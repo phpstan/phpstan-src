@@ -56,7 +56,7 @@ public:
 		if (equal) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		zend_long isNonFalsyString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isnonfalsystring"), 0, NULL);
 		if (UNEXPECTED(isNonFalsyString < 0)) return zv::Val();
-		return pt_type_new_is_super_type_of_result(isNonFalsyString);
+		return pt_type_is_super_type_of_result(isNonFalsyString);
 	}
 
 	/* the union/intersection callback; yes for an AccessoryNonEmptyStringType;
@@ -78,7 +78,7 @@ public:
 		if (!instanceof_function(Z_OBJCE_P(otherType), pt_ce_accessory_non_falsy_string_type)) {
 			value = pt_trinary_and(value, PT_TRI_MAYBE);
 		}
-		return pt_type_new_is_super_type_of_result(value);
+		return pt_type_is_super_type_of_result(value);
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */

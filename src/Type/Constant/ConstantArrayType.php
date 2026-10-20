@@ -773,10 +773,10 @@ class ConstantArrayType implements Type
 
 			if (count($this->keyTypes) === 0) {
 				if (!$bothDefinite) {
-					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+					return IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterableAtLeastOnce()->negate());
 				}
 				if ($thisUnsealedness->no()) {
-					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+					return IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterableAtLeastOnce()->negate());
 				}
 				// $this is unsealed with no known keys — fall through to extras/unsealed-part checks below
 			}

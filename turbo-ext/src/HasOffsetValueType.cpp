@@ -139,7 +139,7 @@ public:
 		if (equal) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		zend_long value = accessibleAndHasOffset(type);
 		if (UNEXPECTED(value < 0)) return zv::Val();
-		zv::Val result = pt_type_new_is_super_type_of_result(value);
+		zv::Val result = pt_type_is_super_type_of_result(value);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		zv::Val offsetValue = offsetValueTypeOf(type);
 		if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
@@ -168,7 +168,7 @@ public:
 		if (!instanceof_function(Z_OBJCE_P(otherType), pt_ce_has_offset_value_type)) {
 			value = pt_trinary_and(value, PT_TRI_MAYBE);
 		}
-		zv::Val result = pt_type_new_is_super_type_of_result(value);
+		zv::Val result = pt_type_is_super_type_of_result(value);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		zv::Val offsetValue = offsetValueTypeOf(otherType);
 		if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();

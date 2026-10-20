@@ -103,14 +103,14 @@ class IterableType implements CompoundType
 			return $type->isSubTypeOf($this);
 		}
 
-		return (new IsSuperTypeOfResult($type->isIterable(), []))
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterable())
 			->and($this->getIterableValueType()->isSuperTypeOf($type->getIterableValueType()))
 			->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
 	}
 
 	public function isSuperTypeOfMixed(Type $type): IsSuperTypeOfResult
 	{
-		return (new IsSuperTypeOfResult($type->isIterable(), []))
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterable())
 			->and($this->isNestedTypeSuperTypeOf($this->getIterableValueType(), $type->getIterableValueType()))
 			->and($this->isNestedTypeSuperTypeOf($this->getIterableKeyType(), $type->getIterableKeyType()));
 	}
@@ -153,7 +153,7 @@ class IterableType implements CompoundType
 		}
 
 		return $limit->and(
-			new IsSuperTypeOfResult($otherType->isIterable(), []),
+			IsSuperTypeOfResult::createFromTrinaryLogic($otherType->isIterable()),
 			$otherType->getIterableValueType()->isSuperTypeOf($this->itemType),
 			$otherType->getIterableKeyType()->isSuperTypeOf($this->keyType),
 		);

@@ -1788,7 +1788,7 @@ public:
 				if (!bothDefinite || thisUnsealedness == PT_TRI_NO) {
 					zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 					if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
-					return pt_type_new_is_super_type_of_result(trinaryNegate(atLeastOnce));
+					return pt_type_is_super_type_of_result(trinaryNegate(atLeastOnce));
 				}
 				/* $this is unsealed with no known keys — fall through to extras/unsealed-part checks below */
 			}

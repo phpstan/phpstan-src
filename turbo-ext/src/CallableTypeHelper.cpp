@@ -193,7 +193,7 @@ public:
 	}
 
 private:
-	/* $result = $result->and(new IsSuperTypeOfResult($theirs->probe()[->negate()], []))
+	/* $result = $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($theirs->probe()[->negate()]))
 	 * when $ours->probe() is yes / no; false = pending exception */
 	[[nodiscard]] static bool andTrinaryProbe(zv::Val &result, zval *ours, zval *theirs, const char *lcname, size_t len)
 	{

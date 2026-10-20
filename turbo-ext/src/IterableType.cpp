@@ -153,7 +153,7 @@ public:
 	/* the same with the nested mixed types compared by explicitness */
 	zv::Val isSuperTypeOfMixed(zval *type) const { return isSuperTypeOfNested(type, true); }
 
-	/* (new IsSuperTypeOfResult($type->isIterable(), []))
+	/* IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterable())
 	 *   ->and(<value types>)->and(<key types>), the nested comparisons
 	 * isSuperTypeOf() or isNestedTypeSuperTypeOf(); UNDEF = pending exception */
 	zv::Val isSuperTypeOfNested(zval *type, bool nested) const

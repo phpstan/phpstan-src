@@ -106,7 +106,7 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->isArray()->and($type->isIterableAtLeastOnce()), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isArray()->and($type->isIterableAtLeastOnce()));
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -115,9 +115,8 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isArray()->and($otherType->isIterableAtLeastOnce())->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

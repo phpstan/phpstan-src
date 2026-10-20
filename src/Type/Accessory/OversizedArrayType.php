@@ -94,7 +94,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 			return $type->isSubTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult($type->isArray()->and($type->isOversizedArray()), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isArray()->and($type->isOversizedArray()));
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -103,9 +103,8 @@ class OversizedArrayType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isArray()->and($otherType->isOversizedArray())->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

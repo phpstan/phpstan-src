@@ -47,7 +47,7 @@ public:
 		return pt_type_accepts_result(isClassString);
 	}
 
-	/* the CompoundType callback, else new IsSuperTypeOfResult($type->isClassString(), []);
+	/* the CompoundType callback, else IsSuperTypeOfResult::createFromTrinaryLogic($type->isClassString());
 	 * UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{

@@ -99,7 +99,7 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return new IsSuperTypeOfResult($type->isNumericString(), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isNumericString());
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -108,9 +108,8 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isNumericString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

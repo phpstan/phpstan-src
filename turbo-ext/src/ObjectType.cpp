@@ -940,17 +940,10 @@ public:
 		bool isClosure;
 		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_closure_type, isClosure))) return zv::Val();
 		if (isClosure) {
-			/* new IsSuperTypeOfResult($this->isInstanceOf(Closure::class), []) */
+			/* IsSuperTypeOfResult::createFromTrinaryLogic($this->isInstanceOf(Closure::class)) */
 			zend_long isInstance = thisIsInstanceOfLiteral(PT_LC("Closure"));
 			if (UNEXPECTED(isInstance < 0)) return zv::Val();
-			zval reasons, lazyReasons;
-			ZVAL_EMPTY_ARRAY(&reasons);
-			ZVAL_EMPTY_ARRAY(&lazyReasons); /* the constructor's default */
-			zval result;
-			if (UNEXPECTED(!pt_result_object_create(&result, pt_ce_is_super_type_of_result, pt_trinary_singleton(isInstance), &reasons, &lazyReasons))) {
-				return zv::Val();
-			}
-			return storeSuperType(thisDescriptionStr, descriptionStr, zv::Val::adopt(result));
+			return storeSuperType(thisDescriptionStr, descriptionStr, pt_type_is_super_type_of_result(isInstance));
 		}
 
 		if (isObjectWithoutClass) {

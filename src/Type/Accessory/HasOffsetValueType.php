@@ -109,7 +109,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		$result = new IsSuperTypeOfResult($type->isOffsetAccessible()->and($type->hasOffsetValueType($this->offsetType)), []);
+		$result = IsSuperTypeOfResult::createFromTrinaryLogic($type->isOffsetAccessible()->and($type->hasOffsetValueType($this->offsetType)));
 
 		return $result
 			->and($this->valueType->isSuperTypeOf($type->getOffsetValueType($this->offsetType)));
@@ -121,11 +121,10 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		$result = new IsSuperTypeOfResult(
+		$result = IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isOffsetAccessible()
 				->and($otherType->hasOffsetValueType($this->offsetType))
 				->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 
 		return $result

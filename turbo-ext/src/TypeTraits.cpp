@@ -2142,16 +2142,6 @@ zval *pt_type_native_callback_state(zval *callback, int index)
 	return OBJ_PROP_NUM(Z_OBJ_P(callback), index == 0 ? PT_NC_PROP_STATE0 : PT_NC_PROP_STATE1);
 }
 
-zv::Val pt_type_new_is_super_type_of_result(zend_long value)
-{
-	zval reasons, lazyReasons;
-	ZVAL_EMPTY_ARRAY(&reasons);
-	ZVAL_EMPTY_ARRAY(&lazyReasons); /* the constructor's default [] */
-	zval result;
-	if (UNEXPECTED(!pt_result_object_create(&result, pt_ce_is_super_type_of_result, pt_trinary_singleton(value), &reasons, &lazyReasons))) return zv::Val();
-	return zv::Val::adopt(result);
-}
-
 zv::Val pt_type_new_accepts_result(zend_long value)
 {
 	zval reasons;
@@ -3304,12 +3294,9 @@ zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zva
 
 zv::Val pt_callable_is_super_type_of_result_of(zval *trinary)
 {
-	zval reasons, lazyReasons;
-	ZVAL_EMPTY_ARRAY(&reasons);
-	ZVAL_EMPTY_ARRAY(&lazyReasons); /* the constructor's default [] */
-	zval result;
-	if (UNEXPECTED(!pt_result_object_create(&result, pt_ce_is_super_type_of_result, trinary, &reasons, &lazyReasons))) return zv::Val();
-	return zv::Val::adopt(result);
+	zend_long value = pt_type_trinary_value(trinary);
+	if (UNEXPECTED(value < 0)) return zv::Val();
+	return pt_type_is_super_type_of_result(value);
 }
 
 zv::Val pt_callable_out_of_class_scope()

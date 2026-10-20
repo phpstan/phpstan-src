@@ -116,7 +116,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		$isDecimalIntegerString = $type->isDecimalIntegerString();
 		$result = $type->isString()->and($this->inverse ? $isDecimalIntegerString->negate() : $isDecimalIntegerString);
 
-		return new IsSuperTypeOfResult($result, []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($result);
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -138,9 +138,8 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 
 		$otherTypeResult = $otherType->isString()->and($this->inverse ? $otherType->isDecimalIntegerString()->negate() : $otherType->isDecimalIntegerString());
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherTypeResult->and($otherType->equals($this) ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

@@ -505,10 +505,9 @@ zv::Val pt_type_native_callback(pt_native_callback fn, zval *state0, zval *state
 /* the holder's state slot (0 or 1), for reading a by-reference `use` back
  * after the call; borrowed */
 zval *pt_type_native_callback_state(zval *callback, int index);
-/* new IsSuperTypeOfResult($trinary, []) / new AcceptsResult($trinary, [])
- * for a PT_TRI_* value — fresh instances, as the accessories' `new` spells
- * them (not the create*() singletons); UNDEF = pending exception */
-zv::Val pt_type_new_is_super_type_of_result(zend_long value);
+/* new AcceptsResult($trinary, []) for a PT_TRI_* value — a fresh instance,
+ * as the accessories' `new` spells it (not the create*() singletons);
+ * UNDEF = pending exception */
 zv::Val pt_type_new_accepts_result(zend_long value);
 /* $result->and($other) on two result objects, natively for two
  * AcceptsResults; UNDEF = pending exception (also for an UNDEF $result) */
@@ -664,8 +663,8 @@ zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, 
 /* the traverseSimultaneously() parameter mapping over the left and right
  * parameter lists of equal size; UNDEF = pending exception */
 zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zval *rightParameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
-/* new IsSuperTypeOfResult($trinary, []) over a TrinaryLogic zval; UNDEF =
- * pending exception */
+/* IsSuperTypeOfResult::createFromTrinaryLogic($trinary) over a TrinaryLogic
+ * zval; UNDEF = pending exception */
 zv::Val pt_callable_is_super_type_of_result_of(zval *trinary);
 /* new OutOfClassScope(); UNDEF = pending exception */
 zv::Val pt_callable_out_of_class_scope();

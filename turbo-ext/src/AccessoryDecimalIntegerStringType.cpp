@@ -97,7 +97,7 @@ public:
 		if (UNEXPECTED(isString < 0)) return zv::Val();
 		bool inverse = false;
 		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
-		return pt_type_new_is_super_type_of_result(pt_trinary_and(isString, inverse ? trinaryNegate(isDecimalIntegerString) : isDecimalIntegerString));
+		return pt_type_is_super_type_of_result(pt_trinary_and(isString, inverse ? trinaryNegate(isDecimalIntegerString) : isDecimalIntegerString));
 	}
 
 	/* the union/intersection callback; yes for a numeric, lowercase or
@@ -134,7 +134,7 @@ public:
 		ZVAL_OBJ(&selfZv, self);
 		zv::Val equal = pt_type_op(Z_OBJ_P(otherType), PT_OP_EQUALS, 1, &selfZv);
 		if (UNEXPECTED(equal.isUndef())) return zv::Val();
-		return pt_type_new_is_super_type_of_result(pt_trinary_and(otherTypeResult, zend_is_true(equal.raw()) ? PT_TRI_YES : PT_TRI_MAYBE));
+		return pt_type_is_super_type_of_result(pt_trinary_and(otherTypeResult, zend_is_true(equal.raw()) ? PT_TRI_YES : PT_TRI_MAYBE));
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */

@@ -99,12 +99,12 @@ final class ForeachEmptyOrObjectNarrowingHelper
 		if ($leftTruthyTypes === null || $leftFalseyTypes === null) {
 			return null;
 		}
-		$leftTruthyScope = $scope->applySpecifiedTypes($leftTruthyTypes->setRootExpr($identical));
 		$leftFalseyScope = $scope->applySpecifiedTypes($leftFalseyTypes->setRootExpr($identical));
 		$rightTruthyTypes = $rightTypes($leftFalseyScope, TypeSpecifierContext::createTruthy());
 		if ($rightTruthyTypes === null) {
 			return null;
 		}
+		$leftTruthyScope = $scope->applySpecifiedTypes($leftTruthyTypes->setRootExpr($identical));
 		$rightTruthyScope = $leftFalseyScope->applySpecifiedTypes($rightTruthyTypes->setRootExpr($isObjectCall));
 
 		$types = $this->booleanNarrowingHelper->specifyDisjunction(

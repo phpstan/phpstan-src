@@ -317,13 +317,13 @@ public:
 		zv::Val leftFalseyTypes = leftTypesOf(leftCaptures, scope, &falsey);
 		if (UNEXPECTED(leftFalseyTypes.isUndef())) return zv::Val();
 		if (leftTruthyTypes.isNull() || leftFalseyTypes.isNull()) return zv::Val::null();
-		zv::Val leftTruthyScope = applyRooted(scope, leftTruthyTypes.raw(), identical);
-		if (UNEXPECTED(leftTruthyScope.isUndef())) return zv::Val();
 		zv::Val leftFalseyScope = applyRooted(scope, leftFalseyTypes.raw(), identical);
 		if (UNEXPECTED(leftFalseyScope.isUndef())) return zv::Val();
 		zv::Val rightTruthyTypes = rightTypesOf(rightCaptures, leftFalseyScope.raw(), &truthy);
 		if (UNEXPECTED(rightTruthyTypes.isUndef())) return zv::Val();
 		if (rightTruthyTypes.isNull()) return zv::Val::null();
+		zv::Val leftTruthyScope = applyRooted(scope, leftTruthyTypes.raw(), identical);
+		if (UNEXPECTED(leftTruthyScope.isUndef())) return zv::Val();
 		zv::Val rightTruthyScope = applyRooted(leftFalseyScope.raw(), rightTruthyTypes.raw(), isObjectCall);
 		if (UNEXPECTED(rightTruthyScope.isUndef())) return zv::Val();
 

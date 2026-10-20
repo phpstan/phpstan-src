@@ -1151,6 +1151,18 @@ extern zend_class_entry *pt_ce_type_utils;
 extern zend_class_entry *pt_ce_typehint_helper;
 
 /* merged from the parallel port branch */
+/* facts about what a type contains, remembered on the type object (types
+ * are immutable) — each fact one bit, its "known" bit the next one up
+ * (TypeCombinatorCache.cpp): pt_type_cached_fact() answers 1 / 0, or -1
+ * when not known (or the object carries no header); pt_type_cache_fact()
+ * records it */
+enum : uint32_t
+{
+	PT_TYPE_FACT_CONTAINS_STATIC = 1u << 0,
+};
+int pt_type_cached_fact(zend_object *type, uint32_t fact);
+void pt_type_cache_fact(zend_object *type, uint32_t fact, bool holds);
+
 /* the static combinator (TypeCombinator.cpp); TypeCombinatorCache.cpp calls
  * its do*() entry points directly */
 extern zend_class_entry *pt_ce_type_combinator;

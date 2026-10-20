@@ -502,6 +502,11 @@ zv::Val pt_static_type_this_class_name(zend_object *self);
  * leaves pending propagates. state0/state1 are borrowed, NULL = null. */
 typedef void (*pt_native_callback)(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 zv::Val pt_type_native_callback(pt_native_callback fn, zval *state0, zval *state1);
+/* whether TypeTraverser::map() reaches a StaticType (ThisType and
+ * GenericStaticType included) in the type — the only kind the
+ * transformStaticType() callbacks change; remembered per type object
+ * (StaticType.cpp); false = pending exception */
+bool pt_type_contains_static(zval *type, bool &out);
 /* the holder's state slot (0 or 1), for reading a by-reference `use` back
  * after the call; borrowed */
 zval *pt_type_native_callback_state(zval *callback, int index);

@@ -147,6 +147,11 @@ private:
 	 * closure below over $this); UNDEF = pending exception */
 	static zv::Val transformStaticType(void *context, zval *type)
 	{
+		/* the callback changes StaticTypes only: a type without one maps to
+		 * itself */
+		bool containsStatic;
+		if (UNEXPECTED(!pt_type_contains_static(type, containsStatic))) return zv::Val();
+		if (!containsStatic) return zv::Val::copyOf(zv::Ref(type));
 		zval thisZv;
 		ZVAL_OBJ(&thisZv, (zend_object *) context);
 		zv::Val callback = pt_type_native_callback(traverse, &thisZv, NULL);

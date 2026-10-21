@@ -130,7 +130,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_UNRESOLVABLE_TYPE_RESULT */ {"unresolvableTypeResult", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult"},
 	/* PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION */ {"undefinedVariableException", "PHPStan\\Analyser\\UndefinedVariableException"},
 	/* PT_CLASS_PROPERTY_INITIALIZATION_EXPR */ {"propertyInitializationExpr", "PHPStan\\Node\\Expr\\PropertyInitializationExpr"},
-	/* PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR */ {"possiblyImpureCallExpr", "PHPStan\\Node\\Expr\\PossiblyImpureCallExpr"},
 	/* PT_CLASS_CONST_FETCH */ {"constFetch", "PhpParser\\Node\\Expr\\ConstFetch"},
 	/* PT_CLASS_HALT_COMPILER */ {"haltCompiler", "PhpParser\\Node\\Stmt\\HaltCompiler"},
 	/* PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR */ {"extendedParametersAcceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor"},

@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
-use PHPStan\Rules\Comparison\PossiblyImpureTipHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\CompositeRule;
@@ -36,7 +35,6 @@ class ImpossibleInstanceOfRuleWithUncertainPhpDocTypesTest extends RuleTestCase
 		return new CompositeRule([
 			new ImpossibleInstanceOfRule(
 				$ruleLevelHelper,
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				treatPhpDocTypesAsCertain: false,
 				reportAlwaysTrueInLastCondition: false,

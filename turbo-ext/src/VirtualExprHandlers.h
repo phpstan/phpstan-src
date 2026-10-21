@@ -41,7 +41,6 @@ inline NodeProp alwaysRememberedExprNativeType = PT_NODE_PROP(PT_CLASS_ALWAYS_RE
 inline NodeProp existingArrayDimFetchVar = PT_NODE_PROP(PT_CLASS_EXISTING_ARRAY_DIM_FETCH, "var");
 inline NodeProp existingArrayDimFetchDim = PT_NODE_PROP(PT_CLASS_EXISTING_ARRAY_DIM_FETCH, "dim");
 inline NodeProp issetExprExpr = PT_NODE_PROP(PT_CLASS_ISSET_EXPR, "expr");
-inline NodeProp possiblyImpureCallExprCallExpr = PT_NODE_PROP(PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR, "callExpr");
 inline NodeProp setOffsetValueTypeExprVar = PT_NODE_PROP(PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR, "var");
 inline NodeProp setOffsetValueTypeExprDim = PT_NODE_PROP(PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR, "dim");
 inline NodeProp setOffsetValueTypeExprValue = PT_NODE_PROP(PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR, "value");

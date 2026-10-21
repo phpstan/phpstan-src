@@ -37,7 +37,6 @@ use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
-use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\IssetExpr;
@@ -114,9 +113,7 @@ use function array_merge;
 use function array_pop;
 use function array_shift;
 use function array_slice;
-use function array_unique;
 use function array_values;
-use function assert;
 use function count;
 use function ctype_alnum;
 use function explode;
@@ -847,114 +844,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $variables;
 	}
 
-	/**
-	 * @return list<string>
-	 */
-	public function findPossiblyImpureCallDescriptions(Expr $expr): array
-	{
-		$nodeFinder = new NodeFinder();
-		$callExprDescriptions = [];
-		$foundCallExprMatch = false;
-		$matchedCallExprKeys = [];
-		foreach ($this->expressionTypes as $holder) {
-			$holderExpr = $holder->getExpr();
-			if (!$holderExpr instanceof PossiblyImpureCallExpr) {
-				continue;
-			}
-
-			$callExprKey = $this->getNodeKey($holderExpr->callExpr);
-
-			$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($callExprKey): bool {
-				if (!$node instanceof Expr) {
-					return false;
-				}
-
-				return $this->getNodeKey($node) === $callExprKey;
-			});
-
-			if ($found === null) {
-				continue;
-			}
-
-			$foundCallExprMatch = true;
-			$matchedCallExprKeys[$callExprKey] = true;
-
-			// Only show the tip when the scope's type for the call expression
-			// differs from the declared return type, meaning control flow
-			// narrowing affected the type (the cached value was narrowed).
-			assert($found instanceof Expr);
-			$scopeType = $this->getType($found);
-			$declaredReturnType = $holder->getType();
-			if ($declaredReturnType->isSuperTypeOf($scopeType)->yes() && $scopeType->isSuperTypeOf($declaredReturnType)->yes()) {
-				continue;
-			}
-
-			$callExprDescriptions[] = $holderExpr->getCallDescription();
-		}
-
-		// If the first pass found a callExpr in the error expression but
-		// filtered it out (return type wasn't narrowed), the error is
-		// explained by the return type alone - skip the fallback.
-		if ($foundCallExprMatch && count($callExprDescriptions) === 0) {
-			return [];
-		}
-
-		// Second pass: match by impactedExpr for cases where a maybe-impure method
-		// on an object didn't invalidate it, but a different method's return
-		// value was narrowed on that object.
-		// Skip when the expression itself is a direct method/static call -
-		// those are passed by ImpossibleCheckType rules where the error is
-		// about the call's arguments, not about object state.
-		if (!($expr instanceof Expr\MethodCall || $expr instanceof Expr\StaticCall)) {
-			$impactedExprDescriptions = [];
-			foreach ($this->expressionTypes as $holder) {
-				$holderExpr = $holder->getExpr();
-				if (!$holderExpr instanceof PossiblyImpureCallExpr) {
-					continue;
-				}
-
-				$impactedExprKey = $this->getNodeKey($holderExpr->impactedExpr);
-
-				// Skip if impactedExpr is the same as callExpr (function calls)
-				if ($impactedExprKey === $this->getNodeKey($holderExpr->callExpr)) {
-					continue;
-				}
-
-				// Skip if this entry's callExpr was already matched in the first pass
-				$callExprKey = $this->getNodeKey($holderExpr->callExpr);
-				if (isset($matchedCallExprKeys[$callExprKey])) {
-					continue;
-				}
-
-				$found = $nodeFinder->findFirst([$expr], function (Node $node) use ($impactedExprKey): bool {
-					if (!$node instanceof Expr) {
-						return false;
-					}
-
-					return $this->getNodeKey($node) === $impactedExprKey;
-				});
-
-				if ($found === null) {
-					continue;
-				}
-
-				$impactedExprDescriptions[] = $holderExpr->getCallDescription();
-			}
-
-			// Prefer impactedExpr matches (intermediate calls that could have
-			// invalidated the object) over callExpr matches
-			if (count($impactedExprDescriptions) > 0) {
-				return array_values(array_unique($impactedExprDescriptions));
-			}
-		}
-
-		if (count($callExprDescriptions) > 0) {
-			return array_values(array_unique($callExprDescriptions));
-		}
-
-		return [];
-	}
-
 	private function isGlobalVariable(string $variableName): bool
 	{
 		return in_array($variableName, self::SUPERGLOBAL_VARIABLES, true);
@@ -1537,9 +1426,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		];
 		foreach ($tables as [$ours, $theirs]) {
 			foreach ($ours as $key => $holder) {
-				if ($holder->getExpr() instanceof PossiblyImpureCallExpr) {
-					continue;
-				}
 				$theirHolder = $theirs[$key] ?? null;
 				if ($theirHolder !== null && ($theirHolder === $holder || $holder->equals($theirHolder))) {
 					continue;
@@ -1553,7 +1439,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 			}
 			foreach ($theirs as $key => $holder) {
-				if (isset($ours[$key]) || $holder->getExpr() instanceof PossiblyImpureCallExpr) {
+				if (isset($ours[$key])) {
 					continue;
 				}
 				$variables = self::getVariablesOfExpressionKey($key);
@@ -1576,12 +1462,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 				$variables = self::getVariablesOfExpressionKey($key);
 				if ($variables === null) {
-					foreach ($holders as $holder) {
-						if (!$holder->getTypeHolder()->getExpr() instanceof PossiblyImpureCallExpr) {
-							return null;
-						}
-					}
-					continue;
+					return null;
 				}
 				foreach ($variables as $variable) {
 					$roots[$variable] = true;

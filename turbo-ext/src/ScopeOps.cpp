@@ -29,7 +29,6 @@ static zend_class_entry *pt_ce_scope_ops;
 static const pt_superglobal_name pt_so_compositional_virtual_key_prefixes[] = {
 	{ PT_LC("__phpstanForeachValueByRef(") },
 	{ PT_LC("__phpstanIntertwinedVariableByReference(") },
-	{ PT_LC("__phpstanPossiblyImpure(") },
 	{ PT_LC("__phpstanPropertyInitialization(") },
 	{ PT_LC("__phpstanRemembered(") },
 };

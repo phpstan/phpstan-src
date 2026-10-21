@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Classes;
 
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
-use PHPStan\Rules\Comparison\PossiblyImpureTipHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\CompositeRule;
@@ -37,7 +36,6 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new ImpossibleInstanceOfRule(
 				$ruleLevelHelper,
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				treatPhpDocTypesAsCertain: true,
 				reportAlwaysTrueInLastCondition: $this->reportAlwaysTrueInLastCondition,
@@ -506,17 +504,15 @@ class ImpossibleInstanceOfRuleTest extends RuleTestCase
 		$this->analyse([$file], []);
 	}
 
-	public function testPossiblyImpureTip(): void
+	public function testRememberedPossiblyImpureValues(): void
 	{
-		$learnMore = ' Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>';
 		$this->analyse([__DIR__ . '/data/possibly-impure-instanceof-tip.php'], [
-			// maybe-impure: tip expected
+			// maybe-impure: the value is remembered
 			[
 				'Instanceof between PossiblyImpureInstanceofTip\Cat and PossiblyImpureInstanceofTip\Cat will always evaluate to true.',
 				41,
-				'If PossiblyImpureInstanceofTip\Holder::maybeImpureMethod() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore,
 			],
-			// pure: no tip, error explained by type
+			// pure
 			[
 				'Instanceof between PossiblyImpureInstanceofTip\Cat and PossiblyImpureInstanceofTip\Cat will always evaluate to true.',
 				53,

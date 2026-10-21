@@ -21,7 +21,6 @@ use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
 use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
-use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -36,7 +35,6 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -62,7 +60,6 @@ use function array_map;
 use function array_merge;
 use function count;
 use function in_array;
-use function sprintf;
 use function strtolower;
 
 /**
@@ -391,24 +388,6 @@ final class StaticCallHandler implements ExprHandler
 		) {
 			// a static method never receives $this, so property fetches on it survive
 			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
-		} elseif (
-			$expr->class instanceof Name
-			&& $methodReflection !== null
-			&& $this->rememberPossiblyImpureFunctionValues
-			&& $scope->isInClass()
-			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
-			&& $methodReflection->hasSideEffects()->maybe()
-			&& !$methodReflection->getDeclaringClass()->isBuiltin()
-		) {
-			// the remembered call value is generic-sensitive: resolve it from the
-			// type-driven acceptor processArgs() selected (generics resolved against
-			// the actual arg types), falling back to the structural acceptor.
-			$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
-			$scope = $scope->assignExpression(
-				new PossiblyImpureCallExpr($normalizedExpr, new Variable('this'), sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-				TemplateArgumentFrame::returnTypeOfCall($acceptorForGenerics, $scope, $expr),
-				new MixedType(),
-			);
 		}
 
 		if (

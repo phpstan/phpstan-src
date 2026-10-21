@@ -18,7 +18,6 @@ class NumberComparisonOperatorsConstantConditionRuleWithoutForeachPollutionTest 
 		// @phpstan-ignore argument.type
 		return new CompositeRule([
 			new NumberComparisonOperatorsConstantConditionRule(
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				true,
 				true,

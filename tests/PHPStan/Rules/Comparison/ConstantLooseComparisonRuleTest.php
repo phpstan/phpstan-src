@@ -25,7 +25,6 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		// @phpstan-ignore argument.type
 		return new CompositeRule([
 			new ConstantLooseComparisonRule(
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				$this->reportAlwaysTrueInLastCondition,

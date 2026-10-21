@@ -28,7 +28,6 @@ class SwitchConditionRuleTest extends RuleTestCase
 				new ConstantConditionRuleHelper(
 					$this->treatPhpDocTypesAsCertain,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(ExprPrinter::class),
 				self::getContainer()->getByType(PhpVersion::class),

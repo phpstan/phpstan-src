@@ -1370,7 +1370,6 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				if ($scope->hasExpressionType($expr)->yes()) {
 					$observe("getTrackedExpressionType#$i $key", static fn () => $scope->getTrackedExpressionType($expr));
 				}
-				$observe("findPossiblyImpureCallDescriptions#$i $key", static fn () => $scope->findPossiblyImpureCallDescriptions($expr));
 				if ($expr instanceof \PhpParser\Node\Expr\PropertyFetch) {
 					$observe("isReadonlyPropertyFetch(this)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, true));
 					$observe("isReadonlyPropertyFetch(any)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, false));

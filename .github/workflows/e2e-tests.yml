@@ -2052,6 +2052,25 @@ jobs:
               ../bashunit assert file_not_contains output.txt "Process restarting"
             coverage: "pcov"
             ini-values: "pcov.enabled=0"
+          - script: |
+              # One restart removes pcov and turns OPcache on: the main process starts twice, not more.
+              cd e2e/restart-once
+              echo "auto_prepend_file=$PWD/start-log.php" | sudo tee -a "$(php -r 'echo php_ini_loaded_file();')"
+              ../../bin/phpstan analyse --no-progress
+              cat starts.log
+              ../bashunit assert equals "2" "$(wc -l < starts.log | tr -d ' ')"
+              ../bashunit assert equals "opcache=1 pcov=0 xdebug=0" "$(tail -n 1 starts.log)"
+            coverage: "pcov"
+            ini-values: "pcov.enabled=1"
+          - script: |
+              # One restart removes Xdebug and turns OPcache on: the main process starts twice, not more.
+              cd e2e/restart-once
+              echo "auto_prepend_file=$PWD/start-log.php" | sudo tee -a "$(php -r 'echo php_ini_loaded_file();')"
+              ../../bin/phpstan analyse --no-progress
+              cat starts.log
+              ../bashunit assert equals "2" "$(wc -l < starts.log | tr -d ' ')"
+              ../bashunit assert equals "opcache=1 pcov=0 xdebug=0" "$(tail -n 1 starts.log)"
+            coverage: "xdebug"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

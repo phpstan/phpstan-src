@@ -33,6 +33,13 @@ if (!class_exists('PHPStanTurbo\Runtime')) {
 	$unknownClasses[] = 'PHPStanTurbo\Runtime';
 }
 
+$unknownFunctions = [];
+if (!function_exists('xdebug_info')) {
+	// provided by the Xdebug extension, which TurboProcessRestarter checks for;
+	// conditional for the same reason as PHPStanTurbo\Runtime above
+	$unknownFunctions[] = 'xdebug_info';
+}
+
 return $config
 	->addPathToScan(__DIR__ . '/../bin', true)
 	->ignoreErrorsOnPackages(
@@ -44,4 +51,5 @@ return $config
 	)
 	->ignoreErrorsOnPackage('phpunit/phpunit', [ErrorType::DEV_DEPENDENCY_IN_PROD]) // prepared test tooling
 	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS, ErrorType::UNKNOWN_FUNCTION, ErrorType::SHADOW_DEPENDENCY]) // to be able to test invalid symbols
-	->ignoreUnknownClasses($unknownClasses);
+	->ignoreUnknownClasses($unknownClasses)
+	->ignoreUnknownFunctions($unknownFunctions);

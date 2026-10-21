@@ -304,7 +304,7 @@ PHP_INI_SCAN_DIR=":/tmp/turbo-ini" /usr/bin/time php -d memory_limit=6G bin/phps
 ```
 
 Never load it with `php -d extension=` for a `bin/phpstan` run: when the
-OPcache settings are not the ones TurboProcessRestarter wants (OPcache off
+OPcache settings are not the ones RestartManager wants (OPcache off
 for CLI, timestamps validated — the CI images and a default Homebrew PHP
 both), PHPStan re-executes itself, and a command-line `-d extension=` does
 not survive the restart. The run then measures PHP alone, while

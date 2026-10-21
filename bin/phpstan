@@ -10,8 +10,8 @@ use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\ResultCacheInfoCommand;
 use PHPStan\Command\WorkerCommand;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Process\Restart\RestartManager;
 use PHPStan\Turbo\TurboExtensionEnabler;
-use PHPStan\Turbo\TurboProcessRestarter;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 (function () {
@@ -27,8 +27,13 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionSelector.php';
-	require_once __DIR__ . '/../src/Turbo/TurboProcessRestarter.php';
-	TurboProcessRestarter::restartIfSuitable($_SERVER['argv']);
+	require_once __DIR__ . '/../src/Process/Restart/RestartReason.php';
+	require_once __DIR__ . '/../src/Process/Restart/OpcacheSettings.php';
+	require_once __DIR__ . '/../src/Process/Restart/ExtensionRegistry.php';
+	require_once __DIR__ . '/../src/Process/Restart/IniComposer.php';
+	require_once __DIR__ . '/../src/Process/Restart/RestartExecutor.php';
+	require_once __DIR__ . '/../src/Process/Restart/RestartManager.php';
+	RestartManager::run($_SERVER['argv']);
 	TurboExtensionEnabler::trustOwnTypesIfSuitable($_SERVER['argv']);
 
 	$analysisStartTime = microtime(true);

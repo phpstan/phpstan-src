@@ -3,8 +3,9 @@
 namespace PHPStan\Process;
 
 use PHPStan\Command\AnalyseCommand;
+use PHPStan\Process\Restart\OpcacheSettings;
+use PHPStan\Process\Restart\RestartManager;
 use PHPStan\Turbo\TurboExtensionSelector;
-use PHPStan\Turbo\TurboProcessRestarter;
 use Symfony\Component\Console\Input\InputInterface;
 use function array_merge;
 use function escapeshellarg;
@@ -26,7 +27,7 @@ use const PHP_OS_FAMILY;
  * configuration the worker runs with. The php.ini is inherited through
  * `-c`, but command-line `-d` entries are not, so whatever the spawning
  * process got that way - the turbo extension and the OPcache setup of the
- * TurboProcessRestarter restart - is repeated here; see
+ * restart (RestartManager) - is repeated here; see
  * resolveWorkerIniEntries() for the set and the reasoning.
  */
 final class ProcessHelper
@@ -70,12 +71,12 @@ final class ProcessHelper
 			// TurboExtensionSelector then knows the extension came through -d,
 			// not the php.ini - nothing that process spawns would inherit it
 			$processCommandArray[] = '-d';
-			$processCommandArray[] = TurboProcessRestarter::EXTENSION_PATH_INI . '=' . escapeshellarg("'" . $turboExtension . "'");
+			$processCommandArray[] = TurboExtensionSelector::EXTENSION_PATH_INI . '=' . escapeshellarg("'" . $turboExtension . "'");
 		}
 
 		$parentPid = getmypid();
 		self::$spawnedWorkerCount++;
-		foreach (self::resolveWorkerIniEntries(TurboProcessRestarter::getOpcacheArgs(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, self::$spawnedWorkerCount) as $iniEntry) {
+		foreach (self::resolveWorkerIniEntries(OpcacheSettings::getIniEntries(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, self::$spawnedWorkerCount) as $iniEntry) {
 			$processCommandArray[] = '-d';
 			$processCommandArray[] = $iniEntry;
 		}
@@ -129,14 +130,14 @@ final class ProcessHelper
 	 * The ini entries a spawned worker gets as `-d name=value`, besides
 	 * memory_limit, sys_temp_dir and the extension.
 	 *
-	 * The OPcache entries are the ones the TurboProcessRestarter restart
-	 * gives the main process (see its resolveOpcacheArgs() for what each
-	 * does). A spawned worker compiles the whole application again and gains
+	 * The OPcache entries are the ones the restart gives the main process
+	 * (see OpcacheSettings::resolveIniEntries() for what each does).
+	 * A spawned worker compiles the whole application again and gains
 	 * the same from them - optimized opcodes, interned strings, the
 	 * inheritance cache - and, with the turbo extension active in a phar,
 	 * the optimizer pass dropping PHPStan's own run-time type checks, which
 	 * exists only inside OPcache. Without them, a worker on a pcntl host
-	 * re-executed itself through TurboProcessRestarter to get OPcache: one
+	 * re-executed itself through the restart to get OPcache: one
 	 * exec more per worker, and one that rebuilt the command line from
 	 * scratch, dropping the sys_temp_dir and extension entries of the spawn.
 	 * A Windows worker ran without OPcache altogether.
@@ -154,9 +155,9 @@ final class ProcessHelper
 	 * mapping private to the process.
 	 *
 	 * The restart marker closes the loop: the worker's configuration is
-	 * decided here, so the worker must not run TurboProcessRestarter itself.
+	 * decided here, so the worker must not restart itself.
 	 *
-	 * @param list<string> $opcacheArgs TurboProcessRestarter::getOpcacheArgs() of the spawning process
+	 * @param list<string> $opcacheArgs OpcacheSettings::getIniEntries() of the spawning process
 	 * @return list<string>
 	 */
 	public static function resolveWorkerIniEntries(array $opcacheArgs, string $osFamily, int $parentPid, int $workerNumber): array
@@ -165,7 +166,7 @@ final class ProcessHelper
 		if ($entries !== [] && $osFamily === 'Windows') {
 			$entries[] = sprintf('opcache.cache_id=phpstan-%d-%d', $parentPid, $workerNumber);
 		}
-		$entries[] = TurboProcessRestarter::RESTARTED_INI . '=1';
+		$entries[] = RestartManager::RESTARTED_INI . '=1';
 
 		return $entries;
 	}

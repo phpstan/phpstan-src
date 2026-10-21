@@ -2037,19 +2037,20 @@ jobs:
               ../bashunit assert not_contains 'Ds\Seq' "$OUTPUT"
           - script: |
               cd e2e/bug-15407
-              XDEBUG_HANDLER_DEBUG=1 ../../bin/phpstan analyse --no-progress 2>&1 | tee -a output.txt
-              ../bashunit assert file_contains output.txt "Process restarting"
+              ../../bin/phpstan analyse --no-progress -vvv 2>&1 | tee -a output.txt
+              ../bashunit assert file_contains output.txt "Restarting process: pcov (pcov.enabled=1)"
             coverage: "pcov"
           - script: |
               cd e2e/bug-15407
-              XDEBUG_HANDLER_DEBUG=1 ../../bin/phpstan analyse --no-progress 2>&1 | tee -a output.txt
-              ../bashunit assert file_contains output.txt "Process restarting"
+              ../../bin/phpstan analyse --no-progress -vvv 2>&1 | tee -a output.txt
+              ../bashunit assert file_contains output.txt "Restarting process: pcov (pcov.enabled=1)"
             coverage: "pcov"
             ini-values: "pcov.enabled=1"
           - script: |
               cd e2e/bug-15407
-              XDEBUG_HANDLER_DEBUG=1 ../../bin/phpstan analyse --no-progress 2>&1 | tee -a output.txt
-              ../bashunit assert file_not_contains output.txt "Process restarting"
+              # the restart may still happen to activate OPcache, just not for pcov
+              ../../bin/phpstan analyse --no-progress -vvv 2>&1 | tee -a output.txt
+              ../bashunit assert file_not_contains output.txt "pcov (pcov.enabled"
             coverage: "pcov"
             ini-values: "pcov.enabled=0"
 
@@ -2117,8 +2118,8 @@ jobs:
         run: make build-turbo
 
       - name: "Load the turbo extension through php.ini"
-        # TurboProcessRestarter re-executes the process with the loaded php.ini
-        # to activate OPcache; an extension passed as -d would not survive that,
+        # the restart re-executes the process with the loaded ini files to
+        # activate OPcache; an extension passed as -d would not survive that,
         # one from the ini scan dir is loaded again
         run: |
           echo "extension=$PWD/turbo-ext/phpstan_turbo.so" | sudo tee "$(php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;')/99-phpstan-turbo.ini"
@@ -2246,8 +2247,8 @@ jobs:
           make -j"$(nproc)"
 
       - name: "Load both extensions through php.ini"
-        # TurboProcessRestarter re-executes the process with the loaded php.ini
-        # to activate OPcache; extensions passed as -d would not survive that,
+        # the restart re-executes the process with the loaded ini files to
+        # activate OPcache; extensions passed as -d would not survive that,
         # ones from the ini scan dir are loaded again
         run: |
           printf 'extension=%s\nextension=%s\n' "$PWD/turbo-ext/phpstan_turbo.so" "$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" | sudo tee "$(php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;')/99-phpstan-turbo.ini"
@@ -2281,3 +2282,189 @@ jobs:
           echo "$OUTPUT"
           ../bashunit assert contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
           ../bashunit assert contains '[OK] No errors' "$OUTPUT"
+
+  process-restart-e2e-tests:
+    name: "Process restart E2E tests"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # pcov armed: one restart, every process - the forked worker
+          # included, which no per-worker `-d` injection could reach - runs
+          # disarmed. pcov stays loaded: the rows disarm rather than unload,
+          # which keeps the extension's own symbols reflectable. setup-php
+          # loads OPcache dormant on CLI, so the same restart activates it in
+          # every Linux row
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=pcov,opcache pcov-armed=no pcov-loaded=yes opcache-cli-on=yes processes=2+ starts=2
+
+          # Windows has no pcntl_exec, so the restart runs as a child process
+          # whose exit code is passed on. OPcache is left alone there: the
+          # workers are spawned, and ProcessHelper activates it for each
+          - operating-system: "windows-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=pcov pcov-armed=no processes=1+ starts=2
+              set +e
+              php ../../bin/phpstan analyse --no-progress --configuration failing.neon
+              EXIT_CODE=$?
+              set -e
+              if [ "$EXIT_CODE" != "1" ]; then
+                echo "FAIL: the restarted process' exit code was not passed on, got $EXIT_CODE"
+                exit 1
+              fi
+
+          # xdebug: one restart disarms it via xdebug.mode=off, and it stays
+          # loaded so xdebug_*() remains reflectable. No note about it being
+          # active either
+          - operating-system: "ubuntu-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress 2>&1 | tee out.txt
+              if grep -q 'The Xdebug PHP extension is active, but' out.txt; then
+                echo "FAIL: xdebug survived the restart armed"
+                exit 1
+              fi
+              php check.php restarted-for=xdebug,opcache xdebug-armed=no xdebug-loaded=yes processes=2+ starts=2
+
+          # XDEBUG_MODE overrides xdebug.mode, so flagging the ini alone would
+          # be silently overridable - the row exports the env var too
+          - operating-system: "ubuntu-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              XDEBUG_MODE=develop,debug php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=xdebug,opcache xdebug-armed=no xdebug-loaded=yes processes=2+ starts=2
+
+          # --xdebug keeps xdebug armed and does not restart for it - only for
+          # OPcache
+          - operating-system: "ubuntu-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress --xdebug 2>&1 | tee out.txt
+              if ! grep -q 'enabled, and the Xdebug PHP extension is active' out.txt; then
+                echo "FAIL: --xdebug did not keep xdebug"
+                exit 1
+              fi
+              php check.php restarted-for=opcache xdebug-armed=yes processes=1+ starts=2
+
+          # xdebug and pcov together: one restart handles both. Both come in
+          # through `extensions` because setup-php's `coverage: xdebug` unloads
+          # pcov. xdebug is armed by its default mode, pcov on the command
+          # line - which also proves the composed ini carries runtime `-d`
+          # overrides over without reconstructing them from $argv
+          - operating-system: "ubuntu-latest"
+            coverage: ""
+            extensions: "xdebug, pcov"
+            script: |
+              php -d pcov.enabled=1 ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=xdebug,pcov,opcache pcov-armed=no xdebug-armed=no processes=2+ starts=2
+
+          # --xdebug with pcov armed: xdebug stays armed, pcov is still
+          # disarmed by the same restart - something xdebug-handler could never
+          # express
+          - operating-system: "ubuntu-latest"
+            coverage: ""
+            extensions: "xdebug, pcov"
+            script: |
+              php -d pcov.enabled=1 ../../bin/phpstan analyse --no-progress --xdebug
+              php check.php restarted-for=pcov,opcache pcov-armed=no xdebug-armed=yes processes=1+ starts=2
+
+          # uopz rewrites opcodes unless uopz.disable=1
+          - operating-system: "ubuntu-latest"
+            coverage: "none"
+            extensions: "uopz"
+            script: |
+              php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=uopz,opcache uopz-armed=no processes=2+ starts=2
+
+          # OPcache is dormant on CLI by default - the restart activates it,
+          # and the forked workers inherit the parent's warm opcode cache
+          - operating-system: "ubuntu-latest"
+            coverage: "none"
+            extensions: "opcache"
+            script: |
+              php -d opcache.enable_cli=0 ../../bin/phpstan analyse --no-progress -vvv > out.txt 2>&1
+              cat out.txt
+              php check.php restarted-for=opcache opcache-cli-on=yes processes=2+ starts=2
+              if ! grep -qE 'Mechanism: +fork' out.txt; then
+                echo "FAIL: the workers were not forked under the activated OPcache"
+                exit 1
+              fi
+
+          # --debug restarts like any other run - it only makes the analysis
+          # serial, --xdebug is what keeps xdebug
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress --debug
+              php check.php restarted-for=pcov,opcache pcov-armed=no processes=1 starts=2
+
+          # diagnose never restarts either, it reports what a run would do
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan diagnose 2>&1 | tee out.txt
+              if ! grep -qE 'Restart if started now: +yes - pcov' out.txt; then
+                echo "FAIL: diagnose did not report the restart it would perform"
+                exit 1
+              fi
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        with:
+          coverage: ${{ matrix.coverage }}
+          php-version: "8.2"
+          extensions: ${{ matrix.extensions }}
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Test"
+        working-directory: "e2e/restart-manager"
+        env:
+          SCRIPT: ${{ matrix.script }}
+          # Symfony wraps its notes to the terminal width and prefixes wrapped
+          # lines with "!", which can split a phrase in a way no post-processing
+          # rejoins - and would make the negative assertions pass vacuously
+          COLUMNS: "400"
+        run: |
+          # count every start of the main process, the one before the restart
+          # included - which only an ini-level hook sees
+          LINE=$(php -r 'echo "auto_prepend_file=\"", getcwd(), DIRECTORY_SEPARATOR, "start-log.php\"";')
+          INI=$(php -r 'echo php_ini_loaded_file();')
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            echo "$LINE" >> "$INI"
+          else
+            echo "$LINE" | sudo tee -a "$INI" > /dev/null
+          fi
+          php ../../bin/phpstan clear-result-cache
+          rm -f probe.log starts.log
+          eval "$SCRIPT"

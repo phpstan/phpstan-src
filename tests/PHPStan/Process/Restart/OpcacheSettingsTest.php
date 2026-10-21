@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\Turbo;
+namespace PHPStan\Process\Restart;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_fill_keys;
 use function array_keys;
 
-final class TurboProcessRestarterTest extends PHPStanTestCase
+final class OpcacheSettingsTest extends PHPStanTestCase
 {
 
 	private const STOCK_ARGS = [
@@ -29,7 +29,7 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 	/**
 	 * @return iterable<string, array{array<string, string|false>, list<string>}>
 	 */
-	public static function dataResolveOpcacheArgs(): iterable
+	public static function dataResolveIniEntries(): iterable
 	{
 		$stock = [
 			'opcache.file_cache_only' => '0',
@@ -90,10 +90,10 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 	 * @param array<string, string|false> $ini
 	 * @param list<string> $expected
 	 */
-	#[DataProvider('dataResolveOpcacheArgs')]
-	public function testResolveOpcacheArgs(array $ini, array $expected): void
+	#[DataProvider('dataResolveIniEntries')]
+	public function testResolveIniEntries(array $ini, array $expected): void
 	{
-		$this->assertSame($expected, TurboProcessRestarter::resolveOpcacheArgs($ini));
+		$this->assertSame($expected, OpcacheSettings::resolveIniEntries($ini));
 	}
 
 	/**
@@ -112,7 +112,7 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 	/**
 	 * @return iterable<string, array{array<string, string|false>, bool}>
 	 */
-	public static function dataResolveOpcacheRestartNeeded(): iterable
+	public static function dataIsRestartNeeded(): iterable
 	{
 		// what the restarted process reads back through ini_get() for the stock args
 		$inEffect = [
@@ -171,10 +171,10 @@ final class TurboProcessRestarterTest extends PHPStanTestCase
 	/**
 	 * @param array<string, string|false> $currentIniValues
 	 */
-	#[DataProvider('dataResolveOpcacheRestartNeeded')]
-	public function testResolveOpcacheRestartNeeded(array $currentIniValues, bool $expected): void
+	#[DataProvider('dataIsRestartNeeded')]
+	public function testIsRestartNeeded(array $currentIniValues, bool $expected): void
 	{
-		$this->assertSame($expected, TurboProcessRestarter::resolveOpcacheRestartNeeded(self::STOCK_ARGS, $currentIniValues));
+		$this->assertSame($expected, OpcacheSettings::isRestartNeeded(self::STOCK_ARGS, $currentIniValues));
 	}
 
 }

@@ -225,7 +225,7 @@ download-coverage:
 # `make build-turbo PHP_CONFIG=/path/to/php-config` (command-line variables
 # reach the sub-make through MAKEFLAGS). Nothing is installed: load the
 # result with `php -d extension=...`, or from the ini scan dir when the run
-# re-executes itself (TurboProcessRestarter drops a -d extension).
+# re-executes itself (RestartManager drops a -d extension).
 TURBO_JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
 
 .PHONY: build-turbo

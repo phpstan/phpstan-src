@@ -20,7 +20,6 @@
 		"composer-runtime-api": "^2.0",
 		"clue/ndjson-react": "^1.0",
 		"composer/semver": "^3.4",
-		"composer/xdebug-handler": "^3.0.3",
 		"fidry/cpu-core-counter": "^1.2",
 		"guzzlehttp/guzzle": "^7.9",
 		"hoa/compiler": "3.17.08.08",

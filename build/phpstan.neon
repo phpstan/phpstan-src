@@ -159,7 +159,7 @@ parameters:
 		-
 			# called from bin/phpstan before the autoloader, outside the analysed paths
 			identifier: shipmonk.deadMethod
-			message: '#^Unused PHPStan\\Turbo\\TurboProcessRestarter::restartIfSuitable#'
+			message: '#^Unused PHPStan\\Process\\Restart\\RestartManager::run#'
 			reportUnmatched: false
 		-
 			# called from bin/phpstan before the autoloader, outside the analysed paths

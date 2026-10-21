@@ -2,7 +2,8 @@
 
 namespace PHPStan\Process;
 
-use PHPStan\Turbo\TurboProcessRestarter;
+use PHPStan\Process\Restart\OpcacheSettings;
+use PHPStan\Process\Restart\RestartManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -45,14 +46,14 @@ final class ProcessHelperTest extends TestCase
 		$command = ProcessHelper::getWorkerCommand('bin/phpstan', 'worker', null, ['--port', '1234'], $this->createInput());
 		$commandAgain = ProcessHelper::getWorkerCommand('bin/phpstan', 'worker', null, ['--port', '1234'], $this->createInput());
 
-		$opcacheArgs = TurboProcessRestarter::getOpcacheArgs();
+		$opcacheArgs = OpcacheSettings::getIniEntries();
 		foreach ($opcacheArgs as $opcacheArg) {
 			$this->assertStringContainsString(sprintf(' -d %s ', $opcacheArg), $command);
 		}
 
 		// the restart marker is the last -d, right before the script
 		$this->assertStringContainsString(
-			sprintf(' -d %s=1 %s %s ', TurboProcessRestarter::RESTARTED_INI, escapeshellarg('bin/phpstan'), escapeshellarg('worker')),
+			sprintf(' -d %s=1 %s %s ', RestartManager::RESTARTED_INI, escapeshellarg('bin/phpstan'), escapeshellarg('worker')),
 			$command,
 		);
 

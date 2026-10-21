@@ -51,7 +51,7 @@ final class ResultCacheInfoCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('debug', mode: InputOption::VALUE_NONE, description: 'Show debug information - do not catch internal errors'),
 				new InputOption('memory-limit', mode: InputOption::VALUE_REQUIRED, description: 'Memory limit for reading the result cache'),
-				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes'),
+				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes (pcov and uopz are still turned off)'),
 				new InputOption('json', mode: InputOption::VALUE_NONE, description: 'Print the information as JSON instead of a human-readable summary'),
 				new InputOption('fail-without-result-cache', mode: InputOption::VALUE_NONE, description: 'Return non-zero exit code when the result cache would not be used'),
 			]);

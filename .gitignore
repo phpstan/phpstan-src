@@ -23,3 +23,6 @@ e2e/bashunit
 /e2e/result-cache-stale-objects/tmp
 /e2e/result-cache-truncated/tmp
 /e2e/result-cache-worker-count/tmp
+e2e/restart-manager/probe.log
+e2e/restart-manager/starts.log
+e2e/restart-manager/out.txt

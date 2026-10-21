@@ -1,0 +1,10 @@
+parameters:
+	level: 0
+	paths:
+		- src
+	parallel:
+		maximumNumberOfProcesses: 4
+		minimumNumberOfJobsPerProcess: 1
+		processTimeout: 120.0
+	bootstrapFiles:
+		- probe.php

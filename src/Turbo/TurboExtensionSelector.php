@@ -5,8 +5,10 @@ namespace PHPStan\Turbo;
 use Phar;
 use function dirname;
 use function file_get_contents;
+use function get_cfg_var;
 use function is_dir;
 use function is_file;
+use function is_string;
 use function php_uname;
 use function sprintf;
 use function strpos;
@@ -20,8 +22,9 @@ use const PHP_ZTS;
 /**
  * Locates the distributed turbo extension binary matching the current runtime
  * so it can be loaded via `-d extension=` — into spawned worker processes
- * (ProcessHelper), or into the restarted main process (TurboProcessRestarter)
- * whose pcntl_fork()ed workers then inherit it.
+ * (ProcessHelper), or into the restarted main process (the turbo row of
+ * PHPStan\Process\Restart\ExtensionRegistry) whose pcntl_fork()ed workers then
+ * inherit it.
  *
  * The binaries are committed to the phpstan/phpstan repository next to
  * phpstan.phar (turbo-ext/<platform>/phpstan_turbo-<minor>.so, .dll on
@@ -55,15 +58,32 @@ final class TurboExtensionSelector
 	 */
 	public const MINIMUM_PHP_VERSION_ID = 80300;
 
+	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';
+
+	/**
+	 * The extension path this process was given through -d — by the restart,
+	 * or by ProcessHelper when spawned as a worker. Null when the extension
+	 * came from the php.ini or is not loaded at all.
+	 */
+	public static function getRestartExtensionPath(): ?string
+	{
+		$path = get_cfg_var(self::EXTENSION_PATH_INI);
+		if (!is_string($path) || $path === '') {
+			return null;
+		}
+
+		return $path;
+	}
+
 	public static function findExtensionForWorkers(?string $pharPath = null): ?string
 	{
 		if (TurboExtensionEnabler::isLoaded()) {
-			$restartPath = TurboProcessRestarter::getRestartExtensionPath();
+			$restartPath = self::getRestartExtensionPath();
 			if ($restartPath !== null) {
 				// loaded through a -d flag — the restart's own, or the one
-				// ProcessHelper gave this process when spawning it as a worker
-				// (see TurboProcessRestarter): spawned workers do not inherit
-				// command-line -d flags, so they need it passed explicitly
+				// ProcessHelper gave this process when spawning it as a worker:
+				// spawned workers do not inherit command-line -d flags, so they
+				// need it passed explicitly
 				return $restartPath;
 			}
 

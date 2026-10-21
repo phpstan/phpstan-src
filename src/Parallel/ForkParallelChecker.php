@@ -7,8 +7,8 @@ use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Process\ProcessHelper;
+use PHPStan\Process\Restart\OpcacheSettings;
 use PHPStan\Turbo\TurboExtensionEnabler;
-use PHPStan\Turbo\TurboProcessRestarter;
 use function function_exists;
 use function getmypid;
 use function opcache_get_status;
@@ -28,9 +28,9 @@ use const PHP_OS_FAMILY;
  *   version. The extension arms the phar-fork-guard: libphar serves phar://
  *   reads through one shared per-archive fd whose seek cursor forked
  *   processes race on, corrupting reads — the guard gives each forked child
- *   a private cursor. TurboProcessRestarter re-executes the main process
- *   with the distributed binary loaded when needed (a forked worker inherits
- *   the parent's extensions; the spawn-time `-d extension=` injection cannot
+ *   a private cursor. RestartManager re-executes the main process with the
+ *   distributed binary loaded when needed (a forked worker inherits the
+ *   parent's extensions; the spawn-time `-d extension=` injection cannot
  *   reach it). Outside a phar there is nothing to guard, and no turbo is
  *   lost by forking either: the distributed binaries only exist next to a
  *   phar, so spawned workers of a source checkout run without turbo too —
@@ -38,8 +38,8 @@ use const PHP_OS_FAMILY;
  * - JIT off — its shared code buffer is not safe to populate concurrently
  *   from forked children. Plain OPcache is fine: concurrent population of
  *   its SHM under the allocator lock is php-fpm's normal operating model,
- *   and TurboProcessRestarter deliberately activates it for the restarted
- *   process (with JIT pinned off).
+ *   and RestartManager deliberately activates it for the restarted process
+ *   (with JIT pinned off).
  *
  * A forked worker ends with the extension's _exit() instead of PHP's full
  * teardown (see ForkedChildTerminator): the child inherits every loaded
@@ -72,7 +72,7 @@ final class ForkParallelChecker implements DiagnoseExtension
 		// (see ProcessHelper); the extension path is on the turbo lines
 		$parentPid = getmypid();
 		$output->writeLineFormatted('Worker -d entries:');
-		foreach (ProcessHelper::resolveWorkerIniEntries(TurboProcessRestarter::getOpcacheArgs(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, 1) as $iniEntry) {
+		foreach (ProcessHelper::resolveWorkerIniEntries(OpcacheSettings::getIniEntries(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, 1) as $iniEntry) {
 			$output->writeLineFormatted(sprintf(
 				'  %s%s',
 				$iniEntry,

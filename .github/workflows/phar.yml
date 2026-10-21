@@ -106,7 +106,7 @@ jobs:
 
       # Box leaves the members with mtime 0 here, which OPcache refuses to
       # cache at all; the commit date also keeps consecutive builds apart for
-      # opcache.validate_timestamps (see TurboProcessRestarter::resolveOpcacheArgs()).
+      # opcache.validate_timestamps (see OpcacheSettings::resolveIniEntries()).
       # resign.php fails if any member is left at mtime 0.
       - name: "Stamp PHAR member timestamps"
         run: php compiler/build/resign.php tmp/phpstan.phar "$(git log -1 --format=%cI)"
@@ -2276,8 +2276,8 @@ jobs:
 
       - name: "Install PHP"
         # Deliberately without `ini-file: development`: that ini lists the
-        # pcntl functions in disable_functions, and TurboProcessRestarter then
-        # returns before TurboExtensionSelector ever runs. With pcntl available
+        # pcntl functions in disable_functions, and RestartManager then never
+        # asks TurboExtensionSelector for the binary. With pcntl available
         # the phar boots through the turbo restart code, which bin/phpstan
         # loads before the Composer autoloader - on PHP < 8.0 without the
         # symfony polyfills (https://github.com/phpstan/phpstan/issues/15137).

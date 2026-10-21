@@ -259,11 +259,10 @@ public:
 	explicit FuncCallScopeEffectsHelper(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *outputBufferHelper, bool rememberPossiblyImpureFunctionValues, zval *assignHandler) const
+	void construct(zval *outputBufferHelper, zval *assignHandler) const
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::outputBufferHelper, zv::Val::copyOf(zv::Ref(outputBufferHelper)));
-		object.propAtWrite(slots::rememberPossiblyImpureFunctionValues, zv::Val::boolean(rememberPossiblyImpureFunctionValues));
 		object.propAtWrite(slots::assignHandler, zv::Val::copyOf(zv::Ref(assignHandler)));
 	}
 
@@ -332,34 +331,6 @@ public:
 				zv::Val invalidated = pt_mutating_scope_invalidate_expression(Z_OBJ_P(scope.raw()), thisVariable.raw(), true, NULL, keepPropertyFetches);
 				if (UNEXPECTED(invalidated.isUndef())) return zv::Val();
 				scope = std::move(invalidated);
-			}
-		}
-
-		if (functionReflection != NULL && parametersAcceptor != NULL && Z_TYPE_P(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) == IS_TRUE) {
-			zv::Val sideEffectsHold;
-			zval *sideEffects = pt_function_reflection_has_side_effects(functionReflection, sideEffectsHold);
-			if (UNEXPECTED(sideEffects == NULL)) return zv::Val();
-			zend_long sideEffectsValue = trinaryOf(sideEffects, "maybe");
-			if (UNEXPECTED(sideEffectsValue < 0)) return zv::Val();
-			bool isBuiltin = false;
-			if (sideEffectsValue == PT_TRI_MAYBE && UNEXPECTED(!pt_function_reflection_is_builtin(functionReflection, isBuiltin))) return zv::Val();
-			if (sideEffectsValue == PT_TRI_MAYBE && !isBuiltin) {
-				zv::Val nameHold;
-				zend_string *name = functionName(functionReflection, nameHold);
-				if (UNEXPECTED(name == NULL)) return zv::Val();
-				zv::Val description = zv::Val::adoptString(zend_string_concat2(ZSTR_VAL(name), ZSTR_LEN(name), PT_LC("()")));
-				zv::Args exprArgv{normalizedExpr, normalizedExpr, description.raw()};
-				zv::Val possiblyImpureCallExpr = pt_type_new(PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR, 3, exprArgv);
-				if (UNEXPECTED(possiblyImpureCallExpr.isUndef())) return zv::Val();
-				zv::Val returnTypeHold;
-				zval *returnType = pt_parameters_acceptor_return_type(parametersAcceptor, returnTypeHold);
-				if (UNEXPECTED(returnType == NULL)) return zv::Val();
-				zval mixed;
-				if (UNEXPECTED(!pt_mixed_type_new(&mixed))) return zv::Val();
-				zv::Val mixedHold = zv::Val::adopt(mixed);
-				zv::Val assigned = pt_mutating_scope_assign_expression(Z_OBJ_P(scope.raw()), Z_OBJ_P(possiblyImpureCallExpr.raw()), returnType, mixedHold.raw());
-				if (UNEXPECTED(assigned.isUndef())) return zv::Val();
-				scope = std::move(assigned);
 			}
 		}
 
@@ -1426,9 +1397,8 @@ PT_MINIT_REGISTRATION(pt_register_func_call_scope_effects_helper)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *outputBufferHelper, *assignHandler;
-		bool rememberPossiblyImpureFunctionValues;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj>(execute_data, outputBufferHelper, rememberPossiblyImpureFunctionValues, assignHandler)) RETURN_THROWS();
-		FuncCallScopeEffectsHelper(Z_OBJ_P(ZEND_THIS)).construct(outputBufferHelper, rememberPossiblyImpureFunctionValues, assignHandler);
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, outputBufferHelper, assignHandler)) RETURN_THROWS();
+		FuncCallScopeEffectsHelper(Z_OBJ_P(ZEND_THIS)).construct(outputBufferHelper, assignHandler);
 	});
 
 	cls.method(sigs::applyArrayWalkResult, [](INTERNAL_FUNCTION_PARAMETERS) {

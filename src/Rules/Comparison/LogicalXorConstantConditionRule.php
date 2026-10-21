@@ -25,7 +25,6 @@ final class LogicalXorConstantConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
@@ -51,20 +50,18 @@ final class LogicalXorConstantConditionRule implements Rule
 		if ($leftType instanceof ConstantBooleanType) {
 			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node->left, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $node->left);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node->left, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node->left, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
-				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-				return $this->possiblyImpureTipHelper->addTip($scope, $node->left, $ruleErrorBuilder);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -97,7 +94,7 @@ final class LogicalXorConstantConditionRule implements Rule
 		if ($rightType instanceof ConstantBooleanType) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node->right, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType(
@@ -105,15 +102,13 @@ final class LogicalXorConstantConditionRule implements Rule
 					$node->right,
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node->right, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node->right, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
-				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-				return $this->possiblyImpureTipHelper->addTip($scope, $node->right, $ruleErrorBuilder);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);

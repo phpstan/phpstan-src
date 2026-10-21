@@ -8,7 +8,7 @@
  * one place), the php-parser node property reads, and the small value helpers
  * the twins spell alike (array_merge(), `$type instanceof NeverType &&
  * $type->isExplicit()`, TemplateTypeHelper::resolveTemplateTypes() against an
- * acceptor, the `%s::%s()` description of a PossiblyImpureCallExpr).
+ * acceptor).
  */
 
 #ifndef PHPSTANTURBO_CALL_HANDLER_SUPPORT_H
@@ -236,31 +236,6 @@ inline zv::Val arrayMerge(zval *a, zval *b)
 	out = false;
 	if (Z_TYPE_P(type) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type), pt_ce_never_type)) return true;
 	return pt_never_type_is_explicit(Z_OBJ_P(type), out);
-}
-
-/* the sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(),
- * $methodReflection->getName()) of a PossiblyImpureCallExpr; UNDEF = pending
- * exception */
-inline zv::Val possiblyImpureCallDescription(zval *methodReflection)
-{
-	zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
-	if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-	zv::Val displayName = pt_class_reflection_get_display_name(Z_OBJ_P(declaringClass.raw()), true);
-	if (UNEXPECTED(displayName.isUndef())) return zv::Val();
-	zv::Val methodName = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_NAME);
-	if (UNEXPECTED(methodName.isUndef())) return zv::Val();
-	zend_string *displayNameString = zval_get_string(displayName.raw());
-	zend_string *methodNameString = zval_get_string(methodName.raw());
-	smart_str description = {NULL, 0};
-	smart_str_append(&description, displayNameString);
-	smart_str_appends(&description, "::");
-	smart_str_append(&description, methodNameString);
-	smart_str_appends(&description, "()");
-	zend_string_release(displayNameString);
-	zend_string_release(methodNameString);
-	zval value;
-	ZVAL_STR(&value, smart_str_extract(&description));
-	return zv::Val::adopt(value);
 }
 
 /* TemplateTypeHelper::resolveTemplateTypes($type,

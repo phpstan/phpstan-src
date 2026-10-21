@@ -462,49 +462,6 @@ public:
 				if (UNEXPECTED(isStatic.isUndef())) return zv::Val();
 				currentScope = pt_mutating_scope_invalidate_expression(Z_OBJ_P(currentScope.raw()), normalizedVar, true, declaringClass.raw(), zend_is_true(isStatic.raw()));
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-			} else if (zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues))) {
-				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-				bool remember = false;
-				if (hasSideEffects == PT_TRI_MAYBE) {
-					zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_DECLARING_CLASS);
-					if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-					bool builtin;
-					if (UNEXPECTED(!pt_class_reflection_is_builtin(Z_OBJ_P(declaringClass.raw()), builtin))) return zv::Val();
-					remember = !builtin;
-				}
-				if (remember) {
-					// the remembered call value and the @phpstan-self-out type are
-					// generic-sensitive: resolve them from the type-driven acceptor
-					// processArgs() selected, falling back to the structural acceptor
-					zval *acceptorForGenerics = resolvedParametersAcceptor.isNull() ? parametersAcceptor.raw() : resolvedParametersAcceptor.raw();
-					zv::Val rememberedType = pt_template_argument_frame_return_type_of_call(acceptorForGenerics, currentScope.raw(), expr);
-					if (UNEXPECTED(rememberedType.isUndef())) return zv::Val();
-					bool varContainsNullsafe;
-					if (UNEXPECTED(!pt_expression_result_contains_nullsafe(varResult.raw(), varContainsNullsafe))) return zv::Val();
-					if (varContainsNullsafe) {
-						bool calledOnContainsNull;
-						if (UNEXPECTED(!pt_type_combinator_contains_null(calledOnType.raw(), calledOnContainsNull))) return zv::Val();
-						if (calledOnContainsNull) {
-							// a call on a nullsafe chain whose receiver is nullable
-							// short-circuits to null - the tracked entry is keyed by the
-							// whole chain, so it must remember the propagated type
-							rememberedType = pt_type_combinator_add_null(rememberedType.raw());
-							if (UNEXPECTED(rememberedType.isUndef())) return zv::Val();
-						}
-					}
-					zval *normalizedVar = exprVar(normalizedExpr.raw());
-					if (UNEXPECTED(normalizedVar == NULL)) return zv::Val();
-					zv::Val description = possiblyImpureCallDescription(methodReflection.raw());
-					if (UNEXPECTED(description.isUndef())) return zv::Val();
-					zv::Args exprArgv{normalizedExpr.raw(), normalizedVar, description.raw()};
-					zv::Val possiblyImpureCallExpr = pt_type_new(PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR, 3, exprArgv);
-					if (UNEXPECTED(possiblyImpureCallExpr.isUndef())) return zv::Val();
-					zv::Val mixed = pt_type_new_mixed_type();
-					if (UNEXPECTED(mixed.isUndef())) return zv::Val();
-					currentScope = pt_mutating_scope_assign_expression(Z_OBJ_P(currentScope.raw()), Z_OBJ_P(possiblyImpureCallExpr.raw()), rememberedType.raw(), mixed.raw());
-					if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-				}
 			}
 			zv::Val isStatic = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_IS_STATIC);
 			if (UNEXPECTED(isStatic.isUndef())) return zv::Val();

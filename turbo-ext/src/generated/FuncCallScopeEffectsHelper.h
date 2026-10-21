@@ -11,8 +11,7 @@ namespace ptdecl::FuncCallScopeEffectsHelper {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t outputBufferHelper = 0;
-inline constexpr uint32_t rememberPossiblyImpureFunctionValues = 1;
-inline constexpr uint32_t assignHandler = 2;
+inline constexpr uint32_t assignHandler = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -24,7 +23,6 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("outputBufferHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper");
-	cls.property("rememberPossiblyImpureFunctionValues", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("assignHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\AssignHandler");
 }
 
@@ -33,86 +31,84 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"outputBufferHelper\0" /* 0 */
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\OutputBufferHelper\0" /* 19 */
-	"rememberPossiblyImpureFunctionValues\0" /* 74 */
-	"assignHandler\0" /* 111 */
-	"PHPStan\\Analyser\\ExprHandler\\AssignHandler\0" /* 125 */
-	"__construct\0" /* 168 */
-	"nodeScopeResolver\0" /* 180 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 198 */
-	"stmt\0" /* 233 */
-	"PhpParser\\Node\\Stmt\0" /* 238 */
-	"arrayWalkArrayArg\0" /* 258 */
-	"PhpParser\\Node\\Expr\0" /* 276 */
-	"arrayWalkValueTypes\0" /* 296 */
-	"argsResult\0" /* 316 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 327 */
-	"scope\0" /* 355 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 361 */
-	"storage\0" /* 392 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 400 */
-	"nodeCallback\0" /* 441 */
-	"\0" /* 454 */
-	"applyArrayWalkResult\0" /* 455 */
-	"normalizedExpr\0" /* 476 */
-	"PhpParser\\Node\\Expr\\FuncCall\0" /* 491 */
-	"functionReflection\0" /* 520 */
-	"PHPStan\\Reflection\\FunctionReflection\0" /* 539 */
-	"parametersAcceptor\0" /* 577 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 596 */
-	"scopeBeforeArgs\0" /* 634 */
-	"applyCallScopeEffects\0" /* 650 */
-	"invalidateObjectArgs\0" /* 672 */
-	"PHPStan\\Analyser\\Scope\0" /* 693 */
-	"expr\0" /* 716 */
-	"PHPStan\\Type\\Type\0" /* 721 */
-	"getArrayFunctionAppendingType"; /* 739 */
+	"assignHandler\0" /* 74 */
+	"PHPStan\\Analyser\\ExprHandler\\AssignHandler\0" /* 88 */
+	"__construct\0" /* 131 */
+	"nodeScopeResolver\0" /* 143 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 161 */
+	"stmt\0" /* 196 */
+	"PhpParser\\Node\\Stmt\0" /* 201 */
+	"arrayWalkArrayArg\0" /* 221 */
+	"PhpParser\\Node\\Expr\0" /* 239 */
+	"arrayWalkValueTypes\0" /* 259 */
+	"argsResult\0" /* 279 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 290 */
+	"scope\0" /* 318 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 324 */
+	"storage\0" /* 355 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 363 */
+	"nodeCallback\0" /* 404 */
+	"\0" /* 417 */
+	"applyArrayWalkResult\0" /* 418 */
+	"normalizedExpr\0" /* 439 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 454 */
+	"functionReflection\0" /* 483 */
+	"PHPStan\\Reflection\\FunctionReflection\0" /* 502 */
+	"parametersAcceptor\0" /* 540 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 559 */
+	"scopeBeforeArgs\0" /* 597 */
+	"applyCallScopeEffects\0" /* 613 */
+	"invalidateObjectArgs\0" /* 635 */
+	"PHPStan\\Analyser\\Scope\0" /* 656 */
+	"expr\0" /* 679 */
+	"PHPStan\\Type\\Type\0" /* 684 */
+	"getArrayFunctionAppendingType"; /* 702 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $outputBufferHelper */
-	reg::packed(74, MAY_BE_BOOL), /* __construct $rememberPossiblyImpureFunctionValues */
-	reg::packed(111, 0, 125), /* __construct $assignHandler */
-	reg::packed(180, 0, 198), /* applyArrayWalkResult $nodeScopeResolver */
-	reg::packed(233, 0, 238), /* applyArrayWalkResult $stmt */
-	reg::packed(258, 0, 276), /* applyArrayWalkResult $arrayWalkArrayArg */
-	reg::packed(296, MAY_BE_ARRAY), /* applyArrayWalkResult $arrayWalkValueTypes */
-	reg::packed(316, 0, 327), /* applyArrayWalkResult $argsResult */
-	reg::packed(355, 0, 361), /* applyArrayWalkResult $scope */
-	reg::packed(392, 0, 400), /* applyArrayWalkResult $storage */
-	reg::packed(441, MAY_BE_CALLABLE), /* applyArrayWalkResult $nodeCallback */
-	reg::packed(454, 0, 361), /* applyArrayWalkResult return */
-	reg::packed(180, 0, 198), /* applyCallScopeEffects $nodeScopeResolver */
-	reg::packed(233, 0, 238), /* applyCallScopeEffects $stmt */
-	reg::packed(476, 0, 491), /* applyCallScopeEffects $normalizedExpr */
-	reg::packed(520, MAY_BE_NULL, 539), /* applyCallScopeEffects $functionReflection */
-	reg::packed(577, MAY_BE_NULL, 596), /* applyCallScopeEffects $parametersAcceptor */
-	reg::packed(316, 0, 327), /* applyCallScopeEffects $argsResult */
-	reg::packed(355, 0, 361), /* applyCallScopeEffects $scope */
-	reg::packed(634, 0, 361), /* applyCallScopeEffects $scopeBeforeArgs */
-	reg::packed(392, 0, 400), /* applyCallScopeEffects $storage */
-	reg::packed(441, MAY_BE_CALLABLE), /* applyCallScopeEffects $nodeCallback */
-	reg::packed(454, 0, 361), /* applyCallScopeEffects return */
-	reg::packed(180, 0, 198), /* invalidateObjectArgs $nodeScopeResolver */
-	reg::packed(476, 0, 491), /* invalidateObjectArgs $normalizedExpr */
-	reg::packed(316, 0, 327), /* invalidateObjectArgs $argsResult */
-	reg::packed(355, 0, 361), /* invalidateObjectArgs $scope */
-	reg::packed(392, 0, 400), /* invalidateObjectArgs $storage */
-	reg::packed(441, MAY_BE_CALLABLE), /* invalidateObjectArgs $nodeCallback */
-	reg::packed(454, 0, 361), /* invalidateObjectArgs return */
-	reg::packed(520, 0, 539), /* getArrayFunctionAppendingType $functionReflection */
-	reg::packed(355, 0, 693), /* getArrayFunctionAppendingType $scope */
-	reg::packed(716, 0, 491), /* getArrayFunctionAppendingType $expr */
-	reg::packed(316, 0, 327), /* getArrayFunctionAppendingType $argsResult */
-	reg::packed(454, 0, 721), /* getArrayFunctionAppendingType return */
+	reg::packed(74, 0, 88), /* __construct $assignHandler */
+	reg::packed(143, 0, 161), /* applyArrayWalkResult $nodeScopeResolver */
+	reg::packed(196, 0, 201), /* applyArrayWalkResult $stmt */
+	reg::packed(221, 0, 239), /* applyArrayWalkResult $arrayWalkArrayArg */
+	reg::packed(259, MAY_BE_ARRAY), /* applyArrayWalkResult $arrayWalkValueTypes */
+	reg::packed(279, 0, 290), /* applyArrayWalkResult $argsResult */
+	reg::packed(318, 0, 324), /* applyArrayWalkResult $scope */
+	reg::packed(355, 0, 363), /* applyArrayWalkResult $storage */
+	reg::packed(404, MAY_BE_CALLABLE), /* applyArrayWalkResult $nodeCallback */
+	reg::packed(417, 0, 324), /* applyArrayWalkResult return */
+	reg::packed(143, 0, 161), /* applyCallScopeEffects $nodeScopeResolver */
+	reg::packed(196, 0, 201), /* applyCallScopeEffects $stmt */
+	reg::packed(439, 0, 454), /* applyCallScopeEffects $normalizedExpr */
+	reg::packed(483, MAY_BE_NULL, 502), /* applyCallScopeEffects $functionReflection */
+	reg::packed(540, MAY_BE_NULL, 559), /* applyCallScopeEffects $parametersAcceptor */
+	reg::packed(279, 0, 290), /* applyCallScopeEffects $argsResult */
+	reg::packed(318, 0, 324), /* applyCallScopeEffects $scope */
+	reg::packed(597, 0, 324), /* applyCallScopeEffects $scopeBeforeArgs */
+	reg::packed(355, 0, 363), /* applyCallScopeEffects $storage */
+	reg::packed(404, MAY_BE_CALLABLE), /* applyCallScopeEffects $nodeCallback */
+	reg::packed(417, 0, 324), /* applyCallScopeEffects return */
+	reg::packed(143, 0, 161), /* invalidateObjectArgs $nodeScopeResolver */
+	reg::packed(439, 0, 454), /* invalidateObjectArgs $normalizedExpr */
+	reg::packed(279, 0, 290), /* invalidateObjectArgs $argsResult */
+	reg::packed(318, 0, 324), /* invalidateObjectArgs $scope */
+	reg::packed(355, 0, 363), /* invalidateObjectArgs $storage */
+	reg::packed(404, MAY_BE_CALLABLE), /* invalidateObjectArgs $nodeCallback */
+	reg::packed(417, 0, 324), /* invalidateObjectArgs return */
+	reg::packed(483, 0, 502), /* getArrayFunctionAppendingType $functionReflection */
+	reg::packed(318, 0, 656), /* getArrayFunctionAppendingType $scope */
+	reg::packed(679, 0, 454), /* getArrayFunctionAppendingType $expr */
+	reg::packed(279, 0, 290), /* getArrayFunctionAppendingType $argsResult */
+	reg::packed(417, 0, 684), /* getArrayFunctionAppendingType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 168 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig applyArrayWalkResult = { { 455 /* applyArrayWalkResult */, 8, 3, 8, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig applyCallScopeEffects = { { 650 /* applyCallScopeEffects */, 10, 12, 10, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig invalidateObjectArgs = { { 672 /* invalidateObjectArgs */, 6, 23, 6, 29, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getArrayFunctionAppendingType = { { 739 /* getArrayFunctionAppendingType */, 4, 30, 4, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 131 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig applyArrayWalkResult = { { 418 /* applyArrayWalkResult */, 8, 2, 8, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig applyCallScopeEffects = { { 613 /* applyCallScopeEffects */, 10, 11, 10, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig invalidateObjectArgs = { { 635 /* invalidateObjectArgs */, 6, 22, 6, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getArrayFunctionAppendingType = { { 702 /* getArrayFunctionAppendingType */, 4, 29, 4, 33, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::FuncCallScopeEffectsHelper

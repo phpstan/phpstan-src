@@ -692,40 +692,6 @@ public:
 				if (UNEXPECTED(!reflectionIsStatic(methodReflection.raw(), isStatic))) return zv::Val();
 				currentScope = pt_mutating_scope_invalidate_expression(Z_OBJ_P(currentScope.raw()), thisVariable.raw(), true, declaringClass.raw(), isStatic);
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-			} else if (zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues))) {
-				bool remember;
-				if (UNEXPECTED(!scopeClassIsDeclaringClass(currentScope.raw(), methodReflection.raw(), remember))) return zv::Val();
-				if (remember) {
-					zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-					if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-					remember = hasSideEffects == PT_TRI_MAYBE;
-				}
-				if (remember) {
-					zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_DECLARING_CLASS);
-					if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-					bool builtin;
-					if (UNEXPECTED(!pt_class_reflection_is_builtin(Z_OBJ_P(declaringClass.raw()), builtin))) return zv::Val();
-					remember = !builtin;
-				}
-				if (remember) {
-					// the remembered call value is generic-sensitive: resolve it from the
-					// type-driven acceptor processArgs() selected, falling back to the
-					// structural acceptor.
-					zval *acceptorForGenerics = resolvedParametersAcceptor.isNull() ? parametersAcceptor.raw() : resolvedParametersAcceptor.raw();
-					zv::Val thisVariable = newThisVariable();
-					if (UNEXPECTED(thisVariable.isUndef())) return zv::Val();
-					zv::Val description = possiblyImpureCallDescription(methodReflection.raw());
-					if (UNEXPECTED(description.isUndef())) return zv::Val();
-					zv::Args exprArgv{normalizedExpr.raw(), thisVariable.raw(), description.raw()};
-					zv::Val possiblyImpureCallExpr = pt_type_new(PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR, 3, exprArgv);
-					if (UNEXPECTED(possiblyImpureCallExpr.isUndef())) return zv::Val();
-					zv::Val rememberedType = pt_template_argument_frame_return_type_of_call(acceptorForGenerics, currentScope.raw(), expr);
-					if (UNEXPECTED(rememberedType.isUndef())) return zv::Val();
-					zv::Val mixed = pt_type_new_mixed_type();
-					if (UNEXPECTED(mixed.isUndef())) return zv::Val();
-					currentScope = pt_mutating_scope_assign_expression(Z_OBJ_P(currentScope.raw()), Z_OBJ_P(possiblyImpureCallExpr.raw()), rememberedType.raw(), mixed.raw());
-					if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-				}
 			}
 		}
 

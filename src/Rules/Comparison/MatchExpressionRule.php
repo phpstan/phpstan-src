@@ -33,7 +33,6 @@ final class MatchExpressionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
@@ -117,7 +116,6 @@ final class MatchExpressionRule implements Rule
 						$armConditionScope->getType($matchCondition)->describe(VerbosityLevel::value()),
 						$armConditionScope->getType($rawCondition)->describe(VerbosityLevel::value()),
 					))->line($armLine)->identifier('match.alwaysFalse');
-					$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
 					$ruleError = $errorBuilder->build();
 					if ($isTypeCheckCandidate) {
 						// the constant-ness of a type-check call is owned by the
@@ -145,7 +143,6 @@ final class MatchExpressionRule implements Rule
 					->line($armLine)
 					->identifier('match.alwaysTrue')
 					->tip('Remove remaining cases below this one and this error will disappear too.');
-				$this->possiblyImpureTipHelper->addTip($armConditionScope, $armConditionExpr, $errorBuilder);
 				$ruleError = $errorBuilder->build();
 				if ($isTypeCheckCandidate) {
 					$this->functionCallConstantConditionHelper->emitFunctionCallError(self::class, $scope, $rawCondition, true, $ruleError);

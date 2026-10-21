@@ -1770,76 +1770,6 @@ public:
 	zv::Val getDefinedVariables() { return definedVariables(PT_TRI_YES); }
 	zv::Val getMaybeDefinedVariables() { return definedVariables(PT_TRI_MAYBE); }
 
-	/* {{{ findPossiblyImpureCallDescriptions(): the NodeFinder::findFirst()
-	 * walks natively (pt_find_first_recursive visits the same pre-order),
-	 * the filter closure's `$this->getNodeKey($node) === $key` in the
-	 * matcher; the walker's failure flag lives in the embedded pt_find_ctx */
-	struct KeyMatchCtx
-	{
-		pt_find_ctx base;
-		MutatingScope *scope;
-		zend_class_entry *exprCe;
-		zend_string *key;
-	};
-
-	static bool keyMatcher(zend_object *node, void *vctx)
-	{
-		KeyMatchCtx *ctx = (KeyMatchCtx *) vctx;
-		if (!instanceof_function(node->ce, ctx->exprCe)) return false;
-		zval nodeZv;
-		ZVAL_OBJ(&nodeZv, node);
-		zv::Val key = ctx->scope->thisGetNodeKey(&nodeZv);
-		if (UNEXPECTED(key.isUndef())) {
-			ctx->base.failed = true;
-			return false;
-		}
-		return Z_TYPE_P(key.raw()) == IS_STRING && zend_string_equals(Z_STR_P(key.raw()), ctx->key);
-	}
-
-	/* $nodeFinder->findFirst([$expr], fn => getNodeKey($node) === $key);
-	 * NULL for no match — with `failed` set when an exception is pending */
-	zend_object *findFirstByKey(zend_object *expr, zend_string *key, bool &failed)
-	{
-		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-		if (UNEXPECTED(exprCe == NULL)) {
-			failed = true;
-			return NULL;
-		}
-		KeyMatchCtx ctx;
-		memset(&ctx, 0, sizeof(ctx));
-		ctx.scope = this;
-		ctx.exprCe = exprCe;
-		ctx.key = key;
-		zend_object *found = pt_find_first_recursive(expr, keyMatcher, &ctx);
-		failed = ctx.base.failed;
-		return found;
-	}
-
-	/* array_values(array_unique($descriptions)) for a list of strings */
-	static zv::Val uniqueValues(zv::Arr &descriptions)
-	{
-		zv::Arr result = zv::Arr::create(descriptions.arrRef().size());
-		zv::ScratchTable seen(descriptions.arrRef().size());
-		for (auto entry : descriptions.arrRef()) {
-			zend_string *description = Z_STR_P(entry.value().raw());
-			if (zend_hash_exists(seen.table(), description)) continue;
-			zval marker;
-			ZVAL_TRUE(&marker);
-			zend_hash_add_new(seen.table(), description, &marker);
-			result.push(entry.value());
-		}
-		return zv::Val(std::move(result));
-	}
-
-	/* the key of $holderExpr->callExpr / ->impactedExpr through
-	 * $this->getNodeKey(); UNDEF = pending exception */
-	zv::Val impureExprKey(zend_object *holderExpr, const char *prop, size_t len)
-	{
-		zv::Ref expr = nodeProp(holderExpr, prop, len);
-		if (UNEXPECTED(expr.raw() == NULL)) return zv::Val();
-		return thisGetNodeKey(expr.deref().raw());
-	}
-
 	/* the string of a getNodeKey() result (an Error when a subclass
 	 * returned something else) */
 	static zend_string *keyString(zv::Val &key)
@@ -1849,121 +1779,6 @@ public:
 			return NULL;
 		}
 		return Z_STR_P(key.raw());
-	}
-
-	zv::Val findPossiblyImpureCallDescriptions(zend_object *expr)
-	{
-		zend_class_entry *impureCe = pt_class(PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR);
-		if (UNEXPECTED(impureCe == NULL)) return zv::Val();
-		zv::Arr callExprDescriptions = zv::Arr::create(0);
-		bool foundCallExprMatch = false;
-		zv::ScratchTable matchedCallExprKeys(0);
-		for (auto entry : zv::ArrRef(slot(PT_MS_PROP_EXPRESSION_TYPES).raw())) {
-			zv::Val holderExprVal = holderExpr(entry.value());
-			if (UNEXPECTED(holderExprVal.isUndef())) return zv::Val();
-			if (!holderExprVal.ref().instanceOf(impureCe)) continue;
-			zend_object *holderExprObject = Z_OBJ_P(holderExprVal.raw());
-
-			zv::Val callExprKeyVal = impureExprKey(holderExprObject, PT_LC("callExpr"));
-			if (UNEXPECTED(callExprKeyVal.isUndef())) return zv::Val();
-			zend_string *callExprKey = keyString(callExprKeyVal);
-			if (UNEXPECTED(callExprKey == NULL)) return zv::Val();
-
-			bool failed;
-			zend_object *found = findFirstByKey(expr, callExprKey, failed);
-			if (UNEXPECTED(failed)) return zv::Val();
-			if (found == NULL) continue;
-
-			foundCallExprMatch = true;
-			zval marker;
-			ZVAL_TRUE(&marker);
-			zend_symtable_update(matchedCallExprKeys.table(), callExprKey, &marker);
-
-			/* Only show the tip when the scope's type for the call expression
-			 * differs from the declared return type, meaning control flow
-			 * narrowing affected the type (the cached value was narrowed). */
-			zval foundZv;
-			ZVAL_OBJ(&foundZv, found);
-			zv::Val scopeType = thisGetType(&foundZv);
-			if (UNEXPECTED(scopeType.isUndef())) return zv::Val();
-			zv::Val declaredReturnType = holderType(entry.value());
-			if (UNEXPECTED(declaredReturnType.isUndef())) return zv::Val();
-			if (UNEXPECTED(Z_TYPE_P(scopeType.raw()) != IS_OBJECT || Z_TYPE_P(declaredReturnType.raw()) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function isSuperTypeOf() on a non-object");
-				return zv::Val();
-			}
-			bool declaredAccepts, scopeAccepts;
-			if (UNEXPECTED(!isSuperTypeOfYes(Z_OBJ_P(declaredReturnType.raw()), scopeType.raw(), declaredAccepts))) return zv::Val();
-			if (declaredAccepts) {
-				if (UNEXPECTED(!isSuperTypeOfYes(Z_OBJ_P(scopeType.raw()), declaredReturnType.raw(), scopeAccepts))) return zv::Val();
-				if (scopeAccepts) continue;
-			}
-
-			zv::Val description = pt_type_call(holderExprObject, PT_LC("getcalldescription"), 0, NULL);
-			if (UNEXPECTED(description.isUndef())) return zv::Val();
-			callExprDescriptions.push(std::move(description));
-		}
-
-		/* If the first pass found a callExpr in the error expression but
-		 * filtered it out (return type wasn't narrowed), the error is
-		 * explained by the return type alone - skip the fallback. */
-		if (foundCallExprMatch && callExprDescriptions.arrRef().size() == 0) return pt_op_empty_array();
-
-		/* Second pass: match by impactedExpr for cases where a maybe-impure method
-		 * on an object didn't invalidate it, but a different method's return
-		 * value was narrowed on that object.
-		 * Skip when the expression itself is a direct method/static call -
-		 * those are passed by ImpossibleCheckType rules where the error is
-		 * about the call's arguments, not about object state. */
-		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
-		zend_class_entry *staticCallCe = pt_class(PT_CLASS_STATIC_CALL);
-		if (UNEXPECTED(methodCallCe == NULL || staticCallCe == NULL)) return zv::Val();
-		if (!(instanceof_function(expr->ce, methodCallCe) || instanceof_function(expr->ce, staticCallCe))) {
-			zv::Arr impactedExprDescriptions = zv::Arr::create(0);
-			for (auto entry : zv::ArrRef(slot(PT_MS_PROP_EXPRESSION_TYPES).raw())) {
-				zv::Val holderExprVal = holderExpr(entry.value());
-				if (UNEXPECTED(holderExprVal.isUndef())) return zv::Val();
-				if (!holderExprVal.ref().instanceOf(impureCe)) continue;
-				zend_object *holderExprObject = Z_OBJ_P(holderExprVal.raw());
-
-				zv::Val impactedExprKeyVal = impureExprKey(holderExprObject, PT_LC("impactedExpr"));
-				if (UNEXPECTED(impactedExprKeyVal.isUndef())) return zv::Val();
-				zend_string *impactedExprKey = keyString(impactedExprKeyVal);
-				if (UNEXPECTED(impactedExprKey == NULL)) return zv::Val();
-
-				/* Skip if impactedExpr is the same as callExpr (function calls) */
-				zv::Val callExprKeyVal = impureExprKey(holderExprObject, PT_LC("callExpr"));
-				if (UNEXPECTED(callExprKeyVal.isUndef())) return zv::Val();
-				zend_string *callExprKey = keyString(callExprKeyVal);
-				if (UNEXPECTED(callExprKey == NULL)) return zv::Val();
-				if (zend_string_equals(impactedExprKey, callExprKey)) continue;
-
-				/* Skip if this entry's callExpr was already matched in the first pass
-				 * ($callExprKey = $this->getNodeKey($holderExpr->callExpr) again) */
-				zv::Val callExprKeyAgain = impureExprKey(holderExprObject, PT_LC("callExpr"));
-				if (UNEXPECTED(callExprKeyAgain.isUndef())) return zv::Val();
-				zend_string *callExprKey2 = keyString(callExprKeyAgain);
-				if (UNEXPECTED(callExprKey2 == NULL)) return zv::Val();
-				if (zend_symtable_exists(matchedCallExprKeys.table(), callExprKey2)) continue;
-
-				bool failed;
-				zend_object *found = findFirstByKey(expr, impactedExprKey, failed);
-				if (UNEXPECTED(failed)) return zv::Val();
-				if (found == NULL) continue;
-
-				zv::Val description = pt_type_call(holderExprObject, PT_LC("getcalldescription"), 0, NULL);
-				if (UNEXPECTED(description.isUndef())) return zv::Val();
-				impactedExprDescriptions.push(std::move(description));
-			}
-
-			/* Prefer impactedExpr matches (intermediate calls that could have
-			 * invalidated the object) over callExpr matches */
-			if (impactedExprDescriptions.arrRef().size() > 0) return uniqueValues(impactedExprDescriptions);
-		}
-
-		if (callExprDescriptions.arrRef().size() > 0) return uniqueValues(callExprDescriptions);
-
-		return pt_op_empty_array();
 	}
 
 	/* $a->isSuperTypeOf($b)->yes(); false = pending exception */
@@ -1981,7 +1796,6 @@ public:
 		return true;
 	}
 
-	/* }}} */
 
 	/* private */
 	static bool isGlobalVariable(zend_string *variableName) { return pt_is_superglobal_name(variableName); }
@@ -2187,14 +2001,6 @@ public:
 			return false;
 		}
 		return true;
-	}
-
-	/* $holder->getExpr() instanceof PossiblyImpureCallExpr; false = pending exception */
-	[[nodiscard]] static bool holderExprIsPossiblyImpureCall(zv::Ref holder, bool &out)
-	{
-		zv::Val expr = holderExpr(holder);
-		if (UNEXPECTED(expr.isUndef())) return false;
-		return isInstance(expr.ref(), PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR, out);
 	}
 
 	/* $a->equals($b): the native holders' body when both are native, the
@@ -3099,9 +2905,6 @@ public:
 			HashTable *ours = Z_ARRVAL_P(slot(table.slot).raw());
 			HashTable *theirs = Z_ARRVAL_P(other.slot(table.slot).raw());
 			for (auto entry : zv::TableRef(ours)) {
-				bool impure;
-				if (UNEXPECTED(!holderExprIsPossiblyImpureCall(entry.value(), impure))) return zv::Val();
-				if (impure) continue;
 				zval *theirHolder = findByEntryKey(theirs, entry);
 				if (theirHolder != NULL && Z_TYPE_P(theirHolder) != IS_NULL) {
 					bool equal = sameObject(entry.value(), zv::Ref(theirHolder));
@@ -3114,9 +2917,6 @@ public:
 			}
 			for (auto entry : zv::TableRef(theirs)) {
 				if (issetByEntryKey(ours, entry)) continue;
-				bool impure;
-				if (UNEXPECTED(!holderExprIsPossiblyImpureCall(entry.value(), impure))) return zv::Val();
-				if (impure) continue;
 				bool noRoot;
 				if (UNEXPECTED(!addVariableRoot(roots, entry, noRoot))) return zv::Val();
 				if (noRoot) return zv::Val::null();
@@ -3138,27 +2938,7 @@ public:
 				if (theirHolders != NULL && Z_TYPE_P(theirHolders) != IS_NULL && zend_is_identical(theirHolders, entry.value().raw())) continue;
 				zend_string *key = entryKeyString(entry, "getVariablesOfExpressionKey", "key");
 				if (UNEXPECTED(key == NULL)) return zv::Val();
-				if (!addVariablesOfExpressionKey(roots, key)) {
-					zv::Ref holders = entry.value().deref();
-					if (UNEXPECTED(!holders.isArray())) {
-						zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(holders.raw()));
-						if (UNEXPECTED(EG(exception))) return zv::Val();
-						continue;
-					}
-					for (auto holderEntry : zv::ArrRef(holders.raw())) {
-						zv::Ref holder = holderEntry.value().deref();
-						if (UNEXPECTED(!holder.isObject())) {
-							zend_throw_error(NULL, "Call to a member function getTypeHolder() on %s", zend_zval_value_name(holder.raw()));
-							return zv::Val();
-						}
-						zv::Val typeHolder = pt_type_call(holder.asObject(), PT_LC("gettypeholder"), 0, NULL);
-						if (UNEXPECTED(typeHolder.isUndef())) return zv::Val();
-						bool impure;
-						if (UNEXPECTED(!holderExprIsPossiblyImpureCall(typeHolder.ref(), impure))) return zv::Val();
-						if (!impure) return zv::Val::null();
-					}
-					continue;
-				}
+				if (!addVariablesOfExpressionKey(roots, key)) return zv::Val::null();
 			}
 		}
 
@@ -12617,16 +12397,6 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.method<&MutatingScope::getDefinedVariables>(sigs::getDefinedVariables);
 
 	cls.method<&MutatingScope::getMaybeDefinedVariables>(sigs::getMaybeDefinedVariables);
-
-	cls.method(sigs::findPossiblyImpureCallDescriptions, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *exprArg;
-		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
-		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT_OF_CLASS(exprArg, exprCe)
-		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_THIS.findPossiblyImpureCallDescriptions(Z_OBJ_P(exprArg)));
-	});
 
 	cls.method(sigs::hasConstant, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nameArg;

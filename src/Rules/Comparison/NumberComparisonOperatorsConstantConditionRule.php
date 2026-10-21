@@ -25,7 +25,6 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 {
 
 	public function __construct(
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
@@ -58,20 +57,18 @@ final class NumberComparisonOperatorsConstantConditionRule implements Rule
 		if ($exprType instanceof ConstantBooleanType) {
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $scope->getNativeType($node);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
-				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			switch (get_class($node)) {

@@ -177,7 +177,6 @@ enum {
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
 	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
 	PT_CLASS_PROPERTY_INITIALIZATION_EXPR,
-	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
 	PT_CLASS_CONST_FETCH,
 	PT_CLASS_HALT_COMPILER,
 	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
@@ -3668,7 +3667,6 @@ extern zend_class_entry *pt_ce_unset_offset_expr_handler;
 extern zend_class_entry *pt_ce_always_remembered_expr_handler;
 extern zend_class_entry *pt_ce_existing_array_dim_fetch_handler;
 extern zend_class_entry *pt_ce_isset_expr_handler;
-extern zend_class_entry *pt_ce_possibly_impure_call_expr_handler;
 extern zend_class_entry *pt_ce_set_existing_offset_value_type_expr_handler;
 extern zend_class_entry *pt_ce_set_offset_value_type_expr_handler;
 

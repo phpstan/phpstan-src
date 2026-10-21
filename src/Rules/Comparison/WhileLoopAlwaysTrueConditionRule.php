@@ -26,7 +26,6 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
@@ -96,20 +95,18 @@ final class WhileLoopAlwaysTrueConditionRule implements Rule
 
 			$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->cond, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $originalNode->cond);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->cond, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->cond, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
-				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-				return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->cond, $ruleErrorBuilder);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$ruleError = $addTip(RuleErrorBuilder::message('While loop condition is always true.'))->line($originalNode->cond->getStartLine())

@@ -10,7 +10,6 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
-use PHPStan\Rules\Comparison\PossiblyImpureTipHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -33,7 +32,6 @@ final class ImpossibleInstanceOfRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
@@ -89,25 +87,23 @@ final class ImpossibleInstanceOfRule implements Rule
 
 		$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $node, $reasons): RuleErrorBuilder {
 			if ($reasons !== []) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder->acceptsReasonsTip($reasons));
+				return $ruleErrorBuilder->acceptsReasonsTip($reasons);
 			}
 
 			if (!$this->treatPhpDocTypesAsCertain) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $ruleErrorBuilder;
 			}
 
 			$instanceofTypeWithoutPhpDocs = $scope->getNativeType($node);
 			if ($instanceofTypeWithoutPhpDocs instanceof ConstantBooleanType) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $ruleErrorBuilder;
 			}
 
 			if (!$this->treatPhpDocTypesAsCertainTip) {
-				return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+				return $ruleErrorBuilder;
 			}
 
-			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-			return $this->possiblyImpureTipHelper->addTip($scope, $node, $ruleErrorBuilder);
+			return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 		};
 
 		if (!$instanceofType->getValue()) {

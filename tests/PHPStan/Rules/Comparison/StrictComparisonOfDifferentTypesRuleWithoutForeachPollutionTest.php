@@ -20,7 +20,6 @@ class StrictComparisonOfDifferentTypesRuleWithoutForeachPollutionTest extends Ru
 		return new CompositeRule([
 			new StrictComparisonOfDifferentTypesRule(
 				self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				true,
 				false,

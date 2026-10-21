@@ -22,7 +22,6 @@ use PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper;
 use PHPStan\Analyser\ExprHandler\Helper\MethodThrowPointHelper;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
-use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -37,7 +36,6 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
@@ -60,7 +58,6 @@ use PHPStan\Type\TypeUtils;
 use function array_map;
 use function array_merge;
 use function count;
-use function sprintf;
 use function strtolower;
 
 /**
@@ -327,25 +324,6 @@ final class MethodCallHandler implements ExprHandler
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
-			} elseif ($this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe() && !$methodReflection->getDeclaringClass()->isBuiltin()) {
-				// the remembered call value and the @phpstan-self-out type are
-				// generic-sensitive: resolve them from the type-driven acceptor
-				// processArgs() selected (generics resolved against the actual arg
-				// types), falling back to the structural acceptor for dynamic callees.
-				$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
-				$rememberedType = TemplateArgumentFrame::returnTypeOfCall($acceptorForGenerics, $scope, $expr);
-				if ($varResult->containsNullsafe() && TypeCombinator::containsNull($calledOnType)) {
-					// a call on a nullsafe chain whose receiver is nullable
-					// short-circuits to null - the tracked entry is keyed by the
-					// whole chain, so it must remember the propagated type, or a
-					// later ?? over the same chain reads it as never-null
-					$rememberedType = TypeCombinator::addNull($rememberedType);
-				}
-				$scope = $scope->assignExpression(
-					new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr->var, sprintf('%s::%s()', $methodReflection->getDeclaringClass()->getDisplayName(), $methodReflection->getName())),
-					$rememberedType,
-					new MixedType(),
-				);
 			}
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();

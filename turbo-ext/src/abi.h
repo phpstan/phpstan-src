@@ -310,6 +310,81 @@ static zend_always_inline void pt_abi_array_init_size(zval *arg, uint32_t size)
 		} \
 	} while (0)
 
+/* zend_smart_str.h's appending helpers: recent patch releases (8.3.36 and
+ * its siblings) grow the buffer through smart_str_ferealloc(), which the
+ * earlier patch releases of every minor do not export — a core built
+ * against the new headers does not load there (LoadLibrary error 127 on
+ * Windows, an unresolved symbol on Linux). These grow it through
+ * smart_str_erealloc(), which every release exports, as the helpers did
+ * before. The header is already included (support.h), so the macros below
+ * only redirect the shared code's calls, not the header's definitions;
+ * variadic, so an argument macro expanding to several (PT_LC) expands
+ * first. */
+static zend_always_inline size_t pt_abi_smart_str_alloc(smart_str *str, size_t len)
+{
+	if (UNEXPECTED(str->s == NULL)) {
+		smart_str_erealloc(str, len);
+		return len;
+	}
+	len += ZSTR_LEN(str->s);
+	if (UNEXPECTED(len >= str->a)) {
+		smart_str_erealloc(str, len);
+	}
+	return len;
+}
+static zend_always_inline void pt_abi_smart_str_appendl(smart_str *dest, const char *str, size_t len)
+{
+	size_t newLength = pt_abi_smart_str_alloc(dest, len);
+	memcpy(ZSTR_VAL(dest->s) + ZSTR_LEN(dest->s), str, len);
+	ZSTR_LEN(dest->s) = newLength;
+}
+static zend_always_inline void pt_abi_smart_str_append(smart_str *dest, const zend_string *src)
+{
+	pt_abi_smart_str_appendl(dest, ZSTR_VAL(src), ZSTR_LEN(src));
+}
+static zend_always_inline void pt_abi_smart_str_appends(smart_str *dest, const char *src)
+{
+	pt_abi_smart_str_appendl(dest, src, strlen(src));
+}
+static zend_always_inline void pt_abi_smart_str_append_smart_str(smart_str *dest, const smart_str *src)
+{
+	if (src->s != NULL && ZSTR_LEN(src->s) != 0) {
+		pt_abi_smart_str_append(dest, src->s);
+	}
+}
+static zend_always_inline void pt_abi_smart_str_appendc(smart_str *dest, char ch)
+{
+	size_t newLength = pt_abi_smart_str_alloc(dest, 1);
+	ZSTR_VAL(dest->s)[newLength - 1] = ch;
+	ZSTR_LEN(dest->s) = newLength;
+}
+static zend_always_inline void pt_abi_smart_str_append_long(smart_str *dest, zend_long num)
+{
+	char buf[32];
+	char *result = zend_print_long_to_buf(buf + sizeof(buf) - 1, num);
+	pt_abi_smart_str_appendl(dest, result, buf + sizeof(buf) - 1 - result);
+}
+static zend_always_inline void pt_abi_smart_str_append_unsigned(smart_str *dest, zend_ulong num)
+{
+	char buf[32];
+	char *result = zend_print_ulong_to_buf(buf + sizeof(buf) - 1, num);
+	pt_abi_smart_str_appendl(dest, result, buf + sizeof(buf) - 1 - result);
+}
+#undef smart_str_appendl
+#define smart_str_appendl(...) pt_abi_smart_str_appendl(__VA_ARGS__)
+#undef smart_str_appendc
+#define smart_str_appendc(...) pt_abi_smart_str_appendc(__VA_ARGS__)
+#undef smart_str_append
+#define smart_str_append(...) pt_abi_smart_str_append(__VA_ARGS__)
+#undef smart_str_appends
+#define smart_str_appends(...) pt_abi_smart_str_appends(__VA_ARGS__)
+#undef smart_str_append_long
+#define smart_str_append_long(...) pt_abi_smart_str_append_long(__VA_ARGS__)
+#undef smart_str_append_unsigned
+#define smart_str_append_unsigned(...) pt_abi_smart_str_append_unsigned(__VA_ARGS__)
+#undef smart_str_append_smart_str
+#define smart_str_append_smart_str(...) pt_abi_smart_str_append_smart_str(__VA_ARGS__)
+
 #undef EG
 #undef CG
 #define EG(field) (*pt_abi.eg_##field)

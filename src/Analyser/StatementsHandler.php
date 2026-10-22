@@ -523,14 +523,20 @@ final class StatementsHandler
 					if ($replayTarget !== null && $previousRecording !== null) {
 						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $endOffset, $replayTarget, $storage, $scope);
 					}
-					$this->appendRecordedStatementResults($state, $recordedEntry, $recordedEnd);
-					$state->scope = $recordedEnd->scope;
 					if (!$finalWalk) {
-						$base = $entries[$i][1];
-						for ($j = $i; $j <= $stmtCount; $j++) {
-							$entries[$j] = [$previous[0][$j][0], $base + $previous[0][$j][1] - $offset];
+						// the previous pass's entries accumulated its own
+						// points before statement $i: rebase them onto this pass's
+						[$entryState, $base] = $entries[$i];
+						for ($j = $i + 1; $j <= $stmtCount; $j++) {
+							[$recordedState, $recordedOffset] = $previous[0][$j];
+							$adoptedState = clone $entryState;
+							$this->appendRecordedStatementResults($adoptedState, $recordedEntry, $recordedState);
+							$adoptedState->scope = $recordedState->scope;
+							$entries[$j] = [$adoptedState, $base + $recordedOffset - $offset];
 						}
 					}
+					$this->appendRecordedStatementResults($state, $recordedEntry, $recordedEnd);
+					$state->scope = $recordedEnd->scope;
 
 					return [$state->toResult(), $entries];
 				}

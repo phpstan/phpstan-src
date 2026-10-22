@@ -759,25 +759,29 @@ public:
 					zval *recordedEnd = entryState(recordedEndPair);
 					zend_long endOffset = zval_get_long(entryOffset(recordedEndPair));
 					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, endOffset, replayTarget, storage, scope))) return zv::Val();
+					if (!finalWalk) {
+						// the previous pass's entries accumulated its own
+						// points before statement $i: rebase them onto this pass's
+						zval *entryPair = entryAt(entries.raw(), i);
+						if (UNEXPECTED(entryPair == NULL)) return zv::Val();
+						zv::Val entryStateHeld = zv::Val::copyOf(zv::Ref(entryState(entryPair)));
+						for (zend_long j = i + 1; j <= stmtCount; j++) {
+							zval *pair = entryAt(previousEntries, j);
+							if (UNEXPECTED(pair == NULL)) return zv::Val();
+							zval *recordedState = entryState(pair);
+							zv::Val adoptedState = cloneObject(entryStateHeld.raw());
+							if (UNEXPECTED(adoptedState.isUndef())) return zv::Val();
+							if (UNEXPECTED(!appendRecordedStatementResults(adoptedState.raw(), recordedEntry, recordedState))) return zv::Val();
+							zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(adoptedState.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(recordedState), stateSlots::scope))));
+							zv::Arr shifted = zv::Arr::create(2);
+							shifted.push(std::move(adoptedState));
+							shifted.push(zv::Val::integer(entryCount + zval_get_long(entryOffset(pair)) - offset));
+							entries.push(zv::Val(std::move(shifted)));
+						}
+					}
 					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, recordedEnd))) return zv::Val();
 					zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(recordedEnd), stateSlots::scope))));
-					if (finalWalk) return pt_statement_list_walk_state_to_result(state.raw());
-					// $entries[$j] = [$previous[0][$j][0], $base + $previous[0][$j][1] - $offset] for $j >= $i
-					zv::Arr adopted = zv::Arr::create((uint32_t) stmtCount + 1);
-					zend_long j = 0;
-					for (auto existing : zv::ArrRef(entries.raw())) {
-						if (j++ >= i) break;
-						adopted.push(zv::Val::copyOf(existing.value()));
-					}
-					for (j = i; j <= stmtCount; j++) {
-						zval *pair = entryAt(previousEntries, j);
-						if (UNEXPECTED(pair == NULL)) return zv::Val();
-						zv::Arr shifted = zv::Arr::create(2);
-						shifted.push(zv::Val::copyOf(zv::Ref(entryState(pair))));
-						shifted.push(zv::Val::integer(entryCount + zval_get_long(entryOffset(pair)) - offset));
-						adopted.push(zv::Val(std::move(shifted)));
-					}
-					*record = passRecord(zv::Val(std::move(adopted)), recording);
+					if (!finalWalk) *record = passRecord(zv::Val(std::move(entries)), recording);
 					return pt_statement_list_walk_state_to_result(state.raw());
 				}
 				bool reWalk = differingRoots.isNull();

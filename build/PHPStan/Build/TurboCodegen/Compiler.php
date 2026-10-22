@@ -2367,7 +2367,7 @@ final class Compiler
 			$f->line(sprintf('goto %s;', $outer['label']));
 			return;
 		}
-		if ($slot !== null && $f->return?->kind === 'zval') {
+		if ($slot !== null && $f->return !== null && $f->return->kind === 'zval') {
 			$f->line(sprintf('*ret = %s.take();', $slot));
 		}
 		$f->line('return true;');
@@ -2607,7 +2607,7 @@ final class Compiler
 	{
 		$f->open('');
 		$source = $stmt->expr;
-		if (!$stmt->byRef && $source instanceof Expr\Variable && is_string($source->name) && ($f->locals[$source->name] ?? null)?->kind === 'vector') {
+		if (!$stmt->byRef && $source instanceof Expr\Variable && is_string($source->name) && $this->localKind($f, $source->name) === 'vector') {
 			$vector = $f->locals[$source->name];
 			$i = $f->temp('i');
 			$f->open(sprintf('for (uint32_t %s = 0; %s < %s_count; %s++)', $i, $i, $vector->cName, $i));
@@ -2626,7 +2626,7 @@ final class Compiler
 		if ($stmt->byRef) {
 			// over the variable's own array, separated first: each element
 			// becomes a reference the value variable is bound to
-			if (!$source instanceof Expr\Variable || !is_string($source->name) || !in_array(($f->locals[$source->name] ?? null)?->kind, ['zval', 'ref'], true)) {
+			if (!$source instanceof Expr\Variable || !is_string($source->name) || !in_array($this->localKind($f, $source->name), ['zval', 'ref'], true)) {
 				throw new CompileError('foreach by reference over anything but a local array is not supported');
 			}
 			$container = $f->locals[$source->name];
@@ -2668,7 +2668,7 @@ final class Compiler
 			$this->assignTo($f, $stmt->keyVar, '&' . $key, true);
 		}
 		if ($stmt->byRef) {
-			if (!$stmt->valueVar instanceof Expr\Variable || !is_string($stmt->valueVar->name) || ($f->locals[$stmt->valueVar->name] ?? null)?->kind !== 'ref') {
+			if (!$stmt->valueVar instanceof Expr\Variable || !is_string($stmt->valueVar->name) || $this->localKind($f, $stmt->valueVar->name) !== 'ref') {
 				throw new CompileError('foreach by reference needs a plain variable');
 			}
 			$f->line(sprintf('ZVAL_MAKE_REF(%s);', $v));
@@ -2913,7 +2913,7 @@ final class Compiler
 		if ($expr instanceof Expr\AssignOp\Coalesce) {
 			return $this->coalesceAssign($f, $expr);
 		}
-		if (($expr instanceof Expr\AssignOp\BitwiseAnd || $expr instanceof Expr\AssignOp\BitwiseOr) && $expr->var instanceof Expr\Variable && is_string($expr->var->name) && ($f->locals[$expr->var->name] ?? null)?->kind === 'long') {
+		if (($expr instanceof Expr\AssignOp\BitwiseAnd || $expr instanceof Expr\AssignOp\BitwiseOr) && $expr->var instanceof Expr\Variable && is_string($expr->var->name) && $this->localKind($f, $expr->var->name) === 'long') {
 			return $this->bitwiseAssign($f, $expr);
 		}
 		if ($expr instanceof Expr\AssignOp) {
@@ -3056,6 +3056,12 @@ final class Compiler
 		}
 
 		throw new CompileError(sprintf('unsupported expression %s on line %d', $expr::class, $expr->getStartLine()));
+	}
+
+	/** how a local is held (LocalVariable::$kind), null when it is not a local */
+	private function localKind(FunctionContext $f, string $name): ?string
+	{
+		return isset($f->locals[$name]) ? $f->locals[$name]->kind : null;
 	}
 
 	private function readLocal(FunctionContext $f, string $name): Value
@@ -3306,7 +3312,7 @@ final class Compiler
 			throw new CompileError('[] read');
 		}
 		$var = $expr->var;
-		if ($var instanceof Expr\Variable && is_string($var->name) && ($f->locals[$var->name] ?? null)?->kind === 'constarray') {
+		if ($var instanceof Expr\Variable && is_string($var->name) && $this->localKind($f, $var->name) === 'constarray') {
 			return $this->constantArrayFetch($f, $f->locals[$var->name], $expr->dim);
 		}
 		$array = $this->expr($f, $var);
@@ -3623,7 +3629,7 @@ final class Compiler
 			$target instanceof Expr\ArrayDimFetch
 			&& $target->dim !== null
 			&& $this->unit()->oracle->nativeType($target->dim)->isInteger()->yes()
-			&& ($target->var instanceof Expr\StaticPropertyFetch || ($target->var instanceof Expr\Variable && is_string($target->var->name) && ($f->locals[$target->var->name] ?? null)?->kind === 'zval'))
+			&& ($target->var instanceof Expr\StaticPropertyFetch || ($target->var instanceof Expr\Variable && is_string($target->var->name) && $this->localKind($f, $target->var->name) === 'zval'))
 		) {
 			$container = $target->var;
 			$key = $this->stabilize($f, $this->expr($f, $target->dim));
@@ -3710,7 +3716,7 @@ final class Compiler
 		}
 		[$function, $longOp, $cOp] = $functions[$expr::class];
 		$target = $expr->var;
-		if ($target instanceof Expr\Variable && is_string($target->name) && ($f->locals[$target->name] ?? null)?->kind === 'long') {
+		if ($target instanceof Expr\Variable && is_string($target->name) && $this->localKind($f, $target->name) === 'long') {
 			$local = $f->locals[$target->name];
 			$value = $this->expr($f, $expr->expr);
 			$long = $this->asLong($f, $value, 'int', $f->label);
@@ -3760,7 +3766,7 @@ final class Compiler
 
 		if ($expr instanceof Expr\BinaryOp\Identical || $expr instanceof Expr\BinaryOp\NotIdentical) {
 			foreach ([[$expr->left, $expr->right], [$expr->right, $expr->left]] as [$a, $b]) {
-				if ($b instanceof Expr\Array_ && count($b->items) === 0 && $a instanceof Expr\Variable && is_string($a->name) && in_array(($f->locals[$a->name] ?? null)?->kind, ['vector', 'list'], true)) {
+				if ($b instanceof Expr\Array_ && count($b->items) === 0 && $a instanceof Expr\Variable && is_string($a->name) && in_array($this->localKind($f, $a->name), ['vector', 'list'], true)) {
 					$local = $f->locals[$a->name];
 					$empty = $local->kind === 'vector' ? sprintf('(%s_count == 0)', $local->cName) : sprintf('(%s.size() == 0)', $local->cName);
 					return Value::bool($expr instanceof Expr\BinaryOp\Identical ? $empty : '!' . $empty);
@@ -3913,7 +3919,7 @@ final class Compiler
 		$increment = $expr instanceof Expr\PreInc || $expr instanceof Expr\PostInc;
 		$post = $expr instanceof Expr\PostInc || $expr instanceof Expr\PostDec;
 		$var = $expr->var;
-		if ($var instanceof Expr\Variable && is_string($var->name) && ($f->locals[$var->name] ?? null)?->kind === 'long') {
+		if ($var instanceof Expr\Variable && is_string($var->name) && $this->localKind($f, $var->name) === 'long') {
 			$local = $f->locals[$var->name];
 			$old = $f->temp('old');
 			$f->line(sprintf('zend_long %s = %s;', $old, $local->cName));
@@ -4077,7 +4083,7 @@ final class Compiler
 				return sprintf('(Z_TYPE_P(%s) == (%s ? IS_TRUE : IS_FALSE))', $a->code, $b->code);
 			}
 			if ($bExpr instanceof Expr\Array_ && count($bExpr->items) === 0) {
-				if ($aExpr instanceof Expr\Variable && is_string($aExpr->name) && ($f->locals[$aExpr->name] ?? null)?->kind === 'vector') {
+				if ($aExpr instanceof Expr\Variable && is_string($aExpr->name) && $this->localKind($f, $aExpr->name) === 'vector') {
 					return sprintf('(%s_count == 0)', $f->locals[$aExpr->name]->cName);
 				}
 				return sprintf('(Z_TYPE_P(%s) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(%s)) == 0)', $this->asZval($f, $a), $this->asZval($f, $a));
@@ -4466,7 +4472,7 @@ final class Compiler
 		$receiver = $this->expr($f, $expr->var);
 		$class = $this->receiverClass($receiver, $this->unit()->oracle->nativeType($expr->var));
 		$unit = $class !== null ? ($this->units[strtolower($class)] ?? null) : null;
-		$method = $unit?->methods[strtolower($name)] ?? null;
+		$method = ($unit !== null ? $unit->methods[strtolower($name)] ?? null : null);
 		if ($method !== null && !$method->isStatic && $method->direct) {
 			if ($this->callHasSideEffects($expr->args)) {
 				$receiver = $this->stabilize($f, $receiver);
@@ -4805,9 +4811,9 @@ final class Compiler
 							'zend_type_error("%s::%s(): Argument #%d ($%s) must be of type %s, %%s given", zend_zval_value_name(%s));',
 							addcslashes($reflection->getDeclaringClass()->getName(), '\\'),
 							$reflection->getName(),
-							($parameter?->getPosition() ?? $index) + 1,
-							$parameter?->getName() ?? $params[$index]['name'],
-							addcslashes((string) $parameter?->getType(), '\\'),
+							($parameter !== null ? $parameter->getPosition() : $index) + 1,
+							$parameter !== null ? $parameter->getName() : $params[$index]['name'],
+							addcslashes($parameter !== null ? (string) $parameter->getType() : '', '\\'),
 							$z,
 						),
 					];
@@ -4932,7 +4938,7 @@ final class Compiler
 	private function needsObjectGuard(ReflectionMethod $method, string $name, int $index, Expr $arg): bool
 	{
 		$parameter = $this->methodParameter($method, $name, $index);
-		$type = $parameter?->getType();
+		$type = $parameter !== null ? $parameter->getType() : null;
 		if ($type === null) {
 			return false;
 		}
@@ -5216,7 +5222,7 @@ final class Compiler
 			if (!$arg instanceof Node\Arg || $arg->unpack || $arg->byRef) {
 				return null;
 			}
-			$parameter = $arg->name !== null ? $arg->name->toString() : ($parameters[$i] ?? null)?->getName();
+			$parameter = $arg->name !== null ? $arg->name->toString() : (isset($parameters[$i]) ? $parameters[$i]->getName() : null);
 			if ($parameter === null || isset($byName[$parameter])) {
 				return null;
 			}
@@ -5281,7 +5287,8 @@ final class Compiler
 				return $parameter->allowsNull();
 			}
 		}
-		return ($method->getParameters()[$index] ?? null)?->allowsNull() ?? false;
+		$parameters = $method->getParameters();
+		return isset($parameters[$index]) && $parameters[$index]->allowsNull();
 	}
 
 	/** whether an argument can be converted to an entry parameter's type */
@@ -5590,7 +5597,7 @@ final class Compiler
 			$implementer = $unit->methods[strtolower($name)] ?? null;
 			if ($implementer === null) {
 				$declaring = $this->units[strtolower($reflection->getDeclaringClass()->getName())] ?? null;
-				$implementer = $declaring?->methods[strtolower($name)] ?? null;
+				$implementer = ($declaring !== null ? $declaring->methods[strtolower($name)] ?? null : null);
 			}
 			if ($implementer === null) {
 				continue;
@@ -5663,7 +5670,8 @@ final class Compiler
 		if ($values !== []) {
 			// a subclass's override is called by name: by-reference parameters
 			// get a reference written back after the call, as on the engine path
-			$parameters = $this->methodReflection($class, $name)?->getParameters() ?? [];
+			$overridden = $this->methodReflection($class, $name);
+			$parameters = $overridden !== null ? $overridden->getParameters() : [];
 			$argv = $f->temp('av');
 			$f->line(sprintf('zval %s[%d];', $argv, count($values)));
 			foreach ($values as $i => $value) {
@@ -5696,12 +5704,13 @@ final class Compiler
 			return $this->narrowZval($t . '.raw()', $t, $this->unit()->oracle->nativeType($expr));
 		}
 		$lower = $expr->class->toLowerString();
-		if ($lower === 'parent' || (in_array($lower, ['self', 'static'], true) && $f->self !== null && !($this->methodReflection($this->unit()->className, $name)?->isStatic() ?? true))) {
+		$selfMethod = $this->methodReflection($this->unit()->className, $name);
+		if ($lower === 'parent' || (in_array($lower, ['self', 'static'], true) && $f->self !== null && $selfMethod !== null && !$selfMethod->isStatic())) {
 			return $this->boundInstanceCall($f, $expr, $lower === 'parent');
 		}
 		$className = $this->className($expr->class);
 		$unit = $this->units[strtolower($className)] ?? null;
-		$method = $unit?->methods[strtolower($name)] ?? null;
+		$method = ($unit !== null ? $unit->methods[strtolower($name)] ?? null : null);
 		if ($method !== null && $method->isStatic && !$this->usesCalledScope($method)) {
 			$args = $this->directArgs($f, $method, $expr->args);
 			return $this->emitDirectCall($f, $method, null, $args);
@@ -5758,7 +5767,7 @@ final class Compiler
 			// a static method through parent::/self::: the class's own
 			$className = $method->getDeclaringClass()->getName();
 			$unit = $this->units[strtolower($className)] ?? null;
-			$compiled = $unit?->methods[strtolower($name)] ?? null;
+			$compiled = ($unit !== null ? $unit->methods[strtolower($name)] ?? null : null);
 			if ($compiled !== null) {
 				return $this->emitDirectCall($f, $compiled, null, $this->directArgs($f, $compiled, $expr->args));
 			}
@@ -5777,7 +5786,7 @@ final class Compiler
 		// the implementation: the declaring class, or the class itself for a trait method compiled into it
 		$declaring = $method->getDeclaringClass()->getName();
 		$unit = $this->units[strtolower($declaring)] ?? null;
-		$compiled = $unit?->methods[strtolower($name)] ?? null;
+		$compiled = ($unit !== null ? $unit->methods[strtolower($name)] ?? null : null);
 		if ($compiled !== null) {
 			return $this->emitDirectCall($f, $compiled, $f->self, $this->directArgs($f, $compiled, $expr->args));
 		}
@@ -5796,7 +5805,7 @@ final class Compiler
 		$native = $this->unit()->oracle->nativeType($expr);
 		if ($expr->name instanceof Expr) {
 			$callee = $expr->name;
-			if ($callee instanceof Expr\Variable && is_string($callee->name) && ($f->locals[$callee->name] ?? null)?->kind === 'callable') {
+			if ($callee instanceof Expr\Variable && is_string($callee->name) && $this->localKind($f, $callee->name) === 'callable') {
 				[$argv, $argc, $named] = $this->engineArgs($f, $expr->args);
 				$t = $f->temp('r');
 				$f->line(sprintf('zv::Val %s;', $t));
@@ -6061,7 +6070,7 @@ final class Compiler
 				if (!$this->unit()->oracle->nativeType($target)->isArray()->yes() || $this->hasSideEffects($target)) {
 					return null;
 				}
-				if (!$target instanceof Expr\PropertyFetch && !($target instanceof Expr\Variable && is_string($target->name) && in_array(($f->locals[$target->name] ?? null)?->kind, ['zval', 'ref'], true))) {
+				if (!$target instanceof Expr\PropertyFetch && !($target instanceof Expr\Variable && is_string($target->name) && in_array($this->localKind($f, $target->name), ['zval', 'ref'], true))) {
 					return null;
 				}
 				$array = $this->writablePtr($f, $target, true);
@@ -6260,7 +6269,7 @@ final class Compiler
 			$f->line(sprintf('Z_TRY_ADDREF_P(%s);', $p));
 			$f->line(sprintf('zend_hash_next_index_insert(Z_ARRVAL_P(%s.raw()), %s);', $t, $p));
 		};
-		if ($source instanceof Expr\Variable && is_string($source->name) && ($f->locals[$source->name] ?? null)?->kind === 'vector') {
+		if ($source instanceof Expr\Variable && is_string($source->name) && $this->localKind($f, $source->name) === 'vector') {
 			$vector = $f->locals[$source->name]->cName;
 			$i = $f->temp('i');
 			$f->open(sprintf('for (uint32_t %s = 0; %s < %s_count; %s++)', $i, $i, $vector, $i));
@@ -6663,7 +6672,7 @@ final class Compiler
 			} else {
 				$parameter = $parameters[$i] ?? (count($parameters) > 0 && $parameters[count($parameters) - 1]->isVariadic() ? $parameters[count($parameters) - 1] : null);
 			}
-			$type = $parameter?->getType();
+			$type = $parameter !== null ? $parameter->getType() : null;
 			if (!($type instanceof ReflectionNamedType) || $type->getName() !== 'callable') {
 				continue;
 			}
@@ -6832,11 +6841,11 @@ final class Compiler
 		$vec = $f->temp('vec');
 		$values = [];
 		foreach ($args as $i => $arg) {
-			if ($arg->unpack && $arg->value instanceof Expr\Variable && is_string($arg->value->name) && ($f->locals[$arg->value->name] ?? null)?->kind === 'vector') {
+			if ($arg->unpack && $arg->value instanceof Expr\Variable && is_string($arg->value->name) && $this->localKind($f, $arg->value->name) === 'vector') {
 				$values[] = ['vector', $f->locals[$arg->value->name]->cName];
 				continue;
 			}
-			if ($arg->unpack && $arg->value instanceof Expr\Variable && is_string($arg->value->name) && ($f->locals[$arg->value->name] ?? null)?->kind === 'list') {
+			if ($arg->unpack && $arg->value instanceof Expr\Variable && is_string($arg->value->name) && $this->localKind($f, $arg->value->name) === 'list') {
 				$values[] = ['list', $f->locals[$arg->value->name]->cName];
 				continue;
 			}
@@ -6967,7 +6976,7 @@ final class Compiler
 				}
 				return sprintf('(Z_TYPE_P(%s) == IS_TRUE)', $z);
 			case 'callable':
-				if ($argExpr instanceof Expr\Variable && is_string($argExpr->name) && ($f->locals[$argExpr->name] ?? null)?->kind === 'callable') {
+				if ($argExpr instanceof Expr\Variable && is_string($argExpr->name) && $this->localKind($f, $argExpr->name) === 'callable') {
 					return $f->locals[$argExpr->name]->cName;
 				}
 				$callable = $f->temp('cb');

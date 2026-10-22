@@ -1,0 +1,9 @@
+parameters:
+	ignoreErrors:
+		-
+			# turbo-ext/bin/compile-twins.php runs on PHP 8.4+ only: the
+			# compiler asks reflection about property hooks
+			message: '#^Call to an undefined method ReflectionProperty\:\:hasHooks\(\)\.$#'
+			identifier: method.notFound
+			path: PHPStan/Build/TurboCodegen/Compiler.php
+			reportUnmatched: false

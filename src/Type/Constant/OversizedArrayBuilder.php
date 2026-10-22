@@ -2,12 +2,9 @@
 
 namespace PHPStan\Type\Constant;
 
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -17,9 +14,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
-use function array_splice;
 use function array_values;
-use function count;
 use const PHP_INT_MAX;
 
 #[AutowiredService]
@@ -35,41 +30,34 @@ final class OversizedArrayBuilder
 		$valueTypes = [];
 		$keyTypes = [];
 		$nextAutoIndex = 0;
-		$items = $expr->items;
-		for ($i = 0; $i < count($items); $i++) {
-			$item = $items[$i];
-			if (!$item->unpack) {
+
+		// unpacked items are expanded into [key type or null for an implicit key, value type]
+		// pairs right here - the callback only knows the literal's own sub-expressions
+		$entries = [];
+		foreach ($expr->items as $item) {
+			if ($item->unpack) {
+				$unpackedType = $getTypeCallback($item->value);
+				if ($unpackedType instanceof ConstantArrayType) {
+					foreach ($unpackedType->getKeyTypes() as $j => $innerKeyType) {
+						$entries[] = [
+							$innerKeyType->isString()->no() ? null : $innerKeyType,
+							$unpackedType->getValueTypes()[$j],
+						];
+					}
+				} else {
+					$entries[] = [$unpackedType->getIterableKeyType(), $unpackedType->getIterableValueType()];
+				}
 				continue;
 			}
 
-			$valueType = $getTypeCallback($item->value);
-			if ($valueType instanceof ConstantArrayType) {
-				array_splice($items, $i, 1);
-				foreach ($valueType->getKeyTypes() as $j => $innerKeyType) {
-					$innerValueType = $valueType->getValueTypes()[$j];
-					if ($innerKeyType->isString()->no()) {
-						$keyExpr = null;
-					} else {
-						$keyExpr = new TypeExpr($innerKeyType);
-					}
-					array_splice($items, $i++, 0, [new ArrayItem(
-						new TypeExpr($innerValueType),
-						$keyExpr,
-					)]);
-				}
-			} else {
-				array_splice($items, $i, 1, [new ArrayItem(
-					new TypeExpr($valueType->getIterableValueType()),
-					new TypeExpr($valueType->getIterableKeyType()),
-				)]);
-			}
+			$entries[] = [
+				$item->key !== null ? $getTypeCallback($item->key) : null,
+				$getTypeCallback($item->value),
+			];
 		}
-		foreach ($items as $item) {
-			if ($item->unpack) {
-				throw new ShouldNotHappenException();
-			}
-			if ($item->key !== null) {
-				$itemKeyType = $getTypeCallback($item->key);
+
+		foreach ($entries as [$itemKeyType, $itemValueType]) {
+			if ($itemKeyType !== null) {
 				if (!$itemKeyType instanceof ConstantIntegerType) {
 					$isList = false;
 				} elseif ($itemKeyType->getValue() !== $nextAutoIndex) {
@@ -89,7 +77,6 @@ final class OversizedArrayBuilder
 			$generalizedKeyType = $itemKeyType->generalize(GeneralizePrecision::moreSpecific());
 			$keyTypes[$generalizedKeyType->describe(VerbosityLevel::precise())] = $generalizedKeyType;
 
-			$itemValueType = $getTypeCallback($item->value);
 			$generalizedValueType = $itemValueType->generalize(GeneralizePrecision::moreSpecific());
 			$valueTypes[$generalizedValueType->describe(VerbosityLevel::precise())] = $generalizedValueType;
 		}

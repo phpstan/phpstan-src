@@ -24,6 +24,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use function array_diff;
 use function array_keys;
 use function array_pop;
 use function count;
@@ -540,18 +541,44 @@ final class ClosureSignatureInference
 	}
 
 	/**
-	 * @param Node\Stmt[] $stmts
+	 * @param Node[] $stmts
 	 * @param array<int, string> $names
 	 */
-	private static function bodyYieldsOrInvokes(array $stmts, array $names): bool
+	private static function bodyYieldsOrInvokes(array $stmts, array $names, bool $checkYield = true): bool
 	{
 		$stack = $stmts;
 		while (count($stack) > 0) {
 			$node = array_pop($stack);
+			if ($node instanceof Closure) {
+				$capturedNames = [];
+				foreach ($node->uses as $use) {
+					if (!is_string($use->var->name) || !in_array($use->var->name, $names, true)) {
+						continue;
+					}
+					$capturedNames[] = $use->var->name;
+				}
+				if ($capturedNames !== [] && self::bodyYieldsOrInvokes($node->stmts, $capturedNames, false)) {
+					return true;
+				}
+				continue;
+			}
+			if ($node instanceof ArrowFunction) {
+				$capturedNames = $names;
+				foreach ($node->params as $param) {
+					if (!$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
+						continue;
+					}
+					$capturedNames = array_diff($capturedNames, [$param->var->name]);
+				}
+				if ($capturedNames !== [] && self::bodyYieldsOrInvokes([$node->expr], $capturedNames, false)) {
+					return true;
+				}
+				continue;
+			}
 			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
 				continue;
 			}
-			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+			if ($checkYield && ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom)) {
 				return true;
 			}
 			if (

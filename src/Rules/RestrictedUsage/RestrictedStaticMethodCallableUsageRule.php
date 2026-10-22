@@ -14,7 +14,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 
@@ -22,7 +21,6 @@ use PHPStan\Type\Type;
  * @implements Rule<StaticMethodCallableNode>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedStaticMethodCallableUsageRule.cpp')]
 final class RestrictedStaticMethodCallableUsageRule implements Rule
 {
 

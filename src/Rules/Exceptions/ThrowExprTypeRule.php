@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -20,7 +19,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\Throw_>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThrowExprTypeRule.cpp')]
 final class ThrowExprTypeRule implements Rule
 {
 

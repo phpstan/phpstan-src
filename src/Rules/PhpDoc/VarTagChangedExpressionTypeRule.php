@@ -7,13 +7,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<VarTagChangedExpressionTypeNode>
  */
 #[RegisteredRule(level: 2)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/VarTagChangedExpressionTypeRule.cpp')]
 final class VarTagChangedExpressionTypeRule implements Rule
 {
 

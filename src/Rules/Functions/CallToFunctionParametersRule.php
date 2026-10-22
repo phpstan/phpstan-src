@@ -14,14 +14,12 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallToFunctionParametersRule.cpp')]
 final class CallToFunctionParametersRule implements Rule
 {
 

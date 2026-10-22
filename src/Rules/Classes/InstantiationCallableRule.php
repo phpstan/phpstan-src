@@ -8,13 +8,11 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InstantiationCallableNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InstantiationCallableRule.cpp')]
 final class InstantiationCallableRule implements Rule
 {
 

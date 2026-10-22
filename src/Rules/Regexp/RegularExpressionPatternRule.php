@@ -15,13 +15,11 @@ use function in_array;
 use function sprintf;
 use function str_starts_with;
 use function strtolower;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RegularExpressionPatternRule.cpp')]
 final class RegularExpressionPatternRule implements Rule
 {
 

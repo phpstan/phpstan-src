@@ -20,10 +20,8 @@ use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
 use function preg_match_all;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SscanfFunctionDynamicReturnTypeExtension.cpp')]
 final class SscanfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

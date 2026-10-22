@@ -8,12 +8,10 @@ use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleError;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError405.cpp')]
 final class RuleError405 implements RuleError, FileRuleError, IdentifierRuleError, FixableNodeRuleError, FileDependenciesRuleError
 {
 

@@ -7,13 +7,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Stmt\EnumCase>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EnumCaseOutsideEnumRule.cpp')]
 final class EnumCaseOutsideEnumRule implements Rule
 {
 

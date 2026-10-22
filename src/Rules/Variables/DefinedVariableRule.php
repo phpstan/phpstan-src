@@ -13,7 +13,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 use function in_array;
 use function is_string;
@@ -23,7 +22,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\Variable>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DefinedVariableRule.cpp')]
 final class DefinedVariableRule implements Rule
 {
 

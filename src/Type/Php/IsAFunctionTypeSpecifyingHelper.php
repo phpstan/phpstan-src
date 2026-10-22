@@ -3,11 +3,9 @@
 namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IsAFunctionTypeSpecifyingHelper.cpp')]
 final class IsAFunctionTypeSpecifyingHelper
 {
 

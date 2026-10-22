@@ -12,7 +12,6 @@ use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -21,7 +20,6 @@ use function sprintf;
 /**
  * @implements Rule<SwitchConditionNode>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SwitchConditionRule.cpp')]
 final class SwitchConditionRule implements Rule
 {
 

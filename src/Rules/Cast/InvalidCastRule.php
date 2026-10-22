@@ -9,7 +9,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -22,7 +21,6 @@ use function substr;
  * @implements Rule<Node\Expr\Cast>
  */
 #[RegisteredRule(level: 2)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidCastRule.cpp')]
 final class InvalidCastRule implements Rule
 {
 

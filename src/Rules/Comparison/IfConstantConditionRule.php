@@ -10,7 +10,6 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use function sprintf;
 
@@ -18,7 +17,6 @@ use function sprintf;
  * @implements Rule<Node\Stmt\If_>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IfConstantConditionRule.cpp')]
 final class IfConstantConditionRule implements Rule
 {
 

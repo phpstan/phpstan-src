@@ -11,14 +11,12 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use const PHP_VERSION_ID;
 
 /**
  * @implements Rule<Node\Stmt\Const_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantAttributesRule.cpp')]
 final class ConstantAttributesRule implements Rule
 {
 

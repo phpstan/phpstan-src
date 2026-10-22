@@ -12,7 +12,6 @@ use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
@@ -20,7 +19,6 @@ use function strtolower;
  * @implements Rule<InPropertyHookNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyHookAttributesRule.cpp')]
 final class PropertyHookAttributesRule implements Rule
 {
 

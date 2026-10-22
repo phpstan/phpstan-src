@@ -7,14 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\UnionType;
 
 /**
  * @implements Rule<InArrowFunctionNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideArrowFunctionReturnTypehintRule.cpp')]
 final class TooWideArrowFunctionReturnTypehintRule implements Rule
 {
 

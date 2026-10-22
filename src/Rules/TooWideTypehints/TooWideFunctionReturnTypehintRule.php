@@ -7,14 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FunctionReturnStatementsNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<FunctionReturnStatementsNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideFunctionReturnTypehintRule.cpp')]
 final class TooWideFunctionReturnTypehintRule implements Rule
 {
 

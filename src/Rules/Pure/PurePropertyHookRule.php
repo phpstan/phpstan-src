@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function ucfirst;
 
@@ -16,7 +15,6 @@ use function ucfirst;
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
 #[RegisteredRule(level: 2)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PurePropertyHookRule.cpp')]
 final class PurePropertyHookRule implements Rule
 {
 

@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
@@ -19,7 +18,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\Yield_>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/YieldTypeRule.cpp')]
 final class YieldTypeRule implements Rule
 {
 

@@ -10,7 +10,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -20,7 +19,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidKeyInArrayDimFetchRule.cpp')]
 final class InvalidKeyInArrayDimFetchRule implements Rule
 {
 

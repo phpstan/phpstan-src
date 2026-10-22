@@ -7,7 +7,6 @@ use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -21,7 +20,6 @@ use function sprintf;
  * Gated behind the `checkNonStringableDynamicAccess` feature toggle.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NonStringableDynamicAccessCheck.cpp')]
 final class NonStringableDynamicAccessCheck
 {
 

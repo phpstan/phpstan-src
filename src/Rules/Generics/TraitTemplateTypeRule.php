@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use function sprintf;
@@ -19,7 +18,6 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TraitTemplateTypeRule.cpp')]
 final class TraitTemplateTypeRule implements Rule
 {
 

@@ -6,13 +6,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_slice;
 use function explode;
 use function str_starts_with;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedInternalUsageHelper.cpp')]
 final class RestrictedInternalUsageHelper
 {
 

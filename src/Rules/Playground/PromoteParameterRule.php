@@ -13,7 +13,6 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function get_class;
 use function sprintf;
@@ -22,7 +21,6 @@ use function sprintf;
  * @template TNodeType of Node
  * @implements Rule<TNodeType>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PromoteParameterRule.cpp')]
 final class PromoteParameterRule implements Rule
 {
 

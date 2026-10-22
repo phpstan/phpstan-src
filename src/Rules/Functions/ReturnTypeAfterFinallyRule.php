@@ -10,7 +10,6 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -27,7 +26,6 @@ use function ucfirst;
  * @implements Rule<ReturnStatementsNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ReturnTypeAfterFinallyRule.cpp')]
 final class ReturnTypeAfterFinallyRule implements Rule
 {
 

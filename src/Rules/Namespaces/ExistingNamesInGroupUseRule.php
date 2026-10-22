@@ -14,7 +14,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 use function strtolower;
@@ -23,7 +22,6 @@ use function strtolower;
  * @implements Rule<Node\Stmt\GroupUse>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingNamesInGroupUseRule.cpp')]
 final class ExistingNamesInGroupUseRule implements Rule
 {
 

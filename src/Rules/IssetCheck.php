@@ -11,7 +11,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Properties\PropertyDescriptor;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -27,7 +26,6 @@ use function str_starts_with;
  * @phpstan-type ErrorIdentifier = 'empty'|'isset'|'nullCoalesce'
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IssetCheck.cpp')]
 final class IssetCheck
 {
 

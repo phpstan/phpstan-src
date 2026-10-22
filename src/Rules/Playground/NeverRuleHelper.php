@@ -5,12 +5,10 @@ namespace PHPStan\Rules\Playground;
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\ReturnStatementsNode;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NeverRuleHelper.cpp')]
 final class NeverRuleHelper
 {
 

@@ -2,13 +2,11 @@
 
 namespace PHPStan\Rules;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
 
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RuleLevelHelperAcceptsResult.cpp')]
 final class RuleLevelHelperAcceptsResult
 {
 

@@ -11,7 +11,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\VerbosityLevel;
@@ -22,7 +21,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 5)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RandomIntParametersRule.cpp')]
 final class RandomIntParametersRule implements Rule
 {
 

@@ -11,7 +11,6 @@ use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function sprintf;
 
@@ -19,7 +18,6 @@ use function sprintf;
  * @implements Rule<ClassPropertiesNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GetNonVirtualPropertyHookReadRule.cpp')]
 final class GetNonVirtualPropertyHookReadRule implements Rule
 {
 

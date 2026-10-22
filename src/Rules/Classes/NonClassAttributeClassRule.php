@@ -10,7 +10,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
@@ -18,7 +17,6 @@ use function strtolower;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NonClassAttributeClassRule.cpp')]
 final class NonClassAttributeClassRule implements Rule
 {
 

@@ -6,12 +6,10 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<never, array{class-string, string, string, int}>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NamedArgumentParameterMethodCallsCollector.cpp')]
 final class NamedArgumentParameterMethodCallsCollector implements Collector
 {
 

@@ -14,7 +14,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\BreaklessWhileLoopNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 
@@ -22,7 +21,6 @@ use PHPStan\Type\NeverType;
  * @implements Rule<BreaklessWhileLoopNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/WhileLoopAlwaysTrueConditionRule.cpp')]
 final class WhileLoopAlwaysTrueConditionRule implements Rule
 {
 

@@ -7,13 +7,11 @@ use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<Node\Stmt\Expression, array{class-string, string, int}>
  */
 #[RegisteredCollector(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PossiblyPureStaticCallCollector.cpp')]
 final class PossiblyPureStaticCallCollector implements Collector
 {
 

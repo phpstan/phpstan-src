@@ -12,14 +12,12 @@ use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @implements Rule<InTraitNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TraitAttributesRule.cpp')]
 final class TraitAttributesRule implements Rule
 {
 

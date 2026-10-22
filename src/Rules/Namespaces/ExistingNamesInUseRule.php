@@ -13,7 +13,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 use function sprintf;
 use function strtolower;
@@ -22,7 +21,6 @@ use function strtolower;
  * @implements Rule<Node\Stmt\Use_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingNamesInUseRule.cpp')]
 final class ExistingNamesInUseRule implements Rule
 {
 

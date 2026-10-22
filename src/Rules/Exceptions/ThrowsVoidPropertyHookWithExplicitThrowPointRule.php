@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -21,7 +20,6 @@ use function ucfirst;
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThrowsVoidPropertyHookWithExplicitThrowPointRule.cpp')]
 final class ThrowsVoidPropertyHookWithExplicitThrowPointRule implements Rule
 {
 

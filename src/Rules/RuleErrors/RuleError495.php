@@ -11,12 +11,10 @@ use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError495.cpp')]
 final class RuleError495 implements RuleError, LineRuleError, FileRuleError, TipRuleError, MetadataRuleError, NonIgnorableRuleError, FixableNodeRuleError, FileDependenciesRuleError
 {
 

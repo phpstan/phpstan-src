@@ -8,14 +8,12 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InTraitNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InTraitNode>
  */
 #[RegisteredRule(level: 0)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/LocalTypeTraitUseAliasesRule.cpp')]
 final class LocalTypeTraitUseAliasesRule implements Rule
 {
 

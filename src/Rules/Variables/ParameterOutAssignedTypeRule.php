@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeUtils;
 use function is_string;
 
@@ -15,7 +14,6 @@ use function is_string;
  * @implements Rule<VariableAssignNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ParameterOutAssignedTypeRule.cpp')]
 final class ParameterOutAssignedTypeRule implements Rule
 {
 

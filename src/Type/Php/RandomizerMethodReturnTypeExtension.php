@@ -10,7 +10,6 @@ use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\Type;
 use Random\Randomizer;
@@ -24,7 +23,6 @@ use function in_array;
  * shuffleBytes() is str_shuffle() and getInt() is random_int().
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RandomizerMethodReturnTypeExtension.cpp')]
 final class RandomizerMethodReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

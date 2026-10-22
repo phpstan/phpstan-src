@@ -15,7 +15,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -25,7 +24,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\BinaryOp>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/StrictComparisonOfDifferentTypesRule.cpp')]
 final class StrictComparisonOfDifferentTypesRule implements Rule
 {
 

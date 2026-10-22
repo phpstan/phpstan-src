@@ -15,10 +15,12 @@ static pt_method_site pg_site_2; /* method_getArgs_2 */
 static pgrt::PropSite pg_site_3; /* prop_value_3 */
 static pt_method_site pg_site_4; /* method_getType_4 */
 static pt_method_site pg_site_5; /* method_getConstantStrings_5 */
-static pt_method_site pg_site_6; /* method_getThrowType_6 */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Reflection\FunctionReflection */
-static pgrt::ClassSite pg_site_8; /* cls_PhpParser\Node\Expr\FuncCall */
-static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Analyser\Scope */
+static pgrt::ClassSite pg_site_6; /* cls_PHPStan\Type\Php\VersionCompareFunctionDynamicReturnTypeExtension */
+static pt_method_site pg_site_7; /* static_PHPStan\Type\Php\VersionCompareFunctionDynamicReturnTypeExtension::mightBeInvalidOperator */
+static pt_method_site pg_site_8; /* method_getThrowType_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Reflection\FunctionReflection */
+static pgrt::ClassSite pg_site_10; /* cls_PhpParser\Node\Expr\FuncCall */
+static pgrt::ClassSite pg_site_11; /* cls_PHPStan\Analyser\Scope */
 
 namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
 
@@ -133,37 +135,41 @@ namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
 		l_operatorStrings = std::move(vd19);
 	}
 	 {
-		bool r21;
-		if (UNEXPECTED(!pgen::VersionCompareFunctionDynamicReturnTypeExtension::m_mightBeInvalidOperator(l_operatorStrings.raw(), &r21))) return false;
-		if (r21) {
+		zval av21[1];
+		ZVAL_COPY_VALUE(&av21[0], l_operatorStrings.raw());
+		zend_class_entry *ce22 = pgrt::lookupClass(pg_site_6, "PHPStan\\Type\\Php\\VersionCompareFunctionDynamicReturnTypeExtension", 65);
+		if (UNEXPECTED(ce22 == NULL)) return false;
+		zv::Val r23;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce22, "mightbeinvalidoperator", 22, 1, av21, r23.raw(), NULL))) return false;
+		if (Z_TYPE_P(r23.raw()) == IS_TRUE) {
 			 {
-				zv::Val vd22;
-				zend_class_entry *vd22_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
-				bool vd22_done = false;
-				if (vd22_ce == pt_ce_php_function_from_parser_node_reflection || vd22_ce == pt_ce_php_method_from_parser_node_reflection) {
-					zv::Val r23;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r23.raw()))) return false;
-					vd22 = std::move(r23);
-					vd22_done = true;
+				zv::Val vd24;
+				zend_class_entry *vd24_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
+				bool vd24_done = false;
+				if (vd24_ce == pt_ce_php_function_from_parser_node_reflection || vd24_ce == pt_ce_php_method_from_parser_node_reflection) {
+					zv::Val r25;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r25.raw()))) return false;
+					vd24 = std::move(r25);
+					vd24_done = true;
 				}
-				if (vd22_ce == pt_ce_native_function_reflection) {
-					zv::Val r24;
-					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r24.raw()))) return false;
-					vd22 = std::move(r24);
-					vd22_done = true;
+				if (vd24_ce == pt_ce_native_function_reflection) {
+					zv::Val r26;
+					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r26.raw()))) return false;
+					vd24 = std::move(r26);
+					vd24_done = true;
 				}
-				if (!vd22_done) {
-					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_functionReflection, "getThrowType", "getthrowtype", 12, 0, NULL, vd22.raw()))) return false;
+				if (!vd24_done) {
+					if (UNEXPECTED(!pgrt::callMethod(pg_site_8, p_functionReflection, "getThrowType", "getthrowtype", 12, 0, NULL, vd24.raw()))) return false;
 				}
-				*ret = vd22.take();
+				*ret = vd24.take();
 				return true;
 			}
 		}
 	}
 	 {
-		zval z25;
-		ZVAL_NULL(&z25);
-		ZVAL_COPY_VALUE(ret, &z25);
+		zval z27;
+		ZVAL_NULL(&z27);
+		ZVAL_COPY_VALUE(ret, &z27);
 		return true;
 	}
 }
@@ -184,7 +190,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VersionCompareFunctionDynamicThrowType
 		ZEND_PARSE_PARAMETERS_START(1, -1)
 			Z_PARAM_ZVAL(p_functionReflection)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
 		bool r;
 		if (UNEXPECTED(!pgen::VersionCompareFunctionDynamicThrowTypeExtension::m_isFunctionSupported(Z_OBJ_P(ZEND_THIS), p_functionReflection, &r))) RETURN_THROWS();
 		RETURN_BOOL(r);
@@ -198,9 +204,9 @@ PT_MINIT_REGISTRATION(pt_register_codegen_VersionCompareFunctionDynamicThrowType
 			Z_PARAM_ZVAL(p_funcCall)
 			Z_PARAM_ZVAL(p_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
-		if (p_funcCall != NULL && UNEXPECTED(Z_TYPE_P(p_funcCall) != IS_OBJECT || !pgrt::instanceOfClass(p_funcCall, pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_funcCall)); RETURN_THROWS(); }
-		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
+		if (p_functionReflection != NULL && UNEXPECTED(Z_TYPE_P(p_functionReflection) != IS_OBJECT || !pgrt::instanceOfClass(p_functionReflection, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\Reflection\\FunctionReflection", 37)))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\Reflection\\FunctionReflection", zend_zval_value_name(p_functionReflection)); RETURN_THROWS(); }
+		if (p_funcCall != NULL && UNEXPECTED(Z_TYPE_P(p_funcCall) != IS_OBJECT || !pgrt::instanceOfClass(p_funcCall, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Expr\\FuncCall", 28)))) { zend_argument_type_error(2, "must be of type %s, %s given", "PhpParser\\Node\\Expr\\FuncCall", zend_zval_value_name(p_funcCall)); RETURN_THROWS(); }
+		if (p_scope != NULL && UNEXPECTED(Z_TYPE_P(p_scope) != IS_OBJECT || !pgrt::instanceOfClass(p_scope, pgrt::lookupClassQuiet(pg_site_11, "PHPStan\\Analyser\\Scope", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Analyser\\Scope", zend_zval_value_name(p_scope)); RETURN_THROWS(); }
 		ZVAL_UNDEF(return_value);
 		if (UNEXPECTED(!pgen::VersionCompareFunctionDynamicThrowTypeExtension::m_getThrowTypeFromFunctionCall(Z_OBJ_P(ZEND_THIS), p_functionReflection, p_funcCall, p_scope, return_value))) RETURN_THROWS();
 	});

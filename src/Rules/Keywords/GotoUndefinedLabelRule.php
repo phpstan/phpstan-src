@@ -9,14 +9,12 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<Goto_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GotoUndefinedLabelRule.cpp')]
 final class GotoUndefinedLabelRule implements Rule
 {
 

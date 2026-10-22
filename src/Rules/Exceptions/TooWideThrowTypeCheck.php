@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Exceptions;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -14,7 +13,6 @@ use PHPStan\Type\VerbosityLevel;
 use function array_map;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideThrowTypeCheck.cpp')]
 final class TooWideThrowTypeCheck
 {
 

@@ -6,11 +6,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassConstantUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function strtolower;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedInternalClassConstantUsageExtension.cpp')]
 final class RestrictedInternalClassConstantUsageExtension implements RestrictedClassConstantUsageExtension
 {
 

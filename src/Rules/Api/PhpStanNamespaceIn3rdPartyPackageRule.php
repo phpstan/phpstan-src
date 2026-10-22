@@ -11,7 +11,6 @@ use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function dirname;
 use function is_dir;
 use function is_file;
@@ -21,7 +20,6 @@ use function str_starts_with;
  * @implements Rule<Node\Stmt\Namespace_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpStanNamespaceIn3rdPartyPackageRule.cpp')]
 final class PhpStanNamespaceIn3rdPartyPackageRule implements Rule
 {
 

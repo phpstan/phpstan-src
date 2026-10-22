@@ -17,11 +17,9 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleError;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionCallConstantConditionHelper.cpp')]
 final class FunctionCallConstantConditionHelper
 {
 

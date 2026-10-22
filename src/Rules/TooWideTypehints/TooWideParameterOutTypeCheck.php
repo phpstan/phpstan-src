@@ -9,12 +9,10 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function lcfirst;
 use function sprintf;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideParameterOutTypeCheck.cpp')]
 final class TooWideParameterOutTypeCheck
 {
 

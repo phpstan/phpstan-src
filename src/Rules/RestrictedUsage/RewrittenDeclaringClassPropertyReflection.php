@@ -6,10 +6,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RewrittenDeclaringClassPropertyReflection.cpp')]
 final class RewrittenDeclaringClassPropertyReflection implements ExtendedPropertyReflection
 {
 

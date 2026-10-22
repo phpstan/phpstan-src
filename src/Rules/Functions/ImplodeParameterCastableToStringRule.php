@@ -11,7 +11,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ParameterCastableToStringCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_key_exists;
 use function count;
@@ -22,7 +21,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 5)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ImplodeParameterCastableToStringRule.cpp')]
 final class ImplodeParameterCastableToStringRule implements Rule
 {
 

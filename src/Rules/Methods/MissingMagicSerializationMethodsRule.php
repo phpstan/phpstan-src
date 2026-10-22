@@ -10,7 +10,6 @@ use PHPStan\Node\InClassNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use Serializable;
 use function sprintf;
 use function strtolower;
@@ -19,7 +18,6 @@ use function strtolower;
  * @implements Rule<InClassNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingMagicSerializationMethodsRule.cpp')]
 final class MissingMagicSerializationMethodsRule implements Rule
 {
 

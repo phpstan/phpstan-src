@@ -16,7 +16,6 @@ use PHPStan\Node\FileNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -25,7 +24,6 @@ use function strtolower;
  * @implements Rule<FileNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UsedNamesRule.cpp')]
 final class UsedNamesRule implements Rule
 {
 

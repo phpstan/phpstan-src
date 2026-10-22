@@ -9,12 +9,10 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError429.cpp')]
 final class RuleError429 implements RuleError, FileRuleError, TipRuleError, MetadataRuleError, FixableNodeRuleError, FileDependenciesRuleError
 {
 

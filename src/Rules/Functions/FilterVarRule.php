@@ -11,7 +11,6 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Php\FilterFunctionFlagsHelper;
 use PHPStan\Type\Php\FilterFunctionReturnTypeHelper;
 
@@ -19,7 +18,6 @@ use PHPStan\Type\Php\FilterFunctionReturnTypeHelper;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FilterVarRule.cpp')]
 final class FilterVarRule implements Rule
 {
 

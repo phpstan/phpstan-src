@@ -9,10 +9,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RewrittenDeclaringClassMethodReflection.cpp')]
 final class RewrittenDeclaringClassMethodReflection implements ExtendedMethodReflection
 {
 

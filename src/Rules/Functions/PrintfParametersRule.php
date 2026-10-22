@@ -17,13 +17,11 @@ use function count;
 use function in_array;
 use function sprintf;
 use function sscanf;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PrintfParametersRule.cpp')]
 final class PrintfParametersRule implements Rule
 {
 

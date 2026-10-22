@@ -11,14 +11,12 @@ use PHPStan\Node\EmptyExpressionNode;
 use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\IssetCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @implements Rule<EmptyExpressionNode>
  */
 #[RegisteredRule(level: 1)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EmptyRule.cpp')]
 final class EmptyRule implements Rule
 {
 

@@ -13,7 +13,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\LastConditionVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use function sprintf;
 
@@ -21,7 +20,6 @@ use function sprintf;
  * @implements Rule<LogicalXor>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/LogicalXorConstantConditionRule.cpp')]
 final class LogicalXorConstantConditionRule implements Rule
 {
 

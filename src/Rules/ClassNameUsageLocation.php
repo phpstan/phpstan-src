@@ -6,14 +6,12 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function ucfirst;
 
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassNameUsageLocation.cpp')]
 final class ClassNameUsageLocation
 {
 

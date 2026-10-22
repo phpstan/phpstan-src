@@ -12,7 +12,6 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\TypeUtils;
 
@@ -20,7 +19,6 @@ use PHPStan\Type\TypeUtils;
  * @implements Rule<ExecutionEndNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ParameterOutExecutionEndTypeRule.cpp')]
 final class ParameterOutExecutionEndTypeRule implements Rule
 {
 

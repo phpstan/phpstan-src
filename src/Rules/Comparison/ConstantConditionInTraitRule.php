@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrors\TransformedRuleError;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_values;
 use function count;
 use function is_array;
@@ -20,7 +19,6 @@ use function var_export;
  * @implements Rule<CollectedDataNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantConditionInTraitRule.cpp')]
 final class ConstantConditionInTraitRule implements Rule
 {
 

@@ -13,7 +13,6 @@ use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
@@ -28,7 +27,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\Instanceof_>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ImpossibleInstanceOfRule.cpp')]
 final class ImpossibleInstanceOfRule implements Rule
 {
 

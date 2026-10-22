@@ -8,13 +8,11 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\StandaloneThrowExprVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<Node\Expr\Throw_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThrowExpressionRule.cpp')]
 final class ThrowExpressionRule implements Rule
 {
 

@@ -14,7 +14,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Methods\AlwaysUsedMethodExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use function array_map;
@@ -26,7 +25,6 @@ use function strtolower;
  * @implements Rule<ClassMethodsNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedPrivateMethodRule.cpp')]
 final class UnusedPrivateMethodRule implements Rule
 {
 

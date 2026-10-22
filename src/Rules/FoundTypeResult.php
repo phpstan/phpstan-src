@@ -2,13 +2,11 @@
 
 namespace PHPStan\Rules;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FoundTypeResult.cpp')]
 final class FoundTypeResult
 {
 

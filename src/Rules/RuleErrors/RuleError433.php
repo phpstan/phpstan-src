@@ -8,12 +8,10 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\RuleError;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @internal Use PHPStan\Rules\RuleErrorBuilder instead.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuleError433.cpp')]
 final class RuleError433 implements RuleError, IdentifierRuleError, MetadataRuleError, FixableNodeRuleError, FileDependenciesRuleError
 {
 

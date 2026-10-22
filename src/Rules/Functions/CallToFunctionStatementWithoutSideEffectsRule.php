@@ -9,7 +9,6 @@ use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use function count;
 use function in_array;
@@ -19,7 +18,6 @@ use function sprintf;
  * @implements Rule<NoopExpressionNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallToFunctionStatementWithoutSideEffectsRule.cpp')]
 final class CallToFunctionStatementWithoutSideEffectsRule implements Rule
 {
 

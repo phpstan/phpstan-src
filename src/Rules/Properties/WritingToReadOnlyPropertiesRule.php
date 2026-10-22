@@ -10,14 +10,12 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
  * @implements Rule<PropertyAssignNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/WritingToReadOnlyPropertiesRule.cpp')]
 final class WritingToReadOnlyPropertiesRule implements Rule
 {
 

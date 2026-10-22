@@ -7,14 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
 
 /**
  * @implements Rule<Node\Stmt\Static_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThisInStaticStatementRule.cpp')]
 final class ThisInStaticStatementRule implements Rule
 {
 

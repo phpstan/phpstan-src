@@ -8,13 +8,11 @@ use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\Node\MethodReturnStatementsNode;
 use function count;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<MethodReturnStatementsNode, array{string, list<string>}>
  */
 #[RegisteredCollector(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstructorWithoutImpurePointsCollector.cpp')]
 final class ConstructorWithoutImpurePointsCollector implements Collector
 {
 

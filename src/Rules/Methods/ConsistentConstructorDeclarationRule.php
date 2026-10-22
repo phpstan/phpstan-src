@@ -8,12 +8,10 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function strtolower;
 
 /** @implements Rule<InClassMethodNode> */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConsistentConstructorDeclarationRule.cpp')]
 final class ConsistentConstructorDeclarationRule implements Rule
 {
 

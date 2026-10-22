@@ -11,7 +11,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
@@ -30,7 +29,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\BinaryOp>
  */
 #[RegisteredRule(level: 2)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidComparisonOperationRule.cpp')]
 final class InvalidComparisonOperationRule implements Rule
 {
 

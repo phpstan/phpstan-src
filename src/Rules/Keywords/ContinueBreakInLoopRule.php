@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Parser\ParentStmtTypesVisitor;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_reverse;
 use function in_array;
 use function sprintf;
@@ -18,7 +17,6 @@ use function sprintf;
  * @implements Rule<Stmt>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ContinueBreakInLoopRule.cpp')]
 final class ContinueBreakInLoopRule implements Rule
 {
 

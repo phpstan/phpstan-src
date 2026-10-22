@@ -11,7 +11,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -24,7 +23,6 @@ use function strtolower;
  * @implements Rule<NoopExpressionNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallToStaticMethodStatementWithoutSideEffectsRule.cpp')]
 final class CallToStaticMethodStatementWithoutSideEffectsRule implements Rule
 {
 

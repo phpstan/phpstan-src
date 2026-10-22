@@ -6,7 +6,6 @@ use DateInterval;
 use DateTime;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -22,7 +21,6 @@ use function strtolower;
 use function strtoupper;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateIntervalFormatReturnTypeHelper.cpp')]
 final class DateIntervalFormatReturnTypeHelper
 {
 

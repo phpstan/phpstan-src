@@ -11,7 +11,6 @@ use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -20,7 +19,6 @@ use function sprintf;
  * @implements Rule<InPropertyHookNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SetPropertyHookParameterRule.cpp')]
 final class SetPropertyHookParameterRule implements Rule
 {
 

@@ -7,7 +7,6 @@ use PhpParser\Node\Expr\Array_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -15,7 +14,6 @@ use function sprintf;
 /**
  * @implements Rule<Array_>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/LiteralArrayKeyCastRule.cpp')]
 final class LiteralArrayKeyCastRule implements Rule
 {
 

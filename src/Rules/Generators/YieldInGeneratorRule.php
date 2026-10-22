@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use function sprintf;
@@ -18,7 +17,6 @@ use function sprintf;
  * @implements MultipleNodeTypesRule<Node\Expr>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/YieldInGeneratorRule.cpp')]
 final class YieldInGeneratorRule implements MultipleNodeTypesRule
 {
 

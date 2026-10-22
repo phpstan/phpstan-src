@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Api;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function dirname;
 use function pathinfo;
 use function str_starts_with;
@@ -14,7 +13,6 @@ use function strtolower;
 use const PATHINFO_BASENAME;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ApiRuleHelper.cpp')]
 final class ApiRuleHelper
 {
 

@@ -6,12 +6,10 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<never, array{class-string, string, class-string, string, string}>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OverridingMethodRenamesParameterCollector.cpp')]
 final class OverridingMethodRenamesParameterCollector implements Collector
 {
 

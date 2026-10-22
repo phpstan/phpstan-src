@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_keys;
 use function in_array;
 use function sprintf;
@@ -18,7 +17,6 @@ use function str_starts_with;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuntimeReflectionFunctionRule.cpp')]
 final class RuntimeReflectionFunctionRule implements Rule
 {
 

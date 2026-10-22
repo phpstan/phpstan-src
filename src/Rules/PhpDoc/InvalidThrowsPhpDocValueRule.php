@@ -10,7 +10,6 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InPropertyHookNode;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\FileTypeMapper;
@@ -27,7 +26,6 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidThrowsPhpDocValueRule.cpp')]
 final class InvalidThrowsPhpDocValueRule implements MultipleNodeTypesRule
 {
 

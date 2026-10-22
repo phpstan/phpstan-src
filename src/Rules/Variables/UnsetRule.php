@@ -10,7 +10,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
 use function sprintf;
@@ -19,7 +18,6 @@ use function sprintf;
  * @implements Rule<Node\Stmt\Unset_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnsetRule.cpp')]
 final class UnsetRule implements Rule
 {
 

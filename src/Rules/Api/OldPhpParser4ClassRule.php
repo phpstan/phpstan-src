@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_change_key_case;
 use function array_key_exists;
 use function array_keys;
@@ -19,7 +18,6 @@ use function str_starts_with;
  * @implements Rule<Name>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OldPhpParser4ClassRule.cpp')]
 final class OldPhpParser4ClassRule implements Rule
 {
 

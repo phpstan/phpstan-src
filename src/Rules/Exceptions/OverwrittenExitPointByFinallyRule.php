@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\FinallyExitPointsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 
@@ -16,7 +15,6 @@ use function sprintf;
  * @implements Rule<FinallyExitPointsNode>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OverwrittenExitPointByFinallyRule.cpp')]
 final class OverwrittenExitPointByFinallyRule implements Rule
 {
 

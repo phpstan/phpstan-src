@@ -6,13 +6,11 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Collector<Node\Stmt\Trait_, array{string, int}>
  */
 #[RegisteredCollector(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TraitDeclarationCollector.cpp')]
 final class TraitDeclarationCollector implements Collector
 {
 

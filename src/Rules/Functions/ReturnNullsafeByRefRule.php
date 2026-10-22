@@ -9,13 +9,11 @@ use PHPStan\Node\ReturnStatementsNode;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<ReturnStatementsNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ReturnNullsafeByRefRule.cpp')]
 final class ReturnNullsafeByRefRule implements Rule
 {
 

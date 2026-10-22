@@ -10,7 +10,6 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\NeverType;
 use function sprintf;
 
@@ -18,7 +17,6 @@ use function sprintf;
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SetNonVirtualPropertyHookAssignRule.cpp')]
 final class SetNonVirtualPropertyHookAssignRule implements Rule
 {
 

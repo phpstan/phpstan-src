@@ -3,13 +3,11 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Analyser\Error;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * The constant-condition collectors carry the reported Error in their collected value, so the
  * result cache cannot reach its paths on its own - see CollectorWithPaths.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CollectedConstantConditionError.cpp')]
 final class CollectedConstantConditionError
 {
 

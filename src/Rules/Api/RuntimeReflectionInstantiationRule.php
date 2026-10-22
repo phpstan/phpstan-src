@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionExtension;
@@ -28,7 +27,6 @@ use function str_starts_with;
  * @implements Rule<Node\Expr\New_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RuntimeReflectionInstantiationRule.cpp')]
 final class RuntimeReflectionInstantiationRule implements Rule
 {
 

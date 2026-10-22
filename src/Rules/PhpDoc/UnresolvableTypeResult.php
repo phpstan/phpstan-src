@@ -3,10 +3,8 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[ReferencedByTurboExtension(key: 'unresolvableTypeResult')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnresolvableTypeResult.cpp')]
 final class UnresolvableTypeResult
 {
 

@@ -11,7 +11,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
@@ -28,7 +27,6 @@ use const SORT_REGULAR;
  *
  * @implements Rule<Node\Expr\FuncCall>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SortWithoutEffectRule.cpp')]
 final class SortWithoutEffectRule implements Rule
 {
 

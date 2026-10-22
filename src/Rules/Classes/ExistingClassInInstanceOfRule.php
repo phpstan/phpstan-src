@@ -13,7 +13,6 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function in_array;
@@ -24,7 +23,6 @@ use function strtolower;
  * @implements Rule<Node\Expr\Instanceof_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingClassInInstanceOfRule.cpp')]
 final class ExistingClassInInstanceOfRule implements Rule
 {
 

@@ -19,7 +19,6 @@ use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
@@ -35,7 +34,6 @@ use function strtolower;
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassConstantRule.cpp')]
 final class ClassConstantRule implements Rule
 {
 

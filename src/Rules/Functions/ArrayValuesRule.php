@@ -12,7 +12,6 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -21,7 +20,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 5)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayValuesRule.cpp')]
 final class ArrayValuesRule implements Rule
 {
 

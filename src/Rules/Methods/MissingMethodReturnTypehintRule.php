@@ -10,7 +10,6 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
@@ -20,7 +19,6 @@ use function sprintf;
  */
 #[RegisteredRule(level: 6)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingMethodReturnTypehintRule.cpp')]
 final class MissingMethodReturnTypehintRule implements Rule
 {
 

@@ -10,7 +10,6 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\PhpDoc\Tag\UsesTag;
 use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Type;
 use function array_map;
@@ -23,7 +22,6 @@ use function ucfirst;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UsedTraitsRule.cpp')]
 final class UsedTraitsRule implements Rule
 {
 

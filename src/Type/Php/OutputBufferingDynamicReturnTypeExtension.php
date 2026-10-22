@@ -8,7 +8,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
@@ -21,7 +20,6 @@ use function in_array;
  * scope has not been balanced by a closing call).
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OutputBufferingDynamicReturnTypeExtension.cpp')]
 final class OutputBufferingDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

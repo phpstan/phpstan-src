@@ -9,7 +9,6 @@ use IteratorAggregate;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
@@ -39,7 +38,6 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MissingTypehintCheck.cpp')]
 final class MissingTypehintCheck
 {
 

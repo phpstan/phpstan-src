@@ -9,7 +9,6 @@ use PHPStan\Node\InClosureNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
@@ -19,7 +18,6 @@ use function sprintf;
  * @implements Rule<InClosureNode>
  */
 #[RegisteredRule(level: 2)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatibleClosureDefaultParameterTypeRule.cpp')]
 final class IncompatibleClosureDefaultParameterTypeRule implements Rule
 {
 

@@ -9,7 +9,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicMethodReturnTypeExtension;
 use PHPStan\Type\NeverType;
@@ -18,7 +17,6 @@ use PHPStan\Type\TypeCombinator;
 use function extension_loaded;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DomDocumentCreateElementDynamicReturnTypeExtension.cpp')]
 final class DomDocumentCreateElementDynamicReturnTypeExtension implements DynamicMethodReturnTypeExtension
 {
 

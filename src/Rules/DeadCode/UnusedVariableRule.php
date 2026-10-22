@@ -10,7 +10,6 @@ use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\VerbosityLevel;
@@ -23,7 +22,6 @@ use function ucfirst;
 /**
  * @implements Rule<VariableWritesNode>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedVariableRule.cpp')]
 final class UnusedVariableRule implements Rule
 {
 

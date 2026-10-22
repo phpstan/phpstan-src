@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function implode;
 use function sprintf;
@@ -19,7 +18,6 @@ use function strtolower;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DebugScopeRule.cpp')]
 final class DebugScopeRule implements Rule
 {
 

@@ -11,7 +11,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -22,7 +21,6 @@ use function sprintf;
  * @implements MultipleNodeTypesRule<Expr>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/OffsetAccessValueAssignmentRule.cpp')]
 final class OffsetAccessValueAssignmentRule implements MultipleNodeTypesRule
 {
 

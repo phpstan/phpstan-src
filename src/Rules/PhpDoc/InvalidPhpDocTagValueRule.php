@@ -16,7 +16,6 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function str_starts_with;
 
@@ -25,7 +24,6 @@ use function str_starts_with;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidPhpDocTagValueRule.cpp')]
 final class InvalidPhpDocTagValueRule implements MultipleNodeTypesRule
 {
 

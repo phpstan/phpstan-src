@@ -10,7 +10,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -20,7 +19,6 @@ use function sprintf;
  * @implements Rule<Node\Stmt\Expression>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallToStaticMethodStatementWithNoDiscardRule.cpp')]
 final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 {
 

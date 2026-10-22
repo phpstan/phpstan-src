@@ -12,7 +12,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\VerbosityLevel;
 use function get_class;
@@ -22,7 +21,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\BinaryOp>
  */
 #[RegisteredRule(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NumberComparisonOperatorsConstantConditionRule.cpp')]
 final class NumberComparisonOperatorsConstantConditionRule implements Rule
 {
 

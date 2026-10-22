@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -20,7 +19,6 @@ use function str_starts_with;
  * @see https://github.com/php/php-src/pull/12804
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PDOConnectReturnTypeExtension.cpp')]
 final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
 

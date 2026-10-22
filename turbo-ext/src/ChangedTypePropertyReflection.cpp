@@ -102,20 +102,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isStatic(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isStatic(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_IS_STATIC);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -142,20 +128,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isPrivate(Z_OBJ_P(p1), &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isPrivate(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isPrivate(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -208,18 +180,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDocComment(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDocComment(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_GET_DOC_COMMENT);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -246,20 +206,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_hasPhpDocType(Z_OBJ_P(p1), &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_hasPhpDocType(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_hasPhpDocType(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -302,20 +248,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_hasNativeType(Z_OBJ_P(p1), &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_hasNativeType(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_hasNativeType(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -388,20 +320,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_canChangeTypeAfterAssignment(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_canChangeTypeAfterAssignment(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_CAN_CHANGE_TYPE_AFTER_ASSIGNMENT);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -428,20 +346,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isReadable(Z_OBJ_P(p1), &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isReadable(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isReadable(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -472,20 +376,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isWritable(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isWritable(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_IS_WRITABLE);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -511,18 +401,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isDeprecated(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isDeprecated(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isDeprecated(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -552,18 +430,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getDeprecatedDescription(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_GET_DEPRECATED_DESCRIPTION);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -589,18 +455,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isInternal(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isInternal(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isInternal(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -642,18 +496,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isAbstract(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isAbstract(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isAbstract(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -729,18 +571,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isVirtual(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isVirtual(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_IS_VIRTUAL);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -769,24 +599,10 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_hasHook(Z_OBJ_P(p1), p_hookType, &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_hasHook(Z_OBJ_P(p1), p_hookType, &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
-			zval av9[1];
-			ZVAL_COPY_VALUE(&av9[0], p_hookType);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "hasHook", "hashook", 7, 1, av9, vd2.raw()))) return false;
+			zval av5[1];
+			ZVAL_COPY_VALUE(&av5[0], p_hookType);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_4, p1, "hasHook", "hashook", 7, 1, av5, vd2.raw()))) return false;
 		}
 		*ret = (Z_TYPE_P(vd2.raw()) == IS_TRUE);
 		return true;
@@ -811,22 +627,10 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getHook(Z_OBJ_P(p1), p_hookType, r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getHook(Z_OBJ_P(p1), p_hookType, r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
-			zval av6[1];
-			ZVAL_COPY_VALUE(&av6[0], p_hookType);
-			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p1, "getHook", "gethook", 7, 1, av6, vd2.raw()))) return false;
+			zval av4[1];
+			ZVAL_COPY_VALUE(&av4[0], p_hookType);
+			if (UNEXPECTED(!pgrt::callMethod(pg_site_5, p1, "getHook", "gethook", 7, 1, av4, vd2.raw()))) return false;
 		}
 		*ret = vd2.take();
 		return true;
@@ -850,20 +654,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isProtectedSet(Z_OBJ_P(p1), &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isProtectedSet(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isProtectedSet(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
 			vd2_done = true;
 		}
 		if (!vd2_done) {
@@ -894,20 +684,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			bool r5;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isPrivateSet(Z_OBJ_P(p1), &r5))) return false;
-			zv::Val o6 = zv::Val::boolean(r5);
-			vd2 = std::move(o6);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			bool r7;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isPrivateSet(Z_OBJ_P(p1), &r7))) return false;
-			zv::Val o8 = zv::Val::boolean(r7);
-			vd2 = std::move(o8);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_IS_PRIVATE_SET);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -935,18 +711,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_getAttributes(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_getAttributes(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
-			vd2_done = true;
-		}
 		if (!vd2_done) {
 			vd2 = pt_extended_property_reflection_call(p1, PT_PROP_GET_ATTRIBUTES);
 			if (UNEXPECTED(vd2.isUndef())) return false;
@@ -972,18 +736,6 @@ namespace pgen::ChangedTypePropertyReflection {
 			zv::Val r3;
 			if (UNEXPECTED(!pgen::ChangedTypePropertyReflection::m_isDummy(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_rewritten_declaring_class_property_reflection) {
-			zv::Val r4;
-			if (UNEXPECTED(!pgen::RewrittenDeclaringClassPropertyReflection::m_isDummy(Z_OBJ_P(p1), r4.raw()))) return false;
-			vd2 = std::move(r4);
-			vd2_done = true;
-		}
-		if (vd2_ce == pt_ce_found_property_reflection) {
-			zv::Val r5;
-			if (UNEXPECTED(!pgen::FoundPropertyReflection::m_isDummy(Z_OBJ_P(p1), r5.raw()))) return false;
-			vd2 = std::move(r5);
 			vd2_done = true;
 		}
 		if (!vd2_done) {

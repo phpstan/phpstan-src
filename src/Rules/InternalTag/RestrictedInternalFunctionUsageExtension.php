@@ -6,12 +6,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\RestrictedUsage\RestrictedFunctionUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_slice;
 use function explode;
 use function sprintf;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RestrictedInternalFunctionUsageExtension.cpp')]
 final class RestrictedInternalFunctionUsageExtension implements RestrictedFunctionUsageExtension
 {
 

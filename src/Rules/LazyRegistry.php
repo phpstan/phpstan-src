@@ -6,13 +6,11 @@ use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ExtensionClassHelper;
 use function array_values;
 use function spl_object_id;
 
 #[AutowiredService(name: 'registry', as: Registry::class)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/LazyRegistry.cpp')]
 final class LazyRegistry implements Registry
 {
 

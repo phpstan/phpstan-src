@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
@@ -16,7 +15,6 @@ use function count;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionConditionalReturnTypeRule.cpp')]
 final class FunctionConditionalReturnTypeRule implements Rule
 {
 

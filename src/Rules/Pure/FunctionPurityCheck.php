@@ -16,7 +16,6 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
@@ -28,7 +27,6 @@ use function lcfirst;
 use function sprintf;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FunctionPurityCheck.cpp')]
 final class FunctionPurityCheck
 {
 

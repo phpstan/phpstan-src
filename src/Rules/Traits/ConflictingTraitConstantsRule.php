@@ -13,7 +13,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\VerbosityLevel;
@@ -23,7 +22,6 @@ use function sprintf;
  * @implements Rule<Node\Stmt\ClassConst>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConflictingTraitConstantsRule.cpp')]
 final class ConflictingTraitConstantsRule implements Rule
 {
 

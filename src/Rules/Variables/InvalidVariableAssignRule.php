@@ -9,14 +9,12 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
 
 /**
  * @implements Rule<VariableAssignNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidVariableAssignRule.cpp')]
 final class InvalidVariableAssignRule implements Rule
 {
 

@@ -11,13 +11,11 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InArrowFunctionNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements Rule<InArrowFunctionNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrowFunctionAttributesRule.cpp')]
 final class ArrowFunctionAttributesRule implements Rule
 {
 

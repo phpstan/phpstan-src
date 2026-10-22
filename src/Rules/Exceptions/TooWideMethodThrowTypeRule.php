@@ -9,7 +9,6 @@ use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
@@ -22,7 +21,6 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TooWideMethodThrowTypeRule.cpp')]
 final class TooWideMethodThrowTypeRule implements Rule
 {
 

@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 use function str_contains;
@@ -17,7 +16,6 @@ use function str_contains;
  * @implements Rule<Node\Expr\ClassConstFetch>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ApiClassConstFetchRule.cpp')]
 final class ApiClassConstFetchRule implements Rule
 {
 

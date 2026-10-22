@@ -7,10 +7,9 @@
 zend_class_entry *pt_ce_registry = nullptr;
 
 
-static pgrt::DispatchCache pg_site_0; /* dispatch_getNodeType_0 */
-static pt_method_site pg_site_1; /* method_getNodeType_1 */
-static pgrt::ClassSite pg_site_2; /* cls_PHPStan\Type\ExtensionClassHelper */
-static pt_method_site pg_site_3; /* static_PHPStan\Type\ExtensionClassHelper::getExtensionClassNamesByRuntimeReflection */
+static pgrt::MethodShapeSite pg_site_0; /* method0_getNodeType_0 */
+static pgrt::ClassSite pg_site_1; /* cls_PHPStan\Type\ExtensionClassHelper */
+static pt_method_site pg_site_2; /* static_PHPStan\Type\ExtensionClassHelper::getExtensionClassNamesByRuntimeReflection */
 
 namespace pgen::Registry {
 
@@ -34,121 +33,13 @@ namespace pgen::Registry {
 				 {
 					zv::Val o8 = zv::Val::copyOf(zv::Ref(l_collector));
 					zv::Val o9 = zv::Val::copyOf(zv::Ref(o8.raw()));
-					zv::Val vd11;
-					zend_class_entry *vd11_ce = Z_TYPE_P(l_collector) == IS_OBJECT ? Z_OBJCE_P(l_collector) : NULL;
-					bool vd11_done = false;
-					static zend_class_entry **const vd11_table[] = { &pt_ce_overriding_method_renames_parameter_collector, &pt_ce_named_argument_parameter_method_calls_collector, &pt_ce_trait_use_collector, &pt_ce_impossible_check_type_reported_collector, &pt_ce_method_without_impure_points_collector, &pt_ce_constant_condition_in_trait_collector, &pt_ce_function_call_constant_condition_collector, &pt_ce_constructor_without_impure_points_collector, &pt_ce_function_without_impure_points_collector, &pt_ce_possibly_pure_func_call_collector, &pt_ce_possibly_pure_method_call_collector, &pt_ce_possibly_pure_new_collector, &pt_ce_possibly_pure_static_call_collector, &pt_ce_trait_declaration_collector };
-					static const uint16_t vd11_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
-					switch (pgrt::dispatchCase(pg_site_0, vd11_ce, vd11_table, vd11_cases, 14)) {
-						case 1: {
-							zv::Val r12;
-							if (UNEXPECTED(!pgen::OverridingMethodRenamesParameterCollector::m_getNodeType(Z_OBJ_P(l_collector), r12.raw()))) return false;
-							vd11 = std::move(r12);
-							vd11_done = true;
-						}
-						break;
-						case 2: {
-							zv::Val r13;
-							if (UNEXPECTED(!pgen::NamedArgumentParameterMethodCallsCollector::m_getNodeType(Z_OBJ_P(l_collector), r13.raw()))) return false;
-							vd11 = std::move(r13);
-							vd11_done = true;
-						}
-						break;
-						case 3: {
-							zv::Val r14;
-							if (UNEXPECTED(!pgen::TraitUseCollector::m_getNodeType(Z_OBJ_P(l_collector), r14.raw()))) return false;
-							vd11 = std::move(r14);
-							vd11_done = true;
-						}
-						break;
-						case 4: {
-							zv::Val r15;
-							if (UNEXPECTED(!pgen::ImpossibleCheckTypeReportedCollector::m_getNodeType(Z_OBJ_P(l_collector), r15.raw()))) return false;
-							vd11 = std::move(r15);
-							vd11_done = true;
-						}
-						break;
-						case 5: {
-							zv::Val r16;
-							if (UNEXPECTED(!pgen::MethodWithoutImpurePointsCollector::m_getNodeType(Z_OBJ_P(l_collector), r16.raw()))) return false;
-							vd11 = std::move(r16);
-							vd11_done = true;
-						}
-						break;
-						case 6: {
-							zv::Val r17;
-							if (UNEXPECTED(!pgen::ConstantConditionInTraitCollector::m_getNodeType(Z_OBJ_P(l_collector), r17.raw()))) return false;
-							vd11 = std::move(r17);
-							vd11_done = true;
-						}
-						break;
-						case 7: {
-							zv::Val r18;
-							if (UNEXPECTED(!pgen::FunctionCallConstantConditionCollector::m_getNodeType(Z_OBJ_P(l_collector), r18.raw()))) return false;
-							vd11 = std::move(r18);
-							vd11_done = true;
-						}
-						break;
-						case 8: {
-							zv::Val r19;
-							if (UNEXPECTED(!pgen::ConstructorWithoutImpurePointsCollector::m_getNodeType(Z_OBJ_P(l_collector), r19.raw()))) return false;
-							vd11 = std::move(r19);
-							vd11_done = true;
-						}
-						break;
-						case 9: {
-							zv::Val r20;
-							if (UNEXPECTED(!pgen::FunctionWithoutImpurePointsCollector::m_getNodeType(Z_OBJ_P(l_collector), r20.raw()))) return false;
-							vd11 = std::move(r20);
-							vd11_done = true;
-						}
-						break;
-						case 10: {
-							zv::Val r21;
-							if (UNEXPECTED(!pgen::PossiblyPureFuncCallCollector::m_getNodeType(Z_OBJ_P(l_collector), r21.raw()))) return false;
-							vd11 = std::move(r21);
-							vd11_done = true;
-						}
-						break;
-						case 11: {
-							zv::Val r22;
-							if (UNEXPECTED(!pgen::PossiblyPureMethodCallCollector::m_getNodeType(Z_OBJ_P(l_collector), r22.raw()))) return false;
-							vd11 = std::move(r22);
-							vd11_done = true;
-						}
-						break;
-						case 12: {
-							zv::Val r23;
-							if (UNEXPECTED(!pgen::PossiblyPureNewCollector::m_getNodeType(Z_OBJ_P(l_collector), r23.raw()))) return false;
-							vd11 = std::move(r23);
-							vd11_done = true;
-						}
-						break;
-						case 13: {
-							zv::Val r24;
-							if (UNEXPECTED(!pgen::PossiblyPureStaticCallCollector::m_getNodeType(Z_OBJ_P(l_collector), r24.raw()))) return false;
-							vd11 = std::move(r24);
-							vd11_done = true;
-						}
-						break;
-						case 14: {
-							zv::Val r25;
-							if (UNEXPECTED(!pgen::TraitDeclarationCollector::m_getNodeType(Z_OBJ_P(l_collector), r25.raw()))) return false;
-							vd11 = std::move(r25);
-							vd11_done = true;
-						}
-						break;
-						default:
-						break;
-					}
-					if (!vd11_done) {
-						if (UNEXPECTED(!pgrt::callMethod(pg_site_1, l_collector, "getNodeType", "getnodetype", 11, 0, NULL, vd11.raw()))) return false;
-					}
-					zval *w26 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::Registry::slot::collectors)).deref().raw();
-					if (Z_TYPE_P(w26) <= IS_NULL) { zval_ptr_dtor(w26); array_init(w26); } else if (UNEXPECTED(Z_TYPE_P(w26) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
-					SEPARATE_ARRAY(w26);
+					zv::Val r11;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, l_collector, "getNodeType", "getnodetype", 11, r11.raw()))) return false;
+					zval *w12 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::Registry::slot::collectors)).deref().raw();
+					if (Z_TYPE_P(w12) <= IS_NULL) { zval_ptr_dtor(w12); array_init(w12); } else if (UNEXPECTED(Z_TYPE_P(w12) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
+					SEPARATE_ARRAY(w12);
 					zval *w10;
-					w10 = pgrt::dimWrite(w26, vd11.raw());
+					w10 = pgrt::dimWrite(w12, r11.raw());
 					if (UNEXPECTED(w10 == NULL)) return false;
 					ZVAL_DEREF(w10);
 					if (Z_TYPE_P(w10) <= IS_NULL) { zval_ptr_dtor(w10); array_init(w10); } else if (UNEXPECTED(Z_TYPE_P(w10) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -184,10 +75,10 @@ namespace pgen::Registry {
 			 {
 				zval av5[1];
 				ZVAL_COPY_VALUE(&av5[0], p_nodeType);
-				zend_class_entry *ce6 = pgrt::lookupClass(pg_site_2, "PHPStan\\Type\\ExtensionClassHelper", 33);
+				zend_class_entry *ce6 = pgrt::lookupClass(pg_site_1, "PHPStan\\Type\\ExtensionClassHelper", 33);
 				if (UNEXPECTED(ce6 == NULL)) return false;
 				zv::Val r7;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_3, ce6, "getextensionclassnamesbyruntimereflection", 41, 1, av5, r7.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_2, ce6, "getextensionclassnamesbyruntimereflection", 41, 1, av5, r7.raw(), NULL))) return false;
 				l_parentNodeTypes = std::move(r7);
 			}
 			 {

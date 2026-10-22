@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 
 /**
@@ -17,7 +16,6 @@ use function sprintf;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodSignatureVarianceRule.cpp')]
 final class MethodSignatureVarianceRule implements Rule
 {
 

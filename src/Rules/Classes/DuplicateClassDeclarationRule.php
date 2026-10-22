@@ -11,7 +11,6 @@ use PHPStan\File\RelativePathHelper;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_filter;
 use function array_map;
 use function count;
@@ -23,7 +22,6 @@ use function strtolower;
  * @implements Rule<InClassNode>
  */
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DuplicateClassDeclarationRule.cpp')]
 final class DuplicateClassDeclarationRule implements Rule
 {
 

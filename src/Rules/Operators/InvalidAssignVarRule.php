@@ -12,13 +12,11 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @implements MultipleNodeTypesRule<Expr>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InvalidAssignVarRule.cpp')]
 final class InvalidAssignVarRule implements MultipleNodeTypesRule
 {
 

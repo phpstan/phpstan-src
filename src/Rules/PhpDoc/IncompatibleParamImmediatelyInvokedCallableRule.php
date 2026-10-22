@@ -11,7 +11,6 @@ use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
@@ -23,7 +22,6 @@ use function trim;
  */
 #[RegisteredRule(level: 2)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncompatibleParamImmediatelyInvokedCallableRule.cpp')]
 final class IncompatibleParamImmediatelyInvokedCallableRule implements Rule
 {
 

@@ -9,7 +9,6 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 use function str_contains;
@@ -18,7 +17,6 @@ use function str_contains;
  * @implements Rule<Node\Expr\StaticCall>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ApiStaticCallRule.cpp')]
 final class ApiStaticCallRule implements Rule
 {
 

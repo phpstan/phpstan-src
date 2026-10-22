@@ -4,9 +4,7 @@ namespace PHPStan\Rules\PhpDoc;
 
 use PhpParser\Node as PhpParserNode;
 use PHPStan\PhpDocParser\Ast\Node as PhpDocNode;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpDocLineHelper.cpp')]
 final class PhpDocLineHelper
 {
 

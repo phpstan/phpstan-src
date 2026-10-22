@@ -8,7 +8,6 @@ use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedParametersCheck;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 use function str_starts_with;
@@ -21,7 +20,6 @@ use function str_starts_with;
  *
  * @implements Rule<VariableWritesNode>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedMethodParametersRule.cpp')]
 final class UnusedMethodParametersRule implements Rule
 {
 

@@ -9,7 +9,6 @@ use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 use function sprintf;
 use function strtolower;
@@ -18,7 +17,6 @@ use function strtolower;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DumpPhpDocTypeRule.cpp')]
 final class DumpPhpDocTypeRule implements Rule
 {
 

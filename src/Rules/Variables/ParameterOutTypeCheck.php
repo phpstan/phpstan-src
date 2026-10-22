@@ -11,7 +11,6 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -32,7 +31,6 @@ use function sprintf;
  * @internal
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ParameterOutTypeCheck.cpp')]
 final class ParameterOutTypeCheck
 {
 

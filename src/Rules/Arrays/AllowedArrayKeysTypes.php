@@ -4,7 +4,6 @@ namespace PHPStan\Rules\Arrays;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -22,7 +21,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 
 #[ReferencedByTurboExtension(key: 'allowedArrayKeysTypes')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AllowedArrayKeysTypes.cpp')]
 final class AllowedArrayKeysTypes
 {
 

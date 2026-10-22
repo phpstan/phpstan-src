@@ -19,7 +19,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantStringType;
 use function dirname;
 use function is_file;
@@ -29,7 +28,6 @@ use function sprintf;
  * @implements Rule<Include_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RequireFileExistsRule.cpp')]
 final class RequireFileExistsRule implements Rule
 {
 

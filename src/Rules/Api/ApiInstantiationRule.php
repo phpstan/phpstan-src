@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function str_contains;
 
@@ -16,7 +15,6 @@ use function str_contains;
  * @implements Rule<Node\Expr\New_>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ApiInstantiationRule.cpp')]
 final class ApiInstantiationRule implements Rule
 {
 

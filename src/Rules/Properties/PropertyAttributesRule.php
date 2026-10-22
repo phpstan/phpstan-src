@@ -12,14 +12,12 @@ use PHPStan\Node\ClassPropertyNode;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @implements Rule<ClassPropertyNode>
  */
 #[RegisteredRule(level: 0)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyAttributesRule.cpp')]
 final class PropertyAttributesRule implements Rule
 {
 

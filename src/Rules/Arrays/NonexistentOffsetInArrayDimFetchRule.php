@@ -14,7 +14,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
@@ -28,7 +27,6 @@ use function sprintf;
  * @implements Rule<Node\Expr\ArrayDimFetch>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NonexistentOffsetInArrayDimFetchRule.cpp')]
 final class NonexistentOffsetInArrayDimFetchRule implements Rule
 {
 

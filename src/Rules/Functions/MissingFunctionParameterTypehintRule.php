@@ -12,7 +12,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -23,7 +22,6 @@ use function sprintf;
  */
 #[RegisteredRule(level: 6)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingFunctionParameterTypehintRule.cpp')]
 final class MissingFunctionParameterTypehintRule implements Rule
 {
 

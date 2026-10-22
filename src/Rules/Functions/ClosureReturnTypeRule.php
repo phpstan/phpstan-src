@@ -8,14 +8,12 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\ClosureReturnStatementsNode;
 use PHPStan\Rules\FunctionReturnTypeCheck;
 use PHPStan\Rules\Rule;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<ClosureReturnStatementsNode>
  */
 #[RegisteredRule(level: 3)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClosureReturnTypeRule.cpp')]
 final class ClosureReturnTypeRule implements Rule
 {
 

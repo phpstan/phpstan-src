@@ -8,7 +8,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
 use PHPStan\Type\Type;
@@ -17,7 +16,6 @@ use function in_array;
 use function strtolower;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PregMatchParameterOutTypeExtension.cpp')]
 final class PregMatchParameterOutTypeExtension implements FunctionParameterOutTypeExtension
 {
 

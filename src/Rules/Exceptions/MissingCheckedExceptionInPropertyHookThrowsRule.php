@@ -8,14 +8,12 @@ use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function sprintf;
 use function ucfirst;
 
 /**
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MissingCheckedExceptionInPropertyHookThrowsRule.cpp')]
 final class MissingCheckedExceptionInPropertyHookThrowsRule implements Rule
 {
 

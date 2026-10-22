@@ -17,7 +17,6 @@ use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Regex\RegexExpressionHelper;
 use function array_filter;
 use function array_merge;
@@ -31,7 +30,6 @@ use function strlen;
  * @implements Rule<Node\Expr\FuncCall>
  */
 #[RegisteredRule(level: 5)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/RegularExpressionQuotingRule.cpp')]
 final class RegularExpressionQuotingRule implements Rule
 {
 

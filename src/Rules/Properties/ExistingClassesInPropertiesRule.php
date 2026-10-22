@@ -16,7 +16,6 @@ use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_map;
 use function array_merge;
 use function sprintf;
@@ -26,7 +25,6 @@ use function sprintf;
  */
 #[RegisteredRule(level: 0)]
 #[ValidatesStubFiles]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExistingClassesInPropertiesRule.cpp')]
 final class ExistingClassesInPropertiesRule implements Rule
 {
 

@@ -7,14 +7,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\Node\MethodReturnStatementsNode;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
 /**
  * @implements Collector<MethodReturnStatementsNode, array{class-string, string, string, list<string>}>
  */
 #[RegisteredCollector(level: 4)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodWithoutImpurePointsCollector.cpp')]
 final class MethodWithoutImpurePointsCollector implements Collector
 {
 

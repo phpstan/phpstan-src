@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function is_string;
 use function sprintf;
 
@@ -17,7 +16,6 @@ use function sprintf;
  * @implements Rule<VariableWritesNode>
  */
 #[RegisteredRule(level: 1)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnusedClosureUsesRule.cpp')]
 final class UnusedClosureUsesRule implements Rule
 {
 

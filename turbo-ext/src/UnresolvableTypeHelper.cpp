@@ -16,6 +16,7 @@ static pgrt::GetterSite pg_site_5; /* getter_isExplicit_5 */
 static pgrt::MethodShapeSite pg_site_6; /* method0_isExplicit_6 */
 static pgrt::GetterSite pg_site_7; /* getter_getReason_7 */
 static pgrt::MethodShapeSite pg_site_8; /* method0_getReason_8 */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\Rules\PhpDoc\UnresolvableTypeResult */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -173,10 +174,12 @@ namespace pgen::UnresolvableTypeHelper {
 	 {
 		zv::Val r11;
 		if (UNEXPECTED(!pgrt::arrayValues(zv::Ref(l_reasons.raw()).deref().raw(), r11.raw()))) return false;
-		zval n10_raw;
-		if (UNEXPECTED(object_init_ex(&n10_raw, pt_ce_unresolvable_type_result) != SUCCESS)) return false;
-		zv::Val n10 = zv::Val::adopt(n10_raw);
-		if (UNEXPECTED(!pgen::UnresolvableTypeResult::m___construct(Z_OBJ_P(n10.raw()), r11.raw()))) { zend_object_store_ctor_failed(Z_OBJ_P(n10.raw())); return false; }
+		zval av12[1];
+		ZVAL_COPY_VALUE(&av12[0], r11.raw());
+		zend_class_entry *ce13 = pgrt::lookupClass(pg_site_9, "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult", 43);
+		if (UNEXPECTED(ce13 == NULL)) return false;
+		zv::Val n10;
+		if (UNEXPECTED(!pgrt::newObject(ce13, 1, av12, n10.raw(), NULL))) return false;
 		*ret = n10.take();
 		return true;
 	}

@@ -615,16 +615,16 @@ namespace pgen::FunctionCallableNodeHandler {
 				zv::Val vd25;
 				zend_class_entry *vd25_ce = Z_TYPE_P(p23) == IS_OBJECT ? Z_OBJCE_P(p23) : NULL;
 				bool vd25_done = false;
-				if (vd25_ce == pt_ce_memoizing_reflection_provider) {
+				if (vd25_ce == pt_ce_better_reflection_provider) {
 					bool r26;
-					if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasFunction(Z_OBJ_P(p23), o24.raw(), p_scope, &r26))) return false;
+					if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasFunction(Z_OBJ_P(p23), o24.raw(), p_scope, &r26))) return false;
 					zv::Val o27 = zv::Val::boolean(r26);
 					vd25 = std::move(o27);
 					vd25_done = true;
 				}
-				if (vd25_ce == pt_ce_better_reflection_provider) {
+				if (vd25_ce == pt_ce_memoizing_reflection_provider) {
 					bool r28;
-					if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasFunction(Z_OBJ_P(p23), o24.raw(), p_scope, &r28))) return false;
+					if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasFunction(Z_OBJ_P(p23), o24.raw(), p_scope, &r28))) return false;
 					zv::Val o29 = zv::Val::boolean(r28);
 					vd25 = std::move(o29);
 					vd25_done = true;
@@ -643,15 +643,15 @@ namespace pgen::FunctionCallableNodeHandler {
 						zv::Val vd33;
 						zend_class_entry *vd33_ce = Z_TYPE_P(p31) == IS_OBJECT ? Z_OBJCE_P(p31) : NULL;
 						bool vd33_done = false;
-						if (vd33_ce == pt_ce_memoizing_reflection_provider) {
+						if (vd33_ce == pt_ce_better_reflection_provider) {
 							zv::Val r34;
-							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getFunction(Z_OBJ_P(p31), o32.raw(), p_scope, r34.raw()))) return false;
+							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getFunction(Z_OBJ_P(p31), o32.raw(), p_scope, r34.raw()))) return false;
 							vd33 = std::move(r34);
 							vd33_done = true;
 						}
-						if (vd33_ce == pt_ce_better_reflection_provider) {
+						if (vd33_ce == pt_ce_memoizing_reflection_provider) {
 							zv::Val r35;
-							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getFunction(Z_OBJ_P(p31), o32.raw(), p_scope, r35.raw()))) return false;
+							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getFunction(Z_OBJ_P(p31), o32.raw(), p_scope, r35.raw()))) return false;
 							vd33 = std::move(r35);
 							vd33_done = true;
 						}
@@ -677,15 +677,15 @@ namespace pgen::FunctionCallableNodeHandler {
 						zv::Val vd41;
 						zend_class_entry *vd41_ce = Z_TYPE_P(l_functionReflection.raw()) == IS_OBJECT ? Z_OBJCE_P(l_functionReflection.raw()) : NULL;
 						bool vd41_done = false;
-						if (vd41_ce == pt_ce_php_function_from_parser_node_reflection || vd41_ce == pt_ce_php_method_from_parser_node_reflection) {
+						if (vd41_ce == pt_ce_native_function_reflection) {
 							zv::Val r42;
-							if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(l_functionReflection.raw()), r42.raw()))) return false;
+							if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getVariants(Z_OBJ_P(l_functionReflection.raw()), r42.raw()))) return false;
 							vd41 = std::move(r42);
 							vd41_done = true;
 						}
-						if (vd41_ce == pt_ce_native_function_reflection) {
+						if (vd41_ce == pt_ce_php_function_from_parser_node_reflection || vd41_ce == pt_ce_php_method_from_parser_node_reflection) {
 							zv::Val r43;
-							if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getVariants(Z_OBJ_P(l_functionReflection.raw()), r43.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(l_functionReflection.raw()), r43.raw()))) return false;
 							vd41 = std::move(r43);
 							vd41_done = true;
 						}
@@ -698,15 +698,15 @@ namespace pgen::FunctionCallableNodeHandler {
 						zv::Val vd45;
 						zend_class_entry *vd45_ce = Z_TYPE_P(l_functionReflection.raw()) == IS_OBJECT ? Z_OBJCE_P(l_functionReflection.raw()) : NULL;
 						bool vd45_done = false;
-						if (vd45_ce == pt_ce_php_function_from_parser_node_reflection || vd45_ce == pt_ce_php_method_from_parser_node_reflection) {
+						if (vd45_ce == pt_ce_native_function_reflection) {
 							zv::Val r46;
-							if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getAsserts(Z_OBJ_P(l_functionReflection.raw()), r46.raw()))) return false;
+							if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getAsserts(Z_OBJ_P(l_functionReflection.raw()), r46.raw()))) return false;
 							vd45 = std::move(r46);
 							vd45_done = true;
 						}
-						if (vd45_ce == pt_ce_native_function_reflection) {
+						if (vd45_ce == pt_ce_php_function_from_parser_node_reflection || vd45_ce == pt_ce_php_method_from_parser_node_reflection) {
 							zv::Val r47;
-							if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getAsserts(Z_OBJ_P(l_functionReflection.raw()), r47.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getAsserts(Z_OBJ_P(l_functionReflection.raw()), r47.raw()))) return false;
 							vd45 = std::move(r47);
 							vd45_done = true;
 						}

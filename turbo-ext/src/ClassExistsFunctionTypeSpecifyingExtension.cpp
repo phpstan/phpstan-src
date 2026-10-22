@@ -559,16 +559,16 @@ namespace pgen::ClassExistsFunctionTypeSpecifyingExtension {
 					zv::Val vd16;
 					zend_class_entry *vd16_ce = Z_TYPE_P(p14) == IS_OBJECT ? Z_OBJCE_P(p14) : NULL;
 					bool vd16_done = false;
-					if (vd16_ce == pt_ce_memoizing_reflection_provider) {
+					if (vd16_ce == pt_ce_better_reflection_provider) {
 						bool r17;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p14), o15.raw(), &r17))) return false;
+						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p14), o15.raw(), &r17))) return false;
 						zv::Val o18 = zv::Val::boolean(r17);
 						vd16 = std::move(o18);
 						vd16_done = true;
 					}
-					if (vd16_ce == pt_ce_better_reflection_provider) {
+					if (vd16_ce == pt_ce_memoizing_reflection_provider) {
 						bool r19;
-						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p14), o15.raw(), &r19))) return false;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p14), o15.raw(), &r19))) return false;
 						zv::Val o20 = zv::Val::boolean(r19);
 						vd16 = std::move(o20);
 						vd16_done = true;
@@ -592,15 +592,15 @@ namespace pgen::ClassExistsFunctionTypeSpecifyingExtension {
 					zv::Val vd24;
 					zend_class_entry *vd24_ce = Z_TYPE_P(p22) == IS_OBJECT ? Z_OBJCE_P(p22) : NULL;
 					bool vd24_done = false;
-					if (vd24_ce == pt_ce_memoizing_reflection_provider) {
+					if (vd24_ce == pt_ce_better_reflection_provider) {
 						zv::Val r25;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p22), o23.raw(), r25.raw()))) return false;
+						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p22), o23.raw(), r25.raw()))) return false;
 						vd24 = std::move(r25);
 						vd24_done = true;
 					}
-					if (vd24_ce == pt_ce_better_reflection_provider) {
+					if (vd24_ce == pt_ce_memoizing_reflection_provider) {
 						zv::Val r26;
-						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p22), o23.raw(), r26.raw()))) return false;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p22), o23.raw(), r26.raw()))) return false;
 						vd24 = std::move(r26);
 						vd24_done = true;
 					}

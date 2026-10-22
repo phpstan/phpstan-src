@@ -4,7 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersions;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function in_array;
 use function ltrim;
 use function strlen;
@@ -17,7 +17,7 @@ use function substr;
  * Before PHP 8.0 only the h and H specifiers are treated differently.
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PrintfFormatParser.cpp')]
+#[CompiledIntoTurboExtension]
 final class PrintfFormatParser
 {
 

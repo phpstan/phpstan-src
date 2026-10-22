@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateFloatType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_float_type_new', 'out'])]
 final class TemplateFloatType extends FloatType implements TemplateType
 {
 

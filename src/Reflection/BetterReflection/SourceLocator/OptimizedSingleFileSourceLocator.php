@@ -21,7 +21,7 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_key_exists;
 use function array_keys;
 use function hash_file;
@@ -29,7 +29,7 @@ use function sprintf;
 use function strtolower;
 
 #[GenerateFactory(interface: OptimizedSingleFileSourceLocatorFactory::class)]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/OptimizedSingleFileSourceLocator.cpp')]
+#[CompiledIntoTurboExtension]
 final class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 

@@ -13,7 +13,34 @@ millions of tiny calls can. Three finished, correct, all-tests-green tier-1
 ports were reverted because they measured ≈0% — being correct is not the bar,
 being ≥0.5% faster is. When the estimate is marginal, don't port.
 
-## Shadowing new code — do the steps in this order
+## Compiling a class instead of porting it by hand
+
+A class the compiler handles needs no hand-written C++ (README.md,
+"Compiled classes"):
+
+1. **Mark it** `#[CompiledIntoTurboExtension]` (arguments only when its
+   native C API needs them: `ce`, `defineCe`, `new`, `dispatch` — see the
+   attribute's docblock) and run `composer dump-autoload`. A vendored class
+   cannot carry the attribute: add it to `VENDORED_COMPILED` in
+   `build/PHPStan/Build/TurboAttributeCollector.php` instead.
+2. **Generate**: `php turbo-ext/bin/compile-twins.php` writes its `.cpp`
+   and `src/CodegenDecls.h`, then `php turbo-ext/bin/generate-declarations.php`
+   its `src/generated/<Stem>.h`. A construct outside the compiled subset is
+   a `CompileError` naming it: extend the compiler
+   (`build/PHPStan/Build/TurboCodegen/Compiler.php`) or port the class by
+   hand (next section).
+3. **Verify and benchmark** as for a hand-written port (steps 6–9 below);
+   the version bump (step 10) applies — the generated files live in
+   `turbo-ext/src/`. Compile only classes a profile or the crossing census
+   shows are hot: every compiled class adds code to every platform's
+   binary, and cold ones buy no speed.
+
+After **editing** a compiled class, rerun `compile-twins.php` (and
+`generate-declarations.php` when its properties or signatures changed) and
+commit the regenerated files with the change. Never edit a generated file:
+CI runs `compile-twins.php --check`.
+
+## Shadowing new code by hand — do the steps in this order
 
 1. **Extract the PHP code** into a dedicated class (static methods are fine)
    under `src/`, called unconditionally from the original sites — no
@@ -74,6 +101,7 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    and instantiates it directly.
 5. **Mark the class** with
    `#[ImplementedInTurboExtension(implementation: __DIR__ . '/../turbo-ext/src/Foo.cpp')]`
+   (the hand-written counterpart of `#[CompiledIntoTurboExtension]`)
    and run `composer dump-autoload` — `build/generate-turbo-manifest.php`
    regenerates the manifest of shadowed pairs in
    `vendor/turbo-shadowed-classes.json` and the class map in

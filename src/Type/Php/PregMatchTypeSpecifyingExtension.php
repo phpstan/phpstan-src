@@ -13,13 +13,13 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function in_array;
 use function strtolower;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PregMatchTypeSpecifyingExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class PregMatchTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

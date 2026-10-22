@@ -6,12 +6,12 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/VersionCompareFunctionDynamicThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

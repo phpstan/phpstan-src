@@ -2248,16 +2248,16 @@ namespace pgen::ExportedNodeResolver {
 					zv::Val vd62;
 					zend_class_entry *vd62_ce = Z_TYPE_P(p61) == IS_OBJECT ? Z_OBJCE_P(p61) : NULL;
 					bool vd62_done = false;
-					if (vd62_ce == pt_ce_memoizing_reflection_provider) {
+					if (vd62_ce == pt_ce_better_reflection_provider) {
 						bool r63;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p61), p_namespacedName, &r63))) return false;
+						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p61), p_namespacedName, &r63))) return false;
 						zv::Val o64 = zv::Val::boolean(r63);
 						vd62 = std::move(o64);
 						vd62_done = true;
 					}
-					if (vd62_ce == pt_ce_better_reflection_provider) {
+					if (vd62_ce == pt_ce_memoizing_reflection_provider) {
 						bool r65;
-						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p61), p_namespacedName, &r65))) return false;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p61), p_namespacedName, &r65))) return false;
 						zv::Val o66 = zv::Val::boolean(r65);
 						vd62 = std::move(o66);
 						vd62_done = true;
@@ -2276,15 +2276,15 @@ namespace pgen::ExportedNodeResolver {
 						zv::Val vd69;
 						zend_class_entry *vd69_ce = Z_TYPE_P(p68) == IS_OBJECT ? Z_OBJCE_P(p68) : NULL;
 						bool vd69_done = false;
-						if (vd69_ce == pt_ce_memoizing_reflection_provider) {
+						if (vd69_ce == pt_ce_better_reflection_provider) {
 							zv::Val r70;
-							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p68), p_namespacedName, r70.raw()))) return false;
+							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p68), p_namespacedName, r70.raw()))) return false;
 							vd69 = std::move(r70);
 							vd69_done = true;
 						}
-						if (vd69_ce == pt_ce_better_reflection_provider) {
+						if (vd69_ce == pt_ce_memoizing_reflection_provider) {
 							zv::Val r71;
-							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p68), p_namespacedName, r71.raw()))) return false;
+							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p68), p_namespacedName, r71.raw()))) return false;
 							vd69 = std::move(r71);
 							vd69_done = true;
 						}

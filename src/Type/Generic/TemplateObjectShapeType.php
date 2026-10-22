@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateObjectShapeType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_object_shape_type_new', 'out'])]
 final class TemplateObjectShapeType extends ObjectShapeType implements TemplateType
 {
 

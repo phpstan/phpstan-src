@@ -782,15 +782,15 @@ namespace pgen::MethodCallableNodeHandler {
 							vd31 = std::move(r32);
 							vd31_done = true;
 						}
-						if (vd31_ce == pt_ce_php_method_reflection) {
+						if (vd31_ce == pt_ce_php_method_from_parser_node_reflection) {
 							zv::Val r33;
-							if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r33.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r33.raw()))) return false;
 							vd31 = std::move(r33);
 							vd31_done = true;
 						}
-						if (vd31_ce == pt_ce_php_method_from_parser_node_reflection) {
+						if (vd31_ce == pt_ce_php_method_reflection) {
 							zv::Val r34;
-							if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r34.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r34.raw()))) return false;
 							vd31 = std::move(r34);
 							vd31_done = true;
 						}
@@ -961,15 +961,15 @@ namespace pgen::MethodCallableNodeHandler {
 			vd21 = std::move(r22);
 			vd21_done = true;
 		}
-		if (vd21_ce == pt_ce_php_method_reflection) {
+		if (vd21_ce == pt_ce_php_method_from_parser_node_reflection) {
 			zv::Val r23;
-			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getVariants(Z_OBJ_P(l_method.raw()), r23.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(l_method.raw()), r23.raw()))) return false;
 			vd21 = std::move(r23);
 			vd21_done = true;
 		}
-		if (vd21_ce == pt_ce_php_method_from_parser_node_reflection) {
+		if (vd21_ce == pt_ce_php_method_reflection) {
 			zv::Val r24;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(l_method.raw()), r24.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getVariants(Z_OBJ_P(l_method.raw()), r24.raw()))) return false;
 			vd21 = std::move(r24);
 			vd21_done = true;
 		}

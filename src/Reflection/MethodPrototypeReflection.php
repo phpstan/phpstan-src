@@ -2,10 +2,10 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MethodPrototypeReflection.cpp')]
+#[CompiledIntoTurboExtension]
 final class MethodPrototypeReflection implements ClassMemberReflection
 {
 

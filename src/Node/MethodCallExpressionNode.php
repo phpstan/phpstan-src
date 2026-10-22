@@ -7,7 +7,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ExpressionResult;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
@@ -19,7 +19,7 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
  * @internal
  */
 #[ReferencedByTurboExtension(key: 'methodCallExpressionNode')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MethodCallExpressionNode.cpp')]
+#[CompiledIntoTurboExtension]
 final class MethodCallExpressionNode extends NodeAbstract implements VirtualNode
 {
 

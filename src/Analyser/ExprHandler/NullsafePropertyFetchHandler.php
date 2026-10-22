@@ -26,7 +26,7 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NullsafePropertyFetchExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -36,7 +36,7 @@ use function array_merge;
  * @implements ExprHandler<NullsafePropertyFetch>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NullsafePropertyFetchHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class NullsafePropertyFetchHandler implements ExprHandler
 {
 

@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -16,7 +16,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GetDefinedVarsFunctionReturnTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class GetDefinedVarsFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

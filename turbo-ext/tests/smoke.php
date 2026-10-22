@@ -22,7 +22,6 @@ function check(bool $cond, string $msg): void
 // the mapped class (the native code holds the class entries of the classes
 // it shadows itself, so the table never names one of them).
 $classRefs = \PHPStanTurbo\Runtime::classRefs();
-$compiledClasses = require __DIR__ . '/../compiled-classes.php';
 ksort($classRefs);
 check(array_keys($classRefs) === array_keys($classMap), 'the class map covers the native class-reference table exactly');
 foreach ($classRefs as $key => $default) {
@@ -31,7 +30,7 @@ foreach ($classRefs as $key => $default) {
 	// a class compiled from its twin after hand-written code referenced it
 	// by name keeps the reference: the name resolves to the native class
 	// once activated, the twin in the prefixed tests
-	check(!isset($shadowedClasses[$default]) || isset($compiledClasses[$default]), "class-map key $key names a shadowed class");
+	check(!isset($shadowedClasses[$default]) || ($shadowedClasses[$default]['compiled'] ?? false), "class-map key $key names a shadowed class");
 }
 
 // each differential section registers the shadowed class it exercises; the

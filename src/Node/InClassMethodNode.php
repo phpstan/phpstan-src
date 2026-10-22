@@ -6,14 +6,14 @@ use Override;
 use PhpParser\Node;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'inClassMethodNode')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InClassMethodNode.cpp')]
+#[CompiledIntoTurboExtension]
 final class InClassMethodNode extends Node\Stmt implements VirtualNode
 {
 

@@ -2,10 +2,10 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CircularTypeAliasErrorType.cpp')]
+#[CompiledIntoTurboExtension]
 class CircularTypeAliasErrorType extends ErrorType
 {
 

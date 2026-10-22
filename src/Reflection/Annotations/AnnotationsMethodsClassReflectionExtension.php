@@ -7,7 +7,7 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -19,7 +19,7 @@ use function count;
 
 // autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
 #[AutowiredService(autoTag: false)]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AnnotationsMethodsClassReflectionExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 

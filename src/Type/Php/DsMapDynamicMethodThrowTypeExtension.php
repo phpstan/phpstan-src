@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
@@ -14,7 +14,7 @@ use function count;
 use function in_array;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DsMapDynamicMethodThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class DsMapDynamicMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 

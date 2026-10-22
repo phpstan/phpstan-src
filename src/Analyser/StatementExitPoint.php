@@ -3,12 +3,12 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @api
  */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementExitPoint.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_statement_exit_point_new', 'val'])]
 final class StatementExitPoint
 {
 

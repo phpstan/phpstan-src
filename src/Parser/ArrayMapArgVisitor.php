@@ -6,12 +6,12 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_slice;
 use function count;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArrayMapArgVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ArrayMapArgVisitor extends NodeVisitorAbstract
 {
 

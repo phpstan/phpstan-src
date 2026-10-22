@@ -271,15 +271,15 @@ namespace pgen::PrintfFunctionThrowTypeExtension {
 							zv::Val vd24;
 							zend_class_entry *vd24_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 							bool vd24_done = false;
-							if (vd24_ce == pt_ce_php_function_from_parser_node_reflection || vd24_ce == pt_ce_php_method_from_parser_node_reflection) {
+							if (vd24_ce == pt_ce_native_function_reflection) {
 								zv::Val r25;
-								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r25.raw()))) return false;
+								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r25.raw()))) return false;
 								vd24 = std::move(r25);
 								vd24_done = true;
 							}
-							if (vd24_ce == pt_ce_native_function_reflection) {
+							if (vd24_ce == pt_ce_php_function_from_parser_node_reflection || vd24_ce == pt_ce_php_method_from_parser_node_reflection) {
 								zv::Val r26;
-								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r26.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r26.raw()))) return false;
 								vd24 = std::move(r26);
 								vd24_done = true;
 							}
@@ -309,15 +309,15 @@ namespace pgen::PrintfFunctionThrowTypeExtension {
 							zv::Val vd31;
 							zend_class_entry *vd31_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 							bool vd31_done = false;
-							if (vd31_ce == pt_ce_php_function_from_parser_node_reflection || vd31_ce == pt_ce_php_method_from_parser_node_reflection) {
+							if (vd31_ce == pt_ce_native_function_reflection) {
 								zv::Val r32;
-								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r32.raw()))) return false;
+								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r32.raw()))) return false;
 								vd31 = std::move(r32);
 								vd31_done = true;
 							}
-							if (vd31_ce == pt_ce_native_function_reflection) {
+							if (vd31_ce == pt_ce_php_function_from_parser_node_reflection || vd31_ce == pt_ce_php_method_from_parser_node_reflection) {
 								zv::Val r33;
-								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r33.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r33.raw()))) return false;
 								vd31 = std::move(r33);
 								vd31_done = true;
 							}
@@ -345,15 +345,15 @@ namespace pgen::PrintfFunctionThrowTypeExtension {
 				zv::Val vd38;
 				zend_class_entry *vd38_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 				bool vd38_done = false;
-				if (vd38_ce == pt_ce_php_function_from_parser_node_reflection || vd38_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd38_ce == pt_ce_native_function_reflection) {
 					zv::Val r39;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r39.raw()))) return false;
+					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r39.raw()))) return false;
 					vd38 = std::move(r39);
 					vd38_done = true;
 				}
-				if (vd38_ce == pt_ce_native_function_reflection) {
+				if (vd38_ce == pt_ce_php_function_from_parser_node_reflection || vd38_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r40;
-					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r40.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r40.raw()))) return false;
 					vd38 = std::move(r40);
 					vd38_done = true;
 				}
@@ -433,15 +433,15 @@ namespace pgen::PrintfFunctionThrowTypeExtension {
 				zv::Val vd54;
 				zend_class_entry *vd54_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 				bool vd54_done = false;
-				if (vd54_ce == pt_ce_php_function_from_parser_node_reflection || vd54_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd54_ce == pt_ce_native_function_reflection) {
 					zv::Val r55;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r55.raw()))) return false;
+					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r55.raw()))) return false;
 					vd54 = std::move(r55);
 					vd54_done = true;
 				}
-				if (vd54_ce == pt_ce_native_function_reflection) {
+				if (vd54_ce == pt_ce_php_function_from_parser_node_reflection || vd54_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r56;
-					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r56.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r56.raw()))) return false;
 					vd54 = std::move(r56);
 					vd54_done = true;
 				}
@@ -499,15 +499,15 @@ namespace pgen::PrintfFunctionThrowTypeExtension {
 							zv::Val vd72;
 							zend_class_entry *vd72_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 							bool vd72_done = false;
-							if (vd72_ce == pt_ce_php_function_from_parser_node_reflection || vd72_ce == pt_ce_php_method_from_parser_node_reflection) {
+							if (vd72_ce == pt_ce_native_function_reflection) {
 								zv::Val r73;
-								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r73.raw()))) return false;
+								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r73.raw()))) return false;
 								vd72 = std::move(r73);
 								vd72_done = true;
 							}
-							if (vd72_ce == pt_ce_native_function_reflection) {
+							if (vd72_ce == pt_ce_php_function_from_parser_node_reflection || vd72_ce == pt_ce_php_method_from_parser_node_reflection) {
 								zv::Val r74;
-								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r74.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r74.raw()))) return false;
 								vd72 = std::move(r74);
 								vd72_done = true;
 							}

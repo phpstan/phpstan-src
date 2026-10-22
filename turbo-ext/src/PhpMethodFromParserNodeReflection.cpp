@@ -329,15 +329,15 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 					vd11 = std::move(r12);
 					vd11_done = true;
 				}
-				if (vd11_ce == pt_ce_php_method_reflection) {
+				if (vd11_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r13;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getPrototype(Z_OBJ_P(r10.raw()), r13.raw()))) goto catch_c1;
+					if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getPrototype(Z_OBJ_P(r10.raw()), r13.raw()))) goto catch_c1;
 					vd11 = std::move(r13);
 					vd11_done = true;
 				}
-				if (vd11_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd11_ce == pt_ce_php_method_reflection) {
 					zv::Val r14;
-					if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getPrototype(Z_OBJ_P(r10.raw()), r14.raw()))) goto catch_c1;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getPrototype(Z_OBJ_P(r10.raw()), r14.raw()))) goto catch_c1;
 					vd11 = std::move(r14);
 					vd11_done = true;
 				}

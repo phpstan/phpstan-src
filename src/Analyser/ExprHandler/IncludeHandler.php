@@ -20,7 +20,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\IncludedFilePathResolver;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -31,7 +31,7 @@ use function is_file;
  * @implements ExprHandler<Include_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IncludeHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class IncludeHandler implements ExprHandler
 {
 

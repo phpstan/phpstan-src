@@ -7,11 +7,11 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\AnonymousClassNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function count;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/AnonymousClassVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class AnonymousClassVisitor extends NodeVisitorAbstract
 {
 

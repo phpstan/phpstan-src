@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateIntersectionType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_intersection_type_new', 'out'])]
 final class TemplateIntersectionType extends IntersectionType implements TemplateType
 {
 

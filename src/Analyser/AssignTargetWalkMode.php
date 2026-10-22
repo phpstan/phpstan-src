@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * How AssignHandler::prepareTarget() walks the assignment target.
@@ -17,7 +17,7 @@ use PHPStan\Turbo\ImplementedInTurboExtension;
  *
  * @internal
  */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/AssignTargetWalkMode.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_assign_target_walk_mode_new', 'val'])]
 final class AssignTargetWalkMode
 {
 

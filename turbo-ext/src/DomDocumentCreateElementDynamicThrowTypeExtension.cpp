@@ -49,15 +49,15 @@ namespace pgen::DomDocumentCreateElementDynamicThrowTypeExtension {
 				vd5 = std::move(r6);
 				vd5_done = true;
 			}
-			if (vd5_ce == pt_ce_php_method_reflection) {
+			if (vd5_ce == pt_ce_php_method_from_parser_node_reflection) {
 				zv::Val r7;
-				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r7.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r7.raw()))) return false;
 				vd5 = std::move(r7);
 				vd5_done = true;
 			}
-			if (vd5_ce == pt_ce_php_method_from_parser_node_reflection) {
+			if (vd5_ce == pt_ce_php_method_reflection) {
 				zv::Val r8;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r8.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r8.raw()))) return false;
 				vd5 = std::move(r8);
 				vd5_done = true;
 			}

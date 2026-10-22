@@ -13,13 +13,13 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements ExprHandler<TypeExpr>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/TypeExprHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class TypeExprHandler implements ExprHandler
 {
 

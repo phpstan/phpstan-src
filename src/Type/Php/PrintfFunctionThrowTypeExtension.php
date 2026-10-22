@@ -9,7 +9,7 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\ObjectType;
@@ -29,7 +29,7 @@ use function max;
  * invalid format or an out-of-range `*` / `.*` argument.
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PrintfFunctionThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

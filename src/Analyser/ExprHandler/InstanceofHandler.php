@@ -21,7 +21,7 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\MixedType;
@@ -40,7 +40,7 @@ use function strtolower;
  * @implements ExprHandler<Instanceof_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InstanceofHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class InstanceofHandler implements ExprHandler
 {
 

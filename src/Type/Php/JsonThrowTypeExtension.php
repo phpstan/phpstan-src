@@ -9,7 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BitwiseFlagHelper;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\ObjectType;
@@ -18,7 +18,7 @@ use function array_key_exists;
 use function in_array;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/JsonThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class JsonThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

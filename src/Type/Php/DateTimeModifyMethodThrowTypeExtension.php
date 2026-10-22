@@ -8,7 +8,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -19,7 +19,7 @@ use function count;
 use function in_array;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateTimeModifyMethodThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrowTypeExtension
 {
 

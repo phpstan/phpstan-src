@@ -5,10 +5,10 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function count;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ReversePipeTransformerVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ReversePipeTransformerVisitor extends NodeVisitorAbstract
 {
 

@@ -440,18 +440,18 @@ namespace pgen::ConstFetchHandler {
 			zv::Val vd15;
 			zend_class_entry *vd15_ce = Z_TYPE_P(p11) == IS_OBJECT ? Z_OBJCE_P(p11) : NULL;
 			bool vd15_done = false;
-			if (vd15_ce == pt_ce_memoizing_reflection_provider) {
-				if (UNEXPECTED(!(pgrt::instanceOfClass(o14.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasConstant", 1, "nameNode", "PhpParser\\Node\\Name", o14.raw()); return false; }
+			if (vd15_ce == pt_ce_better_reflection_provider) {
+				if (UNEXPECTED(!(pgrt::instanceOfClass(o14.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasConstant", 1, "nameNode", "PhpParser\\Node\\Name", o14.raw()); return false; }
 				bool r16;
-				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(p11), o14.raw(), p_scope, &r16))) return false;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(p11), o14.raw(), p_scope, &r16))) return false;
 				zv::Val o17 = zv::Val::boolean(r16);
 				vd15 = std::move(o17);
 				vd15_done = true;
 			}
-			if (vd15_ce == pt_ce_better_reflection_provider) {
-				if (UNEXPECTED(!(pgrt::instanceOfClass(o14.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasConstant", 1, "nameNode", "PhpParser\\Node\\Name", o14.raw()); return false; }
+			if (vd15_ce == pt_ce_memoizing_reflection_provider) {
+				if (UNEXPECTED(!(pgrt::instanceOfClass(o14.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasConstant", 1, "nameNode", "PhpParser\\Node\\Name", o14.raw()); return false; }
 				bool r18;
-				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(p11), o14.raw(), p_scope, &r18))) return false;
+				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(p11), o14.raw(), p_scope, &r18))) return false;
 				zv::Val o19 = zv::Val::boolean(r18);
 				vd15 = std::move(o19);
 				vd15_done = true;
@@ -488,17 +488,17 @@ namespace pgen::ConstFetchHandler {
 				zv::Val vd27;
 				zend_class_entry *vd27_ce = Z_TYPE_P(p23) == IS_OBJECT ? Z_OBJCE_P(p23) : NULL;
 				bool vd27_done = false;
-				if (vd27_ce == pt_ce_memoizing_reflection_provider) {
-					if (UNEXPECTED(!(pgrt::instanceOfClass(o26.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::getConstant", 1, "nameNode", "PhpParser\\Node\\Name", o26.raw()); return false; }
+				if (vd27_ce == pt_ce_better_reflection_provider) {
+					if (UNEXPECTED(!(pgrt::instanceOfClass(o26.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::getConstant", 1, "nameNode", "PhpParser\\Node\\Name", o26.raw()); return false; }
 					zv::Val r28;
-					if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getConstant(Z_OBJ_P(p23), o26.raw(), p_scope, r28.raw()))) return false;
+					if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getConstant(Z_OBJ_P(p23), o26.raw(), p_scope, r28.raw()))) return false;
 					vd27 = std::move(r28);
 					vd27_done = true;
 				}
-				if (vd27_ce == pt_ce_better_reflection_provider) {
-					if (UNEXPECTED(!(pgrt::instanceOfClass(o26.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::getConstant", 1, "nameNode", "PhpParser\\Node\\Name", o26.raw()); return false; }
+				if (vd27_ce == pt_ce_memoizing_reflection_provider) {
+					if (UNEXPECTED(!(pgrt::instanceOfClass(o26.raw(), pgrt::lookupClassQuiet(pg_site_6, "PhpParser\\Node\\Name", 19))))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::getConstant", 1, "nameNode", "PhpParser\\Node\\Name", o26.raw()); return false; }
 					zv::Val r29;
-					if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getConstant(Z_OBJ_P(p23), o26.raw(), p_scope, r29.raw()))) return false;
+					if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getConstant(Z_OBJ_P(p23), o26.raw(), p_scope, r29.raw()))) return false;
 					vd27 = std::move(r29);
 					vd27_done = true;
 				}

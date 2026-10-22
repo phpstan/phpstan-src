@@ -7,10 +7,10 @@ use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClosureBindToVarVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ClosureBindToVarVisitor extends NodeVisitorAbstract
 {
 

@@ -501,15 +501,15 @@ namespace pgen::PhpMethodReflection {
 						zv::Val vd14;
 						zend_class_entry *vd14_ce = Z_TYPE_P(o11.raw()) == IS_OBJECT ? Z_OBJCE_P(o11.raw()) : NULL;
 						bool vd14_done = false;
-						if (vd14_ce == pt_ce_memoizing_reflection_provider) {
+						if (vd14_ce == pt_ce_better_reflection_provider) {
 							zv::Val r15;
-							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o11.raw()), r13.raw(), r15.raw()))) goto catch_c1;
+							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(o11.raw()), r13.raw(), r15.raw()))) goto catch_c1;
 							vd14 = std::move(r15);
 							vd14_done = true;
 						}
-						if (vd14_ce == pt_ce_better_reflection_provider) {
+						if (vd14_ce == pt_ce_memoizing_reflection_provider) {
 							zv::Val r16;
-							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(o11.raw()), r13.raw(), r16.raw()))) goto catch_c1;
+							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o11.raw()), r13.raw(), r16.raw()))) goto catch_c1;
 							vd14 = std::move(r16);
 							vd14_done = true;
 						}
@@ -607,15 +607,15 @@ namespace pgen::PhpMethodReflection {
 					vd44 = std::move(r45);
 					vd44_done = true;
 				}
-				if (vd44_ce == pt_ce_php_method_reflection) {
+				if (vd44_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r46;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getVariants(Z_OBJ_P(r43.raw()), r46.raw()))) goto catch_c1;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(r43.raw()), r46.raw()))) goto catch_c1;
 					vd44 = std::move(r46);
 					vd44_done = true;
 				}
-				if (vd44_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd44_ce == pt_ce_php_method_reflection) {
 					zv::Val r47;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getVariants(Z_OBJ_P(r43.raw()), r47.raw()))) goto catch_c1;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getVariants(Z_OBJ_P(r43.raw()), r47.raw()))) goto catch_c1;
 					vd44 = std::move(r47);
 					vd44_done = true;
 				}
@@ -818,15 +818,15 @@ namespace pgen::PhpMethodReflection {
 		zv::Val vd9;
 		zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
 		bool vd9_done = false;
-		if (vd9_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd9_ce == pt_ce_better_reflection_provider) {
 			zv::Val r10;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
 			vd9 = std::move(r10);
 			vd9_done = true;
 		}
-		if (vd9_ce == pt_ce_better_reflection_provider) {
+		if (vd9_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r11;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
 			vd9 = std::move(r11);
 			vd9_done = true;
 		}

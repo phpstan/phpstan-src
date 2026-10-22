@@ -5,13 +5,13 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\LruCache;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function clearstatcache;
 use function filemtime;
 use function filesize;
 use function strlen;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CachedParser.cpp')]
+#[CompiledIntoTurboExtension]
 final class CachedParser implements Parser
 {
 

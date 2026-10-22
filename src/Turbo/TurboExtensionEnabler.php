@@ -141,7 +141,7 @@ final class TurboExtensionEnabler
 		}
 
 		// The manifest of shadowed pairs, from the ImplementedInTurboExtension
-		// attributes: each native class is declared with its twin's source
+		// and CompiledIntoTurboExtension attributes: each native class is declared with its twin's source
 		// file, so reflection keeps reading the PHP declaration.
 		/** @var array<string, array{php: string, cpp: string, vendored?: bool}> $manifest */
 		$manifest = json_decode($manifestContents, true);

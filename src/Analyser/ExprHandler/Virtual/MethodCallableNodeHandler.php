@@ -22,7 +22,7 @@ use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -31,7 +31,7 @@ use function array_merge;
  * @implements ExprHandler<MethodCallableNode>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/MethodCallableNodeHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class MethodCallableNodeHandler implements ExprHandler
 {
 

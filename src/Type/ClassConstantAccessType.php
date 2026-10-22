@@ -5,13 +5,13 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstFetchNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassConstantAccessType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_class_constant_access_type_new', 'out'])]
 final class ClassConstantAccessType implements CompoundType, LateResolvableType
 {
 

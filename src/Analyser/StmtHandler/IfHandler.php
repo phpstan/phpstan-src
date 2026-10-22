@@ -16,7 +16,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_merge;
 use function array_reverse;
 use function count;
@@ -25,7 +25,7 @@ use function count;
  * @implements StmtHandler<If_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IfHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class IfHandler implements StmtHandler
 {
 

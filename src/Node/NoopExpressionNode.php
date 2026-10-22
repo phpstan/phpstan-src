@@ -5,11 +5,11 @@ namespace PHPStan\Node;
 use Override;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 #[ReferencedByTurboExtension(key: 'noopExpressionNode')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NoopExpressionNode.cpp')]
+#[CompiledIntoTurboExtension]
 final class NoopExpressionNode extends NodeAbstract implements VirtualNode
 {
 

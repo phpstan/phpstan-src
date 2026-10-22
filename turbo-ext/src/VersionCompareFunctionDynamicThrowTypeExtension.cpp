@@ -146,15 +146,15 @@ namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
 				zv::Val vd24;
 				zend_class_entry *vd24_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 				bool vd24_done = false;
-				if (vd24_ce == pt_ce_php_function_from_parser_node_reflection || vd24_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd24_ce == pt_ce_native_function_reflection) {
 					zv::Val r25;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r25.raw()))) return false;
+					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r25.raw()))) return false;
 					vd24 = std::move(r25);
 					vd24_done = true;
 				}
-				if (vd24_ce == pt_ce_native_function_reflection) {
+				if (vd24_ce == pt_ce_php_function_from_parser_node_reflection || vd24_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r26;
-					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r26.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r26.raw()))) return false;
 					vd24 = std::move(r26);
 					vd24_done = true;
 				}

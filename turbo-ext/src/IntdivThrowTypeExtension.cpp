@@ -71,15 +71,15 @@ namespace pgen::IntdivThrowTypeExtension {
 				zv::Val vd2;
 				zend_class_entry *vd2_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 				bool vd2_done = false;
-				if (vd2_ce == pt_ce_php_function_from_parser_node_reflection || vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd2_ce == pt_ce_native_function_reflection) {
 					zv::Val r3;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r3.raw()))) return false;
+					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r3.raw()))) return false;
 					vd2 = std::move(r3);
 					vd2_done = true;
 				}
-				if (vd2_ce == pt_ce_native_function_reflection) {
+				if (vd2_ce == pt_ce_php_function_from_parser_node_reflection || vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r4;
-					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r4.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r4.raw()))) return false;
 					vd2 = std::move(r4);
 					vd2_done = true;
 				}

@@ -7,11 +7,11 @@ use PhpParser\Node;
 use PhpParser\NodeFinder;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function in_array;
 use function is_array;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CleaningVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class CleaningVisitor extends NodeVisitorAbstract
 {
 

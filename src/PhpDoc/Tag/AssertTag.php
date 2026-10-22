@@ -3,13 +3,13 @@
 namespace PHPStan\PhpDoc\Tag;
 
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /** @api */
 #[ReferencedByTurboExtension(key: 'assertTag')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AssertTag.cpp')]
+#[CompiledIntoTurboExtension]
 final class AssertTag implements TypedTag
 {
 

@@ -11,14 +11,14 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\MixedType;
 use function strtolower;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IsIterableFunctionTypeSpecifyingExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class IsIterableFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

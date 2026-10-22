@@ -108,15 +108,15 @@ namespace pgen::StrSplitFunctionThrowTypeExtension {
 							zv::Val vd18;
 							zend_class_entry *vd18_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 							bool vd18_done = false;
-							if (vd18_ce == pt_ce_php_function_from_parser_node_reflection || vd18_ce == pt_ce_php_method_from_parser_node_reflection) {
+							if (vd18_ce == pt_ce_native_function_reflection) {
 								zv::Val r19;
-								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r19.raw()))) return false;
+								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r19.raw()))) return false;
 								vd18 = std::move(r19);
 								vd18_done = true;
 							}
-							if (vd18_ce == pt_ce_native_function_reflection) {
+							if (vd18_ce == pt_ce_php_function_from_parser_node_reflection || vd18_ce == pt_ce_php_method_from_parser_node_reflection) {
 								zv::Val r20;
-								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r20.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r20.raw()))) return false;
 								vd18 = std::move(r20);
 								vd18_done = true;
 							}
@@ -207,15 +207,15 @@ namespace pgen::StrSplitFunctionThrowTypeExtension {
 		zv::Val vd38;
 		zend_class_entry *vd38_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 		bool vd38_done = false;
-		if (vd38_ce == pt_ce_php_function_from_parser_node_reflection || vd38_ce == pt_ce_php_method_from_parser_node_reflection) {
+		if (vd38_ce == pt_ce_native_function_reflection) {
 			zv::Val r39;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r39.raw()))) return false;
+			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r39.raw()))) return false;
 			vd38 = std::move(r39);
 			vd38_done = true;
 		}
-		if (vd38_ce == pt_ce_native_function_reflection) {
+		if (vd38_ce == pt_ce_php_function_from_parser_node_reflection || vd38_ce == pt_ce_php_method_from_parser_node_reflection) {
 			zv::Val r40;
-			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r40.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r40.raw()))) return false;
 			vd38 = std::move(r40);
 			vd38_done = true;
 		}

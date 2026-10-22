@@ -8,7 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -17,7 +17,7 @@ use ReflectionFunction;
 use function count;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ReflectionFunctionConstructorThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class ReflectionFunctionConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

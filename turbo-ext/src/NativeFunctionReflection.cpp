@@ -351,15 +351,15 @@ namespace pgen::NativeFunctionReflection {
 					zv::Val vd9;
 					zend_class_entry *vd9_ce = Z_TYPE_P(l_variant) == IS_OBJECT ? Z_OBJCE_P(l_variant) : NULL;
 					bool vd9_done = false;
-					if (vd9_ce == pt_ce_trivial_parameters_acceptor) {
+					if (vd9_ce == pt_ce_php_function_from_parser_node_reflection || vd9_ce == pt_ce_php_method_from_parser_node_reflection) {
 						zv::Val r10;
-						if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getReturnType(Z_OBJ_P(l_variant), r10.raw()))) return false;
+						if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(l_variant), r10.raw()))) return false;
 						vd9 = std::move(r10);
 						vd9_done = true;
 					}
-					if (vd9_ce == pt_ce_php_function_from_parser_node_reflection || vd9_ce == pt_ce_php_method_from_parser_node_reflection) {
+					if (vd9_ce == pt_ce_trivial_parameters_acceptor) {
 						zv::Val r11;
-						if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(l_variant), r11.raw()))) return false;
+						if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getReturnType(Z_OBJ_P(l_variant), r11.raw()))) return false;
 						vd9 = std::move(r11);
 						vd9_done = true;
 					}

@@ -6,12 +6,12 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_last;
 use function count;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/LastConditionVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class LastConditionVisitor extends NodeVisitorAbstract
 {
 

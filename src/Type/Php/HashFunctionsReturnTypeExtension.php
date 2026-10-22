@@ -7,7 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\BenevolentUnionType;
@@ -28,7 +28,7 @@ use function is_bool;
 use function strtolower;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/HashFunctionsReturnTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class HashFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

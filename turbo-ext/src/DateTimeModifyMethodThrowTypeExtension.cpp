@@ -56,15 +56,15 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 				vd3 = std::move(r4);
 				vd3_done = true;
 			}
-			if (vd3_ce == pt_ce_php_method_reflection) {
+			if (vd3_ce == pt_ce_php_method_from_parser_node_reflection) {
 				zv::Val r5;
-				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
 				vd3 = std::move(r5);
 				vd3_done = true;
 			}
-			if (vd3_ce == pt_ce_php_method_from_parser_node_reflection) {
+			if (vd3_ce == pt_ce_php_method_reflection) {
 				zv::Val r6;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r6.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r6.raw()))) return false;
 				vd3 = std::move(r6);
 				vd3_done = true;
 			}

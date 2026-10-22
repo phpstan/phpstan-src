@@ -3,9 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Node\InvalidateExprNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ProcessArrowFunctionResult.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_process_arrow_function_result_new', 'val'])]
 final class ProcessArrowFunctionResult
 {
 

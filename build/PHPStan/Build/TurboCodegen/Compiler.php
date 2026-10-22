@@ -192,7 +192,7 @@ final class Compiler
 	private ?array $declaredCes = null;
 
 	/**
-	 * @param array<string, array{file: string, stem: string, ce: string, implementation: string, defineCe?: bool, new?: array{string, string}, dispatch?: array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}}> $classes FQCN => where its twin lives, its generated-header stem, its class-entry variable, the .cpp to write, and the native C API to export (see compiled-classes.php)
+	 * @param array<string, array{file: string, stem: string, ce: string, implementation: string, defineCe?: bool, new?: array{string, string}, dispatch?: array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}}> $classes FQCN => where its twin lives, its generated-header stem, its class-entry variable, the .cpp to write, and the native C API to export (see CompiledIntoTurboExtension)
 	 */
 	public function __construct(array $classes)
 	{

@@ -10,12 +10,12 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 use function count;
 use function is_bool;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ChangedTypeMethodReflection.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_changed_type_method_reflection_new', 'val'], dispatch: ['function' => 'pt_changed_type_method_reflection_call', 'enum' => 'pt_method_reflection_member', 'prefix' => 'PT_MR_', 'receiver' => 'method'])]
 final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 {
 

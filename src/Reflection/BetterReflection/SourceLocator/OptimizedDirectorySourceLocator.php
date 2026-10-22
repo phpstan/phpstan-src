@@ -21,14 +21,14 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_key_exists;
 use function array_values;
 use function current;
 use function sprintf;
 use function strtolower;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/OptimizedDirectorySourceLocator.cpp')]
+#[CompiledIntoTurboExtension]
 final class OptimizedDirectorySourceLocator implements SourceLocator
 {
 

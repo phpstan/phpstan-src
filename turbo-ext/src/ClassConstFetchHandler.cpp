@@ -1006,16 +1006,16 @@ namespace pgen::ClassConstFetchHandler {
 								zv::Val vd40;
 								zend_class_entry *vd40_ce = Z_TYPE_P(p38) == IS_OBJECT ? Z_OBJCE_P(p38) : NULL;
 								bool vd40_done = false;
-								if (vd40_ce == pt_ce_memoizing_reflection_provider) {
+								if (vd40_ce == pt_ce_better_reflection_provider) {
 									bool r41;
-									if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p38), o39.raw(), &r41))) return false;
+									if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p38), o39.raw(), &r41))) return false;
 									zv::Val o42 = zv::Val::boolean(r41);
 									vd40 = std::move(o42);
 									vd40_done = true;
 								}
-								if (vd40_ce == pt_ce_better_reflection_provider) {
+								if (vd40_ce == pt_ce_memoizing_reflection_provider) {
 									bool r43;
-									if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p38), o39.raw(), &r43))) return false;
+									if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p38), o39.raw(), &r43))) return false;
 									zv::Val o44 = zv::Val::boolean(r43);
 									vd40 = std::move(o44);
 									vd40_done = true;
@@ -1033,15 +1033,15 @@ namespace pgen::ClassConstFetchHandler {
 										zv::Val vd48;
 										zend_class_entry *vd48_ce = Z_TYPE_P(p46) == IS_OBJECT ? Z_OBJCE_P(p46) : NULL;
 										bool vd48_done = false;
-										if (vd48_ce == pt_ce_memoizing_reflection_provider) {
+										if (vd48_ce == pt_ce_better_reflection_provider) {
 											zv::Val r49;
-											if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p46), o47.raw(), r49.raw()))) return false;
+											if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p46), o47.raw(), r49.raw()))) return false;
 											vd48 = std::move(r49);
 											vd48_done = true;
 										}
-										if (vd48_ce == pt_ce_better_reflection_provider) {
+										if (vd48_ce == pt_ce_memoizing_reflection_provider) {
 											zv::Val r50;
-											if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p46), o47.raw(), r50.raw()))) return false;
+											if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p46), o47.raw(), r50.raw()))) return false;
 											vd48 = std::move(r50);
 											vd48_done = true;
 										}

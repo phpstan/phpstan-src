@@ -17,7 +17,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -26,7 +26,7 @@ use function array_merge;
  * @implements ExprHandler<Throw_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ThrowHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class ThrowHandler implements ExprHandler
 {
 

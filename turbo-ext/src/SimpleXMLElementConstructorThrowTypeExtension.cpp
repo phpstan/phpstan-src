@@ -65,15 +65,15 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 				vd6 = std::move(r7);
 				vd6_done = true;
 			}
-			if (vd6_ce == pt_ce_php_method_reflection) {
+			if (vd6_ce == pt_ce_php_method_from_parser_node_reflection) {
 				zv::Val r8;
-				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r8.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r8.raw()))) return false;
 				vd6 = std::move(r8);
 				vd6_done = true;
 			}
-			if (vd6_ce == pt_ce_php_method_from_parser_node_reflection) {
+			if (vd6_ce == pt_ce_php_method_reflection) {
 				zv::Val r9;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r9.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r9.raw()))) return false;
 				vd6 = std::move(r9);
 				vd6_done = true;
 			}
@@ -127,15 +127,15 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 					vd2 = std::move(r3);
 					vd2_done = true;
 				}
-				if (vd2_ce == pt_ce_php_method_reflection) {
+				if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r4;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r4.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r4.raw()))) return false;
 					vd2 = std::move(r4);
 					vd2_done = true;
 				}
-				if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd2_ce == pt_ce_php_method_reflection) {
 					zv::Val r5;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
 					vd2 = std::move(r5);
 					vd2_done = true;
 				}
@@ -267,15 +267,15 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 											vd39 = std::move(r40);
 											vd39_done = true;
 										}
-										if (vd39_ce == pt_ce_php_method_reflection) {
+										if (vd39_ce == pt_ce_php_method_from_parser_node_reflection) {
 											zv::Val r41;
-											if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r41.raw()))) goto finally_f24;
+											if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r41.raw()))) goto finally_f24;
 											vd39 = std::move(r41);
 											vd39_done = true;
 										}
-										if (vd39_ce == pt_ce_php_method_from_parser_node_reflection) {
+										if (vd39_ce == pt_ce_php_method_reflection) {
 											zv::Val r42;
-											if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r42.raw()))) goto finally_f24;
+											if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r42.raw()))) goto finally_f24;
 											vd39 = std::move(r42);
 											vd39_done = true;
 										}
@@ -342,15 +342,15 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 					vd48 = std::move(r49);
 					vd48_done = true;
 				}
-				if (vd48_ce == pt_ce_php_method_reflection) {
+				if (vd48_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r50;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r50.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r50.raw()))) return false;
 					vd48 = std::move(r50);
 					vd48_done = true;
 				}
-				if (vd48_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd48_ce == pt_ce_php_method_reflection) {
 					zv::Val r51;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r51.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r51.raw()))) return false;
 					vd48 = std::move(r51);
 					vd48_done = true;
 				}

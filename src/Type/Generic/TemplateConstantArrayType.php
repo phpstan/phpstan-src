@@ -3,13 +3,13 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateConstantArrayType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_constant_array_type_new', 'out'])]
 final class TemplateConstantArrayType extends ConstantArrayType implements TemplateType
 {
 

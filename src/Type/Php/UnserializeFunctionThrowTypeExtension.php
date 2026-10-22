@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
@@ -24,7 +24,7 @@ use function preg_match;
  * that are not allowed are unserialized as __PHP_Incomplete_Class.
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnserializeFunctionThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class UnserializeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

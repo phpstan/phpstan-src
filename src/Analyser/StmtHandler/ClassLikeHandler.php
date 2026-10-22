@@ -37,7 +37,7 @@ use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_values;
 use function sprintf;
 use function usort;
@@ -49,7 +49,7 @@ use const PHP_VERSION_ID;
  * @implements StmtHandler<ClassLike>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassLikeHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class ClassLikeHandler implements StmtHandler
 {
 

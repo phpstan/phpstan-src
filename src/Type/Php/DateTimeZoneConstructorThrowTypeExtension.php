@@ -7,7 +7,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -17,7 +17,7 @@ use Throwable;
 use function count;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateTimeZoneConstructorThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class DateTimeZoneConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

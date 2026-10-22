@@ -51,15 +51,15 @@ namespace pgen::ReflectionClassConstructorThrowTypeExtension {
 				vd3 = std::move(r4);
 				vd3_done = true;
 			}
-			if (vd3_ce == pt_ce_php_method_reflection) {
+			if (vd3_ce == pt_ce_php_method_from_parser_node_reflection) {
 				zv::Val r5;
-				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
 				vd3 = std::move(r5);
 				vd3_done = true;
 			}
-			if (vd3_ce == pt_ce_php_method_from_parser_node_reflection) {
+			if (vd3_ce == pt_ce_php_method_reflection) {
 				zv::Val r6;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r6.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r6.raw()))) return false;
 				vd3 = std::move(r6);
 				vd3_done = true;
 			}
@@ -111,15 +111,15 @@ namespace pgen::ReflectionClassConstructorThrowTypeExtension {
 					vd2 = std::move(r3);
 					vd2_done = true;
 				}
-				if (vd2_ce == pt_ce_php_method_reflection) {
+				if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r4;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r4.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r4.raw()))) return false;
 					vd2 = std::move(r4);
 					vd2_done = true;
 				}
-				if (vd2_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd2_ce == pt_ce_php_method_reflection) {
 					zv::Val r5;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
 					vd2 = std::move(r5);
 					vd2_done = true;
 				}
@@ -217,15 +217,15 @@ namespace pgen::ReflectionClassConstructorThrowTypeExtension {
 			vd25 = std::move(r26);
 			vd25_done = true;
 		}
-		if (vd25_ce == pt_ce_php_method_reflection) {
+		if (vd25_ce == pt_ce_php_method_from_parser_node_reflection) {
 			zv::Val r27;
-			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r27.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r27.raw()))) return false;
 			vd25 = std::move(r27);
 			vd25_done = true;
 		}
-		if (vd25_ce == pt_ce_php_method_from_parser_node_reflection) {
+		if (vd25_ce == pt_ce_php_method_reflection) {
 			zv::Val r28;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r28.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r28.raw()))) return false;
 			vd25 = std::move(r28);
 			vd25_done = true;
 		}

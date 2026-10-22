@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Traverser;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
@@ -11,7 +11,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
 
 #[ReferencedByTurboExtension(key: 'lateResolvableTraverser')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/LateResolvableTraverser.cpp')]
+#[CompiledIntoTurboExtension]
 final class LateResolvableTraverser implements TypeTraverserCallable
 {
 

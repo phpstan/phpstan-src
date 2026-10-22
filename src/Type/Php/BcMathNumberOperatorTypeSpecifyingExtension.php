@@ -4,7 +4,7 @@ namespace PHPStan\Type\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\IntegerRangeType;
@@ -15,7 +15,7 @@ use PHPStan\Type\Type;
 use function in_array;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BcMathNumberOperatorTypeSpecifyingExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class BcMathNumberOperatorTypeSpecifyingExtension implements OperatorTypeSpecifyingExtension
 {
 

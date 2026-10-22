@@ -270,15 +270,15 @@ namespace pgen::GenericParametersAcceptorResolver {
 		zv::Val vd4;
 		zend_class_entry *vd4_ce = Z_TYPE_P(l_parametersAcceptor.raw()) == IS_OBJECT ? Z_OBJCE_P(l_parametersAcceptor.raw()) : NULL;
 		bool vd4_done = false;
-		if (vd4_ce == pt_ce_trivial_parameters_acceptor) {
+		if (vd4_ce == pt_ce_php_function_from_parser_node_reflection || vd4_ce == pt_ce_php_method_from_parser_node_reflection) {
 			zv::Val r5;
-			if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getParameters(Z_OBJ_P(l_parametersAcceptor.raw()), r5.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getParameters(Z_OBJ_P(l_parametersAcceptor.raw()), r5.raw()))) return false;
 			vd4 = std::move(r5);
 			vd4_done = true;
 		}
-		if (vd4_ce == pt_ce_php_function_from_parser_node_reflection || vd4_ce == pt_ce_php_method_from_parser_node_reflection) {
+		if (vd4_ce == pt_ce_trivial_parameters_acceptor) {
 			zv::Val r6;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getParameters(Z_OBJ_P(l_parametersAcceptor.raw()), r6.raw()))) return false;
+			if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getParameters(Z_OBJ_P(l_parametersAcceptor.raw()), r6.raw()))) return false;
 			vd4 = std::move(r6);
 			vd4_done = true;
 		}
@@ -685,15 +685,15 @@ namespace pgen::GenericParametersAcceptorResolver {
 		zv::Val vd112;
 		zend_class_entry *vd112_ce = Z_TYPE_P(l_parametersAcceptor.raw()) == IS_OBJECT ? Z_OBJCE_P(l_parametersAcceptor.raw()) : NULL;
 		bool vd112_done = false;
-		if (vd112_ce == pt_ce_trivial_parameters_acceptor) {
+		if (vd112_ce == pt_ce_php_function_from_parser_node_reflection || vd112_ce == pt_ce_php_method_from_parser_node_reflection) {
 			zv::Val r113;
-			if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getReturnType(Z_OBJ_P(l_parametersAcceptor.raw()), r113.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(l_parametersAcceptor.raw()), r113.raw()))) return false;
 			vd112 = std::move(r113);
 			vd112_done = true;
 		}
-		if (vd112_ce == pt_ce_php_function_from_parser_node_reflection || vd112_ce == pt_ce_php_method_from_parser_node_reflection) {
+		if (vd112_ce == pt_ce_trivial_parameters_acceptor) {
 			zv::Val r114;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getReturnType(Z_OBJ_P(l_parametersAcceptor.raw()), r114.raw()))) return false;
+			if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getReturnType(Z_OBJ_P(l_parametersAcceptor.raw()), r114.raw()))) return false;
 			vd112 = std::move(r114);
 			vd112_done = true;
 		}
@@ -854,15 +854,15 @@ namespace pgen::GenericParametersAcceptorResolver {
 				zv::Val vd149;
 				zend_class_entry *vd149_ce = Z_TYPE_P(l_parametersAcceptor.raw()) == IS_OBJECT ? Z_OBJCE_P(l_parametersAcceptor.raw()) : NULL;
 				bool vd149_done = false;
-				if (vd149_ce == pt_ce_trivial_parameters_acceptor) {
+				if (vd149_ce == pt_ce_php_function_from_parser_node_reflection || vd149_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r150;
-					if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getResolvedTemplateTypeMap(Z_OBJ_P(l_parametersAcceptor.raw()), r150.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getResolvedTemplateTypeMap(Z_OBJ_P(l_parametersAcceptor.raw()), r150.raw()))) return false;
 					vd149 = std::move(r150);
 					vd149_done = true;
 				}
-				if (vd149_ce == pt_ce_php_function_from_parser_node_reflection || vd149_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd149_ce == pt_ce_trivial_parameters_acceptor) {
 					zv::Val r151;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getResolvedTemplateTypeMap(Z_OBJ_P(l_parametersAcceptor.raw()), r151.raw()))) return false;
+					if (UNEXPECTED(!pgen::TrivialParametersAcceptor::m_getResolvedTemplateTypeMap(Z_OBJ_P(l_parametersAcceptor.raw()), r151.raw()))) return false;
 					vd149 = std::move(r151);
 					vd149_done = true;
 				}

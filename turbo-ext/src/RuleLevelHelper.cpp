@@ -1491,18 +1491,18 @@ namespace pgen::RuleLevelHelper {
 							zv::Val vd53;
 							zend_class_entry *vd53_ce = Z_TYPE_P(p51) == IS_OBJECT ? Z_OBJCE_P(p51) : NULL;
 							bool vd53_done = false;
-							if (vd53_ce == pt_ce_memoizing_reflection_provider) {
-								if (UNEXPECTED(!(Z_TYPE_P(o52.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o52.raw()); return false; }
+							if (vd53_ce == pt_ce_better_reflection_provider) {
+								if (UNEXPECTED(!(Z_TYPE_P(o52.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", o52.raw()); return false; }
 								bool r54;
-								if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p51), o52.raw(), &r54))) return false;
+								if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p51), o52.raw(), &r54))) return false;
 								zv::Val o55 = zv::Val::boolean(r54);
 								vd53 = std::move(o55);
 								vd53_done = true;
 							}
-							if (vd53_ce == pt_ce_better_reflection_provider) {
-								if (UNEXPECTED(!(Z_TYPE_P(o52.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", o52.raw()); return false; }
+							if (vd53_ce == pt_ce_memoizing_reflection_provider) {
+								if (UNEXPECTED(!(Z_TYPE_P(o52.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o52.raw()); return false; }
 								bool r56;
-								if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p51), o52.raw(), &r56))) return false;
+								if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p51), o52.raw(), &r56))) return false;
 								zv::Val o57 = zv::Val::boolean(r56);
 								vd53 = std::move(o57);
 								vd53_done = true;
@@ -1520,15 +1520,15 @@ namespace pgen::RuleLevelHelper {
 									zv::Val vd61;
 									zend_class_entry *vd61_ce = Z_TYPE_P(p59) == IS_OBJECT ? Z_OBJCE_P(p59) : NULL;
 									bool vd61_done = false;
-									if (vd61_ce == pt_ce_memoizing_reflection_provider) {
+									if (vd61_ce == pt_ce_better_reflection_provider) {
 										zv::Val r62;
-										if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p59), o60.raw(), r62.raw()))) return false;
+										if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p59), o60.raw(), r62.raw()))) return false;
 										vd61 = std::move(r62);
 										vd61_done = true;
 									}
-									if (vd61_ce == pt_ce_better_reflection_provider) {
+									if (vd61_ce == pt_ce_memoizing_reflection_provider) {
 										zv::Val r63;
-										if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p59), o60.raw(), r63.raw()))) return false;
+										if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p59), o60.raw(), r63.raw()))) return false;
 										vd61 = std::move(r63);
 										vd61_done = true;
 									}

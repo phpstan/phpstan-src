@@ -455,15 +455,15 @@ namespace pgen::ClassLikeHandler {
 								zv::Val vd48;
 								zend_class_entry *vd48_ce = Z_TYPE_P(o44.raw()) == IS_OBJECT ? Z_OBJCE_P(o44.raw()) : NULL;
 								bool vd48_done = false;
-								if (vd48_ce == pt_ce_memoizing_reflection_provider) {
+								if (vd48_ce == pt_ce_better_reflection_provider) {
 									zv::Val r49;
-									if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o44.raw()), r47.raw(), r49.raw()))) return false;
+									if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(o44.raw()), r47.raw(), r49.raw()))) return false;
 									vd48 = std::move(r49);
 									vd48_done = true;
 								}
-								if (vd48_ce == pt_ce_better_reflection_provider) {
+								if (vd48_ce == pt_ce_memoizing_reflection_provider) {
 									zv::Val r50;
-									if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(o44.raw()), r47.raw(), r50.raw()))) return false;
+									if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(o44.raw()), r47.raw(), r50.raw()))) return false;
 									vd48 = std::move(r50);
 									vd48_done = true;
 								}
@@ -483,15 +483,15 @@ namespace pgen::ClassLikeHandler {
 								zv::Val vd54;
 								zend_class_entry *vd54_ce = Z_TYPE_P(p52) == IS_OBJECT ? Z_OBJCE_P(p52) : NULL;
 								bool vd54_done = false;
-								if (vd54_ce == pt_ce_memoizing_reflection_provider) {
+								if (vd54_ce == pt_ce_better_reflection_provider) {
 									zv::Val r55;
-									if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p52), p_stmt, o53.raw(), r55.raw()))) return false;
+									if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p52), p_stmt, o53.raw(), r55.raw()))) return false;
 									vd54 = std::move(r55);
 									vd54_done = true;
 								}
-								if (vd54_ce == pt_ce_better_reflection_provider) {
+								if (vd54_ce == pt_ce_memoizing_reflection_provider) {
 									zv::Val r56;
-									if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p52), p_stmt, o53.raw(), r56.raw()))) return false;
+									if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p52), p_stmt, o53.raw(), r56.raw()))) return false;
 									vd54 = std::move(r56);
 									vd54_done = true;
 								}
@@ -1100,16 +1100,16 @@ namespace pgen::ClassLikeHandler {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			bool r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p1), p_className, &r3))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p1), p_className, &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			bool r5;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p1), p_className, &r5))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p1), p_className, &r5))) return false;
 			zv::Val o6 = zv::Val::boolean(r5);
 			vd2 = std::move(o6);
 			vd2_done = true;
@@ -1134,15 +1134,15 @@ namespace pgen::ClassLikeHandler {
 		zv::Val vd10;
 		zend_class_entry *vd10_ce = Z_TYPE_P(p9) == IS_OBJECT ? Z_OBJCE_P(p9) : NULL;
 		bool vd10_done = false;
-		if (vd10_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd10_ce == pt_ce_better_reflection_provider) {
 			zv::Val r11;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p9), p_className, r11.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p9), p_className, r11.raw()))) return false;
 			vd10 = std::move(r11);
 			vd10_done = true;
 		}
-		if (vd10_ce == pt_ce_better_reflection_provider) {
+		if (vd10_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r12;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p9), p_className, r12.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p9), p_className, r12.raw()))) return false;
 			vd10 = std::move(r12);
 			vd10_done = true;
 		}

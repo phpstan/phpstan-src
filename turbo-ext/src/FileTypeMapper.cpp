@@ -1305,18 +1305,18 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 							zv::Val vd256;
 							zend_class_entry *vd256_ce = Z_TYPE_P(l_reflectionProvider.raw()) == IS_OBJECT ? Z_OBJCE_P(l_reflectionProvider.raw()) : NULL;
 							bool vd256_done = false;
-							if (vd256_ce == pt_ce_memoizing_reflection_provider) {
-								if (UNEXPECTED(!(Z_TYPE_P(o255.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o255.raw()); return; }
+							if (vd256_ce == pt_ce_better_reflection_provider) {
+								if (UNEXPECTED(!(Z_TYPE_P(o255.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", o255.raw()); return; }
 								bool r257;
-								if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o255.raw(), &r257))) return;
+								if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o255.raw(), &r257))) return;
 								zv::Val o258 = zv::Val::boolean(r257);
 								vd256 = std::move(o258);
 								vd256_done = true;
 							}
-							if (vd256_ce == pt_ce_better_reflection_provider) {
-								if (UNEXPECTED(!(Z_TYPE_P(o255.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", o255.raw()); return; }
+							if (vd256_ce == pt_ce_memoizing_reflection_provider) {
+								if (UNEXPECTED(!(Z_TYPE_P(o255.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o255.raw()); return; }
 								bool r259;
-								if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o255.raw(), &r259))) return;
+								if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o255.raw(), &r259))) return;
 								zv::Val o260 = zv::Val::boolean(r259);
 								vd256 = std::move(o260);
 								vd256_done = true;
@@ -1335,15 +1335,15 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 							zv::Val vd263;
 							zend_class_entry *vd263_ce = Z_TYPE_P(l_reflectionProvider.raw()) == IS_OBJECT ? Z_OBJCE_P(l_reflectionProvider.raw()) : NULL;
 							bool vd263_done = false;
-							if (vd263_ce == pt_ce_memoizing_reflection_provider) {
+							if (vd263_ce == pt_ce_better_reflection_provider) {
 								zv::Val r264;
-								if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o262.raw(), r264.raw()))) return;
+								if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o262.raw(), r264.raw()))) return;
 								vd263 = std::move(r264);
 								vd263_done = true;
 							}
-							if (vd263_ce == pt_ce_better_reflection_provider) {
+							if (vd263_ce == pt_ce_memoizing_reflection_provider) {
 								zv::Val r265;
-								if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o262.raw(), r265.raw()))) return;
+								if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o262.raw(), r265.raw()))) return;
 								vd263 = std::move(r265);
 								vd263_done = true;
 							}
@@ -2599,18 +2599,18 @@ namespace pgen::FileTypeMapper {
 									zv::Val vd94;
 									zend_class_entry *vd94_ce = Z_TYPE_P(l_reflectionProvider.raw()) == IS_OBJECT ? Z_OBJCE_P(l_reflectionProvider.raw()) : NULL;
 									bool vd94_done = false;
-									if (vd94_ce == pt_ce_memoizing_reflection_provider) {
-										if (UNEXPECTED(!(Z_TYPE_P(o93.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o93.raw()); goto finally_f35; }
+									if (vd94_ce == pt_ce_better_reflection_provider) {
+										if (UNEXPECTED(!(Z_TYPE_P(o93.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", o93.raw()); goto finally_f35; }
 										bool r95;
-										if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o93.raw(), &r95))) goto finally_f35;
+										if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o93.raw(), &r95))) goto finally_f35;
 										zv::Val o96 = zv::Val::boolean(r95);
 										vd94 = std::move(o96);
 										vd94_done = true;
 									}
-									if (vd94_ce == pt_ce_better_reflection_provider) {
-										if (UNEXPECTED(!(Z_TYPE_P(o93.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::hasClass", 1, "className", "string", o93.raw()); goto finally_f35; }
+									if (vd94_ce == pt_ce_memoizing_reflection_provider) {
+										if (UNEXPECTED(!(Z_TYPE_P(o93.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Reflection\\ReflectionProvider\\MemoizingReflectionProvider::hasClass", 1, "className", "string", o93.raw()); goto finally_f35; }
 										bool r97;
-										if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o93.raw(), &r97))) goto finally_f35;
+										if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), o93.raw(), &r97))) goto finally_f35;
 										zv::Val o98 = zv::Val::boolean(r97);
 										vd94 = std::move(o98);
 										vd94_done = true;
@@ -2629,15 +2629,15 @@ namespace pgen::FileTypeMapper {
 									zv::Val vd101;
 									zend_class_entry *vd101_ce = Z_TYPE_P(l_reflectionProvider.raw()) == IS_OBJECT ? Z_OBJCE_P(l_reflectionProvider.raw()) : NULL;
 									bool vd101_done = false;
-									if (vd101_ce == pt_ce_memoizing_reflection_provider) {
+									if (vd101_ce == pt_ce_better_reflection_provider) {
 										zv::Val r102;
-										if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o100.raw(), r102.raw()))) goto finally_f35;
+										if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o100.raw(), r102.raw()))) goto finally_f35;
 										vd101 = std::move(r102);
 										vd101_done = true;
 									}
-									if (vd101_ce == pt_ce_better_reflection_provider) {
+									if (vd101_ce == pt_ce_memoizing_reflection_provider) {
 										zv::Val r103;
-										if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o100.raw(), r103.raw()))) goto finally_f35;
+										if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), o100.raw(), r103.raw()))) goto finally_f35;
 										vd101 = std::move(r103);
 										vd101_done = true;
 									}
@@ -3565,27 +3565,27 @@ namespace pgen::FileTypeMapper {
 		zv::Val vd24;
 		zend_class_entry *vd24_ce = Z_TYPE_P(p23) == IS_OBJECT ? Z_OBJCE_P(p23) : NULL;
 		bool vd24_done = false;
-		if (vd24_ce == pt_ce_rich_parser) {
+		if (vd24_ce == pt_ce_cached_parser) {
 			zv::Val r25;
-			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r25.raw()))) return false;
+			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r25.raw()))) return false;
 			vd24 = std::move(r25);
 			vd24_done = true;
 		}
-		if (vd24_ce == pt_ce_cached_parser) {
+		if (vd24_ce == pt_ce_path_routing_parser) {
 			zv::Val r26;
-			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r26.raw()))) return false;
+			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r26.raw()))) return false;
 			vd24 = std::move(r26);
 			vd24_done = true;
 		}
-		if (vd24_ce == pt_ce_simple_parser) {
+		if (vd24_ce == pt_ce_rich_parser) {
 			zv::Val r27;
-			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r27.raw()))) return false;
+			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r27.raw()))) return false;
 			vd24 = std::move(r27);
 			vd24_done = true;
 		}
-		if (vd24_ce == pt_ce_path_routing_parser) {
+		if (vd24_ce == pt_ce_simple_parser) {
 			zv::Val r28;
-			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r28.raw()))) return false;
+			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p23), p_fileName, r28.raw()))) return false;
 			vd24 = std::move(r28);
 			vd24_done = true;
 		}
@@ -4003,68 +4003,68 @@ namespace pgen::FileTypeMapper {
 				zv::Val vd4;
 				zend_class_entry *vd4_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
 				bool vd4_done = false;
-				static zend_class_entry **const vd4_table[] = { &pt_ce_in_class_method_node, &pt_ce_variable_writes_node, &pt_ce_method_return_statements_node, &pt_ce_method_call_expression_node, &pt_ce_variable_assign_node, &pt_ce_noop_expression_node, &pt_ce_execution_end_node, &pt_ce_class_property_node, &pt_ce_in_class_node };
+				static zend_class_entry **const vd4_table[] = { &pt_ce_class_property_node, &pt_ce_execution_end_node, &pt_ce_in_class_method_node, &pt_ce_in_class_node, &pt_ce_method_call_expression_node, &pt_ce_method_return_statements_node, &pt_ce_noop_expression_node, &pt_ce_variable_assign_node, &pt_ce_variable_writes_node };
 				static const uint16_t vd4_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 				switch (pgrt::dispatchCase(pg_site_191, vd4_ce, vd4_table, vd4_cases, 9)) {
 					case 1: {
 						zv::Val r5;
-						if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(p_node), r5.raw()))) return false;
+						if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(p_node), r5.raw()))) return false;
 						vd4 = std::move(r5);
 						vd4_done = true;
 					}
 					break;
 					case 2: {
 						zv::Val r6;
-						if (UNEXPECTED(!pgen::VariableWritesNode::m_getSubNodeNames(Z_OBJ_P(p_node), r6.raw()))) return false;
+						if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(p_node), r6.raw()))) return false;
 						vd4 = std::move(r6);
 						vd4_done = true;
 					}
 					break;
 					case 3: {
 						zv::Val r7;
-						if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(p_node), r7.raw()))) return false;
+						if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(p_node), r7.raw()))) return false;
 						vd4 = std::move(r7);
 						vd4_done = true;
 					}
 					break;
 					case 4: {
 						zv::Val r8;
-						if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r8.raw()))) return false;
+						if (UNEXPECTED(!pgen::InClassNode::m_getSubNodeNames(Z_OBJ_P(p_node), r8.raw()))) return false;
 						vd4 = std::move(r8);
 						vd4_done = true;
 					}
 					break;
 					case 5: {
 						zv::Val r9;
-						if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(p_node), r9.raw()))) return false;
+						if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r9.raw()))) return false;
 						vd4 = std::move(r9);
 						vd4_done = true;
 					}
 					break;
 					case 6: {
 						zv::Val r10;
-						if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r10.raw()))) return false;
+						if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(p_node), r10.raw()))) return false;
 						vd4 = std::move(r10);
 						vd4_done = true;
 					}
 					break;
 					case 7: {
 						zv::Val r11;
-						if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(p_node), r11.raw()))) return false;
+						if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r11.raw()))) return false;
 						vd4 = std::move(r11);
 						vd4_done = true;
 					}
 					break;
 					case 8: {
 						zv::Val r12;
-						if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(p_node), r12.raw()))) return false;
+						if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(p_node), r12.raw()))) return false;
 						vd4 = std::move(r12);
 						vd4_done = true;
 					}
 					break;
 					case 9: {
 						zv::Val r13;
-						if (UNEXPECTED(!pgen::InClassNode::m_getSubNodeNames(Z_OBJ_P(p_node), r13.raw()))) return false;
+						if (UNEXPECTED(!pgen::VariableWritesNode::m_getSubNodeNames(Z_OBJ_P(p_node), r13.raw()))) return false;
 						vd4 = std::move(r13);
 						vd4_done = true;
 					}

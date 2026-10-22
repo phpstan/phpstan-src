@@ -5,10 +5,10 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParametersProcessor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ParametersProcessor
 {
 

@@ -3,7 +3,7 @@
 namespace PHPStan\Node\Variable;
 
 use PhpParser\Node;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
@@ -15,7 +15,7 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'variableWrite')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/VariableWrite.cpp')]
+#[CompiledIntoTurboExtension]
 final class VariableWrite
 {
 

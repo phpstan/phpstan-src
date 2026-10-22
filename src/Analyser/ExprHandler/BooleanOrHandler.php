@@ -20,7 +20,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BooleanOrNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
@@ -31,7 +31,7 @@ use function array_merge;
  * @implements ExprHandler<BooleanOr|LogicalOr>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BooleanOrHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class BooleanOrHandler implements ExprHandler
 {
 

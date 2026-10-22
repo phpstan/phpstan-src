@@ -56,15 +56,15 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 				vd3 = std::move(r4);
 				vd3_done = true;
 			}
-			if (vd3_ce == pt_ce_php_method_reflection) {
+			if (vd3_ce == pt_ce_php_method_from_parser_node_reflection) {
 				zv::Val r5;
-				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r5.raw()))) return false;
 				vd3 = std::move(r5);
 				vd3_done = true;
 			}
-			if (vd3_ce == pt_ce_php_method_from_parser_node_reflection) {
+			if (vd3_ce == pt_ce_php_method_reflection) {
 				zv::Val r6;
-				if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r6.raw()))) return false;
+				if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(p_methodReflection), r6.raw()))) return false;
 				vd3 = std::move(r6);
 				vd3_done = true;
 			}
@@ -247,15 +247,15 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 								vd34 = std::move(r35);
 								vd34_done = true;
 							}
-							if (vd34_ce == pt_ce_php_method_reflection) {
+							if (vd34_ce == pt_ce_php_method_from_parser_node_reflection) {
 								zv::Val r36;
-								if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r36.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r36.raw()))) return false;
 								vd34 = std::move(r36);
 								vd34_done = true;
 							}
-							if (vd34_ce == pt_ce_php_method_from_parser_node_reflection) {
+							if (vd34_ce == pt_ce_php_method_reflection) {
 								zv::Val r37;
-								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r37.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r37.raw()))) return false;
 								vd34 = std::move(r37);
 								vd34_done = true;
 							}
@@ -298,15 +298,15 @@ namespace pgen::DateIntervalCreateFromDateStringThrowTypeExtension {
 					vd40 = std::move(r41);
 					vd40_done = true;
 				}
-				if (vd40_ce == pt_ce_php_method_reflection) {
+				if (vd40_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r42;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r42.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r42.raw()))) return false;
 					vd40 = std::move(r42);
 					vd40_done = true;
 				}
-				if (vd40_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd40_ce == pt_ce_php_method_reflection) {
 					zv::Val r43;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r43.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(p_methodReflection), r43.raw()))) return false;
 					vd40 = std::move(r43);
 					vd40_done = true;
 				}

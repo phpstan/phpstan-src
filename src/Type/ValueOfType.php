@@ -5,7 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
@@ -14,7 +14,7 @@ use function count;
 use function sprintf;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ValueOfType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_value_of_type_new', 'out'])]
 final class ValueOfType implements CompoundType, LateResolvableType
 {
 

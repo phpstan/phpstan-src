@@ -795,16 +795,16 @@ namespace pgen::StaticMethodCallableNodeHandler {
 					zv::Val vd34;
 					zend_class_entry *vd34_ce = Z_TYPE_P(p32) == IS_OBJECT ? Z_OBJCE_P(p32) : NULL;
 					bool vd34_done = false;
-					if (vd34_ce == pt_ce_memoizing_reflection_provider) {
+					if (vd34_ce == pt_ce_better_reflection_provider) {
 						bool r35;
-						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p32), o33.raw(), &r35))) return false;
+						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p32), o33.raw(), &r35))) return false;
 						zv::Val o36 = zv::Val::boolean(r35);
 						vd34 = std::move(o36);
 						vd34_done = true;
 					}
-					if (vd34_ce == pt_ce_better_reflection_provider) {
+					if (vd34_ce == pt_ce_memoizing_reflection_provider) {
 						bool r37;
-						if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p32), o33.raw(), &r37))) return false;
+						if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p32), o33.raw(), &r37))) return false;
 						zv::Val o38 = zv::Val::boolean(r37);
 						vd34 = std::move(o38);
 						vd34_done = true;
@@ -824,15 +824,15 @@ namespace pgen::StaticMethodCallableNodeHandler {
 						zv::Val vd42;
 						zend_class_entry *vd42_ce = Z_TYPE_P(p40) == IS_OBJECT ? Z_OBJCE_P(p40) : NULL;
 						bool vd42_done = false;
-						if (vd42_ce == pt_ce_memoizing_reflection_provider) {
+						if (vd42_ce == pt_ce_better_reflection_provider) {
 							zv::Val r43;
-							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p40), o41.raw(), r43.raw()))) return false;
+							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p40), o41.raw(), r43.raw()))) return false;
 							vd42 = std::move(r43);
 							vd42_done = true;
 						}
-						if (vd42_ce == pt_ce_better_reflection_provider) {
+						if (vd42_ce == pt_ce_memoizing_reflection_provider) {
 							zv::Val r44;
-							if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p40), o41.raw(), r44.raw()))) return false;
+							if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p40), o41.raw(), r44.raw()))) return false;
 							vd42 = std::move(r44);
 							vd42_done = true;
 						}
@@ -944,15 +944,15 @@ namespace pgen::StaticMethodCallableNodeHandler {
 					vd62 = std::move(r63);
 					vd62_done = true;
 				}
-				if (vd62_ce == pt_ce_php_method_reflection) {
+				if (vd62_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r64;
-					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r64.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r64.raw()))) return false;
 					vd62 = std::move(r64);
 					vd62_done = true;
 				}
-				if (vd62_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd62_ce == pt_ce_php_method_reflection) {
 					zv::Val r65;
-					if (UNEXPECTED(!pgen::PhpMethodFromParserNodeReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r65.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpMethodReflection::m_getDeclaringClass(Z_OBJ_P(l_methodReflection.raw()), r65.raw()))) return false;
 					vd62 = std::move(r65);
 					vd62_done = true;
 				}

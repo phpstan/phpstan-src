@@ -14,12 +14,12 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_key_exists;
 use function strtolower;
 
 #[AutowiredService(name: 'betterReflectionReflector', as: Reflector::class)]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/MemoizingReflector.cpp')]
+#[CompiledIntoTurboExtension]
 final class MemoizingReflector implements Reflector
 {
 

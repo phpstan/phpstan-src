@@ -6,10 +6,10 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ImmediatelyInvokedClosureVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ImmediatelyInvokedClosureVisitor extends NodeVisitorAbstract
 {
 

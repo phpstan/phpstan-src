@@ -3,7 +3,7 @@
 namespace PHPStan\Php;
 
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use function floor;
 
@@ -17,7 +17,7 @@ use function floor;
  */
 #[AutowiredService(factory: '@PHPStan\Php\PhpVersionFactory::create')]
 #[ReferencedByTurboExtension(key: 'phpVersion')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PhpVersion.cpp')]
+#[CompiledIntoTurboExtension]
 final class PhpVersion
 {
 

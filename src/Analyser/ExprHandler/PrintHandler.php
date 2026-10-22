@@ -19,7 +19,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -28,7 +28,7 @@ use function array_merge;
  * @implements ExprHandler<Print_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PrintHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class PrintHandler implements ExprHandler
 {
 

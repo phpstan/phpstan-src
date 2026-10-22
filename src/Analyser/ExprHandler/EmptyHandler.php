@@ -19,7 +19,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\EmptyExpressionNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
@@ -28,7 +28,7 @@ use PHPStan\Type\Type;
  * @implements ExprHandler<Empty_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EmptyHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class EmptyHandler implements ExprHandler
 {
 

@@ -260,11 +260,16 @@ Bugs in PHPStan's type system rarely live alone. A fix in one accessory type usu
 
 Every threshold, fan-out cap, recursion bound, or collection-size limit must be a class constant whose name ends in `_LIMIT`, declared at the top of the owning class. Inline numerics in conditionals (`if (count($this->optionalKeys) <= 10)`) are not acceptable — extract to `self::OPTIONAL_KEYS_LIMIT` (or similar) so the threshold is named, discoverable, and tunable in one place.
 
-### Classes marked with `#[ImplementedInTurboExtension]` have a native C++ mirror
+### Classes marked with `#[ImplementedInTurboExtension]` or `#[CompiledIntoTurboExtension]` have a native C++ mirror
 
-Classes carrying the `PHPStan\Turbo\ImplementedInTurboExtension` attribute are reimplemented natively by the phpstan_turbo extension; the attribute names the `.cpp` file implementing it (`build/generate-turbo-manifest.php` derives the full map into `vendor/turbo-shadowed-classes.json` on composer dump-autoload). The two implementations must behave identically — analysis output is bit-for-bit identical with the extension on or off. When editing such a class, always check whether the `.cpp` mirror in `turbo-ext/` needs the same change; if it does, port it following `turbo-ext/CLAUDE.md` (method parity check, differential smoke test, full test suite with the extension loaded). Any commit touching `turbo-ext/src/` requires the follow-up commit bumping `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION` to that commit's short SHA — run `make bump-turbo`.
+Classes carrying one of these attributes (`PHPStan\Turbo\`) are reimplemented natively by the phpstan_turbo extension (`build/generate-turbo-manifest.php` derives the full map into `vendor/turbo-shadowed-classes.json` on composer dump-autoload). The two implementations must behave identically — analysis output is bit-for-bit identical with the extension on or off. What an edit of such a class requires depends on the attribute:
 
-New introduced classes in these categories should be shadowed with a native C++ mirror in the same commit:
+* `#[ImplementedInTurboExtension(implementation: ...)]` — the C++ is written by hand in the named `.cpp`. Check whether it needs the same change; if it does, port it following `turbo-ext/CLAUDE.md` (method parity check, differential smoke test, full test suite with the extension loaded).
+* `#[CompiledIntoTurboExtension]` — the C++ is generated from the PHP class. Rerun `php turbo-ext/bin/compile-twins.php` (plus `php turbo-ext/bin/generate-declarations.php` when properties or signatures changed) and commit the regenerated files with the change; never edit them by hand. CI fails while they are stale.
+
+Any commit touching `turbo-ext/src/` requires the follow-up commit bumping `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION` to that commit's short SHA — run `make bump-turbo`.
+
+New introduced classes in these categories should be shadowed with a native C++ mirror in the same commit — compiled (`#[CompiledIntoTurboExtension]`) when the compiler handles them, hand-written otherwise:
 
 * `PHPStan\Type\Type` implementations
 * `PHPStan\Analyser\StmtHandler` and `PHPStan\Analyser\ExprHandler` implementations

@@ -335,16 +335,16 @@ namespace pgen::AttributeReflectionFactory {
 		zv::Val vd8;
 		zend_class_entry *vd8_ce = Z_TYPE_P(l_reflectionProvider.raw()) == IS_OBJECT ? Z_OBJCE_P(l_reflectionProvider.raw()) : NULL;
 		bool vd8_done = false;
-		if (vd8_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd8_ce == pt_ce_better_reflection_provider) {
 			bool r9;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, &r9))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, &r9))) return false;
 			zv::Val o10 = zv::Val::boolean(r9);
 			vd8 = std::move(o10);
 			vd8_done = true;
 		}
-		if (vd8_ce == pt_ce_better_reflection_provider) {
+		if (vd8_ce == pt_ce_memoizing_reflection_provider) {
 			bool r11;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, &r11))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, &r11))) return false;
 			zv::Val o12 = zv::Val::boolean(r11);
 			vd8 = std::move(o12);
 			vd8_done = true;
@@ -367,15 +367,15 @@ namespace pgen::AttributeReflectionFactory {
 		zv::Val vd15;
 		zend_class_entry *vd15_ce = Z_TYPE_P(l_reflectionProvider.raw()) == IS_OBJECT ? Z_OBJCE_P(l_reflectionProvider.raw()) : NULL;
 		bool vd15_done = false;
-		if (vd15_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd15_ce == pt_ce_better_reflection_provider) {
 			zv::Val r16;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, r16.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, r16.raw()))) return false;
 			vd15 = std::move(r16);
 			vd15_done = true;
 		}
-		if (vd15_ce == pt_ce_better_reflection_provider) {
+		if (vd15_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r17;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, r17.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(l_reflectionProvider.raw()), p_name, r17.raw()))) return false;
 			vd15 = std::move(r17);
 			vd15_done = true;
 		}

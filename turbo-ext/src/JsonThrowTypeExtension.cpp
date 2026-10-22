@@ -83,20 +83,20 @@ namespace pgen::JsonThrowTypeExtension {
 			zv::Val vd9;
 			zend_class_entry *vd9_ce = Z_TYPE_P(o5.raw()) == IS_OBJECT ? Z_OBJCE_P(o5.raw()) : NULL;
 			bool vd9_done = false;
-			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
+			if (vd9_ce == pt_ce_better_reflection_provider) {
 				zval z10;
 				ZVAL_NULL(&z10);
 				bool r11;
-				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z10, &r11))) return false;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z10, &r11))) return false;
 				zv::Val o12 = zv::Val::boolean(r11);
 				vd9 = std::move(o12);
 				vd9_done = true;
 			}
-			if (vd9_ce == pt_ce_better_reflection_provider) {
+			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
 				zval z13;
 				ZVAL_NULL(&z13);
 				bool r14;
-				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z13, &r14))) return false;
+				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z13, &r14))) return false;
 				zv::Val o15 = zv::Val::boolean(r14);
 				vd9 = std::move(o15);
 				vd9_done = true;

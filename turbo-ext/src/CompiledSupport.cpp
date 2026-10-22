@@ -1,7 +1,7 @@
 /*
  * The hand-written part of the native C API of compiled classes: entries
  * other files call whose shape the compiler does not generate (see
- * turbo-ext/compiled-classes.php). Each enters the compiled body for an
+ * src/Turbo/CompiledIntoTurboExtension.php). Each enters the compiled body for an
  * instance of the compiled class and calls the method by name for anything
  * else (a PHP twin in the differential tests), as the hand-written ports did.
  */

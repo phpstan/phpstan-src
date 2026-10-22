@@ -430,68 +430,68 @@ namespace pgen::GotoLabelVisitor {
 		zv::Val vd38;
 		zend_class_entry *vd38_ce = Z_TYPE_P(p_node) == IS_OBJECT ? Z_OBJCE_P(p_node) : NULL;
 		bool vd38_done = false;
-		static zend_class_entry **const vd38_table[] = { &pt_ce_in_class_method_node, &pt_ce_variable_writes_node, &pt_ce_method_return_statements_node, &pt_ce_method_call_expression_node, &pt_ce_variable_assign_node, &pt_ce_noop_expression_node, &pt_ce_execution_end_node, &pt_ce_class_property_node, &pt_ce_in_class_node };
+		static zend_class_entry **const vd38_table[] = { &pt_ce_class_property_node, &pt_ce_execution_end_node, &pt_ce_in_class_method_node, &pt_ce_in_class_node, &pt_ce_method_call_expression_node, &pt_ce_method_return_statements_node, &pt_ce_noop_expression_node, &pt_ce_variable_assign_node, &pt_ce_variable_writes_node };
 		static const uint16_t vd38_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 		switch (pgrt::dispatchCase(pg_site_9, vd38_ce, vd38_table, vd38_cases, 9)) {
 			case 1: {
 				zv::Val r39;
-				if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(p_node), r39.raw()))) return false;
+				if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(p_node), r39.raw()))) return false;
 				vd38 = std::move(r39);
 				vd38_done = true;
 			}
 			break;
 			case 2: {
 				zv::Val r40;
-				if (UNEXPECTED(!pgen::VariableWritesNode::m_getSubNodeNames(Z_OBJ_P(p_node), r40.raw()))) return false;
+				if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(p_node), r40.raw()))) return false;
 				vd38 = std::move(r40);
 				vd38_done = true;
 			}
 			break;
 			case 3: {
 				zv::Val r41;
-				if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(p_node), r41.raw()))) return false;
+				if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(p_node), r41.raw()))) return false;
 				vd38 = std::move(r41);
 				vd38_done = true;
 			}
 			break;
 			case 4: {
 				zv::Val r42;
-				if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r42.raw()))) return false;
+				if (UNEXPECTED(!pgen::InClassNode::m_getSubNodeNames(Z_OBJ_P(p_node), r42.raw()))) return false;
 				vd38 = std::move(r42);
 				vd38_done = true;
 			}
 			break;
 			case 5: {
 				zv::Val r43;
-				if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(p_node), r43.raw()))) return false;
+				if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r43.raw()))) return false;
 				vd38 = std::move(r43);
 				vd38_done = true;
 			}
 			break;
 			case 6: {
 				zv::Val r44;
-				if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r44.raw()))) return false;
+				if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(p_node), r44.raw()))) return false;
 				vd38 = std::move(r44);
 				vd38_done = true;
 			}
 			break;
 			case 7: {
 				zv::Val r45;
-				if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(p_node), r45.raw()))) return false;
+				if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(p_node), r45.raw()))) return false;
 				vd38 = std::move(r45);
 				vd38_done = true;
 			}
 			break;
 			case 8: {
 				zv::Val r46;
-				if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(p_node), r46.raw()))) return false;
+				if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(p_node), r46.raw()))) return false;
 				vd38 = std::move(r46);
 				vd38_done = true;
 			}
 			break;
 			case 9: {
 				zv::Val r47;
-				if (UNEXPECTED(!pgen::InClassNode::m_getSubNodeNames(Z_OBJ_P(p_node), r47.raw()))) return false;
+				if (UNEXPECTED(!pgen::VariableWritesNode::m_getSubNodeNames(Z_OBJ_P(p_node), r47.raw()))) return false;
 				vd38 = std::move(r47);
 				vd38_done = true;
 			}

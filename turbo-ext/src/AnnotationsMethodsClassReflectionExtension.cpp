@@ -444,15 +444,15 @@ namespace pgen::AnnotationsMethodsClassReflectionExtension {
 						vd64 = std::move(r65);
 						vd64_done = true;
 					}
-					if (vd64_ce == pt_ce_php_method_reflection) {
+					if (vd64_ce == pt_ce_php_method_from_parser_node_reflection) {
 						zv::Val r66;
-						if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(r63.raw()), r66.raw()))) return false;
+						if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(r63.raw()), r66.raw()))) return false;
 						vd64 = std::move(r66);
 						vd64_done = true;
 					}
-					if (vd64_ce == pt_ce_php_method_from_parser_node_reflection) {
+					if (vd64_ce == pt_ce_php_method_reflection) {
 						zv::Val r67;
-						if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(r63.raw()), r67.raw()))) return false;
+						if (UNEXPECTED(!pgen::PhpMethodReflection::m_getThrowType(Z_OBJ_P(r63.raw()), r67.raw()))) return false;
 						vd64 = std::move(r67);
 						vd64_done = true;
 					}

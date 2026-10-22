@@ -5,7 +5,7 @@ namespace PHPStan\Type;
 use Closure;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_map;
 use function array_merge;
 use function array_unique;
@@ -35,7 +35,7 @@ use function array_values;
  *
  * @api
  */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IsSuperTypeOfResult.cpp')]
+#[CompiledIntoTurboExtension(defineCe: false)]
 final class IsSuperTypeOfResult
 {
 

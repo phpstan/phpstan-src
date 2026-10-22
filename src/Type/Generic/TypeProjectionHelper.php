@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TypeProjectionHelper.cpp')]
+#[CompiledIntoTurboExtension]
 final class TypeProjectionHelper
 {
 

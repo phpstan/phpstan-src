@@ -111,27 +111,27 @@ namespace pgen::CachedParser {
 		zv::Val vd11;
 		zend_class_entry *vd11_ce = Z_TYPE_P(p10) == IS_OBJECT ? Z_OBJCE_P(p10) : NULL;
 		bool vd11_done = false;
-		if (vd11_ce == pt_ce_rich_parser) {
+		if (vd11_ce == pt_ce_cached_parser) {
 			zv::Val r12;
-			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p10), p_file, r12.raw()))) return false;
+			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p10), p_file, r12.raw()))) return false;
 			vd11 = std::move(r12);
 			vd11_done = true;
 		}
-		if (vd11_ce == pt_ce_cached_parser) {
+		if (vd11_ce == pt_ce_path_routing_parser) {
 			zv::Val r13;
-			if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p10), p_file, r13.raw()))) return false;
+			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p10), p_file, r13.raw()))) return false;
 			vd11 = std::move(r13);
 			vd11_done = true;
 		}
-		if (vd11_ce == pt_ce_simple_parser) {
+		if (vd11_ce == pt_ce_rich_parser) {
 			zv::Val r14;
-			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p10), p_file, r14.raw()))) return false;
+			if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p10), p_file, r14.raw()))) return false;
 			vd11 = std::move(r14);
 			vd11_done = true;
 		}
-		if (vd11_ce == pt_ce_path_routing_parser) {
+		if (vd11_ce == pt_ce_simple_parser) {
 			zv::Val r15;
-			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p10), p_file, r15.raw()))) return false;
+			if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p10), p_file, r15.raw()))) return false;
 			vd11 = std::move(r15);
 			vd11_done = true;
 		}
@@ -223,27 +223,27 @@ namespace pgen::CachedParser {
 		zv::Val vd6;
 		zend_class_entry *vd6_ce = Z_TYPE_P(p4) == IS_OBJECT ? Z_OBJCE_P(p4) : NULL;
 		bool vd6_done = false;
-		if (vd6_ce == pt_ce_rich_parser) {
+		if (vd6_ce == pt_ce_cached_parser) {
 			zv::Val r7;
-			if (UNEXPECTED(!pgen::RichParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r7.raw()))) return false;
+			if (UNEXPECTED(!pgen::CachedParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r7.raw()))) return false;
 			vd6 = std::move(r7);
 			vd6_done = true;
 		}
-		if (vd6_ce == pt_ce_cached_parser) {
+		if (vd6_ce == pt_ce_path_routing_parser) {
 			zv::Val r8;
-			if (UNEXPECTED(!pgen::CachedParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r8.raw()))) return false;
+			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r8.raw()))) return false;
 			vd6 = std::move(r8);
 			vd6_done = true;
 		}
-		if (vd6_ce == pt_ce_simple_parser) {
+		if (vd6_ce == pt_ce_rich_parser) {
 			zv::Val r9;
-			if (UNEXPECTED(!pgen::SimpleParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r9.raw()))) return false;
+			if (UNEXPECTED(!pgen::RichParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r9.raw()))) return false;
 			vd6 = std::move(r9);
 			vd6_done = true;
 		}
-		if (vd6_ce == pt_ce_path_routing_parser) {
+		if (vd6_ce == pt_ce_simple_parser) {
 			zv::Val r10;
-			if (UNEXPECTED(!pgen::PathRoutingParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r10.raw()))) return false;
+			if (UNEXPECTED(!pgen::SimpleParser::m_parseString(Z_OBJ_P(p4), o5.raw(), r10.raw()))) return false;
 			vd6 = std::move(r10);
 			vd6_done = true;
 		}

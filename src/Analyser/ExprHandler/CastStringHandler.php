@@ -22,7 +22,7 @@ use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -30,7 +30,7 @@ use function array_merge;
  * @implements ExprHandler<Cast\String_>
  */
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CastStringHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class CastStringHandler implements ExprHandler
 {
 

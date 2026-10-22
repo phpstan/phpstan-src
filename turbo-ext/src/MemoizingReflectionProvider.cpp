@@ -86,16 +86,16 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd12;
 		zend_class_entry *vd12_ce = Z_TYPE_P(p10) == IS_OBJECT ? Z_OBJCE_P(p10) : NULL;
 		bool vd12_done = false;
-		if (vd12_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd12_ce == pt_ce_better_reflection_provider) {
 			bool r13;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p10), o11.raw(), &r13))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p10), o11.raw(), &r13))) return false;
 			zv::Val o14 = zv::Val::boolean(r13);
 			vd12 = std::move(o14);
 			vd12_done = true;
 		}
-		if (vd12_ce == pt_ce_better_reflection_provider) {
+		if (vd12_ce == pt_ce_memoizing_reflection_provider) {
 			bool r15;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasClass(Z_OBJ_P(p10), o11.raw(), &r15))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasClass(Z_OBJ_P(p10), o11.raw(), &r15))) return false;
 			zv::Val o16 = zv::Val::boolean(r15);
 			vd12 = std::move(o16);
 			vd12_done = true;
@@ -171,15 +171,15 @@ namespace pgen::MemoizingReflectionProvider {
 			zv::Val vd9;
 			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
 			bool vd9_done = false;
-			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
+			if (vd9_ce == pt_ce_better_reflection_provider) {
 				zv::Val r10;
-				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
 				vd9 = std::move(r10);
 				vd9_done = true;
 			}
-			if (vd9_ce == pt_ce_better_reflection_provider) {
+			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
 				zv::Val r11;
-				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
+				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClass(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
 				vd9 = std::move(r11);
 				vd9_done = true;
 			}
@@ -229,15 +229,15 @@ namespace pgen::MemoizingReflectionProvider {
 			zv::Val vd9;
 			zend_class_entry *vd9_ce = Z_TYPE_P(p7) == IS_OBJECT ? Z_OBJCE_P(p7) : NULL;
 			bool vd9_done = false;
-			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
+			if (vd9_ce == pt_ce_better_reflection_provider) {
 				zv::Val r10;
-				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClassName(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
+				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClassName(Z_OBJ_P(p7), o8.raw(), r10.raw()))) return false;
 				vd9 = std::move(r10);
 				vd9_done = true;
 			}
-			if (vd9_ce == pt_ce_better_reflection_provider) {
+			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
 				zv::Val r11;
-				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getClassName(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
+				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getClassName(Z_OBJ_P(p7), o8.raw(), r11.raw()))) return false;
 				vd9 = std::move(r11);
 				vd9_done = true;
 			}
@@ -274,15 +274,15 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p1), p_classNode, p_scope, r3.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p1), p_classNode, p_scope, r3.raw()))) return false;
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p1), p_classNode, p_scope, r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getAnonymousClassReflection(Z_OBJ_P(p1), p_classNode, p_scope, r4.raw()))) return false;
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
@@ -309,15 +309,15 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(p1), r3.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(p1), r3.raw()))) return false;
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(p1), r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getUniversalObjectCratesClasses(Z_OBJ_P(p1), r4.raw()))) return false;
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
@@ -341,16 +341,16 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			bool r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r3))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			bool r5;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r5))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r5))) return false;
 			zv::Val o6 = zv::Val::boolean(r5);
 			vd2 = std::move(o6);
 			vd2_done = true;
@@ -378,15 +378,15 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getFunction(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
@@ -413,15 +413,15 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_resolveFunctionName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_resolveFunctionName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_resolveFunctionName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_resolveFunctionName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
@@ -448,16 +448,16 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			bool r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r3))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);
 			vd2 = std::move(o4);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			bool r5;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r5))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, &r5))) return false;
 			zv::Val o6 = zv::Val::boolean(r5);
 			vd2 = std::move(o6);
 			vd2_done = true;
@@ -485,15 +485,15 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_getConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_getConstant(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}
@@ -520,15 +520,15 @@ namespace pgen::MemoizingReflectionProvider {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(p1) == IS_OBJECT ? Z_OBJCE_P(p1) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
+		if (vd2_ce == pt_ce_better_reflection_provider) {
 			zv::Val r3;
-			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_resolveConstantName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
+			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_resolveConstantName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r3.raw()))) return false;
 			vd2 = std::move(r3);
 			vd2_done = true;
 		}
-		if (vd2_ce == pt_ce_better_reflection_provider) {
+		if (vd2_ce == pt_ce_memoizing_reflection_provider) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::BetterReflectionProvider::m_resolveConstantName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_resolveConstantName(Z_OBJ_P(p1), p_nameNode, p_namespaceAnswerer, r4.raw()))) return false;
 			vd2 = std::move(r4);
 			vd2_done = true;
 		}

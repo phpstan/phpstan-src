@@ -5,14 +5,14 @@ namespace PHPStan\Node;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'returnStatement')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ReturnStatement.cpp')]
+#[CompiledIntoTurboExtension]
 final class ReturnStatement
 {
 

@@ -1092,31 +1092,31 @@ namespace pgen::StubPhpDocProvider {
 							zv::Val vd21;
 							zend_class_entry *vd21_ce = Z_TYPE_P(p19) == IS_OBJECT ? Z_OBJCE_P(p19) : NULL;
 							bool vd21_done = false;
-							if (vd21_ce == pt_ce_rich_parser) {
-								if (UNEXPECTED(!(Z_TYPE_P(o20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Parser\\RichParser::parseFile", 1, "file", "string", o20.raw()); goto finally_f8; }
-								zv::Val r22;
-								if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r22.raw()))) goto finally_f8;
-								vd21 = std::move(r22);
-								vd21_done = true;
-							}
 							if (vd21_ce == pt_ce_cached_parser) {
 								if (UNEXPECTED(!(Z_TYPE_P(o20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Parser\\CachedParser::parseFile", 1, "file", "string", o20.raw()); goto finally_f8; }
-								zv::Val r23;
-								if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r23.raw()))) goto finally_f8;
-								vd21 = std::move(r23);
-								vd21_done = true;
-							}
-							if (vd21_ce == pt_ce_simple_parser) {
-								if (UNEXPECTED(!(Z_TYPE_P(o20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Parser\\SimpleParser::parseFile", 1, "file", "string", o20.raw()); goto finally_f8; }
-								zv::Val r24;
-								if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r24.raw()))) goto finally_f8;
-								vd21 = std::move(r24);
+								zv::Val r22;
+								if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r22.raw()))) goto finally_f8;
+								vd21 = std::move(r22);
 								vd21_done = true;
 							}
 							if (vd21_ce == pt_ce_path_routing_parser) {
 								if (UNEXPECTED(!(Z_TYPE_P(o20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Parser\\PathRoutingParser::parseFile", 1, "file", "string", o20.raw()); goto finally_f8; }
+								zv::Val r23;
+								if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r23.raw()))) goto finally_f8;
+								vd21 = std::move(r23);
+								vd21_done = true;
+							}
+							if (vd21_ce == pt_ce_rich_parser) {
+								if (UNEXPECTED(!(Z_TYPE_P(o20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Parser\\RichParser::parseFile", 1, "file", "string", o20.raw()); goto finally_f8; }
+								zv::Val r24;
+								if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r24.raw()))) goto finally_f8;
+								vd21 = std::move(r24);
+								vd21_done = true;
+							}
+							if (vd21_ce == pt_ce_simple_parser) {
+								if (UNEXPECTED(!(Z_TYPE_P(o20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\Parser\\SimpleParser::parseFile", 1, "file", "string", o20.raw()); goto finally_f8; }
 								zv::Val r25;
-								if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r25.raw()))) goto finally_f8;
+								if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p19), o20.raw(), r25.raw()))) goto finally_f8;
 								vd21 = std::move(r25);
 								vd21_done = true;
 							}

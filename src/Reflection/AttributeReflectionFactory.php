@@ -8,7 +8,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\FakeReflectionAttribute;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionAttribute;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\TypeCombinator;
 use function array_key_exists;
 use function array_last;
@@ -16,7 +16,7 @@ use function count;
 use function is_int;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/AttributeReflectionFactory.cpp')]
+#[CompiledIntoTurboExtension]
 final class AttributeReflectionFactory
 {
 

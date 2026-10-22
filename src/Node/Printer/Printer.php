@@ -29,7 +29,7 @@ use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\StaticMethodCallableNode;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function preg_match;
 use function sprintf;
@@ -39,7 +39,7 @@ use function str_contains;
  * @api
  */
 #[AutowiredService(as: Printer::class)]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/Printer.cpp')]
+#[CompiledIntoTurboExtension]
 final class Printer extends Standard
 {
 

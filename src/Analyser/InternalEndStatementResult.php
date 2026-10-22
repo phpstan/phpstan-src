@@ -3,9 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InternalEndStatementResult.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_internal_end_statement_result_new', 'val'])]
 final class InternalEndStatementResult
 {
 

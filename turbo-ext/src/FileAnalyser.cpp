@@ -398,27 +398,27 @@ namespace pgen::FileAnalyser {
 						zv::Val vd29;
 						zend_class_entry *vd29_ce = Z_TYPE_P(p28) == IS_OBJECT ? Z_OBJCE_P(p28) : NULL;
 						bool vd29_done = false;
-						if (vd29_ce == pt_ce_rich_parser) {
+						if (vd29_ce == pt_ce_cached_parser) {
 							zv::Val r30;
-							if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p28), p_file, r30.raw()))) goto catch_c26;
+							if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p28), p_file, r30.raw()))) goto catch_c26;
 							vd29 = std::move(r30);
 							vd29_done = true;
 						}
-						if (vd29_ce == pt_ce_cached_parser) {
+						if (vd29_ce == pt_ce_path_routing_parser) {
 							zv::Val r31;
-							if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p28), p_file, r31.raw()))) goto catch_c26;
+							if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p28), p_file, r31.raw()))) goto catch_c26;
 							vd29 = std::move(r31);
 							vd29_done = true;
 						}
-						if (vd29_ce == pt_ce_simple_parser) {
+						if (vd29_ce == pt_ce_rich_parser) {
 							zv::Val r32;
-							if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p28), p_file, r32.raw()))) goto catch_c26;
+							if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p28), p_file, r32.raw()))) goto catch_c26;
 							vd29 = std::move(r32);
 							vd29_done = true;
 						}
-						if (vd29_ce == pt_ce_path_routing_parser) {
+						if (vd29_ce == pt_ce_simple_parser) {
 							zv::Val r33;
-							if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p28), p_file, r33.raw()))) goto catch_c26;
+							if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p28), p_file, r33.raw()))) goto catch_c26;
 							vd29 = std::move(r33);
 							vd29_done = true;
 						}

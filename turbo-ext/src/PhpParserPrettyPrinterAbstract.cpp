@@ -650,7 +650,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd11;
 		zend_class_entry *vd11_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd11_done = false;
-		if (vd11_ce == pt_ce_php_parser_pretty_printer_abstract || vd11_ce == pt_ce_php_parser_standard_printer || vd11_ce == pt_ce_printer) {
+		if (vd11_ce == pt_ce_printer || vd11_ce == pt_ce_php_parser_pretty_printer_abstract || vd11_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), ar10))) return false;
 			vd11_done = true;
 		}
@@ -675,7 +675,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd1;
 		zend_class_entry *vd1_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd1_done = false;
-		if (vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer || vd1_ce == pt_ce_printer) {
+		if (vd1_ce == pt_ce_printer || vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_resetState(Z_OBJ_P(&this_zv)))) return false;
 			vd1_done = true;
 		}
@@ -687,7 +687,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd3;
 		zend_class_entry *vd3_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd3_done = false;
-		if (vd3_ce == pt_ce_php_parser_pretty_printer_abstract || vd3_ce == pt_ce_php_parser_standard_printer || vd3_ce == pt_ce_printer) {
+		if (vd3_ce == pt_ce_printer || vd3_ce == pt_ce_php_parser_pretty_printer_abstract || vd3_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_preprocessNodes(Z_OBJ_P(&this_zv), p_stmts))) return false;
 			vd3_done = true;
 		}
@@ -702,7 +702,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd7;
 		zend_class_entry *vd7_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd7_done = false;
-		if (vd7_ce == pt_ce_php_parser_pretty_printer_abstract || vd7_ce == pt_ce_php_parser_standard_printer || vd7_ce == pt_ce_printer) {
+		if (vd7_ce == pt_ce_printer || vd7_ce == pt_ce_php_parser_pretty_printer_abstract || vd7_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r8;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pStmts(Z_OBJ_P(&this_zv), p_stmts, k6, r8.raw()))) return false;
 			vd7 = std::move(r8);
@@ -719,7 +719,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd11;
 		zend_class_entry *vd11_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd11_done = false;
-		if (vd11_ce == pt_ce_php_parser_pretty_printer_abstract || vd11_ce == pt_ce_php_parser_standard_printer || vd11_ce == pt_ce_printer) {
+		if (vd11_ce == pt_ce_printer || vd11_ce == pt_ce_php_parser_pretty_printer_abstract || vd11_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r12;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_handleMagicTokens(Z_OBJ_P(&this_zv), vd7.raw(), r12.raw()))) return false;
 			vd11 = std::move(r12);
@@ -749,7 +749,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd1;
 		zend_class_entry *vd1_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd1_done = false;
-		if (vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer || vd1_ce == pt_ce_printer) {
+		if (vd1_ce == pt_ce_printer || vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_resetState(Z_OBJ_P(&this_zv)))) return false;
 			vd1_done = true;
 		}
@@ -761,15 +761,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd3;
 		zend_class_entry *vd3_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd3_done = false;
-		if (vd3_ce == pt_ce_php_parser_pretty_printer_abstract || vd3_ce == pt_ce_php_parser_standard_printer) {
+		if (vd3_ce == pt_ce_printer) {
 			zv::Val r4;
-			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_node, 1000, 1000, false, r4.raw()))) return false;
+			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_node, 1000, 1000, false, r4.raw()))) return false;
 			vd3 = std::move(r4);
 			vd3_done = true;
 		}
-		if (vd3_ce == pt_ce_printer) {
+		if (vd3_ce == pt_ce_php_parser_pretty_printer_abstract || vd3_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r5;
-			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_node, 1000, 1000, false, r5.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_node, 1000, 1000, false, r5.raw()))) return false;
 			vd3 = std::move(r5);
 			vd3_done = true;
 		}
@@ -781,7 +781,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd7;
 		zend_class_entry *vd7_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd7_done = false;
-		if (vd7_ce == pt_ce_php_parser_pretty_printer_abstract || vd7_ce == pt_ce_php_parser_standard_printer || vd7_ce == pt_ce_printer) {
+		if (vd7_ce == pt_ce_printer || vd7_ce == pt_ce_php_parser_pretty_printer_abstract || vd7_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r8;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_handleMagicTokens(Z_OBJ_P(&this_zv), vd3.raw(), r8.raw()))) return false;
 			vd7 = std::move(r8);
@@ -832,7 +832,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd9;
 		zend_class_entry *vd9_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd9_done = false;
-		if (vd9_ce == pt_ce_php_parser_pretty_printer_abstract || vd9_ce == pt_ce_php_parser_standard_printer || vd9_ce == pt_ce_printer) {
+		if (vd9_ce == pt_ce_printer || vd9_ce == pt_ce_php_parser_pretty_printer_abstract || vd9_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r10;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_prettyPrint(Z_OBJ_P(&this_zv), p_stmts, r10.raw()))) return false;
 			vd9 = std::move(r10);
@@ -1027,7 +1027,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd1;
 				zend_class_entry *vd1_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd1_done = false;
-				if (vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer || vd1_ce == pt_ce_printer) {
+				if (vd1_ce == pt_ce_printer || vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer) {
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_indent(Z_OBJ_P(&this_zv)))) return false;
 					vd1_done = true;
 				}
@@ -1067,7 +1067,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd16;
 							zend_class_entry *vd16_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd16_done = false;
-							if (vd16_ce == pt_ce_php_parser_pretty_printer_abstract || vd16_ce == pt_ce_php_parser_standard_printer || vd16_ce == pt_ce_printer) {
+							if (vd16_ce == pt_ce_printer || vd16_ce == pt_ce_php_parser_pretty_printer_abstract || vd16_ce == pt_ce_php_parser_standard_printer) {
 								if (UNEXPECTED(!(Z_TYPE_P(o15.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::pComments", 1, "comments", "array", o15.raw()); return false; }
 								zv::Val r17;
 								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pComments(Z_OBJ_P(&this_zv), o15.raw(), r17.raw()))) return false;
@@ -1099,17 +1099,17 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 					zv::Val vd24;
 					zend_class_entry *vd24_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 					bool vd24_done = false;
-					if (vd24_ce == pt_ce_php_parser_pretty_printer_abstract || vd24_ce == pt_ce_php_parser_standard_printer) {
-						if (UNEXPECTED(!(pgrt::instanceOfClass(o23.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o23.raw()); return false; }
+					if (vd24_ce == pt_ce_printer) {
+						if (UNEXPECTED(!(pgrt::instanceOfClass(o23.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o23.raw()); return false; }
 						zv::Val r25;
-						if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o23.raw(), 1000, 1000, false, r25.raw()))) return false;
+						if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o23.raw(), 1000, 1000, false, r25.raw()))) return false;
 						vd24 = std::move(r25);
 						vd24_done = true;
 					}
-					if (vd24_ce == pt_ce_printer) {
-						if (UNEXPECTED(!(pgrt::instanceOfClass(o23.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o23.raw()); return false; }
+					if (vd24_ce == pt_ce_php_parser_pretty_printer_abstract || vd24_ce == pt_ce_php_parser_standard_printer) {
+						if (UNEXPECTED(!(pgrt::instanceOfClass(o23.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o23.raw()); return false; }
 						zv::Val r26;
-						if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o23.raw(), 1000, 1000, false, r26.raw()))) return false;
+						if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o23.raw(), 1000, 1000, false, r26.raw()))) return false;
 						vd24 = std::move(r26);
 						vd24_done = true;
 					}
@@ -1133,7 +1133,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd29;
 				zend_class_entry *vd29_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd29_done = false;
-				if (vd29_ce == pt_ce_php_parser_pretty_printer_abstract || vd29_ce == pt_ce_php_parser_standard_printer || vd29_ce == pt_ce_printer) {
+				if (vd29_ce == pt_ce_printer || vd29_ce == pt_ce_php_parser_pretty_printer_abstract || vd29_ce == pt_ce_php_parser_standard_printer) {
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_outdent(Z_OBJ_P(&this_zv)))) return false;
 					vd29_done = true;
 				}
@@ -1217,19 +1217,19 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd17;
 		zend_class_entry *vd17_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd17_done = false;
-		if (vd17_ce == pt_ce_php_parser_pretty_printer_abstract || vd17_ce == pt_ce_php_parser_standard_printer) {
-			if (UNEXPECTED(Z_TYPE_P(o15.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o15.raw()); return false; }
-			if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o16.raw()); return false; }
-			zv::Val r18;
-			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_leftNode, Z_LVAL_P(o15.raw()), Z_LVAL_P(o16.raw()), false, r18.raw()))) return false;
-			vd17 = std::move(r18);
-			vd17_done = true;
-		}
 		if (vd17_ce == pt_ce_printer) {
 			if (UNEXPECTED(Z_TYPE_P(o15.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o15.raw()); return false; }
 			if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 3, "lhsPrecedence", "int", o16.raw()); return false; }
+			zv::Val r18;
+			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_leftNode, Z_LVAL_P(o15.raw()), Z_LVAL_P(o16.raw()), false, r18.raw()))) return false;
+			vd17 = std::move(r18);
+			vd17_done = true;
+		}
+		if (vd17_ce == pt_ce_php_parser_pretty_printer_abstract || vd17_ce == pt_ce_php_parser_standard_printer) {
+			if (UNEXPECTED(Z_TYPE_P(o15.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o15.raw()); return false; }
+			if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o16.raw()); return false; }
 			zv::Val r19;
-			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_leftNode, Z_LVAL_P(o15.raw()), Z_LVAL_P(o16.raw()), false, r19.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_leftNode, Z_LVAL_P(o15.raw()), Z_LVAL_P(o16.raw()), false, r19.raw()))) return false;
 			vd17 = std::move(r19);
 			vd17_done = true;
 		}
@@ -1248,17 +1248,17 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd24;
 		zend_class_entry *vd24_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd24_done = false;
-		if (vd24_ce == pt_ce_php_parser_pretty_printer_abstract || vd24_ce == pt_ce_php_parser_standard_printer) {
-			if (UNEXPECTED(Z_TYPE_P(o23.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o23.raw()); return false; }
+		if (vd24_ce == pt_ce_printer) {
+			if (UNEXPECTED(Z_TYPE_P(o23.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o23.raw()); return false; }
 			zv::Val r25;
-			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_rightNode, Z_LVAL_P(o23.raw()), l_lhsPrecedence, false, r25.raw()))) return false;
+			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_rightNode, Z_LVAL_P(o23.raw()), l_lhsPrecedence, false, r25.raw()))) return false;
 			vd24 = std::move(r25);
 			vd24_done = true;
 		}
-		if (vd24_ce == pt_ce_printer) {
-			if (UNEXPECTED(Z_TYPE_P(o23.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o23.raw()); return false; }
+		if (vd24_ce == pt_ce_php_parser_pretty_printer_abstract || vd24_ce == pt_ce_php_parser_standard_printer) {
+			if (UNEXPECTED(Z_TYPE_P(o23.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o23.raw()); return false; }
 			zv::Val r26;
-			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_rightNode, Z_LVAL_P(o23.raw()), l_lhsPrecedence, false, r26.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_rightNode, Z_LVAL_P(o23.raw()), l_lhsPrecedence, false, r26.raw()))) return false;
 			vd24 = std::move(r26);
 			vd24_done = true;
 		}
@@ -1338,17 +1338,17 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd14;
 		zend_class_entry *vd14_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd14_done = false;
-		if (vd14_ce == pt_ce_php_parser_pretty_printer_abstract || vd14_ce == pt_ce_php_parser_standard_printer) {
-			if (UNEXPECTED(Z_TYPE_P(o13.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o13.raw()); return false; }
+		if (vd14_ce == pt_ce_printer) {
+			if (UNEXPECTED(Z_TYPE_P(o13.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o13.raw()); return false; }
 			zv::Val r15;
-			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o13.raw()), l_lhsPrecedence, false, r15.raw()))) return false;
+			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o13.raw()), l_lhsPrecedence, false, r15.raw()))) return false;
 			vd14 = std::move(r15);
 			vd14_done = true;
 		}
-		if (vd14_ce == pt_ce_printer) {
-			if (UNEXPECTED(Z_TYPE_P(o13.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o13.raw()); return false; }
+		if (vd14_ce == pt_ce_php_parser_pretty_printer_abstract || vd14_ce == pt_ce_php_parser_standard_printer) {
+			if (UNEXPECTED(Z_TYPE_P(o13.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o13.raw()); return false; }
 			zv::Val r16;
-			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o13.raw()), l_lhsPrecedence, false, r16.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o13.raw()), l_lhsPrecedence, false, r16.raw()))) return false;
 			vd14 = std::move(r16);
 			vd14_done = true;
 		}
@@ -1482,19 +1482,19 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd18;
 		zend_class_entry *vd18_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd18_done = false;
-		if (vd18_ce == pt_ce_php_parser_pretty_printer_abstract || vd18_ce == pt_ce_php_parser_standard_printer) {
-			if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o16.raw()); return false; }
-			if (UNEXPECTED(Z_TYPE_P(o17.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o17.raw()); return false; }
-			zv::Val r19;
-			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r19.raw()))) return false;
-			vd18 = std::move(r19);
-			vd18_done = true;
-		}
 		if (vd18_ce == pt_ce_printer) {
 			if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o16.raw()); return false; }
 			if (UNEXPECTED(Z_TYPE_P(o17.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 3, "lhsPrecedence", "int", o17.raw()); return false; }
+			zv::Val r19;
+			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r19.raw()))) return false;
+			vd18 = std::move(r19);
+			vd18_done = true;
+		}
+		if (vd18_ce == pt_ce_php_parser_pretty_printer_abstract || vd18_ce == pt_ce_php_parser_standard_printer) {
+			if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o16.raw()); return false; }
+			if (UNEXPECTED(Z_TYPE_P(o17.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o17.raw()); return false; }
 			zv::Val r20;
-			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r20.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_node, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r20.raw()))) return false;
 			vd18 = std::move(r20);
 			vd18_done = true;
 		}
@@ -1556,17 +1556,17 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd13;
 							zend_class_entry *vd13_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd13_done = false;
-							if (vd13_ce == pt_ce_php_parser_pretty_printer_abstract || vd13_ce == pt_ce_php_parser_standard_printer) {
-								if (UNEXPECTED(!(pgrt::instanceOfClass(o12.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o12.raw()); return false; }
+							if (vd13_ce == pt_ce_printer) {
+								if (UNEXPECTED(!(pgrt::instanceOfClass(o12.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o12.raw()); return false; }
 								zv::Val r14;
-								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o12.raw(), 1000, 1000, false, r14.raw()))) return false;
+								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o12.raw(), 1000, 1000, false, r14.raw()))) return false;
 								vd13 = std::move(r14);
 								vd13_done = true;
 							}
-							if (vd13_ce == pt_ce_printer) {
-								if (UNEXPECTED(!(pgrt::instanceOfClass(o12.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o12.raw()); return false; }
+							if (vd13_ce == pt_ce_php_parser_pretty_printer_abstract || vd13_ce == pt_ce_php_parser_standard_printer) {
+								if (UNEXPECTED(!(pgrt::instanceOfClass(o12.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o12.raw()); return false; }
 								zv::Val r15;
-								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o12.raw(), 1000, 1000, false, r15.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o12.raw(), 1000, 1000, false, r15.raw()))) return false;
 								vd13 = std::move(r15);
 								vd13_done = true;
 							}
@@ -1606,7 +1606,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd1;
 		zend_class_entry *vd1_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd1_done = false;
-		if (vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer || vd1_ce == pt_ce_printer) {
+		if (vd1_ce == pt_ce_printer || vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r2;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pImplode(Z_OBJ_P(&this_zv), p_nodes, &pg_lit[22], r2.raw()))) return false;
 			vd1 = std::move(r2);
@@ -1638,7 +1638,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd1;
 		zend_class_entry *vd1_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd1_done = false;
-		if (vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer || vd1_ce == pt_ce_printer) {
+		if (vd1_ce == pt_ce_printer || vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_indent(Z_OBJ_P(&this_zv)))) return false;
 			vd1_done = true;
 		}
@@ -1686,7 +1686,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd18;
 									zend_class_entry *vd18_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd18_done = false;
-									if (vd18_ce == pt_ce_php_parser_pretty_printer_abstract || vd18_ce == pt_ce_php_parser_standard_printer || vd18_ce == pt_ce_printer) {
+									if (vd18_ce == pt_ce_printer || vd18_ce == pt_ce_php_parser_pretty_printer_abstract || vd18_ce == pt_ce_php_parser_standard_printer) {
 										if (UNEXPECTED(!(Z_TYPE_P(o17.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::pComments", 1, "comments", "array", o17.raw()); return false; }
 										zv::Val r19;
 										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pComments(Z_OBJ_P(&this_zv), o17.raw(), r19.raw()))) return false;
@@ -1713,17 +1713,17 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd26;
 							zend_class_entry *vd26_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd26_done = false;
-							if (vd26_ce == pt_ce_php_parser_pretty_printer_abstract || vd26_ce == pt_ce_php_parser_standard_printer) {
-								if (UNEXPECTED(!(pgrt::instanceOfClass(o25.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o25.raw()); return false; }
+							if (vd26_ce == pt_ce_printer) {
+								if (UNEXPECTED(!(pgrt::instanceOfClass(o25.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o25.raw()); return false; }
 								zv::Val r27;
-								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o25.raw(), 1000, 1000, false, r27.raw()))) return false;
+								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o25.raw(), 1000, 1000, false, r27.raw()))) return false;
 								vd26 = std::move(r27);
 								vd26_done = true;
 							}
-							if (vd26_ce == pt_ce_printer) {
-								if (UNEXPECTED(!(pgrt::instanceOfClass(o25.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o25.raw()); return false; }
+							if (vd26_ce == pt_ce_php_parser_pretty_printer_abstract || vd26_ce == pt_ce_php_parser_standard_printer) {
+								if (UNEXPECTED(!(pgrt::instanceOfClass(o25.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o25.raw()); return false; }
 								zv::Val r28;
-								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o25.raw(), 1000, 1000, false, r28.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o25.raw(), 1000, 1000, false, r28.raw()))) return false;
 								vd26 = std::move(r28);
 								vd26_done = true;
 							}
@@ -1767,7 +1767,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd35;
 		zend_class_entry *vd35_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd35_done = false;
-		if (vd35_ce == pt_ce_php_parser_pretty_printer_abstract || vd35_ce == pt_ce_php_parser_standard_printer || vd35_ce == pt_ce_printer) {
+		if (vd35_ce == pt_ce_printer || vd35_ce == pt_ce_php_parser_pretty_printer_abstract || vd35_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_outdent(Z_OBJ_P(&this_zv)))) return false;
 			vd35_done = true;
 		}
@@ -1850,7 +1850,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd1;
 		zend_class_entry *vd1_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd1_done = false;
-		if (vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer || vd1_ce == pt_ce_printer) {
+		if (vd1_ce == pt_ce_printer || vd1_ce == pt_ce_php_parser_pretty_printer_abstract || vd1_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeNodeListDiffer(Z_OBJ_P(&this_zv)))) return false;
 			vd1_done = true;
 		}
@@ -1862,7 +1862,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd3;
 		zend_class_entry *vd3_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd3_done = false;
-		if (vd3_ce == pt_ce_php_parser_pretty_printer_abstract || vd3_ce == pt_ce_php_parser_standard_printer || vd3_ce == pt_ce_printer) {
+		if (vd3_ce == pt_ce_printer || vd3_ce == pt_ce_php_parser_pretty_printer_abstract || vd3_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeLabelCharMap(Z_OBJ_P(&this_zv)))) return false;
 			vd3_done = true;
 		}
@@ -1874,7 +1874,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd5;
 		zend_class_entry *vd5_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd5_done = false;
-		if (vd5_ce == pt_ce_php_parser_pretty_printer_abstract || vd5_ce == pt_ce_php_parser_standard_printer || vd5_ce == pt_ce_printer) {
+		if (vd5_ce == pt_ce_printer || vd5_ce == pt_ce_php_parser_pretty_printer_abstract || vd5_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeFixupMap(Z_OBJ_P(&this_zv)))) return false;
 			vd5_done = true;
 		}
@@ -1886,7 +1886,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd7;
 		zend_class_entry *vd7_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd7_done = false;
-		if (vd7_ce == pt_ce_php_parser_pretty_printer_abstract || vd7_ce == pt_ce_php_parser_standard_printer || vd7_ce == pt_ce_printer) {
+		if (vd7_ce == pt_ce_printer || vd7_ce == pt_ce_php_parser_pretty_printer_abstract || vd7_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeRemovalMap(Z_OBJ_P(&this_zv)))) return false;
 			vd7_done = true;
 		}
@@ -1898,7 +1898,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd9;
 		zend_class_entry *vd9_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd9_done = false;
-		if (vd9_ce == pt_ce_php_parser_pretty_printer_abstract || vd9_ce == pt_ce_php_parser_standard_printer || vd9_ce == pt_ce_printer) {
+		if (vd9_ce == pt_ce_printer || vd9_ce == pt_ce_php_parser_pretty_printer_abstract || vd9_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeInsertionMap(Z_OBJ_P(&this_zv)))) return false;
 			vd9_done = true;
 		}
@@ -1910,7 +1910,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd11;
 		zend_class_entry *vd11_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd11_done = false;
-		if (vd11_ce == pt_ce_php_parser_pretty_printer_abstract || vd11_ce == pt_ce_php_parser_standard_printer || vd11_ce == pt_ce_printer) {
+		if (vd11_ce == pt_ce_printer || vd11_ce == pt_ce_php_parser_pretty_printer_abstract || vd11_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeListInsertionMap(Z_OBJ_P(&this_zv)))) return false;
 			vd11_done = true;
 		}
@@ -1922,7 +1922,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd13;
 		zend_class_entry *vd13_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd13_done = false;
-		if (vd13_ce == pt_ce_php_parser_pretty_printer_abstract || vd13_ce == pt_ce_php_parser_standard_printer || vd13_ce == pt_ce_printer) {
+		if (vd13_ce == pt_ce_printer || vd13_ce == pt_ce_php_parser_pretty_printer_abstract || vd13_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeEmptyListInsertionMap(Z_OBJ_P(&this_zv)))) return false;
 			vd13_done = true;
 		}
@@ -1934,7 +1934,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd15;
 		zend_class_entry *vd15_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd15_done = false;
-		if (vd15_ce == pt_ce_php_parser_pretty_printer_abstract || vd15_ce == pt_ce_php_parser_standard_printer || vd15_ce == pt_ce_printer) {
+		if (vd15_ce == pt_ce_printer || vd15_ce == pt_ce_php_parser_pretty_printer_abstract || vd15_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_initializeModifierChangeMap(Z_OBJ_P(&this_zv)))) return false;
 			vd15_done = true;
 		}
@@ -1946,7 +1946,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd17;
 		zend_class_entry *vd17_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd17_done = false;
-		if (vd17_ce == pt_ce_php_parser_pretty_printer_abstract || vd17_ce == pt_ce_php_parser_standard_printer || vd17_ce == pt_ce_printer) {
+		if (vd17_ce == pt_ce_printer || vd17_ce == pt_ce_php_parser_pretty_printer_abstract || vd17_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_resetState(Z_OBJ_P(&this_zv)))) return false;
 			vd17_done = true;
 		}
@@ -1974,7 +1974,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd25;
 		zend_class_entry *vd25_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd25_done = false;
-		if (vd25_ce == pt_ce_php_parser_pretty_printer_abstract || vd25_ce == pt_ce_php_parser_standard_printer || vd25_ce == pt_ce_printer) {
+		if (vd25_ce == pt_ce_printer || vd25_ce == pt_ce_php_parser_pretty_printer_abstract || vd25_ce == pt_ce_php_parser_standard_printer) {
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_preprocessNodes(Z_OBJ_P(&this_zv), p_stmts))) return false;
 			vd25_done = true;
 		}
@@ -1993,7 +1993,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd30;
 		zend_class_entry *vd30_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd30_done = false;
-		if (vd30_ce == pt_ce_php_parser_pretty_printer_abstract || vd30_ce == pt_ce_php_parser_standard_printer || vd30_ce == pt_ce_printer) {
+		if (vd30_ce == pt_ce_printer || vd30_ce == pt_ce_php_parser_pretty_printer_abstract || vd30_ce == pt_ce_php_parser_standard_printer) {
 			zval *is31 = Z_ISUNDEF_P(l_pos.raw()) ? NULL : l_pos.raw();
 			zv::Val ref32 = zv::Val::adopt([&]() { zval inner; if (is31 != NULL) { ZVAL_COPY(&inner, is31); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 			zval z33;
@@ -2059,7 +2059,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd50;
 				zend_class_entry *vd50_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd50_done = false;
-				if (vd50_ce == pt_ce_php_parser_pretty_printer_abstract || vd50_ce == pt_ce_php_parser_standard_printer || vd50_ce == pt_ce_printer) {
+				if (vd50_ce == pt_ce_printer || vd50_ce == pt_ce_php_parser_pretty_printer_abstract || vd50_ce == pt_ce_php_parser_standard_printer) {
 					zv::Val r51;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pStmts(Z_OBJ_P(&this_zv), p_stmts, k49, r51.raw()))) return false;
 					vd50 = std::move(r51);
@@ -2085,7 +2085,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd56;
 		zend_class_entry *vd56_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd56_done = false;
-		if (vd56_ce == pt_ce_php_parser_pretty_printer_abstract || vd56_ce == pt_ce_php_parser_standard_printer || vd56_ce == pt_ce_printer) {
+		if (vd56_ce == pt_ce_printer || vd56_ce == pt_ce_php_parser_pretty_printer_abstract || vd56_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r57;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_handleMagicTokens(Z_OBJ_P(&this_zv), o55.raw(), r57.raw()))) return false;
 			vd56 = std::move(r57);
@@ -2214,7 +2214,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd10;
 				zend_class_entry *vd10_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd10_done = false;
-				if (vd10_ce == pt_ce_php_parser_pretty_printer_abstract || vd10_ce == pt_ce_php_parser_standard_printer || vd10_ce == pt_ce_printer) {
+				if (vd10_ce == pt_ce_printer || vd10_ce == pt_ce_php_parser_pretty_printer_abstract || vd10_ce == pt_ce_php_parser_standard_printer) {
 					zv::Val r11;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFallback(Z_OBJ_P(&this_zv), o9.raw(), p_precedence, p_lhsPrecedence, r11.raw()))) return false;
 					vd10 = std::move(r11);
@@ -2350,7 +2350,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd48;
 				zend_class_entry *vd48_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd48_done = false;
-				if (vd48_ce == pt_ce_php_parser_pretty_printer_abstract || vd48_ce == pt_ce_php_parser_standard_printer || vd48_ce == pt_ce_printer) {
+				if (vd48_ce == pt_ce_printer || vd48_ce == pt_ce_php_parser_pretty_printer_abstract || vd48_ce == pt_ce_php_parser_standard_printer) {
 					zv::Val r49;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFallback(Z_OBJ_P(&this_zv), o47.raw(), p_precedence, p_lhsPrecedence, r49.raw()))) return false;
 					vd48 = std::move(r49);
@@ -2430,68 +2430,68 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd70;
 		zend_class_entry *vd70_ce = Z_TYPE_P(l_node.raw()) == IS_OBJECT ? Z_OBJCE_P(l_node.raw()) : NULL;
 		bool vd70_done = false;
-		static zend_class_entry **const vd70_table[] = { &pt_ce_in_class_method_node, &pt_ce_variable_writes_node, &pt_ce_method_return_statements_node, &pt_ce_method_call_expression_node, &pt_ce_variable_assign_node, &pt_ce_noop_expression_node, &pt_ce_execution_end_node, &pt_ce_class_property_node, &pt_ce_in_class_node };
+		static zend_class_entry **const vd70_table[] = { &pt_ce_class_property_node, &pt_ce_execution_end_node, &pt_ce_in_class_method_node, &pt_ce_in_class_node, &pt_ce_method_call_expression_node, &pt_ce_method_return_statements_node, &pt_ce_noop_expression_node, &pt_ce_variable_assign_node, &pt_ce_variable_writes_node };
 		static const uint16_t vd70_cases[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 		switch (pgrt::dispatchCase(pg_site_74, vd70_ce, vd70_table, vd70_cases, 9)) {
 			case 1: {
 				zv::Val r71;
-				if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r71.raw()))) return false;
+				if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r71.raw()))) return false;
 				vd70 = std::move(r71);
 				vd70_done = true;
 			}
 			break;
 			case 2: {
 				zv::Val r72;
-				if (UNEXPECTED(!pgen::VariableWritesNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r72.raw()))) return false;
+				if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r72.raw()))) return false;
 				vd70 = std::move(r72);
 				vd70_done = true;
 			}
 			break;
 			case 3: {
 				zv::Val r73;
-				if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r73.raw()))) return false;
+				if (UNEXPECTED(!pgen::InClassMethodNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r73.raw()))) return false;
 				vd70 = std::move(r73);
 				vd70_done = true;
 			}
 			break;
 			case 4: {
 				zv::Val r74;
-				if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r74.raw()))) return false;
+				if (UNEXPECTED(!pgen::InClassNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r74.raw()))) return false;
 				vd70 = std::move(r74);
 				vd70_done = true;
 			}
 			break;
 			case 5: {
 				zv::Val r75;
-				if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r75.raw()))) return false;
+				if (UNEXPECTED(!pgen::MethodCallExpressionNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r75.raw()))) return false;
 				vd70 = std::move(r75);
 				vd70_done = true;
 			}
 			break;
 			case 6: {
 				zv::Val r76;
-				if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r76.raw()))) return false;
+				if (UNEXPECTED(!pgen::MethodReturnStatementsNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r76.raw()))) return false;
 				vd70 = std::move(r76);
 				vd70_done = true;
 			}
 			break;
 			case 7: {
 				zv::Val r77;
-				if (UNEXPECTED(!pgen::ExecutionEndNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r77.raw()))) return false;
+				if (UNEXPECTED(!pgen::NoopExpressionNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r77.raw()))) return false;
 				vd70 = std::move(r77);
 				vd70_done = true;
 			}
 			break;
 			case 8: {
 				zv::Val r78;
-				if (UNEXPECTED(!pgen::ClassPropertyNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r78.raw()))) return false;
+				if (UNEXPECTED(!pgen::VariableAssignNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r78.raw()))) return false;
 				vd70 = std::move(r78);
 				vd70_done = true;
 			}
 			break;
 			case 9: {
 				zv::Val r79;
-				if (UNEXPECTED(!pgen::InClassNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r79.raw()))) return false;
+				if (UNEXPECTED(!pgen::VariableWritesNode::m_getSubNodeNames(Z_OBJ_P(l_node.raw()), r79.raw()))) return false;
 				vd70 = std::move(r79);
 				vd70_done = true;
 			}
@@ -2577,7 +2577,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd109;
 									zend_class_entry *vd109_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd109_done = false;
-									if (vd109_ce == pt_ce_php_parser_pretty_printer_abstract || vd109_ce == pt_ce_php_parser_standard_printer || vd109_ce == pt_ce_printer) {
+									if (vd109_ce == pt_ce_printer || vd109_ce == pt_ce_php_parser_pretty_printer_abstract || vd109_ce == pt_ce_php_parser_standard_printer) {
 										zval *is110 = Z_ISUNDEF_P(l_pos.raw()) ? NULL : l_pos.raw();
 										zv::Val ref111 = zv::Val::adopt([&]() { zval inner; if (is110 != NULL) { ZVAL_COPY(&inner, is110); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 										if (UNEXPECTED(!(Z_TYPE_P(o108.raw()) == IS_STRING))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::pArray", 6, "subNodeName", "string", o108.raw()); return false; }
@@ -2617,7 +2617,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 											zv::Val vd118;
 											zend_class_entry *vd118_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 											bool vd118_done = false;
-											if (vd118_ce == pt_ce_php_parser_pretty_printer_abstract || vd118_ce == pt_ce_php_parser_standard_printer || vd118_ce == pt_ce_printer) {
+											if (vd118_ce == pt_ce_printer || vd118_ce == pt_ce_php_parser_pretty_printer_abstract || vd118_ce == pt_ce_php_parser_standard_printer) {
 												zv::Val r119;
 												if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFallback(Z_OBJ_P(&this_zv), o117.raw(), p_precedence, p_lhsPrecedence, r119.raw()))) return false;
 												vd118 = std::move(r119);
@@ -2666,7 +2666,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd131;
 									zend_class_entry *vd131_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd131_done = false;
-									if (vd131_ce == pt_ce_php_parser_pretty_printer_abstract || vd131_ce == pt_ce_php_parser_standard_printer || vd131_ce == pt_ce_printer) {
+									if (vd131_ce == pt_ce_printer || vd131_ce == pt_ce_php_parser_pretty_printer_abstract || vd131_ce == pt_ce_php_parser_standard_printer) {
 										zv::Val r132;
 										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFallback(Z_OBJ_P(&this_zv), o130.raw(), p_precedence, p_lhsPrecedence, r132.raw()))) return false;
 										vd131 = std::move(r132);
@@ -2828,7 +2828,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd179;
 									zend_class_entry *vd179_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd179_done = false;
-									if (vd179_ce == pt_ce_php_parser_pretty_printer_abstract || vd179_ce == pt_ce_php_parser_standard_printer || vd179_ce == pt_ce_printer) {
+									if (vd179_ce == pt_ce_printer || vd179_ce == pt_ce_php_parser_pretty_printer_abstract || vd179_ce == pt_ce_php_parser_standard_printer) {
 										zv::Val r180;
 										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFallback(Z_OBJ_P(&this_zv), o178.raw(), p_precedence, p_lhsPrecedence, r180.raw()))) return false;
 										vd179 = std::move(r180);
@@ -2951,7 +2951,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd210;
 									zend_class_entry *vd210_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd210_done = false;
-									if (vd210_ce == pt_ce_php_parser_pretty_printer_abstract || vd210_ce == pt_ce_php_parser_standard_printer || vd210_ce == pt_ce_printer) {
+									if (vd210_ce == pt_ce_printer || vd210_ce == pt_ce_php_parser_pretty_printer_abstract || vd210_ce == pt_ce_php_parser_standard_printer) {
 										zv::Val r211;
 										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFallback(Z_OBJ_P(&this_zv), o209.raw(), p_precedence, p_lhsPrecedence, r211.raw()))) return false;
 										vd210 = std::move(r211);
@@ -3088,7 +3088,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd258;
 							zend_class_entry *vd258_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd258_done = false;
-							if (vd258_ce == pt_ce_php_parser_pretty_printer_abstract || vd258_ce == pt_ce_php_parser_standard_printer || vd258_ce == pt_ce_printer) {
+							if (vd258_ce == pt_ce_printer || vd258_ce == pt_ce_php_parser_pretty_printer_abstract || vd258_ce == pt_ce_php_parser_standard_printer) {
 								if (UNEXPECTED(Z_TYPE_P(r257.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::setIndentLevel", 1, "level", "int", r257.raw()); return false; }
 								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), Z_LVAL_P(r257.raw())))) return false;
 								vd258_done = true;
@@ -3126,7 +3126,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd273;
 									zend_class_entry *vd273_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd273_done = false;
-									if (vd273_ce == pt_ce_php_parser_pretty_printer_abstract || vd273_ce == pt_ce_php_parser_standard_printer || vd273_ce == pt_ce_printer) {
+									if (vd273_ce == pt_ce_printer || vd273_ce == pt_ce_php_parser_pretty_printer_abstract || vd273_ce == pt_ce_php_parser_standard_printer) {
 										if (UNEXPECTED(Z_TYPE_P(o270.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::pFixup", 1, "fixup", "int", o270.raw()); return false; }
 										zv::Val r274;
 										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFixup(Z_OBJ_P(&this_zv), Z_LVAL_P(o270.raw()), o271.raw(), o272.raw(), l_subStartPos, l_subEndPos, r274.raw()))) return false;
@@ -3156,15 +3156,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd280;
 									zend_class_entry *vd280_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd280_done = false;
-									if (vd280_ce == pt_ce_php_parser_pretty_printer_abstract || vd280_ce == pt_ce_php_parser_standard_printer) {
+									if (vd280_ce == pt_ce_printer) {
 										zv::Val r281;
-										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o278.raw(), 1000, 1000, k279, r281.raw()))) return false;
+										if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o278.raw(), 1000, 1000, k279, r281.raw()))) return false;
 										vd280 = std::move(r281);
 										vd280_done = true;
 									}
-									if (vd280_ce == pt_ce_printer) {
+									if (vd280_ce == pt_ce_php_parser_pretty_printer_abstract || vd280_ce == pt_ce_php_parser_standard_printer) {
 										zv::Val r282;
-										if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o278.raw(), 1000, 1000, k279, r282.raw()))) return false;
+										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o278.raw(), 1000, 1000, k279, r282.raw()))) return false;
 										vd280 = std::move(r282);
 										vd280_done = true;
 									}
@@ -3193,7 +3193,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd289;
 							zend_class_entry *vd289_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd289_done = false;
-							if (vd289_ce == pt_ce_php_parser_pretty_printer_abstract || vd289_ce == pt_ce_php_parser_standard_printer || vd289_ce == pt_ce_printer) {
+							if (vd289_ce == pt_ce_printer || vd289_ce == pt_ce_php_parser_pretty_printer_abstract || vd289_ce == pt_ce_php_parser_standard_printer) {
 								zval *is290 = Z_ISUNDEF_P(l_result.raw()) ? NULL : l_result.raw();
 								zv::Val ref291 = zv::Val::adopt([&]() { zval inner; if (is290 != NULL) { ZVAL_COPY(&inner, is290); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_safeAppend(Z_OBJ_P(&this_zv), ref291.raw(), o288.raw()))) return false;
@@ -3218,7 +3218,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd296;
 							zend_class_entry *vd296_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd296_done = false;
-							if (vd296_ce == pt_ce_php_parser_pretty_printer_abstract || vd296_ce == pt_ce_php_parser_standard_printer || vd296_ce == pt_ce_printer) {
+							if (vd296_ce == pt_ce_printer || vd296_ce == pt_ce_php_parser_pretty_printer_abstract || vd296_ce == pt_ce_php_parser_standard_printer) {
 								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), l_origIndentLevel))) return false;
 								vd296_done = true;
 							}
@@ -3610,7 +3610,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd83;
 							zend_class_entry *vd83_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd83_done = false;
-							if (vd83_ce == pt_ce_php_parser_pretty_printer_abstract || vd83_ce == pt_ce_php_parser_standard_printer || vd83_ce == pt_ce_printer) {
+							if (vd83_ce == pt_ce_printer || vd83_ce == pt_ce_php_parser_pretty_printer_abstract || vd83_ce == pt_ce_php_parser_standard_printer) {
 								if (UNEXPECTED(Z_TYPE_P(o82.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::setIndentLevel", 1, "level", "int", o82.raw()); return false; }
 								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), Z_LVAL_P(o82.raw())))) return false;
 								vd83_done = true;
@@ -3703,7 +3703,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 											zv::Val vd106;
 											zend_class_entry *vd106_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 											bool vd106_done = false;
-											if (vd106_ce == pt_ce_php_parser_pretty_printer_abstract || vd106_ce == pt_ce_php_parser_standard_printer || vd106_ce == pt_ce_printer) {
+											if (vd106_ce == pt_ce_printer || vd106_ce == pt_ce_php_parser_pretty_printer_abstract || vd106_ce == pt_ce_php_parser_standard_printer) {
 												if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), l_origIndentLevel))) return false;
 												vd106_done = true;
 											}
@@ -3770,7 +3770,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 																zv::Val vd127;
 																zend_class_entry *vd127_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 																bool vd127_done = false;
-																if (vd127_ce == pt_ce_php_parser_pretty_printer_abstract || vd127_ce == pt_ce_php_parser_standard_printer || vd127_ce == pt_ce_printer) {
+																if (vd127_ce == pt_ce_printer || vd127_ce == pt_ce_php_parser_pretty_printer_abstract || vd127_ce == pt_ce_php_parser_standard_printer) {
 																	if (UNEXPECTED(!(Z_TYPE_P(o126.raw()) == IS_ARRAY))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::pComments", 1, "comments", "array", o126.raw()); return false; }
 																	zv::Val r128;
 																	if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pComments(Z_OBJ_P(&this_zv), o126.raw(), r128.raw()))) return false;
@@ -3799,17 +3799,17 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 												zv::Val vd135;
 												zend_class_entry *vd135_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 												bool vd135_done = false;
-												if (vd135_ce == pt_ce_php_parser_pretty_printer_abstract || vd135_ce == pt_ce_php_parser_standard_printer) {
-													if (UNEXPECTED(!(pgrt::instanceOfClass(o133.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o133.raw()); return false; }
+												if (vd135_ce == pt_ce_printer) {
+													if (UNEXPECTED(!(pgrt::instanceOfClass(o133.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o133.raw()); return false; }
 													zv::Val r136;
-													if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o133.raw(), 1000, 1000, k134, r136.raw()))) return false;
+													if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o133.raw(), 1000, 1000, k134, r136.raw()))) return false;
 													vd135 = std::move(r136);
 													vd135_done = true;
 												}
-												if (vd135_ce == pt_ce_printer) {
-													if (UNEXPECTED(!(pgrt::instanceOfClass(o133.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 1, "node", "PhpParser\\Node", o133.raw()); return false; }
+												if (vd135_ce == pt_ce_php_parser_pretty_printer_abstract || vd135_ce == pt_ce_php_parser_standard_printer) {
+													if (UNEXPECTED(!(pgrt::instanceOfClass(o133.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14))))) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 1, "node", "PhpParser\\Node", o133.raw()); return false; }
 													zv::Val r137;
-													if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o133.raw(), 1000, 1000, k134, r137.raw()))) return false;
+													if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o133.raw(), 1000, 1000, k134, r137.raw()))) return false;
 													vd135 = std::move(r137);
 													vd135_done = true;
 												}
@@ -3830,7 +3830,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 												zv::Val vd142;
 												zend_class_entry *vd142_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 												bool vd142_done = false;
-												if (vd142_ce == pt_ce_php_parser_pretty_printer_abstract || vd142_ce == pt_ce_php_parser_standard_printer || vd142_ce == pt_ce_printer) {
+												if (vd142_ce == pt_ce_printer || vd142_ce == pt_ce_php_parser_pretty_printer_abstract || vd142_ce == pt_ce_php_parser_standard_printer) {
 													zval *is143 = Z_ISUNDEF_P(l_result.raw()) ? NULL : l_result.raw();
 													zv::Val ref144 = zv::Val::adopt([&]() { zval inner; if (is143 != NULL) { ZVAL_COPY(&inner, is143); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 													if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_safeAppend(Z_OBJ_P(&this_zv), ref144.raw(), vd135.raw()))) return false;
@@ -3892,7 +3892,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 											zv::Val vd157;
 											zend_class_entry *vd157_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 											bool vd157_done = false;
-											if (vd157_ce == pt_ce_php_parser_pretty_printer_abstract || vd157_ce == pt_ce_php_parser_standard_printer || vd157_ce == pt_ce_printer) {
+											if (vd157_ce == pt_ce_printer || vd157_ce == pt_ce_php_parser_pretty_printer_abstract || vd157_ce == pt_ce_php_parser_standard_printer) {
 												zv::Val r158;
 												if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pComments(Z_OBJ_P(&this_zv), o156.raw(), r158.raw()))) return false;
 												vd157 = std::move(r158);
@@ -3963,7 +3963,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 										zv::Val vd172;
 										zend_class_entry *vd172_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 										bool vd172_done = false;
-										if (vd172_ce == pt_ce_php_parser_pretty_printer_abstract || vd172_ce == pt_ce_php_parser_standard_printer || vd172_ce == pt_ce_printer) {
+										if (vd172_ce == pt_ce_printer || vd172_ce == pt_ce_php_parser_pretty_printer_abstract || vd172_ce == pt_ce_php_parser_standard_printer) {
 											bool r173;
 											if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_isMultiline(Z_OBJ_P(&this_zv), p_origNodes, &r173))) return false;
 											zv::Val o174 = zv::Val::boolean(r173);
@@ -4031,7 +4031,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									zv::Val vd186;
 									zend_class_entry *vd186_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 									bool vd186_done = false;
-									if (vd186_ce == pt_ce_php_parser_pretty_printer_abstract || vd186_ce == pt_ce_php_parser_standard_printer || vd186_ce == pt_ce_printer) {
+									if (vd186_ce == pt_ce_printer || vd186_ce == pt_ce_php_parser_pretty_printer_abstract || vd186_ce == pt_ce_php_parser_standard_printer) {
 										if (UNEXPECTED(Z_TYPE_P(o185.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::setIndentLevel", 1, "level", "int", o185.raw()); return false; }
 										if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), Z_LVAL_P(o185.raw())))) return false;
 										vd186_done = true;
@@ -4065,7 +4065,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 													zv::Val vd195;
 													zend_class_entry *vd195_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 													bool vd195_done = false;
-													if (vd195_ce == pt_ce_php_parser_pretty_printer_abstract || vd195_ce == pt_ce_php_parser_standard_printer || vd195_ce == pt_ce_printer) {
+													if (vd195_ce == pt_ce_printer || vd195_ce == pt_ce_php_parser_pretty_printer_abstract || vd195_ce == pt_ce_php_parser_standard_printer) {
 														zv::Val r196;
 														if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pComments(Z_OBJ_P(&this_zv), o194.raw(), r196.raw()))) return false;
 														vd195 = std::move(r196);
@@ -4254,7 +4254,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd237;
 							zend_class_entry *vd237_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd237_done = false;
-							if (vd237_ce == pt_ce_php_parser_pretty_printer_abstract || vd237_ce == pt_ce_php_parser_standard_printer || vd237_ce == pt_ce_printer) {
+							if (vd237_ce == pt_ce_printer || vd237_ce == pt_ce_php_parser_pretty_printer_abstract || vd237_ce == pt_ce_php_parser_standard_printer) {
 								zval z238;
 								ZVAL_NULL(&z238);
 								zv::Val r239;
@@ -4285,15 +4285,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd245;
 							zend_class_entry *vd245_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd245_done = false;
-							if (vd245_ce == pt_ce_php_parser_pretty_printer_abstract || vd245_ce == pt_ce_php_parser_standard_printer) {
+							if (vd245_ce == pt_ce_printer) {
 								zv::Val r246;
-								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o243.raw(), 1000, 1000, k244, r246.raw()))) return false;
+								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o243.raw(), 1000, 1000, k244, r246.raw()))) return false;
 								vd245 = std::move(r246);
 								vd245_done = true;
 							}
-							if (vd245_ce == pt_ce_printer) {
+							if (vd245_ce == pt_ce_php_parser_pretty_printer_abstract || vd245_ce == pt_ce_php_parser_standard_printer) {
 								zv::Val r247;
-								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o243.raw(), 1000, 1000, k244, r247.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o243.raw(), 1000, 1000, k244, r247.raw()))) return false;
 								vd245 = std::move(r247);
 								vd245_done = true;
 							}
@@ -4322,7 +4322,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 					zv::Val vd254;
 					zend_class_entry *vd254_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 					bool vd254_done = false;
-					if (vd254_ce == pt_ce_php_parser_pretty_printer_abstract || vd254_ce == pt_ce_php_parser_standard_printer || vd254_ce == pt_ce_printer) {
+					if (vd254_ce == pt_ce_printer || vd254_ce == pt_ce_php_parser_pretty_printer_abstract || vd254_ce == pt_ce_php_parser_standard_printer) {
 						zval *is255 = Z_ISUNDEF_P(l_result.raw()) ? NULL : l_result.raw();
 						zv::Val ref256 = zv::Val::adopt([&]() { zval inner; if (is255 != NULL) { ZVAL_COPY(&inner, is255); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
 						if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_safeAppend(Z_OBJ_P(&this_zv), ref256.raw(), o253.raw()))) return false;
@@ -4347,7 +4347,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 					zv::Val vd261;
 					zend_class_entry *vd261_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 					bool vd261_done = false;
-					if (vd261_ce == pt_ce_php_parser_pretty_printer_abstract || vd261_ce == pt_ce_php_parser_standard_printer || vd261_ce == pt_ce_printer) {
+					if (vd261_ce == pt_ce_printer || vd261_ce == pt_ce_php_parser_pretty_printer_abstract || vd261_ce == pt_ce_php_parser_standard_printer) {
 						if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_setIndentLevel(Z_OBJ_P(&this_zv), l_origIndentLevel))) return false;
 						vd261_done = true;
 					}
@@ -4582,15 +4582,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zv::Val vd331;
 							zend_class_entry *vd331_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd331_done = false;
-							if (vd331_ce == pt_ce_php_parser_pretty_printer_abstract || vd331_ce == pt_ce_php_parser_standard_printer) {
+							if (vd331_ce == pt_ce_printer) {
 								zv::Val r332;
-								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o329.raw(), 1000, 1000, k330, r332.raw()))) return false;
+								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o329.raw(), 1000, 1000, k330, r332.raw()))) return false;
 								vd331 = std::move(r332);
 								vd331_done = true;
 							}
-							if (vd331_ce == pt_ce_printer) {
+							if (vd331_ce == pt_ce_php_parser_pretty_printer_abstract || vd331_ce == pt_ce_php_parser_standard_printer) {
 								zv::Val r333;
-								if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), o329.raw(), 1000, 1000, k330, r333.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), o329.raw(), 1000, 1000, k330, r333.raw()))) return false;
 								vd331 = std::move(r333);
 								vd331_done = true;
 							}
@@ -4719,19 +4719,19 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd18;
 						zend_class_entry *vd18_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd18_done = false;
-						if (vd18_ce == pt_ce_php_parser_pretty_printer_abstract || vd18_ce == pt_ce_php_parser_standard_printer) {
-							if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o16.raw()); return false; }
-							if (UNEXPECTED(Z_TYPE_P(o17.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o17.raw()); return false; }
-							zv::Val r19;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r19.raw()))) return false;
-							vd18 = std::move(r19);
-							vd18_done = true;
-						}
 						if (vd18_ce == pt_ce_printer) {
 							if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o16.raw()); return false; }
 							if (UNEXPECTED(Z_TYPE_P(o17.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 3, "lhsPrecedence", "int", o17.raw()); return false; }
+							zv::Val r19;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r19.raw()))) return false;
+							vd18 = std::move(r19);
+							vd18_done = true;
+						}
+						if (vd18_ce == pt_ce_php_parser_pretty_printer_abstract || vd18_ce == pt_ce_php_parser_standard_printer) {
+							if (UNEXPECTED(Z_TYPE_P(o16.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o16.raw()); return false; }
+							if (UNEXPECTED(Z_TYPE_P(o17.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o17.raw()); return false; }
 							zv::Val r20;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r20.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o16.raw()), Z_LVAL_P(o17.raw()), false, r20.raw()))) return false;
 							vd18 = std::move(r20);
 							vd18_done = true;
 						}
@@ -4787,19 +4787,19 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd36;
 						zend_class_entry *vd36_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd36_done = false;
-						if (vd36_ce == pt_ce_php_parser_pretty_printer_abstract || vd36_ce == pt_ce_php_parser_standard_printer) {
-							if (UNEXPECTED(Z_TYPE_P(o34.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o34.raw()); return false; }
-							if (UNEXPECTED(Z_TYPE_P(o35.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o35.raw()); return false; }
-							zv::Val r37;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o34.raw()), Z_LVAL_P(o35.raw()), false, r37.raw()))) return false;
-							vd36 = std::move(r37);
-							vd36_done = true;
-						}
 						if (vd36_ce == pt_ce_printer) {
 							if (UNEXPECTED(Z_TYPE_P(o34.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o34.raw()); return false; }
 							if (UNEXPECTED(Z_TYPE_P(o35.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 3, "lhsPrecedence", "int", o35.raw()); return false; }
+							zv::Val r37;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o34.raw()), Z_LVAL_P(o35.raw()), false, r37.raw()))) return false;
+							vd36 = std::move(r37);
+							vd36_done = true;
+						}
+						if (vd36_ce == pt_ce_php_parser_pretty_printer_abstract || vd36_ce == pt_ce_php_parser_standard_printer) {
+							if (UNEXPECTED(Z_TYPE_P(o34.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o34.raw()); return false; }
+							if (UNEXPECTED(Z_TYPE_P(o35.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o35.raw()); return false; }
 							zv::Val r38;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o34.raw()), Z_LVAL_P(o35.raw()), false, r38.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o34.raw()), Z_LVAL_P(o35.raw()), false, r38.raw()))) return false;
 							vd36 = std::move(r38);
 							vd36_done = true;
 						}
@@ -4855,19 +4855,19 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd54;
 						zend_class_entry *vd54_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd54_done = false;
-						if (vd54_ce == pt_ce_php_parser_pretty_printer_abstract || vd54_ce == pt_ce_php_parser_standard_printer) {
-							if (UNEXPECTED(Z_TYPE_P(o52.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o52.raw()); return false; }
-							if (UNEXPECTED(Z_TYPE_P(o53.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o53.raw()); return false; }
-							zv::Val r55;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o52.raw()), Z_LVAL_P(o53.raw()), false, r55.raw()))) return false;
-							vd54 = std::move(r55);
-							vd54_done = true;
-						}
 						if (vd54_ce == pt_ce_printer) {
 							if (UNEXPECTED(Z_TYPE_P(o52.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 2, "precedence", "int", o52.raw()); return false; }
 							if (UNEXPECTED(Z_TYPE_P(o53.raw()) != IS_LONG)) { pgrt::throwArgumentType("PHPStan\\Node\\Printer\\Printer::p", 3, "lhsPrecedence", "int", o53.raw()); return false; }
+							zv::Val r55;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o52.raw()), Z_LVAL_P(o53.raw()), false, r55.raw()))) return false;
+							vd54 = std::move(r55);
+							vd54_done = true;
+						}
+						if (vd54_ce == pt_ce_php_parser_pretty_printer_abstract || vd54_ce == pt_ce_php_parser_standard_printer) {
+							if (UNEXPECTED(Z_TYPE_P(o52.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 2, "precedence", "int", o52.raw()); return false; }
+							if (UNEXPECTED(Z_TYPE_P(o53.raw()) != IS_LONG)) { pgrt::throwArgumentType("PhpParser\\PrettyPrinterAbstract::p", 3, "lhsPrecedence", "int", o53.raw()); return false; }
 							zv::Val r56;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o52.raw()), Z_LVAL_P(o53.raw()), false, r56.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, Z_LVAL_P(o52.raw()), Z_LVAL_P(o53.raw()), false, r56.raw()))) return false;
 							vd54 = std::move(r56);
 							vd54_done = true;
 						}
@@ -4891,7 +4891,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd59;
 				zend_class_entry *vd59_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd59_done = false;
-				if (vd59_ce == pt_ce_php_parser_pretty_printer_abstract || vd59_ce == pt_ce_php_parser_standard_printer || vd59_ce == pt_ce_printer) {
+				if (vd59_ce == pt_ce_printer || vd59_ce == pt_ce_php_parser_pretty_printer_abstract || vd59_ce == pt_ce_php_parser_standard_printer) {
 					bool r60;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_callLhsRequiresParens(Z_OBJ_P(&this_zv), p_subNode, &r60))) return false;
 					zv::Val o61 = zv::Val::boolean(r60);
@@ -4923,15 +4923,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd68;
 						zend_class_entry *vd68_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd68_done = false;
-						if (vd68_ce == pt_ce_php_parser_pretty_printer_abstract || vd68_ce == pt_ce_php_parser_standard_printer) {
+						if (vd68_ce == pt_ce_printer) {
 							zv::Val r69;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r69.raw()))) return false;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r69.raw()))) return false;
 							vd68 = std::move(r69);
 							vd68_done = true;
 						}
-						if (vd68_ce == pt_ce_printer) {
+						if (vd68_ce == pt_ce_php_parser_pretty_printer_abstract || vd68_ce == pt_ce_php_parser_standard_printer) {
 							zv::Val r70;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r70.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r70.raw()))) return false;
 							vd68 = std::move(r70);
 							vd68_done = true;
 						}
@@ -4957,7 +4957,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd75;
 				zend_class_entry *vd75_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd75_done = false;
-				if (vd75_ce == pt_ce_php_parser_pretty_printer_abstract || vd75_ce == pt_ce_php_parser_standard_printer || vd75_ce == pt_ce_printer) {
+				if (vd75_ce == pt_ce_printer || vd75_ce == pt_ce_php_parser_pretty_printer_abstract || vd75_ce == pt_ce_php_parser_standard_printer) {
 					bool r76;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_dereferenceLhsRequiresParens(Z_OBJ_P(&this_zv), p_subNode, &r76))) return false;
 					zv::Val o77 = zv::Val::boolean(r76);
@@ -4989,15 +4989,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd84;
 						zend_class_entry *vd84_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd84_done = false;
-						if (vd84_ce == pt_ce_php_parser_pretty_printer_abstract || vd84_ce == pt_ce_php_parser_standard_printer) {
+						if (vd84_ce == pt_ce_printer) {
 							zv::Val r85;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r85.raw()))) return false;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r85.raw()))) return false;
 							vd84 = std::move(r85);
 							vd84_done = true;
 						}
-						if (vd84_ce == pt_ce_printer) {
+						if (vd84_ce == pt_ce_php_parser_pretty_printer_abstract || vd84_ce == pt_ce_php_parser_standard_printer) {
 							zv::Val r86;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r86.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r86.raw()))) return false;
 							vd84 = std::move(r86);
 							vd84_done = true;
 						}
@@ -5023,7 +5023,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd91;
 				zend_class_entry *vd91_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd91_done = false;
-				if (vd91_ce == pt_ce_php_parser_pretty_printer_abstract || vd91_ce == pt_ce_php_parser_standard_printer || vd91_ce == pt_ce_printer) {
+				if (vd91_ce == pt_ce_printer || vd91_ce == pt_ce_php_parser_pretty_printer_abstract || vd91_ce == pt_ce_php_parser_standard_printer) {
 					bool r92;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_staticDereferenceLhsRequiresParens(Z_OBJ_P(&this_zv), p_subNode, &r92))) return false;
 					zv::Val o93 = zv::Val::boolean(r92);
@@ -5055,15 +5055,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd100;
 						zend_class_entry *vd100_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd100_done = false;
-						if (vd100_ce == pt_ce_php_parser_pretty_printer_abstract || vd100_ce == pt_ce_php_parser_standard_printer) {
+						if (vd100_ce == pt_ce_printer) {
 							zv::Val r101;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r101.raw()))) return false;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r101.raw()))) return false;
 							vd100 = std::move(r101);
 							vd100_done = true;
 						}
-						if (vd100_ce == pt_ce_printer) {
+						if (vd100_ce == pt_ce_php_parser_pretty_printer_abstract || vd100_ce == pt_ce_php_parser_standard_printer) {
 							zv::Val r102;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r102.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r102.raw()))) return false;
 							vd100 = std::move(r102);
 							vd100_done = true;
 						}
@@ -5089,7 +5089,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val vd107;
 				zend_class_entry *vd107_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd107_done = false;
-				if (vd107_ce == pt_ce_php_parser_pretty_printer_abstract || vd107_ce == pt_ce_php_parser_standard_printer || vd107_ce == pt_ce_printer) {
+				if (vd107_ce == pt_ce_printer || vd107_ce == pt_ce_php_parser_pretty_printer_abstract || vd107_ce == pt_ce_php_parser_standard_printer) {
 					bool r108;
 					if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_newOperandRequiresParens(Z_OBJ_P(&this_zv), p_subNode, &r108))) return false;
 					zv::Val o109 = zv::Val::boolean(r108);
@@ -5121,15 +5121,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd116;
 						zend_class_entry *vd116_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd116_done = false;
-						if (vd116_ce == pt_ce_php_parser_pretty_printer_abstract || vd116_ce == pt_ce_php_parser_standard_printer) {
+						if (vd116_ce == pt_ce_printer) {
 							zv::Val r117;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r117.raw()))) return false;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r117.raw()))) return false;
 							vd116 = std::move(r117);
 							vd116_done = true;
 						}
-						if (vd116_ce == pt_ce_printer) {
+						if (vd116_ce == pt_ce_php_parser_pretty_printer_abstract || vd116_ce == pt_ce_php_parser_standard_printer) {
 							zv::Val r118;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r118.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r118.raw()))) return false;
 							vd116 = std::move(r118);
 							vd116_done = true;
 						}
@@ -5187,15 +5187,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd132;
 						zend_class_entry *vd132_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd132_done = false;
-						if (vd132_ce == pt_ce_php_parser_pretty_printer_abstract || vd132_ce == pt_ce_php_parser_standard_printer) {
+						if (vd132_ce == pt_ce_printer) {
 							zv::Val r133;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r133.raw()))) return false;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r133.raw()))) return false;
 							vd132 = std::move(r133);
 							vd132_done = true;
 						}
-						if (vd132_ce == pt_ce_printer) {
+						if (vd132_ce == pt_ce_php_parser_pretty_printer_abstract || vd132_ce == pt_ce_php_parser_standard_printer) {
 							zv::Val r134;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r134.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r134.raw()))) return false;
 							vd132 = std::move(r134);
 							vd132_done = true;
 						}
@@ -5238,15 +5238,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						zv::Val vd144;
 						zend_class_entry *vd144_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd144_done = false;
-						if (vd144_ce == pt_ce_php_parser_pretty_printer_abstract || vd144_ce == pt_ce_php_parser_standard_printer) {
+						if (vd144_ce == pt_ce_printer) {
 							zv::Val r145;
-							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r145.raw()))) return false;
+							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r145.raw()))) return false;
 							vd144 = std::move(r145);
 							vd144_done = true;
 						}
-						if (vd144_ce == pt_ce_printer) {
+						if (vd144_ce == pt_ce_php_parser_pretty_printer_abstract || vd144_ce == pt_ce_php_parser_standard_printer) {
 							zv::Val r146;
-							if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r146.raw()))) return false;
+							if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r146.raw()))) return false;
 							vd144 = std::move(r146);
 							vd144_done = true;
 						}
@@ -5288,15 +5288,15 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd153;
 		zend_class_entry *vd153_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd153_done = false;
-		if (vd153_ce == pt_ce_php_parser_pretty_printer_abstract || vd153_ce == pt_ce_php_parser_standard_printer) {
+		if (vd153_ce == pt_ce_printer) {
 			zv::Val r154;
-			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r154.raw()))) return false;
+			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r154.raw()))) return false;
 			vd153 = std::move(r154);
 			vd153_done = true;
 		}
-		if (vd153_ce == pt_ce_printer) {
+		if (vd153_ce == pt_ce_php_parser_pretty_printer_abstract || vd153_ce == pt_ce_php_parser_standard_printer) {
 			zv::Val r155;
-			if (UNEXPECTED(!pgen::Printer::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r155.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_p(Z_OBJ_P(&this_zv), p_subNode, 1000, 1000, false, r155.raw()))) return false;
 			vd153 = std::move(r155);
 			vd153_done = true;
 		}
@@ -5452,7 +5452,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		zv::Val vd2;
 		zend_class_entry *vd2_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 		bool vd2_done = false;
-		if (vd2_ce == pt_ce_php_parser_pretty_printer_abstract || vd2_ce == pt_ce_php_parser_standard_printer || vd2_ce == pt_ce_printer) {
+		if (vd2_ce == pt_ce_printer || vd2_ce == pt_ce_php_parser_pretty_printer_abstract || vd2_ce == pt_ce_php_parser_standard_printer) {
 			bool r3;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_staticDereferenceLhsRequiresParens(Z_OBJ_P(&this_zv), p_node, &r3))) return false;
 			zv::Val o4 = zv::Val::boolean(r3);

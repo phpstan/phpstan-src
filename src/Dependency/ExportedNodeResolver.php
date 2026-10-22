@@ -31,12 +31,12 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_map;
 use function is_string;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExportedNodeResolver.cpp')]
+#[CompiledIntoTurboExtension]
 final class ExportedNodeResolver
 {
 

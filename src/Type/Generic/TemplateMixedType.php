@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -10,7 +10,7 @@ use PHPStan\Type\StrictMixedType;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateMixedType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_mixed_type_new', 'out'])]
 final class TemplateMixedType extends MixedType implements TemplateType
 {
 

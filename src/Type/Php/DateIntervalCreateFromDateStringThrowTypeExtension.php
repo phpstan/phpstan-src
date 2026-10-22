@@ -7,7 +7,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -16,7 +16,7 @@ use Throwable;
 use function count;
 
 #[AutowiredService]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/DateIntervalCreateFromDateStringThrowTypeExtension.cpp')]
+#[CompiledIntoTurboExtension]
 final class DateIntervalCreateFromDateStringThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

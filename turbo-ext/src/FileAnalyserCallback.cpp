@@ -486,27 +486,27 @@ namespace pgen::FileAnalyserCallback {
 						zv::Val vd82;
 						zend_class_entry *vd82_ce = Z_TYPE_P(p80) == IS_OBJECT ? Z_OBJCE_P(p80) : NULL;
 						bool vd82_done = false;
-						if (vd82_ce == pt_ce_rich_parser) {
+						if (vd82_ce == pt_ce_cached_parser) {
 							zv::Val r83;
-							if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r83.raw()))) return false;
+							if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r83.raw()))) return false;
 							vd82 = std::move(r83);
 							vd82_done = true;
 						}
-						if (vd82_ce == pt_ce_cached_parser) {
+						if (vd82_ce == pt_ce_path_routing_parser) {
 							zv::Val r84;
-							if (UNEXPECTED(!pgen::CachedParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r84.raw()))) return false;
+							if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r84.raw()))) return false;
 							vd82 = std::move(r84);
 							vd82_done = true;
 						}
-						if (vd82_ce == pt_ce_simple_parser) {
+						if (vd82_ce == pt_ce_rich_parser) {
 							zv::Val r85;
-							if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r85.raw()))) return false;
+							if (UNEXPECTED(!pgen::RichParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r85.raw()))) return false;
 							vd82 = std::move(r85);
 							vd82_done = true;
 						}
-						if (vd82_ce == pt_ce_path_routing_parser) {
+						if (vd82_ce == pt_ce_simple_parser) {
 							zv::Val r86;
-							if (UNEXPECTED(!pgen::PathRoutingParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r86.raw()))) return false;
+							if (UNEXPECTED(!pgen::SimpleParser::m_parseFile(Z_OBJ_P(p80), o81.raw(), r86.raw()))) return false;
 							vd82 = std::move(r86);
 							vd82_done = true;
 						}

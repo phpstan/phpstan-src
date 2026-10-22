@@ -8,7 +8,7 @@ use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Variable\VariableWrite;
-use PHPStan\Turbo\ImplementedInTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
@@ -24,7 +24,7 @@ use PHPStan\Type\Type;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'variableWritesNode')]
-#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableWritesNode.cpp')]
+#[CompiledIntoTurboExtension]
 final class VariableWritesNode extends NodeAbstract implements VirtualNode
 {
 

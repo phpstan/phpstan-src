@@ -109,15 +109,15 @@ namespace pgen::ArrayChunkFunctionThrowTypeExtension {
 							zv::Val vd18;
 							zend_class_entry *vd18_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 							bool vd18_done = false;
-							if (vd18_ce == pt_ce_php_function_from_parser_node_reflection || vd18_ce == pt_ce_php_method_from_parser_node_reflection) {
+							if (vd18_ce == pt_ce_native_function_reflection) {
 								zv::Val r19;
-								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r19.raw()))) return false;
+								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r19.raw()))) return false;
 								vd18 = std::move(r19);
 								vd18_done = true;
 							}
-							if (vd18_ce == pt_ce_native_function_reflection) {
+							if (vd18_ce == pt_ce_php_function_from_parser_node_reflection || vd18_ce == pt_ce_php_method_from_parser_node_reflection) {
 								zv::Val r20;
-								if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r20.raw()))) return false;
+								if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r20.raw()))) return false;
 								vd18 = std::move(r20);
 								vd18_done = true;
 							}
@@ -139,15 +139,15 @@ namespace pgen::ArrayChunkFunctionThrowTypeExtension {
 				zv::Val vd21;
 				zend_class_entry *vd21_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 				bool vd21_done = false;
-				if (vd21_ce == pt_ce_php_function_from_parser_node_reflection || vd21_ce == pt_ce_php_method_from_parser_node_reflection) {
+				if (vd21_ce == pt_ce_native_function_reflection) {
 					zv::Val r22;
-					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r22.raw()))) return false;
+					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r22.raw()))) return false;
 					vd21 = std::move(r22);
 					vd21_done = true;
 				}
-				if (vd21_ce == pt_ce_native_function_reflection) {
+				if (vd21_ce == pt_ce_php_function_from_parser_node_reflection || vd21_ce == pt_ce_php_method_from_parser_node_reflection) {
 					zv::Val r23;
-					if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r23.raw()))) return false;
+					if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r23.raw()))) return false;
 					vd21 = std::move(r23);
 					vd21_done = true;
 				}
@@ -224,15 +224,15 @@ namespace pgen::ArrayChunkFunctionThrowTypeExtension {
 		zv::Val vd40;
 		zend_class_entry *vd40_ce = Z_TYPE_P(p_functionReflection) == IS_OBJECT ? Z_OBJCE_P(p_functionReflection) : NULL;
 		bool vd40_done = false;
-		if (vd40_ce == pt_ce_php_function_from_parser_node_reflection || vd40_ce == pt_ce_php_method_from_parser_node_reflection) {
+		if (vd40_ce == pt_ce_native_function_reflection) {
 			zv::Val r41;
-			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r41.raw()))) return false;
+			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r41.raw()))) return false;
 			vd40 = std::move(r41);
 			vd40_done = true;
 		}
-		if (vd40_ce == pt_ce_native_function_reflection) {
+		if (vd40_ce == pt_ce_php_function_from_parser_node_reflection || vd40_ce == pt_ce_php_method_from_parser_node_reflection) {
 			zv::Val r42;
-			if (UNEXPECTED(!pgen::NativeFunctionReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r42.raw()))) return false;
+			if (UNEXPECTED(!pgen::PhpFunctionFromParserNodeReflection::m_getThrowType(Z_OBJ_P(p_functionReflection), r42.raw()))) return false;
 			vd40 = std::move(r42);
 			vd40_done = true;
 		}

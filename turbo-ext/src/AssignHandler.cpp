@@ -42,6 +42,49 @@ zend_class_entry *pt_ce_assign_handler = nullptr;
 #define PT_AH_DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT 16
 #define PT_AH_ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT 5
 
+/* the twin's ASSIGN_OP_BINARY_OPS: each AssignOp class with the BinaryOp
+ * computing the value it writes */
+struct pt_ah_assign_op_binary_op {
+	int assignOpClass;
+	int binaryOpClass;
+	const char *assignOpName;
+	const char *binaryOpName;
+};
+
+static const pt_ah_assign_op_binary_op pt_ah_assign_op_binary_ops[] = {
+	{ PT_CLASS_ASSIGN_OP_BITWISE_AND, PT_CLASS_BITWISE_AND_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\BitwiseAnd", "PhpParser\\Node\\Expr\\BinaryOp\\BitwiseAnd" },
+	{ PT_CLASS_ASSIGN_OP_BITWISE_OR, PT_CLASS_BITWISE_OR_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\BitwiseOr", "PhpParser\\Node\\Expr\\BinaryOp\\BitwiseOr" },
+	{ PT_CLASS_ASSIGN_OP_BITWISE_XOR, PT_CLASS_BITWISE_XOR_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\BitwiseXor", "PhpParser\\Node\\Expr\\BinaryOp\\BitwiseXor" },
+	{ PT_CLASS_COALESCE_ASSIGN_OP_EXPR, PT_CLASS_COALESCE_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\Coalesce", "PhpParser\\Node\\Expr\\BinaryOp\\Coalesce" },
+	{ PT_CLASS_ASSIGN_OP_CONCAT, PT_CLASS_CONCAT_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\Concat", "PhpParser\\Node\\Expr\\BinaryOp\\Concat" },
+	{ PT_CLASS_ASSIGN_OP_DIV, PT_CLASS_DIV_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\Div", "PhpParser\\Node\\Expr\\BinaryOp\\Div" },
+	{ PT_CLASS_ASSIGN_OP_MINUS, PT_CLASS_BINARY_OP_MINUS, "PhpParser\\Node\\Expr\\AssignOp\\Minus", "PhpParser\\Node\\Expr\\BinaryOp\\Minus" },
+	{ PT_CLASS_ASSIGN_OP_MOD, PT_CLASS_MOD_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\Mod", "PhpParser\\Node\\Expr\\BinaryOp\\Mod" },
+	{ PT_CLASS_ASSIGN_OP_MUL, PT_CLASS_MUL_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\Mul", "PhpParser\\Node\\Expr\\BinaryOp\\Mul" },
+	{ PT_CLASS_ASSIGN_OP_PLUS, PT_CLASS_BINARY_OP_PLUS, "PhpParser\\Node\\Expr\\AssignOp\\Plus", "PhpParser\\Node\\Expr\\BinaryOp\\Plus" },
+	{ PT_CLASS_ASSIGN_OP_POW, PT_CLASS_POW_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\Pow", "PhpParser\\Node\\Expr\\BinaryOp\\Pow" },
+	{ PT_CLASS_ASSIGN_OP_SHIFT_LEFT, PT_CLASS_SHIFT_LEFT_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\ShiftLeft", "PhpParser\\Node\\Expr\\BinaryOp\\ShiftLeft" },
+	{ PT_CLASS_ASSIGN_OP_SHIFT_RIGHT, PT_CLASS_SHIFT_RIGHT_EXPR, "PhpParser\\Node\\Expr\\AssignOp\\ShiftRight", "PhpParser\\Node\\Expr\\BinaryOp\\ShiftRight" },
+};
+
+/* the constant's value: a persistent immutable map of interned strings, as
+ * the engine references a class constant for the process lifetime */
+static void pt_ah_assign_op_binary_ops_constant(zval *out)
+{
+	size_t count = sizeof(pt_ah_assign_op_binary_ops) / sizeof(pt_ah_assign_op_binary_ops[0]);
+	HashTable *map = (HashTable *) pemalloc(sizeof(HashTable), 1);
+	zend_hash_init(map, (uint32_t) count, NULL, NULL, 1);
+	for (size_t i = 0; i < count; i++) {
+		zval value;
+		ZVAL_INTERNED_STR(&value, zend_string_init_interned(pt_ah_assign_op_binary_ops[i].binaryOpName, strlen(pt_ah_assign_op_binary_ops[i].binaryOpName), 1));
+		zend_hash_add_new(map, zend_string_init_interned(pt_ah_assign_op_binary_ops[i].assignOpName, strlen(pt_ah_assign_op_binary_ops[i].assignOpName), 1), &value);
+	}
+	GC_ADD_FLAGS(map, IS_ARRAY_IMMUTABLE);
+	GC_SET_REFCOUNT(map, 2);
+	ZVAL_ARR(out, map);
+	Z_TYPE_INFO_P(out) = IS_ARRAY;
+}
+
 /* VariableWrite::KIND_ASSIGN / KIND_READ_MODIFY_WRITE */
 #define PT_AH_KIND_ASSIGN 1
 #define PT_AH_KIND_READ_MODIFY_WRITE 2
@@ -2630,6 +2673,26 @@ private:
 		AH_VALB(scopeConditionalExpressions, pt_mutating_scope_get_conditional_expressions(Z_OBJ_P(scope)));
 		if (zend_hash_num_elements(Z_ARRVAL_P(scopeConditionalExpressions.raw())) == 0) return true;
 
+		// `$var op= value` writes `$var op value` - pricing the AssignOp itself
+		// would walk its write again, re-deriving conditional expressions under
+		// every evaluation (exponential in the number of described reads)
+		zv::Val pricedExpr = zv::Val::copyOf(zv::Ref(assignedExpr));
+		if (ahIs(assignedExpr, PT_CLASS_ASSIGN_OP_EXPR)) {
+			int binaryOpClass = -1;
+			for (const pt_ah_assign_op_binary_op &entry : pt_ah_assign_op_binary_ops) {
+				if (ahIs(assignedExpr, entry.assignOpClass)) {
+					binaryOpClass = entry.binaryOpClass;
+					break;
+				}
+			}
+			if (binaryOpClass < 0) {
+				pt_throw_should_not_happen();
+				return false;
+			}
+			zv::Args argv{AH_PROP(assignedExpr, var), AH_PROP(assignedExpr, expr)};
+			AH_SETB(pricedExpr, pt_type_new(binaryOpClass, 2, argv));
+		}
+
 		zv::Str targetExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(variableName), ZSTR_LEN(variableName)));
 		zend_long evaluations = 0;
 		zv::Val seenReadExprStrings = ahEmptyArray();
@@ -2673,7 +2736,7 @@ private:
 
 				zval *consequentType = OBJ_PROP_NUM(Z_OBJ_P(consequent), PT_ETH_PROP_TYPE);
 				AH_SETB(evalScope, pt_mutating_scope_assign_expression(Z_OBJ_P(evalScope.raw()), Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(consequent), PT_ETH_PROP_EXPR)), consequentType, consequentType));
-				AH_VALB(derivedType, nsrReadScopeStateOrSyntheticType(nsr, assignedExpr, evalScope.raw()));
+				AH_VALB(derivedType, nsrReadScopeStateOrSyntheticType(nsr, pricedExpr.raw(), evalScope.raw()));
 				bool equal;
 				AH_OKB(ahEquals(derivedType.raw(), assignedType, equal));
 				if (equal) continue;
@@ -4802,6 +4865,7 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 	ptdecl::AssignHandler::declareProperties(cls);
 	cls.privateClassConstantLong("TERNARY_ARM_EXCLUDED_VALUES_LIMIT", PT_AH_TERNARY_ARM_EXCLUDED_VALUES_LIMIT);
 	cls.privateClassConstantLong("DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT", PT_AH_DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT);
+	cls.privateClassConstantValue("ASSIGN_OP_BINARY_OPS", pt_ah_assign_op_binary_ops_constant);
 	cls.privateClassConstantLong("ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT", PT_AH_ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT);
 
 	/* the real parameter class names: the DI container autowires the

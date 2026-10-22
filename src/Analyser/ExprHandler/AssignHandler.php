@@ -123,6 +123,22 @@ final class AssignHandler implements ExprHandler
 
 	private const DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT = 16;
 
+	private const ASSIGN_OP_BINARY_OPS = [
+		Expr\AssignOp\BitwiseAnd::class => Expr\BinaryOp\BitwiseAnd::class,
+		Expr\AssignOp\BitwiseOr::class => Expr\BinaryOp\BitwiseOr::class,
+		Expr\AssignOp\BitwiseXor::class => Expr\BinaryOp\BitwiseXor::class,
+		Expr\AssignOp\Coalesce::class => Expr\BinaryOp\Coalesce::class,
+		Expr\AssignOp\Concat::class => Expr\BinaryOp\Concat::class,
+		Expr\AssignOp\Div::class => Expr\BinaryOp\Div::class,
+		Expr\AssignOp\Minus::class => Expr\BinaryOp\Minus::class,
+		Expr\AssignOp\Mod::class => Expr\BinaryOp\Mod::class,
+		Expr\AssignOp\Mul::class => Expr\BinaryOp\Mul::class,
+		Expr\AssignOp\Plus::class => Expr\BinaryOp\Plus::class,
+		Expr\AssignOp\Pow::class => Expr\BinaryOp\Pow::class,
+		Expr\AssignOp\ShiftLeft::class => Expr\BinaryOp\ShiftLeft::class,
+		Expr\AssignOp\ShiftRight::class => Expr\BinaryOp\ShiftRight::class,
+	];
+
 	public function __construct(
 		private TemplateArgumentObserver $templateArgumentObserver,
 		private VarAnnotationProcessor $varAnnotationProcessor,
@@ -2338,6 +2354,23 @@ final class AssignHandler implements ExprHandler
 			return $conditionalExpressions;
 		}
 
+		// `$var op= value` writes `$var op value` - pricing the AssignOp itself
+		// would walk its write again, re-deriving conditional expressions under
+		// every evaluation (exponential in the number of described reads)
+		$pricedExpr = $assignedExpr;
+		if ($assignedExpr instanceof Expr\AssignOp) {
+			$pricedExpr = null;
+			foreach (self::ASSIGN_OP_BINARY_OPS as $assignOpClass => $binaryOpClass) {
+				if ($assignedExpr instanceof $assignOpClass) {
+					$pricedExpr = new $binaryOpClass($assignedExpr->var, $assignedExpr->expr);
+					break;
+				}
+			}
+			if ($pricedExpr === null) {
+				throw new ShouldNotHappenException();
+			}
+		}
+
 		$targetExprString = '$' . $variableName;
 		$evaluations = 0;
 		$seenReadExprStrings = [];
@@ -2374,7 +2407,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$evalScope = $evalScope->assignExpression($consequent->getExpr(), $consequent->getType(), $consequent->getType());
-				$derivedType = $nodeScopeResolver->readScopeStateOrSyntheticType($assignedExpr, $evalScope);
+				$derivedType = $nodeScopeResolver->readScopeStateOrSyntheticType($pricedExpr, $evalScope);
 				if ($derivedType->equals($assignedType)) {
 					continue;
 				}

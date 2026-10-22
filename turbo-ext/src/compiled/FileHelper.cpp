@@ -16,13 +16,12 @@ static pgrt::FunctionSite pg_site_3; /* function_rtrim */
 static pgrt::FunctionSite pg_site_4; /* function_ltrim */
 static pgrt::StaticSite pg_site_5; /* static_PHPStan\File\FileHelper::normalizedPathsCache */
 static pgrt::FunctionSite pg_site_6; /* function_strlen */
-static pgrt::ClassSite pg_site_7; /* cls_Nette\Utils\Strings */
-static pt_method_site pg_site_8; /* static_Nette\Utils\Strings::match */
-static pgrt::FunctionSite pg_site_9; /* function_strtolower */
-static pgrt::FunctionSite pg_site_10; /* function_trim */
-static pgrt::FunctionSite pg_site_11; /* function_explode */
-static pgrt::FunctionSite pg_site_12; /* function_str_ends_with */
-static pgrt::FunctionSite pg_site_13; /* function_str_replace */
+static pt_method_site pg_site_7; /* static_Nette\Utils\Strings::match */
+static pgrt::FunctionSite pg_site_8; /* function_strtolower */
+static pgrt::FunctionSite pg_site_9; /* function_trim */
+static pgrt::FunctionSite pg_site_10; /* function_explode */
+static pgrt::FunctionSite pg_site_11; /* function_str_ends_with */
+static pgrt::FunctionSite pg_site_12; /* function_str_replace */
 
 namespace pgen::FileHelper {
 
@@ -256,10 +255,10 @@ namespace pgen::FileHelper {
 				zval av25[2];
 				ZVAL_COPY_VALUE(&av25[0], p_originalPath);
 				ZVAL_COPY_VALUE(&av25[1], &pg_lit[6]);
-				zend_class_entry *ce26 = pgrt::lookupClass(pg_site_7, "Nette\\Utils\\Strings", 19);
+				zend_class_entry *ce26 = pt_class(PT_CLASS_NETTE_STRINGS);
 				if (UNEXPECTED(ce26 == NULL)) return false;
 				zv::Val r27;
-				if (UNEXPECTED(!pgrt::callStatic(pg_site_8, ce26, "match", 5, 2, av25, r27.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce26, "match", 5, 2, av25, r27.raw(), NULL))) return false;
 				l_matches = std::move(r27);
 			}
 		}
@@ -287,7 +286,7 @@ namespace pgen::FileHelper {
 					r32 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(sa33)));
 				} else {
 				 {
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "strtolower", 10, pt_ce_file_helper, 1, sa33, r32.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "strtolower", 10, pt_ce_file_helper, 1, sa33, r32.raw()))) return false;
 				}
 				}
 				l_scheme = std::move(r32);
@@ -332,12 +331,12 @@ namespace pgen::FileHelper {
 		ZVAL_COPY_VALUE(&av42[0], l_path.raw());
 		ZVAL_COPY_VALUE(&av42[1], &pg_lit[0]);
 		zv::Val r43;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "trim", 4, pt_ce_file_helper, 2, av42, r43.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "trim", 4, pt_ce_file_helper, 2, av42, r43.raw(), NULL))) return false;
 		zval av44[2];
 		ZVAL_COPY_VALUE(&av44[0], &pg_lit[0]);
 		ZVAL_COPY_VALUE(&av44[1], r43.raw());
 		zv::Val r45;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "explode", 7, pt_ce_file_helper, 2, av44, r45.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "explode", 7, pt_ce_file_helper, 2, av44, r45.raw(), NULL))) return false;
 		l_pathParts = std::move(r45);
 	}
 	 {
@@ -380,7 +379,7 @@ namespace pgen::FileHelper {
 							if (b57) {
 								zv::Val o59 = zv::Val::copyOf(zv::Ref(l_removedPart.raw()));
 								zv::Val r60;
-								if (UNEXPECTED(!pgrt::strMatch(pg_site_12, "str_ends_with", 13, pgrt::StrMatch::ENDS, o59.raw(), &pg_lit[10], r60.raw()))) return false;
+								if (UNEXPECTED(!pgrt::strMatch(pg_site_11, "str_ends_with", 13, pgrt::StrMatch::ENDS, o59.raw(), &pg_lit[10], r60.raw()))) return false;
 								b57 = (Z_TYPE_P(r60.raw()) == IS_TRUE);
 							}
 							if (b57) {
@@ -470,7 +469,7 @@ namespace pgen::FileHelper {
 		ZVAL_COPY_VALUE(&av6[1], &pg_lit[0]);
 		ZVAL_COPY_VALUE(&av6[2], p_path);
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "str_replace", 11, pt_ce_file_helper, 3, av6, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "str_replace", 11, pt_ce_file_helper, 3, av6, r7.raw(), NULL))) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(r7.raw()) == IS_STRING))) { pgrt::throwReturnType("PHPStan\\File\\FileHelper::normalizeSeparator", "string", r7.raw()); return false; }
 		*ret = r7.take();
 		return true;

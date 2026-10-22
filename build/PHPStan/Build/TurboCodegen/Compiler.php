@@ -136,6 +136,12 @@ final class Compiler
 
 	private const CPP_KEYWORDS = ['and', 'or', 'not', 'xor', 'new', 'delete', 'default', 'namespace', 'class', 'union', 'switch', 'case', 'template', 'typename', 'operator', 'this', 'register', 'auto', 'char', 'short', 'long', 'float', 'double', 'int', 'bool', 'void', 'static', 'extern', 'const', 'volatile', 'goto', 'return', 'if', 'else', 'for', 'while', 'do', 'break', 'continue', 'try', 'catch', 'throw'];
 
+	/** @var array<string, string>|null lowercase FQCN => PT_CLASS_* constant of the native class-reference table */
+	private ?array $classRefConstants = null;
+
+	/** @var list<string> namespaces the PHAR's php-scoper leaves alone */
+	private array $unscopedNamespaces = [];
+
 	/** @var array<string, ClassUnit> lowercase FQCN => unit */
 	private array $units = [];
 
@@ -2408,6 +2414,11 @@ final class Compiler
 			case 'error':
 				return 'instanceof_function(thrown->ce, zend_ce_error)';
 		}
+		$classRef = $this->scopedClassRef($class);
+		if ($classRef !== null) {
+			// catch never autoloads: an unloaded class catches nothing
+			return sprintf('pgrt::objectInstanceOf(thrown, pt_class_loaded(%s))', $classRef);
+		}
 		$site = $this->site('pgrt::ClassSite', 'cls_' . $class);
 		// catch never autoloads: an unloaded class catches nothing
 		return sprintf('pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(%s, "%s", %d))', $site, addcslashes($class, '\\'), strlen($class));
@@ -2824,7 +2835,11 @@ final class Compiler
 		}
 		if ($expr instanceof Expr\ClassConstFetch && $expr->name instanceof Node\Identifier && $expr->name->toLowerString() === 'class') {
 			if ($expr->class instanceof Node\Name && $expr->class->toLowerString() !== 'static') {
-				return $this->literal($this->className($expr->class));
+				$className = $this->className($expr->class);
+				if ($this->scopedClassRef($className) !== null) {
+					throw new CompileError(sprintf('%s::class names a class the PHAR\'s scoper renames — its name is only known at run time', $className));
+				}
+				return $this->literal($className);
 			}
 			if ($expr->class instanceof Node\Name && $f->self === null) {
 				// static::class in a static method: the called scope of its
@@ -3155,6 +3170,13 @@ final class Compiler
 		}
 		if ($f === null) {
 			throw new CompileError(sprintf('class %s needs a run-time lookup outside a function', $className));
+		}
+		$classRef = $this->scopedClassRef($className);
+		if ($classRef !== null) {
+			$t = $f->temp('ce');
+			$f->line(sprintf('zend_class_entry *%s = pt_class(%s);', $t, $classRef));
+			$f->failIf(sprintf('%s == NULL', $t));
+			return $t;
 		}
 		$site = $this->site('pgrt::ClassSite', 'cls_' . $className);
 		$t = $f->temp('ce');
@@ -7334,8 +7356,50 @@ final class Compiler
 		if ($shadowCe !== null) {
 			return $shadowCe;
 		}
+		$classRef = $this->scopedClassRef($class);
+		if ($classRef !== null) {
+			return sprintf('pt_class_loaded(%s)', $classRef);
+		}
 		$site = $this->site('pgrt::ClassSite', 'cls_' . $class);
 		return sprintf('pgrt::lookupClassQuiet(%s, "%s", %d)', $site, addcslashes($class, '\\'), strlen($class));
+	}
+
+	/**
+	 * The native class-reference table's constant (pt_class_refs in
+	 * turbo-ext/src/support.cpp) for a class the PHAR's php-scoper renames —
+	 * a vendored dependency outside the namespaces
+	 * compiler/build/scoper-namespaces.php excludes. A name baked into the
+	 * C++ would miss the prefixed class, so such a class is resolved through
+	 * the class map TurboExtensionEnabler passes to the extension: PHP code
+	 * the scoper rewrites. Null for any other class.
+	 */
+	private function scopedClassRef(string $class): ?string
+	{
+		if ($this->classRefConstants === null) {
+			$config = require __DIR__ . '/../../../../compiler/build/scoper-namespaces.php';
+			$this->unscopedNamespaces = $config['excluded'];
+			$this->classRefConstants = [];
+			preg_match_all('~/\* (PT_CLASS_\w+) \*/ \{"\w+", "((?:[^"\\\\]|\\\\.)+)"\}~', (string) file_get_contents(__DIR__ . '/../../../../turbo-ext/src/support.cpp'), $matches, PREG_SET_ORDER);
+			foreach ($matches as $match) {
+				$this->classRefConstants[strtolower(stripslashes($match[2]))] = $match[1];
+			}
+		}
+		if (!str_contains($class, '\\')) {
+			return null;
+		}
+		if ((class_exists($class) || interface_exists($class)) && (new ReflectionClass($class))->isInternal()) {
+			return null;
+		}
+		foreach ($this->unscopedNamespaces as $namespace) {
+			if (str_starts_with(strtolower($class), strtolower($namespace) . '\\')) {
+				return null;
+			}
+		}
+		$constant = $this->classRefConstants[strtolower($class)] ?? null;
+		if ($constant === null) {
+			throw new CompileError(sprintf('%s is renamed by the PHAR\'s scoper: add it to the native class-reference table (pt_class_refs in turbo-ext/src/support.cpp) and to VENDORED_CLASS_MAP in build/PHPStan/Build/TurboAttributeCollector.php', $class));
+		}
+		return $constant;
 	}
 
 	private function emitTypeCheck(FunctionContext $f, string $z, string $describe, Type $declared, string $onFailure): void

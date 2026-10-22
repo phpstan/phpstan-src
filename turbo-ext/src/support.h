@@ -512,6 +512,11 @@ enum {
 	PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER,
 	/* the dependencies of the handlers' results */
 	PT_CLASS_DEPENDENCY_TYPES,
+	/* vendored classes compiled code references: the PHAR's scoper renames
+	 * them, so their names come from the class map */
+	PT_CLASS_NETTE_RANDOM,
+	PT_CLASS_SYMFONY_FINDER,
+	PT_CLASS_SYMFONY_GLOB,
 	PT_CLASS_COUNT
 };
 

@@ -9,37 +9,35 @@ zend_class_entry *pt_ce_directory_walker = nullptr;
 /* the interned string literals, created at module startup */
 static zval pg_lit[21];
 
-static pgrt::ClassSite pg_site_0; /* cls_Symfony\Component\Finder\Finder */
-static pgrt::MethodShapeSite pg_site_1; /* method0_followLinks_1 */
-static pgrt::MethodShapeSite pg_site_2; /* method0_files_2 */
-static pt_method_site pg_site_3; /* method_name_3 */
-static pt_method_site pg_site_4; /* method_in_4 */
-static pgrt::MethodShapeSite pg_site_5; /* method0_getPathname_5 */
-static pgrt::FunctionSite pg_site_6; /* function_str_contains */
-static pgrt::FunctionSite pg_site_7; /* function_rtrim */
-static pgrt::ClassSite pg_site_8; /* cls_Symfony\Component\Finder\Glob */
-static pt_method_site pg_site_9; /* static_Symfony\Component\Finder\Glob::toRegex */
-static pgrt::MethodShapeSite pg_site_10; /* method0_begin_10 */
-static pgrt::FunctionSite pg_site_11; /* function_stat */
-static pgrt::FunctionSite pg_site_12; /* function_explode */
-static pgrt::FunctionSite pg_site_13; /* function_substr */
-static pgrt::FunctionSite pg_site_14; /* function_is_dir */
-static pgrt::FunctionSite pg_site_15; /* function_preg_match */
-static pgrt::FunctionSite pg_site_16; /* function_opendir */
-static pgrt::FunctionSite pg_site_17; /* function_readdir */
-static pgrt::FunctionSite pg_site_18; /* function_str_starts_with */
-static pgrt::FunctionSite pg_site_19; /* function_lstat */
-static pgrt::FunctionSite pg_site_20; /* function_closedir */
-static pgrt::FunctionSite pg_site_21; /* function_file_get_contents */
-static pgrt::FunctionSite pg_site_22; /* function_unserialize */
-static pgrt::FunctionSite pg_site_23; /* function_array_keys */
-static pgrt::FunctionSite pg_site_24; /* function_mkdir */
-static pgrt::FunctionSite pg_site_25; /* function_getmypid */
-static pgrt::FunctionSite pg_site_26; /* function_serialize */
-static pgrt::FunctionSite pg_site_27; /* function_file_put_contents */
-static pgrt::FunctionSite pg_site_28; /* function_rename */
-static pgrt::FunctionSite pg_site_29; /* function_unlink */
-static pgrt::ClassSite pg_site_30; /* cls_PHPStan\File\FileStatSignatureReader */
+static pgrt::MethodShapeSite pg_site_0; /* method0_followLinks_0 */
+static pgrt::MethodShapeSite pg_site_1; /* method0_files_1 */
+static pt_method_site pg_site_2; /* method_name_2 */
+static pt_method_site pg_site_3; /* method_in_3 */
+static pgrt::MethodShapeSite pg_site_4; /* method0_getPathname_4 */
+static pgrt::FunctionSite pg_site_5; /* function_str_contains */
+static pgrt::FunctionSite pg_site_6; /* function_rtrim */
+static pt_method_site pg_site_7; /* static_Symfony\Component\Finder\Glob::toRegex */
+static pgrt::MethodShapeSite pg_site_8; /* method0_begin_8 */
+static pgrt::FunctionSite pg_site_9; /* function_stat */
+static pgrt::FunctionSite pg_site_10; /* function_explode */
+static pgrt::FunctionSite pg_site_11; /* function_substr */
+static pgrt::FunctionSite pg_site_12; /* function_is_dir */
+static pgrt::FunctionSite pg_site_13; /* function_preg_match */
+static pgrt::FunctionSite pg_site_14; /* function_opendir */
+static pgrt::FunctionSite pg_site_15; /* function_readdir */
+static pgrt::FunctionSite pg_site_16; /* function_str_starts_with */
+static pgrt::FunctionSite pg_site_17; /* function_lstat */
+static pgrt::FunctionSite pg_site_18; /* function_closedir */
+static pgrt::FunctionSite pg_site_19; /* function_file_get_contents */
+static pgrt::FunctionSite pg_site_20; /* function_unserialize */
+static pgrt::FunctionSite pg_site_21; /* function_array_keys */
+static pgrt::FunctionSite pg_site_22; /* function_mkdir */
+static pgrt::FunctionSite pg_site_23; /* function_getmypid */
+static pgrt::FunctionSite pg_site_24; /* function_serialize */
+static pgrt::FunctionSite pg_site_25; /* function_file_put_contents */
+static pgrt::FunctionSite pg_site_26; /* function_rename */
+static pgrt::FunctionSite pg_site_27; /* function_unlink */
+static pgrt::ClassSite pg_site_28; /* cls_PHPStan\File\FileStatSignatureReader */
 
 static void pg_const_VCS_DIRECTORIES(zval *out)
 {
@@ -98,7 +96,7 @@ namespace pgen::DirectoryWalker {
 		}
 	}
 	 {
-		zend_class_entry *ce3 = pgrt::lookupClass(pg_site_0, "Symfony\\Component\\Finder\\Finder", 31);
+		zend_class_entry *ce3 = pt_class(PT_CLASS_SYMFONY_FINDER);
 		if (UNEXPECTED(ce3 == NULL)) return false;
 		zv::Val n2;
 		if (UNEXPECTED(!pgrt::newObject(ce3, 0, NULL, n2.raw(), NULL))) return false;
@@ -106,7 +104,7 @@ namespace pgen::DirectoryWalker {
 	}
 	 {
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_finder.raw(), "followLinks", "followlinks", 11, r4.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_0, l_finder.raw(), "followLinks", "followlinks", 11, r4.raw()))) return false;
 	}
 	 {
 		zval arr5_raw;
@@ -116,7 +114,7 @@ namespace pgen::DirectoryWalker {
 	}
 	 {
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_2, l_finder.raw(), "files", "files", 5, r8.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_1, l_finder.raw(), "files", "files", 5, r8.raw()))) return false;
 		zv::Val r9;
 		if (UNEXPECTED(!pgrt::implode(&pg_lit[1], p_fileExtensions, r9.raw()))) return false;
 		zv::Val cat10;
@@ -126,11 +124,11 @@ namespace pgen::DirectoryWalker {
 		zval av12[1];
 		ZVAL_COPY_VALUE(&av12[0], cat11.raw());
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r8.raw(), "name", "name", 4, 1, av12, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_2, r8.raw(), "name", "name", 4, 1, av12, r13.raw(), NULL))) return false;
 		zval av14[1];
 		ZVAL_COPY_VALUE(&av14[0], p_directory);
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, r13.raw(), "in", "in", 2, 1, av14, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_3, r13.raw(), "in", "in", 2, 1, av14, r15.raw(), NULL))) return false;
 		pgrt::ForeachIter it16;
 		if (UNEXPECTED(!it16.begin(r15.raw()))) return false;
 		while (it16.valid()) {
@@ -138,7 +136,7 @@ namespace pgen::DirectoryWalker {
 			 {
 				 {
 					zv::Val r19;
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_5, l_fileInfo, "getPathname", "getpathname", 11, r19.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_4, l_fileInfo, "getPathname", "getpathname", 11, r19.raw()))) return false;
 					zv::Val o20 = zv::Val::copyOf(zv::Ref(r19.raw()));
 					zval *w21 = zv::Ref(l_files.raw()).deref().raw();
 					if (Z_TYPE_P(w21) <= IS_NULL) { zval_ptr_dtor(w21); array_init(w21); } else if (UNEXPECTED(Z_TYPE_P(w21) != IS_ARRAY)) { zend_throw_error(NULL, "Cannot use a scalar value as an array"); return false; }
@@ -238,7 +236,7 @@ namespace pgen::DirectoryWalker {
 		if (!b1) {
 			zv::Val o3 = zv::Val::copyOf(zv::Ref(l_directory.raw()));
 			zv::Val r4;
-			if (UNEXPECTED(!pgrt::strMatch(pg_site_6, "str_contains", 12, pgrt::StrMatch::CONTAINS, o3.raw(), &pg_lit[5], r4.raw()))) return false;
+			if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_contains", 12, pgrt::StrMatch::CONTAINS, o3.raw(), &pg_lit[5], r4.raw()))) return false;
 			b1 = (Z_TYPE_P(r4.raw()) == IS_TRUE);
 		}
 		if (b1) {
@@ -255,7 +253,7 @@ namespace pgen::DirectoryWalker {
 		ZVAL_COPY_VALUE(&av6[0], l_directory.raw());
 		ZVAL_COPY_VALUE(&av6[1], &pg_lit[4]);
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "rtrim", 5, pt_ce_directory_walker, 2, av6, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "rtrim", 5, pt_ce_directory_walker, 2, av6, r7.raw(), NULL))) return false;
 		l_directory = std::move(r7);
 	}
 	 {
@@ -293,14 +291,14 @@ namespace pgen::DirectoryWalker {
 		if (UNEXPECTED(!pgrt::concat(cat16.raw(), &pg_lit[2], cat17.raw()))) return false;
 		zval av18[1];
 		ZVAL_COPY_VALUE(&av18[0], cat17.raw());
-		zend_class_entry *ce19 = pgrt::lookupClass(pg_site_8, "Symfony\\Component\\Finder\\Glob", 29);
+		zend_class_entry *ce19 = pt_class(PT_CLASS_SYMFONY_GLOB);
 		if (UNEXPECTED(ce19 == NULL)) return false;
 		zv::Val r20;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_9, ce19, "toregex", 7, 1, av18, r20.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_7, ce19, "toregex", 7, 1, av18, r20.raw(), NULL))) return false;
 		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DirectoryWalker::slot::fileStatSignatures, "fileStatSignatures");
 		if (UNEXPECTED(p21 == NULL)) return false;
 		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callMethod0(pg_site_10, p21, "begin", "begin", 5, r22.raw()))) return false;
+		if (UNEXPECTED(!pgrt::callMethod0(pg_site_8, p21, "begin", "begin", 5, r22.raw()))) return false;
 		if (UNEXPECTED(!(Z_TYPE_P(r20.raw()) == IS_STRING))) { pgrt::throwArgumentType("PHPStan\\File\\DirectoryWalker::walkDirectory", 2, "pattern", "string", r20.raw()); return false; }
 		zval *is23 = Z_ISUNDEF_P(l_files.raw()) ? NULL : l_files.raw();
 		zv::Val ref24 = zv::Val::adopt([&]() { zval inner; if (is23 != NULL) { ZVAL_COPY(&inner, is23); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
@@ -351,7 +349,7 @@ namespace pgen::DirectoryWalker {
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], p_directory);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "stat", 4, pt_ce_directory_walker, 1, av2, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_9, "stat", 4, pt_ce_directory_walker, 1, av2, r3.raw(), NULL))) return false;
 		silence1.end();
 		l_stat = std::move(r3);
 	}
@@ -498,7 +496,7 @@ namespace pgen::DirectoryWalker {
 		ZVAL_COPY_VALUE(&av40[0], &pg_lit[7]);
 		ZVAL_COPY_VALUE(&av40[1], l_entries.raw());
 		zv::Val r41;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "explode", 7, pt_ce_directory_walker, 2, av40, r41.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "explode", 7, pt_ce_directory_walker, 2, av40, r41.raw(), NULL))) return false;
 		zv::Val a42 = zv::Val::copyOf(zv::Ref(r41.raw()).deref());
 		HashTable *ht39 = Z_ARRVAL_P(a42.raw());
 		zval *v43;
@@ -527,7 +525,7 @@ namespace pgen::DirectoryWalker {
 					ZVAL_LONG(&z53, 1);
 					ZVAL_COPY_VALUE(&av52[1], &z53);
 					zv::Val r54;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "substr", 6, pt_ce_directory_walker, 2, av52, r54.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "substr", 6, pt_ce_directory_walker, 2, av52, r54.raw(), NULL))) return false;
 					l_name = std::move(r54);
 				}
 				 {
@@ -543,7 +541,7 @@ namespace pgen::DirectoryWalker {
 							zval av57[1];
 							ZVAL_COPY_VALUE(&av57[0], l_path.raw());
 							zv::Val r58;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "is_dir", 6, pt_ce_directory_walker, 1, av57, r58.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "is_dir", 6, pt_ce_directory_walker, 1, av57, r58.raw(), NULL))) return false;
 							if (Z_TYPE_P(r58.raw()) == IS_TRUE) {
 								 {
 									zval *cc61 = pgrt::classConstant(pt_ce_directory_walker, &pg_lit[9], pt_ce_directory_walker);
@@ -604,7 +602,7 @@ namespace pgen::DirectoryWalker {
 					ZVAL_COPY_VALUE(&av72[0], p_pattern);
 					ZVAL_COPY_VALUE(&av72[1], l_name.raw());
 					zv::Val r73;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "preg_match", 10, pt_ce_directory_walker, 2, av72, r73.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "preg_match", 10, pt_ce_directory_walker, 2, av72, r73.raw(), NULL))) return false;
 					if (!(Z_TYPE_P(r73.raw()) == IS_LONG && Z_LVAL_P(r73.raw()) == 1)) {
 						goto cont47;
 					}
@@ -644,7 +642,7 @@ namespace pgen::DirectoryWalker {
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], p_directory);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_16, "opendir", 7, pt_ce_directory_walker, 1, av2, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "opendir", 7, pt_ce_directory_walker, 1, av2, r3.raw(), NULL))) return false;
 		silence1.end();
 		l_handle = std::move(r3);
 	}
@@ -670,7 +668,7 @@ namespace pgen::DirectoryWalker {
 				zval av7[1];
 				ZVAL_COPY_VALUE(&av7[0], l_handle.raw());
 				zv::Val r8;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "readdir", 7, pt_ce_directory_walker, 1, av7, r8.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "readdir", 7, pt_ce_directory_walker, 1, av7, r8.raw(), NULL))) return false;
 				l_name = std::move(r8);
 				if (!(!(Z_TYPE_P(l_name.raw()) == (false ? IS_TRUE : IS_FALSE)))) break;
 			}
@@ -678,7 +676,7 @@ namespace pgen::DirectoryWalker {
 				 {
 					zv::Val o11 = zv::Val::copyOf(zv::Ref(l_name.raw()));
 					zv::Val r12;
-					if (UNEXPECTED(!pgrt::strMatch(pg_site_18, "str_starts_with", 15, pgrt::StrMatch::STARTS, o11.raw(), &pg_lit[12], r12.raw()))) return false;
+					if (UNEXPECTED(!pgrt::strMatch(pg_site_16, "str_starts_with", 15, pgrt::StrMatch::STARTS, o11.raw(), &pg_lit[12], r12.raw()))) return false;
 					if (Z_TYPE_P(r12.raw()) == IS_TRUE) {
 						goto cont10;
 					}
@@ -692,7 +690,7 @@ namespace pgen::DirectoryWalker {
 					zval av16[1];
 					ZVAL_COPY_VALUE(&av16[0], cat15.raw());
 					zv::Val r17;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_19, "lstat", 5, pt_ce_directory_walker, 1, av16, r17.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "lstat", 5, pt_ce_directory_walker, 1, av16, r17.raw(), NULL))) return false;
 					silence13.end();
 					l_stat = std::move(r17);
 				}
@@ -772,7 +770,7 @@ namespace pgen::DirectoryWalker {
 		zval av37[1];
 		ZVAL_COPY_VALUE(&av37[0], l_handle.raw());
 		zv::Val r38;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_20, "closedir", 8, pt_ce_directory_walker, 1, av37, r38.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_18, "closedir", 8, pt_ce_directory_walker, 1, av37, r38.raw(), NULL))) return false;
 	}
 	 {
 		zv::Val r39;
@@ -854,7 +852,7 @@ namespace pgen::DirectoryWalker {
 		zval av7[1];
 		ZVAL_COPY_VALUE(&av7[0], l_file.raw());
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_21, "file_get_contents", 17, pt_ce_directory_walker, 1, av7, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_19, "file_get_contents", 17, pt_ce_directory_walker, 1, av7, r8.raw(), NULL))) return false;
 		silence6.end();
 		l_contents = std::move(r8);
 	}
@@ -874,7 +872,7 @@ namespace pgen::DirectoryWalker {
 		ZVAL_COPY_VALUE(&av12[0], l_contents.raw());
 		ZVAL_COPY_VALUE(&av12[1], arr10.raw());
 		zv::Val r13;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_22, "unserialize", 11, pt_ce_directory_walker, 2, av12, r13.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_20, "unserialize", 11, pt_ce_directory_walker, 2, av12, r13.raw(), NULL))) return false;
 		silence9.end();
 		l_data = std::move(r13);
 	}
@@ -970,7 +968,7 @@ namespace pgen::DirectoryWalker {
 		zval av6[1];
 		ZVAL_COPY_VALUE(&av6[0], p5);
 		zv::Val r7;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_23, "array_keys", 10, pt_ce_directory_walker, 1, av6, r7.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_21, "array_keys", 10, pt_ce_directory_walker, 1, av6, r7.raw(), NULL))) return false;
 		zv::Val a8 = zv::Val::copyOf(zv::Ref(r7.raw()).deref());
 		HashTable *ht4 = Z_ARRVAL_P(a8.raw());
 		zval *v9;
@@ -991,7 +989,7 @@ namespace pgen::DirectoryWalker {
 						zv::Val cat20;
 						if (UNEXPECTED(!pgrt::concat(p_root, &pg_lit[4], cat20.raw()))) return false;
 						zv::Val r21;
-						if (UNEXPECTED(!pgrt::strMatch(pg_site_18, "str_starts_with", 15, pgrt::StrMatch::STARTS, o19.raw(), cat20.raw(), r21.raw()))) return false;
+						if (UNEXPECTED(!pgrt::strMatch(pg_site_16, "str_starts_with", 15, pgrt::StrMatch::STARTS, o19.raw(), cat20.raw(), r21.raw()))) return false;
 						b14 = !((Z_TYPE_P(r21.raw()) == IS_TRUE));
 					}
 					if (b14) {
@@ -1042,7 +1040,7 @@ namespace pgen::DirectoryWalker {
 		zval av32[1];
 		ZVAL_COPY_VALUE(&av32[0], l_cacheDirectory.raw());
 		zv::Val r33;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "is_dir", 6, pt_ce_directory_walker, 1, av32, r33.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "is_dir", 6, pt_ce_directory_walker, 1, av32, r33.raw(), NULL))) return false;
 		bool b31 = !((Z_TYPE_P(r33.raw()) == IS_TRUE));
 		if (b31) {
 			pgrt::Silence silence34;
@@ -1055,7 +1053,7 @@ namespace pgen::DirectoryWalker {
 			ZVAL_BOOL(&z37, true);
 			ZVAL_COPY_VALUE(&av35[2], &z37);
 			zv::Val r38;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "mkdir", 5, pt_ce_directory_walker, 3, av35, r38.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_22, "mkdir", 5, pt_ce_directory_walker, 3, av35, r38.raw(), NULL))) return false;
 			zv::Val o39 = zv::Val::boolean((Z_TYPE_P(r38.raw()) == IS_TRUE));
 			silence34.end();
 			b31 = !(zend_is_true(o39.raw()));
@@ -1065,7 +1063,7 @@ namespace pgen::DirectoryWalker {
 			zval av40[1];
 			ZVAL_COPY_VALUE(&av40[0], l_cacheDirectory.raw());
 			zv::Val r41;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "is_dir", 6, pt_ce_directory_walker, 1, av40, r41.raw(), NULL))) return false;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "is_dir", 6, pt_ce_directory_walker, 1, av40, r41.raw(), NULL))) return false;
 			b30 = !((Z_TYPE_P(r41.raw()) == IS_TRUE));
 		}
 		if (b30) {
@@ -1076,7 +1074,7 @@ namespace pgen::DirectoryWalker {
 	}
 	 {
 		zv::Val r42;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "getmypid", 8, pt_ce_directory_walker, 0, NULL, r42.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_23, "getmypid", 8, pt_ce_directory_walker, 0, NULL, r42.raw(), NULL))) return false;
 		l_pid = std::move(r42);
 	}
 	 {
@@ -1112,12 +1110,12 @@ namespace pgen::DirectoryWalker {
 		zval av55[1];
 		ZVAL_COPY_VALUE(&av55[0], arr51.raw());
 		zv::Val r56;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_26, "serialize", 9, pt_ce_directory_walker, 1, av55, r56.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_24, "serialize", 9, pt_ce_directory_walker, 1, av55, r56.raw(), NULL))) return false;
 		zval av57[2];
 		ZVAL_COPY_VALUE(&av57[0], o50.raw());
 		ZVAL_COPY_VALUE(&av57[1], r56.raw());
 		zv::Val r58;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_27, "file_put_contents", 17, pt_ce_directory_walker, 2, av57, r58.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "file_put_contents", 17, pt_ce_directory_walker, 2, av57, r58.raw(), NULL))) return false;
 		silence49.end();
 		if (Z_TYPE_P(r58.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
@@ -1131,7 +1129,7 @@ namespace pgen::DirectoryWalker {
 		ZVAL_COPY_VALUE(&av60[0], l_temporaryFile.raw());
 		ZVAL_COPY_VALUE(&av60[1], l_file.raw());
 		zv::Val r61;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_28, "rename", 6, pt_ce_directory_walker, 2, av60, r61.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_26, "rename", 6, pt_ce_directory_walker, 2, av60, r61.raw(), NULL))) return false;
 		zv::Val o62 = zv::Val::boolean((Z_TYPE_P(r61.raw()) == IS_TRUE));
 		silence59.end();
 		if (zend_is_true(o62.raw())) {
@@ -1145,7 +1143,7 @@ namespace pgen::DirectoryWalker {
 		zval av64[1];
 		ZVAL_COPY_VALUE(&av64[0], l_temporaryFile.raw());
 		zv::Val r65;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_29, "unlink", 6, pt_ce_directory_walker, 1, av64, r65.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_27, "unlink", 6, pt_ce_directory_walker, 1, av64, r65.raw(), NULL))) return false;
 		zv::Val o66 = zv::Val::boolean((Z_TYPE_P(r65.raw()) == IS_TRUE));
 		silence63.end();
 	}
@@ -1263,7 +1261,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_DirectoryWalker)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_directory_str != NULL) { ZVAL_STR(&p_directory_zv, p_directory_str); p_directory = &p_directory_zv; }
 		if (p_pattern_str != NULL) { ZVAL_STR(&p_pattern_zv, p_pattern_str); p_pattern = &p_pattern_zv; }
-		if (p_signatures != NULL && UNEXPECTED(Z_TYPE_P(p_signatures) != IS_OBJECT || !((Z_TYPE_P(p_signatures) == IS_OBJECT && Z_OBJCE_P(p_signatures) == pt_ce_file_stat_signature_reader) || pgrt::instanceOfClass(p_signatures, pgrt::lookupClassQuiet(pg_site_30, "PHPStan\\File\\FileStatSignatureReader", 36))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\File\\FileStatSignatureReader", zend_zval_value_name(p_signatures)); RETURN_THROWS(); }
+		if (p_signatures != NULL && UNEXPECTED(Z_TYPE_P(p_signatures) != IS_OBJECT || !((Z_TYPE_P(p_signatures) == IS_OBJECT && Z_OBJCE_P(p_signatures) == pt_ce_file_stat_signature_reader) || pgrt::instanceOfClass(p_signatures, pgrt::lookupClassQuiet(pg_site_28, "PHPStan\\File\\FileStatSignatureReader", 36))))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\File\\FileStatSignatureReader", zend_zval_value_name(p_signatures)); RETURN_THROWS(); }
 		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p_files).deref().raw()) == IS_ARRAY))) { zend_argument_type_error(4, "must be of type %s, %s given", "array", zend_zval_value_name(zv::Ref(p_files).deref().raw())); RETURN_THROWS(); }
 		if (UNEXPECTED(!(Z_TYPE_P(zv::Ref(p_visited).deref().raw()) == IS_ARRAY))) { zend_argument_type_error(5, "must be of type %s, %s given", "array", zend_zval_value_name(zv::Ref(p_visited).deref().raw())); RETURN_THROWS(); }
 		bool r;

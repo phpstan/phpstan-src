@@ -18,32 +18,31 @@ static pgrt::GetterSite pg_site_5; /* getter_getData_5 */
 static pgrt::MethodShapeSite pg_site_6; /* method0_getData_6 */
 static pgrt::ClassSite pg_site_7; /* cls_PHPStan\Internal\DirectoryCreator */
 static pt_method_site pg_site_8; /* static_PHPStan\Internal\DirectoryCreator::ensureDirectoryExists */
-static pgrt::ClassSite pg_site_9; /* cls_Nette\Utils\Random */
-static pt_method_site pg_site_10; /* static_Nette\Utils\Random::generate */
-static pgrt::FunctionSite pg_site_11; /* function_error_get_last */
-static pgrt::FunctionSite pg_site_12; /* function_serialize */
-static pgrt::ClassSite pg_site_13; /* cls_PHPStan\ShouldNotHappenException */
-static pgrt::FunctionSite pg_site_14; /* function_rename */
-static pgrt::FunctionSite pg_site_15; /* function_unlink */
-static pgrt::ClassSite pg_site_16; /* cls_InvalidArgumentException */
-static pgrt::FunctionSite pg_site_17; /* function_hash */
-static pgrt::FunctionSite pg_site_18; /* function_substr */
-static pgrt::FunctionSite pg_site_19; /* function_is_dir */
-static pgrt::ClassSite pg_site_20; /* cls_PHPStan\File\CouldNotReadFileException */
-static pgrt::ClassSite pg_site_21; /* cls_RecursiveDirectoryIterator */
-static pt_method_site pg_site_22; /* method_setFlags_22 */
-static pgrt::ClassSite pg_site_23; /* cls_RecursiveIteratorIterator */
-static pgrt::MethodShapeSite pg_site_24; /* method0_getPathname_24 */
-static pgrt::FunctionSite pg_site_25; /* function_str_ends_with */
-static pgrt::FunctionSite pg_site_26; /* function_dirname */
-static pgrt::FunctionSite pg_site_27; /* function_strlen */
-static pgrt::FunctionSite pg_site_28; /* function_uksort */
-static pgrt::FunctionSite pg_site_29; /* function_array_keys */
-static pgrt::FunctionSite pg_site_30; /* function_rmdir */
-static pgrt::ClassSite pg_site_31; /* cls_PHPStan\File\CouldNotWriteFileException */
-static pgrt::FunctionSite pg_site_32; /* function_opendir */
-static pgrt::FunctionSite pg_site_33; /* function_readdir */
-static pgrt::FunctionSite pg_site_34; /* function_closedir */
+static pt_method_site pg_site_9; /* static_Nette\Utils\Random::generate */
+static pgrt::FunctionSite pg_site_10; /* function_error_get_last */
+static pgrt::FunctionSite pg_site_11; /* function_serialize */
+static pgrt::ClassSite pg_site_12; /* cls_PHPStan\ShouldNotHappenException */
+static pgrt::FunctionSite pg_site_13; /* function_rename */
+static pgrt::FunctionSite pg_site_14; /* function_unlink */
+static pgrt::ClassSite pg_site_15; /* cls_InvalidArgumentException */
+static pgrt::FunctionSite pg_site_16; /* function_hash */
+static pgrt::FunctionSite pg_site_17; /* function_substr */
+static pgrt::FunctionSite pg_site_18; /* function_is_dir */
+static pgrt::ClassSite pg_site_19; /* cls_PHPStan\File\CouldNotReadFileException */
+static pgrt::ClassSite pg_site_20; /* cls_RecursiveDirectoryIterator */
+static pt_method_site pg_site_21; /* method_setFlags_21 */
+static pgrt::ClassSite pg_site_22; /* cls_RecursiveIteratorIterator */
+static pgrt::MethodShapeSite pg_site_23; /* method0_getPathname_23 */
+static pgrt::FunctionSite pg_site_24; /* function_str_ends_with */
+static pgrt::FunctionSite pg_site_25; /* function_dirname */
+static pgrt::FunctionSite pg_site_26; /* function_strlen */
+static pgrt::FunctionSite pg_site_27; /* function_uksort */
+static pgrt::FunctionSite pg_site_28; /* function_array_keys */
+static pgrt::FunctionSite pg_site_29; /* function_rmdir */
+static pgrt::ClassSite pg_site_30; /* cls_PHPStan\File\CouldNotWriteFileException */
+static pgrt::FunctionSite pg_site_31; /* function_opendir */
+static pgrt::FunctionSite pg_site_32; /* function_readdir */
+static pgrt::FunctionSite pg_site_33; /* function_closedir */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -62,11 +61,11 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zval av1[1];
 		ZVAL_COPY_VALUE(&av1[0], p_b);
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_27, "strlen", 6, pt_ce_file_cache_storage, 1, av1, r2.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_26, "strlen", 6, pt_ce_file_cache_storage, 1, av1, r2.raw(), NULL))) return;
 		zval av3[1];
 		ZVAL_COPY_VALUE(&av3[0], p_a);
 		zv::Val r4;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_27, "strlen", 6, pt_ce_file_cache_storage, 1, av3, r4.raw(), NULL))) return;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_26, "strlen", 6, pt_ce_file_cache_storage, 1, av3, r4.raw(), NULL))) return;
 		zend_long ar5;
 		if (UNEXPECTED(!pgrt::subLong(Z_LVAL_P(r2.raw()), Z_LVAL_P(r4.raw()), &ar5))) return;
 		zval z6;
@@ -263,10 +262,10 @@ namespace pgen::FileCacheStorage {
 		zval *p19 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FileCacheStorage::slot::directory, "directory");
 		if (UNEXPECTED(p19 == NULL)) return false;
 		zv::Val o20 = zv::Val::copyOf(zv::Ref(p19));
-		zend_class_entry *ce21 = pgrt::lookupClass(pg_site_9, "Nette\\Utils\\Random", 18);
+		zend_class_entry *ce21 = pt_class(PT_CLASS_NETTE_RANDOM);
 		if (UNEXPECTED(ce21 == NULL)) return false;
 		zv::Val r22;
-		if (UNEXPECTED(!pgrt::callStatic(pg_site_10, ce21, "generate", 8, 0, NULL, r22.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callStatic(pg_site_9, ce21, "generate", 8, 0, NULL, r22.raw(), NULL))) return false;
 		pgrt::StringBuilder sb23;
 		if (UNEXPECTED(!sb23.append(o20.raw()))) return false;
 		sb23.appendLiteral("/", 1);
@@ -277,7 +276,7 @@ namespace pgen::FileCacheStorage {
 	}
 	 {
 		zv::Val r25;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "error_get_last", 14, pt_ce_file_cache_storage, 0, NULL, r25.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "error_get_last", 14, pt_ce_file_cache_storage, 0, NULL, r25.raw(), NULL))) return false;
 		l_errorBefore = std::move(r25);
 	}
 	 {
@@ -292,13 +291,13 @@ namespace pgen::FileCacheStorage {
 		zval av30[1];
 		ZVAL_COPY_VALUE(&av30[0], n27.raw());
 		zv::Val r31;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_12, "serialize", 9, pt_ce_file_cache_storage, 1, av30, r31.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "serialize", 9, pt_ce_file_cache_storage, 1, av30, r31.raw(), NULL))) return false;
 		silence26.end();
 		l_serialized = std::move(r31);
 	}
 	 {
 		zv::Val r32;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_11, "error_get_last", 14, pt_ce_file_cache_storage, 0, NULL, r32.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_10, "error_get_last", 14, pt_ce_file_cache_storage, 0, NULL, r32.raw(), NULL))) return false;
 		l_errorAfter = std::move(r32);
 	}
 	 {
@@ -322,7 +321,7 @@ namespace pgen::FileCacheStorage {
 				zv::Val r39 = sb38.finish();
 				zval av40[1];
 				ZVAL_COPY_VALUE(&av40[0], r39.raw());
-				zend_class_entry *ce41 = pgrt::lookupClass(pg_site_13, "PHPStan\\ShouldNotHappenException", 32);
+				zend_class_entry *ce41 = pgrt::lookupClass(pg_site_12, "PHPStan\\ShouldNotHappenException", 32);
 				if (UNEXPECTED(ce41 == NULL)) return false;
 				zv::Val n34;
 				if (UNEXPECTED(!pgrt::newObject(ce41, 1, av40, n34.raw(), NULL))) return false;
@@ -340,7 +339,7 @@ namespace pgen::FileCacheStorage {
 		ZVAL_COPY_VALUE(&av44[0], l_tmpPath.raw());
 		ZVAL_COPY_VALUE(&av44[1], l_path.raw());
 		zv::Val r45;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "rename", 6, pt_ce_file_cache_storage, 2, av44, r45.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_13, "rename", 6, pt_ce_file_cache_storage, 2, av44, r45.raw(), NULL))) return false;
 		zv::Val o46 = zv::Val::boolean((Z_TYPE_P(r45.raw()) == IS_TRUE));
 		silence43.end();
 		l_renameSuccess = zend_is_true(o46.raw());
@@ -357,7 +356,7 @@ namespace pgen::FileCacheStorage {
 		zval av48[1];
 		ZVAL_COPY_VALUE(&av48[0], l_tmpPath.raw());
 		zv::Val r49;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "unlink", 6, pt_ce_file_cache_storage, 1, av48, r49.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "unlink", 6, pt_ce_file_cache_storage, 1, av48, r49.raw(), NULL))) return false;
 		zv::Val o50 = zv::Val::boolean((Z_TYPE_P(r49.raw()) == IS_TRUE));
 		silence47.end();
 	}
@@ -381,7 +380,7 @@ namespace pgen::FileCacheStorage {
 				zv::Val r57 = sb56.finish();
 				zval av58[1];
 				ZVAL_COPY_VALUE(&av58[0], r57.raw());
-				zend_class_entry *ce59 = pgrt::lookupClass(pg_site_16, "InvalidArgumentException", 24);
+				zend_class_entry *ce59 = pgrt::lookupClass(pg_site_15, "InvalidArgumentException", 24);
 				if (UNEXPECTED(ce59 == NULL)) return false;
 				zv::Val n55;
 				if (UNEXPECTED(!pgrt::newObject(ce59, 1, av58, n55.raw(), NULL))) return false;
@@ -408,7 +407,7 @@ namespace pgen::FileCacheStorage {
 		ZVAL_COPY_VALUE(&av1[0], &pg_lit[2]);
 		ZVAL_COPY_VALUE(&av1[1], p_key);
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "hash", 4, pt_ce_file_cache_storage, 2, av1, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_16, "hash", 4, pt_ce_file_cache_storage, 2, av1, r2.raw(), NULL))) return false;
 		l_keyHash = std::move(r2);
 	}
 	 {
@@ -424,7 +423,7 @@ namespace pgen::FileCacheStorage {
 		ZVAL_LONG(&z7, 2);
 		ZVAL_COPY_VALUE(&av5[2], &z7);
 		zv::Val r8;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_18, "substr", 6, pt_ce_file_cache_storage, 3, av5, r8.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "substr", 6, pt_ce_file_cache_storage, 3, av5, r8.raw(), NULL))) return false;
 		pgrt::StringBuilder sb9;
 		if (UNEXPECTED(!sb9.append(o4.raw()))) return false;
 		sb9.appendLiteral("/", 1);
@@ -443,7 +442,7 @@ namespace pgen::FileCacheStorage {
 		ZVAL_LONG(&z14, 2);
 		ZVAL_COPY_VALUE(&av12[2], &z14);
 		zv::Val r15;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_18, "substr", 6, pt_ce_file_cache_storage, 3, av12, r15.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_17, "substr", 6, pt_ce_file_cache_storage, 3, av12, r15.raw(), NULL))) return false;
 		pgrt::StringBuilder sb16;
 		if (UNEXPECTED(!sb16.append(o11.raw()))) return false;
 		sb16.appendLiteral("/", 1);
@@ -494,7 +493,7 @@ namespace pgen::FileCacheStorage {
 		zval av2[1];
 		ZVAL_COPY_VALUE(&av2[0], p1);
 		zv::Val r3;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_19, "is_dir", 6, pt_ce_file_cache_storage, 1, av2, r3.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_18, "is_dir", 6, pt_ce_file_cache_storage, 1, av2, r3.raw(), NULL))) return false;
 		if (!((Z_TYPE_P(r3.raw()) == IS_TRUE))) {
 			 {
 				return true;
@@ -534,7 +533,7 @@ namespace pgen::FileCacheStorage {
 				 {
 					zend_object *thrown = EG(exception);
 					bool caught10 = false;
-					if (!caught10 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_20, "PHPStan\\File\\CouldNotReadFileException", 38)))) {
+					if (!caught10 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_19, "PHPStan\\File\\CouldNotReadFileException", 38)))) {
 						caught10 = true;
 						zval exception;
 						ZVAL_OBJ_COPY(&exception, thrown);
@@ -555,7 +554,7 @@ namespace pgen::FileCacheStorage {
 		if (UNEXPECTED(p12 == NULL)) return false;
 		zval av13[1];
 		ZVAL_COPY_VALUE(&av13[0], p12);
-		zend_class_entry *ce14 = pgrt::lookupClass(pg_site_21, "RecursiveDirectoryIterator", 26);
+		zend_class_entry *ce14 = pgrt::lookupClass(pg_site_20, "RecursiveDirectoryIterator", 26);
 		if (UNEXPECTED(ce14 == NULL)) return false;
 		zv::Val n11;
 		if (UNEXPECTED(!pgrt::newObject(ce14, 1, av13, n11.raw(), NULL))) return false;
@@ -567,12 +566,12 @@ namespace pgen::FileCacheStorage {
 		ZVAL_LONG(&z16, 4096);
 		ZVAL_COPY_VALUE(&av15[0], &z16);
 		zv::Val r17;
-		if (UNEXPECTED(!pgrt::callMethod(pg_site_22, l_iterator.raw(), "setFlags", "setflags", 8, 1, av15, r17.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_iterator.raw(), "setFlags", "setflags", 8, 1, av15, r17.raw(), NULL))) return false;
 	}
 	 {
 		zval av19[1];
 		ZVAL_COPY_VALUE(&av19[0], l_iterator.raw());
-		zend_class_entry *ce20 = pgrt::lookupClass(pg_site_23, "RecursiveIteratorIterator", 25);
+		zend_class_entry *ce20 = pgrt::lookupClass(pg_site_22, "RecursiveIteratorIterator", 25);
 		if (UNEXPECTED(ce20 == NULL)) return false;
 		zv::Val n18;
 		if (UNEXPECTED(!pgrt::newObject(ce20, 1, av19, n18.raw(), NULL))) return false;
@@ -592,13 +591,13 @@ namespace pgen::FileCacheStorage {
 			 {
 				 {
 					zv::Val r27;
-					if (UNEXPECTED(!pgrt::callMethod0(pg_site_24, l_file, "getPathname", "getpathname", 11, r27.raw()))) return false;
+					if (UNEXPECTED(!pgrt::callMethod0(pg_site_23, l_file, "getPathname", "getpathname", 11, r27.raw()))) return false;
 					l_path = std::move(r27);
 				}
 				 {
 					zv::Val o28 = zv::Val::copyOf(zv::Ref(l_path.raw()));
 					zv::Val r29;
-					if (UNEXPECTED(!pgrt::strMatch(pg_site_25, "str_ends_with", 13, pgrt::StrMatch::ENDS, o28.raw(), &pg_lit[5], r29.raw()))) return false;
+					if (UNEXPECTED(!pgrt::strMatch(pg_site_24, "str_ends_with", 13, pgrt::StrMatch::ENDS, o28.raw(), &pg_lit[5], r29.raw()))) return false;
 					if (!((Z_TYPE_P(r29.raw()) == IS_TRUE))) {
 						goto cont26;
 					}
@@ -607,7 +606,7 @@ namespace pgen::FileCacheStorage {
 					zval av30[1];
 					ZVAL_COPY_VALUE(&av30[0], l_path.raw());
 					zv::Val r31;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_26, "dirname", 7, pt_ce_file_cache_storage, 1, av30, r31.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "dirname", 7, pt_ce_file_cache_storage, 1, av30, r31.raw(), NULL))) return false;
 					bool k32 = true;
 					zval z34;
 					ZVAL_BOOL(&z34, k32);
@@ -626,7 +625,7 @@ namespace pgen::FileCacheStorage {
 					ZVAL_LONG(&z38, 2);
 					ZVAL_COPY_VALUE(&av37[1], &z38);
 					zv::Val r39;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_26, "dirname", 7, pt_ce_file_cache_storage, 2, av37, r39.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "dirname", 7, pt_ce_file_cache_storage, 2, av37, r39.raw(), NULL))) return false;
 					bool k40 = true;
 					zval z42;
 					ZVAL_BOOL(&z42, k40);
@@ -643,7 +642,7 @@ namespace pgen::FileCacheStorage {
 					zval av46[1];
 					ZVAL_COPY_VALUE(&av46[0], l_path.raw());
 					zv::Val r47;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_15, "unlink", 6, pt_ce_file_cache_storage, 1, av46, r47.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_14, "unlink", 6, pt_ce_file_cache_storage, 1, av46, r47.raw(), NULL))) return false;
 					zv::Val o48 = zv::Val::boolean((Z_TYPE_P(r47.raw()) == IS_TRUE));
 					silence45.end();
 				}
@@ -661,7 +660,7 @@ namespace pgen::FileCacheStorage {
 		ZVAL_COPY_VALUE(&av52[0], ref51.raw());
 		ZVAL_COPY_VALUE(&av52[1], h49.raw());
 		zv::Val r53;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_28, "uksort", 6, pt_ce_file_cache_storage, 2, av52, r53.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_27, "uksort", 6, pt_ce_file_cache_storage, 2, av52, r53.raw(), NULL))) return false;
 		 {
 			l_emptyDirectoriesToCheck = zv::Val::copyOf(zv::Ref(Z_REFVAL_P(ref51.raw())));
 		}
@@ -670,7 +669,7 @@ namespace pgen::FileCacheStorage {
 		zval av55[1];
 		ZVAL_COPY_VALUE(&av55[0], l_emptyDirectoriesToCheck.raw());
 		zv::Val r56;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_29, "array_keys", 10, pt_ce_file_cache_storage, 1, av55, r56.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_28, "array_keys", 10, pt_ce_file_cache_storage, 1, av55, r56.raw(), NULL))) return false;
 		zv::Val a57 = zv::Val::copyOf(zv::Ref(r56.raw()).deref());
 		HashTable *ht54 = Z_ARRVAL_P(a57.raw());
 		zval *v58;
@@ -693,7 +692,7 @@ namespace pgen::FileCacheStorage {
 					zval av65[1];
 					ZVAL_COPY_VALUE(&av65[0], l_directory);
 					zv::Val r66;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_30, "rmdir", 5, pt_ce_file_cache_storage, 1, av65, r66.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_29, "rmdir", 5, pt_ce_file_cache_storage, 1, av65, r66.raw(), NULL))) return false;
 					zv::Val o67 = zv::Val::boolean((Z_TYPE_P(r66.raw()) == IS_TRUE));
 					silence64.end();
 				}
@@ -713,7 +712,7 @@ namespace pgen::FileCacheStorage {
 		 {
 			zend_object *thrown = EG(exception);
 			bool caught70 = false;
-			if (!caught70 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_31, "PHPStan\\File\\CouldNotWriteFileException", 39)))) {
+			if (!caught70 && (pgrt::objectInstanceOf(thrown, pgrt::lookupClassQuiet(pg_site_30, "PHPStan\\File\\CouldNotWriteFileException", 39)))) {
 				caught70 = true;
 				zval exception;
 				ZVAL_OBJ_COPY(&exception, thrown);
@@ -739,7 +738,7 @@ namespace pgen::FileCacheStorage {
 		zval av1[1];
 		ZVAL_COPY_VALUE(&av1[0], p_directory);
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_32, "opendir", 7, pt_ce_file_cache_storage, 1, av1, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_31, "opendir", 7, pt_ce_file_cache_storage, 1, av1, r2.raw(), NULL))) return false;
 		l_handle = std::move(r2);
 	}
 	 {
@@ -756,7 +755,7 @@ namespace pgen::FileCacheStorage {
 				zval av3[1];
 				ZVAL_COPY_VALUE(&av3[0], l_handle.raw());
 				zv::Val r4;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_33, "readdir", 7, pt_ce_file_cache_storage, 1, av3, r4.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_32, "readdir", 7, pt_ce_file_cache_storage, 1, av3, r4.raw(), NULL))) return false;
 				l_entry = std::move(r4);
 				if (!(!(Z_TYPE_P(l_entry.raw()) == (false ? IS_TRUE : IS_FALSE)))) break;
 			}
@@ -771,7 +770,7 @@ namespace pgen::FileCacheStorage {
 							zval av8[1];
 							ZVAL_COPY_VALUE(&av8[0], l_handle.raw());
 							zv::Val r9;
-							if (UNEXPECTED(!pgrt::callFunction(pg_site_34, "closedir", 8, pt_ce_file_cache_storage, 1, av8, r9.raw(), NULL))) return false;
+							if (UNEXPECTED(!pgrt::callFunction(pg_site_33, "closedir", 8, pt_ce_file_cache_storage, 1, av8, r9.raw(), NULL))) return false;
 						}
 						 {
 							*ret = false;
@@ -786,7 +785,7 @@ namespace pgen::FileCacheStorage {
 		zval av10[1];
 		ZVAL_COPY_VALUE(&av10[0], l_handle.raw());
 		zv::Val r11;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_34, "closedir", 8, pt_ce_file_cache_storage, 1, av10, r11.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_33, "closedir", 8, pt_ce_file_cache_storage, 1, av10, r11.raw(), NULL))) return false;
 	}
 	 {
 		*ret = true;

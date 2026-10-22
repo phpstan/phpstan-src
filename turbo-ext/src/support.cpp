@@ -413,6 +413,9 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLOSURE_CALL_CONTEXT_MATCHER */ {"closureCallContextMatcher", "PHPStan\\Analyser\\ClosureCallContextMatcher"},
 	/* PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER */ {"classConstantPatternResolver", "PHPStan\\Type\\ClassConstantPatternResolver"},
 	/* PT_CLASS_DEPENDENCY_TYPES */ {"dependencyTypes", "PHPStan\\Dependency\\DependencyTypes"},
+	/* PT_CLASS_NETTE_RANDOM */ {"netteRandom", "Nette\\Utils\\Random"},
+	/* PT_CLASS_SYMFONY_FINDER */ {"symfonyFinder", "Symfony\\Component\\Finder\\Finder"},
+	/* PT_CLASS_SYMFONY_GLOB */ {"symfonyGlob", "Symfony\\Component\\Finder\\Glob"},
 };
 
 zend_class_entry *pt_class(int idx)

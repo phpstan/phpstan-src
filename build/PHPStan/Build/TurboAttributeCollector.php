@@ -4,6 +4,7 @@ namespace PHPStan\Build;
 
 use FilesystemIterator;
 use JsonException;
+use Nette\Utils\Random;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Comment\Doc;
@@ -194,6 +195,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\Glob;
 use Throwable;
 use function array_keys;
 use function basename;
@@ -304,6 +307,9 @@ final class TurboAttributeCollector
 		'constExprStringNode' => ConstExprStringNode::class,
 		'netteStrings' => Strings::class,
 		'netteRegexpException' => RegexpException::class,
+		'netteRandom' => Random::class,
+		'symfonyFinder' => Finder::class,
+		'symfonyGlob' => Glob::class,
 		'constExprFloatNode' => ConstExprFloatNode::class,
 		'thisTypeNode' => ThisTypeNode::class,
 		'objectShapeNode' => ObjectShapeNode::class,

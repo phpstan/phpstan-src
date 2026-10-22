@@ -714,8 +714,6 @@ public:
 
 	bool isReturningStoredExpressionResults() const { return flag(slots::returnStoredExpressionResults); }
 
-	bool isConsumingStoredExpressionResults() const { return flag(slots::consumeStoredExpressionResults); }
-
 	/* Mirrors lookForSetAllowedUndefinedExpressions() /
 	 * lookForUnsetAllowedUndefinedExpressions() over the private
 	 * lookForExpressionCallback() */
@@ -730,12 +728,12 @@ public:
 	}
 
 	/* Mirrors processExprNodeConsumingStored(). */
-	zv::Val processExprNodeConsumingStored(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+	zv::Val processExprNodeConsumingStored(zval *stmt, zval *expr, zval *consumedExpr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
-		bool previous = flag(slots::consumeStoredExpressionResults);
-		setFlag(slots::consumeStoredExpressionResults, true);
+		zv::Val previous = zv::Val::copyOf(slot(slots::consumeStoredExpression).deref());
+		slot(slots::consumeStoredExpression).deref().assign(zv::Val::copyOf(zv::Ref(consumedExpr)));
 		zv::Val result = thisProcessExprNode(stmt, expr, scope, storage, nodeCallback, context);
-		pt_finally([&]() { setFlag(slots::consumeStoredExpressionResults, previous); });
+		pt_finally([&]() { slot(slots::consumeStoredExpression).deref().assign(std::move(previous)); });
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 		return result;
 	}
@@ -1951,11 +1949,13 @@ private:
 
 	zv::Val processExprNodeBody(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
-		if (flag(slots::returnStoredExpressionResults) || flag(slots::consumeStoredExpressionResults)) {
+		zv::Ref consumedExpr = slot(slots::consumeStoredExpression).deref();
+		bool consume = consumedExpr.isObject() && consumedExpr.asObject() == Z_OBJ_P(expr);
+		if (flag(slots::returnStoredExpressionResults) || consume) {
 			zv::Val storedResult = pt_expression_result_storage_find(storage, expr);
 			if (UNEXPECTED(storedResult.isUndef())) return zv::Val();
 			if (!storedResult.isNull()) {
-				bool answers = flag(slots::consumeStoredExpressionResults);
+				bool answers = consume;
 				if (!answers) {
 					bool promoted;
 					if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), promoted))) return zv::Val();
@@ -1968,7 +1968,7 @@ private:
 
 					zv::Val reanchored = pt_expression_result_at_ask_position(storedResult.raw(), scope);
 					if (UNEXPECTED(reanchored.isUndef())) return zv::Val();
-					if (flag(slots::consumeStoredExpressionResults) && UNEXPECTED(!thisStoreExpressionResult(storage, expr, reanchored.raw()))) return zv::Val();
+					if (consume && UNEXPECTED(!thisStoreExpressionResult(storage, expr, reanchored.raw()))) return zv::Val();
 					return reanchored;
 				}
 			}
@@ -2381,24 +2381,12 @@ bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeSco
 	return true;
 }
 
-bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeScopeResolver, bool &out)
-{
-	if (isNativeResolver(nodeScopeResolver)) {
-		out = NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isConsumingStoredExpressionResults();
-		return true;
-	}
-	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("isconsumingstoredexpressionresults"), 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
-}
-
 /* the fetch handlers' (NullsafePropertyFetchHandler.cpp) */
-zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *consumedExpr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 {
-	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processExprNodeConsumingStored(stmt, expr, scope, storage, nodeCallback, context);
-	zv::Args argv{stmt, expr, scope, storage, nodeCallback, context};
-	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnodeconsumingstored"), 6, argv);
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processExprNodeConsumingStored(stmt, expr, consumedExpr, scope, storage, nodeCallback, context);
+	zv::Args argv{stmt, expr, consumedExpr, scope, storage, nodeCallback, context};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnodeconsumingstored"), 7, argv);
 }
 
 /* the closure walk's (ClosureProcessor.cpp) */
@@ -2626,11 +2614,6 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 		RETURN_BOOL(PT_NSR_THIS.isReturningStoredExpressionResults());
 	});
 
-	cls.method(sigs::isConsumingStoredExpressionResults, [](INTERNAL_FUNCTION_PARAMETERS) {
-		ZEND_PARSE_PARAMETERS_NONE();
-		RETURN_BOOL(PT_NSR_THIS.isConsumingStoredExpressionResults());
-	});
-
 	cls.method(sigs::lookForSetAllowedUndefinedExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
@@ -2650,16 +2633,17 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 	});
 
 	cls.method(sigs::processExprNodeConsumingStored, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *stmt, *expr, *scope, *storage, *nodeCallback, *context;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		zval *stmt, *expr, *consumedExpr, *scope, *storage, *nodeCallback, *context;
+		ZEND_PARSE_PARAMETERS_START(7, 7)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT(consumedExpr)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_NSR_THIS.processExprNodeConsumingStored(stmt, expr, scope, storage, nodeCallback, context));
+		PT_RETURN_VAL(PT_NSR_THIS.processExprNodeConsumingStored(stmt, expr, consumedExpr, scope, storage, nodeCallback, context));
 	});
 
 	cls.method(sigs::processExprOnDemand, [](INTERNAL_FUNCTION_PARAMETERS) {

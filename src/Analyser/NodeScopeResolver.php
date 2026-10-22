@@ -80,10 +80,13 @@ class NodeScopeResolver
 	/**
 	 * Consume-stored mode: a walk that deliberately re-enters an
 	 * already-walked subtree (the nullsafe plain twin re-walking its
-	 * receiver) consumes stored results unconditionally instead of
-	 * re-processing - node callbacks fired during the original walk.
+	 * receiver) consumes this node's stored result unconditionally instead
+	 * of re-processing it - node callbacks fired during the original walk.
+	 * Only this exact node is consumed: the rest of the twin (arguments,
+	 * a dynamic name) is walked normally, even when the storage was seeded
+	 * with results of an earlier loop convergence pass.
 	 */
-	private bool $consumeStoredExpressionResults = false;
+	private ?Expr $consumeStoredExpression = null;
 
 	private ?NonNullabilityHelper $nonNullabilityHelper = null;
 
@@ -493,12 +496,6 @@ class NodeScopeResolver
 		return $this->returnStoredExpressionResults;
 	}
 
-	/** Whether the walk consumes stored results unconditionally (see processExprNodeConsumingStored()). */
-	public function isConsumingStoredExpressionResults(): bool
-	{
-		return $this->consumeStoredExpressionResults;
-	}
-
 	public function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
 	{
 		return $this->lookForExpressionCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr));
@@ -544,22 +541,22 @@ class NodeScopeResolver
 	 * are stored into the given storage - pass a duplicate to keep them isolated.
 	 */
 	/**
-	 * Processes an expression whose already-walked subtrees must be CONSUMED
-	 * from their stored results instead of re-walked: the nullsafe handlers
+	 * Processes an expression whose already-walked receiver must be CONSUMED
+	 * from its stored result instead of re-walked: the nullsafe handlers
 	 * process the receiver once (real callbacks) and then walk the plain twin,
-	 * whose receiver subtree answers from storage, re-anchored to the twin's
+	 * whose receiver answers from storage, re-anchored to the twin's
 	 * (ensured) scope.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function processExprNodeConsumingStored(Node\Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExprNodeConsumingStored(Node\Stmt $stmt, Expr $expr, Expr $consumedExpr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$previous = $this->consumeStoredExpressionResults;
-		$this->consumeStoredExpressionResults = true;
+		$previous = $this->consumeStoredExpression;
+		$this->consumeStoredExpression = $consumedExpr;
 		try {
 			return $this->processExprNode($stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		} finally {
-			$this->consumeStoredExpressionResults = $previous;
+			$this->consumeStoredExpression = $previous;
 		}
 	}
 
@@ -775,7 +772,8 @@ class NodeScopeResolver
 		ExpressionContext $context,
 	): ExpressionResult
 	{
-		if ($this->returnStoredExpressionResults || $this->consumeStoredExpressionResults) {
+		$consume = $this->consumeStoredExpression === $expr;
+		if ($this->returnStoredExpressionResults || $consume) {
 			$storedResult = $storage->findExpressionResult($expr);
 			// a stored result only answers when the current scope agrees with its
 			// evaluation position on the variables the expression reads - a
@@ -784,7 +782,7 @@ class NodeScopeResolver
 			// re-processes the node on its own scope instead. In CONSUME mode the
 			// divergence is intentional (an ensured-non-null device) and the
 			// stored result is consumed unconditionally, re-anchored below.
-			if ($storedResult !== null && ($this->consumeStoredExpressionResults || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted))) {
+			if ($storedResult !== null && ($consume || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted))) {
 				// a foreign-position answer must not thread its original walk
 				// scopes into THIS walk - re-anchor it to the asking position so
 				// subsequent operands keep evaluating on the asking scope
@@ -793,7 +791,7 @@ class NodeScopeResolver
 				}
 
 				$reanchored = $storedResult->atAskPosition($scope);
-				if ($this->consumeStoredExpressionResults) {
+				if ($consume) {
 					// the re-anchored view IS this walk's result for the node
 					// (the nullsafe twin's receiver at the ensured position) -
 					// store it so later asks (rules' storage reads) see the same

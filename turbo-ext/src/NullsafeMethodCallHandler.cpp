@@ -229,7 +229,7 @@ public:
 		{
 			zv::Val ensuredScope = ensuredResultScope(nonNullabilityResult.raw());
 			if (UNEXPECTED(ensuredScope.isUndef())) return zv::Val();
-			exprResult = pt_node_scope_resolver_process_expr_node_consuming_stored(nodeScopeResolver, stmt, methodCall.raw(), ensuredScope.raw(), storage, nodeCallback, context);
+			exprResult = pt_node_scope_resolver_process_expr_node_consuming_stored(nodeScopeResolver, stmt, methodCall.raw(), var, ensuredScope.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(exprResult.isUndef())) return zv::Val();
 		}
 		{

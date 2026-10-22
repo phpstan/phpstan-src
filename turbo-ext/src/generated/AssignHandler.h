@@ -224,10 +224,8 @@ inline constexpr char strings[] =
 	"propertyFetch\0" /* 3677 */
 	"PhpParser\\Node\\Expr\\PropertyFetch|PhpParser\\Node\\Expr\\StaticPropertyFetch\0" /* 3691 */
 	"getOriginalPropertyType\0" /* 3765 */
-	"array\0" /* 3789 */
-	"hasArrayReference\0" /* 3795 */
-	"rhs\0" /* 3813 */
-	"redundant"; /* 3817 */
+	"rhs\0" /* 3789 */
+	"redundant"; /* 3793 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 25), /* __construct $templateArgumentObserver */
 	reg::packed(76, 0, 99), /* __construct $varAnnotationProcessor */
@@ -467,9 +465,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3677, 0, 3691), /* getOriginalPropertyType $propertyFetch */
 	reg::packed(1484, 0, 1490), /* getOriginalPropertyType $scope */
 	reg::packed(1396, 0, 2038), /* getOriginalPropertyType return */
-	reg::packed(3789, 0, 3274), /* hasArrayReference $array */
-	reg::packed(1396, MAY_BE_BOOL), /* hasArrayReference return */
-	reg::packed(3813, 0, 1626), /* redundant $rhs */
+	reg::packed(3789, 0, 1626), /* redundant $rhs */
 	reg::packed(1975, 0, 1376), /* redundant $target */
 	reg::packed(1521, 0, 1529), /* redundant $storage */
 	reg::packed(1396, MAY_BE_NULL, 2038), /* redundant return */
@@ -517,8 +513,7 @@ inline constexpr sigtab::Sig isSameVariable = { { 3626 /* isSameVariable */, 2, 
 inline constexpr sigtab::Sig isSameOffset = { { 3641 /* isSameOffset */, 2, 229, 2, 231, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getLiteralArrayKeyType = { { 3654 /* getLiteralArrayKeyType */, 1, 232, 1, 233, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getOriginalPropertyType = { { 3765 /* getOriginalPropertyType */, 3, 234, 3, 237, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasArrayReference = { { 3795 /* hasArrayReference */, 1, 238, 1, 239, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig redundant = { { 3817 /* redundant */, 3, 240, 3, 243, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig redundant = { { 3793 /* redundant */, 3, 238, 3, 241, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::AssignHandler

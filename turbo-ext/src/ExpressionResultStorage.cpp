@@ -68,6 +68,16 @@ public:
 		zv::ArrRef(obj.propAt(slots::fallback).raw()).setIndex(id, zv::Ref(expressionResult));
 	}
 
+	/* Mirrors removeExpressionResult(): this storage's own entry only, the
+	 * result before the pinned Expr */
+	void removeExpressionResult(zval *expr)
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(expr);
+		zv::ObjRef obj(self);
+		zv::ArrRef(obj.propAt(slots::fallback).raw()).unsetIndex(id);
+		zv::ArrRef(obj.propAt(slots::exprResults).raw()).unsetIndex(id);
+	}
+
 	zv::Val findExpressionResult(zval *expr) const
 	{
 		zend_ulong id = Z_OBJ_HANDLE_P(expr);
@@ -204,6 +214,16 @@ PT_MINIT_REGISTRATION(pt_register_expression_result_storage)
 		ExpressionResultStorage(ZEND_THIS).storeExpressionResult(expr, expressionResult);
 	});
 
+	cls.method(sigs::removeExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr;
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+		ZEND_PARSE_PARAMETERS_END();
+		ExpressionResultStorage(ZEND_THIS).removeExpressionResult(expr);
+	});
+
 	cls.method(sigs::findExpressionResult, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr;
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
@@ -252,6 +272,15 @@ void pt_expression_result_storage_store(zval *storage, zval *expr, zval *express
 	}
 	zv::Args argv{expr, expressionResult};
 	(void) pt_type_call(Z_OBJ_P(storage), "storeexpressionresult", sizeof("storeexpressionresult") - 1, 2, argv);
+}
+
+bool pt_expression_result_storage_remove(zval *storage, zval *expr)
+{
+	if (EXPECTED(Z_OBJCE_P(storage) == pt_ce_expression_result_storage)) {
+		ExpressionResultStorage(storage).removeExpressionResult(expr);
+		return true;
+	}
+	return !pt_type_call(Z_OBJ_P(storage), "removeexpressionresult", sizeof("removeexpressionresult") - 1, 1, expr).isUndef();
 }
 
 zv::Val pt_expression_result_storage_new()

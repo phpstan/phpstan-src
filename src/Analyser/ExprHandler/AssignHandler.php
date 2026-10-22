@@ -304,7 +304,7 @@ final class AssignHandler implements ExprHandler
 			$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
 			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_ASSIGN, $scope, $storage, $redundantType),
 		);
-		if ($expr instanceof Assign && $expr->expr instanceof Expr\Array_ && self::hasArrayReference($expr->expr)) {
+		if ($expr instanceof Assign && $expr->expr instanceof Expr\Array_ && ArrayHandler::hasByRefItem($expr->expr)) {
 			$variableFlow = VariableFlow::sequence($variableFlow, VariableFlowBuilder::escapeRoot($expr->var));
 		}
 		if ($expr instanceof AssignRef) {
@@ -1388,7 +1388,7 @@ final class AssignHandler implements ExprHandler
 					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}
 
-				if ($assignedExpr instanceof Expr\Array_) {
+				if ($assignedExpr instanceof Expr\Array_ && ArrayHandler::hasByRefItem($assignedExpr)) {
 					$scope = $this->processArrayByRefItems($nodeScopeResolver, $scope, $storage, $var->name, $assignedExpr, new Variable($var->name));
 				}
 			} else {
@@ -2667,7 +2667,9 @@ final class AssignHandler implements ExprHandler
 				$dimExpr = new TypeExpr(new IntegerType());
 			}
 
-			if ($arrayItem->value instanceof Expr\Array_) {
+			// a nested array with no by-ref item aliases nothing - and its literal
+			// keys' results, read below, are not kept (see ArrayHandler)
+			if ($arrayItem->value instanceof Expr\Array_ && ArrayHandler::hasByRefItem($arrayItem->value)) {
 				$dimFetchExpr = new ArrayDimFetch($parentExpr, $dimExpr);
 				[$scope] = $this->processArrayByRefItemsWithImplicitIndex($nodeScopeResolver, $scope, $storage, $rootVarName, $arrayItem->value, $dimFetchExpr, 0);
 			}
@@ -3044,16 +3046,6 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $originalPropertyType;
-	}
-
-	private static function hasArrayReference(Expr\Array_ $array): bool
-	{
-		foreach ($array->items as $item) {
-			if ($item->byRef || ($item->value instanceof Expr\Array_ && self::hasArrayReference($item->value))) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private static function redundant(ExpressionResult $rhs, Expr $target, ExpressionResultStorage $storage): ?Type

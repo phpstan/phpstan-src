@@ -1296,7 +1296,9 @@ public:
 			zv::Args flows{targetReadFlow.raw(), assignedFlow.raw(), inputsFlow.raw(), targetWriteFlow.raw()};
 			AH_SET(variableFlow, pt_variable_flow_sequence(4, flows));
 		}
-		if (isAssign && ahIs(exprExpr, PT_CLASS_ARRAY_EXPR) && hasArrayReference(exprExpr)) {
+		bool exprHasByRefItem = false;
+		if (isAssign && ahIs(exprExpr, PT_CLASS_ARRAY_EXPR)) AH_OK(pt_array_handler_has_by_ref_item(exprExpr, exprHasByRefItem));
+		if (exprHasByRefItem) {
 			AH_VAL(escape, pt_variable_flow_builder_escape_root(exprVar));
 			zv::Args flows{variableFlow.raw(), escape.raw()};
 			AH_SET(variableFlow, pt_variable_flow_sequence(2, flows));
@@ -2155,7 +2157,9 @@ private:
 				}
 			}
 
-			if (ahIs(assignedExpr.raw(), PT_CLASS_ARRAY_EXPR)) {
+			bool assignedHasByRefItem = false;
+			if (ahIs(assignedExpr.raw(), PT_CLASS_ARRAY_EXPR)) AH_OKB(pt_array_handler_has_by_ref_item(assignedExpr.raw(), assignedHasByRefItem));
+			if (assignedHasByRefItem) {
 				AH_VALB(rootVariable, newVariable(varName));
 				AH_SETB(scope, processArrayByRefItems(nsr, scope.raw(), storage, varName, assignedExpr.raw(), rootVariable.raw()));
 			}
@@ -2990,7 +2994,11 @@ private:
 				AH_SET(dimExpr, newTypeExpr(integerType.raw()));
 			}
 
-			if (ahIs(value, PT_CLASS_ARRAY_EXPR)) {
+			// a nested array with no by-ref item aliases nothing - and its literal
+			// keys' results, read below, are not kept (see ArrayHandler)
+			bool valueHasByRefItem = false;
+			if (ahIs(value, PT_CLASS_ARRAY_EXPR)) AH_OK(pt_array_handler_has_by_ref_item(value, valueHasByRefItem));
+			if (valueHasByRefItem) {
 				AH_VAL(dimFetchExpr, newArrayDimFetch(parentExpr, dimExpr.raw()));
 				// one native frame per literal nesting level
 				zv::Val nested;
@@ -4727,24 +4735,6 @@ private:
 	}
 
 	/* }}} */
-
-	/* (twin 2818) */
-	static bool hasArrayReference(zval *array)
-	{
-		zval *items = AH_PROP(array, items);
-		if (Z_TYPE_P(items) != IS_ARRAY) return false;
-		for (auto entry : zv::TableRef(Z_ARRVAL_P(items))) {
-			zval *item = entry.value().deref().raw();
-			if (zend_is_true(AH_PROP(item, byRef))) return true;
-			zval *value = AH_PROP(item, value);
-			if (ahIs(value, PT_CLASS_ARRAY_EXPR)) {
-				bool nested = false;
-				pt_engine_with_stack([&]() { nested = hasArrayReference(value); });
-				if (nested) return true;
-			}
-		}
-		return false;
-	}
 
 	/* (twin 2828) */
 	static zv::Val redundant(zval *rhs, zval *targetArg, zval *storage)

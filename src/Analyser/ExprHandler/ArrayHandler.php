@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -71,6 +72,8 @@ final class ArrayHandler implements ExprHandler
 		$beforeScope = $scope;
 		$itemNodes = [];
 		$itemResults = [];
+		$literalTypes = [];
+		$literalNativeTypes = [];
 		$variableFlows = [];
 		$hasYield = false;
 		$throwPoints = [];
@@ -83,6 +86,9 @@ final class ArrayHandler implements ExprHandler
 		$passedToType = $this->getExpectedArrayType($context->getPassedToType());
 		$nativePassedToType = $this->getExpectedArrayType($context->getNativePassedToType());
 		$hasExpectedType = $passedToType !== null || $nativePassedToType !== null;
+		// AssignHandler reads the keys' results of an assigned array with a by-ref
+		// item to alias its slots - only an array without one drops its literals'
+		$keepsLiteralResults = self::hasByRefItem($expr);
 		$nextIndex = 0;
 		foreach ($expr->items as $arrayItem) {
 			$itemNodes[] = new LiteralArrayItem($scope, $arrayItem);
@@ -148,10 +154,29 @@ final class ArrayHandler implements ExprHandler
 			// with the item's entry scope - callback-side asks answer from the
 			// storage instead of re-walking the yet-unstored sub-expressions
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $arrayItem, $itemCallbackScope, $storage);
+
+			if ($keepsLiteralResults) {
+				continue;
+			}
+
+			// a literal key or value is lexical - keep only its types and drop its
+			// result, which a large literal array would otherwise hold twice per
+			// item until the statement ends; asks about the literal from now on
+			// are answered by the scope directly (MutatingScope::resolveType())
+			foreach ([$arrayItem->key, $arrayItem->unpack ? null : $arrayItem->value] as $part) {
+				if (!self::isLiteral($part)) {
+					continue;
+				}
+				$id = spl_object_id($part);
+				$literalTypes[$id] = $itemResults[$id]->getType();
+				$literalNativeTypes[$id] = $itemResults[$id]->getNativeType();
+				unset($itemResults[$id]);
+				$storage->removeExpressionResult($part);
+			}
 		}
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new LiteralArrayNode($expr, $itemNodes), $scope, $storage);
 		if ($nodeScopeResolver->observingTemplateArgumentFrame($scope) !== null) {
-			$scope = $this->collectAbsorbedItems($expr, $itemResults, $scope);
+			$scope = $this->collectAbsorbedItems($expr, $itemResults, $literalTypes, $scope);
 		}
 
 		$result = $this->expressionResultFactory->create(
@@ -163,20 +188,13 @@ final class ArrayHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $itemResults, $beforeScope): Type {
+			typeCallback: function (bool $nativeTypesPromoted) use ($expr, $itemResults, $literalTypes, $literalNativeTypes, $beforeScope): Type {
 				// each item type was captured at its own evaluation point in the
 				// sequence - resolving all items on any single scope (the old world)
 				// cannot handle items with side effects like [$b = 1, $b + 1, $b++]
-				$type = $this->initializerExprTypeResolver->getArrayType($expr, static function (Expr $inner) use ($itemResults, $nativeTypesPromoted): Type {
-					$id = spl_object_id($inner);
-					if (array_key_exists($id, $itemResults)) {
-						return $nativeTypesPromoted
-							? $itemResults[$id]->getNativeType()
-							: $itemResults[$id]->getType();
-					}
-
-					throw new ShouldNotHappenException();
-				});
+				$type = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $nativeTypesPromoted
+					? self::getItemType($inner, $itemResults, $literalNativeTypes, true)
+					: self::getItemType($inner, $itemResults, $literalTypes, false));
 
 				if (
 					count($expr->items) === 2
@@ -207,7 +225,7 @@ final class ArrayHandler implements ExprHandler
 		);
 
 		return $result->withDependencies(Dependencies::merge(
-			$this->getCallableDependencies($beforeScope, $expr, $itemResults, $result),
+			$this->getCallableDependencies($beforeScope, $expr, $itemResults, $literalTypes, $result),
 			...array_map(static fn (ExpressionResult $itemResult): ?Dependencies => $itemResult->getDependencies(), array_values($itemResults)),
 		));
 	}
@@ -216,8 +234,9 @@ final class ArrayHandler implements ExprHandler
 	 * An array that may be a callable - `[Foo::class, 'method']` - depends on what calling it returns.
 	 *
 	 * @param array<int, ExpressionResult> $itemResults
+	 * @param array<int, Type> $literalTypes
 	 */
-	private function getCallableDependencies(MutatingScope $scope, Array_ $expr, array $itemResults, ExpressionResult $result): ?Dependencies
+	private function getCallableDependencies(MutatingScope $scope, Array_ $expr, array $itemResults, array $literalTypes, ExpressionResult $result): ?Dependencies
 	{
 		if (count($expr->items) !== 2 || !isset($expr->items[0])) {
 			return null;
@@ -234,8 +253,12 @@ final class ArrayHandler implements ExprHandler
 			return null;
 		}
 
-		$firstItemResult = $itemResults[spl_object_id($expr->items[0]->value)] ?? null;
-		if ($firstItemResult === null || !$firstItemResult->getType()->isClassString()->yes()) {
+		$firstItemValue = $expr->items[0]->value;
+		$id = spl_object_id($firstItemValue);
+		if (!array_key_exists($id, $itemResults) && !array_key_exists($id, $literalTypes)) {
+			return null;
+		}
+		if (!self::getItemType($firstItemValue, $itemResults, $literalTypes, false)->isClassString()->yes()) {
 			return null;
 		}
 
@@ -257,12 +280,13 @@ final class ArrayHandler implements ExprHandler
 	 * into a wider value type - see ClosureSignatureInference::collectAbsorbed().
 	 *
 	 * @param array<int, ExpressionResult> $itemResults
+	 * @param array<int, Type> $literalTypes
 	 */
-	private function collectAbsorbedItems(Array_ $expr, array $itemResults, MutatingScope $scope): MutatingScope
+	private function collectAbsorbedItems(Array_ $expr, array $itemResults, array $literalTypes, MutatingScope $scope): MutatingScope
 	{
 		$itemTypes = [];
 		foreach ($expr->items as $arrayItem) {
-			$itemType = $itemResults[spl_object_id($arrayItem->value)]->getType();
+			$itemType = self::getItemType($arrayItem->value, $itemResults, $literalTypes, false);
 			if (!ClosureSignatureInference::hasMarkers($itemType)) {
 				continue;
 			}
@@ -272,9 +296,49 @@ final class ArrayHandler implements ExprHandler
 			return $scope;
 		}
 
-		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType());
+		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => self::getItemType($inner, $itemResults, $literalTypes, false));
 
 		return $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInto($itemTypes, $arrayType));
+	}
+
+	public static function hasByRefItem(Array_ $array): bool
+	{
+		foreach ($array->items as $item) {
+			if ($item->byRef || ($item->value instanceof Array_ && self::hasByRefItem($item->value))) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @phpstan-assert-if-true Scalar\String_|Scalar\Int_|Scalar\Float_ $expr
+	 */
+	private static function isLiteral(?Expr $expr): bool
+	{
+		return $expr instanceof Scalar\String_ || $expr instanceof Scalar\Int_ || $expr instanceof Scalar\Float_;
+	}
+
+	/**
+	 * The type a key or value of the literal was processed to - from its result,
+	 * or for a literal, whose result is dropped, from its kept type.
+	 *
+	 * @param array<int, ExpressionResult> $itemResults
+	 * @param array<int, Type> $literalTypes the literals' types of the asked flavour
+	 */
+	private static function getItemType(Expr $item, array $itemResults, array $literalTypes, bool $nativeTypesPromoted): Type
+	{
+		$id = spl_object_id($item);
+		if (array_key_exists($id, $literalTypes)) {
+			return $literalTypes[$id];
+		}
+		if (array_key_exists($id, $itemResults)) {
+			return $nativeTypesPromoted
+				? $itemResults[$id]->getNativeType()
+				: $itemResults[$id]->getType();
+		}
+
+		throw new ShouldNotHappenException();
 	}
 
 	private function getExpectedArrayType(?Type $type): ?Type

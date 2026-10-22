@@ -1064,7 +1064,7 @@ namespace pgen::PrintfFunctionThrowTypeExtension {
 		zval z18;
 		ZVAL_LONG(&z18, p_requiredCount);
 		ZVAL_COPY_VALUE(&av17[0], &z18);
-		zval z19;
+		zval z19 = {};
 		ZVAL_NULL(&z19);
 		ZVAL_COPY_VALUE(&av17[1], &z19);
 		zv::Val r20;

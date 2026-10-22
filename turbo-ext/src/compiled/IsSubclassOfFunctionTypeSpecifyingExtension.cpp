@@ -255,10 +255,10 @@ namespace pgen::IsSubclassOfFunctionTypeSpecifyingExtension {
 		zval av41[4];
 		ZVAL_COPY_VALUE(&av41[0], l_objectOrClassType.raw());
 		ZVAL_COPY_VALUE(&av41[1], l_classType.raw());
-		zval z42;
+		zval z42 = {};
 		ZVAL_BOOL(&z42, l_allowString);
 		ZVAL_COPY_VALUE(&av41[2], &z42);
-		zval z43;
+		zval z43 = {};
 		ZVAL_BOOL(&z43, false);
 		ZVAL_COPY_VALUE(&av41[3], &z43);
 		zv::Val r44;

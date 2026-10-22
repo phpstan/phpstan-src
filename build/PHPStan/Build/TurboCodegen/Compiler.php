@@ -7152,7 +7152,10 @@ final class Compiler
 		$out[] = '{';
 		$out[] = "\t(void) captures;";
 		$out[] = "\t(void) argv;";
-		$out[] = sprintf("\tif (UNEXPECTED(argc < %d)) { pgrt::throwTooFewArguments(\"%s\", argc, %d); return; }", $required, addcslashes($label, '\\'), $required);
+		if ($required > 0) {
+			// argc is unsigned: with nothing required the check is vacuous (and -Wtype-limits)
+			$out[] = sprintf("\tif (UNEXPECTED(argc < %d)) { pgrt::throwTooFewArguments(\"%s\", argc, %d); return; }", $required, addcslashes($label, '\\'), $required);
+		}
 		$out[] = $inner->render();
 		$out[] = '}';
 		$this->closures[] = implode("\n", $out);
@@ -7211,13 +7214,15 @@ final class Compiler
 				$f->line(sprintf('ZVAL_LONG(&%s, %s);', $t, $value->code));
 				return '&' . $t;
 			case 'bool':
+				// ZVAL_BOOL() and ZVAL_NULL() set the type only, ZVAL_COPY() copies
+				// the value too: zeroed, it is no read of an uninitialized variable
 				$t = $f->temp('z');
-				$f->line(sprintf('zval %s;', $t));
+				$f->line(sprintf('zval %s = {};', $t));
 				$f->line(sprintf('ZVAL_BOOL(&%s, %s);', $t, $value->code));
 				return '&' . $t;
 			case 'null':
 				$t = $f->temp('z');
-				$f->line(sprintf('zval %s;', $t));
+				$f->line(sprintf('zval %s = {};', $t));
 				$f->line(sprintf('ZVAL_NULL(&%s);', $t));
 				return '&' . $t;
 		}

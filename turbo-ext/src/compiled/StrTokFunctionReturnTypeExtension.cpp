@@ -59,7 +59,7 @@ namespace pgen::StrTokFunctionReturnTypeExtension {
 	 {
 		if (!((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_args.raw())) == 2)) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -149,7 +149,7 @@ namespace pgen::StrTokFunctionReturnTypeExtension {
 		}
 	}
 	 {
-		zval z23;
+		zval z23 = {};
 		ZVAL_NULL(&z23);
 		ZVAL_COPY_VALUE(ret, &z23);
 		return true;

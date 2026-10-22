@@ -736,7 +736,7 @@ namespace pgen::ImplodeFunctionReturnTypeExtension {
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r1.raw()), &r2))) return false;
 		if (r2) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -817,7 +817,7 @@ namespace pgen::ImplodeFunctionReturnTypeExtension {
 					}
 					if (cn19 == 0) {
 						 {
-							zval z21;
+							zval z21 = {};
 							ZVAL_NULL(&z21);
 							ZVAL_COPY_VALUE(ret, &z21);
 							return true;
@@ -901,7 +901,7 @@ namespace pgen::ImplodeFunctionReturnTypeExtension {
 				 {
 					if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_partials.raw())) > l_limit) {
 						 {
-							zval z48;
+							zval z48 = {};
 							ZVAL_NULL(&z48);
 							ZVAL_COPY_VALUE(ret, &z48);
 							return true;
@@ -963,7 +963,7 @@ namespace pgen::ImplodeFunctionReturnTypeExtension {
 		ZVAL_EMPTY_ARRAY(&arr65_raw);
 		if (Z_TYPE_P(l_strings.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(l_strings.raw())) == 0) {
 			 {
-				zval z66;
+				zval z66 = {};
 				ZVAL_NULL(&z66);
 				ZVAL_COPY_VALUE(ret, &z66);
 				return true;

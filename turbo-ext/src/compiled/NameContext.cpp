@@ -355,7 +355,7 @@ namespace pgen::NameContext {
 				}
 			}
 			 {
-				zval z26;
+				zval z26 = {};
 				ZVAL_NULL(&z26);
 				ZVAL_COPY_VALUE(ret, &z26);
 				return true;
@@ -888,7 +888,7 @@ namespace pgen::NameContext {
 		}
 	}
 	 {
-		zval z50;
+		zval z50 = {};
 		ZVAL_NULL(&z50);
 		ZVAL_COPY_VALUE(ret, &z50);
 		return true;
@@ -983,7 +983,7 @@ namespace pgen::NameContext {
 		}
 	}
 	 {
-		zval z23;
+		zval z23 = {};
 		ZVAL_NULL(&z23);
 		ZVAL_COPY_VALUE(ret, &z23);
 		return true;

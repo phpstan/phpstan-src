@@ -242,7 +242,7 @@ namespace pgen::PostDecHandler {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_context, "enterDeep", "enterdeep", 9, 0, NULL, r6.raw()))) return false;
 			}
 			}
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, false);
 			zv::Val r8;
 			if (EXPECTED(Z_TYPE_P(r6.raw()) == IS_OBJECT)) {
@@ -347,7 +347,7 @@ namespace pgen::PostDecHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_post_dec_handler, "var", 3, o34.raw()))) return false;
 			p33 = o34.raw();
 		}
-		zval z35;
+		zval z35 = {};
 		ZVAL_BOOL(&z35, false);
 		zv::Val r36;
 		if (EXPECTED(Z_TYPE_P(p32) == IS_OBJECT)) {

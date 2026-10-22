@@ -72,7 +72,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_args.raw())) < 1) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -135,7 +135,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 						zval z16;
 						ZVAL_LONG(&z16, 1);
 						ZVAL_COPY_VALUE(&av15[0], &z16);
-						zval z17;
+						zval z17 = {};
 						ZVAL_NULL(&z17);
 						ZVAL_COPY_VALUE(&av15[1], &z17);
 						zv::Val r18;
@@ -146,7 +146,7 @@ namespace pgen::CountFunctionReturnTypeExtension {
 				}
 			}
 			 {
-				zval z19;
+				zval z19 = {};
 				ZVAL_NULL(&z19);
 				ZVAL_COPY_VALUE(ret, &z19);
 				return true;

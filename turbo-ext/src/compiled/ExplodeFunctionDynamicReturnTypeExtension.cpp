@@ -130,7 +130,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_args.raw())) < 2) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -437,7 +437,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 						zval z71;
 						ZVAL_LONG(&z71, 2);
 						ZVAL_COPY_VALUE(&av70[0], &z71);
-						zval z72;
+						zval z72 = {};
 						ZVAL_NULL(&z72);
 						ZVAL_COPY_VALUE(&av70[1], &z72);
 						zv::Val r73;
@@ -493,7 +493,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 							zval z89;
 							ZVAL_LONG(&z89, 0);
 							ZVAL_COPY_VALUE(&av88[0], &z89);
-							zval z90;
+							zval z90 = {};
 							ZVAL_NULL(&z90);
 							ZVAL_COPY_VALUE(&av88[1], &z90);
 							zv::Val r91;
@@ -818,7 +818,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_delimiters.raw())) == 0) {
 			 {
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(ret, &z16);
 				return true;
@@ -843,7 +843,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_strings.raw())) == 0) {
 			 {
-				zval z19;
+				zval z19 = {};
 				ZVAL_NULL(&z19);
 				ZVAL_COPY_VALUE(ret, &z19);
 				return true;
@@ -855,7 +855,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 		if (UNEXPECTED(!pgrt::mulLong((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_delimiters.raw())), (zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_strings.raw())), &ar20))) return false;
 		if (ar20 > 16) {
 			 {
-				zval z21;
+				zval z21 = {};
 				ZVAL_NULL(&z21);
 				ZVAL_COPY_VALUE(ret, &z21);
 				return true;
@@ -915,7 +915,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 							 {
 								if (Z_TYPE_P(l_limits.raw()) == IS_NULL) {
 									 {
-										zval z43;
+										zval z43 = {};
 										ZVAL_NULL(&z43);
 										ZVAL_COPY_VALUE(ret, &z43);
 										return true;
@@ -935,7 +935,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 										 {
 											if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_results.raw())) >= 16) {
 												 {
-													zval z51;
+													zval z51 = {};
 													ZVAL_NULL(&z51);
 													ZVAL_COPY_VALUE(ret, &z51);
 													return true;
@@ -954,7 +954,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 										 {
 											if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_items.raw())) > 256) {
 												 {
-													zval z54;
+													zval z54 = {};
 													ZVAL_NULL(&z54);
 													ZVAL_COPY_VALUE(ret, &z54);
 													return true;
@@ -1108,7 +1108,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r3.raw()), &r4))) return false;
 		if (!(r4)) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -1157,7 +1157,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 						 {
 							if (!((pgrt::instanceOfClass(l_finiteType, pt_ce_constant_integer_type) || pgrt::instanceOfClass(l_finiteType, pgrt::lookupClassQuiet(pg_site_36, "PHPStan\\Type\\Constant\\ConstantIntegerType", 41))))) {
 								 {
-									zval z18;
+									zval z18 = {};
 									ZVAL_NULL(&z18);
 									ZVAL_COPY_VALUE(ret, &z18);
 									return true;
@@ -1196,7 +1196,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 							zv::Val r27;
 							if (UNEXPECTED(!pgrt::callFunction(pg_site_39, "max", 3, pt_ce_explode_function_dynamic_return_type_extension, 2, av25, r27.raw(), NULL))) return false;
 							bool k28 = true;
-							zval z30;
+							zval z30 = {};
 							ZVAL_BOOL(&z30, k28);
 							zv::Val o29 = zv::Val::copyOf(zv::Ref(&z30));
 							zval *w31 = zv::Ref(l_clampedLimits.raw()).deref().raw();
@@ -1243,7 +1243,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 					if (l_limit == neg40) {
 						 {
 							zval av41[2];
-							zval z42;
+							zval z42 = {};
 							ZVAL_NULL(&z42);
 							ZVAL_COPY_VALUE(&av41[0], &z42);
 							zval z43;
@@ -1262,7 +1262,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 									zval z46;
 									ZVAL_LONG(&z46, l_limit);
 									ZVAL_COPY_VALUE(&av45[0], &z46);
-									zval z47;
+									zval z47 = {};
 									ZVAL_NULL(&z47);
 									ZVAL_COPY_VALUE(&av45[1], &z47);
 									zv::Val r48;
@@ -1312,7 +1312,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 				 {
 					if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_limits.raw())) > 16) {
 						 {
-							zval z56;
+							zval z56 = {};
 							ZVAL_NULL(&z56);
 							ZVAL_COPY_VALUE(ret, &z56);
 							return true;
@@ -1548,7 +1548,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 							zv::Val n21;
 							if (UNEXPECTED(!pt_constant_integer_type_new(n21.raw(), l_i))) return false;
 							bool k22 = true;
-							zval z23;
+							zval z23 = {};
 							ZVAL_BOOL(&z23, k22);
 							zv::Val r24;
 							if (EXPECTED(Z_TYPE_P(o20.raw()) == IS_OBJECT)) {
@@ -1601,7 +1601,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 	 {
 		if (Z_TYPE_P(p_limitType) == IS_NULL) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -1643,7 +1643,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 				 {
 					if (!((pgrt::instanceOfClass(l_finiteType, pt_ce_constant_integer_type) || pgrt::instanceOfClass(l_finiteType, pgrt::lookupClassQuiet(pg_site_36, "PHPStan\\Type\\Constant\\ConstantIntegerType", 41))))) {
 						 {
-							zval z13;
+							zval z13 = {};
 							ZVAL_NULL(&z13);
 							ZVAL_COPY_VALUE(ret, &z13);
 							return true;
@@ -1665,7 +1665,7 @@ namespace pgen::ExplodeFunctionDynamicReturnTypeExtension {
 				 {
 					if (l_value > 256) {
 						 {
-							zval z15;
+							zval z15 = {};
 							ZVAL_NULL(&z15);
 							ZVAL_COPY_VALUE(ret, &z15);
 							return true;

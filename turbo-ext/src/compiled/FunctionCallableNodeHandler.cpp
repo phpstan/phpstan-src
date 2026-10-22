@@ -246,7 +246,7 @@ namespace pgen::FunctionCallableNodeHandler {
 				}
 				}
 				bool k12 = bo10;
-				zval z13;
+				zval z13 = {};
 				ZVAL_BOOL(&z13, k12);
 				zv::Val r14;
 				 {
@@ -893,7 +893,7 @@ namespace pgen::FunctionCallableNodeHandler {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_scope, pt_ce_function_callable_node_handler, "nativeTypesPromoted", 19, o8.raw()))) return false;
 					p7 = o8.raw();
 				}
-				zval z9;
+				zval z9 = {};
 				ZVAL_BOOL(&z9, (Z_TYPE_P(zv::Ref(p7).deref().raw()) == IS_TRUE));
 				zv::Val r10;
 				if (EXPECTED(Z_TYPE_P(p_nameResult) == IS_OBJECT)) {
@@ -944,11 +944,11 @@ namespace pgen::FunctionCallableNodeHandler {
 				zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::FunctionCallableNodeHandler::slot::initializerExprTypeResolver, "initializerExprTypeResolver");
 				if (UNEXPECTED(p16 == NULL)) return false;
 				zv::Val o17 = zv::Val::copyOf(zv::Ref(p16));
-				zval z18;
+				zval z18 = {};
 				ZVAL_NULL(&z18);
-				zval z19;
+				zval z19 = {};
 				ZVAL_NULL(&z19);
-				zval z20;
+				zval z20 = {};
 				ZVAL_NULL(&z20);
 				zv::Val vd21;
 				zend_class_entry *vd21_ce = Z_TYPE_P(l_callableType.raw()) == IS_OBJECT ? Z_OBJCE_P(l_callableType.raw()) : NULL;
@@ -971,7 +971,7 @@ namespace pgen::FunctionCallableNodeHandler {
 					p24 = o25.raw();
 				}
 				bool k26 = (Z_TYPE_P(zv::Ref(p24).deref().raw()) == IS_TRUE);
-				zval z27;
+				zval z27 = {};
 				ZVAL_BOOL(&z27, k26);
 				zv::Val r28;
 				if (EXPECTED(Z_TYPE_P(o17.raw()) == IS_OBJECT)) {
@@ -1009,7 +1009,7 @@ namespace pgen::FunctionCallableNodeHandler {
 			p34 = o35.raw();
 		}
 		bool k36 = (Z_TYPE_P(zv::Ref(p34).deref().raw()) == IS_TRUE);
-		zval z37;
+		zval z37 = {};
 		ZVAL_BOOL(&z37, k36);
 		zv::Val r38;
 		if (EXPECTED(Z_TYPE_P(o31.raw()) == IS_OBJECT)) {

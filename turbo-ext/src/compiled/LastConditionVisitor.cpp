@@ -218,7 +218,7 @@ namespace pgen::LastConditionVisitor {
 								if (UNEXPECTED(!pgrt::readPropertyGeneric(l_elseif, pt_ce_last_condition_visitor, "cond", 4, o45.raw()))) return false;
 								p44 = o45.raw();
 							}
-							zval z46;
+							zval z46 = {};
 							ZVAL_BOOL(&z46, l_isLast);
 							zv::Val r47;
 							if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_15, zv::Ref(p44).deref().raw(), &pg_lit[0], &z46, r47.raw()))) return false;
@@ -336,7 +336,7 @@ namespace pgen::LastConditionVisitor {
 								e79 = pgrt::dimRead(zv::Ref(p77).deref().raw(), &z81, et80.raw());
 								if (UNEXPECTED(e79 == NULL)) return false;
 							}
-							zval z82;
+							zval z82 = {};
 							ZVAL_BOOL(&z82, l_isLast);
 							zv::Val r83;
 							if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_25, zv::Ref(e79).deref().raw(), &pg_lit[0], &z82, r83.raw()))) return false;
@@ -356,7 +356,7 @@ namespace pgen::LastConditionVisitor {
 								e86 = pgrt::dimRead(zv::Ref(p84).deref().raw(), &z88, et87.raw());
 								if (UNEXPECTED(e86 == NULL)) return false;
 							}
-							zval z89;
+							zval z89 = {};
 							ZVAL_BOOL(&z89, true);
 							zv::Val r90;
 							if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_27, zv::Ref(e86).deref().raw(), &pg_lit[1], &z89, r90.raw()))) return false;
@@ -456,7 +456,7 @@ namespace pgen::LastConditionVisitor {
 			 {
 				if (l_statementCount < 2) {
 					 {
-						zval z113;
+						zval z113 = {};
 						ZVAL_NULL(&z113);
 						ZVAL_COPY_VALUE(ret, &z113);
 						return true;
@@ -480,7 +480,7 @@ namespace pgen::LastConditionVisitor {
 			 {
 				if (!(pgrt::instanceOfClass(l_lastStatement.raw(), pgrt::lookupClassQuiet(pg_site_8, "PhpParser\\Node\\Stmt\\Expression", 30)))) {
 					 {
-						zval z119;
+						zval z119 = {};
 						ZVAL_NULL(&z119);
 						ZVAL_COPY_VALUE(ret, &z119);
 						return true;
@@ -496,7 +496,7 @@ namespace pgen::LastConditionVisitor {
 				}
 				if (!(pgrt::instanceOfClass(zv::Ref(p120).deref().raw(), pgrt::lookupClassQuiet(pg_site_12, "PhpParser\\Node\\Expr\\Throw_", 26)))) {
 					 {
-						zval z122;
+						zval z122 = {};
 						ZVAL_NULL(&z122);
 						ZVAL_COPY_VALUE(ret, &z122);
 						return true;
@@ -536,7 +536,7 @@ namespace pgen::LastConditionVisitor {
 				}
 				if (b123) {
 					 {
-						zval z134;
+						zval z134 = {};
 						ZVAL_NULL(&z134);
 						ZVAL_COPY_VALUE(ret, &z134);
 						return true;
@@ -597,7 +597,7 @@ namespace pgen::LastConditionVisitor {
 				l_cond = std::move(q142);
 			}
 			 {
-				zval z152;
+				zval z152 = {};
 				ZVAL_BOOL(&z152, true);
 				zv::Val r153;
 				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_48, l_cond.raw(), &pg_lit[0], &z152, r153.raw()))) return false;
@@ -605,7 +605,7 @@ namespace pgen::LastConditionVisitor {
 		}
 	}
 	 {
-		zval z154;
+		zval z154 = {};
 		ZVAL_NULL(&z154);
 		ZVAL_COPY_VALUE(ret, &z154);
 		return true;

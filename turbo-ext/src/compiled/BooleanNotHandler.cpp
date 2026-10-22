@@ -185,7 +185,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		}
 		bool k7 = p_nativeTypesPromoted;
-		zval z8;
+		zval z8 = {};
 		ZVAL_BOOL(&z8, k7);
 		zv::Val r9;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[1]).deref().raw()) == IS_OBJECT)) {

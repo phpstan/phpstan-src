@@ -415,7 +415,7 @@ namespace pgen::PhpFunctionFromParserNodeReflection {
 			ZVAL_COPY_VALUE(&av18[0], r5.raw());
 			ZVAL_COPY_VALUE(&av18[1], vd6.raw());
 			ZVAL_COPY_VALUE(&av18[2], vd8.raw());
-			zval z19;
+			zval z19 = {};
 			ZVAL_BOOL(&z19, k11);
 			ZVAL_COPY_VALUE(&av18[3], &z19);
 			ZVAL_COPY_VALUE(&av18[4], vd12.raw());
@@ -454,7 +454,7 @@ namespace pgen::PhpFunctionFromParserNodeReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -1094,7 +1094,7 @@ namespace pgen::PhpFunctionFromParserNodeReflection {
 		}
 	}
 	 {
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(ret, &z3);
 		return true;
@@ -1261,7 +1261,7 @@ namespace pgen::PhpFunctionFromParserNodeReflection {
 		if (UNEXPECTED(p8 == NULL)) return false;
 		zval av9[2];
 		ZVAL_COPY_VALUE(&av9[0], &pg_lit[0]);
-		zval z10;
+		zval z10 = {};
 		ZVAL_BOOL(&z10, l_isGenerator);
 		ZVAL_COPY_VALUE(&av9[1], &z10);
 		zv::Val r11;

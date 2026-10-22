@@ -37,7 +37,7 @@ namespace pgen::ArrowFunctionArgVisitor {
 	 {
 		if (!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\FuncCall", 28)))) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -49,7 +49,7 @@ namespace pgen::ArrowFunctionArgVisitor {
 		if (UNEXPECTED(!pgrt::callIsFirstClassCallable(pg_site_1, p_node, r2.raw()))) return false;
 		if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -119,7 +119,7 @@ namespace pgen::ArrowFunctionArgVisitor {
 				} else {
 				 {
 					 {
-						zval z21;
+						zval z21 = {};
 						ZVAL_NULL(&z21);
 						ZVAL_COPY_VALUE(ret, &z21);
 						return true;
@@ -144,7 +144,7 @@ namespace pgen::ArrowFunctionArgVisitor {
 		}
 	}
 	 {
-		zval z24;
+		zval z24 = {};
 		ZVAL_NULL(&z24);
 		ZVAL_COPY_VALUE(ret, &z24);
 		return true;

@@ -192,7 +192,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val o13 = zv::Val::copyOf(zv::Ref(zv::Ref(p11).deref().raw()));
 		zval cap14[2];
 		ZVAL_COPY_VALUE(&cap14[0], zv::Ref(&captures[1]).deref().raw());
-		zval z15;
+		zval z15 = {};
 		ZVAL_BOOL(&z15, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&cap14[1], &z15);
 		zv::Val h16 = pt_native_closure_new(&pg_closure_2, 2, cap14, 0u);

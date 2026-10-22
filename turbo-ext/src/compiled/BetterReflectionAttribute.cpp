@@ -184,7 +184,7 @@ namespace pgen::BetterReflectionAttribute {
 	}
 	 {
 		bool k3 = p_isRepeated;
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, k3);
 		zval o5;
 		ZVAL_COPY(&o5, &z4);

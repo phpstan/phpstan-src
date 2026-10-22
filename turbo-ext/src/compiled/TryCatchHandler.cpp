@@ -745,7 +745,7 @@ namespace pgen::TryCatchHandler {
 					if (UNEXPECTED(!pgrt::callFunction(pg_site_28, "array_keys", 10, pt_ce_try_catch_handler, 1, av124, r125.raw(), NULL))) return false;
 					zval av126[2];
 					ZVAL_COPY_VALUE(&av126[0], r125.raw());
-					zval z127;
+					zval z127 = {};
 					ZVAL_BOOL(&z127, false);
 					ZVAL_COPY_VALUE(&av126[1], &z127);
 					zv::Val r128;
@@ -813,7 +813,7 @@ namespace pgen::TryCatchHandler {
 										 {
 											zv::Val o155 = zv::Val::copyOf(zv::Ref(l_catchTypeIndex.raw()));
 											bool k156 = true;
-											zval z158;
+											zval z158 = {};
 											ZVAL_BOOL(&z158, k156);
 											zv::Val o157 = zv::Val::copyOf(zv::Ref(&z158));
 											zval *w159 = zv::Ref(l_matchingCatchTypes.raw()).deref().raw();
@@ -908,7 +908,7 @@ namespace pgen::TryCatchHandler {
 												 {
 													zv::Val o183 = zv::Val::copyOf(zv::Ref(l_catchTypeIndex.raw()));
 													bool k184 = true;
-													zval z186;
+													zval z186 = {};
 													ZVAL_BOOL(&z186, k184);
 													zv::Val o185 = zv::Val::copyOf(zv::Ref(&z186));
 													zval *w187 = zv::Ref(l_matchingCatchTypes.raw()).deref().raw();
@@ -1211,7 +1211,7 @@ namespace pgen::TryCatchHandler {
 												if (UNEXPECTED(!pgrt::callFunction(pg_site_28, "array_keys", 10, pt_ce_try_catch_handler, 1, av264, r265.raw(), NULL))) return false;
 												zval av266[2];
 												ZVAL_COPY_VALUE(&av266[0], r265.raw());
-												zval z267;
+												zval z267 = {};
 												ZVAL_BOOL(&z267, true);
 												ZVAL_COPY_VALUE(&av266[1], &z267);
 												zv::Val r268;

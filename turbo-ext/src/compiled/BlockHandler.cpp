@@ -118,7 +118,7 @@ namespace pgen::BlockHandler {
 		}
 		}
 		zv::Val o10 = zv::Val::copyOf(zv::Ref(p9));
-		zval z11;
+		zval z11 = {};
 		ZVAL_NULL(&z11);
 		zval vv12[2];
 		ZVAL_COPY_VALUE(&vv12[0], o10.raw());

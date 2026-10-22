@@ -309,7 +309,7 @@ namespace pgen::UseAliasVisitor {
 								}
 								if (b69) {
 									 {
-										zval z80;
+										zval z80 = {};
 										ZVAL_BOOL(&z80, true);
 										zv::Val r81;
 										if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_22, p_node, &pg_lit[1], &z80, r81.raw()))) return false;
@@ -323,7 +323,7 @@ namespace pgen::UseAliasVisitor {
 		}
 	}
 	 {
-		zval z82;
+		zval z82 = {};
 		ZVAL_NULL(&z82);
 		ZVAL_COPY_VALUE(ret, &z82);
 		return true;

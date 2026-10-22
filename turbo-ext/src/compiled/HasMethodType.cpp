@@ -171,7 +171,7 @@ namespace pgen::HasMethodType {
 				if (!vd2_done) {
 					zval av6[2];
 					ZVAL_COPY_VALUE(&av6[0], &this_zv);
-					zval z7;
+					zval z7 = {};
 					ZVAL_BOOL(&z7, k1);
 					ZVAL_COPY_VALUE(&av6[1], &z7);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_1, p_type, "isAcceptedBy", "isacceptedby", 12, 2, av6, vd2.raw()))) return false;
@@ -531,7 +531,7 @@ namespace pgen::HasMethodType {
 		zval av10[4];
 		ZVAL_COPY_VALUE(&av10[0], o6.raw());
 		ZVAL_COPY_VALUE(&av10[1], r7.raw());
-		zval z11;
+		zval z11 = {};
 		ZVAL_BOOL(&z11, false);
 		ZVAL_COPY_VALUE(&av10[2], &z11);
 		ZVAL_COPY_VALUE(&av10[3], cl9.raw());
@@ -945,7 +945,7 @@ namespace pgen::HasMethodType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;

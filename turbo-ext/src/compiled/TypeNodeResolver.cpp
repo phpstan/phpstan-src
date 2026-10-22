@@ -640,7 +640,7 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_parameterNode, pt_ce_type_node_resolver, "isVariadic", 10, o31.raw()))) return;
 			p30 = o31.raw();
 		}
-		zval z32;
+		zval z32 = {};
 		ZVAL_NULL(&z32);
 		zval n13_raw;
 		if (UNEXPECTED(object_init_ex(&n13_raw, pt_ce_native_parameter_reflection) != SUCCESS)) return;
@@ -1229,7 +1229,7 @@ namespace pgen::TypeNodeResolver {
 				zval z11;
 				ZVAL_LONG(&z11, 1);
 				ZVAL_COPY_VALUE(&av10[0], &z11);
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				ZVAL_COPY_VALUE(&av10[1], &z12);
 				zv::Val r13;
@@ -1244,7 +1244,7 @@ namespace pgen::TypeNodeResolver {
 				zend_long neg14;
 				if (UNEXPECTED(!pgrt::negateLong(1, &neg14))) return false;
 				zval av15[2];
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(&av15[0], &z16);
 				zval z17;
@@ -1260,7 +1260,7 @@ namespace pgen::TypeNodeResolver {
 			case 4: {
 			 {
 				zval av19[2];
-				zval z20;
+				zval z20 = {};
 				ZVAL_NULL(&z20);
 				ZVAL_COPY_VALUE(&av19[0], &z20);
 				zval z21;
@@ -1279,7 +1279,7 @@ namespace pgen::TypeNodeResolver {
 				zval z24;
 				ZVAL_LONG(&z24, 0);
 				ZVAL_COPY_VALUE(&av23[0], &z24);
-				zval z25;
+				zval z25 = {};
 				ZVAL_NULL(&z25);
 				ZVAL_COPY_VALUE(&av23[1], &z25);
 				zv::Val r26;
@@ -1295,7 +1295,7 @@ namespace pgen::TypeNodeResolver {
 				zend_long neg29;
 				if (UNEXPECTED(!pgrt::negateLong(1, &neg29))) return false;
 				zval av30[2];
-				zval z31;
+				zval z31 = {};
 				ZVAL_NULL(&z31);
 				ZVAL_COPY_VALUE(&av30[0], &z31);
 				zval z32;
@@ -1308,7 +1308,7 @@ namespace pgen::TypeNodeResolver {
 				zval z35;
 				ZVAL_LONG(&z35, 1);
 				ZVAL_COPY_VALUE(&av34[0], &z35);
-				zval z36;
+				zval z36 = {};
 				ZVAL_NULL(&z36);
 				ZVAL_COPY_VALUE(&av34[1], &z36);
 				zv::Val r37;
@@ -2670,7 +2670,7 @@ namespace pgen::TypeNodeResolver {
 					if (UNEXPECTED(p15 == NULL)) return false;
 					zval av16[2];
 					ZVAL_COPY_VALUE(&av16[0], l_nameNode.raw());
-					zval z17;
+					zval z17 = {};
 					ZVAL_NULL(&z17);
 					ZVAL_COPY_VALUE(&av16[1], &z17);
 					zv::Val r18;
@@ -2690,7 +2690,7 @@ namespace pgen::TypeNodeResolver {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z19;
+		zval z19 = {};
 		ZVAL_NULL(&z19);
 		ZVAL_COPY_VALUE(ret, &z19);
 		return true;
@@ -2746,7 +2746,7 @@ namespace pgen::TypeNodeResolver {
 		}
 		if (Z_TYPE_P(r11.raw()) == IS_NULL) {
 			 {
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				ZVAL_COPY_VALUE(ret, &z12);
 				return true;
@@ -2802,7 +2802,7 @@ namespace pgen::TypeNodeResolver {
 		}
 	}
 	 {
-		zval z26;
+		zval z26 = {};
 		ZVAL_NULL(&z26);
 		ZVAL_COPY_VALUE(ret, &z26);
 		return true;
@@ -3356,7 +3356,7 @@ namespace pgen::TypeNodeResolver {
 		ZVAL_COPY_VALUE(&av16[1], r7.raw());
 		ZVAL_COPY_VALUE(&av16[2], r10.raw());
 		ZVAL_COPY_VALUE(&av16[3], r13.raw());
-		zval z17;
+		zval z17 = {};
 		ZVAL_BOOL(&z17, (Z_TYPE_P(zv::Ref(p14).deref().raw()) == IS_TRUE));
 		ZVAL_COPY_VALUE(&av16[4], &z17);
 		zv::Val n1;
@@ -3415,7 +3415,7 @@ namespace pgen::TypeNodeResolver {
 		ZVAL_COPY_VALUE(&av16[1], r7.raw());
 		ZVAL_COPY_VALUE(&av16[2], r10.raw());
 		ZVAL_COPY_VALUE(&av16[3], r13.raw());
-		zval z17;
+		zval z17 = {};
 		ZVAL_BOOL(&z17, (Z_TYPE_P(zv::Ref(p14).deref().raw()) == IS_TRUE));
 		ZVAL_COPY_VALUE(&av16[4], &z17);
 		zv::Val n1;
@@ -3674,7 +3674,7 @@ namespace pgen::TypeNodeResolver {
 											e45 = pgrt::dimRead(l_genericTypes.raw(), &z47, et46.raw());
 											if (UNEXPECTED(e45 == NULL)) return false;
 										}
-										zval z48;
+										zval z48 = {};
 										ZVAL_BOOL(&z48, true);
 										zv::Val r49;
 										if (EXPECTED(Z_TYPE_P(l_arrayBuilder.raw()) == IS_OBJECT)) {
@@ -4667,7 +4667,7 @@ namespace pgen::TypeNodeResolver {
 																																zval av266[4];
 																																ZVAL_COPY_VALUE(&av266[0], l_classReflection.raw());
 																																ZVAL_COPY_VALUE(&av266[1], l_genericTypes.raw());
-																																zval z267;
+																																zval z267 = {};
 																																ZVAL_NULL(&z267);
 																																ZVAL_COPY_VALUE(&av266[2], &z267);
 																																ZVAL_COPY_VALUE(&av266[3], l_variances.raw());
@@ -4956,7 +4956,7 @@ namespace pgen::TypeNodeResolver {
 						zval av320[3];
 						ZVAL_COPY_VALUE(&av320[0], l_mainTypeClassName.raw());
 						ZVAL_COPY_VALUE(&av320[1], arr316.raw());
-						zval z321;
+						zval z321 = {};
 						ZVAL_BOOL(&z321, true);
 						ZVAL_COPY_VALUE(&av320[2], &z321);
 						zv::Val r322;
@@ -5270,7 +5270,7 @@ namespace pgen::TypeNodeResolver {
 					 {
 						zv::Val o416 = zv::Val::copyOf(zv::Ref(l_mainTypeClassName.raw()));
 						bool k417 = true;
-						zval z419;
+						zval z419 = {};
 						ZVAL_BOOL(&z419, k417);
 						zv::Val o418 = zv::Val::copyOf(zv::Ref(&z419));
 						zval *w420 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::TypeNodeResolver::slot::genericTypeResolvingStack)).deref().raw();
@@ -5942,7 +5942,7 @@ namespace pgen::TypeNodeResolver {
 	 {
 		if (!(pgrt::instanceOfClass(l_returnTypeNode.raw(), pgrt::lookupClassQuiet(pg_site_10, "PHPStan\\PhpDocParser\\Ast\\Type\\ConditionalTypeForParameterNode", 61)))) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -6023,7 +6023,7 @@ namespace pgen::TypeNodeResolver {
 					zval av31[5];
 					ZVAL_COPY_VALUE(&av31[0], o18.raw());
 					ZVAL_COPY_VALUE(&av31[1], r21.raw());
-					zval z32;
+					zval z32 = {};
 					ZVAL_BOOL(&z32, k24);
 					ZVAL_COPY_VALUE(&av31[2], &z32);
 					ZVAL_COPY_VALUE(&av31[3], r27.raw());
@@ -6041,7 +6041,7 @@ namespace pgen::TypeNodeResolver {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z35;
+		zval z35 = {};
 		ZVAL_NULL(&z35);
 		ZVAL_COPY_VALUE(ret, &z35);
 		return true;
@@ -6890,7 +6890,7 @@ namespace pgen::TypeNodeResolver {
 		}
 	}
 	 {
-		zval z132;
+		zval z132 = {};
 		ZVAL_NULL(&z132);
 		ZVAL_COPY_VALUE(ret, &z132);
 		return true;
@@ -8143,7 +8143,7 @@ namespace pgen::TypeNodeResolver {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_ints.raw())) == 0) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;

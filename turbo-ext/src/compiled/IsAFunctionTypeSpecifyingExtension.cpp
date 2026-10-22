@@ -282,10 +282,10 @@ namespace pgen::IsAFunctionTypeSpecifyingExtension {
 		zval av46[4];
 		ZVAL_COPY_VALUE(&av46[0], l_objectOrClassType.raw());
 		ZVAL_COPY_VALUE(&av46[1], l_classType.raw());
-		zval z47;
+		zval z47 = {};
 		ZVAL_BOOL(&z47, l_allowString);
 		ZVAL_COPY_VALUE(&av46[2], &z47);
-		zval z48;
+		zval z48 = {};
 		ZVAL_BOOL(&z48, true);
 		ZVAL_COPY_VALUE(&av46[3], &z48);
 		zv::Val r49;

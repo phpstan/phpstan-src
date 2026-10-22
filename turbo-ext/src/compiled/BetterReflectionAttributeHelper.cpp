@@ -97,7 +97,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			}
 			b3 = (Z_TYPE_P(vd10.raw()) == IS_TRUE);
 		}
-		zval z14;
+		zval z14 = {};
 		ZVAL_BOOL(&z14, b3);
 		ZVAL_COPY(return_value, &z14);
 		return;
@@ -231,7 +231,7 @@ namespace pgen::BetterReflectionAttributeHelper {
 								ZVAL_COPY_VALUE(&av50[0], p_reflector);
 								ZVAL_COPY_VALUE(&av50[1], o40.raw());
 								ZVAL_COPY_VALUE(&av50[2], p_reflection);
-								zval z51;
+								zval z51 = {};
 								ZVAL_BOOL(&z51, (cn48 > 1));
 								ZVAL_COPY_VALUE(&av50[3], &z51);
 								zv::Val n38;

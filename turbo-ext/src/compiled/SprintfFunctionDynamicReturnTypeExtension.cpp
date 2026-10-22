@@ -123,7 +123,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		bool r6;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd4.raw()), &r6))) return;
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, r6);
 		ZVAL_COPY(return_value, &z7);
 		return;
@@ -173,7 +173,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		bool r6;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd4.raw()), &r6))) return;
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, r6);
 		ZVAL_COPY(return_value, &z7);
 		return;
@@ -236,7 +236,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_args.raw())) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -447,7 +447,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 									if (UNEXPECTED(e45 == NULL)) return false;
 									if (zend_is_identical(zv::Ref(e45).deref().raw(), &pg_lit[5])) {
 										 {
-											zval z47;
+											zval z47 = {};
 											ZVAL_NULL(&z47);
 											ZVAL_COPY_VALUE(ret, &z47);
 											return true;
@@ -492,7 +492,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 						 {
 							if (Z_TYPE_P(l_checkArgType.raw()) == IS_NULL) {
 								 {
-									zval z58;
+									zval z58 = {};
 									ZVAL_NULL(&z58);
 									ZVAL_COPY_VALUE(ret, &z58);
 									return true;
@@ -809,7 +809,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 		}
 	}
 	 {
-		zval z127;
+		zval z127 = {};
 		ZVAL_NULL(&z127);
 		zv::Val r128;
 		if (UNEXPECTED(!pgen::SprintfFunctionDynamicReturnTypeExtension::m_getStringReturnType(Z_OBJ_P(&this_zv), &z127, l_isLowercase, r128.raw()))) return false;
@@ -997,7 +997,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 			 {
 				if (!(zend_hash_index_exists(Z_ARRVAL_P(p_args), (zend_ulong) p_argNumber))) {
 					 {
-						zval z2;
+						zval z2 = {};
 						ZVAL_NULL(&z2);
 						ZVAL_COPY_VALUE(ret, &z2);
 						return true;
@@ -1053,7 +1053,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 			 {
 				if (!(zend_hash_index_exists(Z_ARRVAL_P(p_args), (zend_ulong) 1))) {
 					 {
-						zval z12;
+						zval z12 = {};
 						ZVAL_NULL(&z12);
 						ZVAL_COPY_VALUE(ret, &z12);
 						return true;
@@ -1139,7 +1139,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 							if (UNEXPECTED(!pgrt::subLong(p_argNumber, 1, &ar33))) return false;
 							if (!(zend_hash_index_exists(Z_ARRVAL_P(l_types.raw()), (zend_ulong) ar33))) {
 								 {
-									zval z34;
+									zval z34 = {};
 									ZVAL_NULL(&z34);
 									ZVAL_COPY_VALUE(ret, &z34);
 									return true;
@@ -1201,7 +1201,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 		}
 	}
 	 {
-		zval z46;
+		zval z46 = {};
 		ZVAL_NULL(&z46);
 		ZVAL_COPY_VALUE(ret, &z46);
 		return true;
@@ -1294,7 +1294,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 					 {
 						if (!((pgrt::instanceOfClass(l_arraySize.raw(), pt_ce_constant_integer_type) || pgrt::instanceOfClass(l_arraySize.raw(), pgrt::lookupClassQuiet(pg_site_51, "PHPStan\\Type\\Constant\\ConstantIntegerType", 41))))) {
 							 {
-								zval z15;
+								zval z15 = {};
 								ZVAL_NULL(&z15);
 								ZVAL_COPY_VALUE(ret, &z15);
 								return true;
@@ -1316,7 +1316,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 				} else {
 				 {
 					 {
-						zval z17;
+						zval z17 = {};
 						ZVAL_NULL(&z17);
 						ZVAL_COPY_VALUE(ret, &z17);
 						return true;
@@ -1330,7 +1330,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 	 {
 		if (l_valuesCount <= 0) {
 			 {
-				zval z18;
+				zval z18 = {};
 				ZVAL_NULL(&z18);
 				ZVAL_COPY_VALUE(ret, &z18);
 				return true;
@@ -1365,7 +1365,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 			 {
 				if (Z_TYPE_P(l_formatted.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 					 {
-						zval z27;
+						zval z27 = {};
 						ZVAL_NULL(&z27);
 						ZVAL_COPY_VALUE(ret, &z27);
 						return true;
@@ -1391,7 +1391,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 				zend_clear_exception();
 				zval_ptr_dtor(&exception);
 				 {
-					zval z30;
+					zval z30 = {};
 					ZVAL_NULL(&z30);
 					ZVAL_COPY_VALUE(ret, &z30);
 					return true;
@@ -1451,7 +1451,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 					}
 					if (zend_is_true(zv::Ref(p10).deref().raw())) {
 						 {
-							zval z12;
+							zval z12 = {};
 							ZVAL_NULL(&z12);
 							ZVAL_COPY_VALUE(ret, &z12);
 							return true;
@@ -1537,7 +1537,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 				 {
 					if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_constantScalarValues.raw())) == 0) {
 						 {
-							zval z30;
+							zval z30 = {};
 							ZVAL_NULL(&z30);
 							ZVAL_COPY_VALUE(ret, &z30);
 							return true;
@@ -1562,7 +1562,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 	 {
 		if (l_combinationsCount > 128) {
 			 {
-				zval z34;
+				zval z34 = {};
 				ZVAL_NULL(&z34);
 				ZVAL_COPY_VALUE(ret, &z34);
 				return true;
@@ -1606,7 +1606,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 					uint8_t ty48 = Z_TYPE_P(zv::Ref(l_format.raw()).deref().raw());
 					if (!((ty48 == IS_STRING))) {
 						 {
-							zval z49;
+							zval z49 = {};
 							ZVAL_NULL(&z49);
 							ZVAL_COPY_VALUE(ret, &z49);
 							return true;
@@ -1682,7 +1682,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 							zend_clear_exception();
 							zval_ptr_dtor(&exception);
 							 {
-								zval z68;
+								zval z68 = {};
 								ZVAL_NULL(&z68);
 								ZVAL_COPY_VALUE(ret, &z68);
 								return true;
@@ -1700,7 +1700,7 @@ namespace pgen::SprintfFunctionDynamicReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_returnTypes.raw())) > 128) {
 			 {
-				zval z69;
+				zval z69 = {};
 				ZVAL_NULL(&z69);
 				ZVAL_COPY_VALUE(ret, &z69);
 				return true;

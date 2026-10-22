@@ -233,7 +233,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			 {
 				zv::Val r2;
 				if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_199, p_b, &pg_lit[27], NULL, r2.raw()))) return;
-				zval z3;
+				zval z3 = {};
 				ZVAL_BOOL(&z3, zend_is_identical(p_a, r2.raw()));
 				ZVAL_COPY(return_value, &z3);
 				return;
@@ -245,7 +245,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (b4) {
 			b4 = (Z_TYPE_P(p_b) == IS_NULL);
 		}
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, b4);
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -398,7 +398,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		if (zend_is_identical(l_indent.raw(), &pg_lit[9])) {
 			 {
 				bool k45 = true;
-				zval z46;
+				zval z46 = {};
 				ZVAL_BOOL(&z46, k45);
 				zval o47;
 				ZVAL_COPY(&o47, &z46);
@@ -432,7 +432,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				if (zend_is_identical(o52.raw(), r57.raw())) {
 					 {
 						bool k58 = false;
-						zval z59;
+						zval z59 = {};
 						ZVAL_BOOL(&z59, k58);
 						zval o60;
 						ZVAL_COPY(&o60, &z59);
@@ -493,7 +493,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParserPrettyPrinterAbstract::slot::nl, &o5);
 	}
 	 {
-		zval z6;
+		zval z6 = {};
 		ZVAL_NULL(&z6);
 		zval o7;
 		ZVAL_COPY(&o7, &z6);
@@ -630,7 +630,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 			zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::PhpParserPrettyPrinterAbstract::slot::indentWidth, "indentWidth");
 			if (UNEXPECTED(p3 == NULL)) return false;
 			zval av4[2];
-			zval z5;
+			zval z5 = {};
 			ZVAL_BOOL(&z5, (Z_LVAL_P(p2) >= Z_LVAL_P(p3)));
 			ZVAL_COPY_VALUE(&av4[0], &z5);
 			ZVAL_COPY_VALUE(&av4[1], &pg_lit[12]);
@@ -711,7 +711,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		if (!vd7_done) {
 			zval av9[2];
 			ZVAL_COPY_VALUE(&av9[0], p_stmts);
-			zval z10;
+			zval z10 = {};
 			ZVAL_BOOL(&z10, k6);
 			ZVAL_COPY_VALUE(&av9[1], &z10);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, &this_zv, "pStmts", "pstmts", 6, 2, av9, vd7.raw()))) return false;
@@ -911,7 +911,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 	(void) this_zv;
 	 {
 		bool k1 = true;
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, k1);
 		zval o3;
 		ZVAL_COPY(&o3, &z2);
@@ -941,7 +941,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 					if (b11) {
 						 {
 							bool k14 = false;
-							zval z15;
+							zval z15 = {};
 							ZVAL_BOOL(&z15, k14);
 							zval o16;
 							ZVAL_COPY(&o16, &z15);
@@ -1996,7 +1996,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		if (vd30_ce == pt_ce_printer || vd30_ce == pt_ce_php_parser_pretty_printer_abstract || vd30_ce == pt_ce_php_parser_standard_printer) {
 			zval *is31 = Z_ISUNDEF_P(l_pos.raw()) ? NULL : l_pos.raw();
 			zv::Val ref32 = zv::Val::adopt([&]() { zval inner; if (is31 != NULL) { ZVAL_COPY(&inner, is31); } else { ZVAL_NULL(&inner); } zval r; ZVAL_NEW_REF(&r, &inner); return r; }());
-			zval z33;
+			zval z33 = {};
 			ZVAL_NULL(&z33);
 			zv::Val r34;
 			if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pArray(Z_OBJ_P(&this_zv), p_stmts, p_origStmts, ref32.raw(), 0, &pg_lit[24], &pg_lit[25], &z33, r34.raw()))) return false;
@@ -2018,7 +2018,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 			ZVAL_COPY_VALUE(&av35[3], &z38);
 			ZVAL_COPY_VALUE(&av35[4], &pg_lit[24]);
 			ZVAL_COPY_VALUE(&av35[5], &pg_lit[25]);
-			zval z39;
+			zval z39 = {};
 			ZVAL_NULL(&z39);
 			ZVAL_COPY_VALUE(&av35[6], &z39);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_56, &this_zv, "pArray", "parray", 6, 7, av35, vd30.raw()))) return false;
@@ -2068,7 +2068,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				if (!vd50_done) {
 					zval av52[2];
 					ZVAL_COPY_VALUE(&av52[0], p_stmts);
-					zval z53;
+					zval z53 = {};
 					ZVAL_BOOL(&z53, k49);
 					ZVAL_COPY_VALUE(&av52[1], &z53);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_58, &this_zv, "pStmts", "pstmts", 6, 2, av52, vd50.raw()))) return false;
@@ -2247,7 +2247,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 			zv::Val r17;
 			if (UNEXPECTED(!pgrt::getClass(l_origNode.raw(), r17.raw()))) return false;
 			zval av18[2];
-			zval z19;
+			zval z19 = {};
 			ZVAL_BOOL(&z19, zend_is_identical(l_class.raw(), r17.raw()));
 			ZVAL_COPY_VALUE(&av18[0], &z19);
 			ZVAL_COPY_VALUE(&av18[1], &pg_lit[28]);
@@ -2275,7 +2275,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				b25 = (l_endPos >= 0);
 			}
 			zval av26[2];
-			zval z27;
+			zval z27 = {};
 			ZVAL_BOOL(&z27, b25);
 			ZVAL_COPY_VALUE(&av26[0], &z27);
 			ZVAL_COPY_VALUE(&av26[1], &pg_lit[29]);
@@ -2305,7 +2305,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				zv::Val as34 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av35[2];
-					zval z36;
+					zval z36 = {};
 					ZVAL_BOOL(&z36, pgrt::instanceOfClass(l_origNode.raw(), pgrt::lookupClassQuiet(pg_site_66, "PhpParser\\Node\\Expr\\New_", 24)));
 					ZVAL_COPY_VALUE(&av35[0], &z36);
 					ZVAL_COPY_VALUE(&av35[1], &pg_lit[30]);
@@ -2791,7 +2791,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									b167 = (l_subEndPos >= 0);
 								}
 								zval av168[2];
-								zval z169;
+								zval z169 = {};
 								ZVAL_BOOL(&z169, b167);
 								ZVAL_COPY_VALUE(&av168[0], &z169);
 								ZVAL_COPY_VALUE(&av168[1], &pg_lit[33]);
@@ -3177,7 +3177,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 										zval z285;
 										ZVAL_LONG(&z285, 1000);
 										ZVAL_COPY_VALUE(&av283[2], &z285);
-										zval z286;
+										zval z286 = {};
 										ZVAL_BOOL(&z286, k279);
 										ZVAL_COPY_VALUE(&av283[3], &z286);
 										if (UNEXPECTED(!pgrt::callMethod(pg_site_96, &this_zv, "p", "p", 1, 4, av283, vd280.raw()))) return false;
@@ -3427,7 +3427,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 						b28 = (zend_compare(l_endPos.raw(), &z30) >= 0);
 					}
 					zval av31[2];
-					zval z32;
+					zval z32 = {};
 					ZVAL_BOOL(&z32, b28);
 					ZVAL_COPY_VALUE(&av31[0], &z32);
 					ZVAL_COPY_VALUE(&av31[1], &pg_lit[29]);
@@ -3447,7 +3447,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_103, p35, "haveBraces", "havebraces", 10, 2, av36, r37.raw(), NULL))) return false;
 				if (!((Z_TYPE_P(r37.raw()) == IS_TRUE))) {
 					 {
-						zval z38;
+						zval z38 = {};
 						ZVAL_NULL(&z38);
 						ZVAL_COPY_VALUE(ret, &z38);
 						return true;
@@ -3524,7 +3524,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									}
 								}
 								 {
-									zval z59;
+									zval z59 = {};
 									ZVAL_NULL(&z59);
 									ZVAL_COPY_VALUE(ret, &z59);
 									return true;
@@ -3538,7 +3538,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							}
 							if (b60) {
 								 {
-									zval z61;
+									zval z61 = {};
 									ZVAL_NULL(&z61);
 									ZVAL_COPY_VALUE(ret, &z61);
 									return true;
@@ -3570,7 +3570,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 									b66 = (zend_compare(l_itemStartPos.raw(), zv::Ref(p_pos).deref().raw()) >= 0);
 								}
 								zval av69[2];
-								zval z70;
+								zval z70 = {};
 								ZVAL_BOOL(&z70, b66);
 								ZVAL_COPY_VALUE(&av69[0], &z70);
 								ZVAL_COPY_VALUE(&av69[1], &pg_lit[36]);
@@ -3666,7 +3666,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 								zval z96;
 								ZVAL_LONG(&z96, 0);
 								zval av97[2];
-								zval z98;
+								zval z98 = {};
 								ZVAL_BOOL(&z98, (zend_compare(l_commentStartPos.raw(), &z96) >= 0));
 								ZVAL_COPY_VALUE(&av97[0], &z98);
 								ZVAL_COPY_VALUE(&av97[1], &pg_lit[37]);
@@ -3716,7 +3716,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 											}
 										}
 										 {
-											zval z110;
+											zval z110 = {};
 											ZVAL_NULL(&z110);
 											ZVAL_COPY_VALUE(ret, &z110);
 											return true;
@@ -3822,7 +3822,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 													zval z140;
 													ZVAL_LONG(&z140, 1000);
 													ZVAL_COPY_VALUE(&av138[2], &z140);
-													zval z141;
+													zval z141 = {};
 													ZVAL_BOOL(&z141, k134);
 													ZVAL_COPY_VALUE(&av138[3], &z141);
 													if (UNEXPECTED(!pgrt::callMethod(pg_site_121, &this_zv, "p", "p", 1, 4, av138, vd135.raw()))) return false;
@@ -3940,7 +3940,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 								 {
 									if (Z_TYPE_P(l_insertStr.raw()) == IS_NULL) {
 										 {
-											zval z167;
+											zval z167 = {};
 											ZVAL_NULL(&z167);
 											ZVAL_COPY_VALUE(ret, &z167);
 											return true;
@@ -3950,7 +3950,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 								 {
 									if (!(pgrt::instanceOfClass(l_arrItem.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14)))) {
 										 {
-											zval z168;
+											zval z168 = {};
 											ZVAL_NULL(&z168);
 											ZVAL_COPY_VALUE(ret, &z168);
 											return true;
@@ -4100,7 +4100,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 										 {
 											if (!(pgrt::instanceOfClass(l_origArrItem.raw(), pgrt::lookupClassQuiet(pg_site_30, "PhpParser\\Node", 14)))) {
 												 {
-													zval z201;
+													zval z201 = {};
 													ZVAL_NULL(&z201);
 													ZVAL_COPY_VALUE(ret, &z201);
 													return true;
@@ -4128,7 +4128,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 													b206 = (l_itemEndPos >= 0);
 												}
 												zval av208[2];
-												zval z209;
+												zval z209 = {};
 												ZVAL_BOOL(&z209, b206);
 												ZVAL_COPY_VALUE(&av208[0], &z209);
 												ZVAL_COPY_VALUE(&av208[1], &pg_lit[39]);
@@ -4202,7 +4202,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 													}
 													if (b223) {
 														 {
-															zval z227;
+															zval z227 = {};
 															ZVAL_NULL(&z227);
 															ZVAL_COPY_VALUE(ret, &z227);
 															return true;
@@ -4255,7 +4255,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 							zend_class_entry *vd237_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 							bool vd237_done = false;
 							if (vd237_ce == pt_ce_printer || vd237_ce == pt_ce_php_parser_pretty_printer_abstract || vd237_ce == pt_ce_php_parser_standard_printer) {
-								zval z238;
+								zval z238 = {};
 								ZVAL_NULL(&z238);
 								zv::Val r239;
 								if (UNEXPECTED(!pgen::PhpParserPrettyPrinterAbstract::m_pFixup(Z_OBJ_P(&this_zv), Z_LVAL_P(p_fixup), o235.raw(), &z238, Z_LVAL_P(o236.raw()), l_itemEndPos, r239.raw()))) return false;
@@ -4266,7 +4266,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 								zval av240[5];
 								ZVAL_COPY_VALUE(&av240[0], p_fixup);
 								ZVAL_COPY_VALUE(&av240[1], o235.raw());
-								zval z241;
+								zval z241 = {};
 								ZVAL_NULL(&z241);
 								ZVAL_COPY_VALUE(&av240[2], &z241);
 								ZVAL_COPY_VALUE(&av240[3], o236.raw());
@@ -4306,7 +4306,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 								zval z250;
 								ZVAL_LONG(&z250, 1000);
 								ZVAL_COPY_VALUE(&av248[2], &z250);
-								zval z251;
+								zval z251 = {};
 								ZVAL_BOOL(&z251, k244);
 								ZVAL_COPY_VALUE(&av248[3], &z251);
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_140, &this_zv, "p", "p", 1, 4, av248, vd245.raw()))) return false;
@@ -4373,7 +4373,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 	 {
 		if (l_skipRemovedNode) {
 			 {
-				zval z267;
+				zval z267 = {};
 				ZVAL_NULL(&z267);
 				ZVAL_COPY_VALUE(ret, &z267);
 				return true;
@@ -4392,7 +4392,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 				if (UNEXPECTED(EG(exception))) return false;
 				if (!((is269 != NULL && Z_TYPE_P(is269) > IS_NULL))) {
 					 {
-						zval z273;
+						zval z273 = {};
 						ZVAL_NULL(&z273);
 						ZVAL_COPY_VALUE(ret, &z273);
 						return true;
@@ -4603,7 +4603,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 								zval z336;
 								ZVAL_LONG(&z336, 1000);
 								ZVAL_COPY_VALUE(&av334[2], &z336);
-								zval z337;
+								zval z337 = {};
 								ZVAL_BOOL(&z337, k330);
 								ZVAL_COPY_VALUE(&av334[3], &z337);
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_148, &this_zv, "p", "p", 1, 4, av334, vd331.raw()))) return false;
@@ -5920,7 +5920,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 					zv::Val r12;
 					if (UNEXPECTED(!pgrt::callFunction(pg_site_197, "preg_match", 10, pt_ce_php_parser_pretty_printer_abstract, 2, av11, r12.raw(), NULL))) return false;
 					bool k13 = zend_is_true(r12.raw());
-					zval z15;
+					zval z15 = {};
 					ZVAL_BOOL(&z15, k13);
 					zv::Val o14 = zv::Val::copyOf(zv::Ref(&z15));
 					zval *w16 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::PhpParserPrettyPrinterAbstract::slot::labelCharMap)).deref().raw();
@@ -5945,7 +5945,7 @@ namespace pgen::PhpParserPrettyPrinterAbstract {
 		if (Z_TYPE_P(r20.raw()) == IS_TRUE) {
 			 {
 				bool k21 = true;
-				zval z23;
+				zval z23 = {};
 				ZVAL_BOOL(&z23, k21);
 				zv::Val o22 = zv::Val::copyOf(zv::Ref(&z23));
 				zval *w24 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::PhpParserPrettyPrinterAbstract::slot::labelCharMap)).deref().raw();

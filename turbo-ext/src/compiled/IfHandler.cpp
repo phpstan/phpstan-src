@@ -200,7 +200,7 @@ namespace pgen::IfHandler {
 		}
 		}
 		bool k11 = bo9;
-		zval z12;
+		zval z12 = {};
 		ZVAL_BOOL(&z12, k11);
 		zv::Val r13;
 		 {
@@ -739,7 +739,7 @@ namespace pgen::IfHandler {
 					}
 					}
 					bool k126 = bo124;
-					zval z127;
+					zval z127 = {};
 					ZVAL_BOOL(&z127, k126);
 					zv::Val r128;
 					 {
@@ -1069,7 +1069,7 @@ namespace pgen::IfHandler {
 								q193 = std::move(o194);
 							} else {
 							 {
-								zval z195;
+								zval z195 = {};
 								ZVAL_BOOL(&z195, true);
 								zv::Val r196;
 								if (EXPECTED(Z_TYPE_P(l_branchScope.raw()) == IS_OBJECT && Z_OBJCE_P(l_branchScope.raw()) == pt_ce_mutating_scope)) {
@@ -1279,7 +1279,7 @@ namespace pgen::IfHandler {
 				}
 				if (b236) {
 					 {
-						zval z237;
+						zval z237 = {};
 						ZVAL_BOOL(&z237, true);
 						zv::Val r238;
 						if (EXPECTED(Z_TYPE_P(l_scope.raw()) == IS_OBJECT && Z_OBJCE_P(l_scope.raw()) == pt_ce_mutating_scope)) {
@@ -1491,7 +1491,7 @@ namespace pgen::IfHandler {
 							q279 = std::move(o280);
 						} else {
 						 {
-							zval z281;
+							zval z281 = {};
 							ZVAL_BOOL(&z281, true);
 							zv::Val r282;
 							if (EXPECTED(Z_TYPE_P(l_branchScope.raw()) == IS_OBJECT && Z_OBJCE_P(l_branchScope.raw()) == pt_ce_mutating_scope)) {

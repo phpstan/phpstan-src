@@ -102,11 +102,11 @@ namespace pgen::ProcessClosureResult {
 	 {
 		zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ProcessClosureResult::slot::byRefClosureResultScope, "byRefClosureResultScope");
 		if (UNEXPECTED(p2 == NULL)) return false;
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		zval *p6 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ProcessClosureResult::slot::byRefUses, "byRefUses");
 		if (UNEXPECTED(p6 == NULL)) return false;

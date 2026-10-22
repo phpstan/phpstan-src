@@ -175,7 +175,7 @@ namespace pgen::RegexArrayShapeMatcher {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_constantStrings.raw())) == 0) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -217,7 +217,7 @@ namespace pgen::RegexArrayShapeMatcher {
 				 {
 					if (Z_TYPE_P(l_astWalkResult.raw()) == IS_NULL) {
 						 {
-							zval z17;
+							zval z17 = {};
 							ZVAL_NULL(&z17);
 							ZVAL_COPY_VALUE(ret, &z17);
 							return true;
@@ -306,7 +306,7 @@ namespace pgen::RegexArrayShapeMatcher {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_constantStrings.raw())) == 0) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -322,7 +322,7 @@ namespace pgen::RegexArrayShapeMatcher {
 			 {
 				if (!((pgrt::instanceOfClass(p_flagsType, pt_ce_constant_integer_type) || pgrt::instanceOfClass(p_flagsType, pgrt::lookupClassQuiet(pg_site_8, "PHPStan\\Type\\Constant\\ConstantIntegerType", 41))))) {
 					 {
-						zval z8;
+						zval z8 = {};
 						ZVAL_NULL(&z8);
 						ZVAL_COPY_VALUE(ret, &z8);
 						return true;
@@ -355,7 +355,7 @@ namespace pgen::RegexArrayShapeMatcher {
 				}
 				if (!(Z_TYPE_P(o11.raw()) == IS_LONG && Z_LVAL_P(o11.raw()) == Z_LVAL_P(r12.raw()))) {
 					 {
-						zval z13;
+						zval z13 = {};
 						ZVAL_NULL(&z13);
 						ZVAL_COPY_VALUE(ret, &z13);
 						return true;
@@ -399,7 +399,7 @@ namespace pgen::RegexArrayShapeMatcher {
 				 {
 					if (Z_TYPE_P(l_matched.raw()) == IS_NULL) {
 						 {
-							zval z25;
+							zval z25 = {};
 							ZVAL_NULL(&z25);
 							ZVAL_COPY_VALUE(ret, &z25);
 							return true;
@@ -485,7 +485,7 @@ namespace pgen::RegexArrayShapeMatcher {
 	 {
 		if (Z_TYPE_P(l_astWalkResult.raw()) == IS_NULL) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -734,7 +734,7 @@ namespace pgen::RegexArrayShapeMatcher {
 												ZVAL_LONG(&z62, Z_LVAL_P(r60.raw()));
 												ZVAL_COPY_VALUE(&av61[0], &z62);
 												ZVAL_COPY_VALUE(&av61[1], l_groupCombo);
-												zval z63;
+												zval z63 = {};
 												ZVAL_BOOL(&z63, true);
 												ZVAL_COPY_VALUE(&av61[2], &z63);
 												zv::Val r64;
@@ -967,7 +967,7 @@ namespace pgen::RegexArrayShapeMatcher {
 		bool r6;
 		if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_isSubjectOptional(Z_OBJ_P(&this_zv), p_wasMatched, p_matchesAll, &r6))) return false;
 		bool k7 = r6;
-		zval z8;
+		zval z8 = {};
 		ZVAL_BOOL(&z8, k7);
 		zv::Val r9;
 		if (EXPECTED(Z_TYPE_P(o2.raw()) == IS_OBJECT)) {
@@ -1048,7 +1048,7 @@ namespace pgen::RegexArrayShapeMatcher {
 							if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_getKeyType(Z_OBJ_P(&this_zv), r24.raw(), r25.raw()))) return false;
 							zv::Val o26 = zv::Val::copyOf(zv::Ref(l_groupValueType.raw()));
 							bool k27 = l_optional;
-							zval z28;
+							zval z28 = {};
 							ZVAL_BOOL(&z28, k27);
 							zv::Val r29;
 							if (EXPECTED(Z_TYPE_P(o23.raw()) == IS_OBJECT)) {
@@ -1076,7 +1076,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					if (UNEXPECTED(!pgen::RegexArrayShapeMatcher::m_getKeyType(Z_OBJ_P(&this_zv), &z33, r34.raw()))) return false;
 					zv::Val o35 = zv::Val::copyOf(zv::Ref(l_groupValueType.raw()));
 					bool k36 = l_optional;
-					zval z37;
+					zval z37 = {};
 					ZVAL_BOOL(&z37, k36);
 					zv::Val r38;
 					if (EXPECTED(Z_TYPE_P(o31.raw()) == IS_OBJECT)) {
@@ -1137,7 +1137,7 @@ namespace pgen::RegexArrayShapeMatcher {
 					if (UNEXPECTED(r52.isUndef())) return false;
 				}
 				bool k53 = true;
-				zval z54;
+				zval z54 = {};
 				ZVAL_BOOL(&z54, k53);
 				zv::Val r55;
 				if (EXPECTED(Z_TYPE_P(o49.raw()) == IS_OBJECT)) {
@@ -1880,7 +1880,7 @@ namespace pgen::RegexArrayShapeMatcher {
 		zval z4;
 		ZVAL_LONG(&z4, neg2);
 		ZVAL_COPY_VALUE(&av3[0], &z4);
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		ZVAL_COPY_VALUE(&av3[1], &z5);
 		zv::Val r6;

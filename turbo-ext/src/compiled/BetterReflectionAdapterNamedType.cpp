@@ -31,7 +31,7 @@ namespace pgen::BetterReflectionAdapterNamedType {
 	}
 	 {
 		bool k2 = p_allowsNull;
-		zval z3;
+		zval z3 = {};
 		ZVAL_BOOL(&z3, k2);
 		zval o4;
 		ZVAL_COPY(&o4, &z3);
@@ -71,7 +71,7 @@ namespace pgen::BetterReflectionAdapterNamedType {
 				bool r10;
 				if (UNEXPECTED(!pgen::BetterReflectionAdapterNamedType::m_computeIsBuiltin(o8.raw(), (Z_TYPE_P(r9.raw()) == IS_TRUE), &r10))) return false;
 				bool k11 = r10;
-				zval z12;
+				zval z12 = {};
 				ZVAL_BOOL(&z12, k11);
 				zval o13;
 				ZVAL_COPY(&o13, &z12);
@@ -104,7 +104,7 @@ namespace pgen::BetterReflectionAdapterNamedType {
 			}
 			 {
 				bool k18 = true;
-				zval z19;
+				zval z19 = {};
 				ZVAL_BOOL(&z19, k18);
 				zval o20;
 				ZVAL_COPY(&o20, &z19);

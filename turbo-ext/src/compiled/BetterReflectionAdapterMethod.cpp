@@ -359,7 +359,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z6;
+					zval z6 = {};
 					ZVAL_BOOL(&z6, false);
 					ZVAL_COPY_VALUE(ret, &z6);
 					return true;
@@ -408,7 +408,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z6;
+					zval z6 = {};
 					ZVAL_BOOL(&z6, false);
 					ZVAL_COPY_VALUE(ret, &z6);
 					return true;
@@ -1029,7 +1029,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z6;
+					zval z6 = {};
 					ZVAL_NULL(&z6);
 					ZVAL_COPY_VALUE(ret, &z6);
 					return true;
@@ -1104,7 +1104,7 @@ namespace pgen::BetterReflectionAdapterMethod {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z6;
+					zval z6 = {};
 					ZVAL_NULL(&z6);
 					ZVAL_COPY_VALUE(ret, &z6);
 					return true;

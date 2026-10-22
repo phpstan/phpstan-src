@@ -156,7 +156,6 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\AssignOpHandler::{closure}", argc, 0); return; }
 	 {
 		zv::Val n1;
 		if (UNEXPECTED(!pt_mixed_type_new(n1.raw()))) return;
@@ -205,7 +204,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_s.raw(), pt_ce_assign_op_handler, "nativeTypesPromoted", 19, o7.raw()))) return;
 					p6 = o7.raw();
 				}
-				zval z8;
+				zval z8 = {};
 				ZVAL_BOOL(&z8, (Z_TYPE_P(zv::Ref(p6).deref().raw()) == IS_TRUE));
 				zv::Val r9;
 				if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[3]).deref().raw()) == IS_OBJECT)) {
@@ -239,7 +238,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(l_s.raw(), pt_ce_assign_op_handler, "nativeTypesPromoted", 19, o14.raw()))) return;
 					p13 = o14.raw();
 				}
-				zval z15;
+				zval z15 = {};
 				ZVAL_BOOL(&z15, (Z_TYPE_P(zv::Ref(p13).deref().raw()) == IS_TRUE));
 				zv::Val r16;
 				if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[4]).deref().raw()) == IS_OBJECT)) {
@@ -277,7 +276,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_s.raw(), pt_ce_assign_op_handler, "nativeTypesPromoted", 19, o21.raw()))) return;
 			p20 = o21.raw();
 		}
-		zval z22;
+		zval z22 = {};
 		ZVAL_BOOL(&z22, (Z_TYPE_P(zv::Ref(p20).deref().raw()) == IS_TRUE));
 		zv::Val r23;
 		if (EXPECTED(Z_TYPE_P(r18.raw()) == IS_OBJECT)) {
@@ -317,7 +316,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		ZVAL_COPY_VALUE(&cap1[2], zv::Ref(&captures[2]).deref().raw());
 		ZVAL_COPY_VALUE(&cap1[3], zv::Ref(&captures[6]).deref().raw());
 		ZVAL_COPY_VALUE(&cap1[4], zv::Ref(&captures[7]).deref().raw());
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&cap1[5], &z2);
 		zv::Val h3 = pt_native_closure_new(&pg_closure_3, 6, cap1, 0u);
@@ -334,7 +333,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(&captures[0]).deref().raw(), pt_ce_assign_op_handler, "var", 3, o6.raw()))) return;
 					p5 = o6.raw();
 				}
-				zval z7;
+				zval z7 = {};
 				ZVAL_BOOL(&z7, p_nativeTypesPromoted);
 				zv::Val r8;
 				if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {
@@ -1270,7 +1269,7 @@ namespace pgen::AssignOpHandler {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_17, l_valueContext.raw(), "enterDeep", "enterdeep", 9, 0, NULL, r53.raw()))) return false;
 			}
 			}
-			zval z54;
+			zval z54 = {};
 			ZVAL_BOOL(&z54, false);
 			zv::Val r55;
 			if (EXPECTED(Z_TYPE_P(r53.raw()) == IS_OBJECT)) {
@@ -1659,7 +1658,7 @@ namespace pgen::AssignOpHandler {
 		}
 		bool b131 = b132;
 		if (b131) {
-			zval z133;
+			zval z133 = {};
 			ZVAL_BOOL(&z133, false);
 			zv::Val r134;
 			if (EXPECTED(Z_TYPE_P(l_rhsResult.raw()) == IS_OBJECT)) {
@@ -1714,7 +1713,7 @@ namespace pgen::AssignOpHandler {
 				zv::Val n144;
 				if (UNEXPECTED(!pt_object_type_new(n144.raw(), Z_STR_P(&pg_lit[0])))) return false;
 				bool k145 = false;
-				zval z146;
+				zval z146 = {};
 				ZVAL_BOOL(&z146, k145);
 				zv::Val r147;
 				 {
@@ -1953,7 +1952,7 @@ namespace pgen::AssignOpHandler {
 		}
 		zv::Val o199 = zv::Val::copyOf(zv::Ref(zv::Ref(p197).deref().raw()));
 		bool k200 = true;
-		zval z201;
+		zval z201 = {};
 		ZVAL_BOOL(&z201, k200);
 		bool b202 = !(pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr\\AssignOp\\Coalesce", 37)));
 		if (b202) {
@@ -1979,7 +1978,7 @@ namespace pgen::AssignOpHandler {
 		}
 		zv::Val q208;
 		if (pgrt::instanceOfClass(p_expr, pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr\\AssignOp\\Coalesce", 37))) {
-			zval z209;
+			zval z209 = {};
 			ZVAL_NULL(&z209);
 			zval vv210[2];
 			ZVAL_COPY_VALUE(&vv210[0], l_writeFlow.raw());

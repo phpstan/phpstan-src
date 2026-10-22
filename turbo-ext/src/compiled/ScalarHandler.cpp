@@ -21,7 +21,6 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\ScalarHandler::{closure}", argc, 0); return; }
 	zval this_zv;
 	ZVAL_OBJ(&this_zv, Z_OBJ(captures[2]));
 	(void) this_zv;

@@ -224,7 +224,7 @@ namespace pgen::ReflectionFunctionConstructorThrowTypeExtension {
 					}
 					if (zend_is_identical(r26.raw(), &pg_lit[2])) {
 						 {
-							zval z27;
+							zval z27 = {};
 							ZVAL_NULL(&z27);
 							ZVAL_COPY_VALUE(ret, &z27);
 							return true;
@@ -362,7 +362,7 @@ namespace pgen::ReflectionFunctionConstructorThrowTypeExtension {
 		}
 	}
 	 {
-		zval z51;
+		zval z51 = {};
 		ZVAL_NULL(&z51);
 		ZVAL_COPY_VALUE(ret, &z51);
 		return true;

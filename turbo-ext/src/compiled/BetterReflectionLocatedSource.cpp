@@ -40,7 +40,7 @@ namespace pgen::BetterReflectionLocatedSource {
 				zv::Val as3 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av4[2];
-					zval z5;
+					zval z5 = {};
 					ZVAL_BOOL(&z5, !zend_is_identical(l_filename.raw(), &pg_lit[0]));
 					ZVAL_COPY_VALUE(&av4[0], &z5);
 					ZVAL_COPY_VALUE(&av4[1], &pg_lit[1]);
@@ -83,7 +83,7 @@ namespace pgen::BetterReflectionLocatedSource {
 					zval *p3 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionLocatedSource::slot::filename, "filename");
 					if (UNEXPECTED(p3 == NULL)) return false;
 					zval av4[2];
-					zval z5;
+					zval z5 = {};
 					ZVAL_BOOL(&z5, !(Z_TYPE_P(p3) == IS_NULL));
 					ZVAL_COPY_VALUE(&av4[0], &z5);
 					ZVAL_COPY_VALUE(&av4[1], &pg_lit[2]);
@@ -116,7 +116,7 @@ namespace pgen::BetterReflectionLocatedSource {
 				zv::Val as15 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av16[2];
-					zval z17;
+					zval z17 = {};
 					ZVAL_BOOL(&z17, !(Z_TYPE_P(l_fileContents.raw()) == (false ? IS_TRUE : IS_FALSE)));
 					ZVAL_COPY_VALUE(&av16[0], &z17);
 					ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);
@@ -192,7 +192,7 @@ namespace pgen::BetterReflectionLocatedSource {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -218,7 +218,7 @@ namespace pgen::BetterReflectionLocatedSource {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -237,7 +237,7 @@ namespace pgen::BetterReflectionLocatedSource {
 			zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionLocatedSource::slot::filename, "filename");
 			if (UNEXPECTED(p2 == NULL)) return false;
 			zval av3[2];
-			zval z4;
+			zval z4 = {};
 			ZVAL_BOOL(&z4, !(Z_TYPE_P(p2) == IS_NULL));
 			ZVAL_COPY_VALUE(&av3[0], &z4);
 			ZVAL_COPY_VALUE(&av3[1], &pg_lit[2]);
@@ -296,7 +296,7 @@ namespace pgen::BetterReflectionLocatedSource {
 				zval *e12 = pgrt::dimRead(zv::Ref(e10).deref().raw(), &pg_lit[6], et13.raw());
 				if (UNEXPECTED(e12 == NULL)) return false;
 				zval av14[3];
-				zval z15;
+				zval z15 = {};
 				ZVAL_NULL(&z15);
 				ZVAL_COPY_VALUE(&av14[0], &z15);
 				ZVAL_COPY_VALUE(&av14[1], zv::Ref(e8).deref().raw());

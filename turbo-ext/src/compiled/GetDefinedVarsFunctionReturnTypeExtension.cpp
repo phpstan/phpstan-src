@@ -129,7 +129,7 @@ namespace pgen::GetDefinedVarsFunctionReturnTypeExtension {
 					zv::Val r22;
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_3, p_scope, "getVariableType", "getvariabletype", 15, 1, av21, r22.raw(), NULL))) return false;
 					bool k23 = false;
-					zval z24;
+					zval z24 = {};
 					ZVAL_BOOL(&z24, k23);
 					zv::Val r25;
 					if (EXPECTED(Z_TYPE_P(o18.raw()) == IS_OBJECT)) {
@@ -184,7 +184,7 @@ namespace pgen::GetDefinedVarsFunctionReturnTypeExtension {
 					zv::Val r40;
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_6, p_scope, "getVariableType", "getvariabletype", 15, 1, av39, r40.raw(), NULL))) return false;
 					bool k41 = true;
-					zval z42;
+					zval z42 = {};
 					ZVAL_BOOL(&z42, k41);
 					zv::Val r43;
 					if (EXPECTED(Z_TYPE_P(o36.raw()) == IS_OBJECT)) {

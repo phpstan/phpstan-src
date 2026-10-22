@@ -100,7 +100,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -136,7 +136,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -172,7 +172,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -208,7 +208,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80100);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -244,7 +244,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80300);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -280,7 +280,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80200);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -316,7 +316,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80200);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -352,7 +352,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80100);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -388,7 +388,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80400);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -424,7 +424,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80400);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -460,7 +460,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -496,7 +496,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -532,7 +532,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -565,7 +565,7 @@ namespace pgen::PhpVersions {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zval z3;
@@ -604,7 +604,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80200);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -640,7 +640,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -676,7 +676,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -712,7 +712,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -748,7 +748,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -784,7 +784,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -820,7 +820,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -856,7 +856,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -892,7 +892,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80100);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -928,7 +928,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80100);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -964,7 +964,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80100);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1000,7 +1000,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80200);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1036,7 +1036,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80300);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1072,7 +1072,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80300);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1108,7 +1108,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1144,7 +1144,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1180,7 +1180,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1216,7 +1216,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1249,7 +1249,7 @@ namespace pgen::PhpVersions {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zval z3;
@@ -1288,7 +1288,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80300);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1324,7 +1324,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80500);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1360,7 +1360,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80400);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1396,7 +1396,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1432,7 +1432,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80400);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1465,7 +1465,7 @@ namespace pgen::PhpVersions {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zval z3;
@@ -1504,7 +1504,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1540,7 +1540,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1576,7 +1576,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1609,7 +1609,7 @@ namespace pgen::PhpVersions {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zval z3;
@@ -1648,7 +1648,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80200);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1681,7 +1681,7 @@ namespace pgen::PhpVersions {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zval z3;
@@ -1720,7 +1720,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 70200);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1756,7 +1756,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1789,7 +1789,7 @@ namespace pgen::PhpVersions {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zval z3;
@@ -1828,7 +1828,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80000);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;
@@ -1864,7 +1864,7 @@ namespace pgen::PhpVersions {
 		zval z2;
 		ZVAL_LONG(&z2, 80400);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(&av1[1], &z3);
 		zv::Val r4;

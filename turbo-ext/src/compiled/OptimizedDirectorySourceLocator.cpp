@@ -154,7 +154,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 	}
 	 {
 		bool k4 = false;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, k4);
 		zval o6;
 		ZVAL_COPY(&o6, &z5);
@@ -338,7 +338,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 			 {
 				if (Z_TYPE_P(l_fileByClass.raw()) == IS_NULL) {
 					 {
-						zval z11;
+						zval z11 = {};
 						ZVAL_NULL(&z11);
 						ZVAL_COPY_VALUE(ret, &z11);
 						return true;
@@ -429,7 +429,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 							 {
 								if (Z_TYPE_P(l_fileByConstant.raw()) == IS_NULL) {
 									 {
-										zval z28;
+										zval z28 = {};
 										ZVAL_NULL(&z28);
 										ZVAL_COPY_VALUE(ret, &z28);
 										return true;
@@ -445,7 +445,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 						} else {
 						 {
 							 {
-								zval z31;
+								zval z31 = {};
 								ZVAL_NULL(&z31);
 								ZVAL_COPY_VALUE(ret, &z31);
 								return true;
@@ -662,7 +662,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 							zv::Val o85 = zv::Val::copyOf(zv::Ref(l_identifierName.raw()));
 							if (!(zend_symtable_exists(Z_ARRVAL_P(l_fetchedClassNodes.raw()), Z_STR_P(o85.raw())))) {
 								 {
-									zval z86;
+									zval z86 = {};
 									ZVAL_NULL(&z86);
 									ZVAL_COPY_VALUE(ret, &z86);
 									return true;
@@ -815,7 +815,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 						}
 						if (b128) {
 							 {
-								zval z129;
+								zval z129 = {};
 								ZVAL_NULL(&z129);
 								ZVAL_COPY_VALUE(ret, &z129);
 								return true;
@@ -918,7 +918,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 											zv::Val o159 = zv::Val::copyOf(zv::Ref(l_identifierName.raw()));
 											if (!(zend_symtable_exists(Z_ARRVAL_P(l_fetchedConstantNodes.raw()), Z_STR_P(o159.raw())))) {
 												 {
-													zval z160;
+													zval z160 = {};
 													ZVAL_NULL(&z160);
 													ZVAL_COPY_VALUE(ret, &z160);
 													return true;
@@ -942,7 +942,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 							 {
 								if (Z_TYPE_P(l_fetchedConstantNode.raw()) == IS_NULL) {
 									 {
-										zval z165;
+										zval z165 = {};
 										ZVAL_NULL(&z165);
 										ZVAL_COPY_VALUE(ret, &z165);
 										return true;
@@ -1012,7 +1012,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 		}
 	}
 	 {
-		zval z182;
+		zval z182 = {};
 		ZVAL_NULL(&z182);
 		ZVAL_COPY_VALUE(ret, &z182);
 		return true;
@@ -1530,7 +1530,7 @@ namespace pgen::OptimizedDirectorySourceLocator {
 	 {
 		if (pgrt::instanceOfClass(p_constantNode, pgrt::lookupClassQuiet(pg_site_49, "PhpParser\\Node\\Expr\\FuncCall", 28))) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;

@@ -79,7 +79,7 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 				if (r5) {
 					 {
 						zval av7[1];
-						zval z8;
+						zval z8 = {};
 						ZVAL_BOOL(&z8, true);
 						ZVAL_COPY_VALUE(&av7[0], &z8);
 						zv::Val n6;
@@ -223,7 +223,7 @@ namespace pgen::RoundFunctionReturnTypeExtension {
 				if (r41) {
 					 {
 						zval av43[1];
-						zval z44;
+						zval z44 = {};
 						ZVAL_BOOL(&z44, true);
 						ZVAL_COPY_VALUE(&av43[0], &z44);
 						zv::Val n42;

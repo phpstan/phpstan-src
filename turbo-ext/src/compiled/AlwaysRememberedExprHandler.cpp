@@ -97,7 +97,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p1, "specifyDefaultTypes", "specifydefaulttypes", 19, 2, av3, r2.raw()))) return;
 		}
 		}
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, p_nativeTypesPromoted);
 		zv::Val r5;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[1]).deref().raw()) == IS_OBJECT)) {
@@ -168,11 +168,11 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		zval *p4 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::AlwaysRememberedExprHandler::slot::defaultNarrowingHelper, "defaultNarrowingHelper");
 		if (UNEXPECTED(p4 == NULL)) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
-		zval z6;
+		zval z6 = {};
 		ZVAL_NULL(&z6);
-		zval z7;
+		zval z7 = {};
 		ZVAL_NULL(&z7);
 		zv::Val r8;
 		if (EXPECTED(Z_TYPE_P(p4) == IS_OBJECT)) {

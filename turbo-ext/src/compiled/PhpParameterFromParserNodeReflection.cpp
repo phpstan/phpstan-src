@@ -369,7 +369,7 @@ namespace pgen::PhpParameterFromParserNodeReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -390,7 +390,7 @@ namespace pgen::PhpParameterFromParserNodeReflection {
 		zval av4[3];
 		ZVAL_COPY_VALUE(&av4[0], &arr2_raw);
 		ZVAL_COPY_VALUE(&av4[1], &arr3_raw);
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, false);
 		ZVAL_COPY_VALUE(&av4[2], &z5);
 		zend_class_entry *ce6 = pgrt::lookupClass(pg_site_6, "PHPStan\\Reflection\\AllowedConstantsResult", 41);

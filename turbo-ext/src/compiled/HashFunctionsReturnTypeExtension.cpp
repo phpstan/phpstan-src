@@ -315,7 +315,7 @@ namespace pgen::HashFunctionsReturnTypeExtension {
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is2 != NULL && Z_TYPE_P(is2) > IS_NULL))) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;

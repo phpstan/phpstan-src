@@ -127,7 +127,7 @@ namespace pgen::EchoHandler {
 					}
 					}
 					bool k16 = bo14;
-					zval z17;
+					zval z17 = {};
 					ZVAL_BOOL(&z17, k16);
 					zv::Val r18;
 					 {

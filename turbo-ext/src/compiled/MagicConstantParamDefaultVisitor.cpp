@@ -43,7 +43,7 @@ namespace pgen::MagicConstantParamDefaultVisitor {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_magic_constant_param_default_visitor, "default", 7, o5.raw()))) return false;
 					p4 = o5.raw();
 				}
-				zval z6;
+				zval z6 = {};
 				ZVAL_BOOL(&z6, true);
 				zv::Val r7;
 				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_4, zv::Ref(p4).deref().raw(), &pg_lit[0], &z6, r7.raw()))) return false;
@@ -51,7 +51,7 @@ namespace pgen::MagicConstantParamDefaultVisitor {
 		}
 	}
 	 {
-		zval z8;
+		zval z8 = {};
 		ZVAL_NULL(&z8);
 		ZVAL_COPY_VALUE(ret, &z8);
 		return true;

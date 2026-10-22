@@ -46,7 +46,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			}
 			b1 = zend_is_identical(r2.raw(), &pg_lit[0]);
 		}
-		zval z3;
+		zval z3 = {};
 		ZVAL_BOOL(&z3, !(b1));
 		ZVAL_COPY(return_value, &z3);
 		return;
@@ -134,7 +134,7 @@ namespace pgen::BetterReflectionAdapterType {
 						}
 						zval av17[2];
 						ZVAL_COPY_VALUE(&av17[0], zv::Ref(e14).deref().raw());
-						zval z18;
+						zval z18 = {};
 						ZVAL_BOOL(&z18, true);
 						ZVAL_COPY_VALUE(&av17[1], &z18);
 						zv::Val n12;

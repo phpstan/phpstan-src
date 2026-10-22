@@ -260,7 +260,7 @@ namespace pgen::CachedParser {
 	 {
 		zv::Val o13 = zv::Val::copyOf(zv::Ref(p_sourceCode));
 		bool k14 = true;
-		zval z16;
+		zval z16 = {};
 		ZVAL_BOOL(&z16, k14);
 		zv::Val o15 = zv::Val::copyOf(zv::Ref(&z16));
 		zval *w17 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::CachedParser::slot::parsedByString)).deref().raw();
@@ -341,7 +341,7 @@ namespace pgen::CachedParser {
 	(void) this_zv;
 	 {
 		zval av1[2];
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, true);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		ZVAL_COPY_VALUE(&av1[1], p_file);

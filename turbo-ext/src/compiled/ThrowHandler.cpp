@@ -139,7 +139,7 @@ namespace pgen::ThrowHandler {
 		}
 		}
 		bool k6 = bo4;
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, k6);
 		zv::Val r8;
 		 {
@@ -198,7 +198,7 @@ namespace pgen::ThrowHandler {
 		}
 		zval av16[2];
 		ZVAL_COPY_VALUE(&av16[0], r15.raw());
-		zval z17;
+		zval z17 = {};
 		ZVAL_BOOL(&z17, false);
 		ZVAL_COPY_VALUE(&av16[1], &z17);
 		zv::Val r18;
@@ -236,7 +236,7 @@ namespace pgen::ThrowHandler {
 		}
 		}
 		bool k28 = false;
-		zval z29;
+		zval z29 = {};
 		ZVAL_BOOL(&z29, k28);
 		zv::Val r30;
 		 {

@@ -100,7 +100,7 @@ namespace pgen::ClosureBindArgVisitor {
 							e18 = pgrt::dimRead(l_args.raw(), &z20, et19.raw());
 							if (UNEXPECTED(e18 == NULL)) return false;
 						}
-						zval z21;
+						zval z21 = {};
 						ZVAL_BOOL(&z21, true);
 						zv::Val r22;
 						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_11, zv::Ref(e18).deref().raw(), &pg_lit[2], &z21, r22.raw()))) return false;
@@ -110,7 +110,7 @@ namespace pgen::ClosureBindArgVisitor {
 		}
 	}
 	 {
-		zval z23;
+		zval z23 = {};
 		ZVAL_NULL(&z23);
 		ZVAL_COPY_VALUE(ret, &z23);
 		return true;

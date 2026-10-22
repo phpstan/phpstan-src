@@ -898,7 +898,7 @@ namespace pgen::PhpMethodReflection {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z26;
+		zval z26 = {};
 		ZVAL_NULL(&z26);
 		ZVAL_COPY_VALUE(ret, &z26);
 		return true;
@@ -936,11 +936,11 @@ namespace pgen::PhpMethodReflection {
 			if (UNEXPECTED(!pgen::PhpMethodReflection::m_getNativeReturnType(Z_OBJ_P(&this_zv), r12.raw()))) return false;
 			zval av13[7];
 			ZVAL_COPY_VALUE(&av13[0], o6.raw());
-			zval z14;
+			zval z14 = {};
 			ZVAL_NULL(&z14);
 			ZVAL_COPY_VALUE(&av13[1], &z14);
 			ZVAL_COPY_VALUE(&av13[2], r7.raw());
-			zval z15;
+			zval z15 = {};
 			ZVAL_BOOL(&z15, k9);
 			ZVAL_COPY_VALUE(&av13[3], &z15);
 			ZVAL_COPY_VALUE(&av13[4], r10.raw());
@@ -990,7 +990,7 @@ namespace pgen::PhpMethodReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -1364,7 +1364,7 @@ namespace pgen::PhpMethodReflection {
 		}
 	}
 	 {
-		zval z12;
+		zval z12 = {};
 		ZVAL_NULL(&z12);
 		ZVAL_COPY_VALUE(ret, &z12);
 		return true;

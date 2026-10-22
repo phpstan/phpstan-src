@@ -115,7 +115,7 @@ namespace pgen::FileCacheStorage {
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "is_file", 7, pt_ce_file_cache_storage, 1, av4, r5.raw(), NULL))) return false;
 		if (!((Z_TYPE_P(r5.raw()) == IS_TRUE))) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -134,7 +134,7 @@ namespace pgen::FileCacheStorage {
 	 {
 		if (Z_TYPE_P(l_contents.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
-				zval z10;
+				zval z10 = {};
 				ZVAL_NULL(&z10);
 				ZVAL_COPY_VALUE(ret, &z10);
 				return true;
@@ -153,7 +153,7 @@ namespace pgen::FileCacheStorage {
 	 {
 		if (!(pgrt::instanceOfClass(l_cacheItem.raw(), pgrt::lookupClassQuiet(pg_site_3, "PHPStan\\Cache\\CacheItem", 23)))) {
 			 {
-				zval z14;
+				zval z14 = {};
 				ZVAL_NULL(&z14);
 				ZVAL_COPY_VALUE(ret, &z14);
 				return true;
@@ -167,7 +167,7 @@ namespace pgen::FileCacheStorage {
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_4, l_cacheItem.raw(), "isVariableKeyValid", "isvariablekeyvalid", 18, 1, av15, r16.raw(), NULL))) return false;
 		if (!((Z_TYPE_P(r16.raw()) == IS_TRUE))) {
 			 {
-				zval z17;
+				zval z17 = {};
 				ZVAL_NULL(&z17);
 				ZVAL_COPY_VALUE(ret, &z17);
 				return true;
@@ -608,7 +608,7 @@ namespace pgen::FileCacheStorage {
 					zv::Val r31;
 					if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "dirname", 7, pt_ce_file_cache_storage, 1, av30, r31.raw(), NULL))) return false;
 					bool k32 = true;
-					zval z34;
+					zval z34 = {};
 					ZVAL_BOOL(&z34, k32);
 					zv::Val o33 = zv::Val::copyOf(zv::Ref(&z34));
 					zval *w35 = zv::Ref(l_emptyDirectoriesToCheck.raw()).deref().raw();
@@ -627,7 +627,7 @@ namespace pgen::FileCacheStorage {
 					zv::Val r39;
 					if (UNEXPECTED(!pgrt::callFunction(pg_site_25, "dirname", 7, pt_ce_file_cache_storage, 2, av37, r39.raw(), NULL))) return false;
 					bool k40 = true;
-					zval z42;
+					zval z42 = {};
 					ZVAL_BOOL(&z42, k40);
 					zv::Val o41 = zv::Val::copyOf(zv::Ref(&z42));
 					zval *w43 = zv::Ref(l_emptyDirectoriesToCheck.raw()).deref().raw();

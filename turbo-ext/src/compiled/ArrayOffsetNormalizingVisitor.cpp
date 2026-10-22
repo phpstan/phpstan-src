@@ -44,7 +44,7 @@ namespace pgen::ArrayOffsetNormalizingVisitor {
 		}
 		if (b1) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -111,7 +111,7 @@ namespace pgen::ArrayOffsetNormalizingVisitor {
 		}
 	}
 	 {
-		zval z20;
+		zval z20 = {};
 		ZVAL_NULL(&z20);
 		ZVAL_COPY_VALUE(ret, &z20);
 		return true;

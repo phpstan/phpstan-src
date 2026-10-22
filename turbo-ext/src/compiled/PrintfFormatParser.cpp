@@ -167,7 +167,7 @@ namespace pgen::PrintfFormatParser {
 						 {
 							if (Z_TYPE_P(l_argument.raw()) == IS_NULL) {
 								 {
-									zval z31;
+									zval z31 = {};
 									ZVAL_NULL(&z31);
 									ZVAL_COPY_VALUE(ret, &z31);
 									return true;
@@ -211,7 +211,7 @@ namespace pgen::PrintfFormatParser {
 												if (UNEXPECTED(sub_function(ar42.raw(), &z43, l_i.raw()) != SUCCESS || EG(exception))) return false;
 												if (Z_LVAL_P(ar42.raw()) <= 1) {
 													 {
-														zval z44;
+														zval z44 = {};
 														ZVAL_NULL(&z44);
 														ZVAL_COPY_VALUE(ret, &z44);
 														return true;
@@ -262,7 +262,7 @@ namespace pgen::PrintfFormatParser {
 								 {
 									if (Z_TYPE_P(l_widthArgument.raw()) == IS_NULL) {
 										 {
-											zval z56;
+											zval z56 = {};
 											ZVAL_NULL(&z56);
 											ZVAL_COPY_VALUE(ret, &z56);
 											return true;
@@ -317,7 +317,7 @@ namespace pgen::PrintfFormatParser {
 											}
 											if (r71 >= 2147483647) {
 												 {
-													zval z72;
+													zval z72 = {};
 													ZVAL_NULL(&z72);
 													ZVAL_COPY_VALUE(ret, &z72);
 													return true;
@@ -374,7 +374,7 @@ namespace pgen::PrintfFormatParser {
 										 {
 											if (Z_TYPE_P(l_precisionArgument.raw()) == IS_NULL) {
 												 {
-													zval z88;
+													zval z88 = {};
 													ZVAL_NULL(&z88);
 													ZVAL_COPY_VALUE(ret, &z88);
 													return true;
@@ -429,7 +429,7 @@ namespace pgen::PrintfFormatParser {
 													}
 													if (r103 >= 2147483647) {
 														 {
-															zval z104;
+															zval z104 = {};
 															ZVAL_NULL(&z104);
 															ZVAL_COPY_VALUE(ret, &z104);
 															return true;
@@ -479,7 +479,7 @@ namespace pgen::PrintfFormatParser {
 					ZVAL_LONG(&z113, l_length);
 					if (zend_compare(l_i.raw(), &z113) >= 0) {
 						 {
-							zval z114;
+							zval z114 = {};
 							ZVAL_NULL(&z114);
 							ZVAL_COPY_VALUE(ret, &z114);
 							return true;
@@ -498,7 +498,7 @@ namespace pgen::PrintfFormatParser {
 					if (UNEXPECTED(!pgen::PrintfFormatParser::m_isSpecifier(l_specifier.raw(), p_phpVersions, &r118))) return false;
 					if (!(r118)) {
 						 {
-							zval z119;
+							zval z119 = {};
 							ZVAL_NULL(&z119);
 							ZVAL_COPY_VALUE(ret, &z119);
 							return true;
@@ -734,7 +734,7 @@ namespace pgen::PrintfFormatParser {
 		}
 		if (b19) {
 			 {
-				zval z20;
+				zval z20 = {};
 				ZVAL_NULL(&z20);
 				ZVAL_COPY_VALUE(ret, &z20);
 				return true;

@@ -188,7 +188,7 @@ namespace pgen::SwitchHandler {
 		}
 		}
 		bool k10 = bo8;
-		zval z11;
+		zval z11 = {};
 		ZVAL_BOOL(&z11, k10);
 		zv::Val r12;
 		 {
@@ -445,7 +445,7 @@ namespace pgen::SwitchHandler {
 							}
 							}
 							bool k75 = bo73;
-							zval z76;
+							zval z76 = {};
 							ZVAL_BOOL(&z76, k75);
 							zv::Val r77;
 							 {
@@ -579,7 +579,7 @@ namespace pgen::SwitchHandler {
 							ZVAL_COPY_VALUE(&av107[0], o102.raw());
 							ZVAL_COPY_VALUE(&av107[1], o103.raw());
 							ZVAL_COPY_VALUE(&av107[2], r106.raw());
-							zval z108;
+							zval z108 = {};
 							ZVAL_BOOL(&z108, zend_is_identical(l_caseKey.raw(), l_lastNonDefaultCaseKey.raw()));
 							ZVAL_COPY_VALUE(&av107[3], &z108);
 							zend_class_entry *ce109 = pgrt::lookupClass(pg_site_28, "PHPStan\\Node\\SwitchConditionArm", 31);
@@ -639,17 +639,17 @@ namespace pgen::SwitchHandler {
 							}
 							}
 							zv::Val o127 = zv::Val::copyOf(zv::Ref(p126));
-							zval z128;
+							zval z128 = {};
 							ZVAL_NULL(&z128);
-							zval z129;
+							zval z129 = {};
 							ZVAL_NULL(&z129);
-							zval z130;
+							zval z130 = {};
 							ZVAL_NULL(&z130);
-							zval z131;
+							zval z131 = {};
 							ZVAL_NULL(&z131);
-							zval z132;
+							zval z132 = {};
 							ZVAL_NULL(&z132);
-							zval z133;
+							zval z133 = {};
 							ZVAL_NULL(&z133);
 							zv::Val r134;
 							if (EXPECTED(Z_TYPE_P(vd113.raw()) == IS_OBJECT)) {
@@ -1219,14 +1219,14 @@ namespace pgen::SwitchHandler {
 	 {
 		zval av250[2];
 		ZVAL_COPY_VALUE(&av250[0], l_scopeForBranches.raw());
-		zval z251;
+		zval z251 = {};
 		ZVAL_BOOL(&z251, false);
 		ZVAL_COPY_VALUE(&av250[1], &z251);
 		zv::Val r252;
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_69, l_condResult.raw(), "answersOnScope", "answersonscope", 14, 2, av250, r252.raw(), NULL))) return false;
 		zv::Val q253;
 		if (Z_TYPE_P(r252.raw()) == IS_TRUE) {
-			zval z254;
+			zval z254 = {};
 			ZVAL_BOOL(&z254, false);
 			zv::Val r255;
 			if (EXPECTED(Z_TYPE_P(l_condResult.raw()) == IS_OBJECT)) {
@@ -1376,7 +1376,7 @@ namespace pgen::SwitchHandler {
 		}
 		zv::Val o283 = zv::Val::copyOf(zv::Ref(l_caseFlows.raw()));
 		bool k284 = l_hasDefaultCase;
-		zval z285;
+		zval z285 = {};
 		ZVAL_BOOL(&z285, k284);
 		zv::Val r286;
 		 {
@@ -1395,10 +1395,10 @@ namespace pgen::SwitchHandler {
 		zval av290[1];
 		ZVAL_COPY_VALUE(&av290[0], o276.raw());
 		zv::Arr na291 = zv::Arr::create(7);
-		zval z292;
+		zval z292 = {};
 		ZVAL_BOOL(&z292, k277);
 		{ zval v; ZVAL_COPY(&v, &z292); zend_hash_str_add_new(na291.table(), "hasYield", 8, &v); }
-		zval z293;
+		zval z293 = {};
 		ZVAL_BOOL(&z293, k278);
 		{ zval v; ZVAL_COPY(&v, &z293); zend_hash_str_add_new(na291.table(), "isAlwaysTerminating", 19, &v); }
 		{ zval v; ZVAL_COPY(&v, o279.raw()); zend_hash_str_add_new(na291.table(), "exitPoints", 10, &v); }

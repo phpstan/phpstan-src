@@ -55,7 +55,7 @@ namespace pgen::PowFunctionReturnTypeExtension {
 		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_1, p_functionCall, r1.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r1.raw())) < 2) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;

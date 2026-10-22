@@ -1164,7 +1164,7 @@ namespace pgen::PhpDocInheritanceResolver {
 		if (UNEXPECTED(!pgrt::callMethod(pg_site_36, p_parent, "hasConstant", "hasconstant", 11, 1, av1, r2.raw(), NULL))) return false;
 		if (!((Z_TYPE_P(r2.raw()) == IS_TRUE))) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -1190,7 +1190,7 @@ namespace pgen::PhpDocInheritanceResolver {
 		}
 		if (Z_TYPE_P(r6.raw()) == IS_TRUE) {
 			 {
-				zval z7;
+				zval z7 = {};
 				ZVAL_NULL(&z7);
 				ZVAL_COPY_VALUE(ret, &z7);
 				return true;
@@ -1209,7 +1209,7 @@ namespace pgen::PhpDocInheritanceResolver {
 		}
 		if (Z_TYPE_P(r8.raw()) == IS_NULL) {
 			 {
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(ret, &z9);
 				return true;
@@ -1343,7 +1343,7 @@ namespace pgen::PhpDocInheritanceResolver {
 		}
 		if (!((Z_TYPE_P(r2.raw()) == IS_TRUE))) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -1376,7 +1376,7 @@ namespace pgen::PhpDocInheritanceResolver {
 		}
 		if (Z_TYPE_P(r6.raw()) == IS_TRUE) {
 			 {
-				zval z7;
+				zval z7 = {};
 				ZVAL_NULL(&z7);
 				ZVAL_COPY_VALUE(ret, &z7);
 				return true;
@@ -1395,7 +1395,7 @@ namespace pgen::PhpDocInheritanceResolver {
 		}
 		if (Z_TYPE_P(r8.raw()) == IS_NULL) {
 			 {
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(ret, &z9);
 				return true;

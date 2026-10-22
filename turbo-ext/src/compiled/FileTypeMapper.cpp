@@ -438,7 +438,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 						zv::Ref(zv::Ref(&captures[2]).deref().raw()).assign(std::move(o11));
 					}
 					 {
-						zval z13;
+						zval z13 = {};
 						ZVAL_NULL(&z13);
 						zv::Val o12 = zv::Val::copyOf(zv::Ref(&z13));
 						zval *w14 = zv::Ref(&captures[11]).deref().raw();
@@ -567,7 +567,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 						{ zval v = o42.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w43), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return; } }
 					}
 					 {
-						zval z45;
+						zval z45 = {};
 						ZVAL_NULL(&z45);
 						zv::Val o44 = zv::Val::copyOf(zv::Ref(&z45));
 						zval *w46 = zv::Ref(&captures[11]).deref().raw();
@@ -1112,7 +1112,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 			}
 			 {
-				zval z195;
+				zval z195 = {};
 				ZVAL_NULL(&z195);
 				ZVAL_COPY(return_value, &z195);
 				return;
@@ -1448,7 +1448,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 						 {
 							zv::Val o282 = zv::Val::copyOf(zv::Ref(l_traitResolutionKey.raw()));
 							bool k283 = true;
-							zval z285;
+							zval z285 = {};
 							ZVAL_BOOL(&z285, k283);
 							zv::Val o284 = zv::Val::copyOf(zv::Ref(&z285));
 							zval *w286 = zv::Ref(l_nestedActiveTraitResolutions.raw()).deref().raw();
@@ -1536,7 +1536,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z309;
+		zval z309 = {};
 		ZVAL_NULL(&z309);
 		ZVAL_COPY(return_value, &z309);
 		return;
@@ -1793,7 +1793,7 @@ namespace pgen::FileTypeMapper {
 		zval av7[3];
 		ZVAL_COPY_VALUE(&av7[0], p_docComment);
 		ZVAL_COPY_VALUE(&av7[1], arr4.raw());
-		zval z8;
+		zval z8 = {};
 		ZVAL_BOOL(&z8, true);
 		ZVAL_COPY_VALUE(&av7[2], &z8);
 		zv::Val r9;
@@ -1909,7 +1909,7 @@ namespace pgen::FileTypeMapper {
 				zval arr41_raw;
 				ZVAL_EMPTY_ARRAY(&arr41_raw);
 				zval av42[2];
-				zval z43;
+				zval z43 = {};
 				ZVAL_NULL(&z43);
 				ZVAL_COPY_VALUE(&av42[0], &z43);
 				ZVAL_COPY_VALUE(&av42[1], &arr41_raw);
@@ -1917,7 +1917,7 @@ namespace pgen::FileTypeMapper {
 				if (UNEXPECTED(ce44 == NULL)) return false;
 				zv::Val n40;
 				if (UNEXPECTED(!pgrt::newObject(ce44, 2, av42, n40.raw(), NULL))) return false;
-				zval z45;
+				zval z45 = {};
 				ZVAL_NULL(&z45);
 				zv::Val r46;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_createResolvedPhpDocBlock(Z_OBJ_P(&this_zv), r39.raw(), n40.raw(), p_docComment, &z45, r46.raw()))) return false;
@@ -2074,7 +2074,7 @@ namespace pgen::FileTypeMapper {
 					}
 					zv::Val o21 = zv::Val::copyOf(zv::Ref(zv::Ref(p19).deref().raw()));
 					bool k22 = true;
-					zval z24;
+					zval z24 = {};
 					ZVAL_BOOL(&z24, k22);
 					zv::Val o23 = zv::Val::copyOf(zv::Ref(&z24));
 					zval *w25 = zv::Ref(l_phpDocNodeTemplateTagsByName.raw()).deref().raw();
@@ -2363,7 +2363,7 @@ namespace pgen::FileTypeMapper {
 	 {
 		zv::Val o27 = zv::Val::copyOf(zv::Ref(l_nameScopeKey.raw()));
 		bool k28 = true;
-		zval z30;
+		zval z30 = {};
 		ZVAL_BOOL(&z30, k28);
 		zv::Val o29 = zv::Val::copyOf(zv::Ref(&z30));
 		zval *w31 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileTypeMapper::slot::inProcess)).deref().raw();
@@ -2652,7 +2652,7 @@ namespace pgen::FileTypeMapper {
 									if (UNEXPECTED(!(Z_TYPE_P(l_traitFileName.raw()) == IS_STRING || Z_TYPE_P(l_traitFileName.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 1, "fileName", "?string", l_traitFileName.raw()); goto finally_f35; }
 									if (UNEXPECTED(!(Z_TYPE_P(l_traitClassName.raw()) == IS_STRING || Z_TYPE_P(l_traitClassName.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 2, "className", "?string", l_traitClassName.raw()); goto finally_f35; }
 									if (UNEXPECTED(!(Z_TYPE_P(l_lookForTraitName.raw()) == IS_STRING || Z_TYPE_P(l_lookForTraitName.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 3, "traitName", "?string", l_lookForTraitName.raw()); goto finally_f35; }
-									zval z105;
+									zval z105 = {};
 									ZVAL_NULL(&z105);
 									if (UNEXPECTED(!(Z_TYPE_P(l_traitDocComment.raw()) == IS_STRING || Z_TYPE_P(l_traitDocComment.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 5, "docComment", "?string", l_traitDocComment.raw()); goto finally_f35; }
 									zv::Val r106;
@@ -3248,9 +3248,9 @@ namespace pgen::FileTypeMapper {
 			 {
 				zval arr11_raw;
 				ZVAL_EMPTY_ARRAY(&arr11_raw);
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
-				zval z13;
+				zval z13 = {};
 				ZVAL_NULL(&z13);
 				zval d14;
 				ZVAL_EMPTY_ARRAY(&d14);
@@ -3466,7 +3466,7 @@ namespace pgen::FileTypeMapper {
 		}
 	}
 	 {
-		zval z19;
+		zval z19 = {};
 		ZVAL_NULL(&z19);
 		ZVAL_COPY_VALUE(ret, &z19);
 		return true;
@@ -3882,7 +3882,7 @@ namespace pgen::FileTypeMapper {
 		zval arr2_raw;
 		ZVAL_EMPTY_ARRAY(&arr2_raw);
 		zval av3[2];
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(&av3[0], &z4);
 		ZVAL_COPY_VALUE(&av3[1], &arr2_raw);
@@ -3919,7 +3919,7 @@ namespace pgen::FileTypeMapper {
 				 {
 					zv::Val o19 = zv::Val::copyOf(zv::Ref(l_key));
 					bool k20 = true;
-					zval z22;
+					zval z22 = {};
 					ZVAL_BOOL(&z22, k20);
 					zv::Val o21 = zv::Val::copyOf(zv::Ref(&z22));
 					zval *w23 = zv::Ref(l_aliasesMap.raw()).deref().raw();
@@ -3954,7 +3954,7 @@ namespace pgen::FileTypeMapper {
 				 {
 					zv::Val o36 = zv::Val::copyOf(zv::Ref(l_key));
 					bool k37 = true;
-					zval z39;
+					zval z39 = {};
 					ZVAL_BOOL(&z39, k37);
 					zv::Val o38 = zv::Val::copyOf(zv::Ref(&z39));
 					zval *w40 = zv::Ref(l_aliasesMap.raw()).deref().raw();

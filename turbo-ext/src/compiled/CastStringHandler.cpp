@@ -124,7 +124,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(p1 == NULL)) return;
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zval cap3[3];
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&cap3[0], &z4);
 		ZVAL_COPY_VALUE(&cap3[1], zv::Ref(&captures[0]).deref().raw());
@@ -198,7 +198,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_27, q1.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av14, r13.raw()))) return;
 		}
 		}
-		zval z15;
+		zval z15 = {};
 		ZVAL_BOOL(&z15, p_nativeTypesPromoted);
 		zv::Val r16;
 		if (EXPECTED(Z_TYPE_P(r13.raw()) == IS_OBJECT)) {

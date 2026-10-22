@@ -87,7 +87,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -141,7 +141,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -210,7 +210,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 				zval z6;
 				ZVAL_LONG(&z6, 0);
 				ZVAL_COPY_VALUE(&av5[0], &z6);
-				zval z7;
+				zval z7 = {};
 				ZVAL_NULL(&z7);
 				ZVAL_COPY_VALUE(&av5[1], &z7);
 				zv::Val r8;
@@ -223,7 +223,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_args.raw())) < 2) {
 			 {
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(ret, &z9);
 				return true;
@@ -438,7 +438,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 		zv::Val as15 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
 			zval av16[2];
-			zval z17;
+			zval z17 = {};
 			ZVAL_BOOL(&z17, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_minValues.raw())) > 0));
 			ZVAL_COPY_VALUE(&av16[0], &z17);
 			ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);
@@ -452,7 +452,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 		zv::Val as20 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
 			zval av21[2];
-			zval z22;
+			zval z22 = {};
 			ZVAL_BOOL(&z22, ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_maxValues.raw())) > 0));
 			ZVAL_COPY_VALUE(&av21[0], &z22);
 			ZVAL_COPY_VALUE(&av21[1], &pg_lit[4]);
@@ -463,7 +463,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 		}
 	}
 	 {
-		zval z25;
+		zval z25 = {};
 		ZVAL_NULL(&z25);
 		zv::Val q26;
 		if (pgrt::inArrayStrict(&z25, l_minValues.raw())) {
@@ -476,7 +476,7 @@ namespace pgen::RandomIntFunctionReturnTypeExtension {
 			q26 = std::move(r28);
 		}
 		}
-		zval z29;
+		zval z29 = {};
 		ZVAL_NULL(&z29);
 		zv::Val q30;
 		if (pgrt::inArrayStrict(&z29, l_maxValues.raw())) {

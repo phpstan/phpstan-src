@@ -79,7 +79,7 @@ namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension {
 				ZVAL_LONG(&z7, l_argsCount);
 				ZVAL_COPY_VALUE(&av6[0], &z7);
 				ZVAL_COPY_VALUE(&av6[1], arr3.raw());
-				zval z8;
+				zval z8 = {};
 				ZVAL_BOOL(&z8, true);
 				ZVAL_COPY_VALUE(&av6[2], &z8);
 				zv::Val r9;
@@ -155,7 +155,7 @@ namespace pgen::StrWordCountFunctionDynamicReturnTypeExtension {
 										ZVAL_LONG(&z26, l_val);
 										ZVAL_COPY_VALUE(&av25[0], &z26);
 										ZVAL_COPY_VALUE(&av25[1], arr22.raw());
-										zval z27;
+										zval z27 = {};
 										ZVAL_BOOL(&z27, true);
 										ZVAL_COPY_VALUE(&av25[2], &z27);
 										zv::Val r28;

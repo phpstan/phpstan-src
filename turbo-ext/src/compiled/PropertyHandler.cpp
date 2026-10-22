@@ -308,7 +308,7 @@ namespace pgen::PropertyHandler {
 							}
 							}
 							bool k51 = bo49;
-							zval z52;
+							zval z52 = {};
 							ZVAL_BOOL(&z52, k51);
 							zv::Val r53;
 							 {

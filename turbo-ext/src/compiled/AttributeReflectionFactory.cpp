@@ -356,7 +356,7 @@ namespace pgen::AttributeReflectionFactory {
 		}
 		if (!((Z_TYPE_P(vd8.raw()) == IS_TRUE))) {
 			 {
-				zval z14;
+				zval z14 = {};
 				ZVAL_NULL(&z14);
 				ZVAL_COPY_VALUE(ret, &z14);
 				return true;
@@ -399,7 +399,7 @@ namespace pgen::AttributeReflectionFactory {
 		}
 		if (!(bo19)) {
 			 {
-				zval z21;
+				zval z21 = {};
 				ZVAL_NULL(&z21);
 				ZVAL_COPY_VALUE(ret, &z21);
 				return true;
@@ -411,7 +411,7 @@ namespace pgen::AttributeReflectionFactory {
 		if (UNEXPECTED(!pgrt::callMethod0(pg_site_15, l_classReflection.raw(), "isAttributeClass", "isattributeclass", 16, r22.raw()))) return false;
 		if (!((Z_TYPE_P(r22.raw()) == IS_TRUE))) {
 			 {
-				zval z23;
+				zval z23 = {};
 				ZVAL_NULL(&z23);
 				ZVAL_COPY_VALUE(ret, &z23);
 				return true;
@@ -447,7 +447,7 @@ namespace pgen::AttributeReflectionFactory {
 	 {
 		if (Z_TYPE_P(l_nativeConstructor.raw()) == IS_NULL) {
 			 {
-				zval z27;
+				zval z27 = {};
 				ZVAL_NULL(&z27);
 				ZVAL_COPY_VALUE(ret, &z27);
 				return true;

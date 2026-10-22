@@ -120,7 +120,7 @@ namespace pgen::EnumCaseHandler {
 				}
 				}
 				bool k15 = bo13;
-				zval z16;
+				zval z16 = {};
 				ZVAL_BOOL(&z16, k15);
 				zv::Val r17;
 				 {

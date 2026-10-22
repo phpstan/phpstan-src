@@ -192,7 +192,7 @@ namespace pgen::ArrayMapArgVisitor {
 		}
 	}
 	 {
-		zval z45;
+		zval z45 = {};
 		ZVAL_NULL(&z45);
 		ZVAL_COPY_VALUE(ret, &z45);
 		return true;

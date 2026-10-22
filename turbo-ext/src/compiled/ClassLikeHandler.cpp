@@ -861,7 +861,7 @@ namespace pgen::ClassLikeHandler {
 		}
 		}
 		zval av143[1];
-		zval z144;
+		zval z144 = {};
 		ZVAL_BOOL(&z144, true);
 		ZVAL_COPY_VALUE(&av143[0], &z144);
 		zv::Val r145;
@@ -1404,13 +1404,13 @@ namespace pgen::ClassLikeHandler {
 		zval av47[6];
 		ZVAL_COPY_VALUE(&av47[0], r32.raw());
 		ZVAL_COPY_VALUE(&av47[1], q35.raw());
-		zval z48;
+		zval z48 = {};
 		ZVAL_NULL(&z48);
 		ZVAL_COPY_VALUE(&av47[2], &z48);
-		zval z49;
+		zval z49 = {};
 		ZVAL_NULL(&z49);
 		ZVAL_COPY_VALUE(&av47[3], &z49);
-		zval z50;
+		zval z50 = {};
 		ZVAL_NULL(&z50);
 		ZVAL_COPY_VALUE(&av47[4], &z50);
 		ZVAL_COPY_VALUE(&av47[5], r46.raw());

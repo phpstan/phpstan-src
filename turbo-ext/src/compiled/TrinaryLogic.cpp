@@ -922,7 +922,7 @@ namespace pgen::TrinaryLogic {
 		}
 	}
 	 {
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		ZVAL_COPY_VALUE(ret, &z5);
 		return true;

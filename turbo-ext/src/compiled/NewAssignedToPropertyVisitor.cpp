@@ -90,7 +90,7 @@ namespace pgen::NewAssignedToPropertyVisitor {
 		}
 	}
 	 {
-		zval z16;
+		zval z16 = {};
 		ZVAL_NULL(&z16);
 		ZVAL_COPY_VALUE(ret, &z16);
 		return true;

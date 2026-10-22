@@ -209,7 +209,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Val o2 = zv::Val::copyOf(zv::Ref(p1));
 		zval cap3[2];
 		ZVAL_COPY_VALUE(&cap3[0], zv::Ref(&captures[1]).deref().raw());
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&cap3[1], &z4);
 		zv::Val h5 = pt_native_closure_new(&pg_closure_2, 2, cap3, 0u);
@@ -1075,7 +1075,7 @@ namespace pgen::ArrayHandler {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_33, p_context, "enterDeep", "enterdeep", 9, 0, NULL, r126.raw()))) return false;
 							}
 							}
-							zval z127;
+							zval z127 = {};
 							ZVAL_BOOL(&z127, false);
 							zv::Val r128;
 							if (EXPECTED(Z_TYPE_P(r126.raw()) == IS_OBJECT)) {
@@ -1462,7 +1462,7 @@ namespace pgen::ArrayHandler {
 		}
 		if (b1) {
 			 {
-				zval z10;
+				zval z10 = {};
 				ZVAL_NULL(&z10);
 				ZVAL_COPY_VALUE(ret, &z10);
 				return true;
@@ -1517,7 +1517,7 @@ namespace pgen::ArrayHandler {
 		}
 		if (b11) {
 			 {
-				zval z21;
+				zval z21 = {};
 				ZVAL_NULL(&z21);
 				ZVAL_COPY_VALUE(ret, &z21);
 				return true;
@@ -1607,7 +1607,7 @@ namespace pgen::ArrayHandler {
 		}
 		if (b38) {
 			 {
-				zval z45;
+				zval z45 = {};
 				ZVAL_NULL(&z45);
 				ZVAL_COPY_VALUE(ret, &z45);
 				return true;
@@ -1640,7 +1640,7 @@ namespace pgen::ArrayHandler {
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r47.raw()), &r48))) return false;
 		if (r48) {
 			 {
-				zval z49;
+				zval z49 = {};
 				ZVAL_NULL(&z49);
 				ZVAL_COPY_VALUE(ret, &z49);
 				return true;
@@ -1878,7 +1878,7 @@ namespace pgen::ArrayHandler {
 		}
 		if (b1) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -1950,7 +1950,7 @@ namespace pgen::ArrayHandler {
 		}
 		if (b1) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;

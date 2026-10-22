@@ -185,7 +185,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			bo1 = zend_is_true(r2.raw());
 		}
 		}
-		zval z3;
+		zval z3 = {};
 		ZVAL_BOOL(&z3, bo1);
 		ZVAL_COPY(return_value, &z3);
 		return;
@@ -346,7 +346,7 @@ namespace pgen::ExpressionHandler {
 				}
 				}
 				bool k27 = bo25;
-				zval z28;
+				zval z28 = {};
 				ZVAL_BOOL(&z28, k27);
 				zv::Val r29;
 				 {

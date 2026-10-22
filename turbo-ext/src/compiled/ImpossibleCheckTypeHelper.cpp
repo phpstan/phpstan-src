@@ -416,7 +416,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 		}
 		if (b6) {
 			 {
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(ret, &z16);
 				return true;
@@ -486,7 +486,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 			 {
 				if (!(Z_TYPE_P(l_argResult.raw()) == IS_NULL)) {
 					 {
-						zval z13;
+						zval z13 = {};
 						ZVAL_BOOL(&z13, l_native);
 						zv::Val r14;
 						if (EXPECTED(Z_TYPE_P(l_argResult.raw()) == IS_OBJECT)) {
@@ -761,7 +761,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 				if (UNEXPECTED(!pgrt::callIsFirstClassCallable(pg_site_24, p_node, r1.raw()))) return false;
 				if (Z_TYPE_P(r1.raw()) == IS_TRUE) {
 					 {
-						zval z2;
+						zval z2 = {};
 						ZVAL_NULL(&z2);
 						ZVAL_COPY_VALUE(ret, &z2);
 						return true;
@@ -857,7 +857,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 								}
 								if (b22) {
 									 {
-										zval z25;
+										zval z25 = {};
 										ZVAL_NULL(&z25);
 										ZVAL_COPY_VALUE(ret, &z25);
 										return true;
@@ -865,7 +865,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 								}
 							}
 							 {
-								zval z26;
+								zval z26 = {};
 								ZVAL_BOOL(&z26, l_assertValueIsTrue);
 								ZVAL_COPY_VALUE(ret, &z26);
 								return true;
@@ -875,7 +875,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 					 {
 						if (zend_is_identical(l_functionName.raw(), &pg_lit[5])) {
 							 {
-								zval z27;
+								zval z27 = {};
 								ZVAL_NULL(&z27);
 								ZVAL_COPY_VALUE(ret, &z27);
 								return true;
@@ -888,7 +888,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 						if (Z_TYPE_P(o28.raw()) == IS_STRING) ia29 = zend_string_equals(Z_STR_P(o28.raw()), Z_STR_P(&pg_lit[6])) || zend_string_equals(Z_STR_P(o28.raw()), Z_STR_P(&pg_lit[7]));
 						if (ia29) {
 							 {
-								zval z30;
+								zval z30 = {};
 								ZVAL_NULL(&z30);
 								ZVAL_COPY_VALUE(ret, &z30);
 								return true;
@@ -898,7 +898,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 							 {
 								if (zend_is_identical(l_functionName.raw(), &pg_lit[8])) {
 									 {
-										zval z31;
+										zval z31 = {};
 										ZVAL_NULL(&z31);
 										ZVAL_COPY_VALUE(ret, &z31);
 										return true;
@@ -908,7 +908,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 									 {
 										if (zend_is_identical(l_functionName.raw(), &pg_lit[9])) {
 											 {
-												zval z32;
+												zval z32 = {};
 												ZVAL_NULL(&z32);
 												ZVAL_COPY_VALUE(ret, &z32);
 												return true;
@@ -948,7 +948,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 													 {
 														if (pgrt::instanceOfClass(l_haystackType.raw(), pt_ce_mixed_type) || pgrt::instanceOfClass(l_haystackType.raw(), pgrt::lookupClassQuiet(pg_site_34, "PHPStan\\Type\\MixedType", 22))) {
 															 {
-																zval z41;
+																zval z41 = {};
 																ZVAL_NULL(&z41);
 																ZVAL_COPY_VALUE(ret, &z41);
 																return true;
@@ -969,7 +969,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 														if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r42.raw()), &r43))) return false;
 														if (!(r43)) {
 															 {
-																zval z44;
+																zval z44 = {};
 																ZVAL_NULL(&z44);
 																ZVAL_COPY_VALUE(ret, &z44);
 																return true;
@@ -1101,7 +1101,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 													 {
 														if (!(l_isStrictComparison)) {
 															 {
-																zval z71;
+																zval z71 = {};
 																ZVAL_NULL(&z71);
 																ZVAL_COPY_VALUE(ret, &z71);
 																return true;
@@ -1213,7 +1213,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(l_isNeedleSupertype.raw()), &r86))) return false;
 																				if (r86) {
 																					 {
-																						zval z87;
+																						zval z87 = {};
 																						ZVAL_BOOL(&z87, true);
 																						ZVAL_COPY_VALUE(ret, &z87);
 																						return true;
@@ -1225,7 +1225,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																				if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_no(Z_OBJ_P(l_isNeedleSupertype.raw()), &r88))) return false;
 																				if (r88) {
 																					 {
-																						zval z89;
+																						zval z89 = {};
 																						ZVAL_BOOL(&z89, false);
 																						ZVAL_COPY_VALUE(ret, &z89);
 																						return true;
@@ -1235,7 +1235,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																		}
 																	}
 																	 {
-																		zval z90;
+																		zval z90 = {};
 																		ZVAL_NULL(&z90);
 																		ZVAL_COPY_VALUE(ret, &z90);
 																		return true;
@@ -1247,7 +1247,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_no(Z_OBJ_P(l_isNeedleSupertype.raw()), &r91))) return false;
 																if (!(r91)) {
 																	 {
-																		zval z92;
+																		zval z92 = {};
 																		ZVAL_NULL(&z92);
 																		ZVAL_COPY_VALUE(ret, &z92);
 																		return true;
@@ -1300,7 +1300,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																}
 																if (b96) {
 																	 {
-																		zval z101;
+																		zval z101 = {};
 																		ZVAL_NULL(&z101);
 																		ZVAL_COPY_VALUE(ret, &z101);
 																		return true;
@@ -1343,7 +1343,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																		ZVAL_EMPTY_ARRAY(&arr108_raw);
 																		if (Z_TYPE_P(l_needleFiniteTypes.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(l_needleFiniteTypes.raw())) == 0) {
 																			 {
-																				zval z109;
+																				zval z109 = {};
 																				ZVAL_NULL(&z109);
 																				ZVAL_COPY_VALUE(ret, &z109);
 																				return true;
@@ -1369,7 +1369,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																				 {
 																					if (!((pgrt::instanceOfClass(l_haystackArrayType, pt_ce_constant_array_type) || pgrt::instanceOfClass(l_haystackArrayType, pgrt::lookupClassQuiet(pg_site_48, "PHPStan\\Type\\Constant\\ConstantArrayType", 39))))) {
 																						 {
-																							zval z119;
+																							zval z119 = {};
 																							ZVAL_NULL(&z119);
 																							ZVAL_COPY_VALUE(ret, &z119);
 																							return true;
@@ -1517,7 +1517,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																							 {
 																								if (!(l_found)) {
 																									 {
-																										zval z160;
+																										zval z160 = {};
 																										ZVAL_NULL(&z160);
 																										ZVAL_COPY_VALUE(ret, &z160);
 																										return true;
@@ -1555,7 +1555,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																		}
 																		if (b162) {
 																			 {
-																				zval z164;
+																				zval z164 = {};
 																				ZVAL_NULL(&z164);
 																				ZVAL_COPY_VALUE(ret, &z164);
 																				return true;
@@ -1676,7 +1676,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																}
 																if (b180) {
 																	 {
-																		zval z190;
+																		zval z190 = {};
 																		ZVAL_BOOL(&z190, false);
 																		ZVAL_COPY_VALUE(ret, &z190);
 																		return true;
@@ -1845,7 +1845,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																									}
 																									if (!(zend_is_true(r225.raw()))) {
 																										 {
-																											zval z226;
+																											zval z226 = {};
 																											ZVAL_NULL(&z226);
 																											ZVAL_COPY_VALUE(ret, &z226);
 																											return true;
@@ -1857,7 +1857,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																						ZEND_HASH_FOREACH_END();
 																					}
 																					 {
-																						zval z227;
+																						zval z227 = {};
 																						ZVAL_BOOL(&z227, true);
 																						ZVAL_COPY_VALUE(ret, &z227);
 																						return true;
@@ -1890,7 +1890,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																				if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r231.raw()), &r232))) return false;
 																				if (r232) {
 																					 {
-																						zval z233;
+																						zval z233 = {};
 																						ZVAL_BOOL(&z233, false);
 																						ZVAL_COPY_VALUE(ret, &z233);
 																						return true;
@@ -1977,7 +1977,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																						}
 																						if (b244) {
 																							 {
-																								zval z249;
+																								zval z249 = {};
 																								ZVAL_BOOL(&z249, true);
 																								ZVAL_COPY_VALUE(ret, &z249);
 																								return true;
@@ -1985,7 +1985,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																						}
 																					}
 																					 {
-																						zval z250;
+																						zval z250 = {};
 																						ZVAL_NULL(&z250);
 																						ZVAL_COPY_VALUE(ret, &z250);
 																						return true;
@@ -2047,7 +2047,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 																				}
 																				if (b252) {
 																					 {
-																						zval z260;
+																						zval z260 = {};
 																						ZVAL_BOOL(&z260, false);
 																						ZVAL_COPY_VALUE(ret, &z260);
 																						return true;
@@ -2137,7 +2137,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 		}
 		if (bo270) {
 			 {
-				zval z272;
+				zval z272 = {};
 				ZVAL_NULL(&z272);
 				ZVAL_COPY_VALUE(ret, &z272);
 				return true;
@@ -2222,7 +2222,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 						if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd284.raw()), &r287))) return false;
 						if (r287) {
 							 {
-								zval z288;
+								zval z288 = {};
 								ZVAL_BOOL(&z288, true);
 								ZVAL_COPY_VALUE(ret, &z288);
 								return true;
@@ -2252,7 +2252,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 						if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd289.raw()), &r292))) return false;
 						if (r292) {
 							 {
-								zval z293;
+								zval z293 = {};
 								ZVAL_BOOL(&z293, false);
 								ZVAL_COPY_VALUE(ret, &z293);
 								return true;
@@ -2262,7 +2262,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 				}
 			}
 			 {
-				zval z294;
+				zval z294 = {};
 				ZVAL_NULL(&z294);
 				ZVAL_COPY_VALUE(ret, &z294);
 				return true;
@@ -2312,7 +2312,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 				if (UNEXPECTED(!pgen::ImpossibleCheckTypeHelper::m_isSpecified(l_typeSpecifierScope.raw(), p_node, l_rootExpr.raw(), &r298))) return false;
 				if (r298) {
 					 {
-						zval z299;
+						zval z299 = {};
 						ZVAL_NULL(&z299);
 						ZVAL_COPY_VALUE(ret, &z299);
 						return true;
@@ -2366,7 +2366,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 							if (UNEXPECTED(!pgrt::callMethod0(pg_site_108, l_rootExprType.raw(), "getValue", "getvalue", 8, r306.raw()))) return false;
 						}
 						}
-						zval z307;
+						zval z307 = {};
 						ZVAL_BOOL(&z307, (Z_TYPE_P(r306.raw()) == IS_TRUE));
 						ZVAL_COPY_VALUE(ret, &z307);
 						return true;
@@ -2374,7 +2374,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 				}
 			}
 			 {
-				zval z308;
+				zval z308 = {};
 				ZVAL_NULL(&z308);
 				ZVAL_COPY_VALUE(ret, &z308);
 				return true;
@@ -2961,7 +2961,7 @@ namespace pgen::ImpossibleCheckTypeHelper {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_results.raw())) == 0) {
 			 {
-				zval z466;
+				zval z466 = {};
 				ZVAL_NULL(&z466);
 				ZVAL_COPY_VALUE(ret, &z466);
 				return true;

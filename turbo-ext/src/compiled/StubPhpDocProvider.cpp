@@ -234,7 +234,7 @@ namespace pgen::StubPhpDocProvider {
 		if (UNEXPECTED(!pgen::StubPhpDocProvider::m_isKnownClass(Z_OBJ_P(&this_zv), p_className, &r1))) return false;
 		if (!(r1)) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -286,9 +286,9 @@ namespace pgen::StubPhpDocProvider {
 				zv::Val o17 = zv::Val::copyOf(zv::Ref(p_className));
 				zval *p18 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::fileTypeMapper, "fileTypeMapper");
 				if (UNEXPECTED(p18 == NULL)) return false;
-				zval z19;
+				zval z19 = {};
 				ZVAL_NULL(&z19);
-				zval z20;
+				zval z20 = {};
 				ZVAL_NULL(&z20);
 				zv::Val r21;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_getResolvedPhpDoc(Z_OBJ_P(p18), l_file.raw(), p_className, &z19, &z20, l_docComment.raw(), r21.raw()))) return false;
@@ -313,7 +313,7 @@ namespace pgen::StubPhpDocProvider {
 		}
 	}
 	 {
-		zval z28;
+		zval z28 = {};
 		ZVAL_NULL(&z28);
 		ZVAL_COPY_VALUE(ret, &z28);
 		return true;
@@ -333,7 +333,7 @@ namespace pgen::StubPhpDocProvider {
 		if (UNEXPECTED(!pgen::StubPhpDocProvider::m_isKnownClass(Z_OBJ_P(&this_zv), p_className, &r1))) return false;
 		if (!(r1)) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -405,9 +405,9 @@ namespace pgen::StubPhpDocProvider {
 				zv::Val o27 = zv::Val::copyOf(zv::Ref(p_propertyName));
 				zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::fileTypeMapper, "fileTypeMapper");
 				if (UNEXPECTED(p28 == NULL)) return false;
-				zval z29;
+				zval z29 = {};
 				ZVAL_NULL(&z29);
-				zval z30;
+				zval z30 = {};
 				ZVAL_NULL(&z30);
 				zv::Val r31;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_getResolvedPhpDoc(Z_OBJ_P(p28), l_file.raw(), p_className, &z29, &z30, l_docComment.raw(), r31.raw()))) return false;
@@ -442,7 +442,7 @@ namespace pgen::StubPhpDocProvider {
 		}
 	}
 	 {
-		zval z42;
+		zval z42 = {};
 		ZVAL_NULL(&z42);
 		ZVAL_COPY_VALUE(ret, &z42);
 		return true;
@@ -462,7 +462,7 @@ namespace pgen::StubPhpDocProvider {
 		if (UNEXPECTED(!pgen::StubPhpDocProvider::m_isKnownClass(Z_OBJ_P(&this_zv), p_className, &r1))) return false;
 		if (!(r1)) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -534,9 +534,9 @@ namespace pgen::StubPhpDocProvider {
 				zv::Val o27 = zv::Val::copyOf(zv::Ref(p_constantName));
 				zval *p28 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::fileTypeMapper, "fileTypeMapper");
 				if (UNEXPECTED(p28 == NULL)) return false;
-				zval z29;
+				zval z29 = {};
 				ZVAL_NULL(&z29);
-				zval z30;
+				zval z30 = {};
 				ZVAL_NULL(&z30);
 				zv::Val r31;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_getResolvedPhpDoc(Z_OBJ_P(p28), l_file.raw(), p_className, &z29, &z30, l_docComment.raw(), r31.raw()))) return false;
@@ -571,7 +571,7 @@ namespace pgen::StubPhpDocProvider {
 		}
 	}
 	 {
-		zval z42;
+		zval z42 = {};
 		ZVAL_NULL(&z42);
 		ZVAL_COPY_VALUE(ret, &z42);
 		return true;
@@ -596,7 +596,7 @@ namespace pgen::StubPhpDocProvider {
 		if (UNEXPECTED(!pgen::StubPhpDocProvider::m_isKnownClass(Z_OBJ_P(&this_zv), p_className, &r1))) return false;
 		if (!(r1)) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -667,7 +667,7 @@ namespace pgen::StubPhpDocProvider {
 			 {
 				zval *p27 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::fileTypeMapper, "fileTypeMapper");
 				if (UNEXPECTED(p27 == NULL)) return false;
-				zval z28;
+				zval z28 = {};
 				ZVAL_NULL(&z28);
 				zv::Val r29;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_getResolvedPhpDoc(Z_OBJ_P(p27), l_file.raw(), p_className, &z28, p_methodName, l_docComment.raw(), r29.raw()))) return false;
@@ -784,7 +784,7 @@ namespace pgen::StubPhpDocProvider {
 		}
 	}
 	 {
-		zval z70;
+		zval z70 = {};
 		ZVAL_NULL(&z70);
 		ZVAL_COPY_VALUE(ret, &z70);
 		return true;
@@ -809,7 +809,7 @@ namespace pgen::StubPhpDocProvider {
 		if (UNEXPECTED(!pgen::StubPhpDocProvider::m_isKnownFunction(Z_OBJ_P(&this_zv), p_functionName, &r1))) return false;
 		if (!(r1)) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -860,9 +860,9 @@ namespace pgen::StubPhpDocProvider {
 			 {
 				zval *p17 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::fileTypeMapper, "fileTypeMapper");
 				if (UNEXPECTED(p17 == NULL)) return false;
-				zval z18;
+				zval z18 = {};
 				ZVAL_NULL(&z18);
-				zval z19;
+				zval z19 = {};
 				ZVAL_NULL(&z19);
 				zv::Val r20;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_getResolvedPhpDoc(Z_OBJ_P(p17), l_file.raw(), &z18, &z19, p_functionName, l_docComment.raw(), r20.raw()))) return false;
@@ -968,7 +968,7 @@ namespace pgen::StubPhpDocProvider {
 		}
 	}
 	 {
-		zval z58;
+		zval z58 = {};
 		ZVAL_NULL(&z58);
 		ZVAL_COPY_VALUE(ret, &z58);
 		return true;
@@ -1063,7 +1063,7 @@ namespace pgen::StubPhpDocProvider {
 	}
 	 {
 		bool k5 = true;
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, k5);
 		zval o7;
 		ZVAL_COPY(&o7, &z6);
@@ -1156,7 +1156,7 @@ namespace pgen::StubPhpDocProvider {
 		 {
 			 {
 				bool k35 = false;
-				zval z36;
+				zval z36 = {};
 				ZVAL_BOOL(&z36, k35);
 				zval o37;
 				ZVAL_COPY(&o37, &z36);
@@ -1164,7 +1164,7 @@ namespace pgen::StubPhpDocProvider {
 			}
 			 {
 				bool k38 = true;
-				zval z39;
+				zval z39 = {};
 				ZVAL_BOOL(&z39, k38);
 				zval o40;
 				ZVAL_COPY(&o40, &z39);
@@ -1241,7 +1241,7 @@ namespace pgen::StubPhpDocProvider {
 				if (Z_TYPE_P(l_docComment.raw()) == IS_NULL) {
 					 {
 						zv::Val o12 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
-						zval z14;
+						zval z14 = {};
 						ZVAL_NULL(&z14);
 						zv::Val o13 = zv::Val::copyOf(zv::Ref(&z14));
 						zval *w15 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::functionMap)).deref().raw();
@@ -1359,7 +1359,7 @@ namespace pgen::StubPhpDocProvider {
 		if (Z_TYPE_P(l_docComment.raw()) == IS_NULL) {
 			 {
 				zv::Val o44 = zv::Val::copyOf(zv::Ref(l_className.raw()));
-				zval z46;
+				zval z46 = {};
 				ZVAL_NULL(&z46);
 				zv::Val o45 = zv::Val::copyOf(zv::Ref(&z46));
 				zval *w47 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::StubPhpDocProvider::slot::classMap)).deref().raw();
@@ -1525,7 +1525,7 @@ namespace pgen::StubPhpDocProvider {
 												}
 												zv::Val r114;
 												if (UNEXPECTED(!pgrt::nameToString(pg_site_38, zv::Ref(p112).deref().raw(), r114.raw()))) return false;
-												zval z116;
+												zval z116 = {};
 												ZVAL_NULL(&z116);
 												zv::Val o115 = zv::Val::copyOf(zv::Ref(&z116));
 												zv::Val o118 = zv::Val::copyOf(zv::Ref(l_className.raw()));
@@ -1618,7 +1618,7 @@ namespace pgen::StubPhpDocProvider {
 														}
 														zv::Val r144;
 														if (UNEXPECTED(!pgrt::nameToString(pg_site_46, zv::Ref(p142).deref().raw(), r144.raw()))) return false;
-														zval z146;
+														zval z146 = {};
 														ZVAL_NULL(&z146);
 														zv::Val o145 = zv::Val::copyOf(zv::Ref(&z146));
 														zv::Val o148 = zv::Val::copyOf(zv::Ref(l_className.raw()));
@@ -1695,7 +1695,7 @@ namespace pgen::StubPhpDocProvider {
 													}
 													zv::Val r165;
 													if (UNEXPECTED(!pgrt::nameToString(pg_site_53, zv::Ref(p163).deref().raw(), r165.raw()))) return false;
-													zval z167;
+													zval z167 = {};
 													ZVAL_NULL(&z167);
 													zv::Val o166 = zv::Val::copyOf(zv::Ref(&z167));
 													zv::Val o169 = zv::Val::copyOf(zv::Ref(l_className.raw()));

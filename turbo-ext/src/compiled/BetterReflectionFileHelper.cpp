@@ -36,7 +36,7 @@ namespace pgen::BetterReflectionFileHelper {
 		zv::Val as3 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
 			zval av4[2];
-			zval z5;
+			zval z5 = {};
 			ZVAL_BOOL(&z5, !zend_is_identical(l_path.raw(), &pg_lit[2]));
 			ZVAL_COPY_VALUE(&av4[0], &z5);
 			ZVAL_COPY_VALUE(&av4[1], &pg_lit[3]);
@@ -221,7 +221,7 @@ namespace pgen::BetterReflectionFileHelper {
 							if (EG(assertions) > 0) {
 								uint8_t ty45 = Z_TYPE_P(zv::Ref(l_removedPart.raw()).deref().raw());
 								zval av46[2];
-								zval z47;
+								zval z47 = {};
 								ZVAL_BOOL(&z47, (ty45 == IS_STRING));
 								ZVAL_COPY_VALUE(&av46[0], &z47);
 								ZVAL_COPY_VALUE(&av46[1], &pg_lit[10]);
@@ -360,7 +360,7 @@ namespace pgen::BetterReflectionFileHelper {
 		zv::Val as15 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
 			zval av16[2];
-			zval z17;
+			zval z17 = {};
 			ZVAL_BOOL(&z17, !zend_is_identical(l_path.raw(), &pg_lit[2]));
 			ZVAL_COPY_VALUE(&av16[0], &z17);
 			ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);

@@ -288,7 +288,7 @@ namespace pgen::CtypeDigitFunctionTypeSpecifyingExtension {
 				zval z56;
 				ZVAL_LONG(&z56, 0);
 				ZVAL_COPY_VALUE(&av55[0], &z56);
-				zval z57;
+				zval z57 = {};
 				ZVAL_NULL(&z57);
 				ZVAL_COPY_VALUE(&av55[1], &z57);
 				zv::Val r58;

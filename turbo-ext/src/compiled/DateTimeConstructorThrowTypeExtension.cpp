@@ -93,7 +93,7 @@ namespace pgen::DateTimeConstructorThrowTypeExtension {
 			zval av12[3];
 			ZVAL_COPY_VALUE(&av12[0], r8.raw());
 			ZVAL_COPY_VALUE(&av12[1], arr9.raw());
-			zval z13;
+			zval z13 = {};
 			ZVAL_BOOL(&z13, true);
 			ZVAL_COPY_VALUE(&av12[2], &z13);
 			zv::Val r14;
@@ -119,7 +119,7 @@ namespace pgen::DateTimeConstructorThrowTypeExtension {
 		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_3, p_methodCall, r1.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r1.raw())) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -252,7 +252,7 @@ namespace pgen::DateTimeConstructorThrowTypeExtension {
 		}
 	}
 	 {
-		zval z31;
+		zval z31 = {};
 		ZVAL_NULL(&z31);
 		ZVAL_COPY_VALUE(ret, &z31);
 		return true;

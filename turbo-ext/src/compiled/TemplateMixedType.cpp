@@ -28,7 +28,7 @@ namespace pgen::TemplateMixedType {
 	(void) this_zv;
 	 {
 		zval av1[1];
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, true);
 		ZVAL_COPY_VALUE(&av1[0], &z2);
 		zv::Val r3;

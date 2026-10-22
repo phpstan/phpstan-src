@@ -164,7 +164,7 @@ namespace pgen::UnresolvableTypeHelper {
 	 {
 		if (!(zend_is_true(zv::Ref(l_containsUnresolvable.raw()).deref().raw()))) {
 			 {
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(ret, &z9);
 				return true;

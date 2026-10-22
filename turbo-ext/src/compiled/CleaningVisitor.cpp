@@ -61,7 +61,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		if (b1) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_BOOL(&z2, true);
 				ZVAL_COPY(return_value, &z2);
 				return;
@@ -93,7 +93,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				if (UNEXPECTED(ce9 == NULL)) return;
 				zval *cc10 = pgrt::classConstant(ce9, &pg_lit[3], pt_ce_cleaning_visitor);
 				if (UNEXPECTED(cc10 == NULL)) return;
-				zval z11;
+				zval z11 = {};
 				ZVAL_BOOL(&z11, pgrt::inArrayStrict(r8.raw(), cc10));
 				ZVAL_COPY(return_value, &z11);
 				return;
@@ -107,7 +107,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		if (b12) {
 			 {
-				zval z13;
+				zval z13 = {};
 				ZVAL_BOOL(&z13, true);
 				ZVAL_COPY(return_value, &z13);
 				return;
@@ -167,7 +167,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 				if (b14) {
 					 {
-						zval z29;
+						zval z29 = {};
 						ZVAL_BOOL(&z29, true);
 						ZVAL_COPY(return_value, &z29);
 						return;
@@ -177,7 +177,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z30;
+		zval z30 = {};
 		ZVAL_BOOL(&z30, false);
 		ZVAL_COPY(return_value, &z30);
 		return;
@@ -221,7 +221,7 @@ namespace pgen::CleaningVisitor {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_cleaning_visitor, "stmts", 5, o3.raw()))) return false;
 					p2 = o3.raw();
 				}
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				zv::Val r5;
 				if (UNEXPECTED(!pgen::CleaningVisitor::m_keepVariadicsAndYields(Z_OBJ_P(&this_zv), zv::Ref(p2).deref().raw(), &z4, r5.raw()))) return false;
@@ -253,7 +253,7 @@ namespace pgen::CleaningVisitor {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_cleaning_visitor, "stmts", 5, o11.raw()))) return false;
 					p10 = o11.raw();
 				}
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				zv::Val r13;
 				if (UNEXPECTED(!pgen::CleaningVisitor::m_keepVariadicsAndYields(Z_OBJ_P(&this_zv), zv::Ref(p10).deref().raw(), &z12, r13.raw()))) return false;
@@ -275,7 +275,7 @@ namespace pgen::CleaningVisitor {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_cleaning_visitor, "stmts", 5, o16.raw()))) return false;
 					p15 = o16.raw();
 				}
-				zval z17;
+				zval z17 = {};
 				ZVAL_NULL(&z17);
 				zv::Val r18;
 				if (UNEXPECTED(!pgen::CleaningVisitor::m_keepVariadicsAndYields(Z_OBJ_P(&this_zv), zv::Ref(p15).deref().raw(), &z17, r18.raw()))) return false;
@@ -329,7 +329,7 @@ namespace pgen::CleaningVisitor {
 		}
 	}
 	 {
-		zval z28;
+		zval z28 = {};
 		ZVAL_NULL(&z28);
 		ZVAL_COPY_VALUE(ret, &z28);
 		return true;

@@ -222,7 +222,7 @@ namespace pgen::PhpParameterReflection {
 				bool r23;
 				if (UNEXPECTED(!pgen::PhpParameterReflection::m_isVariadic(Z_OBJ_P(&this_zv), &r23))) return false;
 				bool k24 = r23;
-				zval z25;
+				zval z25 = {};
 				ZVAL_BOOL(&z25, k24);
 				zv::Val r26;
 				 {
@@ -379,7 +379,7 @@ namespace pgen::PhpParameterReflection {
 			bool r7;
 			if (UNEXPECTED(!pgen::PhpParameterReflection::m_isVariadic(Z_OBJ_P(&this_zv), &r7))) return false;
 			bool k8 = r7;
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k8);
 			zv::Val r10;
 			 {
@@ -442,7 +442,7 @@ namespace pgen::PhpParameterReflection {
 		}
 	}
 	 {
-		zval z11;
+		zval z11 = {};
 		ZVAL_NULL(&z11);
 		ZVAL_COPY_VALUE(ret, &z11);
 		return true;
@@ -537,7 +537,7 @@ namespace pgen::PhpParameterReflection {
 				zval av5[3];
 				ZVAL_COPY_VALUE(&av5[0], &arr3_raw);
 				ZVAL_COPY_VALUE(&av5[1], &arr4_raw);
-				zval z6;
+				zval z6 = {};
 				ZVAL_BOOL(&z6, false);
 				ZVAL_COPY_VALUE(&av5[2], &z6);
 				zend_class_entry *ce7 = pgrt::lookupClass(pg_site_15, "PHPStan\\Reflection\\AllowedConstantsResult", 41);

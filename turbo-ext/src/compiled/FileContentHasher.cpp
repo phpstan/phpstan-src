@@ -35,7 +35,7 @@ namespace pgen::FileContentHasher {
 	 {
 		if (Z_TYPE_P(l_stat.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_BOOL(&z4, false);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -118,7 +118,7 @@ namespace pgen::FileContentHasher {
 	 {
 		if (Z_TYPE_P(l_hash.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
-				zval z28;
+				zval z28 = {};
 				ZVAL_BOOL(&z28, false);
 				ZVAL_COPY_VALUE(ret, &z28);
 				return true;

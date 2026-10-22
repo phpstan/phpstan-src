@@ -47,7 +47,7 @@ namespace pgen::FileStatSignatureReader {
 		}
 		if (b1) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -66,7 +66,7 @@ namespace pgen::FileStatSignatureReader {
 	 {
 		if (Z_TYPE_P(l_stat.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
-				zval z8;
+				zval z8 = {};
 				ZVAL_NULL(&z8);
 				ZVAL_COPY_VALUE(ret, &z8);
 				return true;
@@ -114,7 +114,7 @@ namespace pgen::FileStatSignatureReader {
 		}
 		if (b1) {
 			 {
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				ZVAL_COPY_VALUE(ret, &z12);
 				return true;

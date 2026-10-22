@@ -141,7 +141,7 @@ namespace pgen::ReturnHandler {
 				}
 				}
 				bool k14 = bo12;
-				zval z15;
+				zval z15 = {};
 				ZVAL_BOOL(&z15, k14);
 				zv::Val r16;
 				 {

@@ -31,7 +31,7 @@ namespace pgen::ParentStmtTypesVisitor {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ParentStmtTypesVisitor::slot::typeStack, &o3);
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
@@ -51,7 +51,7 @@ namespace pgen::ParentStmtTypesVisitor {
 		}
 		if (b1) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -80,7 +80,7 @@ namespace pgen::ParentStmtTypesVisitor {
 		{ zval v = o7.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w8), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 	}
 	 {
-		zval z9;
+		zval z9 = {};
 		ZVAL_NULL(&z9);
 		ZVAL_COPY_VALUE(ret, &z9);
 		return true;
@@ -100,7 +100,7 @@ namespace pgen::ParentStmtTypesVisitor {
 		}
 		if (b1) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -115,7 +115,7 @@ namespace pgen::ParentStmtTypesVisitor {
 		pgrt::arrayPop(w3, r4.raw());
 	}
 	 {
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		ZVAL_COPY_VALUE(ret, &z5);
 		return true;

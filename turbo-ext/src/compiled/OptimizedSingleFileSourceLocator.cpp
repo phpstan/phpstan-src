@@ -340,7 +340,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				 {
 					zv::Val o35 = zv::Val::copyOf(zv::Ref(l_className));
 					bool k36 = true;
-					zval z38;
+					zval z38 = {};
 					ZVAL_BOOL(&z38, k36);
 					zv::Val o37 = zv::Val::copyOf(zv::Ref(&z38));
 					zval *w40 = zv::Ref(l_presentSymbols.raw()).deref().raw();
@@ -386,7 +386,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				 {
 					zv::Val o53 = zv::Val::copyOf(zv::Ref(l_functionName));
 					bool k54 = true;
-					zval z56;
+					zval z56 = {};
 					ZVAL_BOOL(&z56, k54);
 					zv::Val o55 = zv::Val::copyOf(zv::Ref(&z56));
 					zval *w58 = zv::Ref(l_presentSymbols.raw()).deref().raw();
@@ -432,7 +432,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				 {
 					zv::Val o71 = zv::Val::copyOf(zv::Ref(l_constantName));
 					bool k72 = true;
-					zval z74;
+					zval z74 = {};
 					ZVAL_BOOL(&z74, k72);
 					zv::Val o73 = zv::Val::copyOf(zv::Ref(&z74));
 					zval *w76 = zv::Ref(l_presentSymbols.raw()).deref().raw();
@@ -581,7 +581,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 						if (UNEXPECTED(!pgrt::callFunction(pg_site_16, "array_key_exists", 16, pt_ce_optimized_single_file_source_locator, 2, av20, r21.raw(), NULL))) return false;
 						if (!((Z_TYPE_P(r21.raw()) == IS_TRUE))) {
 							 {
-								zval z22;
+								zval z22 = {};
 								ZVAL_NULL(&z22);
 								ZVAL_COPY_VALUE(ret, &z22);
 								return true;
@@ -631,7 +631,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 						if (UNEXPECTED(!pgrt::callFunction(pg_site_16, "array_key_exists", 16, pt_ce_optimized_single_file_source_locator, 2, av31, r32.raw(), NULL))) return false;
 						if (!((Z_TYPE_P(r32.raw()) == IS_TRUE))) {
 							 {
-								zval z33;
+								zval z33 = {};
 								ZVAL_NULL(&z33);
 								ZVAL_COPY_VALUE(ret, &z33);
 								return true;
@@ -686,7 +686,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 						if (UNEXPECTED(!pgrt::callFunction(pg_site_16, "array_key_exists", 16, pt_ce_optimized_single_file_source_locator, 2, av44, r45.raw(), NULL))) return false;
 						if (!((Z_TYPE_P(r45.raw()) == IS_TRUE))) {
 							 {
-								zval z46;
+								zval z46 = {};
 								ZVAL_NULL(&z46);
 								ZVAL_COPY_VALUE(ret, &z46);
 								return true;
@@ -940,7 +940,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 						 {
 							zv::Val o111 = zv::Val::copyOf(zv::Ref(l_className.raw()));
 							bool k112 = true;
-							zval z114;
+							zval z114 = {};
 							ZVAL_BOOL(&z114, k112);
 							zv::Val o113 = zv::Val::copyOf(zv::Ref(&z114));
 							zval *w116 = zv::Ref(l_presentSymbols.raw()).deref().raw();
@@ -986,7 +986,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 						 {
 							zv::Val o129 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
 							bool k130 = true;
-							zval z132;
+							zval z132 = {};
 							ZVAL_BOOL(&z132, k130);
 							zv::Val o131 = zv::Val::copyOf(zv::Ref(&z132));
 							zval *w134 = zv::Ref(l_presentSymbols.raw()).deref().raw();
@@ -1032,7 +1032,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 						 {
 							zv::Val o147 = zv::Val::copyOf(zv::Ref(l_constantName.raw()));
 							bool k148 = true;
-							zval z150;
+							zval z150 = {};
 							ZVAL_BOOL(&z150, k148);
 							zv::Val o149 = zv::Val::copyOf(zv::Ref(&z150));
 							zval *w152 = zv::Ref(l_presentSymbols.raw()).deref().raw();
@@ -1128,7 +1128,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				zv::Val o171 = zv::Val::copyOf(zv::Ref(l_className.raw()));
 				if (!(zend_symtable_exists(Z_ARRVAL_P(l_classNodes.raw()), Z_STR_P(o171.raw())))) {
 					 {
-						zval z172;
+						zval z172 = {};
 						ZVAL_NULL(&z172);
 						ZVAL_COPY_VALUE(ret, &z172);
 						return true;
@@ -1274,7 +1274,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				zv::Val o205 = zv::Val::copyOf(zv::Ref(l_functionName.raw()));
 				if (!(zend_symtable_exists(Z_ARRVAL_P(l_functionNodes.raw()), Z_STR_P(o205.raw())))) {
 					 {
-						zval z206;
+						zval z206 = {};
 						ZVAL_NULL(&z206);
 						ZVAL_COPY_VALUE(ret, &z206);
 						return true;
@@ -1415,7 +1415,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				zv::Val o240 = zv::Val::copyOf(zv::Ref(l_constantName.raw()));
 				if (!(zend_symtable_exists(Z_ARRVAL_P(l_constantNodes.raw()), Z_STR_P(o240.raw())))) {
 					 {
-						zval z241;
+						zval z241 = {};
 						ZVAL_NULL(&z241);
 						ZVAL_COPY_VALUE(ret, &z241);
 						return true;
@@ -1604,7 +1604,7 @@ namespace pgen::OptimizedSingleFileSourceLocator {
 				if (UNEXPECTED(EG(exception))) return false;
 			}
 			 {
-				zval z292;
+				zval z292 = {};
 				ZVAL_NULL(&z292);
 				ZVAL_COPY_VALUE(ret, &z292);
 				return true;

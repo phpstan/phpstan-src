@@ -327,7 +327,7 @@ namespace pgen::MinMaxFunctionThrowTypeExtension {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_15, p_functionReflection, "getVariants", "getvariants", 11, 0, NULL, vd54.raw()))) return false;
 		}
 		bool k57 = false;
-		zval z58;
+		zval z58 = {};
 		ZVAL_BOOL(&z58, k57);
 		zv::Val r59;
 		 {

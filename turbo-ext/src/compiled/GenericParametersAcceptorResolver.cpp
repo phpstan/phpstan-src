@@ -204,25 +204,25 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		zval av17[15];
 		ZVAL_COPY_VALUE(&av17[0], r2.raw());
 		ZVAL_COPY_VALUE(&av17[1], r3.raw());
-		zval z18;
+		zval z18 = {};
 		ZVAL_BOOL(&z18, k5);
 		ZVAL_COPY_VALUE(&av17[2], &z18);
 		ZVAL_COPY_VALUE(&av17[3], r6.raw());
-		zval z19;
+		zval z19 = {};
 		ZVAL_BOOL(&z19, k8);
 		ZVAL_COPY_VALUE(&av17[4], &z19);
 		ZVAL_COPY_VALUE(&av17[5], r9.raw());
 		ZVAL_COPY_VALUE(&av17[6], n10.raw());
 		ZVAL_COPY_VALUE(&av17[7], r11.raw());
-		zval z20;
+		zval z20 = {};
 		ZVAL_NULL(&z20);
 		ZVAL_COPY_VALUE(&av17[8], &z20);
 		ZVAL_COPY_VALUE(&av17[9], r12.raw());
-		zval z21;
+		zval z21 = {};
 		ZVAL_NULL(&z21);
 		ZVAL_COPY_VALUE(&av17[10], &z21);
 		ZVAL_COPY_VALUE(&av17[11], o14.raw());
-		zval z22;
+		zval z22 = {};
 		ZVAL_NULL(&z22);
 		ZVAL_COPY_VALUE(&av17[12], &z22);
 		ZVAL_COPY_VALUE(&av17[13], r15.raw());
@@ -590,7 +590,7 @@ namespace pgen::GenericParametersAcceptorResolver {
 									if (zend_is_true(r91.raw())) {
 										 {
 											zval av93[1];
-											zval z94;
+											zval z94 = {};
 											ZVAL_BOOL(&z94, true);
 											ZVAL_COPY_VALUE(&av93[0], &z94);
 											zv::Val n92;
@@ -895,7 +895,7 @@ namespace pgen::GenericParametersAcceptorResolver {
 				ZVAL_COPY_VALUE(&av161[0], r148.raw());
 				ZVAL_COPY_VALUE(&av161[1], vd149.raw());
 				ZVAL_COPY_VALUE(&av161[2], r154.raw());
-				zval z162;
+				zval z162 = {};
 				ZVAL_BOOL(&z162, k156);
 				ZVAL_COPY_VALUE(&av161[3], &z162);
 				ZVAL_COPY_VALUE(&av161[4], o157.raw());

@@ -85,7 +85,7 @@ namespace pgen::ArrayFindArgVisitor {
 									e16 = pgrt::dimRead(l_args.raw(), &z18, et17.raw());
 									if (UNEXPECTED(e16 == NULL)) return false;
 								}
-								zval z19;
+								zval z19 = {};
 								ZVAL_BOOL(&z19, true);
 								zv::Val r20;
 								if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_7, zv::Ref(e16).deref().raw(), &pg_lit[4], &z19, r20.raw()))) return false;
@@ -97,7 +97,7 @@ namespace pgen::ArrayFindArgVisitor {
 		}
 	}
 	 {
-		zval z21;
+		zval z21 = {};
 		ZVAL_NULL(&z21);
 		ZVAL_COPY_VALUE(ret, &z21);
 		return true;

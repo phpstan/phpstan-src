@@ -164,7 +164,7 @@ namespace pgen::ArrayChunkFunctionThrowTypeExtension {
 		zval z25;
 		ZVAL_LONG(&z25, 1);
 		ZVAL_COPY_VALUE(&av24[0], &z25);
-		zval z26;
+		zval z26 = {};
 		ZVAL_NULL(&z26);
 		ZVAL_COPY_VALUE(&av24[1], &z26);
 		zv::Val r27;

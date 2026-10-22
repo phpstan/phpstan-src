@@ -241,7 +241,7 @@ namespace pgen::DirectoryWalker {
 		}
 		if (b1) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -259,7 +259,7 @@ namespace pgen::DirectoryWalker {
 	 {
 		if (zend_is_identical(l_directory.raw(), &pg_lit[6])) {
 			 {
-				zval z8;
+				zval z8 = {};
 				ZVAL_NULL(&z8);
 				ZVAL_COPY_VALUE(ret, &z8);
 				return true;
@@ -314,7 +314,7 @@ namespace pgen::DirectoryWalker {
 		}
 		if (!(r27)) {
 			 {
-				zval z28;
+				zval z28 = {};
 				ZVAL_NULL(&z28);
 				ZVAL_COPY_VALUE(ret, &z28);
 				return true;
@@ -364,7 +364,7 @@ namespace pgen::DirectoryWalker {
 	 {
 		zv::Val o4 = zv::Val::copyOf(zv::Ref(p_directory));
 		bool k5 = true;
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, k5);
 		zv::Val o6 = zv::Val::copyOf(zv::Ref(&z7));
 		zval *w8 = zv::Ref(p_visited).deref().raw();
@@ -474,7 +474,7 @@ namespace pgen::DirectoryWalker {
 			}
 			 {
 				bool k36 = true;
-				zval z37;
+				zval z37 = {};
 				ZVAL_BOOL(&z37, k36);
 				zval o38;
 				ZVAL_COPY(&o38, &z37);
@@ -649,7 +649,7 @@ namespace pgen::DirectoryWalker {
 	 {
 		if (Z_TYPE_P(l_handle.raw()) == (false ? IS_TRUE : IS_FALSE)) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -791,7 +791,7 @@ namespace pgen::DirectoryWalker {
 		if (UNEXPECTED(p1 == NULL)) return false;
 		if (zend_is_identical(p1, &pg_lit[6])) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -1011,7 +1011,7 @@ namespace pgen::DirectoryWalker {
 	}
 	 {
 		bool k24 = false;
-		zval z25;
+		zval z25 = {};
 		ZVAL_BOOL(&z25, k24);
 		zval o26;
 		ZVAL_COPY(&o26, &z25);
@@ -1049,7 +1049,7 @@ namespace pgen::DirectoryWalker {
 			zval z36;
 			ZVAL_LONG(&z36, 511);
 			ZVAL_COPY_VALUE(&av35[1], &z36);
-			zval z37;
+			zval z37 = {};
 			ZVAL_BOOL(&z37, true);
 			ZVAL_COPY_VALUE(&av35[2], &z37);
 			zv::Val r38;

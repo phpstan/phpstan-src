@@ -478,7 +478,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z18;
+		zval z18 = {};
 		ZVAL_BOOL(&z18, p_nativeTypesPromoted);
 		zv::Val r19;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[2]).deref().raw()) == IS_OBJECT)) {
@@ -624,7 +624,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 						}
 						if (b44) {
 							 {
-								zval z47;
+								zval z47 = {};
 								ZVAL_BOOL(&z47, p_nativeTypesPromoted);
 								zv::Val r48;
 								if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[1]).deref().raw()) == IS_OBJECT)) {
@@ -1520,7 +1520,7 @@ namespace pgen::InstanceofHandler {
 		ZVAL_COPY_VALUE(&cap139[0], p_expr);
 		ZVAL_COPY_VALUE(&cap139[1], l_exprResult.raw());
 		ZVAL_COPY_VALUE(&cap139[2], l_classResult.raw());
-		zval z140;
+		zval z140 = {};
 		ZVAL_BOOL(&z140, l_isInTrait);
 		ZVAL_COPY_VALUE(&cap139[3], &z140);
 		ZVAL_COPY_VALUE(&cap139[4], l_nameClassType.raw());

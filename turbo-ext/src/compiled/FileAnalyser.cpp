@@ -125,7 +125,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_72, "error_reporting", 15, pt_ce_file_analyser, 0, NULL, r1.raw(), NULL))) return;
 		if ((Z_LVAL_P(r1.raw()) & p_errno) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_BOOL(&z2, true);
 				ZVAL_COPY(return_value, &z2);
 				return;
@@ -167,7 +167,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zval z14;
 		ZVAL_LONG(&z14, p_errline);
 		ZVAL_COPY_VALUE(&av13[2], &z14);
-		zval z15;
+		zval z15 = {};
 		ZVAL_BOOL(&z15, false);
 		ZVAL_COPY_VALUE(&av13[3], &z15);
 		zend_class_entry *ce16 = pgrt::lookupClass(pg_site_18, "PHPStan\\Analyser\\Error", 22);
@@ -189,7 +189,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		if (p_errno == 8192) {
 			 {
-				zval z22;
+				zval z22 = {};
 				ZVAL_BOOL(&z22, true);
 				ZVAL_COPY(return_value, &z22);
 				return;
@@ -202,7 +202,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(EG(exception))) return;
 		if (!((is23 != NULL && Z_TYPE_P(is23) > IS_NULL))) {
 			 {
-				zval z26;
+				zval z26 = {};
 				ZVAL_BOOL(&z26, true);
 				ZVAL_COPY(return_value, &z26);
 				return;
@@ -217,7 +217,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zval z30;
 		ZVAL_LONG(&z30, p_errline);
 		ZVAL_COPY_VALUE(&av29[2], &z30);
-		zval z31;
+		zval z31 = {};
 		ZVAL_BOOL(&z31, (p_errno == 16384));
 		ZVAL_COPY_VALUE(&av29[3], &z31);
 		zend_class_entry *ce32 = pgrt::lookupClass(pg_site_18, "PHPStan\\Analyser\\Error", 22);
@@ -237,7 +237,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		zv::Ref(e37).assign(std::move(o35));
 	}
 	 {
-		zval z38;
+		zval z38 = {};
 		ZVAL_BOOL(&z38, true);
 		ZVAL_COPY(return_value, &z38);
 		return;
@@ -651,11 +651,11 @@ namespace pgen::FileAnalyser {
 																ZVAL_COPY_VALUE(&av103[0], &pg_lit[0]);
 																ZVAL_COPY_VALUE(&av103[1], l_ignoredFile.raw());
 																ZVAL_COPY_VALUE(&av103[2], l_line.raw());
-																zval z104;
+																zval z104 = {};
 																ZVAL_BOOL(&z104, false);
 																ZVAL_COPY_VALUE(&av103[3], &z104);
 																ZVAL_COPY_VALUE(&av103[4], l_ignoredFile.raw());
-																zval z105;
+																zval z105 = {};
 																ZVAL_NULL(&z105);
 																ZVAL_COPY_VALUE(&av103[5], &z105);
 																ZVAL_COPY_VALUE(&av103[6], &pg_lit[1]);
@@ -733,11 +733,11 @@ namespace pgen::FileAnalyser {
 																	ZVAL_COPY_VALUE(&av130[0], r129.raw());
 																	ZVAL_COPY_VALUE(&av130[1], l_ignoredFile.raw());
 																	ZVAL_COPY_VALUE(&av130[2], l_line.raw());
-																	zval z131;
+																	zval z131 = {};
 																	ZVAL_BOOL(&z131, false);
 																	ZVAL_COPY_VALUE(&av130[3], &z131);
 																	ZVAL_COPY_VALUE(&av130[4], l_ignoredFile.raw());
-																	zval z132;
+																	zval z132 = {};
 																	ZVAL_NULL(&z132);
 																	ZVAL_COPY_VALUE(&av130[5], &z132);
 																	ZVAL_COPY_VALUE(&av130[6], &pg_lit[5]);
@@ -1241,7 +1241,7 @@ namespace pgen::FileAnalyser {
 						ZVAL_COPY_VALUE(&av282[0], r281.raw());
 						ZVAL_COPY_VALUE(&av282[1], p_file);
 						zv::Arr na283 = zv::Arr::create(1);
-						zval z284;
+						zval z284 = {};
 						ZVAL_BOOL(&z284, false);
 						{ zval v; ZVAL_COPY(&v, &z284); zend_hash_str_add_new(na283.table(), "canBeIgnored", 12, &v); }
 						zend_class_entry *ce285 = pgrt::lookupClass(pg_site_18, "PHPStan\\Analyser\\Error", 22);
@@ -1270,7 +1270,7 @@ namespace pgen::FileAnalyser {
 						ZVAL_COPY_VALUE(&av293[0], r292.raw());
 						ZVAL_COPY_VALUE(&av293[1], p_file);
 						zv::Arr na294 = zv::Arr::create(1);
-						zval z295;
+						zval z295 = {};
 						ZVAL_BOOL(&z295, false);
 						{ zval v; ZVAL_COPY(&v, &z295); zend_hash_str_add_new(na294.table(), "canBeIgnored", 12, &v); }
 						zend_class_entry *ce296 = pgrt::lookupClass(pg_site_18, "PHPStan\\Analyser\\Error", 22);

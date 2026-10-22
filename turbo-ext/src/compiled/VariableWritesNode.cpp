@@ -152,7 +152,7 @@ namespace pgen::VariableWritesNode {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z11;
+		zval z11 = {};
 		ZVAL_NULL(&z11);
 		ZVAL_COPY_VALUE(ret, &z11);
 		return true;

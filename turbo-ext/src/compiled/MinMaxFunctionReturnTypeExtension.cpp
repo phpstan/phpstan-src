@@ -128,7 +128,7 @@ namespace pgen::MinMaxFunctionReturnTypeExtension {
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is2 != NULL && Z_TYPE_P(is2) > IS_NULL))) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -1258,7 +1258,7 @@ namespace pgen::MinMaxFunctionReturnTypeExtension {
 				ZEND_HASH_FOREACH_END();
 			}
 			 {
-				zval z30;
+				zval z30 = {};
 				ZVAL_NULL(&z30);
 				ZVAL_COPY_VALUE(ret, &z30);
 				return true;
@@ -1326,7 +1326,7 @@ namespace pgen::MinMaxFunctionReturnTypeExtension {
 		}
 	}
 	 {
-		zval z36;
+		zval z36 = {};
 		ZVAL_NULL(&z36);
 		ZVAL_COPY_VALUE(ret, &z36);
 		return true;

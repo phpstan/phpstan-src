@@ -205,7 +205,7 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 	}
 	 {
 		zval av19[1];
-		zval z20;
+		zval z20 = {};
 		ZVAL_BOOL(&z20, true);
 		ZVAL_COPY_VALUE(&av19[0], &z20);
 		zv::Val r21;
@@ -316,7 +316,7 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 		 {
 			 {
 				zval av45[1];
-				zval z46;
+				zval z46 = {};
 				ZVAL_BOOL(&z46, l_internalErrorsOld);
 				ZVAL_COPY_VALUE(&av45[0], &z46);
 				zv::Val r47;
@@ -369,7 +369,7 @@ namespace pgen::SimpleXMLElementConstructorThrowTypeExtension {
 		}
 	}
 	 {
-		zval z53;
+		zval z53 = {};
 		ZVAL_NULL(&z53);
 		ZVAL_COPY_VALUE(ret, &z53);
 		return true;

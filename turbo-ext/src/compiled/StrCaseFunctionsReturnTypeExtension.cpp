@@ -283,7 +283,7 @@ namespace pgen::StrCaseFunctionsReturnTypeExtension {
 		ZVAL_LONG(&z11, (zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_args.raw())));
 		if (zend_compare(&z11, l_requiredArgs.raw()) < 0) {
 			 {
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				ZVAL_COPY_VALUE(ret, &z12);
 				return true;

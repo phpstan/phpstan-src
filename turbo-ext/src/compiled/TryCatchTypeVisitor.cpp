@@ -38,7 +38,7 @@ namespace pgen::TryCatchTypeVisitor {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TryCatchTypeVisitor::slot::typeStack, &o3);
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
@@ -80,7 +80,7 @@ namespace pgen::TryCatchTypeVisitor {
 	 {
 		if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\FunctionLike", 27))) {
 			 {
-				zval z7;
+				zval z7 = {};
 				ZVAL_NULL(&z7);
 				zv::Val o6 = zv::Val::copyOf(zv::Ref(&z7));
 				zval *w8 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::TryCatchTypeVisitor::slot::typeStack)).deref().raw();
@@ -200,7 +200,7 @@ namespace pgen::TryCatchTypeVisitor {
 		}
 	}
 	 {
-		zval z49;
+		zval z49 = {};
 		ZVAL_NULL(&z49);
 		ZVAL_COPY_VALUE(ret, &z49);
 		return true;
@@ -220,7 +220,7 @@ namespace pgen::TryCatchTypeVisitor {
 		}
 		if (b1) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -235,7 +235,7 @@ namespace pgen::TryCatchTypeVisitor {
 		pgrt::arrayPop(w3, r4.raw());
 	}
 	 {
-		zval z5;
+		zval z5 = {};
 		ZVAL_NULL(&z5);
 		ZVAL_COPY_VALUE(ret, &z5);
 		return true;

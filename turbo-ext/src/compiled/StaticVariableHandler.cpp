@@ -188,7 +188,7 @@ namespace pgen::StaticVariableHandler {
 							}
 							}
 							bool k27 = bo25;
-							zval z28;
+							zval z28 = {};
 							ZVAL_BOOL(&z28, k27);
 							zv::Val r29;
 							 {
@@ -316,7 +316,7 @@ namespace pgen::StaticVariableHandler {
 					}
 					}
 					bool k56 = bo54;
-					zval z57;
+					zval z57 = {};
 					ZVAL_BOOL(&z57, k56);
 					zv::Val r58;
 					 {

@@ -512,7 +512,7 @@ static void pg_closure_11(zval *captures, uint32_t argc, zval *argv, zval *retur
 		ZVAL_COPY_VALUE(&av1[0], zv::Ref(&captures[0]).deref().raw());
 		ZVAL_COPY_VALUE(&av1[1], p_methodData);
 		ZVAL_COPY_VALUE(&av1[2], zv::Ref(&captures[1]).deref().raw());
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		ZVAL_COPY_VALUE(&av1[3], &z2);
 		zend_class_entry *ce3 = pgrt::lookupClass(pg_site_48, "PHPStan\\BetterReflection\\Reflection\\ReflectionMethod", 52);
@@ -551,7 +551,7 @@ static void pg_closure_12(zval *captures, uint32_t argc, zval *argv, zval *retur
 				b2 = !zend_is_identical(p_aliasMethodName, &pg_lit[30]);
 			}
 			zval av3[2];
-			zval z4;
+			zval z4 = {};
 			ZVAL_BOOL(&z4, b2);
 			ZVAL_COPY_VALUE(&av3[0], &z4);
 			ZVAL_COPY_VALUE(&av3[1], &pg_lit[31]);
@@ -627,7 +627,7 @@ static void pg_closure_14(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zval z4;
 		ZVAL_LONG(&z4, Z_LVAL_P(r2.raw()));
 		if (UNEXPECTED(bitwise_and_function(ar3.raw(), zv::Ref(&captures[0]).deref().raw(), &z4) != SUCCESS || EG(exception))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, (Z_LVAL_P(ar3.raw()) != 0));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -683,7 +683,7 @@ static void pg_closure_16(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zval z4;
 		ZVAL_LONG(&z4, Z_LVAL_P(r2.raw()));
 		if (UNEXPECTED(bitwise_and_function(ar3.raw(), zv::Ref(&captures[0]).deref().raw(), &z4) != SUCCESS || EG(exception))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, (Z_LVAL_P(ar3.raw()) != 0));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -717,7 +717,7 @@ static void pg_closure_17(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zv::Val as1 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
 			zval av2[2];
-			zval z3;
+			zval z3 = {};
 			ZVAL_BOOL(&z3, !zend_is_identical(p_name, &pg_lit[30]));
 			ZVAL_COPY_VALUE(&av2[0], &z3);
 			ZVAL_COPY_VALUE(&av2[1], &pg_lit[38]);
@@ -807,7 +807,7 @@ static void pg_closure_18(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zval z4;
 		ZVAL_LONG(&z4, Z_LVAL_P(r2.raw()));
 		if (UNEXPECTED(bitwise_and_function(ar3.raw(), zv::Ref(&captures[0]).deref().raw(), &z4) != SUCCESS || EG(exception))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, (Z_LVAL_P(ar3.raw()) != 0));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -838,7 +838,7 @@ static void pg_closure_19(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zval z4;
 		ZVAL_LONG(&z4, Z_LVAL_P(r2.raw()));
 		if (UNEXPECTED(bitwise_and_function(ar3.raw(), zv::Ref(&captures[0]).deref().raw(), &z4) != SUCCESS || EG(exception))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, (Z_LVAL_P(ar3.raw()) != 0));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -858,7 +858,7 @@ static void pg_closure_20(zval *captures, uint32_t argc, zval *argv, zval *retur
 	 {
 		zv::Val r1;
 		if (UNEXPECTED(!pgrt::callMethod0(pg_site_145, p_method, "isConstructor", "isconstructor", 13, r1.raw()))) return;
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, (Z_TYPE_P(r1.raw()) == IS_TRUE));
 		ZVAL_COPY(return_value, &z2);
 		return;
@@ -882,7 +882,7 @@ static void pg_closure_21(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zval z3;
 		ZVAL_LONG(&z3, Z_LVAL_P(r1.raw()));
 		if (UNEXPECTED(bitwise_and_function(ar2.raw(), zv::Ref(&captures[0]).deref().raw(), &z3) != SUCCESS || EG(exception))) return;
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, (Z_LVAL_P(ar2.raw()) != 0));
 		ZVAL_COPY(return_value, &z4);
 		return;
@@ -979,7 +979,7 @@ static void pg_closure_23(zval *captures, uint32_t argc, zval *argv, zval *retur
 		zval z3;
 		ZVAL_LONG(&z3, Z_LVAL_P(r1.raw()));
 		if (UNEXPECTED(bitwise_and_function(ar2.raw(), zv::Ref(&captures[0]).deref().raw(), &z3) != SUCCESS || EG(exception))) return;
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, (Z_LVAL_P(ar2.raw()) != 0));
 		ZVAL_COPY(return_value, &z4);
 		return;
@@ -999,7 +999,7 @@ static void pg_closure_24(zval *captures, uint32_t argc, zval *argv, zval *retur
 	 {
 		zv::Val r1;
 		if (UNEXPECTED(!pgrt::callMethod0(pg_site_181, p_property, "isPrivate", "isprivate", 9, r1.raw()))) return;
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, !((Z_TYPE_P(r1.raw()) == IS_TRUE)));
 		ZVAL_COPY(return_value, &z2);
 		return;
@@ -1367,7 +1367,7 @@ namespace pgen::BetterReflectionClass {
 	}
 	 {
 		bool k26 = pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_9, "PhpParser\\Node\\Stmt\\Interface_", 30));
-		zval z27;
+		zval z27 = {};
 		ZVAL_BOOL(&z27, k26);
 		zval o28;
 		ZVAL_COPY(&o28, &z27);
@@ -1375,7 +1375,7 @@ namespace pgen::BetterReflectionClass {
 	}
 	 {
 		bool k29 = pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_10, "PhpParser\\Node\\Stmt\\Trait_", 26));
-		zval z30;
+		zval z30 = {};
 		ZVAL_BOOL(&z30, k29);
 		zval o31;
 		ZVAL_COPY(&o31, &z30);
@@ -1383,7 +1383,7 @@ namespace pgen::BetterReflectionClass {
 	}
 	 {
 		bool k32 = pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_11, "PhpParser\\Node\\Stmt\\Enum_", 25));
-		zval z33;
+		zval z33 = {};
 		ZVAL_BOOL(&z33, k32);
 		zval o34;
 		ZVAL_COPY(&o34, &z33);
@@ -1401,7 +1401,7 @@ namespace pgen::BetterReflectionClass {
 			b35 = !(Z_TYPE_P(zv::Ref(p36).deref().raw()) == IS_NULL);
 		}
 		bool k38 = b35;
-		zval z39;
+		zval z39 = {};
 		ZVAL_BOOL(&z39, k38);
 		zval o40;
 		ZVAL_COPY(&o40, &z39);
@@ -1452,7 +1452,7 @@ namespace pgen::BetterReflectionClass {
 			zval z54;
 			ZVAL_LONG(&z54, 0);
 			zval av55[2];
-			zval z56;
+			zval z56 = {};
 			ZVAL_BOOL(&z56, (zend_compare(l_startLine.raw(), &z54) > 0));
 			ZVAL_COPY_VALUE(&av55[0], &z56);
 			ZVAL_COPY_VALUE(&av55[1], &pg_lit[0]);
@@ -1473,7 +1473,7 @@ namespace pgen::BetterReflectionClass {
 			zval z61;
 			ZVAL_LONG(&z61, 0);
 			zval av62[2];
-			zval z63;
+			zval z63 = {};
 			ZVAL_BOOL(&z63, (zend_compare(l_endLine.raw(), &z61) > 0));
 			ZVAL_COPY_VALUE(&av62[0], &z63);
 			ZVAL_COPY_VALUE(&av62[1], &pg_lit[1]);
@@ -2327,7 +2327,7 @@ namespace pgen::BetterReflectionClass {
 			zval *p10 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::name, "name");
 			if (UNEXPECTED(p10 == NULL)) return false;
 			zval av11[2];
-			zval z12;
+			zval z12 = {};
 			ZVAL_BOOL(&z12, !(Z_TYPE_P(p10) == IS_NULL));
 			ZVAL_COPY_VALUE(&av11[0], &z12);
 			ZVAL_COPY_VALUE(&av11[1], &pg_lit[29]);
@@ -3601,7 +3601,7 @@ namespace pgen::BetterReflectionClass {
 		if (UNEXPECTED(!pgrt::newObject(ce34, 1, av33, n25.raw(), NULL))) return false;
 		zval av35[3];
 		ZVAL_COPY_VALUE(&av35[0], n22.raw());
-		zval z36;
+		zval z36 = {};
 		ZVAL_NULL(&z36);
 		ZVAL_COPY_VALUE(&av35[1], &z36);
 		ZVAL_COPY_VALUE(&av35[2], n25.raw());
@@ -3893,7 +3893,7 @@ namespace pgen::BetterReflectionClass {
 								if (EG(assertions) > 0) {
 									uint8_t ty20 = Z_TYPE_P(zv::Ref(l_constantPositionInNode).deref().raw());
 									zval av21[2];
-									zval z22;
+									zval z22 = {};
 									ZVAL_BOOL(&z22, (ty20 == IS_LONG));
 									ZVAL_COPY_VALUE(&av21[0], &z22);
 									ZVAL_COPY_VALUE(&av21[1], &pg_lit[50]);
@@ -4552,7 +4552,7 @@ namespace pgen::BetterReflectionClass {
 								zv::Val as45 = zv::Val::boolean(true);
 								if (EG(assertions) > 0) {
 									zval av46[2];
-									zval z47;
+									zval z47 = {};
 									ZVAL_BOOL(&z47, pgrt::instanceOfClass(l_parameterNameNode.raw(), pgrt::lookupClassQuiet(pg_site_118, "PhpParser\\Node\\Expr\\Variable", 28)));
 									ZVAL_COPY_VALUE(&av46[0], &z47);
 									ZVAL_COPY_VALUE(&av46[1], &pg_lit[52]);
@@ -4573,7 +4573,7 @@ namespace pgen::BetterReflectionClass {
 									}
 									uint8_t ty53 = Z_TYPE_P(zv::Ref(zv::Ref(p51).deref().raw()).deref().raw());
 									zval av54[2];
-									zval z55;
+									zval z55 = {};
 									ZVAL_BOOL(&z55, (ty53 == IS_STRING));
 									ZVAL_COPY_VALUE(&av54[0], &z55);
 									ZVAL_COPY_VALUE(&av54[1], &pg_lit[53]);
@@ -4673,7 +4673,7 @@ namespace pgen::BetterReflectionClass {
 								ZVAL_COPY_VALUE(&av85[2], zv::Ref(e82).deref().raw());
 								ZVAL_COPY_VALUE(&av85[3], &this_zv);
 								ZVAL_COPY_VALUE(&av85[4], &this_zv);
-								zval z86;
+								zval z86 = {};
 								ZVAL_BOOL(&z86, true);
 								ZVAL_COPY_VALUE(&av85[5], &z86);
 								zend_class_entry *ce87 = pgrt::lookupClass(pg_site_46, "PHPStan\\BetterReflection\\Reflection\\ReflectionProperty", 54);
@@ -5237,7 +5237,7 @@ namespace pgen::BetterReflectionClass {
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is3 != NULL && Z_TYPE_P(is3) > IS_NULL))) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -5429,7 +5429,7 @@ namespace pgen::BetterReflectionClass {
 	 {
 		if (Z_TYPE_P(l_parentClassName.raw()) == IS_NULL) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -5441,7 +5441,7 @@ namespace pgen::BetterReflectionClass {
 		if (UNEXPECTED(!pgen::BetterReflectionClass::m_isOnParentClassCycle(Z_OBJ_P(&this_zv), &r4))) return false;
 		if (r4) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -5485,7 +5485,7 @@ namespace pgen::BetterReflectionClass {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z13;
+					zval z13 = {};
 					ZVAL_NULL(&z13);
 					ZVAL_COPY_VALUE(ret, &z13);
 					return true;
@@ -5519,12 +5519,12 @@ namespace pgen::BetterReflectionClass {
 			bool r4;
 			if (UNEXPECTED(!pgen::BetterReflectionClass::m_reachesItself(Z_OBJ_P(&this_zv), h3.raw(), &r4))) return false;
 			bool k5 = r4;
-			zval z6;
+			zval z6 = {};
 			ZVAL_BOOL(&z6, k5);
 			zval o7;
 			ZVAL_COPY(&o7, &z6);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::cachedIsOnParentClassCycle, &o7);
-			zval z8;
+			zval z8 = {};
 			ZVAL_BOOL(&z8, k5);
 			ca2 = zv::Val::copyOf(zv::Ref(&z8));
 		}
@@ -5552,12 +5552,12 @@ namespace pgen::BetterReflectionClass {
 			bool r4;
 			if (UNEXPECTED(!pgen::BetterReflectionClass::m_reachesItself(Z_OBJ_P(&this_zv), h3.raw(), &r4))) return false;
 			bool k5 = r4;
-			zval z6;
+			zval z6 = {};
 			ZVAL_BOOL(&z6, k5);
 			zval o7;
 			ZVAL_COPY(&o7, &z6);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::cachedIsOnInterfaceCycle, &o7);
-			zval z8;
+			zval z8 = {};
 			ZVAL_BOOL(&z8, k5);
 			ca2 = zv::Val::copyOf(zv::Ref(&z8));
 		}
@@ -5585,12 +5585,12 @@ namespace pgen::BetterReflectionClass {
 			bool r4;
 			if (UNEXPECTED(!pgen::BetterReflectionClass::m_reachesItself(Z_OBJ_P(&this_zv), h3.raw(), &r4))) return false;
 			bool k5 = r4;
-			zval z6;
+			zval z6 = {};
 			ZVAL_BOOL(&z6, k5);
 			zval o7;
 			ZVAL_COPY(&o7, &z6);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::cachedIsOnTraitCycle, &o7);
-			zval z8;
+			zval z8 = {};
 			ZVAL_BOOL(&z8, k5);
 			ca2 = zv::Val::copyOf(zv::Ref(&z8));
 		}
@@ -5689,7 +5689,7 @@ namespace pgen::BetterReflectionClass {
 				 {
 					zv::Val o17 = zv::Val::copyOf(zv::Ref(l_lowercasedClassName.raw()));
 					bool k18 = true;
-					zval z20;
+					zval z20 = {};
 					ZVAL_BOOL(&z20, k18);
 					zv::Val o19 = zv::Val::copyOf(zv::Ref(&z20));
 					zval *w21 = zv::Ref(l_visited.raw()).deref().raw();
@@ -6403,7 +6403,7 @@ namespace pgen::BetterReflectionClass {
 			zval *p2 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionClass::slot::isEnum, "isEnum");
 			if (UNEXPECTED(p2 == NULL)) return false;
 			zval av3[2];
-			zval z4;
+			zval z4 = {};
 			ZVAL_BOOL(&z4, ((Z_TYPE_P(p2) == IS_TRUE) == true));
 			ZVAL_COPY_VALUE(&av3[0], &z4);
 			ZVAL_COPY_VALUE(&av3[1], &pg_lit[58]);

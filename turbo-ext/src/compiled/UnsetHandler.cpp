@@ -256,7 +256,7 @@ namespace pgen::UnsetHandler {
 					}
 					}
 					bool k18 = bo16;
-					zval z19;
+					zval z19 = {};
 					ZVAL_BOOL(&z19, k18);
 					zv::Val r20;
 					 {
@@ -322,7 +322,7 @@ namespace pgen::UnsetHandler {
 					zval av30[3];
 					ZVAL_COPY_VALUE(&av30[0], o27.raw());
 					ZVAL_COPY_VALUE(&av30[1], p_storage);
-					zval z31;
+					zval z31 = {};
 					ZVAL_BOOL(&z31, r29);
 					ZVAL_COPY_VALUE(&av30[2], &z31);
 					zend_class_entry *ce32 = pgrt::lookupClass(pg_site_8, "PHPStan\\Analyser\\VariableFlowBuilder", 36);
@@ -582,7 +582,7 @@ namespace pgen::UnsetHandler {
 								if (UNEXPECTED(!pgrt::callMethod(pg_site_29, p_nodeScopeResolver, "readStoredResult", "readstoredresult", 16, 2, av95, r94.raw()))) return false;
 							}
 							}
-							zval z96;
+							zval z96 = {};
 							ZVAL_BOOL(&z96, false);
 							zv::Val r97;
 							if (EXPECTED(Z_TYPE_P(r94.raw()) == IS_OBJECT)) {
@@ -660,7 +660,7 @@ namespace pgen::UnsetHandler {
 									}
 									}
 									bool k114 = bo112;
-									zval z115;
+									zval z115 = {};
 									ZVAL_BOOL(&z115, k114);
 									zv::Val r116;
 									 {

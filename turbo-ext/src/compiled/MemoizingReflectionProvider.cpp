@@ -112,7 +112,7 @@ namespace pgen::MemoizingReflectionProvider {
 			 {
 				zv::Val o18 = zv::Val::copyOf(zv::Ref(l_lowerClassName.raw()));
 				bool k19 = true;
-				zval z21;
+				zval z21 = {};
 				ZVAL_BOOL(&z21, k19);
 				zv::Val o20 = zv::Val::copyOf(zv::Ref(&z21));
 				zval *w22 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::knownClasses)).deref().raw();
@@ -127,7 +127,7 @@ namespace pgen::MemoizingReflectionProvider {
 			 {
 				zv::Val o24 = zv::Val::copyOf(zv::Ref(p_className));
 				bool k25 = true;
-				zval z27;
+				zval z27 = {};
 				ZVAL_BOOL(&z27, k25);
 				zv::Val o26 = zv::Val::copyOf(zv::Ref(&z27));
 				zval *w28 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflectionProvider::slot::unknownClasses)).deref().raw();

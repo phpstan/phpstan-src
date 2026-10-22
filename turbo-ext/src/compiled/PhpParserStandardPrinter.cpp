@@ -967,7 +967,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			zv::Val r6;
 			if (UNEXPECTED(!pgrt::callFunction(pg_site_61, "strlen", 6, pt_ce_php_parser_standard_printer, 1, av5, r6.raw(), NULL))) return;
 			zval av7[2];
-			zval z8;
+			zval z8 = {};
 			ZVAL_BOOL(&z8, (Z_LVAL_P(r6.raw()) == 1));
 			ZVAL_COPY_VALUE(&av7[0], &z8);
 			ZVAL_COPY_VALUE(&av7[1], &pg_lit[279]);
@@ -1050,7 +1050,7 @@ namespace pgen::PhpParserStandardPrinter {
 		if (!vd7_done) {
 			zval av9[2];
 			ZVAL_COPY_VALUE(&av9[0], o3.raw());
-			zval z10;
+			zval z10 = {};
 			ZVAL_BOOL(&z10, k6);
 			ZVAL_COPY_VALUE(&av9[1], &z10);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_2, &this_zv, "pAttrGroups", "pattrgroups", 11, 2, av9, vd7.raw()))) return false;
@@ -2278,7 +2278,7 @@ namespace pgen::PhpParserStandardPrinter {
 				zend_class_entry *vd71_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 				bool vd71_done = false;
 				if (vd71_ce == pt_ce_printer || vd71_ce == pt_ce_php_parser_standard_printer) {
-					zval z72;
+					zval z72 = {};
 					ZVAL_NULL(&z72);
 					zv::Val r73;
 					if (UNEXPECTED(!pgen::PhpParserStandardPrinter::m_escapeString(Z_OBJ_P(&this_zv), o70.raw(), &z72, r73.raw()))) return false;
@@ -2288,7 +2288,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd71_done) {
 					zval av74[2];
 					ZVAL_COPY_VALUE(&av74[0], o70.raw());
-					zval z75;
+					zval z75 = {};
 					ZVAL_NULL(&z75);
 					ZVAL_COPY_VALUE(&av74[1], &z75);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_68, &this_zv, "escapeString", "escapestring", 12, 2, av74, vd71.raw()))) return false;
@@ -2592,7 +2592,7 @@ namespace pgen::PhpParserStandardPrinter {
 						zend_class_entry *vd47_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd47_done = false;
 						if (vd47_ce == pt_ce_printer || vd47_ce == pt_ce_php_parser_standard_printer) {
-							zval z48;
+							zval z48 = {};
 							ZVAL_NULL(&z48);
 							zv::Val r49;
 							if (UNEXPECTED(!pgen::PhpParserStandardPrinter::m_pEncapsList(Z_OBJ_P(&this_zv), o46.raw(), &z48, r49.raw()))) return false;
@@ -2602,7 +2602,7 @@ namespace pgen::PhpParserStandardPrinter {
 						if (!vd47_done) {
 							zval av50[2];
 							ZVAL_COPY_VALUE(&av50[0], o46.raw());
-							zval z51;
+							zval z51 = {};
 							ZVAL_NULL(&z51);
 							ZVAL_COPY_VALUE(&av50[1], &z51);
 							if (UNEXPECTED(!pgrt::callMethod(pg_site_85, &this_zv, "pEncapsList", "pencapslist", 11, 2, av50, vd47.raw()))) return false;
@@ -6062,7 +6062,7 @@ namespace pgen::PhpParserStandardPrinter {
 						zv::Val as5 = zv::Val::boolean(true);
 						if (EG(assertions) > 0) {
 							zval av6[2];
-							zval z7;
+							zval z7 = {};
 							ZVAL_BOOL(&z7, (Z_TYPE_P(l_kind.raw()) == IS_LONG && Z_LVAL_P(l_kind.raw()) == 3));
 							ZVAL_COPY_VALUE(&av6[0], &z7);
 							ZVAL_COPY_VALUE(&av6[1], &pg_lit[160]);
@@ -6986,7 +6986,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd10_done) {
 					zval av12[2];
 					ZVAL_COPY_VALUE(&av12[0], o8.raw());
-					zval z13;
+					zval z13 = {};
 					ZVAL_BOOL(&z13, k9);
 					ZVAL_COPY_VALUE(&av12[1], &z13);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_337, &this_zv, "pMaybeMultiline", "pmaybemultiline", 15, 2, av12, vd10.raw()))) return false;
@@ -7021,7 +7021,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd20_done) {
 					zval av22[2];
 					ZVAL_COPY_VALUE(&av22[0], o18.raw());
-					zval z23;
+					zval z23 = {};
 					ZVAL_BOOL(&z23, k19);
 					ZVAL_COPY_VALUE(&av22[1], &z23);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_339, &this_zv, "pMaybeMultiline", "pmaybemultiline", 15, 2, av22, vd20.raw()))) return false;
@@ -7163,7 +7163,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd8_done) {
 					zval av10[2];
 					ZVAL_COPY_VALUE(&av10[0], o6.raw());
-					zval z11;
+					zval z11 = {};
 					ZVAL_BOOL(&z11, k7);
 					ZVAL_COPY_VALUE(&av10[1], &z11);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_347, &this_zv, "pMaybeMultiline", "pmaybemultiline", 15, 2, av10, vd8.raw()))) return false;
@@ -7198,7 +7198,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd18_done) {
 					zval av20[2];
 					ZVAL_COPY_VALUE(&av20[0], o16.raw());
-					zval z21;
+					zval z21 = {};
 					ZVAL_BOOL(&z21, k17);
 					ZVAL_COPY_VALUE(&av20[1], &z21);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_349, &this_zv, "pMaybeMultiline", "pmaybemultiline", 15, 2, av20, vd18.raw()))) return false;
@@ -7821,7 +7821,7 @@ namespace pgen::PhpParserStandardPrinter {
 		if (!vd5_done) {
 			zval av7[2];
 			ZVAL_COPY_VALUE(&av7[0], o3.raw());
-			zval z8;
+			zval z8 = {};
 			ZVAL_BOOL(&z8, k4);
 			ZVAL_COPY_VALUE(&av7[1], &z8);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_383, &this_zv, "pAttrGroups", "pattrgroups", 11, 2, av7, vd5.raw()))) return false;
@@ -7844,7 +7844,7 @@ namespace pgen::PhpParserStandardPrinter {
 		}
 		if (!vd12_done) {
 			zval av14[1];
-			zval z15;
+			zval z15 = {};
 			ZVAL_BOOL(&z15, k11);
 			ZVAL_COPY_VALUE(&av14[0], &z15);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_385, &this_zv, "pStatic", "pstatic", 7, 1, av14, vd12.raw()))) return false;
@@ -8077,7 +8077,7 @@ namespace pgen::PhpParserStandardPrinter {
 		if (!vd14_done) {
 			zval av16[2];
 			ZVAL_COPY_VALUE(&av16[0], o12.raw());
-			zval z17;
+			zval z17 = {};
 			ZVAL_BOOL(&z17, k13);
 			ZVAL_COPY_VALUE(&av16[1], &z17);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_399, &this_zv, "pCommaSeparatedMultiline", "pcommaseparatedmultiline", 24, 2, av16, vd14.raw()))) return false;
@@ -8292,7 +8292,7 @@ namespace pgen::PhpParserStandardPrinter {
 		if (!vd5_done) {
 			zval av7[2];
 			ZVAL_COPY_VALUE(&av7[0], o3.raw());
-			zval z8;
+			zval z8 = {};
 			ZVAL_BOOL(&z8, k4);
 			ZVAL_COPY_VALUE(&av7[1], &z8);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_409, &this_zv, "pAttrGroups", "pattrgroups", 11, 2, av7, vd5.raw()))) return false;
@@ -8315,7 +8315,7 @@ namespace pgen::PhpParserStandardPrinter {
 		}
 		if (!vd12_done) {
 			zval av14[1];
-			zval z15;
+			zval z15 = {};
 			ZVAL_BOOL(&z15, k11);
 			ZVAL_COPY_VALUE(&av14[0], &z15);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_411, &this_zv, "pStatic", "pstatic", 7, 1, av14, vd12.raw()))) return false;
@@ -9158,7 +9158,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd17_done) {
 					zval av19[2];
 					ZVAL_COPY_VALUE(&av19[0], o15.raw());
-					zval z20;
+					zval z20 = {};
 					ZVAL_BOOL(&z20, k16);
 					ZVAL_COPY_VALUE(&av19[1], &z20);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_461, &this_zv, "pStmts", "pstmts", 6, 2, av19, vd17.raw()))) return false;
@@ -13216,7 +13216,7 @@ namespace pgen::PhpParserStandardPrinter {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_BOOL(&z1, true);
 		zv::Val r2;
 		if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_709, p_node, &pg_lit[266], &z1, r2.raw()))) return false;
@@ -13358,7 +13358,7 @@ namespace pgen::PhpParserStandardPrinter {
 		if (!vd7_done) {
 			zval av9[2];
 			ZVAL_COPY_VALUE(&av9[0], o5.raw());
-			zval z10;
+			zval z10 = {};
 			ZVAL_BOOL(&z10, k6);
 			ZVAL_COPY_VALUE(&av9[1], &z10);
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_716, &this_zv, "pAttrGroups", "pattrgroups", 11, 2, av9, vd7.raw()))) return false;
@@ -13557,7 +13557,7 @@ namespace pgen::PhpParserStandardPrinter {
 				zv::Val as7 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av8[2];
-					zval z9;
+					zval z9 = {};
 					ZVAL_BOOL(&z9, pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_727, "PhpParser\\Node\\Identifier", 25)));
 					ZVAL_COPY_VALUE(&av8[0], &z9);
 					ZVAL_COPY_VALUE(&av8[1], &pg_lit[271]);
@@ -13863,7 +13863,7 @@ namespace pgen::PhpParserStandardPrinter {
 						zend_class_entry *vd13_ce = Z_TYPE_P(&this_zv) == IS_OBJECT ? Z_OBJCE_P(&this_zv) : NULL;
 						bool vd13_done = false;
 						if (vd13_ce == pt_ce_printer || vd13_ce == pt_ce_php_parser_standard_printer) {
-							zval z14;
+							zval z14 = {};
 							ZVAL_NULL(&z14);
 							zv::Val r15;
 							if (UNEXPECTED(!pgen::PhpParserStandardPrinter::m_escapeString(Z_OBJ_P(&this_zv), o12.raw(), &z14, r15.raw()))) return false;
@@ -13873,7 +13873,7 @@ namespace pgen::PhpParserStandardPrinter {
 						if (!vd13_done) {
 							zval av16[2];
 							ZVAL_COPY_VALUE(&av16[0], o12.raw());
-							zval z17;
+							zval z17 = {};
 							ZVAL_NULL(&z17);
 							ZVAL_COPY_VALUE(&av16[1], &z17);
 							if (UNEXPECTED(!pgrt::callMethod(pg_site_741, &this_zv, "escapeString", "escapestring", 12, 2, av16, vd13.raw()))) return false;
@@ -13893,7 +13893,7 @@ namespace pgen::PhpParserStandardPrinter {
 							zval av22[3];
 							ZVAL_COPY_VALUE(&av22[0], vd13.raw());
 							ZVAL_COPY_VALUE(&av22[1], p_label);
-							zval z23;
+							zval z23 = {};
 							ZVAL_BOOL(&z23, k18);
 							ZVAL_COPY_VALUE(&av22[2], &z23);
 							if (UNEXPECTED(!pgrt::callMethod(pg_site_742, &this_zv, "containsEndLabel", "containsendlabel", 16, 3, av22, vd19.raw()))) return false;
@@ -14343,7 +14343,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd9_done) {
 					zval av11[2];
 					ZVAL_COPY_VALUE(&av11[0], p_nodes);
-					zval z12;
+					zval z12 = {};
 					ZVAL_BOOL(&z12, k8);
 					ZVAL_COPY_VALUE(&av11[1], &z12);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_758, &this_zv, "pCommaSeparatedMultiline", "pcommaseparatedmultiline", 24, 2, av11, vd9.raw()))) return false;
@@ -14456,7 +14456,7 @@ namespace pgen::PhpParserStandardPrinter {
 				if (!vd13_done) {
 					zval av15[2];
 					ZVAL_COPY_VALUE(&av15[0], p_params);
-					zval z16;
+					zval z16 = {};
 					ZVAL_BOOL(&z16, k12);
 					ZVAL_COPY_VALUE(&av15[1], &z16);
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_763, &this_zv, "pCommaSeparatedMultiline", "pcommaseparatedmultiline", 24, 2, av15, vd13.raw()))) return false;

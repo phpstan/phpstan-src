@@ -163,7 +163,7 @@ namespace pgen::PreIncHandler {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, p_context, "enterDeep", "enterdeep", 9, 0, NULL, r6.raw()))) return false;
 			}
 			}
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, false);
 			zv::Val r8;
 			if (EXPECTED(Z_TYPE_P(r6.raw()) == IS_OBJECT)) {
@@ -229,7 +229,7 @@ namespace pgen::PreIncHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_pre_inc_handler, "var", 3, o17.raw()))) return false;
 			p16 = o17.raw();
 		}
-		zval z18;
+		zval z18 = {};
 		ZVAL_BOOL(&z18, true);
 		zv::Val r19;
 		if (EXPECTED(Z_TYPE_P(p15) == IS_OBJECT)) {
@@ -450,7 +450,7 @@ namespace pgen::PreIncHandler {
 			}
 			zv::Val o76 = zv::Val::copyOf(zv::Ref(zv::Ref(p74).deref().raw()));
 			bool k77 = true;
-			zval z78;
+			zval z78 = {};
 			ZVAL_BOOL(&z78, k77);
 			zv::Val r79;
 			if (EXPECTED(Z_TYPE_P(p_context) == IS_OBJECT)) {

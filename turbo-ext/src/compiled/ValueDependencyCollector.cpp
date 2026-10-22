@@ -160,7 +160,7 @@ namespace pgen::ValueDependencyCollector {
 	 {
 		zv::Val o15 = zv::Val::copyOf(zv::Ref(l_id.raw()));
 		bool k16 = true;
-		zval z18;
+		zval z18 = {};
 		ZVAL_BOOL(&z18, k16);
 		zv::Val o17 = zv::Val::copyOf(zv::Ref(&z18));
 		zval *p21 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ValueDependencyCollector::slot::analysedFile, "analysedFile");
@@ -237,7 +237,7 @@ namespace pgen::ValueDependencyCollector {
 	 {
 		zv::Val o38 = zv::Val::copyOf(zv::Ref(l_id.raw()));
 		bool k39 = true;
-		zval z41;
+		zval z41 = {};
 		ZVAL_BOOL(&z41, k39);
 		zv::Val o40 = zv::Val::copyOf(zv::Ref(&z41));
 		zv::Val o44 = zv::Val::copyOf(zv::Ref(l_scopeFile.raw()));
@@ -480,7 +480,7 @@ namespace pgen::ValueDependencyCollector {
 		}
 		zv::Val r3 = zv::Val::adoptString(zend_string_tolower(Z_STR_P(r2.raw())));
 		bool k4 = true;
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, k4);
 		zv::Val o5 = zv::Val::copyOf(zv::Ref(&z6));
 		zval *w7 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ValueDependencyCollector::slot::dependedOnClasses)).deref().raw();
@@ -517,7 +517,7 @@ namespace pgen::ValueDependencyCollector {
 					}
 					}
 					bool k21 = true;
-					zval z23;
+					zval z23 = {};
 					ZVAL_BOOL(&z23, k21);
 					zv::Val o22 = zv::Val::copyOf(zv::Ref(&z23));
 					zval *w24 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::ValueDependencyCollector::slot::dependedOnClasses)).deref().raw();
@@ -622,7 +622,7 @@ namespace pgen::ValueDependencyCollector {
 									 {
 										zv::Val o34 = zv::Val::copyOf(zv::Ref(l_id.raw()));
 										bool k35 = true;
-										zval z37;
+										zval z37 = {};
 										ZVAL_BOOL(&z37, k35);
 										zv::Val o36 = zv::Val::copyOf(zv::Ref(&z37));
 										zval *p40 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ValueDependencyCollector::slot::analysedFile, "analysedFile");
@@ -721,7 +721,7 @@ namespace pgen::ValueDependencyCollector {
 		l_values = std::move(o68);
 	}
 	 {
-		zval z69;
+		zval z69 = {};
 		ZVAL_NULL(&z69);
 		zval o70;
 		ZVAL_COPY(&o70, &z69);
@@ -942,7 +942,7 @@ namespace pgen::ValueDependencyCollector {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z12;
+		zval z12 = {};
 		ZVAL_NULL(&z12);
 		ZVAL_COPY_VALUE(ret, &z12);
 		return true;

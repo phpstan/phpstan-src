@@ -625,7 +625,7 @@ namespace pgen::ReversePipeTransformerVisitor {
 		}
 	}
 	 {
-		zval z177;
+		zval z177 = {};
 		ZVAL_NULL(&z177);
 		ZVAL_COPY_VALUE(ret, &z177);
 		return true;

@@ -89,7 +89,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(r4.isUndef())) return;
 		}
 		bool k5 = p_nativeTypesPromoted;
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, k5);
 		zv::Val r7;
 		if (EXPECTED(Z_TYPE_P(o2.raw()) == IS_OBJECT)) {
@@ -247,7 +247,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 				}
 				}
 				bool k13 = bo11;
-				zval z14;
+				zval z14 = {};
 				ZVAL_BOOL(&z14, k13);
 				zv::Val r15;
 				 {
@@ -378,7 +378,7 @@ namespace pgen::StaticMethodCallableNodeHandler {
 				}
 				}
 				bool k36 = bo34;
-				zval z37;
+				zval z37 = {};
 				ZVAL_BOOL(&z37, k36);
 				zv::Val r38;
 				 {

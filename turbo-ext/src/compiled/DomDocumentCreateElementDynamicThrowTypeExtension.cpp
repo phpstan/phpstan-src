@@ -257,7 +257,7 @@ namespace pgen::DomDocumentCreateElementDynamicThrowTypeExtension {
 		}
 	}
 	 {
-		zval z35;
+		zval z35 = {};
 		ZVAL_NULL(&z35);
 		ZVAL_COPY_VALUE(ret, &z35);
 		return true;

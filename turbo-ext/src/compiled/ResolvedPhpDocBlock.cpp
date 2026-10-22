@@ -485,7 +485,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	}
 	 {
 		zv::Val o8 = zv::Val::copyOf(zv::Ref(l_self.raw()));
-		zval z9;
+		zval z9 = {};
 		ZVAL_NULL(&z9);
 		zval o10;
 		ZVAL_COPY(&o10, &z9);
@@ -618,7 +618,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	}
 	 {
 		zv::Val o66 = zv::Val::copyOf(zv::Ref(l_self.raw()));
-		zval z67;
+		zval z67 = {};
 		ZVAL_NULL(&z67);
 		zval o68;
 		ZVAL_COPY(&o68, &z67);
@@ -626,7 +626,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	}
 	 {
 		zv::Val o69 = zv::Val::copyOf(zv::Ref(l_self.raw()));
-		zval z70;
+		zval z70 = {};
 		ZVAL_NULL(&z70);
 		zval o71;
 		ZVAL_COPY(&o71, &z70);
@@ -697,7 +697,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	}
 	 {
 		zv::Val o100 = zv::Val::copyOf(zv::Ref(l_self.raw()));
-		zval z101;
+		zval z101 = {};
 		ZVAL_NULL(&z101);
 		zval o102;
 		ZVAL_COPY(&o102, &z101);
@@ -705,7 +705,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	}
 	 {
 		zv::Val o103 = zv::Val::copyOf(zv::Ref(l_self.raw()));
-		zval z104;
+		zval z104 = {};
 		ZVAL_NULL(&z104);
 		zval o105;
 		ZVAL_COPY(&o105, &z104);
@@ -714,7 +714,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o106 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k107 = false;
-		zval z108;
+		zval z108 = {};
 		ZVAL_BOOL(&z108, k107);
 		zval o109;
 		ZVAL_COPY(&o109, &z108);
@@ -723,7 +723,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o110 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k111 = false;
-		zval z112;
+		zval z112 = {};
 		ZVAL_BOOL(&z112, k111);
 		zval o113;
 		ZVAL_COPY(&o113, &z112);
@@ -732,7 +732,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o114 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k115 = false;
-		zval z116;
+		zval z116 = {};
 		ZVAL_BOOL(&z116, k115);
 		zval o117;
 		ZVAL_COPY(&o117, &z116);
@@ -741,7 +741,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o118 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k119 = false;
-		zval z120;
+		zval z120 = {};
 		ZVAL_BOOL(&z120, k119);
 		zval o121;
 		ZVAL_COPY(&o121, &z120);
@@ -749,7 +749,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	}
 	 {
 		zv::Val o122 = zv::Val::copyOf(zv::Ref(l_self.raw()));
-		zval z123;
+		zval z123 = {};
 		ZVAL_NULL(&z123);
 		zval o124;
 		ZVAL_COPY(&o124, &z123);
@@ -758,7 +758,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o125 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k126 = false;
-		zval z127;
+		zval z127 = {};
 		ZVAL_BOOL(&z127, k126);
 		zval o128;
 		ZVAL_COPY(&o128, &z127);
@@ -767,7 +767,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o129 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k130 = false;
-		zval z131;
+		zval z131 = {};
 		ZVAL_BOOL(&z131, k130);
 		zval o132;
 		ZVAL_COPY(&o132, &z131);
@@ -776,7 +776,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o133 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k134 = false;
-		zval z135;
+		zval z135 = {};
 		ZVAL_BOOL(&z135, k134);
 		zval o136;
 		ZVAL_COPY(&o136, &z135);
@@ -785,7 +785,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o137 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k138 = false;
-		zval z139;
+		zval z139 = {};
 		ZVAL_BOOL(&z139, k138);
 		zval o140;
 		ZVAL_COPY(&o140, &z139);
@@ -794,7 +794,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o141 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k142 = false;
-		zval z143;
+		zval z143 = {};
 		ZVAL_BOOL(&z143, k142);
 		zval o144;
 		ZVAL_COPY(&o144, &z143);
@@ -803,7 +803,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o145 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k146 = false;
-		zval z147;
+		zval z147 = {};
 		ZVAL_BOOL(&z147, k146);
 		zval o148;
 		ZVAL_COPY(&o148, &z147);
@@ -812,7 +812,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o149 = zv::Val::copyOf(zv::Ref(l_self.raw()));
 		bool k150 = true;
-		zval z151;
+		zval z151 = {};
 		ZVAL_BOOL(&z151, k150);
 		zval o152;
 		ZVAL_COPY(&o152, &z151);
@@ -1143,7 +1143,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		zval *p120 = pgrt::readSlot(Z_OBJ_P(l_result.raw()), ptdecl::ResolvedPhpDocBlock::slot::deprecatedTag, "deprecatedTag");
 		if (UNEXPECTED(p120 == NULL)) return false;
 		bool k121 = !(Z_TYPE_P(p120) == IS_NULL);
-		zval z122;
+		zval z122 = {};
 		ZVAL_BOOL(&z122, k121);
 		zval o123;
 		ZVAL_COPY(&o123, &z122);
@@ -1154,7 +1154,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r125;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isNotDeprecated(Z_OBJ_P(&this_zv), &r125))) return false;
 		bool k126 = r125;
-		zval z127;
+		zval z127 = {};
 		ZVAL_BOOL(&z127, k126);
 		zval o128;
 		ZVAL_COPY(&o128, &z127);
@@ -1165,7 +1165,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r130;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isInternal(Z_OBJ_P(&this_zv), &r130))) return false;
 		bool k131 = r130;
-		zval z132;
+		zval z132 = {};
 		ZVAL_BOOL(&z132, k131);
 		zval o133;
 		ZVAL_COPY(&o133, &z132);
@@ -1176,7 +1176,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r135;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isFinal(Z_OBJ_P(&this_zv), &r135))) return false;
 		bool k136 = r135;
-		zval z137;
+		zval z137 = {};
 		ZVAL_BOOL(&z137, k136);
 		zval o138;
 		ZVAL_COPY(&o138, &z137);
@@ -1197,7 +1197,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r144;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_areAllMethodsPure(Z_OBJ_P(&this_zv), &r144))) return false;
 		bool k145 = r144;
-		zval z146;
+		zval z146 = {};
 		ZVAL_BOOL(&z146, k145);
 		zval o147;
 		ZVAL_COPY(&o147, &z146);
@@ -1208,7 +1208,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r149;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_areAllMethodsImpure(Z_OBJ_P(&this_zv), &r149))) return false;
 		bool k150 = r149;
-		zval z151;
+		zval z151 = {};
 		ZVAL_BOOL(&z151, k150);
 		zval o152;
 		ZVAL_COPY(&o152, &z151);
@@ -1219,7 +1219,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r154;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isReadOnly(Z_OBJ_P(&this_zv), &r154))) return false;
 		bool k155 = r154;
-		zval z156;
+		zval z156 = {};
 		ZVAL_BOOL(&z156, k155);
 		zval o157;
 		ZVAL_COPY(&o157, &z156);
@@ -1230,7 +1230,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r159;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isImmutable(Z_OBJ_P(&this_zv), &r159))) return false;
 		bool k160 = r159;
-		zval z161;
+		zval z161 = {};
 		ZVAL_BOOL(&z161, k160);
 		zval o162;
 		ZVAL_COPY(&o162, &z161);
@@ -1241,7 +1241,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r164;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_isAllowedPrivateMutation(Z_OBJ_P(&this_zv), &r164))) return false;
 		bool k165 = r164;
-		zval z166;
+		zval z166 = {};
 		ZVAL_BOOL(&z166, k165);
 		zval o167;
 		ZVAL_COPY(&o167, &z166);
@@ -1252,7 +1252,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		bool r169;
 		if (UNEXPECTED(!pgen::ResolvedPhpDocBlock::m_hasConsistentConstructor(Z_OBJ_P(&this_zv), &r169))) return false;
 		bool k170 = r169;
-		zval z171;
+		zval z171 = {};
 		ZVAL_BOOL(&z171, k170);
 		zval o172;
 		ZVAL_COPY(&o172, &z171);
@@ -1261,7 +1261,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		zv::Val o173 = zv::Val::copyOf(zv::Ref(l_result.raw()));
 		bool k174 = l_acceptsNamedArguments;
-		zval z175;
+		zval z175 = {};
 		ZVAL_BOOL(&z175, k174);
 		zval o176;
 		ZVAL_COPY(&o176, &z175);
@@ -2867,12 +2867,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveIsDeprecated(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isDeprecated, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -2903,12 +2903,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveIsNotDeprecated(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isNotDeprecated, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -2939,12 +2939,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveIsInternal(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isInternal, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -2975,12 +2975,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveIsFinal(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isFinal, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3011,12 +3011,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveHasConsistentConstructor(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::hasConsistentConstructor, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3047,12 +3047,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveAcceptsNamedArguments(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::acceptsNamedArguments, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3101,7 +3101,7 @@ namespace pgen::ResolvedPhpDocBlock {
 				if (l_pure) {
 					 {
 						bool k5 = true;
-						zval z6;
+						zval z6 = {};
 						ZVAL_BOOL(&z6, k5);
 						zval o7;
 						ZVAL_COPY(&o7, &z6);
@@ -3110,7 +3110,7 @@ namespace pgen::ResolvedPhpDocBlock {
 					 {
 						zval *p8 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isPure, "isPure");
 						if (UNEXPECTED(p8 == NULL)) return false;
-						zval z9;
+						zval z9 = {};
 						ZVAL_BOOL(&z9, (Z_TYPE_P(p8) == IS_TRUE));
 						ZVAL_COPY_VALUE(ret, &z9);
 						return true;
@@ -3130,7 +3130,7 @@ namespace pgen::ResolvedPhpDocBlock {
 				if (l_impure) {
 					 {
 						bool k13 = false;
-						zval z14;
+						zval z14 = {};
 						ZVAL_BOOL(&z14, k13);
 						zval o15;
 						ZVAL_COPY(&o15, &z14);
@@ -3139,7 +3139,7 @@ namespace pgen::ResolvedPhpDocBlock {
 					 {
 						zval *p16 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isPure, "isPure");
 						if (UNEXPECTED(p16 == NULL)) return false;
-						zval z17;
+						zval z17 = {};
 						ZVAL_BOOL(&z17, (Z_TYPE_P(p16) == IS_TRUE));
 						ZVAL_COPY_VALUE(ret, &z17);
 						return true;
@@ -3147,7 +3147,7 @@ namespace pgen::ResolvedPhpDocBlock {
 				}
 			}
 			 {
-				zval z18;
+				zval z18 = {};
 				ZVAL_NULL(&z18);
 				zval o19;
 				ZVAL_COPY(&o19, &z18);
@@ -3185,12 +3185,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveAllMethodsPure(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsPure, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3221,12 +3221,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveAllMethodsImpure(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::areAllMethodsImpure, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3257,12 +3257,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveIsReadOnly(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isReadOnly, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3293,12 +3293,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveIsImmutable(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isImmutable, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3329,12 +3329,12 @@ namespace pgen::ResolvedPhpDocBlock {
 			bool r5;
 			if (UNEXPECTED(!pgen::PhpDocNodeResolver::m_resolveAllowPrivateMutation(Z_OBJ_P(p3), p4, &r5))) return false;
 			bool k6 = r5;
-			zval z7;
+			zval z7 = {};
 			ZVAL_BOOL(&z7, k6);
 			zval o8;
 			ZVAL_COPY(&o8, &z7);
 			pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::ResolvedPhpDocBlock::slot::isAllowedPrivateMutation, &o8);
-			zval z9;
+			zval z9 = {};
 			ZVAL_BOOL(&z9, k6);
 			ca2 = zv::Val::copyOf(zv::Ref(&z9));
 		}
@@ -3415,7 +3415,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z14;
+		zval z14 = {};
 		ZVAL_NULL(&z14);
 		ZVAL_COPY_VALUE(ret, &z14);
 		return true;
@@ -3612,7 +3612,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		}
 		if (b10) {
 			 {
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(ret, &z16);
 				return true;
@@ -3710,7 +3710,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		if (p_hasNotDeprecatedTag) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -3731,7 +3731,7 @@ namespace pgen::ResolvedPhpDocBlock {
 		}
 		if (b3) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -3764,7 +3764,7 @@ namespace pgen::ResolvedPhpDocBlock {
 	 {
 		if (Z_TYPE_P(l_parentThrowsTag.raw()) == IS_NULL) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;

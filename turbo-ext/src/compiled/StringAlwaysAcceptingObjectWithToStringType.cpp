@@ -233,7 +233,7 @@ namespace pgen::StringAlwaysAcceptingObjectWithToStringType {
 			 {
 				zval av3[2];
 				ZVAL_COPY_VALUE(&av3[0], p_type);
-				zval z4;
+				zval z4 = {};
 				ZVAL_BOOL(&z4, p_strictTypes);
 				ZVAL_COPY_VALUE(&av3[1], &z4);
 				zv::Val r5;

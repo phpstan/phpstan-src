@@ -116,7 +116,7 @@ namespace pgen::BetterReflectionNamedType {
 	}
 	 {
 		bool k5 = pgrt::instanceOfClass(p_type, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Identifier", 25));
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, k5);
 		zval o7;
 		ZVAL_COPY(&o7, &z6);
@@ -399,7 +399,7 @@ namespace pgen::BetterReflectionNamedType {
 				zv::Val as27 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av28[2];
-					zval z29;
+					zval z29 = {};
 					ZVAL_BOOL(&z29, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
 					ZVAL_COPY_VALUE(&av28[0], &z29);
 					ZVAL_COPY_VALUE(&av28[1], &pg_lit[9]);
@@ -428,7 +428,7 @@ namespace pgen::BetterReflectionNamedType {
 				zv::Val as34 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av35[2];
-					zval z36;
+					zval z36 = {};
 					ZVAL_BOOL(&z36, (pgrt::instanceOfClass(l_class.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_class.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
 					ZVAL_COPY_VALUE(&av35[0], &z36);
 					ZVAL_COPY_VALUE(&av35[1], &pg_lit[9]);
@@ -454,7 +454,7 @@ namespace pgen::BetterReflectionNamedType {
 				zv::Val as40 = zv::Val::boolean(true);
 				if (EG(assertions) > 0) {
 					zval av41[2];
-					zval z42;
+					zval z42 = {};
 					ZVAL_BOOL(&z42, (pgrt::instanceOfClass(l_parentClass.raw(), pt_ce_better_reflection_class) || pgrt::instanceOfClass(l_parentClass.raw(), pgrt::lookupClassQuiet(pg_site_13, "PHPStan\\BetterReflection\\Reflection\\ReflectionClass", 51))));
 					ZVAL_COPY_VALUE(&av41[0], &z42);
 					ZVAL_COPY_VALUE(&av41[1], &pg_lit[10]);

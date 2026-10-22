@@ -578,7 +578,7 @@ namespace pgen::ReflectionPropertyConstructorThrowTypeExtension {
 		}
 	}
 	 {
-		zval z96;
+		zval z96 = {};
 		ZVAL_NULL(&z96);
 		ZVAL_COPY_VALUE(ret, &z96);
 		return true;

@@ -277,7 +277,7 @@ namespace pgen::IntdivThrowTypeExtension {
 		}
 	}
 	 {
-		zval z46;
+		zval z46 = {};
 		ZVAL_NULL(&z46);
 		ZVAL_COPY_VALUE(ret, &z46);
 		return true;

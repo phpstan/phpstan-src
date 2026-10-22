@@ -257,7 +257,6 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\BooleanAndHandler::{closure}", argc, 0); return; }
 	 {
 		zv::Val r1;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[0]).deref().raw()) == IS_OBJECT)) {
@@ -277,7 +276,6 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\BooleanAndHandler::{closure}", argc, 0); return; }
 	 {
 		zv::Val r1;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[0]).deref().raw()) == IS_OBJECT)) {
@@ -330,7 +328,6 @@ static void pg_closure_7(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\BooleanAndHandler::{closure}", argc, 0); return; }
 	 {
 		zv::Val r1;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[0]).deref().raw()) == IS_OBJECT)) {
@@ -702,7 +699,7 @@ namespace pgen::BooleanAndHandler {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_21, l_rightResult.raw(), "getVariableFlow", "getvariableflow", 15, 0, NULL, r37.raw()))) return false;
 		}
 		}
-		zval z38;
+		zval z38 = {};
 		ZVAL_NULL(&z38);
 		zval vv39[2];
 		ZVAL_COPY_VALUE(&vv39[0], r37.raw());

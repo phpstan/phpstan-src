@@ -95,7 +95,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 			zval av12[3];
 			ZVAL_COPY_VALUE(&av12[0], r8.raw());
 			ZVAL_COPY_VALUE(&av12[1], arr9.raw());
-			zval z13;
+			zval z13 = {};
 			ZVAL_BOOL(&z13, true);
 			ZVAL_COPY_VALUE(&av12[2], &z13);
 			zv::Val r14;
@@ -123,7 +123,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_3, p_methodCall, r1.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r1.raw())) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -139,7 +139,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r4.raw()), &r5))) return false;
 		if (r5) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -289,7 +289,7 @@ namespace pgen::DateTimeModifyMethodThrowTypeExtension {
 		}
 	}
 	 {
-		zval z39;
+		zval z39 = {};
 		ZVAL_NULL(&z39);
 		ZVAL_COPY_VALUE(ret, &z39);
 		return true;

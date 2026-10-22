@@ -62,7 +62,7 @@ namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_no(Z_OBJ_P(r2.raw()), &r3))) return false;
 		if (r3) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -83,7 +83,7 @@ namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is6 != NULL && Z_TYPE_P(is6) > IS_NULL))) {
 			 {
-				zval z10;
+				zval z10 = {};
 				ZVAL_NULL(&z10);
 				ZVAL_COPY_VALUE(ret, &z10);
 				return true;
@@ -167,7 +167,7 @@ namespace pgen::VersionCompareFunctionDynamicThrowTypeExtension {
 		}
 	}
 	 {
-		zval z27;
+		zval z27 = {};
 		ZVAL_NULL(&z27);
 		ZVAL_COPY_VALUE(ret, &z27);
 		return true;

@@ -144,7 +144,7 @@ namespace pgen::ClassConstHandler {
 					}
 					}
 					bool k21 = bo19;
-					zval z22;
+					zval z22 = {};
 					ZVAL_BOOL(&z22, k21);
 					zv::Val r23;
 					 {

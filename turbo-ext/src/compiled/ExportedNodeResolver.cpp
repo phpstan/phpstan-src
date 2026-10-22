@@ -944,10 +944,10 @@ namespace pgen::ExportedNodeResolver {
 				zval av82[10];
 				ZVAL_COPY_VALUE(&av82[0], o60.raw());
 				ZVAL_COPY_VALUE(&av82[1], r65.raw());
-				zval z83;
+				zval z83 = {};
 				ZVAL_BOOL(&z83, k67);
 				ZVAL_COPY_VALUE(&av82[2], &z83);
-				zval z84;
+				zval z84 = {};
 				ZVAL_BOOL(&z84, k69);
 				ZVAL_COPY_VALUE(&av82[3], &z84);
 				ZVAL_COPY_VALUE(&av82[4], o70.raw());
@@ -1441,7 +1441,7 @@ namespace pgen::ExportedNodeResolver {
 				zval av237[6];
 				ZVAL_COPY_VALUE(&av237[0], o217.raw());
 				ZVAL_COPY_VALUE(&av237[1], r222.raw());
-				zval z238;
+				zval z238 = {};
 				ZVAL_BOOL(&z238, k225);
 				ZVAL_COPY_VALUE(&av237[2], &z238);
 				ZVAL_COPY_VALUE(&av237[3], r230.raw());
@@ -1656,7 +1656,7 @@ namespace pgen::ExportedNodeResolver {
 		}
 	}
 	 {
-		zval z312;
+		zval z312 = {};
 		ZVAL_NULL(&z312);
 		ZVAL_COPY_VALUE(ret, &z312);
 		return true;
@@ -1910,7 +1910,7 @@ namespace pgen::ExportedNodeResolver {
 					ZVAL_COPY_VALUE(&av76[1], r56.raw());
 					ZVAL_COPY_VALUE(&av76[2], o59.raw());
 					ZVAL_COPY_VALUE(&av76[3], o62.raw());
-					zval z77;
+					zval z77 = {};
 					ZVAL_BOOL(&z77, k65);
 					ZVAL_COPY_VALUE(&av76[4], &z77);
 					ZVAL_COPY_VALUE(&av76[5], r68.raw());
@@ -1945,7 +1945,7 @@ namespace pgen::ExportedNodeResolver {
 	 {
 		if (Z_TYPE_P(p_text) == IS_NULL) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -2163,22 +2163,22 @@ namespace pgen::ExportedNodeResolver {
 						zval av41[11];
 						ZVAL_COPY_VALUE(&av41[0], o11.raw());
 						ZVAL_COPY_VALUE(&av41[1], r16.raw());
-						zval z42;
+						zval z42 = {};
 						ZVAL_BOOL(&z42, k19);
 						ZVAL_COPY_VALUE(&av41[2], &z42);
-						zval z43;
+						zval z43 = {};
 						ZVAL_BOOL(&z43, k21);
 						ZVAL_COPY_VALUE(&av41[3], &z43);
-						zval z44;
+						zval z44 = {};
 						ZVAL_BOOL(&z44, k23);
 						ZVAL_COPY_VALUE(&av41[4], &z44);
-						zval z45;
+						zval z45 = {};
 						ZVAL_BOOL(&z45, k25);
 						ZVAL_COPY_VALUE(&av41[5], &z45);
-						zval z46;
+						zval z46 = {};
 						ZVAL_BOOL(&z46, k27);
 						ZVAL_COPY_VALUE(&av41[6], &z46);
-						zval z47;
+						zval z47 = {};
 						ZVAL_BOOL(&z47, k29);
 						ZVAL_COPY_VALUE(&av41[7], &z47);
 						ZVAL_COPY_VALUE(&av41[8], r34.raw());
@@ -2202,7 +2202,7 @@ namespace pgen::ExportedNodeResolver {
 				if (UNEXPECTED(!pgrt::callMethod0(pg_site_178, p_node, "isPrivate", "isprivate", 9, r49.raw()))) return false;
 				if (Z_TYPE_P(r49.raw()) == IS_TRUE) {
 					 {
-						zval z50;
+						zval z50 = {};
 						ZVAL_NULL(&z50);
 						ZVAL_COPY_VALUE(ret, &z50);
 						return true;
@@ -2435,34 +2435,34 @@ namespace pgen::ExportedNodeResolver {
 				ZVAL_COPY_VALUE(&av122[0], o86.raw());
 				ZVAL_COPY_VALUE(&av122[1], r91.raw());
 				ZVAL_COPY_VALUE(&av122[2], r96.raw());
-				zval z123;
+				zval z123 = {};
 				ZVAL_BOOL(&z123, k98);
 				ZVAL_COPY_VALUE(&av122[3], &z123);
-				zval z124;
+				zval z124 = {};
 				ZVAL_BOOL(&z124, k100);
 				ZVAL_COPY_VALUE(&av122[4], &z124);
-				zval z125;
+				zval z125 = {};
 				ZVAL_BOOL(&z125, k102);
 				ZVAL_COPY_VALUE(&av122[5], &z125);
-				zval z126;
+				zval z126 = {};
 				ZVAL_BOOL(&z126, k104);
 				ZVAL_COPY_VALUE(&av122[6], &z126);
-				zval z127;
+				zval z127 = {};
 				ZVAL_BOOL(&z127, k106);
 				ZVAL_COPY_VALUE(&av122[7], &z127);
-				zval z128;
+				zval z128 = {};
 				ZVAL_BOOL(&z128, k108);
 				ZVAL_COPY_VALUE(&av122[8], &z128);
-				zval z129;
+				zval z129 = {};
 				ZVAL_BOOL(&z129, k110);
 				ZVAL_COPY_VALUE(&av122[9], &z129);
-				zval z130;
+				zval z130 = {};
 				ZVAL_BOOL(&z130, k112);
 				ZVAL_COPY_VALUE(&av122[10], &z130);
-				zval z131;
+				zval z131 = {};
 				ZVAL_BOOL(&z131, k114);
 				ZVAL_COPY_VALUE(&av122[11], &z131);
-				zval z132;
+				zval z132 = {};
 				ZVAL_BOOL(&z132, k115);
 				ZVAL_COPY_VALUE(&av122[12], &z132);
 				ZVAL_COPY_VALUE(&av122[13], r118.raw());
@@ -2483,7 +2483,7 @@ namespace pgen::ExportedNodeResolver {
 				if (UNEXPECTED(!pgrt::callMethod0(pg_site_207, p_node, "isPrivate", "isprivate", 9, r134.raw()))) return false;
 				if (Z_TYPE_P(r134.raw()) == IS_TRUE) {
 					 {
-						zval z135;
+						zval z135 = {};
 						ZVAL_NULL(&z135);
 						ZVAL_COPY_VALUE(ret, &z135);
 						return true;
@@ -2611,13 +2611,13 @@ namespace pgen::ExportedNodeResolver {
 				if (UNEXPECTED(!pgen::ExportedNodeResolver::m_exportPhpDocNode(Z_OBJ_P(&this_zv), q172.raw(), p_namespaceUses, r176.raw()))) return false;
 				zval av177[5];
 				ZVAL_COPY_VALUE(&av177[0], o165.raw());
-				zval z178;
+				zval z178 = {};
 				ZVAL_BOOL(&z178, k167);
 				ZVAL_COPY_VALUE(&av177[1], &z178);
-				zval z179;
+				zval z179 = {};
 				ZVAL_BOOL(&z179, k169);
 				ZVAL_COPY_VALUE(&av177[2], &z179);
-				zval z180;
+				zval z180 = {};
 				ZVAL_BOOL(&z180, k171);
 				ZVAL_COPY_VALUE(&av177[3], &z180);
 				ZVAL_COPY_VALUE(&av177[4], r176.raw());
@@ -2707,7 +2707,7 @@ namespace pgen::ExportedNodeResolver {
 		}
 	}
 	 {
-		zval z203;
+		zval z203 = {};
 		ZVAL_NULL(&z203);
 		ZVAL_COPY_VALUE(ret, &z203);
 		return true;
@@ -2976,11 +2976,11 @@ namespace pgen::ExportedNodeResolver {
 					ZVAL_COPY_VALUE(&av37[0], r15.raw());
 					ZVAL_COPY_VALUE(&av37[1], r20.raw());
 					ZVAL_COPY_VALUE(&av37[2], o23.raw());
-					zval z38;
+					zval z38 = {};
 					ZVAL_BOOL(&z38, k26);
 					ZVAL_COPY_VALUE(&av37[3], &z38);
 					ZVAL_COPY_VALUE(&av37[4], r27.raw());
-					zval z39;
+					zval z39 = {};
 					ZVAL_BOOL(&z39, k30);
 					ZVAL_COPY_VALUE(&av37[5], &z39);
 					ZVAL_COPY_VALUE(&av37[6], r33.raw());

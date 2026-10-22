@@ -17,9 +17,9 @@ namespace pgen::TemplateTypeScope {
 [[nodiscard]] bool m_createWithAnonymousFunction(zval *ret)
 {
 	 {
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_template_type_scope) != SUCCESS)) return false;
@@ -34,7 +34,7 @@ namespace pgen::TemplateTypeScope {
 [[nodiscard]] bool m_createWithFunction(zval *p_functionName, zval *ret)
 {
 	 {
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_template_type_scope) != SUCCESS)) return false;
@@ -62,7 +62,7 @@ namespace pgen::TemplateTypeScope {
 [[nodiscard]] bool m_createWithClass(zval *p_className, zval *ret)
 {
 	 {
-		zval z2;
+		zval z2 = {};
 		ZVAL_NULL(&z2);
 		zval n1_raw;
 		if (UNEXPECTED(object_init_ex(&n1_raw, pt_ce_template_type_scope) != SUCCESS)) return false;

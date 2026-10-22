@@ -105,7 +105,7 @@ namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
 		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_2, p_methodCall, r1.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r1.raw())) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -238,7 +238,7 @@ namespace pgen::DateTimeZoneConstructorThrowTypeExtension {
 		}
 	}
 	 {
-		zval z31;
+		zval z31 = {};
 		ZVAL_NULL(&z31);
 		ZVAL_COPY_VALUE(ret, &z31);
 		return true;

@@ -201,7 +201,7 @@ namespace pgen::IncludeHandler {
 		zval av14[3];
 		ZVAL_COPY_VALUE(&av14[0], zv::Ref(p9).deref().raw());
 		ZVAL_COPY_VALUE(&av14[1], arr11.raw());
-		zval z15;
+		zval z15 = {};
 		ZVAL_BOOL(&z15, true);
 		ZVAL_COPY_VALUE(&av14[2], &z15);
 		zv::Val r16;
@@ -378,7 +378,7 @@ namespace pgen::IncludeHandler {
 		}
 		zval av62[2];
 		ZVAL_COPY_VALUE(&av62[0], r61.raw());
-		zval z63;
+		zval z63 = {};
 		ZVAL_BOOL(&z63, true);
 		ZVAL_COPY_VALUE(&av62[1], &z63);
 		zv::Val r64;

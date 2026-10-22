@@ -97,7 +97,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 			ZVAL_LONG(&z5, p_line);
 			b1 = (zend_compare(&z5, r4.raw()) <= 0);
 		}
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, b1);
 		ZVAL_COPY(return_value, &z6);
 		return;
@@ -277,7 +277,7 @@ namespace pgen::RichParser {
 				}
 				zval av13[2];
 				ZVAL_COPY_VALUE(&av13[0], r12.raw());
-				zval z14;
+				zval z14 = {};
 				ZVAL_NULL(&z14);
 				ZVAL_COPY_VALUE(&av13[1], &z14);
 				zend_class_entry *ce15 = pgrt::lookupClass(pg_site_0, "PHPStan\\Parser\\ParserErrorsException", 36);
@@ -423,7 +423,7 @@ namespace pgen::RichParser {
 					{ zval v = o50.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr49.raw()), &v); }
 					zval av51[2];
 					ZVAL_COPY_VALUE(&av51[0], arr49.raw());
-					zval z52;
+					zval z52 = {};
 					ZVAL_NULL(&z52);
 					ZVAL_COPY_VALUE(&av51[1], &z52);
 					zend_class_entry *ce53 = pgrt::lookupClass(pg_site_0, "PHPStan\\Parser\\ParserErrorsException", 36);
@@ -985,7 +985,7 @@ namespace pgen::RichParser {
 														}
 														 {
 															zv::Val o101 = zv::Val::copyOf(zv::Ref(l_lineToIgnore.raw()));
-															zval z103;
+															zval z103 = {};
 															ZVAL_NULL(&z103);
 															zv::Val o102 = zv::Val::copyOf(zv::Ref(&z103));
 															zval *w104 = zv::Ref(l_lines.raw()).deref().raw();
@@ -1067,7 +1067,7 @@ namespace pgen::RichParser {
 								}
 								 {
 									zv::Val o121 = zv::Val::copyOf(zv::Ref(l_line.raw()));
-									zval z123;
+									zval z123 = {};
 									ZVAL_NULL(&z123);
 									zv::Val o122 = zv::Val::copyOf(zv::Ref(&z123));
 									zval *w124 = zv::Ref(l_lines.raw()).deref().raw();
@@ -1512,7 +1512,7 @@ namespace pgen::RichParser {
 					l_line = ar28;
 				}
 				 {
-					zval z30;
+					zval z30 = {};
 					ZVAL_NULL(&z30);
 					zv::Val o29 = zv::Val::copyOf(zv::Ref(&z30));
 					zval *w31 = zv::Ref(l_lines.raw()).deref().raw();
@@ -1669,7 +1669,7 @@ namespace pgen::RichParser {
 						zval av34[3];
 						ZVAL_COPY_VALUE(&av34[0], l_tokenType.raw());
 						ZVAL_COPY_VALUE(&av34[1], arr32.raw());
-						zval z35;
+						zval z35 = {};
 						ZVAL_BOOL(&z35, true);
 						ZVAL_COPY_VALUE(&av34[2], &z35);
 						zv::Val r36;

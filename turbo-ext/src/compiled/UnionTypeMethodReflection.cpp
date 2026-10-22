@@ -984,7 +984,7 @@ namespace pgen::UnionTypeMethodReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -1140,7 +1140,7 @@ namespace pgen::UnionTypeMethodReflection {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_descriptions.raw())) == 0) {
 			 {
-				zval z27;
+				zval z27 = {};
 				ZVAL_NULL(&z27);
 				ZVAL_COPY_VALUE(ret, &z27);
 				return true;
@@ -1309,7 +1309,7 @@ namespace pgen::UnionTypeMethodReflection {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_types.raw())) == 0) {
 			 {
-				zval z19;
+				zval z19 = {};
 				ZVAL_NULL(&z19);
 				ZVAL_COPY_VALUE(ret, &z19);
 				return true;
@@ -1414,7 +1414,7 @@ namespace pgen::UnionTypeMethodReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;
@@ -1523,7 +1523,7 @@ namespace pgen::UnionTypeMethodReflection {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;

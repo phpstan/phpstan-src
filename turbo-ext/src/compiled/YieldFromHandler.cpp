@@ -316,7 +316,7 @@ namespace pgen::YieldFromHandler {
 		}
 		zval av26[2];
 		ZVAL_COPY_VALUE(&av26[0], r25.raw());
-		zval z27;
+		zval z27 = {};
 		ZVAL_BOOL(&z27, true);
 		ZVAL_COPY_VALUE(&av26[1], &z27);
 		zv::Val r28;

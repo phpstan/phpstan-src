@@ -425,7 +425,7 @@ namespace pgen::UnserializeFunctionThrowTypeExtension {
 				zval z16;
 				ZVAL_LONG(&z16, 0);
 				ZVAL_COPY_VALUE(&av15[0], &z16);
-				zval z17;
+				zval z17 = {};
 				ZVAL_NULL(&z17);
 				ZVAL_COPY_VALUE(&av15[1], &z17);
 				zv::Val r18;

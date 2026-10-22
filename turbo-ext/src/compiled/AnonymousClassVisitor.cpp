@@ -36,7 +36,7 @@ namespace pgen::AnonymousClassVisitor {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::AnonymousClassVisitor::slot::nodesPerLine, &o3);
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
@@ -59,7 +59,7 @@ namespace pgen::AnonymousClassVisitor {
 		}
 		if (b1) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -76,7 +76,7 @@ namespace pgen::AnonymousClassVisitor {
 		l_node = std::move(r6);
 	}
 	 {
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, true);
 		zv::Val r8;
 		if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_4, l_node.raw(), &pg_lit[0], &z7, r8.raw()))) return false;
@@ -197,7 +197,7 @@ namespace pgen::AnonymousClassVisitor {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::AnonymousClassVisitor::slot::nodesPerLine, &o26);
 	}
 	 {
-		zval z27;
+		zval z27 = {};
 		ZVAL_NULL(&z27);
 		ZVAL_COPY_VALUE(ret, &z27);
 		return true;

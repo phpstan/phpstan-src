@@ -195,7 +195,7 @@ namespace pgen::ArrayCombineFunctionThrowTypeExtension {
 		}
 	}
 	 {
-		zval z32;
+		zval z32 = {};
 		ZVAL_NULL(&z32);
 		ZVAL_COPY_VALUE(ret, &z32);
 		return true;

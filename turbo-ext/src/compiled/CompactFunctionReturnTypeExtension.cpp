@@ -82,7 +82,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_1, p_functionCall, r1.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r1.raw())) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -113,7 +113,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 		}
 		if (b3) {
 			 {
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(ret, &z9);
 				return true;
@@ -172,7 +172,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 				 {
 					if (Z_TYPE_P(l_constantStrings.raw()) == IS_NULL) {
 						 {
-							zval z25;
+							zval z25 = {};
 							ZVAL_NULL(&z25);
 							ZVAL_COPY_VALUE(ret, &z25);
 							return true;
@@ -231,7 +231,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 								bool r42;
 								if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(l_has.raw()), &r42))) return false;
 								bool k43 = r42;
-								zval z44;
+								zval z44 = {};
 								ZVAL_BOOL(&z44, k43);
 								zv::Val r45;
 								if (EXPECTED(Z_TYPE_P(o37.raw()) == IS_OBJECT)) {
@@ -308,7 +308,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 				if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(r3.raw()), &r4))) return false;
 				if (r4) {
 					 {
-						zval z5;
+						zval z5 = {};
 						ZVAL_NULL(&z5);
 						ZVAL_COPY_VALUE(ret, &z5);
 						return true;
@@ -349,7 +349,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 						 {
 							if (Z_TYPE_P(l_constantStrings.raw()) == IS_NULL) {
 								 {
-									zval z17;
+									zval z17 = {};
 									ZVAL_NULL(&z17);
 									ZVAL_COPY_VALUE(ret, &z17);
 									return true;
@@ -375,7 +375,7 @@ namespace pgen::CompactFunctionReturnTypeExtension {
 		}
 	}
 	 {
-		zval z20;
+		zval z20 = {};
 		ZVAL_NULL(&z20);
 		ZVAL_COPY_VALUE(ret, &z20);
 		return true;

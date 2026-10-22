@@ -341,7 +341,6 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\NullsafeMethodCallHandler::{closure}", argc, 0); return; }
 	 {
 		zv::Val r1;
 		if (UNEXPECTED(!pgen::EnsuredNonNullabilityResult::m_getScope(Z_OBJ_P(zv::Ref(&captures[0]).deref().raw()), r1.raw()))) return;
@@ -354,7 +353,6 @@ static void pg_closure_6(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\NullsafeMethodCallHandler::{closure}", argc, 0); return; }
 	 {
 		zval *is1 = zv::Ref(&captures[2]).deref().raw();
 		if (Z_ISUNDEF_P(is1)) is1 = NULL;
@@ -396,7 +394,6 @@ static void pg_closure_7(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\NullsafeMethodCallHandler::{closure}", argc, 0); return; }
 	 {
 		zv::Val r1;
 		if (EXPECTED(Z_TYPE_P(zv::Ref(&captures[0]).deref().raw()) == IS_OBJECT)) {
@@ -718,7 +715,7 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 	}
 	 {
 		zval av9[1];
-		zval z10;
+		zval z10 = {};
 		ZVAL_BOOL(&z10, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&av9[0], &z10);
 		zv::Val r11;
@@ -798,11 +795,11 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 			 {
 				zval *p24 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NullsafeMethodCallHandler::slot::defaultNarrowingHelper, "defaultNarrowingHelper");
 				if (UNEXPECTED(p24 == NULL)) return;
-				zval z25;
+				zval z25 = {};
 				ZVAL_NULL(&z25);
-				zval z26;
+				zval z26 = {};
 				ZVAL_NULL(&z26);
-				zval z27;
+				zval z27 = {};
 				ZVAL_NULL(&z27);
 				zv::Val r28;
 				if (EXPECTED(Z_TYPE_P(p24) == IS_OBJECT)) {
@@ -856,11 +853,11 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		zval *p35 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::NullsafeMethodCallHandler::slot::defaultNarrowingHelper, "defaultNarrowingHelper");
 		if (UNEXPECTED(p35 == NULL)) return;
-		zval z36;
+		zval z36 = {};
 		ZVAL_NULL(&z36);
-		zval z37;
+		zval z37 = {};
 		ZVAL_NULL(&z37);
-		zval z38;
+		zval z38 = {};
 		ZVAL_NULL(&z38);
 		zv::Val r39;
 		if (EXPECTED(Z_TYPE_P(p35) == IS_OBJECT)) {
@@ -1071,7 +1068,7 @@ namespace pgen::NullsafeMethodCallHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_nullsafe_method_call_handler, "var", 3, o16.raw()))) return false;
 			p15 = o16.raw();
 		}
-		zval z17;
+		zval z17 = {};
 		ZVAL_BOOL(&z17, false);
 		zv::Val r18;
 		if (EXPECTED(Z_TYPE_P(p14) == IS_OBJECT)) {
@@ -1114,7 +1111,7 @@ namespace pgen::NullsafeMethodCallHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_expr, pt_ce_nullsafe_method_call_handler, "var", 3, o25.raw()))) return false;
 			p24 = o25.raw();
 		}
-		zval z26;
+		zval z26 = {};
 		ZVAL_BOOL(&z26, true);
 		zv::Val r27;
 		if (EXPECTED(Z_TYPE_P(p23) == IS_OBJECT)) {

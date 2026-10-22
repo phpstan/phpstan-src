@@ -154,7 +154,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(p2 == NULL)) return;
 		zv::Val o3 = zv::Val::copyOf(zv::Ref(p2));
 		zval cap4[3];
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&cap4[0], &z5);
 		ZVAL_COPY_VALUE(&cap4[1], zv::Ref(&captures[0]).deref().raw());
@@ -318,11 +318,11 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(&captures[0]).deref().raw(), pt_ce_cast_handler, "expr", 4, o28.raw()))) return;
 					p27 = o28.raw();
 				}
-				zval z29;
+				zval z29 = {};
 				ZVAL_NULL(&z29);
-				zval z30;
+				zval z30 = {};
 				ZVAL_NULL(&z30);
-				zval z31;
+				zval z31 = {};
 				ZVAL_NULL(&z31);
 				zv::Val r32;
 				if (EXPECTED(Z_TYPE_P(p26) == IS_OBJECT)) {
@@ -408,7 +408,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_37, o36.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av50, r49.raw()))) return;
 				}
 				}
-				zval z51;
+				zval z51 = {};
 				ZVAL_BOOL(&z51, p_nativeTypesPromoted);
 				zv::Val r52;
 				if (EXPECTED(Z_TYPE_P(r49.raw()) == IS_OBJECT)) {
@@ -475,7 +475,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_42, o56.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av68, r67.raw()))) return;
 				}
 				}
-				zval z69;
+				zval z69 = {};
 				ZVAL_BOOL(&z69, p_nativeTypesPromoted);
 				zv::Val r70;
 				if (EXPECTED(Z_TYPE_P(r67.raw()) == IS_OBJECT)) {
@@ -542,7 +542,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					if (UNEXPECTED(!pgrt::callMethod(pg_site_46, o74.raw(), "obtainResultForNode", "obtainresultfornode", 19, 1, av86, r85.raw()))) return;
 				}
 				}
-				zval z87;
+				zval z87 = {};
 				ZVAL_BOOL(&z87, p_nativeTypesPromoted);
 				zv::Val r88;
 				if (EXPECTED(Z_TYPE_P(r85.raw()) == IS_OBJECT)) {

@@ -457,7 +457,6 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Rules\\FunctionDefinitionCheck::{closure}", argc, 0); return; }
 	zval this_zv;
 	ZVAL_OBJ(&this_zv, Z_OBJ(captures[3]));
 	(void) this_zv;
@@ -710,7 +709,7 @@ static void pg_closure_9(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (Z_TYPE_P(o4.raw()) == IS_STRING) ia5 = zend_string_equals(Z_STR_P(o4.raw()), Z_STR_P(&pg_lit[25])) || zend_string_equals(Z_STR_P(o4.raw()), Z_STR_P(&pg_lit[27]));
 			b1 = ia5;
 		}
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, b1);
 		ZVAL_COPY(return_value, &z6);
 		return;
@@ -969,9 +968,9 @@ namespace pgen::FunctionDefinitionCheck {
 						if (UNEXPECTED(!pgrt::readPropertyGeneric(l_param, pt_ce_function_definition_check, "type", 4, o61.raw()))) return false;
 						p60 = o61.raw();
 					}
-					zval z62;
+					zval z62 = {};
 					ZVAL_BOOL(&z62, false);
-					zval z63;
+					zval z63 = {};
 					ZVAL_BOOL(&z63, false);
 					zv::Val r64;
 					zend_class_entry *rc65 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
@@ -1354,7 +1353,7 @@ namespace pgen::FunctionDefinitionCheck {
 					ZVAL_COPY_VALUE(&av187[0], p_scope);
 					ZVAL_COPY_VALUE(&av187[1], r175.raw());
 					ZVAL_COPY_VALUE(&av187[2], r185.raw());
-					zval z188;
+					zval z188 = {};
 					ZVAL_BOOL(&z188, (Z_TYPE_P(p186) == IS_TRUE));
 					ZVAL_COPY_VALUE(&av187[3], &z188);
 					zv::Val r189;
@@ -1550,9 +1549,9 @@ namespace pgen::FunctionDefinitionCheck {
 		}
 	}
 	 {
-		zval z253;
+		zval z253 = {};
 		ZVAL_BOOL(&z253, false);
-		zval z254;
+		zval z254 = {};
 		ZVAL_BOOL(&z254, false);
 		zv::Val r255;
 		zend_class_entry *rc256 = Z_TYPE_P(p_scope) == IS_OBJECT ? Z_OBJCE_P(p_scope) : NULL;
@@ -1851,7 +1850,7 @@ namespace pgen::FunctionDefinitionCheck {
 		ZVAL_COPY_VALUE(&av351[0], p_scope);
 		ZVAL_COPY_VALUE(&av351[1], r344.raw());
 		ZVAL_COPY_VALUE(&av351[2], r349.raw());
-		zval z352;
+		zval z352 = {};
 		ZVAL_BOOL(&z352, (Z_TYPE_P(p350) == IS_TRUE));
 		ZVAL_COPY_VALUE(&av351[3], &z352);
 		zv::Val r353;
@@ -2076,7 +2075,7 @@ namespace pgen::FunctionDefinitionCheck {
 				ZVAL_COPY_VALUE(&av65[0], p_scope);
 				ZVAL_COPY_VALUE(&av65[1], r60.raw());
 				ZVAL_COPY_VALUE(&av65[2], r63.raw());
-				zval z66;
+				zval z66 = {};
 				ZVAL_BOOL(&z66, (Z_TYPE_P(p64) == IS_TRUE));
 				ZVAL_COPY_VALUE(&av65[3], &z66);
 				zv::Val r67;
@@ -2874,7 +2873,7 @@ namespace pgen::FunctionDefinitionCheck {
 					ZVAL_COPY_VALUE(&av242[0], p_scope);
 					ZVAL_COPY_VALUE(&av242[1], r237.raw());
 					ZVAL_COPY_VALUE(&av242[2], r240.raw());
-					zval z243;
+					zval z243 = {};
 					ZVAL_BOOL(&z243, (Z_TYPE_P(p241) == IS_TRUE));
 					ZVAL_COPY_VALUE(&av242[3], &z243);
 					zv::Val r244;
@@ -3455,7 +3454,7 @@ namespace pgen::FunctionDefinitionCheck {
 		ZVAL_COPY_VALUE(&av413[0], p_scope);
 		ZVAL_COPY_VALUE(&av413[1], r408.raw());
 		ZVAL_COPY_VALUE(&av413[2], r411.raw());
-		zval z414;
+		zval z414 = {};
 		ZVAL_BOOL(&z414, (Z_TYPE_P(p412) == IS_TRUE));
 		ZVAL_COPY_VALUE(&av413[3], &z414);
 		zv::Val r415;
@@ -4546,7 +4545,7 @@ namespace pgen::FunctionDefinitionCheck {
 	 {
 		if (!(pgrt::instanceOfClass(p_default, pgrt::lookupClassQuiet(pg_site_256, "PhpParser\\Node\\Expr\\ConstFetch", 30)))) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -4564,7 +4563,7 @@ namespace pgen::FunctionDefinitionCheck {
 		if (UNEXPECTED(!pgrt::nameToLowerString(pg_site_297, zv::Ref(p2).deref().raw(), r4.raw()))) return false;
 		if (!zend_is_identical(r4.raw(), &pg_lit[25])) {
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -4574,7 +4573,7 @@ namespace pgen::FunctionDefinitionCheck {
 	 {
 		if (Z_TYPE_P(p_type) == IS_NULL) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -4588,7 +4587,7 @@ namespace pgen::FunctionDefinitionCheck {
 		}
 		if (b7) {
 			 {
-				zval z8;
+				zval z8 = {};
 				ZVAL_NULL(&z8);
 				ZVAL_COPY_VALUE(ret, &z8);
 				return true;
@@ -4602,7 +4601,7 @@ namespace pgen::FunctionDefinitionCheck {
 		if (UNEXPECTED(!pgen::PhpVersion::m_deprecatesImplicitlyNullableParameterTypes(Z_OBJ_P(p9), &r10))) return false;
 		if (!(r10)) {
 			 {
-				zval z11;
+				zval z11 = {};
 				ZVAL_NULL(&z11);
 				ZVAL_COPY_VALUE(ret, &z11);
 				return true;
@@ -4623,7 +4622,7 @@ namespace pgen::FunctionDefinitionCheck {
 		}
 		if (b12) {
 			 {
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(ret, &z16);
 				return true;
@@ -4644,7 +4643,7 @@ namespace pgen::FunctionDefinitionCheck {
 		}
 		if (b17) {
 			 {
-				zval z21;
+				zval z21 = {};
 				ZVAL_NULL(&z21);
 				ZVAL_COPY_VALUE(ret, &z21);
 				return true;
@@ -4660,7 +4659,7 @@ namespace pgen::FunctionDefinitionCheck {
 		}
 		if (b22) {
 			 {
-				zval z24;
+				zval z24 = {};
 				ZVAL_NULL(&z24);
 				ZVAL_COPY_VALUE(ret, &z24);
 				return true;
@@ -4699,7 +4698,7 @@ namespace pgen::FunctionDefinitionCheck {
 							}
 							if (b34) {
 								 {
-									zval z38;
+									zval z38 = {};
 									ZVAL_NULL(&z38);
 									ZVAL_COPY_VALUE(ret, &z38);
 									return true;

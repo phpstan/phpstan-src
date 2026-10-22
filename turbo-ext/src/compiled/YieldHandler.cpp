@@ -53,7 +53,6 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\YieldHandler::{closure}", argc, 0); return; }
 	zv::Val l_returnType;
 	zv::Val l_generatorSendType;
 	 {

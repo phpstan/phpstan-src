@@ -28,7 +28,6 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Type\\StrictMixedType::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, &pg_lit[0]);
 		return;
@@ -39,7 +38,6 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Type\\StrictMixedType::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, &pg_lit[0]);
 		return;
@@ -50,7 +48,6 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Type\\StrictMixedType::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, &pg_lit[0]);
 		return;
@@ -61,7 +58,6 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Type\\StrictMixedType::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, &pg_lit[1]);
 		return;
@@ -1186,7 +1182,7 @@ namespace pgen::StrictMixedType {
 		if (UNEXPECTED(!pt_mixed_type_new(n2.raw()))) return false;
 		zval av3[2];
 		ZVAL_COPY_VALUE(&av3[0], n2.raw());
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, false);
 		ZVAL_COPY_VALUE(&av3[1], &z4);
 		zend_class_entry *ce5 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
@@ -1218,7 +1214,7 @@ namespace pgen::StrictMixedType {
 				if (UNEXPECTED(!pt_union_type_new(n2.raw(), arr3.raw()))) return false;
 				zval av6[2];
 				ZVAL_COPY_VALUE(&av6[0], n2.raw());
-				zval z7;
+				zval z7 = {};
 				ZVAL_BOOL(&z7, false);
 				ZVAL_COPY_VALUE(&av6[1], &z7);
 				zend_class_entry *ce8 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
@@ -1235,7 +1231,7 @@ namespace pgen::StrictMixedType {
 		if (UNEXPECTED(!pt_object_without_class_type_new(n10.raw()))) return false;
 		zval av11[2];
 		ZVAL_COPY_VALUE(&av11[0], n10.raw());
-		zval z12;
+		zval z12 = {};
 		ZVAL_BOOL(&z12, false);
 		ZVAL_COPY_VALUE(&av11[1], &z12);
 		zend_class_entry *ce13 = pgrt::lookupClass(pg_site_5, "PHPStan\\Type\\ClassNameToObjectTypeResult", 40);
@@ -1392,7 +1388,7 @@ namespace pgen::StrictMixedType {
 	ZVAL_OBJ(&this_zv, self);
 	(void) this_zv;
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_NULL(&z1);
 		ZVAL_COPY_VALUE(ret, &z1);
 		return true;

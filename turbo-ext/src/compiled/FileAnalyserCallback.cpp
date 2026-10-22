@@ -629,7 +629,7 @@ namespace pgen::FileAnalyserCallback {
 								zv::Val r121;
 								if (UNEXPECTED(!pgrt::callMethod0(pg_site_26, l_e.raw(), "getMessage", "getmessage", 10, r121.raw()))) return false;
 								bool k122 = true;
-								zval z124;
+								zval z124 = {};
 								ZVAL_BOOL(&z124, k122);
 								zv::Val o123 = zv::Val::copyOf(zv::Ref(&z124));
 								zval *w125 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
@@ -1009,7 +1009,7 @@ namespace pgen::FileAnalyserCallback {
 								zv::Val r251;
 								if (UNEXPECTED(!pgrt::callMethod0(pg_site_59, l_e.raw(), "getMessage", "getmessage", 10, r251.raw()))) return false;
 								bool k252 = true;
-								zval z254;
+								zval z254 = {};
 								ZVAL_BOOL(&z254, k252);
 								zv::Val o253 = zv::Val::copyOf(zv::Ref(&z254));
 								zval *w255 = zv::Ref(l_uniquedAnalysedCodeExceptionMessages.raw()).deref().raw();
@@ -1273,7 +1273,7 @@ namespace pgen::FileAnalyserCallback {
 			bool r341;
 			if (UNEXPECTED(!pgen::DependencyResolver::m_canExportNode(Z_OBJ_P(p340), p_node, &r341))) return false;
 			bool k342 = r341;
-			zval z344;
+			zval z344 = {};
 			ZVAL_BOOL(&z344, k342);
 			zv::Val o343 = zv::Val::copyOf(zv::Ref(&z344));
 			zval *w345 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileAnalyserCallback::slot::exportableByNodeType)).deref().raw();
@@ -1282,7 +1282,7 @@ namespace pgen::FileAnalyserCallback {
 			zval *e346 = pgrt::dimWrite(w345, o339.raw());
 			if (UNEXPECTED(e346 == NULL)) return false;
 			zv::Ref(e346).assign(std::move(o343));
-			zval z347;
+			zval z347 = {};
 			ZVAL_BOOL(&z347, k342);
 			ca338 = zv::Val::copyOf(zv::Ref(&z347));
 		}

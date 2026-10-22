@@ -78,7 +78,7 @@ namespace pgen::StringNeverAcceptingObjectWithToStringType {
 	 {
 		zval av1[2];
 		ZVAL_COPY_VALUE(&av1[0], p_type);
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, true);
 		ZVAL_COPY_VALUE(&av1[1], &z2);
 		zv::Val r3;

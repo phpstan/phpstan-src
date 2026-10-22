@@ -610,7 +610,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(l_flavouredScope.raw(), pt_ce_binary_op_handler, "nativeTypesPromoted", 19, o15.raw()))) return;
 			p14 = o15.raw();
 		}
-		zval z16;
+		zval z16 = {};
 		ZVAL_BOOL(&z16, (Z_TYPE_P(zv::Ref(p14).deref().raw()) == IS_TRUE));
 		zv::Val r17;
 		if (EXPECTED(Z_TYPE_P(r12.raw()) == IS_OBJECT)) {
@@ -666,7 +666,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		ZVAL_COPY_VALUE(&cap4[0], zv::Ref(&captures[0]).deref().raw());
 		ZVAL_COPY_VALUE(&cap4[1], zv::Ref(&captures[1]).deref().raw());
 		ZVAL_COPY_VALUE(&cap4[2], zv::Ref(&captures[2]).deref().raw());
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, p_nativeTypesPromoted);
 		ZVAL_COPY_VALUE(&cap4[3], &z5);
 		ZVAL_COPY_VALUE(&cap4[4], zv::Ref(&captures[4]).deref().raw());
@@ -1509,7 +1509,6 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\BinaryOpHandler::{closure}", argc, 0); return; }
 	zv::Val l_ownType;
 	 {
 		zval av1[1];
@@ -1716,7 +1715,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(&captures[3]).deref().raw(), pt_ce_binary_op_handler, "nativeTypesPromoted", 19, o21.raw()))) return;
 			p20 = o21.raw();
 		}
-		zval z22;
+		zval z22 = {};
 		ZVAL_BOOL(&z22, (Z_TYPE_P(zv::Ref(p20).deref().raw()) == IS_TRUE));
 		zv::Val r23;
 		if (EXPECTED(Z_TYPE_P(l_result.raw()) == IS_OBJECT)) {
@@ -1871,7 +1870,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 				zv::Val o22 = zv::Val::copyOf(zv::Ref(l_scope.raw()));
 				zval cap23[3];
 				ZVAL_COPY_VALUE(&cap23[0], zv::Ref(&captures[0]).deref().raw());
-				zval z24;
+				zval z24 = {};
 				ZVAL_BOOL(&z24, p_nativeTypesPromoted);
 				ZVAL_COPY_VALUE(&cap23[1], &z24);
 				ZVAL_COPY_VALUE(&cap23[2], zv::Ref(&captures[8]).deref().raw());
@@ -2340,7 +2339,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 				ZVAL_COPY_VALUE(&cap132[2], zv::Ref(&captures[2]).deref().raw());
 				ZVAL_COPY_VALUE(&cap132[3], l_scope.raw());
 				ZVAL_COPY_VALUE(&cap132[4], zv::Ref(&captures[5]).deref().raw());
-				zval z133;
+				zval z133 = {};
 				ZVAL_BOOL(&z133, p_nativeTypesPromoted);
 				ZVAL_COPY_VALUE(&cap132[5], &z133);
 				zv::Val h134 = pt_native_closure_new(&pg_closure_5, 6, cap132, 0u);
@@ -3230,7 +3229,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 							zval z346;
 							ZVAL_LONG(&z346, 0);
 							ZVAL_COPY_VALUE(&av345[0], &z346);
-							zval z347;
+							zval z347 = {};
 							ZVAL_NULL(&z347);
 							ZVAL_COPY_VALUE(&av345[1], &z347);
 							zv::Val r348;
@@ -3506,7 +3505,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					zval z425;
 					ZVAL_LONG(&z425, 0);
 					ZVAL_COPY_VALUE(&av424[0], &z425);
-					zval z426;
+					zval z426 = {};
 					ZVAL_NULL(&z426);
 					ZVAL_COPY_VALUE(&av424[1], &z426);
 					zv::Val r427;
@@ -3627,7 +3626,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 							zval z464;
 							ZVAL_LONG(&z464, 1);
 							ZVAL_COPY_VALUE(&av463[0], &z464);
-							zval z465;
+							zval z465 = {};
 							ZVAL_NULL(&z465);
 							ZVAL_COPY_VALUE(&av463[1], &z465);
 							zv::Val r466;
@@ -3850,7 +3849,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 					zval z529;
 					ZVAL_LONG(&z529, 1);
 					ZVAL_COPY_VALUE(&av528[0], &z529);
-					zval z530;
+					zval z530 = {};
 					ZVAL_NULL(&z530);
 					ZVAL_COPY_VALUE(&av528[1], &z530);
 					zv::Val r531;
@@ -3876,7 +3875,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 							zval z537;
 							ZVAL_LONG(&z537, 0);
 							ZVAL_COPY_VALUE(&av536[0], &z537);
-							zval z538;
+							zval z538 = {};
 							ZVAL_NULL(&z538);
 							ZVAL_COPY_VALUE(&av536[1], &z538);
 							zv::Val r539;
@@ -4322,7 +4321,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 								zval z659;
 								ZVAL_LONG(&z659, Z_LVAL_P(r656.raw()));
 								ZVAL_COPY_VALUE(&av658[0], &z659);
-								zval z660;
+								zval z660 = {};
 								ZVAL_NULL(&z660);
 								ZVAL_COPY_VALUE(&av658[1], &z660);
 								zval z661;
@@ -4385,7 +4384,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 										zval z677;
 										ZVAL_LONG(&z677, Z_LVAL_P(r674.raw()));
 										ZVAL_COPY_VALUE(&av676[0], &z677);
-										zval z678;
+										zval z678 = {};
 										ZVAL_NULL(&z678);
 										ZVAL_COPY_VALUE(&av676[1], &z678);
 										zval z679;
@@ -4456,7 +4455,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 												zval z697;
 												ZVAL_LONG(&z697, Z_LVAL_P(r695.raw()));
 												ZVAL_COPY_VALUE(&av696[0], &z697);
-												zval z698;
+												zval z698 = {};
 												ZVAL_NULL(&z698);
 												ZVAL_COPY_VALUE(&av696[1], &z698);
 												zval z699;
@@ -4542,7 +4541,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 								zend_long ar719;
 								if (UNEXPECTED(!pgrt::addLong(neg718, 1, &ar719))) return;
 								zval av720[3];
-								zval z721;
+								zval z721 = {};
 								ZVAL_NULL(&z721);
 								ZVAL_COPY_VALUE(&av720[0], &z721);
 								zval z722;
@@ -4607,7 +4606,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 										zend_long ar738;
 										if (UNEXPECTED(!pgrt::subLong(neg737, 1, &ar738))) return;
 										zval av739[3];
-										zval z740;
+										zval z740 = {};
 										ZVAL_NULL(&z740);
 										ZVAL_COPY_VALUE(&av739[0], &z740);
 										zval z741;
@@ -4680,7 +4679,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 												zend_long neg759;
 												if (UNEXPECTED(!pgrt::negateLong(l_offset, &neg759))) return;
 												zval av760[3];
-												zval z761;
+												zval z761 = {};
 												ZVAL_NULL(&z761);
 												ZVAL_COPY_VALUE(&av760[0], &z761);
 												zval z762;
@@ -5633,7 +5632,7 @@ namespace pgen::BinaryOpHandler {
 				zv::Val n45;
 				if (UNEXPECTED(!pt_object_type_new(n45.raw(), Z_STR_P(&pg_lit[0])))) return false;
 				bool k46 = false;
-				zval z47;
+				zval z47 = {};
 				ZVAL_BOOL(&z47, k46);
 				zv::Val r48;
 				 {
@@ -6352,7 +6351,7 @@ namespace pgen::BinaryOpHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_scope, pt_ce_binary_op_handler, "nativeTypesPromoted", 19, o29.raw()))) return false;
 			p28 = o29.raw();
 		}
-		zval z30;
+		zval z30 = {};
 		ZVAL_BOOL(&z30, (Z_TYPE_P(zv::Ref(p28).deref().raw()) == IS_TRUE));
 		zv::Val r31;
 		if (EXPECTED(Z_TYPE_P(p_leftResult) == IS_OBJECT)) {
@@ -6375,7 +6374,7 @@ namespace pgen::BinaryOpHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_scope, pt_ce_binary_op_handler, "nativeTypesPromoted", 19, o34.raw()))) return false;
 			p33 = o34.raw();
 		}
-		zval z35;
+		zval z35 = {};
 		ZVAL_BOOL(&z35, (Z_TYPE_P(zv::Ref(p33).deref().raw()) == IS_TRUE));
 		zv::Val r36;
 		if (EXPECTED(Z_TYPE_P(p_rightResult) == IS_OBJECT)) {

@@ -84,7 +84,7 @@ namespace pgen::JsonThrowTypeExtension {
 			zend_class_entry *vd9_ce = Z_TYPE_P(o5.raw()) == IS_OBJECT ? Z_OBJCE_P(o5.raw()) : NULL;
 			bool vd9_done = false;
 			if (vd9_ce == pt_ce_better_reflection_provider) {
-				zval z10;
+				zval z10 = {};
 				ZVAL_NULL(&z10);
 				bool r11;
 				if (UNEXPECTED(!pgen::BetterReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z10, &r11))) return false;
@@ -93,7 +93,7 @@ namespace pgen::JsonThrowTypeExtension {
 				vd9_done = true;
 			}
 			if (vd9_ce == pt_ce_memoizing_reflection_provider) {
-				zval z13;
+				zval z13 = {};
 				ZVAL_NULL(&z13);
 				bool r14;
 				if (UNEXPECTED(!pgen::MemoizingReflectionProvider::m_hasConstant(Z_OBJ_P(o5.raw()), n6.raw(), &z13, &r14))) return false;
@@ -104,7 +104,7 @@ namespace pgen::JsonThrowTypeExtension {
 			if (!vd9_done) {
 				zval av16[2];
 				ZVAL_COPY_VALUE(&av16[0], n6.raw());
-				zval z17;
+				zval z17 = {};
 				ZVAL_NULL(&z17);
 				ZVAL_COPY_VALUE(&av16[1], &z17);
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_2, o5.raw(), "hasConstant", "hasconstant", 11, 2, av16, vd9.raw()))) return false;
@@ -180,7 +180,7 @@ namespace pgen::JsonThrowTypeExtension {
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is12 != NULL && Z_TYPE_P(is12) > IS_NULL))) {
 			 {
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(ret, &z16);
 				return true;
@@ -221,7 +221,7 @@ namespace pgen::JsonThrowTypeExtension {
 		}
 	}
 	 {
-		zval z27;
+		zval z27 = {};
 		ZVAL_NULL(&z27);
 		ZVAL_COPY_VALUE(ret, &z27);
 		return true;

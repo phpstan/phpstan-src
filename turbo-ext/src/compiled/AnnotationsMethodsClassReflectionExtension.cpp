@@ -479,7 +479,7 @@ namespace pgen::AnnotationsMethodsClassReflectionExtension {
 				ZVAL_COPY_VALUE(&av70[2], r54.raw());
 				ZVAL_COPY_VALUE(&av70[3], o55.raw());
 				ZVAL_COPY_VALUE(&av70[4], o56.raw());
-				zval z71;
+				zval z71 = {};
 				ZVAL_BOOL(&z71, k58);
 				ZVAL_COPY_VALUE(&av70[5], &z71);
 				ZVAL_COPY_VALUE(&av70[6], q61.raw());
@@ -588,7 +588,7 @@ namespace pgen::AnnotationsMethodsClassReflectionExtension {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z93;
+		zval z93 = {};
 		ZVAL_NULL(&z93);
 		ZVAL_COPY_VALUE(ret, &z93);
 		return true;

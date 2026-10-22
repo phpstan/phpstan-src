@@ -27,7 +27,7 @@ namespace pgen::StandaloneThrowExprVisitor {
 	 {
 		if (!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\Expression", 30)))) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -43,7 +43,7 @@ namespace pgen::StandaloneThrowExprVisitor {
 		}
 		if (!(pgrt::instanceOfClass(zv::Ref(p2).deref().raw(), pgrt::lookupClassQuiet(pg_site_2, "PhpParser\\Node\\Expr\\Throw_", 26)))) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -57,7 +57,7 @@ namespace pgen::StandaloneThrowExprVisitor {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_standalone_throw_expr_visitor, "expr", 4, o6.raw()))) return false;
 			p5 = o6.raw();
 		}
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, true);
 		zv::Val r8;
 		if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_4, zv::Ref(p5).deref().raw(), &pg_lit[0], &z7, r8.raw()))) return false;

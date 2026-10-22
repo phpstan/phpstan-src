@@ -81,7 +81,7 @@ namespace pgen::PipeTransformerVisitor {
 	 {
 		if (!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Expr\\BinaryOp\\Pipe", 33)))) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;

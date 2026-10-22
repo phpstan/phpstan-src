@@ -150,7 +150,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(l_isNull.raw()), &r2))) return;
 		if (r2) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY(return_value, &z3);
 				return;
@@ -160,7 +160,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		bool r4;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(l_isNull.raw()), &r4))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, !(r4));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -209,7 +209,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 					}
 					zval av13[2];
 					ZVAL_COPY_VALUE(&av13[0], q10.raw());
-					zval z14;
+					zval z14 = {};
 					ZVAL_BOOL(&z14, false);
 					ZVAL_COPY_VALUE(&av13[1], &z14);
 					zv::Val r15;
@@ -446,7 +446,6 @@ static void pg_closure_8(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\IssetHandler::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, zv::Ref(&captures[0]).deref().raw());
 		return;
@@ -457,7 +456,6 @@ static void pg_closure_9(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\IssetHandler::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, zv::Ref(&captures[0]).deref().raw());
 		return;
@@ -468,7 +466,6 @@ static void pg_closure_10(zval *captures, uint32_t argc, zval *argv, zval *retur
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\IssetHandler::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, zv::Ref(&captures[0]).deref().raw());
 		return;
@@ -1635,7 +1632,7 @@ namespace pgen::IssetHandler {
 						if (UNEXPECTED(!pgrt::callMethod(pg_site_13, p_nodeScopeResolver, "readStoredResult", "readstoredresult", 16, 2, av56, r55.raw()))) return false;
 					}
 					}
-					zval z57;
+					zval z57 = {};
 					ZVAL_BOOL(&z57, false);
 					zv::Val r58;
 					if (EXPECTED(Z_TYPE_P(r55.raw()) == IS_OBJECT)) {

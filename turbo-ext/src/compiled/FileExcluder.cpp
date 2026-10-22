@@ -112,7 +112,7 @@ namespace pgen::FileExcluder {
 								 {
 									zv::Val o28 = zv::Val::copyOf(zv::Ref(l_normalized.raw()));
 									bool k29 = true;
-									zval z31;
+									zval z31 = {};
 									ZVAL_BOOL(&z31, k29);
 									zv::Val o30 = zv::Val::copyOf(zv::Ref(&z31));
 									zval *w32 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::literalAnalyseFilesExcludes)).deref().raw();

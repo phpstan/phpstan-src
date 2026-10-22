@@ -150,7 +150,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 				 {
 					bool k17 = true;
-					zval z19;
+					zval z19 = {};
 					ZVAL_BOOL(&z19, k17);
 					zv::Val o18 = zv::Val::copyOf(zv::Ref(&z19));
 					zv::Val o21 = zv::Val::copyOf(zv::Ref(p_file));
@@ -619,7 +619,7 @@ namespace pgen::DependencyResolver {
 		}
 		if (b26) {
 			 {
-				zval z31;
+				zval z31 = {};
 				ZVAL_NULL(&z31);
 				ZVAL_COPY_VALUE(ret, &z31);
 				return true;
@@ -1174,7 +1174,7 @@ namespace pgen::DependencyResolver {
 				}
 				 {
 					zval av28[1];
-					zval z29;
+					zval z29 = {};
 					ZVAL_BOOL(&z29, true);
 					ZVAL_COPY_VALUE(&av28[0], &z29);
 					zv::Val r30;

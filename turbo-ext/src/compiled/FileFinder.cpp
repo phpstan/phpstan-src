@@ -36,7 +36,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(p1 == NULL)) return;
 		bool r2;
 		if (UNEXPECTED(!pgen::FileExcluder::m_isExcludedFromAnalysing(Z_OBJ_P(p1), p_file, &r2))) return;
-		zval z3;
+		zval z3 = {};
 		ZVAL_BOOL(&z3, !(r2));
 		ZVAL_COPY(return_value, &z3);
 		return;
@@ -281,7 +281,7 @@ namespace pgen::FileFinder {
 		if (UNEXPECTED(!pgrt::arrayValues(r51.raw(), r52.raw()))) return false;
 		zval av53[2];
 		ZVAL_COPY_VALUE(&av53[0], r52.raw());
-		zval z54;
+		zval z54 = {};
 		ZVAL_BOOL(&z54, l_onlyFiles);
 		ZVAL_COPY_VALUE(&av53[1], &z54);
 		zend_class_entry *ce55 = pgrt::lookupClass(pg_site_6, "PHPStan\\File\\FileFinderResult", 29);

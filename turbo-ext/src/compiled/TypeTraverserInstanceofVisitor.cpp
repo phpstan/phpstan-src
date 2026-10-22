@@ -44,7 +44,7 @@ namespace pgen::TypeTraverserInstanceofVisitor {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::TypeTraverserInstanceofVisitor::slot::depth, &o2);
 	}
 	 {
-		zval z3;
+		zval z3 = {};
 		ZVAL_NULL(&z3);
 		ZVAL_COPY_VALUE(ret, &z3);
 		return true;
@@ -66,13 +66,13 @@ namespace pgen::TypeTraverserInstanceofVisitor {
 		}
 		if (b1) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_BOOL(&z3, true);
 				zv::Val r4;
 				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_1, p_node, &pg_lit[0], &z3, r4.raw()))) return false;
 			}
 			 {
-				zval z5;
+				zval z5 = {};
 				ZVAL_NULL(&z5);
 				ZVAL_COPY_VALUE(ret, &z5);
 				return true;
@@ -135,7 +135,7 @@ namespace pgen::TypeTraverserInstanceofVisitor {
 		}
 	}
 	 {
-		zval z23;
+		zval z23 = {};
 		ZVAL_NULL(&z23);
 		ZVAL_COPY_VALUE(ret, &z23);
 		return true;
@@ -204,7 +204,7 @@ namespace pgen::TypeTraverserInstanceofVisitor {
 		}
 	}
 	 {
-		zval z18;
+		zval z18 = {};
 		ZVAL_NULL(&z18);
 		ZVAL_COPY_VALUE(ret, &z18);
 		return true;

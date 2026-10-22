@@ -153,7 +153,6 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::{closure}", argc, 0); return; }
 	zval this_zv;
 	ZVAL_OBJ(&this_zv, Z_OBJ(captures[1]));
 	(void) this_zv;
@@ -181,7 +180,6 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Reflection\\BetterReflection\\BetterReflectionProvider::{closure}", argc, 0); return; }
 	zval this_zv;
 	ZVAL_OBJ(&this_zv, Z_OBJ(captures[1]));
 	(void) this_zv;
@@ -328,7 +326,7 @@ static void pg_closure_7(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 			}
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_BOOL(&z6, true);
 				ZVAL_COPY(return_value, &z6);
 				return;
@@ -372,7 +370,7 @@ static void pg_closure_7(zval *captures, uint32_t argc, zval *argv, zval *return
 				ZVAL_COPY_VALUE(&av12[0], p_name);
 				zv::Val r13;
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_81, p11, "isPresentFunction", "ispresentfunction", 17, 1, av12, r13.raw(), NULL))) return;
-				zval z14;
+				zval z14 = {};
 				ZVAL_BOOL(&z14, !(Z_TYPE_P(r13.raw()) == (false ? IS_TRUE : IS_FALSE)));
 				ZVAL_COPY(return_value, &z14);
 				return;
@@ -380,7 +378,7 @@ static void pg_closure_7(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z15;
+		zval z15 = {};
 		ZVAL_BOOL(&z15, false);
 		ZVAL_COPY(return_value, &z15);
 		return;
@@ -443,7 +441,7 @@ static void pg_closure_9(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 			}
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_BOOL(&z6, true);
 				ZVAL_COPY(return_value, &z6);
 				return;
@@ -480,7 +478,7 @@ static void pg_closure_9(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 	}
 	 {
-		zval z8;
+		zval z8 = {};
 		ZVAL_BOOL(&z8, false);
 		ZVAL_COPY(return_value, &z8);
 		return;
@@ -808,10 +806,10 @@ namespace pgen::BetterReflectionProvider {
 		zval av40[5];
 		ZVAL_COPY_VALUE(&av40[0], r35.raw());
 		ZVAL_COPY_VALUE(&av40[1], o36.raw());
-		zval z41;
+		zval z41 = {};
 		ZVAL_NULL(&z41);
 		ZVAL_COPY_VALUE(&av40[2], &z41);
-		zval z42;
+		zval z42 = {};
 		ZVAL_NULL(&z42);
 		ZVAL_COPY_VALUE(&av40[3], &z42);
 		ZVAL_COPY_VALUE(&av40[4], cl39.raw());
@@ -1050,7 +1048,7 @@ namespace pgen::BetterReflectionProvider {
 	}
 	 {
 		zv::Val o24 = zv::Val::copyOf(zv::Ref(p_classNode));
-		zval z25;
+		zval z25 = {};
 		ZVAL_NULL(&z25);
 		if (UNEXPECTED(!pgrt::writePropertyGeneric(o24.raw(), pt_ce_better_reflection_provider, &pg_lit[0], &z25))) return false;
 	}
@@ -1095,7 +1093,7 @@ namespace pgen::BetterReflectionProvider {
 		ZVAL_COPY_VALUE(&av42[2], l_scopeFile.raw());
 		zv::Val n37;
 		if (UNEXPECTED(!pgrt::newObject(nce38, 3, av42, n37.raw(), NULL))) return false;
-		zval z43;
+		zval z43 = {};
 		ZVAL_NULL(&z43);
 		zv::Val r44;
 		if (UNEXPECTED(!pgen::BetterReflectionClass::m_createFromNode(o35.raw(), o36.raw(), n37.raw(), &z43, r44.raw()))) return false;
@@ -1256,7 +1254,7 @@ namespace pgen::BetterReflectionProvider {
 		ZVAL_COPY_VALUE(&av91[0], o83.raw());
 		ZVAL_COPY_VALUE(&av91[1], n84.raw());
 		ZVAL_COPY_VALUE(&av91[2], o87.raw());
-		zval z92;
+		zval z92 = {};
 		ZVAL_NULL(&z92);
 		ZVAL_COPY_VALUE(&av91[3], &z92);
 		ZVAL_COPY_VALUE(&av91[4], cl90.raw());
@@ -1677,9 +1675,9 @@ namespace pgen::BetterReflectionProvider {
 				}
 				}
 				if (UNEXPECTED(!(Z_TYPE_P(r48.raw()) == IS_STRING || Z_TYPE_P(r48.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 1, "fileName", "?string", r48.raw()); return false; }
-				zval z50;
+				zval z50 = {};
 				ZVAL_NULL(&z50);
-				zval z51;
+				zval z51 = {};
 				ZVAL_NULL(&z51);
 				if (UNEXPECTED(!(Z_TYPE_P(l_docComment.raw()) == IS_STRING || Z_TYPE_P(l_docComment.raw()) == IS_NULL))) { pgrt::throwArgumentType("PHPStan\\Type\\FileTypeMapper::getResolvedPhpDoc", 5, "docComment", "?string", l_docComment.raw()); return false; }
 				zv::Val r52;
@@ -2108,16 +2106,16 @@ namespace pgen::BetterReflectionProvider {
 		ZVAL_COPY_VALUE(&av169[3], q135.raw());
 		ZVAL_COPY_VALUE(&av169[4], q138.raw());
 		ZVAL_COPY_VALUE(&av169[5], o141.raw());
-		zval z170;
+		zval z170 = {};
 		ZVAL_BOOL(&z170, k142);
 		ZVAL_COPY_VALUE(&av169[6], &z170);
-		zval z171;
+		zval z171 = {};
 		ZVAL_BOOL(&z171, k143);
 		ZVAL_COPY_VALUE(&av169[7], &z171);
 		ZVAL_COPY_VALUE(&av169[8], q145.raw());
 		ZVAL_COPY_VALUE(&av169[9], o148.raw());
 		ZVAL_COPY_VALUE(&av169[10], o149.raw());
-		zval z172;
+		zval z172 = {};
 		ZVAL_BOOL(&z172, k150);
 		ZVAL_COPY_VALUE(&av169[11], &z172);
 		ZVAL_COPY_VALUE(&av169[12], o151.raw());
@@ -2485,11 +2483,11 @@ namespace pgen::BetterReflectionProvider {
 			 {
 				zval *p54 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::BetterReflectionProvider::slot::fileTypeMapper, "fileTypeMapper");
 				if (UNEXPECTED(p54 == NULL)) return false;
-				zval z55;
+				zval z55 = {};
 				ZVAL_NULL(&z55);
-				zval z56;
+				zval z56 = {};
 				ZVAL_NULL(&z56);
-				zval z57;
+				zval z57 = {};
 				ZVAL_NULL(&z57);
 				zv::Val r58;
 				if (UNEXPECTED(!pgen::FileTypeMapper::m_getResolvedPhpDoc(Z_OBJ_P(p54), l_fileName.raw(), &z55, &z56, &z57, l_docComment.raw(), r58.raw()))) return false;
@@ -2615,7 +2613,7 @@ namespace pgen::BetterReflectionProvider {
 										zval z93;
 										ZVAL_LONG(&z93, ci91);
 										ZVAL_COPY_VALUE(&av92[0], &z93);
-										zval z94;
+										zval z94 = {};
 										ZVAL_NULL(&z94);
 										ZVAL_COPY_VALUE(&av92[1], &z94);
 										zv::Val r95;
@@ -2728,7 +2726,7 @@ namespace pgen::BetterReflectionProvider {
 		ZVAL_COPY_VALUE(&av122[3], r110.raw());
 		ZVAL_COPY_VALUE(&av122[4], o111.raw());
 		ZVAL_COPY_VALUE(&av122[5], r120.raw());
-		zval z123;
+		zval z123 = {};
 		ZVAL_BOOL(&z123, (Z_TYPE_P(r121.raw()) == IS_TRUE));
 		ZVAL_COPY_VALUE(&av122[6], &z123);
 		zend_class_entry *ce124 = pgrt::lookupClass(pg_site_112, "PHPStan\\Reflection\\Constant\\RuntimeConstantReflection", 53);
@@ -2985,7 +2983,7 @@ namespace pgen::BetterReflectionProvider {
 		}
 	}
 	 {
-		zval z15;
+		zval z15 = {};
 		ZVAL_NULL(&z15);
 		ZVAL_COPY_VALUE(ret, &z15);
 		return true;

@@ -209,7 +209,7 @@ namespace pgen::BetterReflectionParameter {
 	}
 	 {
 		bool k5 = p_isOptional;
-		zval z6;
+		zval z6 = {};
 		ZVAL_BOOL(&z6, k5);
 		zval o7;
 		ZVAL_COPY(&o7, &z6);
@@ -225,7 +225,7 @@ namespace pgen::BetterReflectionParameter {
 				p9 = o10.raw();
 			}
 			zval av11[2];
-			zval z12;
+			zval z12 = {};
 			ZVAL_BOOL(&z12, pgrt::instanceOfClass(zv::Ref(p9).deref().raw(), pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Expr\\Variable", 28)));
 			ZVAL_COPY_VALUE(&av11[0], &z12);
 			ZVAL_COPY_VALUE(&av11[1], &pg_lit[0]);
@@ -252,7 +252,7 @@ namespace pgen::BetterReflectionParameter {
 			}
 			uint8_t ty20 = Z_TYPE_P(zv::Ref(zv::Ref(p18).deref().raw()).deref().raw());
 			zval av21[2];
-			zval z22;
+			zval z22 = {};
 			ZVAL_BOOL(&z22, (ty20 == IS_STRING));
 			ZVAL_COPY_VALUE(&av21[0], &z22);
 			ZVAL_COPY_VALUE(&av21[1], &pg_lit[1]);
@@ -282,7 +282,7 @@ namespace pgen::BetterReflectionParameter {
 		zv::Val as30 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
 			zval av31[2];
-			zval z32;
+			zval z32 = {};
 			ZVAL_BOOL(&z32, !zend_is_identical(l_name.raw(), &pg_lit[2]));
 			ZVAL_COPY_VALUE(&av31[0], &z32);
 			ZVAL_COPY_VALUE(&av31[1], &pg_lit[3]);
@@ -318,7 +318,7 @@ namespace pgen::BetterReflectionParameter {
 			p41 = o42.raw();
 		}
 		bool k43 = !(Z_LVAL_P(zv::Ref(p41).deref().raw()) == 0);
-		zval z44;
+		zval z44 = {};
 		ZVAL_BOOL(&z44, k43);
 		zval o45;
 		ZVAL_COPY(&o45, &z44);
@@ -339,7 +339,7 @@ namespace pgen::BetterReflectionParameter {
 			p48 = o49.raw();
 		}
 		bool k50 = (Z_TYPE_P(zv::Ref(p48).deref().raw()) == IS_TRUE);
-		zval z51;
+		zval z51 = {};
 		ZVAL_BOOL(&z51, k50);
 		zval o52;
 		ZVAL_COPY(&o52, &z51);
@@ -353,7 +353,7 @@ namespace pgen::BetterReflectionParameter {
 			p53 = o54.raw();
 		}
 		bool k55 = (Z_TYPE_P(zv::Ref(p53).deref().raw()) == IS_TRUE);
-		zval z56;
+		zval z56 = {};
 		ZVAL_BOOL(&z56, k55);
 		zval o57;
 		ZVAL_COPY(&o57, &z56);
@@ -461,7 +461,7 @@ namespace pgen::BetterReflectionParameter {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z85;
+					zval z85 = {};
 					ZVAL_NULL(&z85);
 					zval o86;
 					ZVAL_COPY(&o86, &z85);
@@ -517,7 +517,7 @@ namespace pgen::BetterReflectionParameter {
 				l_exception = zv::Val::copyOf(zv::Ref(&exception));
 				zval_ptr_dtor(&exception);
 				 {
-					zval z98;
+					zval z98 = {};
 					ZVAL_NULL(&z98);
 					zval o99;
 					ZVAL_COPY(&o99, &z98);
@@ -742,7 +742,7 @@ namespace pgen::BetterReflectionParameter {
 		 {
 			 {
 				zv::Val o39 = zv::Val::copyOf(zv::Ref(l_ref.raw()));
-				zval z40;
+				zval z40 = {};
 				ZVAL_NULL(&z40);
 				if (UNEXPECTED(!pgrt::writePropertyGeneric(o39.raw(), pt_ce_better_reflection_parameter, &pg_lit[8], &z40))) return false;
 			}
@@ -962,7 +962,7 @@ namespace pgen::BetterReflectionParameter {
 		zval z4;
 		ZVAL_LONG(&z4, p_parameterIndex);
 		ZVAL_COPY_VALUE(&av3[3], &z4);
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, p_isOptional);
 		ZVAL_COPY_VALUE(&av3[4], &z5);
 		zv::Val n1;
@@ -1025,7 +1025,7 @@ namespace pgen::BetterReflectionParameter {
 		pgrt::writeSlot(Z_OBJ_P(o10.raw()), ptdecl::BetterReflectionParameter::slot::attributes, &o16);
 	}
 	 {
-		zval z17;
+		zval z17 = {};
 		ZVAL_NULL(&z17);
 		zval o18;
 		ZVAL_COPY(&o18, &z17);
@@ -1169,7 +1169,7 @@ namespace pgen::BetterReflectionParameter {
 		}
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
@@ -1197,7 +1197,7 @@ namespace pgen::BetterReflectionParameter {
 		}
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
@@ -1376,7 +1376,7 @@ namespace pgen::BetterReflectionParameter {
 	 {
 		if (Z_TYPE_P(l_type.raw()) == IS_NULL) {
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -1403,7 +1403,7 @@ namespace pgen::BetterReflectionParameter {
 				b6 = pgrt::instanceOfClass(l_type.raw(), pgrt::lookupClassQuiet(pg_site_71, "PhpParser\\Node\\IntersectionType", 31));
 			}
 			zval av10[2];
-			zval z11;
+			zval z11 = {};
 			ZVAL_BOOL(&z11, b6);
 			ZVAL_COPY_VALUE(&av10[0], &z11);
 			ZVAL_COPY_VALUE(&av10[1], &pg_lit[24]);
@@ -1475,7 +1475,7 @@ namespace pgen::BetterReflectionParameter {
 		ZVAL_COPY_VALUE(&av33[0], p32);
 		ZVAL_COPY_VALUE(&av33[1], &this_zv);
 		ZVAL_COPY_VALUE(&av33[2], l_type.raw());
-		zval z34;
+		zval z34 = {};
 		ZVAL_BOOL(&z34, l_allowsNull);
 		ZVAL_COPY_VALUE(&av33[3], &z34);
 		zend_class_entry *ce35 = pgrt::lookupClass(pg_site_80, "PHPStan\\BetterReflection\\Reflection\\ReflectionType", 50);

@@ -630,7 +630,7 @@ namespace pgen::ReflectionMethodConstructorThrowTypeExtension {
 		}
 	}
 	 {
-		zval z108;
+		zval z108 = {};
 		ZVAL_NULL(&z108);
 		ZVAL_COPY_VALUE(ret, &z108);
 		return true;

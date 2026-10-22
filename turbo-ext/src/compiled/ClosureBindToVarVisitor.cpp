@@ -95,7 +95,7 @@ namespace pgen::ClosureBindToVarVisitor {
 		}
 	}
 	 {
-		zval z21;
+		zval z21 = {};
 		ZVAL_NULL(&z21);
 		ZVAL_COPY_VALUE(ret, &z21);
 		return true;

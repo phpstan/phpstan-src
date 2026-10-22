@@ -38,7 +38,6 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Type\\IsSuperTypeOfResult::{closure}", argc, 0); return; }
 	 {
 		zv::Val r1;
 		if (UNEXPECTED(!pgrt::callValue(zv::Ref(&captures[1]).deref().raw(), 0, NULL, r1.raw(), NULL))) return;

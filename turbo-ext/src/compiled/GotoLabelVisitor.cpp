@@ -80,7 +80,7 @@ namespace pgen::GotoLabelVisitor {
 	}
 	 {
 		bool k7 = false;
-		zval z8;
+		zval z8 = {};
 		ZVAL_BOOL(&z8, k7);
 		zval o9;
 		ZVAL_COPY(&o9, &z8);
@@ -90,7 +90,7 @@ namespace pgen::GotoLabelVisitor {
 		if (UNEXPECTED(!pgen::GotoLabelVisitor::m_pushScope(Z_OBJ_P(&this_zv)))) return false;
 	}
 	 {
-		zval z11;
+		zval z11 = {};
 		ZVAL_NULL(&z11);
 		ZVAL_COPY_VALUE(ret, &z11);
 		return true;
@@ -154,7 +154,7 @@ namespace pgen::GotoLabelVisitor {
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::GotoLabelVisitor::slot::subtreeData, &o17);
 	}
 	 {
-		zval z18;
+		zval z18 = {};
 		ZVAL_NULL(&z18);
 		ZVAL_COPY_VALUE(ret, &z18);
 		return true;
@@ -172,7 +172,7 @@ namespace pgen::GotoLabelVisitor {
 		if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_1, "PhpParser\\Node\\Stmt\\Label", 25))) {
 			 {
 				bool k1 = true;
-				zval z2;
+				zval z2 = {};
 				ZVAL_BOOL(&z2, k1);
 				zval o3;
 				ZVAL_COPY(&o3, &z2);
@@ -216,7 +216,7 @@ namespace pgen::GotoLabelVisitor {
 				zv::Ref(e14).assign(std::move(o10));
 			}
 			 {
-				zval z15;
+				zval z15 = {};
 				ZVAL_NULL(&z15);
 				ZVAL_COPY_VALUE(ret, &z15);
 				return true;
@@ -227,7 +227,7 @@ namespace pgen::GotoLabelVisitor {
 		if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_4, "PhpParser\\Node\\Stmt\\Goto_", 25))) {
 			 {
 				bool k16 = true;
-				zval z17;
+				zval z17 = {};
 				ZVAL_BOOL(&z17, k16);
 				zval o18;
 				ZVAL_COPY(&o18, &z17);
@@ -261,7 +261,7 @@ namespace pgen::GotoLabelVisitor {
 				{ zval v = o22.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w23), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 			}
 			 {
-				zval z26;
+				zval z26 = {};
 				ZVAL_NULL(&z26);
 				ZVAL_COPY_VALUE(ret, &z26);
 				return true;
@@ -278,7 +278,7 @@ namespace pgen::GotoLabelVisitor {
 		}
 	}
 	 {
-		zval z29;
+		zval z29 = {};
 		ZVAL_NULL(&z29);
 		ZVAL_COPY_VALUE(ret, &z29);
 		return true;
@@ -314,7 +314,7 @@ namespace pgen::GotoLabelVisitor {
 				}
 			}
 			 {
-				zval z4;
+				zval z4 = {};
 				ZVAL_NULL(&z4);
 				ZVAL_COPY_VALUE(ret, &z4);
 				return true;
@@ -353,7 +353,7 @@ namespace pgen::GotoLabelVisitor {
 				zv::Ref(e15).assign(std::move(o13));
 			}
 			 {
-				zval z16;
+				zval z16 = {};
 				ZVAL_NULL(&z16);
 				ZVAL_COPY_VALUE(ret, &z16);
 				return true;
@@ -389,7 +389,7 @@ namespace pgen::GotoLabelVisitor {
 				zv::Ref(e27).assign(std::move(o25));
 			}
 			 {
-				zval z28;
+				zval z28 = {};
 				ZVAL_NULL(&z28);
 				ZVAL_COPY_VALUE(ret, &z28);
 				return true;
@@ -718,7 +718,7 @@ namespace pgen::GotoLabelVisitor {
 		}
 	}
 	 {
-		zval z126;
+		zval z126 = {};
 		ZVAL_NULL(&z126);
 		ZVAL_COPY_VALUE(ret, &z126);
 		return true;
@@ -856,7 +856,7 @@ namespace pgen::GotoLabelVisitor {
 												zv::Val et46;
 												zval *e45 = pgrt::dimRead(p_stmts, l_labelIdx, et46.raw());
 												if (UNEXPECTED(e45 == NULL)) return false;
-												zval z47;
+												zval z47 = {};
 												ZVAL_BOOL(&z47, true);
 												zv::Val r48;
 												if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_15, zv::Ref(e45).deref().raw(), &pg_lit[2], &z47, r48.raw()))) return false;
@@ -1018,7 +1018,7 @@ namespace pgen::GotoLabelVisitor {
 	 {
 		if (pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_21, "PhpParser\\Node\\Stmt\\ClassLike", 29))) {
 			 {
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(ret, &z9);
 				return true;
@@ -1111,7 +1111,7 @@ namespace pgen::GotoLabelVisitor {
 		}
 	}
 	 {
-		zval z31;
+		zval z31 = {};
 		ZVAL_NULL(&z31);
 		ZVAL_COPY_VALUE(ret, &z31);
 		return true;
@@ -1250,7 +1250,7 @@ namespace pgen::GotoLabelVisitor {
 					if (UNEXPECTED(EG(exception))) return false;
 					if (!((is14 != NULL && Z_TYPE_P(is14) > IS_NULL))) {
 						 {
-							zval z20;
+							zval z20 = {};
 							ZVAL_BOOL(&z20, true);
 							zv::Val r21;
 							if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_42, l_goto, &pg_lit[5], &z20, r21.raw()))) return false;
@@ -1260,7 +1260,7 @@ namespace pgen::GotoLabelVisitor {
 						 {
 							zv::Val o22 = zv::Val::copyOf(zv::Ref(l_gotoName.raw()));
 							bool k23 = true;
-							zval z25;
+							zval z25 = {};
 							ZVAL_BOOL(&z25, k23);
 							zv::Val o24 = zv::Val::copyOf(zv::Ref(&z25));
 							zval *w26 = zv::Ref(l_usedLabelNames.raw()).deref().raw();
@@ -1296,7 +1296,7 @@ namespace pgen::GotoLabelVisitor {
 					zv::Val ist38;
 					zval *is35 = is36 == NULL ? NULL : pgrt::dimIs(is36, o37.raw(), ist38.raw());
 					if (UNEXPECTED(EG(exception))) return false;
-					zval z39;
+					zval z39 = {};
 					ZVAL_BOOL(&z39, (is35 != NULL && Z_TYPE_P(is35) > IS_NULL));
 					zv::Val r40;
 					if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_43, l_label, &pg_lit[6], &z39, r40.raw()))) return false;

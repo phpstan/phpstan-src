@@ -185,7 +185,7 @@ namespace pgen::GlobalHandler {
 					}
 					}
 					bool k19 = bo17;
-					zval z20;
+					zval z20 = {};
 					ZVAL_BOOL(&z20, k19);
 					zv::Val r21;
 					 {
@@ -234,7 +234,7 @@ namespace pgen::GlobalHandler {
 					zval av28[3];
 					ZVAL_COPY_VALUE(&av28[0], l_var);
 					ZVAL_COPY_VALUE(&av28[1], p_storage);
-					zval z29;
+					zval z29 = {};
 					ZVAL_BOOL(&z29, false);
 					ZVAL_COPY_VALUE(&av28[2], &z29);
 					zend_class_entry *ce30 = pgrt::lookupClass(pg_site_8, "PHPStan\\Analyser\\VariableFlowBuilder", 36);

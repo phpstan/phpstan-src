@@ -204,7 +204,7 @@ namespace pgen::MethodCallableNodeHandler {
 		}
 		}
 		bool k6 = bo4;
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, k6);
 		zv::Val r8;
 		 {
@@ -382,7 +382,7 @@ namespace pgen::MethodCallableNodeHandler {
 				}
 				}
 				bool k37 = bo35;
-				zval z38;
+				zval z38 = {};
 				ZVAL_BOOL(&z38, k37);
 				zv::Val r39;
 				 {
@@ -897,7 +897,7 @@ namespace pgen::MethodCallableNodeHandler {
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(p_scope, pt_ce_method_callable_node_handler, "nativeTypesPromoted", 19, o7.raw()))) return false;
 			p6 = o7.raw();
 		}
-		zval z8;
+		zval z8 = {};
 		ZVAL_BOOL(&z8, (Z_TYPE_P(zv::Ref(p6).deref().raw()) == IS_TRUE));
 		zv::Val r9;
 		if (EXPECTED(Z_TYPE_P(p_varResult) == IS_OBJECT)) {
@@ -990,7 +990,7 @@ namespace pgen::MethodCallableNodeHandler {
 			p26 = o27.raw();
 		}
 		bool k28 = (Z_TYPE_P(zv::Ref(p26).deref().raw()) == IS_TRUE);
-		zval z29;
+		zval z29 = {};
 		ZVAL_BOOL(&z29, k28);
 		zv::Val r30;
 		if (EXPECTED(Z_TYPE_P(o19.raw()) == IS_OBJECT)) {

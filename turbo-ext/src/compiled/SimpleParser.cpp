@@ -148,7 +148,7 @@ namespace pgen::SimpleParser {
 				}
 				zval av11[2];
 				ZVAL_COPY_VALUE(&av11[0], r10.raw());
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				ZVAL_COPY_VALUE(&av11[1], &z12);
 				zend_class_entry *ce13 = pgrt::lookupClass(pg_site_0, "PHPStan\\Parser\\ParserErrorsException", 36);
@@ -224,7 +224,7 @@ namespace pgen::SimpleParser {
 					{ zval v = o27.take(); zend_hash_next_index_insert(Z_ARRVAL_P(arr26.raw()), &v); }
 					zval av28[2];
 					ZVAL_COPY_VALUE(&av28[0], arr26.raw());
-					zval z29;
+					zval z29 = {};
 					ZVAL_NULL(&z29);
 					ZVAL_COPY_VALUE(&av28[1], &z29);
 					zend_class_entry *ce30 = pgrt::lookupClass(pg_site_0, "PHPStan\\Parser\\ParserErrorsException", 36);

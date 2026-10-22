@@ -230,7 +230,7 @@ namespace pgen::EvalHandler {
 		}
 		zval av21[2];
 		ZVAL_COPY_VALUE(&av21[0], r20.raw());
-		zval z22;
+		zval z22 = {};
 		ZVAL_BOOL(&z22, true);
 		ZVAL_COPY_VALUE(&av21[1], &z22);
 		zv::Val r23;

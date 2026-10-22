@@ -21,7 +21,7 @@ namespace pgen::TraitCollectingVisitor {
 	 {
 		if (!(pgrt::instanceOfClass(p_node, pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\Stmt\\Trait_", 26)))) {
 			 {
-				zval z1;
+				zval z1 = {};
 				ZVAL_NULL(&z1);
 				ZVAL_COPY_VALUE(ret, &z1);
 				return true;
@@ -36,7 +36,7 @@ namespace pgen::TraitCollectingVisitor {
 		{ zval v = o2.take(); if (UNEXPECTED(zend_hash_next_index_insert(Z_ARRVAL_P(w3), &v) == NULL)) { zval_ptr_dtor(&v); zend_throw_error(NULL, "Cannot add element to the array as the next element is already occupied"); return false; } }
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;

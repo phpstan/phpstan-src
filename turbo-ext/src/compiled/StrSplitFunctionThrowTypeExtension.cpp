@@ -147,7 +147,7 @@ namespace pgen::StrSplitFunctionThrowTypeExtension {
 		zval z23;
 		ZVAL_LONG(&z23, 1);
 		ZVAL_COPY_VALUE(&av22[0], &z23);
-		zval z24;
+		zval z24 = {};
 		ZVAL_NULL(&z24);
 		ZVAL_COPY_VALUE(&av22[1], &z24);
 		zv::Val r25;

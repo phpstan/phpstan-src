@@ -535,7 +535,7 @@ namespace pgen::PhpMethodFromParserNodeReflection {
 	 {
 		if (!(pgrt::instanceOfClass(l_function.raw(), pgrt::lookupClassQuiet(pg_site_0, "PhpParser\\Node\\PropertyHook", 27)))) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;

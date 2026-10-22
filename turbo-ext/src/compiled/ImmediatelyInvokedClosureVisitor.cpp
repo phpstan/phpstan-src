@@ -65,7 +65,7 @@ namespace pgen::ImmediatelyInvokedClosureVisitor {
 					if (UNEXPECTED(!pgrt::readPropertyGeneric(p_node, pt_ce_immediately_invoked_closure_visitor, "name", 4, o10.raw()))) return false;
 					p9 = o10.raw();
 				}
-				zval z11;
+				zval z11 = {};
 				ZVAL_BOOL(&z11, true);
 				zv::Val r12;
 				if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_7, zv::Ref(p9).deref().raw(), &pg_lit[0], &z11, r12.raw()))) return false;
@@ -89,7 +89,7 @@ namespace pgen::ImmediatelyInvokedClosureVisitor {
 		}
 	}
 	 {
-		zval z18;
+		zval z18 = {};
 		ZVAL_NULL(&z18);
 		ZVAL_COPY_VALUE(ret, &z18);
 		return true;

@@ -349,7 +349,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		bool r3;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(vd1.raw()), &r3))) return;
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, r3);
 		ZVAL_COPY(return_value, &z4);
 		return;
@@ -411,7 +411,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 				}
 				bool k9 = true;
-				zval z11;
+				zval z11 = {};
 				ZVAL_BOOL(&z11, k9);
 				zv::Val o10 = zv::Val::copyOf(zv::Ref(&z11));
 				zval *w12 = zv::Ref(&captures[0]).deref().raw();
@@ -472,7 +472,7 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 				}
 				}
 				bool k4 = true;
-				zval z6;
+				zval z6 = {};
 				ZVAL_BOOL(&z6, k4);
 				zv::Val o5 = zv::Val::copyOf(zv::Ref(&z6));
 				zval *w7 = zv::Ref(&captures[0]).deref().raw();
@@ -1446,7 +1446,7 @@ namespace pgen::FunctionCallParametersCheck {
 		}
 		bool b196 = b197;
 		if (b196) {
-			zval z201;
+			zval z201 = {};
 			ZVAL_BOOL(&z201, false);
 			zv::Val r202;
 			if (UNEXPECTED(!pgrt::nodeGetAttribute(pg_site_61, p_funcCall, &pg_lit[4], &z201, r202.raw()))) return false;
@@ -1992,11 +1992,11 @@ namespace pgen::FunctionCallParametersCheck {
 									l_rememberTypes = b370;
 								}
 								 {
-									zval z371;
+									zval z371 = {};
 									ZVAL_NULL(&z371);
-									zval z372;
+									zval z372 = {};
 									ZVAL_NULL(&z372);
-									zval z373;
+									zval z373 = {};
 									ZVAL_BOOL(&z373, l_rememberTypes);
 									zv::Val r374;
 									if (EXPECTED(Z_TYPE_P(l_scope.raw()) == IS_OBJECT && Z_OBJCE_P(l_scope.raw()) == pt_ce_mutating_scope)) {
@@ -3772,7 +3772,7 @@ namespace pgen::FunctionCallParametersCheck {
 			zval z11;
 			ZVAL_LONG(&z11, (zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_parameters.raw())));
 			ZVAL_COPY_VALUE(&av9[1], &z11);
-			zval z12;
+			zval z12 = {};
 			ZVAL_NULL(&z12);
 			ZVAL_COPY_VALUE(&av9[2], &z12);
 			zv::Val r13;
@@ -4241,7 +4241,7 @@ namespace pgen::FunctionCallParametersCheck {
 								 {
 									zv::Val o164 = zv::Val::copyOf(zv::Ref(l_argumentName.raw()));
 									bool k165 = true;
-									zval z167;
+									zval z167 = {};
 									ZVAL_BOOL(&z167, k165);
 									zv::Val o166 = zv::Val::copyOf(zv::Ref(&z167));
 									zval *w168 = zv::Ref(l_namedArgumentsForVariadicParameter.raw()).deref().raw();
@@ -4704,7 +4704,7 @@ namespace pgen::FunctionCallParametersCheck {
 				if (Z_TYPE_P(o4.raw()) == IS_STRING) ia5 = zend_string_equals(Z_STR_P(o4.raw()), Z_STR_P(&pg_lit[42])) || zend_string_equals(Z_STR_P(o4.raw()), Z_STR_P(&pg_lit[43])) || zend_string_equals(Z_STR_P(o4.raw()), Z_STR_P(&pg_lit[44]));
 				if (ia5) {
 					 {
-						zval z6;
+						zval z6 = {};
 						ZVAL_NULL(&z6);
 						ZVAL_COPY_VALUE(ret, &z6);
 						return true;
@@ -4746,7 +4746,7 @@ namespace pgen::FunctionCallParametersCheck {
 				}
 				if (!((Z_TYPE_P(vd11.raw()) == IS_TRUE))) {
 					 {
-						zval z17;
+						zval z17 = {};
 						ZVAL_NULL(&z17);
 						ZVAL_COPY_VALUE(ret, &z17);
 						return true;
@@ -4802,7 +4802,7 @@ namespace pgen::FunctionCallParametersCheck {
 				}
 				if (!(pgrt::instanceOfClass(zv::Ref(p27).deref().raw(), pgrt::lookupClassQuiet(pg_site_272, "PhpParser\\Node\\Name", 19)))) {
 					 {
-						zval z29;
+						zval z29 = {};
 						ZVAL_NULL(&z29);
 						ZVAL_COPY_VALUE(ret, &z29);
 						return true;
@@ -4818,7 +4818,7 @@ namespace pgen::FunctionCallParametersCheck {
 				}
 				if (!(pgrt::instanceOfClass(zv::Ref(p30).deref().raw(), pgrt::lookupClassQuiet(pg_site_274, "PhpParser\\Node\\Identifier", 25)))) {
 					 {
-						zval z32;
+						zval z32 = {};
 						ZVAL_NULL(&z32);
 						ZVAL_COPY_VALUE(ret, &z32);
 						return true;
@@ -4877,7 +4877,7 @@ namespace pgen::FunctionCallParametersCheck {
 				}
 				if (!((Z_TYPE_P(vd40.raw()) == IS_TRUE))) {
 					 {
-						zval z46;
+						zval z46 = {};
 						ZVAL_NULL(&z46);
 						ZVAL_COPY_VALUE(ret, &z46);
 						return true;
@@ -4929,7 +4929,7 @@ namespace pgen::FunctionCallParametersCheck {
 				if (UNEXPECTED(!pgrt::callMethod(pg_site_281, l_classReflection.raw(), "hasConstant", "hasconstant", 11, 1, av57, r58.raw(), NULL))) return false;
 				if (!((Z_TYPE_P(r58.raw()) == IS_TRUE))) {
 					 {
-						zval z59;
+						zval z59 = {};
 						ZVAL_NULL(&z59);
 						ZVAL_COPY_VALUE(ret, &z59);
 						return true;
@@ -4991,7 +4991,7 @@ namespace pgen::FunctionCallParametersCheck {
 				}
 				if (b73) {
 					 {
-						zval z74;
+						zval z74 = {};
 						ZVAL_NULL(&z74);
 						ZVAL_COPY_VALUE(ret, &z74);
 						return true;
@@ -5008,7 +5008,7 @@ namespace pgen::FunctionCallParametersCheck {
 		}
 	}
 	 {
-		zval z76;
+		zval z76 = {};
 		ZVAL_NULL(&z76);
 		ZVAL_COPY_VALUE(ret, &z76);
 		return true;

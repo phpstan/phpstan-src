@@ -200,7 +200,7 @@ namespace pgen::ReflectionClassConstructorThrowTypeExtension {
 		if (UNEXPECTED(!pgen::IsSuperTypeOfResult::m_yes(Z_OBJ_P(r22.raw()), &r23))) return false;
 		if (r23) {
 			 {
-				zval z24;
+				zval z24 = {};
 				ZVAL_NULL(&z24);
 				ZVAL_COPY_VALUE(ret, &z24);
 				return true;

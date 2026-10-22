@@ -102,7 +102,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		}
 		zval av4[2];
 		ZVAL_COPY_VALUE(&av4[0], q1.raw());
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, false);
 		ZVAL_COPY_VALUE(&av4[1], &z5);
 		zv::Val r6;
@@ -140,9 +140,8 @@ static void pg_closure_3(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\EmptyHandler::{closure}", argc, 0); return; }
 	 {
-		zval z1;
+		zval z1 = {};
 		ZVAL_BOOL(&z1, true);
 		ZVAL_COPY(return_value, &z1);
 		return;
@@ -331,7 +330,7 @@ static void pg_closure_6(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(l_isNull.raw()), &r2))) return;
 		if (r2) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY(return_value, &z3);
 				return;
@@ -341,7 +340,7 @@ static void pg_closure_6(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		bool r4;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(l_isNull.raw()), &r4))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, !(r4));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -377,7 +376,7 @@ static void pg_closure_5(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		zval av4[2];
 		ZVAL_COPY_VALUE(&av4[0], l_issetabilityScope.raw());
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, false);
 		ZVAL_COPY_VALUE(&av4[1], &z5);
 		zv::Val r6;
@@ -583,7 +582,6 @@ static void pg_closure_9(zval *captures, uint32_t argc, zval *argv, zval *return
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\EmptyHandler::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, zv::Ref(&captures[0]).deref().raw());
 		return;
@@ -594,7 +592,6 @@ static void pg_closure_10(zval *captures, uint32_t argc, zval *argv, zval *retur
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\EmptyHandler::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, zv::Ref(&captures[0]).deref().raw());
 		return;
@@ -605,7 +602,6 @@ static void pg_closure_11(zval *captures, uint32_t argc, zval *argv, zval *retur
 {
 	(void) captures;
 	(void) argv;
-	if (UNEXPECTED(argc < 0)) { pgrt::throwTooFewArguments("PHPStan\\Analyser\\ExprHandler\\EmptyHandler::{closure}", argc, 0); return; }
 	 {
 		ZVAL_COPY(return_value, zv::Ref(&captures[0]).deref().raw());
 		return;
@@ -659,7 +655,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		zval av4[2];
 		ZVAL_COPY_VALUE(&av4[0], l_s.raw());
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, false);
 		ZVAL_COPY_VALUE(&av4[1], &z5);
 		zv::Val r6;

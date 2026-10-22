@@ -82,7 +82,7 @@ namespace pgen::CurlSetOptArrayArgVisitor {
 									e14 = pgrt::dimRead(l_args.raw(), &z16, et15.raw());
 									if (UNEXPECTED(e14 == NULL)) return false;
 								}
-								zval z17;
+								zval z17 = {};
 								ZVAL_BOOL(&z17, true);
 								zv::Val r18;
 								if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_7, zv::Ref(e14).deref().raw(), &pg_lit[1], &z17, r18.raw()))) return false;
@@ -94,7 +94,7 @@ namespace pgen::CurlSetOptArrayArgVisitor {
 		}
 	}
 	 {
-		zval z19;
+		zval z19 = {};
 		ZVAL_NULL(&z19);
 		ZVAL_COPY_VALUE(ret, &z19);
 		return true;

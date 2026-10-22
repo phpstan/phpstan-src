@@ -660,11 +660,11 @@ namespace pgen::InArrayFunctionTypeSpecifyingExtension {
 					 {
 						if (l_combinedMultipleItems) {
 							 {
-								zval z105;
+								zval z105 = {};
 								ZVAL_NULL(&z105);
-								zval z106;
+								zval z106 = {};
 								ZVAL_NULL(&z106);
-								zval z107;
+								zval z107 = {};
 								ZVAL_NULL(&z107);
 								zv::Val r108;
 								if (EXPECTED(Z_TYPE_P(l_types.raw()) == IS_OBJECT && Z_OBJCE_P(l_types.raw()) == pt_ce_specified_types)) {
@@ -1167,7 +1167,7 @@ namespace pgen::InArrayFunctionTypeSpecifyingExtension {
 		}
 		if (b3) {
 			 {
-				zval z12;
+				zval z12 = {};
 				ZVAL_NULL(&z12);
 				ZVAL_COPY_VALUE(ret, &z12);
 				return true;
@@ -1295,7 +1295,7 @@ namespace pgen::InArrayFunctionTypeSpecifyingExtension {
 						 {
 							if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_innerGuaranteeValueType.raw())) == 0) {
 								 {
-									zval z48;
+									zval z48 = {};
 									ZVAL_NULL(&z48);
 									ZVAL_COPY_VALUE(ret, &z48);
 									return true;
@@ -1364,7 +1364,7 @@ namespace pgen::InArrayFunctionTypeSpecifyingExtension {
 							}
 							if (!(cn59 == 1)) {
 								 {
-									zval z61;
+									zval z61 = {};
 									ZVAL_NULL(&z61);
 									ZVAL_COPY_VALUE(ret, &z61);
 									return true;
@@ -1397,7 +1397,7 @@ namespace pgen::InArrayFunctionTypeSpecifyingExtension {
 	 {
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(l_guaranteedValueTypePerArray.raw())) == 0) {
 			 {
-				zval z68;
+				zval z68 = {};
 				ZVAL_NULL(&z68);
 				ZVAL_COPY_VALUE(ret, &z68);
 				return true;
@@ -1474,7 +1474,7 @@ namespace pgen::InArrayFunctionTypeSpecifyingExtension {
 		}
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(vd83.raw())) == 0) {
 			 {
-				zval z86;
+				zval z86 = {};
 				ZVAL_NULL(&z86);
 				ZVAL_COPY_VALUE(ret, &z86);
 				return true;

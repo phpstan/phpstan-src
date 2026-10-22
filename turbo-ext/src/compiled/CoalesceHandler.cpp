@@ -143,7 +143,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_maybe(Z_OBJ_P(l_isNull.raw()), &r2))) return;
 		if (r2) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY(return_value, &z3);
 				return;
@@ -153,7 +153,7 @@ static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		bool r4;
 		if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(l_isNull.raw()), &r4))) return;
-		zval z5;
+		zval z5 = {};
 		ZVAL_BOOL(&z5, !(r4));
 		ZVAL_COPY(return_value, &z5);
 		return;
@@ -182,7 +182,7 @@ static void pg_closure_2(zval *captures, uint32_t argc, zval *argv, zval *return
 			if (UNEXPECTED(!pgrt::readPropertyGeneric(zv::Ref(&captures[1]).deref().raw(), pt_ce_coalesce_handler, "left", 4, o3.raw()))) return;
 			p2 = o3.raw();
 		}
-		zval z4;
+		zval z4 = {};
 		ZVAL_BOOL(&z4, p_nativeTypesPromoted);
 		zv::Val r5;
 		if (EXPECTED(Z_TYPE_P(p1) == IS_OBJECT)) {
@@ -685,11 +685,11 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 						}
 						zval *p27 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CoalesceHandler::slot::defaultNarrowingHelper, "defaultNarrowingHelper");
 						if (UNEXPECTED(p27 == NULL)) return;
-						zval z28;
+						zval z28 = {};
 						ZVAL_NULL(&z28);
-						zval z29;
+						zval z29 = {};
 						ZVAL_NULL(&z29);
-						zval z30;
+						zval z30 = {};
 						ZVAL_NULL(&z30);
 						zv::Val r31;
 						if (EXPECTED(Z_TYPE_P(p27) == IS_OBJECT)) {
@@ -728,11 +728,11 @@ static void pg_closure_4(zval *captures, uint32_t argc, zval *argv, zval *return
 	 {
 		zval *p35 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::CoalesceHandler::slot::defaultNarrowingHelper, "defaultNarrowingHelper");
 		if (UNEXPECTED(p35 == NULL)) return;
-		zval z36;
+		zval z36 = {};
 		ZVAL_NULL(&z36);
-		zval z37;
+		zval z37 = {};
 		ZVAL_NULL(&z37);
-		zval z38;
+		zval z38 = {};
 		ZVAL_NULL(&z38);
 		zv::Val r39;
 		if (EXPECTED(Z_TYPE_P(p35) == IS_OBJECT)) {
@@ -1017,7 +1017,7 @@ namespace pgen::CoalesceHandler {
 	 {
 		zval av52[2];
 		ZVAL_COPY_VALUE(&av52[0], l_scope.raw());
-		zval z53;
+		zval z53 = {};
 		ZVAL_BOOL(&z53, false);
 		ZVAL_COPY_VALUE(&av52[1], &z53);
 		zv::Val r54;
@@ -1389,7 +1389,7 @@ namespace pgen::CoalesceHandler {
 			if (UNEXPECTED(!pgrt::callMethod(pg_site_49, l_rightResult.raw(), "getVariableFlow", "getvariableflow", 15, 0, NULL, r125.raw()))) return false;
 		}
 		}
-		zval z126;
+		zval z126 = {};
 		ZVAL_NULL(&z126);
 		zval vv127[2];
 		ZVAL_COPY_VALUE(&vv127[0], r125.raw());

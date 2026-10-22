@@ -824,7 +824,7 @@ namespace pgen::RuleLevelHelper {
 		}
 	}
 	 {
-		zval z14;
+		zval z14 = {};
 		ZVAL_NULL(&z14);
 		ZVAL_COPY_VALUE(ret, &z14);
 		return true;
@@ -1174,7 +1174,7 @@ namespace pgen::RuleLevelHelper {
 	 {
 		zval av6[2];
 		ZVAL_COPY_VALUE(&av6[0], l_acceptedType.raw());
-		zval z7;
+		zval z7 = {};
 		ZVAL_BOOL(&z7, p_strictTypes);
 		ZVAL_COPY_VALUE(&av6[1], &z7);
 		zv::Val r8;
@@ -1245,7 +1245,7 @@ namespace pgen::RuleLevelHelper {
 				ZVAL_COPY_VALUE(&av8[0], n5.raw());
 				ZVAL_COPY_VALUE(&av8[1], &arr6_raw);
 				ZVAL_COPY_VALUE(&av8[2], &arr7_raw);
-				zval z9;
+				zval z9 = {};
 				ZVAL_NULL(&z9);
 				ZVAL_COPY_VALUE(&av8[3], &z9);
 				zend_class_entry *ce10 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);
@@ -1404,7 +1404,7 @@ namespace pgen::RuleLevelHelper {
 				ZVAL_COPY_VALUE(&av28[0], q23.raw());
 				ZVAL_COPY_VALUE(&av28[1], &arr26_raw);
 				ZVAL_COPY_VALUE(&av28[2], &arr27_raw);
-				zval z29;
+				zval z29 = {};
 				ZVAL_NULL(&z29);
 				ZVAL_COPY_VALUE(&av28[3], &z29);
 				zend_class_entry *ce30 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);
@@ -1433,7 +1433,7 @@ namespace pgen::RuleLevelHelper {
 				ZVAL_COPY_VALUE(&av36[0], n33.raw());
 				ZVAL_COPY_VALUE(&av36[1], &arr34_raw);
 				ZVAL_COPY_VALUE(&av36[2], &arr35_raw);
-				zval z37;
+				zval z37 = {};
 				ZVAL_NULL(&z37);
 				ZVAL_COPY_VALUE(&av36[3], &z37);
 				zend_class_entry *ce38 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);
@@ -1634,7 +1634,7 @@ namespace pgen::RuleLevelHelper {
 				ZVAL_COPY_VALUE(&av88[0], n86.raw());
 				ZVAL_COPY_VALUE(&av88[1], &arr87_raw);
 				ZVAL_COPY_VALUE(&av88[2], l_errors.raw());
-				zval z89;
+				zval z89 = {};
 				ZVAL_NULL(&z89);
 				ZVAL_COPY_VALUE(&av88[3], &z89);
 				zend_class_entry *ce90 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);
@@ -1692,7 +1692,7 @@ namespace pgen::RuleLevelHelper {
 				ZVAL_COPY_VALUE(&av102[0], n99.raw());
 				ZVAL_COPY_VALUE(&av102[1], &arr100_raw);
 				ZVAL_COPY_VALUE(&av102[2], &arr101_raw);
-				zval z103;
+				zval z103 = {};
 				ZVAL_NULL(&z103);
 				ZVAL_COPY_VALUE(&av102[3], &z103);
 				zend_class_entry *ce104 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);
@@ -1825,7 +1825,7 @@ namespace pgen::RuleLevelHelper {
 						ZVAL_COPY_VALUE(&av136[0], l_newUnion.raw());
 						ZVAL_COPY_VALUE(&av136[1], l_directClassNames.raw());
 						ZVAL_COPY_VALUE(&av136[2], &arr135_raw);
-						zval z137;
+						zval z137 = {};
 						ZVAL_NULL(&z137);
 						ZVAL_COPY_VALUE(&av136[3], &z137);
 						zend_class_entry *ce138 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);
@@ -1928,7 +1928,7 @@ namespace pgen::RuleLevelHelper {
 						ZVAL_COPY_VALUE(&av162[0], r160.raw());
 						ZVAL_COPY_VALUE(&av162[1], l_directClassNames.raw());
 						ZVAL_COPY_VALUE(&av162[2], &arr161_raw);
-						zval z163;
+						zval z163 = {};
 						ZVAL_NULL(&z163);
 						ZVAL_COPY_VALUE(&av162[3], &z163);
 						zend_class_entry *ce164 = pgrt::lookupClass(pg_site_78, "PHPStan\\Rules\\FoundTypeResult", 29);

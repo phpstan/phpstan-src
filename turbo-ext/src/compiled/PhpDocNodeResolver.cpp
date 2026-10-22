@@ -385,7 +385,7 @@ namespace pgen::PhpDocNodeResolver {
 										zv::Val o40 = zv::Val::copyOf(zv::Ref(l_variableName.raw()));
 										zval av42[2];
 										ZVAL_COPY_VALUE(&av42[0], l_type.raw());
-										zval z43;
+										zval z43 = {};
 										ZVAL_BOOL(&z43, true);
 										ZVAL_COPY_VALUE(&av42[1], &z43);
 										zend_class_entry *ce44 = pgrt::lookupClass(pg_site_6, "PHPStan\\PhpDoc\\Tag\\VarTag", 25);
@@ -405,7 +405,7 @@ namespace pgen::PhpDocNodeResolver {
 									 {
 										zval av49[2];
 										ZVAL_COPY_VALUE(&av49[0], l_type.raw());
-										zval z50;
+										zval z50 = {};
 										ZVAL_BOOL(&z50, true);
 										ZVAL_COPY_VALUE(&av49[1], &z50);
 										zend_class_entry *ce51 = pgrt::lookupClass(pg_site_6, "PHPStan\\PhpDoc\\Tag\\VarTag", 25);
@@ -1217,7 +1217,7 @@ namespace pgen::PhpDocNodeResolver {
 											zval av134[5];
 											ZVAL_COPY_VALUE(&av134[0], o120.raw());
 											ZVAL_COPY_VALUE(&av134[1], q123.raw());
-											zval z135;
+											zval z135 = {};
 											ZVAL_BOOL(&z135, b127);
 											ZVAL_COPY_VALUE(&av134[2], &z135);
 											ZVAL_COPY_VALUE(&av134[3], zv::Ref(p132).deref().raw());
@@ -2149,7 +2149,7 @@ namespace pgen::PhpDocNodeResolver {
 							 {
 								zv::Val o27 = zv::Val::copyOf(zv::Ref(l_parameterName.raw()));
 								bool k28 = true;
-								zval z30;
+								zval z30 = {};
 								ZVAL_BOOL(&z30, k28);
 								zv::Val o29 = zv::Val::copyOf(zv::Ref(&z30));
 								zval *w31 = zv::Ref(l_parameters.raw()).deref().raw();
@@ -2215,7 +2215,7 @@ namespace pgen::PhpDocNodeResolver {
 							 {
 								zv::Val o57 = zv::Val::copyOf(zv::Ref(l_parameterName.raw()));
 								bool k58 = false;
-								zval z60;
+								zval z60 = {};
 								ZVAL_BOOL(&z60, k58);
 								zv::Val o59 = zv::Val::copyOf(zv::Ref(&z60));
 								zval *w61 = zv::Ref(l_parameters.raw()).deref().raw();
@@ -2303,7 +2303,7 @@ namespace pgen::PhpDocNodeResolver {
 							 {
 								zv::Val o27 = zv::Val::copyOf(zv::Ref(l_parameterName.raw()));
 								bool k28 = true;
-								zval z30;
+								zval z30 = {};
 								ZVAL_BOOL(&z30, k28);
 								zv::Val o29 = zv::Val::copyOf(zv::Ref(&z30));
 								zval *w31 = zv::Ref(l_parameters.raw()).deref().raw();
@@ -2391,7 +2391,7 @@ namespace pgen::PhpDocNodeResolver {
 							 {
 								zv::Val o27 = zv::Val::copyOf(zv::Ref(l_parameterName.raw()));
 								bool k28 = true;
-								zval z30;
+								zval z30 = {};
 								ZVAL_BOOL(&z30, k28);
 								zv::Val o29 = zv::Val::copyOf(zv::Ref(&z30));
 								zval *w31 = zv::Ref(l_parameters.raw()).deref().raw();
@@ -2600,7 +2600,7 @@ namespace pgen::PhpDocNodeResolver {
 							 {
 								zval av30[2];
 								ZVAL_COPY_VALUE(&av30[0], l_type.raw());
-								zval z31;
+								zval z31 = {};
 								ZVAL_BOOL(&z31, true);
 								ZVAL_COPY_VALUE(&av30[1], &z31);
 								zend_class_entry *ce32 = pgrt::lookupClass(pg_site_116, "PHPStan\\PhpDoc\\Tag\\ReturnTag", 28);
@@ -2731,7 +2731,7 @@ namespace pgen::PhpDocNodeResolver {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z36;
+		zval z36 = {};
 		ZVAL_NULL(&z36);
 		ZVAL_COPY_VALUE(ret, &z36);
 		return true;
@@ -3354,10 +3354,10 @@ namespace pgen::PhpDocNodeResolver {
 					zval av19[1];
 					ZVAL_COPY_VALUE(&av19[0], zv::Ref(p17).deref().raw());
 					zv::Arr na20 = zv::Arr::create(2);
-					zval z21;
+					zval z21 = {};
 					ZVAL_NULL(&z21);
 					{ zval v; ZVAL_COPY(&v, &z21); zend_hash_str_add_new(na20.table(), "property", 8, &v); }
-					zval z22;
+					zval z22 = {};
 					ZVAL_NULL(&z22);
 					{ zval v; ZVAL_COPY(&v, &z22); zend_hash_str_add_new(na20.table(), "method", 6, &v); }
 					zend_class_entry *ce23 = pgrt::lookupClass(pg_site_147, "PHPStan\\PhpDoc\\Tag\\AssertTagParameter", 37);
@@ -3440,7 +3440,7 @@ namespace pgen::PhpDocNodeResolver {
 					ZVAL_COPY_VALUE(&av49[0], zv::Ref(p45).deref().raw());
 					zv::Arr na50 = zv::Arr::create(2);
 					{ zval v; ZVAL_COPY(&v, zv::Ref(p47).deref().raw()); zend_hash_str_add_new(na50.table(), "property", 8, &v); }
-					zval z51;
+					zval z51 = {};
 					ZVAL_NULL(&z51);
 					{ zval v; ZVAL_COPY(&v, &z51); zend_hash_str_add_new(na50.table(), "method", 6, &v); }
 					zend_class_entry *ce52 = pgrt::lookupClass(pg_site_147, "PHPStan\\PhpDoc\\Tag\\AssertTagParameter", 37);
@@ -3522,7 +3522,7 @@ namespace pgen::PhpDocNodeResolver {
 					zval av78[1];
 					ZVAL_COPY_VALUE(&av78[0], zv::Ref(p74).deref().raw());
 					zv::Arr na79 = zv::Arr::create(2);
-					zval z80;
+					zval z80 = {};
 					ZVAL_NULL(&z80);
 					{ zval v; ZVAL_COPY(&v, &z80); zend_hash_str_add_new(na79.table(), "property", 8, &v); }
 					{ zval v; ZVAL_COPY(&v, zv::Ref(p76).deref().raw()); zend_hash_str_add_new(na79.table(), "method", 6, &v); }
@@ -3584,7 +3584,7 @@ namespace pgen::PhpDocNodeResolver {
 		if (UNEXPECTED(!pgrt::callFunction(pg_site_97, "method_exists", 13, pt_ce_php_doc_node_resolver, 2, av1, r2.raw(), NULL))) return false;
 		if (!((Z_TYPE_P(r2.raw()) == IS_TRUE))) {
 			 {
-				zval z3;
+				zval z3 = {};
 				ZVAL_NULL(&z3);
 				ZVAL_COPY_VALUE(ret, &z3);
 				return true;
@@ -3657,7 +3657,7 @@ namespace pgen::PhpDocNodeResolver {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z32;
+		zval z32 = {};
 		ZVAL_NULL(&z32);
 		ZVAL_COPY_VALUE(ret, &z32);
 		return true;
@@ -3715,7 +3715,7 @@ namespace pgen::PhpDocNodeResolver {
 		ZEND_HASH_FOREACH_END();
 	}
 	 {
-		zval z16;
+		zval z16 = {};
 		ZVAL_NULL(&z16);
 		ZVAL_COPY_VALUE(ret, &z16);
 		return true;

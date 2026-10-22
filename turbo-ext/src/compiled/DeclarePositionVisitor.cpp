@@ -27,14 +27,14 @@ namespace pgen::DeclarePositionVisitor {
 	(void) this_zv;
 	 {
 		bool k1 = true;
-		zval z2;
+		zval z2 = {};
 		ZVAL_BOOL(&z2, k1);
 		zval o3;
 		ZVAL_COPY(&o3, &z2);
 		pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::DeclarePositionVisitor::slot::isFirstStatement, &o3);
 	}
 	 {
-		zval z4;
+		zval z4 = {};
 		ZVAL_NULL(&z4);
 		ZVAL_COPY_VALUE(ret, &z4);
 		return true;
@@ -69,7 +69,7 @@ namespace pgen::DeclarePositionVisitor {
 		}
 		if (b1) {
 			 {
-				zval z8;
+				zval z8 = {};
 				ZVAL_NULL(&z8);
 				ZVAL_COPY_VALUE(ret, &z8);
 				return true;
@@ -83,7 +83,7 @@ namespace pgen::DeclarePositionVisitor {
 					 {
 						zval *p9 = pgrt::readSlot(Z_OBJ_P(&this_zv), ptdecl::DeclarePositionVisitor::slot::isFirstStatement, "isFirstStatement");
 						if (UNEXPECTED(p9 == NULL)) return false;
-						zval z10;
+						zval z10 = {};
 						ZVAL_BOOL(&z10, (Z_TYPE_P(p9) == IS_TRUE));
 						zv::Val r11;
 						if (UNEXPECTED(!pgrt::nodeSetAttribute(pg_site_5, p_node, &pg_lit[1], &z10, r11.raw()))) return false;
@@ -92,7 +92,7 @@ namespace pgen::DeclarePositionVisitor {
 			}
 			 {
 				bool k12 = false;
-				zval z13;
+				zval z13 = {};
 				ZVAL_BOOL(&z13, k12);
 				zval o14;
 				ZVAL_COPY(&o14, &z13);
@@ -101,7 +101,7 @@ namespace pgen::DeclarePositionVisitor {
 		}
 	}
 	 {
-		zval z15;
+		zval z15 = {};
 		ZVAL_NULL(&z15);
 		ZVAL_COPY_VALUE(ret, &z15);
 		return true;

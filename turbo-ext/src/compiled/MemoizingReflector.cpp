@@ -173,7 +173,7 @@ namespace pgen::MemoizingReflector {
 		if (Z_TYPE_P(l_classReflection.raw()) == IS_NULL) {
 			 {
 				zv::Val o40 = zv::Val::copyOf(zv::Ref(p_className));
-				zval z42;
+				zval z42 = {};
 				ZVAL_NULL(&z42);
 				zv::Val o41 = zv::Val::copyOf(zv::Ref(&z42));
 				zval *w43 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflector::slot::classReflections)).deref().raw();
@@ -326,7 +326,7 @@ namespace pgen::MemoizingReflector {
 		if (Z_TYPE_P(l_constantReflection.raw()) == IS_NULL) {
 			 {
 				zv::Val o30 = zv::Val::copyOf(zv::Ref(p_constantName));
-				zval z32;
+				zval z32 = {};
 				ZVAL_NULL(&z32);
 				zv::Val o31 = zv::Val::copyOf(zv::Ref(&z32));
 				zval *w33 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflector::slot::constantReflections)).deref().raw();
@@ -482,7 +482,7 @@ namespace pgen::MemoizingReflector {
 		if (Z_TYPE_P(l_functionReflection.raw()) == IS_NULL) {
 			 {
 				zv::Val o29 = zv::Val::copyOf(zv::Ref(l_lowerFunctionName.raw()));
-				zval z31;
+				zval z31 = {};
 				ZVAL_NULL(&z31);
 				zv::Val o30 = zv::Val::copyOf(zv::Ref(&z31));
 				zval *w32 = zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(&this_zv), ptdecl::MemoizingReflector::slot::functionReflections)).deref().raw();

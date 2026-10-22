@@ -65,7 +65,7 @@ namespace pgen::DateFunctionReturnTypeExtension {
 		if (UNEXPECTED(!pgrt::callGetArgs(pg_site_1, p_functionCall, r1.raw()))) return false;
 		if ((zend_long) zend_hash_num_elements(Z_ARRVAL_P(r1.raw())) == 0) {
 			 {
-				zval z2;
+				zval z2 = {};
 				ZVAL_NULL(&z2);
 				ZVAL_COPY_VALUE(ret, &z2);
 				return true;
@@ -110,7 +110,7 @@ namespace pgen::DateFunctionReturnTypeExtension {
 		}
 		zval av15[2];
 		ZVAL_COPY_VALUE(&av15[0], r12.raw());
-		zval z16;
+		zval z16 = {};
 		ZVAL_BOOL(&z16, false);
 		ZVAL_COPY_VALUE(&av15[1], &z16);
 		zv::Val r17;

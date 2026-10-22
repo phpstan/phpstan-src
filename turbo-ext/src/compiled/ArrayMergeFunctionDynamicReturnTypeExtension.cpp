@@ -172,7 +172,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 		if (UNEXPECTED(EG(exception))) return false;
 		if (!((is2 != NULL && Z_TYPE_P(is2) > IS_NULL))) {
 			 {
-				zval z6;
+				zval z6 = {};
 				ZVAL_NULL(&z6);
 				ZVAL_COPY_VALUE(ret, &z6);
 				return true;
@@ -627,7 +627,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 											b120 = !(zend_is_true(vd123.raw()));
 										}
 										bool k126 = b120;
-										zval z127;
+										zval z127 = {};
 										ZVAL_BOOL(&z127, k126);
 										zv::Val r128;
 										if (EXPECTED(Z_TYPE_P(o114.raw()) == IS_OBJECT)) {
@@ -1352,7 +1352,7 @@ namespace pgen::ArrayMergeFunctionDynamicReturnTypeExtension {
 							bool r306;
 							if (UNEXPECTED(!pgen::TrinaryLogic::m_yes(Z_OBJ_P(l_hasOffsetValue.raw()), &r306))) return false;
 							bool k307 = !(r306);
-							zval z308;
+							zval z308 = {};
 							ZVAL_BOOL(&z308, k307);
 							zv::Val r309;
 							if (EXPECTED(Z_TYPE_P(o303.raw()) == IS_OBJECT)) {

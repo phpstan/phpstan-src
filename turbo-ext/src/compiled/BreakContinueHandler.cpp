@@ -92,7 +92,7 @@ namespace pgen::BreakContinueHandler {
 				}
 				}
 				bool k9 = bo7;
-				zval z10;
+				zval z10 = {};
 				ZVAL_BOOL(&z10, k9);
 				zv::Val r11;
 				 {

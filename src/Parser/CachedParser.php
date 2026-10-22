@@ -5,11 +5,13 @@ namespace PHPStan\Parser;
 use PhpParser\Node;
 use PHPStan\File\FileReader;
 use PHPStan\Internal\LruCache;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function clearstatcache;
 use function filemtime;
 use function filesize;
 use function strlen;
 
+#[CompiledIntoTurboExtension]
 final class CachedParser implements Parser
 {
 

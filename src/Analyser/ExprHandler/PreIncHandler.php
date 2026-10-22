@@ -20,13 +20,13 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Variable\VariableWrite;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements ExprHandler<PreInc>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PreIncHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class PreIncHandler implements ExprHandler
 {
 

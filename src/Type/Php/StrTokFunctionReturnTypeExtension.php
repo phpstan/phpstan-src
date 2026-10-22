@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -16,6 +17,7 @@ use PHPStan\Type\Type;
 use function count;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class StrTokFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

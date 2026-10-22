@@ -29,7 +29,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\IssetExpressionNode;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ObjectType;
@@ -43,7 +43,7 @@ use function count;
  * @implements ExprHandler<Isset_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/IssetHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class IssetHandler implements ExprHandler
 {
 

@@ -38,7 +38,7 @@ use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\CircularTypeAliasDefinitionException;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ErrorType;
@@ -83,7 +83,7 @@ use function strtolower;
  * @api
  */
 #[GenerateFactory(interface: ClassReflectionFactory::class)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassReflection.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassReflection.cpp')]
 final class ClassReflection
 {
 

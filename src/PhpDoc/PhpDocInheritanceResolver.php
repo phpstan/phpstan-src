@@ -5,6 +5,7 @@ namespace PHPStan\PhpDoc;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
 use function count;
@@ -12,6 +13,7 @@ use function is_bool;
 use function strtolower;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class PhpDocInheritanceResolver
 {
 

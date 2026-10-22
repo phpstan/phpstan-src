@@ -46,7 +46,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -61,7 +61,7 @@ use function spl_object_id;
 use function sprintf;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NodeScopeResolver.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NodeScopeResolver.cpp')]
 class NodeScopeResolver
 {
 

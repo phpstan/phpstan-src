@@ -98,10 +98,40 @@ static zv::Val pt_type_call_fn(zend_function *fn, zend_object *object, zend_clas
 	return zv::Val::adopt(ret);
 }
 
+#ifdef PGRT_COUNT
+void pgrtCountHit(const char *kind, const char *cls, const char *name);
+#endif
+
+/* the trivial bodies of the methods pt_type_call_engine() runs, by function
+ * (direct-mapped; a function's opcodes never change within a request) */
+static constexpr uint32_t PT_TYPE_CALL_SHAPES_LIMIT = 512;
+struct pt_type_call_shape
+{
+	const zend_function *fn;
+	uint32_t generation;
+	pt_trivial_shape shape;
+};
+static pt_type_call_shape pt_type_call_shapes[PT_TYPE_CALL_SHAPES_LIMIT];
+
 zv::Val pt_type_call_engine(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
 {
 	zend_function *fn = pt_find_method(object->ce, lcname, len);
 	if (UNEXPECTED(fn == NULL)) return zv::Val();
+	if (argc == 0 && fn->type == ZEND_USER_FUNCTION) {
+		pt_type_call_shape &cached = pt_type_call_shapes[(((uintptr_t) fn) >> 4) & (PT_TYPE_CALL_SHAPES_LIMIT - 1)];
+		if (cached.fn != fn || cached.generation != pt_engine_generation) {
+			cached.fn = fn;
+			cached.generation = pt_engine_generation;
+			pt_abi.trivial_shape(fn, &cached.shape);
+		}
+		zval answer;
+		if (cached.shape.kind != PT_TRIVIAL_NONE && pt_trivial_answer(cached.shape, object, &answer)) {
+			return zv::Val::adopt(answer);
+		}
+	}
+#ifdef PGRT_COUNT
+	pgrtCountHit(fn->type == ZEND_USER_FUNCTION ? "Tu" : "Ti", ZSTR_VAL(object->ce->name), lcname);
+#endif
 	return pt_type_call_fn(fn, object, object->ce, argc, argv);
 }
 

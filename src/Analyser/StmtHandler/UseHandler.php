@@ -11,13 +11,13 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements StmtHandler<Use_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UseHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class UseHandler implements StmtHandler
 {
 

@@ -23,7 +23,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -102,7 +102,7 @@ use const CASE_UPPER;
  * @api
  */
 #[InstanceofDeprecated(insteadUse: 'Type::getConstantArrays()')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantArrayType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ConstantArrayType.cpp')]
 class ConstantArrayType implements Type
 {
 

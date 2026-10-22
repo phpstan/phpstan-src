@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateBenevolentUnionType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_benevolent_union_type_new', 'out'])]
 final class TemplateBenevolentUnionType extends BenevolentUnionType implements TemplateType
 {
 

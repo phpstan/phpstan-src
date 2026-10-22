@@ -10,6 +10,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use PHPStan\Type\StaticTypeFactory;
@@ -17,6 +18,7 @@ use function count;
 use function in_array;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class StrlenFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

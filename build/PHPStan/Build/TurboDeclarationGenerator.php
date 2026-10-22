@@ -26,6 +26,7 @@ use function implode;
 use function in_array;
 use function is_array;
 use function is_bool;
+use function is_float;
 use function is_int;
 use function is_string;
 use function ksort;
@@ -63,6 +64,9 @@ use const PREG_SET_ORDER;
  */
 final class TurboDeclarationGenerator
 {
+
+	/** @var list<string> the builders of the array defaults of the class being rendered */
+	private array $propertyBuilders = [];
 
 	/** names a slot constant cannot carry verbatim: C++ keywords and the libc macros of common targets */
 	/** reg::PackedArg / reg::SigData hold 16-bit offsets and indexes; UINT16_MAX is reg::NoString / reg::NoArg */
@@ -216,8 +220,15 @@ final class TurboDeclarationGenerator
 		}
 		$out[] = '';
 		if ($unrepresentable !== null) {
+			$this->propertyBuilders = [];
 			$out[] = sprintf('/* no declareProperties(): %s */', $unrepresentable);
 		} else {
+			foreach ($this->propertyBuilders as $builder) {
+				$out[] = '/* a constant array default, persistent and immutable */';
+				$out[] = $builder;
+				$out[] = '';
+			}
+			$this->propertyBuilders = [];
 			$out[] = '/* the properties the class declares itself, in declaration order (a used trait\'s come from its registrar) */';
 			$out[] = 'inline void declareProperties(reg::Class &cls)';
 			$out[] = '{';
@@ -557,7 +568,14 @@ final class TurboDeclarationGenerator
 			return ['0', null];
 		}
 		if ($type instanceof ReflectionIntersectionType) {
-			throw new RuntimeException('an intersection type');
+			// arginfo cannot spell an intersection: its first member, a
+			// contravariant widening of the declaration (the compiled glue
+			// checks every member at run time)
+			$first = $type->getTypes()[0];
+			if (!$first instanceof ReflectionNamedType) {
+				throw new RuntimeException('an intersection type');
+			}
+			return ['0', $first->getName()];
 		}
 		$builtin = [
 			'int' => 'MAY_BE_LONG', 'float' => 'MAY_BE_DOUBLE', 'string' => 'MAY_BE_STRING', 'bool' => 'MAY_BE_BOOL',
@@ -691,6 +709,9 @@ final class TurboDeclarationGenerator
 			if (is_int($default)) {
 				return sprintf('cls.property(%s, %s, reg::PropertyKind::Long, %d);', $name, $flags, $default);
 			}
+			if (is_array($default)) {
+				return sprintf('cls.builtProperty(%s, %s, %s, 0);', $name, $flags, $this->arrayDefaultBuilder($property, $default));
+			}
 			throw new RuntimeException('an untyped default reg::Class cannot declare');
 		}
 
@@ -725,8 +746,72 @@ final class TurboDeclarationGenerator
 		if (is_string($default) && $classes === [] && $masks === ['MAY_BE_STRING']) {
 			return sprintf('cls.typedStringProperty(%s, %s, %s);', $name, $flags, $this->cString($default));
 		}
+		if (is_string($default) && $classes === [] && in_array('MAY_BE_STRING', $masks, true)) {
+			return sprintf('cls.typedStringProperty(%s, %s, %s, %s);', $name, $flags, $this->cString($default), $mask);
+		}
+
+		if (is_array($default) && $classes === []) {
+			return sprintf('cls.builtProperty(%s, %s, %s, %s);', $name, $flags, $this->arrayDefaultBuilder($property, $default), $mask);
+		}
 
 		throw new RuntimeException('a typed default reg::Class cannot declare');
+	}
+
+	/**
+	 * A builder of a property's constant array default — a persistent,
+	 * immutable array with interned strings — declared ahead of
+	 * declareProperties(); its name.
+	 *
+	 * @param array<mixed> $default
+	 */
+	private function arrayDefaultBuilder(ReflectionProperty $property, array $default): string
+	{
+		$function = 'buildDefault_' . $property->getName();
+		$lines = [];
+		$counter = 0;
+		$build = function (array $array) use (&$build, &$lines, &$counter): string {
+			$table = 't' . $counter++;
+			$lines[] = sprintf("\tHashTable *%s = (HashTable *) pemalloc(sizeof(HashTable), 1);", $table);
+			$lines[] = sprintf("\tzend_hash_init(%s, %d, NULL, NULL, 1);", $table, count($array));
+			foreach ($array as $key => $item) {
+				$z = 'v' . $counter++;
+				$lines[] = sprintf("\tzval %s;", $z);
+				if (is_int($item)) {
+					$lines[] = sprintf("\tZVAL_LONG(&%s, %d);", $z, $item);
+				} elseif (is_bool($item)) {
+					$lines[] = sprintf("\tZVAL_BOOL(&%s, %s);", $z, $item ? 'true' : 'false');
+				} elseif ($item === null) {
+					$lines[] = sprintf("\tZVAL_NULL(&%s);", $z);
+				} elseif (is_float($item)) {
+					$lines[] = sprintf("\tZVAL_DOUBLE(&%s, %s);", $z, var_export($item, true));
+				} elseif (is_string($item)) {
+					$lines[] = sprintf("\tZVAL_INTERNED_STR(&%s, zend_string_init_interned(%s, %d, 1));", $z, $this->cString($item), strlen($item));
+				} elseif (is_array($item)) {
+					$lines[] = sprintf("\tZVAL_ARR(&%s, %s);", $z, $build($item));
+					$lines[] = sprintf("\tZ_TYPE_INFO(%s) = IS_ARRAY;", $z);
+				} else {
+					throw new RuntimeException('an array default with a value reg::Class cannot declare');
+				}
+				if (is_int($key)) {
+					$lines[] = sprintf("\tzend_hash_index_update(%s, %d, &%s);", $table, $key, $z);
+				} else {
+					$lines[] = sprintf("\tzend_hash_update(%s, zend_string_init_interned(%s, %d, 1), &%s);", $table, $this->cString($key), strlen($key), $z);
+				}
+			}
+			$lines[] = sprintf("\tGC_ADD_FLAGS(%s, IS_ARRAY_IMMUTABLE);", $table);
+			$lines[] = sprintf("\tGC_SET_REFCOUNT(%s, 2);", $table);
+			return $table;
+		};
+		$root = $build($default);
+		$this->propertyBuilders[] = implode("\n", [
+			sprintf('inline void %s(zval *out)', $function),
+			'{',
+			...$lines,
+			sprintf("\tZVAL_ARR(out, %s);", $root),
+			"\tZ_TYPE_INFO_P(out) = IS_ARRAY;",
+			'}',
+		]);
+		return $function;
 	}
 
 	/**

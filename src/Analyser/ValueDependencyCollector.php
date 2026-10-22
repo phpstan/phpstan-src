@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -54,6 +55,7 @@ use function strtolower;
  * }
  */
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class ValueDependencyCollector
 {
 

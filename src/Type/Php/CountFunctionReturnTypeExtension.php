@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -16,6 +17,7 @@ use function in_array;
 use const COUNT_NORMAL;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class CountFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

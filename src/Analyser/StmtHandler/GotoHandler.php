@@ -13,13 +13,13 @@ use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements StmtHandler<Goto_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GotoHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class GotoHandler implements StmtHandler
 {
 

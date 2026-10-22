@@ -35,7 +35,7 @@ use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\ReturnStatement;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\TypeUtils;
@@ -46,7 +46,7 @@ use function is_string;
  * @implements StmtHandler<ClassMethod>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassMethodHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassMethodHandler.cpp')]
 final class ClassMethodHandler implements StmtHandler
 {
 

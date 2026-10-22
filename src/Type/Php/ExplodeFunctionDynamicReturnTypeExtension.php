@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
@@ -36,6 +37,7 @@ use function min;
 use function substr_count;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class ExplodeFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

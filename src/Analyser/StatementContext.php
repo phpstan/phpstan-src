@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
  *
  * When in doubt, use `StatementContext::createTopLevel()`.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementContext.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementContext.cpp')]
 final class StatementContext
 {
 

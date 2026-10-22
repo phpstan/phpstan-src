@@ -10,9 +10,11 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class AssertFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

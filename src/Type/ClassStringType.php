@@ -5,11 +5,11 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isClassStringType()')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassStringType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassStringType.cpp')]
 class ClassStringType extends StringType
 {
 

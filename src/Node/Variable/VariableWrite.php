@@ -3,6 +3,7 @@
 namespace PHPStan\Node\Variable;
 
 use PhpParser\Node;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
@@ -14,6 +15,7 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'variableWrite')]
+#[CompiledIntoTurboExtension]
 final class VariableWrite
 {
 

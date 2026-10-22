@@ -4,13 +4,13 @@ namespace PHPStan\Node\Printer;
 
 use PhpParser\Node\Expr;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * @api
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExprPrinter.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExprPrinter.cpp')]
 final class ExprPrinter
 {
 

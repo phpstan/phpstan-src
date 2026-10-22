@@ -2,10 +2,10 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function sprintf;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeScope.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_type_scope_new', 'out'])]
 final class TemplateTypeScope
 {
 

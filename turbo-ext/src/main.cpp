@@ -156,6 +156,12 @@ extern zend_module_entry phpstan_turbo_module_entry;
 #else
 #define PT_CORE_DLL L"phpstan_turbo_core.dll"
 #endif
+/* why the core did not load (GetLastError(): 126 a DLL it imports from is
+ * missing, 127 a function it imports is, 1114 its initialisation failed),
+ * reported in the version string */
+static DWORD pt_core_load_error = 0;
+static char pt_core_missing_version[48];
+
 static bool pt_load_core()
 {
 	HMODULE self = NULL;
@@ -168,7 +174,9 @@ static bool pt_load_core()
 	size_t name = wcslen(PT_CORE_DLL);
 	if (directory + name + 1 > sizeof(path) / sizeof(path[0])) return false;
 	wmemcpy(path + directory, PT_CORE_DLL, name + 1);
-	return LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL;
+	if (LoadLibraryExW(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH) != NULL) return true;
+	pt_core_load_error = GetLastError();
+	return false;
 }
 static bool pt_core_loaded = false;
 #endif
@@ -181,7 +189,8 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 #ifdef PHPSTANTURBO_SPLIT
 #ifdef PHP_WIN32
 	if (!pt_core_loaded) {
-		phpstan_turbo_module_entry.version = "core-missing";
+		snprintf(pt_core_missing_version, sizeof(pt_core_missing_version), "core-missing (error %lu)", (unsigned long) pt_core_load_error);
+		phpstan_turbo_module_entry.version = pt_core_missing_version;
 		return SUCCESS;
 	}
 #endif

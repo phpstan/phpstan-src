@@ -6,7 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Traits\FalseyBooleanTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -19,7 +19,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VoidType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VoidType.cpp')]
 #[InstanceofDeprecated(insteadUse: 'Type::isVoid()')]
 class VoidType implements Type
 {

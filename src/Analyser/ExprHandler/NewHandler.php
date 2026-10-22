@@ -53,7 +53,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ErrorType;
@@ -84,7 +84,7 @@ use function sprintf;
  * @implements ExprHandler<New_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NewHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/NewHandler.cpp')]
 final class NewHandler implements ExprHandler
 {
 

@@ -2,8 +2,10 @@
 
 namespace PHPStan\Internal;
 
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function str_replace;
 
+#[CompiledIntoTurboExtension]
 final class SprintfHelper
 {
 

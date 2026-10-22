@@ -59,6 +59,7 @@ if (PHP_OS_FAMILY === 'Darwin') {
 $sources = array_merge(
 	glob($root . '/src/*.cpp') ?: [],
 	glob($root . '/src/parser/*.cpp') ?: [],
+	glob($root . '/src/compiled/*.cpp') ?: [],
 );
 sort($sources);
 

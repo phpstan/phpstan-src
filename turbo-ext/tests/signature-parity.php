@@ -270,6 +270,12 @@ function compareMembers(string $kind, string $className, array $native, array $t
 		foreach ($twinMember['params'] as $i => $twinParam) {
 			foreach ($twinParam as $key => $twinValue) {
 				if ($nativeMember['params'][$i][$key] !== $twinValue) {
+					// arginfo cannot spell an intersection type: the declaration
+					// generator widens it to its first member, and the native
+					// glue checks every member at run time
+					if ($key === 'type' && is_string($twinValue) && str_contains($twinValue, '&') && !str_contains($twinValue, '|') && explode('&', ltrim($twinValue, '?'))[0] === ltrim((string) $nativeMember['params'][$i][$key], '?')) {
+						continue;
+					}
 					$problems[] = sprintf('%s %s: parameter #%d ($%s) %s is %s natively, %s in PHP', $kind, $name, $i + 1, $twinParam['name'], $key, json_encode($nativeMember['params'][$i][$key]), json_encode($twinValue));
 				}
 			}

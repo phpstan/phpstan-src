@@ -5,7 +5,7 @@ namespace PHPStan\Dependency;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use function array_pop;
 use function count;
@@ -23,7 +23,7 @@ use function spl_object_id;
  * Each value is bound to the file of the scope it was found in: the code of a trait is analysed in the
  * context of the class using it, and what is in the trait's own file is not a dependency of it.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/Dependencies.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/Dependencies.cpp')]
 final class Dependencies
 {
 

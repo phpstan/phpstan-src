@@ -3,7 +3,7 @@
 // Read-only report that prepares a rebase of a feature branch onto a fresh base
 // tip: both sides' commits, commits the base already contains, files both sides
 // touch, the conflicts a merge of the two tips predicts, and the turbo twins
-// (#[ShadowedByTurboExtension] PHP class <-> turbo-ext .cpp) whose other half
+// (#[ImplementedInTurboExtension] / #[CompiledIntoTurboExtension] PHP class <-> turbo-ext .cpp) whose other half
 // needs a port during the replay.
 //
 // Usage: php rebase-plan.php <new-base-ref> [<feature-ref>=HEAD]
@@ -137,9 +137,17 @@ if ($mergeTree === [] || $mergeTree === ['']) {
 function shadowMap(string $rev): array
 {
 	$map = [];
-	foreach (gitLines('grep', '-e', 'ShadowedByTurboExtension(', $rev, '--', 'src') as $line) {
+	// ShadowedByTurboExtension is the hand-written attribute's old name, still
+	// on bases from before the rename; a compiled class's .cpp follows from
+	// its short name (TurboAttributeCollector::COMPILED_DIRECTORY)
+	foreach (gitLines('grep', '-e', 'ShadowedByTurboExtension(', '-e', 'ImplementedInTurboExtension(', '-e', '#\\[CompiledIntoTurboExtension', $rev, '--', 'src') as $line) {
 		$line = substr($line, strlen($rev) + 1);
 		[$path, $content] = explode(':', $line, 2);
+		if (str_contains($content, 'CompiledIntoTurboExtension')) {
+			$class = 'PHPStan\\' . str_replace('/', '\\', substr($path, 4, -4));
+			$map[$class] = ['php' => $path, 'cpp' => 'turbo-ext/src/compiled/' . basename($path, '.php') . '.cpp'];
+			continue;
+		}
 		if (preg_match("~implementation:\\s*__DIR__\\s*\\.\\s*'([^']+)'~", $content, $m) !== 1) {
 			continue;
 		}

@@ -49,6 +49,7 @@ use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -139,6 +140,7 @@ use function substr;
  * @phpstan-import-type Level from ReportUnsafeArrayStringKeyCastingToggle as ReportUnsafeArrayStringKeyCastingLevel
  */
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class TypeNodeResolver
 {
 

@@ -12,7 +12,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\PassedByReference;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -57,7 +57,7 @@ use function substr;
  * expected type.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClosureSignatureInference.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClosureSignatureInference.cpp')]
 final class ClosureSignatureInference
 {
 

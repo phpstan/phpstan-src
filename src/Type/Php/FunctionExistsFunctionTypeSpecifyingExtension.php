@@ -13,6 +13,7 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
@@ -20,6 +21,7 @@ use function count;
 use function ltrim;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

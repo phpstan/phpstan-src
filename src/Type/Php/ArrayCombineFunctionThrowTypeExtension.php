@@ -6,11 +6,13 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\Type;
 use function count;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class ArrayCombineFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

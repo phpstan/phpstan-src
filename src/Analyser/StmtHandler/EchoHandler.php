@@ -16,14 +16,14 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_merge;
 
 /**
  * @implements StmtHandler<Echo_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/EchoHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class EchoHandler implements StmtHandler
 {
 

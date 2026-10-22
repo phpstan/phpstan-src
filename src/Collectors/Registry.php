@@ -4,9 +4,11 @@ namespace PHPStan\Collectors;
 
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ExtensionClassHelper;
 
 #[AutowiredService(factory: '@PHPStan\Collectors\RegistryFactory::create')]
+#[CompiledIntoTurboExtension]
 final class Registry
 {
 

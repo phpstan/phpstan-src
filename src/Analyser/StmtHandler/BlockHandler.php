@@ -14,13 +14,13 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements StmtHandler<Block>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BlockHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class BlockHandler implements StmtHandler
 {
 

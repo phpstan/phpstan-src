@@ -45,8 +45,9 @@ if test "$PHP_PHPSTAN_TURBO" != "no"; then
   PHP_ADD_LIBRARY(stdc++, 1, PHPSTAN_TURBO_SHARED_LIBADD)
   PHP_SUBST(PHPSTAN_TURBO_SHARED_LIBADD)
 
-  PHPSTAN_TURBO_SOURCES=`cd "$srcdir" && echo src/*.cpp src/parser/*.cpp`
+  PHPSTAN_TURBO_SOURCES=`cd "$srcdir" && echo src/*.cpp src/parser/*.cpp src/compiled/*.cpp`
   PHP_NEW_EXTENSION(phpstan_turbo, $PHPSTAN_TURBO_SOURCES, $ext_shared,, $PHPSTAN_TURBO_CXXFLAGS, cxx)
   PHP_ADD_BUILD_DIR($ext_builddir/src, 1)
   PHP_ADD_BUILD_DIR($ext_builddir/src/parser, 1)
+  PHP_ADD_BUILD_DIR($ext_builddir/src/compiled, 1)
 fi

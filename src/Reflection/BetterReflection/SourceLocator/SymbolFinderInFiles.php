@@ -3,7 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_filter;
 use function array_slice;
 use function count;
@@ -20,7 +20,7 @@ use function str_contains;
 use function strtolower;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/SymbolFinderInFiles.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/SymbolFinderInFiles.cpp')]
 final class SymbolFinderInFiles
 {
 

@@ -4,14 +4,14 @@ namespace PHPStan\Type;
 
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
 use function count;
 use function sprintf;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CallableTypeHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CallableTypeHelper.cpp')]
 final class CallableTypeHelper
 {
 

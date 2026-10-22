@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArrayType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArrayType.cpp')]
 final class TemplateArrayType extends ArrayType implements TemplateType
 {
 

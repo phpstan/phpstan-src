@@ -41,7 +41,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
@@ -83,7 +83,7 @@ use function usort;
  * parameter types and bound $this, by-ref and out types, invalidation).
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArgumentsHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArgumentsHandler.cpp')]
 final class ArgumentsHandler
 {
 

@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 use function array_key_exists;
 
@@ -16,6 +17,7 @@ use function array_key_exists;
  * functions, taking named arguments into account.
  */
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class FilterFunctionFlagsHelper
 {
 

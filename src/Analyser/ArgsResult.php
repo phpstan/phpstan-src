@@ -6,7 +6,7 @@ use PhpParser\Node\Expr;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function get_class;
 use function spl_object_id;
 use function sprintf;
@@ -19,7 +19,7 @@ use function sprintf;
  * against the actual argument types - callers wire it into the call expression's
  * stored return type. Null when the call had no variants (dynamic callee).
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArgsResult.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArgsResult.cpp')]
 final class ArgsResult
 {
 

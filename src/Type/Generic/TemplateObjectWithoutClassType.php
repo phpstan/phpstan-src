@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateObjectWithoutClassType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_object_without_class_type_new', 'out'])]
 class TemplateObjectWithoutClassType extends ObjectWithoutClassType implements TemplateType
 {
 

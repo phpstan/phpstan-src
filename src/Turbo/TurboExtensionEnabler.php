@@ -34,7 +34,7 @@ use function realpath;
 final class TurboExtensionEnabler
 {
 
-	public const EXPECTED_EXTENSION_VERSION = '04247a5';
+	public const EXPECTED_EXTENSION_VERSION = '707396e';
 
 	private static bool $active = false;
 
@@ -140,8 +140,8 @@ final class TurboExtensionEnabler
 			return;
 		}
 
-		// The manifest of shadowed pairs, from the ShadowedByTurboExtension
-		// attributes: each native class is declared with its twin's source
+		// The manifest of shadowed pairs, from the ImplementedInTurboExtension
+		// and CompiledIntoTurboExtension attributes: each native class is declared with its twin's source
 		// file, so reflection keeps reading the PHP declaration.
 		/** @var array<string, array{php: string, cpp: string, vendored?: bool}> $manifest */
 		$manifest = json_decode($manifestContents, true);

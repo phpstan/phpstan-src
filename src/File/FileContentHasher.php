@@ -3,6 +3,7 @@
 namespace PHPStan\File;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function hash_file;
 use function stat;
 
@@ -19,6 +20,7 @@ use function stat;
  * cost of one stat() per repeated ask.
  */
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class FileContentHasher
 {
 

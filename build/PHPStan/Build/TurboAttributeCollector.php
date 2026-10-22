@@ -4,6 +4,7 @@ namespace PHPStan\Build;
 
 use FilesystemIterator;
 use JsonException;
+use Nette\Utils\Random;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Comment\Doc;
@@ -187,13 +188,18 @@ use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\Glob;
 use Throwable;
+use function array_keys;
+use function basename;
 use function class_exists;
 use function count;
 use function file_get_contents;
@@ -201,11 +207,15 @@ use function interface_exists;
 use function json_decode;
 use function json_encode;
 use function ksort;
+use function preg_replace;
 use function realpath;
 use function sprintf;
 use function str_replace;
 use function str_starts_with;
 use function strlen;
+use function strpos;
+use function strrpos;
+use function strtolower;
 use function strtr;
 use function substr;
 use function var_export;
@@ -215,8 +225,8 @@ use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
- * Collects the ShadowedByTurboExtension and ReferencedByTurboExtension
- * attributes with runtime reflection and renders the two generated files:
+ * Collects the ImplementedInTurboExtension, CompiledIntoTurboExtension and
+ * ReferencedByTurboExtension attributes with runtime reflection and renders the two generated files:
  * vendor/turbo-shadowed-classes.json and vendor/turbo-class-map.php. Shared
  * by build/generate-turbo-manifest.php (which writes the artifacts on every
  * autoloader dump) and turbo-ext/bin/side-by-side.php (which re-derives and
@@ -227,10 +237,37 @@ use const JSON_UNESCAPED_SLASHES;
 final class TurboAttributeCollector
 {
 
-	// Shadowed classes living in vendor/ cannot carry the attribute, so
-	// their pairs are hardcoded. Class name => .cpp
+	// Shadowed classes living in vendor/ cannot carry the attributes, so
+	// they are hardcoded. Hand-written ports: class name => .cpp
+	// where turbo-ext/bin/compile-twins.php writes the compiled classes
+	public const COMPILED_DIRECTORY = 'turbo-ext/src/compiled';
+
 	private const VENDORED_PAIRS = [
 		NodeTraverser::class => 'turbo-ext/src/NodeTraverser.cpp',
+	];
+
+	// Compiled vendored classes: class name => the stem of the generated
+	// file, which the short names would make ambiguous (ReflectionClass,
+	// Standard). Their compile settings are CompiledIntoTurboExtension's
+	// defaults.
+	private const VENDORED_COMPILED = [
+		'PhpParser\\PrettyPrinterAbstract' => 'PhpParserPrettyPrinterAbstract',
+		'PhpParser\\PrettyPrinter\\Standard' => 'PhpParserStandardPrinter',
+		'PhpParser\\NameContext' => 'NameContext',
+		'PHPStan\\BetterReflection\\Identifier\\Identifier' => 'BetterReflectionIdentifier',
+		'PHPStan\\BetterReflection\\Identifier\\IdentifierType' => 'BetterReflectionIdentifierType',
+		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod' => 'BetterReflectionAdapterMethod',
+		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionNamedType' => 'BetterReflectionAdapterNamedType',
+		'PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionType' => 'BetterReflectionAdapterType',
+		'PHPStan\\BetterReflection\\Reflection\\Annotation\\AnnotationHelper' => 'BetterReflectionAnnotationHelper',
+		'PHPStan\\BetterReflection\\Reflection\\Attribute\\ReflectionAttributeHelper' => 'BetterReflectionAttributeHelper',
+		'PHPStan\\BetterReflection\\Reflection\\Deprecated\\DeprecatedHelper' => 'BetterReflectionDeprecatedHelper',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionAttribute' => 'BetterReflectionAttribute',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionClass' => 'BetterReflectionClass',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionNamedType' => 'BetterReflectionNamedType',
+		'PHPStan\\BetterReflection\\Reflection\\ReflectionParameter' => 'BetterReflectionParameter',
+		'PHPStan\\BetterReflection\\SourceLocator\\Located\\LocatedSource' => 'BetterReflectionLocatedSource',
+		'PHPStan\\BetterReflection\\Util\\FileHelper' => 'BetterReflectionFileHelper',
 	];
 
 	// Classes the native code references that live in vendor/ cannot carry
@@ -270,6 +307,9 @@ final class TurboAttributeCollector
 		'constExprStringNode' => ConstExprStringNode::class,
 		'netteStrings' => Strings::class,
 		'netteRegexpException' => RegexpException::class,
+		'netteRandom' => Random::class,
+		'symfonyFinder' => Finder::class,
+		'symfonyGlob' => Glob::class,
 		'constExprFloatNode' => ConstExprFloatNode::class,
 		'thisTypeNode' => ThisTypeNode::class,
 		'objectShapeNode' => ObjectShapeNode::class,
@@ -487,15 +527,24 @@ final class TurboAttributeCollector
 	 * in CI by the name collision detector, so the class name follows from
 	 * the path) and merges the hardcoded vendored entries.
 	 *
+	 * Compiled classes get their generated file derived from the class name
+	 * (see CompiledIntoTurboExtension) and their compile settings returned
+	 * under `compiled`, for turbo-ext/bin/compile-twins.php.
+	 *
 	 * @return array{
-	 *     manifest: array<string, array{php: string, cpp: string, turboClass: string, final: bool, parent: string|null, interfaces: list<class-string>, vendored?: bool}>,
+	 *     manifest: array<string, array{php: string, cpp: string, turboClass: string, final: bool, parent: string|null, interfaces: list<class-string>, compiled?: true, vendored?: bool}>,
 	 *     classMap: array<string, string>,
 	 *     referenced: array<string, string>,
+	 *     compiled: array<class-string, array{stem: string, ce: string, defineCe: bool, new?: array{string, string}, dispatch?: array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}}>,
 	 * }
 	 */
 	public function collect(): array
 	{
 		$pairs = self::VENDORED_PAIRS;
+		$compiledAttributes = [];
+		foreach (array_keys(self::VENDORED_COMPILED) as $className) {
+			$compiledAttributes[$className] = new CompiledIntoTurboExtension();
+		}
 		$classMap = self::VENDORED_CLASS_MAP;
 		$referenced = [];
 
@@ -523,10 +572,17 @@ final class TurboAttributeCollector
 			}
 			$reflection = new ReflectionClass($className);
 
-			$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
+			$attributes = $reflection->getAttributes(ImplementedInTurboExtension::class);
 			if (count($attributes) > 0) {
 				$attribute = $attributes[0]->newInstance();
 				$pairs[$className] = $this->relativize($attribute->implementation);
+			}
+			$compiledAttribute = $reflection->getAttributes(CompiledIntoTurboExtension::class);
+			if (count($compiledAttribute) > 0) {
+				if (isset($pairs[$className])) {
+					throw new RuntimeException(sprintf('%s is both implemented in and compiled into the turbo extension', $className));
+				}
+				$compiledAttributes[$className] = $compiledAttribute[0]->newInstance();
 			}
 
 			foreach ($reflection->getAttributes(ReferencedByTurboExtension::class) as $referencedAttribute) {
@@ -539,12 +595,24 @@ final class TurboAttributeCollector
 			}
 		}
 
+		$compiled = $this->compiledSettings($compiledAttributes, $pairs);
+		foreach ($compiled as $className => $settings) {
+			$pairs[$className] = self::COMPILED_DIRECTORY . '/' . $settings['stem'] . '.cpp';
+		}
+
 		ksort($pairs);
 		ksort($classMap);
 		ksort($referenced);
+		ksort($compiled);
+
+		// how many shadowed classes have each short name
+		$shortNameCounts = [];
+		foreach (array_keys($pairs) as $className) {
+			$shortName = substr($className, (int) strrpos('\\' . $className, '\\'));
+			$shortNameCounts[$shortName] = ($shortNameCounts[$shortName] ?? 0) + 1;
+		}
 
 		$manifest = [];
-		$byShortName = [];
 		foreach ($pairs as $className => $cppFile) {
 			$reflection = new ReflectionClass($className);
 			$fileName = $reflection->getFileName();
@@ -553,15 +621,12 @@ final class TurboAttributeCollector
 			}
 
 			// The name the differential tests declare the native class under
-			// next to its twin, derived the way the extension derives it -
-			// so two shadowed classes sharing a short name would arrive at
-			// one native name and silently shadow each other there.
+			// next to its twin, derived the way the extension derives it
+			// (Shadow.cpp, pt_shadow_declared_name()): the short name, or —
+			// when another shadowed class has the same one — the real name
+			// past its first namespace segment, so the two stay apart.
 			$shortName = $reflection->getShortName();
-			if (isset($byShortName[$shortName])) {
-				throw new RuntimeException(sprintf('%s and %s share the short name %s, so both would be declared as PHPStanTurbo\\%s next to their twins', $byShortName[$shortName], $className, $shortName, $shortName));
-			}
-			$byShortName[$shortName] = $className;
-			$turboClass = 'PHPStanTurbo\\' . $shortName;
+			$turboClass = 'PHPStanTurbo\\' . ($shortNameCounts[$shortName] > 1 ? substr($className, (int) strpos($className, '\\') + 1) : $shortName);
 
 			$parent = $reflection->getParentClass();
 			$phpFile = $this->relativize($fileName);
@@ -575,13 +640,73 @@ final class TurboAttributeCollector
 				'parent' => $parent === false ? null : $parent->getName(),
 				'interfaces' => $reflection->getInterfaceNames(),
 			];
+			if (isset($compiled[$className])) {
+				$entry['compiled'] = true;
+			}
 			if (str_starts_with($phpFile, 'vendor/')) {
 				$entry['vendored'] = true;
 			}
 			$manifest[$className] = $entry;
 		}
 
-		return ['manifest' => $manifest, 'classMap' => $classMap, 'referenced' => $referenced];
+		return ['manifest' => $manifest, 'classMap' => $classMap, 'referenced' => $referenced, 'compiled' => $compiled];
+	}
+
+	/**
+	 * The stem of each compiled class's generated file and its compile
+	 * settings with the defaults filled in. The stem is the short class
+	 * name, unless another compiled class has the same one or a hand-written
+	 * port's file already has it — then the name past its first namespace
+	 * segment, without the separators.
+	 *
+	 * @param array<class-string, CompiledIntoTurboExtension> $attributes
+	 * @param array<string, string> $implemented class => hand-written .cpp
+	 * @return array<class-string, array{stem: string, ce: string, defineCe: bool, new?: array{string, string}, dispatch?: array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}}>
+	 */
+	private function compiledSettings(array $attributes, array $implemented): array
+	{
+		$takenStems = [];
+		foreach ($implemented as $cppFile) {
+			$takenStems[strtolower(basename($cppFile, '.cpp'))] = true;
+		}
+		$shortNameCounts = [];
+		foreach (array_keys($attributes) as $className) {
+			if (isset(self::VENDORED_COMPILED[$className])) {
+				continue;
+			}
+			$shortName = strtolower(substr($className, (int) strrpos('\\' . $className, '\\')));
+			$shortNameCounts[$shortName] = ($shortNameCounts[$shortName] ?? 0) + 1;
+		}
+
+		$settings = [];
+		$stems = [];
+		foreach ($attributes as $className => $attribute) {
+			$stem = self::VENDORED_COMPILED[$className] ?? null;
+			if ($stem === null) {
+				$shortName = substr($className, (int) strrpos('\\' . $className, '\\'));
+				$stem = $shortNameCounts[strtolower($shortName)] > 1 || isset($takenStems[strtolower($shortName)])
+					? str_replace('\\', '', substr($className, (int) strpos($className, '\\') + 1))
+					: $shortName;
+			}
+			if (isset($takenStems[strtolower($stem)]) || isset($stems[strtolower($stem)])) {
+				throw new RuntimeException(sprintf('The generated file of %s, %s.cpp, would overwrite another class\'s', $className, $stem));
+			}
+			$stems[strtolower($stem)] = true;
+			$entry = [
+				'stem' => $stem,
+				'ce' => $attribute->ce ?? 'pt_ce_' . strtolower((string) preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $stem)),
+				'defineCe' => $attribute->defineCe,
+			];
+			if ($attribute->new !== null) {
+				$entry['new'] = $attribute->new;
+			}
+			if ($attribute->dispatch !== null) {
+				$entry['dispatch'] = $attribute->dispatch;
+			}
+			$settings[$className] = $entry;
+		}
+
+		return $settings;
 	}
 
 	/**

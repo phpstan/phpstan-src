@@ -16,14 +16,14 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<AlwaysRememberedExpr>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/AlwaysRememberedExprHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class AlwaysRememberedExprHandler implements ExprHandler
 {
 

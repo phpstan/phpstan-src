@@ -7,11 +7,11 @@ use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function count;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClosureBindArgVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ClosureBindArgVisitor extends NodeVisitorAbstract
 {
 

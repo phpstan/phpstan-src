@@ -22,12 +22,12 @@ use PHPStan\Node\ReturnStatement;
 use PHPStan\Parser\LineAttributesVisitor;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use function array_merge;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PropertyHooksProcessor.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PropertyHooksProcessor.cpp')]
 final class PropertyHooksProcessor
 {
 

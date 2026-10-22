@@ -12,6 +12,7 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\StatementResult;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use function count;
 
@@ -19,6 +20,7 @@ use function count;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'methodReturnStatementsNode')]
+#[CompiledIntoTurboExtension]
 final class MethodReturnStatementsNode extends NodeAbstract implements ReturnStatementsNode
 {
 

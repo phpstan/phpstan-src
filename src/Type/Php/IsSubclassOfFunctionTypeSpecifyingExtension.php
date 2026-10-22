@@ -10,12 +10,14 @@ use PHPStan\Analyser\TypeSpecifierAwareExtension;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
 use function count;
 use function strtolower;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class IsSubclassOfFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 

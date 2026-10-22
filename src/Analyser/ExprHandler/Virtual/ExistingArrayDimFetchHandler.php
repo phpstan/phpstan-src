@@ -14,14 +14,14 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<ExistingArrayDimFetch>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/ExistingArrayDimFetchHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class ExistingArrayDimFetchHandler implements ExprHandler
 {
 

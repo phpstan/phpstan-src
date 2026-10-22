@@ -11,7 +11,7 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ExpressionTypeResolverExtension;
 use PHPStan\Type\Type;
@@ -24,7 +24,7 @@ use function is_string;
 use function spl_object_id;
 
 #[GenerateFactory(interface: ExpressionResultFactory::class)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResult.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResult.cpp')]
 final class ExpressionResult
 {
 

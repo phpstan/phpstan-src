@@ -2,12 +2,14 @@
 
 namespace PHPStan\Node;
 
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'gatheredClassMethod')]
+#[CompiledIntoTurboExtension]
 final class ClassMethod
 {
 

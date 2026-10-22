@@ -12,13 +12,13 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements StmtHandler<InlineHTML>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InlineHtmlHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class InlineHtmlHandler implements StmtHandler
 {
 

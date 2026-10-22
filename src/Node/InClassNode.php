@@ -6,12 +6,14 @@ use Override;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassLike;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'inClassNode')]
+#[CompiledIntoTurboExtension]
 final class InClassNode extends Node\Stmt implements VirtualNode
 {
 

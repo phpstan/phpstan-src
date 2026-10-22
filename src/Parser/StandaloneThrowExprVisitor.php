@@ -6,8 +6,10 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class StandaloneThrowExprVisitor extends NodeVisitorAbstract
 {
 

@@ -80,7 +80,7 @@ zv::Val nameToString(NameToStringSite &site, zval *name)
 	if (UNEXPECTED(site.method.ce != object->ce || site.method.generation != pt_engine_generation || site.method.fn == NULL)) {
 		zend_function *fn = pt_find_method(object->ce, PT_LC("tostring"));
 		if (UNEXPECTED(fn == NULL)) return zv::Val();
-		site.method = { object->ce, fn, pt_engine_generation };
+		site.method = { object->ce, fn, pt_engine_generation, {} };
 	}
 	zend_class_entry *declaring = site.method.fn->common.scope;
 	if (EXPECTED(declaring != NULL && (declaring == pt_class_loaded(PT_CLASS_IDENTIFIER) || declaring == pt_class_loaded(PT_CLASS_NAME)))) {

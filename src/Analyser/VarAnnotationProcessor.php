@@ -6,13 +6,13 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use function count;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VarAnnotationProcessor.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VarAnnotationProcessor.cpp')]
 final class VarAnnotationProcessor
 {
 

@@ -6,12 +6,14 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class ArrayPopFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

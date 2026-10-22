@@ -6,10 +6,10 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArrayWalkArgVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class ArrayWalkArgVisitor extends NodeVisitorAbstract
 {
 

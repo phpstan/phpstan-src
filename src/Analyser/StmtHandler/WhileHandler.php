@@ -21,7 +21,7 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\BreaklessWhileLoopNode;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_merge;
 use function count;
 
@@ -29,7 +29,7 @@ use function count;
  * @implements StmtHandler<While_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/WhileHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/WhileHandler.cpp')]
 final class WhileHandler implements StmtHandler
 {
 

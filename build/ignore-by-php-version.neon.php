@@ -11,6 +11,9 @@ if (PHP_VERSION_ID < 80100) {
 	$includes[] = __DIR__ . '/readonly-property.neon';
 	$includes[] = __DIR__ . '/turbo-declaration-generator-pre-8.1.neon';
 }
+if (PHP_VERSION_ID < 80400) {
+	$includes[] = __DIR__ . '/turbo-codegen-pre-8.4.neon';
+}
 
 // PHP 8.1's serialize() does not trim its buffer, so the rule's cache keys cost 4 KB each
 if (PHP_VERSION_ID >= 80200) {

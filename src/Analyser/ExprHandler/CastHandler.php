@@ -25,7 +25,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 
@@ -33,7 +33,7 @@ use PHPStan\Type\Type;
  * @implements ExprHandler<Cast>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CastHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class CastHandler implements ExprHandler
 {
 

@@ -7,10 +7,12 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_merge;
 use function strtolower;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class DynamicReturnTypeExtensionRegistry
 {
 

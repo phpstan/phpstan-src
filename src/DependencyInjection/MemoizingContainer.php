@@ -2,7 +2,10 @@
 
 namespace PHPStan\DependencyInjection;
 
+use PHPStan\Turbo\CompiledIntoTurboExtension;
+
 #[AutowiredService(as: Container::class)]
+#[CompiledIntoTurboExtension]
 final class MemoizingContainer implements Container
 {
 

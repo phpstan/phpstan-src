@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * A reference to a template type together with its variance at the point of usage.
@@ -18,7 +18,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  * - Variance validation (checking that @template-covariant types only appear in
  *   covariant positions)
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeReference.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_type_reference_new', 'out'])]
 final class TemplateTypeReference
 {
 

@@ -22,7 +22,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
@@ -35,7 +35,7 @@ use function spl_object_id;
  * @implements ExprHandler<Ternary>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TernaryHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TernaryHandler.cpp')]
 final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 {
 

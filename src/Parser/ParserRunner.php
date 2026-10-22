@@ -5,7 +5,7 @@ namespace PHPStan\Parser;
 use PhpParser\ErrorHandler;
 use PhpParser\Node\Stmt;
 use PhpParser\Parser;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * Seam for the turbo extension's native php-parser engine: the native
@@ -13,7 +13,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  * falling back to $parser->parse() for anything else. Without the extension
  * this delegation is all there is.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/parser/ParserRunner.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/parser/ParserRunner.cpp')]
 final class ParserRunner
 {
 

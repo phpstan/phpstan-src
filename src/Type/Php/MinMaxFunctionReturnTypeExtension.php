@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
@@ -21,6 +22,7 @@ use function count;
 use function in_array;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

@@ -5,8 +5,10 @@ namespace PHPStan\Reflection\ReflectionProvider;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService(as: ReflectionProviderProvider::class)]
+#[CompiledIntoTurboExtension]
 final class LazyReflectionProviderProvider implements ReflectionProviderProvider
 {
 

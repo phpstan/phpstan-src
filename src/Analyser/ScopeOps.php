@@ -20,7 +20,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -43,7 +43,7 @@ use function substr_compare;
 /**
  * Hot scope-table operations extracted from MutatingScope.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ScopeOps.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ScopeOps.cpp')]
 final class ScopeOps
 {
 

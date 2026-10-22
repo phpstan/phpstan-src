@@ -7,10 +7,10 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\WrapperPropertyReflection;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ChangedTypePropertyReflection.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_changed_type_property_reflection_new', 'val'], dispatch: ['function' => 'pt_changed_type_property_reflection_call', 'enum' => 'pt_property_reflection_member', 'prefix' => 'PT_PROP_', 'receiver' => 'property'])]
 final class ChangedTypePropertyReflection implements WrapperPropertyReflection
 {
 

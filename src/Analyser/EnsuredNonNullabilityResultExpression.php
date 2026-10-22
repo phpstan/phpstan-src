@@ -4,10 +4,10 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/EnsuredNonNullabilityResultExpression.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_ensured_non_nullability_result_expression_new', 'val'])]
 final class EnsuredNonNullabilityResultExpression
 {
 

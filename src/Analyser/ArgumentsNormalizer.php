@@ -18,7 +18,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_is_list;
 use function array_key_exists;
@@ -34,7 +34,7 @@ use function sprintf;
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArgumentsNormalizer.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArgumentsNormalizer.cpp')]
 final class ArgumentsNormalizer
 {
 

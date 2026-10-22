@@ -1,6 +1,7 @@
 /PHP-CPP/
 /src/*.o
 /src/parser/*.o
+/src/compiled/*.o
 /phpstan_turbo.so
 /phpstan_turbo_core.so
 /version.stamp
@@ -38,13 +39,16 @@
 /run-tests.php
 /src/*.lo
 /src/parser/*.lo
+/src/compiled/*.lo
 /src/.libs/
 /src/parser/.libs/
+/src/compiled/.libs/
 
 # profile-guided build artifacts (make pgo)
 /pgo/
 /src/*.gcda
 /src/parser/*.gcda
+/src/compiled/*.gcda
 
 # the compilation database clang-tidy reads (make lint-turbo), regenerated
 # from the Makefile's own flags by bin/generate-compile-commands.php

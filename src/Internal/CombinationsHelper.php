@@ -2,9 +2,9 @@
 
 namespace PHPStan\Internal;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CombinationsHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CombinationsHelper.cpp')]
 final class CombinationsHelper
 {
 

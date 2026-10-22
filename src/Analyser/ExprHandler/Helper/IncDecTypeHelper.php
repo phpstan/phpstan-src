@@ -9,7 +9,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -30,7 +30,7 @@ use function str_decrement;
 use function str_increment;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/IncDecTypeHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/IncDecTypeHelper.cpp')]
 final class IncDecTypeHelper
 {
 

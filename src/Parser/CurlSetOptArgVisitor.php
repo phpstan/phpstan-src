@@ -6,10 +6,10 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CurlSetOptArgVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class CurlSetOptArgVisitor extends NodeVisitorAbstract
 {
 

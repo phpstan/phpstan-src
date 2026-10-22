@@ -8,11 +8,11 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExtendedDummyParameter.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ExtendedDummyParameter.cpp')]
 final class ExtendedDummyParameter extends DummyParameter implements ExtendedParameterReflection
 {
 

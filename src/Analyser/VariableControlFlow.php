@@ -6,10 +6,10 @@ use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableControlFlow.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableControlFlow.cpp')]
 final class VariableControlFlow extends VariableFlow
 {
 

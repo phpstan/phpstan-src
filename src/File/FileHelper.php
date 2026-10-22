@@ -5,6 +5,7 @@ namespace PHPStan\File;
 use Nette\Utils\Strings;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_pop;
 use function explode;
 use function implode;
@@ -21,6 +22,7 @@ use function trim;
 use const DIRECTORY_SEPARATOR;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class FileHelper
 {
 

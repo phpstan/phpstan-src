@@ -29,6 +29,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NeverType;
@@ -50,6 +51,7 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class FunctionDefinitionCheck
 {
 

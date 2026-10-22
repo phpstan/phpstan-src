@@ -18,7 +18,7 @@ use PHPStan\Analyser\PerFileAnalysisResettable;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
@@ -28,7 +28,7 @@ use function get_class;
 use function is_string;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/NonNullabilityHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/NonNullabilityHelper.cpp')]
 final class NonNullabilityHelper implements PerFileAnalysisResettable
 {
 

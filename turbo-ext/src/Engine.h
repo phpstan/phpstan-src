@@ -257,7 +257,14 @@ struct pt_method_site
 	zend_class_entry *ce;
 	zend_function *fn;
 	uint32_t generation;
+	/* what fn's body is when trivial (pt_abi.trivial_shape), resolved by
+	 * pt_call_method_cached(): a call without arguments is answered from it */
+	pt_trivial_shape shape;
 };
+
+/* the answer of a trivial method body (PT_TRIVIAL_CONST, PT_TRIVIAL_PROP)
+ * without the call: true with *ret set, false when it has to run */
+bool pt_trivial_answer(const pt_trivial_shape &shape, zend_object *object, zval *ret);
 
 /* $object->method(...$argv) / Class::method(...$argv) (a class-map class);
  * UNDEF = pending exception */

@@ -11,6 +11,7 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_map;
@@ -19,6 +20,7 @@ use function count;
 use function implode;
 use function is_bool;
 
+#[CompiledIntoTurboExtension]
 final class UnionTypeMethodReflection implements ExtendedMethodReflection
 {
 

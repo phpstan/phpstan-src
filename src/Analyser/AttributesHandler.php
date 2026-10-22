@@ -9,7 +9,7 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * Processes attribute arguments for NodeScopeResolver - as constructor
@@ -17,7 +17,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  * otherwise.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/AttributesHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/AttributesHandler.cpp')]
 final class AttributesHandler
 {
 

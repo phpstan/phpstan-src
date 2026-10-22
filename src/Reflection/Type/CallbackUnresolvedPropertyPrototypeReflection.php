@@ -6,10 +6,10 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallbackUnresolvedPropertyPrototypeReflection.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CallbackUnresolvedPropertyPrototypeReflection.cpp')]
 final class CallbackUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
 {
 

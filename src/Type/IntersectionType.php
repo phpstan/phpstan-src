@@ -30,7 +30,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
@@ -77,7 +77,7 @@ use const PHP_INT_MAX;
 
 /** @api */
 #[InstanceofDeprecated]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IntersectionType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IntersectionType.cpp')]
 class IntersectionType implements CompoundType
 {
 

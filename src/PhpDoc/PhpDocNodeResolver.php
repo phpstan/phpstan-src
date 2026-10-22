@@ -33,6 +33,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
@@ -52,6 +53,7 @@ use function str_starts_with;
 use function substr;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class PhpDocNodeResolver
 {
 

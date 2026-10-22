@@ -5,14 +5,14 @@ namespace PHPStan\Type;
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use function array_merge;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/OffsetAccessType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_offset_access_type_new', 'out'])]
 final class OffsetAccessType implements CompoundType, LateResolvableType
 {
 

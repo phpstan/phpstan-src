@@ -3,7 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_diff_key;
@@ -31,7 +31,7 @@ use function is_string;
  *
  * @see UnionType::getFiniteTypeSet()
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FiniteTypeSet.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FiniteTypeSet.cpp')]
 final class FiniteTypeSet
 {
 

@@ -6,11 +6,11 @@ use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function in_array;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeTraverserInstanceofVisitor.cpp')]
+#[CompiledIntoTurboExtension]
 final class TypeTraverserInstanceofVisitor extends NodeVisitorAbstract
 {
 

@@ -1,0 +1,5 @@
+parameters:
+	excludePaths:
+		# turbo-ext/bin/compile-twins.php runs on PHP 8.4+ only: the compiler
+		# uses the reflection and syntax of the PHP it runs on
+		- PHPStan/Build/TurboCodegen/*

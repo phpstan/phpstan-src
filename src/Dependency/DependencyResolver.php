@@ -12,6 +12,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_key_exists;
 use function array_values;
 use function get_class;
@@ -20,6 +21,7 @@ use function spl_object_id;
 use function str_starts_with;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class DependencyResolver
 {
 

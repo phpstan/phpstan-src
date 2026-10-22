@@ -3,7 +3,7 @@
 /**
  * Verifies the shadowed PHP classes and their native C++ implementations are
  * in sync, pairing them by method name, driven by the
- * ShadowedByTurboExtension attributes (used by CI): every shadowed pair's
+ * ImplementedInTurboExtension and CompiledIntoTurboExtension attributes (used by CI): every shadowed pair's
  * files exist, every public method of the PHP class has a PHP_METHOD
  * counterpart in the C++ file, and every PHP_METHOD corresponds to a method
  * of the PHP class. Methods a PHP class gets from the traits it uses count
@@ -658,7 +658,8 @@ function analyzePair(string $className, array $entry): array
 
 /**
  * The shadowed pairs must stay complete: every class-defining .cpp file must
- * correspond to a ShadowedByTurboExtension attribute and vice versa — a
+ * correspond to an ImplementedInTurboExtension or CompiledIntoTurboExtension
+ * attribute and vice versa — a
  * shadowed class without the attribute would silently escape the parity
  * checks.
  *
@@ -679,7 +680,7 @@ function checkStructure(array $manifest): array
 	// no manifest entry.
 	$cppClasses = [];
 	$declaredNames = [];
-	foreach (array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')) as $file) {
+	foreach (array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/compiled/*.cpp')) as $file) {
 		$source = file_get_contents($file);
 		preg_match_all('~reg::Class\s+\w+\("((?:PHPStan|PhpParser)\\\\[^"]+)"\)~', $source, $m);
 		if ($m[1] === []) {
@@ -698,7 +699,7 @@ function checkStructure(array $manifest): array
 		}
 	}
 	foreach (array_diff($cppClasses, array_keys($fromManifest)) as $extra) {
-		$problems[] = sprintf('%s.cpp declares a shadowing class but no ShadowedByTurboExtension attribute names it', $extra);
+		$problems[] = sprintf('%s.cpp declares a shadowing class but no ImplementedInTurboExtension or CompiledIntoTurboExtension attribute names it', $extra);
 	}
 	foreach (array_diff(array_keys($fromManifest), $cppClasses) as $missing) {
 		$problems[] = sprintf('shadowed class %s (%s) declares no reg::Class under its name in the .cpp files', $fromManifest[$missing], $missing);
@@ -799,7 +800,7 @@ function checkLowercaseNameLiterals(): array
 	foreach (get_defined_functions()['internal'] as $function) {
 		$remember($function);
 	}
-	$sources = array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/*.h'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/parser/*.h'));
+	$sources = array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/*.h'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/parser/*.h'), glob('turbo-ext/src/compiled/*.cpp'));
 	foreach ($sources as $source) {
 		preg_match_all('~\.(?:method|traitMethod)(?:<[^(]*>)?\("(\w+)"~', file_get_contents($source), $m);
 		foreach ($m[1] as $name) {

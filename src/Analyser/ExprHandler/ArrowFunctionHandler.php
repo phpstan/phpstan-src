@@ -21,14 +21,14 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function is_string;
 
 /**
  * @implements ExprHandler<ArrowFunction>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrowFunctionHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrowFunctionHandler.cpp')]
 final class ArrowFunctionHandler implements ExprHandler
 {
 

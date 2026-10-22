@@ -3,9 +3,9 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/InternalStatementExitPoint.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_internal_statement_exit_point_new', 'val'])]
 final class InternalStatementExitPoint
 {
 

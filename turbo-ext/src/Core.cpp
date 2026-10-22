@@ -92,8 +92,6 @@ PT_CORE_API void pt_core_rinit()
 	pt_node_traverser_rinit();
 	pt_scope_ops_rinit();
 	pt_type_combinator_cache_rinit();
-	pt_is_super_type_of_result_rinit();
-	pt_accepts_result_rinit();
 	pt_integer_range_type_rinit();
 	pt_object_type_rinit();
 	pt_static_type_factory_rinit();
@@ -109,8 +107,6 @@ PT_CORE_API void pt_core_rshutdown()
 	pt_scope_ops_rshutdown();
 	pt_node_traverser_rshutdown();
 	pt_type_combinator_cache_rshutdown();
-	pt_is_super_type_of_result_rshutdown();
-	pt_accepts_result_rshutdown();
 	pt_support_rshutdown();
 	pt_object_type_rshutdown();
 	pt_type_traverser_rshutdown();

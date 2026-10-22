@@ -7,7 +7,7 @@ use PhpParser\Node\Expr\ArrayDimFetch;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
 /**
@@ -20,7 +20,7 @@ use PHPStan\Type\Type;
  *
  * @internal
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PreparedAssignTarget.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_prepared_assign_target_new', 'argv'])]
 final class PreparedAssignTarget
 {
 

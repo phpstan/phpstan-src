@@ -182,7 +182,11 @@ static uint32_t pt_memo_generation = 1;
 
 static zend_always_inline TypeObjectHeader *typeObjectHeader(zend_object *obj)
 {
+#ifdef PT_ALLOC_COUNT
+	if (pt_census_original_handlers(obj) != pt_type_object_handlers) return NULL;
+#else
 	if (obj->handlers != pt_type_object_handlers) return NULL;
+#endif
 	return (TypeObjectHeader *) ((char *) obj - offsetof(TypeObjectHeader, std));
 }
 

@@ -11,13 +11,13 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 
 /**
  * @implements StmtHandler<Label>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/LabelHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class LabelHandler implements StmtHandler
 {
 

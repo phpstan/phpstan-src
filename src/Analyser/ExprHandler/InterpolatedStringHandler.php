@@ -20,7 +20,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -30,7 +30,7 @@ use function spl_object_id;
  * @implements ExprHandler<InterpolatedString>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/InterpolatedStringHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class InterpolatedStringHandler implements ExprHandler
 {
 

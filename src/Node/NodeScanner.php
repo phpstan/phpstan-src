@@ -3,13 +3,13 @@
 namespace PHPStan\Node;
 
 use PhpParser\Node;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function is_array;
 
 /**
  * Recursive AST queries over php-parser node graphs.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NodeScanner.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NodeScanner.cpp')]
 final class NodeScanner
 {
 

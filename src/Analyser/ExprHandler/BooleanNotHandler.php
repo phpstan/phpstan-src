@@ -16,7 +16,7 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Type;
@@ -25,7 +25,7 @@ use PHPStan\Type\Type;
  * @implements ExprHandler<BooleanNot>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BooleanNotHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class BooleanNotHandler implements ExprHandler
 {
 

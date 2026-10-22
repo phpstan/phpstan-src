@@ -331,9 +331,54 @@ void pt_stmt_handler_entry_register(zend_class_entry **ce, pt_stmt_handler_entry
 	registrationFor(ce).stmt = entry;
 }
 
+
+#ifdef PGRT_PROF
+/* -DPGRT_PROF: self time per handler class and in node callbacks, children
+ * subtracted, dumped at exit to $PGRT_PROF_OUT — a profiler-less way to
+ * compare handler implementations */
+#include <map>
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+#include <time.h>
+namespace {
+struct ProfFrame { const char *key; uint64_t start; uint64_t child; };
+ProfFrame profStack[8192];
+int profDepth = 0;
+std::map<std::string, std::pair<uint64_t, uint64_t>> *profTotals;
+void profDump()
+{
+	FILE *out = fopen(getenv("PGRT_PROF_OUT") ? getenv("PGRT_PROF_OUT") : "/dev/stderr", "a");
+	for (auto &e : *profTotals) fprintf(out, "%12llu %10llu %s\n", (unsigned long long) e.second.first, (unsigned long long) e.second.second, e.first.c_str());
+	fclose(out);
+}
+struct ProfGuard
+{
+	explicit ProfGuard(const char *key)
+	{
+		if (profTotals == nullptr) { profTotals = new std::map<std::string, std::pair<uint64_t, uint64_t>>(); atexit(profDump); }
+		profStack[profDepth++] = { key, clock_gettime_nsec_np(CLOCK_UPTIME_RAW), 0 };
+	}
+	~ProfGuard()
+	{
+		ProfFrame frame = profStack[--profDepth];
+		uint64_t elapsed = clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - frame.start;
+		auto &total = (*profTotals)[frame.key];
+		total.first += elapsed - frame.child;
+		total.second++;
+		if (profDepth > 0) profStack[profDepth - 1].child += elapsed;
+	}
+};
+}
+#define PGRT_PROF_GUARD(key) ProfGuard pgrtProfGuard(key)
+#else
+#define PGRT_PROF_GUARD(key) do { } while (0)
+#endif
+
 zv::Val pt_expr_handler_process(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 {
 	zend_object *object = Z_OBJ_P(handler);
+	PGRT_PROF_GUARD(ZSTR_VAL(object->ce->name));
 	HandlerDispatch scratch;
 	HandlerDispatch *dispatch = dispatchOf(object->ce, scratch);
 	if (EXPECTED(dispatch->expr != NULL)) return dispatch->expr(object, nodeScopeResolver, stmt, expr, scope, storage, nodeCallback, context);
@@ -347,6 +392,7 @@ zv::Val pt_expr_handler_process(zval *handler, zval *nodeScopeResolver, zval *st
 zv::Val pt_stmt_handler_process(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 {
 	zend_object *object = Z_OBJ_P(handler);
+	PGRT_PROF_GUARD(ZSTR_VAL(object->ce->name));
 	HandlerDispatch scratch;
 	HandlerDispatch *dispatch = dispatchOf(object->ce, scratch);
 	if (EXPECTED(dispatch->stmt != NULL)) return dispatch->stmt(object, nodeScopeResolver, stmt, scope, storage, nodeCallback, context);
@@ -373,13 +419,44 @@ zval *pt_property_cached_resolve(pt_property_site &site, zend_object *object, co
 	return OBJ_PROP(object, site.offset);
 }
 
+#ifdef PGRT_COUNT
+void pgrtCountHit(const char *kind, const char *cls, const char *name);
+#endif
+
+bool pt_trivial_answer(const pt_trivial_shape &shape, zend_object *object, zval *ret)
+{
+	if (shape.kind == PT_TRIVIAL_CONST) {
+		ZVAL_COPY(ret, &shape.constant);
+		return true;
+	}
+	if (shape.kind == PT_TRIVIAL_PROP) {
+		zval *slot = OBJ_PROP(object, shape.offset);
+		ZVAL_DEREF(slot);
+		if (EXPECTED(Z_TYPE_P(slot) != IS_UNDEF)) {
+			ZVAL_COPY(ret, slot);
+			return true;
+		}
+	}
+	return false;
+}
+
 zv::Val pt_call_method_cached(pt_method_site &site, zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv)
 {
 	if (UNEXPECTED(site.ce != object->ce || site.generation != pt_engine_generation || site.fn == NULL)) {
 		zend_function *fn = pt_find_method(object->ce, lcname, len);
 		if (UNEXPECTED(fn == NULL)) return zv::Val();
-		site = { object->ce, fn, pt_engine_generation };
+		site = { object->ce, fn, pt_engine_generation, {} };
+		pt_abi.trivial_shape(fn, &site.shape);
 	}
+	if (argc == 0 && site.shape.kind != PT_TRIVIAL_NONE) {
+		zval answer;
+		if (pt_trivial_answer(site.shape, object, &answer)) {
+			return zv::Val::adopt(answer);
+		}
+	}
+#ifdef PGRT_COUNT
+	pgrtCountHit(site.fn->type == ZEND_USER_FUNCTION ? "Hu" : "Hi", ZSTR_VAL(object->ce->name), lcname);
+#endif
 	return callKnown(site.fn, object, argc, argv);
 }
 
@@ -402,7 +479,7 @@ zv::Val pt_call_static_cached(pt_method_site &site, int classIdx, const char *lc
 	if (UNEXPECTED(site.ce != ce || site.generation != pt_engine_generation || site.fn == NULL)) {
 		zend_function *fn = pt_find_method(ce, lcname, len);
 		if (UNEXPECTED(fn == NULL)) return zv::Val();
-		site = { ce, fn, pt_engine_generation };
+		site = { ce, fn, pt_engine_generation, {} };
 	}
 	zval ret;
 	zend_call_known_function(site.fn, NULL, ce, &ret, argc, argv, NULL);
@@ -447,6 +524,7 @@ void pt_finally_rethrow(zend_object *pending)
 
 bool pt_engine_call_node_callback(zval *callback, zval *node, zval *scope)
 {
+	PGRT_PROF_GUARD("(node callback)");
 	zval *target = callback;
 	ZVAL_DEREF(target);
 	zval argv[2];

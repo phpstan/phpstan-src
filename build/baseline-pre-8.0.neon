@@ -21,7 +21,7 @@ parameters:
 		-
 			rawMessage: 'Call to an undefined method ReflectionClass<object>::getAttributes().'
 			identifier: method.notFound
-			count: 2
+			count: 3
 			path: PHPStan/Build/TurboAttributeCollector.php
 
 		-

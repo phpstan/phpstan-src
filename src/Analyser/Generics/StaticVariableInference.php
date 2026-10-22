@@ -10,7 +10,7 @@ use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_pop;
@@ -40,7 +40,7 @@ use function spl_object_id;
  * keep today's behaviour.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/StaticVariableInference.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/StaticVariableInference.cpp')]
 final class StaticVariableInference
 {
 

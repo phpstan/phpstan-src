@@ -3,7 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_pop;
 use function count;
 
@@ -25,7 +25,7 @@ use function count;
  * A scope used outside any running analysis simply misses here and resolves
  * on demand with a throwaway storage.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorageStack.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorageStack.cpp')]
 final class ExpressionResultStorageStack
 {
 

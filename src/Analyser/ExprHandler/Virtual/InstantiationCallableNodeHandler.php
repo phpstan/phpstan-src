@@ -21,14 +21,14 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @implements ExprHandler<InstantiationCallableNode>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/InstantiationCallableNodeHandler.cpp')]
+#[CompiledIntoTurboExtension]
 final class InstantiationCallableNodeHandler implements ExprHandler
 {
 

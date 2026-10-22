@@ -7,7 +7,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -37,7 +37,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 
 #[InstanceofDeprecated(insteadUse: 'Type::isNumericString()')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessoryNumericStringType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessoryNumericStringType.cpp')]
 class AccessoryNumericStringType implements CompoundType, AccessoryType
 {
 

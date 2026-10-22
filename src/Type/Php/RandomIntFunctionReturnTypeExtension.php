@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\IntegerRangeType;
@@ -20,6 +21,7 @@ use function max;
 use function min;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class RandomIntFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

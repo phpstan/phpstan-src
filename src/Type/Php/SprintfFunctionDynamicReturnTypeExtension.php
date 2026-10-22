@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -38,6 +39,7 @@ use function substr;
 use function vsprintf;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

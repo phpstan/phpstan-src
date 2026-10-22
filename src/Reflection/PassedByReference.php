@@ -2,7 +2,7 @@
 
 namespace PHPStan\Reflection;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_key_exists;
 
 /**
@@ -24,7 +24,7 @@ use function array_key_exists;
  *
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PassedByReference.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PassedByReference.cpp')]
 final class PassedByReference
 {
 

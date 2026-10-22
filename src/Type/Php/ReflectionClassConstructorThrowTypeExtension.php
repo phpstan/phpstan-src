@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ObjectWithoutClassType;
@@ -15,6 +16,7 @@ use ReflectionClass;
 use function count;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class ReflectionClassConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

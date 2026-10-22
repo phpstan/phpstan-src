@@ -2,6 +2,7 @@
 
 namespace PHPStan\File;
 
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use function array_filter;
 use function array_map;
 use function array_unique;
@@ -10,6 +11,7 @@ use function file_exists;
 use function is_file;
 use function sort;
 
+#[CompiledIntoTurboExtension]
 final class FileFinder
 {
 

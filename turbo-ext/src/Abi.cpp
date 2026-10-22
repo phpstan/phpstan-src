@@ -11,6 +11,7 @@
 #include "zend_closures.h"
 #include "zend_fibers.h"
 #include "zend_weakrefs.h"
+#include "zend_observer.h"
 
 
 static const zend_object_handlers *abi_object_handlers(const pt_abi_handlers &overrides)
@@ -229,9 +230,162 @@ static bool abi_parse_arg_str_slow(zval *arg, zend_string **dest, uint32_t num)
 #endif
 }
 
+/* zend_call_known_function() of an internal function, as zend_call_function()
+ * runs it but without the callable resolution around it: a frame pushed on
+ * the VM stack, the arguments copied (a reference as its value), the
+ * handler, the frame popped, and an exception rethrown into a calling user
+ * frame. The native code calls internal functions — builtins and the
+ * extension's own methods — millions of times per analysis. Anything that
+ * needs more of zend_call_function() takes it: observers, an
+ * execute_internal hook, trampolines, closures, deprecated functions,
+ * by-reference parameters and named arguments. */
+static bool abi_call_internal_lean(zend_function *fn, zend_object *object, zend_class_entry *calledScope, zval *retval, uint32_t paramCount, zval *params)
+{
+	if (UNEXPECTED(ZEND_OBSERVER_ENABLED || zend_execute_internal != NULL || (fn->common.fn_flags & (ZEND_ACC_CALL_VIA_TRAMPOLINE | ZEND_ACC_DEPRECATED | ZEND_ACC_CLOSURE)))) {
+		return false;
+	}
+	for (uint32_t i = 0; i < paramCount; i++) {
+		if (UNEXPECTED(ARG_SHOULD_BE_SENT_BY_REF(fn, i + 1))) {
+			return false;
+		}
+	}
+	ZVAL_UNDEF(retval);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		return true;
+	}
+	uint32_t callInfo = ZEND_CALL_TOP_FUNCTION | ZEND_CALL_DYNAMIC;
+	void *objectOrCalledScope = calledScope;
+	if (object != NULL && !(fn->common.fn_flags & ZEND_ACC_STATIC)) {
+		callInfo |= ZEND_CALL_HAS_THIS;
+		objectOrCalledScope = object;
+	}
+	zend_execute_data *call = zend_vm_stack_push_call_frame(callInfo, fn, paramCount, objectOrCalledScope);
+	for (uint32_t i = 0; i < paramCount; i++) {
+		zval *arg = &params[i];
+		ZVAL_DEREF(arg);
+		ZVAL_COPY(ZEND_CALL_ARG(call, i + 1), arg);
+	}
+	ZVAL_NULL(retval);
+	call->prev_execute_data = EG(current_execute_data);
+	EG(current_execute_data) = call;
+	fn->internal_function.handler(call, retval);
+	EG(current_execute_data) = call->prev_execute_data;
+	zend_vm_stack_free_args(call);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		zval_ptr_dtor(retval);
+		ZVAL_UNDEF(retval);
+	}
+	zend_vm_stack_free_call_frame(call);
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		if (UNEXPECTED(EG(current_execute_data) == NULL)) {
+			zend_throw_exception_internal(NULL);
+		} else if (EG(current_execute_data)->func && ZEND_USER_CODE(EG(current_execute_data)->func->common.type)) {
+			zend_rethrow_exception(EG(current_execute_data));
+		}
+	}
+	return true;
+}
+
 static void abi_call_known_function(zend_function *fn, zend_object *object, zend_class_entry *calledScope, zval *retval, uint32_t paramCount, zval *params, HashTable *namedParams)
 {
+	if (fn->type == ZEND_INTERNAL_FUNCTION && namedParams == NULL) {
+		/* a NULL retval discards the result, as zend_call_known_function() does */
+		zval discarded;
+		if (abi_call_internal_lean(fn, object, calledScope, retval != NULL ? retval : &discarded, paramCount, params)) {
+			if (retval == NULL) {
+				zval_ptr_dtor(&discarded);
+			}
+			return;
+		}
+	}
 	zend_call_known_function(fn, object, calledScope, retval, paramCount, params, namedParams);
+}
+
+static const char *abi_internal_arg_name(const zend_function *fn, uint32_t i)
+{
+	return ((const zend_internal_arg_info *) fn->internal_function.arg_info)[i].name;
+}
+
+static bool abi_arg_sent_by_ref(const zend_function *fn, uint32_t argNum)
+{
+	return ARG_SHOULD_BE_SENT_BY_REF(fn, argNum);
+}
+
+/* `return <literal>;` or `return $this->prop;` (with the return type check
+ * the compiler emits when the property's declared type is exactly the
+ * return type, so it always passes), as the engine compiled it without
+ * extensions instrumenting the opcodes; anything else runs */
+static void abi_trivial_shape(const zend_function *fn, pt_trivial_shape *out)
+{
+	out->kind = PT_TRIVIAL_NONE;
+	if (fn->type != ZEND_USER_FUNCTION) {
+		return;
+	}
+	const zend_op_array *opArray = &fn->op_array;
+	if (opArray->num_args != 0 || (opArray->fn_flags & (ZEND_ACC_VARIADIC | ZEND_ACC_RETURN_REFERENCE | ZEND_ACC_GENERATOR | ZEND_ACC_STATIC | ZEND_ACC_ABSTRACT | ZEND_ACC_HAS_FINALLY_BLOCK | ZEND_ACC_CLOSURE))) {
+		return;
+	}
+	const zend_op *ops = opArray->opcodes;
+	uint32_t count = opArray->last;
+	if (count >= 1 && ops[0].opcode == ZEND_RETURN && ops[0].op1_type == IS_CONST) {
+		zval *constant = RT_CONSTANT(&ops[0], ops[0].op1);
+		/* a literal array (getSubNodeNames()) lives as long as the function: copied with a reference */
+		if (Z_TYPE_P(constant) <= IS_TRUE || Z_TYPE_P(constant) == IS_LONG || Z_TYPE_P(constant) == IS_DOUBLE || (Z_TYPE_P(constant) == IS_STRING && ZSTR_IS_INTERNED(Z_STR_P(constant))) || Z_TYPE_P(constant) == IS_ARRAY) {
+			ZVAL_COPY_VALUE(&out->constant, constant);
+			out->kind = PT_TRIVIAL_CONST;
+		}
+		return;
+	}
+	if (count < 2 || ops[0].opcode != ZEND_FETCH_OBJ_R || ops[0].op1_type != IS_UNUSED || ops[0].op2_type != IS_CONST || ops[0].result_type != IS_TMP_VAR) {
+		return;
+	}
+	uint32_t returned = ops[0].result.var;
+	uint32_t next = 1;
+	bool verified = false;
+	if (ops[1].opcode == ZEND_VERIFY_RETURN_TYPE) {
+		if (ops[1].op1_type != IS_TMP_VAR || ops[1].op1.var != returned) {
+			return;
+		}
+		if (ops[1].result_type == IS_TMP_VAR) {
+			returned = ops[1].result.var;
+		}
+		verified = true;
+		next = 2;
+	}
+	if (next >= count || ops[next].opcode != ZEND_RETURN || ops[next].op1_type != IS_TMP_VAR || ops[next].op1.var != returned) {
+		return;
+	}
+	zval *name = RT_CONSTANT(&ops[0], ops[0].op2);
+	if (Z_TYPE_P(name) != IS_STRING || fn->common.scope == NULL) {
+		return;
+	}
+	auto previousScope = EG(fake_scope); /* const from PHP 8.5 */
+	EG(fake_scope) = fn->common.scope;
+	zend_property_info *info = zend_get_property_info(fn->common.scope, Z_STR_P(name), 1);
+	EG(fake_scope) = previousScope;
+	if (info == NULL || info == ZEND_WRONG_PROPERTY_INFO || (info->flags & ZEND_ACC_STATIC)) {
+		return;
+	}
+#if PHP_VERSION_ID >= 80400
+	if (info->hooks != NULL) {
+		return;
+	}
+#endif
+	if (verified) {
+		/* the property's declared type is the return type: the check passes */
+		zend_type returnType = opArray->arg_info[-1].type;
+		zend_type propertyType = info->type;
+		if (!ZEND_TYPE_IS_SET(propertyType) || ZEND_TYPE_IS_COMPLEX(returnType) != ZEND_TYPE_IS_COMPLEX(propertyType) || ZEND_TYPE_PURE_MASK(returnType) != ZEND_TYPE_PURE_MASK(propertyType)) {
+			return;
+		}
+		if (ZEND_TYPE_IS_COMPLEX(returnType)) {
+			if (!ZEND_TYPE_HAS_NAME(returnType) || !ZEND_TYPE_HAS_NAME(propertyType) || !zend_string_equals_ci(ZEND_TYPE_NAME(returnType), ZEND_TYPE_NAME(propertyType))) {
+				return;
+			}
+		}
+	}
+	out->offset = info->offset;
+	out->kind = PT_TRIVIAL_PROP;
 }
 
 static int abi_stream_free(php_stream *stream, int closeOptions)
@@ -375,6 +529,9 @@ void pt_abi_init()
 	pt_abi.parse_arg_double_slow = abi_parse_arg_double_slow;
 	pt_abi.parse_arg_str_slow = abi_parse_arg_str_slow;
 	pt_abi.call_known_function = abi_call_known_function;
+	pt_abi.internal_arg_name = abi_internal_arg_name;
+	pt_abi.arg_sent_by_ref = abi_arg_sent_by_ref;
+	pt_abi.trivial_shape = abi_trivial_shape;
 	pt_abi.stream_free = abi_stream_free;
 	pt_abi.stream_read = abi_stream_read;
 	pt_abi.run_on_fresh_stack = abi_run_on_fresh_stack;

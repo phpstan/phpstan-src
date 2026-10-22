@@ -5,7 +5,7 @@ namespace PHPStan\Reflection;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MixedType;
@@ -15,7 +15,7 @@ use function sprintf;
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TrivialParametersAcceptor.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_trivial_parameters_acceptor_new', 'val'], dispatch: ['function' => 'pt_trivial_parameters_acceptor_call', 'enum' => 'pt_parameters_acceptor_member', 'prefix' => 'PT_PA_', 'receiver' => 'acceptor', 'fallback' => 'pt_parameters_acceptor_call_method'])]
 final class TrivialParametersAcceptor implements ExtendedParametersAcceptor, CallableParametersAcceptor
 {
 

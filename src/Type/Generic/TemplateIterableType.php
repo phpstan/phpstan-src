@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateIterableType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_iterable_type_new', 'out'])]
 final class TemplateIterableType extends IterableType implements TemplateType
 {
 

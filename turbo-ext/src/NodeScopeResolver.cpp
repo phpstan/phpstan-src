@@ -672,6 +672,7 @@ public:
 	 * pass, record receives this pass's [entries, recording] */
 	zv::Val processLoopPassStmtNodes(zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
 	{
+		PT_CENSUS_MODE(PT_CENSUS_MODE_LOOP_PASS);
 		zv::Val result;
 		pt_engine_with_stack([&]() {
 			zv::Val current = pt_mutating_scope_get_current_expression_result_storage(Z_OBJ_P(scope));
@@ -743,6 +744,7 @@ public:
 	/* Mirrors processExprOnDemand(). */
 	zv::Val processExprOnDemand(zval *expr, zval *scope, zval *storage)
 	{
+		PT_CENSUS_MODE(PT_CENSUS_MODE_ON_DEMAND);
 		zv::Ref container = slot(slots::container);
 		if (UNEXPECTED(!container.isObject())) return uninitialized("container");
 		zv::Val handler = pt_expr_handler_registry_resolve(Z_OBJ_P(expr), container.raw());
@@ -1981,6 +1983,7 @@ private:
 	zv::Val processExprNodeInternal(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
 		zend_object *exprObject = Z_OBJ_P(expr);
+		PT_CENSUS_EXPR_WALK(exprObject, Z_OBJ_P(scope));
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(exprObject, PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {

@@ -2,10 +2,10 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function spl_object_id;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeTraverser.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeTraverser.cpp')]
 final class TypeTraverser
 {
 

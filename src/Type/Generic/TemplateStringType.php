@@ -2,13 +2,13 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateStringType.cpp')]
+#[CompiledIntoTurboExtension(new: ['pt_template_string_type_new', 'out'])]
 final class TemplateStringType extends StringType implements TemplateType
 {
 

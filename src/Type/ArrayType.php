@@ -11,7 +11,7 @@ use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
@@ -52,7 +52,7 @@ use const PHP_INT_MAX;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isArray() or Type::getArrays()')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArrayType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArrayType.cpp')]
 class ArrayType implements Type
 {
 

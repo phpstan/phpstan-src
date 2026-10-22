@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\CompiledIntoTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -29,6 +30,7 @@ use const MB_CASE_LOWER;
 use const MB_CASE_UPPER;
 
 #[AutowiredService]
+#[CompiledIntoTurboExtension]
 final class StrCaseFunctionsReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
 

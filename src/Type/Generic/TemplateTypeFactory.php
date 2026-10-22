@@ -3,7 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\PhpDoc\Tag\TemplateTag;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -26,7 +26,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use function get_class;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeFactory.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeFactory.cpp')]
 final class TemplateTypeFactory
 {
 

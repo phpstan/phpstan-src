@@ -635,21 +635,52 @@ private:
 
 ZEND_COLD bool throwIntegerOverflow();
 
+/* the GCC/Clang builtins where there are some, the same checks spelled out
+ * for MSVC (the engine's ZEND_SIGNED_MULTIPLY_LONG for the product) */
+#if defined(__GNUC__)
+static zend_always_inline bool addOverflows(zend_long a, zend_long b, zend_long *out) { return __builtin_add_overflow(a, b, out); }
+static zend_always_inline bool subOverflows(zend_long a, zend_long b, zend_long *out) { return __builtin_sub_overflow(a, b, out); }
+static zend_always_inline bool mulOverflows(zend_long a, zend_long b, zend_long *out) { return __builtin_mul_overflow(a, b, out); }
+#else
+static zend_always_inline bool addOverflows(zend_long a, zend_long b, zend_long *out)
+{
+	if ((b > 0 && a > ZEND_LONG_MAX - b) || (b < 0 && a < ZEND_LONG_MIN - b)) return true;
+	*out = a + b;
+	return false;
+}
+
+static zend_always_inline bool subOverflows(zend_long a, zend_long b, zend_long *out)
+{
+	if ((b < 0 && a > ZEND_LONG_MAX + b) || (b > 0 && a < ZEND_LONG_MIN + b)) return true;
+	*out = a - b;
+	return false;
+}
+
+static zend_always_inline bool mulOverflows(zend_long a, zend_long b, zend_long *out)
+{
+	double productDouble = 0;
+	zend_long overflowed = 0;
+	ZEND_SIGNED_MULTIPLY_LONG(a, b, *out, productDouble, overflowed);
+	(void) productDouble;
+	return overflowed != 0;
+}
+#endif
+
 static zend_always_inline bool addLong(zend_long a, zend_long b, zend_long *out)
 {
-	if (UNEXPECTED(__builtin_add_overflow(a, b, out))) return throwIntegerOverflow();
+	if (UNEXPECTED(addOverflows(a, b, out))) return throwIntegerOverflow();
 	return true;
 }
 
 static zend_always_inline bool subLong(zend_long a, zend_long b, zend_long *out)
 {
-	if (UNEXPECTED(__builtin_sub_overflow(a, b, out))) return throwIntegerOverflow();
+	if (UNEXPECTED(subOverflows(a, b, out))) return throwIntegerOverflow();
 	return true;
 }
 
 static zend_always_inline bool mulLong(zend_long a, zend_long b, zend_long *out)
 {
-	if (UNEXPECTED(__builtin_mul_overflow(a, b, out))) return throwIntegerOverflow();
+	if (UNEXPECTED(mulOverflows(a, b, out))) return throwIntegerOverflow();
 	return true;
 }
 

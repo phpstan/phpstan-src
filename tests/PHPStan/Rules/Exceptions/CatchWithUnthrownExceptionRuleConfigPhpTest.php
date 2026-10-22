@@ -29,6 +29,10 @@ class CatchWithUnthrownExceptionRuleConfigPhpTest extends RuleTestCase
 				'Dead catch - ValueError is never thrown in the try block.',
 				19,
 			],
+			[
+				'Dead catch - Filter\\FilterFailedException is never thrown in the try block.',
+				58,
+			],
 		]);
 	}
 

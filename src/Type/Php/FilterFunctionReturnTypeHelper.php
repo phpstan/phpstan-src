@@ -515,11 +515,30 @@ final class FilterFunctionReturnTypeHelper
 		);
 	}
 
-	private function hasThrowOnFailureFlag(?Type $flagsType, PhpVersions $phpVersions): TrinaryLogic
+	public function hasThrowOnFailureFlag(?Type $flagsType, PhpVersions $phpVersions): TrinaryLogic
 	{
-		return $phpVersions->hasFilterThrowOnFailureConstant()->no()
-			? TrinaryLogic::createNo()
-			: $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+		$hasConstant = $phpVersions->hasFilterThrowOnFailureConstant();
+		if ($hasConstant->no()) {
+			return TrinaryLogic::createNo();
+		}
+
+		// Flag values are resolved from the runtime. Before PHP 8.5, FILTER_FLAG_GLOBAL_RANGE used the bit
+		// that PHP 8.5 assigned to FILTER_THROW_ON_FAILURE, so the two cannot be told apart on such runtime
+		// unless the analysed code definitely runs on PHP 8.5+.
+		if ($hasConstant->maybe() && $this->isThrowOnFailureFlagAmbiguous()) {
+			return TrinaryLogic::createNo();
+		}
+
+		return $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+	}
+
+	private function isThrowOnFailureFlagAmbiguous(): bool
+	{
+		if (!$this->reflectionProvider->hasConstant(new Node\Name\FullyQualified('FILTER_FLAG_GLOBAL_RANGE'), null)) {
+			return false;
+		}
+
+		return $this->getConstant('FILTER_THROW_ON_FAILURE') === $this->getConstant('FILTER_FLAG_GLOBAL_RANGE');
 	}
 
 	private function getFlagsValue(Type $exprType): Type

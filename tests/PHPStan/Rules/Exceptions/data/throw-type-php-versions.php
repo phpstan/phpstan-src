@@ -51,4 +51,13 @@ class Foo
 		}
 	}
 
+	public function doFilterVar(string $address): void
+	{
+		try {
+			$a = filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE);
+		} catch (\Filter\FilterFailedException $e) {
+
+		}
+	}
+
 }

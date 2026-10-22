@@ -18,6 +18,7 @@ use function array_keys;
 use function array_search;
 use function array_values;
 use function count;
+use function get_debug_type;
 use function implode;
 use function is_bool;
 use function is_float;
@@ -153,7 +154,7 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 				$duplicate = false;
 				$newValues = $keyValues;
 				foreach ($newValues as $k => $newValue) {
-					if (array_search($newValue, $seenKeys, true) !== false) {
+					if (isset($seenKeys[self::getSeenKey($newValue)])) {
 						unset($newValues[$k]);
 					}
 
@@ -179,10 +180,10 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 								continue;
 							}
 
-							$seenKeys[] = $seenUnions[$k][array_key_first($seenUnions[$k])];
+							$seenKeys[self::getSeenKey($seenUnions[$k][array_key_first($seenUnions[$k])])] = true;
 							unset($seenUnions[$k]);
 						}
-						$seenKeys[] = $newValue;
+						$seenKeys[self::getSeenKey($newValue)] = true;
 					} else {
 						$seenUnions[] = $newValues;
 					}
@@ -226,6 +227,15 @@ final class DuplicateKeysInLiteralArraysRule implements Rule
 		}
 
 		return $messages;
+	}
+
+	/**
+	 * Indexes seen key values by their type and value, so that looking one up
+	 * is as strict as an identity comparison without scanning every key seen so far.
+	 */
+	private static function getSeenKey(int|float|string|bool|null $value): string
+	{
+		return get_debug_type($value) . ':' . var_export($value, true);
 	}
 
 }

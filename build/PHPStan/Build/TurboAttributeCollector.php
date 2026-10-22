@@ -237,7 +237,7 @@ final class TurboAttributeCollector
 	// Shadowed classes living in vendor/ cannot carry the attributes, so
 	// they are hardcoded. Hand-written ports: class name => .cpp
 	// where turbo-ext/bin/compile-twins.php writes the compiled classes
-	public const COMPILED_DIRECTORY = 'turbo-ext/src';
+	public const COMPILED_DIRECTORY = 'turbo-ext/src/compiled';
 
 	private const VENDORED_PAIRS = [
 		NodeTraverser::class => 'turbo-ext/src/NodeTraverser.cpp',

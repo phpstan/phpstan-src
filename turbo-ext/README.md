@@ -69,7 +69,7 @@ Every shadowed piece of PHP code follows the same three steps:
 
 `bin/compile-twins.php` compiles every class marked
 `#[CompiledIntoTurboExtension]` to the `.cpp` the collector derives from the
-class name (`src/<short name>.cpp`), plus `src/CodegenDecls.h` with the C++
+class name (`src/compiled/<short name>.cpp`), plus `src/CodegenDecls.h` with the C++
 entry points of all compiled methods. PHPStan analyses each class first, and
 the compiler (`build/PHPStan/Build/TurboCodegen/`) lowers it using the native
 types it inferred: proven ints and bools become C++ scalars, compiled classes

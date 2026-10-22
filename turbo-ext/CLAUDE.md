@@ -31,7 +31,7 @@ A class the compiler handles needs no hand-written C++ (README.md,
    hand (next section).
 3. **Verify and benchmark** as for a hand-written port (steps 6–9 below);
    the version bump (step 10) applies — the generated files live in
-   `turbo-ext/src/`. Compile only classes a profile or the crossing census
+   `turbo-ext/src/compiled/`. Compile only classes a profile or the crossing census
    shows are hot: every compiled class adds code to every platform's
    binary, and cold ones buy no speed.
 

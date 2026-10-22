@@ -680,7 +680,7 @@ function checkStructure(array $manifest): array
 	// no manifest entry.
 	$cppClasses = [];
 	$declaredNames = [];
-	foreach (array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp')) as $file) {
+	foreach (array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/compiled/*.cpp')) as $file) {
 		$source = file_get_contents($file);
 		preg_match_all('~reg::Class\s+\w+\("((?:PHPStan|PhpParser)\\\\[^"]+)"\)~', $source, $m);
 		if ($m[1] === []) {
@@ -800,7 +800,7 @@ function checkLowercaseNameLiterals(): array
 	foreach (get_defined_functions()['internal'] as $function) {
 		$remember($function);
 	}
-	$sources = array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/*.h'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/parser/*.h'));
+	$sources = array_merge(glob('turbo-ext/src/*.cpp'), glob('turbo-ext/src/*.h'), glob('turbo-ext/src/parser/*.cpp'), glob('turbo-ext/src/parser/*.h'), glob('turbo-ext/src/compiled/*.cpp'));
 	foreach ($sources as $source) {
 		preg_match_all('~\.(?:method|traitMethod)(?:<[^(]*>)?\("(\w+)"~', file_get_contents($source), $m);
 		foreach ($m[1] as $name) {

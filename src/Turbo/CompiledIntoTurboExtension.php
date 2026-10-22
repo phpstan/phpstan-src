@@ -11,7 +11,7 @@ use Attribute;
  * stale (`compile-twins.php --check`). Classes ported by hand carry
  * ImplementedInTurboExtension instead.
  *
- * The generated file is turbo-ext/src/<stem>.cpp, the stem being the short
+ * The generated file is turbo-ext/src/compiled/<stem>.cpp, the stem being the short
  * class name — or the name past its first namespace segment, without the
  * separators, when another shadowed class has the same short name. At run
  * time the class is shadowed like a hand-written port (see

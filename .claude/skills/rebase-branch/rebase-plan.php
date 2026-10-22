@@ -145,7 +145,7 @@ function shadowMap(string $rev): array
 		[$path, $content] = explode(':', $line, 2);
 		if (str_contains($content, 'CompiledIntoTurboExtension')) {
 			$class = 'PHPStan\\' . str_replace('/', '\\', substr($path, 4, -4));
-			$map[$class] = ['php' => $path, 'cpp' => 'turbo-ext/src/' . basename($path, '.php') . '.cpp'];
+			$map[$class] = ['php' => $path, 'cpp' => 'turbo-ext/src/compiled/' . basename($path, '.php') . '.cpp'];
 			continue;
 		}
 		if (preg_match("~implementation:\\s*__DIR__\\s*\\.\\s*'([^']+)'~", $content, $m) !== 1) {

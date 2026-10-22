@@ -82,6 +82,9 @@ if (PHP_PHPSTAN_TURBO != "no") {
 		ADD_SOURCES(configure_module_dirname + "/src/parser",
 			phpstan_turbo_sources("src\\parser", ""),
 			"phpstan_turbo_core");
+		ADD_SOURCES(configure_module_dirname + "/src/compiled",
+			phpstan_turbo_sources("src\\compiled", ""),
+			"phpstan_turbo_core");
 	} else if (PHP_PHPSTAN_TURBO == "extension") {
 		EXTENSION("phpstan_turbo",
 			phpstan_turbo_sources("src", "src\\", true),
@@ -96,6 +99,9 @@ if (PHP_PHPSTAN_TURBO != "no") {
 			flags);
 		ADD_SOURCES(configure_module_dirname + "/src/parser",
 			phpstan_turbo_sources("src\\parser", ""),
+			"phpstan_turbo");
+		ADD_SOURCES(configure_module_dirname + "/src/compiled",
+			phpstan_turbo_sources("src\\compiled", ""),
 			"phpstan_turbo");
 	}
 }

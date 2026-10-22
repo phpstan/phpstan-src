@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function array_unique;
 use function array_values;
+use function count;
 use function extension_loaded;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -1805,6 +1806,31 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15331.php');
 		$this->assertNoErrors($errors);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15520(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15520.php');
+		$expected = [
+			['Access to an undefined property Bug15520\\Presenter::$undefinedProperty.', 20],
+			['Binary operation "+" between 1 and \'x\' results in an error.', 20],
+			['Call to an undefined method Bug15520\\Presenter::undefinedMethod().', 20],
+			['Method Bug15520\\Category::imageFor() invoked with 2 parameters, 1 required.', 20],
+			['Call to an undefined method Bug15520\\Presenter::undefinedWhile().', 33],
+			['Call to an undefined method Bug15520\\Presenter::undefinedDoWhile().', 46],
+			['Call to an undefined method Bug15520\\Presenter::undefinedFor().', 59],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInClosure().', 74],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInArrowFunction().', 76],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInPropertyName().', 90],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInNested().', 104],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInMethodName().', 105],
+		];
+		$this->assertCount(count($expected), $errors);
+		foreach ($expected as $i => [$message, $line]) {
+			$this->assertSame($message, $errors[$i]->getMessage());
+			$this->assertSame($line, $errors[$i]->getLine());
+		}
 	}
 
 	/**

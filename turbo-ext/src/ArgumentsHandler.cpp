@@ -339,11 +339,6 @@ inline bool nsrIsReturningStoredExpressionResults(zval *nodeScopeResolver, bool 
 	return pt_node_scope_resolver_is_returning_stored_expression_results(nodeScopeResolver, out);
 }
 
-inline bool nsrIsConsumingStoredExpressionResults(zval *nodeScopeResolver, bool &out)
-{
-	return pt_node_scope_resolver_is_consuming_stored_expression_results(nodeScopeResolver, out);
-}
-
 inline bool nsrStoreExpressionResult(zval *nodeScopeResolver, zval *storage, zval *expr, zval *result)
 {
 	return pt_node_scope_resolver_store_expression_result(nodeScopeResolver, storage, expr, result);
@@ -1746,11 +1741,10 @@ private:
 	zend_never_inline zv::Val storedClosureArgResult(Walk &w, zval *value, zval *scopeToPass, bool &failed) const
 	{
 		failed = true;
-		bool returning = false, consuming = false;
+		bool returning = false;
 		if (UNEXPECTED(!nsrIsReturningStoredExpressionResults(w.nodeScopeResolver, returning))) return zv::Val();
-		if (!returning && UNEXPECTED(!nsrIsConsumingStoredExpressionResults(w.nodeScopeResolver, consuming))) return zv::Val();
 		failed = false;
-		if (!returning && !consuming) return zv::Val();
+		if (!returning) return zv::Val();
 
 		failed = true;
 		zv::Val stored = pt_expression_result_storage_find(w.storage, value);
@@ -1758,12 +1752,6 @@ private:
 		if (!stored.isNull()) {
 			failed = false;
 			return stored;
-		}
-		bool returningAgain = false;
-		if (UNEXPECTED(!nsrIsReturningStoredExpressionResults(w.nodeScopeResolver, returningAgain))) return zv::Val();
-		if (!returningAgain) {
-			failed = false;
-			return zv::Val();
 		}
 		zval *closureTypeResolver = slot(slots::closureTypeResolver);
 		zv::Val type = closureTypeResolverGetClosureType(closureTypeResolver, scopeToPass, value, false, w.storage);

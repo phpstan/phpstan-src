@@ -85,7 +85,7 @@ final class NullsafePropertyFetchHandler implements ExprHandler
 			$expr->name,
 			$attributes,
 		);
-		$exprResult = $nodeScopeResolver->processExprNodeConsumingStored($stmt, $propertyFetch, $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
+		$exprResult = $nodeScopeResolver->processExprNodeConsumingStored($stmt, $propertyFetch, $expr->var, $nonNullabilityResult->getScope(), $storage, $nodeCallback, $context);
 		$scope = $this->nonNullabilityHelper->revertNonNullability($exprResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 
 		// The `?->`'s own type on the asking scope. $receiverType is the receiver's

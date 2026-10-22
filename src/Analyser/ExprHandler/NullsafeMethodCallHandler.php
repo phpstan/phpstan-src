@@ -92,6 +92,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		$exprResult = $nodeScopeResolver->processExprNodeConsumingStored(
 			$stmt,
 			$methodCall,
+			$expr->var,
 			$nonNullabilityResult->getScope(),
 			$storage,
 			$nodeCallback,

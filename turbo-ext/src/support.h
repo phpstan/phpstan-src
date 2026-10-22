@@ -2964,12 +2964,10 @@ zv::Val pt_arguments_handler_process_args(zval *handler, zval *nodeScopeResolver
  * pending exception */
 [[nodiscard]] bool pt_arguments_handler_process_dropped_args(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *originalCall, zval *normalizedCall, zval *scope, zval *storage, zval *context);
 /* NodeScopeResolver.cpp — $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope,
- * $expr) / ->isReturningStoredExpressionResults() /
- * ->isConsumingStoredExpressionResults(): the native body for the native
+ * $expr) / ->isReturningStoredExpressionResults(): the native body for the native
  * class, the method otherwise; UNDEF / false = pending exception */
 zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr);
 [[nodiscard]] bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeScopeResolver, bool &out);
-[[nodiscard]] bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeScopeResolver, bool &out);
 /* MutatingScope.cpp — $scope->pushInFunctionCall($reflection, $parameter,
  * $rememberTypes) ($reflection / $parameter IS_NULL for null) /
  * ->popInFunctionCall() / ->withClosureBindScopeClasses($classes) /
@@ -3135,7 +3133,7 @@ zv::Val pt_non_nullability_helper_revert_non_nullability(zval *helper, zval *sco
 /* NodeScopeResolver.cpp — $nodeScopeResolver->processExprNodeConsumingStored(...):
  * the native body for exactly the native class, the method otherwise; UNDEF =
  * pending exception */
-zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *consumedExpr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 
 /* }}} */
 

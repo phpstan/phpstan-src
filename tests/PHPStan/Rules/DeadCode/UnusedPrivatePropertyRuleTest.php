@@ -475,6 +475,15 @@ class UnusedPrivatePropertyRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14703.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15520(): void
+	{
+		$this->alwaysWrittenTags = [];
+		$this->alwaysReadTags = [];
+
+		$this->analyse([__DIR__ . '/data/bug-15520.php'], []);
+	}
+
 	public function testBug14880(): void
 	{
 		$this->alwaysWrittenTags = [];

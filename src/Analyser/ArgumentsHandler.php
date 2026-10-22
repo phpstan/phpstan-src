@@ -370,18 +370,14 @@ final class ArgumentsHandler
 			if ($arg->value instanceof Expr\Closure) {
 
 				$storedClosureArgResult = null;
-				if ($nodeScopeResolver->isReturningStoredExpressionResults() || $nodeScopeResolver->isConsumingStoredExpressionResults()) {
+				if ($nodeScopeResolver->isReturningStoredExpressionResults()) {
 					// an on-demand re-walk of the enclosing call must not re-run the
 					// closure's whole by-ref convergence: consume the main walk's
 					// stored result, or (when the body release already dropped it)
 					// price the closure through getClosureType's per-node cache -
 					// a single body walk on miss, none on repeat asks
 					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
-					// consume mode alone (the nullsafe call's plain-twin walk) is the
-					// FIRST and only walk of these arguments - nothing stored them, so
-					// a miss means "walk it", not "price it silently": pricing skips
-					// the body walk and never fires the closure's node callbacks
-					if ($storedClosureArgResult === null && $nodeScopeResolver->isReturningStoredExpressionResults()) {
+					if ($storedClosureArgResult === null) {
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
 							beforeScope: $scopeToPass,
@@ -528,12 +524,10 @@ final class ArgumentsHandler
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 
 				$storedClosureArgResult = null;
-				if ($nodeScopeResolver->isReturningStoredExpressionResults() || $nodeScopeResolver->isConsumingStoredExpressionResults()) {
+				if ($nodeScopeResolver->isReturningStoredExpressionResults()) {
 					// see the Closure branch above - consume or price via the cache
 					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
-					// consume mode alone (the nullsafe call's plain-twin walk) is the
-					// first and only walk of the argument - a miss means walk it
-					if ($storedClosureArgResult === null && $nodeScopeResolver->isReturningStoredExpressionResults()) {
+					if ($storedClosureArgResult === null) {
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
 							beforeScope: $scopeToPass,

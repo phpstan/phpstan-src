@@ -522,14 +522,16 @@ final class FilterFunctionReturnTypeHelper
 			return TrinaryLogic::createNo();
 		}
 
+		$hasFlag = $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+
 		// Flag values are resolved from the runtime. Before PHP 8.5, FILTER_FLAG_GLOBAL_RANGE used the bit
-		// that PHP 8.5 assigned to FILTER_THROW_ON_FAILURE, so the two cannot be told apart on such runtime
-		// unless the analysed code definitely runs on PHP 8.5+.
+		// that PHP 8.5 assigned to FILTER_THROW_ON_FAILURE, so on such runtime a set bit may mean either flag.
+		// When the analysed code definitely runs on PHP 8.5+, the bit can only mean FILTER_THROW_ON_FAILURE.
 		if ($hasConstant->maybe() && $this->isThrowOnFailureFlagAmbiguous()) {
-			return TrinaryLogic::createNo();
+			return $hasFlag->and(TrinaryLogic::createMaybe());
 		}
 
-		return $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
+		return $hasFlag;
 	}
 
 	private function isThrowOnFailureFlagAmbiguous(): bool

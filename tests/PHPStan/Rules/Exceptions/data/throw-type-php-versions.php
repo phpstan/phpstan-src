@@ -60,4 +60,13 @@ class Foo
 		}
 	}
 
+	public function doFilterVarThrowOnFailure(string $address): void
+	{
+		try {
+			$a = filter_var($address, FILTER_VALIDATE_IP, FILTER_THROW_ON_FAILURE);
+		} catch (\Filter\FilterFailedException $e) {
+
+		}
+	}
+
 }

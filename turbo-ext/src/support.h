@@ -2392,6 +2392,11 @@ zv::Val pt_expression_result_on_non_nullability_deviced_scopes(zval *result, zva
  * method left pending) and $stack->push($storage) / pop(); false = pending
  * exception */
 void pt_expression_result_storage_store(zval *storage, zval *expr, zval *expressionResult);
+/* ArrayHandler.cpp — ArrayHandler::hasByRefItem($array); false = pending
+ * exception */
+[[nodiscard]] bool pt_array_handler_has_by_ref_item(zval *array, bool &out);
+/* $storage->removeExpressionResult($expr); false = pending exception */
+[[nodiscard]] bool pt_expression_result_storage_remove(zval *storage, zval *expr);
 [[nodiscard]] bool pt_expression_result_storage_stack_push(zval *stack, zval *storage);
 [[nodiscard]] bool pt_expression_result_storage_stack_pop(zval *stack);
 

@@ -1096,6 +1096,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return $expressionType;
 		}
 
+		// a literal's type is lexical - priced directly, like ScalarHandler does,
+		// with no stored result needed (ArrayHandler drops the results of its
+		// literal keys and values)
+		if ($node instanceof Node\Scalar\String_ || $node instanceof Node\Scalar\Int_ || $node instanceof Node\Scalar\Float_) {
+			return $this->services->initializerExprTypeResolver->getType($node, InitializerExprContext::fromScope($this));
+		}
+
 		// NodeScopeResolver intercepts a first-class callable CallLike before the
 		// ExprHandler dispatch - no handler supports the original node, its closure
 		// type lives on the stored result's typeCallback (see the *CallableNode

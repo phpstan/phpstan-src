@@ -6,8 +6,9 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The twin's closures are native closures capturing
  * what the PHP closures capture: the typeCallback ($this, $expr,
- * $itemResults, $beforeScope); the item-type callback it hands to
- * InitializerExprTypeResolver::getArrayType() ($itemResults,
+ * $itemResults, $literalTypes, $literalNativeTypes, $beforeScope); the
+ * item-type callback it hands to InitializerExprTypeResolver::getArrayType()
+ * ($itemResults, the literal types of the asked flavour,
  * $nativeTypesPromoted) is a pt_ietr_get_type over the typeCallback's frame
  * (the resolver calls it synchronously); the specifyTypesCallback is
  * SpecifiedTypes::emptySpecifyCallback(), as in the twin.
@@ -128,7 +129,53 @@ zv::Val newConstantIntegerTypeOf(zval *nextIndex)
 
 /* }}} */
 
+/* Mirrors ArrayHandler::isLiteral(); false = pending exception */
+[[nodiscard]] bool isLiteral(zval *expr, bool &out)
+{
+	out = false;
+	if (Z_TYPE_P(expr) != IS_OBJECT) return true;
+	static const int literalClasses[] = { PT_CLASS_SCALAR_STRING, PT_CLASS_SCALAR_INT, PT_CLASS_SCALAR_FLOAT };
+	for (int classIdx : literalClasses) {
+		zend_class_entry *ce = pt_class(classIdx);
+		if (UNEXPECTED(ce == NULL)) return false;
+		if (instanceof_function(Z_OBJCE_P(expr), ce)) {
+			out = true;
+			return true;
+		}
+	}
+	return true;
+}
+
 } // namespace
+
+/* Mirrors ArrayHandler::hasByRefItem(); false = pending exception */
+bool pt_array_handler_has_by_ref_item(zval *array, bool &out)
+{
+	out = false;
+	zval *items = exprItems(array);
+	if (UNEXPECTED(items == NULL)) return false;
+	if (Z_TYPE_P(items) != IS_ARRAY) return true;
+	zend_class_entry *arrayCe = pt_class(PT_CLASS_ARRAY_EXPR);
+	if (UNEXPECTED(arrayCe == NULL)) return false;
+	for (auto entry : zv::TableRef(Z_ARRVAL_P(items))) {
+		zval *item = entry.value().deref().raw();
+		zval *byRef = itemByRef(item);
+		if (UNEXPECTED(byRef == NULL)) return false;
+		if (zend_is_true(byRef)) {
+			out = true;
+			return true;
+		}
+		zval *value = itemValue(item);
+		if (UNEXPECTED(value == NULL)) return false;
+		if (Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), arrayCe)) {
+			bool ok = false;
+			pt_engine_with_stack([&]() { ok = pt_array_handler_has_by_ref_item(value, out); });
+			if (UNEXPECTED(!ok)) return false;
+			if (out) return true;
+		}
+	}
+	return true;
+}
 
 namespace phpstanturbo {
 
@@ -171,6 +218,8 @@ public:
 
 		zv::Arr itemNodes = zv::Arr::create(itemCount);
 		zv::Arr itemResults = zv::Arr::create(itemCount);
+		zv::Arr literalTypes = zv::Arr::create(0);
+		zv::Arr literalNativeTypes = zv::Arr::create(0);
 		zv::Arr variableFlows = zv::Arr::create(itemCount);
 		bool hasYield = false;
 		zv::Val throwPoints = zv::Val(zv::Arr::empty());
@@ -211,6 +260,10 @@ public:
 		}
 		bool hasExpectedType = !passedToType.isNull() || !nativePassedToType.isNull();
 		bool hasLiteralWrite = !literalWrite.isNull();
+		// AssignHandler reads the keys' results of an assigned array with a by-ref
+		// item to alias its slots - only an array without one drops its literals'
+		bool keepsLiteralResults;
+		if (UNEXPECTED(!pt_array_handler_has_by_ref_item(expr, keepsLiteralResults))) return zv::Val();
 		zval nextIndex;
 		ZVAL_LONG(&nextIndex, 0);
 
@@ -347,6 +400,31 @@ public:
 				// the item's callback fires after its key and value were processed,
 				// with the item's entry scope
 				if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, arrayItem, itemCallbackScope.raw(), storage))) return zv::Val();
+
+				if (keepsLiteralResults) continue;
+
+				// a literal key or value is lexical - keep only its types and drop its
+				// result, which a large literal array would otherwise hold twice per
+				// item until the statement ends; asks about the literal from now on
+				// are answered by the scope directly (MutatingScope::resolveType())
+				zval *parts[2] = {key, isUnpack ? NULL : heldValue.raw()};
+				for (zval *part : parts) {
+					if (part == NULL) continue;
+					bool literal;
+					if (UNEXPECTED(!isLiteral(part, literal))) return zv::Val();
+					if (!literal) continue;
+					zend_ulong id = Z_OBJ_HANDLE_P(part);
+					// held: the result's own type reads may re-enter PHP
+					zv::Val partResult = zv::Val::copyOf(zv::ArrRef(itemResults.raw()).findIndex(id));
+					zv::Val partType = pt_expression_result_get_type(partResult.raw());
+					if (UNEXPECTED(partType.isUndef())) return zv::Val();
+					zv::ArrRef(literalTypes.raw()).setIndex(id, partType.ref());
+					zv::Val partNativeType = pt_expression_result_get_native_type(partResult.raw());
+					if (UNEXPECTED(partNativeType.isUndef())) return zv::Val();
+					zv::ArrRef(literalNativeTypes.raw()).setIndex(id, partNativeType.ref());
+					zend_hash_index_del(itemResults.table(), id);
+					if (UNEXPECTED(!pt_expression_result_storage_remove(storage, part))) return zv::Val();
+				}
 			}
 		}
 		{
@@ -360,7 +438,7 @@ public:
 			zv::Val observingFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw());
 			if (UNEXPECTED(observingFrame.isUndef())) return zv::Val();
 			if (!observingFrame.isNull()) {
-				scope = collectAbsorbedItems(expr, itemResults.raw(), scope.raw());
+				scope = collectAbsorbedItems(expr, itemResults.raw(), literalTypes.raw(), scope.raw());
 				if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			}
 		}
@@ -368,7 +446,9 @@ public:
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val itemResultsValue(std::move(itemResults));
-		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, itemResultsValue.raw(), beforeScope);
+		zv::Val literalTypesValue(std::move(literalTypes));
+		zv::Val literalNativeTypesValue(std::move(literalNativeTypes));
+		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, itemResultsValue.raw(), literalTypesValue.raw(), literalNativeTypesValue.raw(), beforeScope);
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
 
@@ -380,7 +460,7 @@ public:
 		// Dependencies::merge($callableDependencies, ...$itemResults' dependencies):
 		// the non-null ones gathered first, so that an array whose items depend on
 		// nothing allocates nothing
-		zv::Val callableDependencies = getCallableDependencies(beforeScope, expr, itemResultsValue.raw(), result.raw());
+		zv::Val callableDependencies = getCallableDependencies(beforeScope, expr, itemResultsValue.raw(), literalTypesValue.raw(), result.raw());
 		if (UNEXPECTED(callableDependencies.isUndef())) return zv::Val();
 		zv::Arr dependencyList;
 		if (!callableDependencies.isNull()) {
@@ -402,7 +482,7 @@ public:
 	}
 
 	/* Mirrors collectAbsorbedItems() */
-	zv::Val collectAbsorbedItems(zval *expr, zval *itemResults, zval *scopeArg) const
+	zv::Val collectAbsorbedItems(zval *expr, zval *itemResults, zval *literalTypes, zval *scopeArg) const
 	{
 		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
 		zval *items = exprItems(expr);
@@ -414,12 +494,7 @@ public:
 			zval *arrayItem = entry.value().deref().raw();
 			zval *value = itemValue(arrayItem);
 			if (UNEXPECTED(value == NULL)) return zv::Val();
-			zval *itemResult = zend_hash_index_find(Z_ARRVAL_P(itemResults), Z_OBJ_HANDLE_P(value));
-			if (UNEXPECTED(itemResult == NULL)) {
-				zend_error(E_WARNING, "Undefined array key %u", Z_OBJ_HANDLE_P(value));
-				return zv::Val();
-			}
-			zv::Val itemType = pt_expression_result_get_type(itemResult);
+			zv::Val itemType = getItemType(value, itemResults, literalTypes, false);
 			if (UNEXPECTED(itemType.isUndef())) return zv::Val();
 			bool hasMarkers;
 			if (UNEXPECTED(!pt_closure_signature_inference_has_markers(itemType.raw(), hasMarkers))) return zv::Val();
@@ -430,7 +505,7 @@ public:
 
 		zv::Val arrayType;
 		{
-			ItemTypeFrame frame{itemResults, false};
+			ItemTypeFrame frame{itemResults, literalTypes, false};
 			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
 			arrayType = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
 			if (UNEXPECTED(arrayType.isUndef())) return zv::Val();
@@ -453,7 +528,7 @@ private:
 	/* Mirrors getCallableDependencies(): an array that may be a callable -
 	 * `[Foo::class, 'method']` - depends on what calling it returns; PHP null
 	 * for nothing, UNDEF = pending exception */
-	static zv::Val getCallableDependencies(zval *scope, zval *expr, zval *itemResults, zval *result)
+	static zv::Val getCallableDependencies(zval *scope, zval *expr, zval *itemResults, zval *literalTypes, zval *result)
 	{
 		zval *items = exprItems(expr);
 		if (UNEXPECTED(items == NULL)) return zv::Val();
@@ -495,9 +570,8 @@ private:
 			zend_type_error("spl_object_id(): Argument #1 ($object) must be of type object, %s given", zend_zval_value_name(value));
 			return zv::Val();
 		}
-		zval *firstItemResult = zend_hash_index_find(Z_ARRVAL_P(itemResults), Z_OBJ_HANDLE_P(value));
-		if (firstItemResult == NULL || Z_TYPE_P(firstItemResult) == IS_NULL) return zv::Val::null();
-		zv::Val firstItemType = pt_expression_result_get_type(firstItemResult);
+		if (zend_hash_index_find(Z_ARRVAL_P(itemResults), Z_OBJ_HANDLE_P(value)) == NULL && zend_hash_index_find(Z_ARRVAL_P(literalTypes), Z_OBJ_HANDLE_P(value)) == NULL) return zv::Val::null();
+		zv::Val firstItemType = getItemType(value, itemResults, literalTypes, false);
 		if (UNEXPECTED(firstItemType.isUndef())) return zv::Val();
 		zend_long isClassString = pt_type_call_trinary(Z_OBJ_P(firstItemType.raw()), PT_LC("isclassstring"), 0, NULL);
 		if (UNEXPECTED(isClassString < 0)) return zv::Val();
@@ -597,12 +671,29 @@ private:
 		return pt_type_op(Z_OBJ_P(arrayType), PT_OP_GET_OFFSET_VALUE_TYPE, 1, keyType);
 	}
 
-	/* static function (Expr $inner) use ($itemResults, $nativeTypesPromoted):
-	 * Type — InitializerExprTypeResolver calls it synchronously, over the
+	/* Mirrors getItemType(): the literal's kept type of the asked flavour,
+	 * else its result's type; UNDEF = pending exception */
+	static zv::Val getItemType(zval *item, zval *itemResults, zval *literalTypes, bool nativeTypesPromoted)
+	{
+		zend_ulong id = Z_OBJ_HANDLE_P(item);
+		zval *literalType = zend_hash_index_find(Z_ARRVAL_P(literalTypes), id);
+		if (literalType != NULL) return zv::Val::copyOf(zv::Ref(literalType));
+		zval *itemResult = zend_hash_index_find(Z_ARRVAL_P(itemResults), id);
+		if (UNEXPECTED(itemResult == NULL)) {
+			pt_throw_should_not_happen();
+			return zv::Val();
+		}
+		return nativeTypesPromoted ? pt_expression_result_get_native_type(itemResult) : pt_expression_result_get_type(itemResult);
+	}
+
+	/* static fn (Expr $inner): Type => self::getItemType($inner, $itemResults,
+	 * <the literal types of the flavour>, $nativeTypesPromoted) —
+	 * InitializerExprTypeResolver calls it synchronously, over the
 	 * typeCallback's frame */
 	struct ItemTypeFrame
 	{
 		zval *itemResults;
+		zval *literalTypes;
 		bool nativeTypesPromoted;
 	};
 
@@ -616,40 +707,35 @@ private:
 			zend_type_error("%s(): Argument #1 ($inner) must be of type PhpParser\\Node\\Expr, %s given", pt_arh_closure_name, zend_zval_value_name(inner));
 			return zv::Val();
 		}
-		zval *itemResult = zend_hash_index_find(Z_ARRVAL_P(frame->itemResults), Z_OBJ_HANDLE_P(inner));
-		if (UNEXPECTED(itemResult == NULL)) {
-			pt_throw_should_not_happen();
-			return zv::Val();
-		}
-		return frame->nativeTypesPromoted ? pt_expression_result_get_native_type(itemResult) : pt_expression_result_get_type(itemResult);
+		return getItemType(inner, frame->itemResults, frame->literalTypes, frame->nativeTypesPromoted);
 	}
 
 	/* the callback as a PHP callable that outlives the call (the resolver
 	 * hands it to OversizedArrayBuilder): the closure over copies of
-	 * $itemResults and $nativeTypesPromoted */
+	 * $itemResults, the literal types and $nativeTypesPromoted */
 	static zv::Val itemTypeCallable(void *data)
 	{
 		ItemTypeFrame *frame = static_cast<ItemTypeFrame *>(data);
-		return pt_native_closure(&itemTypeCallbackBody, frame->itemResults, frame->nativeTypesPromoted);
+		return pt_native_closure(&itemTypeCallbackBody, frame->itemResults, frame->literalTypes, frame->nativeTypesPromoted);
 	}
 
-	/* the same closure called from PHP — captures: $itemResults,
-	 * $nativeTypesPromoted */
+	/* the same closure called from PHP — captures: $itemResults, the
+	 * literal types, $nativeTypesPromoted */
 	static void itemTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!requireArguments(argc, 1, pt_arh_closure_name))) return;
-		ItemTypeFrame frame{&captures[0], Z_TYPE(captures[1]) == IS_TRUE};
+		ItemTypeFrame frame{&captures[0], &captures[1], Z_TYPE(captures[2]) == IS_TRUE};
 		zv::Val type = itemTypeCallback(&frame, &argv[0]);
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
 	}
 
 	/* the typeCallback's body */
-	zv::Val resolveType(bool nativeTypesPromoted, zval *expr, zval *itemResults, zval *beforeScope) const
+	zv::Val resolveType(bool nativeTypesPromoted, zval *expr, zval *itemResults, zval *literalTypes, zval *literalNativeTypes, zval *beforeScope) const
 	{
 		zv::Val type;
 		{
-			ItemTypeFrame frame{itemResults, nativeTypesPromoted};
+			ItemTypeFrame frame{itemResults, nativeTypesPromoted ? literalNativeTypes : literalTypes, nativeTypesPromoted};
 			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
 			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
@@ -711,11 +797,13 @@ private:
 	}
 
 	/* function (bool $nativeTypesPromoted) use ($expr, $itemResults,
-	 * $beforeScope): Type — captures: $this, $expr, $itemResults, $beforeScope */
+	 * $literalTypes, $literalNativeTypes, $beforeScope): Type — captures:
+	 * $this, $expr, $itemResults, $literalTypes, $literalNativeTypes,
+	 * $beforeScope */
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!requireArguments(argc, 1, pt_arh_closure_name))) return;
-		zv::Val type = ArrayHandler(Z_OBJ(captures[0])).resolveType(zend_is_true(&argv[0]), &captures[1], &captures[2], &captures[3]);
+		zv::Val type = ArrayHandler(Z_OBJ(captures[0])).resolveType(zend_is_true(&argv[0]), &captures[1], &captures[2], &captures[3], &captures[4], &captures[5]);
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
 	}
@@ -746,6 +834,18 @@ PT_MINIT_REGISTRATION(pt_register_array_handler)
 	});
 
 	cls.method<&ArrayHandler::supports, zp::Obj>(sigs::supports);
+
+	cls.method(sigs::hasByRefItem, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *array;
+		zend_class_entry *arrayCe = pt_class(PT_CLASS_ARRAY_EXPR);
+		if (UNEXPECTED(arrayCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(array, arrayCe)
+		ZEND_PARSE_PARAMETERS_END();
+		bool out;
+		if (UNEXPECTED(!pt_array_handler_has_by_ref_item(array, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
+	});
 
 	cls.method(sigs::processExpr, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *stmt, *expr, *scope, *storage, *nodeCallback, *context;

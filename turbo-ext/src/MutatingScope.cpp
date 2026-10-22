@@ -2518,11 +2518,30 @@ public:
 		if (UNEXPECTED(expressionType.isUndef())) return zv::Val();
 		if (!expressionType.isNull()) return expressionType;
 
+		/* a literal's type is lexical - priced directly, like ScalarHandler
+		 * does, with no stored result needed (ArrayHandler drops the results
+		 * of its literal keys and values) */
+		zval nodeZv;
+		ZVAL_OBJ(&nodeZv, node);
+		{
+			bool isLiteral = false;
+			static const int literalClasses[] = { PT_CLASS_SCALAR_STRING, PT_CLASS_SCALAR_INT, PT_CLASS_SCALAR_FLOAT };
+			for (int classIdx : literalClasses) {
+				if (UNEXPECTED(!isInstance(zv::Ref(&nodeZv), classIdx, isLiteral))) return zv::Val();
+				if (isLiteral) break;
+			}
+			if (isLiteral) {
+				zv::Ref resolver = service(PT_MSS_INITIALIZER_EXPR_TYPE_RESOLVER);
+				if (UNEXPECTED(!resolver.isObject())) return uninitializedProperty("initializerExprTypeResolver");
+				zv::Val context = pt_initializer_expr_context_from_scope(thisZval());
+				if (UNEXPECTED(context.isUndef())) return zv::Val();
+				return pt_initializer_expr_type_resolver_get_type(resolver.raw(), &nodeZv, context.raw());
+			}
+		}
+
 		/* NodeScopeResolver intercepts a first-class callable CallLike before
 		 * the ExprHandler dispatch - no handler supports the original node,
 		 * its closure type lives on the stored result's typeCallback */
-		zval nodeZv;
-		ZVAL_OBJ(&nodeZv, node);
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(zv::Ref(&nodeZv), PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {

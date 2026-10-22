@@ -53,6 +53,11 @@ final class ExpressionResultStorage
 		$this->exprResults[$expr] = $expressionResult;
 	}
 
+	public function removeExpressionResult(Expr $expr): void
+	{
+		unset($this->exprResults[$expr]);
+	}
+
 	public function findExpressionResult(Expr $expr): ?ExpressionResult
 	{
 		return $this->exprResults[$expr] ?? ($this->fallback !== null ? $this->fallback->findExpressionResult($expr) : null);

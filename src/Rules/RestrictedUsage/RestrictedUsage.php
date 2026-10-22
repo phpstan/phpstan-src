@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\RestrictedUsage;
 
-
 /**
  * @api
  */

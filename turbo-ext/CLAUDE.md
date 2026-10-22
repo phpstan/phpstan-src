@@ -28,7 +28,14 @@ A class the compiler handles needs no hand-written C++ (README.md,
    its `src/generated/<Stem>.h`. A construct outside the compiled subset is
    a `CompileError` naming it: extend the compiler
    (`build/PHPStan/Build/TurboCodegen/Compiler.php`) or port the class by
-   hand (next section).
+   hand (next section). So is a method whose signature the PHAR's PHP 7.4
+   downgrade would break (`DowngradedSignatureCheck`): overriding or
+   implementing a PHP method whose parameter type the downgrade rewrites —
+   a Rule's `processNode()` with its intersection-typed `$scope` — with a
+   narrower native parameter fails to link when the extension activates in
+   the PHAR, and only there. A vendored dependency the PHAR's scoper renames
+   needs a key in the class map (`pt_class_refs` in `support.cpp` and
+   `VENDORED_CLASS_MAP` in the collector); the error says so.
 3. **Verify and benchmark** as for a hand-written port (steps 6–9 below);
    the version bump (step 10) applies — the generated files live in
    `turbo-ext/src/compiled/`. Compile only classes a profile or the crossing census

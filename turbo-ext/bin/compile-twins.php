@@ -12,6 +12,7 @@
  */
 
 use PHPStan\Build\TurboAttributeCollector;
+use PHPStan\Build\TurboCodegen\CompileError;
 use PHPStan\Build\TurboCodegen\Compiler;
 
 error_reporting(E_ALL);
@@ -37,7 +38,13 @@ foreach ($collected['compiled'] as $className => $settings) {
 
 $check = in_array('--check', $argv, true);
 $stale = 0;
-foreach ((new Compiler($classes))->compile() as $path => $content) {
+try {
+	$compiled = (new Compiler($classes, array_keys($collected['manifest'])))->compile();
+} catch (CompileError $e) {
+	fwrite(STDERR, $e->getMessage() . "\n");
+	exit(1);
+}
+foreach ($compiled as $path => $content) {
 	if (is_file($path) && file_get_contents($path) === $content) {
 		continue;
 	}

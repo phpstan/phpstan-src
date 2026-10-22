@@ -199,13 +199,18 @@ final class Compiler
 
 	/**
 	 * @param array<string, array{file: string, stem: string, ce: string, implementation: string, defineCe?: bool, new?: array{string, string}, dispatch?: array{function: string, enum: string, prefix: string, receiver: string, fallback?: string}}> $classes FQCN => where its twin lives, its generated-header stem, its class-entry variable, the .cpp to write, and the native C API to export (see CompiledIntoTurboExtension)
+	 * @param list<string> $nativeClasses every class the extension shadows, compiled or hand-written (DowngradedSignatureCheck)
 	 */
-	public function __construct(array $classes)
+	public function __construct(array $classes, array $nativeClasses = [])
 	{
 		$this->finder = new NodeFinder();
 		foreach ($classes as $className => $config) {
 			$oracle = new TypeOracle($config['file']);
 			$reflection = self::reflect($className);
+			$conflicts = DowngradedSignatureCheck::conflicts($reflection, $nativeClasses);
+			if ($conflicts !== []) {
+				throw new CompileError(implode("\n", $conflicts));
+			}
 			$unit = new ClassUnit($className, $config['stem'], $config['ce'], $reflection, $oracle, $oracle->getClass($className), $config['implementation'], $config['defineCe'] ?? false, $config['new'] ?? null, $config['dispatch'] ?? null);
 			$this->units[strtolower($className)] = $unit;
 		}

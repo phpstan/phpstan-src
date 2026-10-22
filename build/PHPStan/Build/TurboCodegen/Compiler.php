@@ -134,6 +134,14 @@ final class Compiler
 	 */
 	private const SCOPE_SENSITIVE_FUNCTIONS = ['is_callable', 'call_user_func', 'call_user_func_array', 'array_map', 'array_filter', 'usort', 'uasort', 'uksort', 'array_walk', 'array_reduce', 'get_class_methods', 'get_called_class', 'func_get_args', 'compact', 'extract', 'get_defined_vars'];
 
+	/**
+	 * global constants whose value is the same on every platform and PHP
+	 * version the extension runs on, so the compiling machine's value can be
+	 * baked in; any other constant (FNM_*, T_*, PHP_VERSION_ID,
+	 * DIRECTORY_SEPARATOR, ...) is read from the running engine
+	 */
+	private const PORTABLE_CONSTANT_PATTERN = '~^(?:E_(?!STRICT$)\\w+|PREG_\\w+|PHP_INT_(?:MAX|MIN|SIZE)|COUNT_\\w+|STR_PAD_\\w+|ARRAY_FILTER_\\w+|MB_CASE_\\w+|JSON_\\w+|SORT_\\w+)$~';
+
 	private const CPP_KEYWORDS = ['and', 'or', 'not', 'xor', 'new', 'delete', 'default', 'namespace', 'class', 'union', 'switch', 'case', 'template', 'typename', 'operator', 'this', 'register', 'auto', 'char', 'short', 'long', 'float', 'double', 'int', 'bool', 'void', 'static', 'extern', 'const', 'volatile', 'goto', 'return', 'if', 'else', 'for', 'while', 'do', 'break', 'continue', 'try', 'catch', 'throw'];
 
 	/** @var array<string, string>|null lowercase FQCN => PT_CLASS_* constant of the native class-reference table */
@@ -1629,6 +1637,9 @@ final class Compiler
 			if ($name === 'false') {
 				return false;
 			}
+			if (preg_match(self::PORTABLE_CONSTANT_PATTERN, ltrim($expr->name->toString(), '\\')) !== 1) {
+				throw new CompileError(sprintf('%s on line %d differs between platforms or PHP builds and cannot be a compiled default', $expr->name->toString(), $expr->getStartLine()));
+			}
 		}
 		if ($expr instanceof Node\Scalar\Int_ || $expr instanceof Node\Scalar\String_) {
 			return $expr->value;
@@ -2827,13 +2838,21 @@ final class Compiler
 			if (in_array($name, ['true', 'false'], true)) {
 				return Value::bool($name);
 			}
+			$constant = ltrim($expr->name->toString(), '\\');
 			$values = $native->getConstantScalarValues();
-			if (count($values) === 1 && (is_int($values[0]) || is_string($values[0]) || is_bool($values[0]))) {
+			if (preg_match(self::PORTABLE_CONSTANT_PATTERN, $constant) === 1 && count($values) === 1 && (is_int($values[0]) || is_string($values[0]) || is_bool($values[0]))) {
 				return is_int($values[0]) ? Value::long((string) $values[0]) : (is_bool($values[0]) ? Value::bool($values[0] ? 'true' : 'false') : $this->literal($values[0]));
 			}
-			// a constant whose value is not known statically
+			if (count($values) === 1 && is_int($values[0])) {
+				// platform- or build-dependent: the running engine's value, cached per site
+				$site = $this->site('pgrt::ConstSite', 'const_' . $constant);
+				$t = $f->temp('cn');
+				$f->line(sprintf('zend_long %s;', $t));
+				$f->failIf(sprintf('!pgrt::constLong(%s, "%s", %d, %s)', $site, addcslashes($constant, '\\'), strlen($constant), $t));
+				return Value::long($t);
+			}
+			// a constant whose value is not known statically, or not portably
 			$t = $f->temp('cn');
-			$constant = ltrim($expr->name->toString(), '\\');
 			$f->line(sprintf('zval *%s = zend_get_constant_str("%s", %d);', $t, addcslashes($constant, '\\\\'), strlen($constant)));
 			$f->line(sprintf('if (UNEXPECTED(%s == NULL)) { zend_throw_error(NULL, "Undefined constant \\"%%s\\"", "%s"); %s }', $t, addcslashes($constant, '\\\\'), $f->fail));
 			return $this->narrowZval($t, '', $native);

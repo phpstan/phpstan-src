@@ -51,6 +51,18 @@ zend_class_entry *lookupClassSlow(ClassSite &site, const char *name, size_t len)
 	return ce;
 }
 
+bool constLongSlow(ConstSite &site, const char *name, size_t len, zend_long &out)
+{
+	zval *value = zend_get_constant_str(name, len);
+	if (UNEXPECTED(value == NULL || Z_TYPE_P(value) != IS_LONG)) {
+		if (!EG(exception)) zend_throw_error(NULL, value == NULL ? "Undefined constant \"%s\"" : "Constant \"%s\" is not an int", name);
+		return false;
+	}
+	site = { Z_LVAL_P(value), true };
+	out = site.value;
+	return true;
+}
+
 zend_class_entry *lookupClassQuietSlow(ClassSite &site, const char *name, size_t len)
 {
 	zend_string *str = zend_string_init(name, len, 0);

@@ -48,6 +48,28 @@ struct ClassSite
 	uint32_t missedAt;
 };
 
+/* An integer constant whose value depends on the platform or the PHP
+ * build (FNM_*, T_*, PHP_VERSION_ID): read from the running engine once,
+ * never baked in at compile time. The value is the same in every thread
+ * and request of the process. */
+struct ConstSite
+{
+	zend_long value;
+	bool resolved;
+};
+
+/* false with an Error pending when the constant is undefined */
+bool constLongSlow(ConstSite &site, const char *name, size_t len, zend_long &out);
+
+static zend_always_inline bool constLong(ConstSite &site, const char *name, size_t len, zend_long &out)
+{
+	if (EXPECTED(site.resolved)) {
+		out = site.value;
+		return true;
+	}
+	return constLongSlow(site, name, len, out);
+}
+
 /* the class of a name (autoloading it); NULL with an Error pending */
 zend_class_entry *lookupClassSlow(ClassSite &site, const char *name, size_t len);
 

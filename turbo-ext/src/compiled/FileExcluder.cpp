@@ -12,11 +12,13 @@ static zval pg_lit[4];
 static pgrt::FunctionSite pg_site_0; /* function_strlen */
 static pgrt::FunctionSite pg_site_1; /* function_is_file */
 static pgrt::FunctionSite pg_site_2; /* function_is_dir */
-static pgrt::FunctionSite pg_site_3; /* function_str_starts_with */
-static pgrt::FunctionSite pg_site_4; /* function_fnmatch */
-static pgrt::FunctionSite pg_site_5; /* function_substr */
-static pgrt::FunctionSite pg_site_6; /* function_preg_match */
-static pgrt::ClassSite pg_site_7; /* cls_PHPStan\File\FileHelper */
+static pgrt::ConstSite pg_site_3; /* const_FNM_NOESCAPE */
+static pgrt::ConstSite pg_site_4; /* const_FNM_CASEFOLD */
+static pgrt::FunctionSite pg_site_5; /* function_str_starts_with */
+static pgrt::FunctionSite pg_site_6; /* function_fnmatch */
+static pgrt::FunctionSite pg_site_7; /* function_substr */
+static pgrt::FunctionSite pg_site_8; /* function_preg_match */
+static pgrt::ClassSite pg_site_9; /* cls_PHPStan\File\FileHelper */
 
 namespace pgen::FileExcluder {
 
@@ -168,21 +170,25 @@ namespace pgen::FileExcluder {
 	 {
 		if (l_isWindows) {
 			 {
-				zend_long k42 = (1 | 16);
-				zval z43;
-				ZVAL_LONG(&z43, k42);
-				zval o44;
-				ZVAL_COPY(&o44, &z43);
-				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchFlags, &o44);
+				zend_long cn42;
+				if (UNEXPECTED(!pgrt::constLong(pg_site_3, "FNM_NOESCAPE", 12, cn42))) return false;
+				zend_long cn43;
+				if (UNEXPECTED(!pgrt::constLong(pg_site_4, "FNM_CASEFOLD", 12, cn43))) return false;
+				zend_long k44 = (cn42 | cn43);
+				zval z45;
+				ZVAL_LONG(&z45, k44);
+				zval o46;
+				ZVAL_COPY(&o46, &z45);
+				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchFlags, &o46);
 			}
 		} else {
 		 {
 			 {
-				zval z45;
-				ZVAL_LONG(&z45, 0);
-				zval o46;
-				ZVAL_COPY(&o46, &z45);
-				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchFlags, &o46);
+				zval z47;
+				ZVAL_LONG(&z47, 0);
+				zval o48;
+				ZVAL_COPY(&o48, &z47);
+				pgrt::writeSlot(Z_OBJ_P(&this_zv), ptdecl::FileExcluder::slot::fnmatchFlags, &o48);
 			}
 		}
 		}
@@ -236,7 +242,7 @@ namespace pgen::FileExcluder {
 				 {
 					zv::Val o16 = zv::Val::copyOf(zv::Ref(l_file.raw()));
 					zv::Val r17;
-					if (UNEXPECTED(!pgrt::strMatch(pg_site_3, "str_starts_with", 15, pgrt::StrMatch::STARTS, o16.raw(), l_exclude, r17.raw()))) return false;
+					if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_starts_with", 15, pgrt::StrMatch::STARTS, o16.raw(), l_exclude, r17.raw()))) return false;
 					if (Z_TYPE_P(r17.raw()) == IS_TRUE) {
 						 {
 							*ret = true;
@@ -270,7 +276,7 @@ namespace pgen::FileExcluder {
 					ZVAL_LONG(&z28, Z_LVAL_P(p26));
 					ZVAL_COPY_VALUE(&av27[2], &z28);
 					zv::Val r29;
-					if (UNEXPECTED(!pgrt::callFunction(pg_site_4, "fnmatch", 7, pt_ce_file_excluder, 3, av27, r29.raw(), NULL))) return false;
+					if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "fnmatch", 7, pt_ce_file_excluder, 3, av27, r29.raw(), NULL))) return false;
 					if (Z_TYPE_P(r29.raw()) == IS_TRUE) {
 						 {
 							*ret = true;
@@ -297,7 +303,7 @@ namespace pgen::FileExcluder {
 		if (zend_is_identical(cn1, &pg_lit[1])) {
 			 {
 				zv::Val r2;
-				if (UNEXPECTED(!pgrt::strMatch(pg_site_3, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_path, &pg_lit[1], r2.raw()))) return false;
+				if (UNEXPECTED(!pgrt::strMatch(pg_site_5, "str_starts_with", 15, pgrt::StrMatch::STARTS, p_path, &pg_lit[1], r2.raw()))) return false;
 				if (Z_TYPE_P(r2.raw()) == IS_TRUE) {
 					 {
 						*ret = true;
@@ -317,7 +323,7 @@ namespace pgen::FileExcluder {
 				ZVAL_LONG(&z5, 1);
 				ZVAL_COPY_VALUE(&av3[2], &z5);
 				zv::Val r6;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_5, "substr", 6, pt_ce_file_excluder, 3, av3, r6.raw(), NULL))) return false;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_7, "substr", 6, pt_ce_file_excluder, 3, av3, r6.raw(), NULL))) return false;
 				if (zend_is_identical(r6.raw(), &pg_lit[2])) {
 					 {
 						*ret = true;
@@ -342,7 +348,7 @@ namespace pgen::FileExcluder {
 		ZVAL_COPY_VALUE(&av1[0], &pg_lit[3]);
 		ZVAL_COPY_VALUE(&av1[1], p_path);
 		zv::Val r2;
-		if (UNEXPECTED(!pgrt::callFunction(pg_site_6, "preg_match", 10, pt_ce_file_excluder, 2, av1, r2.raw(), NULL))) return false;
+		if (UNEXPECTED(!pgrt::callFunction(pg_site_8, "preg_match", 10, pt_ce_file_excluder, 2, av1, r2.raw(), NULL))) return false;
 		zval z3;
 		ZVAL_LONG(&z3, 0);
 		*ret = (zend_compare(r2.raw(), &z3) > 0);
@@ -371,7 +377,7 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileExcluder)
 			Z_PARAM_ZVAL(p_fileHelper)
 			Z_PARAM_ARRAY(p_analyseExcludes)
 		ZEND_PARSE_PARAMETERS_END();
-		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !((Z_TYPE_P(p_fileHelper) == IS_OBJECT && Z_OBJCE_P(p_fileHelper) == pt_ce_file_helper) || pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_7, "PHPStan\\File\\FileHelper", 23))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
+		if (p_fileHelper != NULL && UNEXPECTED(Z_TYPE_P(p_fileHelper) != IS_OBJECT || !((Z_TYPE_P(p_fileHelper) == IS_OBJECT && Z_OBJCE_P(p_fileHelper) == pt_ce_file_helper) || pgrt::instanceOfClass(p_fileHelper, pgrt::lookupClassQuiet(pg_site_9, "PHPStan\\File\\FileHelper", 23))))) { zend_argument_type_error(1, "must be of type %s, %s given", "PHPStan\\File\\FileHelper", zend_zval_value_name(p_fileHelper)); RETURN_THROWS(); }
 		if (UNEXPECTED(!pgen::FileExcluder::m___construct(Z_OBJ_P(ZEND_THIS), p_fileHelper, p_analyseExcludes))) RETURN_THROWS();
 	});
 	cls.method(sigs::isExcludedFromAnalysing, [](INTERNAL_FUNCTION_PARAMETERS) { /* PHPStan\File\FileExcluder::isExcludedFromAnalysing() */

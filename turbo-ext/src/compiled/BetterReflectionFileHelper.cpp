@@ -346,48 +346,50 @@ namespace pgen::BetterReflectionFileHelper {
 		if (UNEXPECTED(cn12 == NULL)) { zend_throw_error(NULL, "Undefined constant \"%s\"", "DIRECTORY_SEPARATOR"); return false; }
 		if (zend_is_identical(cn12, &pg_lit[0])) {
 			 {
-				zval av13[3];
-				ZVAL_COPY_VALUE(&av13[0], &pg_lit[1]);
-				ZVAL_COPY_VALUE(&av13[1], &pg_lit[0]);
-				ZVAL_COPY_VALUE(&av13[2], l_path.raw());
-				zv::Val r14;
-				if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "str_replace", 11, pt_ce_better_reflection_file_helper, 3, av13, r14.raw(), NULL))) return false;
-				l_path = std::move(r14);
+				zval *cn13 = zend_get_constant_str("DIRECTORY_SEPARATOR", 19);
+				if (UNEXPECTED(cn13 == NULL)) { zend_throw_error(NULL, "Undefined constant \"%s\"", "DIRECTORY_SEPARATOR"); return false; }
+				zval av14[3];
+				ZVAL_COPY_VALUE(&av14[0], &pg_lit[1]);
+				ZVAL_COPY_VALUE(&av14[1], cn13);
+				ZVAL_COPY_VALUE(&av14[2], l_path.raw());
+				zv::Val r15;
+				if (UNEXPECTED(!pgrt::callFunction(pg_site_0, "str_replace", 11, pt_ce_better_reflection_file_helper, 3, av14, r15.raw(), NULL))) return false;
+				l_path = std::move(r15);
 			}
 		}
 	}
 	 {
-		zv::Val as15 = zv::Val::boolean(true);
+		zv::Val as16 = zv::Val::boolean(true);
 		if (EG(assertions) > 0) {
-			zval av16[2];
-			zval z17 = {};
-			ZVAL_BOOL(&z17, !zend_is_identical(l_path.raw(), &pg_lit[2]));
-			ZVAL_COPY_VALUE(&av16[0], &z17);
-			ZVAL_COPY_VALUE(&av16[1], &pg_lit[3]);
-			zv::Val r18;
-			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 2, av16, r18.raw(), NULL))) return false;
-			zv::Val o19 = zv::Val::boolean((Z_TYPE_P(r18.raw()) == IS_TRUE));
-			as15 = std::move(o19);
+			zval av17[2];
+			zval z18 = {};
+			ZVAL_BOOL(&z18, !zend_is_identical(l_path.raw(), &pg_lit[2]));
+			ZVAL_COPY_VALUE(&av17[0], &z18);
+			ZVAL_COPY_VALUE(&av17[1], &pg_lit[3]);
+			zv::Val r19;
+			if (UNEXPECTED(!pgrt::callFunction(pg_site_1, "assert", 6, pt_ce_better_reflection_file_helper, 2, av17, r19.raw(), NULL))) return false;
+			zv::Val o20 = zv::Val::boolean((Z_TYPE_P(r19.raw()) == IS_TRUE));
+			as16 = std::move(o20);
 		}
 	}
 	 {
-		zv::Val q20;
+		zv::Val q21;
 		if (!(Z_TYPE_P(l_scheme.raw()) == IS_NULL)) {
-			pgrt::StringBuilder sb21;
-			if (UNEXPECTED(!sb21.append(l_scheme.raw()))) return false;
-			sb21.appendLiteral("://", 3);
-			zv::Val r22 = sb21.finish();
-			q20 = std::move(r22);
+			pgrt::StringBuilder sb22;
+			if (UNEXPECTED(!sb22.append(l_scheme.raw()))) return false;
+			sb22.appendLiteral("://", 3);
+			zv::Val r23 = sb22.finish();
+			q21 = std::move(r23);
 		} else {
 		 {
-			zv::Val o23 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
-			q20 = std::move(o23);
+			zv::Val o24 = zv::Val::copyOf(zv::Ref(&pg_lit[2]));
+			q21 = std::move(o24);
 		}
 		}
-		zv::Val cat24;
-		if (UNEXPECTED(!pgrt::concat(q20.raw(), l_path.raw(), cat24.raw()))) return false;
-		if (UNEXPECTED(!(Z_TYPE_P(cat24.raw()) == IS_STRING))) { pgrt::throwReturnType("PHPStan\\BetterReflection\\Util\\FileHelper::normalizeSystemPath", "string", cat24.raw()); return false; }
-		*ret = cat24.take();
+		zv::Val cat25;
+		if (UNEXPECTED(!pgrt::concat(q21.raw(), l_path.raw(), cat25.raw()))) return false;
+		if (UNEXPECTED(!(Z_TYPE_P(cat25.raw()) == IS_STRING))) { pgrt::throwReturnType("PHPStan\\BetterReflection\\Util\\FileHelper::normalizeSystemPath", "string", cat25.raw()); return false; }
+		*ret = cat25.take();
 		return true;
 	}
 }

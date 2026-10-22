@@ -87,8 +87,9 @@ static pt_method_site pg_site_74; /* method_withIdentifier_74 */
 static pt_method_site pg_site_75; /* method_withIdentifier_75 */
 static pgrt::FunctionSite pg_site_76; /* function_set_error_handler */
 static pgrt::FunctionSite pg_site_77; /* function_restore_error_handler */
-static pgrt::ClassSite pg_site_78; /* cls_PHPStan\Rules\Registry */
-static pgrt::ClassSite pg_site_79; /* cls_PHPStan\Collectors\Registry */
+static pgrt::ConstSite pg_site_78; /* const_E_STRICT */
+static pgrt::ClassSite pg_site_79; /* cls_PHPStan\Rules\Registry */
+static pgrt::ClassSite pg_site_80; /* cls_PHPStan\Collectors\Registry */
 
 static void pg_closure_1(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
@@ -1512,7 +1513,9 @@ namespace pgen::FileAnalyser {
 			if (p_errno == 16384) sw1 = 8;
 		}
 		if (sw1 == -1) {
-			if (p_errno == 2048) sw1 = 9;
+			zend_long cn2;
+			if (UNEXPECTED(!pgrt::constLong(pg_site_78, "E_STRICT", 8, cn2))) return false;
+			if (p_errno == cn2) sw1 = 9;
 		}
 		switch (sw1) {
 			case 0: {
@@ -1680,8 +1683,8 @@ PT_MINIT_REGISTRATION(pt_register_codegen_FileAnalyser)
 			Z_PARAM_ZVAL_OR_NULL(p_outerNodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
 		if (p_file_str != NULL) { ZVAL_STR(&p_file_zv, p_file_str); p_file = &p_file_zv; }
-		if (p_ruleRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_ruleRegistry) != IS_OBJECT || !pgrt::instanceOfClass(p_ruleRegistry, pgrt::lookupClassQuiet(pg_site_78, "PHPStan\\Rules\\Registry", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\Registry", zend_zval_value_name(p_ruleRegistry)); RETURN_THROWS(); }
-		if (p_collectorRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_collectorRegistry) != IS_OBJECT || !((Z_TYPE_P(p_collectorRegistry) == IS_OBJECT && Z_OBJCE_P(p_collectorRegistry) == pt_ce_registry) || pgrt::instanceOfClass(p_collectorRegistry, pgrt::lookupClassQuiet(pg_site_79, "PHPStan\\Collectors\\Registry", 27))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Collectors\\Registry", zend_zval_value_name(p_collectorRegistry)); RETURN_THROWS(); }
+		if (p_ruleRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_ruleRegistry) != IS_OBJECT || !pgrt::instanceOfClass(p_ruleRegistry, pgrt::lookupClassQuiet(pg_site_79, "PHPStan\\Rules\\Registry", 22)))) { zend_argument_type_error(3, "must be of type %s, %s given", "PHPStan\\Rules\\Registry", zend_zval_value_name(p_ruleRegistry)); RETURN_THROWS(); }
+		if (p_collectorRegistry != NULL && UNEXPECTED(Z_TYPE_P(p_collectorRegistry) != IS_OBJECT || !((Z_TYPE_P(p_collectorRegistry) == IS_OBJECT && Z_OBJCE_P(p_collectorRegistry) == pt_ce_registry) || pgrt::instanceOfClass(p_collectorRegistry, pgrt::lookupClassQuiet(pg_site_80, "PHPStan\\Collectors\\Registry", 27))))) { zend_argument_type_error(4, "must be of type %s, %s given", "PHPStan\\Collectors\\Registry", zend_zval_value_name(p_collectorRegistry)); RETURN_THROWS(); }
 		if (p_outerNodeCallback != NULL && Z_TYPE_P(p_outerNodeCallback) != IS_NULL && UNEXPECTED(!zend_is_callable(p_outerNodeCallback, 0, NULL))) { zend_argument_type_error(5, "must be a valid callback, %s given", zend_zval_value_name(p_outerNodeCallback)); RETURN_THROWS(); }
 		if (p_outerNodeCallback == NULL) p_outerNodeCallback = &p_outerNodeCallback_null;
 		ZVAL_UNDEF(return_value);

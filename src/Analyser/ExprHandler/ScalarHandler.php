@@ -41,9 +41,11 @@ final class ScalarHandler implements ExprHandler
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		// a literal's type and its initializer context (file/namespace/class) are
-		// lexical - identical on every scope - so build the context once here.
-		$initializerExprContext = InitializerExprContext::fromScope($scope);
+		// a literal's type is lexical - identical on every scope and in both
+		// flavours - and cheaper to hold than a lazy typeCallback capturing the
+		// initializer context, which matters in large array literals whose item
+		// results all stay alive until the array's own type is resolved
+		$type = $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope));
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -53,8 +55,10 @@ final class ScalarHandler implements ExprHandler
 			isAlwaysTerminating: false,
 			throwPoints: [],
 			impurePoints: [],
-			typeCallback: fn () => $this->initializerExprTypeResolver->getType($expr, $initializerExprContext),
+			typeCallback: null,
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			type: $type,
+			nativeType: $type,
 		);
 	}
 

@@ -15,7 +15,7 @@ class HelloWorld
 		foreach($list as $k => $v) {
 			unset($list[$k]['abc']);
 			assertType('non-empty-list<array{}|array{abc: string}>', $list);
-			assertType('array{}|array{abc: string}', $list[$k]);
+			assertType('array{}', $list[$k]);
 		}
 		return $list;
 	}

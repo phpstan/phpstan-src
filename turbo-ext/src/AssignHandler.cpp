@@ -4150,8 +4150,23 @@ private:
 		zv::Val varNativeType;
 		AH_OKB(resolveContainerTypesAfterAssignedExprEval(nsr, var, varResult, scope.raw(), NULL, storage, varType, varNativeType));
 
-		AH_OKB(rebuildExistingOffsetChain(Z_ARRVAL_P(offsetTypes), varType.raw(), valueToWrite));
-		AH_OKB(rebuildExistingOffsetChain(Z_ARRVAL_P(offsetNativeTypes), varNativeType.raw(), nativeValueToWrite));
+		// the chain links whose own type the scope tracks (e.g. narrowed
+		// by is_array($a[$k]) for a non-constant $k) - their container
+		// type comes from the scope, and their new type is remembered
+		uint32_t linkCount = zend_hash_num_elements(Z_ARRVAL_P(offsetTypes));
+		zv::Arr trackedDimFetches = zv::Arr::create(linkCount);
+		for (uint32_t i = 0; i < linkCount; i++) {
+			zval *existingDimFetch = zend_hash_index_find(Z_ARRVAL_P(zend_hash_index_find(Z_ARRVAL_P(offsetTypes), i)), 1);
+			AH_VALB(dimFetch, toArrayDimFetch(existingDimFetch));
+			zend_long tracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope.raw()), dimFetch.raw());
+			AH_OKB(tracked >= 0);
+			trackedDimFetches.push(tracked == PT_TRI_YES ? std::move(dimFetch) : zv::Val::null());
+		}
+
+		zv::Arr linkValues = zv::Arr::create(linkCount);
+		zv::Arr linkNativeValues = zv::Arr::create(linkCount);
+		AH_OKB(rebuildExistingOffsetChain(Z_ARRVAL_P(offsetTypes), trackedDimFetches.table(), varType.raw(), valueToWrite, scope.raw(), linkValues));
+		AH_OKB(rebuildExistingOffsetChain(Z_ARRVAL_P(offsetNativeTypes), trackedDimFetches.table(), varNativeType.raw(), nativeValueToWrite, nativeScope.raw(), linkNativeValues));
 
 		zend_string *varName = ahStringVariableName(var);
 		if (varName != NULL) {
@@ -4166,30 +4181,77 @@ private:
 			AH_SETB(scope, pt_mutating_scope_assign_expression(Z_OBJ_P(scope.raw()), Z_OBJ_P(var), valueToWrite.raw(), nativeValueToWrite.raw()));
 		}
 
+		for (uint32_t i = 0; i < linkCount; i++) {
+			zval *dimFetch = zend_hash_index_find(trackedDimFetches.table(), i);
+			if (Z_TYPE_P(dimFetch) == IS_NULL) {
+				continue;
+			}
+
+			AH_SETB(scope, pt_mutating_scope_assign_expression(Z_OBJ_P(scope.raw()), Z_OBJ_P(dimFetch), zend_hash_index_find(linkValues.table(), i), zend_hash_index_find(linkNativeValues.table(), i)));
+		}
+
 		return true;
 	}
 
-	/* the offset value type stack over all but the last offset, then
-	 * setExistingOffsetValueType() back out from the outermost (twin
-	 * 1758-1780, one flavour) */
-	[[nodiscard]] static bool rebuildExistingOffsetChain(HashTable *offsetTypes, zval *containerType, zv::Val &valueToWrite)
+	/* the offset value type stack over all but the last offset (a tracked
+	 * link's from the scope), then setExistingOffsetValueType() back out
+	 * from the outermost, collecting each link's new value (twin
+	 * rebuildExistingOffsetChain(), one flavour) */
+	[[nodiscard]] static bool rebuildExistingOffsetChain(HashTable *offsetTypes, HashTable *trackedDimFetches, zval *containerType, zv::Val &valueToWrite, zval *scope, zv::Arr &linkValues)
 	{
 		uint32_t count = zend_hash_num_elements(offsetTypes);
 		zv::Arr stack = zv::Arr::create(count);
 		zv::Val offsetValueType = zv::Val::copyOf(zv::Ref(containerType));
 		stack.push(offsetValueType.ref());
 		for (uint32_t i = 0; i + 1 < count; i++) {
-			zval *offsetType = zend_hash_index_find(Z_ARRVAL_P(zend_hash_index_find(offsetTypes, i)), 0);
-			AH_SETB(offsetValueType, ahTypeOp(offsetValueType.raw(), PT_OP_GET_OFFSET_VALUE_TYPE, 1, offsetType));
+			zval *trackedDimFetch = zend_hash_index_find(trackedDimFetches, i);
+			if (Z_TYPE_P(trackedDimFetch) != IS_NULL) {
+				AH_SETB(offsetValueType, pt_mutating_scope_get_state_type(Z_OBJ_P(scope), Z_OBJ_P(trackedDimFetch)));
+			} else {
+				zval *offsetType = zend_hash_index_find(Z_ARRVAL_P(zend_hash_index_find(offsetTypes, i)), 0);
+				AH_SETB(offsetValueType, ahTypeOp(offsetValueType.raw(), PT_OP_GET_OFFSET_VALUE_TYPE, 1, offsetType));
+			}
 			stack.push(offsetValueType.ref());
 		}
+		for (uint32_t i = 0; i < count; i++) {
+			linkValues.push(zv::Val::null());
+		}
 		for (uint32_t i = count; i > 0; i--) {
+			zend_hash_index_update(linkValues.table(), i - 1, valueToWrite.raw());
+			Z_TRY_ADDREF_P(valueToWrite.raw());
 			zval *offsetType = zend_hash_index_find(Z_ARRVAL_P(zend_hash_index_find(offsetTypes, i - 1)), 0);
 			zval *container = zend_hash_index_find(stack.table(), i - 1);
 			zv::Args setArgs{offsetType, valueToWrite.raw()};
-			AH_SETB(valueToWrite, ahCall(container, PT_LC("setexistingoffsetvaluetype"), 2, setArgs));
+			AH_VALB(writtenValueType, ahCall(container, PT_LC("setexistingoffsetvaluetype"), 2, setArgs));
+			zend_long has = ahTypeOpTri(container, PT_OP_HAS_OFFSET_VALUE_TYPE, 1, offsetType);
+			AH_OKB(has >= 0);
+			if (has == PT_TRI_MAYBE) {
+				// unset() does not create a missing offset on its way
+				zend_long isConstantArray = ahTypeOpTri(container, PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
+				AH_OKB(isConstantArray >= 0);
+				zv::Val absentValueType = zv::Val::copyOf(zv::Ref(container));
+				if (isConstantArray == PT_TRI_YES) {
+					AH_SETB(absentValueType, ahCall(container, PT_LC("unsetoffset"), 1, offsetType));
+				}
+				zv::Args unionArgs{absentValueType.raw(), writtenValueType.raw()};
+				AH_SETB(writtenValueType, pt_type_combinator_union(2, unionArgs));
+			}
+			valueToWrite = std::move(writtenValueType);
 		}
 		return true;
+	}
+
+	/* the ArrayDimFetch chain an ExistingArrayDimFetch chain stands for
+	 * (twin toArrayDimFetch()) */
+	static zv::Val toArrayDimFetch(zval *dimFetch)
+	{
+		zval *var = AH_PROP(dimFetch, var);
+		if (ahIs(var, PT_CLASS_EXISTING_ARRAY_DIM_FETCH)) {
+			AH_VAL(converted, toArrayDimFetch(var));
+			return newArrayDimFetch(converted.raw(), AH_PROP(dimFetch, dim));
+		}
+
+		return newArrayDimFetch(var, AH_PROP(dimFetch, dim));
 	}
 
 	/* }}} */

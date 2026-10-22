@@ -1809,29 +1809,18 @@ final class AssignHandler implements ExprHandler
 			$nativeValueToWrite = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain());
 			[$varType, $varNativeType] = $this->resolveContainerTypesAfterAssignedExprEval($nodeScopeResolver, $var, $varResult, $scope, null, $storage);
 
-			$offsetValueType = $varType;
-			$offsetNativeValueType = $varNativeType;
-			$offsetValueTypeStack = [$offsetValueType];
-			$offsetValueNativeTypeStack = [$offsetNativeValueType];
-			foreach (array_slice($offsetTypes, 0, -1) as [$offsetType]) {
-				$offsetValueType = $offsetValueType->getOffsetValueType($offsetType);
-				$offsetValueTypeStack[] = $offsetValueType;
-			}
-			foreach (array_slice($offsetNativeTypes, 0, -1) as [$offsetNativeType]) {
-				$offsetNativeValueType = $offsetNativeValueType->getOffsetValueType($offsetNativeType);
-				$offsetValueNativeTypeStack[] = $offsetNativeValueType;
+			// the chain links whose own type the scope tracks (e.g. narrowed
+			// by is_array($a[$k]) for a non-constant $k) - their container
+			// type comes from the scope, and their new type is remembered
+			$trackedDimFetches = [];
+			foreach ($offsetTypes as $i => [, $existingDimFetch]) {
+				$dimFetch = $this->toArrayDimFetch($existingDimFetch);
+				$trackedDimFetches[$i] = $scope->hasExpressionType($dimFetch)->yes() ? $dimFetch : null;
 			}
 
-			foreach (array_reverse($offsetTypes) as [$offsetType]) {
-				/** @var Type $offsetValueType */
-				$offsetValueType = array_pop($offsetValueTypeStack);
-				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
-			}
-			foreach (array_reverse($offsetNativeTypes) as [$offsetNativeType]) {
-				/** @var Type $offsetNativeValueType */
-				$offsetNativeValueType = array_pop($offsetValueNativeTypeStack);
-				$nativeValueToWrite = $offsetNativeValueType->setExistingOffsetValueType($offsetNativeType, $nativeValueToWrite);
-			}
+			$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
+			[$valueToWrite, $linkValues] = $this->rebuildExistingOffsetChain($offsetTypes, $trackedDimFetches, $varType, $valueToWrite, $scope);
+			[$nativeValueToWrite, $linkNativeValues] = $this->rebuildExistingOffsetChain($offsetNativeTypes, $trackedDimFetches, $varNativeType, $nativeValueToWrite, $nativeScope);
 
 			if ($var instanceof Variable && is_string($var->name)) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedPropertyExpr), $scope, $storage);
@@ -1845,6 +1834,14 @@ final class AssignHandler implements ExprHandler
 					$valueToWrite,
 					$nativeValueToWrite,
 				);
+			}
+
+			foreach ($trackedDimFetches as $i => $dimFetch) {
+				if ($dimFetch === null) {
+					continue;
+				}
+
+				$scope = $scope->assignExpression($dimFetch, $linkValues[$i], $linkNativeValues[$i]);
 			}
 		} else {
 			$result = $valueResult;
@@ -1868,6 +1865,52 @@ final class AssignHandler implements ExprHandler
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: Dependencies::merge(...$writeDependencies),
 		);
+	}
+
+	/**
+	 * @param non-empty-list<array{Type, ExistingArrayDimFetch}> $offsetTypes
+	 * @param array<int, ArrayDimFetch|null> $trackedDimFetches
+	 * @return array{Type, array<int, Type>}
+	 */
+	private function rebuildExistingOffsetChain(array $offsetTypes, array $trackedDimFetches, Type $offsetValueType, Type $valueToWrite, MutatingScope $scope): array
+	{
+		$offsetValueTypeStack = [$offsetValueType];
+		foreach (array_slice($offsetTypes, 0, -1) as $i => [$offsetType]) {
+			$trackedDimFetch = $trackedDimFetches[$i];
+			$offsetValueType = $trackedDimFetch !== null
+				? $scope->getStateType($trackedDimFetch)
+				: $offsetValueType->getOffsetValueType($offsetType);
+			$offsetValueTypeStack[] = $offsetValueType;
+		}
+
+		$linkValues = [];
+		for ($i = count($offsetTypes) - 1; $i >= 0; $i--) {
+			$linkValues[$i] = $valueToWrite;
+			/** @var Type $offsetValueType */
+			$offsetValueType = array_pop($offsetValueTypeStack);
+			$offsetType = $offsetTypes[$i][0];
+			$writtenValueType = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+			if ($offsetValueType->hasOffsetValueType($offsetType)->maybe()) {
+				// unset() does not create a missing offset on its way
+				$writtenValueType = TypeCombinator::union(
+					$offsetValueType->isConstantArray()->yes() ? $offsetValueType->unsetOffset($offsetType) : $offsetValueType,
+					$writtenValueType,
+				);
+			}
+			$valueToWrite = $writtenValueType;
+		}
+
+		return [$valueToWrite, $linkValues];
+	}
+
+	private function toArrayDimFetch(ExistingArrayDimFetch $dimFetch): ArrayDimFetch
+	{
+		$var = $dimFetch->getVar();
+		if ($var instanceof ExistingArrayDimFetch) {
+			$var = $this->toArrayDimFetch($var);
+		}
+
+		return new ArrayDimFetch($var, $dimFetch->getDim());
 	}
 
 	/**

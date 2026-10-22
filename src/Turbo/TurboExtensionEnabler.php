@@ -34,7 +34,7 @@ use function realpath;
 final class TurboExtensionEnabler
 {
 
-	public const EXPECTED_EXTENSION_VERSION = 'c3151b9';
+	public const EXPECTED_EXTENSION_VERSION = '5847573';
 
 	private static bool $active = false;
 

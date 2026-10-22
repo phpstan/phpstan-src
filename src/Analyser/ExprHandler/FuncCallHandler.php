@@ -63,7 +63,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\CallableType;
@@ -99,7 +99,7 @@ use function is_string;
  * @implements ExprHandler<FuncCall>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FuncCallHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FuncCallHandler.cpp')]
 final class FuncCallHandler implements ExprHandler
 {
 

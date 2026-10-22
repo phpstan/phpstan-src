@@ -4,11 +4,11 @@ namespace PHPStan\Collectors;
 
 use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ExtensionClassHelper;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService(factory: '@PHPStan\Collectors\RegistryFactory::create')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/Registry.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/Registry.cpp')]
 final class Registry
 {
 

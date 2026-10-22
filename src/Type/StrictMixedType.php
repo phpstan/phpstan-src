@@ -14,7 +14,7 @@ use PHPStan\Reflection\Type\UnresolvedMethodPrototypeReflection;
 use PHPStan\Reflection\Type\UnresolvedPropertyPrototypeReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -26,7 +26,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StrictMixedType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StrictMixedType.cpp')]
 class StrictMixedType implements CompoundType
 {
 

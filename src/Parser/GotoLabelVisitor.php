@@ -7,15 +7,15 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Goto_;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_intersect_key;
 use function array_pop;
 use function count;
 use function is_array;
 use function spl_object_id;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/GotoLabelVisitor.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/GotoLabelVisitor.cpp')]
 final class GotoLabelVisitor extends NodeVisitorAbstract
 {
 

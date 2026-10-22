@@ -28,7 +28,7 @@ use PHPStan\Node\ReturnAfterFinallyNode;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\TypeCombinator;
@@ -43,7 +43,7 @@ use function is_string;
  * @implements StmtHandler<TryCatch>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TryCatchHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TryCatchHandler.cpp')]
 final class TryCatchHandler implements StmtHandler
 {
 

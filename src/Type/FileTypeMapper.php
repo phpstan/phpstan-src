@@ -28,6 +28,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -51,10 +52,9 @@ use function md5;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileTypeMapper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileTypeMapper.cpp')]
 final class FileTypeMapper
 {
 

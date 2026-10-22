@@ -7,7 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NeverType;
@@ -22,7 +22,7 @@ use function array_map;
 use function count;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GenericStaticType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GenericStaticType.cpp')]
 class GenericStaticType extends StaticType
 {
 

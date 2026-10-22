@@ -2,7 +2,7 @@
 
 namespace PHPStan\Cache;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * Cross-process sharing seam for a single analysis run.
@@ -27,7 +27,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  *
  * @internal
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArenaCache.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArenaCache.cpp')]
 final class ArenaCache
 {
 

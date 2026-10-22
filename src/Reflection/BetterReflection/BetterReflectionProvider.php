@@ -53,6 +53,7 @@ use PHPStan\Reflection\SignatureMap\NativeFunctionReflectionProvider;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -66,11 +67,10 @@ use function in_array;
 use function sprintf;
 use function strtolower;
 use const PHP_VERSION_ID;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[NonAutowiredService(name: 'betterReflectionProvider')]
 #[ReferencedByTurboExtension(key: 'betterReflectionProvider')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BetterReflectionProvider.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BetterReflectionProvider.cpp')]
 final class BetterReflectionProvider implements ReflectionProvider
 {
 

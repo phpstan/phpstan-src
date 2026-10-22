@@ -5,14 +5,14 @@ namespace PHPStan\Node\Property;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'propertyRead')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyRead.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyRead.cpp')]
 final class PropertyRead
 {
 

@@ -29,7 +29,7 @@ use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -50,7 +50,7 @@ use function spl_object_id;
  * @implements ExprHandler<Array_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayHandler.cpp')]
 final class ArrayHandler implements ExprHandler
 {
 

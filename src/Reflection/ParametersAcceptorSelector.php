@@ -24,7 +24,7 @@ use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -65,7 +65,7 @@ use const CURLOPT_SSL_VERIFYHOST;
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParametersAcceptorSelector.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParametersAcceptorSelector.cpp')]
 final class ParametersAcceptorSelector
 {
 

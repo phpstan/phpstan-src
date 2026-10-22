@@ -22,7 +22,7 @@ use PHPStan\Node\Property\PropertyWrite;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\TypeUtils;
 use ReflectionProperty;
 use function count;
@@ -30,7 +30,7 @@ use function in_array;
 use function is_string;
 use function strtolower;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassStatementsGatherer.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassStatementsGatherer.cpp')]
 final class ClassStatementsGatherer
 {
 

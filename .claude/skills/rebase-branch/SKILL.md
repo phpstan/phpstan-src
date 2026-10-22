@@ -85,7 +85,7 @@ Decide these before replaying (ask the user if the answer isn't obvious):
 
 ## 3. Turbo mirrors
 
-Classes carrying `#[ShadowedByTurboExtension(turboClass: ..., implementation: .../turbo-ext/src/X.cpp)]`
+Classes carrying `#[ImplementedInTurboExtension(turboClass: ..., implementation: .../turbo-ext/src/X.cpp)]`
 have a native C++ twin. Vendored twins live in `VENDORED_PAIRS` in
 `build/PHPStan/Build/TurboAttributeCollector.php` and change when their package's version in
 `composer.lock` changes. The PHP class and the C++ class must behave identically after every replayed

@@ -6,7 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -32,7 +32,7 @@ use PHPStan\Type\VerbosityLevel;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isList()')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessoryArrayListType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AccessoryArrayListType.cpp')]
 class AccessoryArrayListType implements CompoundType, AccessoryType
 {
 

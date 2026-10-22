@@ -8,15 +8,15 @@ use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use function get_class;
 use function in_array;
 use function strtolower;
 
 #[ReferencedByTurboExtension(key: 'parserNodeTypeToPHPStanType')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParserNodeTypeToPHPStanType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ParserNodeTypeToPHPStanType.cpp')]
 final class ParserNodeTypeToPHPStanType
 {
 

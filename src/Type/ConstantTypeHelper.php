@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
@@ -27,7 +27,7 @@ use function is_string;
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConstantTypeHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConstantTypeHelper.cpp')]
 final class ConstantTypeHelper
 {
 

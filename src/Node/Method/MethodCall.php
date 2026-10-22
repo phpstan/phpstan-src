@@ -6,14 +6,14 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'gatheredMethodCall')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodCall.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MethodCall.cpp')]
 final class MethodCall
 {
 

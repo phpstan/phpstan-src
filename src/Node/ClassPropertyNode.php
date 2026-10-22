@@ -8,15 +8,15 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeAbstract;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'classPropertyNode')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassPropertyNode.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClassPropertyNode.cpp')]
 final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 {
 

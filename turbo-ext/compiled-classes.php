@@ -3,7 +3,7 @@
 /*
  * The shadowed classes whose native implementation is compiled from the PHP
  * twin by turbo-ext/bin/compile-twins.php instead of written by hand. The
- * generated file is the one the twin's ShadowedByTurboExtension attribute
+ * generated file is the one the twin's ImplementedInTurboExtension attribute
  * names. Per class (FQCN =>), the class-entry variable the rest of the
  * extension uses for it, or an array with
  *

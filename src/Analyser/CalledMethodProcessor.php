@@ -9,7 +9,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\NeverType;
 use function array_key_exists;
 use function count;
@@ -17,7 +17,7 @@ use function is_array;
 use function sprintf;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CalledMethodProcessor.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CalledMethodProcessor.cpp')]
 final class CalledMethodProcessor
 {
 

@@ -11,7 +11,7 @@ use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -30,7 +30,7 @@ use function strtolower;
 use function trim;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PhpDocsResolver.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PhpDocsResolver.cpp')]
 final class PhpDocsResolver
 {
 

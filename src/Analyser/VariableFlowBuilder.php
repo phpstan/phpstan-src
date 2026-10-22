@@ -5,7 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Node\Variable\VariableWrite;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function in_array;
@@ -13,7 +13,7 @@ use function is_string;
 use function spl_object_id;
 
 /** Compose variable flow for assignment targets and arguments. */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableFlowBuilder.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableFlowBuilder.cpp')]
 final class VariableFlowBuilder
 {
 

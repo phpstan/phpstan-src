@@ -17,13 +17,13 @@ use PHPStan\Analyser\StmtHandler;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * @implements StmtHandler<Break_|Continue_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BreakContinueHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/BreakContinueHandler.cpp')]
 final class BreakContinueHandler implements StmtHandler
 {
 

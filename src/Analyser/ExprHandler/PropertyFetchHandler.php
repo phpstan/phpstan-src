@@ -27,7 +27,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -40,7 +40,7 @@ use function count;
  * @implements ExprHandler<PropertyFetch>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyFetchHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PropertyFetchHandler.cpp')]
 final class PropertyFetchHandler implements ExprHandler
 {
 

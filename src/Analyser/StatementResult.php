@@ -4,12 +4,12 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Stmt;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementResult.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementResult.cpp')]
 final class StatementResult
 {
 

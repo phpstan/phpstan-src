@@ -2,8 +2,8 @@
 
 namespace PHPStan\DependencyInjection;
 
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_values;
 
 /**
@@ -14,7 +14,7 @@ use function array_values;
  * @implements ExtensionsCollection<T>
  */
 #[ReferencedByTurboExtension(key: 'lazyExtensionsCollection')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/LazyExtensionsCollection.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/LazyExtensionsCollection.cpp')]
 final class LazyExtensionsCollection implements ExtensionsCollection
 {
 

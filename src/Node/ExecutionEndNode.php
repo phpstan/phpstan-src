@@ -7,14 +7,14 @@ use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\StatementResult;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * @api
  */
 #[ReferencedByTurboExtension(key: 'executionEndNode')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExecutionEndNode.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExecutionEndNode.cpp')]
 final class ExecutionEndNode extends NodeAbstract implements VirtualNode
 {
 

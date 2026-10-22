@@ -12,16 +12,16 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_key_exists;
 use function array_values;
 use function get_class;
 use function is_string;
 use function spl_object_id;
 use function str_starts_with;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DependencyResolver.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DependencyResolver.cpp')]
 final class DependencyResolver
 {
 

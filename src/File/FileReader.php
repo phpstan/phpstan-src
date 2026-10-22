@@ -2,13 +2,13 @@
 
 namespace PHPStan\File;
 
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function file_get_contents;
 use function stream_resolve_include_path;
 
 #[ReferencedByTurboExtension(key: 'fileReader')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileReader.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileReader.cpp')]
 final class FileReader
 {
 

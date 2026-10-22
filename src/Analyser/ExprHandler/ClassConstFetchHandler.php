@@ -22,7 +22,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -31,7 +31,7 @@ use function array_merge;
  * @implements ExprHandler<ClassConstFetch>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassConstFetchHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ClassConstFetchHandler.cpp')]
 final class ClassConstFetchHandler implements ExprHandler
 {
 

@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
 use PHPStan\DependencyInjection\Container;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function get_class;
 use function spl_object_id;
 
@@ -18,7 +18,7 @@ use function spl_object_id;
  * dispatch has to add a discriminator to the cache key here, like the
  * CallLike cases in ExprHandlerRegistry.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StmtHandlerRegistry.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StmtHandlerRegistry.cpp')]
 final class StmtHandlerRegistry
 {
 

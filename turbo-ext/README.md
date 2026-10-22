@@ -51,7 +51,7 @@ Every shadowed piece of PHP code follows the same three steps:
 2. The extension implements the same class natively (one class per file in
    `src/`), registered through the `reg::Class` builder with the twin's real
    name, final flag, parent and interfaces: `reg::Class cls("PHPStan\\TrinaryLogic"); cls.final(); … cls.shadow(&pt_ce_trinary);`
-3. The PHP class is marked with the `#[ShadowedByTurboExtension]` attribute.
+3. The PHP class is marked with the `#[ImplementedInTurboExtension]` attribute.
    On every `composer dump-autoload`, `build/generate-turbo-manifest.php`
    collects the attributes with runtime reflection into
    `vendor/turbo-shadowed-classes.json` — the manifest of shadowed pairs
@@ -163,7 +163,7 @@ rejects — the extension then simply stays inactive.
 ## Keeping the two implementations in sync
 
 The manifest of shadowed pairs — each PHP class and the C++ file
-implementing it natively — is derived from the `#[ShadowedByTurboExtension]`
+implementing it natively — is derived from the `#[ImplementedInTurboExtension]`
 attributes: the attributed file is the PHP side, the attribute names the
 native class and the implementing `.cpp`. Nothing is maintained by hand;
 `build/generate-turbo-manifest.php` derives the same map into

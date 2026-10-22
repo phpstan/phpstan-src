@@ -3,12 +3,12 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Stmt;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/EndStatementResult.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/EndStatementResult.cpp')]
 final class EndStatementResult
 {
 

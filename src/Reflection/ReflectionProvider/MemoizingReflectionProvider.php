@@ -9,12 +9,12 @@ use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\NamespaceAnswerer;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use function strtolower;
 
 #[ReferencedByTurboExtension(key: 'memoizingReflectionProvider')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MemoizingReflectionProvider.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/MemoizingReflectionProvider.cpp')]
 final class MemoizingReflectionProvider implements ReflectionProvider
 {
 

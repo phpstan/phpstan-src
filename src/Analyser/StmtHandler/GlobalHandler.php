@@ -20,7 +20,7 @@ use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
@@ -31,7 +31,7 @@ use function is_string;
  * @implements StmtHandler<Global_>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GlobalHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GlobalHandler.cpp')]
 final class GlobalHandler implements StmtHandler
 {
 

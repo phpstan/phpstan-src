@@ -3,7 +3,7 @@
 namespace PHPStan\File;
 
 use PHPStan\DependencyInjection\GenerateFactory;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function fnmatch;
 use function in_array;
 use function is_dir;
@@ -17,7 +17,7 @@ use const FNM_CASEFOLD;
 use const FNM_NOESCAPE;
 
 #[GenerateFactory(interface: FileExcluderRawFactory::class)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileExcluder.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileExcluder.cpp')]
 final class FileExcluder
 {
 

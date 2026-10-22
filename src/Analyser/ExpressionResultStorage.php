@@ -4,10 +4,10 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\Generics\TemplateArgumentFrame;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use SplObjectStorage;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ExpressionResultStorage.cpp')]
 final class ExpressionResultStorage
 {
 

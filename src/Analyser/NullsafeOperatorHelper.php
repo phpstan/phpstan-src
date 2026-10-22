@@ -3,11 +3,11 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\TypeCombinator;
 use function array_reverse;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NullsafeOperatorHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/NullsafeOperatorHelper.cpp')]
 final class NullsafeOperatorHelper
 {
 

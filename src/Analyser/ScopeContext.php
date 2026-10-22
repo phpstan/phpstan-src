@@ -4,9 +4,9 @@ namespace PHPStan\Analyser;
 
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ScopeContext.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ScopeContext.cpp')]
 final class ScopeContext
 {
 

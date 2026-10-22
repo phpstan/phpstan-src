@@ -3,8 +3,8 @@
 namespace PHPStan\Php;
 
 use PHPStan\TrinaryLogic;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 
@@ -20,7 +20,7 @@ use PHPStan\Type\Type;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'phpVersions')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PhpVersions.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PhpVersions.cpp')]
 final class PhpVersions
 {
 

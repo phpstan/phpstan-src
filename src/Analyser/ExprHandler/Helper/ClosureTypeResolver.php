@@ -35,7 +35,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -59,7 +59,7 @@ use function is_string;
 use function spl_object_id;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/ClosureTypeResolver.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/ClosureTypeResolver.cpp')]
 final class ClosureTypeResolver implements PerFileAnalysisResettable
 {
 

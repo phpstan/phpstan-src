@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\File\FileHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -20,7 +21,6 @@ use function array_values;
 use function rtrim;
 use function sprintf;
 use function strtolower;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * Collects the values declared through DependencyTracker::trackValueDependency() while a file is being
@@ -55,7 +55,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  * }
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ValueDependencyCollector.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ValueDependencyCollector.cpp')]
 final class ValueDependencyCollector
 {
 

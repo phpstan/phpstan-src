@@ -30,7 +30,7 @@ use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
@@ -65,7 +65,7 @@ use function sprintf;
  * by NodeScopeResolver::processStmtNode().
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementsHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementsHandler.cpp')]
 final class StatementsHandler
 {
 

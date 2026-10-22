@@ -3,14 +3,14 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Dependency\Dependencies;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * The state NodeScopeResolver threads from one statement of a statement list
  * to the next. A snapshot (clone) taken before a statement is everything the
  * walk needs to continue from that statement again.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementListWalkState.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StatementListWalkState.cpp')]
 final class StatementListWalkState
 {
 

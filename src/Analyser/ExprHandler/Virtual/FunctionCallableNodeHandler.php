@@ -24,7 +24,7 @@ use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 
@@ -32,7 +32,7 @@ use PHPStan\Type\Type;
  * @implements ExprHandler<FunctionCallableNode>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/FunctionCallableNodeHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/FunctionCallableNodeHandler.cpp')]
 final class FunctionCallableNodeHandler implements ExprHandler
 {
 

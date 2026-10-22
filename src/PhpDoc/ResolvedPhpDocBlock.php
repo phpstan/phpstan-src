@@ -29,8 +29,8 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -48,7 +48,7 @@ use function substr;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'resolvedPhpDocBlock')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ResolvedPhpDocBlock.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ResolvedPhpDocBlock.cpp')]
 final class ResolvedPhpDocBlock
 {
 

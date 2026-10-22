@@ -3,7 +3,7 @@
 /**
  * Compiles the PHP twins listed in turbo-ext/compiled-classes.php to their
  * native implementations (PHPStan\Build\TurboCodegen): the .cpp file each
- * twin's ShadowedByTurboExtension attribute names, plus
+ * twin's ImplementedInTurboExtension attribute names, plus
  * turbo-ext/src/CodegenDecls.h with the compiled methods' C++ entry points.
  *
  * Usage: php turbo-ext/bin/compile-twins.php [--check]
@@ -11,7 +11,7 @@
  */
 
 use PHPStan\Build\TurboCodegen\Compiler;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 error_reporting(E_ALL);
 ini_set('memory_limit', '4G');
@@ -34,7 +34,7 @@ foreach (require 'turbo-ext/compiled-classes.php' as $className => $config) {
 		$config = ['ce' => $config];
 	}
 	$reflection = new ReflectionClass($className);
-	$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
+	$attributes = $reflection->getAttributes(ImplementedInTurboExtension::class);
 	if (count($attributes) === 1) {
 		$implementation = $attributes[0]->newInstance()->implementation;
 	} elseif (($manifest[$className]['vendored'] ?? false) === true) {

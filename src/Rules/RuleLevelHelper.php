@@ -8,7 +8,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\ClosureType;
@@ -31,7 +31,7 @@ use function count;
 use function sprintf;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RuleLevelHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/RuleLevelHelper.cpp')]
 final class RuleLevelHelper
 {
 

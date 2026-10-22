@@ -3,7 +3,7 @@
 use PHPStan\Build\TurboAttributeCollector;
 
 /**
- * Generates two files from the ShadowedByTurboExtension and
+ * Generates two files from the ImplementedInTurboExtension and
  * ReferencedByTurboExtension attributes on every autoloader dump
  * (composer.json scripts.post-autoload-dump):
  *

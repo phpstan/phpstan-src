@@ -4,7 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -12,7 +12,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\Type;
 use function is_bool;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ResolvedMethodReflection.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ResolvedMethodReflection.cpp')]
 final class ResolvedMethodReflection implements ExtendedMethodReflection
 {
 

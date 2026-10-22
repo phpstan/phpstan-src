@@ -3,7 +3,7 @@
 // Read-only report that prepares a rebase of a feature branch onto a fresh base
 // tip: both sides' commits, commits the base already contains, files both sides
 // touch, the conflicts a merge of the two tips predicts, and the turbo twins
-// (#[ShadowedByTurboExtension] PHP class <-> turbo-ext .cpp) whose other half
+// (#[ImplementedInTurboExtension] PHP class <-> turbo-ext .cpp) whose other half
 // needs a port during the replay.
 //
 // Usage: php rebase-plan.php <new-base-ref> [<feature-ref>=HEAD]
@@ -137,7 +137,7 @@ if ($mergeTree === [] || $mergeTree === ['']) {
 function shadowMap(string $rev): array
 {
 	$map = [];
-	foreach (gitLines('grep', '-e', 'ShadowedByTurboExtension(', $rev, '--', 'src') as $line) {
+	foreach (gitLines('grep', '-e', 'ImplementedInTurboExtension(', $rev, '--', 'src') as $line) {
 		$line = substr($line, strlen($rev) + 1);
 		[$path, $content] = explode(':', $line, 2);
 		if (preg_match("~implementation:\\s*__DIR__\\s*\\.\\s*'([^']+)'~", $content, $m) !== 1) {

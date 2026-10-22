@@ -2,9 +2,9 @@
 
 namespace PHPStan\Analyser;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableInputFlow.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableInputFlow.cpp')]
 final class VariableInputFlow extends VariableFlow
 {
 

@@ -3,15 +3,15 @@
 namespace PHPStan\Analyser\Traverser;
 
 use PHPStan\Analyser\Scope;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverserCallable;
 
 #[ReferencedByTurboExtension(key: 'transformStaticTypeTraverser')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TransformStaticTypeTraverser.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TransformStaticTypeTraverser.cpp')]
 final class TransformStaticTypeTraverser implements TypeTraverserCallable
 {
 

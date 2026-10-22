@@ -8,10 +8,10 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\NodeVisitorAbstract;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_merge;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PipeTransformerVisitor.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/PipeTransformerVisitor.cpp')]
 final class PipeTransformerVisitor extends NodeVisitorAbstract
 {
 

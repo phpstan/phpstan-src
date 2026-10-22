@@ -8,13 +8,13 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpParameterFromParserNodeReflection.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpParameterFromParserNodeReflection.cpp')]
 final class PhpParameterFromParserNodeReflection implements ExtendedParameterReflection
 {
 

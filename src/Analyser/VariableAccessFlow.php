@@ -3,10 +3,10 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Node\Variable\VariableWrite;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableAccessFlow.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/VariableAccessFlow.cpp')]
 final class VariableAccessFlow extends VariableFlow
 {
 

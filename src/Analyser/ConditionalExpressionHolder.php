@@ -3,13 +3,13 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\ShouldNotHappenException;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function implode;
 use function sprintf;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConditionalExpressionHolder.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConditionalExpressionHolder.cpp')]
 final class ConditionalExpressionHolder
 {
 

@@ -10,7 +10,7 @@ use PhpParser\Node\Scalar\InterpolatedString;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function preg_match;
 
 /**
@@ -29,7 +29,7 @@ use function preg_match;
  * for these nodes.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArrayOffsetNormalizingVisitor.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ArrayOffsetNormalizingVisitor.cpp')]
 final class ArrayOffsetNormalizingVisitor extends NodeVisitorAbstract
 {
 

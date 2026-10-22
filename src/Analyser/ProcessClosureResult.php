@@ -9,9 +9,9 @@ use PhpParser\Node\Stmt\Return_;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\InvalidateExprNode;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ProcessClosureResult.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ProcessClosureResult.cpp')]
 final class ProcessClosureResult
 {
 

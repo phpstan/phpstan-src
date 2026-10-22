@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\PhpDoc;
 
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -11,7 +11,7 @@ use PHPStan\Type\TypeTraverser;
 use function array_values;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnresolvableTypeHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnresolvableTypeHelper.cpp')]
 final class UnresolvableTypeHelper
 {
 

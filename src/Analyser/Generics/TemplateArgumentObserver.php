@@ -7,7 +7,7 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -31,7 +31,7 @@ use function is_string;
  * constraints and the scope's inference context are immutable.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentObserver.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentObserver.cpp')]
 final class TemplateArgumentObserver
 {
 

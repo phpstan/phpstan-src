@@ -187,8 +187,8 @@ use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
 use PHPStan\PhpDocParser\Printer\Printer;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
@@ -218,7 +218,7 @@ use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 
 /**
- * Collects the ShadowedByTurboExtension and ReferencedByTurboExtension
+ * Collects the ImplementedInTurboExtension and ReferencedByTurboExtension
  * attributes with runtime reflection and renders the two generated files:
  * vendor/turbo-shadowed-classes.json and vendor/turbo-class-map.php. Shared
  * by build/generate-turbo-manifest.php (which writes the artifacts on every
@@ -543,7 +543,7 @@ final class TurboAttributeCollector
 			}
 			$reflection = new ReflectionClass($className);
 
-			$attributes = $reflection->getAttributes(ShadowedByTurboExtension::class);
+			$attributes = $reflection->getAttributes(ImplementedInTurboExtension::class);
 			if (count($attributes) > 0) {
 				$attribute = $attributes[0]->newInstance();
 				$pairs[$className] = $this->relativize($attribute->implementation);

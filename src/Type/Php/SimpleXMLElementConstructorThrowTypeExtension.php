@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\MethodReflection;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
@@ -15,10 +16,9 @@ use Throwable;
 use function count;
 use function extension_loaded;
 use function libxml_use_internal_errors;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SimpleXMLElementConstructorThrowTypeExtension.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SimpleXMLElementConstructorThrowTypeExtension.cpp')]
 final class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStaticMethodThrowTypeExtension
 {
 

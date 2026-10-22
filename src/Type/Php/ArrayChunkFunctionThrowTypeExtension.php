@@ -6,7 +6,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
@@ -17,7 +17,7 @@ use function count;
  * array_chunk() throws ValueError only when $length is less than 1, even for an empty array.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayChunkFunctionThrowTypeExtension.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/ArrayChunkFunctionThrowTypeExtension.cpp')]
 final class ArrayChunkFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 

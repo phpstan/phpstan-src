@@ -8,8 +8,8 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\Type;
 
@@ -17,7 +17,7 @@ use PHPStan\Type\Type;
  * The types whose classes a call or a declaration depends on, for the handlers creating Dependencies.
  */
 #[ReferencedByTurboExtension(key: 'dependencyTypes')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DependencyTypes.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DependencyTypes.cpp')]
 final class DependencyTypes
 {
 

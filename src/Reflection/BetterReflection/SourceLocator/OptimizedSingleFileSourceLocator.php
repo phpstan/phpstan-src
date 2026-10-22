@@ -21,15 +21,15 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function array_key_exists;
 use function array_keys;
 use function hash_file;
 use function sprintf;
 use function strtolower;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[GenerateFactory(interface: OptimizedSingleFileSourceLocatorFactory::class)]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/OptimizedSingleFileSourceLocator.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/OptimizedSingleFileSourceLocator.cpp')]
 final class OptimizedSingleFileSourceLocator implements SourceLocator
 {
 

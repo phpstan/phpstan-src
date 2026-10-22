@@ -2,11 +2,11 @@
 
 namespace PHPStan\File;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function error_get_last;
 use function file_put_contents;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileWriter.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileWriter.cpp')]
 final class FileWriter
 {
 

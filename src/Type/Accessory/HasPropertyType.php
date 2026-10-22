@@ -6,7 +6,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -36,7 +36,7 @@ use PHPStan\Type\VerbosityLevel;
 use function sprintf;
 
 #[InstanceofDeprecated(insteadUse: 'Type::hasProperty()')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/HasPropertyType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/HasPropertyType.cpp')]
 class HasPropertyType implements AccessoryType, CompoundType
 {
 

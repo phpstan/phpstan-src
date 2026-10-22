@@ -4,7 +4,7 @@ namespace PHPStan\File;
 
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\Glob;
 use function array_key_exists;
@@ -58,7 +58,7 @@ use const DIRECTORY_SEPARATOR;
  * wrappers, unreadable directories), so errors surface exactly as they did.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DirectoryWalker.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/DirectoryWalker.cpp')]
 final class DirectoryWalker
 {
 

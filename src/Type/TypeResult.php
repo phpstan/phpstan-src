@@ -2,12 +2,12 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * @template-covariant T of Type
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeResult.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeResult.cpp')]
 final class TypeResult
 {
 

@@ -46,7 +46,7 @@ use PHPStan\Reflection\SignatureMap\ParameterSignature;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\ArrayType;
@@ -80,7 +80,7 @@ use function sprintf;
 use function strtolower;
 
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpClassReflectionExtension.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/PhpClassReflectionExtension.cpp')]
 final class PhpClassReflectionExtension
 {
 

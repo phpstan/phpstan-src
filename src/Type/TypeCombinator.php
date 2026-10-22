@@ -3,7 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
@@ -53,7 +53,7 @@ use const PHP_INT_MIN;
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinator.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinator.cpp')]
 final class TypeCombinator
 {
 

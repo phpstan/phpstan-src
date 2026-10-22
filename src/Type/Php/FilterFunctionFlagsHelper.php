@@ -8,7 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use function array_key_exists;
 
@@ -17,7 +17,7 @@ use function array_key_exists;
  * functions, taking named arguments into account.
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FilterFunctionFlagsHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/FilterFunctionFlagsHelper.cpp')]
 final class FilterFunctionFlagsHelper
 {
 

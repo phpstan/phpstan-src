@@ -23,7 +23,7 @@ use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use function array_merge;
 
@@ -31,7 +31,7 @@ use function array_merge;
  * @implements ExprHandler<StaticMethodCallableNode>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/StaticMethodCallableNodeHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../../turbo-ext/src/StaticMethodCallableNodeHandler.cpp')]
 final class StaticMethodCallableNodeHandler implements ExprHandler
 {
 

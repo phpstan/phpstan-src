@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 
 /**
  * Memoization seam for TypeCombinator's binary operations.
@@ -21,7 +21,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  *
  * @internal
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinatorCache.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinatorCache.cpp')]
 final class TypeCombinatorCache
 {
 

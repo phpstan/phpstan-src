@@ -3,7 +3,7 @@
 namespace PHPStan\Type\Generic;
 
 use PHPStan\Reflection\ParametersAcceptor;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\NarrowedSubjectType;
@@ -13,7 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeHelper.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateTypeHelper.cpp')]
 final class TemplateTypeHelper
 {
 

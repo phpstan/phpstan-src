@@ -2,7 +2,7 @@
 
 namespace PHPStan\Analyser\Generics;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Type;
@@ -14,7 +14,7 @@ use function spl_object_id;
  * and joining take constant time. Only the resolver flattens the collection.
  * No fact retains a scope, expression result, or mutable collection context.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentConstraints.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentConstraints.cpp')]
 final class TemplateArgumentConstraints
 {
 

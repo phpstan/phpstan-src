@@ -2,7 +2,7 @@
 
 namespace PHPStan\File;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use function sprintf;
 use function stat;
 use function str_contains;
@@ -17,7 +17,7 @@ use function str_contains;
  * read, and keep its signature over different contents. Everything modified before that second
  * was read afterwards, so any later change moves its timestamps.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileStatSignatureReader.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FileStatSignatureReader.cpp')]
 final class FileStatSignatureReader
 {
 

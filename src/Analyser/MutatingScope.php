@@ -63,7 +63,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -136,7 +136,7 @@ use function usort;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MutatingScope.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/MutatingScope.cpp')]
 class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter, DependencyTracker
 {
 

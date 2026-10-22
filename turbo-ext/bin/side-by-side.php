@@ -3,7 +3,7 @@
 /**
  * Verifies the shadowed PHP classes and their native C++ implementations are
  * in sync, pairing them by method name, driven by the
- * ShadowedByTurboExtension attributes (used by CI): every shadowed pair's
+ * ImplementedInTurboExtension attributes (used by CI): every shadowed pair's
  * files exist, every public method of the PHP class has a PHP_METHOD
  * counterpart in the C++ file, and every PHP_METHOD corresponds to a method
  * of the PHP class. Methods a PHP class gets from the traits it uses count
@@ -658,7 +658,7 @@ function analyzePair(string $className, array $entry): array
 
 /**
  * The shadowed pairs must stay complete: every class-defining .cpp file must
- * correspond to a ShadowedByTurboExtension attribute and vice versa — a
+ * correspond to a ImplementedInTurboExtension attribute and vice versa — a
  * shadowed class without the attribute would silently escape the parity
  * checks.
  *
@@ -698,7 +698,7 @@ function checkStructure(array $manifest): array
 		}
 	}
 	foreach (array_diff($cppClasses, array_keys($fromManifest)) as $extra) {
-		$problems[] = sprintf('%s.cpp declares a shadowing class but no ShadowedByTurboExtension attribute names it', $extra);
+		$problems[] = sprintf('%s.cpp declares a shadowing class but no ImplementedInTurboExtension attribute names it', $extra);
 	}
 	foreach (array_diff(array_keys($fromManifest), $cppClasses) as $missing) {
 		$problems[] = sprintf('shadowed class %s (%s) declares no reg::Class under its name in the .cpp files', $fromManifest[$missing], $missing);

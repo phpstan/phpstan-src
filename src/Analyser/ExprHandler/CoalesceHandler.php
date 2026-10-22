@@ -22,7 +22,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -34,7 +34,7 @@ use function array_merge;
  * @implements ExprHandler<Coalesce>
  */
 #[AutowiredService]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CoalesceHandler.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CoalesceHandler.cpp')]
 final class CoalesceHandler implements ExprHandler
 {
 

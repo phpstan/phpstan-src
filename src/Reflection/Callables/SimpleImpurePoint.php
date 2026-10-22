@@ -11,7 +11,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
@@ -32,7 +32,7 @@ use function sprintf;
  *
  * @phpstan-import-type ImpurePointIdentifier from ImpurePoint
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SimpleImpurePoint.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/SimpleImpurePoint.cpp')]
 final class SimpleImpurePoint
 {
 

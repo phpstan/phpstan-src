@@ -8,7 +8,7 @@ use PHPStan\Analyser\ConditionalExpressionHolder;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -20,7 +20,7 @@ use function sprintf;
  * Immutable template inference context carried by a scope. The observation walk
  * and the resolved walk use distinct instances, including in saved callbacks.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentFrame.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/TemplateArgumentFrame.cpp')]
 final class TemplateArgumentFrame
 {
 

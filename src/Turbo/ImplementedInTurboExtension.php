@@ -25,7 +25,7 @@ use Attribute;
  * extension derives it: "PHPStanTurbo\" plus the short class name.
  */
 #[Attribute(flags: Attribute::TARGET_CLASS)]
-final class ShadowedByTurboExtension
+final class ImplementedInTurboExtension
 {
 
 	public function __construct(public string $implementation)

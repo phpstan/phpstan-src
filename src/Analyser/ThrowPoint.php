@@ -3,7 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -12,7 +12,7 @@ use Throwable;
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ThrowPoint.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ThrowPoint.cpp')]
 final class ThrowPoint
 {
 

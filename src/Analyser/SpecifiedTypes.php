@@ -4,7 +4,7 @@ namespace PHPStan\Analyser;
 
 use Closure;
 use PhpParser\Node\Expr;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -12,7 +12,7 @@ use function array_key_exists;
 use function array_merge;
 use function count;
 
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/SpecifiedTypes.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/SpecifiedTypes.cpp')]
 final class SpecifiedTypes
 {
 

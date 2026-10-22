@@ -2,7 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 
@@ -16,7 +16,7 @@ use PHPStan\Type\Type;
  * class only tells FunctionCallParametersCheck not to ask the caller to resolve a template
  * the signature already declared as optional.
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AbsorbedTemplateArgumentType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/AbsorbedTemplateArgumentType.cpp')]
 final class AbsorbedTemplateArgumentType extends ErrorType
 {
 

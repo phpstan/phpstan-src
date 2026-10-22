@@ -3,12 +3,12 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use function count;
 
 /** @api */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/BenevolentUnionType.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/BenevolentUnionType.cpp')]
 class BenevolentUnionType extends UnionType
 {
 

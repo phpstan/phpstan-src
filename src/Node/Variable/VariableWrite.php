@@ -3,8 +3,8 @@
 namespace PHPStan\Node\Variable;
 
 use PhpParser\Node;
+use PHPStan\Turbo\ImplementedInTurboExtension;
 use PHPStan\Turbo\ReferencedByTurboExtension;
-use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * A write site of a local variable inside a function-like body.
@@ -15,7 +15,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
  * @api
  */
 #[ReferencedByTurboExtension(key: 'variableWrite')]
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/VariableWrite.cpp')]
+#[ImplementedInTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/VariableWrite.cpp')]
 final class VariableWrite
 {
 

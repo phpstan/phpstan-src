@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-use function PHPStan\dumpType;
+namespace Bug11507;
 
 /**
  * @template TValue

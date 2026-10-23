@@ -445,6 +445,18 @@ public:
 		return zv::Val(std::move(result));
 	}
 
+	/* Mirrors ScopeOps::canBeUndefined(). Returns false with an exception set
+	 * when the node class info cannot be resolved. */
+	static bool canBeUndefined(zend_object *expr, bool *out)
+	{
+		pt_node_class_info *info = pt_get_node_class_info(expr->ce);
+		if (UNEXPECTED(info == NULL)) return false;
+		*out = info->is_variable
+			&& info->name_offset >= 0
+			&& zv::ObjRef(expr).propAtOffset((uint32_t) info->name_offset).deref().isString();
+		return true;
+	}
+
 	/*
 	 * Mirrors ScopeOps::createConditionalExpressions(). The isSuperTypeOf /
 	 * isConstantArray results are cached per guard, exactly like the twin's
@@ -483,7 +495,9 @@ public:
 				if (mergedSlot != NULL) {
 					zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 					if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
-					if (!instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
+					bool undefinable;
+					if (UNEXPECTED(!canBeUndefined(holderExpr(mergedHolder), &undefinable))) return zv::Val();
+					if (undefinable) {
 						hasUndefinedTarget = true;
 					}
 				}
@@ -735,7 +749,9 @@ public:
 			if (pt_ht_exists(ours.table(), key, idx)) continue;
 			zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
-			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) continue;
+			bool undefinable;
+			if (UNEXPECTED(!canBeUndefined(holderExpr(mergedHolder), &undefinable))) return zv::Val();
+			if (!undefinable) continue;
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());

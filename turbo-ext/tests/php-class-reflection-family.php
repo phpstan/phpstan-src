@@ -313,7 +313,7 @@ foreach ([
 }
 
 /** @return array{PhpClassReflectionExtension, \PHPStanTurbo\PhpClassReflectionExtension} */
-$pcreBuildSides = static function (bool $infer, int $memberCacheKeysMax, ?\PHPStan\Parser\Parser $parser = null) use ($pcreCollaborators): array {
+$pcreBuildSides = static function (bool $infer, int $memberCacheKeysMax, ?\PHPStan\Parser\Parser $parser = null, bool $backedEnumFromParameterType = true) use ($pcreCollaborators): array {
 	$make = static fn (string $class) => new $class(
 		scopeFactory: $pcreCollaborators['scopeFactory'],
 		phpDocsResolver: $pcreCollaborators['phpDocsResolver'],
@@ -332,6 +332,7 @@ $pcreBuildSides = static function (bool $infer, int $memberCacheKeysMax, ?\PHPSt
 		allowedConstantsMapProvider: $pcreCollaborators['allowedConstantsMapProvider'],
 		inferPrivatePropertyTypeFromConstructor: $infer,
 		phpVersion: $pcreCollaborators['phpVersion'],
+		backedEnumFromParameterType: $backedEnumFromParameterType,
 		memberCacheKeysMax: $memberCacheKeysMax,
 	);
 
@@ -489,6 +490,30 @@ foreach ($pcreObservations['php'] as $pcreKey => $pcreExpected) {
 	check($pcreDifference === null, 'PhpClassReflectionExtension ' . $pcreKey . ' ' . ($pcreDifference ?? ''));
 }
 check(count($pcreObservations['php']) === count($pcreObservations['native']), 'PhpClassReflectionExtension: both sides observed the same number of rows');
+// }}}
+
+// {{{ with backedEnumFromParameterType off, from() and tryFrom() keep the
+// parameter type reflection declares
+$pcreBackedEnumFromOffObservations = [];
+foreach (['php', 'native'] as $pcreSide) {
+	[$pcrePhpSide, $pcreNativeSide] = $pcreBuildSides(true, 4096, null, false);
+	$pcreExtension = $pcreSide === 'php' ? $pcrePhpSide : $pcreNativeSide;
+	$pcreClassReflection = $pcreReflectionProvider->getClass('PhpClassReflectionFamilyFixture\FixtureBackedEnum');
+	$pcreRows = [];
+	foreach (['from', 'tryFrom'] as $pcreMember) {
+		$pcreRows['getMethod ' . $pcreMember] = $pcreDescriber->describeMethod($pcreExtension->getMethod($pcreClassReflection, $pcreMember));
+		$pcreRows['getNativeMethod ' . $pcreMember] = $pcreDescriber->describeMethod($pcreExtension->getNativeMethod($pcreClassReflection, $pcreMember));
+	}
+	$pcreBackedEnumFromOffObservations[$pcreSide] = $pcreRows;
+}
+foreach ($pcreBackedEnumFromOffObservations['php'] as $pcreKey => $pcreExpected) {
+	$pcreDifference = $pcreFirstDifference($pcreExpected, $pcreBackedEnumFromOffObservations['native'][$pcreKey] ?? '(missing)');
+	check($pcreDifference === null, 'PhpClassReflectionExtension backedEnumFromParameterType off ' . $pcreKey . ' ' . ($pcreDifference ?? ''));
+}
+check(
+	$pcreBackedEnumFromOffObservations['php']['getMethod from']['class'] !== $pcreObservations['php']['PhpClassReflectionFamilyFixture\FixtureBackedEnum::from']['getMethod']['class'],
+	'PhpClassReflectionExtension backedEnumFromParameterType off: from() is not wrapped',
+);
 // }}}
 
 // {{{ the shared member-cache LRU: the same keys survive, the same are evicted

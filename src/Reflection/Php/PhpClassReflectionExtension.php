@@ -126,6 +126,8 @@ final class PhpClassReflectionExtension
 		#[AutowiredParameter]
 		private bool $inferPrivatePropertyTypeFromConstructor,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%featureToggles.backedEnumFromParameterType%')]
+		private bool $backedEnumFromParameterType,
 		#[AutowiredParameter(ref: '%cache.memberCacheKeysMax%')]
 		int $memberCacheKeysMax,
 	)
@@ -803,7 +805,7 @@ final class PhpClassReflectionExtension
 			$this->findMethodTrait($methodReflection),
 		);
 
-		if (in_array(strtolower($methodReflection->getName()), ['from', 'tryfrom'], true)) {
+		if ($this->backedEnumFromParameterType && in_array(strtolower($methodReflection->getName()), ['from', 'tryfrom'], true)) {
 			$backedEnumType = $declaringClass->getBackedEnumType();
 			if ($backedEnumType !== null) {
 				return new BackedEnumFromMethodReflection($method, $backedEnumType);

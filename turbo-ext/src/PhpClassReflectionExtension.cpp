@@ -312,6 +312,7 @@ struct ConstructorArgs
 	zval *allowedConstantsMapProvider;
 	bool inferPrivatePropertyTypeFromConstructor;
 	zval *phpVersion;
+	bool backedEnumFromParameterType;
 	zend_long memberCacheKeysMax;
 };
 
@@ -365,6 +366,7 @@ public:
 			ZVAL_COPY(OBJ_PROP_NUM(object, entry.slot), value);
 		}
 		ZVAL_BOOL(OBJ_PROP_NUM(object, slots::inferPrivatePropertyTypeFromConstructor), a.inferPrivatePropertyTypeFromConstructor);
+		ZVAL_BOOL(OBJ_PROP_NUM(object, slots::backedEnumFromParameterType), a.backedEnumFromParameterType);
 
 		zval lru;
 		if (UNEXPECTED(!pt_lru_cache_new(&lru, a.memberCacheKeysMax))) return false;
@@ -1575,6 +1577,8 @@ public:
 		if (UNEXPECTED(methodTrait.isUndef())) return zv::Val();
 		zv::Val method = createUserlandMethodReflection(declaringClass, declaringClass, methodReflection, methodTrait.raw());
 		if (UNEXPECTED(method.isUndef())) return zv::Val();
+
+		if (Z_TYPE_P(slot(slots::backedEnumFromParameterType)) != IS_TRUE) return method;
 
 		zv::Str loweredName = zv::Str::adopt(zend_string_tolower(methodNameStr.get()));
 		if (zend_string_equals_literal(loweredName.get(), "from") || zend_string_equals_literal(loweredName.get(), "tryfrom")) {
@@ -2953,7 +2957,8 @@ PT_MINIT_REGISTRATION(pt_register_php_class_reflection_extension)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ConstructorArgs a;
 		bool inferPrivatePropertyTypeFromConstructor;
-		ZEND_PARSE_PARAMETERS_START(18, 18)
+		bool backedEnumFromParameterType;
+		ZEND_PARSE_PARAMETERS_START(19, 19)
 			Z_PARAM_OBJECT(a.scopeFactory)
 			Z_PARAM_OBJECT(a.phpDocsResolver)
 			Z_PARAM_OBJECT(a.nodeScopeResolver)
@@ -2971,9 +2976,11 @@ PT_MINIT_REGISTRATION(pt_register_php_class_reflection_extension)
 			Z_PARAM_OBJECT(a.allowedConstantsMapProvider)
 			Z_PARAM_BOOL(inferPrivatePropertyTypeFromConstructor)
 			Z_PARAM_OBJECT(a.phpVersion)
+			Z_PARAM_BOOL(backedEnumFromParameterType)
 			Z_PARAM_LONG(a.memberCacheKeysMax)
 		ZEND_PARSE_PARAMETERS_END();
 		a.inferPrivatePropertyTypeFromConstructor = inferPrivatePropertyTypeFromConstructor;
+		a.backedEnumFromParameterType = backedEnumFromParameterType;
 		if (UNEXPECTED(!phpstanturbo::PhpClassReflectionExtension::construct(Z_OBJ_P(ZEND_THIS), a))) RETURN_THROWS();
 	});
 

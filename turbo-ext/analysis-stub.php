@@ -37,8 +37,4 @@ final class Runtime
 	{
 	}
 
-	public static function exitImmediately(): never
-	{
-	}
-
 }

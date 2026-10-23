@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
 /**
- * Test for Runtime::exitImmediately().
+ * Test for ForkedChild::exitImmediately().
  *
  * A pcntl_fork()ed child inherits the parent's whole process, and PHP's
  * exit() runs the full teardown there: destructors, then every extension's
@@ -17,9 +17,12 @@
  * Two passes over the same child:
  *   1. control, plain exit() - the child must still be alive at the deadline
  *      (proves the workload hangs)
- *   2. exitImmediately() from a shutdown function - the child must be gone
- *      well within the deadline, with exit()'s status, the earlier shutdown
- *      function's marker written and the destructor's not
+ *   2. the native exitImmediately() from a shutdown function - the child must
+ *      be gone well within the deadline, with exit()'s status, the earlier
+ *      shutdown function's marker written and the destructor's not
+ *
+ * The PHP twin, which runs without the active extension, must throw
+ * TurboNotActiveException instead.
  *
  * Run: php -d extension=$PWD/phpstan_turbo.so tests/exit-immediately.php
  */
@@ -27,14 +30,13 @@
 const DEADLINE_SECONDS = 3;
 const EXIT_STATUS = 7;
 
-if (!extension_loaded('phpstan_turbo')) {
-	fwrite(STDERR, "phpstan_turbo extension is not loaded\n");
-	exit(1);
-}
 if (!function_exists('pcntl_fork')) {
 	echo "SKIP: pcntl is not available\n";
 	exit(0);
 }
+
+// declares the native class as PHPStanTurbo\ForkedChild next to the PHP twin
+require __DIR__ . '/activate-prefixed.php';
 
 final class WedgedTeardown
 {
@@ -57,9 +59,10 @@ final class WedgedTeardown
 }
 
 /**
+ * @param class-string|null $terminator
  * @return array{exited: bool, status: int|null, markers: string}
  */
-function forkAndExit(bool $terminate): array
+function forkAndExit(?string $terminator): array
 {
 	$markers = tmpfile();
 	if ($markers === false) {
@@ -78,9 +81,9 @@ function forkAndExit(bool $terminate): array
 		register_shutdown_function(static function () use ($markers): void {
 			fwrite($markers, "shutdown\n");
 		});
-		if ($terminate) {
-			register_shutdown_function(static function (): void {
-				PHPStanTurbo\Runtime::exitImmediately();
+		if ($terminator !== null) {
+			register_shutdown_function(static function () use ($terminator): void {
+				$terminator::exitImmediately();
 			});
 		}
 		exit(EXIT_STATUS);
@@ -110,11 +113,19 @@ function forkAndExit(bool $terminate): array
 	return ['exited' => $exited, 'status' => $status, 'markers' => $written];
 }
 
-$control = forkAndExit(false);
+$control = forkAndExit(null);
 printf("control (exit):      exited %s, markers %s\n", $control['exited'] ? 'yes' : 'no', json_encode($control['markers']));
 
-$terminated = forkAndExit(true);
-printf("exitImmediately():   exited %s, status %s, markers %s\n", $terminated['exited'] ? 'yes' : 'no', var_export($terminated['status'], true), json_encode($terminated['markers']));
+$terminated = forkAndExit(\PHPStanTurbo\ForkedChild::class);
+printf("native:              exited %s, status %s, markers %s\n", $terminated['exited'] ? 'yes' : 'no', var_export($terminated['status'], true), json_encode($terminated['markers']));
+
+$twinThrew = false;
+try {
+	\PHPStan\Turbo\ForkedChild::exitImmediately();
+} catch (\PHPStan\Turbo\TurboNotActiveException) {
+	$twinThrew = true;
+}
+printf("PHP twin:            threw TurboNotActiveException %s\n", $twinThrew ? 'yes' : 'no');
 
 if ($control['exited'] || $control['markers'] !== "shutdown\ndestructor\n") {
 	fwrite(STDERR, "FAIL: the control child did not wedge in its destructor - the workload no longer models the hang\n");
@@ -130,6 +141,10 @@ if ($terminated['status'] !== EXIT_STATUS) {
 }
 if ($terminated['markers'] !== "shutdown\n") {
 	fwrite(STDERR, "FAIL: unexpected teardown ran in the child\n");
+	exit(1);
+}
+if (!$twinThrew) {
+	fwrite(STDERR, "FAIL: the PHP twin's exitImmediately() did not throw TurboNotActiveException\n");
 	exit(1);
 }
 

@@ -110,11 +110,16 @@ hardcoded in the collector), so a renamed class updates the map on the next
 autoloader dump. Shadowed classes are never referenced that way — the native
 code holds their class entries itself and instantiates them directly.
 
-Two more `Runtime` entry points serve fork mode (see `ForkParallelChecker`):
-`enablePharForkGuard()` gives each pcntl_fork()ed worker a private cursor on
-the running phar's fd (`PharForkGuard.cpp`), and `exitImmediately()` —
-`_exit()` with the engine's exit status — is how `ForkedChildTerminator` ends
-a forked worker. A forked child inherits every loaded extension but none of
+Fork mode (see `ForkParallelChecker`) uses two more entry points:
+`Runtime::enablePharForkGuard()` gives each pcntl_fork()ed worker a private
+cursor on the running phar's fd (`PharForkGuard.cpp`), and
+`exitImmediately()` — `_exit()` with the engine's exit status — is how
+`ForkedChildTerminator` ends a forked worker. `exitImmediately()` lives on
+`PHPStan\Turbo\ForkedChild`, a shadowed class that is part of PHPStan's
+`@api` (`ForkedChild.cpp`), because a program that forks its own workers
+needs it too; its PHP twin throws `TurboNotActiveException`. The `Runtime`
+methods cannot move there: `TurboExtensionEnabler` calls them before
+shadowing is active. A forked child inherits every loaded extension but none of
 their threads, so PHP's full teardown can wedge in a fork-unsafe extension's
 module shutdown (ext-grpc without `grpc.enable_fork_support`); a forked child
 that does not exec() must `_exit()` instead.

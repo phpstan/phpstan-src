@@ -15,13 +15,6 @@
 #include "Engine.h"
 #include "version.h"
 
-#ifdef PHP_WIN32
-#include <process.h>
-#else
-#include <unistd.h>
-#endif
-
-
 /* PHPStanTurbo\Runtime::configure() — cold-path configuration entry point.
  * TurboExtensionEnabler passes the generated class map (derived from the
  * ReferencedByTurboExtension attributes) that the native code resolves
@@ -107,33 +100,6 @@ static void ZEND_FASTCALL runtimeTrustTypesUnder(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_BOOL(pt_trusted_types_set_prefix(prefix));
 }
 
-/* PHPStanTurbo\Runtime::exitImmediately() — _exit() for a pcntl_fork()ed
- * worker; ForkedChildTerminator registers it as the child's last shutdown
- * function.
- *
- * A forked child inherits the whole parent process, every loaded extension
- * with whatever background threads it started included — but fork() copies
- * only the calling thread. PHP's exit() then runs destructors and each
- * extension's module shutdown, and an extension whose shutdown waits for
- * its threads to check out (ext-grpc's grpc_shutdown() without
- * grpc.enable_fork_support, for one) waits forever for threads the child
- * never had: the worker has delivered its results, the parent keeps
- * polling waitpid(), and the run hangs at 100%. A forked child that does
- * not exec() must end with _exit() — no destructors, no module shutdown, no
- * atexit handlers; that teardown is the parent's. The shutdown functions
- * have run by then, so the crash report (ForkedChildCrashReporter) is
- * written, and everything the parent reads — the results over the socket,
- * the captured output — went through unbuffered fds.
- *
- * The status is the engine's: what exit() was given, 255 after a fatal
- * error, 0 otherwise. */
-static void ZEND_FASTCALL runtimeExitImmediately(INTERNAL_FUNCTION_PARAMETERS)
-{
-	ZEND_PARSE_PARAMETERS_NONE();
-
-	_exit(EG(exit_status));
-}
-
 /* Whether the shared core loaded next to this library carries the same
  * version: a mismatched pair (a torn update of the distributed files) must
  * never run together — the extension then registers nothing and reports
@@ -201,7 +167,6 @@ static PHP_MINIT_FUNCTION(phpstan_turbo)
 	runtime.method("isShadowing", reg::PublicStatic, 0, {}, runtimeIsShadowing, &returnsBool);
 	runtime.method("enablePharForkGuard", reg::PublicStatic, 1, { reg::stringArg("pharPath") }, runtimeEnablePharForkGuard);
 	runtime.method("trustTypesUnder", reg::PublicStatic, 1, { reg::stringArg("prefix") }, runtimeTrustTypesUnder, &returnsBool);
-	runtime.method("exitImmediately", reg::PublicStatic, 0, {}, runtimeExitImmediately);
 	runtime.register_();
 
 	pt_minit_registrations_run();

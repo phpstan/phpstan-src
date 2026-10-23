@@ -2,8 +2,8 @@
 
 namespace PHPStan\Process;
 
+use PHPStan\Turbo\ForkedChild;
 use PHPStan\Turbo\TurboExtensionEnabler;
-use PHPStanTurbo\Runtime;
 use function register_shutdown_function;
 
 /**
@@ -25,9 +25,10 @@ use function register_shutdown_function;
  * Everything the parent reads from the child, the results over the socket
  * and the captured output, has gone through unbuffered fds by then.
  *
- * PHP itself has no _exit(); the turbo extension provides it, and fork mode
- * from a phar requires the extension anyway (see ForkParallelChecker). A
- * source checkout forking without it keeps the plain exit().
+ * PHP itself has no _exit(); the turbo extension provides it
+ * (ForkedChild::exitImmediately()), and fork mode from a phar requires the
+ * extension anyway (see ForkParallelChecker). A source checkout forking
+ * without it keeps the plain exit().
  */
 final class ForkedChildTerminator
 {
@@ -39,7 +40,7 @@ final class ForkedChildTerminator
 		}
 
 		register_shutdown_function(static function (): void {
-			Runtime::exitImmediately();
+			ForkedChild::exitImmediately();
 		});
 	}
 

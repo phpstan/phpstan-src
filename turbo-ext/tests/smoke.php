@@ -4659,6 +4659,7 @@ $coveredElsewhere = [
 	\PHPStan\Cache\ArenaCache::class => 'arena-smoke.php',
 	\PHPStan\Parser\ParserRunner::class => 'parser-corpus.php',
 	\PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner::class => 'php-file-cleaner-corpus.php',
+	\PHPStan\Turbo\ForkedChild::class => 'exit-immediately.php',
 	\PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles::class => 'symbol-finder-corpus.php',
 	\PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper::class => 'walk-trace.php',

@@ -1132,4 +1132,28 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug11421(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-11421.php'], [
+			[
+				'Parameter #1 $value of static method Bug11421\\NumberEnum::from() expects int, string given.',
+				18,
+			],
+			[
+				'Parameter #1 $value of static method Bug11421\\WordEnum::from() expects string, int given.',
+				21,
+			],
+			[
+				'Parameter #1 $value of static method Bug11421\\NumberEnum::tryFrom() expects int, string given.',
+				24,
+			],
+			[
+				'Parameter #1 $value of static method Bug11421\\WordEnum::tryFrom() expects string, int given.',
+				27,
+			],
+		]);
+	}
+
 }

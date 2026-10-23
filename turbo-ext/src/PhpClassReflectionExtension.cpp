@@ -1573,7 +1573,20 @@ public:
 
 		zv::Val methodTrait = findMethodTrait(methodReflection);
 		if (UNEXPECTED(methodTrait.isUndef())) return zv::Val();
-		return createUserlandMethodReflection(declaringClass, declaringClass, methodReflection, methodTrait.raw());
+		zv::Val method = createUserlandMethodReflection(declaringClass, declaringClass, methodReflection, methodTrait.raw());
+		if (UNEXPECTED(method.isUndef())) return zv::Val();
+
+		zv::Str loweredName = zv::Str::adopt(zend_string_tolower(methodNameStr.get()));
+		if (zend_string_equals_literal(loweredName.get(), "from") || zend_string_equals_literal(loweredName.get(), "tryfrom")) {
+			zv::Val backedEnumType = call(declaringClass, PT_LC("getbackedenumtype"));
+			if (UNEXPECTED(backedEnumType.isUndef())) return zv::Val();
+			if (Z_TYPE_P(backedEnumType.raw()) != IS_NULL) {
+				zv::Args args{method.raw(), backedEnumType.raw()};
+				return pt_type_new(PT_CLASS_BACKED_ENUM_FROM_METHOD_REFLECTION, 2, args);
+			}
+		}
+
+		return method;
 	}
 
 	/*

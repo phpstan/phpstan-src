@@ -32,7 +32,7 @@ class ApiTraitUseRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/trait-use-out-of-phpstan.php'], [
 			[
 				'Using PHPStan\Type\JustNullableTypeTrait is not covered by backward compatibility promise. The trait might change in a minor PHPStan version.',
-				15,
+				16,
 				$tip,
 			],
 		]);

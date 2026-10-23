@@ -29,8 +29,11 @@
  * every gcc/libc target supports — gcc then warns the attribute is ignored */
 #pragma GCC diagnostic ignored "-Wattributes"
 
+/* zend_portability.h first: zend_globals_macros.h includes it itself only
+ * from PHP 8.4, and it brings in the configuration defining ZTS */
 extern "C" {
 #include "php_version.h"
+#include "zend_portability.h"
 #include "zend_globals_macros.h"
 }
 

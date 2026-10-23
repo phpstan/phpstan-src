@@ -4,7 +4,7 @@
  *
  * A final value class with a private constructor: instances come only from
  * the static factories and the enter*() / with*() derivations. The state
- * lives in the twin's fourteen promoted property slots (generated
+ * lives in the twin's fifteen promoted property slots (generated
  * declarations), so the standard object handlers do GC/free/clone —
  * enterPassedToType()'s `clone $this` is the engine's clone handler.
  *
@@ -22,6 +22,7 @@ namespace sigs = ptdecl::ExpressionContext::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 #include "AcceptorValues.h"
+#include "zend_closures.h" /* zend_ce_closure */
 
 zend_class_entry *pt_ce_expression_context = nullptr;
 
@@ -53,6 +54,7 @@ public:
 		int valueConsumed = -1;
 		zval *passedToType = NULL;
 		zval *nativePassedToType = NULL;
+		zval *passedToTypeResolver = NULL;
 	};
 
 	/* the constructor body: the promoted properties */
@@ -80,6 +82,7 @@ public:
 		zval_ptr_dtor(&old);
 		write(slots::passedToType, f.passedToType);
 		write(slots::nativePassedToType, f.nativePassedToType);
+		write(slots::passedToTypeResolver, f.passedToTypeResolver);
 	}
 
 	/* Mirrors createTopLevel(). */
@@ -107,7 +110,7 @@ public:
 	/* Mirrors enterDeep(). */
 	zv::Val enterDeep() const
 	{
-		if (boolSlot(slots::isDeep) && isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType)) {
+		if (boolSlot(slots::isDeep) && isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType) && isNull(slots::passedToTypeResolver)) {
 			return thisValue();
 		}
 
@@ -131,7 +134,7 @@ public:
 	/* Mirrors withoutValueFlow(). */
 	zv::Val withoutValueFlow() const
 	{
-		if (isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType)) {
+		if (isNull(slots::valueFlowTarget) && !boolSlot(slots::arrayDimFetchRoot) && !boolSlot(slots::unsetTarget) && isNull(slots::passedToType) && isNull(slots::nativePassedToType) && isNull(slots::passedToTypeResolver)) {
 			return thisValue();
 		}
 
@@ -179,6 +182,20 @@ public:
 		return context;
 	}
 
+	/* Mirrors enterPassedToTypeResolver(). */
+	zv::Val enterPassedToTypeResolver(zval *resolver) const
+	{
+		zend_object *clone = self->handlers->clone_obj(self);
+		zval cloneValue;
+		ZVAL_OBJ(&cloneValue, clone);
+		zv::Val context = zv::Val::adopt(cloneValue);
+		if (UNEXPECTED(EG(exception))) return zv::Val();
+		ExpressionContext(clone).write(slots::passedToTypeResolver, resolver);
+
+		return context;
+	}
+
+	zv::Val getPassedToTypeResolver() const { return copySlot(slots::passedToTypeResolver); }
 	zv::Val getPassedToType() const { return copySlot(slots::passedToType); }
 	zv::Val getNativePassedToType() const { return copySlot(slots::nativePassedToType); }
 	bool isDeep() const { return boolSlot(slots::isDeep); }
@@ -455,6 +472,12 @@ zv::Val pt_expression_context_enter_passed_to_type(zval *context, zval *type, zv
 	return pt_type_call(Z_OBJ_P(context), PT_LC("enterpassedtotype"), 2, argv);
 }
 
+zv::Val pt_expression_context_enter_passed_to_type_resolver(zval *context, zval *resolver)
+{
+	if (isNative(context)) return ExpressionContext(Z_OBJ_P(context)).enterPassedToTypeResolver(resolver);
+	return pt_type_call(Z_OBJ_P(context), PT_LC("enterpassedtotyperesolver"), 1, resolver);
+}
+
 zv::Val pt_expression_context_enter_right_side_assign(zval *context, zend_string *variableName, zval *expr)
 {
 	zval name;
@@ -540,6 +563,12 @@ bool pt_expression_context_is_unset_target(zval *context, bool &out)
 	return boolMethod(context, PT_LC("isunsettarget"), out);
 }
 
+zv::Val pt_expression_context_get_passed_to_type_resolver(zval *context)
+{
+	if (isNative(context)) return ExpressionContext(Z_OBJ_P(context)).getPassedToTypeResolver();
+	return pt_type_call(Z_OBJ_P(context), PT_LC("getpassedtotyperesolver"), 0, NULL);
+}
+
 zv::Val pt_expression_context_get_passed_to_type(zval *context)
 {
 	if (isNative(context)) return ExpressionContext(Z_OBJ_P(context)).getPassedToType();
@@ -602,7 +631,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 		zval *expr;
 		bool valueConsumedIsNull = true;
 		bool valueConsumed = false;
-		ZEND_PARSE_PARAMETERS_START(3, 14)
+		ZEND_PARSE_PARAMETERS_START(3, 15)
 			Z_PARAM_BOOL(f.isDeep)
 			Z_PARAM_STR_OR_NULL(variableName)
 			Z_PARAM_OBJECT_OR_NULL(expr)
@@ -618,6 +647,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 			Z_PARAM_BOOL_OR_NULL(valueConsumed, valueConsumedIsNull)
 			Z_PARAM_OBJECT_OR_NULL(f.passedToType)
 			Z_PARAM_OBJECT_OR_NULL(f.nativePassedToType)
+			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(f.passedToTypeResolver, zend_ce_closure)
 		ZEND_PARSE_PARAMETERS_END();
 		zval name;
 		if (variableName != NULL) {
@@ -659,6 +689,15 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 		PT_RETURN_VAL(ExpressionContext(Z_OBJ_P(ZEND_THIS)).enterPassedToType(type, nativeType));
 	});
 
+	cls.method(sigs::enterPassedToTypeResolver, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *resolver;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(resolver, zend_ce_closure)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(ExpressionContext(Z_OBJ_P(ZEND_THIS)).enterPassedToTypeResolver(resolver));
+	});
+
+	cls.method<&ExpressionContext::getPassedToTypeResolver>(sigs::getPassedToTypeResolver);
 	cls.method<&ExpressionContext::getPassedToType>(sigs::getPassedToType);
 	cls.method<&ExpressionContext::getNativePassedToType>(sigs::getNativePassedToType);
 

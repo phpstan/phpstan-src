@@ -1876,6 +1876,7 @@ zv::Val pt_expression_context_enter_throw(zval *context);
 zv::Val pt_expression_context_enter_array_dim_fetch_root(zval *context);
 zv::Val pt_expression_context_enter_unset_target(zval *context);
 zv::Val pt_expression_context_enter_passed_to_type(zval *context, zval *type, zval *nativeType);
+zv::Val pt_expression_context_enter_passed_to_type_resolver(zval *context, zval *resolver);
 zv::Val pt_expression_context_enter_right_side_assign(zval *context, zend_string *variableName, zval *expr);
 zv::Val pt_expression_context_enter_assign_right_side_call_args(zval *context, zval *acceptor);
 zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool direct);
@@ -1889,10 +1890,11 @@ zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool
 [[nodiscard]] bool pt_expression_context_is_value_flow_direct(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_array_dim_fetch_root(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_unset_target(zval *context, bool &out);
-/* $context->getPassedToType() / getNativePassedToType() /
+/* $context->getPassedToTypeResolver() / getPassedToType() / getNativePassedToType() /
  * getInAssignRightSideVariableName() / getInAssignRightSideExpr() /
  * getInAssignRightSideType() / getInAssignRightSideNativeType() /
  * getValueFlowTarget(); the value or null, UNDEF = pending exception */
+zv::Val pt_expression_context_get_passed_to_type_resolver(zval *context);
 zv::Val pt_expression_context_get_passed_to_type(zval *context);
 zv::Val pt_expression_context_get_native_passed_to_type(zval *context);
 zv::Val pt_expression_context_get_in_assign_right_side_variable_name(zval *context);

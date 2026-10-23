@@ -3325,6 +3325,31 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15432ImplicitMixed(): void
+	{
+		// the closures are typed from the walked sibling items - never from
+		// a mixed stand-in that the implicit-mixed checks would report
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15432-implicit-mixed.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15432(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15432.php'], [
+			[
+				'Parameter #1 $callbacks of function Bug15432Rule\\consume expects array<\'closure\'|\'method\', callable(): void>, array{method: Closure(int): void, closure: Closure(): void} given.',
+				34,
+				'Parameter #1 $i of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+			],
+			[
+				'Parameter #1 $callbacks of function Bug15432Rule\\consumeIntToString expects array<\'closure\'|\'method\', callable(int): string>, array{method: Closure(string): int, closure: Closure(int): decimal-int-string} given.',
+				111,
+			],
+		]);
+	}
+
 	public function testBug15487(): void
 	{
 		$this->checkExplicitMixed = true;

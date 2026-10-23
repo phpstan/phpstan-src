@@ -2597,13 +2597,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				continue;
 			}
 			$filteredHolders = [];
-			foreach ($holders as $holder) {
+			foreach ($holders as $key => $holder) {
 				foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $holderExprString) {
 					if (!array_key_exists($holderExprString, $useVariableNames)) {
 						continue 2;
 					}
 				}
-				$filteredHolders[] = $holder;
+				$filteredHolders[$key] = $holder;
 			}
 			if ($filteredHolders === []) {
 				continue;

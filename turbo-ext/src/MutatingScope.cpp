@@ -5380,7 +5380,9 @@ public:
 					}
 				}
 				if (!allUsed) continue;
-				filteredHolders.push(holderEntry.value().deref());
+				zval copy;
+				ZVAL_COPY(&copy, holderEntry.value().deref().raw());
+				pt_ht_update(filteredHolders.table(), holderEntry.stringKeyOrNull(), holderEntry.indexKey(), &copy);
 			}
 			if (zend_hash_num_elements(filteredHolders.table()) == 0) continue;
 			filteredConditionalExpressions.set(conditionalExprString, zv::Val(std::move(filteredHolders)));

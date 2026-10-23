@@ -534,6 +534,11 @@ final class FilterFunctionReturnTypeHelper
 		return $hasFlag;
 	}
 
+	/**
+	 * True when PHPStan runs on PHP < 8.5: FILTER_FLAG_GLOBAL_RANGE then has its runtime value 0x10000000,
+	 * while FILTER_THROW_ON_FAILURE does not exist at runtime and is read from stubs with the PHP 8.5 value,
+	 * which is also 0x10000000. On PHP 8.5+ runtime FILTER_FLAG_GLOBAL_RANGE is 0x20000000, so they differ.
+	 */
 	private function isThrowOnFailureFlagAmbiguous(): bool
 	{
 		if (!$this->reflectionProvider->hasConstant(new Node\Name\FullyQualified('FILTER_FLAG_GLOBAL_RANGE'), null)) {

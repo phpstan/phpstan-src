@@ -517,35 +517,10 @@ final class FilterFunctionReturnTypeHelper
 
 	public function hasThrowOnFailureFlag(?Type $flagsType, PhpVersions $phpVersions): TrinaryLogic
 	{
-		$hasConstant = $phpVersions->hasFilterThrowOnFailureConstant();
-		if ($hasConstant->no()) {
-			return TrinaryLogic::createNo();
-		}
-
-		$hasFlag = $this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType);
-
 		// Flag values are resolved from the runtime. Before PHP 8.5, FILTER_FLAG_GLOBAL_RANGE used the bit
-		// that PHP 8.5 assigned to FILTER_THROW_ON_FAILURE, so on such runtime a set bit may mean either flag.
-		// When the analysed code definitely runs on PHP 8.5+, the bit can only mean FILTER_THROW_ON_FAILURE.
-		if ($hasConstant->maybe() && $this->isThrowOnFailureFlagAmbiguous()) {
-			return $hasFlag->and(TrinaryLogic::createMaybe());
-		}
-
-		return $hasFlag;
-	}
-
-	/**
-	 * True when PHPStan runs on PHP < 8.5: FILTER_FLAG_GLOBAL_RANGE then has its runtime value 0x10000000,
-	 * while FILTER_THROW_ON_FAILURE does not exist at runtime and is read from stubs with the PHP 8.5 value,
-	 * which is also 0x10000000. On PHP 8.5+ runtime FILTER_FLAG_GLOBAL_RANGE is 0x20000000, so they differ.
-	 */
-	private function isThrowOnFailureFlagAmbiguous(): bool
-	{
-		if (!$this->reflectionProvider->hasConstant(new Node\Name\FullyQualified('FILTER_FLAG_GLOBAL_RANGE'), null)) {
-			return false;
-		}
-
-		return $this->getConstant('FILTER_THROW_ON_FAILURE') === $this->getConstant('FILTER_FLAG_GLOBAL_RANGE');
+		// that PHP 8.5 assigned to FILTER_THROW_ON_FAILURE, so a set bit only definitely means
+		// FILTER_THROW_ON_FAILURE when the analysed code definitely runs on PHP 8.5+.
+		return $phpVersions->hasFilterThrowOnFailureConstant()->and($this->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType));
 	}
 
 	private function getFlagsValue(Type $exprType): Type

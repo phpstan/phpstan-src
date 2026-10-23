@@ -391,7 +391,7 @@ final class ScopeOps
 			if (!array_key_exists($exprString, $newVariableTypes)) {
 				if (
 					array_key_exists($exprString, $mergedExpressionTypes)
-					&& !$mergedExpressionTypes[$exprString]->getExpr() instanceof VirtualNode
+					&& $mergedExpressionTypes[$exprString]->getExpr() instanceof Variable
 				) {
 					$hasUndefinedTarget = true;
 				}
@@ -575,11 +575,16 @@ final class ScopeOps
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
-			$mergedExprTypeHolder = $mergedExpressionTypes[$exprString];
 			if (array_key_exists($exprString, $ourExpressionTypes)) {
 				continue;
 			}
-			if ($mergedExprTypeHolder->getExpr() instanceof VirtualNode) {
+
+			$mergedExprTypeHolder = $mergedExpressionTypes[$exprString];
+
+			// a variable absent from our branch is undefined there - for any other
+			// expression absence only means it was not narrowed, which carries
+			// nothing to restore when the guard matches
+			if (!$mergedExprTypeHolder->getExpr() instanceof Variable) {
 				continue;
 			}
 

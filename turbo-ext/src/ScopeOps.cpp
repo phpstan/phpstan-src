@@ -454,10 +454,11 @@ public:
 	static zv::Val createConditionalExpressions(zv::TableRef conditional, zv::TableRef ours, zv::TableRef theirs, zv::TableRef merged, zv::TableRef differingKeys)
 	{
 		zend_class_entry *virtualNodeCe = pt_class(PT_CLASS_VIRTUAL_NODE);
+		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		/* the shadowing NeverType (declared at activation, before any
 		 * ScopeOps call can run) */
 		zend_class_entry *neverTypeCe = pt_ce_never_type;
-		if (UNEXPECTED(virtualNodeCe == NULL || neverTypeCe == NULL)) {
+		if (UNEXPECTED(virtualNodeCe == NULL || variableCe == NULL || neverTypeCe == NULL)) {
 			if (neverTypeCe == NULL && !EG(exception)) {
 				zend_throw_error(NULL, "phpstan_turbo: the shadowing NeverType is not declared");
 			}
@@ -483,7 +484,7 @@ public:
 				if (mergedSlot != NULL) {
 					zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 					if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
-					if (!instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
+					if (instanceof_function(holderExpr(mergedHolder)->ce, variableCe)) {
 						hasUndefinedTarget = true;
 					}
 				}
@@ -735,7 +736,10 @@ public:
 			if (pt_ht_exists(ours.table(), key, idx)) continue;
 			zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
-			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) continue;
+			/* a variable absent from our branch is undefined there - for any other
+			 * expression absence only means it was not narrowed, which carries
+			 * nothing to restore when the guard matches */
+			if (!instanceof_function(holderExpr(mergedHolder)->ce, variableCe)) continue;
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());

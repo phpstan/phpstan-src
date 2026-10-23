@@ -31,6 +31,7 @@ if (!is_file('vendor/autoload.php')) {
 
 require 'vendor/autoload.php';
 require_once 'build/PHPStan/Build/TurboAttributeCollector.php';
+require_once 'build/PHPStan/Build/TurboExtensionVersion.php';
 
 $collector = new PHPStan\Build\TurboAttributeCollector($root);
 $collected = $collector->collect();
@@ -725,6 +726,7 @@ function checkGeneratedArtifacts(PHPStan\Build\TurboAttributeCollector $collecto
 	$expected = [
 		'vendor/turbo-shadowed-classes.json' => $collector->renderManifestJson($collected['manifest']),
 		'vendor/turbo-class-map.php' => $collector->renderClassMap($collected['classMap']),
+		'vendor/turbo-extension-version.php' => PHPStan\Build\TurboExtensionVersion::render(PHPStan\Build\TurboExtensionVersion::resolve(getcwd())),
 	];
 	foreach ($expected as $file => $content) {
 		if (!is_file($file)) {
@@ -732,7 +734,7 @@ function checkGeneratedArtifacts(PHPStan\Build\TurboAttributeCollector $collecto
 			continue;
 		}
 		if (file_get_contents($file) !== $content) {
-			$problems[] = sprintf('%s does not match the attributes — run composer dump-autoload', $file);
+			$problems[] = sprintf('%s does not match the attributes and git — run composer dump-autoload', $file);
 		}
 	}
 

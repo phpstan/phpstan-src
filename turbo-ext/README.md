@@ -134,24 +134,24 @@ signatures, typed variadics and typed property writes stay checked
 (`TrustedTypes.cpp` explains each); `tests/trusted-types.php` pins the
 behaviour.
 
-The extension is version-pinned (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`);
+The extension is version-pinned (`TurboExtensionEnabler::getExpectedVersion()`);
 a mismatched extension never gets `activateShadowing()` called and the PHP
 implementations load as usual (`Runtime`'s fork guard and trusted-types pass
 do not depend on it). There is no runtime kill switch — the only way to run
 without it is not to load it.
 
-The version is the short SHA of the last commit that touched `turbo-ext/src/`.
-The binary's (actual) version is baked in at build time — the Makefile
-computes it from git over the same path
-— so only the expected side, `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`,
-is maintained (by `make bump-turbo`, which edits and commits it). After
-changing the native side, verify the implementations still match and run
-`make bump-turbo` (recomputed after the change lands on the target branch —
-a pull request commit gets a new SHA when rebased, and rerunning refreshes
-an unpushed bump commit in place); the
-phar.yml `turbo-version` job enforces the SHA and the compile job verifies
-the built binary reports what the enabler expects. A PHP-twin-only edit does
-not move the version — keeping the pair in sync there is on the review and
+The version is the short SHA of the last commit that touched `turbo-ext/src/`,
+and neither side of the comparison is maintained by hand. The binary's
+version is baked in at build time — the Makefile computes it from git over
+that path. The expected side is computed the same way
+(`build/PHPStan/Build/TurboExtensionVersion.php`) and written into
+`vendor/turbo-extension-version.php` on every autoloader dump; the phar
+compilation dumps the autoloader too, so the phar carries the version of the
+commit it was compiled from, and `make build-turbo` regenerates the file, so
+a rebuild after a `turbo-ext/src` commit needs no dump. The compile jobs
+verify each built binary reports what `php build/turbo-extension-version.php`
+prints, and the compiler job that the phar carries it. A PHP-twin-only edit
+does not move the version — keeping the pair in sync is on the review and
 the differential tests, not the version gate. Builds outside the monorepo — the phpstan/turbo-ext
 subsplit and PIE source builds from it — cannot ask git (the subsplit's
 replayed commits have different SHAs, tarballs have no checkout at all), so
@@ -197,14 +197,9 @@ drives three things:
   type checks cost per call), but what it does declare must match, and
   parameter names must match exactly — a renamed parameter would break named
   arguments only in turbo mode.
-- **CI version coupling** — the version job enforces the expected-version
-  constant against `turbo-ext/src/` history (see above), so a native-side
-  edit cannot ship without the explicit bump attesting the pair still
-  matches.
-
 Semantic equivalence is still proven by the differential smoke test and by
 running the full test suite with the extension loaded — the manifest checks
-guard structure and force the version bump ritual, not behavior. The smoke
+guard structure, not behavior. The smoke
 test also guards two structural invariants at the real runtime: the
 generated class map must cover the native class-reference table exactly
 (`Runtime::classRefs()`), and every shadowed class must have registered
@@ -274,10 +269,9 @@ The CI version job pins the php-parser version the engine was ported against
    `tests/parser-fixtures/`; make sure they land before or with the bump.
    Then the full test suite and `make phpstan` with the extension loaded,
    and `tests/parser-bench.php` to confirm the speedup held.
-4. **Bump both pins**: `SUPPORTED_PHP_PARSER_VERSION` in the workflow, and —
-   since `src/parser/` changed — the extension version
-   (`TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION`) per
-   the usual ritual. The version gate is also what protects users: a phar
+4. **Bump the pin**: `SUPPORTED_PHP_PARSER_VERSION` in the workflow (the
+   extension version moves by itself with the `src/parser/` commit). The
+   version gate is also what protects users: a phar
    ships a consistent extension/sources/php-parser triple, and a stale
    extension build simply deactivates instead of parsing with drifted
    semantics.
@@ -333,9 +327,10 @@ make          # builds phpstan_turbo.so
 
 or, from the repository root, `make build-turbo` — the same build, run in
 parallel over the machine's cores and followed by a check that the binary's
-baked version is the one `TurboExtensionEnabler` activates (a build made
-between a `turbo-ext/src` commit and its `make bump-turbo` loads but stays
-inactive).
+baked version is the one `TurboExtensionEnabler` activates, after
+regenerating `vendor/turbo-extension-version.php` from git (a plain `make`
+after a `turbo-ext/src` commit needs a `composer dump-autoload` too, or the
+build loads but stays inactive).
 
 The only requirements are a C++17 compiler and `php-config` on PATH (or
 passed as `make PHP_CONFIG=...`, `make build-turbo PHP_CONFIG=...` from the

@@ -94,8 +94,8 @@ LTO_FLAGS := -flto=auto
 endif
 
 # The extension version is the short SHA of the last commit touching
-# turbo-ext/src/ (the same computation the CI version job enforces against
-# TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION),
+# turbo-ext/src/ (the same computation that produces the version
+# TurboExtensionEnabler expects, build/PHPStan/Build/TurboExtensionVersion.php),
 # computed from git at build time and baked in via -D. Outside the monorepo
 # (the phpstan/turbo-ext subsplit, a release tarball) git yields nothing —
 # and the subsplit's replayed commits have different SHAs anyway — so

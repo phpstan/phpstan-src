@@ -19,30 +19,54 @@ use function realpath;
  *
  * The extension registers nothing under PHPStan's class names at module
  * startup. Once the Composer autoloader is registered, activateIfCompatible()
- * checks the loaded extension's version against EXPECTED_EXTENSION_VERSION
- * and, when it matches, asks Runtime::activateShadowing() to declare the
+ * checks the loaded extension's version against getExpectedVersion() and,
+ * when it matches, asks Runtime::activateShadowing() to declare the
  * native classes under the PHP twins' real names — PHPStan\TrinaryLogic then
  * is the native class, linked like a PHP declaration (parents and interfaces
  * resolved through the autoloader). A mismatched or absent extension never
  * gets the call, and the PHP implementations load as usual.
  *
  * The version is the short SHA of the last commit touching turbo-ext/src/,
- * enforced by the phar.yml turbo-version job; the native classes must
- * behave exactly like the PHP implementations, hence the gate.
+ * which the extension's build bakes into the binary and
+ * build/generate-turbo-manifest.php writes into
+ * vendor/turbo-extension-version.php on every autoloader dump — the phar
+ * carries the file from its compilation. The native classes must behave
+ * exactly like the PHP implementations, hence the gate.
  */
 #[ReferencedByTurboExtension(key: 'turboExtensionEnabler')]
 final class TurboExtensionEnabler
 {
 
-	public const EXPECTED_EXTENSION_VERSION = '24352c6';
-
 	private static bool $active = false;
+
+	private static bool $expectedVersionResolved = false;
+
+	private static ?string $expectedVersion = null;
 
 	private static bool $trustingOwnTypes = false;
 
 	public static function isLoaded(): bool
 	{
 		return extension_loaded('phpstan_turbo');
+	}
+
+	/**
+	 * Null when the autoloader dump could not read it from git, or skipped
+	 * scripts — no extension version is compatible then.
+	 */
+	public static function getExpectedVersion(): ?string
+	{
+		if (!self::$expectedVersionResolved) {
+			$versionFile = dirname(__DIR__, 2) . '/vendor/turbo-extension-version.php';
+			if (is_file($versionFile)) {
+				/** @var string|null $version */
+				$version = require $versionFile;
+				self::$expectedVersion = $version;
+			}
+			self::$expectedVersionResolved = true;
+		}
+
+		return self::$expectedVersion;
 	}
 
 	/**
@@ -56,7 +80,7 @@ final class TurboExtensionEnabler
 		}
 
 		$version = phpversion('phpstan_turbo');
-		if ($version === self::EXPECTED_EXTENSION_VERSION) {
+		if ($version !== false && $version === self::getExpectedVersion()) {
 			return null;
 		}
 
@@ -86,7 +110,13 @@ final class TurboExtensionEnabler
 
 	private static function isCompatible(): bool
 	{
-		return self::isLoaded() && phpversion('phpstan_turbo') === self::EXPECTED_EXTENSION_VERSION;
+		if (!self::isLoaded()) {
+			return false;
+		}
+
+		$version = phpversion('phpstan_turbo');
+
+		return $version !== false && $version === self::getExpectedVersion();
 	}
 
 	/**

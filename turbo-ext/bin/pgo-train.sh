@@ -32,7 +32,7 @@ export LLVM_PROFILE_FILE="$PGO_DIR/turbo-%p.profraw"
 
 cd "$ROOT"
 REPORTED="$(php -r 'echo phpversion("phpstan_turbo");')"
-EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+EXPECTED="$(php -r 'echo require "vendor/turbo-extension-version.php";')"
 if [ "$REPORTED" != "$EXPECTED" ]; then
 	echo "pgo-train: the instrumented extension reports '$REPORTED' but the enabler expects '$EXPECTED' — the training run would leave it inactive" >&2
 	exit 1

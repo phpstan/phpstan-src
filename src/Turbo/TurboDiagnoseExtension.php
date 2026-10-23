@@ -99,15 +99,16 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		}
 
 		$loadedVersion = phpversion('phpstan_turbo');
-		if ($loadedVersion !== TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION) {
+		$expectedVersion = TurboExtensionEnabler::getExpectedVersion();
+		if ($loadedVersion === false || $loadedVersion !== $expectedVersion) {
 			return sprintf(
 				'inactive (extension version %s, expected %s)',
 				$loadedVersion === false ? 'unknown' : $loadedVersion,
-				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
+				$expectedVersion ?? 'unknown',
 			);
 		}
 
-		return sprintf('enabled (version %s)', TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION);
+		return sprintf('enabled (version %s)', $expectedVersion);
 	}
 
 }

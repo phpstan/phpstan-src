@@ -4532,7 +4532,7 @@ public:
 
 				if (valueIsSuperType == PT_TRI_NO) return zv::Val::null();
 
-				if (valueIsSuperType == PT_TRI_YES) return unsetPreservingListCertainty(offsetType.raw(), l);
+				if (valueIsSuperType == PT_TRI_YES) return removeOffset(offsetType.raw(), l);
 
 				zv::Val newValueType = combinator2(PT_LC("remove"), currentValueType, valueTypeToRemove.raw());
 				if (UNEXPECTED(newValueType.isUndef())) return zv::Val();
@@ -4550,7 +4550,7 @@ public:
 			zv::Val offsetType = pt_has_offset_type_get_offset_type(Z_OBJ_P(typeToRemove));
 			zval *l = isListSlot();
 			if (UNEXPECTED(offsetType.isUndef() || l == NULL)) return zv::Val();
-			return unsetPreservingListCertainty(offsetType.raw(), l);
+			return removeOffset(offsetType.raw(), l);
 		}
 
 		return zv::Val::null();
@@ -6621,9 +6621,12 @@ private:
 
 	/* $this->unsetOffset($offsetType, true), never when that turns a
 	 * definite list into a definite non-list; UNDEF = pending exception */
-	zv::Val unsetPreservingListCertainty(zval *offsetType, zval *isListSlotValue) const
+	/* removeOffset(): the values of $this lacking the offset — an explicit
+	 * key the unsealed extras can also hold stays as an optional never key
+	 * instead of being dropped; UNDEF = pending exception */
+	zv::Val removeOffset(zval *offsetTypeArg, zval *isListSlotValue) const
 	{
-		zv::Val unsetResult = thisUnsetOffset(offsetType, true);
+		zv::Val unsetResult = thisUnsetOffset(offsetTypeArg, true);
 		if (UNEXPECTED(unsetResult.isUndef())) return zv::Val();
 		/* When the source was definitely a list but the post-unset shape
 		 * definitely isn't (e.g. unsetting a non-optional leading key
@@ -6636,7 +6639,61 @@ private:
 			if (UNEXPECTED(resultIsList < 0)) return zv::Val();
 			if (resultIsList == PT_TRI_NO) return neverType();
 		}
-		return unsetResult;
+
+		/* $this->unsealed === null || !$this->isUnsealed()->yes() */
+		zval *u = unsealedSlot();
+		if (UNEXPECTED(u == NULL)) return zv::Val();
+		if (Z_TYPE_P(u) == IS_NULL) return unsetResult;
+		zend_long unsealedness = thisIsUnsealed();
+		if (UNEXPECTED(unsealedness < 0)) return zv::Val();
+		if (unsealedness != PT_TRI_YES) return unsetResult;
+
+		zv::Val offsetType = callType(Z_OBJ_P(offsetTypeArg), PT_LC("toarraykey"), 0, NULL);
+		if (UNEXPECTED(offsetType.isUndef())) return zv::Val();
+		zv::Val offsetValues = pt_type_call_array(Z_OBJ_P(offsetType.raw()), PT_LC("getconstantscalarvalues"), 0, NULL);
+		if (UNEXPECTED(offsetValues.isUndef())) return zv::Val();
+		if (arrayCount(offsetValues.raw()) != 1) return unsetResult;
+		zval *unsealedKeyType, *unsealedValueType;
+		if (UNEXPECTED(!unsealedPair(u, unsealedKeyType, unsealedValueType))) return zv::Val();
+		zend_long extrasHoldOffset = isSuperTypeOfValue(unsealedKeyType, offsetType.raw());
+		if (UNEXPECTED(extrasHoldOffset < 0)) return zv::Val();
+		if (extrasHoldOffset == PT_TRI_NO) return unsetResult;
+
+		/* $offsetValues[0], an int or a string */
+		zval *offsetValue = zend_hash_index_find(Z_ARRVAL_P(offsetValues.raw()), 0);
+		if (offsetValue == NULL) return unsetResult;
+		ZVAL_DEREF(offsetValue);
+		if (Z_TYPE_P(offsetValue) != IS_LONG && Z_TYPE_P(offsetValue) != IS_STRING) return unsetResult;
+
+		/* $this->getKeyIndexMap()[$offsetValue] ?? null */
+		zv::Val map = getKeyIndexMap();
+		if (UNEXPECTED(map.isUndef())) return zv::Val();
+		zval *found = mapFind(Z_ARRVAL_P(map.raw()), offsetValue);
+		if (found == NULL || Z_TYPE_P(found) != IS_LONG) return unsetResult;
+		zend_long i = Z_LVAL_P(found);
+
+		zval *k = keyTypes();
+		zval *v = k != NULL ? valueTypes() : NULL;
+		zval *n = v != NULL ? nextAutoIndexes() : NULL;
+		zval *o = n != NULL ? optionalKeys() : NULL;
+		if (UNEXPECTED(o == NULL)) return zv::Val();
+
+		zval never;
+		if (UNEXPECTED(!pt_non_accepting_never_type_new(&never))) return zv::Val();
+		zv::Val neverValue = zv::Val::adopt(never);
+		zv::Arr valueTypesCopy = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(v)));
+		valueTypesCopy.separate();
+		zv::ArrRef(valueTypesCopy.raw()).setIndex((zend_ulong) i, zv::Ref(neverValue.raw()));
+
+		zv::Arr optionalKeysCopy = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(o)));
+		if (!inArrayStrictLong(o, i)) {
+			optionalKeysCopy.separate();
+			optionalKeysCopy.push(zv::Val::integer(i));
+		}
+
+		zend_long resultIsList = pt_type_op_trinary(Z_OBJ_P(unsetResult.raw()), PT_OP_IS_LIST, 0, NULL);
+		if (UNEXPECTED(resultIsList < 0)) return zv::Val();
+		return thisRecreate(k, valueTypesCopy.raw(), n, optionalKeysCopy.raw(), pt_trinary_singleton(resultIsList), u);
 	}
 
 	/* TypeCombinator::intersect($this, new NonEmptyArrayType()) */

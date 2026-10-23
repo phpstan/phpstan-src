@@ -59,6 +59,7 @@ parametersSchema:
 		unresolvedTemplateArguments: bool()
 		closureSignaturesFromUsages: bool()
 		staticVariablesFromUsages: bool()
+		backedEnumFromParameterType: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
 	])

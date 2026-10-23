@@ -1310,6 +1310,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       # vendor/ (and tests/vendor for the tests legs) is installed on the
       # runner host and only read from the mounted workspace: the
@@ -1929,6 +1930,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       - name: "Install PHP"
         if: ${{ !matrix.container }}
@@ -1950,6 +1952,11 @@ jobs:
         if: ${{ !matrix.container }}
         with:
           ignore-cache: true
+
+      # the autoloader dump reads the expected turbo version from git
+      - name: "Trust the checkout despite the container/host uid mismatch"
+        if: ${{ matrix.container }}
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: "Install Composer dependencies (verified composer)"
         if: ${{ matrix.container }}
@@ -2056,6 +2063,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       # The same container, packages and composer as turbo-compile-musl-arm64.
       - name: "Start the Alpine container"
@@ -2185,6 +2193,7 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0

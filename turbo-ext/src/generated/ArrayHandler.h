@@ -12,6 +12,7 @@ namespace ptdecl::ArrayHandler {
 namespace slot {
 inline constexpr uint32_t initializerExprTypeResolver = 0;
 inline constexpr uint32_t expressionResultFactory = 1;
+inline constexpr uint32_t closureTypeResolver = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -25,6 +26,7 @@ inline void declareProperties(reg::Class &cls)
 {
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
+	cls.property("closureTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -34,76 +36,154 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 28 */
 	"expressionResultFactory\0" /* 75 */
 	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 99 */
-	"__construct\0" /* 140 */
-	"expr\0" /* 152 */
-	"PhpParser\\Node\\Expr\0" /* 157 */
-	"\0" /* 177 */
-	"supports\0" /* 178 */
-	"nodeScopeResolver\0" /* 187 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 205 */
-	"stmt\0" /* 240 */
-	"PhpParser\\Node\\Stmt\0" /* 245 */
-	"scope\0" /* 265 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 271 */
-	"storage\0" /* 302 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 310 */
-	"nodeCallback\0" /* 351 */
-	"context\0" /* 364 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 372 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 407 */
-	"processExpr\0" /* 441 */
-	"PhpParser\\Node\\Expr\\Array_\0" /* 453 */
-	"itemResults\0" /* 480 */
-	"result\0" /* 492 */
-	"PHPStan\\Dependency\\Dependencies\0" /* 499 */
-	"getCallableDependencies\0" /* 531 */
-	"collectAbsorbedItems\0" /* 555 */
-	"type\0" /* 576 */
-	"PHPStan\\Type\\Type\0" /* 581 */
-	"getExpectedArrayType\0" /* 599 */
-	"arrayType\0" /* 620 */
-	"keyType\0" /* 630 */
-	"getExpectedValueType"; /* 638 */
+	"closureTypeResolver\0" /* 140 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver\0" /* 160 */
+	"__construct\0" /* 216 */
+	"expr\0" /* 228 */
+	"PhpParser\\Node\\Expr\0" /* 233 */
+	"\0" /* 253 */
+	"supports\0" /* 254 */
+	"nodeScopeResolver\0" /* 263 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 281 */
+	"stmt\0" /* 316 */
+	"PhpParser\\Node\\Stmt\0" /* 321 */
+	"scope\0" /* 341 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 347 */
+	"storage\0" /* 378 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 386 */
+	"nodeCallback\0" /* 427 */
+	"context\0" /* 440 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 448 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 483 */
+	"processExpr\0" /* 517 */
+	"PhpParser\\Node\\Expr\\Array_\0" /* 529 */
+	"passedToType\0" /* 556 */
+	"PHPStan\\Type\\Type\0" /* 569 */
+	"nativePassedToType\0" /* 587 */
+	"resolve\0" /* 606 */
+	"Closure\0" /* 614 */
+	"walkItems\0" /* 622 */
+	"walk\0" /* 632 */
+	"completeWalk\0" /* 637 */
+	"getWalkedArrayType\0" /* 650 */
+	"createResult\0" /* 669 */
+	"item\0" /* 682 */
+	"keyType\0" /* 687 */
+	"getValueContext\0" /* 695 */
+	"arrayItem\0" /* 711 */
+	"PhpParser\\Node\\ArrayItem\0" /* 721 */
+	"keyResult\0" /* 746 */
+	"nextIndex\0" /* 756 */
+	"getKeyTypeAndOffset\0" /* 766 */
+	"isKeyWalkedFirst\0" /* 786 */
+	"hasClosureItems\0" /* 803 */
+	"closure\0" /* 819 */
+	"PhpParser\\Node\\Expr\\Closure\0" /* 827 */
+	"hasByRefUse\0" /* 855 */
+	"itemResults\0" /* 867 */
+	"result\0" /* 879 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 886 */
+	"getCallableDependencies\0" /* 918 */
+	"collectAbsorbedItems\0" /* 942 */
+	"type\0" /* 963 */
+	"getExpectedArrayType\0" /* 968 */
+	"arrayType\0" /* 989 */
+	"getExpectedValueType"; /* 999 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 99), /* __construct $expressionResultFactory */
-	reg::packed(152, 0, 157), /* supports $expr */
-	reg::packed(177, MAY_BE_BOOL), /* supports return */
-	reg::packed(187, 0, 205), /* processExpr $nodeScopeResolver */
-	reg::packed(240, 0, 245), /* processExpr $stmt */
-	reg::packed(152, 0, 157), /* processExpr $expr */
-	reg::packed(265, 0, 271), /* processExpr $scope */
-	reg::packed(302, 0, 310), /* processExpr $storage */
-	reg::packed(351, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(364, 0, 372), /* processExpr $context */
-	reg::packed(177, 0, 407), /* processExpr return */
-	reg::packed(265, 0, 271), /* getCallableDependencies $scope */
-	reg::packed(152, 0, 453), /* getCallableDependencies $expr */
-	reg::packed(480, MAY_BE_ARRAY), /* getCallableDependencies $itemResults */
-	reg::packed(492, 0, 407), /* getCallableDependencies $result */
-	reg::packed(177, MAY_BE_NULL, 499), /* getCallableDependencies return */
-	reg::packed(152, 0, 453), /* collectAbsorbedItems $expr */
-	reg::packed(480, MAY_BE_ARRAY), /* collectAbsorbedItems $itemResults */
-	reg::packed(265, 0, 271), /* collectAbsorbedItems $scope */
-	reg::packed(177, 0, 271), /* collectAbsorbedItems return */
-	reg::packed(576, MAY_BE_NULL, 581), /* getExpectedArrayType $type */
-	reg::packed(177, MAY_BE_NULL, 581), /* getExpectedArrayType return */
-	reg::packed(620, MAY_BE_NULL, 581), /* getExpectedValueType $arrayType */
-	reg::packed(630, 0, 581), /* getExpectedValueType $keyType */
-	reg::packed(177, MAY_BE_NULL, 581), /* getExpectedValueType return */
+	reg::packed(140, 0, 160), /* __construct $closureTypeResolver */
+	reg::packed(228, 0, 233), /* supports $expr */
+	reg::packed(253, MAY_BE_BOOL), /* supports return */
+	reg::packed(263, 0, 281), /* processExpr $nodeScopeResolver */
+	reg::packed(316, 0, 321), /* processExpr $stmt */
+	reg::packed(228, 0, 233), /* processExpr $expr */
+	reg::packed(341, 0, 347), /* processExpr $scope */
+	reg::packed(378, 0, 386), /* processExpr $storage */
+	reg::packed(427, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(440, 0, 448), /* processExpr $context */
+	reg::packed(253, 0, 483), /* processExpr return */
+	reg::packed(263, 0, 281), /* walkItems $nodeScopeResolver */
+	reg::packed(316, 0, 321), /* walkItems $stmt */
+	reg::packed(228, 0, 529), /* walkItems $expr */
+	reg::packed(341, 0, 347), /* walkItems $scope */
+	reg::packed(378, 0, 386), /* walkItems $storage */
+	reg::packed(427, MAY_BE_CALLABLE), /* walkItems $nodeCallback */
+	reg::packed(440, 0, 448), /* walkItems $context */
+	reg::packed(556, MAY_BE_NULL, 569), /* walkItems $passedToType */
+	reg::packed(587, MAY_BE_NULL, 569), /* walkItems $nativePassedToType */
+	reg::packed(606, MAY_BE_NULL, 614), /* walkItems $resolve */
+	reg::packed(253, MAY_BE_ARRAY), /* walkItems return */
+	reg::packed(263, 0, 281), /* completeWalk $nodeScopeResolver */
+	reg::packed(316, 0, 321), /* completeWalk $stmt */
+	reg::packed(632, MAY_BE_ARRAY), /* completeWalk $walk */
+	reg::packed(378, 0, 386), /* completeWalk $storage */
+	reg::packed(427, MAY_BE_CALLABLE), /* completeWalk $nodeCallback */
+	reg::packed(556, MAY_BE_NULL, 569), /* completeWalk $passedToType */
+	reg::packed(587, MAY_BE_NULL, 569), /* completeWalk $nativePassedToType */
+	reg::packed(253, MAY_BE_ARRAY), /* completeWalk return */
+	reg::packed(263, 0, 281), /* getWalkedArrayType $nodeScopeResolver */
+	reg::packed(632, MAY_BE_ARRAY), /* getWalkedArrayType $walk */
+	reg::packed(253, 0, 569), /* getWalkedArrayType return */
+	reg::packed(263, 0, 281), /* createResult $nodeScopeResolver */
+	reg::packed(632, MAY_BE_ARRAY), /* createResult $walk */
+	reg::packed(378, 0, 386), /* createResult $storage */
+	reg::packed(427, MAY_BE_CALLABLE), /* createResult $nodeCallback */
+	reg::packed(253, 0, 483), /* createResult return */
+	reg::packed(440, 0, 448), /* getValueContext $context */
+	reg::packed(682, MAY_BE_ARRAY), /* getValueContext $item */
+	reg::packed(556, MAY_BE_NULL, 569), /* getValueContext $passedToType */
+	reg::packed(587, MAY_BE_NULL, 569), /* getValueContext $nativePassedToType */
+	reg::packed(687, MAY_BE_NULL, 569), /* getValueContext $keyType */
+	reg::packed(253, 0, 448), /* getValueContext return */
+	reg::packed(263, 0, 281), /* getKeyTypeAndOffset $nodeScopeResolver */
+	reg::packed(711, 0, 721), /* getKeyTypeAndOffset $arrayItem */
+	reg::packed(746, MAY_BE_NULL, 483), /* getKeyTypeAndOffset $keyResult */
+	reg::packed(341, 0, 347), /* getKeyTypeAndOffset $scope */
+	reg::packed(756, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, true, false), /* getKeyTypeAndOffset $nextIndex */
+	reg::packed(253, MAY_BE_ARRAY), /* getKeyTypeAndOffset return */
+	reg::packed(711, 0, 721), /* isKeyWalkedFirst $arrayItem */
+	reg::packed(253, MAY_BE_BOOL), /* isKeyWalkedFirst return */
+	reg::packed(228, 0, 529), /* hasClosureItems $expr */
+	reg::packed(253, MAY_BE_BOOL), /* hasClosureItems return */
+	reg::packed(819, 0, 827), /* hasByRefUse $closure */
+	reg::packed(253, MAY_BE_BOOL), /* hasByRefUse return */
+	reg::packed(341, 0, 347), /* getCallableDependencies $scope */
+	reg::packed(228, 0, 529), /* getCallableDependencies $expr */
+	reg::packed(867, MAY_BE_ARRAY), /* getCallableDependencies $itemResults */
+	reg::packed(879, 0, 483), /* getCallableDependencies $result */
+	reg::packed(253, MAY_BE_NULL, 886), /* getCallableDependencies return */
+	reg::packed(228, 0, 529), /* collectAbsorbedItems $expr */
+	reg::packed(867, MAY_BE_ARRAY), /* collectAbsorbedItems $itemResults */
+	reg::packed(341, 0, 347), /* collectAbsorbedItems $scope */
+	reg::packed(253, 0, 347), /* collectAbsorbedItems return */
+	reg::packed(963, MAY_BE_NULL, 569), /* getExpectedArrayType $type */
+	reg::packed(253, MAY_BE_NULL, 569), /* getExpectedArrayType return */
+	reg::packed(989, MAY_BE_NULL, 569), /* getExpectedValueType $arrayType */
+	reg::packed(687, 0, 569), /* getExpectedValueType $keyType */
+	reg::packed(253, MAY_BE_NULL, 569), /* getExpectedValueType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 140 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 178 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 441 /* processExpr */, 7, 4, 7, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCallableDependencies = { { 531 /* getCallableDependencies */, 4, 12, 4, 16, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig collectAbsorbedItems = { { 555 /* collectAbsorbedItems */, 3, 17, 3, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getExpectedArrayType = { { 599 /* getExpectedArrayType */, 1, 21, 1, 22, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getExpectedValueType = { { 638 /* getExpectedValueType */, 2, 23, 2, 25, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 216 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 254 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 517 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig walkItems = { { 622 /* walkItems */, 10, 13, 10, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig completeWalk = { { 637 /* completeWalk */, 7, 24, 7, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getWalkedArrayType = { { 650 /* getWalkedArrayType */, 2, 32, 2, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createResult = { { 669 /* createResult */, 4, 35, 4, 39, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getValueContext = { { 695 /* getValueContext */, 5, 40, 5, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getKeyTypeAndOffset = { { 766 /* getKeyTypeAndOffset */, 5, 46, 5, 51, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isKeyWalkedFirst = { { 786 /* isKeyWalkedFirst */, 1, 52, 1, 53, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasClosureItems = { { 803 /* hasClosureItems */, 1, 54, 1, 55, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasByRefUse = { { 855 /* hasByRefUse */, 1, 56, 1, 57, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getCallableDependencies = { { 918 /* getCallableDependencies */, 4, 58, 4, 62, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectAbsorbedItems = { { 942 /* collectAbsorbedItems */, 3, 63, 3, 66, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getExpectedArrayType = { { 968 /* getExpectedArrayType */, 1, 67, 1, 68, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getExpectedValueType = { { 999 /* getExpectedValueType */, 2, 69, 2, 71, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayHandler

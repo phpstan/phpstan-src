@@ -190,38 +190,39 @@ inline constexpr char strings[] =
 	"getReferencedTemplateTypes\0" /* 2053 */
 	"typeToRemove\0" /* 2080 */
 	"tryRemove\0" /* 2093 */
-	"cb\0" /* 2103 */
-	"traverse\0" /* 2106 */
-	"right\0" /* 2115 */
-	"traverseSimultaneously\0" /* 2121 */
-	"otherArray\0" /* 2144 */
-	"isKeysSupersetOf\0" /* 2155 */
-	"legacyIsKeysSupersetOf\0" /* 2172 */
-	"mergeWith\0" /* 2195 */
-	"legacyMergeWith\0" /* 2205 */
-	"getKeyIndexMap\0" /* 2221 */
-	"findVerifiedKeyIndex\0" /* 2236 */
-	"otherKeyType\0" /* 2257 */
-	"getKeyIndex\0" /* 2270 */
-	"makeOffsetRequired\0" /* 2282 */
-	"makeList\0" /* 2301 */
-	"makeListMaybe\0" /* 2310 */
-	"mapValueType\0" /* 2324 */
-	"mapKeyType\0" /* 2337 */
-	"makeAllArrayKeysOptional\0" /* 2348 */
-	"case\0" /* 2373 */
-	"changeKeyCaseArray\0" /* 2378 */
-	"filterArrayRemovingFalsey\0" /* 2397 */
-	"PHPStan\\Type\\Constant\\ConstantStringType\0" /* 2423 */
-	"foldConstantStringKeyCase\0" /* 2464 */
-	"key\0" /* 2490 */
-	"foldUnsealedKeyCase\0" /* 2494 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 2514 */
-	"toPhpDocNode\0" /* 2553 */
-	"value\0" /* 2566 */
-	"isValidIdentifier\0" /* 2572 */
-	"getFiniteTypes\0" /* 2590 */
-	"hasTemplateOrLateResolvableType"; /* 2605 */
+	"removeOffset\0" /* 2103 */
+	"cb\0" /* 2116 */
+	"traverse\0" /* 2119 */
+	"right\0" /* 2128 */
+	"traverseSimultaneously\0" /* 2134 */
+	"otherArray\0" /* 2157 */
+	"isKeysSupersetOf\0" /* 2168 */
+	"legacyIsKeysSupersetOf\0" /* 2185 */
+	"mergeWith\0" /* 2208 */
+	"legacyMergeWith\0" /* 2218 */
+	"getKeyIndexMap\0" /* 2234 */
+	"findVerifiedKeyIndex\0" /* 2249 */
+	"otherKeyType\0" /* 2270 */
+	"getKeyIndex\0" /* 2283 */
+	"makeOffsetRequired\0" /* 2295 */
+	"makeList\0" /* 2314 */
+	"makeListMaybe\0" /* 2323 */
+	"mapValueType\0" /* 2337 */
+	"mapKeyType\0" /* 2350 */
+	"makeAllArrayKeysOptional\0" /* 2361 */
+	"case\0" /* 2386 */
+	"changeKeyCaseArray\0" /* 2391 */
+	"filterArrayRemovingFalsey\0" /* 2410 */
+	"PHPStan\\Type\\Constant\\ConstantStringType\0" /* 2436 */
+	"foldConstantStringKeyCase\0" /* 2477 */
+	"key\0" /* 2503 */
+	"foldUnsealedKeyCase\0" /* 2507 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 2527 */
+	"toPhpDocNode\0" /* 2566 */
+	"value\0" /* 2579 */
+	"isValidIdentifier\0" /* 2585 */
+	"getFiniteTypes\0" /* 2603 */
+	"hasTemplateOrLateResolvableType"; /* 2618 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $keyTypes */
 	reg::packed(9, MAY_BE_ARRAY), /* __construct $valueTypes */
@@ -368,44 +369,46 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(110, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
 	reg::packed(2080, 0, 254), /* tryRemove $typeToRemove */
 	reg::packed(110, MAY_BE_NULL, 254), /* tryRemove return */
-	reg::packed(2103, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(881, 0, 254), /* removeOffset $offsetType */
+	reg::packed(110, 0, 254), /* removeOffset return */
+	reg::packed(2116, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(110, 0, 254), /* traverse return */
-	reg::packed(2115, 0, 254), /* traverseSimultaneously $right */
-	reg::packed(2103, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(2128, 0, 254), /* traverseSimultaneously $right */
+	reg::packed(2116, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(110, 0, 254), /* traverseSimultaneously return */
-	reg::packed(2144, 0, 148), /* isKeysSupersetOf $otherArray */
+	reg::packed(2157, 0, 148), /* isKeysSupersetOf $otherArray */
 	reg::packed(110, MAY_BE_BOOL), /* isKeysSupersetOf return */
-	reg::packed(2144, 0, 148), /* legacyIsKeysSupersetOf $otherArray */
+	reg::packed(2157, 0, 148), /* legacyIsKeysSupersetOf $otherArray */
 	reg::packed(110, MAY_BE_BOOL), /* legacyIsKeysSupersetOf return */
-	reg::packed(2144, 0, 148), /* mergeWith $otherArray */
+	reg::packed(2157, 0, 148), /* mergeWith $otherArray */
 	reg::packed(110, 0, 148), /* mergeWith return */
-	reg::packed(2144, 0, 148), /* legacyMergeWith $otherArray */
+	reg::packed(2157, 0, 148), /* legacyMergeWith $otherArray */
 	reg::packed(110, 0, 148), /* legacyMergeWith return */
 	reg::packed(110, MAY_BE_ARRAY), /* getKeyIndexMap return */
 	reg::packed(881, 0, 254), /* findVerifiedKeyIndex $offsetType */
 	reg::packed(110, MAY_BE_NULL | MAY_BE_LONG), /* findVerifiedKeyIndex return */
-	reg::packed(2257, 0), /* getKeyIndex $otherKeyType */
+	reg::packed(2270, 0), /* getKeyIndex $otherKeyType */
 	reg::packed(110, MAY_BE_NULL | MAY_BE_LONG), /* getKeyIndex return */
 	reg::packed(881, 0, 254), /* makeOffsetRequired $offsetType */
 	reg::packed(110, 0, 148), /* makeOffsetRequired return */
 	reg::packed(110, 0, 254), /* makeList return */
 	reg::packed(110, 0, 254), /* makeListMaybe return */
-	reg::packed(2103, MAY_BE_CALLABLE), /* mapValueType $cb */
+	reg::packed(2116, MAY_BE_CALLABLE), /* mapValueType $cb */
 	reg::packed(110, 0, 254), /* mapValueType return */
-	reg::packed(2103, MAY_BE_CALLABLE), /* mapKeyType $cb */
+	reg::packed(2116, MAY_BE_CALLABLE), /* mapKeyType $cb */
 	reg::packed(110, 0, 254), /* mapKeyType return */
 	reg::packed(110, 0, 254), /* makeAllArrayKeysOptional return */
-	reg::packed(2373, MAY_BE_NULL | MAY_BE_LONG), /* changeKeyCaseArray $case */
+	reg::packed(2386, MAY_BE_NULL | MAY_BE_LONG), /* changeKeyCaseArray $case */
 	reg::packed(110, 0, 254), /* changeKeyCaseArray return */
 	reg::packed(110, 0, 254), /* filterArrayRemovingFalsey return */
-	reg::packed(479, 0, 2423), /* foldConstantStringKeyCase $type */
-	reg::packed(2373, MAY_BE_NULL | MAY_BE_LONG), /* foldConstantStringKeyCase $case */
+	reg::packed(479, 0, 2436), /* foldConstantStringKeyCase $type */
+	reg::packed(2386, MAY_BE_NULL | MAY_BE_LONG), /* foldConstantStringKeyCase $case */
 	reg::packed(110, 0, 254), /* foldConstantStringKeyCase return */
-	reg::packed(2490, 0, 254), /* foldUnsealedKeyCase $key */
-	reg::packed(2373, MAY_BE_NULL | MAY_BE_LONG), /* foldUnsealedKeyCase $case */
+	reg::packed(2503, 0, 254), /* foldUnsealedKeyCase $key */
+	reg::packed(2386, MAY_BE_NULL | MAY_BE_LONG), /* foldUnsealedKeyCase $case */
 	reg::packed(110, 0, 254), /* foldUnsealedKeyCase return */
-	reg::packed(110, 0, 2514), /* toPhpDocNode return */
-	reg::packed(2566, MAY_BE_STRING), /* isValidIdentifier $value */
+	reg::packed(110, 0, 2527), /* toPhpDocNode return */
+	reg::packed(2579, MAY_BE_STRING), /* isValidIdentifier $value */
 	reg::packed(110, MAY_BE_BOOL), /* isValidIdentifier return */
 	reg::packed(110, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(110, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
@@ -493,29 +496,30 @@ inline constexpr sigtab::Sig shouldBeDescribedAsAList = { { 1900 /* shouldBeDesc
 inline constexpr sigtab::Sig inferTemplateTypes = { { 1975 /* inferTemplateTypes */, 1, 139, 1, 140, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 2053 /* getReferencedTemplateTypes */, 1, 141, 1, 142, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig tryRemove = { { 2093 /* tryRemove */, 1, 143, 1, 144, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverse = { { 2106 /* traverse */, 1, 145, 1, 146, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 2121 /* traverseSimultaneously */, 2, 147, 2, 149, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isKeysSupersetOf = { { 2155 /* isKeysSupersetOf */, 1, 150, 1, 151, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig legacyIsKeysSupersetOf = { { 2172 /* legacyIsKeysSupersetOf */, 1, 152, 1, 153, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig mergeWith = { { 2195 /* mergeWith */, 1, 154, 1, 155, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig legacyMergeWith = { { 2205 /* legacyMergeWith */, 1, 156, 1, 157, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getKeyIndexMap = { { 2221 /* getKeyIndexMap */, 0, 158, 0, 158, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig findVerifiedKeyIndex = { { 2236 /* findVerifiedKeyIndex */, 1, 159, 1, 160, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getKeyIndex = { { 2270 /* getKeyIndex */, 1, 161, 1, 162, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig makeOffsetRequired = { { 2282 /* makeOffsetRequired */, 1, 163, 1, 164, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig makeList = { { 2301 /* makeList */, 0, 165, 0, 165, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig makeListMaybe = { { 2310 /* makeListMaybe */, 0, 166, 0, 166, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig mapValueType = { { 2324 /* mapValueType */, 1, 167, 1, 168, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig mapKeyType = { { 2337 /* mapKeyType */, 1, 169, 1, 170, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig makeAllArrayKeysOptional = { { 2348 /* makeAllArrayKeysOptional */, 0, 171, 0, 171, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig changeKeyCaseArray = { { 2378 /* changeKeyCaseArray */, 1, 172, 1, 173, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig filterArrayRemovingFalsey = { { 2397 /* filterArrayRemovingFalsey */, 0, 174, 0, 174, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig foldConstantStringKeyCase = { { 2464 /* foldConstantStringKeyCase */, 2, 175, 2, 177, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig foldUnsealedKeyCase = { { 2494 /* foldUnsealedKeyCase */, 2, 178, 2, 180, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 2553 /* toPhpDocNode */, 0, 181, 0, 181, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isValidIdentifier = { { 2572 /* isValidIdentifier */, 1, 182, 1, 183, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 2590 /* getFiniteTypes */, 0, 184, 0, 184, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2605 /* hasTemplateOrLateResolvableType */, 0, 185, 0, 185, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig removeOffset = { { 2103 /* removeOffset */, 1, 145, 1, 146, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig traverse = { { 2119 /* traverse */, 1, 147, 1, 148, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 2134 /* traverseSimultaneously */, 2, 149, 2, 151, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isKeysSupersetOf = { { 2168 /* isKeysSupersetOf */, 1, 152, 1, 153, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig legacyIsKeysSupersetOf = { { 2185 /* legacyIsKeysSupersetOf */, 1, 154, 1, 155, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mergeWith = { { 2208 /* mergeWith */, 1, 156, 1, 157, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig legacyMergeWith = { { 2218 /* legacyMergeWith */, 1, 158, 1, 159, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getKeyIndexMap = { { 2234 /* getKeyIndexMap */, 0, 160, 0, 160, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findVerifiedKeyIndex = { { 2249 /* findVerifiedKeyIndex */, 1, 161, 1, 162, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getKeyIndex = { { 2283 /* getKeyIndex */, 1, 163, 1, 164, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig makeOffsetRequired = { { 2295 /* makeOffsetRequired */, 1, 165, 1, 166, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeList = { { 2314 /* makeList */, 0, 167, 0, 167, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeListMaybe = { { 2323 /* makeListMaybe */, 0, 168, 0, 168, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapValueType = { { 2337 /* mapValueType */, 1, 169, 1, 170, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig mapKeyType = { { 2350 /* mapKeyType */, 1, 171, 1, 172, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makeAllArrayKeysOptional = { { 2361 /* makeAllArrayKeysOptional */, 0, 173, 0, 173, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeKeyCaseArray = { { 2391 /* changeKeyCaseArray */, 1, 174, 1, 175, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterArrayRemovingFalsey = { { 2410 /* filterArrayRemovingFalsey */, 0, 176, 0, 176, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig foldConstantStringKeyCase = { { 2477 /* foldConstantStringKeyCase */, 2, 177, 2, 179, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig foldUnsealedKeyCase = { { 2507 /* foldUnsealedKeyCase */, 2, 180, 2, 182, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 2566 /* toPhpDocNode */, 0, 183, 0, 183, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValidIdentifier = { { 2585 /* isValidIdentifier */, 1, 184, 1, 185, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 2603 /* getFiniteTypes */, 0, 186, 0, 186, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2618 /* hasTemplateOrLateResolvableType */, 0, 187, 0, 187, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantArrayType

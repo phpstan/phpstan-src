@@ -22,6 +22,7 @@ use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
+/** @api */
 trait LateResolvableTypeTrait
 {
 

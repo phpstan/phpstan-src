@@ -75,6 +75,7 @@ use function array_slice;
 use function count;
 use function explode;
 use function implode;
+use function in_array;
 use function is_array;
 use function sprintf;
 use function strtolower;
@@ -795,12 +796,21 @@ final class PhpClassReflectionExtension
 			);
 		}
 
-		return $this->createUserlandMethodReflection(
+		$method = $this->createUserlandMethodReflection(
 			$declaringClass,
 			$declaringClass,
 			$methodReflection,
 			$this->findMethodTrait($methodReflection),
 		);
+
+		if (in_array(strtolower($methodReflection->getName()), ['from', 'tryfrom'], true)) {
+			$backedEnumType = $declaringClass->getBackedEnumType();
+			if ($backedEnumType !== null) {
+				return new BackedEnumFromMethodReflection($method, $backedEnumType);
+			}
+		}
+
+		return $method;
 	}
 
 	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, ReflectionMethod $methodReflection, ?string $declaringTraitName): PhpMethodReflection

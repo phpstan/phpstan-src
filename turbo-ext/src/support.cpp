@@ -165,6 +165,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ALWAYS_REMEMBERED_EXPR */ {"alwaysRememberedExpr", "PHPStan\\Node\\Expr\\AlwaysRememberedExpr"},
 	/* PT_CLASS_NATIVE_METHOD_REFLECTION */ {"nativeMethodReflection", "PHPStan\\Reflection\\Native\\NativeMethodReflection"},
 	/* PT_CLASS_ENUM_CASES_METHOD_REFLECTION */ {"enumCasesMethodReflection", "PHPStan\\Reflection\\Php\\EnumCasesMethodReflection"},
+	/* PT_CLASS_BACKED_ENUM_FROM_METHOD_REFLECTION */ {"backedEnumFromMethodReflection", "PHPStan\\Reflection\\Php\\BackedEnumFromMethodReflection"},
 	/* PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE */ {"privatePropertyAttribute", "PHPStan\\Reflection\\Attribute\\PrivateProperty"},
 	/* PT_CLASS_PROTECTED_PROPERTY_ATTRIBUTE */ {"protectedPropertyAttribute", "PHPStan\\Reflection\\Attribute\\ProtectedProperty"},
 	/* PT_CLASS_ADAPTER_REFLECTION_METHOD */ {"adapterReflectionMethod", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod"},

@@ -116,20 +116,16 @@ being ≥0.5% faster is. When the estimate is marginal, don't port.
    version bump in composer.lock requires the same.
 9. **Benchmark** (protocol below). ≤0.5% → revert the port, keep the PHP
    extraction only if it stands on its own.
-10. **Version bump** (only when `turbo-ext/src/` changed): commit the
-    change, then run `make bump-turbo` — it sets
-    `TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION` to
-    `git log -1 --format=%H -- turbo-ext/src | cut -c1-7` and commits the
-    follow-up (rerun it after a rebase: it refreshes an unpushed bump
-    commit in place).
-    The binary's own version is baked from git at build time (builds outside
-    the monorepo read the VERSION.txt that subsplit-turbo-ext.yml generates
-    into phpstan/turbo-ext — never create that file here), so only the PHP
-    constant is maintained. The bump cannot be part of the same commit —
-    the SHA would change under it — and must be recomputed after the change
-    lands on the target branch (a pull request commit gets a new SHA when
-    rebased). A PHP-twin-only edit needs no bump, but still needs the parity
-    checks and the port.
+10. **Version**: nothing to bump. Both sides are
+    `git log -1 --format=%H -- turbo-ext/src | cut -c1-7` — baked into the
+    binary at build time (builds outside the monorepo read the VERSION.txt
+    that subsplit-turbo-ext.yml generates into phpstan/turbo-ext — never
+    create that file here), and written into
+    `vendor/turbo-extension-version.php` for `TurboExtensionEnabler` on every
+    autoloader dump and by `make build-turbo`. After committing a
+    `turbo-ext/src/` change and rebuilding with a plain `make` in
+    `turbo-ext/`, run `composer dump-autoload` (or build with
+    `make build-turbo` from the root), or the extension stays inactive.
 
 ## Porting analysis-engine classes (handlers, NodeScopeResolver)
 
@@ -379,9 +375,8 @@ Follow README.md's "Updating php-parser" procedure. The agent-relevant traps:
   runs php-parser's own test cases at the installed commit, so it covers new
   syntax as soon as the lock file moves; `tests/parser-corpus.php` only
   proves what the repo contains, so new syntax also needs fixtures here.
-- Finish with both pins: `SUPPORTED_PHP_PARSER_VERSION` in
-  `.github/workflows/phar.yml` plus the extension version bump in
-  `TurboExtensionEnabler` (`src/parser/` changed).
+- Finish with the pin: `SUPPORTED_PHP_PARSER_VERSION` in
+  `.github/workflows/phar.yml`.
 
 ## PHP-side constraints
 

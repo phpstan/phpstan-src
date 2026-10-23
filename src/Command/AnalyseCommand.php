@@ -339,7 +339,7 @@ final class AnalyseCommand extends Command
 				. 'The extension stays inactive and PHPStan runs slower than necessary.' . "\n"
 				. 'Update the extension to the version appropriate for %s.',
 				$incompatibleTurboVersion,
-				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
+				TurboExtensionEnabler::getExpectedVersion() ?? 'unknown',
 				$phpstanVersion === ComposerHelper::UNKNOWN_VERSION ? 'your PHPStan version' : sprintf('PHPStan %s', $phpstanVersion),
 			));
 		} elseif (TurboExtensionSelector::isMissingNextToPhar()) {

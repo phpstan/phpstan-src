@@ -30,6 +30,27 @@
 #pragma GCC diagnostic ignored "-Wattributes"
 
 extern "C" {
+#include "php_version.h"
+#include "zend_globals_macros.h"
+}
+
+/* PHP 8.6's thread-safe EG() and CG() reach the globals at an offset the
+ * headers compute from sizeof(zend_executor_globals) and
+ * sizeof(zend_compiler_globals) — a constant compiled into every use, which
+ * the module API number does not guard: 8.6.0RC4 appended a field to the
+ * executor globals, and an extension built against RC3's headers read and
+ * wrote every EG() field 32 bytes off. Read through the offsets the engine
+ * exports instead, as the headers do up to 8.5, so a field appended by a
+ * later release moves nothing. Redefined before the rest of the headers, so
+ * their inline functions get it too. */
+#if defined(ZTS) && PHP_VERSION_ID >= 80600
+#undef EG
+#undef CG
+#define EG(v) ZEND_TSRMG_FAST(executor_globals_offset, zend_executor_globals *, v)
+#define CG(v) ZEND_TSRMG_FAST(compiler_globals_offset, zend_compiler_globals *, v)
+#endif
+
+extern "C" {
 #include "php.h"
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"

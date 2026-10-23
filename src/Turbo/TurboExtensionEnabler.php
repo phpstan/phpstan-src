@@ -122,6 +122,8 @@ final class TurboExtensionEnabler
 	/**
 	 * Whether activateIfCompatible() declared the native classes — the
 	 * shadowed class names resolve to them only in that case.
+	 *
+	 * @api
 	 */
 	public static function isActive(): bool
 	{

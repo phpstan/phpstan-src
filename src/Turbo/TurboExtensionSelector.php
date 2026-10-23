@@ -58,6 +58,7 @@ final class TurboExtensionSelector
 	 */
 	public const MINIMUM_PHP_VERSION_ID = 80300;
 
+	/** @api */
 	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';
 
 	/**
@@ -75,6 +76,13 @@ final class TurboExtensionSelector
 		return $path;
 	}
 
+	/**
+	 * The extension path a spawned worker needs as `-d extension=`, along with
+	 * `-d` EXTENSION_PATH_INI with the same path. Null when the worker gets the
+	 * extension from the php.ini it inherits, or when there is no extension.
+	 *
+	 * @api
+	 */
 	public static function findExtensionForWorkers(?string $pharPath = null): ?string
 	{
 		if (TurboExtensionEnabler::isLoaded()) {

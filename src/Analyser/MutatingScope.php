@@ -3423,6 +3423,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	private function resolveScopeStateType(Expr $expr, bool $native): Type
 	{
+		if (!$expr instanceof Variable) {
+			// mirror resolveType(): an extension's answer wins over both the
+			// tracked holder and the reflection-derived read below
+			$askScope = $native ? $this->doNotTreatPhpDocTypesAsCertain() : $this;
+			foreach ($this->services->expressionTypeResolverExtensions->getAll() as $extension) {
+				$type = $extension->getType($expr, $askScope);
+				if ($type !== null) {
+					return $type;
+				}
+			}
+		}
+
 		if (!$expr instanceof Variable && $this->hasExpressionType($expr)->yes()) {
 			// mirror resolveType()'s tracked-holder lookup without pricing the
 			// node - the tracked type IS scope state (the extension hook is

@@ -1,7 +1,14 @@
 # config for ExpressionTypeResolverExtensionTest
+parameters:
+	universalObjectCratesClasses:
+		- Bug15421\Crate
+
 services:
 	-
 		class: ExpressionTypeResolverExtension\MethodCallReturnsBoolExpressionTypeResolverExtension
 		tags:
 			- phpstan.broker.expressionTypeResolverExtension
-
+	-
+		class: ExpressionTypeResolverExtension\Bug15421ExpressionTypeResolverExtension
+		tags:
+			- phpstan.broker.expressionTypeResolverExtension

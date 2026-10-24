@@ -2170,8 +2170,10 @@ final class AssignHandler implements ExprHandler
 		// them from the walk's own storage (the scope's storage stack misses it
 		// on loop-convergence passes); synthetic terms narrowing extensions built
 		// (@phpstan-assert property fetches etc.) answer from scope state or a walk
+		// - unless the walk read them on a narrowed branch (the right operand of
+		// `$a['k'] === null || is_int($a['k'])`), then they are re-priced here
 		$storedResult = $storage->findExpressionResult($expr);
-		if ($storedResult !== null) {
+		if ($storedResult !== null && $storedResult->answersOnScope($scope, $scope->nativeTypesPromoted)) {
 			return $storedResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 		}
 

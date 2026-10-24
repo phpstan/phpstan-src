@@ -153,7 +153,7 @@ constexpr Method mGetParentClass{"getParentClass", PT_OP_GET_PARENT_CLASS};
 constexpr Method mGetName{"getName", PT_OP_GET_NAME};
 constexpr Method mIsFinal{"isFinal", PT_OP_IS_FINAL};
 constexpr Method mHasConstant{"hasConstant"};
-constexpr Method mHasEnumCase{"hasEnumCase"};
+constexpr Method mIsEnumCase{"isEnumCase"};
 constexpr Method mGetNativeReflection{"getNativeReflection"};
 constexpr Method mGetReflectionConstant{"getReflectionConstant"};
 constexpr Method mGetDeclaringClass{"getDeclaringClass"};
@@ -4691,22 +4691,25 @@ public:
 				}
 			}
 
+			IETR_VAL(nativeReflection, callOn(constantClassReflection.raw(), mGetNativeReflection));
+			IETR_VAL(reflectionConstant, callOn(nativeReflection.raw(), mGetReflectionConstant, 1, constantName));
+			if (Z_TYPE_P(reflectionConstant.raw()) == IS_FALSE) {
+				continue;
+			}
+
+			// enums on PHP < 8.0 runtime are reflected through the generic class adapter, isEnum() is false there
 			{
-				bool isEnum;
-				if (UNEXPECTED(!classReflectionIsEnum(constantClassReflection.raw(), isEnum))) return zv::Val();
-				if (isEnum) {
-					IETR_VAL(hasEnumCase, callOn(constantClassReflection.raw(), mHasEnumCase, 1, constantName));
-					if (zend_is_true(hasEnumCase.raw())) {
-						IETR_VAL(reflectionName, classReflectionName(constantClassReflection.raw()));
-						if (UNEXPECTED(Z_TYPE_P(reflectionName.raw()) != IS_STRING)) {
-							pt_throw_should_not_happen();
-							return zv::Val();
-						}
-						zval enumCase;
-						if (UNEXPECTED(!pt_enum_case_object_type_new(&enumCase, Z_STR_P(reflectionName.raw()), constantNameString))) return zv::Val();
-						types.push(zv::Val::adopt(enumCase));
-						continue;
+				IETR_VAL(isEnumCase, callOn(reflectionConstant.raw(), mIsEnumCase));
+				if (zend_is_true(isEnumCase.raw())) {
+					IETR_VAL(reflectionName, classReflectionName(constantClassReflection.raw()));
+					if (UNEXPECTED(Z_TYPE_P(reflectionName.raw()) != IS_STRING)) {
+						pt_throw_should_not_happen();
+						return zv::Val();
 					}
+					zval enumCase;
+					if (UNEXPECTED(!pt_enum_case_object_type_new(&enumCase, Z_STR_P(reflectionName.raw()), constantNameString))) return zv::Val();
+					types.push(zv::Val::adopt(enumCase));
+					continue;
 				}
 			}
 
@@ -4734,12 +4737,6 @@ public:
 			writeArrayProperty(slots::currentlyResolvingClassConstant, resolvingName, &trueValue);
 
 			if (!isObject) {
-				IETR_VAL(nativeReflection, callOn(constantClassReflection.raw(), mGetNativeReflection));
-				IETR_VAL(reflectionConstant, callOn(nativeReflection.raw(), mGetReflectionConstant, 1, constantName));
-				if (Z_TYPE_P(reflectionConstant.raw()) == IS_FALSE) {
-					unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
-					continue;
-				}
 				IETR_VAL(reflectionConstantDeclaringClass, callOn(reflectionConstant.raw(), mGetDeclaringClass));
 				IETR_VAL(valueExpression, callOn(reflectionConstant.raw(), mGetValueExpression));
 				IETR_VAL(declaringClassName, callOn(reflectionConstantDeclaringClass.raw(), mGetName));
@@ -5192,16 +5189,6 @@ private:
 	{
 		if (EXPECTED(Z_TYPE_P(classReflection) == IS_OBJECT && Z_OBJCE_P(classReflection) == pt_ce_class_reflection)) return pt_class_reflection_is_final(Z_OBJ_P(classReflection), out);
 		zv::Val result = callOn(classReflection, mIsFinal);
-		if (UNEXPECTED(result.isUndef())) return false;
-		out = zend_is_true(result.raw());
-		return true;
-	}
-
-	/* $classReflection->isEnum(); false = pending exception */
-	static bool classReflectionIsEnum(zval *classReflection, bool &out)
-	{
-		if (EXPECTED(Z_TYPE_P(classReflection) == IS_OBJECT && Z_OBJCE_P(classReflection) == pt_ce_class_reflection)) return pt_class_reflection_is_enum(Z_OBJ_P(classReflection), out);
-		zv::Val result = callOn(classReflection, mIsEnum);
 		if (UNEXPECTED(result.isUndef())) return false;
 		out = zend_is_true(result.raw());
 		return true;

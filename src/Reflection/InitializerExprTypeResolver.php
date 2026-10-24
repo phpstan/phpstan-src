@@ -2747,7 +2747,13 @@ final class InitializerExprTypeResolver
 				continue;
 			}
 
-			if ($constantClassReflection->isEnum() && $constantClassReflection->hasEnumCase($constantName)) {
+			$reflectionConstant = $constantClassReflection->getNativeReflection()->getReflectionConstant($constantName);
+			if ($reflectionConstant === false) {
+				continue;
+			}
+
+			// enums on PHP < 8.0 runtime are reflected through the generic class adapter, isEnum() is false there
+			if ($reflectionConstant->isEnumCase()) {
 				$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName);
 				continue;
 			}
@@ -2766,11 +2772,6 @@ final class InitializerExprTypeResolver
 			$this->currentlyResolvingClassConstant[$resolvingName] = true;
 
 			if (!$isObject) {
-				$reflectionConstant = $constantClassReflection->getNativeReflection()->getReflectionConstant($constantName);
-				if ($reflectionConstant === false) {
-					unset($this->currentlyResolvingClassConstant[$resolvingName]);
-					continue;
-				}
 				$reflectionConstantDeclaringClass = $reflectionConstant->getDeclaringClass();
 				$constantType = $this->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($reflectionConstantDeclaringClass->getName(), $reflectionConstantDeclaringClass->getFileName() ?: null));
 				$nativeType = null;

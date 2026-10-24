@@ -10,6 +10,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -71,6 +72,7 @@ final class FunctionCallParametersCheck
 	/**
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @param array{class-string, string}|null $renamedNamedArgumentParameterData
+	 * @param ArgumentsByNameTagResolver::*|null $argumentsByNameTag
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -99,8 +101,13 @@ final class FunctionCallParametersCheck
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
 		?array $renamedNamedArgumentParameterData,
+		?string $argumentsByNameTag = null,
+		string $positionalArgumentMessage = '',
 	): array
 	{
+		$requiresArgumentsByName = $argumentsByNameTag === ArgumentsByNameTagResolver::ARGUMENTS_BY_NAME;
+		$requiresOptionalArgumentsByName = $argumentsByNameTag === ArgumentsByNameTagResolver::OPTIONAL_ARGUMENTS_BY_NAME;
+
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
 			$funcCallLine = $funcCall->name->getStartLine();
 		} else {
@@ -329,7 +336,11 @@ final class FunctionCallParametersCheck
 			return $errors;
 		}
 
+		$isAfterUnpackedArgument = false;
 		foreach ($argumentsWithParameters as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter, $originalParameter]) {
+			$isPositionKnown = !$isAfterUnpackedArgument;
+			$isAfterUnpackedArgument = $isAfterUnpackedArgument || $unpack;
+
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
@@ -387,6 +398,20 @@ final class FunctionCallParametersCheck
 					$renamedNamedArgumentParameterData,
 					[$parameter->getName(), $argumentLine],
 				));
+			} elseif (
+				$argumentName === null
+				&& $isPositionKnown
+				&& !$parameter->isVariadic()
+				&& ($requiresArgumentsByName || ($requiresOptionalArgumentsByName && $parameter->isOptional()))
+				&& (!$unpack || $this->isUnpackedAsPositionalArguments($scope->getType($argumentValue)))
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					$positionalArgumentMessage,
+					sprintf($requiresArgumentsByName ? 'parameter $%s' : 'optional parameter $%s', $parameter->getName()),
+				))
+					->identifier('argument.positional')
+					->line($argumentLine)
+					->build();
 			}
 
 			if ($this->checkArgumentTypes) {
@@ -787,6 +812,12 @@ final class FunctionCallParametersCheck
 		}
 
 		return [$errors, $newArguments];
+	}
+
+	private function isUnpackedAsPositionalArguments(Type $unpackedType): bool
+	{
+		return $unpackedType->getIterableKeyType()->isInteger()->yes()
+			&& $unpackedType->isIterableAtLeastOnce()->yes();
 	}
 
 	private function describeParameter(ParameterReflection $parameter, int|string|null $positionOrNamed): string

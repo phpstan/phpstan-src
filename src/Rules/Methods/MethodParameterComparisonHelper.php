@@ -7,6 +7,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ArgumentsByNameTagResolver;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -24,6 +25,7 @@ use function array_key_exists;
 use function array_slice;
 use function count;
 use function sprintf;
+use function strtolower;
 
 #[AutowiredService]
 final class MethodParameterComparisonHelper
@@ -49,6 +51,9 @@ final class MethodParameterComparisonHelper
 		$prototypeVariant = $prototype->getVariants()[0];
 
 		$methodParameters = $method->getParameters();
+		$argumentsByNameTag = strtolower($method->getName()) !== '__construct'
+			? ArgumentsByNameTagResolver::resolveForMethod($prototype)
+			: null;
 
 		$prototypeAfterVariadic = false;
 		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {
@@ -73,6 +78,24 @@ final class MethodParameterComparisonHelper
 			}
 
 			$methodParameter = $methodParameters[$i];
+			if (
+				$argumentsByNameTag !== null
+				&& !$prototypeParameter->isVariadic()
+				&& $prototypeParameter->getName() !== $methodParameter->getName()
+				&& ($argumentsByNameTag !== ArgumentsByNameTagResolver::OPTIONAL_ARGUMENTS_BY_NAME || $prototypeParameter->isOptional())
+			) {
+				$messages[] = RuleErrorBuilder::message(sprintf(
+					'Parameter #%d $%s of method %s::%s() should be named $%s like in method %s::%s() because of %s.',
+					$i + 1,
+					$methodParameter->getName(),
+					$method->getDeclaringClass()->getDisplayName(),
+					$method->getName(),
+					$prototypeParameter->getName(),
+					$prototypeDeclaringClass->getDisplayName(true),
+					$prototype->getName(),
+					$argumentsByNameTag,
+				))->identifier('parameter.renamed')->build();
+			}
 			if ($prototype->acceptsNamedArguments()->yes()) {
 				if ($prototypeParameter->getName() !== $methodParameter->getName()) {
 					$scope->emitCollectedData(OverridingMethodRenamesParameterCollector::class, [

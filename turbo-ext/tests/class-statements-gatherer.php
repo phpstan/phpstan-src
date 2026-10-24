@@ -115,7 +115,7 @@ $csgDescribe = static function (mixed $value) use (&$csgDescribe, $csgKnown): mi
 	return [get_class($value), spl_object_id($value)];
 };
 
-$csgGetters = ['getProperties', 'getMethods', 'getMethodCalls', 'getPropertyUsages', 'getConstants', 'getConstantFetches', 'getReturnStatementsNodes', 'getPropertyAssigns'];
+$csgGetters = ['getProperties', 'getMethods', 'getMethodCalls', 'getMethodVariableWrites', 'getPropertyUsages', 'getConstants', 'getConstantFetches', 'getReturnStatementsNodes', 'getPropertyAssigns'];
 $csgRun = static function (string $gathererClass, \PHPStan\Reflection\ClassReflection $classReflection, array $pairs) use ($csgDescribe, $csgGetters): array {
 	$forwarded = [];
 	$gatherer = new $gathererClass($classReflection, static function (\PhpParser\Node $node, \PHPStan\Analyser\Scope $scope) use (&$forwarded): void {

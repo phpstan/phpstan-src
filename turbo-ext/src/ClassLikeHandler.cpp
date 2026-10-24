@@ -374,8 +374,9 @@ public:
 		{
 			zv::Val methods = pt_class_statements_gatherer_get(classStatementsGatherer.raw(), PT_CSG_LIST_METHODS);
 			zv::Val methodCalls = pt_class_statements_gatherer_get(classStatementsGatherer.raw(), PT_CSG_LIST_METHOD_CALLS);
-			zv::Args nodeArgv{stmt, methods.raw(), methodCalls.raw(), classReflection.raw()};
-			zv::Val classMethodsNode = pt_type_new(PT_CLASS_CLASS_METHODS_NODE, 4, nodeArgv);
+			zv::Val methodVariableWrites = pt_class_statements_gatherer_get(classStatementsGatherer.raw(), PT_CSG_LIST_METHOD_VARIABLE_WRITES);
+			zv::Args nodeArgv{stmt, methods.raw(), methodCalls.raw(), classReflection.raw(), methodVariableWrites.raw()};
+			zv::Val classMethodsNode = pt_type_new(PT_CLASS_CLASS_METHODS_NODE, 5, nodeArgv);
 			if (UNEXPECTED(classMethodsNode.isUndef())) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, classMethodsNode.raw(), classScope.raw(), storage))) return zv::Val();
 		}

@@ -6,19 +6,19 @@
  * ClassLikeHandler hands one to the walk of a class body as its node
  * callback: every node of the class reaches __invoke(), which forwards the
  * pair to the wrapped callback (the rule and collector dispatch, PHP) and
- * then gathers the properties, methods, method calls, property usages,
- * constants, constant fetches, return statements and property assigns the
- * Class*Node emissions after the walk carry. The gathering asks the scope
- * through MutatingScope's and ScopeContext's direct entries and the class
- * reflections through ClassReflection's, so the scope and reflection calls
- * made from here (~2.7M per self-analysis) stay native; anything a subclass
- * may override or a PHP twin answers goes by name. The collected value
- * objects are the PHP classes, built through the class map; the PHPStan
- * node classes read here are final with plain getters, so their slots are
- * read directly.
+ * then gathers the properties, methods, method calls, method variable
+ * writes, property usages, constants, constant fetches, return statements
+ * and property assigns the Class*Node emissions after the walk carry. The
+ * gathering asks the scope through MutatingScope's and ScopeContext's direct
+ * entries and the class reflections through ClassReflection's, so the scope
+ * and reflection calls made from here (~2.7M per self-analysis) stay native;
+ * anything a subclass may override or a PHP twin answers goes by name. The
+ * collected value objects are the PHP classes, built through the class map;
+ * the PHPStan node classes read here are final with plain getters, so their
+ * slots are read directly.
  *
  * State is the twin's properties in declaration order: the untyped
- * $nodeCallback, the eight collected arrays, then the promoted
+ * $nodeCallback, the nine collected arrays, then the promoted
  * $classReflection.
  */
 
@@ -91,6 +91,7 @@ static NodeProp pt_csg_param_hooks = PT_NODE_PROP(PT_CLASS_PARAM, "hooks");
 static NodeProp pt_csg_param_var = PT_NODE_PROP(PT_CLASS_PARAM, "var");
 static NodeProp pt_csg_arg_value = PT_NODE_PROP(PT_CLASS_ARG, "value");
 static NodeProp pt_csg_gathered_class_method_node = PT_NODE_PROP(PT_CLASS_GATHERED_CLASS_METHOD, "node");
+static NodeProp pt_csg_variable_writes_function_like = PT_NODE_PROP(PT_CLASS_VARIABLE_WRITES_NODE, "functionLike");
 
 /* Mirrors PHPStan\Node\ClassStatementsGatherer. State lives in the PHP
  * object's slots. */
@@ -294,6 +295,9 @@ private:
 		}
 		if (callableOriginal != NULL) return pushNodeScope(slots::methodCalls, PT_CLASS_GATHERED_METHOD_CALL, callableOriginal, scope);
 		if (isInstanceOf(node, PT_CLASS_METHOD_RETURN_STATEMENTS_NODE)) return addReturnStatementsNode(node, &nodeZv);
+		if (isInstanceOf(node, PT_CLASS_VARIABLE_WRITES_NODE) && pt_csg_variable_writes_function_like.objectOf(node, PT_CLASS_CLASS_METHOD_STMT) != NULL) {
+			return pushNodeScope(slots::methodVariableWrites, PT_CLASS_GATHERED_METHOD_VARIABLE_WRITES, &nodeZv, scope);
+		}
 		if (isInstanceOf(node, PT_CLASS_FUNC_CALL)) {
 			zend_object *callee = pt_csg_func_call_name.objectOf(node, PT_CLASS_NAME);
 			zend_string *calleeName = callee != NULL ? visitors::nameString(callee, pt_csg_name_name) : NULL;
@@ -596,7 +600,7 @@ zv::Val pt_class_statements_gatherer_new(zval *classReflection, zval *nodeCallba
 
 zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gatherer_list list)
 {
-	static const uint32_t listSlots[] = { slots::properties, slots::methods, slots::methodCalls, slots::propertyUsages, slots::constants, slots::constantFetches, slots::returnStatementNodes, slots::propertyAssigns };
+	static const uint32_t listSlots[] = { slots::properties, slots::methods, slots::methodCalls, slots::methodVariableWrites, slots::propertyUsages, slots::constants, slots::constantFetches, slots::returnStatementNodes, slots::propertyAssigns };
 	return zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(gatherer), listSlots[list])));
 }
 
@@ -608,12 +612,13 @@ PT_MINIT_REGISTRATION(pt_register_class_statements_gatherer)
 {
 	reg::Class cls("PHPStan\\Node\\ClassStatementsGatherer");
 	ptdecl::ClassStatementsGatherer::declareClass(cls);
-	/* the slots PT_CSG_PROP_*: the nine class-body properties first, the
+	/* the slots PT_CSG_PROP_*: the ten class-body properties first, the
 	 * promoted constructor property after them */
 	cls.privateNullProperty("nodeCallback");
 	cls.privateTypedArrayPropertyDefaultEmpty("properties");
 	cls.privateTypedArrayPropertyDefaultEmpty("methods");
 	cls.privateTypedArrayPropertyDefaultEmpty("methodCalls");
+	cls.privateTypedArrayPropertyDefaultEmpty("methodVariableWrites");
 	cls.privateTypedArrayPropertyDefaultEmpty("propertyUsages");
 	cls.privateTypedArrayPropertyDefaultEmpty("constants");
 	cls.privateTypedArrayPropertyDefaultEmpty("constantFetches");
@@ -643,6 +648,10 @@ PT_MINIT_REGISTRATION(pt_register_class_statements_gatherer)
 	cls.method(sigs::getMethodCalls, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), slots::methodCalls));
+	});
+	cls.method(sigs::getMethodVariableWrites, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_COPY(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), slots::methodVariableWrites));
 	});
 	cls.method(sigs::getPropertyUsages, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

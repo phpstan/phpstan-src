@@ -1714,8 +1714,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// endless loop
 		$errors = $this->runAnalyse(__DIR__ . '/data/pr-5880.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Call to an undefined method (T of PR5880EndlessRecursion\A = PR5880EndlessRecursion\A|PR5880EndlessRecursion\B)|T of PR5880EndlessRecursion\B = PR5880EndlessRecursion\A|PR5880EndlessRecursion\B::a().', $errors[0]->getMessage());
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug14707(): void

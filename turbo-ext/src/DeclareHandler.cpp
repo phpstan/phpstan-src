@@ -122,6 +122,12 @@ public:
 		zv::Val exitPointsHold;
 		zval *exitPoints = pt_internal_statement_result_exit_points(result.raw(), exitPointsHold);
 		if (UNEXPECTED(exitPoints == NULL)) return zv::Val();
+		zv::Val endStatementsHold;
+		zval *endStatements = pt_internal_statement_result_end_statements(result.raw(), endStatementsHold);
+		if (UNEXPECTED(endStatements == NULL)) return zv::Val();
+		zv::Val variableFlowHold;
+		zval *variableFlow = pt_internal_statement_result_variable_flow(result.raw(), variableFlowHold);
+		if (UNEXPECTED(variableFlow == NULL)) return zv::Val();
 		{
 			zv::Val hold;
 			zval *resultDependencies = pt_internal_statement_result_dependencies(result.raw(), hold);
@@ -130,7 +136,7 @@ public:
 		}
 		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
 		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
-		return pt_internal_statement_result_new(resultScope, hasYield, alwaysTerminating, exitPoints, throwPoints, impurePoints, NULL, NULL, -1, mergedDependencies.raw());
+		return pt_internal_statement_result_new(resultScope, hasYield, alwaysTerminating, exitPoints, throwPoints, impurePoints, endStatements, Z_TYPE_P(variableFlow) == IS_NULL ? NULL : variableFlow, -1, mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

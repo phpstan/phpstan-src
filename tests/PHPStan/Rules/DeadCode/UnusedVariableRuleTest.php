@@ -18,6 +18,20 @@ class UnusedVariableRuleTest extends RuleTestCase
 		return new UnusedVariableRule(self::getContainer()->getByType(ExprPrinter::class));
 	}
 
+	public function testBug15394(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15394.php'], [
+			[
+				'Value assigned to variable $a is never read before being overwritten.',
+				24,
+			],
+			[
+				'Variable $a is never read.',
+				35,
+			],
+		]);
+	}
+
 	public function testBug15411(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15411.php'], []);

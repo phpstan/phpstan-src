@@ -1420,4 +1420,21 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13325.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug15417(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15417.php'], []);
+	}
+
+	public function testBug15417Shapes(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15417-shapes.php'], [
+			[
+				'Method Bug15417Shapes\\Repro::stillReported() should return object{x: Bug15417Shapes\\Collection<string, string>} but returns object{x: Bug15417Shapes\\Collection<0|1, \'a\'|\'b\'>}&stdClass.',
+				51,
+				'Property ($x) type Bug15417Shapes\\Collection<string, string> does not accept type Bug15417Shapes\\Collection<0|1, \'a\'|\'b\'>.',
+			],
+		]);
+	}
+
 }

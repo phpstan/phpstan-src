@@ -1040,24 +1040,14 @@ private:
 		if (first == NULL) return zv::Val::null();
 		ZVAL_DEREF(first);
 		if (Z_TYPE_P(first) == IS_NULL) return zv::Val::null();
+		zval *second = zend_hash_index_find(Z_ARRVAL_P(items), 1);
+		if (second == NULL) return zv::Val::null();
+		ZVAL_DEREF(second);
+		if (Z_TYPE_P(second) == IS_NULL) return zv::Val::null();
 
-		// a class constant, property default or enum case value is not called where it is
-		// declared - testing it would reflect whatever class its first item happens to name
-		bool inClass;
-		if (UNEXPECTED(!pt_mutating_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
-		if (inClass) {
-			zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
-			if (UNEXPECTED(function.isUndef())) return zv::Val();
-			if (function.isNull()) {
-				bool inAnonymousFunction;
-				if (UNEXPECTED(!pt_mutating_scope_is_in_anonymous_function(Z_OBJ_P(scope), inAnonymousFunction))) return zv::Val();
-				if (!inAnonymousFunction) {
-					zv::Val functionCallStack = pt_type_call(Z_OBJ_P(scope), PT_LC("getfunctioncallstack"), 0, NULL);
-					if (UNEXPECTED(functionCallStack.isUndef())) return zv::Val();
-					if (Z_TYPE_P(functionCallStack.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(functionCallStack.raw())) == 0) return zv::Val::null();
-				}
-			}
-		}
+		zv::Val functionCallStack = pt_type_call(Z_OBJ_P(scope), PT_LC("getfunctioncallstack"), 0, NULL);
+		if (UNEXPECTED(functionCallStack.isUndef())) return zv::Val();
+		if (Z_TYPE_P(functionCallStack.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(functionCallStack.raw())) == 0) return zv::Val::null();
 
 		if (UNEXPECTED(Z_TYPE_P(first) != IS_OBJECT)) {
 			zend_throw_error(NULL, "Attempt to read property \"value\" on %s", zend_zval_value_name(first));
@@ -1069,6 +1059,18 @@ private:
 			zend_type_error("spl_object_id(): Argument #1 ($object) must be of type object, %s given", zend_zval_value_name(value));
 			return zv::Val();
 		}
+
+		zend_class_entry *classConstFetchCe = pt_class(PT_CLASS_CLASS_CONST_FETCH);
+		if (UNEXPECTED(classConstFetchCe == NULL)) return zv::Val();
+		if (!instanceof_function(Z_OBJCE_P(value), classConstFetchCe)) return zv::Val::null();
+		static pt_property_site nameSite, identifierNameSite;
+		zval *name = nodeProperty(nameSite, value, PT_LC("name"));
+		if (name == NULL || Z_TYPE_P(name) != IS_OBJECT) return zv::Val::null();
+		zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
+		if (UNEXPECTED(identifierCe == NULL)) return zv::Val();
+		if (!instanceof_function(Z_OBJCE_P(name), identifierCe)) return zv::Val::null();
+		zval *idName = nodeProperty(identifierNameSite, name, PT_LC("name"));
+		if (idName == NULL || Z_TYPE_P(idName) != IS_STRING || !zend_string_equals_literal_ci(Z_STR_P(idName), "class")) return zv::Val::null();
 		zval *firstItemResult = zend_hash_index_find(Z_ARRVAL_P(itemResults), Z_OBJ_HANDLE_P(value));
 		if (firstItemResult == NULL || Z_TYPE_P(firstItemResult) == IS_NULL) return zv::Val::null();
 		zv::Val firstItemType = pt_expression_result_get_type(firstItemResult);

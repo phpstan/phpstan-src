@@ -71,7 +71,9 @@ final class ContextualClosureParameterResolver
 		?Type $nativePassedToType,
 	): ClosureParameterTypes
 	{
+		/** @var Node\Arg[]|null $arrayMapArgs */
 		$arrayMapArgs = $expr->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
+		/** @var Node\Arg[]|null $immediatelyInvokedArgs */
 		$immediatelyInvokedArgs = $expr->getAttribute(ImmediatelyInvokedClosureVisitor::ARGS_ATTRIBUTE_NAME);
 		$intrinsicArgs = $arrayMapArgs ?? $immediatelyInvokedArgs;
 		if ($intrinsicArgs === null) {

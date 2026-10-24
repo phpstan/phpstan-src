@@ -1,0 +1,7 @@
+includes:
+	- ../../../../conf/config.level8.neon
+	- ../../../../conf/bleedingEdge.neon
+	- ../../../../src/Testing/TestCase.neon
+
+parameters:
+	phpVersion: 80500

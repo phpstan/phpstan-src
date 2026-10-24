@@ -8,7 +8,9 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 #[AutowiredService]
 final class RequireExtendsPropertiesClassReflectionExtension
@@ -19,9 +21,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 	{
 		return $this->findProperty(
 			$classReflection,
+			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getProperty($propertyName, new OutOfClassScope()),
+			static fn (Type $type, string $propertyName, Type $fetchedOnType): ExtendedPropertyReflection => $type->getUnresolvedPropertyPrototype($propertyName, new OutOfClassScope())->withFechedOnType($fetchedOnType)->getTransformedProperty(),
 		) !== null;
 	}
 
@@ -30,9 +33,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 	{
 		$property = $this->findProperty(
 			$classReflection,
+			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getProperty($propertyName, new OutOfClassScope()),
+			static fn (Type $type, string $propertyName, Type $fetchedOnType): ExtendedPropertyReflection => $type->getUnresolvedPropertyPrototype($propertyName, new OutOfClassScope())->withFechedOnType($fetchedOnType)->getTransformedProperty(),
 		);
 		if ($property === null) {
 			throw new ShouldNotHappenException();
@@ -45,9 +49,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 	{
 		return $this->findProperty(
 			$classReflection,
+			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasInstanceProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getInstanceProperty($propertyName, new OutOfClassScope()),
+			static fn (Type $type, string $propertyName, Type $fetchedOnType): ExtendedPropertyReflection => $type->getUnresolvedInstancePropertyPrototype($propertyName, new OutOfClassScope())->withFechedOnType($fetchedOnType)->getTransformedProperty(),
 		) !== null;
 	}
 
@@ -55,9 +60,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 	{
 		$property = $this->findProperty(
 			$classReflection,
+			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasInstanceProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getInstanceProperty($propertyName, new OutOfClassScope()),
+			static fn (Type $type, string $propertyName, Type $fetchedOnType): ExtendedPropertyReflection => $type->getUnresolvedInstancePropertyPrototype($propertyName, new OutOfClassScope())->withFechedOnType($fetchedOnType)->getTransformedProperty(),
 		);
 		if ($property === null) {
 			throw new ShouldNotHappenException();
@@ -70,9 +76,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 	{
 		return $this->findProperty(
 			$classReflection,
+			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasStaticProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getStaticProperty($propertyName, new OutOfClassScope()),
+			static fn (Type $type, string $propertyName, Type $fetchedOnType): ExtendedPropertyReflection => $type->getUnresolvedStaticPropertyPrototype($propertyName, new OutOfClassScope())->withFechedOnType($fetchedOnType)->getTransformedProperty(),
 		) !== null;
 	}
 
@@ -80,9 +87,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 	{
 		$property = $this->findProperty(
 			$classReflection,
+			$classReflection,
 			$propertyName,
 			static fn (Type $type, string $propertyName): TrinaryLogic => $type->hasStaticProperty($propertyName),
-			static fn (Type $type, string $propertyName): ExtendedPropertyReflection => $type->getStaticProperty($propertyName, new OutOfClassScope()),
+			static fn (Type $type, string $propertyName, Type $fetchedOnType): ExtendedPropertyReflection => $type->getUnresolvedStaticPropertyPrototype($propertyName, new OutOfClassScope())->withFechedOnType($fetchedOnType)->getTransformedProperty(),
 		);
 		if ($property === null) {
 			throw new ShouldNotHappenException();
@@ -93,9 +101,10 @@ final class RequireExtendsPropertiesClassReflectionExtension
 
 	/**
 	 * @param callable(Type, string): TrinaryLogic               $propertyHasser
-	 * @param callable(Type, string): ExtendedPropertyReflection $propertyGetter
+	 * @param callable(Type, string, Type): ExtendedPropertyReflection $propertyGetter
 	 */
 	private function findProperty(
+		ClassReflection $originalClassReflection,
 		ClassReflection $classReflection,
 		string $propertyName,
 		callable $propertyHasser,
@@ -114,12 +123,13 @@ final class RequireExtendsPropertiesClassReflectionExtension
 				continue;
 			}
 
-			return $propertyGetter($type, $propertyName);
+			// map static to static(interface)&Base so that it gets resolved against the type the property is fetched on
+			return $propertyGetter($type, $propertyName, TypeCombinator::intersect(new StaticType($originalClassReflection), $type));
 		}
 
 		$interfaces = $classReflection->getInterfaces();
 		foreach ($interfaces as $interface) {
-			$property = $this->findProperty($interface, $propertyName, $propertyHasser, $propertyGetter);
+			$property = $this->findProperty($originalClassReflection, $interface, $propertyName, $propertyHasser, $propertyGetter);
 			if ($property !== null) {
 				return $property;
 			}

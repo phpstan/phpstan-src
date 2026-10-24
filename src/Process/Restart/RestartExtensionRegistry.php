@@ -55,7 +55,7 @@ use function strtolower;
  * opentelemetry — measured free while merely loaded, and are deliberately
  * absent from every list here.
  */
-final class ExtensionRegistry
+final class RestartExtensionRegistry
 {
 
 	/**

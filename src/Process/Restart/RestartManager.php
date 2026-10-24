@@ -162,7 +162,7 @@ final class RestartManager
 			return [];
 		}
 
-		return ExtensionRegistry::collectReasons(self::isXdebugAllowed($argv, $appName), $pharPath);
+		return RestartExtensionRegistry::collectReasons(self::isXdebugAllowed($argv, $appName), $pharPath);
 	}
 
 	/**

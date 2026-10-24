@@ -17,7 +17,7 @@ final class RestartDiagnoseExtension implements DiagnoseExtension
 	{
 		$output->writeLineFormatted('<info>Process restart:</info>');
 
-		$detected = ExtensionRegistry::describeDetectedExtensions();
+		$detected = RestartExtensionRegistry::describeDetectedExtensions();
 		$output->writeLineFormatted(sprintf(
 			'Coverage/profilers found:  %s',
 			$detected === [] ? 'none' : implode(', ', $detected),
@@ -44,7 +44,7 @@ final class RestartDiagnoseExtension implements DiagnoseExtension
 		// the diagnose command does not restart, so it reports the answer an
 		// analyse run started the same way would get. --xdebug is a per-run
 		// option, so it is reported as not given
-		$reasons = ExtensionRegistry::collectReasons(false);
+		$reasons = RestartExtensionRegistry::collectReasons(false);
 		if ($reasons === []) {
 			return 'no, nothing to neutralize or load';
 		}

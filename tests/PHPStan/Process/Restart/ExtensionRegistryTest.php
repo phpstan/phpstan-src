@@ -179,7 +179,7 @@ class ExtensionRegistryTest extends TestCase
 		array $expectedExtensions,
 	): void
 	{
-		$reasons = ExtensionRegistry::collectReasonsFor($loadedExtensions, $iniSettings, $turboExtensionPath, $allowXdebug);
+		$reasons = RestartExtensionRegistry::collectReasonsFor($loadedExtensions, $iniSettings, $turboExtensionPath, $allowXdebug);
 
 		$this->assertSame(
 			$expectedExtensions,
@@ -191,7 +191,7 @@ class ExtensionRegistryTest extends TestCase
 	{
 		// stripping would take xdebug_*() out of reflection and so change what
 		// PHPStan knows about code calling them; the flag measures the same
-		$reasons = ExtensionRegistry::collectReasonsFor(['xdebug'], ['xdebug.mode' => 'debug'], null, false);
+		$reasons = RestartExtensionRegistry::collectReasonsFor(['xdebug'], ['xdebug.mode' => 'debug'], null, false);
 
 		$this->assertCount(1, $reasons);
 		$this->assertSame([], $reasons[0]->getStrippedExtensions());
@@ -203,7 +203,7 @@ class ExtensionRegistryTest extends TestCase
 
 	public function testPcovIsFlaggedRatherThanStripped(): void
 	{
-		$reasons = ExtensionRegistry::collectReasonsFor(['pcov'], ['pcov.enabled' => '1'], null, false);
+		$reasons = RestartExtensionRegistry::collectReasonsFor(['pcov'], ['pcov.enabled' => '1'], null, false);
 
 		$this->assertCount(1, $reasons);
 		$this->assertSame([], $reasons[0]->getStrippedExtensions());
@@ -214,7 +214,7 @@ class ExtensionRegistryTest extends TestCase
 
 	public function testTidewaysIsStrippedRatherThanFlagged(): void
 	{
-		$reasons = ExtensionRegistry::collectReasonsFor(['tideways', 'phpstan_turbo'], [], null, false);
+		$reasons = RestartExtensionRegistry::collectReasonsFor(['tideways', 'phpstan_turbo'], [], null, false);
 
 		$this->assertCount(1, $reasons);
 		$this->assertSame(['tideways'], $reasons[0]->getStrippedExtensions());
@@ -225,7 +225,7 @@ class ExtensionRegistryTest extends TestCase
 
 	public function testTurboIsAppendedToTheCommandLineTogetherWithItsMarker(): void
 	{
-		$reasons = ExtensionRegistry::collectReasonsFor([], [], self::TURBO_BINARY, false);
+		$reasons = RestartExtensionRegistry::collectReasonsFor([], [], self::TURBO_BINARY, false);
 
 		$this->assertCount(1, $reasons);
 		$this->assertSame([], $reasons[0]->getStrippedExtensions());
@@ -241,7 +241,7 @@ class ExtensionRegistryTest extends TestCase
 	public function testOpcacheIsActivatedWhenDormant(): void
 	{
 		$entries = ['opcache.enable_cli=1', 'opcache.jit=disable', 'opcache.file_cache='];
-		$reasons = ExtensionRegistry::collectReasonsFor([], [], null, false, $entries, [
+		$reasons = RestartExtensionRegistry::collectReasonsFor([], [], null, false, $entries, [
 			'opcache.enable_cli' => '',
 			'opcache.jit' => 'disable',
 			'opcache.file_cache' => '',
@@ -260,12 +260,12 @@ class ExtensionRegistryTest extends TestCase
 	{
 		$entries = ['opcache.enable_cli=1', 'opcache.jit=disable'];
 
-		$this->assertSame([], ExtensionRegistry::collectReasonsFor([], [], null, false, $entries, [
+		$this->assertSame([], RestartExtensionRegistry::collectReasonsFor([], [], null, false, $entries, [
 			'opcache.enable_cli' => '1',
 			'opcache.jit' => 'disable',
 		]));
 		// no entries means OPcache is to be left alone - not loaded, preloading, or not fork-capable
-		$this->assertSame([], ExtensionRegistry::collectReasonsFor([], [], null, false, [], []));
+		$this->assertSame([], RestartExtensionRegistry::collectReasonsFor([], [], null, false, [], []));
 	}
 
 	public function testCollectReasonsDescribesTheCurrentProcess(): void
@@ -273,11 +273,11 @@ class ExtensionRegistryTest extends TestCase
 		// the test suite runs with coverage off and without the turbo binary of
 		// a phar installation, so this only asserts that the real-process entry
 		// point agrees with what the process actually has loaded
-		foreach (ExtensionRegistry::collectReasons(false) as $reason) {
+		foreach (RestartExtensionRegistry::collectReasons(false) as $reason) {
 			$this->assertContains($reason->getExtension(), ['xdebug', 'pcov', 'uopz', 'phpstan_turbo', 'tideways', 'opcache']);
 		}
 
-		$this->assertSame([], ExtensionRegistry::collectReasonsFor([], [], null, false));
+		$this->assertSame([], RestartExtensionRegistry::collectReasonsFor([], [], null, false));
 	}
 
 	public function testIsXdebugActiveRequiresTheExtension(): void
@@ -286,8 +286,8 @@ class ExtensionRegistryTest extends TestCase
 			$this->markTestSkipped('xdebug is loaded in this process.');
 		}
 
-		$this->assertFalse(ExtensionRegistry::isXdebugActive());
-		foreach (ExtensionRegistry::describeDetectedExtensions() as $description) {
+		$this->assertFalse(RestartExtensionRegistry::isXdebugActive());
+		foreach (RestartExtensionRegistry::describeDetectedExtensions() as $description) {
 			$this->assertStringNotContainsString('xdebug', $description);
 		}
 	}

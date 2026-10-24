@@ -86,7 +86,7 @@ final class CalledMethodProcessor
 		});
 
 		$calledMethodEndScope = null;
-		if ($returnStatement !== null) {
+		if ($returnStatement instanceof MethodReturnStatementsNode) {
 			foreach ($returnStatement->getExecutionEnds() as $executionEnd) {
 				$statementResult = $executionEnd->getStatementResult();
 				$endExprResult = $executionEnd->getExprResult();
@@ -98,19 +98,19 @@ final class CalledMethodProcessor
 					}
 				}
 				if ($calledMethodEndScope === null) {
-					$calledMethodEndScope = $statementResult->getScope();
+					$calledMethodEndScope = $statementResult->getScope()->toWalkScope();
 					continue;
 				}
 
-				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope());
+				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statementResult->getScope()->toWalkScope());
 			}
 			foreach ($returnStatement->getReturnStatements() as $statement) {
 				if ($calledMethodEndScope === null) {
-					$calledMethodEndScope = $statement->getScope();
+					$calledMethodEndScope = $statement->getScope()->toWalkScope();
 					continue;
 				}
 
-				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statement->getScope());
+				$calledMethodEndScope = $calledMethodEndScope->mergeWith($statement->getScope()->toWalkScope());
 			}
 		}
 

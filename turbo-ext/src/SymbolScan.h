@@ -378,7 +378,8 @@ inline void PhpFileCleaner::clean(zend_long maxMatches, std::string &out)
 				if (inType) {
 					typeLevel--;
 
-					if (typeLevel == 0) {
+					if (typeLevel <= 0) {
+						typeLevel = 0;
 						inType = false;
 					}
 				}

@@ -22,3 +22,22 @@ function symbolFinderAnonymousClass(): object
 }
 
 const AFTER_ANONYMOUS_CLASS = 'also found';
+
+function symbolFinderNamedArgument(string $class): string
+{
+	return $class;
+}
+
+function symbolFinderNamedArgumentCall(): string
+{
+	return symbolFinderNamedArgument(class: 'named argument');
+}
+
+const AFTER_NAMED_CLASS_ARGUMENT = 'found after named argument';
+
+function symbolFinderSpacedClassConstant(): string
+{
+	return \stdClass:: class;
+}
+
+const AFTER_SPACED_CLASS_CONSTANT = 'found after spaced class constant';

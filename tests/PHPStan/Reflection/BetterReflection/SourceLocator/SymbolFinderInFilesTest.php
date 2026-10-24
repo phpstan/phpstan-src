@@ -17,8 +17,8 @@ final class SymbolFinderInFilesTest extends PHPStanTestCase
 			__DIR__ . '/data/symbol-finder/class-name-before-global-constant.php',
 			[
 				[],
-				['symbolfinderclassname', 'classname', 'symbolfinderanonymousclass'],
-				['AFTER_CLASS_NAME', 'AFTER_CLASS_PREFIX', 'AFTER_ANONYMOUS_CLASS'],
+				['symbolfinderclassname', 'classname', 'symbolfinderanonymousclass', 'symbolfindernamedargument', 'symbolfindernamedargumentcall', 'symbolfinderspacedclassconstant'],
+				['AFTER_CLASS_NAME', 'AFTER_CLASS_PREFIX', 'AFTER_ANONYMOUS_CLASS', 'AFTER_NAMED_CLASS_ARGUMENT', 'AFTER_SPACED_CLASS_CONSTANT'],
 			],
 		];
 

@@ -181,6 +181,11 @@ final class GenericObjectTypeCheck
 	 */
 	private function getGenericTypes(Type $phpDocType): array
 	{
+		// a generic type references its class, unless it hides in a template default or a late-resolvable type
+		if ($phpDocType->getReferencedClasses() === [] && !$phpDocType->hasTemplateOrLateResolvableType()) {
+			return [];
+		}
+
 		$genericObjectTypes = [];
 		TypeTraverser::map($phpDocType, static function (Type $type, callable $traverse) use (&$genericObjectTypes): Type {
 			if ($type instanceof GenericObjectType || $type instanceof GenericStaticType) {

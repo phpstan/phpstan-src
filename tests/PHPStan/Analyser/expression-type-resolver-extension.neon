@@ -5,3 +5,7 @@ services:
 		tags:
 			- phpstan.broker.expressionTypeResolverExtension
 
+	-
+		class: Bug15496\Bug15496ExpressionTypeResolverExtension
+		tags:
+			- phpstan.broker.expressionTypeResolverExtension

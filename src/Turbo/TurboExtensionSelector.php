@@ -56,7 +56,7 @@ final class TurboExtensionSelector
 	 * matrix. Older runtimes have no binary to find, so they skip the lookup
 	 * (and with it the process restart) entirely.
 	 */
-	public const MINIMUM_PHP_VERSION_ID = 80300;
+	public const MINIMUM_PHP_VERSION_ID = 80200;
 
 	/** @api */
 	public const EXTENSION_PATH_INI = 'phpstan.turboExtensionPath';

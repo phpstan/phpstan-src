@@ -414,8 +414,13 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 // ---- StringType / ConstantStringType / ClassStringType / GenericClassStringType ----
 // a reflection provider behind ReflectionProviderStaticAccessor, as the
 // class-string and callable queries need one (an existing class name, a
-// known function, a static method); the PhpVersion accessor for isCallable()
-$stringContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family', [], []);
+// known function, a static method); the PhpVersion accessor for isCallable().
+// Before PHP 8.3, the object sections reflect 8.3's Random\IntervalBoundary
+// as their enum from the stubs, and the initializer section's fixture (typed
+// class constants) is read as an analysed file instead of being loaded
+$initializerFixture = __DIR__ . '/type-family-initializer-fixture.php';
+$fixtureAnalysedPaths = PHP_VERSION_ID < 80300 ? [$initializerFixture] : [];
+$stringContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family', [], $fixtureAnalysedPaths, [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, PHP_VERSION_ID < 80300 ? ['phpVersion' => 80300] : []);
 $stringReflectionProvider = $stringContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class);
 \PHPStan\Reflection\ReflectionProviderStaticAccessor::registerInstance($stringReflectionProvider);
 \PHPStan\Reflection\PhpVersionStaticAccessor::registerInstance($stringContainer->getByType(\PHPStan\Php\PhpVersion::class));
@@ -7661,7 +7666,9 @@ $observations['native ' . \PHPStan\Reflection\Assertions::class] = (new Reflecti
 // through a bound closure, and getType() over a parsed corpus of constant
 // expressions in an empty, a class and a trait context (class constants of
 // the fixture: typed / untyped / final / enum / cyclic)
-require_once __DIR__ . '/type-family-initializer-fixture.php';
+if (PHP_VERSION_ID >= 80300) {
+	require_once $initializerFixture;
+}
 $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new ReflectionMethod(\PHPStan\Reflection\InitializerExprTypeResolver::class, 'getType'))->isInternal();
 {
 	$resolver = $stringContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
@@ -7861,7 +7868,7 @@ $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new Re
 		'oversizedUnpack' => array_merge(array_map(static fn (int $i) => $item($int($i)), range(0, 260)), [$item($operands['constShape'], null, true)]),
 	];
 	foreach ([70400, 80400] as $phpVersionId) {
-		$versionContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family-' . $phpVersionId, [], [], [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, ['phpVersion' => $phpVersionId]);
+		$versionContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family-' . $phpVersionId, [], $fixtureAnalysedPaths, [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, ['phpVersion' => $phpVersionId]);
 		$versionResolver = $versionContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
 		foreach ($arrays as $name => $items) {
 			$r["getArrayType $phpVersionId $name"] = $catching(static fn () => $versionResolver->getArrayType(new \PhpParser\Node\Expr\Array_($items), $getType));
@@ -7938,7 +7945,7 @@ PHP;
 			}
 		}
 	}
-	$pathContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family-paths', [], [], [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, ['usePathConstantsAsConstantString' => true]);
+	$pathContainer = (new \PHPStan\DependencyInjection\ContainerFactory($root))->create(sys_get_temp_dir() . '/phpstan-turbo-type-family-paths', [], $fixtureAnalysedPaths, [], [], \PHPStan\Command\CommandHelper::DEFAULT_LEVEL, null, null, null, null, ['usePathConstantsAsConstantString' => true]);
 	$pathResolver = $pathContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
 	foreach ($exprs as $i => $expr) {
 		if (!$expr instanceof \PhpParser\Node\Scalar\MagicConst\File && !$expr instanceof \PhpParser\Node\Scalar\MagicConst\Dir) {

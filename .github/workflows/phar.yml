@@ -188,8 +188,8 @@ jobs:
         with:
           egress-policy: audit
 
-      # the compiler-tests job runs the phar on PHP 8.2, where no binary exists
-      # and the note is not printed
+      # the compiler-tests job runs the phar only for `list`, which prints
+      # no note
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
@@ -828,7 +828,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         # the musl arm64 legs are in turbo-compile-musl-arm64
         target:
           - name: "linux-gnu-x86_64"
@@ -1002,7 +1002,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         # thread-safe for every minor too, see turbo-compile
         ts: ["nts", "zts"]
         # see turbo-compile
@@ -1125,7 +1125,7 @@ jobs:
       fail-fast: false
       matrix:
         # every PHP the cores run on; thread-safe builds are "<minor>-zts"
-        php-version: ["8.3", "8.4", "8.5", "8.6", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6", "8.2-zts", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -1257,6 +1257,7 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - "php:8.2-cli-bookworm"
           - "php:8.3.21-cli-bookworm"
           - "php:8.3.22-cli-bookworm"
           - "php:8.4-cli-bookworm"
@@ -1267,6 +1268,9 @@ jobs:
           - "php:8.6-rc-cli-alpine"
         check: ["tests", "phpstan"]
         include:
+          - image: "php:8.2-cli-bookworm"
+            php-version: "8.2"
+            binary: "linux-gnu-x86_64-php8.2"
           - image: "php:8.3.21-cli-bookworm"
             php-version: "8.3"
             binary: "linux-gnu-x86_64-php8.3"
@@ -1562,16 +1566,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         # see turbo-compile
         variant: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')) && '["split", "pie"]' || '["split"]') }}
-        # The official 8.3 Windows binaries are built with VS16 (linker
-        # 14.2x) and PHP's module loader is one-directional (module toolset
-        # generation <= core's), so the 8.3 DLL must be linked with the v142
-        # toolset — which the windows-2022 image ships alongside the default
-        # v143. The devel pack name carries the same vs infix.
+        # The official 8.2 and 8.3 Windows binaries are built with VS16
+        # (linker 14.2x) and PHP's module loader is one-directional (module
+        # toolset generation <= core's), so their DLLs must be linked with
+        # the v142 toolset — which the windows-2022 image ships alongside the
+        # default v143. The devel pack name carries the same vs infix.
         include:
+          - php-version: "8.2"
+            vs: "vs16"
+            toolset: "14.29"
           - php-version: "8.3"
             vs: "vs16"
             toolset: "14.29"
@@ -1851,7 +1858,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         target: ["linux-gnu-x86_64", "linux-gnu-arm64", "macos-arm64", "windows-x86_64"]
         ts: ["nts", "zts"]
         # macOS ships no ZTS binary (see turbo-compile)
@@ -1878,6 +1885,16 @@ jobs:
             container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
           # the linux-gnu ZTS legs, in the image the binary is compiled in
           # (see above); the official php:*-zts images get turbo-docker-run
+          - target: "linux-gnu-x86_64"
+            php-version: "8.2"
+            ts: "zts"
+            runs-on: "ubuntu-latest"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.2-zts"
+          - target: "linux-gnu-arm64"
+            php-version: "8.2"
+            ts: "zts"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.2-zts"
           - target: "linux-gnu-x86_64"
             php-version: "8.3"
             ts: "zts"
@@ -2049,7 +2066,7 @@ jobs:
       fail-fast: false
       matrix:
         arch: ["x86_64", "arm64"]
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         # thread-safe for every minor too, see turbo-compile
         ts: ["nts", "zts"]
 
@@ -2148,7 +2165,7 @@ jobs:
       # vs17-built official PHP loads it fine.
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest"]
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
         # The Linux ZTS binaries run the same checks in turbo-docker-run, in
@@ -2346,7 +2363,7 @@ jobs:
         include:
           # below TurboExtensionSelector::MINIMUM_PHP_VERSION_ID there is no
           # binary to find: the workers get the OPcache entries alone
-          - php-version: "8.2"
+          - php-version: "8.1"
             turbo: "off"
           - php-version: "8.5"
             turbo: "on"

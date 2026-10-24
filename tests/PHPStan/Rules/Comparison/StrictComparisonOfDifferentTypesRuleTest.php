@@ -1287,4 +1287,16 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15424(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-15424.php'], [
+			[
+				'Strict comparison using === between float and null will always evaluate to false.',
+				25,
+			],
+		]);
+	}
+
 }

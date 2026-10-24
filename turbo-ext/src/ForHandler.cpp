@@ -219,6 +219,12 @@ public:
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			zv::Val previousPass = zv::Val::null();
 			zv::Val previousPassStorage = zv::Val::null();
+			bool bodyIsReplayable;
+			{
+				zval *bodyStmts = ptsh::readNodeProperty(pt_fh_stmts_site, stmt, PT_LC("stmts"));
+				if (UNEXPECTED(bodyStmts == NULL)) return zv::Val();
+				if (UNEXPECTED(!pt_node_scope_resolver_is_replayable_convergence_body(nodeScopeResolver, stmt, bodyStmts, bodyIsReplayable))) return zv::Val();
+			}
 			do {
 				zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 				zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
@@ -279,6 +285,10 @@ public:
 					}
 					zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
 					if (UNEXPECTED(backEdgeScope.isUndef())) return;
+					if (backEdgeScope.isNull() && !bodyIsReplayable) {
+						backEdgeScope = ptlh::convergedPassBackEdgeScope(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage.raw(), context);
+						if (UNEXPECTED(backEdgeScope.isUndef())) return;
+					}
 					if (backEdgeScope.isNull()) {
 						bodyScope = std::move(prevScope);
 						brokeOut = true;

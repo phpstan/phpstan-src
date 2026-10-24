@@ -49,6 +49,7 @@ zv::Val call0(zval *object, const char *lcname, size_t len, const char *method)
 
 void resolveUnconstrainedCallback(zval *site, zval *captured, uint32_t argc, zval *argv, zval *return_value);
 void resolveCallback(zval *frame, zval *state1, uint32_t argc, zval *argv, zval *return_value);
+void resolveMarkersCallback(zval *frame, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 
 } // namespace
 
@@ -203,6 +204,12 @@ public:
 		if (UNEXPECTED(resolutions == NULL)) return zv::Val();
 		zval *indexes = pt_typed_slot(self, slots::siteStatementIndexes, self->ce, "siteStatementIndexes");
 		if (UNEXPECTED(indexes == NULL)) return zv::Val();
+		zv::Val resolvedStaticVariableTypes;
+		if (Z_TYPE_P(resolutions) != IS_NULL) {
+			resolvedStaticVariableTypes = resolveStaticVariableTypeMarkers(staticVariableTypes);
+			if (UNEXPECTED(resolvedStaticVariableTypes.isUndef())) return zv::Val();
+			staticVariableTypes = resolvedStaticVariableTypes.raw();
+		}
 		zv::Val mergedIndexes = arrayUnion(Z_ARRVAL_P(indexes), Z_ARRVAL_P(statementIndexes));
 		zval *body = OBJ_PROP_NUM(self, slots::closureSignatureBody);
 		return create(
@@ -217,6 +224,50 @@ public:
 			staticVariableTypes,
 			conditionalExpressions
 		);
+	}
+
+	/* withStaticVariableTypes()'s loop on a resolved frame: every entry
+	 * [$var, $type, $nativeType] with both types through resolveMarkers(),
+	 * under its key; UNDEF = pending exception */
+	zv::Val resolveStaticVariableTypeMarkers(zval *staticVariableTypes) const
+	{
+		zv::Arr result = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(staticVariableTypes)));
+		for (auto entry : zv::ArrRef(staticVariableTypes)) {
+			zval *types = entry.value().deref().raw();
+			zval *var = Z_TYPE_P(types) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(types), 0) : NULL;
+			zval *type = Z_TYPE_P(types) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(types), 1) : NULL;
+			zval *nativeType = Z_TYPE_P(types) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(types), 2) : NULL;
+			if (UNEXPECTED(var == NULL || type == NULL || nativeType == NULL)) {
+				zend_throw_error(NULL, "TemplateArgumentFrame::withStaticVariableTypes(): an entry must be [$var, $type, $nativeType]");
+				return zv::Val();
+			}
+			zv::Val resolvedType = resolveMarkers(type);
+			if (UNEXPECTED(resolvedType.isUndef())) return zv::Val();
+			zv::Val resolvedNativeType = resolveMarkers(nativeType);
+			if (UNEXPECTED(resolvedNativeType.isUndef())) return zv::Val();
+			zv::Arr triple = zv::Arr::create(3);
+			triple.push(zv::Ref(var));
+			triple.push(std::move(resolvedType));
+			triple.push(std::move(resolvedNativeType));
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				result.set(key, zv::Val(std::move(triple)));
+			} else {
+				zval tripleZv = zv::Val(std::move(triple)).take();
+				zend_hash_index_update(result.table(), entry.indexKey(), &tripleZv);
+			}
+		}
+		return zv::Val(std::move(result));
+	}
+
+	/* Mirrors resolveMarkers(); UNDEF = pending exception */
+	zv::Val resolveMarkers(zval *type) const
+	{
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		zv::Val callback = pt_type_native_callback(resolveMarkersCallback, &selfZv, NULL);
+		if (UNEXPECTED(callback.isUndef())) return zv::Val();
+		return pt_type_traverser_map_of(type, callback.raw());
 	}
 
 	/* Mirrors getByRefSiteMode(): the entry of this frame's byRefSites for
@@ -554,6 +605,54 @@ void resolveCallback(zval *frame, zval *state1, uint32_t argc, zval *argv, zval 
 	zv::Val resolved = TemplateArgumentFrame(Z_OBJ_P(frame)).resolve(&argv[0], Z_STR(argv[1]));
 	if (UNEXPECTED(resolved.isUndef())) return;
 	resolved.intoReturnValue(return_value);
+}
+
+/* function (Type $type, callable $traverse): Type of resolveMarkers() — the
+ * frame in the first state slot */
+void resolveMarkersCallback(zval *frame, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("TemplateArgumentFrame traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	zval *traverse = &argv[1];
+	if (instanceof_function(Z_OBJCE_P(type), pt_ce_unresolved_template_argument_type)) {
+		bool closureSignature = false;
+		if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(type, closureSignature))) return;
+		if (!closureSignature) {
+			/* $traverse($this->resolve($site, $type->getTemplateName()) ?? $type->getInitialType() ?? $this->resolveOrUnconstrained($site, $type->getTemplate())) */
+			zval *site = pt_unresolved_template_argument_type_site(type);
+			if (UNEXPECTED(site == NULL)) return;
+			zv::Val siteHold = zv::Val::copyOf(zv::Ref(site));
+			zv::Val name = pt_unresolved_template_argument_type_get_template_name(type);
+			if (UNEXPECTED(name.isUndef())) return;
+			if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
+				zend_type_error("%s::resolve(): Argument #2 ($templateName) must be of type string, %s given", ZSTR_VAL(Z_OBJCE_P(frame)->name), zend_zval_value_name(name.raw()));
+				return;
+			}
+			zv::Val replacement = TemplateArgumentFrame(Z_OBJ_P(frame)).resolve(siteHold.raw(), Z_STR_P(name.raw()));
+			if (UNEXPECTED(replacement.isUndef())) return;
+			if (Z_TYPE_P(replacement.raw()) == IS_NULL) {
+				replacement = pt_type_call(Z_OBJ_P(type), PT_LC("getinitialtype"), 0, NULL);
+				if (UNEXPECTED(replacement.isUndef())) return;
+			}
+			if (Z_TYPE_P(replacement.raw()) == IS_NULL) {
+				zv::Val templateType = pt_type_call(Z_OBJ_P(type), PT_LC("gettemplate"), 0, NULL);
+				if (UNEXPECTED(templateType.isUndef())) return;
+				replacement = TemplateArgumentFrame(Z_OBJ_P(frame)).resolveOrUnconstrained(siteHold.raw(), templateType.raw());
+				if (UNEXPECTED(replacement.isUndef())) return;
+			}
+			zv::Val traversed = pt_type_call_callable(traverse, 1, replacement.raw());
+			if (UNEXPECTED(traversed.isUndef())) return;
+			traversed.intoReturnValue(return_value);
+			return;
+		}
+	}
+	zv::Val traversed = pt_type_call_callable(traverse, 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
 }
 
 /* static function (Type $type, callable $traverse) use ($site, $scope, $resolve): Type

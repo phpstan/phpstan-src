@@ -342,8 +342,27 @@ private:
 	}
 
 	/* $resolveProperty($propertyName) of the typeCallback */
-	static zv::Val resolveProperty(bool nativeTypesPromoted, zval *reflectionScope, zval *fetchedOnType, zval *expr, zend_string *propertyName)
+	static zv::Val resolveProperty(bool nativeTypesPromoted, zval *reflectionScope, zval *fetchedOnType, zval *classType, zval *classResult, zval *expr, zend_string *propertyName)
 	{
+		if (nativeTypesPromoted) {
+			// unlike getStaticPropertyReflection(), do not pick only the union
+			// members that have the property - a fetch on e.g. a null member
+			// does not produce the property's native type
+			if (classType != NULL && Z_TYPE_P(classResult) != IS_NULL) {
+				bool containsNullsafe;
+				if (UNEXPECTED(!pt_expression_result_contains_nullsafe(classResult, containsNullsafe))) return zv::Val();
+				if (!containsNullsafe) {
+					bool containsNull;
+					if (UNEXPECTED(!pt_type_combinator_contains_null(classType, containsNull))) return zv::Val();
+					if (containsNull) return pt_type_new_error_type();
+				}
+			}
+			zval propertyNameZv;
+			ZVAL_STR(&propertyNameZv, propertyName);
+			zend_long hasStaticProperty = pt_type_call_trinary(Z_OBJ_P(fetchedOnType), PT_LC("hasstaticproperty"), 1, &propertyNameZv);
+			if (UNEXPECTED(hasStaticProperty < 0)) return zv::Val();
+			if (hasStaticProperty != PT_TRI_YES) return pt_type_new_error_type();
+		}
 		zv::Val propertyReflection = pt_mutating_scope_get_static_property_reflection(Z_OBJ_P(reflectionScope), fetchedOnType, propertyName);
 		if (UNEXPECTED(propertyReflection.isUndef())) return zv::Val();
 		if (propertyReflection.isNull()) return pt_type_new_error_type();
@@ -406,7 +425,7 @@ private:
 				zend_type_error("PhpParser\\Node\\Identifier::toString(): Return value must be of type string, %s returned", zend_zval_value_name(propertyName));
 				return zv::Val();
 			}
-			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, staticPropertyFetchedOnType.raw(), expr, Z_STR_P(propertyName));
+			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, staticPropertyFetchedOnType.raw(), classType.isUndef() ? NULL : classType.raw(), classResult, expr, Z_STR_P(propertyName));
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			// $shortCircuit($type)
 			if (Z_TYPE_P(classResult) != IS_NULL) {
@@ -463,7 +482,7 @@ private:
 				zend_type_error("%s(): Argument #1 ($propertyName) must be of type string, %s given", pt_spfh_closure_name, zend_zval_value_name(value.raw()));
 				return zv::Val();
 			}
-			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, staticPropertyFetchedOnType.raw(), expr, Z_STR_P(value.raw()));
+			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, staticPropertyFetchedOnType.raw(), classType.isUndef() ? NULL : classType.raw(), classResult, expr, Z_STR_P(value.raw()));
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			types.push(std::move(type));
 		}

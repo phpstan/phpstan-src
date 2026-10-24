@@ -7826,6 +7826,29 @@ public:
 						skipSpecification = true;
 					}
 				}
+				if (!skipSpecification && !hasTrackedNative) {
+					/* a phpdoc-only holder - the native base comes from the
+					 * native state, not from the phpdoc-derived specified type */
+					zval exprZv;
+					ZVAL_OBJ(&exprZv, expr);
+					zv::Val currentTypes = otherPrivate(scopeObject, PT_LC("getcurrenttypesofspecifiedexpr"), 1, &exprZv, [&](MutatingScope &other) {
+						return other.getCurrentTypesOfSpecifiedExpr(expr);
+					});
+					if (UNEXPECTED(currentTypes.isUndef())) return zv::Val();
+					if (Z_TYPE_P(currentTypes.raw()) != IS_NULL) {
+						if (UNEXPECTED(Z_TYPE_P(currentTypes.raw()) != IS_ARRAY)) {
+							zend_throw_error(NULL, "phpstan_turbo: getCurrentTypesOfSpecifiedExpr() answered an unexpected shape");
+							return zv::Val();
+						}
+						zval *native = zend_hash_index_find(Z_ARRVAL_P(currentTypes.raw()), 1);
+						if (UNEXPECTED(native == NULL)) {
+							zend_throw_error(NULL, "phpstan_turbo: getCurrentTypesOfSpecifiedExpr() answered an unexpected shape");
+							return zv::Val();
+						}
+						trackedNativeType = zv::Val::copyOf(zv::Ref(native));
+						hasTrackedNative = true;
+					}
+				}
 			}
 			if (skipSpecification) continue;
 

@@ -4091,11 +4091,22 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					$trackedType = $currentTypes[0];
 					$trackedNativeType ??= $currentTypes[1];
 				}
-			} elseif (!$specifiedTypes->shouldOverwrite() && $scope->isComplexUnionType($trackedType)) {
-				// mirrors addTypeToExpression()/removeTypeFromExpression(): narrowing
-				// a combinatorially-grown offset union doubles it with every isset()-
-				// style check and gets skipped (overwrites assign, they never narrow)
-				continue;
+			} else {
+				if (!$specifiedTypes->shouldOverwrite() && $scope->isComplexUnionType($trackedType)) {
+					// mirrors addTypeToExpression()/removeTypeFromExpression(): narrowing
+					// a combinatorially-grown offset union doubles it with every isset()-
+					// style check and gets skipped (overwrites assign, they never narrow)
+					continue;
+				}
+				if ($trackedNativeType === null) {
+					// a phpdoc-only holder (e.g. one a conditional expression put in
+					// place) - the native base comes from the native state, not from
+					// the phpdoc-derived specified type
+					$currentTypes = $scope->getCurrentTypesOfSpecifiedExpr($expr);
+					if ($currentTypes !== null) {
+						$trackedNativeType = $currentTypes[1];
+					}
+				}
 			}
 
 			if (isset($typeSpecification['terms'])) {

@@ -240,7 +240,7 @@ class BaselineNeonErrorFormatterTest extends ErrorFormatterTestCase
 			new Error('@Foo', 'Testfile'),
 			true,
 			[
-				'rawMessage' => '@@Foo',
+				'rawMessage' => '@Foo',
 				'count' => 1,
 				'path' => 'Testfile',
 			],

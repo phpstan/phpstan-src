@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\Generics;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
@@ -297,7 +298,16 @@ final class TemplateArgumentSolver
 		if (TemplateArgumentStats::$enabled) {
 			TemplateArgumentStats::increment(count($lowerBounds) > 0 ? 'resolvedWithLowerBounds' : 'resolvedToInitial');
 		}
-		return TypeCombinator::union(...$parts);
+		$resolved = TypeCombinator::union(...$parts);
+		if ($initial !== null && !$initial instanceof NeverType && !$initial->isSuperTypeOf($resolved)->yes()) {
+			// the body puts values into the object it was not created with: what
+			// the observation pass read out of it was the initial type alone, so
+			// a value derived from such a read and put back ($box->set($box->get() + 1))
+			// is one step of a loop - generalized like a loop's variables
+			return $resolved->generalize(GeneralizePrecision::lessSpecific());
+		}
+
+		return $resolved;
 	}
 
 	/**

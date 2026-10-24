@@ -19,5 +19,4 @@ parameters:
 				- ../tests/PHPStan/Reflection/Deprecation/DeprecationProviderTest.php
 		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with ''BackedEnum(FromTrait…)?'' and class\-string will always evaluate to false\.$#'
-			count: 3
 			path: ../tests/PHPStan/Reflection/ClassReflectionTest.php

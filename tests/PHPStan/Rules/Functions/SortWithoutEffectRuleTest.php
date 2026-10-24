@@ -185,4 +185,9 @@ class SortWithoutEffectRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15435(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15435.php'], []);
+	}
+
 }

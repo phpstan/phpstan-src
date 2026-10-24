@@ -453,7 +453,9 @@ public:
 		zend_long unrolledTotalKeys = 0;
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
-		if (isTopLevel) {
+		bool shouldConvergeLoops;
+		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
+		if (shouldConvergeLoops) {
 			zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
 			if (UNEXPECTED(storage.isUndef())) return zv::Val();
 
@@ -485,7 +487,7 @@ public:
 				if (UNEXPECTED(foreachNativeIterateeType.isUndef())) return zv::Val();
 			}
 			UnrolledResult unrolledResult;
-			if (UNEXPECTED(!tryProcessUnrolledConstantArrayForeach(nodeScopeResolver, stmt, parts, originalScope.raw(), originalStorage, context, foreachIterateeType.raw(), foreachNativeIterateeType.raw(), unrolledResult))) return zv::Val();
+			if (isTopLevel && UNEXPECTED(!tryProcessUnrolledConstantArrayForeach(nodeScopeResolver, stmt, parts, originalScope.raw(), originalStorage, context, foreachIterateeType.raw(), foreachNativeIterateeType.raw(), unrolledResult))) return zv::Val();
 			if (unrolledResult.found) {
 				bodyScope = std::move(unrolledResult.bodyScope);
 				unrolledEndScope = std::move(unrolledResult.endScope);
@@ -530,9 +532,9 @@ public:
 						zv::Val entered = enterForeach(nodeScopeResolver, bodyScope.raw(), storage.raw(), originalScope.raw(), stmt, parts, foreachIterateeType.raw(), foreachNativeIterateeType.raw(), nodeCallback);
 						if (UNEXPECTED(entered.isUndef())) return;
 						bodyScope = std::move(entered);
-						zv::Val deepContext = pt_statement_context_enter_deep(context);
-						if (UNEXPECTED(deepContext.isUndef())) return;
-						zv::Val passContext = pt_statement_context_without_template_argument_resolution(deepContext.raw());
+						zv::Val loopPassContext = pt_statement_context_enter_loop_pass(context);
+						if (UNEXPECTED(loopPassContext.isUndef())) return;
+						zv::Val passContext = pt_statement_context_without_template_argument_resolution(loopPassContext.raw());
 						if (UNEXPECTED(passContext.isUndef())) return;
 						zv::Val passRecord = zv::Val::null();
 						zv::Val walked = pt_node_scope_resolver_process_loop_pass_stmt_nodes(nodeScopeResolver, stmt, parts.stmts.raw(), bodyScope.raw(), storage.raw(), bodyRecording.raw(), passContext.raw(), previousPass.raw(), passRecord);

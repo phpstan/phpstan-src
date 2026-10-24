@@ -195,7 +195,7 @@ final class ForHandler implements StmtHandler
 			}
 		}
 
-		if ($context->isTopLevel()) {
+		if ($context->shouldConvergeLoops()) {
 			$count = 0;
 			$prevEntryScope = null;
 			// each pass after the first re-walks only the statements whose
@@ -226,7 +226,7 @@ final class ForHandler implements StmtHandler
 						$passFlows[] = $passCondResult->getVariableFlow();
 					}
 					$passRecord = null;
-					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterLoopPass()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$passFlows[] = $bodyScopeResult->getVariableFlow();

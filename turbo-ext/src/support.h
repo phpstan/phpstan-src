@@ -1912,6 +1912,8 @@ zv::Val pt_expression_context_get_value_flow_target(zval *context);
 zv::Val pt_statement_context_create_top_level(bool resolveTemplateArguments = true);
 zv::Val pt_statement_context_create_deep(bool resolveTemplateArguments = true);
 [[nodiscard]] bool pt_statement_context_is_top_level(zval *context, bool &out);
+[[nodiscard]] bool pt_statement_context_should_converge_loops(zval *context, bool &out);
+zv::Val pt_statement_context_enter_loop_pass(zval *context);
 [[nodiscard]] bool pt_statement_context_should_resolve_template_arguments(zval *context, bool &out);
 [[nodiscard]] bool pt_statement_context_get_foreach_unroll_factor(zval *context, zend_long &out);
 zv::Val pt_statement_context_without_template_argument_resolution(zval *context);

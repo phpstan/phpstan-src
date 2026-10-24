@@ -29,7 +29,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionSelector.php';
 	require_once __DIR__ . '/../src/Process/Restart/RestartReason.php';
 	require_once __DIR__ . '/../src/Process/Restart/OpcacheSettings.php';
-	require_once __DIR__ . '/../src/Process/Restart/ExtensionRegistry.php';
+	require_once __DIR__ . '/../src/Process/Restart/RestartExtensionRegistry.php';
 	require_once __DIR__ . '/../src/Process/Restart/IniComposer.php';
 	require_once __DIR__ . '/../src/Process/Restart/RestartExecutor.php';
 	require_once __DIR__ . '/../src/Process/Restart/RestartManager.php';

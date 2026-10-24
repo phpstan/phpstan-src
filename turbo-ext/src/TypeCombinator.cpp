@@ -394,6 +394,14 @@ static zv::Val oversizedArrayType()
 	return adopted(pt_oversized_array_type_new(&raw), raw);
 }
 
+/* new ConstantArrayType([], []) */
+static zv::Val emptyConstantArrayType()
+{
+	zval empty, raw;
+	ZVAL_EMPTY_ARRAY(&empty);
+	return adopted(pt_constant_array_type_new(&raw, &empty, &empty), raw);
+}
+
 static zv::Val accessoryLowercaseStringType()
 {
 	zval raw;
@@ -3111,6 +3119,46 @@ public:
 		return call(type, PT_LC("issupertypeof"), 1, other);
 	}
 
+	/* `[]` is the only list a possibly-empty array whose keys cannot form a
+	 * list admits: new ConstantArrayType([], []) when $a->isArray()->yes()
+	 * && $b->isArray()->yes() && ($a->isList()->no() || $b->isList()->no())
+	 * && $types holds an AccessoryArrayListType and both $a and $b are super
+	 * types of it, else null; UNDEF = pending exception */
+	static zv::Val onlyEmptyListAdmitted(TypeList &types, zval *a, zval *b)
+	{
+		zend_long isArray = callTrinary(a, PT_LC("isarray"));
+		PT_FAIL_IF_NEG(isArray);
+		if (isArray != PT_TRI_YES) return zv::Val::null();
+		isArray = callTrinary(b, PT_LC("isarray"));
+		PT_FAIL_IF_NEG(isArray);
+		if (isArray != PT_TRI_YES) return zv::Val::null();
+		zend_long isList = callTrinary(a, PT_LC("islist"));
+		PT_FAIL_IF_NEG(isList);
+		if (isList != PT_TRI_NO) {
+			isList = callTrinary(b, PT_LC("islist"));
+			PT_FAIL_IF_NEG(isList);
+			if (isList != PT_TRI_NO) return zv::Val::null();
+		}
+		bool hasList = false;
+		for (zv::Val &type : types) {
+			if (isInstance(type.raw(), pt_ce_accessory_array_list_type)) {
+				hasList = true;
+				break;
+			}
+		}
+		if (!hasList) return zv::Val::null();
+
+		zv::Val emptyArray = emptyConstantArrayType();
+		PT_FAIL_IF_UNDEF(emptyArray);
+		zend_long admits = callResultTrinary(a, PT_LC("issupertypeof"), 1, emptyArray.raw());
+		PT_FAIL_IF_NEG(admits);
+		if (admits != PT_TRI_YES) return zv::Val::null();
+		admits = callResultTrinary(b, PT_LC("issupertypeof"), 1, emptyArray.raw());
+		PT_FAIL_IF_NEG(admits);
+		if (admits != PT_TRI_YES) return zv::Val::null();
+		return emptyArray;
+	}
+
 	/* the SubtractableType arm of doIntersect()'s reduction: whether the
 	 * subtractable's type without its subtracted type is a super type of
 	 * $other; -1 = pending exception */
@@ -3570,6 +3618,10 @@ public:
 				}
 
 				if (isSuperTypeAValue == PT_TRI_NO) {
+					zv::Val emptyArray = onlyEmptyListAdmitted(types, types[i].raw(), types[j].raw());
+					PT_FAIL_IF_UNDEF(emptyArray);
+					if (!emptyArray.isNull()) return intersectWith(emptyArray.raw(), types);
+
 					zv::Val reasons = call(isSuperTypeA.raw(), PT_LC("getreasons"));
 					PT_FAIL_IF_UNDEF(reasons);
 					zval *first = indexOf(reasons.raw(), 0);

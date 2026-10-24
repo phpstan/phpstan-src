@@ -309,7 +309,20 @@ class IntersectionType implements CompoundType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));
+		$result = IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));
+		if ($result->no() && $this->isList()->yes() && $otherType->isArray()->yes() && $otherType->isList()->no()) {
+			// `[]` is a list, so a list and a possibly-empty array whose keys
+			// cannot form a list are at worst `maybe`, never `no`.
+			$emptyArray = new ConstantArrayType([], []);
+			if (
+				IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($emptyArray), $this->types))->yes()
+				&& $otherType->isSuperTypeOf($emptyArray)->yes()
+			) {
+				return IsSuperTypeOfResult::createMaybe();
+			}
+		}
+
+		return $result;
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult

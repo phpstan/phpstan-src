@@ -2374,6 +2374,19 @@ final class TypeCombinator
 				}
 
 				if ($isSuperTypeA->no()) {
+					$emptyArray = new ConstantArrayType([], []);
+					if (
+						$types[$i]->isArray()->yes()
+						&& $types[$j]->isArray()->yes()
+						&& ($types[$i]->isList()->no() || $types[$j]->isList()->no())
+						&& count(array_filter($types, static fn (Type $type): bool => $type instanceof AccessoryArrayListType)) > 0
+						&& $types[$i]->isSuperTypeOf($emptyArray)->yes()
+						&& $types[$j]->isSuperTypeOf($emptyArray)->yes()
+					) {
+						// `[]` is the only list a possibly-empty array whose keys cannot form a list admits
+						return self::intersect($emptyArray, ...$types);
+					}
+
 					return new NeverType(reason: $isSuperTypeA->getReasons()[0] ?? null);
 				}
 			}

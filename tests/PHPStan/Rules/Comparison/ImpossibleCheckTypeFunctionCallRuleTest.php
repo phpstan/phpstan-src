@@ -390,17 +390,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/array-is-list.php'], [
 			[
-				'Call to function array_is_list() with array<string, int> will always evaluate to false.',
-				13,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-			],
-			[
 				'Call to function array_is_list() with array{foo: \'bar\', bar: \'baz\'} will always evaluate to false.',
 				40,
 			],
 			[
 				'Call to function array_is_list() with array{0: \'foo\', foo: \'bar\', bar: \'baz\'} will always evaluate to false.',
 				44,
+			],
+			[
+				'Call to function array_is_list() with non-empty-array<string, int> will always evaluate to false.',
+				54,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

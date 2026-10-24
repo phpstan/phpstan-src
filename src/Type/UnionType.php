@@ -264,7 +264,11 @@ class UnionType implements CompoundType
 		}
 
 		if ($type instanceof IterableType) {
-			return $this->accepts($type->toArrayOrTraversable(), $strictTypes);
+			$result = $this->accepts($type->toArrayOrTraversable(), $strictTypes);
+			// TA|TB accepts TA, but not the array|Traversable it stands for
+			if ($result->yes() || !$type instanceof TemplateIterableType) {
+				return $result;
+			}
 		}
 
 		foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) {
@@ -1407,14 +1411,42 @@ class UnionType implements CompoundType
 			$receivedType = TypeCombinator::union(...$remainingReceivedTypes);
 		}
 
+		$nakedTemplateTypes = [];
+		$otherTypes = [];
 		foreach ($this->types as $type) {
 			if (self::getNakedTemplateType($type) !== null) {
+				$nakedTemplateTypes[] = $type;
 				continue;
 			}
+			$otherTypes[] = $type;
 			$types = $types->union($type->inferTemplateTypes($receivedType));
 		}
 
 		if (!$types->isEmpty()) {
+			if ($nakedTemplateTypes === []) {
+				return $types;
+			}
+
+			// T|Box<T> receiving stdClass|Box<int>: what the other members
+			// infer nothing from is what the naked template types receive
+			$unexplainedReceivedTypes = [];
+			foreach ($remainingReceivedTypes as $remainingReceivedType) {
+				foreach ($otherTypes as $otherType) {
+					if (!$otherType->inferTemplateTypes($remainingReceivedType)->isEmpty()) {
+						continue 2;
+					}
+				}
+				$unexplainedReceivedTypes[] = $remainingReceivedType;
+			}
+			if ($unexplainedReceivedTypes === []) {
+				return $types;
+			}
+
+			$unexplainedReceivedType = TypeCombinator::union(...$unexplainedReceivedTypes);
+			foreach ($nakedTemplateTypes as $nakedTemplateType) {
+				$types = $types->union($nakedTemplateType->inferTemplateTypes($unexplainedReceivedType));
+			}
+
 			return $types;
 		}
 

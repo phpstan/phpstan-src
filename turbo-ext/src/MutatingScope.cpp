@@ -10550,6 +10550,32 @@ public:
 		bool isVariable;
 		if (UNEXPECTED(!isInstance(zv::Ref(&exprZv), PT_CLASS_VARIABLE, isVariable))) return zv::Val();
 		if (!isVariable) {
+			/* mirror resolveType(): an extension's answer wins over both the
+			 * tracked holder and the reflection-derived read below */
+			zv::Val askScope = native ? thisDoNotTreatPhpDocTypesAsCertain() : self_();
+			if (UNEXPECTED(askScope.isUndef())) return zv::Val();
+			zv::Ref extensions = service(PT_MSS_EXPRESSION_TYPE_RESOLVER_EXTENSIONS);
+			if (UNEXPECTED(!extensions.isObject())) return uninitializedProperty("expressionTypeResolverExtensions");
+			zv::Val all = pt_extensions_collection_get_all(extensions.asObject());
+			if (UNEXPECTED(all.isUndef())) return zv::Val();
+			if (EXPECTED(Z_TYPE_P(all.raw()) == IS_ARRAY)) {
+				zv::Args args{expr, askScope.raw()};
+				for (auto entry : zv::ArrRef(all.raw())) {
+					zv::Ref extension = entry.value().deref();
+					if (UNEXPECTED(!extension.isObject())) {
+						zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(extension.raw()));
+						return zv::Val();
+					}
+					zv::Val type = pt_type_call(extension.asObject(), PT_LC("gettype"), 2, args);
+					if (UNEXPECTED(type.isUndef())) return zv::Val();
+					if (!type.isNull()) return type;
+				}
+			} else {
+				zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(all.raw()));
+				if (UNEXPECTED(EG(exception))) return zv::Val();
+			}
+		}
+		if (!isVariable) {
 			zv::Val has = thisHasExpressionType(&exprZv);
 			if (UNEXPECTED(has.isUndef())) return zv::Val();
 			zend_long certainty = pt_type_trinary_value(has.raw());

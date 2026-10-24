@@ -57,11 +57,12 @@ public:
 	explicit TernaryHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *booleanNarrowingHelper) const
+	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *booleanNarrowingHelper, bool treatPhpDocTypesAsCertain) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 		pt_write_slot(self, slots::booleanNarrowingHelper, booleanNarrowingHelper);
+		zv::ObjRef(self).propAtWrite(slots::treatPhpDocTypesAsCertain, zv::Val::boolean(treatPhpDocTypesAsCertain));
 	}
 
 	/* Mirrors resetFileAnalysisState(). */
@@ -167,7 +168,8 @@ public:
 			zend_hash_index_update(Z_ARRVAL_P(capturedResults), Z_OBJ_HANDLE_P(expr), &entryValue);
 		}
 
-		zv::Val condType = pt_expression_result_get_type(ternaryCondResult.raw());
+		bool treatPhpDocTypesAsCertain = Z_TYPE_P(OBJ_PROP_NUM(self, slots::treatPhpDocTypesAsCertain)) == IS_TRUE;
+		zv::Val condType = treatPhpDocTypesAsCertain ? pt_expression_result_get_type(ternaryCondResult.raw()) : pt_expression_result_get_native_type(ternaryCondResult.raw());
 		if (UNEXPECTED(condType.isUndef())) return zv::Val();
 		zval *finalScope;
 		zv::Val mergedScope;
@@ -952,8 +954,9 @@ PT_MINIT_REGISTRATION(pt_register_ternary_handler)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expressionResultFactory, *defaultNarrowingHelper, *booleanNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, booleanNarrowingHelper)) RETURN_THROWS();
-		TernaryHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, booleanNarrowingHelper);
+		bool treatPhpDocTypesAsCertain;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Bool>(execute_data, expressionResultFactory, defaultNarrowingHelper, booleanNarrowingHelper, treatPhpDocTypesAsCertain)) RETURN_THROWS();
+		TernaryHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, booleanNarrowingHelper, treatPhpDocTypesAsCertain);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

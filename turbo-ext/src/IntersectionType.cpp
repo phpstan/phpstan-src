@@ -211,6 +211,15 @@ static zv::Val integerRange(NullableLong min, NullableLong max)
  * new BooleanType() / new ObjectWithoutClassType() / new ClassStringType() */
 static zv::Val constantInteger(zend_long value) { return pt_type_new_constant_integer(value); }
 
+/* new ConstantArrayType([], []) */
+static zv::Val emptyConstantArray()
+{
+	zval empty, result;
+	ZVAL_EMPTY_ARRAY(&empty);
+	if (UNEXPECTED(!pt_constant_array_type_new(&result, &empty, &empty))) return zv::Val();
+	return zv::Val::adopt(result);
+}
+
 static zv::Val stringType()
 {
 	return pt_val_of<pt_string_type_new>();
@@ -577,7 +586,8 @@ public:
 	}
 
 	/* yes for an equal intersection or a never, else yes and'ed with every
-	 * member's isSuperTypeOf(); UNDEF = pending exception */
+	 * member's isSuperTypeOf() — at worst maybe for a list and a non-list
+	 * array when both sides admit `[]`; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *otherType) const
 	{
 		if (zv::Ref(otherType).instanceOf(pt_ce_intersection_type)) {
@@ -591,7 +601,41 @@ public:
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
 		zv::Val yes = pt_type_is_super_type_of_result(PT_TRI_YES);
 		if (UNEXPECTED(yes.isUndef())) return zv::Val();
-		return pt_is_super_type_of_result_spread(Z_OBJ_P(yes.raw()), true, zv::ArrRef(results.raw()).table());
+		zv::Val result = pt_is_super_type_of_result_spread(Z_OBJ_P(yes.raw()), true, zv::ArrRef(results.raw()).table());
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		zend_long value = pt_type_result_trinary(result.raw());
+		if (UNEXPECTED(value < 0)) return zv::Val();
+		if (value != PT_TRI_NO) return result;
+
+		zend_long isList = thisTrinary(PT_LC("islist"), &IntersectionType::isList);
+		if (UNEXPECTED(isList < 0)) return zv::Val();
+		if (isList != PT_TRI_YES) return result;
+		zend_long otherIsArray = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isarray"), 0, NULL);
+		if (UNEXPECTED(otherIsArray < 0)) return zv::Val();
+		if (otherIsArray != PT_TRI_YES) return result;
+		zend_long otherIsList = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_LIST, 0, NULL);
+		if (UNEXPECTED(otherIsList < 0)) return zv::Val();
+		if (otherIsList != PT_TRI_NO) return result;
+
+		/* `[]` is a list, so a list and a possibly-empty array whose keys
+		 * cannot form a list are at worst `maybe`, never `no` */
+		zv::Val emptyArray = emptyConstantArray();
+		if (UNEXPECTED(emptyArray.isUndef())) return zv::Val();
+		zv::Val emptyResults = mapCall(PT_LC("issupertypeof"), 1, emptyArray.raw());
+		if (UNEXPECTED(emptyResults.isUndef())) return zv::Val();
+		zv::Val admitsEmpty = pt_is_super_type_of_result_spread(Z_OBJ_P(yes.raw()), true, zv::ArrRef(emptyResults.raw()).table());
+		if (UNEXPECTED(admitsEmpty.isUndef())) return zv::Val();
+		zend_long admitsEmptyValue = pt_type_result_trinary(admitsEmpty.raw());
+		if (UNEXPECTED(admitsEmptyValue < 0)) return zv::Val();
+		if (admitsEmptyValue != PT_TRI_YES) return result;
+
+		zv::Val otherAdmitsEmpty = pt_type_call(Z_OBJ_P(otherType), PT_LC("issupertypeof"), 1, emptyArray.raw());
+		if (UNEXPECTED(otherAdmitsEmpty.isUndef())) return zv::Val();
+		zend_long otherAdmitsEmptyValue = pt_type_result_trinary(otherAdmitsEmpty.raw());
+		if (UNEXPECTED(otherAdmitsEmptyValue < 0)) return zv::Val();
+		if (otherAdmitsEmptyValue != PT_TRI_YES) return result;
+
+		return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 	}
 
 	/* $otherType->isSuperTypeOf($this) for a compound other type, else

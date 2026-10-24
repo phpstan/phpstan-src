@@ -198,7 +198,7 @@ class HelloWorld2
 		unset($a[$int]);
 		unset($b[$int]);
 		assertType('bool', array_is_list($a));
-		assertType('false', array_is_list($b));
+		assertType('bool', array_is_list($b));
 	}
 
 	/**

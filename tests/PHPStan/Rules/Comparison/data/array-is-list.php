@@ -45,4 +45,14 @@ class Foo
 			// Fine
 		}
 	}
+
+	/**
+	 * @param non-empty-array<string, int> $nonEmptyStringKeyedArray
+	 */
+	public function doQux(array $nonEmptyStringKeyedArray)
+	{
+		if (array_is_list($nonEmptyStringKeyedArray)) {
+
+		}
+	}
 }

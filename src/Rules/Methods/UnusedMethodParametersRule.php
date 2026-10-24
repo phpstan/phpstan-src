@@ -3,49 +3,93 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
-use PhpParser\NodeFinder;
+use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Analyser\Scope;
 use PHPStan\Internal\SprintfHelper;
-use PHPStan\Node\VariableWritesNode;
-use PHPStan\Parser\Parser;
-use PHPStan\Reflection\ClassReflection;
+use PHPStan\Node\ClassMethodsNode;
+use PHPStan\Node\Method\MethodVariableWrites;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrors\TransformedRuleError;
 use PHPStan\Rules\UnusedParametersCheck;
 use function count;
 use function sprintf;
-use function str_ends_with;
 use function str_starts_with;
-use function strlen;
 use function strtolower;
 
 /**
  * Reports unused parameters of private methods: a private method has no
  * callers outside the class, so its signature is not a contract - unlike a
  * public or protected one, whose parameters may be dictated by an interface,
- * a parent or an override. A private method referenced as a callable
- * (first-class callable syntax, a callable array or a callable string) escapes
- * the class, so it is skipped as well.
+ * a parent or an override. A private method the class hands out as a callable
+ * (first-class callable syntax or a callable array) escapes the class, so it
+ * is skipped as well.
  *
- * @implements Rule<VariableWritesNode>
+ * Errors are reported with the scope inside the method, as if the rule
+ * listened to the method's VariableWritesNode, so a method declared in a
+ * trait is reported in the trait's file.
+ *
+ * @implements Rule<ClassMethodsNode>
  */
 final class UnusedMethodParametersRule implements Rule
 {
 
 	public function __construct(
 		private UnusedParametersCheck $check,
-		private Parser $parser,
+		private RuleErrorTransformer $ruleErrorTransformer,
 	)
 	{
 	}
 
 	public function getNodeType(): string
 	{
-		return VariableWritesNode::class;
+		return ClassMethodsNode::class;
 	}
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		$originalNode = $node->getFunctionLike();
+		$referencedAsCallable = null;
+		$errors = [];
+		foreach ($node->getMethodVariableWrites() as $methodVariableWrites) {
+			$methodErrors = $this->getMethodErrors($methodVariableWrites);
+			if (count($methodErrors) === 0) {
+				continue;
+			}
+
+			$referencedAsCallable ??= $this->getMethodsReferencedAsCallable($node);
+			if ($referencedAsCallable === true) {
+				return [];
+			}
+
+			$methodNode = $methodVariableWrites->getNode()->getFunctionLike();
+			if (!$methodNode instanceof Node\Stmt\ClassMethod) {
+				continue;
+			}
+			if (isset($referencedAsCallable[$methodNode->name->toLowerString()])) {
+				continue;
+			}
+
+			foreach ($methodErrors as $methodError) {
+				$errors[] = new TransformedRuleError($this->ruleErrorTransformer->transform(
+					$methodError,
+					$methodVariableWrites->getScope(),
+					[],
+					$methodVariableWrites->getNode(),
+				));
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function getMethodErrors(MethodVariableWrites $methodVariableWrites): array
+	{
+		$variableWritesNode = $methodVariableWrites->getNode();
+		$scope = $methodVariableWrites->getScope();
+		$originalNode = $variableWritesNode->getFunctionLike();
 		if (!$originalNode instanceof Node\Stmt\ClassMethod) {
 			return [];
 		}
@@ -74,8 +118,8 @@ final class UnusedMethodParametersRule implements Rule
 			SprintfHelper::escapeFormatString($originalNode->name->toString()),
 		);
 
-		$errors = $this->check->getUnusedParameterErrors(
-			$node,
+		return $this->check->getUnusedParameterErrors(
+			$variableWritesNode,
 			$method,
 			$originalNode->params,
 			sprintf('Method %s has an unused parameter $%%s.', $methodDescription),
@@ -84,65 +128,55 @@ final class UnusedMethodParametersRule implements Rule
 			sprintf('Method %s has a parameter $%%s that only flows into values that are never used.', $methodDescription),
 			'method.unusedParameterFlow',
 		);
-		if (count($errors) === 0) {
-			return [];
-		}
-
-		$methodName = $originalNode->name->toString();
-		if ($this->isReferencedAsCallable($scope->getClassReflection(), $methodName)) {
-			return [];
-		}
-		$traitReflection = $scope->getTraitReflection();
-		if ($traitReflection !== null && $this->isReferencedAsCallable($traitReflection, $methodName)) {
-			return [];
-		}
-
-		return $errors;
 	}
 
-	private function isReferencedAsCallable(ClassReflection $classReflection, string $methodName): bool
+	/**
+	 * Lowercased names of the methods the class references as callables.
+	 * True when a first-class callable's method name cannot be resolved, so
+	 * any method may be referenced.
+	 *
+	 * @return array<string, true>|true
+	 */
+	private function getMethodsReferencedAsCallable(ClassMethodsNode $node): array|bool
 	{
-		$fileName = $classReflection->getFileName();
-		if ($fileName === null) {
-			return false;
-		}
-
-		$startLine = $classReflection->getNativeReflection()->getStartLine();
-		$nodeFinder = new NodeFinder();
-		$classNodes = $nodeFinder->find(
-			$this->parser->parseFile($fileName),
-			static fn (Node $node): bool => $node instanceof Node\Stmt\ClassLike && $node->getStartLine() === $startLine,
-		);
-
-		$lowerMethodName = strtolower($methodName);
-		foreach ($classNodes as $classNode) {
-			$reference = $nodeFinder->findFirst($classNode, static function (Node $node) use ($lowerMethodName): bool {
-				if ($node instanceof Node\Expr\MethodCall || $node instanceof Node\Expr\StaticCall) {
-					return $node->isFirstClassCallable()
-						&& $node->name instanceof Node\Identifier
-						&& $node->name->toLowerString() === $lowerMethodName;
+		$methodNames = [];
+		foreach ($node->getMethodCalls() as $methodCall) {
+			$callNode = $methodCall->getNode();
+			$callScope = $methodCall->getScope();
+			if ($callNode instanceof Node\Expr\Array_) {
+				$arrayType = $callScope->getType($callNode);
+				if ($arrayType->isCallable()->no()) {
+					continue;
 				}
-
-				if ($node instanceof Node\Expr\Array_) {
-					return count($node->items) === 2
-						&& $node->items[1]->value instanceof Node\Scalar\String_
-						&& strtolower($node->items[1]->value->value) === $lowerMethodName;
+				foreach ($arrayType->getConstantArrays() as $constantArray) {
+					foreach ($constantArray->findTypeAndMethodNames() as $typeAndMethod) {
+						if ($typeAndMethod->isUnknown()) {
+							continue;
+						}
+						$methodNames[strtolower($typeAndMethod->getMethod())] = true;
+					}
 				}
+				continue;
+			}
 
-				if ($node instanceof Node\Scalar\String_) {
-					$value = strtolower($node->value);
-					return strlen($value) > strlen($lowerMethodName) + 2
-						&& str_ends_with($value, '::' . $lowerMethodName);
-				}
+			if (!$callNode->isFirstClassCallable()) {
+				continue;
+			}
+			if ($callNode->name instanceof Node\Identifier) {
+				$methodNames[$callNode->name->toLowerString()] = true;
+				continue;
+			}
 
-				return false;
-			});
-			if ($reference !== null) {
+			$constantStrings = $callScope->getType($callNode->name)->getConstantStrings();
+			if (count($constantStrings) === 0) {
 				return true;
+			}
+			foreach ($constantStrings as $constantString) {
+				$methodNames[strtolower($constantString->getValue())] = true;
 			}
 		}
 
-		return false;
+		return $methodNames;
 	}
 
 }

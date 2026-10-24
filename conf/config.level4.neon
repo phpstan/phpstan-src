@@ -64,5 +64,3 @@ services:
 
 	-
 		class: PHPStan\Rules\Methods\UnusedMethodParametersRule
-		arguments:
-			parser: @defaultAnalysisParser

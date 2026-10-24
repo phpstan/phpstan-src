@@ -146,6 +146,7 @@ parameters:
 		phpStormStubsNodesCountMax: 128
 		memberCacheKeysMax: 2048
 		resolvedLocalTypeAliasesCountMax: 2048
+		parsedPhpDocCountMax: 1024
 	reportUnmatchedIgnoredErrors: true
 	reportIgnoresWithoutComments: false
 	typeAliases: []

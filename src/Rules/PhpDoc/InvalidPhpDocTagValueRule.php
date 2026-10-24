@@ -8,12 +8,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\PhpDocParser\Ast\PhpDoc\InvalidTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TypeAliasTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\InvalidTypeNode;
-use PHPStan\PhpDocParser\Lexer\Lexer;
-use PHPStan\PhpDocParser\Parser\PhpDocParser;
-use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -27,10 +25,7 @@ use function str_starts_with;
 final class InvalidPhpDocTagValueRule implements MultipleNodeTypesRule
 {
 
-	public function __construct(
-		private Lexer $phpDocLexer,
-		private PhpDocParser $phpDocParser,
-	)
+	public function __construct(private PhpDocStringResolver $phpDocStringResolver)
 	{
 	}
 
@@ -69,8 +64,7 @@ final class InvalidPhpDocTagValueRule implements MultipleNodeTypesRule
 		}
 
 		$phpDocString = $docComment->getText();
-		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
-		$phpDocNode = $this->phpDocParser->parse($tokens);
+		$phpDocNode = $this->phpDocStringResolver->resolve($phpDocString);
 
 		$errors = [];
 		foreach ($phpDocNode->getTags() as $phpDocTag) {

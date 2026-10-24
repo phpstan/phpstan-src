@@ -1838,36 +1838,33 @@ private:
 		if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(scope), inTrait))) return zv::Val();
 		if (!inTrait) return zv::Val::null();
 
+		/* $nativeClassReflection = $scope->getClassReflection()->getNativeReflection() */
 		zv::Val classReflection = pt_mutating_scope_get_class_reflection(Z_OBJ_P(scope));
-		if (UNEXPECTED(classReflection.isUndef() || !requireObject(classReflection, "hasNativeMethod"))) return zv::Val();
+		if (UNEXPECTED(classReflection.isUndef() || !requireObject(classReflection, "getNativeReflection"))) return zv::Val();
+		zv::Val nativeClassReflection = pt_class_reflection_get_native_reflection(Z_OBJ_P(classReflection.raw()));
+		if (UNEXPECTED(nativeClassReflection.isUndef())) return zv::Val();
 		zv::Val methodName = identifierToString(stmt);
 		if (UNEXPECTED(methodName.isUndef())) return zv::Val();
-		zv::Val hasNativeMethod = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("hasnativemethod"), 1, methodName.raw());
-		if (UNEXPECTED(hasNativeMethod.isUndef())) return zv::Val();
-		if (Z_TYPE_P(hasNativeMethod.raw()) != IS_TRUE) return zv::Val::null();
+		if (UNEXPECTED(!requireObject(nativeClassReflection, "hasMethod"))) return zv::Val();
+		zv::Val hasMethod = pt_type_call(Z_OBJ_P(nativeClassReflection.raw()), PT_LC("hasmethod"), 1, methodName.raw());
+		if (UNEXPECTED(hasMethod.isUndef())) return zv::Val();
+		if (!zend_is_true(hasMethod.raw())) return zv::Val::null();
 
-		zv::Val classReflectionAgain = pt_mutating_scope_get_class_reflection(Z_OBJ_P(scope));
-		if (UNEXPECTED(classReflectionAgain.isUndef() || !requireObject(classReflectionAgain, "getNativeMethod"))) return zv::Val();
-		zv::Val methodNameAgain = identifierToString(stmt);
-		if (UNEXPECTED(methodNameAgain.isUndef())) return zv::Val();
-		zv::Val methodReflection = pt_type_call(Z_OBJ_P(classReflectionAgain.raw()), PT_LC("getnativemethod"), 1, methodNameAgain.raw());
-		if (UNEXPECTED(methodReflection.isUndef())) return zv::Val();
-		bool isNative;
-		if (UNEXPECTED(!isInstanceValue(methodReflection.raw(), PT_CLASS_NATIVE_METHOD_REFLECTION, isNative))) return zv::Val();
-		if (isNative) return emptyInternalStatementResult(scope, NULL);
-		bool isPhp;
-		if (UNEXPECTED(!isInstanceValue(methodReflection.raw(), PT_CLASS_PHP_METHOD_REFLECTION, isPhp))) return zv::Val();
-		if (!isPhp) return zv::Val::null();
-		zv::Val declaringTrait = pt_type_call(Z_OBJ_P(methodReflection.raw()), PT_LC("getdeclaringtrait"), 0, NULL);
-		if (UNEXPECTED(declaringTrait.isUndef())) return zv::Val();
-		if (declaringTrait.isNull()) return emptyInternalStatementResult(scope, NULL);
-		zv::Val declaringTraitName = requireObject(declaringTrait, "getName") ? pt_class_reflection_get_name(Z_OBJ_P(declaringTrait.raw())) : zv::Val();
-		if (UNEXPECTED(declaringTraitName.isUndef())) return zv::Val();
+		/* $nativeClassReflection->getMethod($methodName)->getBetterReflection()->getDeclaringClass()->getName() */
+		zv::Val nativeMethod = pt_type_call(Z_OBJ_P(nativeClassReflection.raw()), PT_LC("getmethod"), 1, methodName.raw());
+		if (UNEXPECTED(nativeMethod.isUndef() || !requireObject(nativeMethod, "getBetterReflection"))) return zv::Val();
+		zv::Val betterReflectionMethod = pt_reflection_adapter_get_better_reflection(nativeMethod.raw());
+		if (UNEXPECTED(betterReflectionMethod.isUndef() || !requireObject(betterReflectionMethod, "getDeclaringClass"))) return zv::Val();
+		zv::Val declaringClass = pt_better_reflection_member_get_declaring_class(betterReflectionMethod.raw());
+		if (UNEXPECTED(declaringClass.isUndef() || !requireObject(declaringClass, "getName"))) return zv::Val();
+		zv::Val declaringClassName = pt_better_reflection_class_get_name(declaringClass.raw());
+		if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
+
 		zv::Val traitReflection = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(scope));
 		if (UNEXPECTED(traitReflection.isUndef() || !requireObject(traitReflection, "getName"))) return zv::Val();
 		zv::Val traitName = pt_class_reflection_get_name(Z_OBJ_P(traitReflection.raw()));
 		if (UNEXPECTED(traitName.isUndef())) return zv::Val();
-		if (!zend_is_identical(declaringTraitName.raw(), traitName.raw())) return emptyInternalStatementResult(scope, NULL);
+		if (!zend_is_identical(declaringClassName.raw(), traitName.raw())) return emptyInternalStatementResult(scope, NULL);
 		return zv::Val::null();
 	}
 

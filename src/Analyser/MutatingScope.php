@@ -2240,7 +2240,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 			$nativeParameterType = $parameter->getNativeType();
 			if ($parameter->isVariadic()) {
-				if (!$this->getPhpVersion()->supportsNamedArguments()->no() && $functionReflection->acceptsNamedArguments()->yes()) {
+				if (!$this->getPhpVersion()->supportsNamedArguments()->no()) {
 					$nativeParameterType = new ArrayType(new UnionType([IntegerRangeType::createAllGreaterThanOrEqualTo(0), new StringType()]), $nativeParameterType);
 				} else {
 					$nativeParameterType = new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $nativeParameterType), new AccessoryArrayListType()]);

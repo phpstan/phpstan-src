@@ -207,6 +207,13 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNoNamedArgumentsNativeTypeWithUncertainPhpDocTypes(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/no-named-arguments-native-type.php'], []);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

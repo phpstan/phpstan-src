@@ -14,7 +14,7 @@ self-analysis).
 **Most users do not need to install anything.** The
 [phpstan/phpstan](https://github.com/phpstan/phpstan) Composer package ships
 prebuilt binaries for the most common platforms — Linux (glibc and musl,
-x86_64 and arm64), macOS (arm64), and Windows (x86_64), for PHP 8.3 and newer — and
+x86_64 and arm64), macOS (arm64), and Windows (x86_64), for PHP 8.2 and newer — and
 PHPStan automatically loads the one matching your runtime into its worker
 processes.
 
@@ -420,6 +420,10 @@ layout moved through `abi.h`:
 | `ZSTR_KNOWN()` ids, `IS_REFERENCE_EX`, `ZEND_ACC_USE_GUARDS`, lazy-object flags | `pt_abi` values (`PT_ABI_KNOWN_STRINGS`, …) |
 | ZPP error codes / `Z_EXPECTED_*` numbering, parse slow paths (8.6) | neutral ZPP macros in `abi.h`, translated by `Abi.cpp` |
 | functions whose signature or behaviour changed (`zend_create_closure`, `zend_dval_to_lval`, …) or that stopped being exported (`zend_call_known_function`, …) | function pointers in `pt_abi`, implemented in `Abi.cpp` |
+| `EG(stack_base)` / `EG(stack_limit)` and `zend_call_stack.h` (8.3) | `pt_abi.eg_stack_*`; before 8.3, `Abi.cpp`'s own pair, determined like 8.3 does, and the two inline helpers spelled out in `abi.h` |
+| `zend_fcall_info_cache.closure` (8.3 appended it) | 8.3's layout declared over the older headers' struct (`support.h`, `abi.h`); the older engines use the first four members, the shared code never reads `closure` |
+| class names of internal arginfo (`_ZEND_TYPE_LITERAL_NAME_BIT`, 8.3) | pinned in `abi.h`, turned into the plain name bit by `Abi.cpp` before 8.3 |
+| `zend_zval_value_name()` (8.3; 8.2's type errors use `zend_zval_type_name()`) | `pt_abi.zval_value_name` |
 | `#if PHP_VERSION_ID` gates | `PT_ABI_SINCE(version, then, otherwise)`, decided at run time |
 | helpers re-spelled without changing behaviour (macro → inline function) | one definition pinned in `abi.h` ("codegen pins") |
 
@@ -459,7 +463,7 @@ against them (the import library expected in `turbo-ext/`).
 
 In CI (`.github/workflows/phar.yml`), `turbo-compile-core*` build one core
 per platform — profile-guided, against `php-version` of its matrix (Windows:
-against 8.3 with VS16, the oldest toolset, since PHP checks the toolset of
+against 8.3 with VS16, the oldest toolset — 8.2's too — since PHP checks the toolset of
 the DLL it loads, the extension, and a core linked with an older one runs on
 any newer VC runtime) — and are what `turbo-origins` reuses from earlier
 runs; `turbo-compile*` link each version's extension against them in a

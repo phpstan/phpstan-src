@@ -53,11 +53,26 @@ extern "C" {
 #define CG(v) ZEND_TSRMG_FAST(compiler_globals_offset, zend_compiler_globals *, v)
 #endif
 
+/* PHP 8.3 appended `closure` to zend_fcall_info_cache. Against older headers
+ * the shared code declares its own with 8.3's layout (abi.h), on top of the
+ * headers' four-member struct, declared under another name here — so the
+ * shared code compiles to the same frames against every header set. The
+ * older engines read and write the first four members only, and nothing in
+ * the shared code reads `closure`. The engine's structures embedding one by
+ * value keep their layout only when declared before abi.h: their headers
+ * are included below. */
+#if PHP_VERSION_ID < 80300 && !defined(PHPSTANTURBO_ABI_IMPL)
+#define _zend_fcall_info_cache pt_abi_zend_fcall_info_cache_before_83
+#define zend_fcall_info_cache pt_abi_zend_fcall_info_cache_before_83_t
+#define PT_ABI_FCALL_INFO_CACHE_BEFORE_83
+#endif
+
 extern "C" {
 #include "php.h"
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"
 #include "zend_smart_str.h"
+#include "zend_fibers.h"
 }
 
 #pragma GCC diagnostic pop

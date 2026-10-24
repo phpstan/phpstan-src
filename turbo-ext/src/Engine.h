@@ -28,9 +28,6 @@
 #include <utility>
 
 #include "zend_exceptions.h"
-#ifdef ZEND_CHECK_STACK_LIMIT
-#include "zend_call_stack.h"
-#endif
 
 /* {{{ native closures
  *
@@ -342,7 +339,7 @@ inline void pt_finally(F &&cleanup)
 static zend_always_inline bool pt_engine_stack_low()
 {
 #ifdef ZEND_CHECK_STACK_LIMIT
-	uintptr_t limit = (uintptr_t) EG(stack_limit);
+	uintptr_t limit = (uintptr_t) *pt_abi.eg_stack_limit;
 	if (limit == 0) return false;
 	uintptr_t position = (uintptr_t) zend_call_stack_position();
 	return position <= limit || position - limit < PT_ENGINE_STACK_MARGIN_LIMIT;

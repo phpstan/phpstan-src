@@ -31,6 +31,7 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -38,9 +39,12 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -303,13 +307,35 @@ final class PhpDocNodeResolver
 
 			$resolved[$name] = new TemplateTag(
 				$valueNode->name,
-				$valueNode->bound !== null ? $this->typeNodeResolver->resolve($valueNode->bound, $nameScopeWithoutCurrent) : new MixedType(true),
-				$valueNode->default !== null ? $this->typeNodeResolver->resolve($valueNode->default, $nameScopeWithoutCurrent) : null,
+				$valueNode->bound !== null ? $this->resolveTemplateTagType($valueNode->bound, $nameScopeWithoutCurrent) : new MixedType(true),
+				$valueNode->default !== null ? $this->resolveTemplateTagType($valueNode->default, $nameScopeWithoutCurrent) : null,
 				$variance,
 			);
 		}
 
 		return $resolved;
+	}
+
+	private function resolveTemplateTagType(TypeNode $typeNode, NameScope $nameScope): Type
+	{
+		$type = $this->typeNodeResolver->resolve($typeNode, $nameScope);
+		$templateTypeScope = $nameScope->getTemplateTypeScope();
+		if ($templateTypeScope === null || $templateTypeScope->getFunctionName() !== null) {
+			return $type;
+		}
+		$className = $templateTypeScope->getClassName();
+		if ($className === null) {
+			return $type;
+		}
+
+		// static in a class-level template bound or default would refer back to the class parametrized by it
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($className): Type {
+			if ($type instanceof StaticType && $type->getClassName() === $className) {
+				return new ObjectType($className);
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	/**

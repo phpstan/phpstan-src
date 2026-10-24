@@ -143,6 +143,38 @@ class ImpossibleCheckTypeStaticMethodCallRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/assert-unresolved-generic.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNoNamedArgumentsAssertIsAlwaysSatisfied(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/no-named-arguments-assert.php'], [
+			[
+				'Call to static method NoNamedArgumentsAssert\QueryBuilder::validateVariadicParameter() with list<mixed> will always evaluate to true.',
+				14,
+			],
+			[
+				'Call to static method NoNamedArgumentsAssert\QueryBuilder::validateVariadicParameter() with list<string> will always evaluate to true.',
+				22,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNoNamedArgumentsAssertIsAlwaysSatisfiedTreatPhpDocTypesAsCertain(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/no-named-arguments-assert.php'], [
+			[
+				'Call to static method NoNamedArgumentsAssert\QueryBuilder::validateVariadicParameter() with list<mixed> will always evaluate to true.',
+				14,
+			],
+			[
+				'Call to static method NoNamedArgumentsAssert\QueryBuilder::validateVariadicParameter() with list<string> will always evaluate to true.',
+				22,
+			],
+		]);
+	}
+
 	public static function dataReportAlwaysTrueInLastCondition(): iterable
 	{
 		yield [false, [

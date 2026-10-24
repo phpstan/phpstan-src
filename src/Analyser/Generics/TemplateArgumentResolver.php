@@ -58,14 +58,14 @@ final class TemplateArgumentResolver
 				TemplateArgumentStats::increment('closureObservationPasses');
 			}
 
-			return new TemplateArgumentFrame($parent, array_diff_key($resolutions, $closureKeys), $templateSiteStatementIndexes, $closureSignatureBody, $closureSignatureStmts, observingClosures: true);
+			return new TemplateArgumentFrame($parent, array_diff_key($resolutions, $closureKeys), $templateSiteStatementIndexes, $closureSignatureBody, $closureSignatureStmts, observingClosures: true, sentResolutionKeys: $this->collectSentResolutionKeys($observations));
 		}
 
 		if (TemplateArgumentStats::$enabled && count($settledClosureSites) > 0) {
 			TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites));
 		}
 
-		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites, byRefSites: $this->collectByRefSites($observations, $siteIndexes));
+		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites, byRefSites: $this->collectByRefSites($observations, $siteIndexes), sentResolutionKeys: $this->collectSentResolutionKeys($observations));
 	}
 
 	/**
@@ -223,6 +223,23 @@ final class TemplateArgumentResolver
 		}
 
 		return $byRefSites;
+	}
+
+	/**
+	 * @param array<string, array{marker: UnresolvedTemplateArgumentType, initial: Type|null, sends: list<array{Type, TemplateTypeVariance}>, lowerBounds: list<Type>, unconstrainingSend: bool}> $observations
+	 * @return array<string, true>
+	 */
+	private function collectSentResolutionKeys(array $observations): array
+	{
+		$keys = [];
+		foreach ($observations as $key => $observation) {
+			if ($observation['sends'] === [] || ClosureSignatureInference::isClosureSignatureMarker($observation['marker'])) {
+				continue;
+			}
+			$keys[$key] = true;
+		}
+
+		return $keys;
 	}
 
 	/**

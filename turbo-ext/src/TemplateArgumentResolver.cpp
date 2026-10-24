@@ -166,7 +166,9 @@ public:
 				if (UNEXPECTED(!statsEnabled(enabled))) return zv::Val();
 				if (enabled && UNEXPECTED(!statsIncrement(PT_LC("closureObservationPasses"), 1))) return zv::Val();
 
-				return pt_template_argument_frame_new(parent, templateResolutionsHolder.raw(), templateSiteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, NULL, true);
+				zv::Val sentResolutionKeys = collectSentResolutionKeys(state.observations.raw());
+				if (UNEXPECTED(sentResolutionKeys.isUndef())) return zv::Val();
+				return pt_template_argument_frame_new(parent, templateResolutionsHolder.raw(), templateSiteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, NULL, true, NULL, sentResolutionKeys.raw());
 			}
 		}
 
@@ -174,7 +176,9 @@ public:
 		zv::Val siteStatementIndexes = collectSiteStatementIndexes(state.siteIndexes.raw(), settledClosureSites.raw());
 		zv::Val byRefSites = collectByRefSites(state.observations.raw(), state.siteIndexes.raw());
 		if (UNEXPECTED(byRefSites.isUndef())) return zv::Val();
-		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, settledClosureSites.raw(), false, byRefSites.raw());
+		zv::Val sentResolutionKeys = collectSentResolutionKeys(state.observations.raw());
+		if (UNEXPECTED(sentResolutionKeys.isUndef())) return zv::Val();
+		return pt_template_argument_frame_new(parent, resolutions.raw(), siteStatementIndexes.raw(), closureSignatureBody, closureSignatureStmts, settledClosureSites.raw(), false, byRefSites.raw(), sentResolutionKeys.raw());
 	}
 
 	/* Mirrors resolveObservedClosures(). */
@@ -267,6 +271,33 @@ private:
 		if (resolution == NULL) return NULL;
 		ZVAL_DEREF(resolution);
 		return Z_TYPE_P(resolution) == IS_NULL ? NULL : resolution;
+	}
+
+	/* Mirrors collectSentResolutionKeys(): the keys of the observations with
+	 * a send that are not closure signature markers */
+	static zv::Val collectSentResolutionKeys(zval *observations)
+	{
+		zv::Arr keys = zv::Arr::create(0);
+		for (auto entry : zv::ArrRef(observations)) {
+			zval *observation = entry.value().deref().raw();
+			zval *sends = Z_TYPE_P(observation) == IS_ARRAY ? zend_hash_find(Z_ARRVAL_P(observation), pt_tar_sends) : NULL;
+			if (sends != NULL) ZVAL_DEREF(sends);
+			if (sends == NULL || Z_TYPE_P(sends) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(sends)) == 0) continue;
+			zval *marker = observationMarker(observation);
+			if (UNEXPECTED(marker == NULL)) continue;
+			bool closureMarker;
+			if (UNEXPECTED(!pt_unresolved_template_argument_type_is_closure_signature(marker, closureMarker))) return zv::Val();
+			if (closureMarker) continue;
+			zval marked;
+			ZVAL_TRUE(&marked);
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				zend_symtable_update(keys.table(), key, &marked);
+			} else {
+				zend_hash_index_update(keys.table(), entry.indexKey(), &marked);
+			}
+		}
+		return zv::Val(std::move(keys));
 	}
 
 	/* Mirrors settleClosureSites(). */

@@ -2106,7 +2106,7 @@ zv::Val pt_template_argument_frame_return_type_of_call(zval *acceptor, zval *sco
 /* new TemplateArgumentFrame($parent, $resolutions, $siteStatementIndexes)
  * ($parent / $resolutions NULL or IS_NULL for null, $siteStatementIndexes
  * NULL for []) */
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL, bool observingClosures = false, zval *byRefSites = NULL);
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions = NULL, zval *siteStatementIndexes = NULL, zval *closureSignatureBody = NULL, zval *closureSignatureStmts = NULL, zval *settledClosureSites = NULL, bool observingClosures = false, zval *byRefSites = NULL, zval *sentResolutionKeys = NULL);
 /* $frame->withObservedClosures($closureResolutions, $closureSiteStatementIndexes, $settledClosureSites); UNDEF = pending exception */
 zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites, zval *byRefSites = NULL);
 /* TemplateArgumentFrame::getByRefSiteMode(): 'local' / 'escaped' / PHP null; UNDEF = pending exception */
@@ -2138,9 +2138,11 @@ zv::Val pt_template_argument_frame_get_parent(zval *frame);
 zv::Val pt_template_argument_frame_get_closure_signature_body(zval *frame);
 zv::Val pt_template_argument_frame_get_closure_signature_stmts(zval *frame);
 /* $frame->resolve($site, $templateName) (the type or null) /
+ * ->resolveSentFromEnclosingBody($site, $templateName) (the type or null) /
  * ->resolveOrUnconstrained($site, $template) /
  * ->getResolutionCacheKeySuffix() */
 zv::Val pt_template_argument_frame_resolve(zval *frame, zval *site, zend_string *templateName);
+zv::Val pt_template_argument_frame_resolve_sent_from_enclosing_body(zval *frame, zval *site, zend_string *templateName);
 zv::Val pt_template_argument_frame_resolve_or_unconstrained(zval *frame, zval *site, zval *templateType);
 zv::Val pt_template_argument_frame_resolution_cache_key_suffix(zval *frame);
 

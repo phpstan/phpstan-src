@@ -28,6 +28,8 @@ class GenericStaticType extends StaticType
 
 	private ?ObjectType $staticObjectType = null;
 
+	private ?ClassReflection $resolvedClassReflection = null;
+
 	/**
 	 * @api
 	 * @param array<int, Type> $types
@@ -60,6 +62,12 @@ class GenericStaticType extends StaticType
 		return $this->variances;
 	}
 
+	/** The class reflection with the type arguments of this type. */
+	public function getClassReflection(): ClassReflection
+	{
+		return $this->resolvedClassReflection ??= $this->classReflection->withTypes($this->types)->withVariances($this->variances);
+	}
+
 	public function getStaticObjectType(): ObjectType
 	{
 		if ($this->staticObjectType === null) {
@@ -68,7 +76,7 @@ class GenericStaticType extends StaticType
 					$this->classReflection->getName(),
 					$this->types,
 					$this->subtractedType,
-					$this->classReflection,
+					$this->getClassReflection(),
 					$this->variances,
 				);
 			}
@@ -77,6 +85,34 @@ class GenericStaticType extends StaticType
 		}
 
 		return $this->staticObjectType;
+	}
+
+	/**
+	 * The ancestor keeps the type arguments the static object type has for
+	 * that class - changeBaseClass() can only carry them down to a subclass.
+	 */
+	public function getAncestorWithClassName(string $className): ?TypeWithClassName
+	{
+		$ancestor = $this->getStaticObjectType()->getAncestorWithClassName($className);
+		if ($ancestor === null) {
+			return null;
+		}
+
+		$classReflection = $ancestor->getClassReflection();
+		if ($classReflection === null) {
+			return null;
+		}
+
+		if ($classReflection->getName() === $this->getClassName() || !$classReflection->isGeneric()) {
+			return $this->changeBaseClass($classReflection);
+		}
+
+		return new self(
+			$classReflection,
+			$classReflection->typeMapToList($classReflection->getActiveTemplateTypeMap()),
+			$this->subtractedType,
+			$classReflection->varianceMapToList($classReflection->getCallSiteVarianceMap()),
+		);
 	}
 
 	public function changeBaseClass(ClassReflection $classReflection): StaticType

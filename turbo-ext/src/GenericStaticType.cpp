@@ -100,6 +100,34 @@ public:
 
 	static zval *slot(zend_object *object, uint32_t index, const char *name) { return pt_typed_slot(object, index, pt_ce_generic_static_type, name); }
 
+	/* the memoized class reflection with the own type arguments:
+	 * $this->classReflection->withTypes($this->types)->withVariances($this->variances);
+	 * UNDEF = pending exception */
+	zv::Val getClassReflection() const
+	{
+		zval *memo = OBJ_PROP_NUM(self, slots::resolvedClassReflection);
+		if (Z_TYPE_P(memo) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(memo));
+		zval *reflection = classReflection();
+		if (UNEXPECTED(reflection == NULL)) return zv::Val();
+		zval *ownTypes = types();
+		zval *ownVariances = ownTypes != NULL ? variances() : NULL;
+		if (UNEXPECTED(ownVariances == NULL)) return zv::Val();
+		zv::Val resolved = pt_class_reflection_with_types(Z_OBJ_P(reflection), ownTypes);
+		if (UNEXPECTED(resolved.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(resolved.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: withTypes() must return an object");
+			return zv::Val();
+		}
+		resolved = pt_type_call(Z_OBJ_P(resolved.raw()), PT_LC("withvariances"), 1, ownVariances);
+		if (UNEXPECTED(resolved.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(resolved.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: withVariances() must return an object");
+			return zv::Val();
+		}
+		zv::ObjRef(self).propAtWrite(slots::resolvedClassReflection, zv::Val::copyOf(zv::Ref(resolved.raw())));
+		return resolved;
+	}
+
 	/* the memoized static object type: a GenericObjectType over the own
 	 * types and variances for a generic class, parent::getStaticObjectType()
 	 * otherwise; UNDEF = pending exception */
@@ -119,9 +147,15 @@ public:
 			if (UNEXPECTED(ownVariances == NULL)) return zv::Val();
 			zv::Val name = pt_class_reflection_get_name(Z_OBJ_P(reflection));
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
-			/* new GenericObjectType($name, $this->types, $this->subtractedType, $this->classReflection, $this->variances) */
+			zv::Val resolvedReflection = pt_static_type_this_class_reflection(self);
+			if (UNEXPECTED(resolvedReflection.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(resolvedReflection.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: getClassReflection() must return an object");
+				return zv::Val();
+			}
+			/* new GenericObjectType($name, $this->types, $this->subtractedType, $this->getClassReflection(), $this->variances) */
 			zval genericRaw;
-			if (UNEXPECTED(!pt_generic_object_type_new(&genericRaw, Z_STR_P(name.raw()), ownTypes, subtracted, reflection, ownVariances))) return zv::Val();
+			if (UNEXPECTED(!pt_generic_object_type_new(&genericRaw, Z_STR_P(name.raw()), ownTypes, subtracted, resolvedReflection.raw(), ownVariances))) return zv::Val();
 			objectType = zv::Val::adopt(genericRaw);
 		} else {
 			objectType = pt_static_type_get_static_object_type(self);
@@ -129,6 +163,64 @@ public:
 		if (UNEXPECTED(objectType.isUndef())) return zv::Val();
 		zv::ObjRef(self).propAtWrite(slots::staticObjectType, zv::Val::copyOf(zv::Ref(objectType.raw())));
 		return objectType;
+	}
+
+	/* the static object type's ancestor with the class name as
+	 * a GenericStaticType of that class over the type arguments its
+	 * reflection carries, $this->changeBaseClass() of the reflection for the
+	 * own class or a non-generic one, null without an ancestor or
+	 * a reflection; UNDEF = pending exception */
+	zv::Val getAncestorWithClassName(zval *className) const
+	{
+		zv::Val staticObject = pt_static_type_this_static_object_type(self);
+		if (UNEXPECTED(staticObject.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(staticObject.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getStaticObjectType() must return an object");
+			return zv::Val();
+		}
+		zv::Val ancestor = pt_type_call(Z_OBJ_P(staticObject.raw()), PT_LC("getancestorwithclassname"), 1, className);
+		if (UNEXPECTED(ancestor.isUndef())) return zv::Val();
+		if (ancestor.isNull()) return zv::Val::null();
+		if (UNEXPECTED(!zv::Ref(ancestor.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getAncestorWithClassName() must return an object or null");
+			return zv::Val();
+		}
+		zv::Val classReflection = pt_type_call(Z_OBJ_P(ancestor.raw()), PT_LC("getclassreflection"), 0, NULL);
+		if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+		if (classReflection.isNull()) return zv::Val::null();
+		if (UNEXPECTED(!zv::Ref(classReflection.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getClassReflection() must return an object or null");
+			return zv::Val();
+		}
+		zend_object *reflection = Z_OBJ_P(classReflection.raw());
+
+		zv::Val reflectionName = pt_class_reflection_get_name(reflection);
+		if (UNEXPECTED(reflectionName.isUndef())) return zv::Val();
+		zv::Val ownClassName = pt_static_type_this_class_name(self);
+		if (UNEXPECTED(ownClassName.isUndef())) return zv::Val();
+		bool generic;
+		if (UNEXPECTED(!pt_class_reflection_is_generic(reflection, generic))) return zv::Val();
+		if (zend_is_identical(reflectionName.raw(), ownClassName.raw()) || !generic) {
+			/* return $this->changeBaseClass($classReflection); */
+			return pt_type_call(self, PT_LC("changebaseclass"), 1, classReflection.raw());
+		}
+
+		/* $classReflection->typeMapToList($classReflection->getActiveTemplateTypeMap()) */
+		zv::Val activeTypeMap = pt_class_reflection_get_active_template_type_map(reflection);
+		if (UNEXPECTED(activeTypeMap.isUndef())) return zv::Val();
+		zv::Val ancestorTypes = pt_class_reflection_type_map_to_list(reflection, activeTypeMap.raw());
+		if (UNEXPECTED(ancestorTypes.isUndef())) return zv::Val();
+		/* $classReflection->varianceMapToList($classReflection->getCallSiteVarianceMap()) */
+		zv::Val varianceMap = pt_type_call(reflection, PT_LC("getcallsitevariancemap"), 0, NULL);
+		if (UNEXPECTED(varianceMap.isUndef())) return zv::Val();
+		zv::Val ancestorVariances = pt_type_call(reflection, PT_LC("variancemaptolist"), 1, varianceMap.raw());
+		if (UNEXPECTED(ancestorVariances.isUndef())) return zv::Val();
+		zval *subtracted = subtractedType();
+		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
+		/* new self($classReflection, <the types>, $this->subtractedType, <the variances>) */
+		zval result;
+		if (UNEXPECTED(!pt_generic_static_type_new(&result, classReflection.raw(), ancestorTypes.raw(), subtracted, ancestorVariances.raw()))) return zv::Val();
+		return zv::Val::adopt(result);
 	}
 
 	/* $this for the own class; a plain StaticType for a non-generic class;
@@ -558,12 +650,7 @@ PT_MINIT_REGISTRATION(pt_register_generic_static_type)
 
 	reg::Class cls("PHPStan\\Type\\Generic\\GenericStaticType");
 	ptdecl::GenericStaticType::declareClass(cls);
-	/* the slots must stay in this order (PT_GST_PROP_*), after StaticType's */
-	cls.privateTypedClassPropertyDefaultNull("staticObjectType", "PHPStan\\Type\\ObjectType");
-	cls.privateTypedClassProperty("classReflection", "PHPStan\\Reflection\\ClassReflection", false);
-	cls.privateTypedProperty("types", MAY_BE_ARRAY);
-	cls.privateTypedClassProperty("subtractedType", "PHPStan\\Type\\Type", true);
-	cls.privateTypedProperty("variances", MAY_BE_ARRAY);
+	ptdecl::GenericStaticType::declareProperties(cls);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *classReflection, *types, *subtractedType, *variances;
@@ -590,6 +677,18 @@ PT_MINIT_REGISTRATION(pt_register_generic_static_type)
 		if (UNEXPECTED(variances == NULL)) RETURN_THROWS();
 		RETURN_COPY(variances);
 	});
+
+	cls.method(sigs::getAncestorWithClassName, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *className;
+		if (!zp::parse<zp::Str>(execute_data, className)) RETURN_THROWS();
+		zval classNameZv;
+		ZVAL_STR(&classNameZv, className);
+		PT_RETURN_VAL(PT_THIS.getAncestorWithClassName(&classNameZv));
+	});
+	cls.op<PT_OP_GET_ANCESTOR_WITH_CLASS_NAME, &GenericStaticType::getAncestorWithClassName>();
+
+	cls.method<&GenericStaticType::getClassReflection>(sigs::getClassReflection);
+	cls.op<PT_OP_GET_CLASS_REFLECTION, &GenericStaticType::getClassReflection>();
 
 	cls.method<&GenericStaticType::getStaticObjectType>(sigs::getStaticObjectType);
 

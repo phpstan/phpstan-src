@@ -7,12 +7,14 @@
 # one version each; gate.py compare then needs only the .tsv files.
 #
 # Needs docker and an llvm-objdump (LLVM_OBJDUMP, else the newest found).
+# GATE_BASE_IMAGE replaces ghcr.io/phpstan/turbo-build, e.g. with images
+# built locally from .github/turbo-build.
 # Usage: SHARED_CORE_WORK_DIR=<scratch directory> [GATE_VERSIONS="8.4 8.6-zts"] fingerprint-linux.sh
 set -euo pipefail
 
 S=${SHARED_CORE_WORK_DIR:?set SHARED_CORE_WORK_DIR to a scratch directory}
 HERE=$(cd "$(dirname "$0")" && pwd)
-VERSIONS=${GATE_VERSIONS:-8.3 8.4 8.5 8.6 8.3-zts 8.4-zts 8.5-zts 8.6-zts}
+VERSIONS=${GATE_VERSIONS:-8.2 8.3 8.4 8.5 8.6 8.2-zts 8.3-zts 8.4-zts 8.5-zts 8.6-zts}
 if [ -z "${LLVM_OBJDUMP:-}" ]; then
 	LLVM_OBJDUMP=$(command -v llvm-objdump || { ls /usr/bin/llvm-objdump-* /opt/homebrew/opt/llvm/bin/llvm-objdump 2>/dev/null || true; } | sort -V | tail -1)
 fi
@@ -21,7 +23,7 @@ export LLVM_OBJDUMP
 
 # the CI build images plus clang
 for v in $VERSIONS; do
-	printf 'FROM ghcr.io/phpstan/turbo-build:gnu-php%s\nRUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq clang-14 > /dev/null && rm -rf /var/lib/apt/lists/*\n' "$v" \
+	printf 'FROM %s:gnu-php%s\nRUN apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq clang-14 > /dev/null && rm -rf /var/lib/apt/lists/*\n' "${GATE_BASE_IMAGE:-ghcr.io/phpstan/turbo-build}" "$v" \
 		| docker build -q ${GATE_PLATFORM:+--platform "$GATE_PLATFORM"} -t "turbo-build-clang:gnu-php$v" - > /dev/null
 done
 

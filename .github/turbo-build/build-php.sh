@@ -60,7 +60,14 @@ tar -xJf php.tar.xz -C php-src --strip-components=1
 rm php.tar.xz
 
 cd php-src
-# shellcheck disable=SC2086 # ZTS_FLAG is empty or a single word
+# PHP 8.2's x86-64 JIT does not assemble for musl ZTS with binutils 2.43+
+# (alpine:3.24): "@TLSGD operator requires `%rdi' as dest register", fixed
+# only from 8.3. Nothing these builds run uses the JIT.
+JIT_FLAG=""
+case "$PHP_VERSION" in
+	8.2.*) JIT_FLAG="--disable-opcache-jit" ;;
+esac
+# shellcheck disable=SC2086 # ZTS_FLAG and JIT_FLAG are empty or a single word
 ./configure \
 	--prefix=/usr/local \
 	--disable-cgi \
@@ -72,7 +79,8 @@ cd php-src
 	--with-curl \
 	--with-openssl \
 	--with-zlib \
-	$ZTS_FLAG
+	$ZTS_FLAG \
+	$JIT_FLAG
 make -j"$(nproc)"
 make install
 

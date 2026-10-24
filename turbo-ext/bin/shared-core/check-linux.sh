@@ -21,7 +21,7 @@ set -euo pipefail
 S=${SHARED_CORE_WORK_DIR:?set SHARED_CORE_WORK_DIR to a scratch directory}
 HERE=$(cd "$(dirname "$0")" && pwd)
 REFERENCE=${GATE_REFERENCE:-8.5}
-VERSIONS=${GATE_VERSIONS:-8.3 8.4 8.5 8.6 8.3-zts 8.4-zts 8.5-zts 8.6-zts}
+VERSIONS=${GATE_VERSIONS:-8.2 8.3 8.4 8.5 8.6 8.2-zts 8.3-zts 8.4-zts 8.5-zts 8.6-zts}
 case " $VERSIONS " in
 	*" $REFERENCE "*) ;;
 	*) VERSIONS="$REFERENCE $VERSIONS" ;;

@@ -561,10 +561,10 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 						size_t partLen = end != NULL ? (size_t) (end - start) : strlen(start);
 						zend_string *className = zend_new_interned_string(zend_string_init(start, partLen, persistent));
 						zend_alloc_ce_cache(className);
-						list->types[i] = (zend_type) ZEND_TYPE_INIT_CLASS(className, 0, 0);
+						list->types[i] = ZEND_TYPE_INIT_CLASS(className, 0, 0);
 						start = end != NULL ? end + 1 : start;
 					}
-					type = (zend_type) ZEND_TYPE_INIT_UNION(list, (property.defaultValue & MAY_BE_NULL) != 0 ? MAY_BE_NULL : 0);
+					type = ZEND_TYPE_INIT_UNION(list, (property.defaultValue & MAY_BE_NULL) != 0 ? MAY_BE_NULL : 0);
 				} else if (property.className != NULL) {
 					/* a class-typed property, declared the way the compiler
 					 * declares one (zend_compile_single_typename): an interned
@@ -578,9 +578,9 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 					zend_alloc_ce_cache(className);
 					/* the bits beyond MAY_BE_NULL in defaultValue are the scalar
 					 * members of a `Foo|false|null` union */
-					type = (zend_type) ZEND_TYPE_INIT_CLASS(className, (property.defaultValue & MAY_BE_NULL) != 0, (uint32_t) property.defaultValue & ~(uint32_t) MAY_BE_NULL);
+					type = ZEND_TYPE_INIT_CLASS(className, (property.defaultValue & MAY_BE_NULL) != 0, (uint32_t) property.defaultValue & ~(uint32_t) MAY_BE_NULL);
 				} else {
-					type = (zend_type) ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
+					type = ZEND_TYPE_INIT_MASK((uint32_t) property.defaultValue);
 				}
 				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
@@ -591,7 +591,7 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_string *nameStr = zend_string_init(property.name, len, persistent);
 				zval defaultValue;
 				ZVAL_BOOL(&defaultValue, property.defaultValue != 0);
-				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_BOOL);
+				zend_type type = ZEND_TYPE_INIT_MASK(MAY_BE_BOOL);
 				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;
@@ -604,7 +604,7 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_string *nameStr = zend_string_init(property.name, len, persistent);
 				zval defaultValue;
 				ZVAL_STR(&defaultValue, zend_string_init_interned(property.stringValue, strlen(property.stringValue), persistent));
-				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_STRING);
+				zend_type type = ZEND_TYPE_INIT_MASK(MAY_BE_STRING);
 				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;
@@ -614,7 +614,7 @@ inline void declareMembers(zend_class_entry *ce, const std::vector<Property> &pr
 				zend_string *nameStr = zend_string_init(property.name, len, persistent);
 				zval defaultValue;
 				ZVAL_LONG(&defaultValue, property.defaultValue);
-				zend_type type = (zend_type) ZEND_TYPE_INIT_MASK(MAY_BE_LONG);
+				zend_type type = ZEND_TYPE_INIT_MASK(MAY_BE_LONG);
 				zend_declare_typed_property(ce, nameStr, &defaultValue, property.visibility, NULL, type);
 				zend_string_release(nameStr);
 				break;

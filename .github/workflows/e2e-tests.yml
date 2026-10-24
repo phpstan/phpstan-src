@@ -232,6 +232,11 @@ jobs:
               cd e2e/debug-class-loader
               composer install
               ../../bin/phpstan analyze
+              # With --debug, the analysis runs in the main process, and PHPStan prints the
+              # exception that DebugClassLoader threw for the unknown class.
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyze --debug")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'by a bootstrap autoloader for class DebugClassLoaderE2e\Widget: The autoloader expected class' "$OUTPUT"
           - script: |
               cd e2e/bug-12972c
               composer install

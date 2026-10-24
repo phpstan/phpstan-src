@@ -4513,7 +4513,7 @@ public:
 			if (UNEXPECTED(nativeParameterType.isUndef())) return zv::Val();
 			if (zend_is_true(isVariadic.raw())) {
 				bool named;
-				if (UNEXPECTED(!acceptsNamedArgumentsHere(reflection, named))) return zv::Val();
+				if (UNEXPECTED(!phpVersionSupportsNamedArguments(named))) return zv::Val();
 				zv::Val wrapped = variadicArrayType(nativeParameterType.raw(), named);
 				if (UNEXPECTED(wrapped.isUndef())) return zv::Val();
 				nativeParameterType = std::move(wrapped);

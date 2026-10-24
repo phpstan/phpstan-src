@@ -1503,6 +1503,7 @@ private:
 		zv::Arr allBodyScopes = zv::Arr::empty();
 		zv::Arr allChainScopes = zv::Arr::empty();
 		zv::Arr allBreakScopes = zv::Arr::empty();
+		zv::Arr allTerminatedScopes = zv::Arr::empty();
 
 		zv::Val bodyContext = pt_statement_context_enter_unrolled_foreach(context, totalKeys);
 		if (UNEXPECTED(bodyContext.isUndef())) return false;
@@ -1635,6 +1636,12 @@ private:
 					}
 
 					// no later iteration runs, the loop is left only through its break statements
+					{
+						zv::Val hold;
+						zval *terminatedScope = pt_internal_statement_result_scope(bodyResult.raw(), hold);
+						if (UNEXPECTED(terminatedScope == NULL)) return false;
+						allTerminatedScopes.push(zv::Ref(terminatedScope));
+					}
 					chainScope = zv::Val::null();
 					break;
 				}
@@ -1690,6 +1697,14 @@ private:
 		zv::Val endScope = chainEndScope.isNull() ? zv::Val::null() : zv::Val::copyOf(chainEndScope.ref());
 		for (auto entry : zv::ArrRef(allBreakScopes.raw())) {
 			if (UNEXPECTED(!ptlh::mergeOrTake(endScope, entry.value().deref().raw()))) return false;
+		}
+
+		// the code after the loop is unreachable - keep what the terminated
+		// iterations narrowed instead of falling back to the generic loop pass
+		if (endScope.isNull()) {
+			for (auto entry : zv::ArrRef(allTerminatedScopes.raw())) {
+				if (UNEXPECTED(!ptlh::mergeOrTake(endScope, entry.value().deref().raw()))) return false;
+			}
 		}
 
 		// Unsealed shapes describe zero-or-more additional entries beyond the

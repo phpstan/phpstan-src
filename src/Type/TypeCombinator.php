@@ -44,6 +44,7 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
+use function max;
 use function spl_object_id;
 use function sprintf;
 use function usort;
@@ -1221,7 +1222,7 @@ final class TypeCombinator
 
 			$arrayType = new ArrayType(
 				self::union(...$keyTypesForGeneralArray),
-				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
+				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray, $valueTypesForGeneralArray)),
 			);
 
 			if ($templateArrayType !== null) {
@@ -1240,7 +1241,7 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true), $arrayTypes);
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$applied = $accessoryTypes;
 			if ($reducedArray->isIterableAtLeastOnce()->no()) {
@@ -1259,14 +1260,38 @@ final class TypeCombinator
 	}
 
 	/**
+	 * The count of constant array value types above which a union of the given
+	 * types gets generalized. A single type already holding more than
+	 * ARRAY_COUNT_LIMIT of them raises it - a union no bigger than one of its
+	 * members does not grow the type, generalizing it would only lose precision.
+	 *
 	 * @param Type[] $types
+	 */
+	private static function getConstantArrayValueTypesLimit(array $types): int
+	{
+		$limit = ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT;
+		foreach ($types as $type) {
+			$limit = max($limit, self::countConstantArrayValueTypes([$type]));
+		}
+
+		return $limit;
+	}
+
+	/**
+	 * @param Type[] $types
+	 * @param Type[] $unionedTypes the types whose union $types represent
 	 * @return Type[]
 	 */
-	private static function optimizeConstantArrays(array $types): array
+	private static function optimizeConstantArrays(array $types, array $unionedTypes): array
 	{
 		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
 
 		if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			return $types;
+		}
+
+		$limit = self::getConstantArrayValueTypesLimit($unionedTypes);
+		if ($constantArrayValuesCount <= $limit) {
 			return $types;
 		}
 
@@ -1311,7 +1336,7 @@ final class TypeCombinator
 			if ($anyMerged) {
 				$types = array_values($collapsed);
 				$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
-				if ($constantArrayValuesCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				if ($constantArrayValuesCount <= $limit) {
 					return $types;
 				}
 			}

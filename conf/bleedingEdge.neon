@@ -33,3 +33,4 @@ parameters:
 		backedEnumFromParameterType: true
 		unusedVariable: true
 		unusedParameters: true
+		unsetOffsetOnMaybeAccessible: true

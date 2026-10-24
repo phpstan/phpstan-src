@@ -16,12 +16,18 @@ use const PHP_VERSION_ID;
 class UnsetRuleTest extends RuleTestCase
 {
 
+	private bool $reportMaybes = false;
+
+	private bool $unsetOffsetOnMaybeAccessible = false;
+
 	protected function getRule(): Rule
 	{
 		$container = self::getContainer();
 		return new UnsetRule(
 			$container->getByType(PropertyReflectionFinder::class),
 			$container->getByType(PhpVersion::class),
+			$this->reportMaybes,
+			$this->unsetOffsetOnMaybeAccessible,
 		);
 	}
 
@@ -227,6 +233,66 @@ class UnsetRuleTest extends RuleTestCase
 	public function testNullCoalesceAssignRightSideScope(): void
 	{
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);
+	}
+
+	public function testUnsetOffsetOnMaybeAccessible(): void
+	{
+		$this->reportMaybes = true;
+		$this->unsetOffsetOnMaybeAccessible = true;
+		$this->analyse([__DIR__ . '/data/unset-offset-maybe-accessible.php'], [
+			[
+				'Cannot unset offset \'port\' on array{port?: int, path?: string}|false.',
+				13,
+			],
+			[
+				'Cannot unset offset \'port\' on array<string, int>|int.',
+				21,
+			],
+			[
+				'Cannot unset offset \'port\' on array{scheme?: string, host?: string, port?: int<0, 65535>, user?: string, pass?: string, path?: string, query?: string, fragment?: string}|false.',
+				56,
+			],
+			[
+				'Cannot unset offset \'port\' on array<string, int>|bool.',
+				91,
+			],
+			[
+				'Cannot unset offset \'port\' on array<string, int>|true.',
+				92,
+			],
+			[
+				'Cannot unset offset \'port\' on array<string, int>|float.',
+				93,
+			],
+			[
+				'Cannot unset offset \'port\' on array<string, int>|false.',
+				101,
+			],
+		]);
+	}
+
+	public function testUnsetOffsetOnMaybeAccessibleWithoutReportMaybes(): void
+	{
+		$this->unsetOffsetOnMaybeAccessible = true;
+		$this->analyse([__DIR__ . '/data/unset-offset-maybe-accessible.php'], []);
+	}
+
+	public function testUnsetOffsetOnMaybeAccessibleWithoutFeatureToggle(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/unset-offset-maybe-accessible.php'], []);
+	}
+
+	public function testUnsetOffsetOnMaybeAccessibleTemplate(): void
+	{
+		$this->reportMaybes = true;
+		$this->unsetOffsetOnMaybeAccessible = true;
+		$this->analyse([__DIR__ . '/data/unset-offset-maybe-accessible-template.php'], [
+			[
+				'Cannot unset offset \'port\' on array<string, int>|(T of array<string, int>|false).',
+				11,
+			],
+		]);
 	}
 
 }

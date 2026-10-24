@@ -144,7 +144,7 @@ final class ClassLikeHandler implements StmtHandler
 		// declaration is visited during an enclosing body's observation pass.
 		$bodyResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $classLikeStatements, $classScope, $storage, $classStatementsGatherer, StatementContext::createTopLevel());
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassPropertiesNode($stmt, $this->readWritePropertiesExtensions, $classStatementsGatherer->getProperties(), $classStatementsGatherer->getPropertyUsages(), $classStatementsGatherer->getMethodCalls(), $classStatementsGatherer->getReturnStatementsNodes(), $classStatementsGatherer->getPropertyAssigns(), $classReflection), $classScope, $storage);
-		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection, $classStatementsGatherer->getMethodVariableWrites()), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 		$classReflection->evictPrivateSymbols();
 		$this->calledMethodProcessor->clearCalledMethodResults();

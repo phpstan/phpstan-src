@@ -2799,6 +2799,14 @@ public:
 						zend_type_error("phpstan_turbo: a union member must be %s", ptcls::type);
 						return zv::Val();
 					}
+					/* if ($member->isSuperTypeOf($this)->yes()) return new NeverType(); */
+					zval selfZv;
+					ZVAL_OBJ(&selfZv, self);
+					zv::Val memberIsSuperType = pt_type_call(Z_OBJ_P(member), PT_LC("issupertypeof"), 1, &selfZv);
+					if (UNEXPECTED(memberIsSuperType.isUndef())) return zv::Val();
+					zend_long memberIsSuperTypeValue = pt_type_result_trinary(memberIsSuperType.raw());
+					if (UNEXPECTED(memberIsSuperTypeValue < 0)) return zv::Val();
+					if (memberIsSuperTypeValue == PT_TRI_YES) return pt_type_new_never_type();
 					zv::Val isSuperTypeOfMember = thisCall(PT_LC("issupertypeof"), otIsSuperTypeOf, 1, member, [&]() { return isSuperTypeOf(member); });
 					if (UNEXPECTED(isSuperTypeOfMember.isUndef())) return zv::Val();
 					zend_long memberValue = pt_type_result_trinary(isSuperTypeOfMember.raw());

@@ -6530,6 +6530,47 @@ class TypeCombinatorTest extends PHPStanTestCase
 				IntersectionType::class,
 				'non-empty-array&hasOffsetValue(\'a\', string)',
 			],
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new UnionType([
+					new ObjectType('PHPStan\Fixture\TestEnum'),
+					new ObjectType(stdClass::class),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new UnionType([
+					new ObjectType(stdClass::class),
+					new ObjectType('PHPStan\Fixture\TestEnumInterface'),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				new ObjectType('PHPStan\Fixture\TestEnum'),
+				new UnionType([
+					new ObjectType(stdClass::class),
+					new ObjectType('PHPStan\Fixture\TestEnum'),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('a'),
+					'T',
+					new ObjectType('PHPStan\Fixture\TestEnum'),
+					TemplateTypeVariance::createInvariant(),
+				),
+				new UnionType([
+					new ObjectType('PHPStan\Fixture\TestEnum'),
+					new ObjectType(stdClass::class),
+				]),
+				NeverType::class,
+				'*NEVER*=implicit',
+			],
 		];
 	}
 

@@ -94,6 +94,9 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		unset($staticParameters['env']['SHELL_VERBOSITY']);
 		// make sure invocations via blackfire use the same container
 		unset($staticParameters['env']['BLACKFIRE_AGENT_SOCKET']);
+		// the restart points these at a temporary ini with a random name (RestartManager)
+		unset($staticParameters['env']['PHPRC']);
+		unset($staticParameters['env']['PHP_INI_SCAN_DIR']);
 
 		$containerKey = [
 			$staticParameters,

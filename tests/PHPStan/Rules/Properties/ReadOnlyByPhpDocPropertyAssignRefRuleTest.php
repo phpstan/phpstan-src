@@ -65,4 +65,18 @@ class ReadOnlyByPhpDocPropertyAssignRefRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-assign-ref-phpdoc-and-native.php'], []);
 	}
 
+	public function testBug14243(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-14243-phpdoc.php'], [
+			[
+				'@readonly property Bug14243PhpDoc\PhpDocReadonly::$params is assigned by reference.',
+				37,
+			],
+			[
+				'@readonly property Bug14243PhpDoc\PhpDocReadonly::$staticParams is assigned by reference.',
+				38,
+			],
+		]);
+	}
+
 }

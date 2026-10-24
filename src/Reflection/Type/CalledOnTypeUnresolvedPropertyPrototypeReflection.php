@@ -7,9 +7,12 @@ use PHPStan\Reflection\Dummy\ChangedTypePropertyReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
+use function count;
 
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/CalledOnTypeUnresolvedPropertyPrototypeReflection.cpp')]
 final class CalledOnTypeUnresolvedPropertyPrototypeReflection implements UnresolvedPropertyPrototypeReflection
@@ -85,6 +88,26 @@ final class CalledOnTypeUnresolvedPropertyPrototypeReflection implements Unresol
 	private function transformStaticType(Type $type): Type
 	{
 		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof GenericStaticType) {
+				$fetchedOnTypeReflections = $this->fetchedOnType->getObjectClassReflections();
+				if (count($fetchedOnTypeReflections) === 1) {
+					$staticObjectType = $type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType();
+					if ($staticObjectType instanceof GenericObjectType) {
+						// do not carry over the class reflection of the declaring class,
+						// it would not know the type arguments of the resolved type
+						$staticObjectType = new GenericObjectType(
+							$staticObjectType->getClassName(),
+							$staticObjectType->getTypes(),
+							$staticObjectType->getSubtractedType(),
+							variances: $staticObjectType->getVariances(),
+						);
+					}
+
+					return $traverse($staticObjectType);
+				}
+
+				return $this->fetchedOnType;
+			}
 			if ($type instanceof StaticType) {
 				return $this->fetchedOnType;
 			}

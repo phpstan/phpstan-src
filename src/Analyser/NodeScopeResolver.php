@@ -41,9 +41,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodCallExpressionNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\StaticMethodCallExpressionNode;
-use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -416,23 +414,21 @@ class NodeScopeResolver
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
 			// a trait method the using class overrides is not analysed here at all -
-			// decided before the node callback is emitted
+			// decided before the node callback is emitted; the override can be the
+			// class's own method, another trait's, or an engine-provided one like
+			// enum cases(), from() and tryFrom(), so it is told by the declaring
+			// class of the native method, not by the kind of its method reflection
 			if (!$scope->isInClass()) {
 				throw new ShouldNotHappenException();
 			}
-			if (
-				$scope->isInTrait()
-				&& $scope->getClassReflection()->hasNativeMethod($stmt->name->toString())
-			) {
-				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
-				if ($methodReflection instanceof NativeMethodReflection) {
+			if ($scope->isInTrait()) {
+				$nativeClassReflection = $scope->getClassReflection()->getNativeReflection();
+				$methodName = $stmt->name->toString();
+				if (
+					$nativeClassReflection->hasMethod($methodName)
+					&& $nativeClassReflection->getMethod($methodName)->getBetterReflection()->getDeclaringClass()->getName() !== $scope->getTraitReflection()->getName()
+				) {
 					return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
-				}
-				if ($methodReflection instanceof PhpMethodReflection) {
-					$declaringTrait = $methodReflection->getDeclaringTrait();
-					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {
-						return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
-					}
 				}
 			}
 		}

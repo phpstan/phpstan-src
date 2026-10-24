@@ -103,36 +103,38 @@ final class InceptionResult
 	/**
 	 * @param int|null $peakMemoryUsageBytes the heaviest parallel worker's peak, 0 when the
 	 * analysis ran in this process
+	 * @param Output|null $summaryOutput error output by default
 	 */
-	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime, int $workerCount = 0): int
+	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime, int $workerCount = 0, ?Output $summaryOutput = null): int
 	{
-		if ($this->getErrorOutput()->isVerbose()) {
+		$summaryOutput ??= $this->getErrorOutput();
+		if ($summaryOutput->isVerbose()) {
 			$elapsedTime = round(microtime(true) - $analysisStartTime, 2);
 			if ($elapsedTime < 60) {
 				$elapsedTimeString = sprintf('%.2f seconds', $elapsedTime);
 			} else {
 				$elapsedTimeString = $this->formatDuration((int) $elapsedTime);
 			}
-			$this->getErrorOutput()->writeLineFormatted(sprintf(
+			$summaryOutput->writeLineFormatted(sprintf(
 				'Elapsed time: %s',
 				$elapsedTimeString,
 			));
 		}
 
-		if ($peakMemoryUsageBytes !== null && $this->getErrorOutput()->isVerbose()) {
+		if ($peakMemoryUsageBytes !== null && $summaryOutput->isVerbose()) {
 			// This process's peak is read here, at the very end, so it covers collecting
 			// the workers' results and saving the result cache - the part of a parallel
 			// run where the main process is at its largest. Both numbers are per process,
 			// which is also how memory_limit applies.
 			$mainProcessPeak = memory_get_peak_usage(true);
 			if ($peakMemoryUsageBytes === 0 || $workerCount === 0) {
-				$this->getErrorOutput()->writeLineFormatted(sprintf(
+				$summaryOutput->writeLineFormatted(sprintf(
 					'Peak memory: %s',
 					BytesHelper::bytes($mainProcessPeak),
 				));
 			} else {
 				$mechanism = $this->container->getByType(ForkParallelChecker::class)->isSupported() ? 'forked' : 'spawned';
-				$this->getErrorOutput()->writeLineFormatted(sprintf(
+				$summaryOutput->writeLineFormatted(sprintf(
 					'Peak memory: %s (main process), %s (%s)',
 					BytesHelper::bytes($mainProcessPeak),
 					BytesHelper::bytes($peakMemoryUsageBytes),

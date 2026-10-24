@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Analyser\RuleErrorTransformer;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\UnusedParametersCheck;
 use PHPStan\Testing\RuleTestCase;
@@ -17,7 +18,7 @@ class UnusedMethodParametersRuleTest extends RuleTestCase
 	{
 		return new UnusedMethodParametersRule(
 			self::getContainer()->getByType(UnusedParametersCheck::class),
-			self::getContainer()->getService('defaultAnalysisParser'),
+			self::getContainer()->getByType(RuleErrorTransformer::class),
 		);
 	}
 
@@ -75,6 +76,7 @@ class UnusedMethodParametersRuleTest extends RuleTestCase
 	public function testBug15405(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15405.php'], [
+			['Method Bug15405\OtherForms::stringCallable() has an unused parameter $context.', 54],
 			['Method Bug15405\NotReferenced::notReferenced() has an unused parameter $context.', 67],
 			['Method Bug15405\NotReferenced::calledDirectly() has an unused parameter $context.', 72],
 		]);

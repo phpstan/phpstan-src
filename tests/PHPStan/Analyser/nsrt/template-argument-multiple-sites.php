@@ -205,7 +205,7 @@ function covariantIntoInvariantInferred(): void
 	$z = collectBoxes($a, $b);
 	$z->add(3);
 	assertType('TemplateArgumentMultipleSites\Box<1>', $a);
-	assertType('TemplateArgumentMultipleSites\Coll<1|2|3>', $z);
+	assertType('TemplateArgumentMultipleSites\Coll<int>', $z);
 }
 
 function invariantIntoCovariant(): void

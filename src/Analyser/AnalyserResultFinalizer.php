@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Closure;
 use PHPStan\AnalysedCodeException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
@@ -38,7 +39,17 @@ final class AnalyserResultFinalizer
 	{
 	}
 
-	public function finalize(AnalyserResult $analyserResult, bool $onlyFiles, bool $debug): FinalizerResult
+	/**
+	 * @param Closure(string $ruleClass): void|null $preRuleCallback
+	 * @param Closure(): void|null $postRuleCallback called when the rule's processNode() has returned or thrown, before its errors are processed
+	 */
+	public function finalize(
+		AnalyserResult $analyserResult,
+		bool $onlyFiles,
+		bool $debug,
+		?Closure $preRuleCallback = null,
+		?Closure $postRuleCallback = null,
+	): FinalizerResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
 			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
@@ -57,6 +68,10 @@ final class AnalyserResultFinalizer
 		$tempCollectorErrors = [];
 		$internalErrors = $analyserResult->getInternalErrors();
 		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
+			if ($preRuleCallback !== null) {
+				$preRuleCallback(get_class($rule));
+			}
+
 			try {
 				$ruleErrors = $rule->processNode($node, $scope);
 			} catch (AnalysedCodeException $e) {
@@ -96,6 +111,10 @@ final class AnalyserResultFinalizer
 					shouldReportBug: true,
 				);
 				continue;
+			} finally {
+				if ($postRuleCallback !== null) {
+					$postRuleCallback();
+				}
 			}
 
 			foreach ($ruleErrors as $ruleError) {

@@ -2335,8 +2335,13 @@ final class InitializerExprTypeResolver
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
+		// a template type of mixed does not absorb the other operand in the union
+		$typesMixed = $types instanceof MixedType
+			|| $leftType instanceof MixedType
+			|| $rightType instanceof MixedType;
+
 		if (
-			!$types instanceof MixedType
+			!$typesMixed
 			&& (
 				$rightNumberType instanceof IntegerRangeType
 				|| $rightNumberType instanceof ConstantIntegerType
@@ -2397,14 +2402,14 @@ final class InitializerExprTypeResolver
 
 		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
 		if ($expr instanceof Expr\BinaryOp\Div) {
-			if ($types instanceof MixedType || $resultType->isInteger()->yes()) {
+			if ($typesMixed || $resultType->isInteger()->yes()) {
 				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
 			}
 
 			return new UnionType([new IntegerType(), new FloatType()]);
 		}
 
-		if ($types instanceof MixedType
+		if ($typesMixed
 			|| $leftType instanceof BenevolentUnionType
 			|| $rightType instanceof BenevolentUnionType
 		) {

@@ -437,9 +437,8 @@ final class ResultCacheManager
 		// bootstrapFiles having been executed. Restoring must not run them, so the entry is
 		// taken out of the cached meta here; the freshly computed meta below never contains it,
 		// and isMetaDifferent() never sees it on either side. Instead, the recorded hashes are
-		// verified after the meta comparison - a changed stub file invalidates the whole cache.
-		// A different list coming from an extension is not detected - projectExtensionFiles
-		// cover that.
+		// verified after the meta comparison. A different list coming from an extension is not
+		// detected - projectExtensionFiles cover that.
 		$cachedStubFiles = [];
 		if (array_key_exists('stubFiles', $data['meta']) && is_array($data['meta']['stubFiles'])) {
 			/** @var array<string, string> $cachedStubFiles */
@@ -659,6 +658,12 @@ final class ResultCacheManager
 			);
 		}
 
+		// A stub file the analysed files depend on (DependencyResolver records one for each symbol it
+		// declares) is handled by the loop over the not-analysed files below: a changed PHPDoc in it
+		// re-analyses the files using its symbols. A stub file nothing depends on gives nothing to go
+		// by, and a stub file that is analysed as well is never handled by that loop, so a change in
+		// either still invalidates the whole cache.
+		$changedStubFiles = [];
 		foreach ($cachedStubFiles as $stubFile => $stubFileHash) {
 			if (!is_file($stubFile)) {
 				return $this->fullAnalysis(
@@ -671,6 +676,11 @@ final class ResultCacheManager
 			}
 
 			if ($this->getFileHash($stubFile) === $stubFileHash) {
+				continue;
+			}
+
+			if (array_key_exists($stubFile, $data['dependencies']) && !array_key_exists($stubFile, $currentFileHashes)) {
+				$changedStubFiles[$stubFile] = true;
 				continue;
 			}
 
@@ -872,6 +882,7 @@ final class ResultCacheManager
 
 		// the freshly computed metadata, so a file that stopped being scanned is not counted
 		$scannedFiles = is_array($meta['scannedFiles'] ?? null) ? $meta['scannedFiles'] : [];
+		$stubFileWithChangedSymbols = null;
 		foreach (array_keys($notAnalysedFiles) as $notAnalysedFile) {
 			if (!array_key_exists($notAnalysedFile, $invertedDependencies)) {
 				continue;
@@ -953,6 +964,12 @@ final class ResultCacheManager
 					$scannedFilesWithChangedSymbols[$notAnalysedFile] = true;
 				}
 
+				if ($exportedNodesChanged && array_key_exists($notAnalysedFile, $changedStubFiles)) {
+					// A symbol the stub file did not declare before changes the PHPDocs of a symbol
+					// whose users recorded no edge to the stub file.
+					$stubFileWithChangedSymbols ??= $notAnalysedFile;
+				}
+
 				if ($exportedNodesChanged) {
 					// A symbol appeared or disappeared. The dependents are not enough then: a file that
 					// reported the symbol as unknown - or referenced this file while it had a syntax error
@@ -972,6 +989,16 @@ final class ResultCacheManager
 				}
 				$filesToAnalyse[] = $dependentFile;
 			}
+		}
+
+		if ($stubFileWithChangedSymbols !== null) {
+			return $this->fullAnalysis(
+				sprintf('Result cache not used because stub file %s declares different symbols.', $stubFileWithChangedSymbols),
+				$allAnalysedFiles,
+				$meta,
+				$currentFileHashes,
+				$output,
+			);
 		}
 
 		if ($cachedExportedNodesError !== null) {
@@ -1087,6 +1114,7 @@ final class ResultCacheManager
 			cachedExportedNodes: $cachedExportedNodes->only($keptCachedExportedNodes),
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
+			stubFilesChanged: $changedStubFiles !== [],
 		);
 	}
 
@@ -1452,6 +1480,17 @@ final class ResultCacheManager
 	private function mergeErrors(ResultCache $resultCache, array $freshErrorsByFile): array
 	{
 		$errorsByFile = $resultCache->getErrors();
+		if ($resultCache->hasChangedStubFiles()) {
+			// all project stub files were validated again: the errors of one depend on the others
+			foreach ($this->stubFilesProvider->getProjectStubFiles() as $stubFile) {
+				unset($errorsByFile[$stubFile]);
+				if (!array_key_exists($stubFile, $freshErrorsByFile)) {
+					continue;
+				}
+
+				$errorsByFile[$stubFile] = $freshErrorsByFile[$stubFile];
+			}
+		}
 		foreach ($resultCache->getFilesToAnalyse() as $file) {
 			if (array_key_exists($file, $this->fileReplacements)) {
 				unset($errorsByFile[$file]);

@@ -49,8 +49,18 @@ final class ResultCache
 		private CachedExportedNodes $cachedExportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private bool $stubFilesChanged = false,
 	)
 	{
+	}
+
+	/**
+	 * Whether a project stub file changed without the whole analysis having to run. The stub files
+	 * are validated again then, which otherwise happens only in a full analysis.
+	 */
+	public function hasChangedStubFiles(): bool
+	{
+		return $this->stubFilesChanged;
 	}
 
 	/**

@@ -1,0 +1,10 @@
+--- stubs/Foo.stub
++++ stubs/Foo.stub
+@@ -2,6 +2,7 @@
+ 
+ namespace ResultCacheE2EStubEdit;
+ 
++// Foo is generated from a template.
+ class Foo
+ {
+ 

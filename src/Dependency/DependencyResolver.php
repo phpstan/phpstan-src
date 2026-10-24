@@ -8,6 +8,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
+use PHPStan\PhpDoc\StubFilesProvider;
+use PHPStan\PhpDoc\StubPhpDocProvider;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -58,11 +60,16 @@ final class DependencyResolver
 
 	private ?string $nameScopeFile = null;
 
+	/** @var array<string, true>|null */
+	private ?array $projectStubFiles = null;
+
 	public function __construct(
 		private FileHelper $fileHelper,
 		private ReflectionProvider $reflectionProvider,
 		private ExportedNodeResolver $exportedNodeResolver,
 		private PackageDependencyResolver $packageDependencyResolver,
+		private StubPhpDocProvider $stubPhpDocProvider,
+		private StubFilesProvider $stubFilesProvider,
 	)
 	{
 		$this->nameScopeTracker = new NamespaceUsesTracker();
@@ -354,6 +361,11 @@ final class DependencyResolver
 	 * stub they were read from - inside the PHAR, or in PHPStan's own vendor directory - which does
 	 * not change with the selected version.
 	 *
+	 * A project stub file declaring the class or the function is a file dependency as well: its
+	 * PHPDocs override the ones of the declaring file, so editing them re-analyses the files that
+	 * use the symbol. The stub files of PHPStan and of installed packages change only with their
+	 * version.
+	 *
 	 * @param array<int, ClassReflection|FunctionReflection|ConstantReflection> $reflections
 	 * @param array<string, true> $analysedFiles
 	 * @param array<string, string> $files
@@ -362,6 +374,14 @@ final class DependencyResolver
 	private function resolveFiles(string $scopeFile, array $reflections, array $analysedFiles, array &$files, array &$packages): void
 	{
 		foreach ($reflections as $reflection) {
+			foreach ($this->getProjectStubFiles($reflection) as $stubFile) {
+				if ($stubFile === $scopeFile) {
+					continue;
+				}
+
+				$files[$stubFile] = $stubFile;
+			}
+
 			$extensionPackage = $this->packageDependencyResolver->resolveVersionedExtensionPackage($reflection);
 			if ($extensionPackage !== null) {
 				$packages[$extensionPackage] = $extensionPackage;
@@ -396,6 +416,42 @@ final class DependencyResolver
 
 			$files[$normalizedDependencyFile] = $normalizedDependencyFile;
 		}
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function getProjectStubFiles(ClassReflection|FunctionReflection|ConstantReflection $reflection): array
+	{
+		if ($this->projectStubFiles === null) {
+			$this->projectStubFiles = [];
+			foreach ($this->stubFilesProvider->getProjectStubFiles() as $stubFile) {
+				$this->projectStubFiles[$stubFile] = true;
+			}
+		}
+
+		if ($this->projectStubFiles === []) {
+			return [];
+		}
+
+		if ($reflection instanceof ClassReflection) {
+			$stubFiles = $this->stubPhpDocProvider->getClassStubFiles($reflection->getName());
+		} elseif ($reflection instanceof FunctionReflection) {
+			$stubFiles = $this->stubPhpDocProvider->getFunctionStubFiles($reflection->getName());
+		} else {
+			return [];
+		}
+
+		$projectStubFiles = [];
+		foreach ($stubFiles as $stubFile) {
+			if (!isset($this->projectStubFiles[$stubFile])) {
+				continue;
+			}
+
+			$projectStubFiles[] = $stubFile;
+		}
+
+		return $projectStubFiles;
 	}
 
 }

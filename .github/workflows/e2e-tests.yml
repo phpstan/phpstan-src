@@ -263,6 +263,8 @@ jobs:
               # A later full run must not reuse them, even with the result cache cleared.
               ../../bin/phpstan analyse src/usage.php
               ../../bin/phpstan clear-result-cache
+          - script: |
+              cd e2e/bug-15482
               ../../bin/phpstan analyse
           - script: |
               cd e2e/bug-15102

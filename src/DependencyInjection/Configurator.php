@@ -145,6 +145,7 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 		$linesToWrite = [];
 		$usedInTheLastWeek = [];
 		$now = time();
+		$week = 3600 * 24 * 7;
 		$currentAlreadyInTheJournal = false;
 		foreach ($journalLines as $journalLine) {
 			if ($journalLine === '') {
@@ -156,8 +157,6 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			}
 			$className = $journalLineParts[0];
 			$containerLastUsedTime = (int) $journalLineParts[1];
-
-			$week = 3600 * 24 * 7;
 
 			if ($containerLastUsedTime + $week < $now) {
 				continue;
@@ -198,6 +197,11 @@ final class Configurator extends \Nette\Bootstrap\Configurator
 			}
 			$fileClassName = substr($fileName, 0, -4);
 			if (in_array($fileClassName, $usedInTheLastWeek, true)) {
+				continue;
+			}
+			// another PHPStan process sharing this directory writes a new container before it is
+			// journaled, so a file missing from the journal is deleted only once it is a week old
+			if ($fileInfo->getMTime() + $week >= $now) {
 				continue;
 			}
 			$basePathname = $fileInfo->getPathname();

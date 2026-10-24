@@ -256,6 +256,15 @@ jobs:
               cd e2e/bug-15231
               ../../bin/phpstan analyze
           - script: |
+              cd e2e/bug-15475
+              # https://github.com/phpstan/phpstan/issues/15475
+              # A run on other paths builds the name scopes of the scanned file from its
+              # simplified AST, without the anonymous class declared in a function body.
+              # A later full run must not reuse them, even with the result cache cleared.
+              ../../bin/phpstan analyse src/usage.php
+              ../../bin/phpstan clear-result-cache
+              ../../bin/phpstan analyse
+          - script: |
               cd e2e/bug-15102
               composer install
               ../../bin/phpstan analyze
@@ -2180,6 +2189,17 @@ jobs:
         run: |
           cd e2e/bug-15268
           php ../../bin/phpstan analyse --no-progress --error-format=raw
+
+      - name: "Verify name scopes built from the simplified AST are not reused for an analysed file"
+        # A run on other paths builds the name scopes of the scanned file from its
+        # simplified AST, without the anonymous class declared in a function body.
+        # A later full run must not reuse them, even with the result cache cleared -
+        # https://github.com/phpstan/phpstan/issues/15475
+        run: |
+          cd e2e/bug-15475
+          php ../../bin/phpstan analyse --no-progress src/usage.php
+          php ../../bin/phpstan clear-result-cache
+          php ../../bin/phpstan analyse --no-progress
 
       - name: "Test"
         # The arena is a per-run POSIX shared-memory object: shm_open() plus an

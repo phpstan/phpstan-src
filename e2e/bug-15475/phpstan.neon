@@ -1,0 +1,9 @@
+parameters:
+    level: max
+    tmpDir: tmp
+    # the reproducer declares an anonymous readonly class
+    phpVersion: 80300
+    paths:
+        - src
+    scanFiles:
+        - src/helpers.php

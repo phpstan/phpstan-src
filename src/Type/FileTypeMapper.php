@@ -18,6 +18,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\LruCache;
 use PHPStan\Parser\Parser;
+use PHPStan\Parser\PathRoutingParser;
 use PHPStan\PhpDoc\NameScopeAlreadyBeingCreatedException;
 use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDoc\PhpDocStringResolver;
@@ -383,21 +384,26 @@ final class FileTypeMapper
 			return $cachedEntry;
 		}
 
-		$cacheKey = sprintf('ftm-%s', $fileName);
+		// a map built from the simplified AST of a file outside the analysed paths lacks
+		// the name scopes of classes declared inside function bodies, so it must not be
+		// reused once the file gets analysed, nor the other way around
+		$cacheKey = sprintf('ftm-%s%s', $this->returnsSimplifiedAst($fileName) ? 'simplified-' : '', $fileName);
 		// v6: v5 entries may be poisoned by the turbo comment-loss bug
 		// (https://github.com/phpstan/phpstan/issues/15037) - a parse that
 		// silently dropped every comment cached PHPDoc-less name-scope maps,
 		// and the content hashes cannot tell them apart from real ones.
 		// v7: IntermediaryNameScope refers to a NamespaceUses shared with the other name scopes
 		// created under the same use statements
-		$variableCacheKey = sprintf('v7-%s', ComposerHelper::getPhpDocParserVersion());
+		// v8: the files are recorded with whether the map was built from their simplified AST;
+		// v7 entries may be built from it even under the key of the full AST
+		$variableCacheKey = sprintf('v8-%s', ComposerHelper::getPhpDocParserVersion());
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);
 			$filesWithHashes = [];
 			foreach ($files as $file) {
 				$newHash = $this->fileContentHasher->hash($file);
-				$filesWithHashes[$file] = $newHash;
+				$filesWithHashes[$file] = [$newHash, $this->returnsSimplifiedAst($file)];
 			}
 			$this->cache->save($cacheKey, $variableCacheKey, [$nameScopeMap, $filesWithHashes]);
 		} else {
@@ -418,17 +424,17 @@ final class FileTypeMapper
 		$cached = $this->cache->load($cacheKey, $variableCacheKey);
 		if ($cached !== null) {
 			/**
-			 * @var array<string, string> $filesWithHashes
+			 * @var array<string, array{string, bool}> $filesWithHashes
 			 */
 			[$nameScopeMap, $filesWithHashes] = $cached;
 			$useCache = true;
-			foreach ($filesWithHashes as $file => $hash) {
+			foreach ($filesWithHashes as $file => [$hash, $simplifiedAst]) {
 				$newHash = $this->fileContentHasher->hash($file);
 				if ($newHash === false) {
 					$useCache = false;
 					break;
 				}
-				if ($newHash === $hash) {
+				if ($newHash === $hash && $this->returnsSimplifiedAst($file) === $simplifiedAst) {
 					continue;
 				}
 				$useCache = false;
@@ -441,6 +447,11 @@ final class FileTypeMapper
 		}
 
 		return null;
+	}
+
+	private function returnsSimplifiedAst(string $fileName): bool
+	{
+		return $this->phpParser instanceof PathRoutingParser && $this->phpParser->returnsSimplifiedAst($fileName);
 	}
 
 	/**

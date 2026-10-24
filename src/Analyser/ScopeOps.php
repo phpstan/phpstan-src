@@ -505,6 +505,15 @@ final class ScopeOps
 			if ($remainder instanceof NeverType) {
 				continue;
 			}
+			if (
+				$remainder !== $holder->getType()
+				&& !$theirHolder->getType()->isSuperTypeOf($remainder)->no()
+			) {
+				// only part of their type was subtracted (e.g. null from
+				// string|null, but not non-empty-string from string), so the
+				// remainder still overlaps their branch and cannot prove ours
+				$remainder = $holder->getType();
+			}
 			if ($mergedExpressionTypes[$exprString]->getType()->equals($remainder)) {
 				// matching this guard later would not discriminate the branches -
 				// the merged scope already guarantees it

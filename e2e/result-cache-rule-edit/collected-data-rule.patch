@@ -1,0 +1,11 @@
+--- rules/CalledRule.php
++++ rules/CalledRule.php
+@@ -27,7 +27,7 @@
+ 				if ($name !== 'foo') {
+ 					continue;
+ 				}
+-				$errors[] = RuleErrorBuilder::message('Called v1: ' . $name)->identifier('called.foo')->file($file)->line(1)->build();
++				$errors[] = RuleErrorBuilder::message('Called v2: ' . $name)->identifier('called.foo')->file($file)->line(1)->build();
+ 			}
+ 		}
+ 

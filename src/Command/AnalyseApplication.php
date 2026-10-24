@@ -8,6 +8,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\Analyser\RuleScopedAnalysis;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -44,6 +45,7 @@ final class AnalyseApplication
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
+		private RuleScopedAnalysis $ruleScopedAnalysis,
 	)
 	{
 	}
@@ -90,6 +92,8 @@ final class AnalyseApplication
 			}
 		} else {
 			$resultCache = $resultCacheManager->restore($files, $debug, $onlyFiles, $projectConfigArray, $errorOutput);
+			// the in-process analysis reads it here, the parallel workers get it with each job
+			$this->ruleScopedAnalysis->set($resultCache->getChangedRuleClasses(), $resultCache->getRuleScopedFiles());
 			$intermediateAnalyserResult = $this->runAnalyser(
 				$resultCache->getFilesToAnalyse(),
 				$files,
@@ -129,6 +133,7 @@ final class AnalyseApplication
 					peakMemoryUsageBytes: $intermediateAnalyserResult->getPeakMemoryUsageBytes(),
 					processedFiles: $intermediateAnalyserResult->getProcessedFiles(),
 					workerCount: $intermediateAnalyserResult->getWorkerCount(),
+					nodeTypes: $intermediateAnalyserResult->getNodeTypes(),
 				);
 			}
 
@@ -354,6 +359,7 @@ final class AnalyseApplication
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
+			nodeTypes: $analyserResult->getNodeTypes(),
 		);
 	}
 

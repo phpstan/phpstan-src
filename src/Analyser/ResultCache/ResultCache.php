@@ -6,6 +6,7 @@ use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
+use function array_fill_keys;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
@@ -29,6 +30,9 @@ final class ResultCache
 	 * @param array<string, array<RootExportedNode>> $exportedNodes the decoded ones - see $cachedExportedNodes for the rest
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
+	 * @param list<string> $ruleScopedFiles files in $filesToAnalyse that are re-analysed only for $changedRuleClasses
+	 * @param list<string> $changedRuleClasses
+	 * @param array<string, list<string>> $nodeTypes the cached node classes per analysed file
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -49,8 +53,80 @@ final class ResultCache
 		private CachedExportedNodes $cachedExportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private array $ruleScopedFiles = [],
+		private array $changedRuleClasses = [],
+		private array $nodeTypes = [],
 	)
 	{
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getRuleScopedFiles(): array
+	{
+		return $this->ruleScopedFiles;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getChangedRuleClasses(): array
+	{
+		return $this->changedRuleClasses;
+	}
+
+	/**
+	 * @return array<string, list<string>>
+	 */
+	public function getNodeTypes(): array
+	{
+		return $this->nodeTypes;
+	}
+
+	/**
+	 * The same cache with only the files that are re-analysed with all rules, for the merges that
+	 * replace everything of a re-analysed file.
+	 */
+	public function withoutRuleScopedFiles(): self
+	{
+		if ($this->ruleScopedFiles === []) {
+			return $this;
+		}
+
+		$ruleScoped = array_fill_keys($this->ruleScopedFiles, true);
+		$filesToAnalyse = [];
+		foreach ($this->filesToAnalyse as $file) {
+			if (isset($ruleScoped[$file])) {
+				continue;
+			}
+
+			$filesToAnalyse[] = $file;
+		}
+
+		return new self(
+			$filesToAnalyse,
+			$this->fullAnalysis,
+			$this->fullAnalysisReason,
+			$this->lastFullAnalysisTime,
+			$this->meta,
+			$this->errors,
+			$this->locallyIgnoredErrors,
+			$this->linesToIgnore,
+			$this->unmatchedLineIgnores,
+			$this->collectedData,
+			$this->dependencies,
+			$this->usedTraitDependencies,
+			$this->valueDependencies,
+			$this->packageDependencies,
+			$this->exportedNodes,
+			$this->cachedExportedNodes,
+			$this->projectExtensionFiles,
+			$this->currentFileHashes,
+			[],
+			$this->changedRuleClasses,
+			$this->nodeTypes,
+		);
 	}
 
 	/**

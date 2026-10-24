@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 
@@ -28,6 +29,7 @@ final class FileAnalyserResult
 	 * @param LinesToIgnore $linesToIgnore
 	 * @param LinesToIgnore $unmatchedLineIgnores
 	 * @param list<string> $processedFiles
+	 * @param list<class-string<Node>> $nodeTypes
 	 */
 	public function __construct(
 		private array $errors,
@@ -43,8 +45,17 @@ final class FileAnalyserResult
 		private array $linesToIgnore,
 		private array $unmatchedLineIgnores,
 		private array $processedFiles,
+		private array $nodeTypes = [],
 	)
 	{
+	}
+
+	/**
+	 * @return list<class-string<Node>>
+	 */
+	public function getNodeTypes(): array
+	{
+		return $this->nodeTypes;
 	}
 
 	/**

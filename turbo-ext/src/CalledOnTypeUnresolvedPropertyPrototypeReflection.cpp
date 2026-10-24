@@ -144,8 +144,10 @@ private:
 	}
 
 	/* the closure of transformStaticType(): `function (Type $type, callable
-	 * $traverse): Type` — a StaticType becomes the fetched-on type,
-	 * everything else traverses */
+	 * $traverse): Type` — a GenericStaticType becomes the static object
+	 * type of its base class changed to the single fetched-on class
+	 * (traversed on), or the fetched-on type itself; any other StaticType
+	 * the fetched-on type; everything else traverses */
 	static void traverse(zval *thisZv, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
 		(void) state1;
@@ -158,6 +160,42 @@ private:
 			return;
 		}
 		zval *type = &argv[0];
+		bool isGenericStatic;
+		pt_type_instanceof_ce(type, pt_ce_generic_static_type, isGenericStatic);
+		if (isGenericStatic) {
+			zval *fetchedOnType = CalledOnTypeUnresolvedPropertyPrototypeReflection(Z_OBJ_P(thisZv)).slot(slots::fetchedOnType, "fetchedOnType");
+			if (UNEXPECTED(fetchedOnType == NULL)) return;
+			/* $fetchedOnTypeReflections = $this->fetchedOnType->getObjectClassReflections(); */
+			zv::Val reflections = pt_type_call(Z_OBJ_P(fetchedOnType), PT_LC("getobjectclassreflections"), 0, NULL);
+			if (UNEXPECTED(reflections.isUndef())) return;
+			if (UNEXPECTED(!zv::Ref(reflections.raw()).isArray())) {
+				zend_type_error("phpstan_turbo: getObjectClassReflections() must return an array");
+				return;
+			}
+			if (zend_hash_num_elements(Z_ARRVAL_P(reflections.raw())) == 1) {
+				/* return $traverse($type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType()); */
+				zval *first = zend_hash_index_find(Z_ARRVAL_P(reflections.raw()), 0);
+				if (UNEXPECTED(first == NULL)) {
+					zend_throw_error(NULL, "phpstan_turbo: getObjectClassReflections() must return a list");
+					return;
+				}
+				ZVAL_DEREF(first);
+				zv::Val changed = pt_type_call(Z_OBJ_P(type), PT_LC("changebaseclass"), 1, first);
+				if (UNEXPECTED(changed.isUndef())) return;
+				if (UNEXPECTED(!zv::Ref(changed.raw()).isObject())) {
+					zend_type_error("phpstan_turbo: changeBaseClass() must return an object");
+					return;
+				}
+				zv::Val staticObjectType = pt_type_call(Z_OBJ_P(changed.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
+				if (UNEXPECTED(staticObjectType.isUndef())) return;
+				zv::Val traversed = pt_type_call_callable(&argv[1], 1, staticObjectType.raw());
+				if (UNEXPECTED(traversed.isUndef())) return;
+				traversed.intoReturnValue(return_value);
+				return;
+			}
+			ZVAL_COPY(return_value, fetchedOnType);
+			return;
+		}
 		bool isStatic;
 		pt_type_instanceof_ce(type, pt_ce_static_type, isStatic);
 		if (isStatic) {

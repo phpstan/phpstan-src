@@ -23,6 +23,7 @@ final class StatementContext
 		private bool $resolveTemplateArguments = true,
 		private ?Type $expectedReturnType = null,
 		private ?Type $nativeExpectedReturnType = null,
+		private bool $convergesLoops = false,
 	)
 	{
 	}
@@ -48,6 +49,35 @@ final class StatementContext
 		return $this->isTopLevel;
 	}
 
+	/**
+	 * Whether loops walk their body until the types stabilize. Besides the
+	 * top level, the loops nested in a convergence pass of a top-level loop
+	 * do, and so do the loops nested in their final walks - otherwise a
+	 * variable a nested loop changes over several iterations keeps the type
+	 * of its first iteration in the outer loop's passes.
+	 */
+	public function shouldConvergeLoops(): bool
+	{
+		return $this->isTopLevel || $this->convergesLoops;
+	}
+
+	/**
+	 * The context of a loop's convergence pass. The loops nested in a pass of
+	 * a top-level loop converge themselves, their passes' nested loops are
+	 * walked once.
+	 */
+	public function enterLoopPass(): self
+	{
+		if ($this->isTopLevel) {
+			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType, true);
+		}
+		if ($this->convergesLoops) {
+			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType);
+		}
+
+		return $this;
+	}
+
 	public function getForeachUnrollFactor(): int
 	{
 		return $this->foreachUnrollFactor;
@@ -64,7 +94,7 @@ final class StatementContext
 			return $this;
 		}
 
-		return new self($this->isTopLevel, $this->foreachUnrollFactor, false, $this->expectedReturnType, $this->nativeExpectedReturnType);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, false, $this->expectedReturnType, $this->nativeExpectedReturnType, $this->convergesLoops);
 	}
 
 	/**
@@ -78,7 +108,7 @@ final class StatementContext
 			return $this;
 		}
 
-		return new self($this->isTopLevel, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $expectedReturnType, $nativeExpectedReturnType);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $expectedReturnType, $nativeExpectedReturnType, $this->convergesLoops);
 	}
 
 	public function getExpectedReturnType(): ?Type
@@ -102,7 +132,7 @@ final class StatementContext
 
 	public function enterUnrolledForeach(int $totalKeys): self
 	{
-		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor * $totalKeys, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType, $this->convergesLoops);
 	}
 
 }

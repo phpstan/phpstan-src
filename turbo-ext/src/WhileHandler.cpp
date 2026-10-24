@@ -79,6 +79,8 @@ public:
 		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
+		bool shouldConvergeLoops;
+		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
 
 		zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
 		if (UNEXPECTED(storage.isUndef())) return zv::Val();
@@ -134,7 +136,7 @@ public:
 		zv::Val prevEntryScope;
 		zv::Val previousPass = zv::Val::null();
 		zv::Val previousPassStorage = zv::Val::null();
-		if (isTopLevel) {
+		if (shouldConvergeLoops) {
 			zend_long count = 0;
 			zval *stmts = ptsh::readNodeProperty(pt_wh_stmts_site, stmt, PT_LC("stmts"));
 			if (UNEXPECTED(stmts == NULL)) return zv::Val();
@@ -181,9 +183,9 @@ public:
 					zval *passStmts = ptsh::readNodeProperty(pt_wh_stmts_site, stmt, PT_LC("stmts"));
 					if (UNEXPECTED(passStmts == NULL)) return;
 					zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(passStmts));
-					zv::Val deepContext = pt_statement_context_enter_deep(context);
-					if (UNEXPECTED(deepContext.isUndef())) return;
-					zv::Val passContext = pt_statement_context_without_template_argument_resolution(deepContext.raw());
+					zv::Val loopPassContext = pt_statement_context_enter_loop_pass(context);
+					if (UNEXPECTED(loopPassContext.isUndef())) return;
+					zv::Val passContext = pt_statement_context_without_template_argument_resolution(loopPassContext.raw());
 					if (UNEXPECTED(passContext.isUndef())) return;
 					zv::Val passRecord = zv::Val::null();
 					zv::Val walked = pt_node_scope_resolver_process_loop_pass_stmt_nodes(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage.raw(), bodyRecording.raw(), passContext.raw(), previousPass.raw(), passRecord);

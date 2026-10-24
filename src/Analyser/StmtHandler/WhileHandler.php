@@ -94,7 +94,7 @@ final class WhileHandler implements StmtHandler
 		$prevEntryScope = null;
 		$previousPass = null;
 		$previousPassStorage = null;
-		if ($context->isTopLevel()) {
+		if ($context->shouldConvergeLoops()) {
 			$count = 0;
 			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			do {
@@ -119,7 +119,7 @@ final class WhileHandler implements StmtHandler
 					$passCondResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $bodyScope, $storage, $condRecording, ExpressionContext::createDeep(resolveTemplateArguments: false));
 					$bodyScope = $passCondResult->getTruthyScope();
 					$passRecord = null;
-					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterLoopPass()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();

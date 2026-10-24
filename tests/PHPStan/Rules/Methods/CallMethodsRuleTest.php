@@ -4560,6 +4560,14 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15251.php'], []);
 	}
 
+	public function testBug15434(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-15434.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testClassConstantWildcardArguments(): void
 	{

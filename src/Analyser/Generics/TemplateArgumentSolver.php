@@ -131,6 +131,18 @@ final class TemplateArgumentSolver
 		return $type;
 	}
 
+	private function refersToKey(Type $type, string $key): bool
+	{
+		$refers = false;
+		TypeTraverser::map($type, function (Type $type, callable $traverse) use ($key, &$refers): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType && $this->representative(self::key($type->getSite(), $type->getTemplateName())) === $key) {
+				$refers = true;
+			}
+			return $refers ? $type : $traverse($type);
+		});
+		return $refers;
+	}
+
 	/** @var array<string, true> */
 	private array $resolving = [];
 
@@ -207,7 +219,14 @@ final class TemplateArgumentSolver
 		$initial = $observation['initial'] !== null ? $this->substituteResolutions($observation['initial']) : null;
 		$template = $observation['marker']->getTemplate();
 		$lowerBounds = [];
+		$key = $this->representative(self::key($observation['marker']->getSite(), $observation['marker']->getTemplateName()));
 		foreach ($observation['lowerBounds'] as $lowerBound) {
+			if ($this->refersToKey($lowerBound, $key)) {
+				// the object passed to its own method ($map->set($map) with
+				// set(TOwner $owner)) can only be bounded by itself - it says
+				// nothing about the argument
+				continue;
+			}
 			$inferred = $template->inferTemplateTypes($this->substituteResolutions($lowerBound))->getType($template->getName());
 			if ($inferred === null) {
 				continue;

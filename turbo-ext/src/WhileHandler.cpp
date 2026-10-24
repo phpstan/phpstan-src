@@ -193,6 +193,10 @@ public:
 					bodyScopeResult = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
 					if (UNEXPECTED(bodyScopeResult.isUndef())) return;
 					backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
+					if (UNEXPECTED(backEdgeScope.isUndef())) return;
+					if (backEdgeScope.isNull() && !bodyIsReplayable) {
+						backEdgeScope = ptlh::convergedPassBackEdgeScope(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage.raw(), context);
+					}
 				}();
 				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope.raw())); });
 				if (UNEXPECTED(EG(exception))) return zv::Val();

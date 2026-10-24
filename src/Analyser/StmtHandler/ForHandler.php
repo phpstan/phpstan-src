@@ -202,6 +202,7 @@ final class ForHandler implements StmtHandler
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			$previousPass = null;
 			$previousPassStorage = null;
+			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			do {
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
@@ -231,6 +232,11 @@ final class ForHandler implements StmtHandler
 					$previousPassStorage = $storage;
 					$passFlows[] = $bodyScopeResult->getVariableFlow();
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+					if ($backEdgeScope === null && !$bodyIsReplayable) {
+						// a nested loop walks only its first iteration in a pass - its unconverged
+						// types can make the back edge look dead, so a walk converging it decides
+						$backEdgeScope = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage->duplicate(), new NoopNodeCallback(), $context->withoutTemplateArgumentResolution())->filterOutLoopExitPoints()->getLoopBackEdgeScope();
+					}
 					if ($backEdgeScope === null) {
 						$bodyScope = $prevScope;
 						break;

@@ -378,7 +378,8 @@ inline void PhpFileCleaner::clean(zend_long maxMatches, std::string &out)
 				if (inType) {
 					typeLevel--;
 
-					if (typeLevel == 0) {
+					if (typeLevel <= 0) {
+						typeLevel = 0;
 						inType = false;
 					}
 				}
@@ -448,8 +449,12 @@ inline void PhpFileCleaner::clean(zend_long maxMatches, std::string &out)
 			for (const TypeConfig &type : types) {
 				if (type.firstByte != c) continue;
 
-				if (index + type.length <= len && memcmp(contents + index, type.name, type.length) == 0) {
-					if (maxMatches == 1 && prevByteOpensKeyword(index)) {
+				if (index + type.length <= len
+					&& memcmp(contents + index, type.name, type.length) == 0
+					&& prevByteOpensKeyword(index)
+					&& (index + type.length == len || !isWordByte((unsigned char) contents[index + type.length]))
+				) {
+					if (maxMatches == 1) {
 						size_t end;
 						if (matchSpacesAndName(index + type.length, &end)) {
 							clean.append(contents + index - 1, end - (index - 1));

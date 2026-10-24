@@ -1062,6 +1062,10 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 				'Constant NumberFormatter::TYPE_INT32 is not allowed for parameter #2 $style of static method NumberFormatter::create().',
 				15,
 			],
+			[
+				'Integer 100 does not correspond to constants allowed for parameter #2 $style of static method NumberFormatter::create().',
+				18,
+			],
 		]);
 	}
 

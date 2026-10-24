@@ -12,6 +12,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\ParameterAllowedConstants;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
@@ -38,6 +39,7 @@ use function array_key_exists;
 use function array_last;
 use function array_merge;
 use function count;
+use function explode;
 use function implode;
 use function in_array;
 use function is_int;
@@ -45,6 +47,7 @@ use function is_string;
 use function lcfirst;
 use function max;
 use function sprintf;
+use function str_contains;
 
 #[AutowiredService]
 final class FunctionCallParametersCheck
@@ -98,6 +101,7 @@ final class FunctionCallParametersCheck
 		string $invalidConstantMessage,
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
+		string $integerLiteralMessage,
 		?array $renamedNamedArgumentParameterData,
 	): array
 	{
@@ -453,6 +457,21 @@ final class FunctionCallParametersCheck
 					$parameter instanceof ExtendedParameterReflection
 					&& $scope->getPhpVersion()->supportsNamedArguments()->yes()
 				) {
+					$allowedConstants = $parameter->getAllowedConstants();
+					if ($allowedConstants !== null) {
+						$literalValue = $this->resolveIntegerLiteralValue($argumentValue);
+						if ($literalValue !== null && !$this->isIntegerValueAllowed($literalValue, $allowedConstants, $scope)) {
+							$errors[] = RuleErrorBuilder::message(sprintf(
+								$integerLiteralMessage,
+								(string) $literalValue,
+								lcfirst($this->describeParameter($parameter, $argumentName ?? $i + 1)),
+							))
+								->identifier('argument.invalidIntegerLiteral')
+								->line($argumentLine)
+								->build();
+						}
+					}
+
 					$constantReflections = $this->resolveConstantReflections($argumentValue, $scope);
 					if ($constantReflections !== null) {
 						if ($parameter->getAllowedConstants() !== null) {
@@ -858,6 +877,90 @@ final class FunctionCallParametersCheck
 		}
 
 		return null;
+	}
+
+	/**
+	 * Combines integer literals found directly in the argument, including literals
+	 * inside a bitmask built with `|`. Returns null when there are no such literals.
+	 */
+	private function resolveIntegerLiteralValue(Expr $expr): ?int
+	{
+		if ($expr instanceof Node\Scalar\Int_) {
+			return $expr->value;
+		}
+
+		if ($expr instanceof Expr\BinaryOp\BitwiseOr) {
+			$left = $this->resolveIntegerLiteralValue($expr->left);
+			$right = $this->resolveIntegerLiteralValue($expr->right);
+			if ($left === null) {
+				return $right;
+			}
+			if ($right === null) {
+				return $left;
+			}
+
+			return $left | $right;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Single-value parameters accept only a value of one of the allowed constants.
+	 * Bitmask parameters accept any value that can be built by combining allowed constants with `|`.
+	 */
+	private function isIntegerValueAllowed(int $value, ParameterAllowedConstants $allowedConstants, Scope $scope): bool
+	{
+		$constantValues = [];
+		foreach ($allowedConstants->getConstants() as $constantName) {
+			$constantValue = $this->resolveIntegerConstantValue($constantName, $scope);
+			if ($constantValue === null) {
+				continue;
+			}
+
+			$constantValues[] = $constantValue;
+		}
+
+		if ($constantValues === []) {
+			return true;
+		}
+
+		if (!$allowedConstants->isBitmask()) {
+			return in_array($value, $constantValues, true);
+		}
+
+		$constructibleValue = 0;
+		foreach ($constantValues as $constantValue) {
+			if (($constantValue & ~$value) !== 0) {
+				continue;
+			}
+
+			$constructibleValue |= $constantValue;
+		}
+
+		return $constructibleValue === $value;
+	}
+
+	private function resolveIntegerConstantValue(string $constantName, Scope $scope): ?int
+	{
+		if (str_contains($constantName, '::')) {
+			[$className, $classConstantName] = explode('::', $constantName, 2);
+			if ($className === '' || $classConstantName === '') {
+				return null;
+			}
+			$constantFetch = new Expr\ClassConstFetch(new Node\Name\FullyQualified($className), $classConstantName);
+		} elseif ($constantName !== '') {
+			$constantFetch = new Expr\ConstFetch(new Node\Name\FullyQualified($constantName));
+		} else {
+			return null;
+		}
+
+		$values = $scope->getType($constantFetch)->getConstantScalarValues();
+		if (count($values) !== 1 || !is_int($values[0])) {
+			return null;
+		}
+
+		return $values[0];
 	}
 
 	private function callReturnsByReference(Expr $expr, Scope $scope): bool

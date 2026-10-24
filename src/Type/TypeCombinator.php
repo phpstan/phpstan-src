@@ -738,7 +738,13 @@ final class TypeCombinator
 		}
 
 		// simplify string[] | int[] to (string|int)[]
-		if ($a instanceof IterableType && $b instanceof IterableType) {
+		// - but not TKey|TValue both of iterable, that would forget the template types
+		if (
+			$a instanceof IterableType
+			&& $b instanceof IterableType
+			&& !$a instanceof TemplateType
+			&& !$b instanceof TemplateType
+		) {
 			return [
 				new IterableType(
 					self::union($a->getIterableKeyType(), $b->getIterableKeyType()),
@@ -1133,6 +1139,48 @@ final class TypeCombinator
 	}
 
 	/**
+	 * Splits the arrays of a union into the arrays of each template type and the rest.
+	 *
+	 * Arrays of different template types cannot be merged: `TKey|TValue` both of
+	 * `array` is not `TKey` - nor is it a plain array, the merge would forget which
+	 * template types the values come from.
+	 *
+	 * @param list<Type> $arrayTypes
+	 * @return list<list<Type>>
+	 */
+	private static function groupArrayTypesByTemplateType(array $arrayTypes): array
+	{
+		$groups = [];
+		$templateTypes = [];
+		$otherArrayTypes = [];
+		foreach ($arrayTypes as $arrayType) {
+			if (!$arrayType instanceof TemplateType) {
+				$otherArrayTypes[] = $arrayType;
+				continue;
+			}
+
+			foreach ($templateTypes as $i => $templateType) {
+				if (
+					$templateType->getName() === $arrayType->getName()
+					&& $templateType->getScope()->equals($arrayType->getScope())
+				) {
+					$groups[$i][] = $arrayType;
+					continue 2;
+				}
+			}
+
+			$templateTypes[] = $arrayType;
+			$groups[] = [$arrayType];
+		}
+
+		if ($otherArrayTypes !== []) {
+			$groups[] = $otherArrayTypes;
+		}
+
+		return $groups;
+	}
+
+	/**
 	 * @param list<Type> $arrayTypes
 	 * @return Type[]
 	 */
@@ -1140,6 +1188,16 @@ final class TypeCombinator
 	{
 		if ($arrayTypes === []) {
 			return [];
+		}
+
+		$arrayTypeGroups = self::groupArrayTypesByTemplateType($arrayTypes);
+		if (count($arrayTypeGroups) > 1) {
+			$processedArrayTypes = [];
+			foreach ($arrayTypeGroups as $arrayTypeGroup) {
+				$processedArrayTypes = array_merge($processedArrayTypes, self::processArrayTypes($arrayTypeGroup));
+			}
+
+			return $processedArrayTypes;
 		}
 
 		$emptyArray = self::findEmptyArrayNextToOversizedArray($arrayTypes);

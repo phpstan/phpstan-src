@@ -1432,7 +1432,14 @@ private:
 					ZVAL_COPY_VALUE(&captures[4], closureImpurePoints.raw());
 					ZVAL_COPY_VALUE(&captures[5], invalidateExpressions.raw());
 					zv::Val callback = pt_native_closure_new(&closureWalkCallbackBody, 6, captures, 0b111110);
-					zv::Val context = pt_statement_context_create_top_level();
+					// a body walked while the enclosing body observes keeps its
+					// unresolved template arguments for the enclosing body to resolve
+					zv::Val frame = pt_mutating_scope_get_current_template_argument_frame(Z_OBJ_P(scope));
+					bool observing = false;
+					zv::Val context;
+					if (EXPECTED(!frame.isUndef()) && (frame.isNull() || EXPECTED(pt_template_argument_frame_is_observing(frame.raw(), observing)))) {
+						context = pt_statement_context_create_top_level(!observing);
+					}
 					if (EXPECTED(!context.isUndef())) {
 						zv::Val internalResult = pt_node_scope_resolver_process_stmt_nodes_internal(OBJ_PROP_NUM(self, slots::nodeScopeResolver), expr, stmtsHold.raw(), closureScope.raw(), walkStorage.raw(), callback.raw(), context.raw());
 						if (EXPECTED(!internalResult.isUndef())) {

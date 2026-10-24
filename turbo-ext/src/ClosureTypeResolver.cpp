@@ -6,8 +6,9 @@
  * constructor keeps the twin's arginfo so Nette autowires it, the per-file
  * cache lives in the twin's $cachedTypes slot with the twin's shape
  * (spl_object_id => ['expr' => ..., 'types' => [cacheKey => [...]]]) and is
- * updated in place. The private static $resolveClosureTypeDepth guard is a
- * C++ counter (the declared static stays for reflection parity).
+ * updated in place. The private static $resolveClosureTypeDepth guard and
+ * $cappedClosureTypeWalks are C++ counters (the declared statics stay for
+ * reflection parity).
  *
  * getClosureType(), buildClosureTypeForClosure(),
  * buildClosureTypeForArrowFunction() and getDeclaredClosureType() are exported
@@ -57,6 +58,9 @@ zend_string *pt_ctr_used_variables = nullptr;
 
 /* the private static $resolveClosureTypeDepth */
 int pt_ctr_resolve_closure_type_depth = 0;
+
+/* the private static $cappedClosureTypeWalks */
+int pt_ctr_capped_closure_type_walks = 0;
 
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
@@ -355,7 +359,10 @@ public:
 			ZVAL_DEREF(cached);
 			return createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree);
 		}
-		if (pt_ctr_resolve_closure_type_depth >= 2) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
+		if (pt_ctr_resolve_closure_type_depth >= 2) {
+			pt_ctr_capped_closure_type_walks++;
+			return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
+		}
 
 		if (UNEXPECTED(!countClosureTypeBodyWalk())) return zv::Val();
 		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
@@ -1336,6 +1343,12 @@ private:
 		zend_hash_index_update(Z_ARRVAL_P(cachedTypes), id, &value);
 	}
 
+	/* Mirrors readableWalkStorage() (NULL for null) */
+	static zval *readableWalkStorage(zval *walkStorage, int cappedBefore)
+	{
+		return pt_ctr_capped_closure_type_walks == cappedBefore ? walkStorage : NULL;
+	}
+
 	/* the arrow-function body walk of getClosureType() */
 	zv::Val walkArrowFunction(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey)
 	{
@@ -1354,6 +1367,7 @@ private:
 		zv::Val arrowFunctionImpurePoints = ptsh::newArrayReference();
 		zv::Val invalidateExpressions = ptsh::newArrayReference();
 		pt_ctr_resolve_closure_type_depth++;
+		int cappedBefore = pt_ctr_capped_closure_type_walks;
 		zv::Val walkStorage = pt_expression_result_storage_new();
 		if (UNEXPECTED(walkStorage.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(arrowScope.raw()), walkStorage.raw()))) return zv::Val();
@@ -1390,7 +1404,7 @@ private:
 
 		// the body was processed just above; resolve the return type from its stored
 		// result rather than reading the still-unprocessed body expression
-		zv::Val returnType = resolveArrowFunctionReturnType(scope, arrowScope.raw(), expr, false, walkStorage.raw());
+		zv::Val returnType = resolveArrowFunctionReturnType(scope, arrowScope.raw(), expr, false, readableWalkStorage(walkStorage.raw(), cappedBefore));
 		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 
 		zv::Arr usedVariables = zv::Arr::empty();
@@ -1401,6 +1415,7 @@ private:
 	zv::Val walkClosure(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey)
 	{
 		pt_ctr_resolve_closure_type_depth++;
+		int cappedBefore = pt_ctr_capped_closure_type_walks;
 
 		zval null;
 		ZVAL_NULL(&null);
@@ -1461,7 +1476,7 @@ private:
 		zv::Val impurePoints = mergeLists(Z_REFVAL_P(closureImpurePoints.raw()), resultImpurePoints);
 		if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
 
-		return buildClosureTypeFromClosureWalk(scope, expr, p.parameters.raw(), p.isVariadic, Z_REFVAL_P(closureReturnStatements.raw()), Z_REFVAL_P(closureYieldStatements.raw()), Z_REFVAL_P(closureExecutionEnds.raw()), throwPointsOwned.raw(), impurePoints.raw(), Z_REFVAL_P(invalidateExpressions.raw()), cacheKey, false, walkStorage.raw(), p.contextFree);
+		return buildClosureTypeFromClosureWalk(scope, expr, p.parameters.raw(), p.isVariadic, Z_REFVAL_P(closureReturnStatements.raw()), Z_REFVAL_P(closureYieldStatements.raw()), Z_REFVAL_P(closureExecutionEnds.raw()), throwPointsOwned.raw(), impurePoints.raw(), Z_REFVAL_P(invalidateExpressions.raw()), cacheKey, false, readableWalkStorage(walkStorage.raw(), cappedBefore), p.contextFree);
 	}
 };
 

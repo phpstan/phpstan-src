@@ -699,7 +699,19 @@ final class ExpressionResult
 		$useNativeTypes = $useNativeTypes || $scope->nativeTypesPromoted;
 		$readScope = $useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope;
 
-		return $this->isScopeAuthoritative($readScope) || $this->askScopeVariableStateMatches($scope, $useNativeTypes);
+		if ($this->isScopeAuthoritative($readScope)) {
+			return true;
+		}
+
+		// the walk position narrowed this very expression (e.g. the right
+		// operand of `$a['k'] === null || is_int($a['k'])`) - a position not
+		// carrying that narrowing must not see it through the memoized type
+		$positionScope = $useNativeTypes ? $this->beforeScope->doNotTreatPhpDocTypesAsCertain() : $this->beforeScope;
+		if ($this->isScopeAuthoritative($positionScope)) {
+			return false;
+		}
+
+		return $this->askScopeVariableStateMatches($scope, $useNativeTypes);
 	}
 
 	/**

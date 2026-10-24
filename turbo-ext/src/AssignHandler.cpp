@@ -2489,8 +2489,16 @@ private:
 		// them from the walk's own storage (the scope's storage stack misses it
 		// on loop-convergence passes); synthetic terms narrowing extensions built
 		// (@phpstan-assert property fetches etc.) answer from scope state or a walk
+		// - unless the walk read them on a narrowed branch (the right operand of
+		// `$a['k'] === null || is_int($a['k'])`), then they are re-priced here
 		AH_VAL(storedResult, pt_expression_result_storage_find(storage, expr));
-		if (!storedResult.isNull()) return ahTypeOnScope(storedResult.raw(), scope);
+		if (!storedResult.isNull()) {
+			bool promoted;
+			AH_OK(ahPromoted(scope, promoted));
+			bool answers;
+			AH_OK(pt_expression_result_answers_on_scope(storedResult.raw(), scope, promoted, answers));
+			if (answers) return ahTypeOnScope(storedResult.raw(), scope);
+		}
 
 		return nsrReadScopeStateOrSyntheticType(nsr, expr, scope);
 	}

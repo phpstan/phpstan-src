@@ -16,3 +16,5 @@ is_writeable = "is_writeable"
 [default.extend-words]
 # override false-positives
 Excluder = "Excluder"
+# English ordinal suffix ("2nd"), from the "S" date format
+nd = "nd"

@@ -2,6 +2,8 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\Analyser\AnalyserResultFinalizer;
+use PHPStan\Analyser\CollectedDataRuleResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\CollectorWithPaths;
@@ -109,6 +111,35 @@ final class ResultCachePathTransformer
 				$absolutized[] = $error->transformPaths(fn (string $path): string => $this->absolutizeCompoundKey($path));
 			}
 			$result[$this->absolutizePath($file)] = $absolutized;
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
+	 * @return array<string, CollectedDataRuleResult>
+	 */
+	public function relativizeCollectedDataRuleResults(array $collectedDataRuleResults): array
+	{
+		$result = [];
+		foreach ($collectedDataRuleResults as $ruleKey => $ruleResult) {
+			$result[$ruleKey] = $ruleResult->transformPaths(fn (string $path): string => $path === AnalyserResultFinalizer::NO_FILE ? $path : $this->relativizeCompoundKey($path));
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
+	 * @return array<string, CollectedDataRuleResult>
+	 */
+	public function absolutizeCollectedDataRuleResults(array $collectedDataRuleResults): array
+	{
+		$result = [];
+		foreach ($collectedDataRuleResults as $ruleKey => $ruleResult) {
+			// an error without a file keeps no file, absolutizing would prefix it with the directory
+			$result[$ruleKey] = $ruleResult->transformPaths(fn (string $path): string => $path === AnalyserResultFinalizer::NO_FILE ? $path : $this->absolutizeCompoundKey($path));
 		}
 
 		return $result;

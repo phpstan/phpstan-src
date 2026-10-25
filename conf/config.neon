@@ -65,6 +65,7 @@ parameters:
 		backedEnumFromParameterType: false
 		unusedVariable: false
 		unusedParameters: false
+		reuseCollectedDataRuleErrors: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

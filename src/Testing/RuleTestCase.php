@@ -304,6 +304,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 			self::createScopeFactory($reflectionProvider, self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),
 			true,
+			self::getContainer()->getByType(ValueDependencyCollector::class),
+			false,
 		);
 
 		return [

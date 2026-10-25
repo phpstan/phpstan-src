@@ -1,0 +1,23 @@
+includes:
+	- ../../conf/bleedingEdge.neon
+
+parameters:
+	level: 8
+	tmpDir: tmp
+	paths:
+		- src
+	scanDirectories:
+		- lib
+
+services:
+	-
+		class: ResultCacheCollectedDataRulesTracking\ViewCollector
+		tags:
+			- phpstan.collector
+	-
+		class: ResultCacheCollectedDataRulesTracking\ViewRule
+		arguments:
+			viewsDirectory: %currentWorkingDirectory%/views
+			ignoredViewsFile: %currentWorkingDirectory%/ignored-views.txt
+		tags:
+			- phpstan.rules.rule

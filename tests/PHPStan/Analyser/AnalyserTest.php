@@ -812,6 +812,8 @@ class AnalyserTest extends PHPStanTestCase
 			),
 			new LocalIgnoresProcessor(),
 			$reportUnmatchedIgnoredErrors,
+			self::getContainer()->getByType(ValueDependencyCollector::class),
+			false,
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
 

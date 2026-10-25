@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\Analyser\CollectedDataRuleResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Collectors\CollectedData;
@@ -29,6 +30,7 @@ final class ResultCache
 	 * @param array<string, array<RootExportedNode>> $exportedNodes the decoded ones - see $cachedExportedNodes for the rest
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
+	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -49,6 +51,7 @@ final class ResultCache
 		private CachedExportedNodes $cachedExportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private array $collectedDataRuleResults = [],
 	)
 	{
 	}
@@ -190,6 +193,14 @@ final class ResultCache
 	public function getCurrentFileHashes(): array
 	{
 		return $this->currentFileHashes;
+	}
+
+	/**
+	 * @return array<string, CollectedDataRuleResult>
+	 */
+	public function getCollectedDataRuleResults(): array
+	{
+		return $this->collectedDataRuleResults;
 	}
 
 }

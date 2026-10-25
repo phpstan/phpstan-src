@@ -79,6 +79,7 @@ public:
 		zval *throwPoints = &emptyArray;
 		zval *impurePoints = &emptyArray;
 		zval *dependencies = NULL;
+		zv::Val result;
 		zv::Val variableFlow;
 		expr = returnedExpr(stmt);
 		if (UNEXPECTED(expr == NULL)) return zv::Val();
@@ -96,7 +97,7 @@ public:
 				Z_TYPE_P(expectedReturnType.raw()) == IS_OBJECT ? expectedReturnType.raw() : NULL,
 				Z_TYPE_P(nativeExpectedReturnType.raw()) == IS_OBJECT ? nativeExpectedReturnType.raw() : NULL);
 			if (UNEXPECTED(expressionContext.isUndef())) return zv::Val();
-			zv::Val result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, expr, stmtScope.raw(), storage, nodeCallback, expressionContext.raw());
+			result = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, expr, stmtScope.raw(), storage, nodeCallback, expressionContext.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			dependencies = pt_expression_result_dependencies(result.raw(), dependenciesHold);
 			if (UNEXPECTED(dependencies == NULL)) return zv::Val();

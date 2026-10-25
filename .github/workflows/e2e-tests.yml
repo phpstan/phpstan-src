@@ -2436,6 +2436,16 @@ jobs:
                 exit 1
               fi
 
+          # another program that loads PHPStan restarts through
+          # TurboProcessRestarter, and can leave OPcache dormant: the same
+          # single restart disarms pcov, and no process turns OPcache on
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php restart-without-opcache.php analyse --no-progress
+              php check.php restarted-for=pcov pcov-armed=no opcache-cli-on=no processes=2+ starts=2
+
           # --debug restarts like any other run - it only makes the analysis
           # serial, --xdebug is what keeps xdebug
           - operating-system: "ubuntu-latest"

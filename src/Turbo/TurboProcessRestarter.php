@@ -24,11 +24,32 @@ final class TurboProcessRestarter
 	 * in $argv or <APP>_ALLOW_XDEBUG is set - the variable composer/xdebug-handler
 	 * reads for that application, so a caller can drop its own xdebug restart.
 	 *
+	 * With $withOpcache false, the restart does not turn on OPcache. A run
+	 * that mostly reads the result cache is then faster, and a full analysis
+	 * uses a little more CPU.
+	 *
 	 * @api
 	 * @param list<string> $argv
 	 */
-	public static function restartIfSuitable(array $argv, ?string $pharPath = null, ?string $appName = null): void
+	public static function restartIfSuitable(array $argv, ?string $pharPath = null, ?string $appName = null, bool $withOpcache = true): void
 	{
+		if (!$withOpcache) {
+			$extensions = $appName === null
+				? [
+					'phpstan_turbo',
+					'tideways',
+				]
+				: [
+					'xdebug',
+					'pcov',
+					'uopz',
+					'phpstan_turbo',
+					'tideways',
+				];
+			RestartManager::run($argv, $pharPath, $extensions, $appName ?? 'phpstan');
+			return;
+		}
+
 		if ($appName === null) {
 			RestartManager::run($argv, $pharPath, ['phpstan_turbo', 'tideways', 'opcache']);
 			return;

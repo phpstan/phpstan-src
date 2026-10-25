@@ -216,6 +216,57 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'Result cache restored.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-collected-data-rules
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Caller.php:10:Call to function ResultCacheCollectedDataRules\pure() on a separate line has no effect.' "$OUTPUT"
+              # Nothing changed, so every rule on CollectedDataNode reuses its errors from the result cache.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Caller.php:10:Call to function ResultCacheCollectedDataRules\pure() on a separate line has no effect.' "$OUTPUT"
+              echo "$OUTPUT" | grep -E 'Result cache reused the errors of ([0-9]+) of \1 rules on collected data\.'
+              ../bashunit assert contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              # src/Other.php is analysed again, but what it collects stays the same.
+              echo '// changed' >> src/Other.php
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Caller.php:10:Call to function ResultCacheCollectedDataRules\pure() on a separate line has no effect.' "$OUTPUT"
+              echo "$OUTPUT" | grep -E 'Result cache reused the errors of ([0-9]+) of \1 rules on collected data\.'
+              # Removing the call changes what src/Caller.php collects, so the rule runs again and the error goes away.
+              sed -i 's/^\t\tpure();$//' src/Caller.php
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'on a separate line has no effect' "$OUTPUT"
+          - script: |
+              cd e2e/result-cache-collected-data-rules-tracking
+              composer install
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Controller.php:15:View about not found.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              echo "$OUTPUT" | grep -E 'Result cache reused the errors of ([0-9]+) of \1 rules on collected data\.'
+              # The rule tracks the views directory, so a new view runs it again.
+              printf 'about\n' > views/about.txt
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'View about not found.' "$OUTPUT"
+              rm views/about.txt
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Controller.php:15:View about not found.' "$OUTPUT"
+              # The rule tracks the file of ignored views too.
+              printf 'about\n' > ignored-views.txt
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'View about not found.' "$OUTPUT"
+              # And the class of extra views, which is not analysed.
+              sed -i "s/'contact'/'nothing'/" lib/ExtraViews.php
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Controller.php:20:View contact not found.' "$OUTPUT"
+          - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php

@@ -62,6 +62,7 @@ parametersSchema:
 		backedEnumFromParameterType: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
+		reuseCollectedDataRuleErrors: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

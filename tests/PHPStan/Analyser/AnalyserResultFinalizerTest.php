@@ -89,6 +89,8 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 			),
 			new LocalIgnoresProcessor(),
 			false,
+			self::getContainer()->getByType(ValueDependencyCollector::class),
+			false,
 		);
 	}
 

@@ -12,16 +12,24 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\CollectedDataNode;
+use PHPStan\Node\CollectedDataNodeReads;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
+use function array_key_exists;
 use function array_merge;
 use function count;
 use function get_class;
+use function ksort;
+use function md5;
+use function serialize;
 use function sprintf;
 
 #[AutowiredService]
 final class AnalyserResultFinalizer
 {
+
+	/** The file of an error a rule on CollectedDataNode reports without one. */
+	public const NO_FILE = 'N/A';
 
 	/**
 	 * @param ExtensionsCollection<IgnoreErrorExtension> $ignoreErrorExtensions
@@ -35,13 +43,19 @@ final class AnalyserResultFinalizer
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
+		private ValueDependencyCollector $valueDependencyCollector,
+		#[AutowiredParameter(ref: '%featureToggles.reuseCollectedDataRuleErrors%')]
+		private bool $reuseCollectedDataRuleErrors,
 	)
 	{
 	}
 
 	/**
-	 * @param Closure(string $ruleClass): void|null $preRuleCallback
+	 * @param Closure(string $ruleClass): void|null $preRuleCallback called only for a rule that runs, not for one whose errors are reused
 	 * @param Closure(): void|null $postRuleCallback called when the rule's processNode() has returned or thrown, before its errors are processed
+	 * @param array<string, CollectedDataRuleResult> $previousCollectedDataRuleResults the rule results of the
+	 *        previous run, from the result cache - a rule whose input did not change reuses its errors.
+	 *        Only with the reuseCollectedDataRuleErrors feature toggle, otherwise every rule runs.
 	 */
 	public function finalize(
 		AnalyserResult $analyserResult,
@@ -49,6 +63,7 @@ final class AnalyserResultFinalizer
 		bool $debug,
 		?Closure $preRuleCallback = null,
 		?Closure $postRuleCallback = null,
+		array $previousCollectedDataRuleResults = [],
 	): FinalizerResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
@@ -61,19 +76,59 @@ final class AnalyserResultFinalizer
 		}
 
 		$nodeType = CollectedDataNode::class;
-		$node = new CollectedDataNode($analyserResult->getCollectedData(), $onlyFiles);
+		$collectedData = $analyserResult->getCollectedData();
+		$node = new CollectedDataNode($collectedData, $onlyFiles);
 
-		$file = 'N/A';
+		// Hashed once per collector type and run, in the same order however the files were merged.
+		$collectorHashes = [];
+		$hashCollector = static function (string $collectorType) use ($collectedData, &$collectorHashes): string {
+			if (!array_key_exists($collectorType, $collectorHashes)) {
+				$data = [];
+				foreach ($collectedData as $filePath => $collectedDataPerCollector) {
+					if (!isset($collectedDataPerCollector[$collectorType])) {
+						continue;
+					}
+
+					$data[$filePath] = $collectedDataPerCollector[$collectorType];
+				}
+				ksort($data);
+				$collectorHashes[$collectorType] = md5(serialize($data));
+			}
+
+			return $collectorHashes[$collectorType];
+		};
+
+		$file = self::NO_FILE;
 		$scope = $this->scopeFactory->create(ScopeContext::create($file));
 		$tempCollectorErrors = [];
 		$internalErrors = $analyserResult->getInternalErrors();
+		$collectedDataRuleResults = [];
+		$reusedRulesCount = 0;
+		$ruleCountsByClass = [];
 		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
-			if ($preRuleCallback !== null) {
-				$preRuleCallback(get_class($rule));
+			$ruleClass = get_class($rule);
+			$ruleCountsByClass[$ruleClass] = ($ruleCountsByClass[$ruleClass] ?? 0) + 1;
+			$ruleKey = sprintf('%s#%d', $ruleClass, $ruleCountsByClass[$ruleClass]);
+
+			$previousResult = $this->reuseCollectedDataRuleErrors ? $previousCollectedDataRuleResults[$ruleKey] ?? null : null;
+			if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector)) {
+				$collectedDataRuleResults[$ruleKey] = $previousResult;
+				$reusedRulesCount++;
+				$this->addRuleErrors($previousResult->getErrors(), $node, $scope, $tempCollectorErrors);
+				continue;
 			}
 
+			$reads = new CollectedDataNodeReads();
+			$ruleNode = new CollectedDataNode($collectedData, $onlyFiles, $reads);
+			if ($this->reuseCollectedDataRuleErrors) {
+				$this->valueDependencyCollector->startCollectedDataRule();
+			}
+			if ($preRuleCallback !== null) {
+				$preRuleCallback($ruleClass);
+			}
 			try {
-				$ruleErrors = $rule->processNode($node, $scope);
+				$ruleErrors = $rule->processNode($ruleNode, $scope);
+				$ruleValueDependencies = $this->valueDependencyCollector->getCollectedDataRuleValues();
 			} catch (AnalysedCodeException $e) {
 				$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, tip: $e->getTip()))
 					->withIdentifier('phpstan.internal')
@@ -112,24 +167,22 @@ final class AnalyserResultFinalizer
 				);
 				continue;
 			} finally {
+				$this->valueDependencyCollector->finishCollectedDataRule();
 				if ($postRuleCallback !== null) {
 					$postRuleCallback();
 				}
 			}
 
+			$errors = [];
 			foreach ($ruleErrors as $ruleError) {
-				$error = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $node);
-
-				if ($error->canBeIgnored()) {
-					foreach ($this->ignoreErrorExtensions->getAll() as $ignoreErrorExtension) {
-						if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
-							continue 2;
-						}
-					}
-				}
-
-				$tempCollectorErrors[] = $error;
+				$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $ruleNode);
 			}
+
+			if ($this->reuseCollectedDataRuleErrors) {
+				$collectedDataRuleResults[$ruleKey] = $this->createRuleResult($reads, $onlyFiles, $hashCollector, $errors, $ruleValueDependencies);
+			}
+
+			$this->addRuleErrors($errors, $node, $scope, $tempCollectorErrors);
 		}
 
 		$errors = $analyserResult->getUnorderedErrors();
@@ -177,7 +230,87 @@ final class AnalyserResultFinalizer
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
-		), $collectorErrors, $locallyIgnoredCollectorErrors);
+		), $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount);
+	}
+
+	/**
+	 * @param Closure(string): string $hashCollector
+	 * @param list<Error> $errors
+	 * @param array<string, array{string, string, string}> $valueDependencies
+	 */
+	private function createRuleResult(CollectedDataNodeReads $reads, bool $onlyFiles, Closure $hashCollector, array $errors, array $valueDependencies): CollectedDataRuleResult
+	{
+		$readCollectorHashes = [];
+		foreach ($reads->getCollectorTypes() as $collectorType) {
+			$readCollectorHashes[$collectorType] = $hashCollector($collectorType);
+		}
+
+		$storedValueDependencies = [];
+		foreach ($valueDependencies as [$extensionClass, $key, $value]) {
+			$extension = $this->valueDependencyCollector->getExtension($extensionClass);
+			if ($extension === null) {
+				continue;
+			}
+
+			$storedValueDependencies[] = [$extensionClass, $extension->keyToResultCache($key), $value];
+		}
+
+		return new CollectedDataRuleResult(
+			$readCollectorHashes,
+			$reads->isOnlyFilesRead() ? $onlyFiles : null,
+			$errors,
+			$storedValueDependencies,
+		);
+	}
+
+	/**
+	 * @param Closure(string): string $hashCollector
+	 */
+	private function canReuse(CollectedDataRuleResult $previousResult, bool $onlyFiles, Closure $hashCollector): bool
+	{
+		$previousOnlyFiles = $previousResult->getOnlyFiles();
+		if ($previousOnlyFiles !== null && $previousOnlyFiles !== $onlyFiles) {
+			return false;
+		}
+
+		foreach ($previousResult->getCollectorHashes() as $collectorType => $hash) {
+			if ($hashCollector($collectorType) !== $hash) {
+				return false;
+			}
+		}
+
+		// the values the rule declared through DependencyTracker - see ValueDependencyCollector
+		foreach ($previousResult->getValueDependencies() as [$extensionClass, $storedKey, $value]) {
+			$extension = $this->valueDependencyCollector->getExtension($extensionClass);
+			if ($extension === null) {
+				return false;
+			}
+
+			if ($extension->getValue($extension->keyFromResultCache($storedKey)) !== $value) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param list<Error> $errors
+	 * @param list<Error> $tempCollectorErrors
+	 */
+	private function addRuleErrors(array $errors, CollectedDataNode $node, Scope $scope, array &$tempCollectorErrors): void
+	{
+		foreach ($errors as $error) {
+			if ($error->canBeIgnored()) {
+				foreach ($this->ignoreErrorExtensions->getAll() as $ignoreErrorExtension) {
+					if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
+						continue 2;
+					}
+				}
+			}
+
+			$tempCollectorErrors[] = $error;
+		}
 	}
 
 	private function mergeFilteredPhpErrors(AnalyserResult $analyserResult): AnalyserResult
@@ -206,15 +339,18 @@ final class AnalyserResultFinalizer
 	/**
 	 * @param list<Error> $collectorErrors
 	 * @param list<Error> $locallyIgnoredCollectorErrors
+	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
 	 */
 	private function addUnmatchedIgnoredErrors(
 		AnalyserResult $analyserResult,
 		array $collectorErrors,
 		array $locallyIgnoredCollectorErrors,
+		array $collectedDataRuleResults = [],
+		int $reusedRulesCount = 0,
 	): FinalizerResult
 	{
 		if (!$this->reportUnmatchedIgnoredErrors) {
-			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors);
+			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount);
 		}
 
 		$errors = $analyserResult->getUnorderedErrors();
@@ -271,6 +407,8 @@ final class AnalyserResultFinalizer
 			),
 			$collectorErrors,
 			$locallyIgnoredCollectorErrors,
+			$collectedDataRuleResults,
+			$reusedRulesCount,
 		);
 	}
 

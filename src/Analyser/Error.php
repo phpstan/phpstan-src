@@ -470,7 +470,7 @@ final class Error implements JsonSerializable
 	{
 		$result = [];
 		foreach ($this->traitContexts as $contextFilePath => $contextFile) {
-			$result[$transformPath($contextFilePath)] = $contextFile;
+			$result[$transformPath($contextFilePath)] = $transformPath($contextFile);
 		}
 
 		return $result;

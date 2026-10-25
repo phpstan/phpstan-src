@@ -23,6 +23,9 @@ use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
  *
  * It tracks what the analysis of the current file depends on besides the analysed code, so that
  * the result cache re-analyses the file when that changes - see ResultCacheValueExtension.
+ * In a rule for CollectedDataNode, it tracks what the errors of the rule depend on: with the
+ * reuseCollectedDataRuleErrors feature toggle, the result cache reuses the errors of such a rule
+ * while its collected data and the tracked values stay the same.
  *
  * Extensions that get no Scope because they describe a class - class reflection extensions - use
  * DeclarationDependencyTracker instead.

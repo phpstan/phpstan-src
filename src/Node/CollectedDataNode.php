@@ -18,7 +18,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param CollectorData $collectedData
 	 */
-	public function __construct(private array $collectedData, private bool $onlyFiles)
+	public function __construct(private array $collectedData, private bool $onlyFiles, private ?CollectedDataNodeReads $reads = null)
 	{
 		parent::__construct([]);
 	}
@@ -31,6 +31,10 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	 */
 	public function get(string $collectorType): array
 	{
+		if ($this->reads !== null) {
+			$this->reads->addCollectorType($collectorType);
+		}
+
 		$result = [];
 		foreach ($this->collectedData as $filePath => $collectedDataPerCollector) {
 			if (!isset($collectedDataPerCollector[$collectorType])) {
@@ -52,6 +56,10 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	 */
 	public function isOnlyFilesAnalysis(): bool
 	{
+		if ($this->reads !== null) {
+			$this->reads->addOnlyFiles();
+		}
+
 		return $this->onlyFiles;
 	}
 

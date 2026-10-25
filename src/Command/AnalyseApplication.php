@@ -137,14 +137,23 @@ final class AnalyseApplication
 
 			$resultCacheResult = $resultCacheManager->process($intermediateAnalyserResult, $resultCache, $errorOutput, $onlyFiles, true);
 			[$preRuleCallback, $postRuleCallback] = $this->createRuleCallbacks($debug, $stdOutput);
-			$analyserResult = $this->analyserResultFinalizer->finalize(
+			$finalizerResult = $this->analyserResultFinalizer->finalize(
 				$this->switchTmpFileInAnalyserResult($resultCacheResult->getAnalyserResult(), $insteadOfFile, $tmpFile),
 				$onlyFiles,
 				$debug,
 				$preRuleCallback,
 				$postRuleCallback,
-			)->getAnalyserResult();
-			$savedResultCache = $resultCacheResult->save();
+				$resultCache->getCollectedDataRuleResults(),
+			);
+			if ($finalizerResult->getReusedRulesCount() > 0 && $errorOutput->isVeryVerbose()) {
+				$errorOutput->writeLineFormatted(sprintf(
+					'Result cache reused the errors of %d of %d rules on collected data.',
+					$finalizerResult->getReusedRulesCount(),
+					count($finalizerResult->getCollectedDataRuleResults()),
+				));
+			}
+			$savedResultCache = $resultCacheResult->save($finalizerResult->getCollectedDataRuleResults());
+			$analyserResult = $finalizerResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
 				$analyserResult->getErrors(),

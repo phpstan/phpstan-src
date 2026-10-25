@@ -2,6 +2,9 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\Analyser\AnalyserResultFinalizer;
+use PHPStan\Analyser\CollectedDataRuleResult;
+use PHPStan\Analyser\Error;
 use PHPUnit\Framework\TestCase;
 use function str_replace;
 use const DIRECTORY_SEPARATOR;
@@ -101,6 +104,51 @@ class ResultCachePathTransformerTest extends TestCase
 		// and the round trip is what canonicalizes: a cache written from the raw meta restores to the
 		// same canonical form, so a cache from before the normalization is still reused
 		$this->assertSame($canonical, $transformer->absolutizeMeta($transformer->relativizeMeta($raw)));
+	}
+
+	/**
+	 * The stored errors of rules on CollectedDataNode keep trait contexts, and both the key and the
+	 * "path (in context of class X)" value hold a path.
+	 */
+	public function testCollectedDataRuleResultsTraitContextsAreRelativized(): void
+	{
+		$transformer = new ResultCachePathTransformer(self::raw('/opt/project/vendor/phpstan/phpstan'));
+		$traitFile = self::canonical('/opt/project/src/SomeTrait.php');
+		$error = new Error(
+			'Message',
+			$traitFile . ' (in context of class Foo)',
+			10,
+			filePath: $traitFile,
+			traitContexts: [$traitFile => $traitFile . ' (in context of class Foo)'],
+		);
+		$results = ['SomeRule#0' => new CollectedDataRuleResult([], null, [$error])];
+
+		$relativized = $transformer->relativizeCollectedDataRuleResults($results);
+		$this->assertSame(
+			['../../../src/SomeTrait.php' => '../../../src/SomeTrait.php (in context of class Foo)'],
+			$relativized['SomeRule#0']->getErrors()[0]->getTraitContexts(),
+		);
+
+		$absolutized = $transformer->absolutizeCollectedDataRuleResults($relativized);
+		$this->assertSame(
+			[$traitFile => $traitFile . ' (in context of class Foo)'],
+			$absolutized['SomeRule#0']->getErrors()[0]->getTraitContexts(),
+		);
+	}
+
+	/**
+	 * A rule on CollectedDataNode can report an error without a file. It has no path to relativize,
+	 * and absolutizing it must not prefix it with a directory.
+	 */
+	public function testCollectedDataRuleResultsKeepAnErrorWithoutFile(): void
+	{
+		$transformer = new ResultCachePathTransformer(self::raw('/opt/project/vendor/phpstan/phpstan'));
+		$error = new Error('Message', AnalyserResultFinalizer::NO_FILE, null);
+		$results = ['SomeRule#0' => new CollectedDataRuleResult([], null, [$error])];
+
+		$roundTrip = $transformer->absolutizeCollectedDataRuleResults($transformer->relativizeCollectedDataRuleResults($results));
+		$this->assertSame(AnalyserResultFinalizer::NO_FILE, $roundTrip['SomeRule#0']->getErrors()[0]->getFile());
+		$this->assertSame(AnalyserResultFinalizer::NO_FILE, $roundTrip['SomeRule#0']->getErrors()[0]->getFilePath());
 	}
 
 	/**

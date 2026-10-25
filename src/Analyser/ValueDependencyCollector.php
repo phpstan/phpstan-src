@@ -39,8 +39,10 @@ use function strtolower;
  *   by the files analysed after it, so it is what the scope's file declares that depends on the
  *   value: a change of it re-analyses the scope's file and every file depending on it.
  *
- * Outside the analysis of a file - in the rules for CollectedDataNode, which run again on every
- * run anyway - nothing is collected.
+ * A rule for CollectedDataNode runs outside the analysis of a file. What it declares is collected
+ * for the rule itself, between startCollectedDataRule() and finishCollectedDataRule(), and stored
+ * with its errors: the next run reuses them only while every value is still the same. Outside of
+ * both, nothing is collected.
  *
  * DeclarationDependencyTracker records what a class declares depends on, through extensions that
  * describe a class rather than analyse code. Their result is remembered for the rest of the process
@@ -58,6 +60,9 @@ final class ValueDependencyCollector
 {
 
 	private ?string $analysedFile = null;
+
+	/** @var array<string, array{string, string, string}>|null id => [extension class, key, value], while a rule for CollectedDataNode runs */
+	private ?array $collectedDataRuleValues = null;
 
 	/** @var array<string, array{string, string, string}> id => [extension class, key, value] */
 	private array $values = [];
@@ -100,6 +105,12 @@ final class ValueDependencyCollector
 	 */
 	public function record(string $extensionClass, string $key, Scope $scope, bool $insideWalk): void
 	{
+		if ($this->collectedDataRuleValues !== null) {
+			$id = self::getId($extensionClass, $key);
+			$this->collectedDataRuleValues[$id] ??= [$extensionClass, $key, $this->getRegisteredExtension($extensionClass)->getValue($key)];
+			return;
+		}
+
 		if ($this->analysedFile === null) {
 			return;
 		}
@@ -152,6 +163,24 @@ final class ValueDependencyCollector
 	public function recordClass(string $className, Scope $scope, bool $insideWalk): void
 	{
 		$this->record(ClassResultCacheValueExtension::class, ClassResultCacheValueExtension::createKey($className), $scope, $insideWalk);
+	}
+
+	public function startCollectedDataRule(): void
+	{
+		$this->collectedDataRuleValues = [];
+	}
+
+	/**
+	 * @return array<string, array{string, string, string}> id => [extension class, key, value]
+	 */
+	public function getCollectedDataRuleValues(): array
+	{
+		return $this->collectedDataRuleValues ?? [];
+	}
+
+	public function finishCollectedDataRule(): void
+	{
+		$this->collectedDataRuleValues = null;
 	}
 
 	public function getFileKey(string $file): string

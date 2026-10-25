@@ -190,14 +190,15 @@ final class FixerWorkerRunner
 					]);
 				},
 			)->then(function (AnalyserResult $intermediateAnalyserResult) use ($resultCacheManager, $resultCache, $errorOutput, $isOnlyFiles, $ignoredErrorHelperResult, $inceptionFiles, $out): void {
-				$analyserResult = $resultCacheManager->process(
+				$resultCacheResult = $resultCacheManager->process(
 					$intermediateAnalyserResult,
 					$resultCache,
 					$errorOutput,
 					false,
 					true,
-				)->getAnalyserResult();
-				$finalizerResult = $this->analyserResultFinalizer->finalize($analyserResult, $isOnlyFiles, false);
+				);
+				$finalizerResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $isOnlyFiles, false);
+				$resultCacheResult->save();
 
 				$internalErrors = [];
 				foreach ($finalizerResult->getAnalyserResult()->getInternalErrors() as $internalError) {

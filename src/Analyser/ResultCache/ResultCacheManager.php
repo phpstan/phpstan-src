@@ -1356,20 +1356,22 @@ final class ResultCacheManager
 		};
 
 		if ($resultCache->isFullAnalysis()) {
-			$saved = false;
-			if ($save !== false) {
+			return new ResultCacheProcessResult($analyserResult, function () use ($save, $output, $analyserResult, $projectConfigArray, $doSave, $freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $freshCollectedDataByFile): bool {
+				if ($save === false) {
+					if ($output->isVeryVerbose()) {
+						$output->writeLineFormatted('Result cache was not saved because it was not requested.');
+					}
+
+					return false;
+				}
+
 				$projectExtensionFiles = [];
 				if ($analyserResult->getDependencies() !== null) {
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
-				$saved = $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles);
-			} else {
-				if ($output->isVeryVerbose()) {
-					$output->writeLineFormatted('Result cache was not saved because it was not requested.');
-				}
-			}
 
-			return new ResultCacheProcessResult($analyserResult, $saved);
+				return $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles);
+			});
 		}
 
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
@@ -1385,8 +1387,11 @@ final class ResultCacheManager
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
 
-		$saved = false;
-		if ($save !== false) {
+		$saveCallback = function () use ($save, $resultCache, $projectConfigArray, $doSave, $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes): bool {
+			if ($save === false) {
+				return false;
+			}
+
 			$projectExtensionFiles = [];
 			foreach ($resultCache->getProjectExtensionFiles() as $file => [$hash, $isAnalysed, $className]) {
 				if ($isAnalysed) {
@@ -1407,8 +1412,8 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			$saved = $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles);
-		}
+			return $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles);
+		};
 
 		$flatErrors = [];
 		foreach ($errorsByFile as $fileErrors) {
@@ -1442,7 +1447,7 @@ final class ResultCacheManager
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
-		), $saved);
+		), $saveCallback);
 	}
 
 	/**

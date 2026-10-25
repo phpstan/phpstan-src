@@ -144,6 +144,7 @@ final class AnalyseApplication
 				$preRuleCallback,
 				$postRuleCallback,
 			)->getAnalyserResult();
+			$savedResultCache = $resultCacheResult->save();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(
 				$analyserResult->getErrors(),
@@ -158,7 +159,6 @@ final class AnalyseApplication
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			$collectedData = $analyserResult->getCollectedData();
-			$savedResultCache = $resultCacheResult->isSaved();
 		}
 
 		return new AnalysisResult(

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Fast resume check: this repo needs no databases, tunnels, or auth.
+# Only verify the toolchain and autoloader survived the snapshot.
+
+command -v php >/dev/null 2>&1 || { echo "resume: php missing" >&2; exit 1; }
+php -r 'require "vendor/autoload.php";' 2>/dev/null || {
+	echo "resume: vendor/autoload.php missing, run .agents/setup" >&2;
+	exit 1;
+}

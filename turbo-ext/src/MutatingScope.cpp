@@ -8565,6 +8565,14 @@ public:
 				bool yes;
 				if (UNEXPECTED(!isSuperTypeOfYes(Z_OBJ_P(typeHolderType.raw()), otherTargetType.raw(), yes))) return zv::Val();
 				if (!yes) continue;
+				/* array shapes are unsealed in isSuperTypeOf() - the consequent
+				 * only holds on both paths when the other branch's state adds
+				 * nothing to it */
+				zv::Val united = unionTypes(typeHolderType.raw(), otherTargetType.raw());
+				if (UNEXPECTED(united.isUndef())) return zv::Val();
+				bool unchanged;
+				if (UNEXPECTED(!typeEquals(united.raw(), typeHolderType.raw(), unchanged))) return zv::Val();
+				if (!unchanged) continue;
 				if (UNEXPECTED(!appendConditionalHolder(result, exprKey, exprIndex, key, keyIndex, holder))) return zv::Val();
 			}
 		}

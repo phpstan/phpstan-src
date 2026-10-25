@@ -37,12 +37,6 @@ final class DateFunctionReturnTypeHelper
 			$type = TypeCombinator::union(...$types);
 		}
 
-		if ($type->isNumericString()->no() && $formatType->isNonEmptyString()->yes()) {
-			$type = TypeCombinator::union($type, new IntersectionType([
-				new StringType(), new AccessoryNonEmptyStringType(),
-			]));
-		}
-
 		return $type;
 	}
 
@@ -84,6 +78,20 @@ final class DateFunctionReturnTypeHelper
 				return $useMicrosec
 					? new IntersectionType([new StringType(), new AccessoryNonFalsyStringType(), new AccessoryNumericStringType()])
 					: new ConstantStringType('000');
+			case 'a':
+				return $this->buildConstantStringsType(['am', 'pm']);
+			case 'A':
+				return $this->buildConstantStringsType(['AM', 'PM']);
+			case 'S':
+				return $this->buildConstantStringsType(['st', 'nd', 'rd', 'th']);
+			case 'D':
+				return $this->buildConstantStringsType(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
+			case 'l':
+				return $this->buildConstantStringsType(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']);
+			case 'M':
+				return $this->buildConstantStringsType(['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']);
+			case 'F':
+				return $this->buildConstantStringsType(['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']);
 		}
 
 		$date = date($formatString);
@@ -112,6 +120,20 @@ final class DateFunctionReturnTypeHelper
 			}
 
 			$types[] = new ConstantStringType($string);
+		}
+
+		return new UnionType($types);
+	}
+
+	/**
+	 * @param list<string> $values
+	 */
+	private function buildConstantStringsType(array $values): Type
+	{
+		$types = [];
+
+		foreach ($values as $value) {
+			$types[] = new ConstantStringType($value);
 		}
 
 		return new UnionType($types);

@@ -1175,3 +1175,20 @@ function testBranchResetNotInOnlyTopLevelAlternation(string $s): void {
 		assertType('array<string>', $matches);
 	}
 }
+
+function testConditionalSubpatterns(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/^(\()?blah(?(1)(\)))$/', $s, $matches)) {
+		assertType("list{0: non-falsy-string, 1?: ''|'(', 2?: ')'}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput2
+	if (preg_match('/((?(-1)a))/', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(?(DEFINE)(?<foo>bar))(?<![-a-z0-9])word/', $s, $matches)) {
+		assertType("array{0: non-falsy-string, foo: 'bar', 1: 'bar'}|array{non-falsy-string}", $matches);
+	}
+}

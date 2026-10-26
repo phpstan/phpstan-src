@@ -53,6 +53,8 @@ final class RegexGroupParser
 
 	private const ASSERTIONS = ['#lookahead', '#lookbehind', '#negativelookahead', '#negativelookbehind'];
 
+	private const CONDITIONS = ['#namedcondition', '#absolutecondition', '#relativecondition', '#assertioncondition'];
+
 	private static ?RegexParser $parser = null;
 
 	/** @var array<string, ?RegexNode> */
@@ -291,8 +293,12 @@ final class RegexGroupParser
 				true,
 			);
 			$parentGroup = $group;
-		} elseif (in_array($ast->getId(), self::NEGATIVE_ASSERTIONS, true)) {
-			// capturing groups in a negative assertion are never set when the whole pattern matches
+		} elseif (
+			in_array($ast->getId(), self::NEGATIVE_ASSERTIONS, true)
+			|| in_array($ast->getId(), self::CONDITIONS, true)
+		) {
+			// capturing groups in a negative assertion are never set when the whole pattern matches,
+			// capturing groups in a conditional subpattern are set only when its condition says so
 			$group = new RegexNonCapturingGroup(
 				$alternation,
 				true,
@@ -513,6 +519,11 @@ final class RegexGroupParser
 		if (in_array($ast->getId(), self::ASSERTIONS, true)) {
 			// assertions are zero-width, they do not add anything to the matched string
 			return $walkResult;
+		}
+
+		if (in_array($ast->getId(), self::CONDITIONS, true)) {
+			// which branch of a conditional subpattern matches is not known, it might match an empty string
+			return $walkResult->onlyLiterals(null)->numeric(TrinaryLogic::createNo());
 		}
 
 		$children = $ast->getChildren();
@@ -785,7 +796,7 @@ final class RegexGroupParser
 
 	private function isMaybeEmptyNode(RegexNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
-		if (in_array($node->getId(), self::ASSERTIONS, true)) {
+		if (in_array($node->getId(), self::ASSERTIONS, true) || in_array($node->getId(), self::CONDITIONS, true)) {
 			return true;
 		}
 

@@ -234,7 +234,7 @@ class RunCommand extends Command
 		$startTime = microtime(true);
 		return $process->run()->then(static function (string $stdout) use ($hash, $output, $startTime) {
 			try {
-				$json = Json::decode($stdout, Json::FORCE_ARRAY);
+				$json = Json::decode($stdout, forceArrays: true);
 			} catch (Throwable $e) {
 				$output->writeln($stdout);
 				throw new Exception(sprintf('Failed to decode JSON for %s: %s', $hash, $e->getMessage()));

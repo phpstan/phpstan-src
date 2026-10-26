@@ -407,7 +407,8 @@ final class RegexArrayShapeMatcher
 					$this->containsSetOrder($flags)
 					&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					&& $captureGroup->isOptional()
-					&& !$isTrailingOptional
+					// an unmatched group followed by a matched one is reported as ''
+					&& !$isLastGroup
 				)
 			) {
 				$groupValueType = $this->getValueType(

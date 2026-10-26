@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "450d71ae1a549d485bfaa803f391eb26",
+  "content-hash": "d2e6989470701df6491ae6ae3cb6c31c",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1537,16 +1537,16 @@
     },
     {
       "name": "ondrejmirtes/phplrt-runtime",
-      "version": "4.2.4.0",
+      "version": "4.2.4.1",
       "source": {
         "type": "git",
         "url": "https://github.com/ondrejmirtes/phplrt-runtime.git",
-        "reference": "cd7a818c306ef237d47723c2b784e72c0090073f"
+        "reference": "0a9b3058a8f857f5e2428a5b5040e29bce7017a0"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/phplrt-runtime/zipball/cd7a818c306ef237d47723c2b784e72c0090073f",
-        "reference": "cd7a818c306ef237d47723c2b784e72c0090073f",
+        "url": "https://api.github.com/repos/ondrejmirtes/phplrt-runtime/zipball/0a9b3058a8f857f5e2428a5b5040e29bce7017a0",
+        "reference": "0a9b3058a8f857f5e2428a5b5040e29bce7017a0",
         "shasum": ""
       },
       "require": {
@@ -1601,9 +1601,9 @@
       "homepage": "https://github.com/phplrt/phplrt",
       "support": {
         "issues": "https://github.com/ondrejmirtes/phplrt-runtime/issues",
-        "source": "https://github.com/ondrejmirtes/phplrt-runtime/tree/4.2.4.0"
+        "source": "https://github.com/ondrejmirtes/phplrt-runtime/tree/4.2.4.1"
       },
-      "time": "2026-10-26T10:54:37+00:00"
+      "time": "2026-10-26T17:32:05+00:00"
     },
     {
       "name": "phpstan/php-8-stubs",

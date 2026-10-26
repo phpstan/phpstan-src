@@ -33,8 +33,6 @@ use function preg_replace;
 use function sprintf;
 
 (function (): void {
-	require_once __DIR__ . '/../vendor/autoload.php';
-
 	$command = new class() extends Command {
 
 		protected function configure(): void

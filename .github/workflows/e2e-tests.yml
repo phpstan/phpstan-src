@@ -1845,7 +1845,7 @@ jobs:
             extensions: mbstring
           - script: |
               cd e2e/bug-11359
-              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 -c bug-11359.php")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 bug-11359.php")
               echo "$OUTPUT"
               ../bashunit assert not_contains 'Function mb_ucfirst not found.' "$OUTPUT"
             php-version: "8.4"

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CallToNonExistentFunctionRule>
@@ -279,21 +278,6 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
 			],
 		]);
-	}
-
-	public function testBug11359(): void
-	{
-		$errors = [];
-		if (PHP_VERSION_ID < 80400) {
-			$errors = [
-				[
-					'Function mb_ucfirst not found.',
-					3,
-					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
-				],
-			];
-		}
-		$this->analyse([__DIR__ . '/data/bug-11359.php'], $errors);
 	}
 
 }

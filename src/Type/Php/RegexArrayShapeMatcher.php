@@ -310,9 +310,18 @@ final class RegexArrayShapeMatcher
 			foreach ($markVerbs as $mark) {
 				$markTypes[] = new ConstantStringType($mark);
 			}
+			$markType = TypeCombinator::union(...$markTypes);
+			if ($matchesAll && $this->containsPatternOrder($flags)) {
+				// marks are keyed by the index of the match that set them, matches without a mark are left out
+				$markType = new IntersectionType([
+					new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $markType),
+					new NonEmptyArrayType(),
+				]);
+			}
+
 			$builder->setOffsetValueType(
 				$this->getKeyType('MARK'),
-				TypeCombinator::union(...$markTypes),
+				$markType,
 				true,
 			);
 		}

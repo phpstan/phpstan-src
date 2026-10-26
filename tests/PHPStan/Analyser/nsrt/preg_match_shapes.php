@@ -1168,3 +1168,10 @@ function testBackreferences(string $s): void {
 		assertType("array{non-falsy-string, non-falsy-string, string}", $matches);
 	}
 }
+
+function testBranchResetNotInOnlyTopLevelAlternation(string $s): void {
+	// from PCRE2 testdata/testinput2
+	if (preg_match('/(x)(?|(abc)|(xyz))(x)/', $s, $matches)) {
+		assertType('array<string>', $matches);
+	}
+}

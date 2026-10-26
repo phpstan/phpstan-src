@@ -178,6 +178,17 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		return false;
 	}
 
+	public function hasGroupResettingGroupCounter(): bool
+	{
+		foreach ($this->groups as $captureGroup) {
+			if ($captureGroup->resetsGroupCounter()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function getOnlyTopLevelAlternation(): ?RegexAlternation
 	{
 		$alternation = null;

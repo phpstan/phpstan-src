@@ -160,6 +160,21 @@ final class RegexArrayShapeMatcher
 		}
 
 		if (
+			$regexGroupList->hasGroupResettingGroupCounter()
+			&& (
+				$matchesAll
+				|| $onlyOptionalTopLevelGroup !== null
+				|| $onlyTopLevelAlternation === null
+				|| $wasMatched->no()
+				|| $this->containsUnmatchedAsNull($flags, $matchesAll)
+			)
+		) {
+			// groups in a branch reset (?|...) share offsets, which is only modelled
+			// when its alternation is the only top level alternation
+			return null;
+		}
+
+		if (
 			!$matchesAll
 			&& $wasMatched->yes()
 			&& $onlyOptionalTopLevelGroup !== null

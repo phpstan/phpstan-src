@@ -226,3 +226,10 @@ function markVerbs(string $s): void {
 		assertType("non-empty-list<array{0: string, MARK?: 'A'|'B'}>", $matches);
 	}
 }
+
+function testBranchReset(string $s): void {
+	// from PCRE2 testdata/testinput2
+	if (preg_match_all('/(?|(abc)|(xyz))/', $s, $matches)) {
+		assertType('array<list<string>>', $matches);
+	}
+}

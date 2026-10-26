@@ -86,4 +86,23 @@ class ParameterOutExecutionEndTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15228(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], [
+			[
+				'Parameter &$p @param-out type of function Bug15228\\writesString() expects int, int|string given.',
+				16,
+			],
+			[
+				'Parameter &$p @param-out type of function Bug15228\\keepsOriginalValue() expects string, int|string given.',
+				29,
+			],
+			[
+				'Parameter &$p @param-out type of function Bug15228\\keepsOriginalValueTwice() expects string, int|string given.',
+				36,
+			],
+		]);
+	}
+
 }

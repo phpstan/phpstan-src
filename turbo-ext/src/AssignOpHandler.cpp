@@ -496,6 +496,43 @@ public:
 		AOH_OK(nsrStoreExpressionResult(nsr, storage, expr, assignOpValueResult.raw()));
 		AOH_VAL(assignResult, pt_assign_handler_apply_write(prop(slots::assignHandler), nsr, target.raw(), valueResult.raw(), assignOpValueResult.raw(), stmt, storage, nodeCallback, context));
 		AOH_VAL(scope, aohResultScope(assignResult.raw()));
+		if (isCoalesce) {
+			zval *coalescedVar = AOH_PROP(expr, var);
+			zval *coalescedVarName = aohIs(coalescedVar, PT_CLASS_VARIABLE) ? AOH_PROP(coalescedVar, name) : NULL;
+			if (coalescedVarName != NULL && Z_TYPE_P(coalescedVarName) == IS_STRING) {
+				if (UNEXPECTED(condResult.isNull())) {
+					pt_throw_should_not_happen();
+					return zv::Val();
+				}
+
+				// the write only happens when the left side is null - a by-ref
+				// parameter may still hold its original value afterwards (a
+				// closure's copy of an outer parameter carries no native marker)
+				AOH_VAL(originalValueExpr, pt_type_new(PT_CLASS_PARAMETER_VARIABLE_ORIGINAL_VALUE_EXPR, 1, coalescedVarName));
+				AOH_VAL(nativeValueBeforeScope, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(valueBeforeScope.raw())));
+				AOH_VAL(condType, pt_expression_result_get_type(condResult.raw()));
+				if (UNEXPECTED(Z_TYPE_P(condType.raw()) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function isNull() on %s", zend_zval_value_name(condType.raw()));
+					return zv::Val();
+				}
+				AOH_VAL(isNull, pt_type_op(Z_OBJ_P(condType.raw()), PT_OP_IS_NULL, 0, NULL));
+				zend_long isNullValue = aohTri(isNull.raw());
+				AOH_OK(isNullValue >= 0);
+				if (isNullValue != PT_TRI_YES) {
+					zend_long hadOriginalValue = pt_mutating_scope_has_expression_type(Z_OBJ_P(valueBeforeScope.raw()), originalValueExpr.raw());
+					AOH_OK(hadOriginalValue >= 0);
+					if (hadOriginalValue != PT_TRI_NO) {
+						zend_long hadNativeOriginalValue = pt_mutating_scope_has_expression_type(Z_OBJ_P(nativeValueBeforeScope.raw()), originalValueExpr.raw());
+						AOH_OK(hadNativeOriginalValue >= 0);
+						if (hadNativeOriginalValue != PT_TRI_NO) {
+							AOH_VAL(originalType, pt_mutating_scope_get_tracked_expression_type(Z_OBJ_P(valueBeforeScope.raw()), Z_OBJ_P(originalValueExpr.raw())));
+							AOH_VAL(originalNativeType, pt_mutating_scope_get_tracked_expression_type(Z_OBJ_P(nativeValueBeforeScope.raw()), Z_OBJ_P(originalValueExpr.raw())));
+							AOH_SET(scope, pt_mutating_scope_specify_expression_type(Z_OBJ_P(scope.raw()), Z_OBJ_P(originalValueExpr.raw()), originalType.raw(), originalNativeType.raw(), pt_trinary_singleton(PT_TRI_MAYBE)));
+						}
+					}
+				}
+			}
+		}
 		AOH_VAL(throwPoints, aohResultThrowPoints(assignResult.raw()));
 		AOH_VAL(impurePoints, aohResultImpurePoints(assignResult.raw()));
 		if (aohIs(expr, PT_CLASS_ASSIGN_OP_DIV) || aohIs(expr, PT_CLASS_ASSIGN_OP_MOD)) {

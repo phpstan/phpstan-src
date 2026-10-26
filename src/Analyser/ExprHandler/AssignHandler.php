@@ -760,7 +760,7 @@ final class AssignHandler implements ExprHandler
 			// 1b. build the write chain (Set*OffsetValueTypeExpr nesting) after
 			// the root walk, so a property base's holder and current types are
 			// read from its stored result instead of pricing the unwalked fetch
-			$assignedPropertyExpr = $assignedExpr;
+			$assignedPropertyExpr = $this->getWrittenExpr($originalVar, $assignedExpr);
 			$chainVar = $originalVar;
 			while ($chainVar instanceof ArrayDimFetch) {
 				$varForSetOffsetValue = $chainVar->var;
@@ -1374,7 +1374,7 @@ final class AssignHandler implements ExprHandler
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $identicalSpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 				}
 
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $assignedExpr), $scopeBeforeAssignEval, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new VariableAssignNode($var, $this->getWrittenExpr($var, $assignedExpr)), $scopeBeforeAssignEval, $storage);
 
 				$nativeType = $this->readAssignedValueType($nodeScopeResolver, $storedAssignedExprResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain());
 				$scope = $scope->assignVariable(
@@ -1596,7 +1596,7 @@ final class AssignHandler implements ExprHandler
 				if ($templateArgumentFrame !== null) {
 					$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectSend($propertyReflection->getWritableType(), $assignedExprType));
 				}
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $this->getWrittenExpr($var, $assignedExpr), $isAssignOp), $scopeBeforeAssignEval, $storage);
 				if ($propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {
 						$propertyNativeType = $propertyReflection->getNativeType();
@@ -1657,7 +1657,7 @@ final class AssignHandler implements ExprHandler
 			} else {
 				// fallback
 				$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $this->getWrittenExpr($var, $assignedExpr), $isAssignOp), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignExpression($var, $assignedExprType, $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain()));
 				// simulate dynamic property assign by __set to get throw points
 				if (!$propertyHolderType->hasMethod('__set')->no()) {
@@ -1693,7 +1693,7 @@ final class AssignHandler implements ExprHandler
 						$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectSend($propertyReflection->getWritableType(), $assignedExprType));
 					}
 				}
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $this->getWrittenExpr($var, $assignedExpr), $isAssignOp), $scopeBeforeAssignEval, $storage);
 				if ($propertyReflection !== null && $propertyReflection->canChangeTypeAfterAssignment()) {
 					if ($propertyReflection->hasNativeType()) {
 						$propertyNativeType = $propertyReflection->getNativeType();
@@ -1724,7 +1724,7 @@ final class AssignHandler implements ExprHandler
 			} else {
 				// fallback
 				$assignedExprType = $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope);
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $assignedExpr, $isAssignOp), $scopeBeforeAssignEval, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new PropertyAssignNode($var, $this->getWrittenExpr($var, $assignedExpr), $isAssignOp), $scopeBeforeAssignEval, $storage);
 				$scope = $scope->assignExpression($var, $assignedExprType, $this->readAssignedValueType($nodeScopeResolver, $assignedValueResult, $assignedExpr, $scope->doNotTreatPhpDocTypesAsCertain()));
 			}
 		} elseif ($kind === PreparedAssignTarget::KIND_LIST) {
@@ -2047,6 +2047,18 @@ final class AssignHandler implements ExprHandler
 			$scope = $scope->assignVariable($name, $type, $nativeType, $nameType->equals($nameStringType) ? TrinaryLogic::createYes() : $certainty->or(TrinaryLogic::createMaybe()));
 		}
 		return $scope;
+	}
+
+	/**
+	 * `$var ??= $value` evaluates to `$var ?? $value`, but writes only `$value` to `$var`.
+	 */
+	private function getWrittenExpr(Expr $var, Expr $assignedExpr): Expr
+	{
+		if ($assignedExpr instanceof Expr\AssignOp\Coalesce && $assignedExpr->var === $var) {
+			return $assignedExpr->expr;
+		}
+
+		return $assignedExpr;
 	}
 
 	private function unwrapAssign(Expr $expr): Expr

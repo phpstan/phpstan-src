@@ -26,9 +26,11 @@ use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\CoalesceExpressionNode;
+use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\MixedType;
@@ -271,6 +273,29 @@ final class AssignOpHandler implements ExprHandler
 			$context,
 		);
 		$scope = $assignResult->getScope();
+		if ($expr instanceof Expr\AssignOp\Coalesce && $expr->var instanceof Expr\Variable && is_string($expr->var->name)) {
+			if ($condResult === null) {
+				throw new ShouldNotHappenException();
+			}
+
+			// the write only happens when the left side is null - a by-ref
+			// parameter may still hold its original value afterwards (a
+			// closure's copy of an outer parameter carries no native marker)
+			$originalValueExpr = new ParameterVariableOriginalValueExpr($expr->var->name);
+			$nativeValueBeforeScope = $valueBeforeScope->doNotTreatPhpDocTypesAsCertain();
+			if (
+				!$condResult->getType()->isNull()->yes()
+				&& !$valueBeforeScope->hasExpressionType($originalValueExpr)->no()
+				&& !$nativeValueBeforeScope->hasExpressionType($originalValueExpr)->no()
+			) {
+				$scope = $scope->specifyExpressionType(
+					$originalValueExpr,
+					$valueBeforeScope->getTrackedExpressionType($originalValueExpr),
+					$nativeValueBeforeScope->getTrackedExpressionType($originalValueExpr),
+					TrinaryLogic::createMaybe(),
+				);
+			}
+		}
 		$throwPoints = $assignResult->getThrowPoints();
 		$impurePoints = $assignResult->getImpurePoints();
 		if (

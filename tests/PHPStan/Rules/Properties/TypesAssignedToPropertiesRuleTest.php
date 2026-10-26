@@ -15,6 +15,8 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	private bool $checkNullables = true;
 
+	private bool $checkUnionTypes = true;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
@@ -26,7 +28,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				self::createReflectionProvider(),
 				checkNullables: $this->checkNullables,
 				checkThisOnly: false,
-				checkUnionTypes: true,
+				checkUnionTypes: $this->checkUnionTypes,
 				checkExplicitMixed: $this->checkExplicitMixed,
 				checkImplicitMixed: $this->checkImplicitMixed,
 				checkBenevolentUnionTypes: false,
@@ -1129,6 +1131,58 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 	{
 		$this->checkNullables = false;
 		$this->analyse([__DIR__ . '/data/bug-9096.php'], []);
+	}
+
+	public function testBug15228(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], $this->getBug15228Errors());
+	}
+
+	public function testBug15228WithoutUnionTypes(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], $this->getBug15228Errors());
+	}
+
+	/**
+	 * @return list<array{0: string, 1: int, 2?: string|null}>
+	 */
+	private function getBug15228Errors(): array
+	{
+		return [
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$a (int|null) does not accept string.',
+				26,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$a (int|null) does not accept string.',
+				32,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				41,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				47,
+			],
+			[
+				'Static property Bug15228\\Adjacent::$s (int|null) does not accept string.',
+				64,
+			],
+			[
+				'Property Bug15228\\Adjacent::$a (int|null) does not accept string.',
+				70,
+			],
+			[
+				'Property Bug15228\\Adjacent::$uninitialized (int) does not accept string.',
+				75,
+			],
+			[
+				'Property Bug15228\\Offsets::$m (array<string, int>) does not accept array<string, int|string>.',
+				102,
+			],
+		];
 	}
 
 	public function testIntersectionWithTemplateMixed(): void

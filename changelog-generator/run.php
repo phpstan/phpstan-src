@@ -44,7 +44,7 @@ use function sprintf;
 			$this->addOption('include-headings', null, InputOption::VALUE_NONE);
 		}
 
-		protected function execute(InputInterface $input, OutputInterface $output)
+		protected function execute(InputInterface $input, OutputInterface $output): int
 		{
 			$token = $_SERVER['GITHUB_PAT_TOKEN'];
 
@@ -208,7 +208,7 @@ use function sprintf;
 	};
 
 	$application = new Application();
-	$application->add($command);
+	$application->addCommand($command);
 	$application->setDefaultCommand('run', true);
 	$application->setCatchExceptions(false);
 	$application->run();

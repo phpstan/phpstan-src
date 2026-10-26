@@ -15,11 +15,15 @@ use PHPStan\Type\Type;
  *
  * For example, `non-empty-string` is represented as:
  *
- *     IntersectionType([StringType, AccessoryNonEmptyStringType])
+ * ```
+ * IntersectionType([StringType, AccessoryNonEmptyStringType])
+ * ```
  *
  * And `non-empty-list<int>` is represented as:
  *
- *     IntersectionType([ArrayType(int, int), NonEmptyArrayType, AccessoryArrayListType])
+ * ```
+ * IntersectionType([ArrayType(int, int), NonEmptyArrayType, AccessoryArrayListType])
+ * ```
  *
  * Each AccessoryType implementation has a corresponding query method on the `Type` interface
  * that returns `TrinaryLogic`. This lets any code query the refinement without knowing

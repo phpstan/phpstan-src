@@ -1837,15 +1837,17 @@ jobs:
           - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
             extensions: ""
           - script: |
-              OUTPUT=$(e2e/bashunit assert exit_code "1" "bin/phpstan analyse --no-progress --error-format raw --level=8 -c tests/e2e/data/empty.neon tests/e2e/data/bug-11359.php")
+              cd e2e/bug-11359
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 bug-11359.php")
               echo "$OUTPUT"
-              e2e/bashunit assert contains 'tests/e2e/data/bug-11359.php:3:Function mb_ucfirst not found.' "$OUTPUT"
+              ../bashunit assert contains 'tests/e2e/data/bug-11359.php:3:Function mb_ucfirst not found.' "$OUTPUT"
             php-version: "8.2"
             extensions: mbstring
           - script: |
-              OUTPUT=$(e2e/bashunit assert exit_code "0" "bin/phpstan analyse --no-progress --error-format raw --level=8 -c tests/e2e/data/empty.neon tests/e2e/data/bug-11359.php")
+              cd e2e/bug-11359
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 -c bug-11359.php")
               echo "$OUTPUT"
-              e2e/bashunit assert not_contains 'Function mb_ucfirst not found.' "$OUTPUT"
+              ../bashunit assert not_contains 'Function mb_ucfirst not found.' "$OUTPUT"
             php-version: "8.4"
             extensions: mbstring
           - script: "bin/phpstan analyse -l 8 e2e/phpstan-phpunit-190/test.php -c e2e/phpstan-phpunit-190/test.neon"

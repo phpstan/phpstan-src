@@ -149,6 +149,16 @@ final class RegexArrayShapeMatcher
 		$onlyTopLevelAlternation = $regexGroupList->getOnlyTopLevelAlternation();
 		$flags ??= 0;
 
+		if ($regexGroupList->hasDuplicateNamesOutsideOfAlternationBranches(
+			!$matchesAll && $onlyOptionalTopLevelGroup === null && !$this->containsUnmatchedAsNull($flags, $matchesAll)
+				? $onlyTopLevelAlternation
+				: null,
+		)) {
+			// which of the groups sharing a name sets the named offset is only modelled
+			// for groups in different branches of a top level alternation
+			return null;
+		}
+
 		if (
 			!$matchesAll
 			&& $wasMatched->yes()

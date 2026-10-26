@@ -1117,3 +1117,20 @@ function testGroupsInNegativeAssertionsAreNeverSet(string $s): void {
 		assertType("array{0: non-falsy-string, 1?: 'c'|'d'}", $matches);
 	}
 }
+
+function testDuplicateNamesInternalOption(string $s): void {
+	// from php-src ext/pcre/tests/bug79257.phpt
+	if (preg_match('/(?J)(?:(?<g>foo)|(?<g>bar))(?<h>baz)/', $s, $matches)) {
+		assertType('array<string>', $matches);
+	}
+
+	// from php-src ext/pcre/tests/bug79257.phpt
+	if (preg_match('/(?J)(?:(?<g>foo)|(?<g>bar))/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array<string|null>', $matches);
+	}
+
+	// from php-src ext/pcre/tests/bug79257.phpt
+	if (preg_match_all('/(?J)(?<chr>[ac])(?<num>\d)|(?<chr>[b])/', $s, $matches, PREG_SET_ORDER)) {
+		assertType('list<array<string>>', $matches);
+	}
+}

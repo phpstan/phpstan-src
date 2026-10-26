@@ -989,7 +989,7 @@ jobs:
     # ships an x64 musl Node). Instead the workflow steps run on the arm64
     # host and only the build commands run inside a long-lived Alpine
     # container via docker exec — native arm64, no QEMU.
-    runs-on: "ubuntu-24.04-arm"
+    runs-on: "ubuntu-26.04-arm"
     needs: turbo-compile-core-musl-arm64
     if: ${{ !cancelled() }}
     timeout-minutes: ${{ matrix.variant == 'pie' && 45 || 20 }}

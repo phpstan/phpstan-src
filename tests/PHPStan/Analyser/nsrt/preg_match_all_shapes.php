@@ -198,3 +198,20 @@ function bug11661(): void {
 	assertType("list<array{0: string, 1?: 'ERR'}>", $results);
 
 }
+
+function setOrderOptionalGroupFollowedByMatchedGroup(string $s): void {
+	// from php-src ext/pcre/tests/bug61780_1.phpt
+	if (preg_match_all('/(4)?(2)?\d/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, 1?: ''|'4', 2?: '2'}>", $matches);
+	}
+
+	// from php-src ext/pcre/tests/bug61780_2.phpt
+	if (preg_match_all('/(?<a>4)?(?<b>2)?\d/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, a?: ''|'4', 1?: ''|'4', b?: '2', 2?: '2'}>", $matches);
+	}
+
+	// from php-src ext/pcre/tests/preg_replace_callback_flags.phpt
+	if (preg_match_all('/(a)|(b)/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, 1?: ''|'a', 2?: 'b'}>", $matches);
+	}
+}

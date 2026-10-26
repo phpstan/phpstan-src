@@ -32,9 +32,11 @@ use PHPStan\Type\Generic\TemplateType;
  *
  * Used as a parameter to Type::describe() to control output detail:
  *
- *     $type->describe(VerbosityLevel::typeOnly())  // "string"
- *     $type->describe(VerbosityLevel::value())      // "'hello'"
- *     $type->describe(VerbosityLevel::precise())    // "non-empty-lowercase-string"
+ * ```php
+ * $type->describe(VerbosityLevel::typeOnly())  // "string"
+ * $type->describe(VerbosityLevel::value())      // "'hello'"
+ * $type->describe(VerbosityLevel::precise())    // "non-empty-lowercase-string"
+ * ```
  *
  * The getRecommendedLevelByType() factory method automatically chooses the right level
  * for error messages based on what types are involved — it picks the minimum verbosity

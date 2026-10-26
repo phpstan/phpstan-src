@@ -30,6 +30,7 @@ final class TypeTraverser
 	 * The following example converts constant strings to objects, while
 	 * preserving unions and intersections:
 	 *
+	 * ```php
 	 * TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
 	 *     if ($type instanceof UnionType || $type instanceof IntersectionType) {
 	 *         // Traverse inner types
@@ -42,6 +43,7 @@ final class TypeTraverser
 	 *     // Replaces the current type, and don't traverse
 	 *     return new MixedType();
 	 * });
+	 * ```
 	 *
 	 * @api
 	 * @param TypeTraverserCallable|callable(Type $type, callable(Type): Type $traverse): Type $cb

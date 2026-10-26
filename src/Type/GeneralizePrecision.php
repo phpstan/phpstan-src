@@ -22,7 +22,9 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
  *
  * Used as a parameter to Type::generalize():
  *
- *     $type->generalize(GeneralizePrecision::lessSpecific())
+ * ```php
+ * $type->generalize(GeneralizePrecision::lessSpecific())
+ * ```
  */
 #[ReferencedByTurboExtension(key: 'generalizePrecision')]
 final class GeneralizePrecision

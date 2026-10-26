@@ -280,4 +280,20 @@ class CallToNonExistentFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug11359(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80400) {
+			$errors = [
+				[
+					'Function mb_ucfirst not found.',
+					3,
+					'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+				]
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-11359.php'], $errors);
+	}
+
+
 }

@@ -165,7 +165,6 @@ final class RegexArrayShapeMatcher
 				$matchesAll
 				|| $onlyOptionalTopLevelGroup !== null
 				|| $onlyTopLevelAlternation === null
-				|| $wasMatched->no()
 				|| $this->containsUnmatchedAsNull($flags, $matchesAll)
 			)
 		) {

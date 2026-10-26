@@ -106,6 +106,10 @@ final class RegexGroupParser
 			if (!$ast instanceof RegexNode) {
 				throw new ShouldNotHappenException();
 			}
+			if ($this->containsSubroutineCall($ast)) {
+				// a subroutine call matches what another group matches, but it does not set that group
+				return self::$parsedAst[$regex] = null;
+			}
 			self::$parsedAst[$regex] = $ast;
 		}
 
@@ -155,6 +159,21 @@ final class RegexGroupParser
 	private function createEmptyTokenRegexNode(): RegexNode
 	{
 		return new RegexNode('token', 'literal', '');
+	}
+
+	private function containsSubroutineCall(RegexNode $ast): bool
+	{
+		if ($ast->getId() === 'token' && $ast->getValueToken() === 'subroutine') {
+			return true;
+		}
+
+		foreach ($ast->getChildren() as $child) {
+			if ($this->containsSubroutineCall($child)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(RegexNode $ast): void
@@ -570,6 +589,11 @@ final class RegexGroupParser
 			$onlyLiterals = $walkResult->getOnlyLiterals();
 			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers, false);
 			$walkResult = $walkResult->onlyLiterals($onlyLiterals);
+
+			if ($ast->getValueToken() === 'backreference') {
+				// matches what another group matched, the content is not known
+				$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
+			}
 
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {

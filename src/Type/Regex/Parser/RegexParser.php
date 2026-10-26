@@ -50,65 +50,73 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
     /** @var int */
     public const T_MARKER = 14;
     /** @var int */
-    public const T_NAMED_CAPTURING = 15;
+    public const T_NAMED_BACKREFERENCE = 15;
     /** @var int */
-    public const T_NON_CAPTURING = 16;
+    public const T_SUBROUTINE = 16;
     /** @var int */
-    public const T_NON_CAPTURING_INTERNAL_OPTION = 17;
+    public const T_NAMED_CAPTURING = 17;
     /** @var int */
-    public const T_NON_CAPTURING_RESET = 18;
+    public const T_NON_CAPTURING = 18;
     /** @var int */
-    public const T_ATOMIC_GROUP = 19;
+    public const T_NON_CAPTURING_INTERNAL_OPTION = 19;
     /** @var int */
-    public const T_CAPTURING = 20;
+    public const T_NON_CAPTURING_RESET = 20;
     /** @var int */
-    public const T_CAPTURING_CLOSE = 21;
+    public const T_ATOMIC_GROUP = 21;
     /** @var int */
-    public const T_ZERO_OR_ONE_POSSESSIVE = 22;
+    public const T_CAPTURING = 22;
     /** @var int */
-    public const T_ZERO_OR_ONE_LAZY = 23;
+    public const T_CAPTURING_CLOSE = 23;
     /** @var int */
-    public const T_ZERO_OR_ONE = 24;
+    public const T_ZERO_OR_ONE_POSSESSIVE = 24;
     /** @var int */
-    public const T_ZERO_OR_MORE_POSSESSIVE = 25;
+    public const T_ZERO_OR_ONE_LAZY = 25;
     /** @var int */
-    public const T_ZERO_OR_MORE_LAZY = 26;
+    public const T_ZERO_OR_ONE = 26;
     /** @var int */
-    public const T_ZERO_OR_MORE = 27;
+    public const T_ZERO_OR_MORE_POSSESSIVE = 27;
     /** @var int */
-    public const T_ONE_OR_MORE_POSSESSIVE = 28;
+    public const T_ZERO_OR_MORE_LAZY = 28;
     /** @var int */
-    public const T_ONE_OR_MORE_LAZY = 29;
+    public const T_ZERO_OR_MORE = 29;
     /** @var int */
-    public const T_ONE_OR_MORE = 30;
+    public const T_ONE_OR_MORE_POSSESSIVE = 30;
     /** @var int */
-    public const T_EXACTLY_N = 31;
+    public const T_ONE_OR_MORE_LAZY = 31;
     /** @var int */
-    public const T_N_TO_M_POSSESSIVE = 32;
+    public const T_ONE_OR_MORE = 32;
     /** @var int */
-    public const T_N_TO_M_LAZY = 33;
+    public const T_EXACTLY_N = 33;
     /** @var int */
-    public const T_N_TO_M = 34;
+    public const T_N_TO_M_POSSESSIVE = 34;
     /** @var int */
-    public const T_N_OR_MORE_POSSESSIVE = 35;
+    public const T_N_TO_M_LAZY = 35;
     /** @var int */
-    public const T_N_OR_MORE_LAZY = 36;
+    public const T_N_TO_M = 36;
     /** @var int */
-    public const T_N_OR_MORE = 37;
+    public const T_N_OR_MORE_POSSESSIVE = 37;
     /** @var int */
-    public const T_ALTERNATION = 38;
+    public const T_N_OR_MORE_LAZY = 38;
     /** @var int */
-    public const T_CHARACTER = 39;
+    public const T_N_OR_MORE = 39;
     /** @var int */
-    public const T_DYNAMIC_CHARACTER = 40;
+    public const T_ALTERNATION = 40;
     /** @var int */
-    public const T_CHARACTER_TYPE = 41;
+    public const T_CHARACTER = 41;
     /** @var int */
-    public const T_ANCHOR = 42;
+    public const T_DYNAMIC_CHARACTER = 42;
     /** @var int */
-    public const T_MATCH_POINT_RESET = 43;
+    public const T_CHARACTER_TYPE = 43;
     /** @var int */
-    public const T_LITERAL = 44;
+    public const T_ANCHOR = 44;
+    /** @var int */
+    public const T_MATCH_POINT_RESET = 45;
+    /** @var int */
+    public const T_SUBROUTINE_G = 46;
+    /** @var int */
+    public const T_BACKREFERENCE = 47;
+    /** @var int */
+    public const T_LITERAL = 48;
 
     /** @var array<int, non-empty-string> */
     private const PARSER_EXPECTATIONS = [
@@ -127,6 +135,8 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         'T_ASSERTION_REFERENCE',
         'T_COMMENT',
         'T_MARKER',
+        'T_NAMED_BACKREFERENCE',
+        'T_SUBROUTINE',
         'T_NAMED_CAPTURING',
         'T_NON_CAPTURING',
         'T_NON_CAPTURING_INTERNAL_OPTION',
@@ -156,6 +166,8 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         'T_CHARACTER_TYPE',
         'T_ANCHOR',
         'T_MATCH_POINT_RESET',
+        'T_SUBROUTINE_G',
+        'T_BACKREFERENCE',
         'T_LITERAL',
         '/[^\\s]++/',
     ];
@@ -194,6 +206,10 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         false,
         false,
         true,
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false,
@@ -258,7 +274,11 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             true,
             true,
             true,
-            39 => true,
+            true,
+            true,
+            41 => true,
+            true,
+            true,
             true,
             true,
             true,
@@ -287,7 +307,11 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             true,
             true,
             true,
-            39 => true,
+            true,
+            true,
+            41 => true,
+            true,
+            true,
             true,
             true,
             true,
@@ -322,7 +346,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             8 => true,
         ],
         [
-            21 => true,
+            23 => true,
         ],
         [
             true,
@@ -337,7 +361,11 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             true,
             true,
             true,
-            39 => true,
+            true,
+            true,
+            41 => true,
+            true,
+            true,
             true,
             true,
             true,
@@ -357,7 +385,11 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             true,
             true,
             true,
-            39 => true,
+            true,
+            true,
+            41 => true,
+            true,
+            true,
             true,
             true,
             true,
@@ -385,7 +417,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         [
             13 => true,
             true,
-            true,
+            17 => true,
             true,
             true,
             true,
@@ -399,7 +431,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             13 => true,
         ],
         [
-            15 => true,
+            17 => true,
             true,
             true,
             true,
@@ -407,18 +439,12 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             true,
         ],
         [
-            15 => true,
+            17 => true,
             true,
             true,
             true,
             true,
             true,
-        ],
-        [
-            15 => true,
-        ],
-        [
-            16 => true,
         ],
         [
             17 => true,
@@ -433,18 +459,22 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             20 => true,
         ],
         [
-            39 => true,
-            true,
-            true,
-            true,
-            true,
-            true,
+            21 => true,
         ],
         [
-            39 => true,
+            22 => true,
         ],
         [
-            40 => true,
+            15 => true,
+            true,
+            41 => true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
         ],
         [
             41 => true,
@@ -458,9 +488,27 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         [
             44 => true,
         ],
+        [
+            45 => true,
+        ],
+        [
+            46 => true,
+        ],
+        [
+            47 => true,
+        ],
+        [
+            15 => true,
+        ],
+        [
+            16 => true,
+        ],
+        [
+            48 => true,
+        ],
         null,
         [
-            22 => true,
+            24 => true,
             true,
             true,
             true,
@@ -476,12 +524,6 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             true,
             true,
             true,
-        ],
-        [
-            22 => true,
-        ],
-        [
-            23 => true,
         ],
         [
             24 => true,
@@ -526,6 +568,12 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             37 => true,
         ],
         [
+            38 => true,
+        ],
+        [
+            39 => true,
+        ],
+        [
             9 => true,
             true,
             true,
@@ -554,13 +602,13 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         ],
         null,
         [
-            38 => true,
+            40 => true,
         ],
         [
-            38 => true,
+            40 => true,
         ],
         [
-            38 => true,
+            40 => true,
         ],
     ];
 
@@ -618,7 +666,19 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             [
                 13,
             ],
-            39 => [
+            [
+                13,
+            ],
+            [
+                13,
+            ],
+            41 => [
+                13,
+            ],
+            [
+                13,
+            ],
+            [
                 13,
             ],
             [
@@ -637,16 +697,16 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 13,
             ],
             9 => [
-                56,
+                60,
             ],
             10 => [
-                56,
+                60,
             ],
             11 => [
-                56,
+                60,
             ],
             12 => [
-                56,
+                60,
             ],
         ],
         7 => [
@@ -682,7 +742,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             [
                 20,
             ],
-            [
+            17 => [
                 20,
             ],
             [
@@ -700,7 +760,19 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             [
                 20,
             ],
-            39 => [
+            15 => [
+                31,
+            ],
+            16 => [
+                31,
+            ],
+            41 => [
+                31,
+            ],
+            [
+                31,
+            ],
+            [
                 31,
             ],
             [
@@ -740,7 +812,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             13 => [
                 -23,
             ],
-            [
+            17 => [
                 23,
             ],
             [
@@ -760,7 +832,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             ],
         ],
         24 => [
-            15 => [
+            17 => [
                 -26,
             ],
             [
@@ -780,7 +852,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             ],
         ],
         31 => [
-            39 => [
+            41 => [
                 -33,
             ],
             [
@@ -798,21 +870,21 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             [
                 -38,
             ],
-        ],
-        39 => [
-            22 => [
+            [
+                -39,
+            ],
+            15 => [
+                -40,
+            ],
+            16 => [
                 -41,
             ],
             [
                 -42,
             ],
-            [
-                -43,
-            ],
-            [
-                -44,
-            ],
-            [
+        ],
+        43 => [
+            24 => [
                 -45,
             ],
             [
@@ -848,19 +920,31 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             [
                 -56,
             ],
-        ],
-        57 => [
-            9 => [
+            [
+                -57,
+            ],
+            [
+                -58,
+            ],
+            [
                 -59,
             ],
             [
                 -60,
             ],
-            [
-                -61,
+        ],
+        61 => [
+            9 => [
+                -63,
             ],
             [
-                61,
+                -64,
+            ],
+            [
+                -65,
+            ],
+            [
+                65,
             ],
         ],
     ];
@@ -869,14 +953,14 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
     private const PARSER_SEQUENCE_PREDICTION_TABLE = [
         1 => [
             -4,
-            -65,
+            -69,
         ],
         13 => [
             14,
-            -40,
+            -44,
         ],
-        65 => [
-            66,
+        69 => [
+            70,
             -4,
         ],
     ];
@@ -911,9 +995,9 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         );
 
         $this->lexer = new \Phplrt\Lexer\Lexer(
-            pattern: '/\\G(?|(?:(?:\\[\\^\\])(*MARK:0))|(?:(?:\\[\\])(*MARK:1))|(?:(?:\\[\\^)(*MARK:2))|(?:(?:\\[)(*MARK:3))|(?:(?:\\(\\?[imsxnJUX^]*-?[imsxnJUX^]+\\))(*MARK:4))|(?:(?:\\(\\?=)(*MARK:5))|(?:(?:\\(\\?!)(*MARK:6))|(?:(?:\\(\\?<=)(*MARK:7))|(?:(?:\\(\\?<!)(*MARK:8))|(?:(?:\\(\\?\\(<(.+?)(?<!\\\\)>\\))(*MARK:9))|(?:(?:\\(\\?\\((\\d+)\\))(*MARK:10))|(?:(?:\\(\\?\\(([\\+\\-]\\d+)\\))(*MARK:11))|(?:(?:\\(\\?\\()(*MARK:12))|(?:(?:\\(\\?#(.*?)(?<!\\\\)\\))(*MARK:13))|(?:(?:\\(\\*:([^)]+)\\))(*MARK:14))|(?:(?:\\(\\?P?<(.+?)(?<!\\\\)>)(*MARK:15))|(?:(?:\\(\\?:)(*MARK:16))|(?:(?:\\(\\?[imsxnJUX^]*-?[imsxnJUX^]+:)(*MARK:17))|(?:(?:\\(\\?\\|)(*MARK:18))|(?:(?:\\(\\?>)(*MARK:19))|(?:(?:\\()(*MARK:20))|(?:(?:\\))(*MARK:21))|(?:(?:\\?\\+)(*MARK:22))|(?:(?:\\?\\?)(*MARK:23))|(?:(?:\\?)(*MARK:24))|(?:(?:\\*\\+)(*MARK:25))|(?:(?:\\*\\?)(*MARK:26))|(?:(?:\\*)(*MARK:27))|(?:(?:\\+\\+)(*MARK:28))|(?:(?:\\+\\?)(*MARK:29))|(?:(?:\\+)(*MARK:30))|(?:(?:\\{[0-9]+\\})(*MARK:31))|(?:(?:\\{[0-9]+,[0-9]+\\}\\+)(*MARK:32))|(?:(?:\\{[0-9]+,[0-9]+\\}\\?)(*MARK:33))|(?:(?:\\{[0-9]+,[0-9]+\\})(*MARK:34))|(?:(?:\\{[0-9]+,\\}\\+)(*MARK:35))|(?:(?:\\{[0-9]+,\\}\\?)(*MARK:36))|(?:(?:\\{[0-9]+,\\})(*MARK:37))|(?:(?:\\|)(*MARK:38))|(?:(?:\\\\(?:[aefnrt]|c[\\x00-\\x7f]))(*MARK:39))|(?:(?:\\\\(?:[0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+}))(*MARK:40))|(?:(?:\\\\(?:[CdDhHNRsSvVwWX]|[pP]{[^}]+}))(*MARK:41))|(?:(?:\\\\[bBAZzG]|\\^|\\$)(*MARK:42))|(?:(?:\\\\K)(*MARK:43))|(?:(?:\\\\.|.|\\n)(*MARK:44))|(?:(?:[^\\s]++)(*MARK:45)))/Ssum',
+            pattern: '/\\G(?|(?:(?:\\[\\^\\])(*MARK:0))|(?:(?:\\[\\])(*MARK:1))|(?:(?:\\[\\^)(*MARK:2))|(?:(?:\\[)(*MARK:3))|(?:(?:\\(\\?[imsxnJUX^]*-?[imsxnJUX^]+\\))(*MARK:4))|(?:(?:\\(\\?=)(*MARK:5))|(?:(?:\\(\\?!)(*MARK:6))|(?:(?:\\(\\?<=)(*MARK:7))|(?:(?:\\(\\?<!)(*MARK:8))|(?:(?:\\(\\?\\(<(.+?)(?<!\\\\)>\\))(*MARK:9))|(?:(?:\\(\\?\\((\\d+)\\))(*MARK:10))|(?:(?:\\(\\?\\(([\\+\\-]\\d+)\\))(*MARK:11))|(?:(?:\\(\\?\\()(*MARK:12))|(?:(?:\\(\\?#(.*?)(?<!\\\\)\\))(*MARK:13))|(?:(?:\\(\\*:([^)]+)\\))(*MARK:14))|(?:(?:\\(\\?P=\\w+\\))(*MARK:15))|(?:(?:\\(\\?(?:R|[+-]?\\d+|&\\w+|P>\\w+)\\))(*MARK:16))|(?:(?:\\(\\?P?<(.+?)(?<!\\\\)>)(*MARK:17))|(?:(?:\\(\\?:)(*MARK:18))|(?:(?:\\(\\?[imsxnJUX^]*-?[imsxnJUX^]+:)(*MARK:19))|(?:(?:\\(\\?\\|)(*MARK:20))|(?:(?:\\(\\?>)(*MARK:21))|(?:(?:\\()(*MARK:22))|(?:(?:\\))(*MARK:23))|(?:(?:\\?\\+)(*MARK:24))|(?:(?:\\?\\?)(*MARK:25))|(?:(?:\\?)(*MARK:26))|(?:(?:\\*\\+)(*MARK:27))|(?:(?:\\*\\?)(*MARK:28))|(?:(?:\\*)(*MARK:29))|(?:(?:\\+\\+)(*MARK:30))|(?:(?:\\+\\?)(*MARK:31))|(?:(?:\\+)(*MARK:32))|(?:(?:\\{[0-9]+\\})(*MARK:33))|(?:(?:\\{[0-9]+,[0-9]+\\}\\+)(*MARK:34))|(?:(?:\\{[0-9]+,[0-9]+\\}\\?)(*MARK:35))|(?:(?:\\{[0-9]+,[0-9]+\\})(*MARK:36))|(?:(?:\\{[0-9]+,\\}\\+)(*MARK:37))|(?:(?:\\{[0-9]+,\\}\\?)(*MARK:38))|(?:(?:\\{[0-9]+,\\})(*MARK:39))|(?:(?:\\|)(*MARK:40))|(?:(?:\\\\(?:[aefnrt]|c[\\x00-\\x7f]))(*MARK:41))|(?:(?:\\\\(?:[0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+}))(*MARK:42))|(?:(?:\\\\(?:[CdDhHNRsSvVwWX]|[pP]{[^}]+}))(*MARK:43))|(?:(?:\\\\[bBAZzG]|\\^|\\$)(*MARK:44))|(?:(?:\\\\K)(*MARK:45))|(?:(?:\\\\g(?:<[^>]+>|\'[^\']+\'))(*MARK:46))|(?:(?:\\\\(?:[1-9]\\d*|g[+-]?\\d+|g\\{[+-]?\\w+\\}|k<\\w+>|k\'\\w+\'|k\\{\\w+\\}))(*MARK:47))|(?:(?:\\\\.|.|\\n)(*MARK:48))|(?:(?:[^\\s]++)(*MARK:49)))/Ssum',
             channels: [
-                45 => 'Unknown',
+                49 => 'Unknown',
             ],
             names: [
                 'T_NEGATIVE_CLASS_FC',
@@ -931,6 +1015,8 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 'T_ASSERTION_REFERENCE',
                 'T_COMMENT',
                 'T_MARKER',
+                'T_NAMED_BACKREFERENCE',
+                'T_SUBROUTINE',
                 'T_NAMED_CAPTURING',
                 'T_NON_CAPTURING',
                 'T_NON_CAPTURING_INTERNAL_OPTION',
@@ -960,6 +1046,8 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 'T_CHARACTER_TYPE',
                 'T_ANCHOR',
                 'T_MATCH_POINT_RESET',
+                'T_SUBROUTINE_G',
+                'T_BACKREFERENCE',
                 'T_LITERAL',
             ],
             transitions: [
@@ -974,7 +1062,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 1,
                 13 => 1,
                 1,
-                1,
+                17 => 1,
             ],
         );
 
@@ -982,10 +1070,10 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             lexer: $this->lexer,
             grammar: [
                 new \Phplrt\Parser\Grammar\Optional(1),
-                new \Phplrt\Parser\Grammar\Concatenation([2, 63]),
+                new \Phplrt\Parser\Grammar\Concatenation([2, 67]),
                 new \Phplrt\Parser\Grammar\Optional(3),
                 new \Phplrt\Parser\Grammar\Repetition(4, 1, \INF),
-                new \Phplrt\Parser\Grammar\Alternation([5, 6, 13, 56]),
+                new \Phplrt\Parser\Grammar\Alternation([5, 6, 13, 60]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_INTERNAL_OPTION, true),
                 new \Phplrt\Parser\Grammar\Concatenation([7, 1, 12]),
                 new \Phplrt\Parser\Grammar\Alternation([8, 9, 10, 11]),
@@ -994,7 +1082,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_LOOKBEHIND, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_NEGATIVE_LOOKBEHIND, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_CAPTURING_CLOSE, false),
-                new \Phplrt\Parser\Grammar\Concatenation([14, 38]),
+                new \Phplrt\Parser\Grammar\Concatenation([14, 42]),
                 new \Phplrt\Parser\Grammar\Alternation([15, 20, 31]),
                 new \Phplrt\Parser\Grammar\Alternation([16, 17, 18, 19]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_NEGATIVE_CLASS_FC, true),
@@ -1012,15 +1100,19 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_NON_CAPTURING_RESET, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ATOMIC_GROUP, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_CAPTURING, true),
-                new \Phplrt\Parser\Grammar\Alternation([32, 33, 34, 35, 36, 37]),
+                new \Phplrt\Parser\Grammar\Alternation([32, 33, 34, 35, 36, 37, 38, 39, 40, 41]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_CHARACTER, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_DYNAMIC_CHARACTER, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_CHARACTER_TYPE, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ANCHOR, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_MATCH_POINT_RESET, true),
+                new \Phplrt\Parser\Grammar\Lexeme(self::T_SUBROUTINE_G, true),
+                new \Phplrt\Parser\Grammar\Lexeme(self::T_BACKREFERENCE, true),
+                new \Phplrt\Parser\Grammar\Lexeme(self::T_NAMED_BACKREFERENCE, true),
+                new \Phplrt\Parser\Grammar\Lexeme(self::T_SUBROUTINE, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_LITERAL, true),
-                new \Phplrt\Parser\Grammar\Optional(39),
-                new \Phplrt\Parser\Grammar\Alternation([40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55]),
+                new \Phplrt\Parser\Grammar\Optional(43),
+                new \Phplrt\Parser\Grammar\Alternation([44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ZERO_OR_ONE_POSSESSIVE, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ZERO_OR_ONE_LAZY, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ZERO_OR_ONE, true),
@@ -1037,16 +1129,16 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_N_OR_MORE_POSSESSIVE, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_N_OR_MORE_LAZY, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_N_OR_MORE, true),
-                new \Phplrt\Parser\Grammar\Concatenation([57, 1, 12]),
-                new \Phplrt\Parser\Grammar\Alternation([58, 59, 60, 61]),
+                new \Phplrt\Parser\Grammar\Concatenation([61, 1, 12]),
+                new \Phplrt\Parser\Grammar\Alternation([62, 63, 64, 65]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_NAMED_REFERENCE, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ABSOLUTE_REFERENCE, true),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_RELATIVE_REFERENCE, true),
-                new \Phplrt\Parser\Grammar\Concatenation([62, 1, 12]),
+                new \Phplrt\Parser\Grammar\Concatenation([66, 1, 12]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ASSERTION_REFERENCE, true),
-                new \Phplrt\Parser\Grammar\Optional(64),
-                new \Phplrt\Parser\Grammar\Repetition(65, 1, \INF),
-                new \Phplrt\Parser\Grammar\Concatenation([66, 2]),
+                new \Phplrt\Parser\Grammar\Optional(68),
+                new \Phplrt\Parser\Grammar\Repetition(69, 1, \INF),
+                new \Phplrt\Parser\Grammar\Concatenation([70, 2]),
                 new \Phplrt\Parser\Grammar\Lexeme(self::T_ALTERNATION, true),
             ],
             initial: 0,
@@ -1060,7 +1152,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
                 15 => \Closure::fromCallable([self::class, 'reduceCharacterClass']),
                 20 => \Closure::fromCallable([self::class, 'reduceCapturing']),
                 31 => \Closure::fromCallable([self::class, 'reduceLiteral']),
-                56 => \Closure::fromCallable([self::class, 'reduceCondition']),
+                60 => \Closure::fromCallable([self::class, 'reduceCondition']),
             ],
             expectations: self::PARSER_EXPECTATIONS,
             kept: self::PARSER_KEPT_TABLE,
@@ -1256,7 +1348,12 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
 
     private static function reduceLiteral(\Phplrt\Parser\Context $ctx, mixed $children): mixed
     {
-        return new RegexNode('token', \strtolower(\substr($children->name, 2)), $children->value);
+        $names = [
+            self::T_NAMED_BACKREFERENCE => 'backreference',
+            self::T_SUBROUTINE_G => 'subroutine',
+        ];
+
+        return new RegexNode('token', $names[$children->id] ?? \strtolower(\substr($children->name, 2)), $children->value);
     }
 
     private static function reduceCondition(\Phplrt\Parser\Context $ctx, mixed $children): mixed

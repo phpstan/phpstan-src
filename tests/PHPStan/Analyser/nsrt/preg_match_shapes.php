@@ -1151,3 +1151,20 @@ function testQuantifiedMaybeEmptyAtom(string $s): void {
 		assertType("array{non-falsy-string, string, string}", $matches);
 	}
 }
+
+function testBackreferences(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/([a-c]*)\1/', $s, $matches)) {
+		assertType("array{string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(\2|a)(\1)/', $s, $matches)) {
+		assertType("array{string, string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput2
+	if (preg_match('/^(..)(\1{2,3})ab/', $s, $matches)) {
+		assertType("array{non-falsy-string, non-falsy-string, string}", $matches);
+	}
+}

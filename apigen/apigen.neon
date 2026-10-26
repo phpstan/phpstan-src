@@ -8,3 +8,6 @@ services:
 
 	renderer.filter:
 		factory: PHPStan\ApiGen\RendererFilter
+
+	commonMark:
+		factory: PHPStan\ApiGen\MarkdownConverter

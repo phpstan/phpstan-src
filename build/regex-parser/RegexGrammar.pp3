@@ -84,6 +84,10 @@
 // Marker verbs.
 %token T_MARKER                   \(\*:([^)]+)\)
 
+// Backreferences and subroutine calls written as groups: (?P=name), (?R), (?1), (?-1), (?&name), (?P>name).
+%token T_NAMED_BACKREFERENCE      \(\?P=\w+\)
+%token T_SUBROUTINE               \(\?(?:R|[+-]?\d+|&\w+|P>\w+)\)
+
 // Groups.
 %token T_NAMED_CAPTURING          \(\?P?<(.+?)(?<!\\)>
 %token T_NON_CAPTURING            \(\?:
@@ -120,6 +124,10 @@
 %token T_CHARACTER_TYPE           \\(?:[CdDhHNRsSvVwWX]|[pP]{[^}]+})
 %token T_ANCHOR                   \\[bBAZzG]|\^|\$
 %token T_MATCH_POINT_RESET        \\K
+// Subroutine calls \g<name>, \g'1' and backreferences \1, \g1, \g{-1}, \g{name}, \k<name>, \k'name', \k{name}.
+// Octal escapes like \012 are matched as dynamic characters above.
+%token T_SUBROUTINE_G             \\g(?:<[^>]+>|'[^']+')
+%token T_BACKREFERENCE            \\(?:[1-9]\d*|g[+-]?\d+|g\{[+-]?\w+\}|k<\w+>|k'\w+'|k\{\w+\})
 %token T_LITERAL                  \\.|.|\n
 
 Expression -> {
@@ -354,12 +362,21 @@ Capturing -> {
   ;
 
 Literal -> {
-    return new RegexNode('token', \strtolower(\substr($children->name, 2)), $children->value);
+    $names = [
+        self::T_NAMED_BACKREFERENCE => 'backreference',
+        self::T_SUBROUTINE_G => 'subroutine',
+    ];
+
+    return new RegexNode('token', $names[$children->id] ?? \strtolower(\substr($children->name, 2)), $children->value);
 }
   : <T_CHARACTER>
   | <T_DYNAMIC_CHARACTER>
   | <T_CHARACTER_TYPE>
   | <T_ANCHOR>
   | <T_MATCH_POINT_RESET>
+  | <T_SUBROUTINE_G>
+  | <T_BACKREFERENCE>
+  | <T_NAMED_BACKREFERENCE>
+  | <T_SUBROUTINE>
   | <T_LITERAL>
   ;

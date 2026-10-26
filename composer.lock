@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "d2e6989470701df6491ae6ae3cb6c31c",
+  "content-hash": "f5148e68b5a12ba8eac518eba014d4a8",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1344,16 +1344,16 @@
     },
     {
       "name": "ondrejmirtes/better-reflection",
-      "version": "6.75.0.3",
+      "version": "6.75.0.4",
       "source": {
         "type": "git",
         "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-        "reference": "0b241d424a8be1ec74335cc0838f1e45f9bc376a"
+        "reference": "47a79d87807e12860c3f1cafcae5f7380e4539c9"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/0b241d424a8be1ec74335cc0838f1e45f9bc376a",
-        "reference": "0b241d424a8be1ec74335cc0838f1e45f9bc376a",
+        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/47a79d87807e12860c3f1cafcae5f7380e4539c9",
+        "reference": "47a79d87807e12860c3f1cafcae5f7380e4539c9",
         "shasum": ""
       },
       "require": {
@@ -1409,9 +1409,9 @@
       ],
       "description": "Better Reflection - an improved code reflection API",
       "support": {
-        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.75.0.3"
+        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.75.0.4"
       },
-      "time": "2026-10-26T15:50:23+00:00"
+      "time": "2026-10-26T21:37:39+00:00"
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",

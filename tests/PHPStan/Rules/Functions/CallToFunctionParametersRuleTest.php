@@ -71,7 +71,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $promises of function JointInference\\all expects array<JointInference\\Promise<1|2>>, array{JointInference\\Promise<1>, JointInference\\Promise<2>} given.',
 				13,
-				'Template type T on class JointInference\\Promise is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+				"• Offset 0 (JointInference\\Promise<1|2>) does not accept type JointInference\\Promise<1>: Template type T on class JointInference\\Promise is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>\n• Offset 1 (JointInference\\Promise<1|2>) does not accept type JointInference\\Promise<2>: Template type T on class JointInference\\Promise is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>",
 			],
 			[
 				'Parameter #1 $a of function JointInference\\both expects JointInference\\Box<JointInference\\Cat|JointInference\\Dog>, JointInference\\Box<JointInference\\Cat> given.',
@@ -3145,7 +3145,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $a of function Bug11494\test expects array{long: string, details: string}|array{short: string}, array{short: \'thing\', extra: \'other\'} given.',
 				18,
-				"• Type #1 from the union: Array does not have offset 'long'.\n• Type #2 from the union: Sealed array shape does not accept array with extra key 'extra'.",
+				"• Type #1 from the union: Array does not have offset 'long'.\n• Type #2 from the union: Sealed array shape does not accept array with extra key 'extra' => 'other'.",
 			],
 		]);
 	}
@@ -3326,6 +3326,42 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testReadableAcceptsReasons(): void
+	{
+		$this->analyse([__DIR__ . '/data/readable-accepts-reasons.php'], [
+			[
+				'Parameter #1 $a of function ReadableAcceptsReasons\\unsealedExtraOffsets expects array{id: int, ...<string, array{x: int}>}, array{id: 1, k0: array{x: \'a0\'}, k1: array{x: \'a1\'}, k2: array{x: \'a2\'}, k3: array{x: \'a3\'}, k4: array{x: \'a4\'}, k5: array{x: \'a5\'}} given.',
+				22,
+				'Offsets \'k0\' › \'x\', \'k1\' › \'x\', \'k2\' › \'x\' and 3 more (int) does not accept type string.',
+			],
+			[
+				'Parameter #1 $o of function ReadableAcceptsReasons\\missingProperties expects object{p0: int, p1: int, p2: int, p3: int, p4: int, p5: int}, object{p0: int, p1: int, p2: int}&stdClass given.',
+				23,
+				'object{p0: int, p1: int, p2: int} does not have properties $p3, $p4 and $p5.',
+			],
+			[
+				'Parameter #1 $x of function ReadableAcceptsReasons\\nonEmptyList expects non-empty-list<lowercase-string>, list<literal-string&lowercase-string&non-falsy-string> given.',
+				24,
+				'Array might be empty.',
+			],
+			[
+				'Parameter #1 $a of function ReadableAcceptsReasons\\listInShape expects array{a: list<int>, b: list<int>}, array{a: array{x: 1}, b: array{1}} given.',
+				25,
+				'Offset \'a\' (list<int>): array{x: 1} is not a list.',
+			],
+			[
+				'Parameter #1 $it of function ReadableAcceptsReasons\\iterateRows expects Iterator<int, array{id: int}>, ArrayIterator<0, array{id: 0, name: \'a0\'}|array{id: 1, name: \'a1\'}|array{id: 2, name: \'a2\'}|array{id: 3, name: \'a3\'}> given.',
+				27,
+				'Sealed array shapes array{id: int} and array{id: int, name: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys',
+			],
+			[
+				'Parameter #1 $it of function ReadableAcceptsReasons\\iterateRows expects Iterator<int, array{id: int}>, ArrayIterator<0, array{id: 0, name0: \'a0\'}|array{id: 1, name1: \'a1\'}|array{id: 2, name2: \'a2\'}|array{id: 3, name3: \'a3\'}|array{id: 4, name4: \'a4\'}|array{id: 5, name5: \'a5\'}|array{id: 6, name6: \'a6\'}|array{id: 7, name7: \'a7\'}> given.',
+				29,
+				"• Sealed array shapes array{id: int} and array{id: int, name0: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys\n• Sealed array shapes array{id: int} and array{id: int, name1: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys\n• Sealed array shapes array{id: int} and array{id: int, name2: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys\n• Sealed array shapes array{id: int} and array{id: int, name3: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys\n• Sealed array shapes array{id: int} and array{id: int, name4: string} cannot be intersected. Unseal at least one of them with ... syntax. Learn more: https://phpstan.org/blog/phpstan-2-2-unsealed-array-shapes-safer-array-keys\n• 3 more reasons not shown.",
+			],
+		]);
+	}
+
 	public function testBug15432ImplicitMixed(): void
 	{
 		// the closures are typed from the walked sibling items - never from
@@ -3341,7 +3377,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $callbacks of function Bug15432Rule\\consume expects array<\'closure\'|\'method\', callable(): void>, array{method: Closure(int): void, closure: Closure(): void} given.',
 				34,
-				'Parameter #1 $i of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+				'Offset \'method\' (callable(): void) does not accept type Closure(int): void: Parameter #1 $i of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 			],
 			[
 				'Parameter #1 $callbacks of function Bug15432Rule\\consumeIntToString expects array<\'closure\'|\'method\', callable(int): string>, array{method: Closure(string): int, closure: Closure(int): decimal-int-string} given.',

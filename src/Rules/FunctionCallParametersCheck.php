@@ -407,7 +407,7 @@ final class FunctionCallParametersCheck
 							$wrongArgumentTypeMessage,
 							$this->describeParameter($parameter, $argumentName ?? $i + 1),
 							$parameterType->describe($verbosityLevel),
-							$argumentValueType->describe($verbosityLevel),
+							AcceptedTypeDescriptionHelper::describe($parameterType, $argumentValueType, $verbosityLevel),
 						))
 							->identifier('argument.type')
 							->line($argumentLine)

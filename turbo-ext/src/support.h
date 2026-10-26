@@ -1078,6 +1078,12 @@ extern zend_class_entry *pt_ce_constant_array_type;
 [[nodiscard]] bool pt_constant_array_type_new(zval *out, zval *keyTypes, zval *valueTypes, zval *nextAutoIndexes = NULL, zval *optionalKeys = NULL, zval *isList = NULL, zval *unsealed = NULL);
 /* ConstantArrayType::isValidIdentifier($value); false = pending exception */
 [[nodiscard]] bool pt_constant_array_type_is_valid_identifier(zend_string *value, bool &out);
+/* BleedingEdgeToggle::isBleedingEdge() (ConstantArrayType.cpp); false =
+ * pending exception */
+[[nodiscard]] bool pt_is_bleeding_edge(bool &out);
+/* AcceptsReasonHelper::SUBJECT_DESCRIPTION_LENGTH_LIMIT: a longer accepted
+ * type is not repeated as the subject of a reason */
+#define PT_ACCEPTS_REASON_SUBJECT_DESCRIPTION_LENGTH_LIMIT 120
 
 /* merged from the parallel port branch */
 /* the compound family (UnionType.cpp, BenevolentUnionType.cpp,

@@ -1495,10 +1495,23 @@ public:
 				mapDel(keys.table(), value.raw());
 			}
 
+			bool bleedingEdge;
+			if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
 			for (zv::ArrayEntry entry : keys.arrRef()) {
-				zv::Val description = describePrecise(entry.value().deref().raw());
+				zval *extraKey = entry.value().deref().raw();
+				zv::Val description = describePrecise(extraKey);
 				if (UNEXPECTED(description.isUndef())) return zv::Val();
-				result = pt_type_result_and(std::move(result), acceptsNoWithReason(zv::Val::adoptString(zend_strpprintf(0, "Sealed array shape does not accept array with extra key %s.", ZSTR_VAL(zv::Ref(description.raw()).asString())))).raw());
+				zv::Val reason;
+				if (bleedingEdge) {
+					zv::Val extraValueType = callType(Z_OBJ_P(constantArray), PT_LC("getoffsetvaluetype"), 1, extraKey);
+					if (UNEXPECTED(extraValueType.isUndef())) return zv::Val();
+					zv::Val valueDescription = describeValue(extraValueType.raw());
+					if (UNEXPECTED(valueDescription.isUndef())) return zv::Val();
+					reason = zv::Val::adoptString(zend_strpprintf(0, "Sealed array shape does not accept array with extra key %s => %s.", ZSTR_VAL(zv::Ref(description.raw()).asString()), ZSTR_VAL(zv::Ref(valueDescription.raw()).asString())));
+				} else {
+					reason = zv::Val::adoptString(zend_strpprintf(0, "Sealed array shape does not accept array with extra key %s.", ZSTR_VAL(zv::Ref(description.raw()).asString())));
+				}
+				result = pt_type_result_and(std::move(result), acceptsNoWithReason(std::move(reason)).raw());
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
 			}
 
@@ -1560,6 +1573,8 @@ public:
 			mapDel(keys.table(), value.raw());
 		}
 
+		bool bleedingEdge;
+		if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
 		zv::Val otherValueTypes;
 		for (zv::ArrayEntry entry : keys.arrRef()) {
 			zval *pair = entry.value().deref().raw();
@@ -1590,13 +1605,32 @@ public:
 			ZVAL_COPY_VALUE(&args[0], extraValueType);
 			zv::Val acceptsValue = pt_type_op(Z_OBJ_P(unsealedValueType), PT_OP_ACCEPTS, 2, args);
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
-			zv::Val captured = tripleOf(unsealedValueType, extraKeyType, extraValueType);
-			acceptsValue = decorateReasons(acceptsValue.raw(), unsealedValueReasonCallback, captured.raw(), NULL);
-			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
-			if (UNEXPECTED(!isNonYesWithoutReasons(acceptsValue.raw(), reasonless))) return zv::Val();
-			if (reasonless) {
-				acceptsValue = acceptsResultWithReason(acceptsValue.raw(), unsealedValueReason(unsealedValueType, extraKeyType, extraValueType, NULL));
+			if (bleedingEdge) {
+				/* the same offset paths as of the known keys, so they read and group the same way */
+				zend_long acceptsValueTrinary = pt_type_result_trinary(acceptsValue.raw());
+				if (UNEXPECTED(acceptsValueTrinary < 0)) return zv::Val();
+				zv::Val acceptsValueReasons = resultReasons(acceptsValue.raw());
+				if (UNEXPECTED(acceptsValueReasons.isUndef())) return zv::Val();
+				bool hasReasons = arrayCount(acceptsValueReasons.raw()) > 0;
+				if (acceptsValueTrinary != PT_TRI_YES || hasReasons) {
+					zv::Val verbosity = pt_type_verbosity_recommended(unsealedValueType, extraValueType);
+					if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
+					if (hasReasons) {
+						acceptsValue = prependOffsetToReasons(acceptsValue.raw(), extraKeyType, unsealedValueType, extraValueType, verbosity.raw());
+					} else {
+						acceptsValue = acceptsResultWithReason(acceptsValue.raw(), offsetReason(extraKeyType, unsealedValueType, verbosity.raw(), extraValueType, NULL));
+					}
+					if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+				}
+			} else {
+				zv::Val captured = tripleOf(unsealedValueType, extraKeyType, extraValueType);
+				acceptsValue = decorateReasons(acceptsValue.raw(), unsealedValueReasonCallback, captured.raw(), NULL);
 				if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+				if (UNEXPECTED(!isNonYesWithoutReasons(acceptsValue.raw(), reasonless))) return zv::Val();
+				if (reasonless) {
+					acceptsValue = acceptsResultWithReason(acceptsValue.raw(), unsealedValueReason(unsealedValueType, extraKeyType, extraValueType, NULL));
+					if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+				}
 			}
 			result = pt_type_result_and(std::move(result), acceptsValue.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
@@ -1736,8 +1770,14 @@ public:
 			}
 			zv::Val verbosity = pt_type_verbosity_recommended(valueType, otherValueType.raw());
 			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
-			zv::Val captured = quadOf(keyType, valueType, verbosity.raw(), otherValueType.raw());
-			acceptsValue = decorateReasons(acceptsValue.raw(), offsetReasonCallback, captured.raw(), NULL);
+			bool bleedingEdge;
+			if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
+			if (bleedingEdge) {
+				acceptsValue = prependOffsetToReasons(acceptsValue.raw(), keyType, valueType, otherValueType.raw(), verbosity.raw());
+			} else {
+				zv::Val captured = quadOf(keyType, valueType, verbosity.raw(), otherValueType.raw());
+				acceptsValue = decorateReasons(acceptsValue.raw(), offsetReasonCallback, captured.raw(), NULL);
+			}
 			if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
 			bool reasonless;
 			if (UNEXPECTED(!isNonYesWithoutReasons(acceptsValue.raw(), reasonless))) return zv::Val();
@@ -1989,9 +2029,25 @@ public:
 	 * discarded); UNDEF = pending exception */
 	zv::Val sealedArrayShapesCannotBeIntersectedReason(zval *type) const
 	{
-		zv::Val thisDescription = thisDescribeValue();
-		if (UNEXPECTED(thisDescription.isUndef())) return zv::Val();
-		zv::Val typeDescription = describeValue(type);
+		bool bleedingEdge;
+		if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
+		zv::Val thisDescription;
+		zv::Val typeDescription;
+		if (bleedingEdge) {
+			/* only the keys matter here; without the literal values the
+			 * reasons of many similar shapes are the same */
+			zv::Val left = generalizeValues();
+			if (UNEXPECTED(left.isUndef())) return zv::Val();
+			zv::Val right = ConstantArrayType(Z_OBJ_P(type)).generalizeValues();
+			if (UNEXPECTED(right.isUndef())) return zv::Val();
+			thisDescription = describeValue(left.raw());
+			if (UNEXPECTED(thisDescription.isUndef())) return zv::Val();
+			typeDescription = describeValue(right.raw());
+		} else {
+			thisDescription = thisDescribeValue();
+			if (UNEXPECTED(thisDescription.isUndef())) return zv::Val();
+			typeDescription = describeValue(type);
+		}
 		if (UNEXPECTED(typeDescription.isUndef())) return zv::Val();
 		return zv::Val::adoptString(zend_strpprintf(0, "Sealed array shapes %s and %s cannot be intersected. Unseal at least one of them with ... syntax. Learn more: %s", ZSTR_VAL(zv::Ref(thisDescription.raw()).asString()), ZSTR_VAL(zv::Ref(typeDescription.raw()).asString()), PT_CAT_UNSEALED_ARRAY_SHAPES_LINK));
 	}
@@ -5705,6 +5761,36 @@ public:
 		return arrayShapeNode(true, chosen, NULL, asList);
 	}
 
+	/* AcceptsReasonHelper::prependOffset() over every reason of
+	 * $result: a reason already holding an offset path gets $offsetType
+	 * prepended to it, any other one the offset with its expected value
+	 * type (and the accepted one unless it is an array shape); UNDEF =
+	 * pending exception */
+	static zv::Val prependOffsetToReasons(zval *result, zval *offsetType, zval *offsetValueType, zval *acceptedValueType, zval *verbosity)
+	{
+		zv::Arr captured = zv::Arr::create(4);
+		captured.push(zv::Ref(offsetType));
+		captured.push(zv::Ref(offsetValueType));
+		captured.push(zv::Ref(acceptedValueType));
+		captured.push(zv::Ref(verbosity));
+		zv::Val capturedVal(std::move(captured));
+		return decorateReasons(result, prependOffsetReasonCallback, capturedVal.raw(), NULL);
+	}
+
+	/* ArrayType::accepts()'s decoration of an entry's value result: the
+	 * result itself when it has no reasons, else prependOffsetToReasons()
+	 * at the verbosity recommended for the two value types; UNDEF =
+	 * pending exception */
+	static zv::Val prependOffsetToEntryReasons(zval *result, zval *offsetType, zval *offsetValueType, zval *acceptedValueType)
+	{
+		zv::Val reasons = resultReasons(result);
+		if (UNEXPECTED(reasons.isUndef())) return zv::Val();
+		if (arrayCount(reasons.raw()) == 0) return zv::Val::copyOf(zv::Ref(result));
+		zv::Val verbosity = pt_type_verbosity_recommended(offsetValueType, acceptedValueType);
+		if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
+		return prependOffsetToReasons(result, offsetType, offsetValueType, acceptedValueType, verbosity.raw());
+	}
+
 	/* Strings::match($value, '~^(?:[\\]?+[a-z_\x80-\xFF][0-9a-z_\x80-\xFF-]*+)++$~si') !== null —
 	 * the same preg_match(), called as the internal function it is (the
 	 * pcre extension caches the compiled pattern), without the userland
@@ -6233,6 +6319,44 @@ private:
 		zval *otherValueType = zend_hash_index_find(Z_ARRVAL_P(captured), 3);
 		ZEND_ASSERT(keyType != NULL && valueType != NULL && verbosity != NULL && otherValueType != NULL);
 		zv::Val result = offsetReason(keyType, valueType, verbosity, otherValueType, reason);
+		if (UNEXPECTED(result.isUndef())) return;
+		result.intoReturnValue(return_value);
+	}
+
+	/* AcceptsReasonHelper::prependOffset() */
+	static zv::Val prependOffsetReason(zval *offsetType, zval *offsetValueType, zval *acceptedValueType, zval *verbosity, zend_string *reason)
+	{
+		static constexpr char offsetPrefix[] = "Offset ";
+		static constexpr size_t offsetPrefixLength = sizeof(offsetPrefix) - 1;
+		zv::Val offsetDescription = describePrecise(offsetType);
+		if (UNEXPECTED(offsetDescription.isUndef())) return zv::Val();
+		if (ZSTR_LEN(reason) >= offsetPrefixLength && memcmp(ZSTR_VAL(reason), offsetPrefix, offsetPrefixLength) == 0) {
+			return zv::Val::adoptString(zend_strpprintf(0, "Offset %s › %s", ZSTR_VAL(zv::Ref(offsetDescription.raw()).asString()), ZSTR_VAL(reason) + offsetPrefixLength));
+		}
+		zv::Val valueDescription = describeOf(offsetValueType, verbosity);
+		if (UNEXPECTED(valueDescription.isUndef())) return zv::Val();
+		zend_long acceptedIsConstantArray = pt_type_op_trinary(Z_OBJ_P(acceptedValueType), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
+		if (UNEXPECTED(acceptedIsConstantArray < 0)) return zv::Val();
+		if (acceptedIsConstantArray == PT_TRI_YES) {
+			return zv::Val::adoptString(zend_strpprintf(0, "Offset %s (%s): %s", ZSTR_VAL(zv::Ref(offsetDescription.raw()).asString()), ZSTR_VAL(zv::Ref(valueDescription.raw()).asString()), ZSTR_VAL(reason)));
+		}
+		zv::Val acceptedDescription = describeOf(acceptedValueType, verbosity);
+		if (UNEXPECTED(acceptedDescription.isUndef())) return zv::Val();
+		return zv::Val::adoptString(zend_strpprintf(0, "Offset %s (%s) does not accept type %s: %s", ZSTR_VAL(zv::Ref(offsetDescription.raw()).asString()), ZSTR_VAL(zv::Ref(valueDescription.raw()).asString()), ZSTR_VAL(zv::Ref(acceptedDescription.raw()).asString()), ZSTR_VAL(reason)));
+	}
+
+	/* prependOffsetToReasons()'s decorator: state0 = [offsetType, offsetValueType, acceptedValueType, verbosity] */
+	static void prependOffsetReasonCallback(zval *captured, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+	{
+		(void) state1;
+		zend_string *reason = reasonArgument(argc, argv);
+		if (UNEXPECTED(reason == NULL || Z_TYPE_P(captured) != IS_ARRAY)) return;
+		zval *offsetType = zend_hash_index_find(Z_ARRVAL_P(captured), 0);
+		zval *offsetValueType = zend_hash_index_find(Z_ARRVAL_P(captured), 1);
+		zval *acceptedValueType = zend_hash_index_find(Z_ARRVAL_P(captured), 2);
+		zval *verbosity = zend_hash_index_find(Z_ARRVAL_P(captured), 3);
+		ZEND_ASSERT(offsetType != NULL && offsetValueType != NULL && acceptedValueType != NULL && verbosity != NULL);
+		zv::Val result = prependOffsetReason(offsetType, offsetValueType, acceptedValueType, verbosity, reason);
 		if (UNEXPECTED(result.isUndef())) return;
 		result.intoReturnValue(return_value);
 	}
@@ -7110,6 +7234,16 @@ bool pt_constant_array_type_new(zval *out, zval *keyTypes, zval *valueTypes, zva
 bool pt_constant_array_type_is_valid_identifier(zend_string *value, bool &out)
 {
 	return ConstantArrayType::isValidIdentifier(value, out);
+}
+
+zv::Val pt_offset_accepts_reasons_prepend(zval *result, zval *offsetType, zval *offsetValueType, zval *acceptedValueType)
+{
+	return ConstantArrayType::prependOffsetToEntryReasons(result, offsetType, offsetValueType, acceptedValueType);
+}
+
+bool pt_is_bleeding_edge(bool &out)
+{
+	return phpstanturbo::isBleedingEdge(out);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */

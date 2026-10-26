@@ -227,7 +227,8 @@ public:
 	static zv::Val getConstantArrays() { return zv::Val(zv::Arr::empty()); }
 
 	/* the CompoundType callback; for a ConstantArrayType the key and value
-	 * types accepted pairwise; for an ArrayType the item and key types
+	 * types accepted pairwise (on bleeding edge the value reasons prefixed
+	 * with their offset); for an ArrayType the item and key types
 	 * accepted; no otherwise; UNDEF = pending exception */
 	zv::Val accepts(zval *type, bool strictTypes) const
 	{
@@ -250,6 +251,8 @@ public:
 			/* $type->getValueTypes()[$i] — the same array on every iteration */
 			zv::Val valueTypes = pt_type_call_array(Z_OBJ_P(type), PT_LC("getvaluetypes"), 0, NULL);
 			if (UNEXPECTED(valueTypes.isUndef())) return zv::Val();
+			bool bleedingEdge;
+			if (UNEXPECTED(!pt_is_bleeding_edge(bleedingEdge))) return zv::Val();
 			for (zv::ArrayEntry entry : zv::ArrRef(keyTypes.raw())) {
 				zval *keyType = entry.value().deref().raw();
 				zv::Ref valueType = zv::ArrRef(valueTypes.raw()).findIndex(entry.indexKey());
@@ -263,6 +266,10 @@ public:
 				ZVAL_COPY_VALUE(&args[0], valueType.deref().raw());
 				zv::Val acceptsValue = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_ACCEPTS, 2, args);
 				if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+				if (bleedingEdge) {
+					acceptsValue = pt_offset_accepts_reasons_prepend(acceptsValue.raw(), keyType, itemType.raw(), valueType.deref().raw());
+					if (UNEXPECTED(acceptsValue.isUndef())) return zv::Val();
+				}
 				result = pt_type_result_and(pt_type_result_and(std::move(result), acceptsKey.raw()), acceptsValue.raw());
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
 			}

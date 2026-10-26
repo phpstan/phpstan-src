@@ -181,6 +181,10 @@ public:
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		zv::Val scope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		bool bleedingEdge;
+		if (UNEXPECTED(!pt_is_bleeding_edge(bleedingEdge))) return zv::Val();
+		zv::Arr missingProperties = zv::Arr::empty();
+		zv::Arr possiblyMissingProperties = zv::Arr::empty();
 		zval *props = properties();
 		if (UNEXPECTED(props == NULL)) return zv::Val();
 		for (zv::ArrayEntry entry : zv::ArrRef(props)) {
@@ -194,7 +198,7 @@ public:
 			if (UNEXPECTED(typeHasProperty.isUndef())) return zv::Val();
 			zend_long typeHasPropertyValue = pt_type_trinary_value(typeHasProperty.raw());
 			if (UNEXPECTED(typeHasPropertyValue < 0)) return zv::Val();
-			zv::Val hasProperty = memberPresenceResult(pt_ce_accepts_result, type, typeHasProperty.raw(), typeHasPropertyValue, &propertyName);
+			zv::Val hasProperty = memberPresenceResult(pt_ce_accepts_result, type, typeHasProperty.raw(), typeHasPropertyValue, &propertyName, bleedingEdge);
 			if (UNEXPECTED(hasProperty.isUndef())) return zv::Val();
 
 			if (typeHasPropertyValue != PT_TRI_YES) {
@@ -220,12 +224,14 @@ public:
 				if (optional) continue;
 				result = resultAnd(std::move(result), hasProperty.raw());
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
+				missingProperties.push(zv::Val::copyOf(zv::Ref(propertyNameString.raw())));
 				continue;
 			}
 			if (typeHasPropertyValue == PT_TRI_MAYBE) {
 				if (!optional) {
 					result = resultAnd(std::move(result), hasProperty.raw());
 					if (UNEXPECTED(result.isUndef())) return zv::Val();
+					possiblyMissingProperties.push(zv::Val::copyOf(zv::Ref(propertyNameString.raw())));
 					continue;
 				}
 				hasProperty = pt_type_accepts_result(PT_TRI_YES);
@@ -303,7 +309,10 @@ public:
 		ZVAL_EMPTY_ARRAY(&emptyReasons);
 		if (UNEXPECTED(!pt_accepts_result_create(&objectResult, isObject.raw(), &emptyReasons))) return zv::Val();
 		zv::Val objectResultVal = zv::Val::adopt(objectResult);
-		return resultAnd(std::move(result), objectResultVal.raw());
+		result = resultAnd(std::move(result), objectResultVal.raw());
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		if (!bleedingEdge) return result;
+		return withMissingPropertiesReasons(pt_ce_accepts_result, std::move(result), type, missingProperties, possiblyMissingProperties);
 	}
 
 	/* the CompoundType callback; maybe for object and a universal object
@@ -329,6 +338,10 @@ public:
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		zv::Val scope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		bool bleedingEdge;
+		if (UNEXPECTED(!pt_is_bleeding_edge(bleedingEdge))) return zv::Val();
+		zv::Arr missingProperties = zv::Arr::empty();
+		zv::Arr possiblyMissingProperties = zv::Arr::empty();
 		zval *props = properties();
 		if (UNEXPECTED(props == NULL)) return zv::Val();
 		for (zv::ArrayEntry entry : zv::ArrRef(props)) {
@@ -341,7 +354,7 @@ public:
 			if (UNEXPECTED(typeHasProperty.isUndef())) return zv::Val();
 			zend_long typeHasPropertyValue = pt_type_trinary_value(typeHasProperty.raw());
 			if (UNEXPECTED(typeHasPropertyValue < 0)) return zv::Val();
-			zv::Val hasProperty = memberPresenceResult(pt_ce_is_super_type_of_result, type, typeHasProperty.raw(), typeHasPropertyValue, &propertyName);
+			zv::Val hasProperty = memberPresenceResult(pt_ce_is_super_type_of_result, type, typeHasProperty.raw(), typeHasPropertyValue, &propertyName, bleedingEdge);
 			if (UNEXPECTED(hasProperty.isUndef())) return zv::Val();
 			bool optional;
 			if (UNEXPECTED(!isOptional(&propertyName, optional))) return zv::Val();
@@ -349,12 +362,14 @@ public:
 				if (optional) continue;
 				result = resultAnd(std::move(result), hasProperty.raw());
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
+				missingProperties.push(zv::Val::copyOf(zv::Ref(propertyNameString.raw())));
 				continue;
 			}
 			if (typeHasPropertyValue == PT_TRI_MAYBE) {
 				if (!optional) {
 					result = resultAnd(std::move(result), hasProperty.raw());
 					if (UNEXPECTED(result.isUndef())) return zv::Val();
+					possiblyMissingProperties.push(zv::Val::copyOf(zv::Ref(propertyNameString.raw())));
 					continue;
 				}
 				hasProperty = pt_type_is_super_type_of_result(PT_TRI_YES);
@@ -391,7 +406,83 @@ public:
 		if (UNEXPECTED(isObject.isUndef())) return zv::Val();
 		zv::Val objectResult = pt_callable_is_super_type_of_result_of(isObject.raw());
 		if (UNEXPECTED(objectResult.isUndef())) return zv::Val();
-		return resultAnd(std::move(result), objectResult.raw());
+		result = resultAnd(std::move(result), objectResult.raw());
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		if (!bleedingEdge) return result;
+		return withMissingPropertiesReasons(pt_ce_is_super_type_of_result, std::move(result), type, missingProperties, possiblyMissingProperties);
+	}
+
+	/* $result->and(new <Result>(TrinaryLogic::createYes(),
+	 * self::missingPropertiesReasons($type, $missingProperties, $possiblyMissingProperties)));
+	 * UNDEF = pending exception */
+	static zv::Val withMissingPropertiesReasons(zend_class_entry *resultCe, zv::Val result, zval *type, zv::Arr &missingProperties, zv::Arr &possiblyMissingProperties)
+	{
+		if (missingProperties.arrRef().size() == 0 && possiblyMissingProperties.arrRef().size() == 0) return result;
+		/* AcceptsReasonHelper::describeSubject($type, VerbosityLevel::typeOnly(), 'Object') */
+		zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
+		if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
+		zv::Val subject = pt_type_op(Z_OBJ_P(type), PT_OP_DESCRIBE, 1, typeOnly.raw());
+		if (UNEXPECTED(subject.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(subject.raw()).isString())) {
+			zend_type_error("phpstan_turbo: describe() must return string");
+			return zv::Val();
+		}
+		if (ZSTR_LEN(zv::Ref(subject.raw()).asString()) > PT_ACCEPTS_REASON_SUBJECT_DESCRIPTION_LENGTH_LIMIT) {
+			subject = zv::Val::string(PT_LC("Object"));
+		}
+		zv::Arr reasons = zv::Arr::create(2);
+		if (missingProperties.arrRef().size() > 0) reasons.push(missingPropertiesReason(zv::Ref(subject.raw()).asString(), missingProperties, true));
+		if (possiblyMissingProperties.arrRef().size() > 0) reasons.push(missingPropertiesReason(zv::Ref(subject.raw()).asString(), possiblyMissingProperties, false));
+		zv::Val reasonsResult;
+		if (resultCe == pt_ce_accepts_result) {
+			reasonsResult = acceptsResultCreate(pt_trinary_singleton(PT_TRI_YES), std::move(reasons));
+		} else {
+			zv::Args args{pt_trinary_singleton(PT_TRI_YES), reasons.raw()};
+			reasonsResult = pt_type_new_ce(resultCe, 2, args);
+		}
+		if (UNEXPECTED(reasonsResult.isUndef())) return zv::Val();
+		return resultAnd(std::move(result), reasonsResult.raw());
+	}
+
+	/* AcceptsReasonHelper::missingProperties(): 'Foo does not have property $a.',
+	 * 'Foo might not have properties $a, $b, $c and 2 more.' */
+	static zv::Val missingPropertiesReason(zend_string *subject, zv::Arr &propertyNames, bool certainly)
+	{
+		static constexpr uint32_t listedItemsLimit = 3; /* AcceptsReasonHelper::LISTED_ITEMS_LIMIT */
+		uint32_t count = propertyNames.arrRef().size();
+		smart_str reason = {NULL, 0};
+		smart_str_append(&reason, subject);
+		if (certainly) {
+			smart_str_appendl(&reason, PT_LC(" does not have "));
+		} else {
+			smart_str_appendl(&reason, PT_LC(" might not have "));
+		}
+		if (count == 1) {
+			smart_str_appendl(&reason, PT_LC("property "));
+		} else {
+			smart_str_appendl(&reason, PT_LC("properties "));
+		}
+		uint32_t listed = count > listedItemsLimit ? listedItemsLimit : count;
+		uint32_t i = 0;
+		for (zv::ArrayEntry entry : propertyNames.arrRef()) {
+			if (i == listed) break;
+			if (i > 0) {
+				if (count <= listedItemsLimit && i == count - 1) {
+					smart_str_appendl(&reason, PT_LC(" and "));
+				} else {
+					smart_str_appendl(&reason, PT_LC(", "));
+				}
+			}
+			smart_str_appendc(&reason, '$');
+			smart_str_append(&reason, entry.value().asString());
+			i++;
+		}
+		if (count > listedItemsLimit) {
+			smart_str_append_printf(&reason, " and %u more", count - listedItemsLimit);
+		}
+		smart_str_appendc(&reason, '.');
+		smart_str_0(&reason);
+		return zv::Val::adoptString(reason.s);
 	}
 
 	/* another instance (of any subclass) with the same properties (each
@@ -942,14 +1033,14 @@ private:
 		return true;
 	}
 
-	/* new <Result>($typeHasProperty, $typeHasProperty->yes() ? [] :
+	/* new <Result>($typeHasProperty, $typeHasProperty->yes() || $bleedingEdge ? [] :
 	 * [sprintf('%s %s have property $%s.', $type->describe(VerbosityLevel::typeOnly()),
 	 * $typeHasProperty->no() ? 'does not' : 'might not', $propertyName)]);
 	 * UNDEF = pending exception */
-	static zv::Val memberPresenceResult(zend_class_entry *resultCe, zval *type, zval *typeHasProperty, zend_long value, zval *propertyName)
+	static zv::Val memberPresenceResult(zend_class_entry *resultCe, zval *type, zval *typeHasProperty, zend_long value, zval *propertyName, bool bleedingEdge)
 	{
 		zv::Arr reasons;
-		if (value == PT_TRI_YES) {
+		if (value == PT_TRI_YES || bleedingEdge) {
 			reasons = zv::Arr::empty();
 		} else {
 			zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);

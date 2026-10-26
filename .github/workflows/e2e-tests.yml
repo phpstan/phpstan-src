@@ -1704,7 +1704,7 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
@@ -1725,7 +1725,7 @@ jobs:
         run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2074,7 +2074,7 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
@@ -2093,7 +2093,7 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2107,7 +2107,7 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
@@ -2128,7 +2128,7 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2236,7 +2236,7 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 
@@ -2257,7 +2257,7 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2458,7 +2458,7 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
         with:
           egress-policy: audit
 

@@ -1840,7 +1840,7 @@ jobs:
               cd e2e/bug-11359
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 bug-11359.php")
               echo "$OUTPUT"
-              ../bashunit assert contains 'tests/e2e/data/bug-11359.php:3:Function mb_ucfirst not found.' "$OUTPUT"
+              ../bashunit assert contains 'e2e/data/bug-11359.php:3:Function mb_ucfirst not found.' "$OUTPUT"
             php-version: "8.2"
             extensions: mbstring
           - script: |

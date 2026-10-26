@@ -215,3 +215,14 @@ function setOrderOptionalGroupFollowedByMatchedGroup(string $s): void {
 		assertType("non-empty-list<array{0: string, 1?: ''|'a', 2?: 'b'}>", $matches);
 	}
 }
+
+function markVerbs(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match_all('/A(*:A)B|XX(*:B)Y/', $s, $matches)) {
+		assertType("array{0: non-empty-list<string>, MARK?: non-empty-array<int<0, max>, 'A'|'B'>}", $matches);
+	}
+
+	if (preg_match_all('/A(*:A)B|XX(*:B)Y/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, MARK?: 'A'|'B'}>", $matches);
+	}
+}

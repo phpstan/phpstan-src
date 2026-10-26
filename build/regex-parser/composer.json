@@ -1,0 +1,13 @@
+{
+	"name": "phpstan/regex-parser-generator",
+	"description": "Generates src/Type/Regex/Parser/RegexParser.php from RegexGrammar.pp3",
+	"type": "project",
+	"license": ["MIT"],
+	"require": {
+		"php": "^8.4",
+		"phplrt/compiler": "^4.2.4"
+	},
+	"config": {
+		"sort-packages": true
+	}
+}

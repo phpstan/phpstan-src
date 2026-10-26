@@ -177,6 +177,14 @@ phpstan-generate-baseline-php:
 phpstan-pro:
 	php -d memory_limit=450M bin/phpstan --pro
 
+# Regenerates src/Type/Regex/Parser/RegexParser.php from
+# build/regex-parser/RegexGrammar.pp3 with the phplrt compiler. The compiler
+# needs PHP 8.4+, the generated parser only needs the phplrt runtime.
+.PHONY: regex-parser
+regex-parser:
+	composer install --working-dir build/regex-parser
+	php build/regex-parser/generate.php
+
 name-collision:
 	php vendor/bin/detect-collisions --configuration build/collision-detector.json
 

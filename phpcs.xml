@@ -118,6 +118,8 @@
 		</properties>
 		<exclude-pattern>src/Type/TypeResult.php</exclude-pattern>
 	</rule>
+	<exclude-pattern>build/regex-parser/vendor/*</exclude-pattern>
+	<exclude-pattern>src/Type/Regex/Parser/RegexParser.php</exclude-pattern>
 	<exclude-pattern>compiler/tests/*/data/</exclude-pattern>
 	<exclude-pattern>tests/*/Fixture/</exclude-pattern>
 	<exclude-pattern>tests/*/cache/</exclude-pattern>

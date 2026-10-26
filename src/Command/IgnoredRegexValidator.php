@@ -2,14 +2,16 @@
 
 namespace PHPStan\Command;
 
-use Hoa\Compiler\Llk\Parser;
-use Hoa\Compiler\Llk\TreeNode;
-use Hoa\Exception\Exception;
 use Nette\Utils\Strings;
+use Phplrt\Contracts\Parser\Exception\ParserExceptionInterface;
+use Phplrt\Source\StringSource;
 use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\PhpDocParser\Parser\ParserException;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\Regex\Parser\RegexNode;
+use PHPStan\Type\Regex\Parser\RegexParser;
+use PHPStan\Type\Regex\Parser\RegexSyntaxException;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function strrpos;
@@ -19,7 +21,7 @@ final class IgnoredRegexValidator
 {
 
 	public function __construct(
-		private Parser $parser,
+		private RegexParser $parser,
 		private TypeStringResolver $typeStringResolver,
 	)
 	{
@@ -30,10 +32,12 @@ final class IgnoredRegexValidator
 		$regex = $this->removeDelimiters($regex);
 
 		try {
-			/** @var TreeNode $ast */
-			$ast = $this->parser->parse($regex);
-		} catch (Exception) {
+			$ast = $this->parser->parse(StringSource::createFromString($regex));
+		} catch (ParserExceptionInterface | RegexSyntaxException) {
 			return new IgnoredRegexValidatorResult(ignoredTypes: [], anchorsInTheMiddle: false, allErrorsIgnored: false);
+		}
+		if (!$ast instanceof RegexNode) {
+			throw new ShouldNotHappenException();
 		}
 
 		if (Strings::match($regex, '~(?<!\\\\)(?:\\\\\\\\)*\|\|~')) {
@@ -53,10 +57,9 @@ final class IgnoredRegexValidator
 	/**
 	 * @return array<string, string>
 	 */
-	private function getIgnoredTypes(TreeNode $ast): array
+	private function getIgnoredTypes(RegexNode $ast): array
 	{
-		/** @var TreeNode|null $alternation */
-		$alternation = $ast->getChild(0);
+		$alternation = $ast->getChildren()[0] ?? null;
 		if ($alternation === null) {
 			return [];
 		}
@@ -110,7 +113,7 @@ final class IgnoredRegexValidator
 		return substr($regex, 1, $endDelimiterPosition - 1);
 	}
 
-	private function getText(TreeNode $treeNode): ?string
+	private function getText(RegexNode $treeNode): ?string
 	{
 		if ($treeNode->getId() === 'token') {
 			return $treeNode->getValueValue();
@@ -137,12 +140,10 @@ final class IgnoredRegexValidator
 		return null;
 	}
 
-	private function hasAnchorsInTheMiddle(TreeNode $ast): bool
+	private function hasAnchorsInTheMiddle(RegexNode $ast): bool
 	{
 		if ($ast->getId() === 'token') {
-			$valueArray = $ast->getValue();
-
-			return $valueArray['token'] === 'anchor' && $valueArray['value'] === '$';
+			return $ast->getValueToken() === 'anchor' && $ast->getValueValue() === '$';
 		}
 		$childrenCount = count($ast->getChildren());
 		foreach ($ast->getChildren() as $i => $child) {

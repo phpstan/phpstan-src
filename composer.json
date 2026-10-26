@@ -22,9 +22,6 @@
 		"composer/semver": "^3.4",
 		"fidry/cpu-core-counter": "^1.4",
 		"guzzlehttp/guzzle": "^7.9",
-		"hoa/compiler": "3.17.08.08",
-		"hoa/exception": "^1.0",
-		"hoa/file": "1.17.07.11",
 		"jetbrains/phpstorm-stubs": "dev-master#e4f5f6c3de39f3bab3e9f3fca4b8cdb8b061e681",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.10",
@@ -37,6 +34,7 @@
 		"ondrejmirtes/better-reflection": "6.75.0.2",
 		"ondrejmirtes/composer-attribute-collector": "^1.2.0",
 		"ondrejmirtes/php-merge": "^4.1",
+		"ondrejmirtes/phplrt-runtime": "4.2.4.0",
 		"phpstan/php-8-stubs": "0.4.43",
 		"phpstan/phpdoc-parser": "2.3.6",
 		"react/child-process": "^0.7",
@@ -101,36 +99,6 @@
 		"patches": {
 			"composer/ca-bundle": [
 				"patches/cloudflare-ca.patch"
-			],
-			"hoa/exception": [
-				"patches/Idle.patch"
-			],
-			"hoa/file": [
-				"patches/File.patch",
-				"patches/Read.patch"
-			],
-			"hoa/iterator": [
-				"patches/Buffer.patch",
-				"patches/Lookahead.patch"
-			],
-			"hoa/compiler": [
-				"patches/HoaException.patch",
-				"patches/HoaParser.patch",
-				"patches/Invocation.patch",
-				"patches/Rule.patch",
-				"patches/Lexer.patch",
-				"patches/TreeNode.patch"
-			],
-			"hoa/consistency": [
-				"patches/Consistency.patch",
-				"patches/Prelude.patch"
-			],
-			"hoa/protocol": [
-				"patches/Node.patch",
-				"patches/Wrapper.patch"
-			],
-			"hoa/stream": [
-				"patches/Stream.patch"
 			],
 			"jetbrains/phpstorm-stubs": [
 				"patches/ReflectionProperty.patch",

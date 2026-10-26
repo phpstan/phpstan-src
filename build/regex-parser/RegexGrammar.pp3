@@ -1,0 +1,365 @@
+//
+// Hoa
+//
+//
+// @license
+//
+// New BSD License
+//
+// Copyright © 2007-2017, Hoa community. All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//     * Redistributions of source code must retain the above copyright
+//       notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//     * Neither the name of the Hoa nor the names of its contributors may be
+//       used to endorse or promote products derived from this software without
+//       specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS AND CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+// Grammar \Hoa\Regex\Grammar.
+//
+// Provide grammar of PCRE (Perl Compatible Regular Expression)for the LL(k)
+// parser. More informations at http://pcre.org/pcre.txt, sections pcrepattern &
+// pcresyntax.
+//
+// @copyright  Copyright © 2007-2017 Hoa community.
+// @license    New BSD License
+//
+// Ported to the phplrt PP3 grammar format by the PHPStan project.
+// The generated parser lives in src/Type/Regex/Parser/RegexParser.php,
+// regenerate it with `make regex-parser`.
+
+
+%pragma root Expression
+
+// Character classes.
+// The "fc" variants are followed by a "]" which is a literal and does not close the class.
+%token T_NEGATIVE_CLASS_FC        \[\^\]                  -> state(class)
+%token T_CLASS_FC                 \[\]                    -> state(class)
+%token T_NEGATIVE_CLASS           \[\^                    -> state(class)
+%token T_CLASS                    \[                      -> state(class)
+%token class:T_POSIX_CLASS        \[:\^?[a-z]+:\]
+%token class:T_CLASS_NESTED       \[
+%token class:T_CLASS_CLOSE        \]                      -> exit()
+%token class:T_RANGE              \-
+// \b means backspace in character classes
+%token class:T_CLASS_CHARACTER    \\(?:[aefnrtb]|c[\x00-\x7f])
+%token class:T_CLASS_DYNAMIC_CHARACTER \\(?:[0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+})
+%token class:T_CLASS_CHARACTER_TYPE \\(?:[CdDhHNRsSvVwWX]|[pP]{[^}]+})
+%token class:T_CLASS_LITERAL      \\.|.|\n
+
+// Internal options.
+%token T_INTERNAL_OPTION          \(\?[imsxnJUX^]*-?[imsxnJUX^]+\)
+
+// Lookahead and lookbehind assertions.
+%token T_LOOKAHEAD                \(\?=
+%token T_NEGATIVE_LOOKAHEAD       \(\?!
+%token T_LOOKBEHIND               \(\?<=
+%token T_NEGATIVE_LOOKBEHIND      \(\?<!
+
+// Conditions.
+%token T_NAMED_REFERENCE          \(\?\(<(.+?)(?<!\\)>\)
+%token T_ABSOLUTE_REFERENCE       \(\?\((\d+)\)
+%token T_RELATIVE_REFERENCE       \(\?\(([\+\-]\d+)\)
+%token T_ASSERTION_REFERENCE      \(\?\(
+
+// Comments.
+%token T_COMMENT                  \(\?#(.*?)(?<!\\)\)
+
+// Marker verbs.
+%token T_MARKER                   \(\*:([^)]+)\)
+
+// Groups.
+%token T_NAMED_CAPTURING          \(\?P?<(.+?)(?<!\\)>
+%token T_NON_CAPTURING            \(\?:
+%token T_NON_CAPTURING_INTERNAL_OPTION \(\?[imsxnJUX^]*-?[imsxnJUX^]+:
+%token T_NON_CAPTURING_RESET      \(\?\|
+%token T_ATOMIC_GROUP             \(\?>
+%token T_CAPTURING                \(
+%token T_CAPTURING_CLOSE          \)
+
+// Quantifiers (by default, greedy).
+%token T_ZERO_OR_ONE_POSSESSIVE   \?\+
+%token T_ZERO_OR_ONE_LAZY         \?\?
+%token T_ZERO_OR_ONE              \?
+%token T_ZERO_OR_MORE_POSSESSIVE  \*\+
+%token T_ZERO_OR_MORE_LAZY        \*\?
+%token T_ZERO_OR_MORE             \*
+%token T_ONE_OR_MORE_POSSESSIVE   \+\+
+%token T_ONE_OR_MORE_LAZY         \+\?
+%token T_ONE_OR_MORE              \+
+%token T_EXACTLY_N                \{[0-9]+\}
+%token T_N_TO_M_POSSESSIVE        \{[0-9]+,[0-9]+\}\+
+%token T_N_TO_M_LAZY              \{[0-9]+,[0-9]+\}\?
+%token T_N_TO_M                   \{[0-9]+,[0-9]+\}
+%token T_N_OR_MORE_POSSESSIVE     \{[0-9]+,\}\+
+%token T_N_OR_MORE_LAZY           \{[0-9]+,\}\?
+%token T_N_OR_MORE                \{[0-9]+,\}
+
+// Alternation.
+%token T_ALTERNATION              \|
+
+// Literals.
+%token T_CHARACTER                \\(?:[aefnrt]|c[\x00-\x7f])
+%token T_DYNAMIC_CHARACTER        \\(?:[0-7]{3}|x[0-9a-zA-Z]{2}|x{[0-9a-zA-Z]+})
+%token T_CHARACTER_TYPE           \\(?:[CdDhHNRsSvVwWX]|[pP]{[^}]+})
+%token T_ANCHOR                   \\[bBAZzG]|\^|\$
+%token T_MATCH_POINT_RESET        \\K
+%token T_LITERAL                  \\.|.|\n
+
+Expression -> {
+    return new RegexNode('#expression', children: \is_array($children) ? $children : [$children]);
+}
+  : Alternation()?
+  ;
+
+Alternation -> {
+    if (!\is_array($children)) {
+        return $children;
+    }
+    $nodes = [];
+    $isAlternation = false;
+    foreach ($children as $child) {
+        if ($child instanceof TokenInterface) {
+            $isAlternation = true;
+            $child = new RegexNode('token', 'alternation', $child->value);
+        }
+        $nodes[] = $child;
+    }
+    if (!$isAlternation) {
+        return $children[0] ?? [];
+    }
+    return new RegexNode('#alternation', children: $nodes);
+}
+  : Concatenation()? (<T_ALTERNATION> Concatenation()?)*
+  ;
+
+Concatenation -> {
+    if (!\is_array($children)) {
+        return $children;
+    }
+    if (\count($children) === 1) {
+        return $children[0];
+    }
+    return new RegexNode('#concatenation', children: $children);
+}
+  : (InternalOptions() | Assertion() | Quantification() | Condition())+
+  ;
+
+InternalOptions -> {
+    return new RegexNode('#internal_options', children: [
+        new RegexNode('token', 'internal_option', $children->value),
+    ]);
+}
+  : <T_INTERNAL_OPTION>
+  ;
+
+Condition -> {
+    $reference = \array_shift($children);
+    switch ($reference->id) {
+        case self::T_NAMED_REFERENCE:
+            \array_unshift($children, new RegexNode('token', 'capturing_name', $reference->captures[0]));
+            return new RegexNode('#namedcondition', children: $children);
+        case self::T_ABSOLUTE_REFERENCE:
+            \array_unshift($children, new RegexNode('token', 'index', $reference->captures[0]));
+            return new RegexNode('#absolutecondition', children: $children);
+        case self::T_RELATIVE_REFERENCE:
+            \array_unshift($children, new RegexNode('token', 'index', $reference->captures[0]));
+            return new RegexNode('#relativecondition', children: $children);
+        default:
+            return new RegexNode('#assertioncondition', children: $children);
+    }
+}
+  : (
+        <T_NAMED_REFERENCE>
+      | <T_ABSOLUTE_REFERENCE>
+      | <T_RELATIVE_REFERENCE>
+      | <T_ASSERTION_REFERENCE> Alternation()? ::T_CAPTURING_CLOSE::
+    )
+    Alternation()?
+    ::T_CAPTURING_CLOSE::
+  ;
+
+Assertion -> {
+    $assertion = \array_shift($children);
+    $ids = [
+        self::T_LOOKAHEAD => '#lookahead',
+        self::T_NEGATIVE_LOOKAHEAD => '#negativelookahead',
+        self::T_LOOKBEHIND => '#lookbehind',
+        self::T_NEGATIVE_LOOKBEHIND => '#negativelookbehind',
+    ];
+    return new RegexNode($ids[$assertion->id], children: $children);
+}
+  : (<T_LOOKAHEAD> | <T_NEGATIVE_LOOKAHEAD> | <T_LOOKBEHIND> | <T_NEGATIVE_LOOKBEHIND>)
+    Alternation()?
+    ::T_CAPTURING_CLOSE::
+  ;
+
+Quantification -> {
+    if (!\is_array($children)) {
+        return $children;
+    }
+    if (\count($children) === 1) {
+        return $children[0];
+    }
+    return new RegexNode('#quantification', children: [
+        $children[0],
+        new RegexNode('token', \strtolower(\substr($children[1]->name, 2)), $children[1]->value),
+    ]);
+}
+  : (CharacterClass() | Capturing() | Literal()) Quantifier()?
+  ;
+
+Quantifier
+  : <T_ZERO_OR_ONE_POSSESSIVE>  | <T_ZERO_OR_ONE_LAZY>  | <T_ZERO_OR_ONE>
+  | <T_ZERO_OR_MORE_POSSESSIVE> | <T_ZERO_OR_MORE_LAZY> | <T_ZERO_OR_MORE>
+  | <T_ONE_OR_MORE_POSSESSIVE>  | <T_ONE_OR_MORE_LAZY>  | <T_ONE_OR_MORE>
+  | <T_EXACTLY_N>
+  | <T_N_TO_M_POSSESSIVE>       | <T_N_TO_M_LAZY>       | <T_N_TO_M>
+  | <T_N_OR_MORE_POSSESSIVE>    | <T_N_OR_MORE_LAZY>    | <T_N_OR_MORE>
+  ;
+
+CharacterClass -> {
+    $tokens = $children->children;
+    $close = \array_pop($tokens);
+    if ($close === null || $close->name !== 'T_CLASS_CLOSE') {
+        throw new RegexSyntaxException('Unclosed character class');
+    }
+
+    $nodes = [];
+    if ($children->id === self::T_NEGATIVE_CLASS_FC || $children->id === self::T_CLASS_FC) {
+        $nodes[] = new RegexNode('token', '_class', ']');
+    }
+
+    $literalNames = [
+        'T_CLASS_CHARACTER' => 'character',
+        'T_CLASS_DYNAMIC_CHARACTER' => 'dynamic_character',
+        'T_CLASS_CHARACTER_TYPE' => 'character_type',
+        'T_CLASS_LITERAL' => 'literal',
+    ];
+
+    $count = \count($tokens);
+    $i = 0;
+    // <range>? ( <posix_class> | <class_> | range() <range>? | literal() )* <range>?
+    if ($i < $count && $tokens[$i]->name === 'T_RANGE') {
+        $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value);
+        $i++;
+    }
+    while ($i < $count) {
+        $token = $tokens[$i];
+        if ($token->name === 'T_POSIX_CLASS') {
+            $nodes[] = new RegexNode('token', 'posix_class', $token->value);
+            $i++;
+            continue;
+        }
+        if ($token->name === 'T_CLASS_NESTED') {
+            $nodes[] = new RegexNode('token', 'class_', $token->value);
+            $i++;
+            continue;
+        }
+        if (!isset($literalNames[$token->name])) {
+            break;
+        }
+        $literal = new RegexNode('token', $literalNames[$token->name], $token->value);
+        if (
+            $i + 2 < $count
+            && $tokens[$i + 1]->name === 'T_RANGE'
+            && isset($literalNames[$tokens[$i + 2]->name])
+        ) {
+            $nodes[] = new RegexNode('#range', children: [
+                $literal,
+                new RegexNode('token', $literalNames[$tokens[$i + 2]->name], $tokens[$i + 2]->value),
+            ]);
+            $i += 3;
+            if ($i < $count && $tokens[$i]->name === 'T_RANGE') {
+                $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value);
+                $i++;
+            }
+            continue;
+        }
+        $nodes[] = $literal;
+        $i++;
+    }
+    if ($i < $count && $tokens[$i]->name === 'T_RANGE') {
+        $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value);
+        $i++;
+    }
+    if ($i !== $count) {
+        throw new RegexSyntaxException('Unexpected token in character class');
+    }
+
+    $negative = $children->id === self::T_NEGATIVE_CLASS_FC || $children->id === self::T_NEGATIVE_CLASS;
+    return new RegexNode($negative ? '#negativeclass' : '#class', children: $nodes);
+}
+  : <T_NEGATIVE_CLASS_FC> | <T_CLASS_FC> | <T_NEGATIVE_CLASS> | <T_CLASS>
+  ;
+
+Capturing -> {
+    if (!\is_array($children)) {
+        $children = [$children];
+    }
+    $opening = \array_shift($children);
+    switch ($opening->id) {
+        case self::T_MARKER:
+            return new RegexNode('#mark', children: [
+                new RegexNode('token', 'name', $opening->captures[0]),
+            ]);
+        case self::T_COMMENT:
+            return new RegexNode('#comment', children: $opening->captures[0] === '' ? [] : [
+                new RegexNode('token', 'comment', $opening->captures[0]),
+            ]);
+        case self::T_NAMED_CAPTURING:
+            \array_unshift($children, new RegexNode('token', 'capturing_name', $opening->captures[0]));
+            return new RegexNode('#namedcapturing', children: $children);
+        case self::T_NON_CAPTURING:
+            return new RegexNode('#noncapturing', children: $children);
+        case self::T_NON_CAPTURING_INTERNAL_OPTION:
+            \array_unshift($children, new RegexNode('token', 'non_capturing_internal_option', $opening->value));
+            return new RegexNode('#noncapturing', children: $children);
+        case self::T_NON_CAPTURING_RESET:
+            return new RegexNode('#noncapturingreset', children: $children);
+        case self::T_ATOMIC_GROUP:
+            return new RegexNode('#atomicgroup', children: $children);
+        default:
+            return new RegexNode('#capturing', children: $children);
+    }
+}
+  : <T_MARKER>
+  | <T_COMMENT>
+  | (
+        <T_NAMED_CAPTURING>
+      | <T_NON_CAPTURING>
+      | <T_NON_CAPTURING_INTERNAL_OPTION>
+      | <T_NON_CAPTURING_RESET>
+      | <T_ATOMIC_GROUP>
+      | <T_CAPTURING>
+    )
+    Alternation()?
+    ::T_CAPTURING_CLOSE::
+  ;
+
+Literal -> {
+    return new RegexNode('token', \strtolower(\substr($children->name, 2)), $children->value);
+}
+  : <T_CHARACTER>
+  | <T_DYNAMIC_CHARACTER>
+  | <T_CHARACTER_TYPE>
+  | <T_ANCHOR>
+  | <T_MATCH_POINT_RESET>
+  | <T_LITERAL>
+  ;

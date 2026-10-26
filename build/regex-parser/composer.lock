@@ -1,0 +1,2049 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "893c1c7b6bf054bfe0d0fb737629d08c",
+    "packages": [
+        {
+            "name": "phplrt/compiler",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/compiler.git",
+                "reference": "b093fc0b5c045d2632bea351137980263f3c82e7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/compiler/zipball/b093fc0b5c045d2632bea351137980263f3c82e7",
+                "reference": "b093fc0b5c045d2632bea351137980263f3c82e7",
+                "shasum": ""
+            },
+            "require": {
+                "composer-runtime-api": "^2.0",
+                "php": "^8.1",
+                "phplrt/exception": "^4.2",
+                "phplrt/lexer-builder": "^4.2",
+                "phplrt/parser-builder": "^4.2",
+                "phplrt/source": "^4.2",
+                "psr/log": "^3.0",
+                "symfony/console": "^6.4|^7.0|^8.0",
+                "twig/twig": "^3.30"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "bin": [
+                "bin/phplrt"
+            ],
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Compiler\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt component for compiling a grammar file into a lexer and a parser",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "compiler",
+                "generator",
+                "grammar",
+                "lexer",
+                "parser",
+                "pp2"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/compiler"
+            },
+            "time": "2026-10-16T08:44:06+00:00"
+        },
+        {
+            "name": "phplrt/exception",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/exception.git",
+                "reference": "b5df39f3661b8651baba684bb17f0d69ad366f98"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/exception/zipball/b5df39f3661b8651baba684bb17f0d69ad366f98",
+                "reference": "b5df39f3661b8651baba684bb17f0d69ad366f98",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/lexer-contracts": "^4.2",
+                "phplrt/parser-contracts": "^4.2",
+                "phplrt/position": "^4.2",
+                "phplrt/source": "^4.2"
+            },
+            "require-dev": {
+                "ext-intl": "*",
+                "ext-mbstring": "*",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Exception\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt library to display parsing errors",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "error",
+                "exception",
+                "formatter",
+                "parsing",
+                "printer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/exception"
+            },
+            "time": "2026-10-15T12:10:17+00:00"
+        },
+        {
+            "name": "phplrt/lexer",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/lexer.git",
+                "reference": "ced66a094f69d4f874d70923eabda290ac1ef63e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/lexer/zipball/ced66a094f69d4f874d70923eabda290ac1ef63e",
+                "reference": "ced66a094f69d4f874d70923eabda290ac1ef63e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pcre": "*",
+                "php": "^8.1",
+                "phplrt/lexer-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/lexer-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "ext-mbstring": "*",
+                "phplrt/exception": "^4.2",
+                "phplrt/lexer-builder": "^4.2",
+                "phplrt/source": "^4.2",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant",
+                "phplrt/exception": "Renders the syntax errors along with the fragment of the source code they occurred in"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Lexer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt lexer library that can be used for scanners implementation using PCRE",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "lexer",
+                "parsing",
+                "regex",
+                "scanner",
+                "stream",
+                "token",
+                "tokenizer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/lexer"
+            },
+            "time": "2026-10-12T23:29:56+00:00"
+        },
+        {
+            "name": "phplrt/lexer-builder",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/lexer-builder.git",
+                "reference": "4280d42b54638a02f65e76ed365651260107b908"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/lexer-builder/zipball/4280d42b54638a02f65e76ed365651260107b908",
+                "reference": "4280d42b54638a02f65e76ed365651260107b908",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/exception": "^4.2",
+                "phplrt/lexer": "^4.2",
+                "phplrt/source-contracts": "^4.2",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Lexer\\Builder\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt component for assembling a lexer",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "build",
+                "compiler",
+                "lexer",
+                "parsing",
+                "regex",
+                "scanner",
+                "stream",
+                "token",
+                "tokenizer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/lexer-builder"
+            },
+            "time": "2026-10-16T08:43:44+00:00"
+        },
+        {
+            "name": "phplrt/lexer-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/lexer-contracts.git",
+                "reference": "8df53e70664674b0defeaa1212056b38ca3685f6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/lexer-contracts/zipball/8df53e70664674b0defeaa1212056b38ca3685f6",
+                "reference": "8df53e70664674b0defeaa1212056b38ca3685f6",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Lexer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt lexer abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "lexer",
+                "parsing",
+                "regex",
+                "standards",
+                "stream",
+                "token",
+                "tokenizer"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/lexer-contracts"
+            },
+            "time": "2026-10-15T12:09:22+00:00"
+        },
+        {
+            "name": "phplrt/parser",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/parser.git",
+                "reference": "5ce04660ed44b22c4c595b6a8a180f97ef16c2fe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/parser/zipball/5ce04660ed44b22c4c595b6a8a180f97ef16c2fe",
+                "reference": "5ce04660ed44b22c4c595b6a8a180f97ef16c2fe",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-pcre": "*",
+                "php": "^8.1",
+                "phplrt/lexer": "^4.2",
+                "phplrt/parser-contracts": "^4.2",
+                "phplrt/position": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/parser-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "phplrt/exception": "^4.2",
+                "phplrt/parser-builder": "^4.2",
+                "phplrt/source": "^4.2",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant",
+                "phplrt/exception": "Renders the syntax errors along with the fragment of the source code they occurred in"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Parser\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt parser library",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "LPeg",
+                "language",
+                "lookahead",
+                "parser",
+                "peg",
+                "php",
+                "tracing"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/parser"
+            },
+            "time": "2026-10-16T08:43:49+00:00"
+        },
+        {
+            "name": "phplrt/parser-builder",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/parser-builder.git",
+                "reference": "898c27614ec7a6e52d68a9fb1450281516a91192"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/parser-builder/zipball/898c27614ec7a6e52d68a9fb1450281516a91192",
+                "reference": "898c27614ec7a6e52d68a9fb1450281516a91192",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/exception": "^4.2",
+                "phplrt/lexer": "^4.2",
+                "phplrt/lexer-builder": "^4.2",
+                "phplrt/parser": "^4.2",
+                "phplrt/source-contracts": "^4.2",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Parser\\Builder\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt component for assembling a parser",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "LPeg",
+                "build",
+                "compiler",
+                "parser",
+                "peg",
+                "regex"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/parser-builder"
+            },
+            "time": "2026-10-16T08:45:09+00:00"
+        },
+        {
+            "name": "phplrt/parser-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/parser-contracts.git",
+                "reference": "472a952aaaa4bea475a60a9c876abdee74a4e4bc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/parser-contracts/zipball/472a952aaaa4bea475a60a9c876abdee74a4e4bc",
+                "reference": "472a952aaaa4bea475a60a9c876abdee74a4e4bc",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/lexer-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Parser\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt parser abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "abstractions",
+                "analysis",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "language",
+                "parser",
+                "php",
+                "standards",
+                "syntax"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/parser-contracts"
+            },
+            "time": "2026-10-15T12:08:13+00:00"
+        },
+        {
+            "name": "phplrt/position",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/position.git",
+                "reference": "2f4bcfa40967a9c73b7b772d5c3a42ee801aff46"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/position/zipball/2f4bcfa40967a9c73b7b772d5c3a42ee801aff46",
+                "reference": "2f4bcfa40967a9c73b7b772d5c3a42ee801aff46",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/position-contracts": "^4.2",
+                "phplrt/position-factory-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/position-contracts-implementation": "^4.0",
+                "phplrt/position-factory-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "phplrt/source": "^4.2",
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Position\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt position package",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "analyzing",
+                "column",
+                "line",
+                "location",
+                "offset",
+                "position",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/position"
+            },
+            "time": "2026-10-12T23:31:53+00:00"
+        },
+        {
+            "name": "phplrt/position-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/position-contracts.git",
+                "reference": "b63daaea00c7dae74b222a94d97cbc8f2be3a162"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/position-contracts/zipball/b63daaea00c7dae74b222a94d97cbc8f2be3a162",
+                "reference": "b63daaea00c7dae74b222a94d97cbc8f2be3a162",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Position\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt position abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "column",
+                "line",
+                "location",
+                "position",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/position-contracts"
+            },
+            "time": "2026-10-12T22:31:16+00:00"
+        },
+        {
+            "name": "phplrt/position-factory-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/position-factory-contracts.git",
+                "reference": "cef59452df997b220207781ae4bf1b9ef28fb64c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/position-factory-contracts/zipball/cef59452df997b220207781ae4bf1b9ef28fb64c",
+                "reference": "cef59452df997b220207781ae4bf1b9ef28fb64c",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/position-contracts": "^4.2",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Position\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt position factory abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "column",
+                "factory",
+                "line",
+                "location",
+                "position",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/position-factory-contracts"
+            },
+            "time": "2026-10-12T23:31:42+00:00"
+        },
+        {
+            "name": "phplrt/source",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/source.git",
+                "reference": "2df423fb5a05fd16f1d8889123a2944a6e806c69"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/source/zipball/2df423fb5a05fd16f1d8889123a2944a6e806c69",
+                "reference": "2df423fb5a05fd16f1d8889123a2944a6e806c69",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/source-contracts": "^4.2",
+                "phplrt/source-factory-contracts": "^4.2"
+            },
+            "provide": {
+                "phplrt/source-contracts-implementation": "^4.0",
+                "phplrt/source-factory-contracts-implementation": "^4.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/polyfill.php"
+                ],
+                "psr-4": {
+                    "Phplrt\\Source\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "The phplrt sources package",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "abstraction",
+                "directory",
+                "file",
+                "file system",
+                "fs",
+                "reader"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/source"
+            },
+            "time": "2026-10-12T23:32:11+00:00"
+        },
+        {
+            "name": "phplrt/source-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/source-contracts.git",
+                "reference": "6fcd59e10d586bfd4e387aff3d387b00c4080462"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/source-contracts/zipball/6fcd59e10d586bfd4e387aff3d387b00c4080462",
+                "reference": "6fcd59e10d586bfd4e387aff3d387b00c4080462",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Source\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt source abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "disk",
+                "file",
+                "io",
+                "read",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/source-contracts"
+            },
+            "time": "2026-10-12T22:31:34+00:00"
+        },
+        {
+            "name": "phplrt/source-factory-contracts",
+            "version": "4.2.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phplrt/source-factory-contracts.git",
+                "reference": "59a7070f6e520ecc03b9544d88edfa2ea874e9bb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phplrt/source-factory-contracts/zipball/59a7070f6e520ecc03b9544d88edfa2ea874e9bb",
+                "reference": "59a7070f6e520ecc03b9544d88edfa2ea874e9bb",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1",
+                "phplrt/source-contracts": "^4.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.3",
+                "testo/testo": "^0.10.45"
+            },
+            "suggest": {
+                "llm/skills": "Delivers the bundled phplrt agent skill (a lexer/parser authoring guide) into your AI coding assistant"
+            },
+            "type": "library",
+            "extra": {
+                "skills": {
+                    "sources": [
+                        {
+                            "ref": "self.version",
+                            "from": "github",
+                            "package": "phplrt/phplrt"
+                        }
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "4.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Phplrt\\Contracts\\Source\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kirill Nesmeyanov",
+                    "email": "nesk@xakep.ru"
+                }
+            ],
+            "description": "A set of phplrt source factory abstractions",
+            "homepage": "https://github.com/phplrt",
+            "keywords": [
+                "disk",
+                "factory",
+                "file",
+                "io",
+                "read",
+                "source"
+            ],
+            "support": {
+                "issues": "https://github.com/phplrt/phplrt/issues",
+                "source": "https://github.com/phplrt/source-factory-contracts"
+            },
+            "time": "2026-10-12T23:30:56+00:00"
+        },
+        {
+            "name": "psr/container",
+            "version": "2.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/container.git",
+                "reference": "c71ecc56dfe541dbd90c5360474fbc405f8d5963"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/container/zipball/c71ecc56dfe541dbd90c5360474fbc405f8d5963",
+                "reference": "c71ecc56dfe541dbd90c5360474fbc405f8d5963",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Container\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common Container Interface (PHP FIG PSR-11)",
+            "homepage": "https://github.com/php-fig/container",
+            "keywords": [
+                "PSR-11",
+                "container",
+                "container-interface",
+                "container-interop",
+                "psr"
+            ],
+            "support": {
+                "issues": "https://github.com/php-fig/container/issues",
+                "source": "https://github.com/php-fig/container/tree/2.0.2"
+            },
+            "time": "2021-11-05T16:47:00+00:00"
+        },
+        {
+            "name": "psr/log",
+            "version": "3.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
+            },
+            "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "symfony/console",
+            "version": "v8.1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/console.git",
+                "reference": "630e74196a2635ec0f06c12bd3fb47cfedf85157"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/console/zipball/630e74196a2635ec0f06c12bd3fb47cfedf85157",
+                "reference": "630e74196a2635ec0f06c12bd3fb47cfedf85157",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1",
+                "symfony/deprecation-contracts": "^2.5|^3",
+                "symfony/polyfill-mbstring": "^1.0",
+                "symfony/polyfill-php85": "^1.32",
+                "symfony/service-contracts": "^2.5|^3",
+                "symfony/string": "^7.4.6|^8.0.6"
+            },
+            "conflict": {
+                "symfony/dependency-injection": "<8.1",
+                "symfony/event-dispatcher": "<8.1"
+            },
+            "provide": {
+                "psr/log-implementation": "1.0|2.0|3.0"
+            },
+            "require-dev": {
+                "psr/log": "^1|^2|^3",
+                "symfony/config": "^7.4|^8.0",
+                "symfony/dependency-injection": "^8.1",
+                "symfony/event-dispatcher": "^8.1",
+                "symfony/filesystem": "^7.4|^8.0",
+                "symfony/http-foundation": "^7.4|^8.0",
+                "symfony/http-kernel": "^7.4|^8.0",
+                "symfony/lock": "^7.4|^8.0",
+                "symfony/messenger": "^7.4|^8.0",
+                "symfony/mime": "^7.4|^8.0",
+                "symfony/process": "^7.4|^8.0",
+                "symfony/stopwatch": "^7.4|^8.0",
+                "symfony/uid": "^7.4|^8.0",
+                "symfony/validator": "^7.4|^8.0",
+                "symfony/var-dumper": "^7.4|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\Console\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Eases the creation of beautiful and testable command line interfaces",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "cli",
+                "command-line",
+                "console",
+                "terminal"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/console/tree/v8.1.9"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-10-12T19:11:16+00:00"
+        },
+        {
+            "name": "symfony/deprecation-contracts",
+            "version": "v3.7.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/deprecation-contracts.git",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
+                "branch-alias": {
+                    "dev-main": "3.7-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "function.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "A generic function and convention to trigger deprecation notices",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-06-05T06:23:12+00:00"
+        },
+        {
+            "name": "symfony/polyfill-ctype",
+            "version": "v1.37.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-ctype.git",
+                "reference": "141046a8f9477948ff284fa65be2095baafb94f2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/141046a8f9477948ff284fa65be2095baafb94f2",
+                "reference": "141046a8f9477948ff284fa65be2095baafb94f2",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "provide": {
+                "ext-ctype": "*"
+            },
+            "suggest": {
+                "ext-ctype": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Ctype\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gert de Pagter",
+                    "email": "BackEndTea@gmail.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for ctype functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "ctype",
+                "polyfill",
+                "portable"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.37.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-04-10T16:19:22+00:00"
+        },
+        {
+            "name": "symfony/polyfill-intl-grapheme",
+            "version": "v1.43.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
+                "reference": "5cac8f4db97208823aa353f59a01faad2da52c75"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/5cac8f4db97208823aa353f59a01faad2da52c75",
+                "reference": "5cac8f4db97208823aa353f59a01faad2da52c75",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "suggest": {
+                "ext-intl": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Intl\\Grapheme\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for intl's grapheme_* functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "grapheme",
+                "intl",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.43.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-25T15:46:47+00:00"
+        },
+        {
+            "name": "symfony/polyfill-intl-normalizer",
+            "version": "v1.43.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
+                "reference": "ebd57ccc7edb93d632e184efbe7693d2517bab3b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/ebd57ccc7edb93d632e184efbe7693d2517bab3b",
+                "reference": "ebd57ccc7edb93d632e184efbe7693d2517bab3b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "suggest": {
+                "ext-intl": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Intl\\Normalizer\\": ""
+                },
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for intl's Normalizer class and related functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "intl",
+                "normalizer",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.43.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-23T22:02:09+00:00"
+        },
+        {
+            "name": "symfony/polyfill-mbstring",
+            "version": "v1.43.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-mbstring.git",
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+                "shasum": ""
+            },
+            "require": {
+                "ext-iconv": "*",
+                "php": ">=7.2"
+            },
+            "provide": {
+                "ext-mbstring": "*"
+            },
+            "suggest": {
+                "ext-mbstring": "For best performance"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Mbstring\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill for the Mbstring extension",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "mbstring",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-24T15:19:04+00:00"
+        },
+        {
+            "name": "symfony/polyfill-php85",
+            "version": "v1.43.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-php85.git",
+                "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/86a42cbcc07adc331481a5ab310a4024bfc227f6",
+                "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/polyfill",
+                    "name": "symfony/polyfill"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php85\\": ""
+                },
+                "classmap": [
+                    "Resources/stubs"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Symfony polyfill backporting some PHP 8.5+ features to lower PHP versions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "polyfill",
+                "portable",
+                "shim"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php85/tree/v1.43.0"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-25T15:46:47+00:00"
+        },
+        {
+            "name": "symfony/service-contracts",
+            "version": "v3.7.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/service-contracts.git",
+                "reference": "15e6a07ec2a2c75ceb1b21dd98105ee8456d2257"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/service-contracts/zipball/15e6a07ec2a2c75ceb1b21dd98105ee8456d2257",
+                "reference": "15e6a07ec2a2c75ceb1b21dd98105ee8456d2257",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1",
+                "psr/container": "^1.1|^2.0",
+                "symfony/deprecation-contracts": "^2.5|^3"
+            },
+            "conflict": {
+                "ext-psr": "<1.1|>=2"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
+                "branch-alias": {
+                    "dev-main": "3.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Contracts\\Service\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Test/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Generic abstractions related to writing services",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "standards"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/service-contracts/tree/v3.7.3"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-07-27T15:39:01+00:00"
+        },
+        {
+            "name": "symfony/string",
+            "version": "v8.1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/string.git",
+                "reference": "07fb208558f941eab50ec49c89c2a6a93fb11f01"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/string/zipball/07fb208558f941eab50ec49c89c2a6a93fb11f01",
+                "reference": "07fb208558f941eab50ec49c89c2a6a93fb11f01",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1",
+                "symfony/polyfill-ctype": "^1.8",
+                "symfony/polyfill-intl-grapheme": "^1.33",
+                "symfony/polyfill-intl-normalizer": "^1.0",
+                "symfony/polyfill-mbstring": "^1.0"
+            },
+            "conflict": {
+                "symfony/translation-contracts": "<2.5"
+            },
+            "require-dev": {
+                "symfony/emoji": "^7.4|^8.0",
+                "symfony/http-client": "^7.4|^8.0",
+                "symfony/intl": "^7.4|^8.0",
+                "symfony/translation-contracts": "^2.5|^3.0",
+                "symfony/var-exporter": "^7.4|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "Resources/functions.php"
+                ],
+                "psr-4": {
+                    "Symfony\\Component\\String\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides an object-oriented API to strings and deals with bytes, UTF-8 code points and grapheme clusters in a unified way",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "grapheme",
+                "i18n",
+                "string",
+                "unicode",
+                "utf-8",
+                "utf8"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/string/tree/v8.1.9"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-10-03T15:16:03+00:00"
+        },
+        {
+            "name": "twig/twig",
+            "version": "v3.30.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twigphp/Twig.git",
+                "reference": "8c737079b726af72ff8ef3c595be9f6a810ea1ef"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/8c737079b726af72ff8ef3c595be9f6a810ea1ef",
+                "reference": "8c737079b726af72ff8ef3c595be9f6a810ea1ef",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1.0",
+                "symfony/deprecation-contracts": "^2.5|^3",
+                "symfony/polyfill-ctype": "^1.8",
+                "symfony/polyfill-mbstring": "^1.3"
+            },
+            "require-dev": {
+                "php-cs-fixer/shim": "^3.0@stable",
+                "phpstan/phpstan": "^2.0@stable",
+                "psr/container": "^1.0|^2.0",
+                "symfony/phpunit-bridge": "^5.4.9|^6.4|^7.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Resources/core.php",
+                    "src/Resources/debug.php",
+                    "src/Resources/escaper.php",
+                    "src/Resources/string_loader.php"
+                ],
+                "psr-4": {
+                    "Twig\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Fabien Potencier",
+                    "email": "fabien@symfony.com",
+                    "homepage": "http://fabien.potencier.org",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Twig Team",
+                    "role": "Contributors"
+                },
+                {
+                    "name": "Armin Ronacher",
+                    "email": "armin.ronacher@active-4.com",
+                    "role": "Project Founder"
+                }
+            ],
+            "description": "Twig, the flexible, fast, and secure template language for PHP",
+            "homepage": "https://twig.symfony.com",
+            "keywords": [
+                "templating"
+            ],
+            "support": {
+                "issues": "https://github.com/twigphp/Twig/issues",
+                "source": "https://github.com/twigphp/Twig/tree/v3.30.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/twig/twig",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-09-25T13:20:01+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "stable",
+    "stability-flags": {},
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": {
+        "php": "^8.4"
+    },
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
+}

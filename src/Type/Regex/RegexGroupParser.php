@@ -49,6 +49,10 @@ final class RegexGroupParser
 	// to avoid combinatorial explosion from nested optional/bounded quantifications
 	private const LITERALS_LIMIT = 100;
 
+	private const NEGATIVE_ASSERTIONS = ['#negativelookahead', '#negativelookbehind'];
+
+	private const ASSERTIONS = ['#lookahead', '#lookbehind', '#negativelookahead', '#negativelookbehind'];
+
 	private static ?RegexParser $parser = null;
 
 	/** @var array<string, ?RegexNode> */
@@ -268,6 +272,15 @@ final class RegexGroupParser
 				true,
 			);
 			$parentGroup = $group;
+		} elseif (in_array($ast->getId(), self::NEGATIVE_ASSERTIONS, true)) {
+			// capturing groups in a negative assertion are never set when the whole pattern matches
+			$group = new RegexNonCapturingGroup(
+				$alternation,
+				true,
+				$parentGroup,
+				false,
+			);
+			$parentGroup = $group;
 		}
 
 		$inOptionalQuantification = false;
@@ -478,6 +491,11 @@ final class RegexGroupParser
 		RegexGroupWalkResult $walkResult,
 	): RegexGroupWalkResult
 	{
+		if (in_array($ast->getId(), self::ASSERTIONS, true)) {
+			// assertions are zero-width, they do not add anything to the matched string
+			return $walkResult;
+		}
+
 		$children = $ast->getChildren();
 		$quantifiedLiterals = null;
 
@@ -741,6 +759,10 @@ final class RegexGroupParser
 
 	private function isMaybeEmptyNode(RegexNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
+		if (in_array($node->getId(), self::ASSERTIONS, true)) {
+			return true;
+		}
+
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
 

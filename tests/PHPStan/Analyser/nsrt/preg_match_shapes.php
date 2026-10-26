@@ -1088,3 +1088,32 @@ function testExtendedSyntaxEscapedHash(string $string): void {
 		assertType('array{non-falsy-string, numeric-string, non-empty-string}', $matches);
 	}
 }
+
+function testAssertionsAreZeroWidth(string $s): void {
+	// from php-src ext/pcre/tests/bug66121.phpt
+	if (preg_match('/(?<!k)/u', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(?=C)/', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(\.\d\d((?=0)|\d(?=\d)))/', $s, $matches)) {
+		assertType('array{non-falsy-string, non-falsy-string, string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/$(?<=^(a))/', $s, $matches)) {
+		assertType("array{string, 'a'}", $matches);
+	}
+}
+
+function testGroupsInNegativeAssertionsAreNeverSet(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(?<!(c|d))[ab]/', $s, $matches)) {
+		assertType("array{0: non-falsy-string, 1?: 'c'|'d'}", $matches);
+	}
+}

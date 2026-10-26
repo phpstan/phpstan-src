@@ -537,7 +537,9 @@ final class RegexGroupParser
 				$walkResult = $walkResult->inOptionalQuantification(true);
 			}
 
-			if (!$walkResult->isInOptionalQuantification()) {
+			// repeating an atom that might match an empty string might match an empty string too
+			$atomNonFalsy = false;
+			if (!$walkResult->isInOptionalQuantification() && !$this->isMaybeEmptyNode($children[0], $patternModifiers, $atomNonFalsy)) {
 				if ($min >= 1) {
 					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 				}
@@ -767,7 +769,8 @@ final class RegexGroupParser
 			[$min] = $this->getQuantificationRange($node);
 
 			if ($min > 0) {
-				return false;
+				$atomNonFalsy = false;
+				return $this->isMaybeEmptyNode($node->getChildren()[0], $patternModifiers, $atomNonFalsy);
 			}
 
 			if ($min === 0) {

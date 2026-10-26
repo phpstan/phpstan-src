@@ -1134,3 +1134,20 @@ function testDuplicateNamesInternalOption(string $s): void {
 		assertType('list<array<string>>', $matches);
 	}
 }
+
+function testQuantifiedMaybeEmptyAtom(string $s): void {
+	// from PCRE2 testdata/testinput6
+	if (preg_match('/(abc|)+/', $s, $matches)) {
+		assertType("array{string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput6
+	if (preg_match('/^(){3,5}/', $s, $matches)) {
+		assertType("array{string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/((a|)+)+Z/', $s, $matches)) {
+		assertType("array{non-falsy-string, string, string}", $matches);
+	}
+}

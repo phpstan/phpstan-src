@@ -8635,7 +8635,7 @@ return [
 'Redis::sDiff' => ['__benevolent<Redis|list<string>|false>', 'key'=>'string', '...other_keys='=>'string'],
 'Redis::sDiffStore' => ['__benevolent<Redis|int|false>', 'dst'=>'string', 'key'=>'string', '...other_keys='=>'string'],
 'Redis::select' => ['__benevolent<Redis|bool>', 'db'=>'int'],
-'Redis::set' => ['__benevolent<Redis|string|bool>', 'key'=>'string', 'value'=>'mixed', 'options='=>'array'],
+'Redis::set' => ['__benevolent<Redis|string|bool>', 'key'=>'string', 'value'=>'mixed', 'options='=>'array|int|null'],
 'Redis::setBit' => ['__benevolent<Redis|int|bool>', 'key'=>'string', 'idx'=>'int', 'value'=>'bool'],
 'Redis::setex' => ['__benevolent<Redis|bool>', 'key'=>'string', 'expire'=>'int', 'value'=>'mixed'],
 'Redis::setnx' => ['__benevolent<Redis|bool>', 'key'=>'string', 'value'=>'mixed'],

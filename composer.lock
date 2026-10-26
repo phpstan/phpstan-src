@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "f9455710ed4217e15945f9a10e3eccaa",
+  "content-hash": "b5971d43d4d9d5dfb67fa9b60c0b55cd",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1344,21 +1344,21 @@
     },
     {
       "name": "ondrejmirtes/better-reflection",
-      "version": "6.75.0.2",
+      "version": "6.75.0.3",
       "source": {
         "type": "git",
         "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-        "reference": "c6a63e16c7c2ef79b66bbffe436ebd216be45c7d"
+        "reference": "0b241d424a8be1ec74335cc0838f1e45f9bc376a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/c6a63e16c7c2ef79b66bbffe436ebd216be45c7d",
-        "reference": "c6a63e16c7c2ef79b66bbffe436ebd216be45c7d",
+        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/0b241d424a8be1ec74335cc0838f1e45f9bc376a",
+        "reference": "0b241d424a8be1ec74335cc0838f1e45f9bc376a",
         "shasum": ""
       },
       "require": {
         "ext-json": "*",
-        "jetbrains/phpstorm-stubs": "dev-master#dfcad4524db603bd20bdec3aab1a31c5f5128ea3",
+        "jetbrains/phpstorm-stubs": "dev-master#e4f5f6c3de39f3bab3e9f3fca4b8cdb8b061e681",
         "nikic/php-parser": "^5.9.0",
         "php": "^7.4 || ^8.0"
       },
@@ -1370,8 +1370,7 @@
         "phpbench/phpbench": "^1.7.0",
         "phpstan/phpstan": "^2.1.46",
         "phpstan/phpstan-phpunit": "^2.0.16",
-        "phpunit/phpunit": "^13.4.3",
-        "rector/rector": "2.6.7"
+        "phpunit/phpunit": "^13.4.3"
       },
       "suggest": {
         "composer/composer": "Required to use the ComposerSourceLocator"
@@ -1410,9 +1409,9 @@
       ],
       "description": "Better Reflection - an improved code reflection API",
       "support": {
-        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.75.0.2"
+        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.75.0.3"
       },
-      "time": "2026-10-24T10:14:46+00:00"
+      "time": "2026-10-26T15:50:23+00:00"
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",

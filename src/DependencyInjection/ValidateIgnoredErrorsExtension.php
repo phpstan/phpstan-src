@@ -2,8 +2,6 @@
 
 namespace PHPStan\DependencyInjection;
 
-use Hoa\Compiler\Llk\Llk;
-use Hoa\File\Read;
 use Nette\DI\CompilerExtension;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
@@ -33,6 +31,7 @@ use PHPStan\Type\Constant\OversizedArrayBuilder;
 use PHPStan\Type\DirectTypeAliasResolverProvider;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
+use PHPStan\Type\Regex\Parser\RegexParser;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeAliasResolver;
 use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
@@ -68,8 +67,7 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 			return;
 		}
 
-		/** @throws void */
-		$parser = Llk::load(new Read(__DIR__ . '/../../resources/RegexGrammar.pp'));
+		$parser = new RegexParser();
 		$reflectionProvider = new DummyReflectionProvider();
 		$reflectionProviderProvider = new DirectReflectionProviderProvider($reflectionProvider);
 

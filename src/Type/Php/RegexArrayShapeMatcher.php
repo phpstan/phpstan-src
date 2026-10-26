@@ -133,7 +133,7 @@ final class RegexArrayShapeMatcher
 	{
 		$astWalkResult = $this->regexGroupParser->parseGroups($regex);
 		if ($astWalkResult === null) {
-			// regex could not be parsed by Hoa/Regex
+			// regex could not be parsed by RegexParser
 			return null;
 		}
 		$groupList = $astWalkResult->getCapturingGroups();

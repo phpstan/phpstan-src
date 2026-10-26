@@ -13,7 +13,6 @@ return [
 		'PHPStanTurbo',
 		'PHPUnit',
 		'PhpParser',
-		'Hoa',
 		'Symfony\Polyfill\Php80',
 		'Symfony\Polyfill\Php81',
 		'Symfony\Polyfill\Php83',

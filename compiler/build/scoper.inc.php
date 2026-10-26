@@ -5,7 +5,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $namespaces = require __DIR__ . '/scoper-namespaces.php';
 
 $stubs = [
-	'../../vendor/hoa/consistency/Prelude.php',
 	'../../vendor/composer/InstalledVersions.php',
 	'../../vendor/composer/installed.php',
 ];
@@ -103,10 +102,6 @@ return [
 				}
 
 				if (strpos($class, 'PhpParser\\') === 0) {
-					return $class;
-				}
-
-				if (strpos($class, 'Hoa\\') === 0) {
 					return $class;
 				}
 

@@ -9,5 +9,8 @@ services:
 	renderer.filter:
 		factory: PHPStan\ApiGen\RendererFilter
 
+	analyze.phpDocResolver:
+		factory: PHPStan\ApiGen\PhpDocResolver
+
 	commonMark:
 		factory: PHPStan\ApiGen\MarkdownConverter

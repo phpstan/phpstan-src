@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aecc0fc06bfff0cb67c71d4302204f80",
+    "content-hash": "deea301c216d65624ddbdba906bfd6da",
     "packages": [
         {
             "name": "clue/stream-filter",
@@ -866,25 +866,28 @@
         },
         {
             "name": "nette/neon",
-            "version": "v3.4.10",
+            "version": "v4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/neon.git",
-                "reference": "af5d261a7664b3d6377c8528206cd5a7fe21b982"
+                "reference": "187c00a5c45d786a00ba08b3297f2ebb43d53c96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/neon/zipball/af5d261a7664b3d6377c8528206cd5a7fe21b982",
-                "reference": "af5d261a7664b3d6377c8528206cd5a7fe21b982",
+                "url": "https://api.github.com/repos/nette/neon/zipball/187c00a5c45d786a00ba08b3297f2ebb43d53c96",
+                "reference": "187c00a5c45d786a00ba08b3297f2ebb43d53c96",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "php": "8.0 - 8.6"
+                "ext-mbstring": "*",
+                "php": "8.4 - 8.6"
             },
             "require-dev": {
+                "nette/phpstan-rules": "^1.0",
                 "nette/tester": "^2.4",
-                "phpstan/phpstan-nette": "^2.0@stable",
+                "phpstan/extension-installer": "^1.4@stable",
+                "phpstan/phpstan": "^2.3@stable",
                 "tracy/tracy": "^2.7"
             },
             "bin": [
@@ -893,7 +896,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.4-dev"
+                    "dev-master": "4.0-dev"
                 }
             },
             "autoload": {
@@ -929,9 +932,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/neon/issues",
-                "source": "https://github.com/nette/neon/tree/v3.4.10"
+                "source": "https://github.com/nette/neon/tree/v4.0.0"
             },
-            "time": "2026-10-25T22:35:03+00:00"
+            "time": "2026-10-26T00:16:48+00:00"
         },
         {
             "name": "nette/schema",

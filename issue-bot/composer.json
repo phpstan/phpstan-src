@@ -13,8 +13,8 @@
 		"react/child-process": "^0.6.7",
 		"react/event-loop": "^1.6",
 		"react/promise": "^3.3",
-		"symfony/console": "^7.4",
-		"symfony/finder": "^7.4"
+		"symfony/console": "^8.1",
+		"symfony/finder": "^8.1"
 	},
 	"autoload": {
 		"psr-4": {

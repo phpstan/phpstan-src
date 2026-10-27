@@ -75,6 +75,34 @@ final class ClosureProcessor
 	}
 
 	/**
+	 * Looked up instead of injected for the same reason as getParametersProcessor().
+	 */
+	private function getAttributesHandler(): AttributesHandler
+	{
+		return $this->container->getByType(AttributesHandler::class);
+	}
+
+	/**
+	 * Returns what the attributes and the parameters of the closure or arrow function depend on.
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function processAttributeGroupsAndParams(
+		NodeScopeResolver $nodeScopeResolver,
+		Node\Stmt $stmt,
+		Expr\Closure|Expr\ArrowFunction $expr,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+	): ?Dependencies
+	{
+		return Dependencies::merge(
+			$this->getAttributesHandler()->processAttributeGroups($nodeScopeResolver, $stmt, $expr->attrGroups, $scope, $storage, $nodeCallback),
+			$this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback),
+		);
+	}
+
+	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function processClosureNode(
@@ -107,7 +135,7 @@ final class ClosureProcessor
 		?Type $nativePassedToType = null,
 	): ProcessClosureResult
 	{
-		$parametersDependencies = $this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		$parametersDependencies = $this->processAttributeGroupsAndParams($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback);
 
 		$byRefUses = [];
 
@@ -756,7 +784,7 @@ final class ClosureProcessor
 	): ProcessArrowFunctionResult
 	{
 		$context ??= ExpressionContext::createTopLevel();
-		$parametersDependencies = $this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt, $expr->params, $scope, $storage, $nodeCallback);
+		$parametersDependencies = $this->processAttributeGroupsAndParams($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback);
 		if ($this->closureSignatureInference->isObserving($scope)) {
 			foreach (ClosureSignatureInference::getArrowFunctionOuterVariables($expr) as $name) {
 				if (!$scope->hasVariableType($name)->yes()) {

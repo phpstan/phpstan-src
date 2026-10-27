@@ -2,4 +2,4 @@ parameters:
 	readonlySuperglobals: true
 	superglobalTypes:
 		_COOKIE: 'array<string, string>'
-		_SERVER: 'array<string, mixed>'
+		_ENV: 'array<string, string>'

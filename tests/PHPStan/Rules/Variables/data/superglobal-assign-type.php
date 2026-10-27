@@ -10,6 +10,8 @@ function conformingWrites(string $string): void
 	unset($_GET['posted']);
 	parse_str('a=b', $_GET);
 	$_ENV['FOO'] = 'bar';
+	$_SERVER['REQUEST_URI'] = $string;
+	unset($_SERVER['PATH_INFO']);
 }
 
 /**
@@ -22,6 +24,7 @@ function nonConformingWrites(array $strings, array $ints, int $int): void
 	$_POST['ids'] = $strings;
 	$_POST['ids'] = $ints;
 	$_ENV['FOO'] = 1;
+	$_SERVER['SERVER_PORT'] = $int;
 }
 
 function reportedOnce(int $int, string $string): void
@@ -44,6 +47,5 @@ function foreachTarget(array $strings): void
 function untypedSuperglobals(int $int): void
 {
 	$GLOBALS['foo'] = $int;
-	$_SERVER['argc'] = $int;
 	$_SESSION['user'] = $int;
 }

@@ -4595,4 +4595,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDeadCatch(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/dead-catch.php'], [
+			[
+				'Call to an undefined method InvalidArgumentException::nonExistentMethod().',
+				14,
+			],
+			[
+				'Call to an undefined method CallMethodsDeadCatch\\Foo::nonExistentMethod().',
+				15,
+			],
+			[
+				'Call to an undefined method InvalidArgumentException::nonExistentMethod().',
+				26,
+			],
+		]);
+	}
+
 }

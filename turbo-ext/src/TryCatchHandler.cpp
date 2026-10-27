@@ -441,9 +441,60 @@ public:
 				zv::Val mentionFlow = pt_statements_handler_get_variable_mention_flow(statementsHandler, catchNode);
 				if (UNEXPECTED(mentionFlow.isUndef())) return zv::Val();
 				zv::Arr catchFlow = zv::Arr::create(2);
-				catchFlow.push(std::move(originalCatchType));
+				catchFlow.push(zv::Ref(originalCatchType.raw()));
 				catchFlow.push(std::move(mentionFlow));
 				catchFlows.push(zv::Val(std::move(catchFlow)));
+
+				// the catch block is not reachable, but rules still need to see its statements;
+				// it is entered from where the try block can throw anything, and the result
+				// of the walk does not flow anywhere
+				zend_string *deadVariableName = NULL;
+				{
+					zval *catchVar = ptsh::readNodeProperty(pt_tch_catch_var_site, catchNode, PT_LC("var"));
+					if (UNEXPECTED(catchVar == NULL)) return zv::Val();
+					if (Z_TYPE_P(catchVar) != IS_NULL) {
+						zval *name = ptsh::readNodeProperty(pt_tch_variable_name_site, catchVar, PT_LC("name"));
+						if (UNEXPECTED(name == NULL)) return zv::Val();
+						if (Z_TYPE_P(name) == IS_STRING) {
+							deadVariableName = Z_STR_P(name);
+						}
+					}
+				}
+				zv::Val deadVariableNameHold = deadVariableName != NULL ? zv::Val::string(deadVariableName) : zv::Val::null();
+				zv::Val mergedScope = zv::Val::null();
+				{
+					zv::Val hold;
+					zval *branchThrowPoints = pt_internal_statement_result_throw_points(branch, hold);
+					if (UNEXPECTED(branchThrowPoints == NULL)) return zv::Val();
+					zv::Val branchThrowPointsHold = zv::Val::copyOf(zv::Ref(branchThrowPoints));
+					if (Z_TYPE_P(branchThrowPointsHold.raw()) == IS_ARRAY) {
+						for (auto throwEntry : zv::ArrRef(branchThrowPointsHold.raw())) {
+							zv::Val scopeHold;
+							zval *throwScope = pt_internal_throw_point_scope(throwEntry.value().deref().raw(), scopeHold);
+							if (UNEXPECTED(throwScope == NULL)) return zv::Val();
+							if (mergedScope.isNull()) {
+								mergedScope = zv::Val::copyOf(zv::Ref(throwScope));
+								continue;
+							}
+							zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(mergedScope.raw()), throwScope);
+							if (UNEXPECTED(merged.isUndef())) return zv::Val();
+							mergedScope = std::move(merged);
+						}
+					}
+				}
+				if (mergedScope.isNull()) {
+					mergedScope = pt_mutating_scope_merge_with(Z_OBJ_P(scope), branchScope.raw());
+					if (UNEXPECTED(mergedScope.isUndef())) return zv::Val();
+				}
+				zval *deadCatchType = isNeverType(catchType.raw()) ? originalCatchType.raw() : catchType.raw();
+				zv::Val deadCatchScope = pt_mutating_scope_enter_catch_type(Z_OBJ_P(mergedScope.raw()), deadCatchType, deadVariableName != NULL ? Z_STR_P(deadVariableNameHold.raw()) : NULL);
+				if (UNEXPECTED(deadCatchScope.isUndef())) return zv::Val();
+				zval *deadCatchStmts = ptsh::readNodeProperty(pt_tch_catch_stmts_site, catchNode, PT_LC("stmts"));
+				if (UNEXPECTED(deadCatchStmts == NULL)) return zv::Val();
+				zv::Val deadCatchStmtsHold = zv::Val::copyOf(zv::Ref(deadCatchStmts));
+				zv::Val deadCatchResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, catchNode, deadCatchStmtsHold.raw(), deadCatchScope.raw(), storage, nodeCallback, context);
+				if (UNEXPECTED(deadCatchResult.isUndef())) return zv::Val();
+				if (UNEXPECTED(!pushStatementDependencies(dependencies, deadCatchResult.raw()))) return zv::Val();
 				continue;
 			}
 

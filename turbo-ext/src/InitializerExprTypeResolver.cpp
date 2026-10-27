@@ -2678,7 +2678,10 @@ public:
 		IETR_VAL(leftNumberType, callOn(leftType, mToNumber));
 		IETR_VAL(rightNumberType, callOn(rightType, mToNumber));
 
-		bool typesMixed = isA(types.raw(), pt_ce_mixed_type);
+		// a template type of mixed does not absorb the other operand in the union
+		bool typesMixed = isA(types.raw(), pt_ce_mixed_type)
+			|| isA(leftType, pt_ce_mixed_type)
+			|| isA(rightType, pt_ce_mixed_type);
 		if (
 			!typesMixed
 			&& (

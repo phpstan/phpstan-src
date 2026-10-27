@@ -8,7 +8,7 @@ use Attribute;
  * Marks a class the phpstan_turbo extension replaces with the named native
  * implementation (found in the .cpp file $implementation points at), so
  * every method must behave exactly like its native counterpart (see
- * turbo-ext/README.md for the sync machinery).
+ * turbo-ext/CLAUDE.md for the sync machinery).
  *
  * With the extension active, TurboExtensionEnabler::activateIfCompatible()
  * declares the native implementation under this very class name right

@@ -12,9 +12,15 @@ function translate_meridiem( string $meridiem ): string {
 	return $meridiem;
 }
 
-function test( DateTimeImmutable $datetime, int $timestamp ): void {
+/**
+ * @param non-empty-string $nonES
+ */
+function test( DateTimeImmutable $datetime, int $timestamp, string $nonES ): void {
 	echo translate_meridiem( $datetime->format( 'a' ) );
 	echo translate_meridiem( date( 'A', $timestamp ) );
+
+	assertType( "' '|'-'", date($timestamp ? ' ' : '-') );
+	assertType( "non-empty-string", date($nonES) );
 
 	assertType( "'am'|'pm'", $datetime->format( 'a' ) );
 	assertType( "'AM'|'PM'", $datetime->format( 'A' ) );

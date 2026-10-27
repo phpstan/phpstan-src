@@ -1339,16 +1339,16 @@
         },
         {
             "name": "humbug/box",
-            "version": "4.7.0",
+            "version": "4.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/box-project/box.git",
-                "reference": "9c2a430118f61ba4a20bc4969931494503f5da6a"
+                "reference": "c4a66b68c170d98feeb80ed7e047e611485d34ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/box-project/box/zipball/9c2a430118f61ba4a20bc4969931494503f5da6a",
-                "reference": "9c2a430118f61ba4a20bc4969931494503f5da6a",
+                "url": "https://api.github.com/repos/box-project/box/zipball/c4a66b68c170d98feeb80ed7e047e611485d34ff",
+                "reference": "c4a66b68c170d98feeb80ed7e047e611485d34ff",
                 "shasum": ""
             },
             "require": {
@@ -1447,9 +1447,9 @@
             ],
             "support": {
                 "issues": "https://github.com/box-project/box/issues",
-                "source": "https://github.com/box-project/box/tree/4.7.0"
+                "source": "https://github.com/box-project/box/tree/4.7.1"
             },
-            "time": "2026-03-18T09:34:43+00:00"
+            "time": "2026-10-27T10:00:32+00:00"
         },
         {
             "name": "humbug/php-scoper",

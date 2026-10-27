@@ -40,6 +40,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Operators/data/invalid-assign-var.php \
 		--exclude tests/PHPStan/Rules/Functions/data/arrow-function-nullsafe-by-ref.php \
 		--exclude tests/PHPStan/Levels/data/namedArguments.php \
+		--exclude tests/PHPStan/Reflection/BetterReflection/SourceLocator/data/symbol-finder/class-name-before-global-constant.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break-property-hook.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/goto-undefined-label.php \

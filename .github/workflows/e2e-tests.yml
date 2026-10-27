@@ -265,6 +265,9 @@ jobs:
               ../../bin/phpstan clear-result-cache
               ../../bin/phpstan analyse
           - script: |
+              cd e2e/bug-15482b
+              ../../bin/phpstan analyse
+          - script: |
               cd e2e/bug-15102
               composer install
               ../../bin/phpstan analyze

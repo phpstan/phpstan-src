@@ -196,6 +196,64 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 	public function getMethodSignatures(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array
 	{
+		return $this->applyTentativeReturnType(
+			$className,
+			$reflectionMethod,
+			$this->getMethodSignaturesWithoutTentativeReturnType($className, $methodName, $reflectionMethod),
+		);
+	}
+
+	/**
+	 * PHP checks a tentative return type of a built-in method like a real one,
+	 * and overriding it with an incompatible type is deprecated,
+	 * so it is used as the native return type when the signature does not have one.
+	 *
+	 * @param array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} $signatures
+	 * @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>}
+	 */
+	private function applyTentativeReturnType(string $className, ?ReflectionMethod $reflectionMethod, array $signatures): array
+	{
+		if ($reflectionMethod === null || !$this->phpVersion->hasTentativeReturnTypes()) {
+			return $signatures;
+		}
+
+		$tentativeReturnType = $reflectionMethod->getTentativeReturnType();
+		if ($tentativeReturnType === null) {
+			return $signatures;
+		}
+
+		$nativeReturnType = TypehintHelper::decideTypeFromReflection(
+			$tentativeReturnType,
+			selfClass: $this->reflectionProviderProvider->getReflectionProvider()->getClass($className),
+		);
+		foreach ($signatures as $signatureType => $typeSignatures) {
+			if ($typeSignatures === null) {
+				continue;
+			}
+
+			foreach ($typeSignatures as $i => $signature) {
+				$signatureNativeReturnType = $signature->getNativeReturnType();
+				if (!$signatureNativeReturnType instanceof MixedType || $signatureNativeReturnType->isExplicitMixed()) {
+					continue;
+				}
+
+				$signatures[$signatureType][$i] = new FunctionSignature(
+					$signature->getParameters(),
+					$signature->getReturnType(),
+					$nativeReturnType,
+					$signature->isVariadic(),
+				);
+			}
+		}
+
+		return $signatures;
+	}
+
+	/**
+	 * @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>}
+	 */
+	private function getMethodSignaturesWithoutTentativeReturnType(string $className, string $methodName, ?ReflectionMethod $reflectionMethod): array
+	{
 		$lowerClassName = strtolower($className);
 		if (!array_key_exists($lowerClassName, $this->map->classes)) {
 			return $this->functionSignatureMapProvider->getMethodSignatures($className, $methodName, $reflectionMethod);

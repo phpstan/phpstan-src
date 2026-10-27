@@ -113,6 +113,7 @@ final class ClassConstFetchHandler implements ExprHandler
 
 						return $nativeTypesPromoted ? $classResult->getNativeType() : $classResult->getType();
 					},
+					$nativeTypesPromoted,
 				);
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),

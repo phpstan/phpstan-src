@@ -241,6 +241,7 @@ parameters:
 		- ZEND_DEBUG_BUILD
 		- ZEND_THREAD_SAFE
 		- E_ALL # different on PHP 8.4
+	readonlySuperglobals: false
 	superglobalTypes: []
 	customRulesetUsed: null
 	editorUrl: null

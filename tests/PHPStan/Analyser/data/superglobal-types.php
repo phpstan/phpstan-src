@@ -11,6 +11,8 @@ function configuredTypes(): void
 	assertType('array<string, string>', $_COOKIE);
 	assertType('array<mixed>', $_POST);
 	assertType('array<mixed>', $_SERVER);
+	assertType('array<mixed>', $_FILES);
+	assertType('array<mixed>', $_ENV);
 
 	assertNativeType('array<mixed>', $_GET);
 	assertNativeType('array<mixed>', $_COOKIE);

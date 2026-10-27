@@ -177,6 +177,7 @@ parametersSchema:
 	resultCacheSkipIfOlderThanDays: int()
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	dynamicConstantNames: arrayOf(string())
+	readonlySuperglobals: bool()
 	superglobalTypes: arrayOf(string())
 	customRulesetUsed: schema(bool(), nullable())
 	rootDir: string()

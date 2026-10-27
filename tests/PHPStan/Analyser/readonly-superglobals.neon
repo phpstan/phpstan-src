@@ -1,0 +1,5 @@
+parameters:
+	readonlySuperglobals: true
+	superglobalTypes:
+		_COOKIE: 'array<string, string>'
+		_SERVER: 'array<string, mixed>'

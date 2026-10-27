@@ -149,7 +149,7 @@ def compare(reference_version, directory):
 		print('''A source outside the version-specific ones reads something whose layout,
 value or signature differs between PHP versions. Route it through pt_abi
 (abi.h, filled by Abi.cpp) or move the code into a version-specific source;
-turbo-ext/README.md ("Shared core") lists the mechanisms.''')
+turbo-ext/CLAUDE.md ("Shared core") lists the mechanisms.''')
 	return 1 if failed else 0
 
 

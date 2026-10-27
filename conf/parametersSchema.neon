@@ -178,7 +178,7 @@ parametersSchema:
 	resultCacheChecksProjectExtensionFilesDependencies: bool()
 	dynamicConstantNames: arrayOf(string())
 	readonlySuperglobals: bool()
-	superglobalTypes: arrayOf(string())
+	superglobalTypes: arrayOf(string(), anyOf('GLOBALS', '_SERVER', '_GET', '_POST', '_FILES', '_COOKIE', '_SESSION', '_REQUEST', '_ENV'))
 	customRulesetUsed: schema(bool(), nullable())
 	rootDir: string()
 	tmpDir: string()

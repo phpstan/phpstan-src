@@ -1,0 +1,11 @@
+includes:
+	- phpstan.neon
+
+rules:
+	- RestartManagerE2E\SpawnedProcessRule
+
+services:
+	-
+		class: RestartManagerE2E\FileCollector
+		tags:
+			- phpstan.collector

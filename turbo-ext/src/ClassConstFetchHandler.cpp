@@ -35,10 +35,10 @@ constexpr const char *pt_ccfh_closure_name = "PHPStan\\Analyser\\ExprHandler\\Cl
  * once they are ported) */
 
 /* $initializerExprTypeResolver->getClassConstFetchTypeByReflection($class,
- * $constantName, $classReflection, $getTypeCallback) */
-zv::Val getClassConstFetchTypeByReflection(zval *initializerExprTypeResolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback)
+ * $constantName, $classReflection, $getTypeCallback, $nativeTypesPromoted) */
+zv::Val getClassConstFetchTypeByReflection(zval *initializerExprTypeResolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted)
 {
-	return pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(initializerExprTypeResolver, class_, constantName, classReflection, getTypeCallback);
+	return pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(initializerExprTypeResolver, class_, constantName, classReflection, getTypeCallback, nativeTypesPromoted);
 }
 
 /* }}} */
@@ -317,7 +317,7 @@ private:
 		ZVAL_COPY_VALUE(&classTypeCaptures[0], &captures[2]);
 		ZVAL_BOOL(&classTypeCaptures[1], zend_is_true(&argv[0]));
 		pt_ietr_get_type getTypeCallback{&classTypeCallback, classTypeCaptures, &classTypeCallable};
-		zv::Val type = getClassConstFetchTypeByReflection(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), class_, constantName, &captures[3], getTypeCallback);
+		zv::Val type = getClassConstFetchTypeByReflection(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), class_, constantName, &captures[3], getTypeCallback, zend_is_true(&argv[0]));
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
 	}

@@ -17,7 +17,8 @@ use function sprintf;
 /**
  * Reports a view without a file in the views directory, unless the view is listed in a file of
  * ignored views or is a constant of ExtraViews. None of them is analysed, so the rule declares
- * all three.
+ * all three. A view can also be a method of MoreViews, which MoreViewsExtension describes and
+ * declares itself.
  *
  * @implements Rule<CollectedDataNode>
  */
@@ -48,10 +49,11 @@ final class ViewRule implements Rule
 
 		$ignoredViews = file($this->ignoredViewsFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$extraViews = $this->reflectionProvider->getClass(ExtraViews::class)->getNativeReflection()->getConstants();
+		$moreViews = $this->reflectionProvider->getClass(MoreViews::class);
 		$errors = [];
 		foreach ($node->get(ViewCollector::class) as $file => $views) {
 			foreach ($views as [$view, $line]) {
-				if (is_file($this->viewsDirectory . '/' . $view . '.txt') || in_array($view, $ignoredViews, true) || in_array($view, $extraViews, true)) {
+				if (is_file($this->viewsDirectory . '/' . $view . '.txt') || in_array($view, $ignoredViews, true) || in_array($view, $extraViews, true) || $moreViews->hasMethod($view)) {
 					continue;
 				}
 

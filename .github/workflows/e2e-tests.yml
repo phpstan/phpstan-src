@@ -266,6 +266,12 @@ jobs:
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               ../bashunit assert contains 'Controller.php:20:View contact not found.' "$OUTPUT"
+              # And a method that a class reflection extension describes from a file that is not
+              # analysed, tracked through DeclarationDependencyTracker. No analysed file changes.
+              printf '' > more-views.txt
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Controller.php:25:View faq not found.' "$OUTPUT"
           - script: |
               cd e2e/bug-14514
               composer install

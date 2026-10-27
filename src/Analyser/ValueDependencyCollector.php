@@ -49,6 +49,8 @@ use function strtolower;
  * and reused by every file analysed after it without asking the extension again, so these are kept
  * for the whole process too, by class, and every file depending on the class - or on a class
  * extending it or implementing it - gets them as its own dependencies when its analysis finishes.
+ * A rule for CollectedDataNode gets those of every class, because it is not known which classes
+ * it read.
  *
  * @phpstan-type ValueDependencies = array{
  *     values: array<string, array{string, string, string}>,
@@ -171,11 +173,23 @@ final class ValueDependencyCollector
 	}
 
 	/**
+	 * With what every class seen in this process declares depends on, see recordForClass(): the
+	 * rule may have read any of them, and an extension describes a class only once per process.
+	 *
 	 * @return array<string, array{string, string, string}> id => [extension class, key, value]
 	 */
 	public function getCollectedDataRuleValues(): array
 	{
-		return $this->collectedDataRuleValues ?? [];
+		if ($this->collectedDataRuleValues === null) {
+			return [];
+		}
+
+		$values = $this->collectedDataRuleValues;
+		foreach ($this->classDeclarations as $classValues) {
+			$values += $classValues;
+		}
+
+		return $values;
 	}
 
 	public function finishCollectedDataRule(): void

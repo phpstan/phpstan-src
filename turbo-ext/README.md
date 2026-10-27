@@ -56,21 +56,6 @@ across its parts. Percentages are of the time without Turbo:
 To read these: a run that takes 20 seconds without Turbo takes 8 seconds with
 it, which is 60% less time, or 2.5× faster.
 
-How each part was measured:
-
-- The hot paths were measured on 2.2.17, with and without the extension. They
-  still stand on their own there.
-- On 2.3.x the hot paths are part of the engine port and can't be removed
-  separately. The engine row is what turning off all shadowing costs on
-  2.3.x, minus the hot-path share.
-- Trusted types were measured with no shadowing, which matches the order they
-  shipped in. With everything shadowed they save only 2%, because less PHP code
-  is left for them to strip.
-- Forking was measured on a parallel run, fork vs. spawn, both with the
-  extension loaded.
-
-The analysis output was identical in every configuration.
-
 Trusted types need OPcache, because they're an OPcache optimizer pass. PHPStan's
 restart enables OPcache for every run that can fork, with or without Turbo, so
 the baseline without Turbo has OPcache too.

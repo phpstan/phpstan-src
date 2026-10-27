@@ -420,7 +420,10 @@ final class TypeCombinator
 		$enumCaseTypes = [];
 		$integerRangeTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
-			if ($types[$i]->isConstantScalarValue()->yes()) {
+			// a constant scalar refined by an accessory type ('Foo'&hasMethod(bar))
+			// stays with the other types so it is compared against the plain
+			// constant scalars and other refinements of the same value
+			if ($types[$i]->isConstantScalarValue()->yes() && !$types[$i] instanceof IntersectionType) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][$type->describe(VerbosityLevel::cache())] = $type;
 				unset($types[$i]);

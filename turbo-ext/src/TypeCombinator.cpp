@@ -1040,7 +1040,7 @@ public:
 			zval *type = types[i].raw();
 			zend_long isConstantScalarValue = callTrinary(type, PT_LC("isconstantscalarvalue"));
 			PT_FAIL_IF_NEG(isConstantScalarValue);
-			if (isConstantScalarValue == PT_TRI_YES) {
+			if (isConstantScalarValue == PT_TRI_YES && !isInstance(type, pt_ce_intersection_type)) {
 				zv::Val description = describe(type, cacheLevel);
 				zend_string *key = describedKey(description);
 				if (UNEXPECTED(key == NULL)) return zv::Val();

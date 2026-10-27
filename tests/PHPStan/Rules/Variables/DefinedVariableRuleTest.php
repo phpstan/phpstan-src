@@ -527,4 +527,16 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testDeadCatch(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/dead-catch-defined-variable.php'], [
+			[
+				'Undefined variable: $undefined',
+				22,
+			],
+		]);
+	}
+
 }

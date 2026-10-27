@@ -20,4 +20,9 @@ class Controller
 		return view('contact');
 	}
 
+	public function faq(): string
+	{
+		return view('faq');
+	}
+
 }

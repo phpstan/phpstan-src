@@ -21,3 +21,9 @@ services:
 			ignoredViewsFile: %currentWorkingDirectory%/ignored-views.txt
 		tags:
 			- phpstan.rules.rule
+	-
+		class: ResultCacheCollectedDataRulesTracking\MoreViewsExtension
+		arguments:
+			moreViewsFile: %currentWorkingDirectory%/more-views.txt
+		tags:
+			- phpstan.broker.methodsClassReflectionExtension

@@ -105,13 +105,14 @@ final class AnalyserResultFinalizer
 		$collectedDataRuleResults = [];
 		$reusedRulesCount = 0;
 		$ruleCountsByClass = [];
+		$currentValues = [];
 		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
 			$ruleClass = get_class($rule);
 			$ruleCountsByClass[$ruleClass] = ($ruleCountsByClass[$ruleClass] ?? 0) + 1;
 			$ruleKey = sprintf('%s#%d', $ruleClass, $ruleCountsByClass[$ruleClass]);
 
 			$previousResult = $this->reuseCollectedDataRuleErrors ? $previousCollectedDataRuleResults[$ruleKey] ?? null : null;
-			if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector)) {
+			if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector, $currentValues)) {
 				$collectedDataRuleResults[$ruleKey] = $previousResult;
 				$reusedRulesCount++;
 				$this->addRuleErrors($previousResult->getErrors(), $node, $scope, $tempCollectorErrors);
@@ -265,8 +266,9 @@ final class AnalyserResultFinalizer
 
 	/**
 	 * @param Closure(string): string $hashCollector
+	 * @param array<string, string> $currentValues id => value, asked for once per run - every rule shares the values of the classes
 	 */
-	private function canReuse(CollectedDataRuleResult $previousResult, bool $onlyFiles, Closure $hashCollector): bool
+	private function canReuse(CollectedDataRuleResult $previousResult, bool $onlyFiles, Closure $hashCollector, array &$currentValues): bool
 	{
 		$previousOnlyFiles = $previousResult->getOnlyFiles();
 		if ($previousOnlyFiles !== null && $previousOnlyFiles !== $onlyFiles) {
@@ -286,7 +288,9 @@ final class AnalyserResultFinalizer
 				return false;
 			}
 
-			if ($extension->getValue($extension->keyFromResultCache($storedKey)) !== $value) {
+			$id = ValueDependencyCollector::getId($extensionClass, $storedKey);
+			$currentValues[$id] ??= $extension->getValue($extension->keyFromResultCache($storedKey));
+			if ($currentValues[$id] !== $value) {
 				return false;
 			}
 		}

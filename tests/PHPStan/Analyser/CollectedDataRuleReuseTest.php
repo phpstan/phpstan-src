@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Analyser\CollectedDataReuse\DescribedClassRule;
 use PHPStan\Analyser\CollectedDataReuse\EarlyReturnRule;
 use PHPStan\Analyser\CollectedDataReuse\FirstCollector;
 use PHPStan\Analyser\CollectedDataReuse\OnlyFilesRule;
@@ -9,7 +10,9 @@ use PHPStan\Analyser\CollectedDataReuse\SecondCollector;
 use PHPStan\Analyser\CollectedDataReuse\ThrowingRule;
 use PHPStan\Analyser\CollectedDataReuse\TrackingRule;
 use PHPStan\Analyser\CollectedDataReuse\UnregisteredValueRule;
+use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\File\FileHelper;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\DirectRegistry;
 use PHPStan\Rules\Rule;
@@ -207,6 +210,48 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		rmdir($directory);
 	}
 
+	public function testRuleRunsAgainWhenWhatAClassDeclaresChanged(): void
+	{
+		$file = sys_get_temp_dir() . '/phpstan-collected-data-reuse-' . uniqid() . '.txt';
+		file_put_contents($file, 'one');
+		$classReflection = self::createReflectionProvider()->getClass(FirstCollector::class);
+
+		$rule = new DescribedClassRule($file);
+		$collectedData = [
+			self::A => [FirstCollector::class => ['a1']],
+		];
+
+		// a new process each run: an extension describes the class once, before the rule asks for it
+		/** @param array<string, CollectedDataRuleResult> $previousResults */
+		$finalize = function (array $previousResults) use ($rule, $collectedData, $file, $classReflection): FinalizerResult {
+			$valueDependencyCollector = new ValueDependencyCollector(
+				self::getContainer()->getExtensionsCollection(ResultCacheValueExtension::class),
+				self::getContainer()->getByType(FileHelper::class),
+			);
+			(new ValueDependencyDeclarationDependencyTracker($valueDependencyCollector))->trackFileDependency($classReflection, $file);
+
+			return $this->finalize([$rule], $collectedData, false, $previousResults, true, $valueDependencyCollector);
+		};
+
+		$result = $finalize([]);
+		$this->assertSame(1, $rule->runs);
+		$this->assertSame(['Class is described by one.'], $this->getMessages($result));
+
+		// nothing changed
+		$result = $finalize($result->getCollectedDataRuleResults());
+		$this->assertSame(1, $rule->runs);
+		$this->assertSame(1, $result->getReusedRulesCount());
+
+		// the file the extension described the class from changed - in size too, FileContentHasher memoizes by mtime and size
+		file_put_contents($file, 'three');
+		clearstatcache();
+		$result = $finalize($result->getCollectedDataRuleResults());
+		$this->assertSame(2, $rule->runs);
+		$this->assertSame(['Class is described by three.'], $this->getMessages($result));
+
+		unlink($file);
+	}
+
 	public function testEveryRuleRunsWithoutTheFeatureToggle(): void
 	{
 		$rule = new EarlyReturnRule();
@@ -237,7 +282,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 	 * @param CollectorData $collectedData
 	 * @param array<string, CollectedDataRuleResult> $previousResults
 	 */
-	private function finalize(array $rules, array $collectedData, bool $onlyFiles, array $previousResults, bool $reuse = true): FinalizerResult
+	private function finalize(array $rules, array $collectedData, bool $onlyFiles, array $previousResults, bool $reuse = true, ?ValueDependencyCollector $valueDependencyCollector = null): FinalizerResult
 	{
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRegistry($rules),
@@ -246,7 +291,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::createScopeFactory(self::createReflectionProvider(), self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),
 			false,
-			self::getContainer()->getByType(ValueDependencyCollector::class),
+			$valueDependencyCollector ?? self::getContainer()->getByType(ValueDependencyCollector::class),
 			$reuse,
 		);
 

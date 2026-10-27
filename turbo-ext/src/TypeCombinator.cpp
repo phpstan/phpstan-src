@@ -1038,9 +1038,12 @@ public:
 		Level cacheLevel(PT_LC("cache"));
 		for (size_t i = 0; i < typesCount; i++) {
 			zval *type = types[i].raw();
-			zend_long isConstantScalarValue = callTrinary(type, PT_LC("isconstantscalarvalue"));
-			PT_FAIL_IF_NEG(isConstantScalarValue);
-			if (isConstantScalarValue == PT_TRI_YES && !isInstance(type, pt_ce_intersection_type)) {
+			zend_long isConstantScalarValue = PT_TRI_NO;
+			if (!isInstance(type, pt_ce_intersection_type)) {
+				isConstantScalarValue = callTrinary(type, PT_LC("isconstantscalarvalue"));
+				PT_FAIL_IF_NEG(isConstantScalarValue);
+			}
+			if (isConstantScalarValue == PT_TRI_YES) {
 				zv::Val description = describe(type, cacheLevel);
 				zend_string *key = describedKey(description);
 				if (UNEXPECTED(key == NULL)) return zv::Val();

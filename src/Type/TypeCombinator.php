@@ -423,7 +423,7 @@ final class TypeCombinator
 			// a constant scalar refined by an accessory type ('Foo'&hasMethod(bar))
 			// stays with the other types so it is compared against the plain
 			// constant scalars and other refinements of the same value
-			if ($types[$i]->isConstantScalarValue()->yes() && !$types[$i] instanceof IntersectionType) {
+			if (!$types[$i] instanceof IntersectionType && $types[$i]->isConstantScalarValue()->yes()) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][$type->describe(VerbosityLevel::cache())] = $type;
 				unset($types[$i]);

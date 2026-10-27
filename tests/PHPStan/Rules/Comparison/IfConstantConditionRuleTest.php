@@ -6,6 +6,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -151,12 +152,16 @@ class IfConstantConditionRuleTest extends RuleTestCase
 	public function testBug4043(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;
+		$assertError = [
+			'Call to function assert() with true will always evaluate to true.',
+			13,
+		];
+		if (PHP_VERSION_ID < 80100) {
+			// tentative return types are native only on PHP 8.1+
+			$assertError[] = 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.';
+		}
 		$this->analyse([__DIR__ . '/data/bug-4043.php'], [
-			[
-				'Call to function assert() with true will always evaluate to true.',
-				13,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
-			],
+			$assertError,
 			[
 				'If condition is always false.',
 				43,

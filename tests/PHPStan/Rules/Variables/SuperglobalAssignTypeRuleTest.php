@@ -25,7 +25,7 @@ class SuperglobalAssignTypeRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		$request = 'array<array<array<mixed>|string>|string>';
-		$server = 'array{argc?: int<0, max>, argv?: list<string>, REQUEST_TIME?: int, REQUEST_TIME_FLOAT?: float, ...<string>}';
+		$server = 'array{REQUEST_TIME: int, REQUEST_TIME_FLOAT: float, argc?: int<0, max>, argv?: list<string>, ...<string>}';
 		$this->analyse([__DIR__ . '/data/superglobal-assign-type.php'], [
 			[
 				sprintf('Superglobal $_GET (%s) does not accept array<array<array<mixed>|string>|int|string>.', $request),
@@ -40,7 +40,7 @@ class SuperglobalAssignTypeRuleTest extends RuleTestCase
 				26,
 			],
 			[
-				sprintf('Superglobal $_SERVER (%s) does not accept array{argc?: int<0, max>, argv?: list<string>, REQUEST_TIME?: int, REQUEST_TIME_FLOAT?: float, SERVER_PORT: int, ...<string>}.', $server),
+				sprintf('Superglobal $_SERVER (%s) does not accept array{REQUEST_TIME: int, REQUEST_TIME_FLOAT: float, argc?: int<0, max>, argv?: list<string>, SERVER_PORT: int, ...<string>}.', $server),
 				27,
 				'Unsealed array value type string does not accept extra offset \'SERVER_PORT\' with value type int.',
 			],

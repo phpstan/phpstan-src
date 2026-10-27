@@ -2461,7 +2461,6 @@ jobs:
             coverage: "pcov"
             extensions: ""
             script: |
-              php ../../bin/phpstan clear-result-cache -c spawn.neon -a SpawnedProcessRule.php
               set +e
               php ../../bin/phpstan analyse -c spawn.neon -a SpawnedProcessRule.php --no-progress --error-format=raw -vvv > out.txt 2>&1
               CODE=$?

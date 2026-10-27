@@ -6,9 +6,19 @@ use Override;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use function fclose;
+use function function_exists;
 use function getenv;
+use function is_file;
+use function proc_close;
+use function proc_open;
 use function putenv;
 use function sprintf;
+use function stream_get_contents;
+use function sys_get_temp_dir;
+use function tempnam;
+use function unlink;
+use const PHP_BINARY;
 
 #[CoversNothing]
 class RestartManagerTest extends TestCase
@@ -151,6 +161,31 @@ class RestartManagerTest extends TestCase
 	{
 		$this->assertSame([], RestartManager::collectReasons(['bin/phpstan', 'worker']));
 		$this->assertSame([], RestartManager::collectReasons(['bin/phpstan', 'diagnose']));
+	}
+
+	public function testAForkedWorkerDoesNotDeleteTheComposedIni(): void
+	{
+		if (!function_exists('pcntl_fork')) {
+			$this->markTestSkipped('Requires pcntl.');
+		}
+
+		$temporaryIni = tempnam(sys_get_temp_dir(), 'phpstan-restart-ini-test-');
+		$this->assertNotFalse($temporaryIni);
+
+		$environment = getenv();
+		$environment['PHPSTAN_RESTART_INI'] = $temporaryIni;
+		$process = proc_open([PHP_BINARY, __DIR__ . '/data/forked-child-ends.php'], [1 => ['pipe', 'w']], $pipes, null, $environment);
+		$this->assertIsResource($process);
+		$output = stream_get_contents($pipes[1]);
+		fclose($pipes[1]);
+		proc_close($process);
+
+		$deletedByOwner = !is_file($temporaryIni);
+		@unlink($temporaryIni);
+
+		// spawned PHP processes read their configuration from it until the run ends
+		$this->assertSame('kept', $output);
+		$this->assertTrue($deletedByOwner);
 	}
 
 }

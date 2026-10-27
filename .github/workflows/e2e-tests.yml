@@ -2453,6 +2453,30 @@ jobs:
                 exit 1
               fi
 
+          # a PHP process spawned during the run - by an extension compiling
+          # its own DI container, say - reads the composed ini through PHPRC,
+          # so a forked worker that ends must not delete it; the rule spawns
+          # one in the main process after every worker has ended
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan clear-result-cache -c spawn.neon -a SpawnedProcessRule.php
+              set +e
+              php ../../bin/phpstan analyse -c spawn.neon -a SpawnedProcessRule.php --no-progress --error-format=raw -vvv > out.txt 2>&1
+              CODE=$?
+              set -e
+              cat out.txt
+              if ! grep -qE 'Mechanism: +fork' out.txt; then
+                echo "FAIL: the workers were not forked"
+                exit 1
+              fi
+              if [ "$CODE" != "0" ]; then
+                echo "FAIL: the analysis exited with $CODE"
+                exit 1
+              fi
+              php check.php restarted-for=pcov,opcache pcov-armed=no processes=2+ starts=2
+
           # --debug restarts like any other run - it only makes the analysis
           # serial, --xdebug is what keeps xdebug
           - operating-system: "ubuntu-latest"

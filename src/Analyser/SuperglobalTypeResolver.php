@@ -41,9 +41,11 @@ final class SuperglobalTypeResolver
 	 * `$_SERVER` is strings too, the request variables, headers and environment,
 	 * except for the few entries PHP adds itself; `argc` is 0 and `argv` empty on
 	 * the web when `register_argc_argv` is on and there is no query string.
-	 * `REQUEST_TIME` and `REQUEST_TIME_FLOAT` are set for every request by every
-	 * SAPI, unless `variables_order` leaves out `S` and `$_SERVER` stays empty;
-	 * any other key, a header in particular, is up to the SAPI, the web server or the client.
+	 * `REQUEST_TIME` and `REQUEST_TIME_FLOAT` are set for every request, and every
+	 * bundled SAPI sets `PHP_SELF`, if only to an empty string, unless
+	 * `variables_order` leaves out `S` and `$_SERVER` stays empty. Any other key is
+	 * up to the SAPI, the web server or the client: `SCRIPT_FILENAME` comes from
+	 * the web server's configuration, and a header from the request.
 	 * The keys are not narrowed to strings: like any array key, a numeric name
 	 * (`?1=a`, an environment variable named `123`) becomes an int.
 	 * `$_SESSION` and `$GLOBALS` are left out: what they hold is up to the application.
@@ -54,7 +56,7 @@ final class SuperglobalTypeResolver
 		'_COOKIE' => self::REQUEST_INPUT_TYPE,
 		'_REQUEST' => self::REQUEST_INPUT_TYPE,
 		'_FILES' => 'array<array{name: string, full_path?: string, type: string, tmp_name: string, error: int<0, 8>, size: int<0, max>}|array{name: array<mixed>, full_path?: array<mixed>, type: array<mixed>, tmp_name: array<mixed>, error: array<mixed>, size: array<mixed>}>',
-		'_SERVER' => 'array{REQUEST_TIME: int, REQUEST_TIME_FLOAT: float, argc?: int<0, max>, argv?: list<string>, ...<string>}',
+		'_SERVER' => 'array{PHP_SELF: string, REQUEST_TIME: int, REQUEST_TIME_FLOAT: float, argc?: int<0, max>, argv?: list<string>, ...<string>}',
 		'_ENV' => 'array<string>',
 	];
 

@@ -78,6 +78,7 @@ final class DateFunctionReturnTypeHelper
 				return $useMicrosec
 					? new IntersectionType([new StringType(), new AccessoryNonFalsyStringType(), new AccessoryNumericStringType()])
 					: new ConstantStringType('000');
+			// values which do not depend on the locale
 			case 'a':
 				return $this->buildConstantStringsType(['am', 'pm']);
 			case 'A':

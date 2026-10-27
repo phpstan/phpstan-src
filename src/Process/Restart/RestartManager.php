@@ -369,7 +369,14 @@ final class RestartManager
 		// descendants must not delete the file their siblings are still reading
 		putenv(self::TEMPORARY_INI_ENV_VARIABLE);
 
-		register_shutdown_function(static function () use ($temporaryIni): void {
+		// pcntl_fork()ed workers inherit this shutdown function; the first one
+		// to end would delete the ini while the rest of the run still reads it
+		$ownerPid = getmypid();
+		register_shutdown_function(static function () use ($temporaryIni, $ownerPid): void {
+			if (getmypid() !== $ownerPid) {
+				return;
+			}
+
 			@unlink($temporaryIni);
 		});
 

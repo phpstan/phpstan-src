@@ -7,7 +7,7 @@ use function PHPStan\Testing\assertType;
 function (string $s): void {
 	assertType('\'\'', date(''));
 	assertType('string', date($s));
-	assertType('non-falsy-string', date('D'));
+	assertType("'Fri'|'Mon'|'Sat'|'Sun'|'Thu'|'Tue'|'Wed'", date('D'));
 	assertType('numeric-string', date('Y'));
 	assertType('numeric-string', date('Ghi'));
 };
@@ -15,7 +15,7 @@ function (string $s): void {
 function (\DateTime $dt, string $s): void {
 	assertType('\'\'', date_format($dt, ''));
 	assertType('string', date_format($dt, $s));
-	assertType('non-falsy-string', date_format($dt, 'D'));
+	assertType("'Fri'|'Mon'|'Sat'|'Sun'|'Thu'|'Tue'|'Wed'", date_format($dt, 'D'));
 	assertType('numeric-string', date_format($dt, 'Y'));
 	assertType('numeric-string', date_format($dt, 'Ghi'));
 };
@@ -23,7 +23,7 @@ function (\DateTime $dt, string $s): void {
 function (\DateTimeInterface $dt, string $s): void {
 	assertType('\'\'', $dt->format(''));
 	assertType('string', $dt->format($s));
-	assertType('non-falsy-string', $dt->format('D'));
+	assertType("'Fri'|'Mon'|'Sat'|'Sun'|'Thu'|'Tue'|'Wed'", $dt->format('D'));
 	assertType('numeric-string', $dt->format('Y'));
 	assertType('numeric-string', $dt->format('Ghi'));
 };
@@ -31,7 +31,7 @@ function (\DateTimeInterface $dt, string $s): void {
 function (\DateTime $dt, string $s): void {
 	assertType('\'\'', $dt->format(''));
 	assertType('string', $dt->format($s));
-	assertType('non-falsy-string', $dt->format('D'));
+	assertType("'Fri'|'Mon'|'Sat'|'Sun'|'Thu'|'Tue'|'Wed'", $dt->format('D'));
 	assertType('numeric-string', $dt->format('Y'));
 	assertType('numeric-string', $dt->format('Ghi'));
 };
@@ -39,7 +39,7 @@ function (\DateTime $dt, string $s): void {
 function (\DateTimeImmutable $dt, string $s): void {
 	assertType('\'\'', $dt->format(''));
 	assertType('string', $dt->format($s));
-	assertType('non-falsy-string', $dt->format('D'));
+	assertType("'Fri'|'Mon'|'Sat'|'Sun'|'Thu'|'Tue'|'Wed'", $dt->format('D'));
 	assertType('numeric-string', $dt->format('Y'));
 	assertType('numeric-string', $dt->format('Ghi'));
 };

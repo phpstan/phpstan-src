@@ -22,9 +22,10 @@ use function array_key_exists;
  * By default every superglobal is `array<mixed>`, since a script can write
  * anything into it. A project that treats superglobals as a contract opts in to
  * narrower types: `readonlySuperglobals` assumes the shapes PHP populates them
- * with (READONLY_SUPERGLOBAL_TYPES) and reports writes to them (see
- * ReadonlySuperglobalRule), and `superglobalTypes` declares the type of any
- * superglobal, taking precedence over those shapes.
+ * with (READONLY_SUPERGLOBAL_TYPES), and `superglobalTypes` declares the type of
+ * any superglobal, taking precedence over those shapes. Either type stays sound
+ * only while what is written into the superglobal fits it, which
+ * SuperglobalAssignTypeRule checks.
  *
  * Either type is a PHPDoc type: PHP itself does not enforce it, so the native
  * type stays the default and, with `treatPhpDocTypesAsCertain: false`, a
@@ -75,8 +76,19 @@ final class SuperglobalTypeResolver
 
 	public function getType(string $variableName, bool $nativeTypesPromoted): Type
 	{
-		if ($nativeTypesPromoted || !array_key_exists($variableName, $this->typeStrings)) {
-			return $this->defaultType ??= new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
+		$contractType = $nativeTypesPromoted ? null : $this->getContractType($variableName);
+
+		return $contractType ?? $this->defaultType ??= new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
+	}
+
+	/**
+	 * The type the project holds the superglobal to, declared or assumed;
+	 * null when it has none and anything may be written into it.
+	 */
+	public function getContractType(string $variableName): ?Type
+	{
+		if (!array_key_exists($variableName, $this->typeStrings)) {
+			return null;
 		}
 
 		// fetched lazily: TypeStringResolver depends on services that depend on the scope factory

@@ -83,7 +83,6 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -795,7 +794,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$varExprString = '$' . $variableName;
 		if (!array_key_exists($varExprString, $this->expressionTypes)) {
 			if ($this->isGlobalVariable($variableName)) {
-				return new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true));
+				return $this->services->superglobalTypeResolver->getType($variableName, $this->nativeTypesPromoted);
 			}
 			return new MixedType();
 		}

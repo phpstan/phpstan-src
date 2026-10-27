@@ -92,6 +92,7 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 			$this->container->getByType(PhpVersion::class),
 			$this->container->getByType(AttributeReflectionFactory::class),
 			$this->container->getByType(ConfiguredPhpVersionRangeHelper::class),
+			$this->container->getByType(SuperglobalTypeResolver::class),
 			$this->nodeCallback,
 		);
 

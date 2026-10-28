@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Internal\CombinationsHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
@@ -272,23 +273,29 @@ class IntersectionType implements CompoundType
 
 		if (!$result->yes()) {
 			$isList = $otherType->isList();
-			$reasons = $result->reasons;
-			$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $otherType);
-			if ($this->isList()->yes() && !$isList->yes()) {
-				$reasons[] = sprintf(
-					'%s %s a list.',
-					$otherType->describe($verbosity),
-					$isList->no() ? 'is not' : 'might not be',
-				);
-			}
-
 			$isNonEmpty = $otherType->isIterableAtLeastOnce();
-			if ($this->isIterableAtLeastOnce()->yes() && !$isNonEmpty->yes()) {
-				$reasons[] = sprintf(
-					'%s %s empty.',
-					$otherType->describe($verbosity),
-					$isNonEmpty->no() ? 'is' : 'might be',
-				);
+			$reportList = $this->isList()->yes() && !$isList->yes();
+			$reportEmpty = $this->isIterableAtLeastOnce()->yes() && !$isNonEmpty->yes();
+			$reasons = $result->reasons;
+			if ($reportList || $reportEmpty) {
+				$verbosity = VerbosityLevel::getRecommendedLevelByType($this, $otherType);
+				$otherTypeDescription = BleedingEdgeToggle::isBleedingEdge() && $otherType->isArray()->yes()
+					? AcceptsReasonHelper::describeSubject($otherType, $verbosity, 'Array')
+					: $otherType->describe($verbosity);
+				if ($reportList) {
+					$reasons[] = sprintf(
+						'%s %s a list.',
+						$otherTypeDescription,
+						$isList->no() ? 'is not' : 'might not be',
+					);
+				}
+				if ($reportEmpty) {
+					$reasons[] = sprintf(
+						'%s %s empty.',
+						$otherTypeDescription,
+						$isNonEmpty->no() ? 'is' : 'might be',
+					);
+				}
 			}
 
 			if (count($reasons) > 0) {

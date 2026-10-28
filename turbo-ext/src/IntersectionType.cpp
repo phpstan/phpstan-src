@@ -537,39 +537,46 @@ public:
 			for (zv::ArrayEntry entry : zv::ArrRef(reasons.raw())) {
 				collected.push(entry.value());
 			}
-			zv::Args args{&selfZv, otherType};
-			zv::Val verbosity = pt_type_verbosity_recommended(&selfZv, otherType);
-			if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
-			zend_long thisIsList = thisTrinary(PT_LC("islist"), &IntersectionType::isList);
-			if (UNEXPECTED(thisIsList < 0)) return zv::Val();
-			bool added = false;
-			if (thisIsList == PT_TRI_YES && isList != PT_TRI_YES) {
-				zv::Val description = describeOf(otherType, verbosity.raw());
-				if (UNEXPECTED(description.isUndef())) return zv::Val();
-				smart_str reason = {NULL, 0};
-				smart_str_append(&reason, zv::Ref(description.raw()).asString());
-				smart_str_appendl(&reason, isList == PT_TRI_NO ? " is not a list." : " might not be a list.", isList == PT_TRI_NO ? sizeof(" is not a list.") - 1 : sizeof(" might not be a list.") - 1);
-				smart_str_0(&reason);
-				collected.push(zv::Val::adoptString(reason.s));
-				added = true;
-			}
-
 			zend_long isNonEmpty = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 			if (UNEXPECTED(isNonEmpty < 0)) return zv::Val();
+			zend_long thisIsList = thisTrinary(PT_LC("islist"), &IntersectionType::isList);
+			if (UNEXPECTED(thisIsList < 0)) return zv::Val();
 			zend_long thisNonEmpty = thisTrinary(PT_LC("isiterableatleastonce"), &IntersectionType::isIterableAtLeastOnce);
 			if (UNEXPECTED(thisNonEmpty < 0)) return zv::Val();
-			if (thisNonEmpty == PT_TRI_YES && isNonEmpty != PT_TRI_YES) {
+			bool reportList = thisIsList == PT_TRI_YES && isList != PT_TRI_YES;
+			bool reportEmpty = thisNonEmpty == PT_TRI_YES && isNonEmpty != PT_TRI_YES;
+			if (reportList || reportEmpty) {
+				zv::Val verbosity = pt_type_verbosity_recommended(&selfZv, otherType);
+				if (UNEXPECTED(verbosity.isUndef())) return zv::Val();
+				bool bleedingEdge;
+				if (UNEXPECTED(!pt_is_bleeding_edge(bleedingEdge))) return zv::Val();
+				zend_long otherIsArray = PT_TRI_NO;
+				if (bleedingEdge) {
+					otherIsArray = pt_type_op_trinary(Z_OBJ_P(otherType), PT_OP_IS_ARRAY, 0, NULL);
+					if (UNEXPECTED(otherIsArray < 0)) return zv::Val();
+				}
 				zv::Val description = describeOf(otherType, verbosity.raw());
 				if (UNEXPECTED(description.isUndef())) return zv::Val();
-				smart_str reason = {NULL, 0};
-				smart_str_append(&reason, zv::Ref(description.raw()).asString());
-				smart_str_appendl(&reason, isNonEmpty == PT_TRI_NO ? " is empty." : " might be empty.", isNonEmpty == PT_TRI_NO ? sizeof(" is empty.") - 1 : sizeof(" might be empty.") - 1);
-				smart_str_0(&reason);
-				collected.push(zv::Val::adoptString(reason.s));
-				added = true;
+				/* AcceptsReasonHelper::describeSubject($otherType, $verbosity, 'Array') */
+				if (otherIsArray == PT_TRI_YES && ZSTR_LEN(zv::Ref(description.raw()).asString()) > PT_ACCEPTS_REASON_SUBJECT_DESCRIPTION_LENGTH_LIMIT) {
+					description = zv::Val::string(PT_LC("Array"));
+				}
+				if (reportList) {
+					smart_str reason = {NULL, 0};
+					smart_str_append(&reason, zv::Ref(description.raw()).asString());
+					smart_str_appendl(&reason, isList == PT_TRI_NO ? " is not a list." : " might not be a list.", isList == PT_TRI_NO ? sizeof(" is not a list.") - 1 : sizeof(" might not be a list.") - 1);
+					smart_str_0(&reason);
+					collected.push(zv::Val::adoptString(reason.s));
+				}
+				if (reportEmpty) {
+					smart_str reason = {NULL, 0};
+					smart_str_append(&reason, zv::Ref(description.raw()).asString());
+					smart_str_appendl(&reason, isNonEmpty == PT_TRI_NO ? " is empty." : " might be empty.", isNonEmpty == PT_TRI_NO ? sizeof(" is empty.") - 1 : sizeof(" might be empty.") - 1);
+					smart_str_0(&reason);
+					collected.push(zv::Val::adoptString(reason.s));
+				}
 			}
 
-			(void) added;
 			if (zend_hash_num_elements(collected.table()) > 0) return withReasons(result.raw(), std::move(collected));
 		}
 

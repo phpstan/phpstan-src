@@ -98,7 +98,7 @@ final class FunctionReturnTypeCheck
 				RuleErrorBuilder::message(sprintf(
 					$typeMismatchMessage,
 					$returnType->describe($verbosityLevel),
-					$returnValueType->describe($verbosityLevel),
+					AcceptedTypeDescriptionHelper::describe($returnType, $returnValueType, $verbosityLevel),
 				))
 					->line($returnNode->getStartLine())
 					->identifier('return.type')

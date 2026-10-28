@@ -165,6 +165,10 @@ zv::Val pt_type_call_parent(zend_class_entry *scope, zend_object *object, const 
 
 /* Class::method(...$args) on a class-map class; UNDEF = pending exception */
 zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32_t argc, zval *argv);
+/* ArrayType::accepts()'s bleeding-edge decoration of an entry's value
+ * result with its offset (AcceptsReasonHelper::prependOffset() over
+ * every reason, ConstantArrayType.cpp); UNDEF = pending exception */
+zv::Val pt_offset_accepts_reasons_prepend(zval *result, zval *offsetType, zval *offsetValueType, zval *acceptedValueType);
 
 /* new Class(...$args) on a class-map class, its constructor called when it
  * declares one; UNDEF = pending exception */

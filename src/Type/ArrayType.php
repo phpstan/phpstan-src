@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -131,10 +132,17 @@ class ArrayType implements Type
 			$result = AcceptsResult::createYes();
 			$thisKeyType = $this->keyType;
 			$itemType = $this->getItemType();
+			$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
 			foreach ($type->getKeyTypes() as $i => $keyType) {
 				$valueType = $type->getValueTypes()[$i];
 				$acceptsKey = $thisKeyType->accepts($keyType, $strictTypes);
 				$acceptsValue = $itemType->accepts($valueType, $strictTypes);
+				if ($bleedingEdge && count($acceptsValue->reasons) > 0) {
+					$verbosity = VerbosityLevel::getRecommendedLevelByType($itemType, $valueType);
+					$acceptsValue = $acceptsValue->decorateReasons(
+						static fn (string $reason) => AcceptsReasonHelper::prependOffset($keyType, $itemType, $valueType, $verbosity, $reason),
+					);
+				}
 				$result = $result->and($acceptsKey)->and($acceptsValue);
 			}
 

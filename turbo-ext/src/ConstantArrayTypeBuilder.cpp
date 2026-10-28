@@ -73,7 +73,7 @@ public:
 	{
 		zv::Val unsealed = zv::Val::null();
 		bool bleedingEdge;
-		if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
+		if (UNEXPECTED(!pt_is_bleeding_edge(bleedingEdge))) return zv::Val();
 		if (bleedingEdge) {
 			zval neverRaw;
 			if (UNEXPECTED(!pt_never_type_new(&neverRaw, true))) return zv::Val();
@@ -882,29 +882,6 @@ private:
 			return zv::Val();
 		}
 		return part;
-	}
-
-	/* BleedingEdgeToggle::isBleedingEdge(): the private static the final
-	 * class returns, read through the engine's static-property path under
-	 * the class's own scope (as ConstantArrayType.cpp reads it); false =
-	 * pending exception */
-	static bool isBleedingEdge(bool &out)
-	{
-		zend_class_entry *ce = pt_class(PT_CLASS_BLEEDING_EDGE_TOGGLE);
-		if (UNEXPECTED(ce == NULL)) return false;
-		auto previousScope = EG(fake_scope); /* const from PHP 8.4 */
-		EG(fake_scope) = ce;
-		zval *value = zend_read_static_property(ce, PT_LC("bleedingEdge"), 1);
-		EG(fake_scope) = previousScope;
-		if (EXPECTED(value != NULL && (Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE))) {
-			out = Z_TYPE_P(value) == IS_TRUE;
-			return true;
-		}
-		if (UNEXPECTED(EG(exception))) return false;
-		zv::Val result = pt_type_call_static(PT_CLASS_BLEEDING_EDGE_TOGGLE, PT_LC("isbleedingedge"), 0, NULL);
-		if (UNEXPECTED(result.isUndef())) return false;
-		out = zend_is_true(result.raw());
-		return true;
 	}
 
 	/* [$keyType, $valueType] */

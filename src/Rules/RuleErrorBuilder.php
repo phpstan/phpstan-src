@@ -4,7 +4,9 @@ namespace PHPStan\Rules;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Error;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\AcceptsReasonHelper;
 use function array_map;
 use function class_exists;
 use function count;
@@ -244,6 +246,10 @@ final class RuleErrorBuilder
 	 */
 	public function acceptsReasonsTip(array $reasons): self
 	{
+		if (BleedingEdgeToggle::isBleedingEdge()) {
+			$reasons = AcceptsReasonHelper::forTip($reasons);
+		}
+
 		foreach ($reasons as $reason) {
 			$this->addTip($reason);
 		}

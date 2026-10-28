@@ -243,7 +243,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				"Function Bug7766\problem() should return array<array{id: int, created: DateTimeInterface, updated: DateTimeInterface, valid_from: DateTimeInterface, valid_till: DateTimeInterface, string: string, other_string: string, another_string: string, ...}> but returns array{array{id: 1, created: DateTimeImmutable, updated: DateTimeImmutable, valid_from: DateTimeImmutable, valid_till: DateTimeImmutable, string: 'string', other_string: 'string', another_string: 'string', ...}}.",
 				20,
-				"Offset 'count' (int<0, max>) does not accept type '4'.",
+				"Offset 0 › 'count' (int<0, max>) does not accept type '4'.",
 			],
 		]);
 	}
@@ -458,7 +458,7 @@ class ReturnTypeRuleTest extends RuleTestCase
 			[
 				'Function Bug13565\x() should return array{name: string} but returns array{name: \'string\', email: Bug13565\NotAString}.',
 				11,
-				'Sealed array shape does not accept array with extra key \'email\'.',
+				'Sealed array shape does not accept array with extra key \'email\' => Bug13565\NotAString.',
 			],
 		]);
 	}

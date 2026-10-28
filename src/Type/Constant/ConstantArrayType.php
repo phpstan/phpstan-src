@@ -24,6 +24,7 @@ use PHPStan\Rules\Arrays\AllowedArrayKeysTypes;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\AcceptsReasonHelper;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -574,10 +575,18 @@ class ConstantArrayType implements Type
 				unset($keys[$keyType->getValue()]);
 			}
 
+			$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
 			foreach ($keys as $extraKey) {
-				$result = $result->and(AcceptsResult::createNo([
-					sprintf('Sealed array shape does not accept array with extra key %s.', $extraKey->describe(VerbosityLevel::precise())),
-				]));
+				if ($bleedingEdge) {
+					$reason = sprintf(
+						'Sealed array shape does not accept array with extra key %s => %s.',
+						$extraKey->describe(VerbosityLevel::precise()),
+						$constantArrays[0]->getOffsetValueType($extraKey)->describe(VerbosityLevel::value()),
+					);
+				} else {
+					$reason = sprintf('Sealed array shape does not accept array with extra key %s.', $extraKey->describe(VerbosityLevel::precise()));
+				}
+				$result = $result->and(AcceptsResult::createNo([$reason]));
 			}
 
 			if (!$constantArrays[0]->isUnsealed()->no()) {
@@ -609,6 +618,7 @@ class ConstantArrayType implements Type
 			unset($keys[$keyType->getValue()]);
 		}
 
+		$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
 		foreach ($keys as [$i, $extraKeyType]) {
 			$acceptsKey = $unsealedKeyType->accepts($extraKeyType, $strictTypes)->decorateReasons(
 				static fn (string $reason) => sprintf(
@@ -630,24 +640,46 @@ class ConstantArrayType implements Type
 			$result = $result->and($acceptsKey);
 
 			$extraValueType = $constantArray->getValueTypes()[$i];
-			$acceptsValue = $unsealedValueType->accepts($extraValueType, $strictTypes)->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Unsealed array value type %s does not accept extra offset %s with value type %s: %s',
-					$unsealedValueType->describe(VerbosityLevel::value()),
-					$extraKeyType->describe(VerbosityLevel::value()),
-					$extraValueType->describe(VerbosityLevel::value()),
-					$reason,
-				),
-			);
-			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0) {
-				$acceptsValue = new AcceptsResult($acceptsValue->result, [
-					sprintf(
-						'Unsealed array value type %s does not accept extra offset %s with value type %s.',
+			$acceptsValue = $unsealedValueType->accepts($extraValueType, $strictTypes);
+			if ($bleedingEdge) {
+				// the same offset paths as of the known keys, so they read and group the same way
+				if (!$acceptsValue->yes() || count($acceptsValue->reasons) > 0) {
+					$verbosity = VerbosityLevel::getRecommendedLevelByType($unsealedValueType, $extraValueType);
+					if (count($acceptsValue->reasons) > 0) {
+						$acceptsValue = $acceptsValue->decorateReasons(
+							static fn (string $reason) => AcceptsReasonHelper::prependOffset($extraKeyType, $unsealedValueType, $extraValueType, $verbosity, $reason),
+						);
+					} else {
+						$acceptsValue = new AcceptsResult($acceptsValue->result, [
+							sprintf(
+								'Offset %s (%s) does not accept type %s.',
+								$extraKeyType->describe(VerbosityLevel::precise()),
+								$unsealedValueType->describe($verbosity),
+								$extraValueType->describe($verbosity),
+							),
+						]);
+					}
+				}
+			} else {
+				$acceptsValue = $acceptsValue->decorateReasons(
+					static fn (string $reason) => sprintf(
+						'Unsealed array value type %s does not accept extra offset %s with value type %s: %s',
 						$unsealedValueType->describe(VerbosityLevel::value()),
 						$extraKeyType->describe(VerbosityLevel::value()),
 						$extraValueType->describe(VerbosityLevel::value()),
+						$reason,
 					),
-				]);
+				);
+				if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0) {
+					$acceptsValue = new AcceptsResult($acceptsValue->result, [
+						sprintf(
+							'Unsealed array value type %s does not accept extra offset %s with value type %s.',
+							$unsealedValueType->describe(VerbosityLevel::value()),
+							$extraKeyType->describe(VerbosityLevel::value()),
+							$extraValueType->describe(VerbosityLevel::value()),
+						),
+					]);
+				}
 			}
 			$result = $result->and($acceptsValue);
 		}
@@ -737,15 +769,21 @@ class ConstantArrayType implements Type
 			}
 
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($valueType, $otherValueType);
-			$acceptsValue = $acceptsValue->decorateReasons(
-				static fn (string $reason) => sprintf(
-					'Offset %s (%s) does not accept type %s: %s',
-					$keyType->describe(VerbosityLevel::precise()),
-					$valueType->describe($verbosity),
-					$otherValueType->describe($verbosity),
-					$reason,
-				),
-			);
+			if (BleedingEdgeToggle::isBleedingEdge()) {
+				$acceptsValue = $acceptsValue->decorateReasons(
+					static fn (string $reason) => AcceptsReasonHelper::prependOffset($keyType, $valueType, $otherValueType, $verbosity, $reason),
+				);
+			} else {
+				$acceptsValue = $acceptsValue->decorateReasons(
+					static fn (string $reason) => sprintf(
+						'Offset %s (%s) does not accept type %s: %s',
+						$keyType->describe(VerbosityLevel::precise()),
+						$valueType->describe($verbosity),
+						$otherValueType->describe($verbosity),
+						$reason,
+					),
+				);
+			}
 			if (!$acceptsValue->yes() && count($acceptsValue->reasons) === 0 && $type->isConstantArray()->yes()) {
 				$acceptsValue = new AcceptsResult($acceptsValue->result, [
 					sprintf(
@@ -902,10 +940,19 @@ class ConstantArrayType implements Type
 	 */
 	private function sealedArrayShapesCannotBeIntersectedReason(self $type): string
 	{
+		$left = $this;
+		$right = $type;
+		if (BleedingEdgeToggle::isBleedingEdge()) {
+			// only the keys matter here; without the literal values the reasons
+			// of many similar shapes (e.g. members of a union) are the same
+			$left = $left->generalizeValues();
+			$right = $right->generalizeValues();
+		}
+
 		return sprintf(
 			'Sealed array shapes %s and %s cannot be intersected. Unseal at least one of them with ... syntax. Learn more: %s',
-			$this->describe(VerbosityLevel::value()),
-			$type->describe(VerbosityLevel::value()),
+			$left->describe(VerbosityLevel::value()),
+			$right->describe(VerbosityLevel::value()),
 			self::UNSEALED_ARRAY_SHAPES_LINK,
 		);
 	}

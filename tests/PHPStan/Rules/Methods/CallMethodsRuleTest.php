@@ -571,12 +571,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $param of method Test\ConstantArrayAccepts::doBar() expects array{name: string, color?: string}, array{name: string, color: string, year: int} given.',
 				1614,
-				"Sealed array shape does not accept array with extra key 'year'.",
+				"Sealed array shape does not accept array with extra key 'year' => int.",
 			],
 			[
 				'Parameter #1 $params of method Test\ConstantArrayAcceptsOptionalKey::doFoo() expects array{wrapperClass?: class-string}, array{wrapperClass: \'stdClass\', undocumented: 42} given.',
 				1638,
-				"Sealed array shape does not accept array with extra key 'undocumented'.",
+				"Sealed array shape does not accept array with extra key 'undocumented' => 42.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -908,12 +908,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $param of method Test\ConstantArrayAccepts::doBar() expects array{name: string, color?: string}, array{name: string, color: string, year: int} given.',
 				1614,
-				"Sealed array shape does not accept array with extra key 'year'.",
+				"Sealed array shape does not accept array with extra key 'year' => int.",
 			],
 			[
 				'Parameter #1 $params of method Test\ConstantArrayAcceptsOptionalKey::doFoo() expects array{wrapperClass?: class-string}, array{wrapperClass: \'stdClass\', undocumented: 42} given.',
 				1638,
-				"Sealed array shape does not accept array with extra key 'undocumented'.",
+				"Sealed array shape does not accept array with extra key 'undocumented' => 42.",
 			],
 			[
 				'Parameter #1 $test of method Test\NumericStringParam::sayHello() expects numeric-string, 123 given.',
@@ -2341,12 +2341,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $params of method Bug5258\HelloWorld::method2() expects array{other_key: string}, array{some_key: non-falsy-string, other_key: string} given.',
 				12,
-				"Sealed array shape does not accept array with extra key 'some_key'.",
+				"Sealed array shape does not accept array with extra key 'some_key' => non-falsy-string.",
 			],
 			[
 				'Parameter #1 $params of method Bug5258\HelloWorld::method2() expects array{other_key: string}, array{some_key?: string, other_key: non-falsy-string} given.',
 				14,
-				"Sealed array shape does not accept array with extra key 'some_key'.",
+				"Sealed array shape does not accept array with extra key 'some_key' => string.",
 			],
 		]);
 	}
@@ -3182,12 +3182,12 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
 				14,
-				PHP_VERSION_ID >= 80200 ? "• Exception does not have property \$foo.\n• Exception does not have property \$bar." : "• Exception might not have property \$foo.\n• Exception might not have property \$bar.",
+				PHP_VERSION_ID >= 80200 ? 'Exception does not have properties $foo and $bar.' : 'Exception might not have properties $foo and $bar.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, Exception given.',
 				15,
-				"• Exception might not have property \$foo.\n• Exception might not have property \$bar.",
+				'Exception might not have properties $foo and $bar.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object{foo: string, bar: int} given.',
@@ -3211,8 +3211,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, object given.',
 				55,
-				'• object might not have property $foo.
-• object might not have property $bar.',
+				'object might not have properties $foo and $bar.',
 			],
 			[
 				'Parameter #1 $o of method ObjectShapesAcceptance\Foo::doBar() expects object{foo: int, bar: string}, stdClass given.',

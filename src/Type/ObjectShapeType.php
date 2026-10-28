@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -182,11 +183,14 @@ class ObjectShapeType implements Type
 
 		$result = AcceptsResult::createYes();
 		$scope = new OutOfClassScope();
+		$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
+		$missingProperties = [];
+		$possiblyMissingProperties = [];
 		foreach ($this->properties as $propertyName => $propertyType) {
 			$typeHasProperty = $type->hasInstanceProperty((string) $propertyName);
 			$hasProperty = new AcceptsResult(
 				$typeHasProperty,
-				$typeHasProperty->yes() ? [] : [
+				$typeHasProperty->yes() || $bleedingEdge ? [] : [
 					sprintf(
 						'%s %s have property $%s.',
 						$type->describe(VerbosityLevel::typeOnly()),
@@ -206,11 +210,13 @@ class ObjectShapeType implements Type
 					continue;
 				}
 				$result = $result->and($hasProperty);
+				$missingProperties[] = (string) $propertyName;
 				continue;
 			}
 			if ($hasProperty->maybe()) {
 				if (!in_array($propertyName, $this->optionalProperties, true)) {
 					$result = $result->and($hasProperty);
+					$possiblyMissingProperties[] = (string) $propertyName;
 					continue;
 
 				}
@@ -270,7 +276,12 @@ class ObjectShapeType implements Type
 			$result = $result->and($acceptsValue);
 		}
 
-		return $result->and(new AcceptsResult($type->isObject(), []));
+		$result = $result->and(new AcceptsResult($type->isObject(), []));
+		if ($bleedingEdge) {
+			$result = $result->and(new AcceptsResult(TrinaryLogic::createYes(), self::missingPropertiesReasons($type, $missingProperties, $possiblyMissingProperties)));
+		}
+
+		return $result;
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
@@ -297,11 +308,14 @@ class ObjectShapeType implements Type
 
 		$result = IsSuperTypeOfResult::createYes();
 		$scope = new OutOfClassScope();
+		$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
+		$missingProperties = [];
+		$possiblyMissingProperties = [];
 		foreach ($this->properties as $propertyName => $propertyType) {
 			$typeHasProperty = $type->hasInstanceProperty((string) $propertyName);
 			$hasProperty = new IsSuperTypeOfResult(
 				$typeHasProperty,
-				$typeHasProperty->yes() ? [] : [
+				$typeHasProperty->yes() || $bleedingEdge ? [] : [
 					sprintf(
 						'%s %s have property $%s.',
 						$type->describe(VerbosityLevel::typeOnly()),
@@ -315,11 +329,13 @@ class ObjectShapeType implements Type
 					continue;
 				}
 				$result = $result->and($hasProperty);
+				$missingProperties[] = (string) $propertyName;
 				continue;
 			}
 			if ($hasProperty->maybe()) {
 				if (!in_array($propertyName, $this->optionalProperties, true)) {
 					$result = $result->and($hasProperty);
+					$possiblyMissingProperties[] = (string) $propertyName;
 					continue;
 				}
 
@@ -359,7 +375,35 @@ class ObjectShapeType implements Type
 			$result = $result->and($isSuperType);
 		}
 
-		return $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($type->isObject()));
+		$result = $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($type->isObject()));
+		if ($bleedingEdge) {
+			$result = $result->and(new IsSuperTypeOfResult(TrinaryLogic::createYes(), self::missingPropertiesReasons($type, $missingProperties, $possiblyMissingProperties)));
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param list<string> $missingProperties
+	 * @param list<string> $possiblyMissingProperties
+	 * @return list<string>
+	 */
+	private static function missingPropertiesReasons(Type $type, array $missingProperties, array $possiblyMissingProperties): array
+	{
+		if (count($missingProperties) === 0 && count($possiblyMissingProperties) === 0) {
+			return [];
+		}
+
+		$subject = AcceptsReasonHelper::describeSubject($type, VerbosityLevel::typeOnly(), 'Object');
+		$reasons = [];
+		if (count($missingProperties) > 0) {
+			$reasons[] = AcceptsReasonHelper::missingProperties($subject, $missingProperties, true);
+		}
+		if (count($possiblyMissingProperties) > 0) {
+			$reasons[] = AcceptsReasonHelper::missingProperties($subject, $possiblyMissingProperties, false);
+		}
+
+		return $reasons;
 	}
 
 	public function equals(Type $type): bool

@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "7f02fc29c82dd7674e340b25eea637e1",
+  "content-hash": "50a107456591d6f34b4865b19b51e3e7",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1639,16 +1639,16 @@
     },
     {
       "name": "phpstan/phpdoc-parser",
-      "version": "2.3.9",
+      "version": "2.3.10",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpdoc-parser.git",
-        "reference": "2c122d2f890ae4b9e6ede898a9ac36b2c07e2a17"
+        "reference": "a53805ef8d85b89318cc177ba7ea6ec914f188a9"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/2c122d2f890ae4b9e6ede898a9ac36b2c07e2a17",
-        "reference": "2c122d2f890ae4b9e6ede898a9ac36b2c07e2a17",
+        "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/a53805ef8d85b89318cc177ba7ea6ec914f188a9",
+        "reference": "a53805ef8d85b89318cc177ba7ea6ec914f188a9",
         "shasum": ""
       },
       "require": {
@@ -1680,9 +1680,9 @@
       "description": "PHPDoc parser with support for nullable, intersection and generic types",
       "support": {
         "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-        "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.9"
+        "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.10"
       },
-      "time": "2026-10-27T22:32:31+00:00"
+      "time": "2026-10-28T10:20:57+00:00"
     },
     {
       "name": "psr/container",

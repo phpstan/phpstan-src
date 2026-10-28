@@ -236,7 +236,7 @@ final class PhpDocNodeResolver
 
 		foreach (['@extends', '@phan-extends', '@phan-inherits', '@template-extends', '@phpstan-extends'] as $tagName) {
 			foreach ($phpDocNode->getExtendsTagValues($tagName) as $tagValue) {
-				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ExtendsTag(
+				$resolved[$nameScope->resolveStringName((string) $tagValue->type->type)] = new ExtendsTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
@@ -254,7 +254,7 @@ final class PhpDocNodeResolver
 
 		foreach (['@implements', '@template-implements', '@phpstan-implements'] as $tagName) {
 			foreach ($phpDocNode->getImplementsTagValues($tagName) as $tagValue) {
-				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new ImplementsTag(
+				$resolved[$nameScope->resolveStringName((string) $tagValue->type->type)] = new ImplementsTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
@@ -272,7 +272,7 @@ final class PhpDocNodeResolver
 
 		foreach (['@use', '@template-use', '@phpstan-use'] as $tagName) {
 			foreach ($phpDocNode->getUsesTagValues($tagName) as $tagValue) {
-				$resolved[$nameScope->resolveStringName($tagValue->type->type->name)] = new UsesTag(
+				$resolved[$nameScope->resolveStringName((string) $tagValue->type->type)] = new UsesTag(
 					$this->typeNodeResolver->resolve($tagValue->type, $nameScope),
 				);
 			}
@@ -571,7 +571,7 @@ final class PhpDocNodeResolver
 		foreach (['@psalm-import-type', '@phpstan-import-type'] as $tagName) {
 			foreach ($phpDocNode->getTypeAliasImportTagValues($tagName) as $typeAliasImportTagValue) {
 				$importedAlias = $typeAliasImportTagValue->importedAlias;
-				$importedFrom = $nameScope->resolveStringName($typeAliasImportTagValue->importedFrom->name);
+				$importedFrom = $nameScope->resolveStringName((string) $typeAliasImportTagValue->importedFrom);
 				$importedAs = $typeAliasImportTagValue->importedAs;
 				$resolved[$importedAs ?? $importedAlias] = new TypeAliasImportTag($importedAlias, $importedFrom, $importedAs);
 			}

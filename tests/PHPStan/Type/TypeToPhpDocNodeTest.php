@@ -3,7 +3,13 @@
 namespace PHPStan\Type;
 
 use PHPStan\Analyser\NameScope;
+use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
+use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\RelativeNameNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -648,6 +654,41 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode(), $nameScope);
 		$this->assertTrue($type->equals($typeAgain));
+	}
+
+	/**
+	 * @return iterable<array{TypeNode, string}>
+	 */
+	public static function dataResolveNameNodes(): iterable
+	{
+		// a NameNode is always a class, even when it is named like a keyword or a template type
+		yield [new RelativeNameNode('Int'), 'App\\Int'];
+		yield [new RelativeNameNode('T'), 'App\\T'];
+		yield [new RelativeNameNode('Bar'), 'Vendor\\Bar'];
+		yield [new FullyQualifiedNameNode('Int'), 'Int'];
+		yield [new GenericTypeNode(new RelativeNameNode('List'), [new IdentifierTypeNode('int')]), 'App\\List<int>'];
+		yield [new GenericTypeNode(new FullyQualifiedNameNode('Bar'), [new RelativeNameNode('T')]), 'Bar<App\\T>'];
+
+		// plain identifiers keep resolving keywords and template types first
+		yield [new IdentifierTypeNode('Int'), 'int'];
+		yield [new IdentifierTypeNode('T'), 'T (function doFoo(), parameter)'];
+		yield [new GenericTypeNode(new IdentifierTypeNode('List'), [new IdentifierTypeNode('T')]), 'list<T (function doFoo(), parameter)>'];
+	}
+
+	#[DataProvider('dataResolveNameNodes')]
+	public function testResolveNameNodes(TypeNode $typeNode, string $expected): void
+	{
+		$nameScope = new NameScope('App', ['bar' => 'Vendor\\Bar'], null, 'doFoo', new TemplateTypeMap([
+			'T' => TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('doFoo'),
+				'T',
+				null,
+				TemplateTypeVariance::createInvariant(),
+			),
+		]));
+
+		$type = self::getContainer()->getByType(TypeNodeResolver::class)->resolve($typeNode, $nameScope);
+		$this->assertSame($expected, $type->describe(VerbosityLevel::precise()));
 	}
 
 	public static function getAdditionalConfigFiles(): array

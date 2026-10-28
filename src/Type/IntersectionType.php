@@ -2056,7 +2056,7 @@ class IntersectionType implements CompoundType
 
 		foreach ($baseTypes as $i => $type) {
 			$typeNode = $type->toPhpDocNode();
-			if ($typeNode instanceof GenericTypeNode && $typeNode->type->name === 'array') {
+			if ($typeNode instanceof GenericTypeNode && $typeNode->type instanceof IdentifierTypeNode && $typeNode->type->name === 'array') {
 				$nonEmpty = false;
 				$typeName = 'array';
 				foreach ($typesToDescribe as $j => $typeToDescribe) {

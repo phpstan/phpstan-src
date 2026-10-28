@@ -542,6 +542,29 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11507.php'], []);
 	}
 
+	public function testBug6567(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = false;
+		$this->analyse([__DIR__ . '/data/bug-6567.php'], [
+			[
+				'Function Bug6567\add() should return T of int but returns int.',
+				11,
+				'Type int is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Function Bug6567\testBool() should return T of bool but returns false.',
+				27,
+				'Type false is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+			[
+				'Function Bug6567\testFloat() should return T of float but returns float.',
+				36,
+				'Type float is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 	public function testBug15245(): void
 	{
 		$this->checkNullables = true;

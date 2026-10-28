@@ -422,14 +422,13 @@ PT_MINIT_REGISTRATION(pt_register_conditional_expression_holder_helper)
 	cls.method(sigs::buildConditionalHolderRecipe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *composeScope, *conditionSpecifiedTypes, *holderSpecifiedTypes, *nonVariableTargetScope, *holderSideExpr = NULL;
 		bool holdersFromSureTypes, holderSideIsNegated;
-		ZEND_PARSE_PARAMETERS_START(6, 7)
+		ZEND_PARSE_PARAMETERS_START(7, 7)
 			Z_PARAM_OBJECT(composeScope)
 			Z_PARAM_OBJECT(conditionSpecifiedTypes)
 			Z_PARAM_OBJECT(holderSpecifiedTypes)
 			Z_PARAM_BOOL(holdersFromSureTypes)
 			Z_PARAM_BOOL(holderSideIsNegated)
 			Z_PARAM_OBJECT_OR_NULL(nonVariableTargetScope)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(holderSideExpr)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(ConditionalExpressionHolderHelper(Z_OBJ_P(ZEND_THIS)).buildConditionalHolderRecipe(composeScope, conditionSpecifiedTypes, holderSpecifiedTypes, holdersFromSureTypes, holderSideIsNegated, nonVariableTargetScope, holderSideExpr));

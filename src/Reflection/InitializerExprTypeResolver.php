@@ -2687,7 +2687,7 @@ final class InitializerExprTypeResolver
 	 *
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
-	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback, bool $nativeTypesPromoted = false): Type
+	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback, bool $nativeTypesPromoted): Type
 	{
 		$isObject = false;
 		if ($class instanceof Name) {
@@ -2874,7 +2874,7 @@ final class InitializerExprTypeResolver
 			$classReflection = $this->getReflectionProvider()->getClass($className);
 		}
 
-		return $this->getClassConstFetchTypeByReflection($class, $constantName, $classReflection, $getTypeCallback);
+		return $this->getClassConstFetchTypeByReflection($class, $constantName, $classReflection, $getTypeCallback, false);
 	}
 
 	/**

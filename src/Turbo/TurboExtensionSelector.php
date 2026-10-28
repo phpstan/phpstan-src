@@ -110,7 +110,7 @@ final class TurboExtensionSelector
 	 */
 	public static function isMissingNextToPhar(): bool
 	{
-		$platformDirectory = self::getPlatformDirectoryNextToPhar();
+		$platformDirectory = self::getPlatformDirectoryNextToPhar(null);
 		if ($platformDirectory === null) {
 			return false;
 		}
@@ -128,7 +128,7 @@ final class TurboExtensionSelector
 	 * Another program that loads PHPStan's phar, Rector for example, passes
 	 * the path to that phar: Phar::running() only knows the phar that runs.
 	 */
-	public static function findExtension(?string $pharPath = null): ?string
+	public static function findExtension(?string $pharPath): ?string
 	{
 		$platformDirectory = self::getPlatformDirectoryNextToPhar($pharPath);
 		if ($platformDirectory === null) {
@@ -162,7 +162,7 @@ final class TurboExtensionSelector
 	 * binary is built for this runtime: PHP older than the minimum, a debug
 	 * build, a run from source, or a platform without binaries.
 	 */
-	private static function getPlatformDirectoryNextToPhar(?string $pharPath = null): ?string
+	private static function getPlatformDirectoryNextToPhar(?string $pharPath): ?string
 	{
 		if (PHP_VERSION_ID < self::MINIMUM_PHP_VERSION_ID) {
 			return null;

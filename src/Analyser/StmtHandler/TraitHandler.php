@@ -56,7 +56,7 @@ final class TraitHandler implements StmtHandler
 			foreach ($this->reflectionProvider->getClass($stmt->namespacedName->toString())->getRequireImplementsTags() as $implementsTag) {
 				$requiredTypes[] = $implementsTag->getType();
 			}
-			$dependencies = Dependencies::create($scope->getFile(), $requiredTypes);
+			$dependencies = Dependencies::create($scope->getFile(), $requiredTypes, [], [], [], []);
 		}
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: $dependencies);

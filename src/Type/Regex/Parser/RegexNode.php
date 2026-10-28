@@ -19,9 +19,9 @@ final class RegexNode
 	 */
 	public function __construct(
 		private string $id,
-		private string $valueToken = '',
-		private string $valueValue = '',
-		private array $children = [],
+		private string $valueToken,
+		private string $valueValue,
+		private array $children,
 	)
 	{
 	}

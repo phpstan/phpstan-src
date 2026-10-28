@@ -42,7 +42,7 @@ final class UsefulTypeAliasResolver implements TypeAliasResolver
 		int $resolvedLocalTypeAliasesCountMax,
 	)
 	{
-		$this->resolvedLocalTypeAliases = new LruCache($resolvedLocalTypeAliasesCountMax);
+		$this->resolvedLocalTypeAliases = new LruCache($resolvedLocalTypeAliasesCountMax, 0, 0);
 	}
 
 	public function hasTypeAlias(string $aliasName, ?string $classNameScope): bool

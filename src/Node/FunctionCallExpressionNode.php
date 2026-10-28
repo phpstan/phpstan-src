@@ -25,7 +25,7 @@ final class FunctionCallExpressionNode extends NodeAbstract implements VirtualNo
 	public function __construct(
 		private FuncCall $originalNode,
 		private ExpressionResult $result,
-		private ?ArgsResult $argsResult = null,
+		private ?ArgsResult $argsResult,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());

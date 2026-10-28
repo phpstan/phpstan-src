@@ -647,8 +647,8 @@ public:
 			}
 			zv::Val publicResult = isrToPublic(statementResult.raw());
 			if (UNEXPECTED(publicResult.isUndef())) return zv::Val();
-			zv::Args argv{endParent.raw(), publicResult.raw(), !returnTypeNode.isNull()};
-			zv::Val endNode = pt_type_new(PT_CLASS_EXECUTION_END_NODE, 3, argv);
+			zv::Args argv{endParent.raw(), publicResult.raw(), !returnTypeNode.isNull(), zv::null};
+			zv::Val endNode = pt_type_new(PT_CLASS_EXECUTION_END_NODE, 4, argv);
 			if (UNEXPECTED(endNode.isUndef())) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, endNode.raw(), scope, storage))) return zv::Val();
 		}

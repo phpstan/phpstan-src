@@ -49,17 +49,16 @@ inline constexpr char strings[] =
 	"toPublic\0" /* 153 */
 	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 162 */
 	"createExplicit\0" /* 198 */
-	"null\0" /* 213 */
-	"createImplicit\0" /* 218 */
-	"throwPoint\0" /* 233 */
-	"createFromPublic\0" /* 244 */
-	"withScope\0" /* 261 */
-	"getScope\0" /* 271 */
-	"getType\0" /* 280 */
-	"getNode\0" /* 288 */
-	"isExplicit\0" /* 296 */
-	"catchType\0" /* 307 */
-	"subtractCatchType"; /* 317 */
+	"createImplicit\0" /* 213 */
+	"throwPoint\0" /* 228 */
+	"createFromPublic\0" /* 239 */
+	"withScope\0" /* 256 */
+	"getScope\0" /* 266 */
+	"getType\0" /* 275 */
+	"getNode\0" /* 283 */
+	"isExplicit\0" /* 291 */
+	"catchType\0" /* 302 */
+	"subtractCatchType"; /* 312 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* __construct $scope */
 	reg::packed(37, 0, 42), /* __construct $type */
@@ -74,9 +73,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(124, 0, 162), /* createExplicit return */
 	reg::packed(0, 0, 6), /* createImplicit $scope */
 	reg::packed(60, 0, 65), /* createImplicit $node */
-	reg::packed(37, MAY_BE_NULL, 42, false, false, 213), /* createImplicit $type */
+	reg::packed(37, MAY_BE_NULL, 42), /* createImplicit $type */
 	reg::packed(124, 0, 162), /* createImplicit return */
-	reg::packed(233, 0, 125), /* createFromPublic $throwPoint */
+	reg::packed(228, 0, 125), /* createFromPublic $throwPoint */
 	reg::packed(0, 0, 6), /* createFromPublic $scope */
 	reg::packed(124, 0, 162), /* createFromPublic return */
 	reg::packed(0, 0, 6), /* withScope $scope */
@@ -85,7 +84,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(124, 0, 42), /* getType return */
 	reg::packed(124, MAY_BE_BOOL), /* isExplicit return */
 	reg::packed(124, MAY_BE_BOOL), /* canContainAnyThrowable return */
-	reg::packed(307, 0, 42), /* subtractCatchType $catchType */
+	reg::packed(302, 0, 42), /* subtractCatchType $catchType */
 	reg::packed(124, 0, 162), /* subtractCatchType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -96,15 +95,15 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 112 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig toPublic = { { 153 /* toPublic */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig createExplicit = { { 198 /* createExplicit */, 4, 6, 4, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createImplicit = { { 218 /* createImplicit */, 2, 11, 3, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createFromPublic = { { 244 /* createFromPublic */, 2, 15, 2, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig withScope = { { 261 /* withScope */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getScope = { { 271 /* getScope */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getType = { { 280 /* getType */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNode = { { 288 /* getNode */, 0, 22, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isExplicit = { { 296 /* isExplicit */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createImplicit = { { 213 /* createImplicit */, 3, 11, 3, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createFromPublic = { { 239 /* createFromPublic */, 2, 15, 2, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig withScope = { { 256 /* withScope */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 266 /* getScope */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 275 /* getType */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNode = { { 283 /* getNode */, 0, 22, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isExplicit = { { 291 /* isExplicit */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig canContainAnyThrowable = { { 89 /* canContainAnyThrowable */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig subtractCatchType = { { 317 /* subtractCatchType */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig subtractCatchType = { { 312 /* subtractCatchType */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::InternalThrowPoint

@@ -58,7 +58,7 @@ final class ConstFetchHandler implements ExprHandler
 			!in_array($expr->name->toLowerString(), ['true', 'false', 'null'], true)
 			&& $this->reflectionProvider->hasConstant($expr->name, $scope)
 		) {
-			$dependencies = Dependencies::create($scope->getFile(), reflections: [$this->reflectionProvider->getConstant($expr->name, $scope)]);
+			$dependencies = Dependencies::create($scope->getFile(), reflections: [$this->reflectionProvider->getConstant($expr->name, $scope)], types: [], classNames: [], filePaths: [], usedTraits: []);
 		}
 
 		return $this->expressionResultFactory->create(
@@ -108,6 +108,15 @@ final class ConstFetchHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: $dependencies,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
 		);
 	}
 

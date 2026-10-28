@@ -67,6 +67,16 @@ final class PreDecHandler implements ExprHandler
 			impurePoints: $varResult->getImpurePoints(),
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 
 		// processVirtualAssign() emits nodes (PropertyAssignNode) whose rules ask
@@ -92,7 +102,7 @@ final class PreDecHandler implements ExprHandler
 			expr: $expr,
 			variableFlow: VariableFlow::sequence(
 				$varResult->getVariableFlow(),
-				VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_DEC, $assignedScope, $storage),
+				VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_PRE_DEC, $assignedScope, $storage, null),
 				$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlowBuilder::targetRead($expr->var, $storage, true, $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
 			),
 			hasYield: $varResult->hasYield(),
@@ -102,6 +112,14 @@ final class PreDecHandler implements ExprHandler
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
 			dependencies: $varResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

@@ -59,6 +59,14 @@ final class ScalarHandler implements ExprHandler
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			type: $type,
 			nativeType: $type,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 	}
 

@@ -86,7 +86,7 @@ final class GlobalHandler implements StmtHandler
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$dependencies[] = $varResult->getDependencies();
-			$variableFlows[] = VariableFlow::sequence(VariableFlowBuilder::escapeRoot($var), VariableFlowBuilder::targetRead($var, $storage, false));
+			$variableFlows[] = VariableFlow::sequence(VariableFlowBuilder::escapeRoot($var), VariableFlowBuilder::targetRead($var, $storage, false, null));
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
 
@@ -98,7 +98,8 @@ final class GlobalHandler implements StmtHandler
 			$scope = $scope->assignVariable($var->name, $varType, $varType, TrinaryLogic::createYes());
 			$vars[] = $var->name;
 		}
-		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+		$changed = false;
+		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $changed);
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(...$variableFlows), dependencies: Dependencies::merge(...$dependencies));
 	}

@@ -66,7 +66,7 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 				continue;
 			}
 
-			$created = $this->defaultNarrowingHelper->createForSubject($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope);
+			$created = $this->defaultNarrowingHelper->createForSubject($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope, null);
 			$result = $result === null ? $created : $result->unionWith($created);
 		}
 

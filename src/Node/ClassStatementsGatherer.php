@@ -371,6 +371,7 @@ final class ClassStatementsGatherer
 				new PropertyFetch(new Expr\Variable('this'), new Identifier($property->getName()), $attributes),
 				$scope,
 				false,
+				null,
 			);
 		}
 	}

@@ -50,14 +50,13 @@ inline constexpr char strings[] =
 	"nonVariableTargetScope\0" /* 445 */
 	"holderSideExpr\0" /* 468 */
 	"PhpParser\\Node\\Expr\0" /* 483 */
-	"null\0" /* 503 */
-	"PHPStan\\Analyser\\ConditionalExpressionHolderRecipe\0" /* 508 */
-	"buildConditionalHolderRecipe\0" /* 559 */
-	"expr\0" /* 588 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 593 */
-	"findConditionResult\0" /* 627 */
-	"isUnsplittableCompoundHolderSide\0" /* 647 */
-	"isTrackableExpression"; /* 680 */
+	"PHPStan\\Analyser\\ConditionalExpressionHolderRecipe\0" /* 503 */
+	"buildConditionalHolderRecipe\0" /* 554 */
+	"expr\0" /* 583 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 588 */
+	"findConditionResult\0" /* 622 */
+	"isUnsplittableCompoundHolderSide\0" /* 642 */
+	"isTrackableExpression"; /* 675 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
 	reg::packed(94, 0, 112), /* buildBranchUnionAugment $nodeScopeResolver */
@@ -73,15 +72,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(404, MAY_BE_BOOL), /* buildConditionalHolderRecipe $holdersFromSureTypes */
 	reg::packed(425, MAY_BE_BOOL), /* buildConditionalHolderRecipe $holderSideIsNegated */
 	reg::packed(445, MAY_BE_NULL, 328), /* buildConditionalHolderRecipe $nonVariableTargetScope */
-	reg::packed(468, MAY_BE_NULL, 483, false, false, 503), /* buildConditionalHolderRecipe $holderSideExpr */
-	reg::packed(243, MAY_BE_NULL, 508), /* buildConditionalHolderRecipe return */
+	reg::packed(468, MAY_BE_NULL, 483), /* buildConditionalHolderRecipe $holderSideExpr */
+	reg::packed(243, MAY_BE_NULL, 503), /* buildConditionalHolderRecipe return */
 	reg::packed(315, 0, 328), /* findConditionResult $composeScope */
-	reg::packed(588, 0, 483), /* findConditionResult $expr */
-	reg::packed(243, MAY_BE_NULL, 593), /* findConditionResult return */
+	reg::packed(583, 0, 483), /* findConditionResult $expr */
+	reg::packed(243, MAY_BE_NULL, 588), /* findConditionResult return */
 	reg::packed(468, MAY_BE_NULL, 483), /* isUnsplittableCompoundHolderSide $holderSideExpr */
 	reg::packed(425, MAY_BE_BOOL), /* isUnsplittableCompoundHolderSide $holderSideIsNegated */
 	reg::packed(243, MAY_BE_BOOL), /* isUnsplittableCompoundHolderSide return */
-	reg::packed(588, 0, 483), /* isTrackableExpression $expr */
+	reg::packed(583, 0, 483), /* isTrackableExpression $expr */
 	reg::packed(243, MAY_BE_BOOL), /* isTrackableExpression return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -91,10 +90,10 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 82 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig buildBranchUnionAugment = { { 291 /* buildBranchUnionAugment */, 6, 1, 6, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig buildConditionalHolderRecipe = { { 559 /* buildConditionalHolderRecipe */, 6, 8, 7, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig findConditionResult = { { 627 /* findConditionResult */, 2, 16, 2, 18, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isUnsplittableCompoundHolderSide = { { 647 /* isUnsplittableCompoundHolderSide */, 2, 19, 2, 21, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isTrackableExpression = { { 680 /* isTrackableExpression */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig buildConditionalHolderRecipe = { { 554 /* buildConditionalHolderRecipe */, 7, 8, 7, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findConditionResult = { { 622 /* findConditionResult */, 2, 16, 2, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isUnsplittableCompoundHolderSide = { { 642 /* isUnsplittableCompoundHolderSide */, 2, 19, 2, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isTrackableExpression = { { 675 /* isTrackableExpression */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ConditionalExpressionHolderHelper

@@ -39,17 +39,16 @@ inline constexpr char strings[] =
 	"getInner\0" /* 110 */
 	"typeCallback\0" /* 119 */
 	"result\0" /* 132 */
-	"null\0" /* 139 */
-	"isSet\0" /* 144 */
-	"isSetUndefined\0" /* 150 */
-	"notEmpty"; /* 165 */
+	"isSet\0" /* 139 */
+	"isSetUndefined\0" /* 145 */
+	"notEmpty"; /* 160 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* __construct $link */
 	reg::packed(43, MAY_BE_NULL, 49), /* __construct $inner */
 	reg::packed(101, 0, 5), /* getLink return */
 	reg::packed(101, MAY_BE_NULL, 49), /* getInner return */
 	reg::packed(119, MAY_BE_CALLABLE), /* isSet $typeCallback */
-	reg::packed(132, MAY_BE_NULL | MAY_BE_BOOL, reg::NoString, false, false, 139), /* isSet $result */
+	reg::packed(132, MAY_BE_NULL | MAY_BE_BOOL), /* isSet $result */
 	reg::packed(101, MAY_BE_NULL | MAY_BE_BOOL), /* isSet return */
 	reg::packed(101, MAY_BE_NULL | MAY_BE_BOOL), /* isSetUndefined return */
 	reg::packed(101, MAY_BE_NULL | MAY_BE_BOOL), /* notEmpty return */
@@ -62,9 +61,9 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 89 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getLink = { { 102 /* getLink */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getInner = { { 110 /* getInner */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSet = { { 144 /* isSet */, 1, 4, 2, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSetUndefined = { { 150 /* isSetUndefined */, 0, 7, 0, 7, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig notEmpty = { { 165 /* notEmpty */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSet = { { 139 /* isSet */, 2, 4, 2, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSetUndefined = { { 145 /* isSetUndefined */, 0, 7, 0, 7, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig notEmpty = { { 160 /* notEmpty */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IssetabilityResolution

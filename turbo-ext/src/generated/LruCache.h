@@ -38,51 +38,50 @@ inline void declareProperties(reg::Class &cls)
 namespace sigtab {
 inline constexpr char strings[] =
 	"maxCount\0" /* 0 */
-	"0\0" /* 9 */
-	"maxWeight\0" /* 11 */
-	"weightEvictionFloorCount\0" /* 21 */
-	"__construct\0" /* 46 */
-	"key\0" /* 58 */
-	"\0" /* 62 */
-	"get\0" /* 63 */
-	"value\0" /* 67 */
-	"weight\0" /* 73 */
-	"set\0" /* 80 */
-	"replace\0" /* 84 */
-	"count\0" /* 92 */
-	"all\0" /* 98 */
-	"incomingWeight\0" /* 102 */
-	"evict"; /* 117 */
+	"maxWeight\0" /* 9 */
+	"weightEvictionFloorCount\0" /* 19 */
+	"__construct\0" /* 44 */
+	"key\0" /* 56 */
+	"\0" /* 60 */
+	"get\0" /* 61 */
+	"value\0" /* 65 */
+	"weight\0" /* 71 */
+	"set\0" /* 78 */
+	"replace\0" /* 82 */
+	"count\0" /* 90 */
+	"all\0" /* 96 */
+	"incomingWeight\0" /* 100 */
+	"evict"; /* 115 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, MAY_BE_LONG, reg::NoString, false, false, 9), /* __construct $maxCount */
-	reg::packed(11, MAY_BE_LONG, reg::NoString, false, false, 9), /* __construct $maxWeight */
-	reg::packed(21, MAY_BE_LONG, reg::NoString, false, false, 9), /* __construct $weightEvictionFloorCount */
-	reg::packed(58, MAY_BE_STRING), /* get $key */
-	reg::packed(62, MAY_BE_ANY), /* get return */
-	reg::packed(58, MAY_BE_STRING), /* set $key */
-	reg::packed(67, MAY_BE_ANY), /* set $value */
-	reg::packed(73, MAY_BE_LONG), /* set $weight */
-	reg::packed(62, MAY_BE_ARRAY), /* set return */
-	reg::packed(58, MAY_BE_STRING), /* replace $key */
-	reg::packed(67, MAY_BE_ANY), /* replace $value */
-	reg::packed(62, MAY_BE_VOID), /* replace return */
-	reg::packed(62, MAY_BE_LONG), /* count return */
-	reg::packed(62, MAY_BE_ARRAY), /* all return */
-	reg::packed(102, MAY_BE_LONG), /* evict $incomingWeight */
-	reg::packed(62, MAY_BE_ARRAY), /* evict return */
+	reg::packed(0, MAY_BE_LONG), /* __construct $maxCount */
+	reg::packed(9, MAY_BE_LONG), /* __construct $maxWeight */
+	reg::packed(19, MAY_BE_LONG), /* __construct $weightEvictionFloorCount */
+	reg::packed(56, MAY_BE_STRING), /* get $key */
+	reg::packed(60, MAY_BE_ANY), /* get return */
+	reg::packed(56, MAY_BE_STRING), /* set $key */
+	reg::packed(65, MAY_BE_ANY), /* set $value */
+	reg::packed(71, MAY_BE_LONG), /* set $weight */
+	reg::packed(60, MAY_BE_ARRAY), /* set return */
+	reg::packed(56, MAY_BE_STRING), /* replace $key */
+	reg::packed(65, MAY_BE_ANY), /* replace $value */
+	reg::packed(60, MAY_BE_VOID), /* replace return */
+	reg::packed(60, MAY_BE_LONG), /* count return */
+	reg::packed(60, MAY_BE_ARRAY), /* all return */
+	reg::packed(100, MAY_BE_LONG), /* evict $incomingWeight */
+	reg::packed(60, MAY_BE_ARRAY), /* evict return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 46 /* __construct */, 0, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig get = { { 63 /* get */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig set = { { 80 /* set */, 3, 5, 3, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig replace = { { 84 /* replace */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig count = { { 92 /* count */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig all = { { 98 /* all */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig evict = { { 117 /* evict */, 1, 14, 1, 15, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 44 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig get = { { 61 /* get */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig set = { { 78 /* set */, 3, 5, 3, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig replace = { { 82 /* replace */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig count = { { 90 /* count */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig all = { { 96 /* all */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig evict = { { 115 /* evict */, 1, 14, 1, 15, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::LruCache

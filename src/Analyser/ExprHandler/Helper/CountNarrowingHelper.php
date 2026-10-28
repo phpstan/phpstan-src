@@ -119,6 +119,7 @@ final class CountNarrowingHelper
 					TypeCombinator::union(...$keptTypes),
 					$context->negate(),
 					$scope,
+					null,
 				)->setRootExpr($rootExpr);
 			}
 		}
@@ -184,7 +185,7 @@ final class CountNarrowingHelper
 			}
 		}
 
-		return $this->defaultNarrowingHelper->createForSubject($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope)->setRootExpr($rootExpr);
+		return $this->defaultNarrowingHelper->createForSubject($countFuncCall->getArgs()[0]->value, TypeCombinator::union(...$resultTypes), $context, $scope, null)->setRootExpr($rootExpr);
 	}
 
 }

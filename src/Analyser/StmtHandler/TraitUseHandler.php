@@ -112,7 +112,7 @@ final class TraitUseHandler implements StmtHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), $types, $classNames);
+		return Dependencies::create($scope->getFile(), $types, $classNames, [], [], []);
 	}
 
 	/**

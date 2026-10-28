@@ -276,7 +276,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 						$conditionCaseType = new UnionType($conditionCases);
 					}
 
-					$filteringExpr = $this->getFilteringExprForMatchArm($expr, $conditionExprs);
+					$filteringExpr = $this->getFilteringExprForMatchArm($expr, $conditionExprs, []);
 					$condNarrowedScope = $matchScope->addTypeToExpression(
 						$expr->cond,
 						$conditionCaseType,
@@ -525,7 +525,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 
 		$this->capturedArmResults[spl_object_id($expr)] = [$expr, $armTypeResults];
 
-		$variableFlow = VariableFlow::throwing(new ObjectType(UnhandledMatchError::class), false);
+		$variableFlow = VariableFlow::throwing(new ObjectType(UnhandledMatchError::class), false, false);
 		foreach ($expr->arms as $i => $arm) {
 			if ($arm->conds !== null) {
 				continue;
@@ -570,6 +570,14 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: Dependencies::merge(...$dependencies),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 
@@ -577,7 +585,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 	 * @param Expr[] $conditions
 	 * @param list<array{Expr, ExpressionResult}> $condData the conditions' walk results, keyed like $conditions
 	 */
-	private function getFilteringExprForMatchArm(Match_ $expr, array $conditions, array $condData = []): BinaryOp\Identical|FuncCall
+	private function getFilteringExprForMatchArm(Match_ $expr, array $conditions, array $condData): BinaryOp\Identical|FuncCall
 	{
 		if (count($conditions) === 1) {
 			return new BinaryOp\Identical($expr->cond, $conditions[0]);

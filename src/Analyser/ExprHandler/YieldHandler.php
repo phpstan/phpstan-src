@@ -51,7 +51,7 @@ final class YieldHandler implements ExprHandler
 	{
 		$beforeScope = $scope;
 		$throwPoints = [
-			InternalThrowPoint::createImplicit($scope, $expr),
+			InternalThrowPoint::createImplicit($scope, $expr, null),
 		];
 		$impurePoints = [
 			new ImpurePoint(
@@ -114,6 +114,14 @@ final class YieldHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: Dependencies::merge($keyResult !== null ? $keyResult->getDependencies() : null, $valueResult !== null ? $valueResult->getDependencies() : null),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

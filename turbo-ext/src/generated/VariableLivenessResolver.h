@@ -101,19 +101,18 @@ inline constexpr char strings[] =
 	"name\0" /* 257 */
 	"write\0" /* 262 */
 	"discard\0" /* 268 */
-	"false\0" /* 276 */
-	"passBindingProbes\0" /* 282 */
-	"offset\0" /* 300 */
-	"offsetKey\0" /* 307 */
-	"compileAccesses\0" /* 317 */
-	"accesses\0" /* 333 */
-	"compileOverwrites\0" /* 342 */
-	"replacedSlot\0" /* 360 */
-	"id\0" /* 373 */
-	"observeWrite\0" /* 376 */
-	"observeOverwrite\0" /* 389 */
-	"resolveDependencies\0" /* 406 */
-	"resolveCoverage"; /* 426 */
+	"passBindingProbes\0" /* 276 */
+	"offset\0" /* 294 */
+	"offsetKey\0" /* 301 */
+	"compileAccesses\0" /* 311 */
+	"accesses\0" /* 327 */
+	"compileOverwrites\0" /* 336 */
+	"replacedSlot\0" /* 354 */
+	"id\0" /* 367 */
+	"observeWrite\0" /* 370 */
+	"observeOverwrite\0" /* 383 */
+	"resolveDependencies\0" /* 400 */
+	"resolveCoverage"; /* 420 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
@@ -130,20 +129,20 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(133, MAY_BE_ARRAY), /* passBindingProbes $next */
 	reg::packed(257, MAY_BE_STRING), /* passBindingProbes $name */
 	reg::packed(262, MAY_BE_NULL, 202), /* passBindingProbes $write */
-	reg::packed(268, MAY_BE_BOOL, reg::NoString, false, false, 276), /* passBindingProbes $discard */
+	reg::packed(268, MAY_BE_BOOL), /* passBindingProbes $discard */
 	reg::packed(84, MAY_BE_ARRAY), /* passBindingProbes return */
-	reg::packed(300, 0), /* offsetKey $offset */
+	reg::packed(294, 0), /* offsetKey $offset */
 	reg::packed(84, MAY_BE_STRING), /* offsetKey return */
 	reg::packed(84, MAY_BE_VOID), /* compileAccesses return */
 	reg::packed(257, MAY_BE_STRING), /* compileOverwrites $name */
-	reg::packed(333, MAY_BE_ARRAY), /* compileOverwrites $accesses */
+	reg::packed(327, MAY_BE_ARRAY), /* compileOverwrites $accesses */
 	reg::packed(84, MAY_BE_VOID), /* compileOverwrites return */
 	reg::packed(262, 0, 202), /* replacedSlot $write */
 	reg::packed(84, MAY_BE_NULL | MAY_BE_STRING), /* replacedSlot return */
-	reg::packed(373, MAY_BE_LONG), /* observeWrite $id */
+	reg::packed(367, MAY_BE_LONG), /* observeWrite $id */
 	reg::packed(133, MAY_BE_ARRAY), /* observeWrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeWrite return */
-	reg::packed(373, MAY_BE_LONG), /* observeOverwrite $id */
+	reg::packed(367, MAY_BE_LONG), /* observeOverwrite $id */
 	reg::packed(133, MAY_BE_ARRAY), /* observeOverwrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeOverwrite return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
@@ -159,15 +158,15 @@ inline constexpr sigtab::Sig resolve = { { 117 /* resolve */, 2, 0, 2, 2, ZEND_A
 inline constexpr sigtab::Sig collect = { { 125 /* collect */, 1, 3, 1, 4, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig liveBefore = { { 183 /* liveBefore */, 3, 5, 3, 8, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig bindingProbe = { { 244 /* bindingProbe */, 2, 9, 2, 11, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig passBindingProbes = { { 282 /* passBindingProbes */, 3, 12, 4, 16, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig offsetKey = { { 307 /* offsetKey */, 1, 17, 1, 18, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig compileAccesses = { { 317 /* compileAccesses */, 0, 19, 0, 19, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig compileOverwrites = { { 342 /* compileOverwrites */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig replacedSlot = { { 360 /* replacedSlot */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig observeWrite = { { 376 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeOverwrite = { { 389 /* observeOverwrite */, 2, 28, 2, 30, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveDependencies = { { 406 /* resolveDependencies */, 0, 31, 0, 31, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 426 /* resolveCoverage */, 0, 32, 0, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig passBindingProbes = { { 276 /* passBindingProbes */, 4, 12, 4, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig offsetKey = { { 301 /* offsetKey */, 1, 17, 1, 18, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig compileAccesses = { { 311 /* compileAccesses */, 0, 19, 0, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig compileOverwrites = { { 336 /* compileOverwrites */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig replacedSlot = { { 354 /* replacedSlot */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig observeWrite = { { 370 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeOverwrite = { { 383 /* observeOverwrite */, 2, 28, 2, 30, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveDependencies = { { 400 /* resolveDependencies */, 0, 31, 0, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 420 /* resolveCoverage */, 0, 32, 0, 32, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

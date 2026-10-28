@@ -25,7 +25,7 @@ final class VarAnnotationProcessor
 	/**
 	 * @param array<int, string> $variableNames
 	 */
-	public function processVarAnnotation(MutatingScope $scope, array $variableNames, Node\Stmt $node, bool &$changed = false): MutatingScope
+	public function processVarAnnotation(MutatingScope $scope, array $variableNames, Node\Stmt $node, bool &$changed): MutatingScope
 	{
 		$function = $scope->getFunction();
 		$varTags = [];

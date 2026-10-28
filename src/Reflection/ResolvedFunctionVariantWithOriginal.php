@@ -163,6 +163,9 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				$this->resolveResolvableTemplateTypes(
 					$this->narrowTemplateTypesInConditionalTypesForParameter($this->parametersAcceptor->getReturnType()),
 					TemplateTypeVariance::createCovariant(),
+					null,
+					null,
+					true,
 				),
 			);
 	}
@@ -174,6 +177,9 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 				$this->resolveResolvableTemplateTypes(
 					$this->narrowTemplateTypesInConditionalTypesForParameter($this->parametersAcceptor->getPhpDocReturnType()),
 					TemplateTypeVariance::createCovariant(),
+					null,
+					null,
+					true,
 				),
 			);
 	}
@@ -279,7 +285,7 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 		);
 	}
 
-	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance, ?Expr $site = null, ?TemplateArgumentFrame $frame = null, bool $allowUnresolved = true): Type
+	private function resolveResolvableTemplateTypes(Type $type, TemplateTypeVariance $positionVariance, ?Expr $site, ?TemplateArgumentFrame $frame, bool $allowUnresolved): Type
 	{
 		$references = $type->getReferencedTemplateTypes($positionVariance);
 		$onlyCovariant = [];

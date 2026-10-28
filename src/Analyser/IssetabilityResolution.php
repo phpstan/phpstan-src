@@ -40,7 +40,7 @@ final class IssetabilityResolution
 	 *
 	 * @param callable(Type): ?bool $typeCallback
 	 */
-	public function isSet(callable $typeCallback, ?bool $result = null): ?bool
+	public function isSet(callable $typeCallback, ?bool $result): ?bool
 	{
 		$link = $this->link;
 
@@ -173,7 +173,7 @@ final class IssetabilityResolution
 			}
 
 			return !$isFalsey->yes();
-		});
+		}, null);
 	}
 
 }

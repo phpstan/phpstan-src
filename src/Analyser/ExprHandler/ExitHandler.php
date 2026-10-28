@@ -69,7 +69,7 @@ final class ExitHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($variableFlow, VariableFlow::exit(VariableFlow::STOP)),
+			variableFlow: VariableFlow::sequence($variableFlow, VariableFlow::exit(VariableFlow::STOP, 1, null)),
 			hasYield: $hasYield,
 			isAlwaysTerminating: true,
 			throwPoints: $throwPoints,
@@ -77,6 +77,14 @@ final class ExitHandler implements ExprHandler
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new NonAcceptingNeverType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: $dependencies,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

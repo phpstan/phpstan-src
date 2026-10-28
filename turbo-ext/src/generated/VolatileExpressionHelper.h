@@ -30,10 +30,8 @@ inline constexpr char strings[] =
 	"scope\0" /* 94 */
 	"PHPStan\\Analyser\\Scope\0" /* 100 */
 	"functionNames\0" /* 123 */
-	"self::EXISTENCE_CHECK_FUNCTION_NAMES\0" /* 137 */
-	"declaredSymbolName\0" /* 174 */
-	"null\0" /* 193 */
-	"invalidateNegativeExistenceChecks"; /* 198 */
+	"declaredSymbolName\0" /* 137 */
+	"invalidateNegativeExistenceChecks"; /* 156 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $nativeExpressionTypes */
@@ -44,8 +42,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(94, 0, 100), /* invalidateNegativeExistenceChecks $scope */
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $nativeExpressionTypes */
-	reg::packed(123, MAY_BE_ARRAY, reg::NoString, false, false, 137), /* invalidateNegativeExistenceChecks $functionNames */
-	reg::packed(174, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 193), /* invalidateNegativeExistenceChecks $declaredSymbolName */
+	reg::packed(123, MAY_BE_ARRAY), /* invalidateNegativeExistenceChecks $functionNames */
+	reg::packed(137, MAY_BE_NULL | MAY_BE_STRING), /* invalidateNegativeExistenceChecks $declaredSymbolName */
 	reg::packed(38, MAY_BE_BOOL), /* invalidateNegativeExistenceChecks return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -55,7 +53,7 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig invalidateVolatileFunctionCalls = { { 39 /* invalidateVolatileFunctionCalls */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig invalidateSuperglobals = { { 71 /* invalidateSuperglobals */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 198 /* invalidateNegativeExistenceChecks */, 3, 6, 5, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 156 /* invalidateNegativeExistenceChecks */, 5, 6, 5, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VolatileExpressionHelper

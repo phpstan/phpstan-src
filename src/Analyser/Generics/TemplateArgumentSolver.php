@@ -255,7 +255,7 @@ final class TemplateArgumentSolver
 				}
 
 				if (TemplateArgumentStats::$enabled) {
-					TemplateArgumentStats::increment('resolvedBySend');
+					TemplateArgumentStats::increment('resolvedBySend', 1);
 				}
 				return $sent;
 			}
@@ -265,7 +265,7 @@ final class TemplateArgumentSolver
 			}
 			if ($covariantFallback !== null) {
 				if (TemplateArgumentStats::$enabled) {
-					TemplateArgumentStats::increment('resolvedBySend');
+					TemplateArgumentStats::increment('resolvedBySend', 1);
 				}
 				return $covariantFallback;
 			}
@@ -288,14 +288,14 @@ final class TemplateArgumentSolver
 				return $initial;
 			}
 			if (TemplateArgumentStats::$enabled) {
-				TemplateArgumentStats::increment('resolvedUnconstrained');
+				TemplateArgumentStats::increment('resolvedUnconstrained', 1);
 			}
 
 			return TemplateArgumentFrame::resolveUnconstrained($observation['marker']->getSite(), $observation['marker']->getTemplate(), fn (Expr $site, string $templateName): ?Type => $this->resolve($site, $templateName));
 		}
 
 		if (TemplateArgumentStats::$enabled) {
-			TemplateArgumentStats::increment(count($lowerBounds) > 0 ? 'resolvedWithLowerBounds' : 'resolvedToInitial');
+			TemplateArgumentStats::increment(count($lowerBounds) > 0 ? 'resolvedWithLowerBounds' : 'resolvedToInitial', 1);
 		}
 		return TypeCombinator::union(...$parts);
 	}
@@ -356,7 +356,7 @@ final class TemplateArgumentSolver
 		$declared = $marker->getDelegate();
 		if ($observation['unconstrainingSend']) {
 			if (TemplateArgumentStats::$enabled) {
-				TemplateArgumentStats::increment('closureParametersEscaped');
+				TemplateArgumentStats::increment('closureParametersEscaped', 1);
 			}
 			return $declared;
 		}
@@ -366,7 +366,7 @@ final class TemplateArgumentSolver
 		}
 		if ($lowerBounds === []) {
 			if (TemplateArgumentStats::$enabled) {
-				TemplateArgumentStats::increment('closureParametersUnobserved');
+				TemplateArgumentStats::increment('closureParametersUnobserved', 1);
 			}
 			return $declared;
 		}
@@ -380,14 +380,14 @@ final class TemplateArgumentSolver
 			// an invocation the declared type rejects is reported against the
 			// declared type, which is also all the body can rely on
 			if (TemplateArgumentStats::$enabled) {
-				TemplateArgumentStats::increment('closureParametersDeclared');
+				TemplateArgumentStats::increment('closureParametersDeclared', 1);
 			}
 			return $declared;
 		}
 
 		$resolved = MutatingScope::intersectButNotNever($declared, $inferred);
 		if (TemplateArgumentStats::$enabled) {
-			TemplateArgumentStats::increment($resolved->equals($declared) ? 'closureParametersDeclared' : 'closureParametersInferred');
+			TemplateArgumentStats::increment($resolved->equals($declared) ? 'closureParametersDeclared' : 'closureParametersInferred', 1);
 		}
 
 		return $resolved;

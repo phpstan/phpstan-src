@@ -25,96 +25,6 @@ parameters:
 			path: ../src/Analyser/Analyser.php
 
 		-
-			rawMessage: 'Parameter $workerCount of method PHPStan\Analyser\AnalyserResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/AnalyserResult.php
-
-		-
-			rawMessage: 'Parameter $collectedDataRuleResults of method PHPStan\Analyser\AnalyserResultFinalizer::addUnmatchedIgnoredErrors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/AnalyserResultFinalizer.php
-
-		-
-			rawMessage: 'Parameter $postRuleCallback of method PHPStan\Analyser\AnalyserResultFinalizer::finalize() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/AnalyserResultFinalizer.php
-
-		-
-			rawMessage: 'Parameter $preRuleCallback of method PHPStan\Analyser\AnalyserResultFinalizer::finalize() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/AnalyserResultFinalizer.php
-
-		-
-			rawMessage: 'Parameter $previousCollectedDataRuleResults of method PHPStan\Analyser\AnalyserResultFinalizer::finalize() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/AnalyserResultFinalizer.php
-
-		-
-			rawMessage: 'Parameter $reusedRulesCount of method PHPStan\Analyser\AnalyserResultFinalizer::addUnmatchedIgnoredErrors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/AnalyserResultFinalizer.php
-
-		-
-			rawMessage: 'Parameter $byRefArguments of method PHPStan\Analyser\ArgsResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ArgsResult.php
-
-		-
-			rawMessage: 'Parameter $closureBindScopeFactory of method PHPStan\Analyser\ArgumentsHandler::processArgs() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ArgumentsHandler.php
-
-		-
-			rawMessage: 'Parameter $context of method PHPStan\Analyser\ClosureProcessor::processArrowFunctionNode() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ClosureProcessor.php
-
-		-
-			rawMessage: 'Parameter $nativePassedToType of method PHPStan\Analyser\ClosureProcessor::processArrowFunctionNode() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ClosureProcessor.php
-
-		-
-			rawMessage: 'Parameter $nativePassedToType of method PHPStan\Analyser\ClosureProcessor::processClosureNode() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ClosureProcessor.php
-
-		-
-			rawMessage: 'Parameter $nativePassedToType of method PHPStan\Analyser\ClosureProcessor::processClosureNodeInternal() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ClosureProcessor.php
-
-		-
-			rawMessage: 'Parameter $valueDependencies of method PHPStan\Analyser\CollectedDataRuleResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/CollectedDataRuleResult.php
-
-		-
-			rawMessage: 'Parameter $createsNodeCallbackScopes of method PHPStan\Analyser\DirectInternalScopeFactory::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/DirectInternalScopeFactory.php
-
-		-
-			rawMessage: 'Parameter $expressionResultStorageStack of method PHPStan\Analyser\DirectInternalScopeFactory::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/DirectInternalScopeFactory.php
-
-		-
 			rawMessage: 'Parameter $canBeIgnored of method PHPStan\Analyser\Error::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -181,246 +91,6 @@ parameters:
 			path: ../src/Analyser/Error.php
 
 		-
-			rawMessage: 'Parameter $assignedExprResult of method PHPStan\Analyser\ExprHandler\AssignHandler::processVirtualAssign() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/AssignHandler.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExprHandler\FuncCallHandler::specifyTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/FuncCallHandler.php
-
-		-
-			rawMessage: 'Parameter $cacheKey of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::assembleClosureType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $cacheKey of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeFromClosureWalk() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $contextFree of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::assembleClosureType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $contextFree of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeFromClosureWalk() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $native of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForArrowFunction() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $native of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForClosure() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $native of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeFromClosureWalk() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $native of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::resolveArrowFunctionReturnType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $nativePassedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForArrowFunction() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $nativePassedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForClosure() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $nativePassedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildParametersAndAcceptors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $passedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForArrowFunction() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $passedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForClosure() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $passedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildParametersAndAcceptors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $passedToType of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::getClosureType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $shallow of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::getClosureType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $storage of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForArrowFunction() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $storage of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeForClosure() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $storage of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildClosureTypeFromClosureWalk() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $storage of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::buildParametersAndAcceptors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $storage of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::getClosureType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $storage of method PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::resolveArrowFunctionReturnType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ClosureTypeResolver.php
-
-		-
-			rawMessage: 'Parameter $holderSideExpr of method PHPStan\Analyser\ExprHandler\Helper\ConditionalExpressionHolderHelper::buildConditionalHolderRecipe() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/ConditionalExpressionHolderHelper.php
-
-		-
-			rawMessage: 'Parameter $resultFor of method PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper::createForSubject() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/DefaultNarrowingHelper.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper::methodCallReturnType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/MethodCallReturnTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $preResolvedAcceptor of method PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper::methodCallReturnType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/MethodCallReturnTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $includeExpr of method PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper::lookForExpressionCallback() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/NonNullabilityHelper.php
-
-		-
-			rawMessage: 'Parameter $pending of method PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper::pushActiveEnsure() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/Helper/NonNullabilityHelper.php
-
-		-
-			rawMessage: 'Parameter $condData of method PHPStan\Analyser\ExprHandler\MatchHandler::getFilteringExprForMatchArm() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/MatchHandler.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExprHandler\MethodCallHandler::specifyTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/MethodCallHandler.php
-
-		-
-			rawMessage: 'Parameter $allowUnresolved of method PHPStan\Analyser\ExprHandler\NewHandler::exactInstantiation() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/NewHandler.php
-
-		-
-			rawMessage: 'Parameter $allowUnresolved of method PHPStan\Analyser\ExprHandler\NewHandler::resolveReturnType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/NewHandler.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExprHandler\NewHandler::exactInstantiation() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/NewHandler.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExprHandler\NewHandler::resolveReturnType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/NewHandler.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExprHandler\StaticCallHandler::specifyTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/StaticCallHandler.php
-
-		-
-			rawMessage: 'Parameter $context of method PHPStan\Analyser\ExprHandler\VariableHandler::composeResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/VariableHandler.php
-
-		-
-			rawMessage: 'Parameter $nameArgResult of method PHPStan\Analyser\ExprHandler\VariableHandler::createTypeCallback() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/VariableHandler.php
-
-		-
-			rawMessage: 'Parameter $nameResult of method PHPStan\Analyser\ExprHandler\VariableHandler::createTypeCallback() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExprHandler/VariableHandler.php
-
-		-
 			rawMessage: 'Parameter $arrayDimFetchRoot of method PHPStan\Analyser\ExpressionContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -469,18 +139,6 @@ parameters:
 			path: ../src/Analyser/ExpressionContext.php
 
 		-
-			rawMessage: 'Parameter $resolveTemplateArguments of method PHPStan\Analyser\ExpressionContext::createDeep() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionContext.php
-
-		-
-			rawMessage: 'Parameter $resolveTemplateArguments of method PHPStan\Analyser\ExpressionContext::createTopLevel() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionContext.php
-
-		-
 			rawMessage: 'Parameter $unsetTarget of method PHPStan\Analyser\ExpressionContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -505,12 +163,6 @@ parameters:
 			path: ../src/Analyser/ExpressionContext.php
 
 		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
 			rawMessage: 'Parameter $cachedNativeType of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -523,18 +175,6 @@ parameters:
 			path: ../src/Analyser/ExpressionResult.php
 
 		-
-			rawMessage: 'Parameter $containsNullsafe of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $createTypesCallback of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
 			rawMessage: 'Parameter $dependencies of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -542,36 +182,6 @@ parameters:
 
 		-
 			rawMessage: 'Parameter $extensionsDeclined of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $falseyScopeOverrideResult of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $issetabilityDescriptor of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $nativeType of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $nativeTypesPromoted of method PHPStan\Analyser\ExpressionResult::getCreatedTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $nativeTypesPromoted of method PHPStan\Analyser\ExpressionResult::getSpecifiedTypes() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Analyser/ExpressionResult.php
@@ -595,12 +205,6 @@ parameters:
 			path: ../src/Analyser/ExpressionResult.php
 
 		-
-			rawMessage: 'Parameter $reprocessUntrackedLinks of method PHPStan\Analyser\ExpressionResult::getIssetabilityResolution() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
 			rawMessage: 'Parameter $resolvedNativeType of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -613,244 +217,10 @@ parameters:
 			path: ../src/Analyser/ExpressionResult.php
 
 		-
-			rawMessage: 'Parameter $ruleFacingAsk of method PHPStan\Analyser\ExpressionResult::askScopeVariableStateMatches() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
 			rawMessage: 'Parameter $specifiedTypes of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $truthyScopeOverrideResult of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $type of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $variableFlow of method PHPStan\Analyser\ExpressionResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResult.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $containsNullsafe of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $createTypesCallback of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $dependencies of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $falseyScopeOverrideResult of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $issetabilityDescriptor of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $nativeType of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $truthyScopeOverrideResult of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $type of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $variableFlow of method PHPStan\Analyser\ExpressionResultFactory::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ExpressionResultFactory.php
-
-		-
-			rawMessage: 'Parameter $collectedDataRuleResults of method PHPStan\Analyser\FinalizerResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/FinalizerResult.php
-
-		-
-			rawMessage: 'Parameter $reusedRulesCount of method PHPStan\Analyser\FinalizerResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/FinalizerResult.php
-
-		-
-			rawMessage: 'Parameter $fact of method PHPStan\Analyser\Generics\TemplateArgumentConstraints::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentConstraints.php
-
-		-
-			rawMessage: 'Parameter $left of method PHPStan\Analyser\Generics\TemplateArgumentConstraints::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentConstraints.php
-
-		-
-			rawMessage: 'Parameter $right of method PHPStan\Analyser\Generics\TemplateArgumentConstraints::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentConstraints.php
-
-		-
-			rawMessage: 'Parameter $until of method PHPStan\Analyser\Generics\TemplateArgumentConstraints::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentConstraints.php
-
-		-
-			rawMessage: 'Parameter $allowUnresolved of method PHPStan\Analyser\Generics\TemplateArgumentFrame::returnTypeOfCall() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $byRefSites of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $byRefSites of method PHPStan\Analyser\Generics\TemplateArgumentFrame::withObservedClosures() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $closureSignatureBody of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $closureSignatureStmts of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $conditionalExpressions of method PHPStan\Analyser\Generics\TemplateArgumentFrame::withStaticVariableTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $observingClosures of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $resolutions of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $settledClosureSites of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $siteStatementIndexes of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $staticVariableConditionalExpressions of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $staticVariableTypes of method PHPStan\Analyser\Generics\TemplateArgumentFrame::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentFrame.php
-
-		-
-			rawMessage: 'Parameter $classTemplates of method PHPStan\Analyser\Generics\TemplateArgumentObserver::collectCall() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentObserver.php
-
-		-
-			rawMessage: 'Parameter $isCallArgument of method PHPStan\Analyser\Generics\TemplateArgumentObserver::observeSend() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentObserver.php
-
-		-
-			rawMessage: 'Parameter $isPure of method PHPStan\Analyser\Generics\TemplateArgumentObserver::collectArgument() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentObserver.php
-
-		-
-			rawMessage: 'Parameter $templateArgumentsOnly of method PHPStan\Analyser\Generics\TemplateArgumentObserver::containsMarker() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentObserver.php
-
-		-
-			rawMessage: 'Parameter $closureSignatureBody of method PHPStan\Analyser\Generics\TemplateArgumentResolver::resolve() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentResolver.php
-
-		-
-			rawMessage: 'Parameter $closureSignatureStmts of method PHPStan\Analyser\Generics\TemplateArgumentResolver::resolve() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentResolver.php
-
-		-
-			rawMessage: 'Parameter $by of method PHPStan\Analyser\Generics\TemplateArgumentStats::increment() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/Generics/TemplateArgumentStats.php
 
 		-
 			rawMessage: 'Parameter $bypassTypeAliases of method PHPStan\Analyser\IntermediaryNameScope::__construct() must not be optional. Optional parameters are allowed only in @api code.'
@@ -1027,210 +397,6 @@ parameters:
 			path: ../src/Analyser/InternalStatementResult.php
 
 		-
-			rawMessage: 'Parameter $type of method PHPStan\Analyser\InternalThrowPoint::createImplicit() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/InternalThrowPoint.php
-
-		-
-			rawMessage: 'Parameter $dimResult of method PHPStan\Analyser\IssetabilityDescriptor::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $innerResult of method PHPStan\Analyser\IssetabilityDescriptor::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $propertyFetch of method PHPStan\Analyser\IssetabilityDescriptor::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $reflectionResolver of method PHPStan\Analyser\IssetabilityDescriptor::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $reprocessUntrackedLinks of method PHPStan\Analyser\IssetabilityDescriptor::resolve() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $varResult of method PHPStan\Analyser\IssetabilityDescriptor::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $variableName of method PHPStan\Analyser\IssetabilityDescriptor::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityDescriptor.php
-
-		-
-			rawMessage: 'Parameter $dimType of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $hasExpressionTypeOfExpr of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $hasExpressionTypeOfFetch of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $hasNativeType of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $hasOffsetValue of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $hasVariable of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $initializedThisProperty of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $isOffsetAccessible of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $isVirtual of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $leafExpr of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $leafIsNullsafePropertyFetch of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $nativeHasDefaultValue of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $nativeIsHooked of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $nativeIsPromoted of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $nativeIsReadOnly of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $nativeReflectionExists of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $nativeType of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $propertyFetch of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $propertyReflection of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $reflectionNative of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $valueType of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $varType of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $variableName of method PHPStan\Analyser\IssetabilityLinkInfo::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityLinkInfo.php
-
-		-
-			rawMessage: 'Parameter $result of method PHPStan\Analyser\IssetabilityResolution::isSet() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/IssetabilityResolution.php
-
-		-
-			rawMessage: 'Parameter $createsNodeCallbackScopes of method PHPStan\Analyser\LazyInternalScopeFactory::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/LazyInternalScopeFactory.php
-
-		-
-			rawMessage: 'Parameter $expressionResultStorageStack of method PHPStan\Analyser\LazyInternalScopeFactory::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/LazyInternalScopeFactory.php
-
-		-
 			rawMessage: 'Parameter $afterExtractCall of method PHPStan\Analyser\MutatingScope::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -1309,12 +475,6 @@ parameters:
 			path: ../src/Analyser/MutatingScope.php
 
 		-
-			rawMessage: 'Parameter $isPlainWrite of method PHPStan\Analyser\MutatingScope::enterExpressionAssign() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/MutatingScope.php
-
-		-
 			rawMessage: 'Parameter $keepPropertyFetches of method PHPStan\Analyser\MutatingScope::invalidateExpression() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -1351,18 +511,6 @@ parameters:
 			path: ../src/Analyser/MutatingScope.php
 
 		-
-			rawMessage: 'Parameter $preserveVacuousConditionals of method PHPStan\Analyser\MutatingScope::mergeWithVariableState() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/MutatingScope.php
-
-		-
-			rawMessage: 'Parameter $relevantRoots of method PHPStan\Analyser\MutatingScope::getClosureScopeCacheKey() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/MutatingScope.php
-
-		-
 			rawMessage: 'Parameter $requireMoreCharacters of method PHPStan\Analyser\MutatingScope::invalidateExpression() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -1387,108 +535,6 @@ parameters:
 			path: ../src/Analyser/MutatingScope.php
 
 		-
-			rawMessage: 'Parameter $writableVariableNames of method PHPStan\Analyser\MutatingScope::generalizeWith() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/MutatingScope.php
-
-		-
-			rawMessage: 'Parameter $assignedPropertyExpr of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $dependencies of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $dimFetchStack of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $existingOffsetNativeTypes of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $existingOffsetTypes of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $objectResult of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $offsetNativeTypes of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $offsetSetTargetResult of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $offsetTypes of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $propertyHolderType of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $propertyName of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $rootVar of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $targetChainResults of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $targetReadResult of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $varResult of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
-			rawMessage: 'Parameter $variableNameResult of method PHPStan\Analyser\PreparedAssignTarget::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/PreparedAssignTarget.php
-
-		-
 			rawMessage: 'Parameter $byRefClosureResultScope of method PHPStan\Analyser\ProcessClosureResult::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -1505,78 +551,6 @@ parameters:
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Analyser/ProcessClosureResult.php
-
-		-
-			rawMessage: 'Parameter $collectedDataRuleResults of method PHPStan\Analyser\ResultCache\ResultCache::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ResultCache/ResultCache.php
-
-		-
-			rawMessage: 'Parameter $leftType of method PHPStan\Analyser\RicherScopeGetTypeHelper::getIdenticalResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/RicherScopeGetTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $leftType of method PHPStan\Analyser\RicherScopeGetTypeHelper::getNotIdenticalResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/RicherScopeGetTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $nodeScopeResolver of method PHPStan\Analyser\RicherScopeGetTypeHelper::getIdenticalResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/RicherScopeGetTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $nodeScopeResolver of method PHPStan\Analyser\RicherScopeGetTypeHelper::getNotIdenticalResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/RicherScopeGetTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $rightType of method PHPStan\Analyser\RicherScopeGetTypeHelper::getIdenticalResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/RicherScopeGetTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $rightType of method PHPStan\Analyser\RicherScopeGetTypeHelper::getNotIdenticalResult() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/RicherScopeGetTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $differingKeys of method PHPStan\Analyser\ScopeOps::mergeVariableHolders() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ScopeOps.php
-
-		-
-			rawMessage: 'Parameter $invalidatingClass of method PHPStan\Analyser\ScopeOps::shouldInvalidateExpression() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ScopeOps.php
-
-		-
-			rawMessage: 'Parameter $keepPropertyFetches of method PHPStan\Analyser\ScopeOps::invalidateExpressionEntries() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ScopeOps.php
-
-		-
-			rawMessage: 'Parameter $keepPropertyFetches of method PHPStan\Analyser\ScopeOps::shouldInvalidateExpression() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ScopeOps.php
-
-		-
-			rawMessage: 'Parameter $requireMoreCharacters of method PHPStan\Analyser\ScopeOps::shouldInvalidateExpression() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/ScopeOps.php
 
 		-
 			rawMessage: 'Parameter $expectedReturnType of method PHPStan\Analyser\StatementContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
@@ -1609,228 +583,6 @@ parameters:
 			path: ../src/Analyser/StatementResult.php
 
 		-
-			rawMessage: 'Parameter $changed of method PHPStan\Analyser\VarAnnotationProcessor::processVarAnnotation() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VarAnnotationProcessor.php
-
-		-
-			rawMessage: 'Parameter $container of method PHPStan\Analyser\VariableAccessFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableAccessFlow.php
-
-		-
-			rawMessage: 'Parameter $offset of method PHPStan\Analyser\VariableAccessFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableAccessFlow.php
-
-		-
-			rawMessage: 'Parameter $targetId of method PHPStan\Analyser\VariableAccessFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableAccessFlow.php
-
-		-
-			rawMessage: 'Parameter $type of method PHPStan\Analyser\VariableAccessFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableAccessFlow.php
-
-		-
-			rawMessage: 'Parameter $write of method PHPStan\Analyser\VariableAccessFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableAccessFlow.php
-
-		-
-			rawMessage: 'Parameter $arrow of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $atLeastOnce of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $bindings of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $canContainAnyThrowable of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $canExit of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $canRepeat of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $cases of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $catches of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $children of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $level of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $name of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $ownWrites of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $stmt of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $type of method PHPStan\Analyser\VariableControlFlow::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableControlFlow.php
-
-		-
-			rawMessage: 'Parameter $canContainAnyThrowable of method PHPStan\Analyser\VariableFlow::throwing() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $canRepeat of method PHPStan\Analyser\VariableFlow::loop() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $container of method PHPStan\Analyser\VariableFlow::read() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $level of method PHPStan\Analyser\VariableFlow::exit() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $name of method PHPStan\Analyser\VariableFlow::exit() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $offset of method PHPStan\Analyser\VariableFlow::read() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $redundantType of method PHPStan\Analyser\VariableFlow::write() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $targetId of method PHPStan\Analyser\VariableFlow::read() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlow.php
-
-		-
-			rawMessage: 'Parameter $redundant of method PHPStan\Analyser\VariableFlowBuilder::targetWrite() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlowBuilder.php
-
-		-
-			rawMessage: 'Parameter $targetId of method PHPStan\Analyser\VariableFlowBuilder::targetRead() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlowBuilder.php
-
-		-
-			rawMessage: 'Parameter $breaks of method PHPStan\Analyser\VariableFlowContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlowContext.php
-
-		-
-			rawMessage: 'Parameter $catches of method PHPStan\Analyser\VariableFlowContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlowContext.php
-
-		-
-			rawMessage: 'Parameter $continues of method PHPStan\Analyser\VariableFlowContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlowContext.php
-
-		-
-			rawMessage: 'Parameter $uncaught of method PHPStan\Analyser\VariableFlowContext::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableFlowContext.php
-
-		-
-			rawMessage: 'Parameter $discard of method PHPStan\Analyser\VariableLivenessResolver::passBindingProbes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VariableLivenessResolver.php
-
-		-
-			rawMessage: 'Parameter $declaredSymbolName of method PHPStan\Analyser\VolatileExpressionHelper::invalidateNegativeExistenceChecks() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VolatileExpressionHelper.php
-
-		-
-			rawMessage: 'Parameter $functionNames of method PHPStan\Analyser\VolatileExpressionHelper::invalidateNegativeExistenceChecks() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Analyser/VolatileExpressionHelper.php
-
-		-
 			rawMessage: 'Parameter $processedFiles of method PHPStan\Command\AnalyseCommand::runDiagnoseExtensions() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -1861,12 +613,6 @@ parameters:
 			path: ../src/Command/BisectCommand.php
 
 		-
-			rawMessage: 'Parameter $deferBootstrapFiles of method PHPStan\Command\CommandHelper::begin() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Command/CommandHelper.php
-
-		-
 			rawMessage: 'Parameter $message of method PHPStan\Command\ErrorFormatter\JunitErrorFormatter::createTestCase() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -1889,42 +635,6 @@ parameters:
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Command/IgnoredRegexValidatorResult.php
-
-		-
-			rawMessage: 'Parameter $workerCount of method PHPStan\Command\InceptionResult::handleReturn() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Command/InceptionResult.php
-
-		-
-			rawMessage: 'Parameter $classNames of method PHPStan\Dependency\Dependencies::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Dependency/Dependencies.php
-
-		-
-			rawMessage: 'Parameter $filePaths of method PHPStan\Dependency\Dependencies::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Dependency/Dependencies.php
-
-		-
-			rawMessage: 'Parameter $reflections of method PHPStan\Dependency\Dependencies::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Dependency/Dependencies.php
-
-		-
-			rawMessage: 'Parameter $types of method PHPStan\Dependency\Dependencies::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Dependency/Dependencies.php
-
-		-
-			rawMessage: 'Parameter $usedTraits of method PHPStan\Dependency\Dependencies::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Dependency/Dependencies.php
 
 		-
 			rawMessage: 'Parameter $flags of method PHPStan\Dependency\ExportedNode\ExportedParameterNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
@@ -1993,28 +703,10 @@ parameters:
 			path: ../src/DependencyInjection/GenerateFactory.php
 
 		-
-			rawMessage: 'Parameter $parameters of method PHPStan\DependencyInjection\NeonAdapter::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/DependencyInjection/NeonAdapter.php
-
-		-
-			rawMessage: 'Parameter $parameters of method PHPStan\DependencyInjection\NeonCachedFileReader::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/DependencyInjection/NeonCachedFileReader.php
-
-		-
 			rawMessage: 'Parameter $factory of method PHPStan\DependencyInjection\NonAutowiredService::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/DependencyInjection/NonAutowiredService.php
-
-		-
-			rawMessage: 'Parameter $tmpDir of method PHPStan\File\DirectoryWalker::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/File/DirectoryWalker.php
 
 		-
 			rawMessage: 'Parameter $directorySeparator of method PHPStan\File\FuzzyRelativePathHelper::__construct() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2047,178 +739,16 @@ parameters:
 			path: ../src/Internal/HttpClientFactory.php
 
 		-
-			rawMessage: 'Parameter $maxCount of method PHPStan\Internal\LruCache::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Internal/LruCache.php
-
-		-
-			rawMessage: 'Parameter $maxWeight of method PHPStan\Internal\LruCache::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Internal/LruCache.php
-
-		-
-			rawMessage: 'Parameter $weightEvictionFloorCount of method PHPStan\Internal\LruCache::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Internal/LruCache.php
-
-		-
-			rawMessage: 'Parameter $reads of method PHPStan\Node\CollectedDataNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/CollectedDataNode.php
-
-		-
-			rawMessage: 'Parameter $exprResult of method PHPStan\Node\ExecutionEndNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/ExecutionEndNode.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Node\FunctionCallExpressionNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/FunctionCallExpressionNode.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Node\MethodCallExpressionNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/MethodCallExpressionNode.php
-
-		-
-			rawMessage: 'Parameter $originalNode of method PHPStan\Node\Property\PropertyWrite::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/Property/PropertyWrite.php
-
-		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Node\StaticMethodCallExpressionNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/StaticMethodCallExpressionNode.php
-
-		-
 			rawMessage: 'Parameter $nextStatements of method PHPStan\Node\UnreachableStatementNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Node/UnreachableStatementNode.php
 
 		-
-			rawMessage: 'Parameter $offset of method PHPStan\Node\Variable\VariableWrite::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/Variable/VariableWrite.php
-
-		-
-			rawMessage: 'Parameter $offsetWrite of method PHPStan\Node\Variable\VariableWrite::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/Variable/VariableWrite.php
-
-		-
-			rawMessage: 'Parameter $parentId of method PHPStan\Node\Variable\VariableWrite::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/Variable/VariableWrite.php
-
-		-
-			rawMessage: 'Parameter $replacesOffset of method PHPStan\Node\Variable\VariableWrite::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Node/Variable/VariableWrite.php
-
-		-
 			rawMessage: 'Parameter $cachedSourceBytesMax of method PHPStan\Parser\CachedParser::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Parser/CachedParser.php
-
-		-
-			rawMessage: 'Parameter $currentOpcacheIniValues of method PHPStan\Process\Restart\RestartExtensionRegistry::collectReasonsFor() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartExtensionRegistry.php
-
-		-
-			rawMessage: 'Parameter $opcacheIniEntries of method PHPStan\Process\Restart\RestartExtensionRegistry::collectReasonsFor() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartExtensionRegistry.php
-
-		-
-			rawMessage: 'Parameter $pharPath of method PHPStan\Process\Restart\RestartExtensionRegistry::collectReasons() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartExtensionRegistry.php
-
-		-
-			rawMessage: 'Parameter $pharPath of method PHPStan\Process\Restart\RestartExtensionRegistry::findTurboExtensionToLoad() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartExtensionRegistry.php
-
-		-
-			rawMessage: 'Parameter $appName of method PHPStan\Process\Restart\RestartManager::collectReasons() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartManager.php
-
-		-
-			rawMessage: 'Parameter $appName of method PHPStan\Process\Restart\RestartManager::isXdebugAllowed() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartManager.php
-
-		-
-			rawMessage: 'Parameter $appName of method PHPStan\Process\Restart\RestartManager::run() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartManager.php
-
-		-
-			rawMessage: 'Parameter $extensions of method PHPStan\Process\Restart\RestartManager::run() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartManager.php
-
-		-
-			rawMessage: 'Parameter $pharPath of method PHPStan\Process\Restart\RestartManager::collectReasons() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartManager.php
-
-		-
-			rawMessage: 'Parameter $pharPath of method PHPStan\Process\Restart\RestartManager::run() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartManager.php
-
-		-
-			rawMessage: 'Parameter $commandLineArguments of method PHPStan\Process\Restart\RestartReason::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartReason.php
-
-		-
-			rawMessage: 'Parameter $environmentVariables of method PHPStan\Process\Restart\RestartReason::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartReason.php
-
-		-
-			rawMessage: 'Parameter $iniSettings of method PHPStan\Process\Restart\RestartReason::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartReason.php
-
-		-
-			rawMessage: 'Parameter $strippedExtensions of method PHPStan\Process\Restart\RestartReason::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Process/Restart/RestartReason.php
 
 		-
 			rawMessage: 'Parameter $autoloadSection of method PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker::packageToClassMapPaths() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2245,34 +775,16 @@ parameters:
 			path: ../src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
 
 		-
-			rawMessage: 'Parameter $batch of method PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker::create() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/ComposerJsonAndInstalledJsonSourceLocatorMaker.php
-
-		-
 			rawMessage: 'Parameter $streamWrapperProtocols of method PHPStan\Reflection\BetterReflection\SourceLocator\FileReadTrapStreamWrapper::withStreamWrapperOverride() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Reflection/BetterReflection/SourceLocator/FileReadTrapStreamWrapper.php
 
 		-
-			rawMessage: 'Parameter $awaitingScan of method PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocator::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
 			rawMessage: 'Parameter $positionInNode of method PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocator::nodeToReflection() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocator.php
-
-		-
-			rawMessage: 'Parameter $batch of method PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository::getOrCreate() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/BetterReflection/SourceLocator/OptimizedDirectorySourceLocatorRepository.php
 
 		-
 			rawMessage: 'Parameter $match of method PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner::match() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2347,12 +859,6 @@ parameters:
 			path: ../src/Reflection/ExtendedCallableFunctionVariant.php
 
 		-
-			rawMessage: 'Parameter $nativeTypesPromoted of method PHPStan\Reflection\InitializerExprTypeResolver::getClassConstFetchTypeByReflection() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/InitializerExprTypeResolver.php
-
-		-
 			rawMessage: 'Parameter $assertions of method PHPStan\Reflection\ResolvedFunctionVariantWithCallable::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -2363,24 +869,6 @@ parameters:
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Reflection/ResolvedFunctionVariantWithCallable.php
-
-		-
-			rawMessage: 'Parameter $allowUnresolved of method PHPStan\Reflection\ResolvedFunctionVariantWithOriginal::resolveResolvableTemplateTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/ResolvedFunctionVariantWithOriginal.php
-
-		-
-			rawMessage: 'Parameter $frame of method PHPStan\Reflection\ResolvedFunctionVariantWithOriginal::resolveResolvableTemplateTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/ResolvedFunctionVariantWithOriginal.php
-
-		-
-			rawMessage: 'Parameter $site of method PHPStan\Reflection\ResolvedFunctionVariantWithOriginal::resolveResolvableTemplateTypes() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Reflection/ResolvedFunctionVariantWithOriginal.php
 
 		-
 			rawMessage: 'Parameter $phpVersion of method PHPStan\Rules\Arrays\AllowedArrayKeysTypes::getType() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2401,18 +889,6 @@ parameters:
 			path: ../src/Rules/ClassNameCheck.php
 
 		-
-			rawMessage: 'Parameter $argsResult of method PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::findSpecifiedType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Rules/Comparison/ImpossibleCheckTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $phpDocFlavour of method PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::getArgumentType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Rules/Comparison/ImpossibleCheckTypeHelper.php
-
-		-
 			rawMessage: 'Parameter $reasons of method PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper::findSpecifiedType() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -2429,18 +905,6 @@ parameters:
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Rules/RuleLevelHelper.php
-
-		-
-			rawMessage: 'Parameter $unusedFlowIdentifier of method PHPStan\Rules\UnusedParametersCheck::getUnusedParameterErrors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Rules/UnusedParametersCheck.php
-
-		-
-			rawMessage: 'Parameter $unusedFlowMessage of method PHPStan\Rules\UnusedParametersCheck::getUnusedParameterErrors() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Rules/UnusedParametersCheck.php
 
 		-
 			rawMessage: 'Parameter $decorated of method PHPStan\Testing\ErrorFormatterTestCase::getOutput() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2479,18 +943,6 @@ parameters:
 			path: ../src/Testing/ErrorFormatterTestCase.php
 
 		-
-			rawMessage: 'Parameter $pharPath of method PHPStan\Turbo\TurboExtensionSelector::findExtension() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Turbo/TurboExtensionSelector.php
-
-		-
-			rawMessage: 'Parameter $pharPath of method PHPStan\Turbo\TurboExtensionSelector::getPlatformDirectoryNextToPhar() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Turbo/TurboExtensionSelector.php
-
-		-
 			rawMessage: 'Parameter $strictTypes of method PHPStan\Type\CallableType::isSuperTypeOfInternal() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -2501,18 +953,6 @@ parameters:
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Type/CallableTypeHelper.php
-
-		-
-			rawMessage: 'Parameter $nativeType of method PHPStan\Type\ClassConstantAccessType::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Type/ClassConstantAccessType.php
-
-		-
-			rawMessage: 'Parameter $nativeType of method PHPStan\Type\ClassConstantPatternResolver::resolve() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Type/ClassConstantPatternResolver.php
 
 		-
 			rawMessage: 'Parameter $strictTypes of method PHPStan\Type\ClosureType::isSuperTypeOfInternal() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2557,12 +997,6 @@ parameters:
 			path: ../src/Type/Generic/TemplateTypeHelper.php
 
 		-
-			rawMessage: 'Parameter $insteadUse of method PHPStan\Type\InstanceofDeprecated::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Type/InstanceofDeprecated.php
-
-		-
 			rawMessage: 'Parameter $filter of method PHPStan\Type\IntersectionType::intersectResults() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -2579,24 +1013,6 @@ parameters:
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: ../src/Type/Php/SubstrDynamicReturnTypeExtension.php
-
-		-
-			rawMessage: 'Parameter $children of method PHPStan\Type\Regex\Parser\RegexNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Type/Regex/Parser/RegexNode.php
-
-		-
-			rawMessage: 'Parameter $valueToken of method PHPStan\Type\Regex\Parser\RegexNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Type/Regex/Parser/RegexNode.php
-
-		-
-			rawMessage: 'Parameter $valueValue of method PHPStan\Type\Regex\Parser\RegexNode::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../src/Type/Regex/Parser/RegexNode.php
 
 		-
 			rawMessage: 'Parameter $forceAlternationBranchMatched of method PHPStan\Type\Regex\RegexCapturingGroup::__construct() must not be optional. Optional parameters are allowed only in @api code.'
@@ -2653,24 +1069,6 @@ parameters:
 			path: ../tests/PHPStan/Analyser/AnalyserIntegrationTest.php
 
 		-
-			rawMessage: 'Parameter $reuse of method PHPStan\Analyser\CollectedDataRuleReuseTest::finalize() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Analyser/CollectedDataRuleReuseTest.php
-
-		-
-			rawMessage: 'Parameter $valueDependencyCollector of method PHPStan\Analyser\CollectedDataRuleReuseTest::finalize() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Analyser/CollectedDataRuleReuseTest.php
-
-		-
-			rawMessage: 'Parameter $variance of method PHPStan\Analyser\Generics\TemplateArgumentResolverTest::template() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Analyser/Generics/TemplateArgumentResolverTest.php
-
-		-
 			rawMessage: 'Parameter $variableName of method PHPStan\Analyser\TypeSpecifierTest::createFunctionCall() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -2725,12 +1123,6 @@ parameters:
 			path: ../tests/PHPStan/Command/ErrorFormatter/TableErrorFormatterTest.php
 
 		-
-			rawMessage: 'Parameter $reporter of method PHPStan\Reflection\BetterReflection\SourceLocator\AutoloadFunctionsSourceLocatorTest::createLocator() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Reflection/BetterReflection/SourceLocator/AutoloadFunctionsSourceLocatorTest.php
-
-		-
 			rawMessage: 'Parameter $expectedFlags of method PHPStan\Reflection\ClassReflectionTest::testIsAttributeClass() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
@@ -2761,34 +1153,10 @@ parameters:
 			path: ../tests/PHPStan/Type/Constant/ConstantArrayTypeTest.php
 
 		-
-			rawMessage: 'Parameter $name of method PHPStan\Type\Generic\UnresolvedTemplateArgumentTypeTest::marker() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Type/Generic/UnresolvedTemplateArgumentTypeTest.php
-
-		-
-			rawMessage: 'Parameter $variance of method PHPStan\Type\Generic\UnresolvedTemplateArgumentTypeTest::template() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Type/Generic/UnresolvedTemplateArgumentTypeTest.php
-
-		-
-			rawMessage: 'Parameter $bound of method PHPStan\Type\LateResolvableArrayShapeTypeTest::templateType() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: ../tests/PHPStan/Type/LateResolvableArrayShapeTypeTest.php
-
-		-
 			rawMessage: 'Parameter $skipTests of method PHPStan\Build\FinalClassRule::__construct() must not be optional. Optional parameters are allowed only in @api code.'
 			identifier: phpstan.optionalParameter
 			count: 1
 			path: PHPStan/Build/FinalClassRule.php
-
-		-
-			rawMessage: 'Parameter $directories of method PHPStan\Build\InlineCallCollector::__construct() must not be optional. Optional parameters are allowed only in @api code.'
-			identifier: phpstan.optionalParameter
-			count: 1
-			path: PHPStan/Build/InlineCallCollector.php
 
 		-
 			rawMessage: 'Parameter $skipTests of method PHPStan\Build\MemoizationPropertyRule::__construct() must not be optional. Optional parameters are allowed only in @api code.'

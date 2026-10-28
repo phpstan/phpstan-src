@@ -52,13 +52,13 @@ final class YieldFromHandler implements ExprHandler
 		$scope = $exprResult->getScope();
 		$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectYieldFromSend($scope, $exprResult->getType()));
 
-		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
+		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr, null);
 
 		return $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::throwing($throwPoint->getType(), true)),
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::throwing($throwPoint->getType(), true, false)),
 			hasYield: true,
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [$throwPoint]),
@@ -74,6 +74,14 @@ final class YieldFromHandler implements ExprHandler
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: $exprResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

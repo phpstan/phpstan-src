@@ -46,6 +46,16 @@ final class VirtualExprResultHelper
 				? static fn (bool $nativeTypesPromoted): Type => $expr->getExprType()
 				: static fn (bool $nativeTypesPromoted): Type => $nativeTypesPromoted ? $expr->getNativeType() : $expr->getPhpDocType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 	}
 
@@ -61,6 +71,16 @@ final class VirtualExprResultHelper
 			impurePoints: [],
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType())->unsetOffset($nativeTypesPromoted ? $dimResult->getNativeType() : $dimResult->getType()),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 	}
 

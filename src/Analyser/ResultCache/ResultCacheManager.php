@@ -292,6 +292,7 @@ final class ResultCacheManager
 			cachedExportedNodes: CachedExportedNodes::createEmpty(),
 			projectExtensionFiles: [],
 			currentFileHashes: $currentFileHashes,
+			collectedDataRuleResults: [],
 		);
 	}
 

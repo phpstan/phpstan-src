@@ -73,6 +73,15 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->initializerExprTypeResolver->getFirstClassCallableType($expr->getOriginalNode(), InitializerExprContext::fromScope($beforeScope), $nativeTypesPromoted),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 
 		return $result->withDependencies(Dependencies::merge(
@@ -95,13 +104,13 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 		}
 		$class = $expr->getClass();
 		if ($class instanceof Name) {
-			return Dependencies::create($scope->getFile(), $types, [$scope->resolveName($class)]);
+			return Dependencies::create($scope->getFile(), $types, [$scope->resolveName($class)], [], [], []);
 		}
 		if ($classResult === null) {
-			return Dependencies::create($scope->getFile(), $types);
+			return Dependencies::create($scope->getFile(), $types, [], [], [], []);
 		}
 
-		return Dependencies::create($scope->getFile(), $types, DependencyTypes::classNamesOfClassString($classResult->getType()));
+		return Dependencies::create($scope->getFile(), $types, DependencyTypes::classNamesOfClassString($classResult->getType()), [], [], []);
 	}
 
 }

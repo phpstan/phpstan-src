@@ -152,6 +152,7 @@ final class Analyser
 			// analysis ran in this process - its peak is read where the number is printed
 			peakMemoryUsageBytes: 0,
 			processedFiles: $allProcessedFiles,
+			workerCount: 0,
 		);
 	}
 

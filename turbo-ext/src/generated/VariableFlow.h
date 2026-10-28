@@ -41,50 +41,46 @@ inline constexpr char strings[] =
 	"outputs\0" /* 124 */
 	"name\0" /* 132 */
 	"targetId\0" /* 137 */
-	"null\0" /* 146 */
-	"container\0" /* 151 */
-	"false\0" /* 161 */
-	"offset\0" /* 167 */
-	"read\0" /* 174 */
-	"condition\0" /* 179 */
-	"if\0" /* 189 */
-	"else\0" /* 192 */
-	"conditional\0" /* 197 */
-	"cases\0" /* 209 */
-	"exhaustive\0" /* 215 */
-	"switch\0" /* 226 */
-	"write\0" /* 233 */
-	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 239 */
-	"redundantType\0" /* 275 */
-	"PHPStan\\Type\\Type\0" /* 289 */
-	"discard\0" /* 307 */
-	"writeId\0" /* 315 */
-	"inputs\0" /* 323 */
-	"escape\0" /* 330 */
-	"mention\0" /* 337 */
-	"all\0" /* 345 */
-	"level\0" /* 349 */
-	"1\0" /* 355 */
-	"exit\0" /* 357 */
-	"type\0" /* 362 */
-	"canContinue\0" /* 367 */
-	"canContainAnyThrowable\0" /* 379 */
-	"throwing\0" /* 402 */
-	"update\0" /* 411 */
-	"atLeastOnce\0" /* 418 */
-	"canExit\0" /* 430 */
-	"canRepeat\0" /* 438 */
-	"true\0" /* 448 */
-	"loop\0" /* 453 */
-	"stmt\0" /* 458 */
-	"PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_\0" /* 463 */
-	"flow\0" /* 517 */
-	"bindings\0" /* 522 */
-	"ownWrites\0" /* 531 */
-	"loopStatement\0" /* 541 */
-	"catches\0" /* 555 */
-	"finally\0" /* 563 */
-	"tryCatch"; /* 571 */
+	"container\0" /* 146 */
+	"offset\0" /* 156 */
+	"read\0" /* 163 */
+	"condition\0" /* 168 */
+	"if\0" /* 178 */
+	"else\0" /* 181 */
+	"conditional\0" /* 186 */
+	"cases\0" /* 198 */
+	"exhaustive\0" /* 204 */
+	"switch\0" /* 215 */
+	"write\0" /* 222 */
+	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 228 */
+	"redundantType\0" /* 264 */
+	"PHPStan\\Type\\Type\0" /* 278 */
+	"discard\0" /* 296 */
+	"writeId\0" /* 304 */
+	"inputs\0" /* 312 */
+	"escape\0" /* 319 */
+	"mention\0" /* 326 */
+	"all\0" /* 334 */
+	"level\0" /* 338 */
+	"exit\0" /* 344 */
+	"type\0" /* 349 */
+	"canContinue\0" /* 354 */
+	"canContainAnyThrowable\0" /* 366 */
+	"throwing\0" /* 389 */
+	"update\0" /* 398 */
+	"atLeastOnce\0" /* 405 */
+	"canExit\0" /* 417 */
+	"canRepeat\0" /* 425 */
+	"loop\0" /* 435 */
+	"stmt\0" /* 440 */
+	"PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_\0" /* 445 */
+	"flow\0" /* 499 */
+	"bindings\0" /* 504 */
+	"ownWrites\0" /* 513 */
+	"loopStatement\0" /* 523 */
+	"catches\0" /* 537 */
+	"finally\0" /* 545 */
+	"tryCatch"; /* 553 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
 	reg::packed(17, MAY_BE_NULL, 23, false, true), /* sequence $flows */
@@ -96,24 +92,24 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(124, MAY_BE_NULL, 23), /* arrow $outputs */
 	reg::packed(53, 0, 23), /* arrow return */
 	reg::packed(132, MAY_BE_STRING), /* read $name */
-	reg::packed(137, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 146), /* read $targetId */
-	reg::packed(151, MAY_BE_BOOL, reg::NoString, false, false, 161), /* read $container */
-	reg::packed(167, 0, reg::NoString, false, false, 146), /* read $offset */
+	reg::packed(137, MAY_BE_NULL | MAY_BE_LONG), /* read $targetId */
+	reg::packed(146, MAY_BE_BOOL), /* read $container */
+	reg::packed(156, 0), /* read $offset */
 	reg::packed(53, MAY_BE_NULL, 23), /* read return */
-	reg::packed(179, MAY_BE_NULL, 23), /* conditional $condition */
-	reg::packed(189, MAY_BE_NULL, 23), /* conditional $if */
-	reg::packed(192, MAY_BE_NULL, 23), /* conditional $else */
+	reg::packed(168, MAY_BE_NULL, 23), /* conditional $condition */
+	reg::packed(178, MAY_BE_NULL, 23), /* conditional $if */
+	reg::packed(181, MAY_BE_NULL, 23), /* conditional $else */
 	reg::packed(53, MAY_BE_NULL, 23), /* conditional return */
-	reg::packed(179, MAY_BE_NULL, 23), /* switch $condition */
-	reg::packed(209, MAY_BE_ARRAY), /* switch $cases */
-	reg::packed(215, MAY_BE_BOOL), /* switch $exhaustive */
+	reg::packed(168, MAY_BE_NULL, 23), /* switch $condition */
+	reg::packed(198, MAY_BE_ARRAY), /* switch $cases */
+	reg::packed(204, MAY_BE_BOOL), /* switch $exhaustive */
 	reg::packed(53, 0, 23), /* switch return */
-	reg::packed(233, 0, 239), /* write $write */
-	reg::packed(275, MAY_BE_NULL, 289, false, false, 146), /* write $redundantType */
+	reg::packed(222, 0, 228), /* write $write */
+	reg::packed(264, MAY_BE_NULL, 278), /* write $redundantType */
 	reg::packed(53, 0, 23), /* write return */
-	reg::packed(233, 0, 239), /* discard $write */
+	reg::packed(222, 0, 228), /* discard $write */
 	reg::packed(53, 0, 23), /* discard return */
-	reg::packed(315, MAY_BE_LONG), /* inputs $writeId */
+	reg::packed(304, MAY_BE_LONG), /* inputs $writeId */
 	reg::packed(137, MAY_BE_NULL | MAY_BE_LONG), /* inputs $targetId */
 	reg::packed(53, 0, 23), /* inputs return */
 	reg::packed(132, MAY_BE_STRING), /* escape $name */
@@ -123,28 +119,28 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* all $kind */
 	reg::packed(53, 0, 23), /* all return */
 	reg::packed(0, MAY_BE_STRING), /* exit $kind */
-	reg::packed(349, MAY_BE_LONG, reg::NoString, false, false, 355), /* exit $level */
-	reg::packed(132, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 146), /* exit $name */
+	reg::packed(338, MAY_BE_LONG), /* exit $level */
+	reg::packed(132, MAY_BE_NULL | MAY_BE_STRING), /* exit $name */
 	reg::packed(53, 0, 23), /* exit return */
-	reg::packed(362, 0, 289), /* throwing $type */
-	reg::packed(367, MAY_BE_BOOL), /* throwing $canContinue */
-	reg::packed(379, MAY_BE_BOOL, reg::NoString, false, false, 161), /* throwing $canContainAnyThrowable */
+	reg::packed(349, 0, 278), /* throwing $type */
+	reg::packed(354, MAY_BE_BOOL), /* throwing $canContinue */
+	reg::packed(366, MAY_BE_BOOL), /* throwing $canContainAnyThrowable */
 	reg::packed(53, 0, 23), /* throwing return */
-	reg::packed(179, MAY_BE_NULL, 23), /* loop $condition */
+	reg::packed(168, MAY_BE_NULL, 23), /* loop $condition */
 	reg::packed(119, MAY_BE_NULL, 23), /* loop $body */
-	reg::packed(411, MAY_BE_NULL, 23), /* loop $update */
-	reg::packed(418, MAY_BE_BOOL), /* loop $atLeastOnce */
-	reg::packed(430, MAY_BE_BOOL), /* loop $canExit */
-	reg::packed(438, MAY_BE_BOOL, reg::NoString, false, false, 448), /* loop $canRepeat */
+	reg::packed(398, MAY_BE_NULL, 23), /* loop $update */
+	reg::packed(405, MAY_BE_BOOL), /* loop $atLeastOnce */
+	reg::packed(417, MAY_BE_BOOL), /* loop $canExit */
+	reg::packed(425, MAY_BE_BOOL), /* loop $canRepeat */
 	reg::packed(53, 0, 23), /* loop return */
-	reg::packed(458, 0, 463), /* loopStatement $stmt */
-	reg::packed(517, MAY_BE_NULL, 23), /* loopStatement $flow */
-	reg::packed(522, MAY_BE_ARRAY), /* loopStatement $bindings */
-	reg::packed(531, MAY_BE_ARRAY), /* loopStatement $ownWrites */
+	reg::packed(440, 0, 445), /* loopStatement $stmt */
+	reg::packed(499, MAY_BE_NULL, 23), /* loopStatement $flow */
+	reg::packed(504, MAY_BE_ARRAY), /* loopStatement $bindings */
+	reg::packed(513, MAY_BE_ARRAY), /* loopStatement $ownWrites */
 	reg::packed(53, MAY_BE_NULL, 23), /* loopStatement return */
 	reg::packed(119, MAY_BE_NULL, 23), /* tryCatch $body */
-	reg::packed(555, MAY_BE_ARRAY), /* tryCatch $catches */
-	reg::packed(563, MAY_BE_NULL, 23), /* tryCatch $finally */
+	reg::packed(537, MAY_BE_ARRAY), /* tryCatch $catches */
+	reg::packed(545, MAY_BE_NULL, 23), /* tryCatch $finally */
 	reg::packed(53, 0, 23), /* tryCatch return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -156,20 +152,20 @@ inline constexpr sigtab::Sig __construct = { { 5 /* __construct */, 1, 0, 1, reg
 inline constexpr sigtab::Sig sequence = { { 54 /* sequence */, 0, 1, 1, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig choice = { { 72 /* choice */, 0, 3, 1, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig arrow = { { 79 /* arrow */, 3, 5, 3, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig read = { { 174 /* read */, 1, 9, 4, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig conditional = { { 197 /* conditional */, 3, 14, 3, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig switch_ = { { 226 /* switch */, 3, 18, 3, 21, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig write = { { 233 /* write */, 1, 22, 2, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig discard = { { 307 /* discard */, 1, 25, 1, 26, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig inputs = { { 323 /* inputs */, 2, 27, 2, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig escape = { { 330 /* escape */, 1, 30, 1, 31, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig mention = { { 337 /* mention */, 1, 32, 1, 33, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig all = { { 345 /* all */, 1, 34, 1, 35, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig exit = { { 357 /* exit */, 1, 36, 3, 39, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig throwing = { { 402 /* throwing */, 2, 40, 3, 43, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig loop = { { 453 /* loop */, 5, 44, 6, 50, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig loopStatement = { { 541 /* loopStatement */, 4, 51, 4, 55, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig tryCatch = { { 571 /* tryCatch */, 3, 56, 3, 59, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig read = { { 163 /* read */, 4, 9, 4, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig conditional = { { 186 /* conditional */, 3, 14, 3, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig switch_ = { { 215 /* switch */, 3, 18, 3, 21, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig write = { { 222 /* write */, 2, 22, 2, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig discard = { { 296 /* discard */, 1, 25, 1, 26, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig inputs = { { 312 /* inputs */, 2, 27, 2, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig escape = { { 319 /* escape */, 1, 30, 1, 31, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig mention = { { 326 /* mention */, 1, 32, 1, 33, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig all = { { 334 /* all */, 1, 34, 1, 35, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig exit = { { 344 /* exit */, 3, 36, 3, 39, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig throwing = { { 389 /* throwing */, 3, 40, 3, 43, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig loop = { { 435 /* loop */, 6, 44, 6, 50, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig loopStatement = { { 523 /* loopStatement */, 4, 51, 4, 55, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig tryCatch = { { 553 /* tryCatch */, 3, 56, 3, 59, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableFlow

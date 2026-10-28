@@ -104,7 +104,7 @@ final class InceptionResult
 	 * @param int|null $peakMemoryUsageBytes the heaviest parallel worker's peak, 0 when the
 	 * analysis ran in this process
 	 */
-	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime, int $workerCount = 0): int
+	public function handleReturn(int $exitCode, ?int $peakMemoryUsageBytes, float $analysisStartTime, int $workerCount): int
 	{
 		if ($this->getErrorOutput()->isVerbose()) {
 			$elapsedTime = round(microtime(true) - $analysisStartTime, 2);

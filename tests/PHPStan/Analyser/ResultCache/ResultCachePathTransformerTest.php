@@ -121,7 +121,7 @@ class ResultCachePathTransformerTest extends TestCase
 			filePath: $traitFile,
 			traitContexts: [$traitFile => $traitFile . ' (in context of class Foo)'],
 		);
-		$results = ['SomeRule#0' => new CollectedDataRuleResult([], null, [$error])];
+		$results = ['SomeRule#0' => new CollectedDataRuleResult([], null, [$error], [])];
 
 		$relativized = $transformer->relativizeCollectedDataRuleResults($results);
 		$this->assertSame(
@@ -144,7 +144,7 @@ class ResultCachePathTransformerTest extends TestCase
 	{
 		$transformer = new ResultCachePathTransformer(self::raw('/opt/project/vendor/phpstan/phpstan'));
 		$error = new Error('Message', AnalyserResultFinalizer::NO_FILE, null);
-		$results = ['SomeRule#0' => new CollectedDataRuleResult([], null, [$error])];
+		$results = ['SomeRule#0' => new CollectedDataRuleResult([], null, [$error], [])];
 
 		$roundTrip = $transformer->absolutizeCollectedDataRuleResults($transformer->relativizeCollectedDataRuleResults($results));
 		$this->assertSame(AnalyserResultFinalizer::NO_FILE, $roundTrip['SomeRule#0']->getErrors()[0]->getFile());

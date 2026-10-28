@@ -45,7 +45,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 * With a batch, the directory locators are added to it, and the returned locator cannot be used
 	 * before the batch is scanned.
 	 */
-	public function create(string $projectInstallationPath, ?OptimizedDirectorySourceLocatorBatch $batch = null): ?SourceLocator
+	public function create(string $projectInstallationPath, ?OptimizedDirectorySourceLocatorBatch $batch): ?SourceLocator
 	{
 		$composer = ComposerHelper::getComposerConfig($projectInstallationPath);
 
@@ -165,7 +165,7 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 				}
 
 				if ($bestDirFound !== null) {
-					$phpunitBridgeLocator = $this->create($bestDirFound);
+					$phpunitBridgeLocator = $this->create($bestDirFound, null);
 					if ($phpunitBridgeLocator !== null) {
 						$locators[] = $phpunitBridgeLocator;
 					}

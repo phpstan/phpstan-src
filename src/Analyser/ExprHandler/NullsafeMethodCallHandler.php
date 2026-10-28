@@ -226,6 +226,12 @@ final class NullsafeMethodCallHandler implements ExprHandler
 					->setRootExpr($expr);
 			},
 			dependencies: Dependencies::merge($exprResult->getDependencies(), $processedReceiverResult->getDependencies()),
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

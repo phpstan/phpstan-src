@@ -1883,7 +1883,7 @@ PT_MINIT_REGISTRATION(pt_register_scope_ops)
 	cls.method(sigs::mergeVariableHolders, [](INTERNAL_FUNCTION_PARAMETERS) {
 		HashTable *ours, *theirs;
 		zval *differing_zv = NULL;
-		if (!zp::parse<zp::Ht, zp::Ht, zp::Opt<zp::Zval>>(execute_data, ours, theirs, differing_zv)) RETURN_THROWS();
+		if (!zp::parse<zp::Ht, zp::Ht, zp::Zval>(execute_data, ours, theirs, differing_zv)) RETURN_THROWS();
 		HashTable *differing = NULL;
 		if (differing_zv != NULL && Z_ISREF_P(differing_zv)) {
 			/* the twin declares `array &$differingKeys = []`; vivify like PHP
@@ -1920,7 +1920,7 @@ PT_MINIT_REGISTRATION(pt_register_scope_ops)
 		bool require_more_characters;
 		bool keep_property_fetches = false;
 		HashTable *expression_types, *native_expression_types, *conditional_expressions;
-		ZEND_PARSE_PARAMETERS_START(9, 10)
+		ZEND_PARSE_PARAMETERS_START(10, 10)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(expr_printer)
 			Z_PARAM_STR(invalidate_str)
@@ -1930,7 +1930,6 @@ PT_MINIT_REGISTRATION(pt_register_scope_ops)
 			Z_PARAM_ARRAY_HT(expression_types)
 			Z_PARAM_ARRAY_HT(native_expression_types)
 			Z_PARAM_ARRAY_HT(conditional_expressions)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(keep_property_fetches)
 		ZEND_PARSE_PARAMETERS_END();
 		pt_init_strs();
@@ -1944,14 +1943,13 @@ PT_MINIT_REGISTRATION(pt_register_scope_ops)
 		zend_string *invalidate_str, *expr_string;
 		bool require_more_characters = false;
 		bool keep_property_fetches = false;
-		ZEND_PARSE_PARAMETERS_START(6, 9)
+		ZEND_PARSE_PARAMETERS_START(9, 9)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(expr_printer)
 			Z_PARAM_STR(invalidate_str)
 			Z_PARAM_OBJECT(expr_to_invalidate)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_STR(expr_string)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(require_more_characters)
 			Z_PARAM_OBJECT_OR_NULL(invalidating_class)
 			Z_PARAM_BOOL(keep_property_fetches)

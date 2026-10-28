@@ -256,7 +256,7 @@ final class WhileHandler implements StmtHandler
 			impurePoints: $impurePoints,
 			// the body may run or not whatever the condition says: a write in
 			// it does not make an earlier write dead, and a usage in it counts
-			variableFlow: VariableFlow::loop($bodyCondResult->getVariableFlow(), $finalScopeResult->getVariableFlow(), null, false, true),
+			variableFlow: VariableFlow::loop($bodyCondResult->getVariableFlow(), $finalScopeResult->getVariableFlow(), null, false, true, true),
 			dependencies: Dependencies::merge($bodyCondResult->getDependencies(), $finalScopeResult->getDependencies()),
 		);
 	}

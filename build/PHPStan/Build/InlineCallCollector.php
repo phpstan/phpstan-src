@@ -83,7 +83,7 @@ final class InlineCallCollector implements Collector
 	/**
 	 * @param list<string>|null $directories the closed world to scan for overrides; null = directories()
 	 */
-	public function __construct(private Parser $parser, private ReflectionProvider $reflectionProvider, private ?array $directories = null)
+	public function __construct(private Parser $parser, private ReflectionProvider $reflectionProvider, private ?array $directories)
 	{
 	}
 

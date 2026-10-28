@@ -1173,7 +1173,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
 
     private static function reduceExpression(\Phplrt\Parser\Context $ctx, mixed $children): mixed
     {
-        return new RegexNode('#expression', children: \is_array($children) ? $children : [$children]);
+        return new RegexNode('#expression', '', '', \is_array($children) ? $children : [$children]);
     }
 
     private static function reduceAlternation(\Phplrt\Parser\Context $ctx, mixed $children): mixed
@@ -1186,14 +1186,14 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         foreach ($children as $child) {
             if ($child instanceof TokenInterface) {
                 $isAlternation = true;
-                $child = new RegexNode('token', 'alternation', $child->value);
+                $child = new RegexNode('token', 'alternation', $child->value, []);
             }
             $nodes[] = $child;
         }
         if (!$isAlternation) {
             return $children[0] ?? [];
         }
-        return new RegexNode('#alternation', children: $nodes);
+        return new RegexNode('#alternation', '', '', $nodes);
     }
 
     private static function reduceConcatenation(\Phplrt\Parser\Context $ctx, mixed $children): mixed
@@ -1204,13 +1204,13 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         if (\count($children) === 1) {
             return $children[0];
         }
-        return new RegexNode('#concatenation', children: $children);
+        return new RegexNode('#concatenation', '', '', $children);
     }
 
     private static function reduceInternalOptions(\Phplrt\Parser\Context $ctx, mixed $children): mixed
     {
-        return new RegexNode('#internal_options', children: [
-            new RegexNode('token', 'internal_option', $children->value),
+        return new RegexNode('#internal_options', '', '', [
+            new RegexNode('token', 'internal_option', $children->value, []),
         ]);
     }
 
@@ -1223,7 +1223,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             self::T_LOOKBEHIND => '#lookbehind',
             self::T_NEGATIVE_LOOKBEHIND => '#negativelookbehind',
         ];
-        return new RegexNode($ids[$assertion->id], children: $children);
+        return new RegexNode($ids[$assertion->id], '', '', $children);
     }
 
     private static function reduceQuantification(\Phplrt\Parser\Context $ctx, mixed $children): mixed
@@ -1234,9 +1234,9 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         if (\count($children) === 1) {
             return $children[0];
         }
-        return new RegexNode('#quantification', children: [
+        return new RegexNode('#quantification', '', '', [
             $children[0],
-            new RegexNode('token', \strtolower(\substr($children[1]->name, 2)), $children[1]->value),
+            new RegexNode('token', \strtolower(\substr($children[1]->name, 2)), $children[1]->value, []),
         ]);
     }
 
@@ -1250,7 +1250,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
 
         $nodes = [];
         if ($children->id === self::T_NEGATIVE_CLASS_FC || $children->id === self::T_CLASS_FC) {
-            $nodes[] = new RegexNode('token', '_class', ']');
+            $nodes[] = new RegexNode('token', '_class', ']', []);
         }
 
         $literalNames = [
@@ -1264,37 +1264,37 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         $i = 0;
         // <range>? ( <posix_class> | <class_> | range() <range>? | literal() )* <range>?
         if ($i < $count && $tokens[$i]->name === 'T_RANGE') {
-            $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value);
+            $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value, []);
             $i++;
         }
         while ($i < $count) {
             $token = $tokens[$i];
             if ($token->name === 'T_POSIX_CLASS') {
-                $nodes[] = new RegexNode('token', 'posix_class', $token->value);
+                $nodes[] = new RegexNode('token', 'posix_class', $token->value, []);
                 $i++;
                 continue;
             }
             if ($token->name === 'T_CLASS_NESTED') {
-                $nodes[] = new RegexNode('token', 'class_', $token->value);
+                $nodes[] = new RegexNode('token', 'class_', $token->value, []);
                 $i++;
                 continue;
             }
             if (!isset($literalNames[$token->name])) {
                 break;
             }
-            $literal = new RegexNode('token', $literalNames[$token->name], $token->value);
+            $literal = new RegexNode('token', $literalNames[$token->name], $token->value, []);
             if (
                 $i + 2 < $count
                 && $tokens[$i + 1]->name === 'T_RANGE'
                 && isset($literalNames[$tokens[$i + 2]->name])
             ) {
-                $nodes[] = new RegexNode('#range', children: [
+                $nodes[] = new RegexNode('#range', '', '', [
                     $literal,
-                    new RegexNode('token', $literalNames[$tokens[$i + 2]->name], $tokens[$i + 2]->value),
+                    new RegexNode('token', $literalNames[$tokens[$i + 2]->name], $tokens[$i + 2]->value, []),
                 ]);
                 $i += 3;
                 if ($i < $count && $tokens[$i]->name === 'T_RANGE') {
-                    $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value);
+                    $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value, []);
                     $i++;
                 }
                 continue;
@@ -1303,7 +1303,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             $i++;
         }
         if ($i < $count && $tokens[$i]->name === 'T_RANGE') {
-            $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value);
+            $nodes[] = new RegexNode('token', 'range', $tokens[$i]->value, []);
             $i++;
         }
         if ($i !== $count) {
@@ -1311,7 +1311,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         }
 
         $negative = $children->id === self::T_NEGATIVE_CLASS_FC || $children->id === self::T_NEGATIVE_CLASS;
-        return new RegexNode($negative ? '#negativeclass' : '#class', children: $nodes);
+        return new RegexNode($negative ? '#negativeclass' : '#class', '', '', $nodes);
     }
 
     private static function reduceCapturing(\Phplrt\Parser\Context $ctx, mixed $children): mixed
@@ -1322,27 +1322,27 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         $opening = \array_shift($children);
         switch ($opening->id) {
             case self::T_MARKER:
-                return new RegexNode('#mark', children: [
-                    new RegexNode('token', 'name', $opening->captures[0]),
+                return new RegexNode('#mark', '', '', [
+                    new RegexNode('token', 'name', $opening->captures[0], []),
                 ]);
             case self::T_COMMENT:
-                return new RegexNode('#comment', children: $opening->captures[0] === '' ? [] : [
-                    new RegexNode('token', 'comment', $opening->captures[0]),
+                return new RegexNode('#comment', '', '', $opening->captures[0] === '' ? [] : [
+                    new RegexNode('token', 'comment', $opening->captures[0], []),
                 ]);
             case self::T_NAMED_CAPTURING:
-                \array_unshift($children, new RegexNode('token', 'capturing_name', $opening->captures[0]));
-                return new RegexNode('#namedcapturing', children: $children);
+                \array_unshift($children, new RegexNode('token', 'capturing_name', $opening->captures[0], []));
+                return new RegexNode('#namedcapturing', '', '', $children);
             case self::T_NON_CAPTURING:
-                return new RegexNode('#noncapturing', children: $children);
+                return new RegexNode('#noncapturing', '', '', $children);
             case self::T_NON_CAPTURING_INTERNAL_OPTION:
-                \array_unshift($children, new RegexNode('token', 'non_capturing_internal_option', $opening->value));
-                return new RegexNode('#noncapturing', children: $children);
+                \array_unshift($children, new RegexNode('token', 'non_capturing_internal_option', $opening->value, []));
+                return new RegexNode('#noncapturing', '', '', $children);
             case self::T_NON_CAPTURING_RESET:
-                return new RegexNode('#noncapturingreset', children: $children);
+                return new RegexNode('#noncapturingreset', '', '', $children);
             case self::T_ATOMIC_GROUP:
-                return new RegexNode('#atomicgroup', children: $children);
+                return new RegexNode('#atomicgroup', '', '', $children);
             default:
-                return new RegexNode('#capturing', children: $children);
+                return new RegexNode('#capturing', '', '', $children);
         }
     }
 
@@ -1353,7 +1353,7 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
             self::T_SUBROUTINE_G => 'subroutine',
         ];
 
-        return new RegexNode('token', $names[$children->id] ?? \strtolower(\substr($children->name, 2)), $children->value);
+        return new RegexNode('token', $names[$children->id] ?? \strtolower(\substr($children->name, 2)), $children->value, []);
     }
 
     private static function reduceCondition(\Phplrt\Parser\Context $ctx, mixed $children): mixed
@@ -1361,16 +1361,16 @@ final class RegexParser implements \Phplrt\Contracts\Parser\ParserInterface
         $reference = \array_shift($children);
         switch ($reference->id) {
             case self::T_NAMED_REFERENCE:
-                \array_unshift($children, new RegexNode('token', 'capturing_name', $reference->captures[0]));
-                return new RegexNode('#namedcondition', children: $children);
+                \array_unshift($children, new RegexNode('token', 'capturing_name', $reference->captures[0], []));
+                return new RegexNode('#namedcondition', '', '', $children);
             case self::T_ABSOLUTE_REFERENCE:
-                \array_unshift($children, new RegexNode('token', 'index', $reference->captures[0]));
-                return new RegexNode('#absolutecondition', children: $children);
+                \array_unshift($children, new RegexNode('token', 'index', $reference->captures[0], []));
+                return new RegexNode('#absolutecondition', '', '', $children);
             case self::T_RELATIVE_REFERENCE:
-                \array_unshift($children, new RegexNode('token', 'index', $reference->captures[0]));
-                return new RegexNode('#relativecondition', children: $children);
+                \array_unshift($children, new RegexNode('token', 'index', $reference->captures[0], []));
+                return new RegexNode('#relativecondition', '', '', $children);
             default:
-                return new RegexNode('#assertioncondition', children: $children);
+                return new RegexNode('#assertioncondition', '', '', $children);
         }
     }
 }

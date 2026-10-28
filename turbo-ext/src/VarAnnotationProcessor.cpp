@@ -315,11 +315,10 @@ PT_MINIT_REGISTRATION(pt_register_var_annotation_processor)
 	cls.method(sigs::processVarAnnotation, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *changed = NULL;
 		HashTable *variableNames;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_ARRAY_HT(variableNames)
 			Z_PARAM_OBJECT(node)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ZVAL(changed)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(VarAnnotationProcessor(Z_OBJ_P(ZEND_THIS)).processVarAnnotation(scope, variableNames, node, changed != NULL && Z_ISREF_P(changed) ? changed : NULL, NULL));

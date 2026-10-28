@@ -149,9 +149,8 @@ PT_MINIT_REGISTRATION(pt_register_variable_control_flow)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *kind;
 		pt_variable_control_flow_args a;
-		ZEND_PARSE_PARAMETERS_START(1, 15)
+		ZEND_PARSE_PARAMETERS_START(15, 15)
 			Z_PARAM_STR(kind)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(a.children)
 			Z_PARAM_STR_OR_NULL(a.name)
 			Z_PARAM_OBJECT_OR_NULL(a.type)

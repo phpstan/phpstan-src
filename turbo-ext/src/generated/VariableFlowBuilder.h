@@ -41,21 +41,20 @@ inline constexpr char strings[] =
 	"target\0" /* 233 */
 	"read\0" /* 240 */
 	"targetId\0" /* 245 */
-	"null\0" /* 254 */
-	"targetRead\0" /* 259 */
-	"flow\0" /* 270 */
-	"writes\0" /* 275 */
-	"kind\0" /* 282 */
-	"scope\0" /* 287 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 293 */
-	"redundant\0" /* 324 */
-	"PHPStan\\Type\\Type\0" /* 334 */
-	"targetWrite\0" /* 352 */
-	"type\0" /* 364 */
-	"holdsDestructibleObject\0" /* 369 */
-	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 393 */
-	"writeSite\0" /* 429 */
-	"escapeRoot"; /* 439 */
+	"targetRead\0" /* 254 */
+	"flow\0" /* 265 */
+	"writes\0" /* 270 */
+	"kind\0" /* 277 */
+	"scope\0" /* 282 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 288 */
+	"redundant\0" /* 319 */
+	"PHPStan\\Type\\Type\0" /* 329 */
+	"targetWrite\0" /* 347 */
+	"type\0" /* 359 */
+	"holdsDestructibleObject\0" /* 364 */
+	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 388 */
+	"writeSite\0" /* 424 */
+	"escapeRoot"; /* 434 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* throws $expr */
 	reg::packed(25, MAY_BE_ARRAY), /* throws $throwPoints */
@@ -70,23 +69,23 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(233, 0, 5), /* targetRead $target */
 	reg::packed(148, 0, 156), /* targetRead $storage */
 	reg::packed(240, MAY_BE_BOOL), /* targetRead $read */
-	reg::packed(245, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 254), /* targetRead $targetId */
+	reg::packed(245, MAY_BE_NULL | MAY_BE_LONG), /* targetRead $targetId */
 	reg::packed(37, MAY_BE_NULL, 38), /* targetRead return */
-	reg::packed(270, MAY_BE_NULL, 38), /* writes $flow */
+	reg::packed(265, MAY_BE_NULL, 38), /* writes $flow */
 	reg::packed(37, MAY_BE_ARRAY), /* writes return */
 	reg::packed(233, 0, 5), /* targetWrite $target */
-	reg::packed(282, MAY_BE_LONG), /* targetWrite $kind */
-	reg::packed(287, 0, 293), /* targetWrite $scope */
+	reg::packed(277, MAY_BE_LONG), /* targetWrite $kind */
+	reg::packed(282, 0, 288), /* targetWrite $scope */
 	reg::packed(148, 0, 156), /* targetWrite $storage */
-	reg::packed(324, MAY_BE_NULL, 334, false, false, 254), /* targetWrite $redundant */
+	reg::packed(319, MAY_BE_NULL, 329), /* targetWrite $redundant */
 	reg::packed(37, MAY_BE_NULL, 38), /* targetWrite return */
-	reg::packed(364, 0, 334), /* holdsDestructibleObject $type */
+	reg::packed(359, 0, 329), /* holdsDestructibleObject $type */
 	reg::packed(37, MAY_BE_BOOL), /* holdsDestructibleObject return */
 	reg::packed(233, 0, 5), /* writeSite $target */
-	reg::packed(282, MAY_BE_LONG), /* writeSite $kind */
-	reg::packed(287, 0, 293), /* writeSite $scope */
+	reg::packed(277, MAY_BE_LONG), /* writeSite $kind */
+	reg::packed(282, 0, 288), /* writeSite $scope */
 	reg::packed(148, 0, 156), /* writeSite $storage */
-	reg::packed(37, MAY_BE_NULL, 393), /* writeSite return */
+	reg::packed(37, MAY_BE_NULL, 388), /* writeSite return */
 	reg::packed(0, 0, 5), /* escapeRoot $expr */
 	reg::packed(37, MAY_BE_NULL, 38), /* escapeRoot return */
 };
@@ -98,12 +97,12 @@ namespace sig {
 inline constexpr sigtab::Sig throws = { { 68 /* throws */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig arguments = { { 197 /* arguments */, 3, 3, 3, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig child = { { 227 /* child */, 2, 7, 2, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig targetRead = { { 259 /* targetRead */, 3, 10, 4, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig writes = { { 275 /* writes */, 1, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig targetWrite = { { 352 /* targetWrite */, 4, 17, 5, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig holdsDestructibleObject = { { 369 /* holdsDestructibleObject */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig writeSite = { { 429 /* writeSite */, 4, 25, 4, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig escapeRoot = { { 439 /* escapeRoot */, 1, 30, 1, 31, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig targetRead = { { 254 /* targetRead */, 4, 10, 4, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig writes = { { 270 /* writes */, 1, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig targetWrite = { { 347 /* targetWrite */, 5, 17, 5, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig holdsDestructibleObject = { { 364 /* holdsDestructibleObject */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig writeSite = { { 424 /* writeSite */, 4, 25, 4, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig escapeRoot = { { 434 /* escapeRoot */, 1, 30, 1, 31, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableFlowBuilder

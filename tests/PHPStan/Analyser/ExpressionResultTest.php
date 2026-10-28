@@ -246,7 +246,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			new ExpressionResultStorage(),
 			static function (): void {
 			},
-			ExpressionContext::createTopLevel(),
+			ExpressionContext::createTopLevel(true),
 		);
 	}
 
@@ -265,10 +265,20 @@ class ExpressionResultTest extends PHPStanTestCase
 			[],
 			static fn (): IntegerType => $type,
 			SpecifiedTypes::emptySpecifyCallback(),
+			false,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
 		);
 		$finalScope = $scope->assignVariable('value', $type, $type, TrinaryLogic::createYes());
-		$throwPoints = [InternalThrowPoint::createImplicit($finalScope, $expr)];
-		$flow = VariableFlow::read('value');
+		$throwPoints = [InternalThrowPoint::createImplicit($finalScope, $expr, null)];
+		$flow = VariableFlow::read('value', null, false, null);
 		$final = $result->finalize($finalScope, true, true, $throwPoints, [], $flow, null);
 
 		$this->assertNotSame($result, $final);
@@ -308,6 +318,16 @@ class ExpressionResultTest extends PHPStanTestCase
 			[],
 			static fn (): Type => $rawType,
 			SpecifiedTypes::emptySpecifyCallback(),
+			false,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
 		);
 
 		$this->assertTrue($rawType->equals($result->getKeepVoidType(false)));
@@ -354,6 +374,16 @@ class ExpressionResultTest extends PHPStanTestCase
 				$calls->narrowing++;
 				return new SpecifiedTypes([], []);
 			},
+			false,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
+			null,
 		);
 		if (($resolved & 1) !== 0) {
 			$this->assertSame($type, $result->getType());
@@ -362,7 +392,7 @@ class ExpressionResultTest extends PHPStanTestCase
 			$this->assertSame($nativeType, $result->getNativeType());
 		}
 		$context = TypeSpecifierContext::createTruthy();
-		$specifiedTypes = $result->getSpecifiedTypes($context);
+		$specifiedTypes = $result->getSpecifiedTypes($context, false);
 		$newScope = $scope->assignVariable('other', $type, $type, TrinaryLogic::createYes());
 		switch ($method) {
 			case 'finalize':
@@ -388,7 +418,7 @@ class ExpressionResultTest extends PHPStanTestCase
 		$this->assertSame($nativeType, $copy->getNativeType());
 		$this->assertSame($type, $copy->getKeepVoidType(false));
 		$this->assertSame($nativeType, $copy->getKeepVoidType(true));
-		$this->assertSame($specifiedTypes, $copy->getSpecifiedTypes($context));
+		$this->assertSame($specifiedTypes, $copy->getSpecifiedTypes($context, false));
 		$this->assertSame(2, $calls->types);
 		$this->assertSame(1, $calls->narrowing);
 	}

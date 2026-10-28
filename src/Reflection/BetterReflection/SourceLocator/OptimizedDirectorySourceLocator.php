@@ -43,7 +43,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		private array $classToFile,
 		private array $functionToFiles,
 		private array $constantToFile,
-		private bool $awaitingScan = false,
+		private bool $awaitingScan,
 	)
 	{
 	}

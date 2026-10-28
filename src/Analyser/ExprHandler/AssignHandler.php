@@ -203,7 +203,7 @@ final class AssignHandler implements ExprHandler
 				);
 			}
 
-			$valueScope = $valueScope->enterExpressionAssign($expr->expr);
+			$valueScope = $valueScope->enterExpressionAssign($expr->expr, true);
 		}
 
 		$valueContext = $context;
@@ -237,6 +237,16 @@ final class AssignHandler implements ExprHandler
 				impurePoints: $valueImpurePoints,
 				typeCallback: static fn (bool $nativeTypesPromoted): Type => $nativeTypesPromoted ? $assignedExprResult->getNativeType() : $assignedExprResult->getType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
+				variableFlow: null,
+				dependencies: null,
 			),
 			$assignedExprResult,
 			$stmt,
@@ -299,7 +309,7 @@ final class AssignHandler implements ExprHandler
 			? self::redundant($assignedExprResult, $expr->var, $storage)
 			: null;
 		$variableFlow = VariableFlow::sequence(
-			VariableFlowBuilder::targetRead($expr->var, $storage, false),
+			VariableFlowBuilder::targetRead($expr->var, $storage, false, null),
 			$assignedExprResult->getVariableFlow(),
 			$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
 			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_ASSIGN, $scope, $storage, $redundantType),
@@ -324,6 +334,13 @@ final class AssignHandler implements ExprHandler
 			specifyTypesCallback: $expr instanceof Assign ? $this->createSpecifyTypesCallback($expr, $assignedExprResult, $beforeScope, $storage) : fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			createTypesCallback: $expr instanceof Assign ? $this->createCreateTypesCallback($expr, $assignedExprResult, $beforeScope) : null,
 			dependencies: Dependencies::merge($assignedExprResult->getDependencies(), $result->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 
@@ -577,7 +594,7 @@ final class AssignHandler implements ExprHandler
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function processVirtualAssign(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?ExpressionResult $assignedExprResult = null): ExpressionResult
+	public function processVirtualAssign(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $var, Expr $assignedExpr, callable $nodeCallback, ?ExpressionResult $assignedExprResult): ExpressionResult
 	{
 		// work off an available result for the assigned expr: passed by the
 		// caller, or fabricated from a type-carrying virtual node - threaded
@@ -601,7 +618,7 @@ final class AssignHandler implements ExprHandler
 			$var,
 			$assignedExpr,
 			$virtualAssignNodeCallback,
-			ExpressionContext::createDeep(),
+			ExpressionContext::createDeep(true),
 			AssignTargetWalkMode::virtualAssign(),
 		);
 
@@ -618,12 +635,22 @@ final class AssignHandler implements ExprHandler
 				impurePoints: [],
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
+				variableFlow: null,
+				dependencies: null,
 			),
 			$assignedExprResult,
 			$stmt,
 			$storage,
 			$virtualAssignNodeCallback,
-			ExpressionContext::createDeep(),
+			ExpressionContext::createDeep(true),
 		);
 	}
 
@@ -654,7 +681,7 @@ final class AssignHandler implements ExprHandler
 		// answers its asks from the storage instead of re-walking on demand,
 		// same as NodeScopeResolver::processExprNodeInternal().
 		$prepared = $this->doPrepareTarget($nodeScopeResolver, $scope, $storage, $stmt, $var, $assignedExpr, $nodeCallback, $context, $mode);
-		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $mode->enterExpressionAssign() ? $scope->enterExpressionAssign($var) : $scope, $storage);
+		$nodeScopeResolver->callNodeCallback($nodeCallback, $var, $mode->enterExpressionAssign() ? $scope->enterExpressionAssign($var, true) : $scope, $storage);
 
 		return $prepared;
 	}
@@ -706,7 +733,7 @@ final class AssignHandler implements ExprHandler
 					$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 					$readScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 				}
-				$targetReadResult = $this->variableHandler->composeResult($nodeScopeResolver, $var, $variableNameResult, $storage, $readScope);
+				$targetReadResult = $this->variableHandler->composeResult($nodeScopeResolver, $var, $variableNameResult, $storage, $readScope, null);
 				if ($mode->issetSemanticsForRead()) {
 					$targetChainResults[spl_object_id($var)] = $targetReadResult;
 				}
@@ -728,6 +755,18 @@ final class AssignHandler implements ExprHandler
 				targetChainResults: $targetChainResults,
 				variableNameResult: $variableNameResult,
 				dependencies: $variableNameResult !== null ? $variableNameResult->getDependencies() : null,
+				rootVar: null,
+				varResult: null,
+				dimFetchStack: null,
+				assignedPropertyExpr: null,
+				offsetTypes: null,
+				offsetNativeTypes: null,
+				existingOffsetTypes: null,
+				existingOffsetNativeTypes: null,
+				offsetSetTargetResult: null,
+				objectResult: null,
+				propertyName: null,
+				propertyHolderType: null,
 			);
 		}
 
@@ -814,13 +853,23 @@ final class AssignHandler implements ExprHandler
 						impurePoints: [],
 						typeCallback: static fn (): Type => new NeverType(),
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						containsNullsafe: false,
+						issetabilityDescriptor: null,
+						truthyScopeOverrideResult: null,
+						falseyScopeOverrideResult: null,
+						createTypesCallback: null,
+						type: null,
+						nativeType: null,
+						argsResult: null,
+						variableFlow: null,
+						dependencies: null,
 					);
 					$deferredDimFetchResults[] = [$dimFetch, $fabricatedResult];
 					$previousLinkResult = $fabricatedResult;
 
 				} else {
 					if ($enterExpressionAssign) {
-						$scope->enterExpressionAssign($dimExpr);
+						$scope->enterExpressionAssign($dimExpr, true);
 					}
 					// process the dimension first, then consume its ExpressionResult
 					// (single-pass inside-out) rather than reading it before processExprNode()
@@ -846,6 +895,16 @@ final class AssignHandler implements ExprHandler
 							return $previousLinkResult->getTypeOnScope($s, $s->nativeTypesPromoted)->getOffsetValueType($dimNodeResult->getTypeOnScope($s, $s->nativeTypesPromoted));
 						},
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						containsNullsafe: false,
+						issetabilityDescriptor: null,
+						truthyScopeOverrideResult: null,
+						falseyScopeOverrideResult: null,
+						createTypesCallback: null,
+						type: null,
+						nativeType: null,
+						argsResult: null,
+						variableFlow: null,
+						dependencies: null,
 					);
 					$deferredDimFetchResults[] = [$dimFetch, $fabricatedResult];
 					$previousLinkResult = $fabricatedResult;
@@ -865,7 +924,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$nodeScopeResolver->storeExpressionResult($storage, $dimFetch, $previousLinkResult);
-				$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $callbackScope->enterExpressionAssign($dimFetch) : $callbackScope, $storage);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, $dimFetch, $enterExpressionAssign ? $callbackScope->enterExpressionAssign($dimFetch, true) : $callbackScope, $storage);
 			}
 
 			if ($mode->issetSemanticsForRead()) {
@@ -917,7 +976,7 @@ final class AssignHandler implements ExprHandler
 
 				$linkTypes[] = $deferredResult->getType();
 			}
-			$targetDependencies[] = Dependencies::create($beforeScope->getFile(), $linkTypes);
+			$targetDependencies[] = Dependencies::create($beforeScope->getFile(), $linkTypes, [], [], [], []);
 			$targetDependencies = Dependencies::merge(...$targetDependencies);
 			// the chain link the write's ArrayAccess::offsetSet would be invoked on:
 			// the second-outermost link, or the root for a single-dimension target
@@ -947,6 +1006,12 @@ final class AssignHandler implements ExprHandler
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
 				dependencies: $targetDependencies,
+				existingOffsetTypes: null,
+				existingOffsetNativeTypes: null,
+				objectResult: null,
+				propertyName: null,
+				propertyHolderType: null,
+				variableNameResult: null,
 			);
 		}
 
@@ -1014,6 +1079,17 @@ final class AssignHandler implements ExprHandler
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
 				dependencies: $parkedReadResult->getDependencies(),
+				rootVar: null,
+				varResult: null,
+				dimFetchStack: null,
+				assignedPropertyExpr: null,
+				offsetTypes: null,
+				offsetNativeTypes: null,
+				existingOffsetTypes: null,
+				existingOffsetNativeTypes: null,
+				offsetSetTargetResult: null,
+				propertyHolderType: null,
+				variableNameResult: null,
 			);
 		}
 
@@ -1075,6 +1151,17 @@ final class AssignHandler implements ExprHandler
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
 				dependencies: $parkedReadResult->getDependencies(),
+				rootVar: null,
+				varResult: null,
+				dimFetchStack: null,
+				assignedPropertyExpr: null,
+				offsetTypes: null,
+				offsetNativeTypes: null,
+				existingOffsetTypes: null,
+				existingOffsetNativeTypes: null,
+				offsetSetTargetResult: null,
+				objectResult: null,
+				variableNameResult: null,
 			);
 		}
 
@@ -1091,6 +1178,22 @@ final class AssignHandler implements ExprHandler
 				$throwPoints,
 				$impurePoints,
 				$isAlwaysTerminating,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				[],
+				null,
+				null,
 			);
 		}
 
@@ -1141,6 +1244,17 @@ final class AssignHandler implements ExprHandler
 				assignedPropertyExpr: $assignedPropertyExpr,
 				existingOffsetTypes: $offsetTypes,
 				existingOffsetNativeTypes: $offsetNativeTypes,
+				dimFetchStack: null,
+				offsetTypes: null,
+				offsetNativeTypes: null,
+				offsetSetTargetResult: null,
+				objectResult: null,
+				propertyName: null,
+				propertyHolderType: null,
+				targetReadResult: null,
+				targetChainResults: [],
+				variableNameResult: null,
+				dependencies: null,
 			);
 		}
 
@@ -1176,6 +1290,19 @@ final class AssignHandler implements ExprHandler
 			targetReadResult: $targetReadResult,
 			targetChainResults: $targetChainResults,
 			dependencies: $varResult->getDependencies(),
+			rootVar: null,
+			varResult: null,
+			dimFetchStack: null,
+			assignedPropertyExpr: null,
+			offsetTypes: null,
+			offsetNativeTypes: null,
+			existingOffsetTypes: null,
+			existingOffsetNativeTypes: null,
+			offsetSetTargetResult: null,
+			objectResult: null,
+			propertyName: null,
+			propertyHolderType: null,
+			variableNameResult: null,
 		);
 	}
 
@@ -1585,7 +1712,7 @@ final class AssignHandler implements ExprHandler
 			$scope = $result->getScope();
 
 			if ($var->name instanceof Expr && $this->phpVersion->supportsPropertyHooks()) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $var);
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $var, null);
 			}
 
 			$propertyHolderType = $objectResult->getType();
@@ -1744,7 +1871,7 @@ final class AssignHandler implements ExprHandler
 
 				$itemScope = $scope;
 				if ($enterExpressionAssign) {
-					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value);
+					$itemScope = $itemScope->enterExpressionAssign($arrayItem->value, true);
 				}
 				$itemScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($itemScope, $arrayItem->value);
 				$keyResult = null;
@@ -1800,6 +1927,16 @@ final class AssignHandler implements ExprHandler
 						impurePoints: [],
 						typeCallback: static fn () => new MixedType(),
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						containsNullsafe: false,
+						issetabilityDescriptor: null,
+						truthyScopeOverrideResult: null,
+						falseyScopeOverrideResult: null,
+						createTypesCallback: null,
+						type: null,
+						nativeType: null,
+						argsResult: null,
+						variableFlow: null,
+						dependencies: null,
 					),
 					$itemValueResult,
 					$stmt,
@@ -1883,6 +2020,15 @@ final class AssignHandler implements ExprHandler
 			typeCallback: static fn () => new MixedType(),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: Dependencies::merge(...$writeDependencies),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
 		);
 	}
 
@@ -1902,13 +2048,13 @@ final class AssignHandler implements ExprHandler
 
 		$parameters = $receiverType->getMethod('offsetSet', $scope)->getOnlyVariant()->getParameters();
 		if ($keyType !== null && isset($parameters[0])) {
-			$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[0]->getType(), $keyType));
+			$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[0]->getType(), $keyType, false));
 		}
 		if (!isset($parameters[1])) {
 			return $constraints;
 		}
 
-		$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[1]->getType(), $valueType));
+		$constraints = $constraints->merge($this->templateArgumentObserver->collectArgument($parameters[1]->getType(), $valueType, false));
 		$constraints = $constraints->merge($this->templateArgumentObserver->collectClosureArgument($parameters[1]->getType(), $valueType));
 		return $constraints;
 	}
@@ -1979,7 +2125,7 @@ final class AssignHandler implements ExprHandler
 			// the raw superglobal array (see bug-14999).
 			if (
 				!in_array($var->name, Scope::SUPERGLOBAL_VARIABLES, true)
-				&& !$varResult->askScopeVariableStateMatches($postEvalScope, false)
+				&& !$varResult->askScopeVariableStateMatches($postEvalScope, false, false)
 			) {
 				// the assigned expression reassigned the root variable itself
 				return [

@@ -201,7 +201,7 @@ final class ScopeOps
 	 * @param array<string, true> $differingKeys
 	 * @return array<string, ExpressionTypeHolder>
 	 */
-	public static function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders, array &$differingKeys = []): array
+	public static function mergeVariableHolders(array $ourVariableTypeHolders, array $theirVariableTypeHolders, array &$differingKeys): array
 	{
 		$intersectedVariableTypeHolders = [];
 		$globalVariableCallback = static fn (Node $node) => $node instanceof Variable && is_string($node->name) && in_array($node->name, Scope::SUPERGLOBAL_VARIABLES, true);
@@ -314,13 +314,15 @@ final class ScopeOps
 			unset($theirNativeExpressionTypes[$exprString]);
 		}
 
+		$differingNativeKeys = [];
+
 		return [
 			$mergedExpressionTypes,
 			// + instead of array_merge: the key sets are disjoint (matching entries were
 			// unset from both native maps above), and array_merge would renumber
 			// integer-coerced expression keys (an expression printing as '5' is stored
 			// under int key 5), corrupting them. The native implementation preserves keys.
-			$mergedNativeExpressionTypes + array_filter(self::mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes), $filter),
+			$mergedNativeExpressionTypes + array_filter(self::mergeVariableHolders($ourNativeExpressionTypes, $theirNativeExpressionTypes, $differingNativeKeys), $filter),
 		];
 	}
 
@@ -709,7 +711,7 @@ final class ScopeOps
 		array $expressionTypes,
 		array $nativeExpressionTypes,
 		array $conditionalExpressions,
-		bool $keepPropertyFetches = false,
+		bool $keepPropertyFetches,
 	): ?array
 	{
 		$invalidated = false;
@@ -782,7 +784,7 @@ final class ScopeOps
 				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass, keepPropertyFetches: $keepPropertyFetches)) {
+					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass, keepPropertyFetches: $keepPropertyFetches, requireMoreCharacters: false)) {
 						$invalidated = true;
 						$shouldKeep = false;
 						break;
@@ -869,7 +871,7 @@ final class ScopeOps
 	/**
 	 * Mirrors the former MutatingScope::shouldInvalidateExpression().
 	 */
-	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false): bool
+	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters, ?ClassReflection $invalidatingClass, bool $keepPropertyFetches): bool
 	{
 		if (
 			$expr instanceof IntertwinedVariableByReferenceWithExpr

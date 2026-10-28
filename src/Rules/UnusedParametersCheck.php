@@ -44,8 +44,8 @@ final class UnusedParametersCheck
 		string $unusedParameterMessage,
 		string $identifier,
 		bool $reportExactLine,
-		?string $unusedFlowMessage = null,
-		?string $unusedFlowIdentifier = null,
+		?string $unusedFlowMessage,
+		?string $unusedFlowIdentifier,
 	): array
 	{
 		if ($node->isOpaque()) {

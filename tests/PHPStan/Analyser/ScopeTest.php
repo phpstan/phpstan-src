@@ -240,7 +240,7 @@ class ScopeTest extends PHPStanTestCase
 		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
 		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a, $a, TrinaryLogic::createYes());
 		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b, $b, TrinaryLogic::createYes());
-		$resultScope = $scopeA->generalizeWith($scopeB);
+		$resultScope = $scopeA->generalizeWith($scopeB, null);
 		$this->assertSame($expectedTypeDescription, $resultScope->getVariableType('a')->describe(VerbosityLevel::precise()));
 	}
 

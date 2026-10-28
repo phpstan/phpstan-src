@@ -21,7 +21,7 @@ final class CollectedDataRuleResult
 		private array $collectorHashes,
 		private ?bool $onlyFiles,
 		private array $errors,
-		private array $valueDependencies = [],
+		private array $valueDependencies,
 	)
 	{
 	}

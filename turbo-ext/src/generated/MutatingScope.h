@@ -579,7 +579,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(380, MAY_BE_BOOL), /* duplicateWith $inFirstLevelStatement */
 	reg::packed(494, MAY_BE_BOOL), /* duplicateWith $afterExtractCall */
 	reg::packed(738, 0, 523), /* duplicateWith return */
-	reg::packed(1845, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 222), /* getClosureScopeCacheKey $relevantRoots */
+	reg::packed(1845, MAY_BE_NULL | MAY_BE_ARRAY), /* getClosureScopeCacheKey $relevantRoots */
 	reg::packed(738, MAY_BE_STRING), /* getClosureScopeCacheKey return */
 	reg::packed(1883, MAY_BE_STRING), /* exprStringIsRootedIn $exprString */
 	reg::packed(1894, MAY_BE_ARRAY), /* exprStringIsRootedIn $roots */
@@ -790,7 +790,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1374, MAY_BE_NULL | MAY_BE_STRING), /* enterCatchType $variableName */
 	reg::packed(738, 0, 523), /* enterCatchType return */
 	reg::packed(966, 0, 1712), /* enterExpressionAssign $expr */
-	reg::packed(5262, MAY_BE_BOOL, reg::NoString, false, false, 402), /* enterExpressionAssign $isPlainWrite */
+	reg::packed(5262, MAY_BE_BOOL), /* enterExpressionAssign $isPlainWrite */
 	reg::packed(738, 0, 523), /* enterExpressionAssign return */
 	reg::packed(966, 0, 1712), /* exitExpressionAssign $expr */
 	reg::packed(738, 0, 523), /* exitExpressionAssign return */
@@ -897,7 +897,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(6533, 0, 523), /* collectAbsorbedClosures $theirs */
 	reg::packed(738, MAY_BE_NULL, 672), /* collectAbsorbedClosures return */
 	reg::packed(6479, MAY_BE_NULL, 523), /* mergeWithVariableState $otherScope */
-	reg::packed(6490, MAY_BE_BOOL, reg::NoString, false, false, 148), /* mergeWithVariableState $preserveVacuousConditionals */
+	reg::packed(6490, MAY_BE_BOOL), /* mergeWithVariableState $preserveVacuousConditionals */
 	reg::packed(738, 0, 523), /* mergeWithVariableState return */
 	reg::packed(6587, MAY_BE_ARRAY), /* withoutPreciseClassConstantFetches $differingExpressionKeys */
 	reg::packed(6611, MAY_BE_ARRAY), /* withoutPreciseClassConstantFetches $ourExpressionTypes */
@@ -930,7 +930,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(7249, 0, 523), /* processAlwaysIterableForeachScopeWithoutPollute $finalScope */
 	reg::packed(738, 0, 523), /* processAlwaysIterableForeachScopeWithoutPollute return */
 	reg::packed(6479, 0, 523), /* generalizeWith $otherScope */
-	reg::packed(7308, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 222), /* generalizeWith $writableVariableNames */
+	reg::packed(7308, MAY_BE_NULL | MAY_BE_ARRAY), /* generalizeWith $writableVariableNames */
 	reg::packed(738, 0, 523), /* generalizeWith return */
 	reg::packed(6479, 0, 523), /* generalizeWithVariableState $otherScope */
 	reg::packed(7308, MAY_BE_NULL | MAY_BE_ARRAY), /* generalizeWithVariableState $writableVariableNames */
@@ -1072,7 +1072,7 @@ inline constexpr sigtab::Sig getScopeNativeType = { { 1753 /* getScopeNativeType
 inline constexpr sigtab::Sig getNodeKey = { { 1772 /* getNodeKey */, 1, 73, 1, 74, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getExprPrinter = { { 1816 /* getExprPrinter */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig duplicateWith = { { 1831 /* duplicateWith */, 8, 76, 8, 84, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClosureScopeCacheKey = { { 1859 /* getClosureScopeCacheKey */, 0, 85, 1, 86, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureScopeCacheKey = { { 1859 /* getClosureScopeCacheKey */, 1, 85, 1, 86, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig exprStringIsRootedIn = { { 1900 /* exprStringIsRootedIn */, 2, 87, 2, 89, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig resolveType = { { 1921 /* resolveType */, 2, 90, 2, 92, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig resolveTypeOfNewWorldHandlerNode = { { 1933 /* resolveTypeOfNewWorldHandlerNode */, 1, 93, 1, 94, ZEND_ACC_PRIVATE } };
@@ -1140,7 +1140,7 @@ inline constexpr sigtab::Sig enterMatch = { { 5127 /* enterMatch */, 3, 274, 3, 
 inline constexpr sigtab::Sig enterForeach = { { 5208 /* enterForeach */, 7, 278, 7, 285, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig enterForeachKey = { { 5221 /* enterForeachKey */, 5, 286, 5, 291, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig enterCatchType = { { 5247 /* enterCatchType */, 2, 292, 2, 294, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterExpressionAssign = { { 5275 /* enterExpressionAssign */, 1, 295, 2, 297, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterExpressionAssign = { { 5275 /* enterExpressionAssign */, 2, 295, 2, 297, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig exitExpressionAssign = { { 5297 /* exitExpressionAssign */, 1, 298, 1, 299, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isInExpressionAssign = { { 5318 /* isInExpressionAssign */, 1, 300, 1, 301, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isInWriteExpressionAssign = { { 5339 /* isInWriteExpressionAssign */, 1, 302, 1, 303, ZEND_ACC_PUBLIC } };
@@ -1179,7 +1179,7 @@ inline constexpr sigtab::Sig exitFirstLevelStatements = { { 6430 /* exitFirstLev
 inline constexpr sigtab::Sig isInFirstLevelStatement = { { 6455 /* isInFirstLevelStatement */, 0, 395, 0, 395, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig mergeWith = { { 6518 /* mergeWith */, 1, 396, 2, 398, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig collectAbsorbedClosures = { { 6540 /* collectAbsorbedClosures */, 2, 399, 2, 401, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig mergeWithVariableState = { { 6564 /* mergeWithVariableState */, 1, 402, 2, 404, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mergeWithVariableState = { { 6564 /* mergeWithVariableState */, 2, 402, 2, 404, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig withoutPreciseClassConstantFetches = { { 6651 /* withoutPreciseClassConstantFetches */, 3, 405, 3, 408, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig preserveVacuousConditionalExpressions = { { 6766 /* preserveVacuousConditionalExpressions */, 3, 409, 3, 412, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig mergeSameGuardConditionalExpressions = { { 6858 /* mergeSameGuardConditionalExpressions */, 3, 413, 3, 416, ZEND_ACC_PRIVATE } };
@@ -1189,7 +1189,7 @@ inline constexpr sigtab::Sig processFinallyScope = { { 7059 /* processFinallySco
 inline constexpr sigtab::Sig processFinallyScopeVariableTypeHolders = { { 7157 /* processFinallyScopeVariableTypeHolders */, 3, 425, 3, 428, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig processClosureScope = { { 7229 /* processClosureScope */, 3, 429, 3, 432, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processAlwaysIterableForeachScopeWithoutPollute = { { 7260 /* processAlwaysIterableForeachScopeWithoutPollute */, 1, 433, 1, 434, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig generalizeWith = { { 7330 /* generalizeWith */, 1, 435, 2, 437, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalizeWith = { { 7330 /* generalizeWith */, 2, 435, 2, 437, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig generalizeWithVariableState = { { 7345 /* generalizeWithVariableState */, 2, 438, 2, 440, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig generalizeVariableTypeHolders = { { 7418 /* generalizeVariableTypeHolders */, 3, 441, 3, 444, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig flattenUnionForGeneralization = { { 7448 /* flattenUnionForGeneralization */, 1, 445, 1, 446, ZEND_ACC_PRIVATE } };

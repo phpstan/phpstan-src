@@ -71,7 +71,7 @@ final class InstanceofHandler implements ExprHandler
 			$dependencies = Dependencies::merge(
 				$exprResult->getDependencies(),
 				$classResult->getDependencies(),
-				Dependencies::create($beforeScope->getFile(), classNames: DependencyTypes::classNamesOfClassString($classResult->getType())),
+				Dependencies::create($beforeScope->getFile(), classNames: DependencyTypes::classNamesOfClassString($classResult->getType()), types: [], reflections: [], filePaths: [], usedTraits: []),
 			);
 			$scope = $classResult->getScope();
 			$hasYield = $hasYield || $classResult->hasYield();
@@ -79,7 +79,7 @@ final class InstanceofHandler implements ExprHandler
 			$impurePoints = array_merge($impurePoints, $classResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $classResult->isAlwaysTerminating();
 		} else {
-			$dependencies = Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), classNames: [$beforeScope->resolveName($expr->class)]));
+			$dependencies = Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), classNames: [$beforeScope->resolveName($expr->class)], types: [], reflections: [], filePaths: [], usedTraits: []));
 		}
 
 		// When the class side is written as a Name (self / static / parent / a
@@ -211,6 +211,14 @@ final class InstanceofHandler implements ExprHandler
 				return (new SpecifiedTypes([], []))->setRootExpr($expr);
 			},
 			dependencies: $dependencies,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

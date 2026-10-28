@@ -140,14 +140,14 @@ final class IssetHandler implements ExprHandler
 			typeCallback: static function (bool $nativeTypesPromoted) use ($varResults, $afterScope): Type {
 				$issetResult = true;
 				foreach ($varResults as $varResult) {
-					$result = $varResult->getIssetabilityResolution($nativeTypesPromoted ? $afterScope->doNotTreatPhpDocTypesAsCertain() : $afterScope, false)->isSet(static function (Type $type): ?bool {
+					$result = $varResult->getIssetabilityResolution($nativeTypesPromoted ? $afterScope->doNotTreatPhpDocTypesAsCertain() : $afterScope, false, false)->isSet(static function (Type $type): ?bool {
 						$isNull = $type->isNull();
 						if ($isNull->maybe()) {
 							return null;
 						}
 
 						return !$isNull->yes();
-					});
+					}, null);
 					if ($result !== null) {
 						if (!$result) {
 							return new ConstantBooleanType($result);
@@ -263,6 +263,14 @@ final class IssetHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->createIssetTruthyChainTypes($evaluationScope, $issetExpr, $readType, $expr, $context);
 			},
 			dependencies: Dependencies::merge(...array_map(static fn (ExpressionResult $result) => $result->getDependencies(), $varResults)),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

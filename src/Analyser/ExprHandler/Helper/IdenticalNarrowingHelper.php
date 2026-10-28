@@ -261,6 +261,7 @@ final class IdenticalNarrowingHelper
 					new ObjectType($constantStrings[0]->getValue(), classReflection: $this->reflectionProvider->getClass($constantStrings[0]->getValue())->asFinal()),
 					$context,
 					$evaluationScope,
+					null,
 				)->unionWith($this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context));
 			}
 		}
@@ -413,6 +414,7 @@ final class IdenticalNarrowingHelper
 						new ObjectType($otherStrings[0]->getValue()),
 						$context,
 						$evaluationScope,
+						null,
 					)->unionWith($this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $side, $sideResult, $otherStrings[0], $context));
 				}
 
@@ -421,6 +423,7 @@ final class IdenticalNarrowingHelper
 					new ObjectType($otherStrings[0]->getValue(), classReflection: $this->reflectionProvider->getClass($otherStrings[0]->getValue())->asFinal()),
 					$context,
 					$evaluationScope,
+					null,
 				)->unionWith($this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $side, $sideResult, $otherStrings[0], $context));
 			}
 		}
@@ -453,8 +456,8 @@ final class IdenticalNarrowingHelper
 					&& !$rightType->isConstantScalarValue()->yes()
 					&& ($leftArgType->isIterableAtLeastOnce()->yes() || $rightArgType->isIterableAtLeastOnce()->yes())
 				) {
-					return $this->defaultNarrowingHelper->createForSubject($unwrappedLeft->getArgs()[0]->value, new NonEmptyArrayType(), $context, $evaluationScope)->unionWith(
-						$this->defaultNarrowingHelper->createForSubject($unwrappedRight->getArgs()[0]->value, new NonEmptyArrayType(), $context, $evaluationScope),
+					return $this->defaultNarrowingHelper->createForSubject($unwrappedLeft->getArgs()[0]->value, new NonEmptyArrayType(), $context, $evaluationScope, null)->unionWith(
+						$this->defaultNarrowingHelper->createForSubject($unwrappedRight->getArgs()[0]->value, new NonEmptyArrayType(), $context, $evaluationScope, null),
 					);
 				}
 			}
@@ -571,7 +574,7 @@ final class IdenticalNarrowingHelper
 			return null;
 		}
 
-		$identicalTypeCallback = fn (): Type => $this->richerScopeGetTypeHelper->getIdenticalResult($evaluationScope, new Expr\BinaryOp\Identical($left, $right), $nodeScopeResolver)->type;
+		$identicalTypeCallback = fn (): Type => $this->richerScopeGetTypeHelper->getIdenticalResult($evaluationScope, new Expr\BinaryOp\Identical($left, $right), $nodeScopeResolver, null, null)->type;
 
 		$unwrappedLeft = $left instanceof AlwaysRememberedExpr ? $left->getExpr() : $left;
 		$unwrappedRight = $right instanceof AlwaysRememberedExpr ? $right->getExpr() : $right;
@@ -705,7 +708,7 @@ final class IdenticalNarrowingHelper
 				$contextForTypes = $isTrue ? $context->negate() : $context;
 
 				return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $never, $contextForTypes)->unionWith(
-					$this->defaultNarrowingHelper->createForSubject($constantExpr, $never, $contextForTypes, $evaluationScope),
+					$this->defaultNarrowingHelper->createForSubject($constantExpr, $never, $contextForTypes, $evaluationScope, null),
 				);
 			}
 		}
@@ -714,7 +717,7 @@ final class IdenticalNarrowingHelper
 
 		$subjectType = $subjectResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted);
 		if (count($subjectType->getFiniteTypes()) === 1) {
-			$types = $types->unionWith($this->defaultNarrowingHelper->createForSubject($constantExpr, $subjectType, $context, $evaluationScope));
+			$types = $types->unionWith($this->defaultNarrowingHelper->createForSubject($constantExpr, $subjectType, $context, $evaluationScope, null));
 		}
 
 		return $types;
@@ -870,6 +873,7 @@ final class IdenticalNarrowingHelper
 							new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 							$context->negate(),
 							$evaluationScope,
+							null,
 						);
 					}
 				}
@@ -899,7 +903,7 @@ final class IdenticalNarrowingHelper
 						$narrowed = TypeCombinator::union($objectType, $classStringType);
 					}
 
-					return $this->defaultNarrowingHelper->createForSubject($argExpr, $narrowed, $context, $evaluationScope);
+					return $this->defaultNarrowingHelper->createForSubject($argExpr, $narrowed, $context, $evaluationScope, null);
 				}
 			}
 
@@ -927,9 +931,9 @@ final class IdenticalNarrowingHelper
 					$types = new SpecifiedTypes();
 					$funcName = $call->name->toLowerString();
 					if (in_array($funcName, ['strtolower', 'mb_strtolower'], true)) {
-						$types = $this->defaultNarrowingHelper->createForSubject($constantExpr, TypeCombinator::intersect($constantType, new AccessoryLowercaseStringType()), $context, $evaluationScope);
+						$types = $this->defaultNarrowingHelper->createForSubject($constantExpr, TypeCombinator::intersect($constantType, new AccessoryLowercaseStringType()), $context, $evaluationScope, null);
 					} elseif (in_array($funcName, ['strtoupper', 'mb_strtoupper'], true)) {
-						$types = $this->defaultNarrowingHelper->createForSubject($constantExpr, TypeCombinator::intersect($constantType, new AccessoryUppercaseStringType()), $context, $evaluationScope);
+						$types = $this->defaultNarrowingHelper->createForSubject($constantExpr, TypeCombinator::intersect($constantType, new AccessoryUppercaseStringType()), $context, $evaluationScope, null);
 					}
 
 					$accessory = $constantType->isNonFalsyString()->yes()
@@ -941,6 +945,7 @@ final class IdenticalNarrowingHelper
 						TypeCombinator::intersect($argType, $accessory),
 						$context,
 						$evaluationScope,
+						null,
 					));
 				}
 			}
@@ -960,7 +965,7 @@ final class IdenticalNarrowingHelper
 
 			$argExpr = $call->getArgs()[0]->value;
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($constantType)->yes()) {
-				return $this->defaultNarrowingHelper->createForSubject($argExpr, new NeverType(), $context, $evaluationScope);
+				return $this->defaultNarrowingHelper->createForSubject($argExpr, new NeverType(), $context, $evaluationScope, null);
 			}
 
 			if ($argResult === null) {
@@ -974,7 +979,7 @@ final class IdenticalNarrowingHelper
 					: new ConstantArrayType([], []);
 
 				return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context)->unionWith(
-					$this->defaultNarrowingHelper->createForSubject($argExpr, $newArgType, $context, $evaluationScope),
+					$this->defaultNarrowingHelper->createForSubject($argExpr, $newArgType, $context, $evaluationScope, null),
 				);
 			}
 
@@ -993,7 +998,7 @@ final class IdenticalNarrowingHelper
 				$types = $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context);
 				if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($constantType)->yes()) {
 					return $types->unionWith(
-						$this->defaultNarrowingHelper->createForSubject($argExpr, new NonEmptyArrayType(), $context, $evaluationScope),
+						$this->defaultNarrowingHelper->createForSubject($argExpr, new NonEmptyArrayType(), $context, $evaluationScope, null),
 					);
 				}
 
@@ -1014,12 +1019,12 @@ final class IdenticalNarrowingHelper
 
 			$argExpr = $call->getArgs()[0]->value;
 			if (IntegerRangeType::fromInterval(null, -1)->isSuperTypeOf($constantType)->yes()) {
-				return $this->defaultNarrowingHelper->createForSubject($argExpr, new NeverType(), $context, $evaluationScope);
+				return $this->defaultNarrowingHelper->createForSubject($argExpr, new NeverType(), $context, $evaluationScope, null);
 			}
 
 			if ((new ConstantIntegerType(0))->isSuperTypeOf($constantType)->yes()) {
 				return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context)->unionWith(
-					$this->defaultNarrowingHelper->createForSubject($argExpr, new ConstantStringType(''), $context, $evaluationScope),
+					$this->defaultNarrowingHelper->createForSubject($argExpr, new ConstantStringType(''), $context, $evaluationScope, null),
 				);
 			}
 
@@ -1033,7 +1038,7 @@ final class IdenticalNarrowingHelper
 						: new AccessoryNonEmptyStringType();
 
 					return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context)->unionWith(
-						$this->defaultNarrowingHelper->createForSubject($argExpr, $accessory, $context, $evaluationScope),
+						$this->defaultNarrowingHelper->createForSubject($argExpr, $accessory, $context, $evaluationScope, null),
 					);
 				}
 			}
@@ -1057,7 +1062,7 @@ final class IdenticalNarrowingHelper
 						continue;
 					}
 					$one = $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantString, $context)->unionWith(
-						$this->defaultNarrowingHelper->createForSubject($call->getArgs()[0]->value, $mapped, $context, $evaluationScope),
+						$this->defaultNarrowingHelper->createForSubject($call->getArgs()[0]->value, $mapped, $context, $evaluationScope, null),
 					);
 					$intersectedTypes = $intersectedTypes === null ? $one : $intersectedTypes->intersectWith($one);
 				}
@@ -1071,7 +1076,7 @@ final class IdenticalNarrowingHelper
 					$gettypeNarrowedType = $this->getTypeFromGettypeStringValue($constantStrings[0]->getValue());
 				if ($gettypeNarrowedType !== null) {
 					return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context)->unionWith(
-						$this->defaultNarrowingHelper->createForSubject($call->getArgs()[0]->value, $gettypeNarrowedType, $context, $evaluationScope),
+						$this->defaultNarrowingHelper->createForSubject($call->getArgs()[0]->value, $gettypeNarrowedType, $context, $evaluationScope, null),
 					);
 				}
 				// an unknown type-name string only pins the call itself below
@@ -1097,6 +1102,7 @@ final class IdenticalNarrowingHelper
 					$narrowedObjectType,
 					$context,
 					$evaluationScope,
+					null,
 				)->unionWith($this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $constantType, $context));
 			}
 		}

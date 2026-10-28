@@ -1300,9 +1300,8 @@ bool pt_expression_result_ask_scope_variable_state_matches(zval *result, zval *s
 		out = matches == 1;
 		return true;
 	}
-	/* the twin's call passes the third argument only when it is true */
 	zv::Args argv{scope, useNativeTypes, ruleFacingAsk};
-	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("askscopevariablestatematches"), ruleFacingAsk ? 3 : 2, argv);
+	zv::Val value = pt_type_call(Z_OBJ_P(result), PT_LC("askscopevariablestatematches"), 3, argv);
 	if (UNEXPECTED(value.isUndef())) return false;
 	out = Z_TYPE_P(value.raw()) == IS_TRUE;
 	return true;
@@ -1450,8 +1449,7 @@ zv::Val constructDirect(zval *collection, zval *defaultNarrowingHelper, const pt
 	return zv::Val::adopt(object);
 }
 
-/* $factory->create(...) through the engine: the required parameters
- * positionally, the optional ones the call names as named arguments */
+/* $factory->create(...) through the engine */
 zv::Val createThroughFactory(zend_object *factory, const pt_expression_result_args &args)
 {
 	zend_function *create = pt_find_method(factory->ce, PT_LC("create"));
@@ -1471,39 +1469,20 @@ zv::Val createThroughFactory(zend_object *factory, const pt_expression_result_ar
 		args.impurePoints != NULL ? args.impurePoints : &emptyArray,
 		orNull(args.typeCallback),
 		orNull(args.specifyTypesCallback),
+		args.containsNullsafe,
+		orNull(args.issetabilityDescriptor),
+		orNull(args.truthyScopeOverrideResult),
+		orNull(args.falseyScopeOverrideResult),
+		orNull(args.createTypesCallback),
+		orNull(args.type),
+		orNull(args.nativeType),
+		orNull(args.argsResult),
+		orNull(args.variableFlow),
+		orNull(args.dependencies),
 	};
-
-	HashTable named;
-	zend_hash_init(&named, 8, NULL, NULL, 0);
-	zval containsNullsafe;
-	ZVAL_BOOL(&containsNullsafe, args.containsNullsafe);
-	const struct
-	{
-		uint32_t bit;
-		const char *name;
-		size_t len;
-		zval *value;
-	} optionals[] = {
-		{ PT_ER_NAMED_CONTAINS_NULLSAFE, PT_LC("containsNullsafe"), &containsNullsafe },
-		{ PT_ER_NAMED_ISSETABILITY_DESCRIPTOR, PT_LC("issetabilityDescriptor"), orNull(args.issetabilityDescriptor) },
-		{ PT_ER_NAMED_TRUTHY_SCOPE_OVERRIDE_RESULT, PT_LC("truthyScopeOverrideResult"), orNull(args.truthyScopeOverrideResult) },
-		{ PT_ER_NAMED_FALSEY_SCOPE_OVERRIDE_RESULT, PT_LC("falseyScopeOverrideResult"), orNull(args.falseyScopeOverrideResult) },
-		{ PT_ER_NAMED_CREATE_TYPES_CALLBACK, PT_LC("createTypesCallback"), orNull(args.createTypesCallback) },
-		{ PT_ER_NAMED_TYPE, PT_LC("type"), orNull(args.type) },
-		{ PT_ER_NAMED_NATIVE_TYPE, PT_LC("nativeType"), orNull(args.nativeType) },
-		{ PT_ER_NAMED_ARGS_RESULT, PT_LC("argsResult"), orNull(args.argsResult) },
-		{ PT_ER_NAMED_VARIABLE_FLOW, PT_LC("variableFlow"), orNull(args.variableFlow) },
-		{ PT_ER_NAMED_DEPENDENCIES, PT_LC("dependencies"), orNull(args.dependencies) },
-	};
-	for (const auto &optional : optionals) {
-		if ((args.named & optional.bit) != 0) {
-			zend_hash_str_add(&named, optional.name, optional.len, optional.value);
-		}
-	}
 
 	zval ret;
-	zend_call_known_function(create, factory, factory->ce, &ret, 9, argv, zend_hash_num_elements(&named) > 0 ? &named : NULL);
-	zend_hash_destroy(&named);
+	zend_call_known_function(create, factory, factory->ce, &ret, 19, argv, NULL);
 	if (UNEXPECTED(EG(exception))) {
 		zval_ptr_dtor(&ret);
 		return zv::Val();
@@ -1599,7 +1578,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 	 * slot */
 	ptdecl::ExpressionResult::declareProperties(cls);
 
-	cls.method("__construct", reg::Public, 11, {
+	cls.method("__construct", reg::Public, 20, {
 		reg::obj("expressionTypeResolverExtensions", "PHPStan\\DependencyInjection\\ExtensionsCollection"),
 		reg::obj("defaultNarrowingHelper", "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper"),
 		reg::obj("scope", pt_er_scope),
@@ -1611,15 +1590,15 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		reg::arrayArg("impurePoints"),
 		reg::callableArg("typeCallback", true),
 		reg::callableArg("specifyTypesCallback"),
-		reg::withDefault(reg::boolArg("containsNullsafe"), "false"),
-		reg::withDefault(reg::obj("issetabilityDescriptor", "PHPStan\\Analyser\\IssetabilityDescriptor", true), "null"),
-		reg::withDefault(reg::obj("truthyScopeOverrideResult", pt_er_self, true), "null"),
-		reg::withDefault(reg::obj("falseyScopeOverrideResult", pt_er_self, true), "null"),
-		reg::withDefault(reg::callableArg("createTypesCallback", true), "null"),
-		reg::withDefault(reg::obj("type", pt_er_type, true), "null"),
-		reg::withDefault(reg::obj("nativeType", pt_er_type, true), "null"),
-		reg::withDefault(reg::obj("argsResult", "PHPStan\\Analyser\\ArgsResult", true), "null"),
-		reg::withDefault(reg::obj("variableFlow", "PHPStan\\Analyser\\VariableFlow", true), "null"),
+		reg::boolArg("containsNullsafe"),
+		reg::obj("issetabilityDescriptor", "PHPStan\\Analyser\\IssetabilityDescriptor", true),
+		reg::obj("truthyScopeOverrideResult", pt_er_self, true),
+		reg::obj("falseyScopeOverrideResult", pt_er_self, true),
+		reg::callableArg("createTypesCallback", true),
+		reg::obj("type", pt_er_type, true),
+		reg::obj("nativeType", pt_er_type, true),
+		reg::obj("argsResult", "PHPStan\\Analyser\\ArgsResult", true),
+		reg::obj("variableFlow", "PHPStan\\Analyser\\VariableFlow", true),
 		reg::withDefault(reg::arrayArg("specifiedTypes"), "[]"),
 		reg::withDefault(reg::obj("cachedType", pt_er_type, true), "null"),
 		reg::withDefault(reg::boolArg("extensionsDeclined"), "false"),
@@ -1639,7 +1618,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		zval *issetabilityDescriptor = NULL, *truthyScopeOverrideResult = NULL, *falseyScopeOverrideResult = NULL;
 		zval *type = NULL, *nativeType = NULL, *argsResult = NULL, *variableFlow = NULL;
 		zval *specifiedTypes = NULL, *cachedType = NULL, *cachedNativeType = NULL, *resolvedType = NULL, *resolvedNativeType = NULL, *projectedType = NULL, *projectedNativeType = NULL, *readVariableNames = NULL, *dependencies = NULL;
-		ZEND_PARSE_PARAMETERS_START(11, 30)
+		ZEND_PARSE_PARAMETERS_START(20, 30)
 			Z_PARAM_OBJECT(a.expressionTypeResolverExtensions)
 			Z_PARAM_OBJECT(a.defaultNarrowingHelper)
 			Z_PARAM_OBJECT(a.scope)
@@ -1651,7 +1630,6 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 			Z_PARAM_ARRAY(a.impurePoints)
 			Z_PARAM_ZVAL(typeCallback)
 			Z_PARAM_ZVAL(specifyTypesCallback)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(containsNullsafe)
 			Z_PARAM_OBJECT_OR_NULL(issetabilityDescriptor)
 			Z_PARAM_OBJECT_OR_NULL(truthyScopeOverrideResult)
@@ -1661,6 +1639,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 			Z_PARAM_OBJECT_OR_NULL(nativeType)
 			Z_PARAM_OBJECT_OR_NULL(argsResult)
 			Z_PARAM_OBJECT_OR_NULL(variableFlow)
+			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(specifiedTypes)
 			Z_PARAM_OBJECT_OR_NULL(cachedType)
 			Z_PARAM_BOOL(extensionsDeclined)
@@ -1772,7 +1751,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 	cls.method(sigs::getIssetabilityResolution, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		bool useNativeTypes, reprocessUntrackedLinks = false;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Opt<zp::Bool>>(execute_data, scope, useNativeTypes, reprocessUntrackedLinks)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Bool>(execute_data, scope, useNativeTypes, reprocessUntrackedLinks)) RETURN_THROWS();
 		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).getIssetabilityResolution(scope, useNativeTypes, reprocessUntrackedLinks));
 	});
 
@@ -1831,7 +1810,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 	cls.method(sigs::getSpecifiedTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *context;
 		bool nativeTypesPromoted = false;
-		if (!zp::parse<zp::Obj, zp::Opt<zp::Bool>>(execute_data, context, nativeTypesPromoted)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Bool>(execute_data, context, nativeTypesPromoted)) RETURN_THROWS();
 		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).getSpecifiedTypes(context, nativeTypesPromoted));
 	});
 
@@ -1844,7 +1823,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 	cls.method(sigs::getCreatedTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type, *context;
 		bool nativeTypesPromoted = false;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Opt<zp::Bool>>(execute_data, type, context, nativeTypesPromoted)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Bool>(execute_data, type, context, nativeTypesPromoted)) RETURN_THROWS();
 		PT_ER_RETURN(ExpressionResult(Z_OBJ_P(ZEND_THIS)).getCreatedTypes(type, context, nativeTypesPromoted));
 	});
 
@@ -1865,7 +1844,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 	cls.method(sigs::askScopeVariableStateMatches, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope;
 		bool useNativeTypes, ruleFacingAsk = false;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Opt<zp::Bool>>(execute_data, scope, useNativeTypes, ruleFacingAsk)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Bool>(execute_data, scope, useNativeTypes, ruleFacingAsk)) RETURN_THROWS();
 		PT_ER_RETURN_TRINARY_BOOL(ExpressionResult(Z_OBJ_P(ZEND_THIS)).askScopeVariableStateMatches(scope, useNativeTypes, ruleFacingAsk));
 	});
 

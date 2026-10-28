@@ -44,14 +44,14 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		// FirstCollector collected nothing, so the rule returns before it asks for SecondCollector
 		$result = $this->finalize([$rule], [
 			self::B => [SecondCollector::class => ['b1']],
-		], false, []);
+		], false, [], true, null);
 		$this->assertSame(1, $rule->runs);
 		$this->assertSame([], $this->getMessages($result));
 
 		// SecondCollector changed, but the rule did not ask for it
 		$result = $this->finalize([$rule], [
 			self::B => [SecondCollector::class => ['b2']],
-		], false, $result->getCollectedDataRuleResults());
+		], false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(1, $rule->runs);
 		$this->assertSame(1, $result->getReusedRulesCount());
 
@@ -59,7 +59,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$result = $this->finalize([$rule], [
 			self::A => [FirstCollector::class => ['a1']],
 			self::B => [SecondCollector::class => ['b2']],
-		], false, $result->getCollectedDataRuleResults());
+		], false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(2, $rule->runs);
 		$this->assertSame(['Second collected b2.'], $this->getMessages($result));
 
@@ -67,7 +67,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$result = $this->finalize([$rule], [
 			self::A => [FirstCollector::class => ['a1']],
 			self::B => [SecondCollector::class => ['b3']],
-		], false, $result->getCollectedDataRuleResults());
+		], false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(3, $rule->runs);
 		$this->assertSame(['Second collected b3.'], $this->getMessages($result));
 
@@ -75,7 +75,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$result = $this->finalize([$rule], [
 			self::A => [FirstCollector::class => ['a1']],
 			self::B => [SecondCollector::class => ['b3']],
-		], false, $result->getCollectedDataRuleResults());
+		], false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(3, $rule->runs);
 		$this->assertSame(1, $result->getReusedRulesCount());
 		$this->assertSame(['Second collected b3.'], $this->getMessages($result));
@@ -88,14 +88,14 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::A => [FirstCollector::class => ['a1']],
 			self::B => [SecondCollector::class => ['b1']],
 			self::C => [SecondCollector::class => ['c1']],
-		], false, []);
+		], false, [], true, null);
 
 		// a merged result cache lists the files in another order than a full analysis does
 		$result = $this->finalize([$rule], [
 			self::C => [SecondCollector::class => ['c1']],
 			self::A => [FirstCollector::class => ['a1']],
 			self::B => [SecondCollector::class => ['b1']],
-		], false, $result->getCollectedDataRuleResults());
+		], false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(1, $rule->runs);
 		$this->assertSame(1, $result->getReusedRulesCount());
 	}
@@ -108,11 +108,11 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::A => [FirstCollector::class => ['a1']],
 		];
 
-		$result = $this->finalize([$onlyFilesRule, $earlyReturnRule], $collectedData, false, []);
+		$result = $this->finalize([$onlyFilesRule, $earlyReturnRule], $collectedData, false, [], true, null);
 		$this->assertSame(['Full analysis.'], $this->getMessages($result));
 
 		// only the rule that asked for isOnlyFilesAnalysis() runs again
-		$result = $this->finalize([$onlyFilesRule, $earlyReturnRule], $collectedData, true, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$onlyFilesRule, $earlyReturnRule], $collectedData, true, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(2, $onlyFilesRule->runs);
 		$this->assertSame(1, $earlyReturnRule->runs);
 		$this->assertSame([], $this->getMessages($result));
@@ -125,10 +125,10 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::A => [FirstCollector::class => ['a1']],
 		];
 
-		$result = $this->finalize([$rule], $collectedData, false, []);
+		$result = $this->finalize([$rule], $collectedData, false, [], true, null);
 		$this->assertSame([], $result->getCollectedDataRuleResults());
 
-		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(2, $rule->runs);
 		$this->assertSame(['Function notThere not found while trying to analyse it - discovering symbols is probably not configured properly.'], $this->getMessages($result));
 	}
@@ -143,10 +143,10 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::B => [SecondCollector::class => ['b1']],
 		];
 
-		$result = $this->finalize([$first, $second, $third], $collectedData, false, []);
+		$result = $this->finalize([$first, $second, $third], $collectedData, false, [], true, null);
 		$this->assertCount(3, $result->getCollectedDataRuleResults());
 
-		$result = $this->finalize([$first, $second, $third], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$first, $second, $third], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(3, $result->getReusedRulesCount());
 		$this->assertSame(['Full analysis.', 'Second collected b1.', 'Second collected b1.'], $this->getMessages($result));
 	}
@@ -166,12 +166,12 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::A => [FirstCollector::class => ['a1']],
 		];
 
-		$result = $this->finalize([$rule], $collectedData, false, []);
+		$result = $this->finalize([$rule], $collectedData, false, [], true, null);
 		$this->assertSame(1, $rule->runs);
 		$this->assertSame(['File says one, directory has 1 files, value is a.'], $this->getMessages($result));
 
 		// nothing changed
-		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(1, $rule->runs);
 		$this->assertSame(1, $result->getReusedRulesCount());
 		$this->assertSame(['File says one, directory has 1 files, value is a.'], $this->getMessages($result));
@@ -179,26 +179,26 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		// the tracked file changed - in size too, FileContentHasher memoizes by mtime and size
 		file_put_contents($file, 'three');
 		clearstatcache();
-		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(2, $rule->runs);
 		$this->assertSame(['File says three, directory has 1 files, value is a.'], $this->getMessages($result));
 
 		// a file appeared in the tracked directory
 		file_put_contents($directory . '/b.txt', '');
-		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(3, $rule->runs);
 		$this->assertSame(['File says three, directory has 2 files, value is a.'], $this->getMessages($result));
 
 		// a file that does not match the pattern does not count
 		file_put_contents($directory . '/c.md', '');
-		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(3, $rule->runs);
 		$this->assertSame(1, $result->getReusedRulesCount());
 
 		// the value declared through trackValueDependency() changed
 		file_put_contents($valueFile, 'bb');
 		clearstatcache();
-		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults(), true, null);
 		$this->assertSame(4, $rule->runs);
 		$this->assertSame(['File says three, directory has 2 files, value is bb.'], $this->getMessages($result));
 
@@ -260,20 +260,20 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::B => [SecondCollector::class => ['b1']],
 		];
 
-		$result = $this->finalize([$rule], $collectedData, false, [], false);
+		$result = $this->finalize([$rule], $collectedData, false, [], false, null);
 		$this->assertSame([], $result->getCollectedDataRuleResults());
 
-		$previousResults = $this->finalize([$rule], $collectedData, false, [])->getCollectedDataRuleResults();
+		$previousResults = $this->finalize([$rule], $collectedData, false, [], true, null)->getCollectedDataRuleResults();
 		$this->assertCount(1, $previousResults);
 		$this->assertSame(2, $rule->runs);
 
-		$result = $this->finalize([$rule], $collectedData, false, $previousResults, false);
+		$result = $this->finalize([$rule], $collectedData, false, $previousResults, false, null);
 		$this->assertSame(3, $rule->runs);
 		$this->assertSame(0, $result->getReusedRulesCount());
 		$this->assertSame(['Second collected b1.'], $this->getMessages($result));
 
 		// without the toggle, the declared values are not asked for, as before
-		$result = $this->finalize([new UnregisteredValueRule()], $collectedData, false, [], false);
+		$result = $this->finalize([new UnregisteredValueRule()], $collectedData, false, [], false, null);
 		$this->assertSame(['Unregistered value.'], $this->getMessages($result));
 	}
 
@@ -282,7 +282,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 	 * @param CollectorData $collectedData
 	 * @param array<string, CollectedDataRuleResult> $previousResults
 	 */
-	private function finalize(array $rules, array $collectedData, bool $onlyFiles, array $previousResults, bool $reuse = true, ?ValueDependencyCollector $valueDependencyCollector = null): FinalizerResult
+	private function finalize(array $rules, array $collectedData, bool $onlyFiles, array $previousResults, bool $reuse, ?ValueDependencyCollector $valueDependencyCollector): FinalizerResult
 	{
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRegistry($rules),
@@ -312,6 +312,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			reachedInternalErrorsCountLimit: false,
 			peakMemoryUsageBytes: 0,
 			processedFiles: [],
+			workerCount: 0,
 		), $onlyFiles, false, null, null, $previousResults);
 	}
 

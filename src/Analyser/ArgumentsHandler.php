@@ -146,7 +146,7 @@ final class ArgumentsHandler
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		ExpressionContext $context,
-		?callable $closureBindScopeFactory = null,
+		?callable $closureBindScopeFactory,
 	): ArgsResult
 	{
 		$args = $callLike->getArgs();
@@ -237,7 +237,7 @@ final class ArgumentsHandler
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
 					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
-					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
+					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage, null);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
@@ -367,10 +367,18 @@ final class ArgumentsHandler
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $this->closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
-							nativeType: $this->closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
+							type: $this->closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage, null),
+							nativeType: $this->closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage, null),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+							containsNullsafe: false,
+							issetabilityDescriptor: null,
+							truthyScopeOverrideResult: null,
+							falseyScopeOverrideResult: null,
+							createTypesCallback: null,
+							argsResult: null,
+							variableFlow: null,
+							dependencies: null,
 						);
 						$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedClosureArgResult);
 					}
@@ -410,7 +418,7 @@ final class ArgumentsHandler
 
 					$closureResult = $this->closureProcessor->processClosureNode($nodeScopeResolver, $stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $context, $parameterType, $parameterNativeType);
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $closureResult->getThrowPoints()));
+						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value, null), $closureResult->getThrowPoints()));
 						$impurePoints = array_merge($impurePoints, $closureResult->getImpurePoints());
 					}
 
@@ -434,6 +442,8 @@ final class ArgumentsHandler
 							$closureResult->getInvalidateExpressions(),
 							false,
 							$storage,
+							null,
+							null,
 						),
 						// the native flavour reads the stored native types off the same
 						// single body walk - no second walk on the promoted scope
@@ -448,13 +458,22 @@ final class ArgumentsHandler
 							$closureResult->getInvalidateExpressions(),
 							true,
 							$storage,
+							null,
+							null,
 						),
 						typeCallback: null,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						containsNullsafe: false,
+						issetabilityDescriptor: null,
+						truthyScopeOverrideResult: null,
+						falseyScopeOverrideResult: null,
+						createTypesCallback: null,
+						argsResult: null,
+						dependencies: null,
 					);
 					$storedClosureResult = $storedClosureResult->withDependencies(Dependencies::merge(
 						$closureResult->getDependencies(),
-						Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($storedClosureResult->getType())),
+						Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($storedClosureResult->getType()), [], [], [], []),
 					));
 					$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedClosureResult);
 					// the closure node's own callback fires after its result is
@@ -517,10 +536,18 @@ final class ArgumentsHandler
 							isAlwaysTerminating: false,
 							throwPoints: [],
 							impurePoints: [],
-							type: $this->closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage),
-							nativeType: $this->closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage),
+							type: $this->closureTypeResolver->getClosureType($scopeToPass, $arg->value, false, $storage, null),
+							nativeType: $this->closureTypeResolver->getClosureType($scopeToPass->doNotTreatPhpDocTypesAsCertain(), $arg->value, false, $storage, null),
 							typeCallback: null,
 							specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+							containsNullsafe: false,
+							issetabilityDescriptor: null,
+							truthyScopeOverrideResult: null,
+							falseyScopeOverrideResult: null,
+							createTypesCallback: null,
+							argsResult: null,
+							variableFlow: null,
+							dependencies: null,
 						);
 						$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedClosureArgResult);
 					}
@@ -559,7 +586,7 @@ final class ArgumentsHandler
 					$arrowFunctionResult = $this->closureProcessor->processArrowFunctionNode($nodeScopeResolver, $stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $parameterType, $parameterNativeType, $context);
 					$arrowFunctionExprResult = $arrowFunctionResult->getExpressionResult();
 					if ($this->callCallbackImmediately($parameter, $parameterType, $calleeReflection)) {
-						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $arrowFunctionExprResult->getThrowPoints()));
+						$throwPoints = array_merge($throwPoints, array_map(static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value, null), $arrowFunctionExprResult->getThrowPoints()));
 						$impurePoints = array_merge($impurePoints, $arrowFunctionExprResult->getImpurePoints());
 					}
 					$arrowFunctionScope = $arrowFunctionResult->getArrowFunctionScope();
@@ -576,6 +603,8 @@ final class ArgumentsHandler
 						$arrowFunctionResult->getInvalidateExpressions(),
 						false,
 						$storage,
+						null,
+						null,
 					);
 					$storedArrowResult = $this->expressionResultFactory->create(
 						$arrowFunctionExprResult->getScope(),
@@ -596,13 +625,21 @@ final class ArgumentsHandler
 							$arrowFunctionResult->getInvalidateExpressions(),
 							true,
 							$storage,
+							null,
+							null,
 						),
 						typeCallback: null,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						dependencies: Dependencies::merge(
 							$arrowFunctionExprResult->getDependencies(),
-							Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($arrowFunctionType)),
+							Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($arrowFunctionType), [], [], [], []),
 						),
+						containsNullsafe: false,
+						issetabilityDescriptor: null,
+						truthyScopeOverrideResult: null,
+						falseyScopeOverrideResult: null,
+						createTypesCallback: null,
+						argsResult: null,
 					);
 					$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedArrowResult);
 					// the arrow function node's own callback fires after its result
@@ -621,7 +658,7 @@ final class ArgumentsHandler
 			} else {
 				$enterExpressionAssignForByRef = $assignByReference && $arg->value instanceof ArrayDimFetch && $arg->value->dim === null;
 				if ($enterExpressionAssignForByRef) {
-					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
+					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value, true);
 				}
 				$argContext = $context->enterDeep();
 				if (!$arg->unpack && $arg->value instanceof Expr\Array_) {
@@ -654,7 +691,7 @@ final class ArgumentsHandler
 							$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 						}
 						if ($callCallbackImmediately) {
-							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
+							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value, null), $acceptors[0]->getThrowPoints());
 							if (!$this->implicitThrows) {
 								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
 							}
@@ -817,6 +854,7 @@ final class ArgumentsHandler
 							$argValue,
 							new NativeTypeExpr($byRefType, $byRefNativeType),
 							$nodeCallback,
+							null,
 						)->getScope();
 						$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 					}
@@ -863,6 +901,15 @@ final class ArgumentsHandler
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 				dependencies: Dependencies::merge(...array_map(static fn (ExpressionResult $argResult): ?Dependencies => $argResult->getDependencies(), array_values($argResults))),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
+				variableFlow: null,
 			),
 			$resolvedAcceptor,
 			$argResults,

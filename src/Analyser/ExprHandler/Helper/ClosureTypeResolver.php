@@ -127,12 +127,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	public function getClosureType(
 		MutatingScope $scope,
 		Node\Expr\Closure|ArrowFunction $expr,
-		bool $shallow = false,
-		?ExpressionResultStorage $storage = null,
-		?Type $passedToType = null,
+		bool $shallow,
+		?ExpressionResultStorage $storage,
+		?Type $passedToType,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, null);
 
 		// A shallow reflection is the closure/arrow function's signature without
 		// walking its body: parameters plus the DECLARED return type. Used at scope
@@ -165,7 +165,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		}
 
 		if (TemplateArgumentStats::$enabled) {
-			TemplateArgumentStats::increment('closureTypeBodyWalks');
+			TemplateArgumentStats::increment('closureTypeBodyWalks', 1);
 		}
 		if ($expr instanceof ArrowFunction) {
 			$arrowScope = $scope->enterArrowFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
@@ -204,7 +204,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 						);
 						$invalidateExpressions[] = new InvalidateExprNode($node->getPropertyFetch());
 					},
-					ExpressionContext::createDeep(),
+					ExpressionContext::createDeep(true),
 				);
 			} finally {
 				$arrowScope->popExpressionResultStorage();
@@ -317,10 +317,10 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $throwPoints,
 		array $impurePoints,
 		array $invalidateExpressions,
-		bool $native = false,
-		?ExpressionResultStorage $storage = null,
-		?Type $passedToType = null,
-		?Type $nativePassedToType = null,
+		bool $native,
+		?ExpressionResultStorage $storage,
+		?Type $passedToType,
+		?Type $nativePassedToType,
 	): ClosureType
 	{
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
@@ -368,10 +368,10 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $throwPoints,
 		array $impurePoints,
 		array $invalidateExpressions,
-		bool $native = false,
-		?ExpressionResultStorage $storage = null,
-		?Type $passedToType = null,
-		?Type $nativePassedToType = null,
+		bool $native,
+		?ExpressionResultStorage $storage,
+		?Type $passedToType,
+		?Type $nativePassedToType,
 	): ClosureType
 	{
 		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, $nativePassedToType);
@@ -513,10 +513,10 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $throwPoints,
 		array $impurePoints,
 		array $invalidateExpressions,
-		?string $cacheKey = null,
-		bool $native = false,
-		?ExpressionResultStorage $storage = null,
-		bool $contextFree = false,
+		?string $cacheKey,
+		bool $native,
+		?ExpressionResultStorage $storage,
+		bool $contextFree,
 	): ClosureType
 	{
 		$onlyNeverExecutionEnds = $this->deriveOnlyNeverExecutionEnds($executionEnds);
@@ -628,8 +628,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		MutatingScope $scope,
 		MutatingScope $arrowScope,
 		ArrowFunction $expr,
-		bool $native = false,
-		?ExpressionResultStorage $storage = null,
+		bool $native,
+		?ExpressionResultStorage $storage,
 	): Type
 	{
 		// Unlike a closure (whose native type equals its phpdoc type), an arrow
@@ -804,9 +804,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	private function buildParametersAndAcceptors(
 		MutatingScope $scope,
 		Node\Expr\Closure|ArrowFunction $expr,
-		?ExpressionResultStorage $storage = null,
-		?Type $passedToType = null,
-		?Type $nativePassedToType = null,
+		?ExpressionResultStorage $storage,
+		?Type $passedToType,
+		?Type $nativePassedToType,
 	): array
 	{
 		[$parameters, $isVariadic] = $this->buildDeclaredParameters($scope, $expr);
@@ -890,8 +890,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		array $impurePoints,
 		array $invalidateExpressions,
 		array $usedVariables,
-		?string $cacheKey = null,
-		bool $contextFree = false,
+		?string $cacheKey,
+		bool $contextFree,
 	): ClosureType
 	{
 		foreach ($parameters as $parameter) {

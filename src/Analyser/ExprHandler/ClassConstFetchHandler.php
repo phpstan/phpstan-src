@@ -117,6 +117,15 @@ final class ClassConstFetchHandler implements ExprHandler
 				);
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 
 		return $result->withDependencies(Dependencies::merge(
@@ -157,7 +166,7 @@ final class ClassConstFetchHandler implements ExprHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), $types, $classNames);
+		return Dependencies::create($scope->getFile(), $types, $classNames, [], [], []);
 	}
 
 }

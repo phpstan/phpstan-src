@@ -248,6 +248,7 @@ final class AnalyseApplication
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: 0,
 				processedFiles: [],
+				workerCount: 0,
 			);
 		}
 

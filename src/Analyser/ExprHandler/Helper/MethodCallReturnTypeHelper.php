@@ -35,8 +35,8 @@ final class MethodCallReturnTypeHelper
 		Type $typeWithMethod,
 		string $methodName,
 		MethodCall|Expr\StaticCall $methodCall,
-		?ParametersAcceptor $preResolvedAcceptor = null,
-		?ArgsResult $argsResult = null,
+		?ParametersAcceptor $preResolvedAcceptor,
+		?ArgsResult $argsResult,
 	): ?Type
 	{
 		$typeWithMethod = $scope->filterTypeWithMethod($typeWithMethod, $methodName);
@@ -57,7 +57,7 @@ final class MethodCallReturnTypeHelper
 			$normalizedMethodCall = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $methodCall);
 		}
 		if ($normalizedMethodCall === null) {
-			return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $scope, $methodCall);
+			return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $scope, $methodCall, null);
 		}
 
 		// re-expose the already-processed arguments so an extension's
@@ -119,7 +119,7 @@ final class MethodCallReturnTypeHelper
 							$remainingMethod->getVariants(),
 							$remainingMethod->getNamedArgumentsVariants(),
 						);
-						$resolvedTypes[] = TemplateArgumentFrame::returnTypeOfCall($remainingParametersAcceptor, $scope, $methodCall);
+						$resolvedTypes[] = TemplateArgumentFrame::returnTypeOfCall($remainingParametersAcceptor, $scope, $methodCall, null);
 					}
 				}
 
@@ -129,7 +129,7 @@ final class MethodCallReturnTypeHelper
 			$popPrimedStorage();
 		}
 
-		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $scope, $methodCall);
+		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $scope, $methodCall, null);
 	}
 
 }

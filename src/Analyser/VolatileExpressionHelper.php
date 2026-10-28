@@ -19,7 +19,7 @@ final class VolatileExpressionHelper
 
 	private const VOLATILE_FUNCTION_NAMES = ['ob_get_level', 'openssl_error_string'];
 
-	private const EXISTENCE_CHECK_FUNCTION_NAMES = [
+	public const EXISTENCE_CHECK_FUNCTION_NAMES = [
 		'class_exists',
 		'interface_exists',
 		'trait_exists',
@@ -130,8 +130,8 @@ final class VolatileExpressionHelper
 		Scope $scope,
 		array &$expressionTypes,
 		array &$nativeExpressionTypes,
-		array $functionNames = self::EXISTENCE_CHECK_FUNCTION_NAMES,
-		?string $declaredSymbolName = null,
+		array $functionNames,
+		?string $declaredSymbolName,
 	): bool
 	{
 		$changed = false;

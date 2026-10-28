@@ -204,7 +204,7 @@ final class StaticCallHandler implements ExprHandler
 						};
 					}
 				} else {
-					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr, null);
 				}
 			} elseif ($expr->class instanceof Expr) {
 				// the class expr was processed above as the receiver; read its
@@ -244,7 +244,7 @@ final class StaticCallHandler implements ExprHandler
 				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new StaticCall(new Name($objectClasses[0]), $expr->name, []), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
-				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
+				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr, null)];
 			}
 			foreach ($additionalThrowPoints as $throwPoint) {
 				$throwPoints[] = $throwPoint;
@@ -354,6 +354,13 @@ final class StaticCallHandler implements ExprHandler
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
 			argsResult: $argsResult,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $preliminaryResult);
 
@@ -430,7 +437,7 @@ final class StaticCallHandler implements ExprHandler
 			// the short-circuited world evaluates none of the arguments
 			$mayShortCircuit ? VariableFlow::choice($argumentsFlow, null) : $argumentsFlow,
 			VariableFlowBuilder::throws($expr, $throwPoints),
-			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP, 1, null) : null,
 		);
 
 		// the call's scope effects (@param-out, invalidations) only happened in the
@@ -456,7 +463,7 @@ final class StaticCallHandler implements ExprHandler
 			$classResult !== null ? $classResult->getDependencies() : null,
 			$nameResult !== null ? $nameResult->getDependencies() : null,
 			$argsResult->getDependencies(),
-			Dependencies::create($beforeScope->getFile(), $calledOnTypes, $calledOnClassNames),
+			Dependencies::create($beforeScope->getFile(), $calledOnTypes, $calledOnClassNames, [], [], []),
 		);
 		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
 	}
@@ -572,7 +579,7 @@ final class StaticCallHandler implements ExprHandler
 	 * @param StaticCall $expr
 	 * @param StaticCall $normalizedExpr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ?ExpressionResult $classResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);

@@ -60,6 +60,16 @@ final class IssetExprHandler implements ExprHandler
 			impurePoints: [],
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => $nodeScopeResolver->readScopeStateOrSyntheticType($expr->getExpr(), $nativeTypesPromoted ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 	}
 

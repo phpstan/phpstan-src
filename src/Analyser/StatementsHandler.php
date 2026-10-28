@@ -251,7 +251,7 @@ final class StatementsHandler
 			}
 
 			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-				$bodyScope = $prevScope->generalizeWith($bodyScope);
+				$bodyScope = $prevScope->generalizeWith($bodyScope, null);
 			}
 			$count++;
 		} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
@@ -394,6 +394,7 @@ final class StatementsHandler
 				$parentNode,
 				$statementResult->toPublic(),
 				$returnTypeNode !== null,
+				null,
 			), $scope, $storage);
 		}
 
@@ -798,9 +799,9 @@ final class StatementsHandler
 		}
 		$parentFrame = $scope->getCurrentTemplateArgumentFrame();
 		$parentConstraints = $scope->getTemplateArgumentConstraints();
-		$frame = new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts);
+		$frame = new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts, resolutions: null, siteStatementIndexes: [], settledClosureSites: [], observingClosures: false, byRefSites: [], staticVariableTypes: [], staticVariableConditionalExpressions: []);
 		if (TemplateArgumentStats::$enabled) {
-			TemplateArgumentStats::increment('bodiesWalked');
+			TemplateArgumentStats::increment('bodiesWalked', 1);
 			TemplateArgumentStats::increment('statementsTotal', count($stmts));
 		}
 		$scope = $scope->withTemplateArgumentFrame($frame)->withTemplateArgumentConstraints(null);
@@ -856,7 +857,7 @@ final class StatementsHandler
 		}
 
 		if (TemplateArgumentStats::$enabled) {
-			TemplateArgumentStats::increment('bodiesWithSites');
+			TemplateArgumentStats::increment('bodiesWithSites', 1);
 			TemplateArgumentStats::increment('statementsReplayed', $firstSiteStatementIndex);
 		}
 		// the second pass: the statements before the first site stand as
@@ -877,7 +878,7 @@ final class StatementsHandler
 			if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
 				// converged with the observation pass: the rest of its recording stands
 				if (TemplateArgumentStats::$enabled) {
-					TemplateArgumentStats::increment('earlyExits');
+					TemplateArgumentStats::increment('earlyExits', 1);
 					TemplateArgumentStats::increment('statementsReplayed', $stmtCount - $i);
 				}
 				$nodeScopeResolver->replayRecordingRange($recording, $offset, $recording->count(), $nodeCallback, $storage, $scope);
@@ -907,14 +908,14 @@ final class StatementsHandler
 			}
 			if ($reWalk) {
 				if (TemplateArgumentStats::$enabled) {
-					TemplateArgumentStats::increment('statementsReWalked');
+					TemplateArgumentStats::increment('statementsReWalked', 1);
 				}
 				$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, true);
 				continue;
 			}
 
 			if (TemplateArgumentStats::$enabled) {
-				TemplateArgumentStats::increment('statementsReplayed');
+				TemplateArgumentStats::increment('statementsReplayed', 1);
 			}
 			$nodeScopeResolver->replayRecordingRange($recording, $offset, $nextOffset, $nodeCallback, $storage, $scope);
 			$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
@@ -985,7 +986,7 @@ final class StatementsHandler
 				[$type, $nativeType] = $types[$name];
 				$siteTypes[spl_object_id($var)] = [$var, $type, $nativeType];
 			}
-			$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts))->withStaticVariableTypes($siteTypes, $staticStatementIndexes, $conditionalExpressions);
+			$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts, resolutions: null, siteStatementIndexes: [], settledClosureSites: [], observingClosures: false, byRefSites: [], staticVariableTypes: [], staticVariableConditionalExpressions: []))->withStaticVariableTypes($siteTypes, $staticStatementIndexes, $conditionalExpressions);
 
 			$state = clone $entries[$start][0];
 			$state->scope = $state->scope->withTemplateArgumentFrame($frame);
@@ -1140,8 +1141,8 @@ final class StatementsHandler
 		[$start, $state, $walkRecording, $walkStorage, $walkLog] = $staticWalk;
 		$stmtCount = count($stmts);
 		if (TemplateArgumentStats::$enabled) {
-			TemplateArgumentStats::increment('bodiesWithSites');
-			TemplateArgumentStats::increment('staticVariableWalksReplayed');
+			TemplateArgumentStats::increment('bodiesWithSites', 1);
+			TemplateArgumentStats::increment('staticVariableWalksReplayed', 1);
 		}
 		$nodeScopeResolver->replayRecordingRange($recording, 0, $entries[$start][1], $nodeCallback, $storage, $scope);
 		$storage->mergeResults($walkStorage);
@@ -1663,14 +1664,14 @@ final class StatementsHandler
 					|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
 				) {
 					if (TemplateArgumentStats::$enabled) {
-						TemplateArgumentStats::increment('closureObservationStatements');
+						TemplateArgumentStats::increment('closureObservationStatements', 1);
 					}
 					$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $storage, $nodeCallback, $context, true);
 					continue;
 				}
 
 				if (TemplateArgumentStats::$enabled) {
-					TemplateArgumentStats::increment('closureObservationStatementsReplayed');
+					TemplateArgumentStats::increment('closureObservationStatementsReplayed', 1);
 				}
 				$recordedExit = $entries[$i + 1][0];
 				$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
@@ -1877,7 +1878,7 @@ final class StatementsHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), $types);
+		return Dependencies::create($scope->getFile(), $types, [], [], [], []);
 	}
 
 	/**

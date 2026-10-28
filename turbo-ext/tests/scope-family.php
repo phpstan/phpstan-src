@@ -766,7 +766,7 @@ $sfAssignScope = $sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create(
 	->enterNamespace('ScopeFamilyFixture')
 	->assignVariable('this', new \PHPStan\Type\ObjectType(\ScopeFamilyFixture\Holder::class), new \PHPStan\Type\ObjectType(\ScopeFamilyFixture\Holder::class), \PHPStan\TrinaryLogic::createYes())
 	->assignVariable('items', new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), \PHPStan\TrinaryLogic::createYes())
-	->enterExpressionAssign($sfAssignedPropertyFetch)
+	->enterExpressionAssign($sfAssignedPropertyFetch, true)
 	->enterExpressionAssign($sfAssignedDimFetch, false)
 	->setAllowedUndefinedExpression($sfAssignedDimFetch);
 $sfScopes[spl_object_id($sfAssignScope)] = [$sfAssignScope, [$sfAssignedPropertyFetch, $sfAssignedDimFetch], null];
@@ -1457,7 +1457,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 
 			// the closure cache key
 			$definedRoots = array_map(static fn (string $v): string => '$' . $v, array_slice($scope->getDefinedVariables(), 0, 2));
-			$observe('getClosureScopeCacheKey()', static fn () => $scope->getClosureScopeCacheKey());
+			$observe('getClosureScopeCacheKey()', static fn () => $scope->getClosureScopeCacheKey(null));
 			$observe('getClosureScopeCacheKey([])', static fn () => $scope->getClosureScopeCacheKey([]));
 			$observe('getClosureScopeCacheKey([$this])', static fn () => $scope->getClosureScopeCacheKey(['$this']));
 			$observe('getClosureScopeCacheKey(defined)', static fn () => $scope->getClosureScopeCacheKey($definedRoots));
@@ -1705,7 +1705,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				'intersectButNotNever(int, string)' => static fn () => ($scopeClass . '::intersectButNotNever')($int, $string),
 				'intersectButNotNever(int, int)' => static fn () => ($scopeClass . '::intersectButNotNever')($int, $int),
 				'intersectButNotNever(?int, int)' => static fn () => ($scopeClass . '::intersectButNotNever')((($side === 'native' ? 'PHPStanTurbo\\TypeCombinator' : \PHPStan\Type\TypeCombinator::class) . '::addNull')($int), $int),
-				'enterExpressionAssign' => static fn () => $scope->enterExpressionAssign($propFetch),
+				'enterExpressionAssign' => static fn () => $scope->enterExpressionAssign($propFetch, true),
 				'enterExpressionAssign(not plain)' => static fn () => $scope->enterExpressionAssign($propFetch, false),
 				'exitExpressionAssign' => static fn () => $scope->exitExpressionAssign($propFetch),
 				'setAllowedUndefinedExpression' => static fn () => $scope->setAllowedUndefinedExpression($dimFetch),
@@ -2023,15 +2023,15 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				'processClosureScope(other, this)' => static fn () => $scope->processClosureScope($other, $scope, $byRefUses),
 				'processAlwaysIterableForeachScopeWithoutPollute(this)' => static fn () => $scope->processAlwaysIterableForeachScopeWithoutPollute($scope),
 				'processAlwaysIterableForeachScopeWithoutPollute(other)' => static fn () => $scope->processAlwaysIterableForeachScopeWithoutPollute($other),
-				'generalizeWith(this)' => static fn () => $scope->generalizeWith($scope),
-				'generalizeWith(other)' => static fn () => $scope->generalizeWith($other),
+				'generalizeWith(this)' => static fn () => $scope->generalizeWith($scope, null),
+				'generalizeWith(other)' => static fn () => $scope->generalizeWith($other, null),
 				'generalizeWith(other, nothing writable)' => static fn () => $scope->generalizeWith($other, []),
 				'generalizeWith(other, writable)' => static fn () => $scope->generalizeWith($other, ['g' => true, 'a' => true, 'out' => true]),
-				'generalizeWith(other, reversed)' => static fn () => $other->generalizeWith($scope),
+				'generalizeWith(other, reversed)' => static fn () => $other->generalizeWith($scope, null),
 				// addTemplateArgumentConstraints() answers with $this for an
 				// empty (or null) set, so only a non-empty one makes
 				// generalizeWith()'s second half observable
-				'generalizeWith(other with constraints)' => static fn () => $scope->generalizeWith($other->withTemplateArgumentConstraints($sfNonEmptyConstraints)),
+				'generalizeWith(other with constraints)' => static fn () => $scope->generalizeWith($other->withTemplateArgumentConstraints($sfNonEmptyConstraints), null),
 				'equals(this)' => static fn () => $scope->equals($scope),
 				'equals(other)' => static fn () => $scope->equals($other),
 				'equals(other, reversed)' => static fn () => $other->equals($scope),

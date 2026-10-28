@@ -25,6 +25,8 @@ final class OnlyFilesRule implements Rule
 	{
 		$this->runs++;
 
+		// a rule that does not ask for collected data runs every time
+		$node->get(FirstCollector::class);
 		if ($node->isOnlyFilesAnalysis()) {
 			return [];
 		}

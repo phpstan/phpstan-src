@@ -34,6 +34,8 @@ final class DescribedClassRule implements Rule
 	{
 		$this->runs++;
 
+		// a rule that does not ask for collected data runs every time
+		$node->get(FirstCollector::class);
 		$contents = file_get_contents($this->file);
 
 		return [

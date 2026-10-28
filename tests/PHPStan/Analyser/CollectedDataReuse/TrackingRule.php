@@ -41,6 +41,8 @@ final class TrackingRule implements Rule
 	{
 		$this->runs++;
 
+		// a rule that does not ask for collected data runs every time
+		$node->get(FirstCollector::class);
 		$scope->trackFileDependency($this->file);
 		$scope->trackDirectoryDependency($this->directory, '*.txt');
 		$scope->trackValueDependency(FileResultCacheValueExtension::class, $this->valueFile);

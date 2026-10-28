@@ -834,6 +834,8 @@ make SPLIT=1                 # phpstan_turbo_core.so + phpstan_turbo.so (loads t
 make SPLIT=1 pgo             # the same, profile-guided (what turbo-compile-core runs)
 make SPLIT=1 extension       # only the extension, against a phpstan_turbo_core.so already here
 make SPLIT=1 strip           # both; a plain `make strip` leaves the core untouched
+make SPLIT=1 pgo-pack        # after `pgo`: the core's profile, into pgo-profile.tar
+make pgo-from-profile        # self-contained, from that profile (CI's pie legs); trains if it does not fit
 ```
 
 A plain `make`, the phpize build (`config.m4`, what PIE drives) and

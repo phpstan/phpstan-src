@@ -143,12 +143,15 @@ inline constexpr char strings[] =
 	"traverse\0" /* 1605 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1614 */
 	"toPhpDocNode\0" /* 1653 */
-	"right\0" /* 1666 */
-	"traverseSimultaneously\0" /* 1672 */
-	"typeToRemove\0" /* 1695 */
-	"tryRemove\0" /* 1708 */
-	"getFiniteTypes\0" /* 1718 */
-	"hasTemplateOrLateResolvableType"; /* 1733 */
+	"position\0" /* 1666 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 1675 */
+	"toNativePhpTypeNode\0" /* 1707 */
+	"right\0" /* 1727 */
+	"traverseSimultaneously\0" /* 1733 */
+	"typeToRemove\0" /* 1756 */
+	"tryRemove\0" /* 1769 */
+	"getFiniteTypes\0" /* 1779 */
+	"hasTemplateOrLateResolvableType"; /* 1794 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 8), /* __construct $keyType */
 	reg::packed(26, 0, 8), /* __construct $itemType */
@@ -252,10 +255,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1170, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(47, 0, 8), /* traverse return */
 	reg::packed(47, 0, 1614), /* toPhpDocNode return */
-	reg::packed(1666, 0, 8), /* traverseSimultaneously $right */
+	reg::packed(1666, 0, 1675), /* toNativePhpTypeNode $position */
+	reg::packed(1727, 0, 8), /* traverseSimultaneously $right */
 	reg::packed(1170, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(47, 0, 8), /* traverseSimultaneously return */
-	reg::packed(1695, 0, 8), /* tryRemove $typeToRemove */
+	reg::packed(1756, 0, 8), /* tryRemove $typeToRemove */
 	reg::packed(47, MAY_BE_NULL, 8), /* tryRemove return */
 	reg::packed(47, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(47, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
@@ -324,10 +328,11 @@ inline constexpr sigtab::Sig inferTemplateTypes = { { 1500 /* inferTemplateTypes
 inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 1578 /* getReferencedTemplateTypes */, 1, 97, 1, 98, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverse = { { 1605 /* traverse */, 1, 99, 1, 100, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 1653 /* toPhpDocNode */, 0, 101, 0, 101, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 1672 /* traverseSimultaneously */, 2, 102, 2, 104, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 1708 /* tryRemove */, 1, 105, 1, 106, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 1718 /* getFiniteTypes */, 0, 107, 0, 107, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1733 /* hasTemplateOrLateResolvableType */, 0, 108, 0, 108, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1707 /* toNativePhpTypeNode */, 1, 102, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 1733 /* traverseSimultaneously */, 2, 103, 2, 105, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 1769 /* tryRemove */, 1, 106, 1, 107, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1779 /* getFiniteTypes */, 0, 108, 0, 108, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1794 /* hasTemplateOrLateResolvableType */, 0, 109, 0, 109, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayType

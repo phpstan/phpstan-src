@@ -515,6 +515,8 @@ enum {
 	PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER,
 	/* the dependencies of the handlers' results */
 	PT_CLASS_DEPENDENCY_TYPES,
+	/* the compound arms of Type::toNativePhpTypeNode() */
+	PT_CLASS_NATIVE_PHP_TYPE_NODE_HELPER,
 	PT_CLASS_COUNT
 };
 

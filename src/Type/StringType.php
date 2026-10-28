@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -350,6 +351,11 @@ class StringType implements Type
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('string');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isScalarAllowed() ? new Identifier('string') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

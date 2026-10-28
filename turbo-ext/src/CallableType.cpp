@@ -1216,6 +1216,13 @@ PT_MINIT_REGISTRATION(pt_register_callable_type)
 	cls.method<&CallableType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &CallableType::hasTemplateOrLateResolvableType>();
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isCallableAllowed() ? new Identifier('callable') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("iscallableallowed"), PT_CLASS_IDENTIFIER, PT_LC("callable")));
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::CallableType::registerTraits(cls);

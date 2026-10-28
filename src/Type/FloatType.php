@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -302,6 +303,11 @@ class FloatType implements Type
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('float');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isScalarAllowed() ? new Identifier('float') : null;
 	}
 
 	public function getFiniteTypes(): array

@@ -170,6 +170,12 @@ zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32
  * declares one; UNDEF = pending exception */
 zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv);
 
+/* $position->allowed() ? new NodeClass($name) : null — the keyword and
+ * class-name answers of Type::toNativePhpTypeNode(); allowedLc is the
+ * lowercased NativeTypePosition check, nodeClassIdx a class-map PhpParser node
+ * class (Identifier, Name, FullyQualified); UNDEF = pending exception */
+zv::Val pt_type_native_type_node(zval *position, const char *allowedLc, size_t allowedLen, int nodeClassIdx, const char *name, size_t nameLen);
+
 /* $value instanceof Class for a class-map class or interface; false with
  * an exception pending when the class cannot be resolved */
 bool pt_type_instanceof(zval *value, int classIdx, bool &out);

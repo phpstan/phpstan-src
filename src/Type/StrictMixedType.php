@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -520,6 +521,11 @@ class StrictMixedType implements CompoundType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('mixed');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isMixedAllowed() ? new Identifier('mixed') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

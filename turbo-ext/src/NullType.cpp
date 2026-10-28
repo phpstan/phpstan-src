@@ -717,6 +717,13 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(NullType::hasTemplateOrLateResolvableType()); });
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isNullAllowed() ? new Identifier('null') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isnullallowed"), PT_CLASS_IDENTIFIER, PT_LC("null")));
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (toClassConstantType, getConstantStrings) */
 	ptdecl::NullType::registerTraits(cls);

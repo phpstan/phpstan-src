@@ -2857,6 +2857,16 @@ public:
 		return pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, name.raw());
 	}
 
+	/* null for an empty class name, else $position->isClassNameAllowed()
+	 * ? new FullyQualified($className) : null; UNDEF = pending exception */
+	zv::Val toNativePhpTypeNode(zval *position) const
+	{
+		zv::Val name = thisGetClassName();
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		if (Z_STRLEN_P(name.raw()) == 0) return zv::Val::null();
+		return pt_type_native_type_node(position, PT_LC("isclassnameallowed"), PT_CLASS_FULLY_QUALIFIED, Z_STRVAL_P(name.raw()), Z_STRLEN_P(name.raw()));
+	}
+
 	/* the subtracted type's answer, false without one; false with an
 	 * exception pending on an uninitialized slot */
 	bool hasTemplateOrLateResolvableType(bool &out) const
@@ -3927,6 +3937,12 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 	});
 	cls.method<&ObjectType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &ObjectType::hasTemplateOrLateResolvableType>();
+
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.toNativePhpTypeNode(position));
+	});
 
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */

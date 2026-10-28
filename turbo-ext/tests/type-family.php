@@ -8661,6 +8661,88 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	}
 }
 
+// ---- toNativePhpTypeNode() of every shadowed Type family ----
+{
+	$nodeView = static function (mixed $node) use (&$nodeView): mixed {
+		if ($node instanceof \PhpParser\Node\NullableType) {
+			return ['?', $nodeView($node->type)];
+		}
+		if ($node instanceof \PhpParser\Node\UnionType || $node instanceof \PhpParser\Node\IntersectionType) {
+			return [get_class($node), array_map($nodeView, $node->types)];
+		}
+		if ($node instanceof \PhpParser\Node\Identifier || $node instanceof \PhpParser\Node\Name) {
+			return [get_class($node), $node->toString()];
+		}
+		return $node;
+	};
+	$positions = [];
+	foreach ([70100, 70400, 80000, 80100, 80200] as $versionId) {
+		$version = new \PHPStan\Php\PhpVersion($versionId);
+		$positions["parameter $versionId"] = \PHPStan\Type\NativeTypePosition::parameter($version);
+		$positions["return $versionId"] = \PHPStan\Type\NativeTypePosition::returnType($version);
+		$positions["property $versionId"] = \PHPStan\Type\NativeTypePosition::property($version);
+		$positions["unionMember $versionId"] = \PHPStan\Type\NativeTypePosition::returnType($version)->toUnionMember();
+	}
+	$foo = new \PHPStan\Type\ObjectType('Foo');
+	$bar = new \PHPStan\Type\ObjectType('Bar');
+	$mixed = new \PHPStan\Type\MixedType();
+	$subjects = [
+		'bool' => new \PHPStan\Type\BooleanType(),
+		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+		'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+		'int' => new \PHPStan\Type\IntegerType(),
+		'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+		'float' => new \PHPStan\Type\FloatType(),
+		'string' => new \PHPStan\Type\StringType(),
+		'numericString' => new \PHPStan\Type\Accessory\AccessoryNumericStringType(),
+		'nonEmptyString' => new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(),
+		'nonFalsyString' => new \PHPStan\Type\Accessory\AccessoryNonFalsyStringType(),
+		'literalString' => new \PHPStan\Type\Accessory\AccessoryLiteralStringType(),
+		'lowercaseString' => new \PHPStan\Type\Accessory\AccessoryLowercaseStringType(),
+		'uppercaseString' => new \PHPStan\Type\Accessory\AccessoryUppercaseStringType(),
+		'decimalIntString' => new \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType(),
+		'array' => new \PHPStan\Type\ArrayType($mixed, $mixed),
+		'constantArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+		'nonEmptyArray' => new \PHPStan\Type\Accessory\NonEmptyArrayType(),
+		'list' => new \PHPStan\Type\Accessory\AccessoryArrayListType(),
+		'oversizedArray' => new \PHPStan\Type\Accessory\OversizedArrayType(),
+		'hasOffset' => new \PHPStan\Type\Accessory\HasOffsetType(new \PHPStan\Type\Constant\ConstantStringType('a')),
+		'hasOffsetValue' => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a'), $mixed),
+		'iterable' => new \PHPStan\Type\IterableType($mixed, $mixed),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'closure' => new \PHPStan\Type\ClosureType(),
+		'null' => new \PHPStan\Type\NullType(),
+		'void' => new \PHPStan\Type\VoidType(),
+		'never' => new \PHPStan\Type\NeverType(),
+		'explicitNever' => new \PHPStan\Type\NeverType(true),
+		'mixed' => $mixed,
+		'explicitMixed' => new \PHPStan\Type\MixedType(true),
+		'strictMixed' => new \PHPStan\Type\StrictMixedType(),
+		'error' => new \PHPStan\Type\ErrorType(),
+		'resource' => new \PHPStan\Type\ResourceType(),
+		'object' => new \PHPStan\Type\ObjectWithoutClassType(),
+		'objectShape' => new \PHPStan\Type\ObjectShapeType([], []),
+		'Foo' => $foo,
+		'static' => new \PHPStan\Type\StaticType($stringReflectionProvider->getClass(\PHPStan\TrinaryLogic::class)),
+		'parent' => new \PHPStan\Type\NonexistentParentClassType(),
+		'hasMethod' => new \PHPStan\Type\Accessory\HasMethodType('foo'),
+		'hasProperty' => new \PHPStan\Type\Accessory\HasPropertyType('foo'),
+		'Foo|null' => new \PHPStan\Type\UnionType([$foo, new \PHPStan\Type\NullType()]),
+		'int|string|null' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType()]),
+		'false|null' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantBooleanType(false), new \PHPStan\Type\NullType()]),
+		'Foo&Bar' => new \PHPStan\Type\IntersectionType([$foo, $bar]),
+		'(Foo&Bar)|null' => new \PHPStan\Type\UnionType([new \PHPStan\Type\IntersectionType([$foo, $bar]), new \PHPStan\Type\NullType()]),
+		'object&hasMethod' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ObjectWithoutClassType(), new \PHPStan\Type\Accessory\HasMethodType('foo')]),
+		'non-empty-string' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),
+		'keyOf' => new \PHPStan\Type\KeyOfType(new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [$mixed])),
+	];
+	foreach ($subjects as $name => $subject) {
+		foreach ($positions as $positionName => $position) {
+			$observations["toNativePhpTypeNode $name $positionName"] = $nodeView($subject->toNativePhpTypeNode($position));
+		}
+	}
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

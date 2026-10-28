@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -551,6 +552,11 @@ class IterableType implements CompoundType
 				$this->itemType->toPhpDocNode(),
 			],
 		);
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isIterableAllowed() ? new Identifier('iterable') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

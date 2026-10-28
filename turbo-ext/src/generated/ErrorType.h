@@ -40,7 +40,10 @@ inline constexpr char strings[] =
 	"getIterableValueType\0" /* 115 */
 	"type\0" /* 136 */
 	"subtract\0" /* 141 */
-	"equals"; /* 150 */
+	"equals\0" /* 150 */
+	"position\0" /* 157 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 166 */
+	"toNativePhpTypeNode"; /* 198 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 7), /* __construct $reason */
 	reg::packed(24, MAY_BE_NULL | MAY_BE_STRING), /* getReason return */
@@ -52,6 +55,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(24, 0, 78), /* subtract return */
 	reg::packed(136, 0, 78), /* equals $type */
 	reg::packed(24, MAY_BE_BOOL), /* equals return */
+	reg::packed(157, 0, 166), /* toNativePhpTypeNode $position */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -65,6 +69,7 @@ inline constexpr sigtab::Sig getIterableKeyType = { { 96 /* getIterableKeyType *
 inline constexpr sigtab::Sig getIterableValueType = { { 115 /* getIterableValueType */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig subtract = { { 141 /* subtract */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig equals = { { 150 /* equals */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 198 /* toNativePhpTypeNode */, 1, 10, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ErrorType

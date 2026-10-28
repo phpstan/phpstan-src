@@ -173,6 +173,13 @@ PT_MINIT_REGISTRATION(pt_register_error_type)
 	});
 	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(ErrorType::equals(argv)); });
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* null */
+		RETURN_NULL();
+	});
+
 	cls.shadow(&pt_ce_error_type);
 }
 

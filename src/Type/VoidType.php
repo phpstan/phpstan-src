@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -280,6 +281,11 @@ class VoidType implements Type
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('void');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isVoidAllowed() ? new Identifier('void') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

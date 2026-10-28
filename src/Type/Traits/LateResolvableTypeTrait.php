@@ -19,6 +19,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\LateResolvableType;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 
@@ -707,6 +708,11 @@ trait LateResolvableTypeTrait
 	}
 
 	abstract protected function getResult(): Type;
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $this->resolve()->toNativePhpTypeNode($position);
+	}
 
 	public function hasTemplateOrLateResolvableType(): bool
 	{

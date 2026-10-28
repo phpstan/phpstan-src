@@ -22,6 +22,7 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
@@ -290,6 +291,11 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 	public function toPhpDocNode(): TypeNode
 	{
 		return $this->getDelegate()->toPhpDocNode();
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $this->getDelegate()->toNativePhpTypeNode($position);
 	}
 
 	public function getReferencedClasses(): array

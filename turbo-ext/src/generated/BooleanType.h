@@ -75,8 +75,11 @@ inline constexpr char strings[] =
 	"exponentiate\0" /* 469 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 482 */
 	"toPhpDocNode\0" /* 521 */
-	"toTrinaryLogic\0" /* 534 */
-	"hasTemplateOrLateResolvableType"; /* 549 */
+	"position\0" /* 534 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 543 */
+	"toNativePhpTypeNode\0" /* 575 */
+	"toTrinaryLogic\0" /* 595 */
+	"hasTemplateOrLateResolvableType"; /* 610 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getConstantStrings return */
 	reg::packed(12, MAY_BE_ARRAY), /* getConstantScalarTypes return */
@@ -108,6 +111,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(460, 0, 122), /* exponentiate $exponent */
 	reg::packed(12, 0, 122), /* exponentiate return */
 	reg::packed(12, 0, 482), /* toPhpDocNode return */
+	reg::packed(534, 0, 543), /* toNativePhpTypeNode $position */
 	reg::packed(12, 0, 263), /* toTrinaryLogic return */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
@@ -141,8 +145,9 @@ inline constexpr sigtab::Sig tryRemove = { { 435 /* tryRemove */, 1, 24, 1, 25, 
 inline constexpr sigtab::Sig getFiniteTypes = { { 445 /* getFiniteTypes */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig exponentiate = { { 469 /* exponentiate */, 1, 27, 1, 28, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 521 /* toPhpDocNode */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toTrinaryLogic = { { 534 /* toTrinaryLogic */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 549 /* hasTemplateOrLateResolvableType */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 575 /* toNativePhpTypeNode */, 1, 30, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toTrinaryLogic = { { 595 /* toTrinaryLogic */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 610 /* hasTemplateOrLateResolvableType */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BooleanType

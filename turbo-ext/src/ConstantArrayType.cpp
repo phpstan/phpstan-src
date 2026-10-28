@@ -7638,6 +7638,13 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	 * the class's chunkArray() above) */
 	cls.method("traitChunkArray", reg::Public, 2, { reg::obj("lengthType", ptcls::type), reg::obj("preserveKeys", ptcls::trinaryLogic) }, pt_carr_array_trait_chunk_array_handler(), &ptret::type);
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isArrayAllowed() ? new Identifier('array') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isarrayallowed"), PT_CLASS_IDENTIFIER, PT_LC("array")));
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::ConstantArrayType::registerTraits(cls);

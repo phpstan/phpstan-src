@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -187,6 +188,11 @@ class BooleanType implements Type
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('bool');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isScalarAllowed() ? new Identifier('bool') : null;
 	}
 
 	public function toTrinaryLogic(): TrinaryLogic

@@ -219,10 +219,13 @@ inline constexpr char strings[] =
 	"foldUnsealedKeyCase\0" /* 2507 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 2527 */
 	"toPhpDocNode\0" /* 2566 */
-	"value\0" /* 2579 */
-	"isValidIdentifier\0" /* 2585 */
-	"getFiniteTypes\0" /* 2603 */
-	"hasTemplateOrLateResolvableType"; /* 2618 */
+	"position\0" /* 2579 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 2588 */
+	"toNativePhpTypeNode\0" /* 2620 */
+	"value\0" /* 2640 */
+	"isValidIdentifier\0" /* 2646 */
+	"getFiniteTypes\0" /* 2664 */
+	"hasTemplateOrLateResolvableType"; /* 2679 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $keyTypes */
 	reg::packed(9, MAY_BE_ARRAY), /* __construct $valueTypes */
@@ -408,7 +411,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(2386, MAY_BE_NULL | MAY_BE_LONG), /* foldUnsealedKeyCase $case */
 	reg::packed(110, 0, 254), /* foldUnsealedKeyCase return */
 	reg::packed(110, 0, 2527), /* toPhpDocNode return */
-	reg::packed(2579, MAY_BE_STRING), /* isValidIdentifier $value */
+	reg::packed(2579, 0, 2588), /* toNativePhpTypeNode $position */
+	reg::packed(2640, MAY_BE_STRING), /* isValidIdentifier $value */
 	reg::packed(110, MAY_BE_BOOL), /* isValidIdentifier return */
 	reg::packed(110, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(110, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
@@ -517,9 +521,10 @@ inline constexpr sigtab::Sig filterArrayRemovingFalsey = { { 2410 /* filterArray
 inline constexpr sigtab::Sig foldConstantStringKeyCase = { { 2477 /* foldConstantStringKeyCase */, 2, 177, 2, 179, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig foldUnsealedKeyCase = { { 2507 /* foldUnsealedKeyCase */, 2, 180, 2, 182, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 2566 /* toPhpDocNode */, 0, 183, 0, 183, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isValidIdentifier = { { 2585 /* isValidIdentifier */, 1, 184, 1, 185, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 2603 /* getFiniteTypes */, 0, 186, 0, 186, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2618 /* hasTemplateOrLateResolvableType */, 0, 187, 0, 187, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 2620 /* toNativePhpTypeNode */, 1, 184, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValidIdentifier = { { 2646 /* isValidIdentifier */, 1, 185, 1, 186, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 2664 /* getFiniteTypes */, 0, 187, 0, 187, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2679 /* hasTemplateOrLateResolvableType */, 0, 188, 0, 188, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantArrayType

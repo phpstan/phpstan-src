@@ -137,6 +137,13 @@ PT_MINIT_REGISTRATION(pt_register_resource_type)
 		RETURN_FALSE;
 	});
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* null */
+		RETURN_NULL();
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::ResourceType::registerTraits(cls);

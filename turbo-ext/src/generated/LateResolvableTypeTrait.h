@@ -190,7 +190,10 @@ inline constexpr char strings[] =
 	"getFiniteTypes\0" /* 3065 */
 	"resolve\0" /* 3080 */
 	"getResult\0" /* 3088 */
-	"hasTemplateOrLateResolvableType"; /* 3098 */
+	"position\0" /* 3098 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3107 */
+	"toNativePhpTypeNode\0" /* 3139 */
+	"hasTemplateOrLateResolvableType"; /* 3159 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* getObjectClassNames return */
 	reg::packed(0, MAY_BE_ARRAY), /* getObjectClassReflections return */
@@ -402,6 +405,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(0, 0, 99), /* resolve return */
 	reg::packed(0, 0, 99), /* getResult return */
+	reg::packed(3098, 0, 3107), /* toNativePhpTypeNode $position */
 	reg::packed(0, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -538,7 +542,8 @@ inline constexpr sigtab::Sig exponentiate = { { 3052 /* exponentiate */, 1, 205,
 inline constexpr sigtab::Sig getFiniteTypes = { { 3065 /* getFiniteTypes */, 0, 207, 0, 207, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolve = { { 3080 /* resolve */, 0, 208, 0, 208, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getResult = { { 3088 /* getResult */, 0, 209, 0, 209, ZEND_ACC_PROTECTED | ZEND_ACC_ABSTRACT } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3098 /* hasTemplateOrLateResolvableType */, 0, 210, 0, 210, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3139 /* toNativePhpTypeNode */, 1, 210, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3159 /* hasTemplateOrLateResolvableType */, 0, 211, 0, 211, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::LateResolvableTypeTrait

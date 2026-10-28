@@ -268,8 +268,11 @@ inline constexpr char strings[] =
 	"pickFromTypes\0" /* 3694 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3708 */
 	"toPhpDocNode\0" /* 3747 */
-	"notBenevolentPickFromTypes\0" /* 3760 */
-	"hasTemplateOrLateResolvableType"; /* 3787 */
+	"position\0" /* 3760 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3769 */
+	"toNativePhpTypeNode\0" /* 3801 */
+	"notBenevolentPickFromTypes\0" /* 3821 */
+	"hasTemplateOrLateResolvableType"; /* 3848 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -522,6 +525,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3685, MAY_BE_CALLABLE), /* pickFromTypes $criteria */
 	reg::packed(35, MAY_BE_ARRAY), /* pickFromTypes return */
 	reg::packed(35, 0, 3708), /* toPhpDocNode return */
+	reg::packed(3760, 0, 3769), /* toNativePhpTypeNode $position */
 	reg::packed(3675, MAY_BE_CALLABLE), /* notBenevolentPickFromTypes $getValues */
 	reg::packed(35, MAY_BE_ARRAY), /* notBenevolentPickFromTypes return */
 	reg::packed(35, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
@@ -680,8 +684,9 @@ inline constexpr sigtab::Sig notBenevolentUnionResults = { { 3630 /* notBenevole
 inline constexpr sigtab::Sig unionTypes = { { 3664 /* unionTypes */, 1, 245, 1, 246, ZEND_ACC_PROTECTED } };
 inline constexpr sigtab::Sig pickFromTypes = { { 3694 /* pickFromTypes */, 2, 247, 2, 249, ZEND_ACC_PROTECTED } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 3747 /* toPhpDocNode */, 0, 250, 0, 250, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3760 /* notBenevolentPickFromTypes */, 1, 251, 1, 252, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3787 /* hasTemplateOrLateResolvableType */, 0, 253, 0, 253, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3801 /* toNativePhpTypeNode */, 1, 251, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3821 /* notBenevolentPickFromTypes */, 1, 252, 1, 253, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3848 /* hasTemplateOrLateResolvableType */, 0, 254, 0, 254, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionType

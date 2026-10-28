@@ -334,6 +334,13 @@ PT_MINIT_REGISTRATION(pt_register_boolean_type)
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(BooleanType::hasTemplateOrLateResolvableType()); });
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isScalarAllowed() ? new Identifier('bool') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isscalarallowed"), PT_CLASS_IDENTIFIER, PT_LC("bool")));
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares (getConstantStrings, getConstantScalarTypes,
 	 * getConstantScalarValues, isNull, isTrue, isFalse, isBoolean) */

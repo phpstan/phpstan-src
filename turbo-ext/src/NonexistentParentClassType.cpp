@@ -210,6 +210,13 @@ PT_MINIT_REGISTRATION(pt_register_nonexistent_parent_class_type)
 		RETURN_FALSE;
 	});
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isClassNameAllowed() ? new Name('parent') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isclassnameallowed"), PT_CLASS_NAME, PT_LC("parent")));
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::NonexistentParentClassType::registerTraits(cls);

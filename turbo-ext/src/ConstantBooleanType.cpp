@@ -339,6 +339,23 @@ PT_MINIT_REGISTRATION(pt_register_constant_boolean_type)
 	 * declaration; the registrar below skips the trait's own looseCompare()
 	 * because the class body declares one */
 	cls.method("scalarLooseCompare", reg::Private, 2, { reg::obj("type", ptcls::type), reg::obj("phpVersion", ptcls::phpVersion) }, pt_type_trait_constant_scalar_loose_compare, &ptret::booleanType);
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* new Identifier('true' / 'false') when the position allows the value,
+		 * else parent::toNativePhpTypeNode($position) — BooleanType's answer */
+		bool value;
+		if (UNEXPECTED(!ConstantBooleanType(Z_OBJ_P(ZEND_THIS)).value(value))) RETURN_THROWS();
+		zv::Val node = value
+			? pt_type_native_type_node(position, PT_LC("istrueallowed"), PT_CLASS_IDENTIFIER, PT_LC("true"))
+			: pt_type_native_type_node(position, PT_LC("isfalseallowed"), PT_CLASS_IDENTIFIER, PT_LC("false"));
+		if (UNEXPECTED(node.isUndef())) RETURN_THROWS();
+		if (Z_TYPE_P(node.raw()) == IS_NULL) {
+			PT_RETURN_VAL(pt_type_call_parent(pt_ce_constant_boolean_type, Z_OBJ_P(ZEND_THIS), PT_LC("tonativephptypenode"), 1, position));
+		}
+		PT_RETURN_VAL(std::move(node));
+	});
+
 	ptdecl::ConstantBooleanType::registerTraits(cls);
 
 	cls.shadow(&pt_ce_constant_boolean_type);

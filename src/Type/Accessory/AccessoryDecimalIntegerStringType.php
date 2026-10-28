@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -24,6 +25,7 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -478,6 +480,11 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode($this->inverse ? 'non-decimal-int-string' : 'decimal-int-string');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isScalarAllowed() ? new Identifier('string') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

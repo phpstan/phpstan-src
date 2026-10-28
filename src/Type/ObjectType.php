@@ -9,6 +9,7 @@ use Countable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
+use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Internal\LruCache;
@@ -2131,6 +2132,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode($this->getClassName());
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		$className = $this->getClassName();
+		if ($className === '' || !$position->isClassNameAllowed()) {
+			return null;
+		}
+
+		return new FullyQualified($className);
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

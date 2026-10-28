@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Name;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -931,6 +932,15 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('static');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		if ($position->isStaticAllowed()) {
+			return new Name('static');
+		}
+
+		return $position->isClassNameAllowed() ? new Name('self') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

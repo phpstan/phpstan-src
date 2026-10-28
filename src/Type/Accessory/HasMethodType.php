@@ -23,6 +23,7 @@ use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
@@ -343,6 +344,12 @@ class HasMethodType implements AccessoryType, CompoundType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode(''); // no PHPDoc representation
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		// not certainly an object on its own, object&hasMethod(foo) maps to object through the intersection
+		return null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

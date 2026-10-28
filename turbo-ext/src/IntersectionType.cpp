@@ -2433,10 +2433,13 @@ public:
 				zv::Val identifier = readProperty(typeNode.raw(), PT_LC("type"));
 				if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 				if (UNEXPECTED(!zv::Ref(identifier.raw()).isObject())) {
-					zend_type_error("phpstan_turbo: GenericTypeNode::$type must be an IdentifierTypeNode");
+					zend_type_error("phpstan_turbo: GenericTypeNode::$type must be an IdentifierTypeNode or a NameNode");
 					return zv::Val();
 				}
-				zv::Val identifierName = readProperty(identifier.raw(), PT_LC("name"));
+				/* a NameNode is a class, never the array keyword */
+				bool isIdentifier;
+				if (UNEXPECTED(!isInstance(identifier.raw(), PT_CLASS_IDENTIFIER_TYPE_NODE, isIdentifier))) return zv::Val();
+				zv::Val identifierName = isIdentifier ? readProperty(identifier.raw(), PT_LC("name")) : zv::Val::null();
 				if (UNEXPECTED(identifierName.isUndef())) return zv::Val();
 				if (Z_TYPE_P(identifierName.raw()) == IS_STRING && zend_string_equals_literal(Z_STR_P(identifierName.raw()), "array")) {
 					bool nonEmpty = false;

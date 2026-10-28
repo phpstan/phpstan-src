@@ -34,6 +34,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\InvalidTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\NameNode;
 use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
@@ -170,7 +171,10 @@ final class TypeNodeResolver
 			}
 		}
 
-		if ($typeNode instanceof IdentifierTypeNode) {
+		if ($typeNode instanceof NameNode) {
+			return $this->resolveNameNode($typeNode, $nameScope);
+
+		} elseif ($typeNode instanceof IdentifierTypeNode) {
 			return $this->resolveIdentifierTypeNode($typeNode, $nameScope);
 
 		} elseif ($typeNode instanceof ThisTypeNode) {
@@ -213,6 +217,14 @@ final class TypeNodeResolver
 		}
 
 		return new ErrorType();
+	}
+
+	/**
+	 * A name node is always a class, even when it is named like a keyword or a template type.
+	 */
+	private function resolveNameNode(NameNode $typeNode, NameScope $nameScope): Type
+	{
+		return new ObjectType($nameScope->resolveStringName($typeNode->toCodeString()));
 	}
 
 	private function resolveIdentifierTypeNode(IdentifierTypeNode $typeNode, NameScope $nameScope): Type
@@ -692,7 +704,7 @@ final class TypeNodeResolver
 
 	private function resolveGenericTypeNode(GenericTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		$mainTypeName = strtolower($typeNode->type->name);
+		$mainTypeName = $typeNode->type instanceof NameNode ? null : strtolower($typeNode->type->name);
 		$genericTypes = $this->resolveMultiple($typeNode->genericTypes, $nameScope);
 		$variances = array_map(
 			static function (string $variance): TemplateTypeVariance {
@@ -861,7 +873,9 @@ final class TypeNodeResolver
 			return new ErrorType();
 		}
 
-		$mainType = $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
+		$mainType = $typeNode->type instanceof NameNode
+			? $this->resolveNameNode($typeNode->type, $nameScope)
+			: $this->resolveIdentifierTypeNode($typeNode->type, $nameScope);
 		$mainTypeObjectClassNames = $mainType->getObjectClassNames();
 		if (count($mainTypeObjectClassNames) > 1) {
 			if ($mainType instanceof TemplateType) {

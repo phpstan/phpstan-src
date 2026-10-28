@@ -4,7 +4,6 @@ namespace PHPStan\Type;
 
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
@@ -61,9 +60,7 @@ final class OffsetAccessType implements CompoundType, LateResolvableType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		$printer = new Printer();
-
-		return $printer->print($this->toPhpDocNode());
+		return TypeNodeDescriber::describe($this->toPhpDocNode());
 	}
 
 	public function isResolvable(): bool

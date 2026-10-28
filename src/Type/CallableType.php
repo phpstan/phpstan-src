@@ -12,7 +12,6 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -337,7 +336,6 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $level->handle(
 			static fn (): string => 'callable',
 			function (): string {
-				$printer = new Printer();
 				$assertedParameterNames = [];
 				foreach ($this->assertions->getAll() as $assertTag) {
 					$assertedParameterNames[$assertTag->getParameter()->getParameterName()] = true;
@@ -360,7 +358,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 					$this->assertions,
 				);
 
-				return $printer->print($selfWithoutParameterNames->toPhpDocNode());
+				return TypeNodeDescriber::describe($selfWithoutParameterNames->toPhpDocNode());
 			},
 		);
 	}

@@ -11,9 +11,9 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
+use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -352,7 +352,6 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	private function describeCallable(): string
 	{
-		$printer = new Printer();
 		$assertedParameterNames = [];
 		foreach ($this->assertions->getAll() as $assertTag) {
 			$assertedParameterNames[$assertTag->getParameter()->getParameterName()] = true;
@@ -382,7 +381,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->isStatic,
 		);
 
-		return $printer->print($selfWithoutParameterNames->toPhpDocNode());
+		return TypeNodeDescriber::describe($selfWithoutParameterNames->toPhpDocNode());
 	}
 
 	public function isOffsetAccessLegal(): TrinaryLogic
@@ -997,6 +996,10 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	{
 		if ($this->isCommonCallable) {
 			$prefix = $this->isStatic->yes() ? 'static-' : '';
+			if ($prefix === '' && !$this->isPure()->yes()) {
+				return new FullyQualifiedNameNode(Closure::class);
+			}
+
 			$name = $this->isPure()->yes() ? 'pure-Closure' : 'Closure';
 			return new IdentifierTypeNode($prefix . $name);
 		}
@@ -1025,7 +1028,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			?? $this->returnType->toPhpDocNode();
 
 		return new CallableTypeNode(
-			new IdentifierTypeNode('Closure'),
+			new FullyQualifiedNameNode(Closure::class),
 			$parameters,
 			$returnTypeNode,
 			$templateTags,

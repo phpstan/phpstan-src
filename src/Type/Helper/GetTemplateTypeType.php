@@ -4,6 +4,7 @@ namespace PHPStan\Type\Helper;
 
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -99,7 +100,7 @@ final class GetTemplateTypeType implements CompoundType, LateResolvableType
 			new IdentifierTypeNode('template-type'),
 			[
 				$this->type->toPhpDocNode(),
-				new IdentifierTypeNode($this->ancestorClassName),
+				new FullyQualifiedNameNode($this->ancestorClassName),
 				new ConstTypeNode(new ConstExprStringNode($this->templateTypeName, ConstExprStringNode::SINGLE_QUOTED)),
 			],
 		);

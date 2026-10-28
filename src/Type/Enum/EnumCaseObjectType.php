@@ -250,7 +250,7 @@ class EnumCaseObjectType extends ObjectType
 	{
 		return new ConstTypeNode(
 			new ConstFetchNode(
-				$this->getClassName(),
+				'\\' . $this->getClassName(),
 				$this->getEnumCaseName(),
 			),
 		);

@@ -95,7 +95,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_SIMPLE_THROW_POINT */ {"simpleThrowPoint", "PHPStan\\Reflection\\Callables\\SimpleThrowPoint"},
 	/* PT_CLASS_EXTENDED_PARAMETER_REFLECTION */ {"extendedParameterReflection", "PHPStan\\Reflection\\ExtendedParameterReflection"},
 	/* PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION */ {"closureCallUnresolvedMethodPrototypeReflection", "PHPStan\\Reflection\\Php\\ClosureCallUnresolvedMethodPrototypeReflection"},
-	/* PT_CLASS_PHPDOC_PRINTER */ {"phpDocPrinter", "PHPStan\\PhpDocParser\\Printer\\Printer"},
 	/* PT_CLASS_CALLABLE_TYPE_NODE */ {"callableTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\CallableTypeNode"},
 	/* PT_CLASS_CALLABLE_TYPE_PARAMETER_NODE */ {"callableTypeParameterNode", "PHPStan\\PhpDocParser\\Ast\\Type\\CallableTypeParameterNode"},
 	/* PT_CLASS_TEMPLATE_TAG_VALUE_NODE */ {"templateTagValueNode", "PHPStan\\PhpDocParser\\Ast\\PhpDoc\\TemplateTagValueNode"},
@@ -414,6 +413,8 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLASS_CONSTANT_PATTERN_RESOLVER */ {"classConstantPatternResolver", "PHPStan\\Type\\ClassConstantPatternResolver"},
 	/* PT_CLASS_DEPENDENCY_TYPES */ {"dependencyTypes", "PHPStan\\Dependency\\DependencyTypes"},
 	/* PT_CLASS_NATIVE_PHP_TYPE_NODE_HELPER */ {"nativePhpTypeNodeHelper", "PHPStan\\Type\\NativePhpTypeNodeHelper"},
+	/* PT_CLASS_FULLY_QUALIFIED_NAME_NODE */ {"fullyQualifiedNameNode", "PHPStan\\PhpDocParser\\Ast\\Type\\FullyQualifiedNameNode"},
+	/* PT_CLASS_TYPE_NODE_DESCRIBER */ {"typeNodeDescriber", "PHPStan\\Type\\TypeNodeDescriber"},
 };
 
 zend_class_entry *pt_class(int idx)

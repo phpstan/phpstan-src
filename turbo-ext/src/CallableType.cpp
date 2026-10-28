@@ -382,8 +382,6 @@ public:
 		pt_verbosity_case which;
 		if (UNEXPECTED(!pt_type_verbosity_case(level, which))) return zv::Val();
 		if (which == PT_VERBOSITY_TYPE_ONLY) return zv::Val::string("callable", sizeof("callable") - 1);
-		zv::Val printer = pt_type_new(PT_CLASS_PHPDOC_PRINTER, 0, NULL);
-		if (UNEXPECTED(printer.isUndef())) return zv::Val();
 		zval *a = assertions();
 		zval *p = a != NULL ? parameters() : NULL;
 		if (UNEXPECTED(p == NULL)) return zv::Val();
@@ -400,7 +398,7 @@ public:
 		if (UNEXPECTED(selfWithoutParameterNames.isUndef())) return zv::Val();
 		zv::Val node = CallableType(Z_OBJ_P(selfWithoutParameterNames.raw())).toPhpDocNode();
 		if (UNEXPECTED(node.isUndef())) return zv::Val();
-		return pt_type_call(Z_OBJ_P(printer.raw()), PT_LC("print"), 1, node.raw());
+		return pt_describe_php_doc_node(node.raw());
 	}
 
 	/* [SimpleThrowPoint::createImplicit()] */
@@ -605,8 +603,8 @@ public:
 		/* $this->isPure->yes() — the slot, not the method */
 		zend_long pureValue = pt_type_trinary_value(pure);
 		if (UNEXPECTED(pureValue < 0)) return zv::Val();
-		if (pureValue == PT_TRI_YES) return pt_callable_type_node(PT_LC("pure-callable"), p, tags, a, r);
-		return pt_callable_type_node(PT_LC("callable"), p, tags, a, r);
+		if (pureValue == PT_TRI_YES) return pt_callable_type_node(PT_LC("pure-callable"), false, p, tags, a, r);
+		return pt_callable_type_node(PT_LC("callable"), false, p, tags, a, r);
 	}
 
 	/* false = pending exception */

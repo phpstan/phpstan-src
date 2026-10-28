@@ -23,6 +23,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\OffsetAccessType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
@@ -44,6 +45,7 @@ class TypeDescriptionTest extends PHPStanTestCase
 		yield ['non-empty-array<int, string>', new IntersectionType([new ArrayType(new IntegerType(), new StringType()), new NonEmptyArrayType()])];
 		yield ['class-string&literal-string', new IntersectionType([new ClassStringType(), new AccessoryLiteralStringType()])];
 		yield ['class-string<Foo>&literal-string', new IntersectionType([new GenericClassStringType(new ObjectType('Foo')), new AccessoryLiteralStringType()])];
+		yield ['Foo\\Bar[\'baz\']', new OffsetAccessType(new ObjectType('Foo\\Bar'), new ConstantStringType('baz'))];
 
 		$builder = ConstantArrayTypeBuilder::createEmpty();
 		$builder->setOffsetValueType(new ConstantStringType('foo'), new IntegerType());

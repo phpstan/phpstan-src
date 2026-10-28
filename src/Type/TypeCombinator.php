@@ -420,10 +420,7 @@ final class TypeCombinator
 		$enumCaseTypes = [];
 		$integerRangeTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
-			// a constant scalar refined by an accessory type ('Foo'&hasMethod(bar))
-			// stays with the other types so it is compared against the plain
-			// constant scalars and other refinements of the same value
-			if (!$types[$i] instanceof IntersectionType && $types[$i]->isConstantScalarValue()->yes()) {
+			if ($types[$i]->isConstantScalarValue()->yes()) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][$type->describe(VerbosityLevel::cache())] = $type;
 				unset($types[$i]);
@@ -473,6 +470,10 @@ final class TypeCombinator
 		// is empty, so the keys the bucketing above unset must be renumbered here
 		$types = array_merge(array_values($types), $integerRangeTypes);
 		$typesCount = count($types);
+
+		if (isset($scalarTypes[IntersectionType::class])) {
+			$scalarTypes[IntersectionType::class] = self::reduceRefinedConstantScalars($scalarTypes[IntersectionType::class], $scalarTypes);
+		}
 
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
 			if (isset($hasGenericScalarTypes[$classType])) {
@@ -701,6 +702,54 @@ final class TypeCombinator
 		}
 
 		return false;
+	}
+
+	/**
+	 * Scalar buckets are compared only against the non-scalar union members, which
+	 * is correct for plain constants (distinct values are disjoint) but not for
+	 * constants refined by another type ('Foo'&hasMethod(bar)). Those are absorbed
+	 * here by the plain constant of the same value, or by a less refined
+	 * intersection of the same value. Values never need to be compared across.
+	 *
+	 * @param array<string, Type> $intersections
+	 * @param array<string, array<string, Type>> $scalarTypes
+	 * @return array<string, Type>
+	 */
+	private static function reduceRefinedConstantScalars(array $intersections, array $scalarTypes): array
+	{
+		$byValue = [];
+		foreach ($intersections as $key => $intersection) {
+			$constants = $intersection->getConstantScalarTypes();
+			if (count($constants) !== 1) {
+				continue;
+			}
+			$valueKey = $constants[0]->describe(VerbosityLevel::cache());
+			$plain = $scalarTypes[get_class($constants[0])][$valueKey] ?? null;
+			if ($plain !== null && $plain->isSuperTypeOf($intersection)->yes()) {
+				unset($intersections[$key]);
+				continue;
+			}
+			$byValue[get_class($constants[0])][$valueKey][] = $key;
+		}
+
+		foreach ($byValue as $valueKeys) {
+			foreach ($valueKeys as $keys) {
+				$keysCount = count($keys);
+				for ($i = 0; $i < $keysCount; $i++) {
+					for ($j = 0; $j < $keysCount; $j++) {
+						if ($i === $j || !isset($intersections[$keys[$i]], $intersections[$keys[$j]])) {
+							continue;
+						}
+						if (!$intersections[$keys[$i]]->isSuperTypeOf($intersections[$keys[$j]])->yes()) {
+							continue;
+						}
+						unset($intersections[$keys[$j]]);
+					}
+				}
+			}
+		}
+
+		return $intersections;
 	}
 
 	/**

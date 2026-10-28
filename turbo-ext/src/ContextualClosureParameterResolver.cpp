@@ -48,6 +48,17 @@ void isCallableYesBody(zval *captures, uint32_t argc, zval *argv, zval *return_v
 	ZVAL_BOOL(return_value, isCallable == PT_TRI_YES);
 }
 
+/* ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) */
+pt_method_site pt_ccpr_add_padding_null_site;
+/* $arg->unpack */
+pt_property_site pt_ccpr_arg_unpack_site;
+
+zv::Val addPaddingNull(zval *valueTypes, zval *arrayTypes)
+{
+	zv::Args argv{valueTypes, arrayTypes};
+	return pt_call_static_cached(pt_ccpr_add_padding_null_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnull"), 2, argv);
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -142,14 +153,22 @@ public:
 			return true;
 		}
 		uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(argsHold.raw()));
-		zv::Arr parameterList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
-		zv::Arr nativeParameterList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
+		zv::Arr typeList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
+		zv::Arr nativeTypeList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
+		zv::Arr arrayTypeList = zv::Arr::empty();
+		zv::Arr nativeArrayTypeList = zv::Arr::empty();
 		zval *nodeScopeResolver = OBJ_PROP_NUM(self, slots::nodeScopeResolver);
 		zend_object *no = pt_passed_by_reference_create_no();
 		if (UNEXPECTED(no == NULL)) return false;
 		zval noZv;
 		ZVAL_OBJ(&noZv, no);
+		bool hasUnpackedArg = false;
 		for (zv::ArrayEntry entry : zv::ArrRef(argsHold.raw())) {
+			if (!hasUnpackedArg) {
+				zval *unpack = ptclosure::prop(pt_ccpr_arg_unpack_site, entry.value().deref().raw(), PT_LC("unpack"));
+				if (UNEXPECTED(unpack == NULL)) return false;
+				hasUnpackedArg = zend_is_true(unpack);
+			}
 			zval *value = ptclosure::prop(ptclosure::argValueSite, entry.value().deref().raw(), PT_LC("value"));
 			if (UNEXPECTED(value == NULL)) return false;
 			zv::Val valueHold = zv::Val::copyOf(zv::Ref(value));
@@ -174,15 +193,40 @@ public:
 					zend_throw_error(NULL, "Call to a member function getIterableValueType() on %s", zend_zval_value_name(type.ref().isObject() ? nativeType.raw() : type.raw()));
 					return false;
 				}
+				arrayTypeList.push(type.ref());
+				nativeArrayTypeList.push(nativeType.ref());
 				type = pt_type_op(Z_OBJ_P(type.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 				if (UNEXPECTED(type.isUndef())) return false;
 				nativeType = pt_type_op(Z_OBJ_P(nativeType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 				if (UNEXPECTED(nativeType.isUndef())) return false;
 			}
-			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, type.raw(), false, &noZv, false, NULL);
+			typeList.push(std::move(type));
+			nativeTypeList.push(std::move(nativeType));
+		}
+
+		zv::Val types = zv::Val(std::move(typeList));
+		zv::Val nativeTypes = zv::Val(std::move(nativeTypeList));
+		// an unpacked arg is one parameter here, so its arrays cannot be told apart
+		if (arrayMapArgs != NULL && !hasUnpackedArg) {
+			types = addPaddingNull(types.raw(), arrayTypeList.raw());
+			if (UNEXPECTED(types.isUndef())) return false;
+			nativeTypes = addPaddingNull(nativeTypes.raw(), nativeArrayTypeList.raw());
+			if (UNEXPECTED(nativeTypes.isUndef())) return false;
+		}
+		if (UNEXPECTED(Z_TYPE_P(types.raw()) != IS_ARRAY || Z_TYPE_P(nativeTypes.raw()) != IS_ARRAY)) {
+			zend_throw_error(NULL, "ArrayMapCallbackParameterTypes::addPaddingNull() did not return an array");
+			return false;
+		}
+
+		zv::Arr parameterList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, entry.value().deref().raw(), false, &noZv, false, NULL);
 			if (UNEXPECTED(parameter.isUndef())) return false;
 			parameterList.push(std::move(parameter));
-			zv::Val nativeParameter = pt_dummy_parameter_new(pt_ccpr_item, nativeType.raw(), false, &noZv, false, NULL);
+		}
+		zv::Arr nativeParameterList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(nativeTypes.raw())) {
+			zv::Val nativeParameter = pt_dummy_parameter_new(pt_ccpr_item, entry.value().deref().raw(), false, &noZv, false, NULL);
 			if (UNEXPECTED(nativeParameter.isUndef())) return false;
 			nativeParameterList.push(std::move(nativeParameter));
 		}

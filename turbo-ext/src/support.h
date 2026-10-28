@@ -519,6 +519,8 @@ enum {
 	/* the class names of Type::toPhpDocNode() and how describe() prints them */
 	PT_CLASS_FULLY_QUALIFIED_NAME_NODE,
 	PT_CLASS_TYPE_NODE_DESCRIBER,
+	/* the null array_map() passes for the shorter arrays */
+	PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES,
 	PT_CLASS_COUNT
 };
 

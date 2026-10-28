@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Parser\ArrayMapArgVisitor;
+use PHPStan\Reflection\ArrayMapCallbackParameterTypes;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -25,6 +26,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_filter;
 use function array_map;
 use function array_reduce;
 use function array_slice;
@@ -53,11 +55,17 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		$callableIsNull = $callableType->isNull()->yes();
 
 		if ($callableType->isCallable()->yes()) {
+			$arrayArgs = array_slice($args, 1);
+			$arrayTypes = array_map(static fn (Node\Arg $arg) => $scope->getType($arg->value), $arrayArgs);
+			$callbackValueTypes = array_map(static fn (Type $arrayType) => $arrayType->getIterableValueType(), $arrayTypes);
+			if (count(array_filter($arrayArgs, static fn (Node\Arg $arg) => $arg->unpack)) === 0) {
+				$callbackValueTypes = ArrayMapCallbackParameterTypes::addPaddingNull($callbackValueTypes, $arrayTypes);
+			}
 			$valueType = $scope->getType(new FuncCall(
 				$callback,
 				array_map(
-					static fn (Node\Arg $arg) => new Node\Arg(new TypeExpr($scope->getType($arg->value)->getIterableValueType())),
-					array_slice($args, 1),
+					static fn (Type $valueType) => new Node\Arg(new TypeExpr($valueType)),
+					$callbackValueTypes,
 				),
 			));
 		} elseif ($callableIsNull) {

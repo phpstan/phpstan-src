@@ -5,6 +5,7 @@ namespace PHPStan\Type\Php;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ArrayMapCallbackParameterTypes;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
@@ -31,7 +32,8 @@ final class ArrayMapParameterClosureTypeExtension implements FunctionParameterCl
 			return null;
 		}
 
-		$callbackParameters = [];
+		$valueTypes = [];
+		$arrayTypes = [];
 		$argCount = count($args);
 		for ($i = 1; $i < $argCount; $i++) {
 			$arg = $args[$i];
@@ -43,12 +45,19 @@ final class ArrayMapParameterClosureTypeExtension implements FunctionParameterCl
 				}
 				foreach ($constantArrays as $constantArray) {
 					foreach ($constantArray->getValueTypes() as $valueType) {
-						$callbackParameters[] = $this->createParameter($scope->getIterableValueType($valueType));
+						$valueTypes[] = $scope->getIterableValueType($valueType);
+						$arrayTypes[] = $valueType;
 					}
 				}
 			} else {
-				$callbackParameters[] = $this->createParameter($scope->getIterableValueType($arrayType));
+				$valueTypes[] = $scope->getIterableValueType($arrayType);
+				$arrayTypes[] = $arrayType;
 			}
+		}
+
+		$callbackParameters = [];
+		foreach (ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) as $valueType) {
+			$callbackParameters[] = $this->createParameter($valueType);
 		}
 
 		return new ClosureType($callbackParameters, new MixedType());

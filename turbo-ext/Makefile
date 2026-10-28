@@ -332,18 +332,66 @@ pgo:
 	$(MAKE) pgo-clean
 	$(MAKE) PGO_FLAGS="$(PGO_GEN_FLAGS)" phpstan_turbo.so
 	PGO_DIR="$(PGO_DIR)" bin/pgo-train.sh
-	rm -f $(OBJECTS) phpstan_turbo.so $(CORE_LIB)
 ifeq ($(CXX_IS_CLANG),1)
 	$(LLVM_PROFDATA) merge -output=$(PGO_DIR)/turbo.profdata $(PGO_DIR)/*.profraw
 endif
+	$(MAKE) pgo-use
+
+# the optimised stage of `make pgo` alone, from a profile already in place:
+# the one `make pgo` just recorded, or one unpacked from $(PGO_PROFILE)
+pgo-use:
+	rm -f $(OBJECTS) phpstan_turbo.so $(CORE_LIB)
 	$(MAKE) PGO_FLAGS="$(PGO_USE_FLAGS)" phpstan_turbo.so
+
+# The core's share of the profile `make SPLIT=1 pgo` recorded, with the
+# compiler that recorded it (a profile only fits that one: GCC rejects
+# another version's .gcda files), so that `make pgo-use` builds the
+# self-contained extension of every other PHP version from it without a
+# training run of its own — the CI pie legs (phar.yml). The core compiles to
+# the same code against every supported version's headers
+# (bin/shared-core/gate-*.sh), so its profile fits nearly all of them (see
+# pgo-from-profile); the shim's
+# records stay out, since those objects do not (GCC rejects them as a
+# coverage mismatch), and the shim builds without a profile, like the shim
+# of the split extension. Clang's one merged file is taken whole: it drops
+# the records of functions that changed on its own.
+PGO_PROFILE := pgo-profile.tar
+CXX_VERSION = $(shell $(CXX) --version | head -n 1)
+pgo-pack:
+	mkdir -p $(PGO_DIR)
+	echo '$(CXX_VERSION)' > $(PGO_DIR)/compiler.txt
+ifeq ($(CXX_IS_CLANG),1)
+	tar -cf $(PGO_PROFILE) $(PGO_DIR)/compiler.txt $(PGO_DIR)/turbo.profdata
+else
+	tar -cf $(PGO_PROFILE) $(PGO_DIR)/compiler.txt $(wildcard $(CORE_OBJECTS:.o=.gcda))
+endif
+
+# `make pgo-use` from the $(PGO_PROFILE) pgo-pack wrote, when the compiler
+# that recorded it is the one in use; `make pgo` otherwise (or without one).
+# The same code is not the same control flow when GCC instruments it, before
+# its optimisations: against other headers a few functions count other arcs
+# (with the GCC 11.4 profile of an 8.5 core, 85 of 33136 functions for
+# 8.2-zts, none for 8.4, 8.4-zts or 8.5). GCC rejects the profile of such a
+# function, which then builds without one, like the shim; the warning would
+# fail the strict build, so it is off.
+ifneq ($(CXX_IS_CLANG),1)
+PGO_FOREIGN_FLAGS := -Wno-coverage-mismatch
+endif
+pgo-from-profile:
+	@if [ -f $(PGO_PROFILE) ] && [ "$$(tar -xOf $(PGO_PROFILE) $(PGO_DIR)/compiler.txt)" = '$(CXX_VERSION)' ]; then \
+		echo "building with the profile in $(PGO_PROFILE)"; \
+		tar -xf $(PGO_PROFILE) && $(MAKE) pgo-use PGO_USE_FLAGS="$(PGO_USE_FLAGS) $(PGO_FOREIGN_FLAGS)"; \
+	else \
+		echo "no profile recorded by $(CXX_VERSION) in $(PGO_PROFILE); training one"; \
+		$(MAKE) pgo; \
+	fi
 
 # llvm-profdata must match the clang in use: Xcode ships it behind xcrun,
 # Linux distributions suffix it with the LLVM major version
 LLVM_PROFDATA ?= $(shell command -v llvm-profdata 2>/dev/null || (command -v xcrun > /dev/null 2>&1 && echo "xcrun llvm-profdata") || ls /usr/bin/llvm-profdata-* 2>/dev/null | sort -V | tail -1)
 
 pgo-clean:
-	rm -f $(OBJECTS) phpstan_turbo.so $(CORE_LIB) version.stamp
+	rm -f $(OBJECTS) phpstan_turbo.so $(CORE_LIB) version.stamp $(PGO_PROFILE)
 	rm -rf $(PGO_DIR)
 	find src -name '*.gcda' -delete
 
@@ -432,4 +480,4 @@ sanitize:
 	done
 	$(MAKE) clean
 
-.PHONY: clean lint pgo pgo-clean print-clang-tidy-version print-warn-flags sanitize strip FORCE
+.PHONY: clean lint pgo pgo-clean pgo-from-profile pgo-pack pgo-use print-clang-tidy-version print-warn-flags sanitize strip FORCE

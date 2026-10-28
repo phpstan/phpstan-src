@@ -497,6 +497,7 @@ jobs:
       PHP_MINOR: ${{ matrix.target.php-version }}
       PHP_ZTS: "0"
       TURBO_ARTIFACT: "phpstan_turbo_core-${{ matrix.target.name }}"
+      PGO_PROFILE_ARTIFACT: "turbo-pgo-profile-${{ matrix.target.name }}"
       ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)] }}
 
     strategy:
@@ -540,6 +541,17 @@ jobs:
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ env.ORIGIN_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      # the profile that core was compiled with, uploaded before it (see
+      # "Upload the core's profile")
+      - name: "Download the profile of the core compiled from identical build inputs"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ env.PGO_PROFILE_ARTIFACT }}
           path: "turbo-ext"
           run-id: ${{ env.ORIGIN_RUN_ID }}
           github-token: ${{ github.token }}
@@ -614,8 +626,11 @@ jobs:
         # locally, so a profile-guided core can be reproduced outside CI.
         # The strict set itself lives in turbo-ext/Makefile
         # (STRICT_WARN_FLAGS), which documents why each exemption is there.
+        # `make pgo-pack` keeps the core's share of the profile for the pie
+        # legs of turbo-compile, which build with it instead of training again.
         run: |
           make SPLIT=1 pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make SPLIT=1 pgo-pack
 
       # Before signing (stripping invalidates a signature) and before the
       # upload. The symbol tables are a quarter of the binary; see `strip`
@@ -650,6 +665,16 @@ jobs:
           EXPECTED="$(php build/turbo-extension-version.php)"
           echo "core + extension report: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
+
+      # Before the core, so that a run carrying the core (all that
+      # find-turbo-origins.sh checks) carries its profile too. A reused one
+      # is uploaded again, like the core.
+      - name: "Upload the core's profile"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.PGO_PROFILE_ARTIFACT }}
+          path: "turbo-ext/pgo-profile.tar"
+          if-no-files-found: "error"
 
       # A reused core is uploaded again under the same name, so the
       # turbo-compile legs find it in this run.
@@ -688,6 +713,7 @@ jobs:
       PHP_MINOR: "8.5"
       PHP_ZTS: "0"
       TURBO_ARTIFACT: "phpstan_turbo_core-linux-musl-arm64"
+      PGO_PROFILE_ARTIFACT: "turbo-pgo-profile-linux-musl-arm64"
       ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')['phpstan_turbo_core-linux-musl-arm64'] }}
 
     steps:
@@ -696,12 +722,21 @@ jobs:
         with:
           egress-policy: audit
 
-      # See the same two steps in turbo-compile-core.
+      # See the same three steps in turbo-compile-core.
       - name: "Download the core compiled from identical build inputs"
         if: env.ORIGIN_RUN_ID != ''
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
+          path: "turbo-ext"
+          run-id: ${{ env.ORIGIN_RUN_ID }}
+          github-token: ${{ github.token }}
+
+      - name: "Download the profile of the core compiled from identical build inputs"
+        if: env.ORIGIN_RUN_ID != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ env.PGO_PROFILE_ARTIFACT }}
           path: "turbo-ext"
           run-id: ${{ env.ORIGIN_RUN_ID }}
           github-token: ${{ github.token }}
@@ -751,6 +786,7 @@ jobs:
         run: |
           docker exec -i -w /work/turbo-ext alpine-build sh -e <<'EOF'
           make SPLIT=1 pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make SPLIT=1 pgo-pack
           make SPLIT=1 strip
           ls -l phpstan_turbo_core.so phpstan_turbo.so
           EOF
@@ -764,6 +800,13 @@ jobs:
           echo "core + extension report: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           EOF
+
+      - name: "Upload the core's profile"
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.PGO_PROFILE_ARTIFACT }}
+          path: "turbo-ext/pgo-profile.tar"
+          if-no-files-found: "error"
 
       - name: "Upload core artifact"
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -791,7 +834,8 @@ jobs:
     # there, and the commit job checks that every leg of a platform carries
     # the same core.
     # The `pie` variant legs build the same version self-contained instead,
-    # profile-guided like the core — PIE installs a pre-packaged binary by
+    # profile-guided with the profile the platform's core was built with
+    # (`make pgo-from-profile`) — PIE installs a pre-packaged binary by
     # copying the one extension file, so the PIE release assets cannot be
     # the thin extension (see .github/scripts/turbo-pie-assets.sh). Nothing
     # else ships them, so they only run for release tags (turbo-pie-release
@@ -910,8 +954,21 @@ jobs:
         run: |
           make SPLIT=1 extension WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
+      # The profile the platform's core was compiled with (turbo-compile-core,
+      # `make pgo-pack`): the core is all but the four version-specific
+      # sources and compiles to the same code against every version's
+      # headers, so the self-contained build of this version uses its profile
+      # instead of training one of its own — which took most of the leg.
+      - name: "Download the profile of the platform's core"
+        if: matrix.variant == 'pie'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: "turbo-pgo-profile-${{ matrix.target.name }}"
+          path: "turbo-ext"
+
       # see the same steps in turbo-compile-core: the training run of
-      # `make pgo` runs bin/phpstan on the checkout
+      # `make pgo` runs bin/phpstan on the checkout (pgo-from-profile falls
+      # back to it when another compiler recorded the profile)
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
         if: matrix.variant == 'pie' && matrix.target.family == 'macos'
         with:
@@ -924,12 +981,12 @@ jobs:
           php composer.phar install --no-interaction --no-progress
           rm composer.phar
 
-      # A plain `make pgo` builds one self-contained phpstan_turbo.so.
+      # A plain `make pgo-use` builds one self-contained phpstan_turbo.so.
       - name: "Compile the self-contained extension with strict warnings (profile-guided)"
         if: matrix.variant == 'pie'
         working-directory: "turbo-ext"
         run: |
-          make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make pgo-from-profile WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
 
       # Before signing and the upload; a plain `make strip` leaves the core
       # (already stripped and signed by its own job) untouched.
@@ -1027,6 +1084,14 @@ jobs:
           name: "phpstan_turbo_core-linux-musl-arm64"
           path: "turbo-ext"
 
+      # see turbo-compile
+      - name: "Download the profile of the platform's core"
+        if: matrix.variant == 'pie'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: "turbo-pgo-profile-linux-musl-arm64"
+          path: "turbo-ext"
+
       - name: "Start the Alpine build container"
         env:
           ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && matrix.ts == 'nts' && 'alpine:edge' || 'alpine:3.24' }}
@@ -1052,8 +1117,8 @@ jobs:
           ls -l phpstan_turbo.so phpstan_turbo_core.so
           EOF
 
-      # see turbo-compile: the training run of `make pgo` runs bin/phpstan
-      # on the checkout
+      # see turbo-compile: the training run of `make pgo`, which
+      # pgo-from-profile falls back to, runs bin/phpstan on the checkout
       - name: "Compile the self-contained extension with strict warnings (profile-guided)"
         if: matrix.variant == 'pie'
         run: |
@@ -1062,7 +1127,7 @@ jobs:
           php composer.phar install --no-interaction --no-progress
           rm composer.phar
           cd turbo-ext
-          make pgo WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
+          make pgo-from-profile WARN_FLAGS="$(make -s print-warn-flags)" -j"$(getconf _NPROCESSORS_ONLN 2>/dev/null || nproc)"
           make strip
           ls -l phpstan_turbo.so
           EOF

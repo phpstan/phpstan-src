@@ -7027,12 +7027,12 @@ public:
 			zend_throw_error(NULL, "phpstan_turbo: ScopeOps::invalidateExpressionEntries() answered an unexpected shape");
 			return zv::Val();
 		}
-		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(conditionalExpressions), true);
+		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(conditionalExpressions));
 	}
 
 	/* ScopeOps::scopeWith($this, ...) with the twin's argument list: the
-	 * three tables as given, an empty call stack, the rest from $this */
-	zv::Val scopeWith(HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, bool emptyCallStack)
+	 * three tables as given, the rest from $this */
+	zv::Val scopeWith(HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions)
 	{
 		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CURRENTLY_ASSIGNED_EXPRESSIONS, "currentlyAssignedExpressions")
 			|| !requireSlot(PT_MS_PROP_CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS, "currentlyAllowedUndefinedExpressions")
@@ -7046,7 +7046,7 @@ public:
 			conditionalExpressions,
 			Z_ARRVAL_P(slot(PT_MS_PROP_CURRENTLY_ASSIGNED_EXPRESSIONS).raw()),
 			Z_ARRVAL_P(slot(PT_MS_PROP_CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS).raw()),
-			emptyCallStack ? (HashTable *) &zend_empty_array : Z_ARRVAL_P(slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw()),
+			Z_ARRVAL_P(slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw()),
 			slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
 			slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL));
 	}
@@ -7118,7 +7118,7 @@ public:
 			return zv::Val();
 		}
 		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) return zv::Val();
-		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), true);
+		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()));
 	}
 
 	/* private (twin 3893); its only caller is applySpecifiedTypes() */

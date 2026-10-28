@@ -106,7 +106,15 @@ foreach ($ieCalls as $label => $call) {
 		// result, which the prefix does not let through - the type callback
 		// was kept before that, reading the type the dependencies are made of
 		// (the native type, read below for the other handlers, is not)
-		check($label === 'ClassConstFetchHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\Dependencies'), "escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage());
+		// the twin resolver computes `$a - 3` over the native int and its own
+		// constant 3: the native int is not a supertype of the twin's 3, so
+		// their union mixes both families, which the prefix does not let
+		// through either - the type callback was kept before that
+		check(
+			($label === 'ClassConstFetchHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\Dependencies'))
+			|| ($label === 'BinaryOpHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\TrinaryLogic returned')),
+			"escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage(),
+		);
 	} catch (\Throwable $e) {
 		check(false, "escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage());
 	} finally {
@@ -138,7 +146,7 @@ try {
 unset($storage, $ieVarResult, $ieTypeCallback);
 gc_collect_cycles();
 $ieDeepStack(200);
-check(count($ieKeeping->kept) === 16, 'escaping getTypeCallback: the keeping resolver was handed the callbacks (' . count($ieKeeping->kept) . ')');
+check(count($ieKeeping->kept) === 15, 'escaping getTypeCallback: the keeping resolver was handed the callbacks (' . count($ieKeeping->kept) . ')');
 foreach ($ieKeeping->kept as $i => [$method, $callback, $asked, $answered]) {
 	$ieDeepStack(50);
 	try {

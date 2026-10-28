@@ -322,6 +322,12 @@ static zv::Val booleanType()
 	return adopted(pt_boolean_type_new(&raw), raw);
 }
 
+static zv::Val floatType()
+{
+	zval raw;
+	return adopted(pt_float_type_new(&raw), raw);
+}
+
 static zv::Val stringType()
 {
 	zval raw;
@@ -1051,17 +1057,29 @@ public:
 			zend_long isBoolean = callTrinary(type, PT_LC("isboolean"));
 			PT_FAIL_IF_NEG(isBoolean);
 			if (isBoolean == PT_TRI_YES) {
-				hasGenericBoolean = true;
+				zv::Val generic = booleanType();
+				PT_FAIL_IF_UNDEF(generic);
+				int covers = isSuperTypeYes(type, generic.raw());
+				PT_FAIL_IF_NEG(covers);
+				if (covers) hasGenericBoolean = true;
 			} else {
 				zend_long isFloat = callTrinary(type, PT_LC("isfloat"));
 				PT_FAIL_IF_NEG(isFloat);
 				if (isFloat == PT_TRI_YES) {
-					hasGenericFloat = true;
+					zv::Val generic = floatType();
+					PT_FAIL_IF_UNDEF(generic);
+					int covers = isSuperTypeYes(type, generic.raw());
+					PT_FAIL_IF_NEG(covers);
+					if (covers) hasGenericFloat = true;
 				} else {
 					zend_long isInteger = callTrinary(type, PT_LC("isinteger"));
 					PT_FAIL_IF_NEG(isInteger);
 					if (isInteger == PT_TRI_YES && !isInstance(type, pt_ce_integer_range_type)) {
-						hasGenericInteger = true;
+						zv::Val generic = integerType();
+						PT_FAIL_IF_UNDEF(generic);
+						int covers = isSuperTypeYes(type, generic.raw());
+						PT_FAIL_IF_NEG(covers);
+						if (covers) hasGenericInteger = true;
 					} else {
 						int plainString = isPlainString(type);
 						PT_FAIL_IF_NEG(plainString);

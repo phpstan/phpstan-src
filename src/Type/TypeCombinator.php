@@ -427,12 +427,20 @@ final class TypeCombinator
 				continue;
 			}
 
+			// only a type containing every value of the scalar (not T of int, 1&T)
+			// absorbs all the constants of that scalar
 			if ($types[$i]->isBoolean()->yes()) {
-				$hasGenericScalarTypes[ConstantBooleanType::class] = true;
+				if ($types[$i]->isSuperTypeOf(new BooleanType())->yes()) {
+					$hasGenericScalarTypes[ConstantBooleanType::class] = true;
+				}
 			} elseif ($types[$i]->isFloat()->yes()) {
-				$hasGenericScalarTypes[ConstantFloatType::class] = true;
+				if ($types[$i]->isSuperTypeOf(new FloatType())->yes()) {
+					$hasGenericScalarTypes[ConstantFloatType::class] = true;
+				}
 			} elseif ($types[$i]->isInteger()->yes() && !$types[$i] instanceof IntegerRangeType) {
-				$hasGenericScalarTypes[ConstantIntegerType::class] = true;
+				if ($types[$i]->isSuperTypeOf(new IntegerType())->yes()) {
+					$hasGenericScalarTypes[ConstantIntegerType::class] = true;
+				}
 			} elseif ($types[$i]->isString()->yes() && $types[$i]->isClassString()->no() && TypeUtils::getAccessoryTypes($types[$i]) === []) {
 				$hasGenericScalarTypes[ConstantStringType::class] = true;
 			} else {

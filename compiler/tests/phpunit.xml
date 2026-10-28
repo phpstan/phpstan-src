@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/7.2/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="../vendor/phpunit/phpunit/phpunit.xsd"
          colors="true"
          failOnRisky="true"
          failOnWarning="true"
          beStrictAboutChangesToGlobalState="true"
-         beStrictAboutCoversAnnotation="true"
-         beStrictAboutOutputDuringTests="true"
-         beStrictAboutTodoAnnotatedTests="true"
-         verbose="false">
+         beStrictAboutCoverageMetadata="true"
+         beStrictAboutOutputDuringTests="true">
     <testsuite name="PHAR Compiler for PHPStan">
         <directory suffix=".php">.</directory>
     </testsuite>
 
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
+    <source>
+        <include>
             <directory suffix=".php">../src</directory>
-        </whitelist>
-    </filter>
-
-    <logging>
-        <log type="coverage-text" target="php://stdout" showUncoveredFiles="true" showOnlySummary="true"/>
-    </logging>
+        </include>
+    </source>
 </phpunit>
-

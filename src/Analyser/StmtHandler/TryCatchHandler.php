@@ -221,7 +221,8 @@ final class TryCatchHandler implements StmtHandler
 				// of the walk does not flow anywhere
 				$deadCatchScope = null;
 				foreach ($branchScopeResult->getThrowPoints() as $throwPoint) {
-					$deadCatchScope = $deadCatchScope === null ? $throwPoint->getScope() : $deadCatchScope->mergeWith($throwPoint->getScope());
+					$throwPointScope = $throwPoint->getScope()->withFunctionCallStackOf($scope);
+					$deadCatchScope = $deadCatchScope === null ? $throwPointScope : $deadCatchScope->mergeWith($throwPointScope);
 				}
 				$deadCatchScope = ($deadCatchScope ?? $scope->mergeWith($branchScope))->enterCatchType($catchType instanceof NeverType ? $originalCatchType : $catchType, $catchNode->var !== null && is_string($catchNode->var->name) ? $catchNode->var->name : null);
 				$deadCatchResult = $nodeScopeResolver->processStmtNodesInternal($catchNode, $catchNode->stmts, $deadCatchScope, $storage, $nodeCallback, $context);
@@ -249,10 +250,11 @@ final class TryCatchHandler implements StmtHandler
 
 			$catchScope = null;
 			foreach ($matchingThrowPoints as $matchingThrowPoint) {
+				$throwPointScope = $matchingThrowPoint->getScope()->withFunctionCallStackOf($scope);
 				if ($catchScope === null) {
-					$catchScope = $matchingThrowPoint->getScope();
+					$catchScope = $throwPointScope;
 				} else {
-					$catchScope = $catchScope->mergeWith($matchingThrowPoint->getScope());
+					$catchScope = $catchScope->mergeWith($throwPointScope);
 				}
 			}
 
@@ -297,7 +299,7 @@ final class TryCatchHandler implements StmtHandler
 				if ($finallyScope === null) {
 					continue;
 				}
-				$finallyScope = $finallyScope->mergeWith($catchThrowPoint->getScope());
+				$finallyScope = $finallyScope->mergeWith($catchThrowPoint->getScope()->withFunctionCallStackOf($scope));
 			}
 		}
 
@@ -309,7 +311,7 @@ final class TryCatchHandler implements StmtHandler
 			if ($finallyScope === null) {
 				continue;
 			}
-			$finallyScope = $finallyScope->mergeWith($throwPoint->getScope());
+			$finallyScope = $finallyScope->mergeWith($throwPoint->getScope()->withFunctionCallStackOf($scope));
 		}
 
 		if ($finallyScope !== null) {

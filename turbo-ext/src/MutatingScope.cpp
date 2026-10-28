@@ -3437,6 +3437,33 @@ public:
 		return parentScope;
 	}
 
+	zv::Val withFunctionCallStackOf(zend_object *scopeObject)
+	{
+		MutatingScope scope(scopeObject);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack")
+			|| !scope.requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) {
+			return zv::Val();
+		}
+		zval *stack = scope.slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw();
+		if (zend_is_identical(slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw(), stack)) return self_();
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes")
+			|| !requireSlot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, "nativeExpressionTypes")
+			|| !requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions")
+			|| !requireSlot(PT_MS_PROP_CURRENTLY_ASSIGNED_EXPRESSIONS, "currentlyAssignedExpressions")
+			|| !requireSlot(PT_MS_PROP_CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS, "currentlyAllowedUndefinedExpressions"))) {
+			return zv::Val();
+		}
+		return scopeWithTables(
+			Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()),
+			Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()),
+			Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()),
+			Z_ARRVAL_P(slot(PT_MS_PROP_CURRENTLY_ASSIGNED_EXPRESSIONS).raw()),
+			Z_ARRVAL_P(slot(PT_MS_PROP_CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS).raw()),
+			Z_ARRVAL_P(stack),
+			slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
+			slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL));
+	}
+
 	/* $this->inFunctionCallsStack entry's [0] — the reflection of the call,
 	 * NULL when the entry carries none (the twin's list destructuring) */
 	static zval *inFunctionCallReflection(zv::Ref entryValue)
@@ -12587,6 +12614,12 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 
 	cls.method(sigs::popInFunctionCall, msPopInFunctionCall);
 
+	cls.method(sigs::withFunctionCallStackOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope;
+		if (!zp::parse<zp::Obj>(execute_data, scope)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.withFunctionCallStackOf(Z_OBJ_P(scope)));
+	});
+
 	cls.method(sigs::isInClassExists, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *className;
 		if (!zp::parse<zp::Str>(execute_data, className)) RETURN_THROWS();
@@ -13502,6 +13535,14 @@ zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, 
 		ZVAL_NULL(&argv[1]);
 	}
 	return pt_type_call(scope, PT_LC("entercatchtype"), 2, argv);
+}
+
+zv::Val pt_mutating_scope_with_function_call_stack_of(zend_object *scope, zend_object *otherScope)
+{
+	if (PT_MS_INHERITS(scope, "withfunctioncallstackof")) return MutatingScope(scope).withFunctionCallStackOf(otherScope);
+	zval argv[1];
+	ZVAL_OBJ(&argv[0], otherScope);
+	return pt_type_call(scope, PT_LC("withfunctioncallstackof"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_process_finally_scope(zend_object *scope, zend_object *finallyScope, zend_object *originalFinallyScope)

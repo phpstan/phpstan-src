@@ -75,6 +75,10 @@ class ScopeFunctionCallStackRuleTest extends RuleTestCase
 				"Bug15377\\inTransaction\nBug15377\\takesTwo",
 				44,
 			],
+			[
+				'Bug15377\inTransaction',
+				52,
+			],
 		]);
 	}
 

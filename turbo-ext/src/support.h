@@ -3454,6 +3454,7 @@ zv::Val pt_variable_flow_builder_writes(zval *flow);
  * $nativeIterateeType, $valueName, $keyName, $valueByRef) ($keyName NULL for
  * null) / ->enterForeachKey(...) / ->enterCatchType($catchType,
  * $variableName) ($variableName NULL for null) /
+ * ->withFunctionCallStackOf($scope) /
  * ->processFinallyScope($finallyScope, $originalFinallyScope) /
  * ->processAlwaysIterableForeachScopeWithoutPollute($finalScope): the native
  * body for exactly a MutatingScope, the method otherwise (everything
@@ -3462,6 +3463,7 @@ zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object 
 zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef);
 zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName);
 zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName);
+zv::Val pt_mutating_scope_with_function_call_stack_of(zend_object *scope, zend_object *otherScope);
 zv::Val pt_mutating_scope_process_finally_scope(zend_object *scope, zend_object *finallyScope, zend_object *originalFinallyScope);
 zv::Val pt_mutating_scope_process_always_iterable_foreach_scope_without_pollute(zend_object *scope, zend_object *finalScope);
 

@@ -1785,6 +1785,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $parentScope;
 	}
 
+	/**
+	 * Takes the function call stack of $scope. A throw point records its scope
+	 * in the middle of a call, so the catch and finally blocks built from it
+	 * take the stack of the try statement instead.
+	 */
+	public function withFunctionCallStackOf(self $scope): self
+	{
+		if ($this->inFunctionCallsStack === $scope->inFunctionCallsStack) {
+			return $this;
+		}
+
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
+			$this->expressionTypes,
+			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
+			$this->currentlyAssignedExpressions,
+			$this->currentlyAllowedUndefinedExpressions,
+			$scope->inFunctionCallsStack,
+			$this->inFirstLevelStatement,
+			$this->afterExtractCall,
+		);
+	}
+
 	/** @api */
 	public function isInClassExists(string $className): bool
 	{

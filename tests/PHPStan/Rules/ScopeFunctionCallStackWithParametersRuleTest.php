@@ -77,6 +77,10 @@ class ScopeFunctionCallStackWithParametersRuleTest extends RuleTestCase
 				"Bug15377\\inTransaction (\$callback)\nBug15377\\takesTwo (\$j)",
 				44,
 			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				52,
+			],
 		]);
 	}
 

@@ -45,4 +45,39 @@ class ScopeFunctionCallStackWithParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15377(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15377.php'], [
+			[
+				'Bug15377\inTransaction ($callback)',
+				13,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				17,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				27,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				28,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				29,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				43,
+			],
+			[
+				"Bug15377\\inTransaction (\$callback)\nBug15377\\takesTwo (\$j)",
+				44,
+			],
+		]);
+	}
+
 }

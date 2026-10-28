@@ -5,9 +5,11 @@ namespace PHPStan\Type;
 use PHPStan\Analyser\NameScope;
 use PHPStan\PhpDoc\TypeNodeResolver;
 use PHPStan\PhpDoc\TypeStringResolver;
+use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\NameNode;
 use PHPStan\PhpDocParser\Ast\Type\RelativeNameNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Testing\PHPStanTestCase;
@@ -64,7 +66,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		yield [
 			new ObjectType(stdClass::class),
-			'stdClass',
+			'\\stdClass',
 		];
 
 		yield [
@@ -147,7 +149,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		yield [
 			new GenericClassStringType(new ObjectType('stdClass')),
-			'class-string<stdClass>',
+			'class-string<\\stdClass>',
 		];
 
 		yield [
@@ -155,7 +157,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new ConstantIntegerType(1),
 				new ConstantIntegerType(2),
 			]),
-			'stdClass<1, 2>',
+			'\\stdClass<1, 2>',
 		];
 
 		yield [
@@ -168,7 +170,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				TemplateTypeVariance::createContravariant(),
 				TemplateTypeVariance::createBivariant(),
 			]),
-			'stdClass<string, contravariant int, *>',
+			'\\stdClass<string, contravariant int, *>',
 		];
 
 		yield [
@@ -213,7 +215,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new StringType(),
 				false,
 			),
-			'(object is stdClass ? int : string)',
+			'(object is \\stdClass ? int : string)',
 		];
 
 		yield [
@@ -224,7 +226,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 				new StringType(),
 				true,
 			),
-			'(object is not stdClass ? int : string)',
+			'(object is not \\stdClass ? int : string)',
 		];
 
 		yield [
@@ -279,7 +281,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		yield [
 			new IntersectionType([new GenericClassStringType(new ObjectType('Foo')), new AccessoryLiteralStringType()]),
-			'(class-string<Foo> & literal-string)',
+			'(class-string<\\Foo> & literal-string)',
 		];
 
 		yield [
@@ -561,7 +563,7 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		yield [
 			new ClosureType(),
-			'Closure',
+			'\\Closure',
 		];
 	}
 
@@ -584,25 +586,25 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		}
 
 		yield ['callable'];
-		yield ['callable(Foo): Bar'];
-		yield ['callable(Foo=, Bar=): Bar'];
-		yield ['Closure(Foo=, Bar=): Bar'];
+		yield ['callable(\\Foo): \\Bar'];
+		yield ['callable(\\Foo=, \\Bar=): \\Bar'];
+		yield ['\\Closure(\\Foo=, \\Bar=): \\Bar'];
 
-		yield ['callable(Foo $foo): Bar'];
-		yield ['callable(Foo $foo=, Bar $bar=): Bar'];
-		yield ['Closure(Foo $foo=, Bar $bar=): Bar'];
-		yield ['Closure(Foo $foo=, Bar $bar=): (Closure(Foo): Bar)'];
+		yield ['callable(\\Foo $foo): \\Bar'];
+		yield ['callable(\\Foo $foo=, \\Bar $bar=): \\Bar'];
+		yield ['\\Closure(\\Foo $foo=, \\Bar $bar=): \\Bar'];
+		yield ['\\Closure(\\Foo $foo=, \\Bar $bar=): (\\Closure(\\Foo): \\Bar)'];
 
 		yield ['array{a: int}'];
 		yield ['array{a: int, ...}'];
-		yield ['array{a: int, ...<Foo>}'];
-		yield ['array{a: int, ...<int, Foo>}'];
+		yield ['array{a: int, ...<\\Foo>}'];
+		yield ['array{a: int, ...<int, \\Foo>}'];
 		yield ['array{int, int, int, ...}'];
-		yield ['array{int, int, int, ...<Foo>}'];
-		yield ['array{int, int, int, ...<int, Foo>}'];
+		yield ['array{int, int, int, ...<\\Foo>}'];
+		yield ['array{int, int, int, ...<int, \\Foo>}'];
 
 		yield ['list{0?: int, 1?: int, 2?: int, ...}'];
-		yield ['list{0?: int, 1?: int, 2?: int, ...<Foo>}'];
+		yield ['list{0?: int, 1?: int, 2?: int, ...<\\Foo>}'];
 	}
 
 	#[DataProvider('dataFromTypeStringToPhpDocNode')]
@@ -654,6 +656,63 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 
 		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode(), $nameScope);
 		$this->assertTrue($type->equals($typeAgain));
+	}
+
+	/**
+	 * @return iterable<array{Type}>
+	 */
+	public static function dataNamesResolveInNamespace(): iterable
+	{
+		yield [new ObjectType('Foo\\Bar')];
+		yield [TypeCombinator::addNull(new ObjectType('Foo\\Bar'))];
+		yield [new GenericObjectType('Foo\\Bar', [new ObjectType('Foo\\Baz')])];
+		yield [new GenericClassStringType(new ObjectType('Foo\\Bar'))];
+	}
+
+	#[DataProvider('dataNamesResolveInNamespace')]
+	public function testNamesResolveInNamespace(Type $type): void
+	{
+		// a use or namespace that would capture the name if it were printed relative
+		$nameScope = new NameScope('Other', ['foo' => 'Some\\Foo', 'closure' => 'Some\\Closure']);
+
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode(), $nameScope);
+		$this->assertTrue($type->equals($typeAgain), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $typeAgain->describe(VerbosityLevel::precise())));
+	}
+
+	public function testClosureResolvesInNamespaceWithClosureUse(): void
+	{
+		$nameScope = new NameScope('Other', ['closure' => 'Some\\Closure']);
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+
+		$this->assertSame(['Closure'], $typeStringResolver->resolve((string) (new ClosureType())->toPhpDocNode(), $nameScope)->getObjectClassNames());
+	}
+
+	public function testNameNodes(): void
+	{
+		$this->assertInstanceOf(FullyQualifiedNameNode::class, (new ObjectType('Foo\\Bar'))->toPhpDocNode());
+		$this->assertInstanceOf(FullyQualifiedNameNode::class, (new ClosureType())->toPhpDocNode());
+
+		$generic = (new GenericObjectType('Foo\\Bar', [new IntegerType()]))->toPhpDocNode();
+		$this->assertInstanceOf(GenericTypeNode::class, $generic);
+		$this->assertInstanceOf(FullyQualifiedNameNode::class, $generic->type);
+		$this->assertNotInstanceOf(NameNode::class, $generic->genericTypes[0]);
+
+		$closure = self::getContainer()->getByType(TypeStringResolver::class)->resolve('\\Closure(int): void')->toPhpDocNode();
+		$this->assertInstanceOf(CallableTypeNode::class, $closure);
+		$this->assertInstanceOf(FullyQualifiedNameNode::class, $closure->identifier);
+
+		// keywords stay plain identifiers
+		foreach ([
+			new IntegerType(),
+			new MixedType(true),
+			new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
+			new CallableType(),
+			ClosureType::createPure(),
+			TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', null, TemplateTypeVariance::createInvariant()),
+		] as $keywordType) {
+			$this->assertNotInstanceOf(NameNode::class, $keywordType->toPhpDocNode(), $keywordType->describe(VerbosityLevel::precise()));
+		}
 	}
 
 	/**

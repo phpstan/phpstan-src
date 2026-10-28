@@ -2849,12 +2849,12 @@ public:
 		return pt_type_new_error_type();
 	}
 
-	/* new IdentifierTypeNode($this->getClassName()); UNDEF = pending exception */
+	/* new FullyQualifiedNameNode($this->getClassName()); UNDEF = pending exception */
 	zv::Val toPhpDocNode() const
 	{
 		zv::Val name = thisGetClassName();
 		if (UNEXPECTED(name.isUndef())) return zv::Val();
-		return pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, name.raw());
+		return pt_type_new(PT_CLASS_FULLY_QUALIFIED_NAME_NODE, 1, name.raw());
 	}
 
 	/* null for an empty class name, else $position->isClassNameAllowed()

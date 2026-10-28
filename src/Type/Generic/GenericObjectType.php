@@ -2,8 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassMemberAccessAnswerer;
 use PHPStan\Reflection\ClassReflection;
@@ -454,7 +454,7 @@ class GenericObjectType extends ObjectType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		/** @var IdentifierTypeNode $parent */
+		/** @var FullyQualifiedNameNode $parent */
 		$parent = parent::toPhpDocNode();
 		return new GenericTypeNode(
 			$parent,

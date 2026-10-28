@@ -2883,16 +2883,19 @@ zv::Val pt_callable_dummy_parameters(zval *parameters, zval *assertions)
 	return zv::Val(std::move(dummies));
 }
 
-zv::Val pt_callable_print_php_doc_node(zval *type)
+zv::Val pt_describe_php_doc_node(zval *node)
 {
-	zv::Val printer = pt_type_new(PT_CLASS_PHPDOC_PRINTER, 0, NULL);
-	if (UNEXPECTED(printer.isUndef())) return zv::Val();
-	zv::Val node = pt_type_call(Z_OBJ_P(type), PT_LC("tophpdocnode"), 0, NULL);
-	if (UNEXPECTED(node.isUndef())) return zv::Val();
-	return pt_type_call(Z_OBJ_P(printer.raw()), PT_LC("print"), 1, node.raw());
+	return pt_type_call_static(PT_CLASS_TYPE_NODE_DESCRIBER, PT_LC("describe"), 1, node);
 }
 
-zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, zval *parameters, zval *templateTags, zval *assertions, zval *returnType)
+zv::Val pt_callable_print_php_doc_node(zval *type)
+{
+	zv::Val node = pt_type_call(Z_OBJ_P(type), PT_LC("tophpdocnode"), 0, NULL);
+	if (UNEXPECTED(node.isUndef())) return zv::Val();
+	return pt_describe_php_doc_node(node.raw());
+}
+
+zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, bool identifierIsClassName, zval *parameters, zval *templateTags, zval *assertions, zval *returnType)
 {
 	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY || Z_TYPE_P(templateTags) != IS_ARRAY)) {
 		zend_type_error("phpstan_turbo: the parameters and template tags must be arrays");
@@ -2957,7 +2960,8 @@ zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, zval
 		returnTypeNode = pt_type_call(Z_OBJ_P(returnType), PT_LC("tophpdocnode"), 0, NULL);
 		if (UNEXPECTED(returnTypeNode.isUndef())) return zv::Val();
 	}
-	zv::Val identifierNode = pt_type_new_identifier_type_node(identifier, identifierLen);
+	zv::Val identifierName = zv::Val::string(identifier, identifierLen);
+	zv::Val identifierNode = pt_type_new(identifierIsClassName ? PT_CLASS_FULLY_QUALIFIED_NAME_NODE : PT_CLASS_IDENTIFIER_TYPE_NODE, 1, identifierName.raw());
 	if (UNEXPECTED(identifierNode.isUndef())) return zv::Val();
 	zv::Args args{identifierNode.raw(), parameterNodes.raw(), returnTypeNode.raw(), templateTagNodes.raw()};
 	return pt_type_new(PT_CLASS_CALLABLE_TYPE_NODE, 4, args);

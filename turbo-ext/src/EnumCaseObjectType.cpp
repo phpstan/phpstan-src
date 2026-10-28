@@ -340,7 +340,7 @@ public:
 		return pt_intersection_of(std::move(types));
 	}
 
-	/* new ConstTypeNode(new ConstFetchNode($this->getClassName(), $this->getEnumCaseName()));
+	/* new ConstTypeNode(new ConstFetchNode('\\' . $this->getClassName(), $this->getEnumCaseName()));
 	 * UNDEF = pending exception */
 	zv::Val toPhpDocNode() const
 	{
@@ -352,7 +352,8 @@ public:
 			return zv::Val::string(name);
 		});
 		if (UNEXPECTED(caseName.isUndef())) return zv::Val();
-		zv::Args args{className.raw(), caseName.raw()};
+		zv::Val qualifiedClassName = zv::Val::adoptString(zend_string_concat2("\\", 1, Z_STRVAL_P(className.raw()), Z_STRLEN_P(className.raw())));
+		zv::Args args{qualifiedClassName.raw(), caseName.raw()};
 		zv::Val constFetch = pt_type_new(PT_CLASS_CONST_FETCH_NODE, 2, args);
 		if (UNEXPECTED(constFetch.isUndef())) return zv::Val();
 		return pt_type_new(PT_CLASS_CONST_TYPE_NODE, 1, constFetch.raw());

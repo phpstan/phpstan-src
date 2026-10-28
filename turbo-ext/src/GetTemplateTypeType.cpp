@@ -157,7 +157,7 @@ public:
 	}
 
 	/* new GenericTypeNode(new IdentifierTypeNode('template-type'), [$this->type->toPhpDocNode(),
-	 * new IdentifierTypeNode($this->ancestorClassName), new ConstTypeNode(new
+	 * new FullyQualifiedNameNode($this->ancestorClassName), new ConstTypeNode(new
 	 * ConstExprStringNode($this->templateTypeName, ConstExprStringNode::SINGLE_QUOTED))]) */
 	zv::Val toPhpDocNode() const
 	{
@@ -169,7 +169,7 @@ public:
 		if (UNEXPECTED(typeNode.isUndef())) return zv::Val();
 		zval *ancestor = ancestorClassName();
 		if (UNEXPECTED(ancestor == NULL)) return zv::Val();
-		zv::Val ancestorNode = pt_type_new_identifier_type_node(ZSTR_VAL(Z_STR_P(ancestor)), ZSTR_LEN(Z_STR_P(ancestor)));
+		zv::Val ancestorNode = pt_type_new(PT_CLASS_FULLY_QUALIFIED_NAME_NODE, 1, ancestor);
 		if (UNEXPECTED(ancestorNode.isUndef())) return zv::Val();
 		zval *name = templateTypeName();
 		if (UNEXPECTED(name == NULL)) return zv::Val();

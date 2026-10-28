@@ -512,8 +512,6 @@ public:
 	 * (unless an assertion refers to them); UNDEF = pending exception */
 	zv::Val describeCallable() const
 	{
-		zv::Val printer = pt_type_new(PT_CLASS_PHPDOC_PRINTER, 0, NULL);
-		if (UNEXPECTED(printer.isUndef())) return zv::Val();
 		zval *a = assertions();
 		zval *p = a != NULL ? parameters() : NULL;
 		if (UNEXPECTED(p == NULL)) return zv::Val();
@@ -526,11 +524,7 @@ public:
 		if (UNEXPECTED(selfWithoutParameterNames.isUndef())) return zv::Val();
 		zv::Val node = ClosureType(Z_OBJ_P(selfWithoutParameterNames.raw())).toPhpDocNode();
 		if (UNEXPECTED(node.isUndef())) return zv::Val();
-		if (UNEXPECTED(!zv::Ref(printer.raw()).isObject())) {
-			zend_type_error("phpstan_turbo: the printer must be an object");
-			return zv::Val();
-		}
-		return pt_type_call(Z_OBJ_P(printer.raw()), PT_LC("print"), 1, node.raw());
+		return pt_describe_php_doc_node(node.raw());
 	}
 
 	/* $this->getUnresolvedMethodPrototype($methodName, $scope)->getTransformedMethod() */
@@ -679,8 +673,8 @@ public:
 		return create(args);
 	}
 
-	/* IdentifierTypeNode('Closure' with its static-/pure- prefixes) for a
-	 * common callable; the CallableTypeNode over the parameters, template
+	/* FullyQualifiedNameNode('Closure') for a common callable, or an
+	 * IdentifierTypeNode when it has a static-/pure- prefix; the CallableTypeNode over the parameters, template
 	 * tags and (conditional) return type otherwise; UNDEF = pending
 	 * exception */
 	zv::Val toPhpDocNode() const
@@ -690,14 +684,15 @@ public:
 		if (common == 1) {
 			zv::Val name = prefixedName();
 			if (UNEXPECTED(name.isUndef())) return zv::Val();
-			return pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, name.raw());
+			bool isClassName = zv::Ref(name.raw()).stringEquals("Closure");
+			return pt_type_new(isClassName ? PT_CLASS_FULLY_QUALIFIED_NAME_NODE : PT_CLASS_IDENTIFIER_TYPE_NODE, 1, name.raw());
 		}
 		zval *p = parameters();
 		zval *tags = p != NULL ? templateTags() : NULL;
 		zval *a = tags != NULL ? assertions() : NULL;
 		zval *r = a != NULL ? returnType() : NULL;
 		if (UNEXPECTED(r == NULL)) return zv::Val();
-		return pt_callable_type_node(PT_LC("Closure"), p, tags, a, r);
+		return pt_callable_type_node(PT_LC("Closure"), true, p, tags, a, r);
 	}
 
 	/* false = pending exception */

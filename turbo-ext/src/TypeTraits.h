@@ -652,12 +652,15 @@ zv::Val pt_callable_parameter_types(zval *parameters);
 zv::Val pt_callable_dummy_parameters(zval *parameters, zval *assertions);
 /* (new Printer())->print($type->toPhpDocNode()) — the $printer created
  * first, as the twins do; UNDEF = pending exception */
+/* TypeNodeDescriber::describe($node); UNDEF = pending exception */
+zv::Val pt_describe_php_doc_node(zval *node);
 zv::Val pt_callable_print_php_doc_node(zval *type);
 /* the CallableTypeNode of toPhpDocNode(): new CallableTypeNode(new
  * IdentifierTypeNode($identifier), <parameter nodes>, <the conditional
  * return type node of the assertions, else $returnType->toPhpDocNode()>,
  * <template tag nodes>); UNDEF = pending exception */
-zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, zval *parameters, zval *templateTags, zval *assertions, zval *returnType);
+/* identifierIsClassName: a FullyQualifiedNameNode instead of an IdentifierTypeNode */
+zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, bool identifierIsClassName, zval *parameters, zval *templateTags, zval *assertions, zval *returnType);
 /* whether a parameter's type, out type or closure-this type, or an
  * assertion's type has a template or late-resolvable type — the
  * hasTemplateOrLateResolvableType() body before the return type's answer;

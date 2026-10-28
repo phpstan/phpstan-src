@@ -11,7 +11,6 @@ use PHPStan\PhpDocParser\Ast\Type\ArrayShapeUnsealedTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
-use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -171,7 +170,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 	public function describe(VerbosityLevel $level): string
 	{
 		// a shape that can be resolved never stays late-resolvable, see create()
-		return (new Printer())->print($this->toPhpDocNode());
+		return TypeNodeDescriber::describe($this->toPhpDocNode());
 	}
 
 	public function isResolvable(): bool

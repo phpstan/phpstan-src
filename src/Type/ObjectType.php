@@ -14,7 +14,7 @@ use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\Internal\LruCache;
 use PHPStan\Php\PhpVersion;
-use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\FunctionCallableVariant;
@@ -2131,7 +2131,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function toPhpDocNode(): TypeNode
 	{
-		return new IdentifierTypeNode($this->getClassName());
+		return new FullyQualifiedNameNode($this->getClassName());
 	}
 
 	public function toNativePhpTypeNode(NativeTypePosition $position)

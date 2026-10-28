@@ -178,6 +178,7 @@ use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeForParameterNode;
 use PHPStan\PhpDocParser\Ast\Type\ConditionalTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\FullyQualifiedNameNode;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
@@ -186,7 +187,6 @@ use PHPStan\PhpDocParser\Ast\Type\ObjectShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\OffsetAccessTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\ThisTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\UnionTypeNode;
-use PHPStan\PhpDocParser\Printer\Printer;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use RecursiveDirectoryIterator;
@@ -264,6 +264,7 @@ final class TurboAttributeCollector
 		'closureExpr' => Closure::class,
 		'arrowFunction' => ArrowFunction::class,
 		'identifierTypeNode' => IdentifierTypeNode::class,
+		'fullyQualifiedNameNode' => FullyQualifiedNameNode::class,
 		'genericTypeNode' => GenericTypeNode::class,
 		'constTypeNode' => ConstTypeNode::class,
 		'constExprIntegerNode' => ConstExprIntegerNode::class,
@@ -275,7 +276,6 @@ final class TurboAttributeCollector
 		'objectShapeNode' => ObjectShapeNode::class,
 		'objectShapeItemNode' => ObjectShapeItemNode::class,
 		'constFetchNode' => ConstFetchNode::class,
-		'phpDocPrinter' => Printer::class,
 		'callableTypeNode' => CallableTypeNode::class,
 		'callableTypeParameterNode' => CallableTypeParameterNode::class,
 		'templateTagValueNode' => TemplateTagValueNode::class,

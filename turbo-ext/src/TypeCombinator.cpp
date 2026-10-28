@@ -1038,11 +1038,8 @@ public:
 		Level cacheLevel(PT_LC("cache"));
 		for (size_t i = 0; i < typesCount; i++) {
 			zval *type = types[i].raw();
-			zend_long isConstantScalarValue = PT_TRI_NO;
-			if (!isInstance(type, pt_ce_intersection_type)) {
-				isConstantScalarValue = callTrinary(type, PT_LC("isconstantscalarvalue"));
-				PT_FAIL_IF_NEG(isConstantScalarValue);
-			}
+			zend_long isConstantScalarValue = callTrinary(type, PT_LC("isconstantscalarvalue"));
+			PT_FAIL_IF_NEG(isConstantScalarValue);
 			if (isConstantScalarValue == PT_TRI_YES) {
 				zv::Val description = describe(type, cacheLevel);
 				zend_string *key = describedKey(description);
@@ -1108,6 +1105,14 @@ public:
 			types.push_back(std::move(rangeType));
 		}
 		typesCount = types.size();
+
+		for (ScalarGroup &group : scalarTypes) {
+			if (group.ce != pt_ce_intersection_type) continue;
+			zv::Val reduced = reduceRefinedConstantScalars(group.items.raw(), scalarTypes, cacheLevel);
+			PT_FAIL_IF_UNDEF(reduced);
+			group.items = zv::Arr::adoptVal(std::move(reduced));
+			break;
+		}
 
 		for (ScalarGroup &group : scalarTypes) {
 			zend_class_entry *classType = group.ce;
@@ -1262,6 +1267,73 @@ public:
 		listFrom(replacement, inner);
 		types.erase(types.begin() + (ptrdiff_t) i);
 		types.insert(types.begin() + (ptrdiff_t) i, std::make_move_iterator(inner.begin()), std::make_move_iterator(inner.end()));
+	}
+
+	/* Mirrors reduceRefinedConstantScalars(): the constant-scalar
+	 * intersections without those absorbed by the plain constant of the same
+	 * value or by a less refined intersection of the same value */
+	static zv::Val reduceRefinedConstantScalars(zval *intersections, std::vector<ScalarGroup> &groups, Level &cacheLevel)
+	{
+		struct Refined
+		{
+			zend_string *key;
+			zv::Val type;
+			zend_class_entry *valueCe;
+			zv::Val valueDescription;
+			bool removed;
+		};
+		std::vector<Refined> entries;
+		for (zv::ArrayEntry entry : zv::ArrRef(intersections)) {
+			zval *intersection = entry.value().raw();
+			entries.push_back({ entry.stringKeyOrNull(), copy(intersection), NULL, zv::Val(), false });
+			Refined &refined = entries.back();
+			zv::Val constants = call(intersection, PT_LC("getconstantscalartypes"));
+			PT_FAIL_IF_UNDEF(constants);
+			if (countOf(constants.raw()) != 1) continue;
+			zval *constant = indexOf(constants.raw(), 0);
+			if (UNEXPECTED(constant == NULL)) {
+				zend_throw_error(NULL, "Undefined array key 0");
+				return zv::Val();
+			}
+			zv::Val description = describe(constant, cacheLevel);
+			zend_string *valueKey = describedKey(description);
+			if (UNEXPECTED(valueKey == NULL)) return zv::Val();
+			for (ScalarGroup &group : groups) {
+				if (group.ce != Z_OBJCE_P(constant)) continue;
+				zv::Ref plain = group.items.arrRef().find(valueKey);
+				if (plain.raw() == NULL) break;
+				int absorbed = isSuperTypeYes(plain.raw(), intersection);
+				PT_FAIL_IF_NEG(absorbed);
+				refined.removed = absorbed != 0;
+				break;
+			}
+			if (refined.removed) continue;
+			refined.valueCe = Z_OBJCE_P(constant);
+			refined.valueDescription = std::move(description);
+		}
+
+		for (size_t i = 0; i < entries.size(); i++) {
+			if (entries[i].valueCe == NULL) continue;
+			for (size_t j = 0; j < entries.size(); j++) {
+				if (i == j || entries[i].removed || entries[j].removed) continue;
+				if (entries[j].valueCe != entries[i].valueCe) continue;
+				if (!zend_string_equals(Z_STR_P(entries[i].valueDescription.raw()), Z_STR_P(entries[j].valueDescription.raw()))) continue;
+				int absorbed = isSuperTypeYes(entries[i].type.raw(), entries[j].type.raw());
+				PT_FAIL_IF_NEG(absorbed);
+				if (absorbed) entries[j].removed = true;
+			}
+		}
+
+		zv::Arr result = zv::Arr::create((uint32_t) entries.size());
+		for (Refined &refined : entries) {
+			if (refined.removed) continue;
+			if (UNEXPECTED(refined.key == NULL)) {
+				zend_throw_error(NULL, "phpstan_turbo: a scalar group key must be a string");
+				return zv::Val();
+			}
+			result.set(refined.key, std::move(refined.type));
+		}
+		return zv::Val(std::move(result));
 	}
 
 	/* $scalarTypes[$ce][$key] = $type */

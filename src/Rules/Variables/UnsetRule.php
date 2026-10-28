@@ -4,12 +4,15 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function is_string;
 use function sprintf;
@@ -24,6 +27,10 @@ final class UnsetRule implements Rule
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
+		private bool $reportMaybes,
+		#[AutowiredParameter(ref: '%featureToggles.unsetOffsetOnMaybeAccessible%')]
+		private bool $unsetOffsetOnMaybeAccessible,
 	)
 	{
 	}
@@ -127,7 +134,11 @@ final class UnsetRule implements Rule
 			$type = $scope->getType($node->var);
 			$dimType = $scope->getType($node->dim);
 
-			if ($type->isOffsetAccessible()->no() || $type->hasOffsetValueType($dimType)->no()) {
+			if (
+				$type->isOffsetAccessible()->no()
+				|| $type->hasOffsetValueType($dimType)->no()
+				|| $this->isOffsetMaybeNotUnsettable($type)
+			) {
 				return RuleErrorBuilder::message(
 					sprintf(
 						'Cannot unset offset %s on %s.',
@@ -144,6 +155,30 @@ final class UnsetRule implements Rule
 		}
 
 		return null;
+	}
+
+	/**
+	 * unset() of an offset deprecates on false and throws an Error on true, an int, a float or a string,
+	 * so a union like array|false, array|int or array|string can fail at runtime.
+	 * A type whose offset access is not even legal (an object without ArrayAccess) is reported by NonexistentOffsetInArrayDimFetchRule.
+	 */
+	private function isOffsetMaybeNotUnsettable(Type $type): bool
+	{
+		if (!$this->unsetOffsetOnMaybeAccessible || !$this->reportMaybes) {
+			return false;
+		}
+
+		if (!$type->isOffsetAccessLegal()->yes()) {
+			return false;
+		}
+
+		foreach (TypeUtils::flattenTypes($type) as $innerType) {
+			if ($innerType->isScalar()->yes()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

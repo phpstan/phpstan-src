@@ -79,6 +79,50 @@ class ScopeFunctionCallStackRuleTest extends RuleTestCase
 				'Bug15377\inTransaction',
 				52,
 			],
+			[
+				'Bug15377\inTransaction',
+				62,
+			],
+			[
+				'Bug15377\inTransaction',
+				63,
+			],
+			[
+				'Bug15377\inTransaction',
+				64,
+			],
+			[
+				'Bug15377\inTransaction',
+				65,
+			],
+			[
+				"Bug15377\\inTransaction\nBug15377\\takesTwo",
+				66,
+			],
+			[
+				'Bug15377\inTransaction',
+				67,
+			],
+			[
+				'Bug15377\inTransaction',
+				68,
+			],
+			[
+				'Bug15377\inTransaction',
+				69,
+			],
+			[
+				'Bug15377\inTransaction',
+				70,
+			],
+			[
+				'Bug15377\inTransaction',
+				71,
+			],
+			[
+				'Bug15377\inTransaction',
+				72,
+			],
 		]);
 	}
 

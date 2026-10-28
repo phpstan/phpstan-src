@@ -81,6 +81,50 @@ class ScopeFunctionCallStackWithParametersRuleTest extends RuleTestCase
 				'Bug15377\inTransaction ($callback)',
 				52,
 			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				62,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				63,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				64,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				65,
+			],
+			[
+				"Bug15377\\inTransaction (\$callback)\nBug15377\\takesTwo (\$j)",
+				66,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				67,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				68,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				69,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				70,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				71,
+			],
+			[
+				'Bug15377\inTransaction ($callback)',
+				72,
+			],
 		]);
 	}
 

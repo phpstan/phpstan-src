@@ -51,3 +51,23 @@ function d(): void
 {
 	inTransaction(function (): void { try { var_dump(name()); } catch (\RuntimeException $e) { throw $e; } });
 }
+
+final class Item { public ?string $name = null; public function label(): string { return ''; } }
+
+/**
+ * @param list<Item> $items
+ */
+function e(?int $n, bool $b, array $items): void
+{
+	inTransaction(function () use ($n): void { $x = $n ?? 1; throw new \Exception(); });
+	inTransaction(function () use ($n): void { if (isset($n)) { $n++; } throw new \Exception(); });
+	inTransaction(function () use ($b): void { if ($b) { $y = 1; } else { $y = 2; } throw new \Exception(); });
+	inTransaction(function () use ($b): void { $z = $b ? 1 : 2; throw new \Exception(); });
+	inTransaction(function () use ($b): void { takesTwo($b ? 1 : 2, throw new \Exception()); });
+	inTransaction(function () use ($items): void { foreach ($items as $item) { $item->name = 'x'; } throw new \Exception(); });
+	inTransaction(function () use ($items): void { foreach ($items as $i => $item) { if ($item->name !== null) { break; } $label = $items[$i]->label(); } throw new \Exception(); });
+	inTransaction(function () use ($b): void { while ($b) { $b = false; } throw new \Exception(); });
+	inTransaction(function (): void { try { var_dump(name()); } finally { $f = 1; } throw new \Exception(); });
+	inTransaction(function (): void { try { var_dump(name(), name()); } catch (\RuntimeException $e) { throw $e; } });
+	inTransaction(function (): void { $c = \Closure::bind(static function (): void {}, null, null); throw new \Exception(); });
+}

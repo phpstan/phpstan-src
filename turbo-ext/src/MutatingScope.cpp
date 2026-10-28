@@ -3049,7 +3049,8 @@ public:
 		ZVAL_COPY_VALUE(&args[2], conditionalExpressions.raw());
 		ZVAL_EMPTY_ARRAY(&args[3]);
 		ZVAL_EMPTY_ARRAY(&args[4]);
-		ZVAL_EMPTY_ARRAY(&args[5]);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
+		ZVAL_COPY_VALUE(&args[5], slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw());
 		ZVAL_BOOL(&args[6], slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT));
 		ZVAL_BOOL(&args[7], recordedExit.slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL));
 		return thisDuplicateWith(args);
@@ -4764,7 +4765,8 @@ public:
 		a.setBool(CreateArgs::IN_FIRST_LEVEL_STATEMENT, true);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
-		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
+		a.set(CreateArgs::IN_FUNCTION_CALLS_STACK, slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK));
 		a.setBool(CreateArgs::AFTER_EXTRACT_CALL, false);
 		a.setNull(CreateArgs::PARENT_SCOPE);
 		a.setBool(CreateArgs::NATIVE_TYPES_PROMOTED, false);
@@ -6044,7 +6046,8 @@ public:
 		if (UNEXPECTED(!fillDispatched(a, true, true))) return zv::Val();
 		a.setOwned(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS, std::move(currentlyAssignedExpressions));
 		a.setOwned(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS, std::move(currentlyAllowedUndefinedExpressions));
-		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
+		a.set(CreateArgs::IN_FUNCTION_CALLS_STACK, slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK));
 		zv::Val scope = scopeFactoryCreate(a);
 		if (UNEXPECTED(scope.isUndef())) return zv::Val();
 		if (UNEXPECTED(!assignResolvedTypes(scope))) return zv::Val();
@@ -8438,13 +8441,14 @@ public:
 			return zv::Val();
 		}
 
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
 		return scopeWithTables(
 			Z_ARRVAL_P(mergedTypes),
 			Z_ARRVAL_P(mergedNativeTypes),
 			Z_ARRVAL_P(conditionalExpressions.raw()),
 			(HashTable *) &zend_empty_array,
 			(HashTable *) &zend_empty_array,
-			(HashTable *) &zend_empty_array,
+			Z_ARRVAL_P(slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw()),
 			slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
 			slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL) && theirAfterExtractCall);
 	}
@@ -8798,7 +8802,8 @@ public:
 		PT_MS_ARG_CREATE(a, CreateArgs::CONDITIONAL_EXPRESSIONS, pt_scope_ops_intersect_conditional_expressions(Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), finallyConditional));
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
-		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
+		a.set(CreateArgs::IN_FUNCTION_CALLS_STACK, slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK));
 		return scopeFactoryCreate(a);
 	}
 
@@ -8995,7 +9000,8 @@ public:
 		a.setBool(CreateArgs::IN_FIRST_LEVEL_STATEMENT, slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT));
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
-		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
+		a.set(CreateArgs::IN_FUNCTION_CALLS_STACK, slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK));
 		return scopeFactoryCreate(a);
 	}
 
@@ -9105,7 +9111,8 @@ public:
 		a.setBool(CreateArgs::IN_FIRST_LEVEL_STATEMENT, slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT));
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
-		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) return zv::Val();
+		a.set(CreateArgs::IN_FUNCTION_CALLS_STACK, slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK));
 		return scopeFactoryCreate(a);
 	}
 

@@ -143,7 +143,8 @@ final class AnalyseApplication
 				$debug,
 				$preRuleCallback,
 				$postRuleCallback,
-				$resultCache->getCollectedDataRuleResults(),
+				// with -vvv the diagnose extensions print, and a rule can fill what they print only while it runs
+				$errorOutput->isDebug() ? [] : $resultCache->getCollectedDataRuleResults(),
 			);
 			if ($finalizerResult->getReusedRulesCount() > 0 && $errorOutput->isVeryVerbose()) {
 				$errorOutput->writeLineFormatted(sprintf(

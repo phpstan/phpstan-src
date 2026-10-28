@@ -226,6 +226,11 @@ jobs:
               ../bashunit assert contains 'Caller.php:10:Call to function ResultCacheCollectedDataRules\pure() on a separate line has no effect.' "$OUTPUT"
               echo "$OUTPUT" | grep -E 'Result cache reused the errors of ([0-9]+) of \1 rules on collected data\.'
               ../bashunit assert contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              # With -vvv the diagnose extensions print what the rules filled while they ran, so every rule runs.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Caller.php:10:Call to function ResultCacheCollectedDataRules\pure() on a separate line has no effect.' "$OUTPUT"
+              ../bashunit assert not_contains 'Result cache reused the errors' "$OUTPUT"
               # src/Other.php is analysed again, but what it collects stays the same.
               echo '// changed' >> src/Other.php
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")

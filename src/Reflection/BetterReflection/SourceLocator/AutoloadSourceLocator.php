@@ -2,8 +2,8 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use Composer\Autoload\ClassLoader;
 use Override;
-use ParseError;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
@@ -23,6 +23,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ConstantTypeHelper;
 use ReflectionClass;
 use ReflectionFunction;
+use Throwable;
 use function array_key_exists;
 use function array_keys;
 use function class_exists;
@@ -30,13 +31,18 @@ use function constant;
 use function count;
 use function defined;
 use function function_exists;
+use function get_included_files;
+use function ini_get;
 use function interface_exists;
+use function is_array;
 use function is_file;
 use function is_string;
 use function opcache_invalidate;
+use function realpath;
 use function restore_error_handler;
 use function set_error_handler;
 use function spl_autoload_functions;
+use function str_contains;
 use function strtolower;
 use function trait_exists;
 use const PHP_VERSION_ID;
@@ -64,6 +70,9 @@ final class AutoloadSourceLocator implements SourceLocator
 
 	/** @var array<string, int> */
 	private array $startLineByClass = [];
+
+	/** How many get_included_files() entries invalidateIncludedFiles() has handled. */
+	private static int $invalidatedIncludedFilesCount = 0;
 
 	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $executeAutoloadersInFileReadTrap)
 	{
@@ -336,20 +345,37 @@ final class AutoloadSourceLocator implements SourceLocator
 		$this->silenceErrors();
 
 		try {
+			$foundByComposer = false;
 			$result = FileReadTrapStreamWrapper::withStreamWrapperOverride(
-				static function () use ($className): ?array {
+				static function () use ($className, &$foundByComposer): ?array {
 					$functions = spl_autoload_functions();
 					if ($functions === false) {
 						return null;
 					}
 
 					foreach ($functions as $preExistingAutoloader) {
+						$composerFile = self::findFileWithComposer($preExistingAutoloader, $className);
+						if ($composerFile !== null) {
+							$foundByComposer = true;
+							return [[$composerFile], $className, null];
+						}
+
+						self::invalidateIncludedFiles();
+
 						try {
 							$preExistingAutoloader($className);
-						} catch (ParseError) {
-							// the trap served a parse error instead of the empty
-							// script, see FileReadTrapStreamWrapper::stream_read();
-							// the file was recorded before the include compiled it
+						} catch (Throwable) {
+							// Two unrelated throws land here, and neither one means the class was not found.
+							// The trap can serve a parse error instead of the empty script, see
+							// FileReadTrapStreamWrapper::stream_read(). And asking every registered
+							// autoloader for the class is not the order PHP uses, so an autoloader that
+							// throws for names outside its own scope throws here for names it is never
+							// invoked for at runtime. Either exception would abort the analysis of the file
+							// with an internal error, so both are swallowed - the file the autoloader asked
+							// for is recorded by the trap before the throw. Unlike AutoloadFunctionsSourceLocator,
+							// this catch does not report the message: the trap serves an empty script, so an
+							// autoloader that checks what the file declared (Symfony's DebugClassLoader) throws
+							// even for a class that the file does declare.
 						}
 
 						/**
@@ -370,7 +396,8 @@ final class AutoloadSourceLocator implements SourceLocator
 				return null;
 			}
 
-			if (!function_exists('opcache_invalidate')) {
+			// nothing was included, so there is no trapped script to invalidate
+			if ($foundByComposer || !function_exists('opcache_invalidate')) {
 				return $result;
 			}
 
@@ -385,6 +412,66 @@ final class AutoloadSourceLocator implements SourceLocator
 		} finally {
 			restore_error_handler();
 		}
+	}
+
+	/**
+	 * Asks Composer's ClassLoader which file loadClass() would include, without
+	 * including it. With OPcache holding a file this process already ran, an
+	 * include inside the trap runs the cached script instead of the trap's empty
+	 * one, and a file declaring a function dies with "Cannot redeclare".
+	 *
+	 * A path behind a stream wrapper is left to the trap: realpath() cannot
+	 * resolve it, and the phar's own ClassLoader maps PHPStan\ to phar://.
+	 *
+	 * @param callable(string): void $autoloader
+	 */
+	private static function findFileWithComposer(callable $autoloader, string $className): ?string
+	{
+		if (!is_array($autoloader) || !$autoloader[0] instanceof ClassLoader) {
+			return null;
+		}
+
+		$file = $autoloader[0]->findFile($className);
+		if ($file === false || str_contains($file, '://')) {
+			return null;
+		}
+
+		// findFile() can return ../ segments and mixed separators; resolve them
+		// as an include would, so that locateIdentifier() can compare the path
+		// with ReflectionClass::getFileName()
+		$resolvedFile = realpath($file);
+		if ($resolvedFile === false || !is_file($resolvedFile)) {
+			return null;
+		}
+
+		return $resolvedFile;
+	}
+
+	/**
+	 * An autoloader can include a file that this process already included for real, for example a file
+	 * a bootstrap autoloader included without declaring the class. With OPcache active, the trapped
+	 * include of that file runs the script OPcache compiled from the real file, not the empty script
+	 * FileReadTrapStreamWrapper serves, and dies with "Cannot redeclare". Invalidating the entries of
+	 * the included files makes that include go through the trap. The opcache_invalidate() loop after
+	 * the trap cannot do this, because the include has already run by then. That loop removes the
+	 * empty script the trap left in OPcache.
+	 *
+	 * Only an autoloader that runs inside the trap needs this. findFileWithComposer() includes nothing.
+	 * Forked workers switch OPcache off (see ForkedProcess), so they skip this.
+	 */
+	private static function invalidateIncludedFiles(): void
+	{
+		if (!function_exists('opcache_invalidate') || !(bool) ini_get('opcache.enable') || !(bool) ini_get('opcache.enable_cli')) {
+			return;
+		}
+
+		$includedFiles = get_included_files();
+		$includedFilesCount = count($includedFiles);
+		for ($i = self::$invalidatedIncludedFilesCount; $i < $includedFilesCount; $i++) {
+			opcache_invalidate($includedFiles[$i], true);
+		}
+
+		self::$invalidatedIncludedFilesCount = $includedFilesCount;
 	}
 
 	private function silenceErrors(): void

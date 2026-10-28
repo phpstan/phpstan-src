@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use Closure;
 use PhpParser\Node\Expr;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -14,6 +15,9 @@ use PHPStan\Type\Type;
 final class ExpressionContext
 {
 
+	/**
+	 * @param (Closure(Type): array{?Type, ?Type})|null $passedToTypeResolver
+	 */
 	private function __construct(
 		private bool $isDeep,
 		private ?string $inAssignRightSideVariableName,
@@ -29,6 +33,7 @@ final class ExpressionContext
 		private ?bool $valueConsumed = null,
 		private ?Type $passedToType = null,
 		private ?Type $nativePassedToType = null,
+		private ?Closure $passedToTypeResolver = null,
 	)
 	{
 	}
@@ -50,7 +55,7 @@ final class ExpressionContext
 	 */
 	public function enterDeep(): self
 	{
-		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
+		if ($this->isDeep && $this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null && $this->passedToTypeResolver === null) {
 			return $this;
 		}
 
@@ -78,7 +83,7 @@ final class ExpressionContext
 	 */
 	public function withoutValueFlow(): self
 	{
-		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null) {
+		if ($this->valueFlowTarget === null && !$this->arrayDimFetchRoot && !$this->unsetTarget && $this->passedToType === null && $this->nativePassedToType === null && $this->passedToTypeResolver === null) {
 			return $this;
 		}
 
@@ -108,6 +113,29 @@ final class ExpressionContext
 		$context->nativePassedToType = $nativeType;
 
 		return $context;
+	}
+
+	/**
+	 * Like enterPassedToType(), for an array literal holding closures whose
+	 * expected type depends on the literal's own type: ArrayHandler calls the
+	 * resolver with the type of the items it walked before the closures.
+	 *
+	 * @param Closure(Type): array{?Type, ?Type} $resolver
+	 */
+	public function enterPassedToTypeResolver(Closure $resolver): self
+	{
+		$context = clone $this;
+		$context->passedToTypeResolver = $resolver;
+
+		return $context;
+	}
+
+	/**
+	 * @return (Closure(Type): array{?Type, ?Type})|null
+	 */
+	public function getPassedToTypeResolver(): ?Closure
+	{
+		return $this->passedToTypeResolver;
 	}
 
 	public function getPassedToType(): ?Type

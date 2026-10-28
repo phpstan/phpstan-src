@@ -2,6 +2,9 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use LogicException;
+use PHPStan\BetterReflection\Identifier\Identifier;
+use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\BetterReflection\Reflector\DefaultReflector;
 use PHPStan\Reflection\InitializerExprContext;
@@ -12,6 +15,8 @@ use TestSingleFileSourceLocator\AFoo;
 use TestSingleFileSourceLocator\InCondition;
 use function array_merge;
 use function class_alias;
+use function spl_autoload_register;
+use function spl_autoload_unregister;
 
 function testFunctionForLocator(): void // phpcs:disable
 {
@@ -77,6 +82,39 @@ class AutoloadSourceLocatorTest extends PHPStanTestCase
 		$reflector = new DefaultReflector($locator);
 		$class = $reflector->reflectClass('A_Foo');
 		$this->assertSame(AFoo::class, $class->getName());
+	}
+
+	/**
+	 * This locator asks every registered autoloader for the class, which is not the order PHP uses,
+	 * so an autoloader that throws for names outside its own scope must not abort the analysis.
+	 *
+	 * @see https://github.com/phpstan/phpstan/issues/14976
+	 */
+	public function testThrowingAutoloader(): void
+	{
+		// Everything that needs autoloading has to be loaded before the throwing autoloader joins
+		// the queue - it is registered globally, so anything loaded lazily inside the try would
+		// throw as well. That includes building the container.
+		$locator = new AutoloadSourceLocator(self::getContainer()->getByType(FileNodesFetcher::class), true);
+
+		$autoloader = static function (string $class): void {
+			if ($class !== 'NeverDefinedByAnyAutoloader') {
+				return;
+			}
+
+			throw new LogicException('this should not happen');
+		};
+		spl_autoload_register($autoloader);
+
+		try {
+			$reflection = $locator->locateIdentifier(
+				new DefaultReflector($locator),
+				new Identifier('NeverDefinedByAnyAutoloader', new IdentifierType(IdentifierType::IDENTIFIER_CLASS)),
+			);
+			$this->assertNull($reflection);
+		} finally {
+			spl_autoload_unregister($autoloader);
+		}
 	}
 
 	public static function getAdditionalConfigFiles(): array

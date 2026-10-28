@@ -15,10 +15,8 @@ use PHPStan\Analyser\ExprHandler\AssignHandler;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\NativeTypeExpr;
-use PHPStan\Node\Expr\PossiblyImpureCallExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
@@ -45,7 +43,6 @@ use PHPStan\Type\UnionType;
 use function array_slice;
 use function count;
 use function in_array;
-use function sprintf;
 use function str_starts_with;
 
 /**
@@ -65,8 +62,6 @@ final class FuncCallScopeEffectsHelper
 
 	public function __construct(
 		private OutputBufferHelper $outputBufferHelper,
-		#[AutowiredParameter]
-		private bool $rememberPossiblyImpureFunctionValues,
 		private AssignHandler $assignHandler,
 	)
 	{
@@ -127,20 +122,6 @@ final class FuncCallScopeEffectsHelper
 				$scope = $this->invalidateObjectArgs($nodeScopeResolver, $normalizedExpr, $argsResult, $scope, $storage, $nodeCallback);
 			}
 			$scope = $scope->invalidateExpression(new Variable('this'), true, null, $keepPropertyFetches);
-		}
-
-		if (
-			$functionReflection !== null
-			&& $parametersAcceptor !== null
-			&& $this->rememberPossiblyImpureFunctionValues
-			&& $functionReflection->hasSideEffects()->maybe()
-			&& !$functionReflection->isBuiltin()
-		) {
-			$scope = $scope->assignExpression(
-				new PossiblyImpureCallExpr($normalizedExpr, $normalizedExpr, sprintf('%s()', $functionReflection->getName())),
-				$parametersAcceptor->getReturnType(),
-				new MixedType(),
-			);
 		}
 
 		if (

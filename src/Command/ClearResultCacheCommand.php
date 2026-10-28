@@ -37,7 +37,7 @@ final class ClearResultCacheCommand extends Command
 				new InputOption('autoload-file', 'a', InputOption::VALUE_REQUIRED, 'Project\'s additional autoload file path'),
 				new InputOption('debug', mode: InputOption::VALUE_NONE, description: 'Show debug information - which file is analysed, do not catch internal errors'),
 				new InputOption('memory-limit', mode: InputOption::VALUE_REQUIRED, description: 'Memory limit for clearing result cache'),
-				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes'),
+				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes (pcov and uopz are still turned off)'),
 			]);
 	}
 

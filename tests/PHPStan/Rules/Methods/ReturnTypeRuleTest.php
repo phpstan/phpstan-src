@@ -478,9 +478,8 @@ class ReturnTypeRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-4590.php'], [
 			[
-				'Method Bug4590\OkResponse::testGenericStatic() should return static(Bug4590\OkResponse<array<string, string>>) but returns static(Bug4590\OkResponse<array{ok: \'hello\'}>).',
-				36,
-				'Template type T on class Bug4590\OkResponse is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+				'Method Bug4590\OkResponse::testGenericStaticMismatch() should return static(Bug4590\OkResponse<array<int, string>>) but returns static(Bug4590\OkResponse<array{ok: \'hello\'}>).',
+				44,
 			],
 		]);
 	}

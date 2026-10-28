@@ -5,9 +5,8 @@
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. processExpr() is registered as the
  * class's handler entry (Engine.h), so native callers dispatch to it
- * without an engine frame. The typeCallback is a native closure capturing
- * what the twin's arrow function captures ($this, $expr and the initializer
- * context); the result is built through pt_expression_result_create().
+ * without an engine frame. The literal's type is resolved eagerly and passed
+ * as both flavours; the result is built through pt_expression_result_create().
  *
  * SpecifiedTypes and InitializerExprTypeResolver are called through their
  * direct entries; InitializerExprContext, which stays PHP for now, through the
@@ -87,15 +86,19 @@ public:
 		(void) storage;
 		(void) nodeCallback;
 		(void) context;
-		// a literal's type and its initializer context (file/namespace/class) are
-		// lexical - identical on every scope - so build the context once here.
+		// a literal's type is lexical - identical on every scope and in both
+		// flavours - and cheaper to hold than a lazy typeCallback capturing the
+		// initializer context, which matters in large array literals whose item
+		// results all stay alive until the array's own type is resolved
 		zv::Val initializerExprContext = initializerExprContextFromScope(scope);
 		if (UNEXPECTED(initializerExprContext.isUndef())) return zv::Val();
+		zv::Val type = initializerExprType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, initializerExprContext.raw());
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
 
-		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, initializerExprContext.raw());
 		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		if (UNEXPECTED(specifyTypesCallback.isUndef())) return zv::Val();
-		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, typeCallback.raw(), specifyTypesCallback.raw());
+		pt_expression_result_args args(scope, scope, expr, false, false, NULL, NULL, NULL, specifyTypesCallback.raw());
+		args.withType(type.raw()).withNativeType(type.raw());
 		return pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 	}
 
@@ -107,18 +110,6 @@ public:
 
 private:
 	zend_object *self;
-
-	/* fn () => $this->initializerExprTypeResolver->getType($expr, $initializerExprContext)
-	 * — captures: $this, $expr, $initializerExprContext */
-	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
-	{
-		(void) argc;
-		(void) argv;
-		zval *handler = &captures[0];
-		zv::Val type = initializerExprType(OBJ_PROP_NUM(Z_OBJ_P(handler), slots::initializerExprTypeResolver), &captures[1], &captures[2]);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
-	}
 };
 
 } // namespace phpstanturbo

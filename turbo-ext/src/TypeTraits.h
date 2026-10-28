@@ -502,13 +502,21 @@ zv::Val pt_static_type_this_class_name(zend_object *self);
  * leaves pending propagates. state0/state1 are borrowed, NULL = null. */
 typedef void (*pt_native_callback)(zval *state0, zval *state1, uint32_t argc, zval *argv, zval *return_value);
 zv::Val pt_type_native_callback(pt_native_callback fn, zval *state0, zval *state1);
+/* whether TypeTraverser::map() reaches an instance of ce (a class or an
+ * interface) in the type, remembered on the type object under the fact bit
+ * (support.h, PT_TYPE_FACT_*) — a traversal whose callback changes only
+ * such instances maps a type without one to itself (TypeTraverser.cpp);
+ * false = pending exception */
+bool pt_type_contains_instance_of(zval *type, zend_class_entry *ce, uint32_t fact, bool &out);
+/* ... of a StaticType (ThisType and GenericStaticType included) — the only
+ * kind the transformStaticType() callbacks change (StaticType.cpp) */
+bool pt_type_contains_static(zval *type, bool &out);
 /* the holder's state slot (0 or 1), for reading a by-reference `use` back
  * after the call; borrowed */
 zval *pt_type_native_callback_state(zval *callback, int index);
-/* new IsSuperTypeOfResult($trinary, []) / new AcceptsResult($trinary, [])
- * for a PT_TRI_* value — fresh instances, as the accessories' `new` spells
- * them (not the create*() singletons); UNDEF = pending exception */
-zv::Val pt_type_new_is_super_type_of_result(zend_long value);
+/* new AcceptsResult($trinary, []) for a PT_TRI_* value — a fresh instance,
+ * as the accessories' `new` spells it (not the create*() singletons);
+ * UNDEF = pending exception */
 zv::Val pt_type_new_accepts_result(zend_long value);
 /* $result->and($other) on two result objects, natively for two
  * AcceptsResults; UNDEF = pending exception (also for an UNDEF $result) */
@@ -664,8 +672,8 @@ zv::Val pt_callable_traverse_parameters(zval *parameters, zend_fcall_info *fci, 
 /* the traverseSimultaneously() parameter mapping over the left and right
  * parameter lists of equal size; UNDEF = pending exception */
 zv::Val pt_callable_traverse_parameters_simultaneously(zval *leftParameters, zval *rightParameters, zend_fcall_info *fci, zend_fcall_info_cache *fcc);
-/* new IsSuperTypeOfResult($trinary, []) over a TrinaryLogic zval; UNDEF =
- * pending exception */
+/* IsSuperTypeOfResult::createFromTrinaryLogic($trinary) over a TrinaryLogic
+ * zval; UNDEF = pending exception */
 zv::Val pt_callable_is_super_type_of_result_of(zval *trinary);
 /* new OutOfClassScope(); UNDEF = pending exception */
 zv::Val pt_callable_out_of_class_scope();
@@ -1366,7 +1374,7 @@ zv::Val pt_type_utils_get_integer_ranges(zval *type);
 
 /* merged from the parallel port branch */
 /* {{{ direct dispatch (TypeOps.h): the callables native code hands around
- * — the PHPStanTurbo\NativeCallback and PHPStanTurbo\ObjectTypeCallback
+ * — the PHPStanTurbo\NativeClosure and PHPStanTurbo\NativeCallback
  * holders' __invoke() and TypeTraverser::mapInternal() /
  * traverseInternal() — entered without a frame by pt_call_fci() and
  * pt_type_call_callable() when a resolved callable is one of them */
@@ -1374,7 +1382,6 @@ zv::Val pt_type_utils_get_integer_ranges(zval *type);
 /* the handlers, for identifying a resolved callable (a Closure over one
  * carries the same handler in its function copy) */
 zif_handler pt_native_callback_invoke_handler();
-zif_handler pt_object_type_callback_invoke_handler(); /* ObjectType.cpp */
 zif_handler pt_type_traverser_map_internal_handler(); /* TypeTraverser.cpp */
 zif_handler pt_type_traverser_traverse_internal_handler();
 
@@ -1383,7 +1390,6 @@ zif_handler pt_type_traverser_traverse_internal_handler();
  * *retval released), and mapInternal($type) / traverseInternal($type) of
  * a TypeTraverser instance (UNDEF = pending exception) */
 [[nodiscard]] bool pt_native_callback_invoke(zend_object *holder, uint32_t argc, zval *argv, zval *retval);
-zv::Val pt_object_type_callback_invoke(zend_object *holder);
 zv::Val pt_type_traverser_map_internal(zend_object *traverser, zval *type);
 zv::Val pt_type_traverser_traverse_internal(zend_object *traverser, zval *type);
 
@@ -1392,10 +1398,9 @@ zv::Val pt_type_traverser_traverse_internal(zend_object *traverser, zval *type);
  * function's copy by its own trampoline, so a closure is recognised by the
  * copy's scope and name, a plain callable by its handler */
 zend_class_entry *pt_native_callback_ce();
-zend_class_entry *pt_object_type_callback_ce(); /* ObjectType.cpp */
 
 /* the direct call of a resolved internal callable (its function and bound
- * object) when it is one of the four; handled = false when it is not
+ * object) when it is one of them; handled = false when it is not
  * (nothing was called); false with handled = true when the call threw
  * (*retval released) */
 bool pt_direct_invoke(const zend_function *fn, zend_object *object, uint32_t argc, zval *argv, zval *retval, bool &handled);

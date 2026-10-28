@@ -90,7 +90,7 @@ public:
 		}
 		zend_long has = otherHasMethod(type);
 		if (UNEXPECTED(has < 0)) return zv::Val();
-		return pt_type_new_is_super_type_of_result(has);
+		return pt_type_is_super_type_of_result(has);
 	}
 
 	/* the union/intersection callback; yes for a callable other type when
@@ -128,7 +128,7 @@ public:
 		zend_long limit = instanceof_function(Z_OBJCE_P(otherType), pt_ce_has_method_type) ? PT_TRI_YES : PT_TRI_MAYBE;
 		zend_long has = otherHasMethod(otherType);
 		if (UNEXPECTED(has < 0)) return zv::Val();
-		return pt_type_new_is_super_type_of_result(pt_trinary_and(limit, has));
+		return pt_type_is_super_type_of_result(pt_trinary_and(limit, has));
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */

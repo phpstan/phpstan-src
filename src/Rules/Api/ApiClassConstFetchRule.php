@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Api;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -60,6 +61,12 @@ final class ApiClassConstFetchRule implements Rule
 			'https://github.com/phpstan/phpstan/discussions',
 		))->build();
 
+		if ($node->name->toLowerString() !== 'class' && $classReflection->hasConstant($node->name->toString())) {
+			if ($this->isConstantCovered($classReflection->getConstant($node->name->toString()))) {
+				return [];
+			}
+		}
+
 		$docBlock = $classReflection->getResolvedPhpDoc();
 		if ($docBlock !== null) {
 			foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
@@ -86,6 +93,26 @@ final class ApiClassConstFetchRule implements Rule
 		}
 
 		return [$ruleError];
+	}
+
+	private function isConstantCovered(ClassConstantReflection $constantReflection): bool
+	{
+		$classDocBlock = $constantReflection->getDeclaringClass()->getResolvedPhpDoc();
+		if ($classDocBlock !== null) {
+			foreach ($classDocBlock->getPhpDocNodes() as $phpDocNode) {
+				$apiTags = $phpDocNode->getTagsByName('@api');
+				if (count($apiTags) > 0) {
+					return true;
+				}
+			}
+		}
+
+		$constantDocComment = $constantReflection->getDocComment();
+		if ($constantDocComment === null) {
+			return false;
+		}
+
+		return str_contains($constantDocComment, '@api');
 	}
 
 }

@@ -26,7 +26,6 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 				new ConstantConditionRuleHelper(
 					$this->treatPhpDocTypesAsCertain,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
@@ -38,7 +37,6 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 					self::createReflectionProvider(),
 					$this->treatPhpDocTypesAsCertain,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
@@ -50,7 +48,6 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 					self::createReflectionProvider(),
 					$this->treatPhpDocTypesAsCertain,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
@@ -62,7 +59,6 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 					self::createReflectionProvider(),
 					$this->treatPhpDocTypesAsCertain,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
@@ -185,7 +181,7 @@ class ElseIfConstantConditionRuleTest extends RuleTestCase
 			[
 				'Elseif condition is always false.',
 				13,
-				"• Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.\n• If Bug6947\HelloWorld::getValue() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration. Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>",
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

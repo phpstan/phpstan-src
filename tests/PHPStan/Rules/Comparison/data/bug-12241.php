@@ -18,3 +18,10 @@ function (Foo $foo): string {
 		Baz::class => 'Baz',
 	};
 };
+
+function (Foo $foo): string {
+	return match (get_class($foo)) {
+		Bar::class => 'Bar',
+		Baz::class => 'Baz',
+	};
+};

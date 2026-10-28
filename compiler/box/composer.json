@@ -2,7 +2,7 @@
 	"require": {
 		"humbug/box": "^4.6",
 		"cweagans/composer-patches": "^1.7",
-		"jetbrains/phpstorm-stubs": "dev-master"
+		"jetbrains/phpstorm-stubs": "dev-master as v2026.x-dev"
 	},
 	"config": {
 		"platform": {

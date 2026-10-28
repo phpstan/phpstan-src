@@ -101,7 +101,7 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return new IsSuperTypeOfResult($type->isLiteralString(), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isLiteralString());
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -110,9 +110,8 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isLiteralString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

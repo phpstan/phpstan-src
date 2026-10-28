@@ -35,6 +35,14 @@ class OkResponse
 	{
 		return new static(["ok" => "hello"]);
 	}
+
+	/**
+	 * @return static<array<int, string>>
+	 */
+	public static function testGenericStaticMismatch()
+	{
+		return new static(["ok" => "hello"]);
+	}
 }
 
 class Controller

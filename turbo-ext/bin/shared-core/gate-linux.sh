@@ -5,7 +5,7 @@
 # compares the results function by function.
 S=${SHARED_CORE_WORK_DIR:?set SHARED_CORE_WORK_DIR to a scratch directory}
 WT=$(cd "$(dirname "$0")/../.." && pwd)
-VERSIONS=${GATE_VERSIONS:-8.3 8.4 8.5 8.6}
+VERSIONS=${GATE_VERSIONS:-8.2 8.3 8.4 8.5 8.6}
 JOBS=${GATE_JOBS:-3} # per version; the versions build at the same time
 # GATE_PLATFORM (e.g. linux/amd64) runs the images of another architecture —
 # code generation differs between them, and CI gates on x86_64

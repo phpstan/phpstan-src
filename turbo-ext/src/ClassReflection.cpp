@@ -2168,10 +2168,12 @@ public:
 		zv::Arr cases = zv::Arr::create(countOf(reflectionCases.ref()));
 		if (reflectionCases.ref().isArray()) {
 			for (auto entry : zv::ArrRef(reflectionCases.raw())) {
-				zv::Val valueType = enumCaseValueType(entry.value(), initializerExprContext.raw());
-				if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 				zv::Val caseName = callOn(entry.value(), PT_LC("getname"), 0, NULL);
 				if (UNEXPECTED(caseName.isUndef())) return zv::Val();
+				zend_string *caseNameStr = zval_get_string(caseName.raw());
+				zv::Val valueType = enumCaseValueType(entry.value(), caseNameStr, initializerExprContext.raw());
+				zend_string_release(caseNameStr);
+				if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 				zv::Val attributes = enumCaseAttributes(entry.value());
 				if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 				zv::Val caseReflection = newEnumCaseReflection(entry.value(), valueType.ref(), attributes.ref());
@@ -2228,7 +2230,7 @@ public:
 		ZVAL_STR(&arg, name);
 		zv::Val case_ = reflectionCall(PT_LC("getcase"), 1, &arg);
 		if (UNEXPECTED(case_.isUndef())) return zv::Val();
-		zv::Val valueType = enumCaseValueType(case_.ref(), NULL);
+		zv::Val valueType = enumCaseValueType(case_.ref(), name, NULL);
 		if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 		zv::Val attributes = enumCaseAttributes(case_.ref());
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
@@ -2237,10 +2239,11 @@ public:
 	}
 
 	/* $case instanceof ReflectionEnumBackedCase && $case->hasBackingValue()
-	 * ? $this->initializerExprTypeResolver->getType($case->getValueExpression(),
-	 * $context) : null — $context NULL where the twin builds it inside the
-	 * branch (getEnumCase()), the loop's shared one otherwise */
-	zv::Val enumCaseValueType(zv::Ref case_, zval *context)
+	 * ? $this->initializerExprTypeResolver->getEnumCaseValueType($this->getName(),
+	 * $caseName, $case->getValueExpression(), $context) : null — $context NULL
+	 * where the twin builds it inside the branch (getEnumCase()), the loop's
+	 * shared one otherwise */
+	zv::Val enumCaseValueType(zv::Ref case_, zend_string *caseName, zval *context)
 	{
 		bool isBackedCase;
 		if (UNEXPECTED(!pt_type_instanceof(case_.raw(), PT_CLASS_REFLECTION_ENUM_BACKED_CASE, isBackedCase))) return zv::Val();
@@ -2258,7 +2261,16 @@ public:
 			context = ownContext.raw();
 		}
 
-		return initializerExprType(valueExpression.raw(), context);
+		zv::Val className = getName();
+		if (UNEXPECTED(className.isUndef())) return zv::Val();
+		zend_object *object = service(PT_CR_PROP_INITIALIZER_EXPR_TYPE_RESOLVER, "initializerExprTypeResolver");
+		if (UNEXPECTED(object == NULL)) return zv::Val();
+		zval resolver;
+		ZVAL_OBJ(&resolver, object);
+		zend_string *classNameStr = zval_get_string(className.raw());
+		zv::Val valueType = pt_initializer_expr_type_resolver_get_enum_case_value_type(&resolver, classNameStr, caseName, valueExpression.raw(), context);
+		zend_string_release(classNameStr);
+		return valueType;
 	}
 
 	/* $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(),
@@ -3985,9 +3997,23 @@ public:
 		zv::Args args{fileName.raw(), name.raw(), zv::null, zv::null, slot(PT_CR_PROP_REFLECTION_DOC_COMMENT).raw()};
 		zv::Val resolved = callService(PT_CR_PROP_FILE_TYPE_MAPPER, "fileTypeMapper", PT_LC("getresolvedphpdoc"), 5, args);
 		if (UNEXPECTED(resolved.isUndef())) return zv::Val();
+		bool beingCreated;
+		if (UNEXPECTED(!isClassNameScopeBeingCreated(beingCreated))) return zv::Val();
+		if (beingCreated) return resolved;
 		writeSlot(PT_CR_PROP_RESOLVED_PHP_DOC_BLOCK, zv::Val::copyOf(resolved.ref()));
 
 		return resolved;
+	}
+
+	/* $this->fileTypeMapper->isClassNameScopeBeingCreated($this->getName()); false = pending exception */
+	bool isClassNameScopeBeingCreated(bool &out)
+	{
+		zv::Val name = getName();
+		if (UNEXPECTED(name.isUndef())) return false;
+		zv::Val result = callService(PT_CR_PROP_FILE_TYPE_MAPPER, "fileTypeMapper", PT_LC("isclassnamescopebeingcreated"), 1, name.raw());
+		if (UNEXPECTED(result.isUndef())) return false;
+		out = result.ref().isTrue();
+		return true;
 	}
 
 	/* ?ResolvedPhpDocBlock */
@@ -4318,7 +4344,14 @@ public:
 
 			zv::Val templateTags = getTemplateTags();
 			if (UNEXPECTED(templateTags.isUndef())) return false;
-			writeSlot(PT_CR_PROP_IS_GENERIC, zv::Val::boolean(countOf(templateTags.ref()) > 0));
+			bool isGeneric_ = countOf(templateTags.ref()) > 0;
+			bool beingCreated;
+			if (UNEXPECTED(!isClassNameScopeBeingCreated(beingCreated))) return false;
+			if (beingCreated) {
+				out = isGeneric_;
+				return true;
+			}
+			writeSlot(PT_CR_PROP_IS_GENERIC, zv::Val::boolean(isGeneric_));
 		}
 
 		out = slot(PT_CR_PROP_IS_GENERIC).isTrue();

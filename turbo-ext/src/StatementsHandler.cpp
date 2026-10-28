@@ -656,6 +656,277 @@ public:
 		return statementResult;
 	}
 
+	/* Mirrors processLoopPassStmtNodes(): one loop convergence pass that
+	 * re-walks only the statements whose entry differs from the previous
+	 * pass's; $previous IS_NULL for the first pass, record receives this
+	 * pass's [entries, recording]. UNDEF = pending exception */
+	zv::Val processLoopPassStmtNodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
+	{
+		bool isRecording = Z_TYPE_P(nodeCallback) == IS_OBJECT && instanceof_function(Z_OBJCE_P(nodeCallback), pt_ce_recording_node_callback);
+		return walkAgainstPreviousPass(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, previous, isRecording ? nodeCallback : NULL, false, &record);
+	}
+
+	/* Mirrors processLoopFinalStmtNodes(). UNDEF = pending exception */
+	zv::Val processLoopFinalStmtNodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+	{
+		return walkAgainstPreviousPass(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass, nodeCallback, true, NULL);
+	}
+
+	/* Mirrors the private walkAgainstPreviousPass(): replayTarget NULL for
+	 * none; record (a pass's [entries, recording]) is left alone by a final
+	 * walk. UNDEF = pending exception */
+	zv::Val walkAgainstPreviousPass(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zval *replayTarget, bool finalWalk, zv::Val *record)
+	{
+		bool isRecording = !finalWalk && Z_TYPE_P(nodeCallback) == IS_OBJECT && instanceof_function(Z_OBJCE_P(nodeCallback), pt_ce_recording_node_callback);
+		zval *recording = isRecording ? nodeCallback : NULL;
+		bool hasPrevious = previous != NULL && Z_TYPE_P(previous) == IS_ARRAY;
+		zval *previousEntries = hasPrevious ? zend_hash_index_find(Z_ARRVAL_P(previous), 0) : NULL;
+		zval *previousRecording = hasPrevious ? zend_hash_index_find(Z_ARRVAL_P(previous), 1) : NULL;
+		if (previousRecording != NULL && Z_TYPE_P(previousRecording) == IS_NULL) previousRecording = NULL;
+		// a replayed statement's emissions come from the previous recording;
+		// labels make the statement order no straight line
+		bool canReplay = hasPrevious && previousEntries != NULL && (replayTarget == NULL || previousRecording != NULL);
+		zv::Val stmtsHeld = zv::Val::copyOf(zv::Ref(stmts));
+		if (canReplay) {
+			bool hasLabels;
+			if (UNEXPECTED(!containsLabels(stmtsHeld.raw(), hasLabels))) return zv::Val();
+			canReplay = !hasLabels;
+		}
+		HashTable *stmtsTable = Z_ARRVAL_P(stmtsHeld.raw());
+		zend_long stmtCount = zend_hash_num_elements(stmtsTable);
+		// the last statement a final walk walks whatever the state
+		zend_long lastWalked = -1;
+		if (canReplay && finalWalk) {
+			for (zend_long i = stmtCount - 1; i >= 0; i--) {
+				zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
+				if (UNEXPECTED(stmt == NULL)) {
+					zend_throw_error(NULL, "phpstan_turbo: the loop body's statements are not a list");
+					return zv::Val();
+				}
+				ZVAL_DEREF(stmt);
+				bool sensitive;
+				if (UNEXPECTED(!pt_node_scope_resolver_is_context_sensitive_statement(nodeScopeResolver, stmt, sensitive))) return zv::Val();
+				if (sensitive) {
+					lastWalked = i;
+					break;
+				}
+			}
+		}
+		zv::Val state = pt_statement_list_walk_state_new(scope);
+		if (UNEXPECTED(state.isUndef())) return zv::Val();
+		zv::Arr entries = zv::Arr::create(finalWalk ? 0 : (uint32_t) stmtCount + 1);
+		for (zend_long i = 0; i < stmtCount; i++) {
+			zend_long entryCount = 0;
+			if (!finalWalk) {
+				zv::Val entry = snapshotPassEntry(state.raw(), recording);
+				if (UNEXPECTED(entry.isUndef())) return zv::Val();
+				entryCount = zval_get_long(entryOffset(entry.raw()));
+				entries.push(std::move(entry));
+			}
+			zval *stmt = zend_hash_index_find(stmtsTable, (zend_ulong) i);
+			if (UNEXPECTED(stmt == NULL)) {
+				zend_throw_error(NULL, "phpstan_turbo: the loop body's statements are not a list");
+				return zv::Val();
+			}
+			ZVAL_DEREF(stmt);
+			bool mayReplay = canReplay;
+			if (mayReplay && i <= lastWalked) {
+				bool sensitive;
+				if (UNEXPECTED(!pt_node_scope_resolver_is_context_sensitive_statement(nodeScopeResolver, stmt, sensitive))) return zv::Val();
+				mayReplay = !sensitive;
+			}
+			if (mayReplay) {
+				zval *recordedEntryPair = entryAt(previousEntries, i);
+				zval *recordedExitPair = recordedEntryPair != NULL ? entryAt(previousEntries, i + 1) : NULL;
+				if (UNEXPECTED(recordedExitPair == NULL)) return zv::Val();
+				zval *recordedEntry = entryState(recordedEntryPair);
+				zend_long offset = zval_get_long(entryOffset(recordedEntryPair));
+				zval *recordedExit = entryState(recordedExitPair);
+				zend_long nextOffset = zval_get_long(entryOffset(recordedExitPair));
+				zend_object *stateObject = Z_OBJ_P(state.raw());
+				zend_object *recordedEntryObject = Z_OBJ_P(recordedEntry);
+				zv::Val differingRoots = zv::Val::null();
+				bool stateTerminated = Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+				bool entryTerminated = Z_TYPE_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+				if (stateTerminated == entryTerminated) {
+					differingRoots = pt_mutating_scope_get_differing_variable_roots(Z_OBJ_P(OBJ_PROP_NUM(stateObject, stateSlots::scope)), Z_OBJ_P(OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope)));
+					if (UNEXPECTED(differingRoots.isUndef())) return zv::Val();
+				}
+				if (i > lastWalked && differingRoots.ref().isArray() && zend_hash_num_elements(Z_ARRVAL_P(differingRoots.raw())) == 0) {
+					// converged with the previous pass: the rest of it stands
+					zval *recordedEndPair = entryAt(previousEntries, stmtCount);
+					if (UNEXPECTED(recordedEndPair == NULL)) return zv::Val();
+					zval *recordedEnd = entryState(recordedEndPair);
+					zend_long endOffset = zval_get_long(entryOffset(recordedEndPair));
+					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, endOffset, replayTarget, storage, scope))) return zv::Val();
+					if (!finalWalk) {
+						// the previous pass's entries accumulated its own
+						// points before statement $i: rebase them onto this pass's
+						zval *entryPair = entryAt(entries.raw(), i);
+						if (UNEXPECTED(entryPair == NULL)) return zv::Val();
+						zv::Val entryStateHeld = zv::Val::copyOf(zv::Ref(entryState(entryPair)));
+						for (zend_long j = i + 1; j <= stmtCount; j++) {
+							zval *pair = entryAt(previousEntries, j);
+							if (UNEXPECTED(pair == NULL)) return zv::Val();
+							zval *recordedState = entryState(pair);
+							zv::Val adoptedState = cloneObject(entryStateHeld.raw());
+							if (UNEXPECTED(adoptedState.isUndef())) return zv::Val();
+							if (UNEXPECTED(!appendRecordedStatementResults(adoptedState.raw(), recordedEntry, recordedState))) return zv::Val();
+							zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(adoptedState.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(recordedState), stateSlots::scope))));
+							zv::Arr shifted = zv::Arr::create(2);
+							shifted.push(std::move(adoptedState));
+							shifted.push(zv::Val::integer(entryCount + zval_get_long(entryOffset(pair)) - offset));
+							entries.push(zv::Val(std::move(shifted)));
+						}
+					}
+					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, recordedEnd))) return zv::Val();
+					zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(recordedEnd), stateSlots::scope))));
+					if (!finalWalk) *record = passRecord(zv::Val(std::move(entries)), recording);
+					return pt_statement_list_walk_state_to_result(state.raw());
+				}
+				bool reWalk = differingRoots.isNull();
+				if (!reWalk) {
+					zv::Val mentioned = withByRefClosureHolders(OBJ_PROP_NUM(stateObject, stateSlots::scope), differingRoots.raw());
+					if (UNEXPECTED(mentioned.isUndef())) return zv::Val();
+					if (UNEXPECTED(!statementMentionsAnyVariable(stmt, mentioned.raw(), reWalk))) return zv::Val();
+				}
+				if (!reWalk) {
+					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, nextOffset, replayTarget, storage, scope))) return zv::Val();
+					zend_long exitPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)));
+					zend_long throwPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::throwPoints)));
+					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, recordedExit))) return zv::Val();
+					zval *recordedEntryScope = OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope);
+					if (UNEXPECTED(!rebaseAppendedPoints(state.raw(), exitPointCount, throwPointCount, recordedEntryScope))) return zv::Val();
+					zval *currentScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
+					zv::Val delta = pt_mutating_scope_with_recorded_statement_delta(Z_OBJ_P(currentScope), Z_OBJ_P(recordedEntryScope), Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(recordedExit), stateSlots::scope)));
+					if (UNEXPECTED(delta.isUndef())) return zv::Val();
+					zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope)).assign(std::move(delta));
+					continue;
+				}
+			}
+			if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state.raw(), storage, nodeCallback, context, false))) return zv::Val();
+		}
+		if (!finalWalk) {
+			zv::Val last = snapshotPassEntry(state.raw(), recording);
+			if (UNEXPECTED(last.isUndef())) return zv::Val();
+			entries.push(std::move(last));
+			*record = passRecord(zv::Val(std::move(entries)), recording);
+		}
+		return pt_statement_list_walk_state_to_result(state.raw());
+	}
+
+	/* [clone $state, $recording !== null ? $recording->count() : 0] */
+	static zv::Val snapshotPassEntry(zval *state, zval *recording)
+	{
+		if (recording != NULL) return snapshotEntry(state, recording);
+		zv::Val cloned = cloneObject(state);
+		if (UNEXPECTED(cloned.isUndef())) return zv::Val();
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(std::move(cloned));
+		pair.push(zv::Val::integer(0));
+		return zv::Val(std::move(pair));
+	}
+
+	/* [$entries, $recording] */
+	static zv::Val passRecord(zv::Val entries, zval *recording)
+	{
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(std::move(entries));
+		if (recording != NULL) {
+			pair.push(zv::Val::copyOf(zv::Ref(recording)));
+		} else {
+			pair.push(zv::Val::null());
+		}
+		return zv::Val(std::move(pair));
+	}
+
+	/* Mirrors the private rebaseAppendedPoints(); false = pending exception */
+	[[nodiscard]] static bool rebaseAppendedPoints(zval *state, zend_long exitPointCount, zend_long throwPointCount, zval *recordedEntry)
+	{
+		zend_object *stateObject = Z_OBJ_P(state);
+		zv::Val entry = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)));
+		for (uint32_t pointsSlot : { stateSlots::exitPoints, stateSlots::throwPoints }) {
+			zend_long from = pointsSlot == stateSlots::exitPoints ? exitPointCount : throwPointCount;
+			zval *points = OBJ_PROP_NUM(stateObject, pointsSlot);
+			zend_long count = zend_hash_num_elements(Z_ARRVAL_P(points));
+			for (zend_long i = from; i < count; i++) {
+				zval *point = zend_hash_index_find(Z_ARRVAL_P(points), (zend_ulong) i);
+				if (UNEXPECTED(point == NULL)) {
+					zend_throw_error(NULL, "phpstan_turbo: the walk state's points are not a list");
+					return false;
+				}
+				zv::Val pointScope = pt_type_call(Z_OBJ_P(point), PT_LC("getscope"), 0, NULL);
+				if (UNEXPECTED(pointScope.isUndef())) return false;
+				zv::Val rebasedScope = pt_mutating_scope_with_recorded_statement_delta(Z_OBJ_P(entry.raw()), Z_OBJ_P(recordedEntry), Z_OBJ_P(pointScope.raw()));
+				if (UNEXPECTED(rebasedScope.isUndef())) return false;
+				zv::Val rebased = pt_type_call(Z_OBJ_P(point), PT_LC("withscope"), 1, rebasedScope.raw());
+				if (UNEXPECTED(rebased.isUndef())) return false;
+				points = OBJ_PROP_NUM(stateObject, pointsSlot);
+				SEPARATE_ARRAY(points);
+				zend_hash_index_update(Z_ARRVAL_P(points), (zend_ulong) i, rebased.raw());
+				ZVAL_UNDEF(rebased.raw());
+			}
+		}
+		return true;
+	}
+
+	/* Mirrors the private withByRefClosureHolders(); UNDEF = pending exception */
+	static zv::Val withByRefClosureHolders(zval *scope, zval *variableNames)
+	{
+		zv::Val names = zv::Val::copyOf(zv::Ref(variableNames));
+		if (zend_hash_num_elements(Z_ARRVAL_P(names.raw())) == 0) return names;
+		HashTable differing;
+		zend_hash_init(&differing, 8, NULL, NULL, 0);
+		for (auto entry : zv::ArrRef(variableNames)) {
+			zval *name = entry.value().deref().raw();
+			if (Z_TYPE_P(name) == IS_STRING) zend_hash_add_empty_element(&differing, Z_STR_P(name));
+		}
+		bool ok = true;
+		for (int kind = 0; kind < 2 && ok; kind++) {
+			zv::Val defined = kind == 0 ? pt_mutating_scope_get_defined_variables(Z_OBJ_P(scope)) : pt_mutating_scope_get_maybe_defined_variables(Z_OBJ_P(scope));
+			if (UNEXPECTED(defined.isUndef())) { ok = false; break; }
+			for (auto entry : zv::ArrRef(defined.raw())) {
+				zval *holder = entry.value().deref().raw();
+				if (Z_TYPE_P(holder) != IS_STRING || zend_hash_exists(&differing, Z_STR_P(holder))) continue;
+				zv::Val type = pt_mutating_scope_get_variable_type(Z_OBJ_P(scope), Z_STR_P(holder));
+				if (UNEXPECTED(type.isUndef())) { ok = false; break; }
+				if (!type.ref().isObject()) continue;
+				zv::Val members;
+				if (instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_union_type)) {
+					members = pt_union_type_get_types(Z_OBJ_P(type.raw()));
+					if (UNEXPECTED(members.isUndef())) { ok = false; break; }
+				} else {
+					zv::Arr single = zv::Arr::create(1);
+					single.push(zv::Val::copyOf(type.ref()));
+					members = zv::Val(std::move(single));
+				}
+				bool captures = false;
+				for (auto member : zv::ArrRef(members.raw())) {
+					zval *memberType = member.value().deref().raw();
+					if (Z_TYPE_P(memberType) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(memberType), pt_ce_closure_type)) continue;
+					zv::Val byRef = pt_closure_type_get_by_ref_use_types(memberType);
+					if (UNEXPECTED(byRef.isUndef())) { ok = false; break; }
+					for (auto use : zv::ArrRef(byRef.raw())) {
+						if (use.hasStringKey() && zend_hash_exists(&differing, use.stringKey())) {
+							captures = true;
+							break;
+						}
+					}
+					if (captures) break;
+				}
+				if (!ok) break;
+				if (captures) {
+					zv::Arr list = zv::Arr::adoptTable(zend_array_dup(Z_ARRVAL_P(names.raw())));
+					list.push(zv::Ref(holder));
+					names = zv::Val(std::move(list));
+				}
+			}
+			if (!ok) break;
+		}
+		zend_hash_destroy(&differing);
+		return ok ? std::move(names) : zv::Val();
+	}
+
 	/* Mirrors getVariableMentionFlow(). */
 	zv::Val getVariableMentionFlow(zval *stmt)
 	{
@@ -3225,6 +3496,28 @@ zv::Val pt_statements_handler_do_process_stmt_nodes(zval *handler, zval *nodeSco
 	return pt_type_call(Z_OBJ_P(handler), PT_LC("doprocessstmtnodes"), 7, argv);
 }
 
+zv::Val pt_statements_handler_process_loop_final_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+{
+	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).processLoopFinalStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass);
+	zv::Args argv{nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass};
+	return pt_type_call(Z_OBJ_P(handler), PT_LC("processloopfinalstmtnodes"), 8, argv);
+}
+
+zv::Val pt_statements_handler_process_loop_pass_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
+{
+	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).processLoopPassStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+	zval recordRef;
+	ZVAL_NULL(&recordRef);
+	ZVAL_MAKE_REF(&recordRef);
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, previous != NULL ? previous : &null, &recordRef};
+	zv::Val result = pt_type_call(Z_OBJ_P(handler), PT_LC("processlooppassstmtnodes"), 9, argv);
+	record = zv::Val::copyOf(zv::Ref(Z_REFVAL(recordRef)));
+	zval_ptr_dtor(&recordRef);
+	return result;
+}
+
 zv::Val pt_statements_handler_process_stmt_var_annotation(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback)
 {
 	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).processStmtVarAnnotation(nodeScopeResolver, scope, storage, stmt, defaultExpr, nodeCallback);
@@ -3310,6 +3603,41 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(StatementsHandler(Z_OBJ_P(ZEND_THIS)).doProcessStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context));
+	});
+
+	cls.method(sigs::processLoopPassStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *nodeScopeResolver, *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *previous, *recordRef;
+		ZEND_PARSE_PARAMETERS_START(9, 9)
+			Z_PARAM_OBJECT(nodeScopeResolver)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY_OR_NULL(previous)
+			Z_PARAM_ZVAL(recordRef)
+		ZEND_PARSE_PARAMETERS_END();
+		zv::Val record = zv::Val::null();
+		zv::Val result = StatementsHandler(Z_OBJ_P(ZEND_THIS)).processLoopPassStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
+		ZEND_TRY_ASSIGN_REF_COPY(recordRef, record.raw());
+		PT_RETURN_VAL(std::move(result));
+	});
+
+	cls.method(sigs::processLoopFinalStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *nodeScopeResolver, *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *lastPass;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
+			Z_PARAM_OBJECT(nodeScopeResolver)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY(lastPass)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(StatementsHandler(Z_OBJ_P(ZEND_THIS)).processLoopFinalStmtNodes(nodeScopeResolver, parentNode, stmts, scope, storage, nodeCallback, context, lastPass));
 	});
 
 	cls.method(sigs::getVariableMentionFlow, [](INTERNAL_FUNCTION_PARAMETERS) {

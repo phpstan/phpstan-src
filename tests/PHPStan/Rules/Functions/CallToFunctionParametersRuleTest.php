@@ -3325,4 +3325,73 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15432ImplicitMixed(): void
+	{
+		// the closures are typed from the walked sibling items - never from
+		// a mixed stand-in that the implicit-mixed checks would report
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15432-implicit-mixed.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15432(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15432.php'], [
+			[
+				'Parameter #1 $callbacks of function Bug15432Rule\\consume expects array<\'closure\'|\'method\', callable(): void>, array{method: Closure(int): void, closure: Closure(): void} given.',
+				34,
+				'Parameter #1 $i of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+			],
+			[
+				'Parameter #1 $callbacks of function Bug15432Rule\\consumeIntToString expects array<\'closure\'|\'method\', callable(int): string>, array{method: Closure(string): int, closure: Closure(int): decimal-int-string} given.',
+				111,
+			],
+		]);
+	}
+
+	public function testBug15487(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15487.php'], $this->getBug15487Errors());
+	}
+
+	public function testBug15487ImplicitMixed(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15487.php'], $this->getBug15487Errors());
+	}
+
+	/**
+	 * @return list<array{0: string, 1: int, 2?: string|null}>
+	 */
+	private function getBug15487Errors(): array
+	{
+		return [
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\PositiveIntArrBox given.',
+				56,
+				'Template type T on class Bug15487\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\Box<array<int<1, max>>> given.',
+				57,
+				'Template type T on class Bug15487\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\ArrBox given.',
+				58,
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrBox expects Bug15487\\Box<array<int>>, Bug15487\\Box<array<mixed>> given.',
+				59,
+			],
+			[
+				'Parameter #1 $b of function Bug15487\\wantsIntArrCovariantBox expects Bug15487\\CovariantBox<array<int>>, Bug15487\\ArrCovariantBox given.',
+				77,
+			],
+		];
+	}
+
 }

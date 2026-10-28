@@ -40,6 +40,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Operators/data/invalid-assign-var.php \
 		--exclude tests/PHPStan/Rules/Functions/data/arrow-function-nullsafe-by-ref.php \
 		--exclude tests/PHPStan/Levels/data/namedArguments.php \
+		--exclude tests/PHPStan/Reflection/BetterReflection/SourceLocator/data/symbol-finder/class-name-before-global-constant.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/continue-break-property-hook.php \
 		--exclude tests/PHPStan/Rules/Keywords/data/goto-undefined-label.php \
@@ -177,6 +178,14 @@ phpstan-generate-baseline-php:
 phpstan-pro:
 	php -d memory_limit=450M bin/phpstan --pro
 
+# Regenerates src/Type/Regex/Parser/RegexParser.php from
+# build/regex-parser/RegexGrammar.pp3 with the phplrt compiler. The compiler
+# needs PHP 8.4+, the generated parser only needs the phplrt runtime.
+.PHONY: regex-parser
+regex-parser:
+	composer install --working-dir build/regex-parser
+	php build/regex-parser/generate.php
+
 name-collision:
 	php vendor/bin/detect-collisions --configuration build/collision-detector.json
 
@@ -225,56 +234,29 @@ download-coverage:
 # `make build-turbo PHP_CONFIG=/path/to/php-config` (command-line variables
 # reach the sub-make through MAKEFLAGS). Nothing is installed: load the
 # result with `php -d extension=...`, or from the ini scan dir when the run
-# re-executes itself (TurboProcessRestarter drops a -d extension).
+# re-executes itself (RestartManager drops a -d extension).
 TURBO_JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
 
 .PHONY: build-turbo
 build-turbo:
 	$(MAKE) -C turbo-ext -j$(TURBO_JOBS)
 	@# The binary bakes its version from `git log -- turbo-ext/src`, and
-	@# TurboExtensionEnabler activates only the version it expects — a build
-	@# from a shallow clone ("dev"), or one made between a turbo-ext/src
-	@# commit and its `make bump-turbo`, loads but stays inactive, which
-	@# otherwise only shows up as "nothing got faster".
+	@# TurboExtensionEnabler activates only the version the last autoloader
+	@# dump wrote into vendor/turbo-extension-version.php from the same git
+	@# log — regenerate it, so that a build after a turbo-ext/src commit is
+	@# expected without another `composer dump-autoload`.
+	@php build/generate-turbo-manifest.php > /dev/null
+	@# A build from a checkout without git history ("dev") still loads but
+	@# stays inactive, which otherwise only shows up as "nothing got faster".
 	@# -n: the machine's php.ini usually loads the extension already, and
 	@# the "Module is already loaded" warning that a second -d then prints
 	@# goes to stdout, i.e. into the version being read. An ini-less probe
 	@# also guarantees the version reported is the binary just built.
 	@BUILT="$$(php -n -d display_errors=stderr -d extension="$(CURDIR)/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");' 2>/dev/null)"; \
-	EXPECTED="$$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"; \
+	EXPECTED="$$(php -r 'echo require "vendor/turbo-extension-version.php";')"; \
 	echo "built $(CURDIR)/turbo-ext/phpstan_turbo.so$${BUILT:+ (version $$BUILT)}"; \
 	if [ -n "$$BUILT" ] && [ "$$BUILT" != "$$EXPECTED" ]; then \
-		echo "warning: TurboExtensionEnabler expects $$EXPECTED, so this build would load but stay inactive (run 'make bump-turbo' once the turbo-ext/src commit is in)"; \
-	fi
-
-# The expected turbo version is the short SHA of the last commit touching
-# turbo-ext/src (enforced by the phar.yml turbo-version job), so the bump can
-# never be part of the commit it points at. Refreshes an unpushed bump commit
-# in place — after a rebase gives the watched commit a new SHA, rerunning
-# this amends instead of stacking a second bump commit.
-.PHONY: bump-turbo
-bump-turbo:
-	@if [ -n "$$(git status --porcelain -- turbo-ext/src)" ]; then \
-		echo "turbo-ext/src has uncommitted changes — commit them first, the expected version is the short SHA of the last commit touching turbo-ext/src"; \
-		exit 1; \
-	fi; \
-	if ! git diff --quiet HEAD -- src/Turbo/TurboExtensionEnabler.php; then \
-		echo "src/Turbo/TurboExtensionEnabler.php has uncommitted changes — commit or stash them first"; \
-		exit 1; \
-	fi; \
-	EXPECTED="$$(git log -1 --format=%H -- turbo-ext/src | cut -c1-7)"; \
-	CURRENT="$$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"; \
-	if [ "$$EXPECTED" = "$$CURRENT" ]; then \
-		echo "TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION is already $$EXPECTED"; \
-		exit 0; \
-	fi; \
-	sed -i '' -e "s/EXPECTED_EXTENSION_VERSION = '$$CURRENT'/EXPECTED_EXTENSION_VERSION = '$$EXPECTED'/" src/Turbo/TurboExtensionEnabler.php; \
-	if [ "$$(git log -1 --format=%s)" = "Bump expected turbo version" ] && [ -z "$$(git branch -r --contains HEAD)" ]; then \
-		git commit --amend --no-edit -- src/Turbo/TurboExtensionEnabler.php; \
-		echo "amended the unpushed bump commit: $$CURRENT -> $$EXPECTED"; \
-	else \
-		git commit -m "Bump expected turbo version" -- src/Turbo/TurboExtensionEnabler.php; \
-		echo "bumped: $$CURRENT -> $$EXPECTED"; \
+		echo "warning: TurboExtensionEnabler expects $${EXPECTED:-no version (no git history)}, so this build would load but stay inactive"; \
 	fi
 
 # Static analysis of the native extension's hand-written C++ sources. The

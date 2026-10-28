@@ -18,14 +18,56 @@
 
 #include <type_traits>
 
+/* zend_fcall_info_cache in 8.3's layout over older headers (support.h) */
+#ifdef PT_ABI_FCALL_INFO_CACHE_BEFORE_83
+#undef _zend_fcall_info_cache
+#undef zend_fcall_info_cache
+struct _zend_fcall_info_cache : pt_abi_zend_fcall_info_cache_before_83_t
+{
+	zend_object *closure;
+};
+typedef struct _zend_fcall_info_cache zend_fcall_info_cache;
+#endif
+
+/* The C stack limit arrived in PHP 8.3 (zend_call_stack.h, EG(stack_base),
+ * EG(stack_limit)). Against older headers, the two inline helpers the
+ * shared code uses are spelled out as 8.3 has them, and the limit is
+ * Abi.cpp's own (pt_abi_globals::eg_stack_limit). */
+#if PHP_VERSION_ID >= 80300
+#ifdef ZEND_CHECK_STACK_LIMIT
+#include "zend_call_stack.h"
+#endif
+#else
+#define ZEND_CHECK_STACK_LIMIT 1
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+static zend_always_inline void *zend_call_stack_position(void)
+{
+#ifdef _MSC_VER
+	return _AddressOfReturnAddress();
+#else
+	return __builtin_frame_address(0);
+#endif
+}
+static zend_always_inline bool zend_call_stack_overflowed(void *stack_limit)
+{
+	return (uintptr_t) zend_call_stack_position() <= (uintptr_t) stack_limit;
+}
+#endif
+
+/* 8.3 marks the class names of internal arginfo with a bit of their own;
+ * Abi.cpp turns it into the name bit the older engines expect */
+#ifndef _ZEND_TYPE_LITERAL_NAME_BIT
+#define _ZEND_TYPE_LITERAL_NAME_BIT (1u << 23)
+#endif
+
 #define PT_ABI_EG_FIELDS(X) \
 	X(exception) \
 	X(uninitialized_zval) \
 	X(class_table) \
 	X(function_table) \
 	X(fake_scope) \
-	X(stack_limit) \
-	X(stack_base) \
 	X(current_module) \
 	X(weakrefs) \
 	X(vm_stack) \
@@ -129,6 +171,10 @@ struct pt_abi_globals
 #undef PT_ABI_CG_FIELD
 #undef PT_ABI_KNOWN_STRING
 #undef PT_ABI_OBJECT_HANDLER
+	/* EG(stack_base) / EG(stack_limit) from 8.3 on; before, Abi.cpp's own
+	 * pair, determined like 8.3's zend_call_stack_init() */
+	void **eg_stack_base;
+	void **eg_stack_limit;
 
 	/* member offsets that moved between minors */
 	size_t offset_internal_function_handler; /* 8.4 inserted frameless_function_infos and doc_comment before it */
@@ -158,6 +204,7 @@ struct pt_abi_globals
 	void (*call_stack_size_error)();
 	void (*try_assign_ref_str)(zval *zv, zend_string *str);
 	void (*try_assign_ref_true)(zval *zv);
+	void (*try_assign_ref_copy)(zval *zv, zval *value);
 	/* zend_wrong_parameter_error() with the neutral ZPP numbering (below) */
 	void (*wrong_parameter_error)(int errorCode, uint32_t num, char *name, int expectedType, zval *arg);
 	/* the slow paths of the bool/double/string parameter parsing: 8.6
@@ -175,6 +222,9 @@ struct pt_abi_globals
 	void (*run_on_fresh_stack)(void (*body)(void *), void *data);
 	/* zend_is_true() where the declaration cannot be renamed (MSVC, below) */
 	bool (*is_true)(const zval *op);
+	/* what the engine's own type errors name a value by: its type up to 8.2
+	 * ("bool given"), from 8.3 its value for true/false ("true given") */
+	const char *(*zval_value_name)(const zval *arg);
 };
 
 /* Defined by the shared core, filled by the version-specific library, which
@@ -206,6 +256,7 @@ inline void pt_abi_weakrefs_hash_destroy(HashTable *ht) { pt_abi.weakrefs_hash_d
 inline void pt_abi_call_stack_size_error() { pt_abi.call_stack_size_error(); }
 inline void pt_abi_try_assign_ref_str(zval *zv, zend_string *str) { pt_abi.try_assign_ref_str(zv, str); }
 inline void pt_abi_try_assign_ref_true(zval *zv) { pt_abi.try_assign_ref_true(zv); }
+inline void pt_abi_try_assign_ref_copy(zval *zv, zval *value) { pt_abi.try_assign_ref_copy(zv, value); }
 
 /* `then` from the given PHP_VERSION_ID on, `otherwise` before it — the
  * runtime form of an #if PHP_VERSION_ID gate */
@@ -277,6 +328,179 @@ static zend_always_inline void pt_abi_array_init_size(zval *arg, uint32_t size)
 			Z_DELREF_P(_pz); \
 		} \
 	} while (0)
+
+/* ZEND_ASSUME() (and ZEND_ASSERT() over it): from 8.3 on, clang's
+ * __builtin_assume() — a hint clang compiles differently from the
+ * __builtin_unreachable() form 8.2 spells for every compiler */
+#if defined(__clang__) && defined(__has_builtin)
+#if __has_builtin(__builtin_assume)
+#pragma clang diagnostic ignored "-Wassume"
+#undef ZEND_ASSUME
+#define ZEND_ASSUME(c) __builtin_assume(c)
+#endif
+#endif
+
+/* zend_string.h's allocating helpers: 8.2's late patch releases spell them
+ * as wrappers over fallible variants (zend_string_falloc(), ...), the same
+ * result with fallible = false. 8.5's definitions — also where the headers'
+ * macros expand to them (ZVAL_STRINGL(), RETURN_STRING(), ...). */
+static zend_always_inline zend_string *pt_abi_zend_string_alloc(size_t len, bool persistent)
+{
+	zend_string *ret = (zend_string *) pemalloc(ZEND_MM_ALIGNED_SIZE(_ZSTR_STRUCT_SIZE(len)), persistent);
+	GC_SET_REFCOUNT(ret, 1);
+	GC_TYPE_INFO(ret) = GC_STRING | ((persistent ? IS_STR_PERSISTENT : 0) << GC_FLAGS_SHIFT);
+	ZSTR_H(ret) = 0;
+	ZSTR_LEN(ret) = len;
+	return ret;
+}
+static zend_always_inline zend_string *pt_abi_zend_string_init(const char *str, size_t len, bool persistent)
+{
+	zend_string *ret = pt_abi_zend_string_alloc(len, persistent);
+	memcpy(ZSTR_VAL(ret), str, len);
+	ZSTR_VAL(ret)[len] = '\0';
+	return ret;
+}
+static zend_always_inline zend_string *pt_abi_zend_string_dup(zend_string *s, bool persistent)
+{
+	if (GC_FLAGS(s) & IS_STR_INTERNED) {
+		return s;
+	}
+	return pt_abi_zend_string_init(ZSTR_VAL(s), ZSTR_LEN(s), persistent);
+}
+static zend_always_inline zend_string *pt_abi_zend_string_realloc(zend_string *s, size_t len, bool persistent)
+{
+	zend_string *ret;
+	if (!(GC_FLAGS(s) & IS_STR_INTERNED)) {
+		if (EXPECTED(GC_REFCOUNT(s) == 1)) {
+			ret = (zend_string *) perealloc(s, ZEND_MM_ALIGNED_SIZE(_ZSTR_STRUCT_SIZE(len)), persistent);
+			ZSTR_LEN(ret) = len;
+			zend_string_forget_hash_val(ret);
+			return ret;
+		}
+	}
+	ret = pt_abi_zend_string_alloc(len, persistent);
+	memcpy(ZSTR_VAL(ret), ZSTR_VAL(s), MIN(len, ZSTR_LEN(s)) + 1);
+	if (!(GC_FLAGS(s) & IS_STR_INTERNED)) {
+		GC_DELREF(s);
+	}
+	return ret;
+}
+static zend_always_inline zend_string *pt_abi_smart_str_extract(smart_str *str)
+{
+	if (str->s == NULL) {
+		return ZSTR_EMPTY_ALLOC();
+	}
+	ZSTR_VAL(str->s)[ZSTR_LEN(str->s)] = '\0';
+	if (str->a > ZSTR_LEN(str->s)) {
+		str->s = pt_abi_zend_string_realloc(str->s, ZSTR_LEN(str->s), false);
+		str->a = ZSTR_LEN(str->s);
+	}
+	zend_string *res = str->s;
+	str->s = NULL;
+	return res;
+}
+/* variadic, like the smart_str ones below: PT_LC() expands to two arguments */
+#define zend_string_alloc(...) pt_abi_zend_string_alloc(__VA_ARGS__)
+#define zend_string_init(...) pt_abi_zend_string_init(__VA_ARGS__)
+#define zend_string_dup(...) pt_abi_zend_string_dup(__VA_ARGS__)
+#define zend_string_realloc(...) pt_abi_zend_string_realloc(__VA_ARGS__)
+#define smart_str_extract(...) pt_abi_smart_str_extract(__VA_ARGS__)
+
+/* 8.3's packed fill keeps nNumOfElements right when the array is not empty
+ * to begin with; 8.2's sets it to the fill index (the same from an empty
+ * array). 8.5's definitions. */
+#undef ZEND_HASH_FILL_GROW
+#define ZEND_HASH_FILL_GROW() do { \
+		if (UNEXPECTED(__fill_idx >= __fill_ht->nTableSize)) { \
+			__fill_ht->nNumOfElements += __fill_idx - __fill_ht->nNumUsed; \
+			__fill_ht->nNumUsed = __fill_idx; \
+			__fill_ht->nNextFreeElement = __fill_idx; \
+			zend_hash_packed_grow(__fill_ht); \
+			__fill_val = __fill_ht->arPacked + __fill_idx; \
+		} \
+	} while (0);
+#undef ZEND_HASH_FILL_FINISH
+#define ZEND_HASH_FILL_FINISH() do { \
+		__fill_ht->nNumOfElements += __fill_idx - __fill_ht->nNumUsed; \
+		__fill_ht->nNumUsed = __fill_idx; \
+		__fill_ht->nNextFreeElement = __fill_idx; \
+		__fill_ht->nInternalPointer = 0; \
+	} while (0)
+
+/* zend_smart_str.h's appending helpers: recent patch releases (8.3.36 and
+ * its siblings) grow the buffer through smart_str_ferealloc(), which the
+ * earlier patch releases of every minor do not export — a core built
+ * against the new headers does not load there (LoadLibrary error 127 on
+ * Windows, an unresolved symbol on Linux). These grow it through
+ * smart_str_erealloc(), which every release exports, as the helpers did
+ * before. The header is already included (support.h), so the macros below
+ * only redirect the shared code's calls, not the header's definitions;
+ * variadic, so an argument macro expanding to several (PT_LC) expands
+ * first. */
+static zend_always_inline size_t pt_abi_smart_str_alloc(smart_str *str, size_t len)
+{
+	if (UNEXPECTED(str->s == NULL)) {
+		smart_str_erealloc(str, len);
+		return len;
+	}
+	len += ZSTR_LEN(str->s);
+	if (UNEXPECTED(len >= str->a)) {
+		smart_str_erealloc(str, len);
+	}
+	return len;
+}
+static zend_always_inline void pt_abi_smart_str_appendl(smart_str *dest, const char *str, size_t len)
+{
+	size_t newLength = pt_abi_smart_str_alloc(dest, len);
+	memcpy(ZSTR_VAL(dest->s) + ZSTR_LEN(dest->s), str, len);
+	ZSTR_LEN(dest->s) = newLength;
+}
+static zend_always_inline void pt_abi_smart_str_append(smart_str *dest, const zend_string *src)
+{
+	pt_abi_smart_str_appendl(dest, ZSTR_VAL(src), ZSTR_LEN(src));
+}
+static zend_always_inline void pt_abi_smart_str_appends(smart_str *dest, const char *src)
+{
+	pt_abi_smart_str_appendl(dest, src, strlen(src));
+}
+static zend_always_inline void pt_abi_smart_str_append_smart_str(smart_str *dest, const smart_str *src)
+{
+	if (src->s != NULL && ZSTR_LEN(src->s) != 0) {
+		pt_abi_smart_str_append(dest, src->s);
+	}
+}
+static zend_always_inline void pt_abi_smart_str_appendc(smart_str *dest, char ch)
+{
+	size_t newLength = pt_abi_smart_str_alloc(dest, 1);
+	ZSTR_VAL(dest->s)[newLength - 1] = ch;
+	ZSTR_LEN(dest->s) = newLength;
+}
+static zend_always_inline void pt_abi_smart_str_append_long(smart_str *dest, zend_long num)
+{
+	char buf[32];
+	char *result = zend_print_long_to_buf(buf + sizeof(buf) - 1, num);
+	pt_abi_smart_str_appendl(dest, result, buf + sizeof(buf) - 1 - result);
+}
+static zend_always_inline void pt_abi_smart_str_append_unsigned(smart_str *dest, zend_ulong num)
+{
+	char buf[32];
+	char *result = zend_print_ulong_to_buf(buf + sizeof(buf) - 1, num);
+	pt_abi_smart_str_appendl(dest, result, buf + sizeof(buf) - 1 - result);
+}
+#undef smart_str_appendl
+#define smart_str_appendl(...) pt_abi_smart_str_appendl(__VA_ARGS__)
+#undef smart_str_appendc
+#define smart_str_appendc(...) pt_abi_smart_str_appendc(__VA_ARGS__)
+#undef smart_str_append
+#define smart_str_append(...) pt_abi_smart_str_append(__VA_ARGS__)
+#undef smart_str_appends
+#define smart_str_appends(...) pt_abi_smart_str_appends(__VA_ARGS__)
+#undef smart_str_append_long
+#define smart_str_append_long(...) pt_abi_smart_str_append_long(__VA_ARGS__)
+#undef smart_str_append_unsigned
+#define smart_str_append_unsigned(...) pt_abi_smart_str_append_unsigned(__VA_ARGS__)
+#undef smart_str_append_smart_str
+#define smart_str_append_smart_str(...) pt_abi_smart_str_append_smart_str(__VA_ARGS__)
 
 #undef EG
 #undef CG
@@ -566,11 +790,17 @@ static zend_always_inline void *pt_abi_object_alloc(size_t obj_size, zend_class_
 
 #define zend_dval_to_lval(d) (pt_abi.dval_to_lval(d))
 
+/* exported from 8.3 on; the type errors the shared code raises name the
+ * value the way the running engine's own do */
+#define zend_zval_value_name(arg) (pt_abi.zval_value_name(arg))
+
 /* 8.5 destroys the previous value with zval_ptr_safe_dtor() */
 #undef ZEND_TRY_ASSIGN_REF_STR
 #define ZEND_TRY_ASSIGN_REF_STR(zv, str) pt_abi_try_assign_ref_str(zv, str)
 #undef ZEND_TRY_ASSIGN_REF_TRUE
 #define ZEND_TRY_ASSIGN_REF_TRUE(zv) pt_abi_try_assign_ref_true(zv)
+#undef ZEND_TRY_ASSIGN_REF_COPY
+#define ZEND_TRY_ASSIGN_REF_COPY(zv, value) pt_abi_try_assign_ref_copy(zv, value)
 
 /* arg_info[i] of a user function (zend_arg_info; name and type keep their
  * offsets, the stride moved) */

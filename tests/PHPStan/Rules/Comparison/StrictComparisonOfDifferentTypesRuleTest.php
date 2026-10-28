@@ -27,7 +27,6 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		return new CompositeRule([
 			new StrictComparisonOfDifferentTypesRule(
 				self::getContainer()->getByType(RicherScopeGetTypeHelper::class),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				$this->reportAlwaysTrueInLastCondition,
@@ -1106,21 +1105,15 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testPossiblyImpureTip(): void
+	public function testRememberedPossiblyImpureValues(): void
 	{
-		$learnMore = ' Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>';
-		$impureTipFunction = 'If PossiblyImpureTip\maybeImpureFunction() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
-		$impureTipMethod = 'If PossiblyImpureTip\MethodCallTest::maybeImpureMethod() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
-		$impureTipStatic = 'If PossiblyImpureTip\StaticCallTest::maybeImpureStatic() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
-		$impureTipIntermediate = 'If PossiblyImpureTip\ObjectInvalidationTest::maybeImpureIntermediate() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore;
 		$this->analyse([__DIR__ . '/data/possibly-impure-tip.php'], [
-			// Function calls: maybe-impure (tip expected)
+			// Function calls: maybe-impure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				34,
-				$impureTipFunction,
 			],
-			// Function calls: @phpstan-pure (no tip)
+			// Function calls: @phpstan-pure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				40,
@@ -1128,31 +1121,29 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			// Function calls: @phpstan-impure - no error at all (value not remembered)
 			// Function calls: void - cannot appear in === comparison
 
-			// Method calls: maybe-impure (tip expected)
+			// Method calls: maybe-impure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				85,
-				$impureTipMethod,
 			],
-			// Method calls: @phpstan-pure (no tip)
+			// Method calls: @phpstan-pure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				94,
 			],
 			// Method calls: @phpstan-impure - no error at all (value not remembered)
-			// Method calls: void - return type explains the error (no tip)
+			// Method calls: void - return type explains the error
 			[
 				'Strict comparison using === between null and null will always evaluate to true.',
 				114,
 			],
 
-			// Static method calls: maybe-impure (tip expected)
+			// Static method calls: maybe-impure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				156,
-				$impureTipStatic,
 			],
-			// Static method calls: @phpstan-pure (no tip)
+			// Static method calls: @phpstan-pure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				165,
@@ -1160,14 +1151,13 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			// Static method calls: @phpstan-impure - no error at all (value not remembered)
 			// Static method calls: void - hasSideEffects()->yes() invalidates
 
-			// Object invalidation: maybe-impure intermediate (tip expected)
+			// Object invalidation: maybe-impure intermediate
 			// getValue() is @phpstan-pure, intermediate is maybe-impure
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				233,
-				$impureTipIntermediate,
 			],
-			// Object invalidation: @phpstan-pure intermediate (no tip)
+			// Object invalidation: @phpstan-pure intermediate
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				244,
@@ -1179,16 +1169,14 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				294,
-				'If PossiblyImpureTip\IntermediateCallPriority::next() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore,
 			],
-			// No intermediate call: tip points to fetch() itself
+			// No intermediate call
 			[
 				'Strict comparison using === between 1 and 2 will always evaluate to false.',
 				303,
-				'If PossiblyImpureTip\IntermediateCallPriority::fetch() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration.' . $learnMore,
 			],
 
-			// No tip when return type alone explains the error
+			// The return type alone explains the error
 			[
 				'Strict comparison using === between string and null will always evaluate to false.',
 				324,
@@ -1284,6 +1272,17 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 			[
 				'Strict comparison using === between string and null will always evaluate to false.',
 				29,
+			],
+		]);
+	}
+
+	public function testBug15432(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15432.php'], [
+			[
+				'Strict comparison using === between 1 and 1 will always evaluate to true.',
+				18,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);
 	}

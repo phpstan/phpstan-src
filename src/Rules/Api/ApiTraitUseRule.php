@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function count;
 use function sprintf;
 
 /**
@@ -45,6 +46,15 @@ final class ApiTraitUseRule implements Rule
 			$traitReflection = $this->reflectionProvider->getClass($traitName);
 			if (!$this->apiRuleHelper->isPhpStanCode($scope, $traitReflection->getName(), $traitReflection->getFileName())) {
 				continue;
+			}
+
+			$docBlock = $traitReflection->getResolvedPhpDoc();
+			if ($docBlock !== null) {
+				foreach ($docBlock->getPhpDocNodes() as $phpDocNode) {
+					if (count($phpDocNode->getTagsByName('@api')) > 0) {
+						continue 2;
+					}
+				}
 			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(

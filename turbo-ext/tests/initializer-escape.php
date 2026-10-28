@@ -91,7 +91,7 @@ $ieCalls = [
 	'UnaryMinusHandler' => static fn ($storage) => (new \PHPStanTurbo\UnaryMinusHandler($ieKeeping, $ieFactory, $ieDefault))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\UnaryMinus(new \PhpParser\Node\Expr\Variable('a')), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
 	'UnaryPlusHandler' => static fn ($storage) => (new \PHPStanTurbo\UnaryPlusHandler($ieKeeping, $ieFactory, $ieDefault))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\UnaryPlus(new \PhpParser\Node\Expr\Variable('n')), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
 	'BitwiseNotHandler' => static fn ($storage) => (new \PHPStanTurbo\BitwiseNotHandler($ieKeeping, $ieFactory, $ieDefault))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\BitwiseNot(new \PhpParser\Node\Expr\Variable('a')), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
-	'ArrayHandler' => static fn ($storage) => (new \PHPStanTurbo\ArrayHandler($ieKeeping, $ieFactory))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\Array_([new \PhpParser\Node\ArrayItem(new \PhpParser\Node\Expr\Variable('n')), new \PhpParser\Node\ArrayItem(new \PhpParser\Node\Scalar\Int_(5))]), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
+	'ArrayHandler' => static fn ($storage) => (new \PHPStanTurbo\ArrayHandler($ieKeeping, $ieFactory, $ieContainer->getByType(\PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver::class)))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\Array_([new \PhpParser\Node\ArrayItem(new \PhpParser\Node\Expr\Variable('n')), new \PhpParser\Node\ArrayItem(new \PhpParser\Node\Scalar\Int_(5))]), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
 	'ClassConstFetchHandler' => static fn ($storage) => (new \PHPStanTurbo\ClassConstFetchHandler($ieKeeping, $ieFactory, $ieDefault, $ieContainer->getByType(\PHPStan\Reflection\ReflectionProvider::class)))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\ClassConstFetch(new \PhpParser\Node\Expr\Variable('n'), 'FOO'), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
 	'BinaryOpHandler' => static fn ($storage) => (new \PHPStanTurbo\BinaryOpHandler($ieKeeping, $ieContainer->getByType(\PHPStan\Analyser\RicherScopeGetTypeHelper::class), $ieContainer->getByType(\PHPStan\Php\PhpVersion::class), $ieContainer->getByType(\PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper::class), $ieContainer->getByType(\PHPStan\Node\Printer\ExprPrinter::class), $ieIdentical, $ieContainer->getByType(\PHPStan\Analyser\ExprHandler\Helper\CountNarrowingHelper::class), $ieFactory, $ieDefault))->processExpr($ieNodeScopeResolver, $ieStmt, new \PhpParser\Node\Expr\BinaryOp\Minus(new \PhpParser\Node\Expr\Variable('a'), new \PhpParser\Node\Scalar\Int_(3)), $ieScope, $storage, new \PHPStan\Analyser\NoopNodeCallback(), \PHPStan\Analyser\ExpressionContext::createDeep()),
 ];
@@ -106,7 +106,15 @@ foreach ($ieCalls as $label => $call) {
 		// result, which the prefix does not let through - the type callback
 		// was kept before that, reading the type the dependencies are made of
 		// (the native type, read below for the other handlers, is not)
-		check($label === 'ClassConstFetchHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\Dependencies'), "escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage());
+		// the twin resolver computes `$a - 3` over the native int and its own
+		// constant 3: the native int is not a supertype of the twin's 3, so
+		// their union mixes both families, which the prefix does not let
+		// through either - the type callback was kept before that
+		check(
+			($label === 'ClassConstFetchHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\Dependencies'))
+			|| ($label === 'BinaryOpHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\TrinaryLogic returned')),
+			"escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage(),
+		);
 	} catch (\Throwable $e) {
 		check(false, "escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage());
 	} finally {
@@ -138,7 +146,7 @@ try {
 unset($storage, $ieVarResult, $ieTypeCallback);
 gc_collect_cycles();
 $ieDeepStack(200);
-check(count($ieKeeping->kept) === 16, 'escaping getTypeCallback: the keeping resolver was handed the callbacks (' . count($ieKeeping->kept) . ')');
+check(count($ieKeeping->kept) === 15, 'escaping getTypeCallback: the keeping resolver was handed the callbacks (' . count($ieKeeping->kept) . ')');
 foreach ($ieKeeping->kept as $i => [$method, $callback, $asked, $answered]) {
 	$ieDeepStack(50);
 	try {

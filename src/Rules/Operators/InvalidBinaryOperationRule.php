@@ -90,6 +90,16 @@ final class InvalidBinaryOperationRule implements MultipleNodeTypesRule
 			return [];
 		}
 
+		// on the very operand types the walk saw, the operation's own type is the
+		// answer - the walk already priced it
+		if (
+			$leftType->equals($scope->getType($left))
+			&& $rightType->equals($scope->getType($right))
+			&& !$scope->getType($node) instanceof ErrorType
+		) {
+			return [];
+		}
+
 		if ($node instanceof Node\Expr\AssignOp) {
 			$newNode = clone $node;
 			$newNode->setAttribute('phpstan_cache_printer', null);

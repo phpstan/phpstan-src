@@ -1,7 +1,7 @@
 # Prebuilt image for the turbo-compile gnu legs in phar.yml, published to
-# ghcr.io/phpstan/turbo-build by turbo-build-image.yml (tags gnu-php8.3,
-# gnu-php8.4, gnu-php8.5, gnu-php8.6 and the thread-safe gnu-php8.3-zts to
-# gnu-php8.6-zts; each a linux/amd64 + linux/arm64 manifest).
+# ghcr.io/phpstan/turbo-build by turbo-build-image.yml (tags gnu-php8.2 to
+# gnu-php8.6 and the thread-safe gnu-php8.2-zts to gnu-php8.6-zts; each a
+# linux/amd64 + linux/arm64 manifest).
 #
 # Baking the PHP toolchain in keeps apt and the ondrej/php PPA out of the
 # compile jobs entirely: ports.ubuntu.com (the only Ubuntu arm64 mirror,

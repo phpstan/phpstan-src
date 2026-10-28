@@ -14,6 +14,8 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateMixedType;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
@@ -86,24 +88,81 @@ final class RuleLevelHelper
 			return $type;
 		}
 
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) {
-			if ($type instanceof TemplateMixedType) {
-				if ($this->checkExplicitMixed) {
-					return $type->toStrictMixedType();
-				}
-			}
-			if (
-				$type instanceof MixedType
-				&& (
-					($type->isExplicitMixed() && $this->checkExplicitMixed)
-					|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
-				)
-			) {
-				return new StrictMixedType();
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof GenericObjectType && !$type instanceof TemplateType) {
+				return $this->transformGenericObjectTypeArguments($type, $traverse);
 			}
 
-			return $traverse($type);
+			return $this->transformMixedType($type) ?? $traverse($type);
 		});
+	}
+
+	private function transformMixedType(Type $type): ?Type
+	{
+		if ($type instanceof TemplateMixedType) {
+			if ($this->checkExplicitMixed) {
+				return $type->toStrictMixedType();
+			}
+		}
+		if (
+			$type instanceof MixedType
+			&& (
+				($type->isExplicitMixed() && $this->checkExplicitMixed)
+				|| (!$type->isExplicitMixed() && $this->checkImplicitMixed)
+			)
+		) {
+			return new StrictMixedType();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Invariant type arguments are compared with equals(), so mapping mixed nested in them
+	 * only changes the outcome when one side is mapped and the other is not - like the
+	 * type arguments an accepted object type inherits through @extends, which a traversal
+	 * does not reach. A top-level mixed is still mapped, as variance checks treat it leniently.
+	 *
+	 * @param callable(Type): Type $traverse
+	 */
+	private function transformGenericObjectTypeArguments(GenericObjectType $type, callable $traverse): Type
+	{
+		$classReflection = $type->getClassReflection();
+		if ($classReflection === null) {
+			return $traverse($type);
+		}
+
+		$templateTypes = $classReflection->typeMapToList($classReflection->getTemplateTypeMap());
+		$variances = $type->getVariances();
+		$typesChanged = false;
+		$types = [];
+		foreach ($type->getTypes() as $i => $argument) {
+			$templateType = $templateTypes[$i] ?? null;
+			if (
+				($variances[$i] ?? TemplateTypeVariance::createInvariant())->invariant()
+				&& $templateType instanceof TemplateType
+				&& $templateType->getVariance()->invariant()
+			) {
+				$newArgument = $this->transformMixedType($argument) ?? $argument;
+			} else {
+				$newArgument = $traverse($argument);
+			}
+
+			$types[] = $newArgument;
+			if ($newArgument === $argument) {
+				continue;
+			}
+
+			$typesChanged = true;
+		}
+
+		$subtractedType = $type->getSubtractedType();
+		$newSubtractedType = $subtractedType !== null ? $traverse($subtractedType) : null;
+		if (!$typesChanged && $newSubtractedType === $subtractedType) {
+			return $type;
+		}
+
+		return new GenericObjectType($type->getClassName(), $types, $newSubtractedType, variances: $variances);
 	}
 
 	/**

@@ -1053,7 +1053,7 @@ final class ClassReflection
 		foreach ($this->reflection->getCases() as $case) {
 			$valueType = null;
 			if ($case instanceof ReflectionEnumBackedCase && $case->hasBackingValue()) {
-				$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), $initializerExprContext);
+				$valueType = $this->initializerExprTypeResolver->getEnumCaseValueType($this->getName(), $case->getName(), $case->getValueExpression(), $initializerExprContext);
 			}
 			$caseName = $case->getName();
 			$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));
@@ -1080,7 +1080,7 @@ final class ClassReflection
 		$case = $this->reflection->getCase($name);
 		$valueType = null;
 		if ($case instanceof ReflectionEnumBackedCase && $case->hasBackingValue()) {
-			$valueType = $this->initializerExprTypeResolver->getType($case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
+			$valueType = $this->initializerExprTypeResolver->getEnumCaseValueType($this->getName(), $name, $case->getValueExpression(), InitializerExprContext::fromClassReflection($this));
 		}
 
 		$attributes = $this->attributeReflectionFactory->fromNativeReflection($case->getAttributes(), InitializerExprContext::fromClass($this->getName(), $this->getFileName()));
@@ -1909,7 +1909,12 @@ final class ClassReflection
 				return $this->isGeneric = false;
 			}
 
-			$this->isGeneric = count($this->getTemplateTags()) > 0;
+			$isGeneric = count($this->getTemplateTags()) > 0;
+			if ($this->fileTypeMapper->isClassNameScopeBeingCreated($this->getName())) {
+				return $isGeneric;
+			}
+
+			$this->isGeneric = $isGeneric;
 		}
 
 		return $this->isGeneric;
@@ -2145,7 +2150,12 @@ final class ClassReflection
 			return $this->resolvedPhpDocBlock;
 		}
 
-		return $this->resolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
+		$resolvedPhpDocBlock = $this->fileTypeMapper->getResolvedPhpDoc($fileName, $this->getName(), null, null, $this->reflectionDocComment);
+		if ($this->fileTypeMapper->isClassNameScopeBeingCreated($this->getName())) {
+			return $resolvedPhpDocBlock;
+		}
+
+		return $this->resolvedPhpDocBlock = $resolvedPhpDocBlock;
 	}
 
 	public function getTraitContextResolvedPhpDoc(self $implementingClass): ?ResolvedPhpDocBlock

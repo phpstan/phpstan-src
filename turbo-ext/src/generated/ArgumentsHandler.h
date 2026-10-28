@@ -26,7 +26,6 @@ inline constexpr uint32_t implicitThrows = 12;
 inline constexpr uint32_t assignHandler = 13;
 inline constexpr uint32_t closureTypeResolver = 14;
 inline constexpr uint32_t closureParameterResolver = 15;
-inline constexpr uint32_t initializerExprTypeResolver = 16;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -53,7 +52,6 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("assignHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\AssignHandler");
 	cls.property("closureTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver");
 	cls.property("closureParameterResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureParameterResolver");
-	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -82,79 +80,77 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver\0" /* 678 */
 	"closureParameterResolver\0" /* 734 */
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureParameterResolver\0" /* 759 */
-	"initializerExprTypeResolver\0" /* 820 */
-	"PHPStan\\Reflection\\InitializerExprTypeResolver\0" /* 848 */
-	"__construct\0" /* 895 */
-	"nodeScopeResolver\0" /* 907 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 925 */
-	"stmt\0" /* 960 */
-	"PhpParser\\Node\\Stmt\0" /* 965 */
-	"calleeReflection\0" /* 985 */
-	"nakedMethodReflection\0" /* 1002 */
-	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1024 */
-	"parametersAcceptors\0" /* 1068 */
-	"namedArgumentsVariants\0" /* 1088 */
-	"callLike\0" /* 1111 */
-	"PhpParser\\Node\\Expr\\CallLike\0" /* 1120 */
-	"scope\0" /* 1149 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 1155 */
-	"storage\0" /* 1186 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1194 */
-	"nodeCallback\0" /* 1235 */
-	"context\0" /* 1248 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 1256 */
-	"closureBindScopeFactory\0" /* 1291 */
-	"null\0" /* 1315 */
-	"\0" /* 1320 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 1321 */
-	"processArgs\0" /* 1349 */
-	"types\0" /* 1361 */
-	"unpack\0" /* 1367 */
-	"hasName\0" /* 1374 */
-	"originalArg\0" /* 1382 */
-	"PhpParser\\Node\\Arg\0" /* 1394 */
-	"i\0" /* 1413 */
-	"type\0" /* 1415 */
-	"PHPStan\\Type\\Type\0" /* 1420 */
-	"addGatheredArgType\0" /* 1438 */
-	"value\0" /* 1457 */
-	"PhpParser\\Node\\Expr\0" /* 1463 */
-	"argConsumesResolvedParameterType\0" /* 1483 */
-	"closureExpr\0" /* 1516 */
-	"gatherClosureArgType\0" /* 1528 */
-	"expr\0" /* 1549 */
-	"PhpParser\\Node\\Expr\\Array_\0" /* 1554 */
-	"gatherArrayArgTypeSkeleton\0" /* 1581 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1608 */
-	"selectArgsAcceptor\0" /* 1646 */
-	"args\0" /* 1665 */
-	"gatheredTypes\0" /* 1670 */
-	"selectArgsMetadataAcceptor\0" /* 1684 */
-	"originalCall\0" /* 1711 */
-	"normalizedCall\0" /* 1724 */
-	"processDroppedArgs\0" /* 1739 */
-	"parameter\0" /* 1758 */
-	"PHPStan\\Reflection\\ParameterReflection\0" /* 1768 */
-	"parameterType\0" /* 1807 */
-	"callCallbackImmediately\0" /* 1821 */
-	"shouldInvalidateCallbackExpressions\0" /* 1845 */
-	"getParameterTypeFromParameterClosureTypeExtension\0" /* 1881 */
-	"currentParameter\0" /* 1931 */
-	"getParameterOutExtensionsType\0" /* 1948 */
-	"call\0" /* 1978 */
-	"resolveClosureThisType\0" /* 1983 */
-	"acceptor\0" /* 2006 */
-	"position\0" /* 2015 */
-	"unpackedType\0" /* 2024 */
-	"isPure\0" /* 2037 */
-	"observeUnpackedArgument\0" /* 2044 */
-	"valueType\0" /* 2068 */
-	"observeArgumentValue\0" /* 2078 */
-	"findOriginalParameterType\0" /* 2099 */
-	"argResults\0" /* 2125 */
-	"argValue\0" /* 2136 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 2145 */
-	"readArgResult"; /* 2179 */
+	"__construct\0" /* 820 */
+	"nodeScopeResolver\0" /* 832 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 850 */
+	"stmt\0" /* 885 */
+	"PhpParser\\Node\\Stmt\0" /* 890 */
+	"calleeReflection\0" /* 910 */
+	"nakedMethodReflection\0" /* 927 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 949 */
+	"parametersAcceptors\0" /* 993 */
+	"namedArgumentsVariants\0" /* 1013 */
+	"callLike\0" /* 1036 */
+	"PhpParser\\Node\\Expr\\CallLike\0" /* 1045 */
+	"scope\0" /* 1074 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 1080 */
+	"storage\0" /* 1111 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1119 */
+	"nodeCallback\0" /* 1160 */
+	"context\0" /* 1173 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 1181 */
+	"closureBindScopeFactory\0" /* 1216 */
+	"null\0" /* 1240 */
+	"\0" /* 1245 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 1246 */
+	"processArgs\0" /* 1274 */
+	"types\0" /* 1286 */
+	"unpack\0" /* 1292 */
+	"hasName\0" /* 1299 */
+	"originalArg\0" /* 1307 */
+	"PhpParser\\Node\\Arg\0" /* 1319 */
+	"i\0" /* 1338 */
+	"type\0" /* 1340 */
+	"PHPStan\\Type\\Type\0" /* 1345 */
+	"addGatheredArgType\0" /* 1363 */
+	"value\0" /* 1382 */
+	"PhpParser\\Node\\Expr\0" /* 1388 */
+	"argConsumesResolvedParameterType\0" /* 1408 */
+	"closureExpr\0" /* 1441 */
+	"gatherClosureArgType\0" /* 1453 */
+	"args\0" /* 1474 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1479 */
+	"selectCountStableMetadataAcceptor\0" /* 1517 */
+	"acceptor\0" /* 1551 */
+	"arg\0" /* 1560 */
+	"PHPStan\\Reflection\\ParameterReflection\0" /* 1564 */
+	"matchArgParameter\0" /* 1603 */
+	"selectArgsAcceptor\0" /* 1621 */
+	"gatheredTypes\0" /* 1640 */
+	"selectArgsMetadataAcceptor\0" /* 1654 */
+	"originalCall\0" /* 1681 */
+	"normalizedCall\0" /* 1694 */
+	"processDroppedArgs\0" /* 1709 */
+	"parameter\0" /* 1728 */
+	"parameterType\0" /* 1738 */
+	"callCallbackImmediately\0" /* 1752 */
+	"shouldInvalidateCallbackExpressions\0" /* 1776 */
+	"getParameterTypeFromParameterClosureTypeExtension\0" /* 1812 */
+	"currentParameter\0" /* 1862 */
+	"getParameterOutExtensionsType\0" /* 1879 */
+	"call\0" /* 1909 */
+	"resolveClosureThisType\0" /* 1914 */
+	"position\0" /* 1937 */
+	"unpackedType\0" /* 1946 */
+	"isPure\0" /* 1959 */
+	"observeUnpackedArgument\0" /* 1966 */
+	"valueType\0" /* 1990 */
+	"observeArgumentValue\0" /* 2000 */
+	"findOriginalParameterType\0" /* 2021 */
+	"argResults\0" /* 2047 */
+	"argValue\0" /* 2058 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 2067 */
+	"readArgResult"; /* 2101 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 25), /* __construct $templateArgumentObserver */
 	reg::packed(76, 0, 100), /* __construct $expressionResultFactory */
@@ -172,124 +168,130 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(601, 0, 615), /* __construct $assignHandler */
 	reg::packed(658, 0, 678), /* __construct $closureTypeResolver */
 	reg::packed(734, 0, 759), /* __construct $closureParameterResolver */
-	reg::packed(820, 0, 848), /* __construct $initializerExprTypeResolver */
-	reg::packed(907, 0, 925), /* processArgs $nodeScopeResolver */
-	reg::packed(960, 0, 965), /* processArgs $stmt */
-	reg::packed(985, 0), /* processArgs $calleeReflection */
-	reg::packed(1002, MAY_BE_NULL, 1024), /* processArgs $nakedMethodReflection */
-	reg::packed(1068, MAY_BE_ARRAY), /* processArgs $parametersAcceptors */
-	reg::packed(1088, MAY_BE_NULL | MAY_BE_ARRAY), /* processArgs $namedArgumentsVariants */
-	reg::packed(1111, 0, 1120), /* processArgs $callLike */
-	reg::packed(1149, 0, 1155), /* processArgs $scope */
-	reg::packed(1186, 0, 1194), /* processArgs $storage */
-	reg::packed(1235, MAY_BE_CALLABLE), /* processArgs $nodeCallback */
-	reg::packed(1248, 0, 1256), /* processArgs $context */
-	reg::packed(1291, MAY_BE_NULL | MAY_BE_CALLABLE, reg::NoString, false, false, 1315), /* processArgs $closureBindScopeFactory */
-	reg::packed(1320, 0, 1321), /* processArgs return */
-	reg::packed(1361, MAY_BE_ARRAY, reg::NoString, true, false), /* addGatheredArgType $types */
-	reg::packed(1367, MAY_BE_BOOL, reg::NoString, true, false), /* addGatheredArgType $unpack */
-	reg::packed(1374, MAY_BE_BOOL, reg::NoString, true, false), /* addGatheredArgType $hasName */
-	reg::packed(1382, 0, 1394), /* addGatheredArgType $originalArg */
-	reg::packed(1413, MAY_BE_LONG), /* addGatheredArgType $i */
-	reg::packed(1415, 0, 1420), /* addGatheredArgType $type */
-	reg::packed(1320, MAY_BE_VOID), /* addGatheredArgType return */
-	reg::packed(1457, 0, 1463), /* argConsumesResolvedParameterType $value */
-	reg::packed(1320, MAY_BE_BOOL), /* argConsumesResolvedParameterType return */
-	reg::packed(1068, MAY_BE_ARRAY), /* gatherClosureArgType $parametersAcceptors */
-	reg::packed(1413, MAY_BE_LONG), /* gatherClosureArgType $i */
-	reg::packed(1516, 0, 1463), /* gatherClosureArgType $closureExpr */
-	reg::packed(1149, 0, 1155), /* gatherClosureArgType $scope */
-	reg::packed(1320, 0, 1420), /* gatherClosureArgType return */
-	reg::packed(907, 0, 925), /* gatherArrayArgTypeSkeleton $nodeScopeResolver */
-	reg::packed(1549, 0, 1554), /* gatherArrayArgTypeSkeleton $expr */
-	reg::packed(1149, 0, 1155), /* gatherArrayArgTypeSkeleton $scope */
-	reg::packed(1320, 0, 1420), /* gatherArrayArgTypeSkeleton return */
-	reg::packed(1361, MAY_BE_ARRAY), /* selectArgsAcceptor $types */
-	reg::packed(1068, MAY_BE_ARRAY), /* selectArgsAcceptor $parametersAcceptors */
-	reg::packed(1088, MAY_BE_NULL | MAY_BE_ARRAY), /* selectArgsAcceptor $namedArgumentsVariants */
-	reg::packed(1374, MAY_BE_BOOL), /* selectArgsAcceptor $hasName */
-	reg::packed(1367, MAY_BE_BOOL), /* selectArgsAcceptor $unpack */
-	reg::packed(1320, 0, 1608), /* selectArgsAcceptor return */
-	reg::packed(907, 0, 925), /* selectArgsMetadataAcceptor $nodeScopeResolver */
-	reg::packed(1665, MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $args */
-	reg::packed(1670, MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $gatheredTypes */
-	reg::packed(1068, MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $parametersAcceptors */
-	reg::packed(1088, MAY_BE_NULL | MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $namedArgumentsVariants */
-	reg::packed(1374, MAY_BE_BOOL), /* selectArgsMetadataAcceptor $hasName */
-	reg::packed(1367, MAY_BE_BOOL), /* selectArgsMetadataAcceptor $unpack */
-	reg::packed(1149, 0, 1155), /* selectArgsMetadataAcceptor $scope */
-	reg::packed(1320, 0, 1608), /* selectArgsMetadataAcceptor return */
-	reg::packed(907, 0, 925), /* processDroppedArgs $nodeScopeResolver */
-	reg::packed(960, 0, 965), /* processDroppedArgs $stmt */
-	reg::packed(1711, 0, 1120), /* processDroppedArgs $originalCall */
-	reg::packed(1724, 0, 1120), /* processDroppedArgs $normalizedCall */
-	reg::packed(1149, 0, 1155), /* processDroppedArgs $scope */
-	reg::packed(1186, 0, 1194), /* processDroppedArgs $storage */
-	reg::packed(1248, 0, 1256), /* processDroppedArgs $context */
-	reg::packed(1320, MAY_BE_VOID), /* processDroppedArgs return */
-	reg::packed(1758, MAY_BE_NULL, 1768), /* callCallbackImmediately $parameter */
-	reg::packed(1807, MAY_BE_NULL, 1420), /* callCallbackImmediately $parameterType */
-	reg::packed(985, 0), /* callCallbackImmediately $calleeReflection */
-	reg::packed(1320, MAY_BE_BOOL), /* callCallbackImmediately return */
-	reg::packed(1758, MAY_BE_NULL, 1768), /* shouldInvalidateCallbackExpressions $parameter */
-	reg::packed(1320, MAY_BE_BOOL), /* shouldInvalidateCallbackExpressions return */
-	reg::packed(1111, 0, 1120), /* getParameterTypeFromParameterClosureTypeExtension $callLike */
-	reg::packed(985, 0), /* getParameterTypeFromParameterClosureTypeExtension $calleeReflection */
-	reg::packed(1758, 0, 1768), /* getParameterTypeFromParameterClosureTypeExtension $parameter */
-	reg::packed(1149, 0, 1155), /* getParameterTypeFromParameterClosureTypeExtension $scope */
-	reg::packed(1320, MAY_BE_NULL, 1420), /* getParameterTypeFromParameterClosureTypeExtension return */
-	reg::packed(1111, 0, 1120), /* getParameterOutExtensionsType $callLike */
-	reg::packed(985, 0), /* getParameterOutExtensionsType $calleeReflection */
-	reg::packed(1931, 0, 1768), /* getParameterOutExtensionsType $currentParameter */
-	reg::packed(1149, 0, 1155), /* getParameterOutExtensionsType $scope */
-	reg::packed(1320, MAY_BE_NULL, 1420), /* getParameterOutExtensionsType return */
-	reg::packed(1978, MAY_BE_NULL, 1120), /* resolveClosureThisType $call */
-	reg::packed(985, 0), /* resolveClosureThisType $calleeReflection */
-	reg::packed(1758, 0, 1768), /* resolveClosureThisType $parameter */
-	reg::packed(1149, 0, 1155), /* resolveClosureThisType $scope */
-	reg::packed(1320, MAY_BE_NULL, 1420), /* resolveClosureThisType return */
-	reg::packed(1149, 0, 1155), /* observeUnpackedArgument $scope */
-	reg::packed(2006, 0, 1608), /* observeUnpackedArgument $acceptor */
-	reg::packed(2015, MAY_BE_LONG), /* observeUnpackedArgument $position */
-	reg::packed(2024, 0, 1420), /* observeUnpackedArgument $unpackedType */
-	reg::packed(2037, MAY_BE_BOOL), /* observeUnpackedArgument $isPure */
-	reg::packed(1320, 0, 1155), /* observeUnpackedArgument return */
-	reg::packed(1149, 0, 1155), /* observeArgumentValue $scope */
-	reg::packed(2006, 0, 1608), /* observeArgumentValue $acceptor */
-	reg::packed(1758, 0, 1768), /* observeArgumentValue $parameter */
-	reg::packed(2068, 0, 1420), /* observeArgumentValue $valueType */
-	reg::packed(2037, MAY_BE_BOOL), /* observeArgumentValue $isPure */
-	reg::packed(1320, 0, 1155), /* observeArgumentValue return */
-	reg::packed(2006, 0, 1608), /* findOriginalParameterType $acceptor */
-	reg::packed(1758, 0, 1768), /* findOriginalParameterType $parameter */
-	reg::packed(1320, MAY_BE_NULL, 1420), /* findOriginalParameterType return */
-	reg::packed(2125, MAY_BE_ARRAY), /* readArgResult $argResults */
-	reg::packed(2136, 0, 1463), /* readArgResult $argValue */
-	reg::packed(1320, 0, 2145), /* readArgResult return */
+	reg::packed(832, 0, 850), /* processArgs $nodeScopeResolver */
+	reg::packed(885, 0, 890), /* processArgs $stmt */
+	reg::packed(910, 0), /* processArgs $calleeReflection */
+	reg::packed(927, MAY_BE_NULL, 949), /* processArgs $nakedMethodReflection */
+	reg::packed(993, MAY_BE_ARRAY), /* processArgs $parametersAcceptors */
+	reg::packed(1013, MAY_BE_NULL | MAY_BE_ARRAY), /* processArgs $namedArgumentsVariants */
+	reg::packed(1036, 0, 1045), /* processArgs $callLike */
+	reg::packed(1074, 0, 1080), /* processArgs $scope */
+	reg::packed(1111, 0, 1119), /* processArgs $storage */
+	reg::packed(1160, MAY_BE_CALLABLE), /* processArgs $nodeCallback */
+	reg::packed(1173, 0, 1181), /* processArgs $context */
+	reg::packed(1216, MAY_BE_NULL | MAY_BE_CALLABLE, reg::NoString, false, false, 1240), /* processArgs $closureBindScopeFactory */
+	reg::packed(1245, 0, 1246), /* processArgs return */
+	reg::packed(1286, MAY_BE_ARRAY, reg::NoString, true, false), /* addGatheredArgType $types */
+	reg::packed(1292, MAY_BE_BOOL, reg::NoString, true, false), /* addGatheredArgType $unpack */
+	reg::packed(1299, MAY_BE_BOOL, reg::NoString, true, false), /* addGatheredArgType $hasName */
+	reg::packed(1307, 0, 1319), /* addGatheredArgType $originalArg */
+	reg::packed(1338, MAY_BE_LONG), /* addGatheredArgType $i */
+	reg::packed(1340, 0, 1345), /* addGatheredArgType $type */
+	reg::packed(1245, MAY_BE_VOID), /* addGatheredArgType return */
+	reg::packed(1382, 0, 1388), /* argConsumesResolvedParameterType $value */
+	reg::packed(1245, MAY_BE_BOOL), /* argConsumesResolvedParameterType return */
+	reg::packed(993, MAY_BE_ARRAY), /* gatherClosureArgType $parametersAcceptors */
+	reg::packed(1338, MAY_BE_LONG), /* gatherClosureArgType $i */
+	reg::packed(1441, 0, 1388), /* gatherClosureArgType $closureExpr */
+	reg::packed(1074, 0, 1080), /* gatherClosureArgType $scope */
+	reg::packed(1245, 0, 1345), /* gatherClosureArgType return */
+	reg::packed(832, 0, 850), /* selectCountStableMetadataAcceptor $nodeScopeResolver */
+	reg::packed(1474, MAY_BE_ARRAY), /* selectCountStableMetadataAcceptor $args */
+	reg::packed(993, MAY_BE_ARRAY), /* selectCountStableMetadataAcceptor $parametersAcceptors */
+	reg::packed(1013, MAY_BE_NULL | MAY_BE_ARRAY), /* selectCountStableMetadataAcceptor $namedArgumentsVariants */
+	reg::packed(1074, 0, 1080), /* selectCountStableMetadataAcceptor $scope */
+	reg::packed(1245, 0, 1479), /* selectCountStableMetadataAcceptor return */
+	reg::packed(1551, 0, 1479), /* matchArgParameter $acceptor */
+	reg::packed(1560, 0, 1319), /* matchArgParameter $arg */
+	reg::packed(1338, MAY_BE_LONG), /* matchArgParameter $i */
+	reg::packed(1245, MAY_BE_NULL, 1564), /* matchArgParameter return */
+	reg::packed(1286, MAY_BE_ARRAY), /* selectArgsAcceptor $types */
+	reg::packed(993, MAY_BE_ARRAY), /* selectArgsAcceptor $parametersAcceptors */
+	reg::packed(1013, MAY_BE_NULL | MAY_BE_ARRAY), /* selectArgsAcceptor $namedArgumentsVariants */
+	reg::packed(1299, MAY_BE_BOOL), /* selectArgsAcceptor $hasName */
+	reg::packed(1292, MAY_BE_BOOL), /* selectArgsAcceptor $unpack */
+	reg::packed(1245, 0, 1479), /* selectArgsAcceptor return */
+	reg::packed(832, 0, 850), /* selectArgsMetadataAcceptor $nodeScopeResolver */
+	reg::packed(1474, MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $args */
+	reg::packed(1640, MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $gatheredTypes */
+	reg::packed(993, MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $parametersAcceptors */
+	reg::packed(1013, MAY_BE_NULL | MAY_BE_ARRAY), /* selectArgsMetadataAcceptor $namedArgumentsVariants */
+	reg::packed(1299, MAY_BE_BOOL), /* selectArgsMetadataAcceptor $hasName */
+	reg::packed(1292, MAY_BE_BOOL), /* selectArgsMetadataAcceptor $unpack */
+	reg::packed(1074, 0, 1080), /* selectArgsMetadataAcceptor $scope */
+	reg::packed(1245, 0, 1479), /* selectArgsMetadataAcceptor return */
+	reg::packed(832, 0, 850), /* processDroppedArgs $nodeScopeResolver */
+	reg::packed(885, 0, 890), /* processDroppedArgs $stmt */
+	reg::packed(1681, 0, 1045), /* processDroppedArgs $originalCall */
+	reg::packed(1694, 0, 1045), /* processDroppedArgs $normalizedCall */
+	reg::packed(1074, 0, 1080), /* processDroppedArgs $scope */
+	reg::packed(1111, 0, 1119), /* processDroppedArgs $storage */
+	reg::packed(1173, 0, 1181), /* processDroppedArgs $context */
+	reg::packed(1245, MAY_BE_VOID), /* processDroppedArgs return */
+	reg::packed(1728, MAY_BE_NULL, 1564), /* callCallbackImmediately $parameter */
+	reg::packed(1738, MAY_BE_NULL, 1345), /* callCallbackImmediately $parameterType */
+	reg::packed(910, 0), /* callCallbackImmediately $calleeReflection */
+	reg::packed(1245, MAY_BE_BOOL), /* callCallbackImmediately return */
+	reg::packed(1728, MAY_BE_NULL, 1564), /* shouldInvalidateCallbackExpressions $parameter */
+	reg::packed(1245, MAY_BE_BOOL), /* shouldInvalidateCallbackExpressions return */
+	reg::packed(1036, 0, 1045), /* getParameterTypeFromParameterClosureTypeExtension $callLike */
+	reg::packed(910, 0), /* getParameterTypeFromParameterClosureTypeExtension $calleeReflection */
+	reg::packed(1728, 0, 1564), /* getParameterTypeFromParameterClosureTypeExtension $parameter */
+	reg::packed(1074, 0, 1080), /* getParameterTypeFromParameterClosureTypeExtension $scope */
+	reg::packed(1245, MAY_BE_NULL, 1345), /* getParameterTypeFromParameterClosureTypeExtension return */
+	reg::packed(1036, 0, 1045), /* getParameterOutExtensionsType $callLike */
+	reg::packed(910, 0), /* getParameterOutExtensionsType $calleeReflection */
+	reg::packed(1862, 0, 1564), /* getParameterOutExtensionsType $currentParameter */
+	reg::packed(1074, 0, 1080), /* getParameterOutExtensionsType $scope */
+	reg::packed(1245, MAY_BE_NULL, 1345), /* getParameterOutExtensionsType return */
+	reg::packed(1909, MAY_BE_NULL, 1045), /* resolveClosureThisType $call */
+	reg::packed(910, 0), /* resolveClosureThisType $calleeReflection */
+	reg::packed(1728, 0, 1564), /* resolveClosureThisType $parameter */
+	reg::packed(1074, 0, 1080), /* resolveClosureThisType $scope */
+	reg::packed(1245, MAY_BE_NULL, 1345), /* resolveClosureThisType return */
+	reg::packed(1074, 0, 1080), /* observeUnpackedArgument $scope */
+	reg::packed(1551, 0, 1479), /* observeUnpackedArgument $acceptor */
+	reg::packed(1937, MAY_BE_LONG), /* observeUnpackedArgument $position */
+	reg::packed(1946, 0, 1345), /* observeUnpackedArgument $unpackedType */
+	reg::packed(1959, MAY_BE_BOOL), /* observeUnpackedArgument $isPure */
+	reg::packed(1245, 0, 1080), /* observeUnpackedArgument return */
+	reg::packed(1074, 0, 1080), /* observeArgumentValue $scope */
+	reg::packed(1551, 0, 1479), /* observeArgumentValue $acceptor */
+	reg::packed(1728, 0, 1564), /* observeArgumentValue $parameter */
+	reg::packed(1990, 0, 1345), /* observeArgumentValue $valueType */
+	reg::packed(1959, MAY_BE_BOOL), /* observeArgumentValue $isPure */
+	reg::packed(1245, 0, 1080), /* observeArgumentValue return */
+	reg::packed(1551, 0, 1479), /* findOriginalParameterType $acceptor */
+	reg::packed(1728, 0, 1564), /* findOriginalParameterType $parameter */
+	reg::packed(1245, MAY_BE_NULL, 1345), /* findOriginalParameterType return */
+	reg::packed(2047, MAY_BE_ARRAY), /* readArgResult $argResults */
+	reg::packed(2058, 0, 1388), /* readArgResult $argValue */
+	reg::packed(1245, 0, 2067), /* readArgResult return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 895 /* __construct */, 17, 0, 17, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processArgs = { { 1349 /* processArgs */, 11, 17, 12, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig addGatheredArgType = { { 1438 /* addGatheredArgType */, 6, 30, 6, 36, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig argConsumesResolvedParameterType = { { 1483 /* argConsumesResolvedParameterType */, 1, 37, 1, 38, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig gatherClosureArgType = { { 1528 /* gatherClosureArgType */, 4, 39, 4, 43, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig gatherArrayArgTypeSkeleton = { { 1581 /* gatherArrayArgTypeSkeleton */, 3, 44, 3, 47, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig selectArgsAcceptor = { { 1646 /* selectArgsAcceptor */, 5, 48, 5, 53, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig selectArgsMetadataAcceptor = { { 1684 /* selectArgsMetadataAcceptor */, 8, 54, 8, 62, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processDroppedArgs = { { 1739 /* processDroppedArgs */, 7, 63, 7, 70, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig callCallbackImmediately = { { 1821 /* callCallbackImmediately */, 3, 71, 3, 74, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig shouldInvalidateCallbackExpressions = { { 1845 /* shouldInvalidateCallbackExpressions */, 1, 75, 1, 76, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getParameterTypeFromParameterClosureTypeExtension = { { 1881 /* getParameterTypeFromParameterClosureTypeExtension */, 4, 77, 4, 81, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getParameterOutExtensionsType = { { 1948 /* getParameterOutExtensionsType */, 4, 82, 4, 86, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveClosureThisType = { { 1983 /* resolveClosureThisType */, 4, 87, 4, 91, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeUnpackedArgument = { { 2044 /* observeUnpackedArgument */, 5, 92, 5, 97, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeArgumentValue = { { 2078 /* observeArgumentValue */, 5, 98, 5, 103, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig findOriginalParameterType = { { 2099 /* findOriginalParameterType */, 2, 104, 2, 106, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig readArgResult = { { 2179 /* readArgResult */, 2, 107, 2, 109, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 820 /* __construct */, 16, 0, 16, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processArgs = { { 1274 /* processArgs */, 11, 16, 12, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig addGatheredArgType = { { 1363 /* addGatheredArgType */, 6, 29, 6, 35, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig argConsumesResolvedParameterType = { { 1408 /* argConsumesResolvedParameterType */, 1, 36, 1, 37, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig gatherClosureArgType = { { 1453 /* gatherClosureArgType */, 4, 38, 4, 42, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig selectCountStableMetadataAcceptor = { { 1517 /* selectCountStableMetadataAcceptor */, 5, 43, 5, 48, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig matchArgParameter = { { 1603 /* matchArgParameter */, 3, 49, 3, 52, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig selectArgsAcceptor = { { 1621 /* selectArgsAcceptor */, 5, 53, 5, 58, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig selectArgsMetadataAcceptor = { { 1654 /* selectArgsMetadataAcceptor */, 8, 59, 8, 67, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processDroppedArgs = { { 1709 /* processDroppedArgs */, 7, 68, 7, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig callCallbackImmediately = { { 1752 /* callCallbackImmediately */, 3, 76, 3, 79, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig shouldInvalidateCallbackExpressions = { { 1776 /* shouldInvalidateCallbackExpressions */, 1, 80, 1, 81, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getParameterTypeFromParameterClosureTypeExtension = { { 1812 /* getParameterTypeFromParameterClosureTypeExtension */, 4, 82, 4, 86, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getParameterOutExtensionsType = { { 1879 /* getParameterOutExtensionsType */, 4, 87, 4, 91, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveClosureThisType = { { 1914 /* resolveClosureThisType */, 4, 92, 4, 96, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeUnpackedArgument = { { 1966 /* observeUnpackedArgument */, 5, 97, 5, 102, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeArgumentValue = { { 2000 /* observeArgumentValue */, 5, 103, 5, 108, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findOriginalParameterType = { { 2021 /* findOriginalParameterType */, 2, 109, 2, 111, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readArgResult = { { 2101 /* readArgResult */, 2, 112, 2, 114, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ArgumentsHandler

@@ -55,7 +55,7 @@ final class ScopeOps
 	// parameter original-value markers (__phpstanOriginalForeachKey etc.) hide a
 	// synthesized Variable child on purpose - reassigning the variable must
 	// invalidate them through containment - so they can never be listed here.
-	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanPossiblyImpure(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
+	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
 
 	/**
 	 * Mirrors MutatingScope::getNodeKey().
@@ -359,6 +359,16 @@ final class ScopeOps
 	}
 
 	/**
+	 * Only a variable can be undefined. Any other expression missing from a
+	 * branch is just untracked there - a certainty-No conditional for it would,
+	 * once its guard matches, discard a narrowing made after the merge.
+	 */
+	private static function canBeUndefined(Expr $expr): bool
+	{
+		return $expr instanceof Variable && is_string($expr->name);
+	}
+
+	/**
 	 * Mirrors the former MutatingScope::createConditionalExpressions().
 	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -391,7 +401,7 @@ final class ScopeOps
 			if (!array_key_exists($exprString, $newVariableTypes)) {
 				if (
 					array_key_exists($exprString, $mergedExpressionTypes)
-					&& !$mergedExpressionTypes[$exprString]->getExpr() instanceof VirtualNode
+					&& self::canBeUndefined($mergedExpressionTypes[$exprString]->getExpr())
 				) {
 					$hasUndefinedTarget = true;
 				}
@@ -579,7 +589,7 @@ final class ScopeOps
 			if (array_key_exists($exprString, $ourExpressionTypes)) {
 				continue;
 			}
-			if ($mergedExprTypeHolder->getExpr() instanceof VirtualNode) {
+			if (!self::canBeUndefined($mergedExprTypeHolder->getExpr())) {
 				continue;
 			}
 

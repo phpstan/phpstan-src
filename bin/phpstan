@@ -10,8 +10,8 @@ use PHPStan\Command\FixerWorkerCommand;
 use PHPStan\Command\ResultCacheInfoCommand;
 use PHPStan\Command\WorkerCommand;
 use PHPStan\Internal\ComposerHelper;
+use PHPStan\Process\Restart\RestartManager;
 use PHPStan\Turbo\TurboExtensionEnabler;
-use PHPStan\Turbo\TurboProcessRestarter;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 (function () {
@@ -27,8 +27,13 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionEnabler.php';
 	require_once __DIR__ . '/../src/Turbo/TurboExtensionSelector.php';
-	require_once __DIR__ . '/../src/Turbo/TurboProcessRestarter.php';
-	TurboProcessRestarter::restartIfSuitable($_SERVER['argv']);
+	require_once __DIR__ . '/../src/Process/Restart/RestartReason.php';
+	require_once __DIR__ . '/../src/Process/Restart/OpcacheSettings.php';
+	require_once __DIR__ . '/../src/Process/Restart/RestartExtensionRegistry.php';
+	require_once __DIR__ . '/../src/Process/Restart/IniComposer.php';
+	require_once __DIR__ . '/../src/Process/Restart/RestartExecutor.php';
+	require_once __DIR__ . '/../src/Process/Restart/RestartManager.php';
+	RestartManager::run($_SERVER['argv']);
 	TurboExtensionEnabler::trustOwnTypesIfSuitable($_SERVER['argv']);
 
 	$analysisStartTime = microtime(true);
@@ -46,13 +51,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 		$vendorDirectory = $cwd . '/vendor';
 	}
 	$devOrPharLoader->unregister();
-
-	// fix missing key for vendor/hoa/protocol/Wrapper.php
-	$existingComposerAutoloadFiles = $GLOBALS['__composer_autoload_files'] ?? [];
-	$GLOBALS['__composer_autoload_files'] = array_merge(
-		$existingComposerAutoloadFiles,
-		array_fill_keys(['3e76f7f02b41af8cea96018933f6b7e3'], true),
-	);
 
 	$autoloaderInWorkingDirectory = $vendorDirectory . '/autoload.php';
 	$composerAutoloaderProjectPaths = [];

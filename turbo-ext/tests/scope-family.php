@@ -366,7 +366,7 @@ final class Harness
 		return strtr(get_class($object), $this->classNorm);
 	}
 
-	/** The 33 constructor arguments of a scope, by parameter name. */
+	/** The constructor arguments of a scope, by parameter name. */
 	public function constructorArgs(MutatingScope $scope): array
 	{
 		$args = [];
@@ -643,6 +643,35 @@ $sfOverallVersionTables = static function (string $side) use ($sfHarness, $sfOve
 
 	return [$table, $table, []];
 };
+// PHP_VERSION_ID under a guard that only gives an upper bound (`PHP_VERSION_ID < X`),
+// with a single analysed version pinned to phpVersion: 80500 whatever PHP runs
+// this: getPhpVersion() raises the lower bound to the analysed version, or as
+// close to it as the guard allows - once with the analysed version above the
+// guard's bound and once below it
+$sfGuardedVersionScopes = [];
+foreach ([80399, 80599] as $sfGuardedMax) {
+	$sfGuardedVersionFetch = new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID'));
+	$sfGuardedVersionArgs = $sfHarness->constructorArgs(
+		$sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile))
+			->assignExpression($sfGuardedVersionFetch, \PHPStan\Type\IntegerRangeType::fromInterval(\PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, $sfGuardedMax), new \PHPStan\Type\IntegerType()),
+	);
+	$sfGuardedVersionArgs['phpVersion'] = new \PHPStan\Php\PhpVersion(80500);
+	$sfGuardedVersionArgs['configuredPhpVersionRangeHelper'] = new \PHPStan\Php\ConfiguredPhpVersionRangeHelper(80500, $scContainer->getByType(\PHPStan\Php\ComposerPhpVersionFactory::class));
+	$sfGuardedVersionScope = new \PHPStan\Analyser\MutatingScope(...array_values($sfGuardedVersionArgs));
+	$sfScopes[spl_object_id($sfGuardedVersionScope)] = [$sfGuardedVersionScope, [$sfGuardedVersionFetch], null];
+	$sfGuardedVersionScopes[] = [$sfGuardedVersionScope, static function (string $side) use ($sfHarness, $sfGuardedVersionFetch, $sfGuardedMax): array {
+		$native = $side === 'native';
+		$range = $native
+			? \PHPStanTurbo\IntegerRangeType::fromInterval(\PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, $sfGuardedMax)
+			: \PHPStan\Type\IntegerRangeType::fromInterval(\PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, $sfGuardedMax);
+		$holder = $native
+			? new \PHPStanTurbo\ExpressionTypeHolder($sfGuardedVersionFetch, $range, \PHPStanTurbo\TrinaryLogic::createYes())
+			: new \PHPStan\Analyser\ExpressionTypeHolder($sfGuardedVersionFetch, $range, \PHPStan\TrinaryLogic::createYes());
+		$table = [$sfHarness->key($sfGuardedVersionFetch) => $holder];
+
+		return [$table, $table, []];
+	}];
+}
 foreach ([80500, 70400] as $sfVersionId) {
 	$sfVersionScope = $sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile)->enterClass($sfReflectionProvider->getClass(\ScopeFamilyFixture\Holder::class)))
 		->assignExpression(new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID')), new \PHPStan\Type\Constant\ConstantIntegerType($sfVersionId), new \PHPStan\Type\IntegerType());
@@ -759,6 +788,9 @@ $sfScopes[spl_object_id($sfConditionalScope)] = [$sfConditionalScope, [new \PhpP
 // the scopes whose tables are built per side (each side's own Type classes)
 $sfScopes[spl_object_id($sfSyntheticScope)][3] = $sfSyntheticTables;
 $sfScopes[spl_object_id($sfOverallVersionScope)][3] = $sfOverallVersionTables;
+foreach ($sfGuardedVersionScopes as [$sfGuardedVersionScope, $sfGuardedVersionTables]) {
+	$sfScopes[spl_object_id($sfGuardedVersionScope)][3] = $sfGuardedVersionTables;
+}
 $sfPromotedArgs = $sfHarness->constructorArgs($sfSyntheticScope);
 $sfPromotedArgs['nativeTypesPromoted'] = true;
 $sfPromotedScope = new \PHPStan\Analyser\MutatingScope(...array_values($sfPromotedArgs));
@@ -1105,6 +1137,16 @@ $sfSnapshot = static function (object $scope, ?array $props = null) use ($sfProp
 
 	return $state;
 };
+// the scope's ScopeServices with another node callback (the services are
+// read-only, so a copy replaces them)
+$sfWithNodeCallback = static function (object $services, ?callable $nodeCallback): object {
+	$args = [];
+	foreach ((new \ReflectionClass($services))->getConstructor()->getParameters() as $parameter) {
+		$args[$parameter->getName()] = $parameter->getName() === 'nodeCallback' ? $nodeCallback : $services->{$parameter->getName()};
+	}
+
+	return new \PHPStan\Analyser\ScopeServices(...$args);
+};
 $sfRestore = static function (object $scope, array $state): void {
 	$class = new \ReflectionClass($scope);
 	foreach ($state as $name => $value) {
@@ -1350,7 +1392,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 
 		// ---- the type resolution core, with the walk's storage
 		// (or a fresh one for a hand-built scope) as the analysis in progress
-		$stack = $args['expressionResultStorageStack'];
+		$stack = $args['services']->expressionResultStorageStack;
 		$stack->push($sfStorage ?? new \PHPStan\Analyser\ExpressionResultStorage());
 		try {
 			foreach ($exprs as $i => $expr) {
@@ -1360,7 +1402,6 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				if ($scope->hasExpressionType($expr)->yes()) {
 					$observe("getTrackedExpressionType#$i $key", static fn () => $scope->getTrackedExpressionType($expr));
 				}
-				$observe("findPossiblyImpureCallDescriptions#$i $key", static fn () => $scope->findPossiblyImpureCallDescriptions($expr));
 				if ($expr instanceof \PhpParser\Node\Expr\PropertyFetch) {
 					$observe("isReadonlyPropertyFetch(this)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, true));
 					$observe("isReadonlyPropertyFetch(any)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, false));
@@ -2087,42 +2128,42 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				'getIterableValueType(non-iterable union)' => static fn () => $scope->getIterableValueType($scalarUnion),
 				'getIterableKeyType(array)' => static fn () => $scope->getIterableKeyType($arrayType),
 				'getIterableValueType(array)' => static fn () => $scope->getIterableValueType($arrayType),
-				'node callback' => static function () use ($scope, $sfHarness, $sfProp, $sfRestore) {
-					$saved = $sfProp($scope, 'nodeCallback');
+				'node callback' => static function () use ($scope, $sfHarness, $sfProp, $sfRestore, $sfWithNodeCallback) {
+					$saved = $sfProp($scope, 'services');
 					$seen = [];
 					$callback = static function (\PhpParser\Node $node, object $answerer) use (&$seen, $sfHarness): void {
 						$seen[] = [$sfHarness->className($node), $sfHarness->className($answerer)];
 					};
 					try {
-						$sfRestore($scope, ['nodeCallback' => $callback]);
+						$sfRestore($scope, ['services' => $sfWithNodeCallback($saved, $callback)]);
 						$scope->invokeNodeCallback(new \PhpParser\Node\Expr\Variable('cb'));
 						$scope->emitCollectedData('ScopeFamily\\SomeCollector', ['x' => 1]);
 
 						return $seen;
 					} finally {
-						$sfRestore($scope, ['nodeCallback' => $saved]);
+						$sfRestore($scope, ['services' => $saved]);
 					}
 				},
-				'invokeNodeCallback(no callback)' => static function () use ($scope, $sfProp, $sfRestore) {
-					$saved = $sfProp($scope, 'nodeCallback');
+				'invokeNodeCallback(no callback)' => static function () use ($scope, $sfProp, $sfRestore, $sfWithNodeCallback) {
+					$saved = $sfProp($scope, 'services');
 					try {
-						$sfRestore($scope, ['nodeCallback' => null]);
+						$sfRestore($scope, ['services' => $sfWithNodeCallback($saved, null)]);
 						$scope->invokeNodeCallback(new \PhpParser\Node\Expr\Variable('cb'));
 
 						return 'no throw';
 					} finally {
-						$sfRestore($scope, ['nodeCallback' => $saved]);
+						$sfRestore($scope, ['services' => $saved]);
 					}
 				},
-				'emitCollectedData(no callback)' => static function () use ($scope, $sfProp, $sfRestore) {
-					$saved = $sfProp($scope, 'nodeCallback');
+				'emitCollectedData(no callback)' => static function () use ($scope, $sfProp, $sfRestore, $sfWithNodeCallback) {
+					$saved = $sfProp($scope, 'services');
 					try {
-						$sfRestore($scope, ['nodeCallback' => null]);
+						$sfRestore($scope, ['services' => $sfWithNodeCallback($saved, null)]);
 						$scope->emitCollectedData('ScopeFamily\\SomeCollector', null);
 
 						return 'no throw';
 					} finally {
-						$sfRestore($scope, ['nodeCallback' => $saved]);
+						$sfRestore($scope, ['services' => $saved]);
 					}
 				},
 			];

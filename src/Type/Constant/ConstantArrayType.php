@@ -54,6 +54,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\RecursionGuard;
@@ -773,10 +774,10 @@ class ConstantArrayType implements Type
 
 			if (count($this->keyTypes) === 0) {
 				if (!$bothDefinite) {
-					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+					return IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterableAtLeastOnce()->negate());
 				}
 				if ($thisUnsealedness->no()) {
-					return new IsSuperTypeOfResult($type->isIterableAtLeastOnce()->negate(), []);
+					return IsSuperTypeOfResult::createFromTrinaryLogic($type->isIterableAtLeastOnce()->negate());
 				}
 				// $this is unsealed with no known keys — fall through to extras/unsealed-part checks below
 			}
@@ -2793,15 +2794,7 @@ class ConstantArrayType implements Type
 				}
 
 				if ($valueIsSuperType->yes()) {
-					$unsetResult = $this->unsetOffset($offsetType, true);
-					// When the source was definitely a list but the post-unset shape
-					// definitely isn't (e.g. unsetting a non-optional leading key
-					// creates a hole), no value of $this could have lacked the
-					// removed key — the subtraction yields the empty set.
-					if ($this->isList->yes() && $unsetResult->isList()->no()) {
-						return new NeverType();
-					}
-					return $unsetResult;
+					return $this->removeOffset($offsetType);
 				}
 
 				$newValueType = TypeCombinator::remove($currentValueType, $valueTypeToRemove);
@@ -2822,18 +2815,57 @@ class ConstantArrayType implements Type
 		}
 
 		if ($typeToRemove instanceof HasOffsetType) {
-			$unsetResult = $this->unsetOffset($typeToRemove->getOffsetType(), true);
-			// When the source was definitely a list but the post-unset shape
-			// definitely isn't (e.g. unsetting a non-optional leading key
-			// creates a hole), no value of $this could have lacked the
-			// removed key — the subtraction yields the empty set.
-			if ($this->isList->yes() && $unsetResult->isList()->no()) {
-				return new NeverType();
-			}
-			return $unsetResult;
+			return $this->removeOffset($typeToRemove->getOffsetType());
 		}
 
 		return null;
+	}
+
+	/**
+	 * The values of this shape lacking the offset. Unlike unsetOffset(), an
+	 * explicit key the unsealed extras can also hold becomes an optional never
+	 * key - dropping it would let the extras supply it again, widening the
+	 * shape instead of subtracting from it.
+	 */
+	private function removeOffset(Type $offsetType): Type
+	{
+		$unsetResult = $this->unsetOffset($offsetType, true);
+		// When the source was definitely a list but the post-unset shape
+		// definitely isn't (e.g. unsetting a non-optional leading key
+		// creates a hole), no value of $this could have lacked the
+		// removed key — the subtraction yields the empty set.
+		if ($this->isList->yes() && $unsetResult->isList()->no()) {
+			return new NeverType();
+		}
+
+		if ($this->unsealed === null || !$this->isUnsealed()->yes()) {
+			return $unsetResult;
+		}
+
+		$offsetType = $offsetType->toArrayKey();
+		$offsetValues = $offsetType->getConstantScalarValues();
+		if (count($offsetValues) !== 1 || $this->unsealed[0]->isSuperTypeOf($offsetType)->no()) {
+			return $unsetResult;
+		}
+
+		$offsetValue = $offsetValues[0];
+		if (!is_int($offsetValue) && !is_string($offsetValue)) {
+			return $unsetResult;
+		}
+
+		$i = $this->getKeyIndexMap()[$offsetValue] ?? null;
+		if ($i === null) {
+			return $unsetResult;
+		}
+
+		$valueTypes = $this->valueTypes;
+		$valueTypes[$i] = new NonAcceptingNeverType();
+		$optionalKeys = $this->optionalKeys;
+		if (!in_array($i, $optionalKeys, true)) {
+			$optionalKeys[] = $i;
+		}
+
+		return $this->recreate($this->keyTypes, $valueTypes, $this->nextAutoIndexes, $optionalKeys, $unsetResult->isList(), $this->unsealed);
 	}
 
 	public function traverse(callable $cb): Type

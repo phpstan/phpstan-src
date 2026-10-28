@@ -25,7 +25,6 @@ final class SwitchConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private ExprPrinter $exprPrinter,
 		private PhpVersion $phpVersion,
@@ -124,7 +123,6 @@ final class SwitchConditionRule implements Rule
 					$subjectType->describe(VerbosityLevel::value()),
 					$caseConditionType->describe(VerbosityLevel::value()),
 				))->line($arm->getLine())->identifier('switch.alwaysFalse');
-				$this->possiblyImpureTipHelper->addTip($armScope, $conditionExpr, $errorBuilder);
 				$ruleError = $errorBuilder->build();
 				if ($scope->isInTrait()) {
 					$this->constantConditionInTraitHelper->emitError(self::class, $scope, $conditionExpr, false, $ruleError);
@@ -145,7 +143,6 @@ final class SwitchConditionRule implements Rule
 				$armScope->getType($caseCondition)->describe(VerbosityLevel::value()),
 			))->line($arm->getLine())->identifier('switch.alwaysTrue')
 				->tip('Remove remaining cases below this one and this error will disappear too.');
-			$this->possiblyImpureTipHelper->addTip($armScope, $conditionExpr, $errorBuilder);
 			$ruleError = $errorBuilder->build();
 			if ($scope->isInTrait()) {
 				$this->constantConditionInTraitHelper->emitError(self::class, $scope, $conditionExpr, true, $ruleError);

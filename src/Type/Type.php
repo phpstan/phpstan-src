@@ -36,11 +36,13 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
  * will miss union types, intersection types with accessory types, and other composite forms.
  * Always use the `is*()` methods or `isSuperTypeOf()` instead:
  *
- *     // Wrong:
- *     if ($type instanceof StringType) { ... }
+ * ```php
+ * // Wrong:
+ * if ($type instanceof StringType) { ... }
  *
- *     // Correct:
- *     if ($type->isString()->yes()) { ... }
+ * // Correct:
+ * if ($type->isString()->yes()) { ... }
+ * ```
  *
  * @api
  * @api-do-not-implement
@@ -563,14 +565,13 @@ interface Type
 	/**
 	 * Returns actual template type for a given object.
 	 *
-	 * Example:
+	 * For example, with a class `Foo` that declares `@template T`:
 	 *
-	 * @-template T
-	 * class Foo {}
-	 *
+	 * ```php
 	 * // $fooType is Foo<int>
 	 * $t = $fooType->getTemplateType(Foo::class, 'T');
 	 * $t->isInteger(); // yes
+	 * ```
 	 *
 	 * Returns ErrorType in case of a missing type.
 	 *

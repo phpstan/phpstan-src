@@ -188,6 +188,9 @@ constexpr Method mHasMethod{"hasMethod", PT_OP_HAS_METHOD};
 constexpr Method mGetMethod{"getMethod", PT_OP_GET_METHOD};
 constexpr Method mIsStatic{"isStatic"};
 constexpr Method mGetStaticObjectType{"getStaticObjectType"};
+constexpr Method mChangeBaseClass{"changeBaseClass", PT_OP_CHANGE_BASE_CLASS};
+constexpr Method mGetClassReflection{"getClassReflection", PT_OP_GET_CLASS_REFLECTION};
+constexpr Method mGetObjectClassReflections{"getObjectClassReflections", PT_OP_GET_OBJECT_CLASS_REFLECTIONS};
 constexpr Method mGetAncestorWithClassName{"getAncestorWithClassName", PT_OP_GET_ANCESTOR_WITH_CLASS_NAME};
 constexpr Method mGetClassName{"getClassName"};
 constexpr Method mGetClassStringObjectType{"getClassStringObjectType"};
@@ -4587,7 +4590,7 @@ public:
 
 	/* Mirrors getClassConstFetchTypeByReflection(); $constantName a string
 	 * zval, $classReflection PHP null for null */
-	zv::Val getClassConstFetchTypeByReflection(zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback) const
+	zv::Val getClassConstFetchTypeByReflection(zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted = false) const
 	{
 		zend_string *constantNameString = Z_STR_P(constantName);
 		bool constantNameIsClass = zend_string_equals_literal_ci(constantNameString, "class");
@@ -4679,6 +4682,15 @@ public:
 				}
 			}
 
+			/* $fetchedOnType = count($referencedClasses) === 1 ? $constantClassType : new ObjectType($referencedClass) */
+			zv::Val fetchedOnType;
+			if (zend_hash_num_elements(Z_ARRVAL_P(referencedClasses.raw())) == 1) {
+				fetchedOnType = zv::Val::copyOf(zv::Ref(constantClassType.raw()));
+			} else {
+				fetchedOnType = objectTypeOf(referencedClass);
+				if (UNEXPECTED(fetchedOnType.isUndef())) return zv::Val();
+			}
+
 			IETR_VAL(constantClassReflection, reflectionProviderGetClass(referencedClass));
 			{
 				IETR_VAL(hasConstant, callOn(constantClassReflection.raw(), mHasConstant, 1, constantName));
@@ -4721,8 +4733,13 @@ public:
 				continue;
 			}
 
+			/* $cacheKey = $nativeTypesPromoted ? $resolvingName . '#native' : $resolvingName */
+			zend_string *cacheKey = nativeTypesPromoted
+				? zend_string_concat2(ZSTR_VAL(resolvingName), ZSTR_LEN(resolvingName), "#native", 7)
+				: zend_string_copy(resolvingName);
+			zv::Val cacheKeyHold = zv::Val::adoptString(cacheKey);
 			if (!isObject) {
-				zval *cached = zend_symtable_find(Z_ARRVAL_P(prop(slots::classConstantValueTypeCache)), resolvingName);
+				zval *cached = zend_symtable_find(Z_ARRVAL_P(prop(slots::classConstantValueTypeCache)), cacheKey);
 				if (cached != NULL) {
 					types.push(zv::Ref(cached));
 					continue;
@@ -4757,9 +4774,11 @@ public:
 					}
 				}
 				IETR_VAL(className, classReflectionName(constantClassReflection.raw()));
-				IETR_VAL(phpDocType, callOn(constantClassReflection.raw(), mGetConstantPhpDocType, 1, constantName));
-				IETR_VAL(resolvedType, resolveClassConstantType(prop(slots::constantResolver), className.raw(), constantName, constantType.raw(), nativeType.raw(), phpDocType.raw()));
-				writeArrayProperty(slots::classConstantValueTypeCache, resolvingName, resolvedType.raw());
+				zv::Val phpDocType = nativeTypesPromoted ? zv::Val::null() : callOn(constantClassReflection.raw(), mGetConstantPhpDocType, 1, constantName);
+				if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
+				IETR_VAL(resolvedClassConstantType, resolveClassConstantType(prop(slots::constantResolver), className.raw(), constantName, constantType.raw(), nativeType.raw(), phpDocType.raw()));
+				IETR_VAL(resolvedType, transformStaticType(resolvedClassConstantType.raw(), fetchedOnType.raw()));
+				writeArrayProperty(slots::classConstantValueTypeCache, cacheKey, resolvedType.raw());
 				types.push(zv::Ref(resolvedType.raw()));
 				unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
 				continue;
@@ -4773,7 +4792,7 @@ public:
 					IETR_VAL(constantIsFinal, callOn(constantReflection.raw(), mIsFinal));
 					if (!zend_is_true(constantIsFinal.raw())) {
 						IETR_VAL(hasPhpDocType, callOn(constantReflection.raw(), mHasPhpDocType));
-						if (!zend_is_true(hasPhpDocType.raw())) {
+						if (nativeTypesPromoted || !zend_is_true(hasPhpDocType.raw())) {
 							IETR_VAL(hasNativeType, callOn(constantReflection.raw(), mHasNativeType));
 							if (!zend_is_true(hasNativeType.raw())) {
 								unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
@@ -4784,25 +4803,34 @@ public:
 				}
 			}
 
+			IETR_VAL(nativeType, callOn(constantReflection.raw(), mGetNativeType));
 			zv::Val constantType;
 			{
 				bool classIsFinal;
 				if (UNEXPECTED(!classReflectionIsFinal(constantClassReflection.raw(), classIsFinal))) return zv::Val();
-				if (!classIsFinal) {
-					constantType = callOn(constantReflection.raw(), mGetValueType);
-				} else {
+				bool valueIsExact = classIsFinal;
+				if (!valueIsExact && nativeTypesPromoted) {
+					IETR_VAL(constantIsFinal, callOn(constantReflection.raw(), mIsFinal));
+					valueIsExact = zend_is_true(constantIsFinal.raw());
+				}
+				if (valueIsExact) {
 					IETR_VAL(valueExpr, callOn(constantReflection.raw(), mGetValueExpr));
 					IETR_VAL(declaringClass, callOn(constantReflection.raw(), mGetDeclaringClass));
 					IETR_VAL(constantContext, contextFromClassReflection(declaringClass.raw()));
 					constantType = getTypeRecursive(valueExpr.raw(), constantContext.raw());
+				} else if (nativeTypesPromoted && Z_TYPE_P(nativeType.raw()) != IS_NULL) {
+					constantType = zv::Val::copyOf(zv::Ref(nativeType.raw()));
+				} else {
+					constantType = callOn(constantReflection.raw(), mGetValueType);
 				}
 				if (UNEXPECTED(constantType.isUndef())) return zv::Val();
 			}
 
-			IETR_VAL(nativeType, callOn(constantReflection.raw(), mGetNativeType));
 			IETR_VAL(className, classReflectionName(constantClassReflection.raw()));
-			IETR_VAL(phpDocType, callOn(constantClassReflection.raw(), mGetConstantPhpDocType, 1, constantName));
-			IETR_VAL(resolvedConstantType, resolveClassConstantType(prop(slots::constantResolver), className.raw(), constantName, constantType.raw(), nativeType.raw(), phpDocType.raw()));
+			zv::Val phpDocType = nativeTypesPromoted ? zv::Val::null() : callOn(constantClassReflection.raw(), mGetConstantPhpDocType, 1, constantName);
+			if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
+			IETR_VAL(resolvedClassConstantType, resolveClassConstantType(prop(slots::constantResolver), className.raw(), constantName, constantType.raw(), nativeType.raw(), phpDocType.raw()));
+			IETR_VAL(resolvedConstantType, transformStaticType(resolvedClassConstantType.raw(), fetchedOnType.raw()));
 			unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
 			types.push(std::move(resolvedConstantType));
 		}
@@ -4819,7 +4847,66 @@ public:
 		}
 
 		IETR_VAL(constant, callOn(constantClassType.raw(), mGetConstant, 1, constantName));
-		return callOn(constant.raw(), mGetValueType);
+		IETR_VAL(valueType, callOn(constant.raw(), mGetValueType));
+		return transformStaticType(valueType.raw(), constantClassType.raw());
+	}
+
+	/* Mirrors transformStaticType(): TypeTraverser::map($type, the closure
+	 * below over $fetchedOnType) */
+	static zv::Val transformStaticType(zval *type, zval *fetchedOnType)
+	{
+		IETR_VAL(callback, pt_type_native_callback(transformStaticTypeCallback, fetchedOnType, NULL));
+		return pt_type_traverser_map_of(type, callback.raw());
+	}
+
+	/* the closure of transformStaticType(): `static function (Type $type,
+	 * callable $traverse) use ($fetchedOnType): Type` — a StaticType has its
+	 * base class changed to the class of a StaticType fetched-on type, or,
+	 * a GenericStaticType, becomes the static object type of its base class
+	 * changed to the single fetched-on class; any other StaticType becomes
+	 * the fetched-on type; everything else traverses */
+	static void transformStaticTypeCallback(zval *fetchedOnType, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+	{
+		(void) state1;
+		if (UNEXPECTED(argc < 2)) {
+			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_initializer_expr_type_resolver->name), argc);
+			return;
+		}
+		zval *type = &argv[0];
+		zv::Val result = transformStaticTypeStep(type, fetchedOnType, &argv[1]);
+		if (UNEXPECTED(result.isUndef())) return;
+		result.intoReturnValue(return_value);
+	}
+
+	static zv::Val transformStaticTypeStep(zval *type, zval *fetchedOnType, zval *traverse)
+	{
+		if (!isA(type, pt_ce_static_type)) {
+			return pt_type_call_callable(traverse, 1, type);
+		}
+		if (isA(fetchedOnType, pt_ce_static_type)) {
+			/* return $traverse($type->changeBaseClass($fetchedOnType->getClassReflection())); */
+			IETR_VAL(fetchedOnReflection, callOn(fetchedOnType, mGetClassReflection));
+			IETR_VAL(changed, callOn(type, mChangeBaseClass, 1, fetchedOnReflection.raw()));
+			return pt_type_call_callable(traverse, 1, changed.raw());
+		}
+		if (isA(type, pt_ce_generic_static_type)) {
+			IETR_VAL(reflections, callOn(fetchedOnType, mGetObjectClassReflections));
+			if (UNEXPECTED(!requireArray(reflections.raw()))) return zv::Val();
+			if (zend_hash_num_elements(Z_ARRVAL_P(reflections.raw())) == 1) {
+				/* return $traverse($type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType()); */
+				zval *first = zend_hash_index_find(Z_ARRVAL_P(reflections.raw()), 0);
+				if (UNEXPECTED(first == NULL)) {
+					zend_throw_error(NULL, "phpstan_turbo: getObjectClassReflections() must return a list");
+					return zv::Val();
+				}
+				ZVAL_DEREF(first);
+				IETR_VAL(changed, callOn(type, mChangeBaseClass, 1, first));
+				IETR_VAL(staticObjectType, callOn(changed.raw(), mGetStaticObjectType));
+				return pt_type_call_callable(traverse, 1, staticObjectType.raw());
+			}
+		}
+
+		return zv::Val::copyOf(zv::Ref(fetchedOnType));
 	}
 
 	/* Mirrors getClassConstFetchType(); $className PHP null for null */
@@ -4836,6 +4923,25 @@ public:
 		}
 
 		return getClassConstFetchTypeByReflection(class_, constantName, classReflection.raw(), getTypeCallback);
+	}
+
+	/* getEnumCaseValueType(): the case value resolved under the
+	 * currentlyResolvingClassConstant guard, mixed on re-entry */
+	zv::Val getEnumCaseValueType(zend_string *className, zend_string *caseName, zval *valueExpr, zval *context) const
+	{
+		zend_string *resolvingName = zend_string_concat3(ZSTR_VAL(className), ZSTR_LEN(className), "::", 2, ZSTR_VAL(caseName), ZSTR_LEN(caseName));
+		zv::Val resolvingNameHold = zv::Val::adoptString(resolvingName);
+		if (zend_symtable_exists(Z_ARRVAL_P(prop(slots::currentlyResolvingClassConstant)), resolvingName)) {
+			return newMixedType();
+		}
+
+		zval trueValue = {};
+		ZVAL_TRUE(&trueValue);
+		writeArrayProperty(slots::currentlyResolvingClassConstant, resolvingName, &trueValue);
+		zv::Val type = getType(valueExpr, context);
+		/* the twin's finally: released with an exception pending too */
+		unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
+		return type;
 	}
 
 	/* }}} */
@@ -5336,6 +5442,19 @@ zv::Val pt_initializer_expr_type_resolver_get_type(zval *resolver, zval *expr, z
 	return callResolverMethod(site, resolver, PT_LC("gettype"), 2, argv);
 }
 
+zv::Val pt_initializer_expr_type_resolver_get_enum_case_value_type(zval *resolver, zend_string *className, zend_string *caseName, zval *valueExpr, zval *context)
+{
+	if (EXPECTED(isNativeResolver(resolver) && Z_TYPE_P(valueExpr) == IS_OBJECT)) {
+		return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getEnumCaseValueType(className, caseName, valueExpr, context);
+	}
+	static pt_method_site site;
+	zval classNameZv, caseNameZv;
+	ZVAL_STR(&classNameZv, className);
+	ZVAL_STR(&caseNameZv, caseName);
+	zv::Args argv{&classNameZv, &caseNameZv, valueExpr, context};
+	return callResolverMethod(site, resolver, PT_LC("getenumcasevaluetype"), 4, argv);
+}
+
 zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_ietr_binary_operator op, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback)
 {
 	if (EXPECTED(isNativeResolver(resolver))) {
@@ -5464,15 +5583,15 @@ zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *reso
 	return callResolverMethod(site, resolver, PT_LC("createfirstclasscallable"), 3, argv);
 }
 
-zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback)
+zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted)
 {
 	if (EXPECTED(isNativeResolver(resolver) && Z_TYPE_P(constantName) == IS_STRING)) {
-		return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getClassConstFetchTypeByReflection(class_, constantName, classReflection, getTypeCallback);
+		return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getClassConstFetchTypeByReflection(class_, constantName, classReflection, getTypeCallback, nativeTypesPromoted);
 	}
 	static pt_method_site site;
 	IETR_VAL(callable, callbackCallable(getTypeCallback));
-	zv::Args argv{class_, constantName, classReflection, callable.raw()};
-	return callResolverMethod(site, resolver, PT_LC("getclassconstfetchtypebyreflection"), 4, argv);
+	zv::Args argv{class_, constantName, classReflection, callable.raw(), nativeTypesPromoted};
+	return callResolverMethod(site, resolver, PT_LC("getclassconstfetchtypebyreflection"), 5, argv);
 }
 
 zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback)
@@ -5639,6 +5758,14 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expr, context)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgExpr(expr, 1) || !ietrArgContext(context, 2))) RETURN_THROWS();
 		PT_RETURN_VAL(IETR_THIS.getType(expr, context));
+	});
+
+	cls.method(sigs::getEnumCaseValueType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *className, *caseName;
+		zval *valueExpr, *context;
+		if (!zp::parse<zp::Str, zp::Str, zp::Obj, zp::Obj>(execute_data, className, caseName, valueExpr, context)) RETURN_THROWS();
+		if (UNEXPECTED(!ietrArgExpr(valueExpr, 3) || !ietrArgContext(context, 4))) RETURN_THROWS();
+		PT_RETURN_VAL(IETR_THIS.getEnumCaseValueType(className, caseName, valueExpr, context));
 	});
 
 	cls.method(sigs::getConcatType, IETR_OPERATOR_GLUE(self.getConcatType(left, right, getTypeCallback)));
@@ -5854,7 +5981,8 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	cls.method(sigs::getClassConstFetchTypeByReflection, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *class_, *classReflection, *callable;
 		zend_string *constantName;
-		if (!zp::parse<zp::Obj, zp::Str, zp::ObjOrNull, zp::Zval>(execute_data, class_, constantName, classReflection, callable)) RETURN_THROWS();
+		bool nativeTypesPromoted = false;
+		if (!zp::parse<zp::Obj, zp::Str, zp::ObjOrNull, zp::Zval, zp::Opt<zp::Bool>>(execute_data, class_, constantName, classReflection, callable, nativeTypesPromoted)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgCallable(callable, 4))) RETURN_THROWS();
 		zval nullReflection;
 		if (classReflection == NULL) {
@@ -5866,7 +5994,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		zval constantNameZv;
 		ZVAL_STR(&constantNameZv, constantName);
 		pt_ietr_get_type getTypeCallback = callableCallback(callable);
-		PT_RETURN_VAL(IETR_THIS.getClassConstFetchTypeByReflection(class_, &constantNameZv, classReflection, getTypeCallback));
+		PT_RETURN_VAL(IETR_THIS.getClassConstFetchTypeByReflection(class_, &constantNameZv, classReflection, getTypeCallback, nativeTypesPromoted));
 	});
 
 	cls.method(sigs::getClassConstFetchType, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -5944,6 +6072,13 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	cls.method(sigs::getReflectionProvider, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(IETR_THIS.getReflectionProvider());
+	});
+
+	cls.method(sigs::transformStaticType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type, *fetchedOnType;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, type, fetchedOnType)) RETURN_THROWS();
+		if (UNEXPECTED(!ietrArgType(type, 1) || !ietrArgType(fetchedOnType, 2))) RETURN_THROWS();
+		PT_RETURN_VAL(InitializerExprTypeResolver::transformStaticType(type, fetchedOnType));
 	});
 
 	cls.method(sigs::getNeverType, [](INTERNAL_FUNCTION_PARAMETERS) {

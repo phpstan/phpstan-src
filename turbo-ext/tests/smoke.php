@@ -489,7 +489,6 @@ $epBuildExprs = static function () use ($smokeParser, $nodeFinder, $epSnippets):
 	$exprs['SetOffsetValueTypeExpr'] = new \PHPStan\Node\Expr\SetOffsetValueTypeExpr($var, null, $dim);
 	$exprs['SetExistingOffsetValueTypeExpr'] = new \PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr($var, $dim, $var);
 	$exprs['AlwaysRememberedExpr'] = new \PHPStan\Node\Expr\AlwaysRememberedExpr($var, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType());
-	$exprs['PossiblyImpureCallExpr'] = new \PHPStan\Node\Expr\PossiblyImpureCallExpr($var, $dim, 'call');
 	$exprs['PropertyInitializationExpr'] = new \PHPStan\Node\Expr\PropertyInitializationExpr('prop');
 	$exprs['CloneReinitializationExpr'] = new \PHPStan\Node\Expr\CloneReinitializationExpr('prop');
 	$exprs['ForeachValueByRefExpr'] = new \PHPStan\Node\Expr\ForeachValueByRefExpr($var);
@@ -4286,7 +4285,7 @@ foreach ($hhResults['php'] as $label => $described) {
 check(($hhResults['php']['variable / top']['type'] ?? null) === 'int' && ($hhResults['php']['dynamic name / top']['flow']['kind'] ?? null) === 'sequence', 'ScalarHandler/VariableHandler: the fixture resolves a variable and walks a dynamic name: ' . json_encode([$hhResults['php']['variable / top'] ?? null, $hhResults['php']['dynamic name / top'] ?? null]));
 // a native closure is not serializable and has no body when userland creates one
 try {
-	serialize((new \ReflectionProperty(\PHPStan\Analyser\ExpressionResult::class, 'typeCallback'))->getValue((new \PHPStanTurbo\ScalarHandler($hhInitializer, $hhFactory))->processExpr($hhNodeScopeResolver, $hhStmt, $hhExprs['int'], $hhScope, new \PHPStan\Analyser\ExpressionResultStorage(), new \PHPStan\Analyser\NoopNodeCallback(), $hhContexts['top'])));
+	serialize((new \ReflectionProperty(\PHPStan\Analyser\ExpressionResult::class, 'typeCallback'))->getValue((new \PHPStanTurbo\VariableHandler($hhNativeFactory, $hhDefault, $hhIdentical, $hhInitializer))->processExpr($hhNodeScopeResolver, $hhStmt, $hhExprs['variable'], $hhScope, new \PHPStan\Analyser\ExpressionResultStorage(), new \PHPStan\Analyser\NoopNodeCallback(), $hhContexts['top'])));
 	check(false, 'NativeClosure: serialize() must refuse');
 } catch (\Exception $e) {
 	check(str_contains($e->getMessage(), 'is not allowed'), 'NativeClosure: serialize() message: ' . $e->getMessage());
@@ -4660,6 +4659,7 @@ $coveredElsewhere = [
 	\PHPStan\Cache\ArenaCache::class => 'arena-smoke.php',
 	\PHPStan\Parser\ParserRunner::class => 'parser-corpus.php',
 	\PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner::class => 'php-file-cleaner-corpus.php',
+	\PHPStan\Turbo\ForkedChild::class => 'exit-immediately.php',
 	\PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles::class => 'symbol-finder-corpus.php',
 	\PHPStan\Analyser\ExprHandler\Helper\EarlyTerminatingCallHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\MethodCallReturnTypeHelper::class => 'walk-trace.php',
@@ -4719,6 +4719,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\BinaryOpHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\CoalesceHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\CoalesceCompositionHelper::class => 'walk-trace.php',
+	\PHPStan\Analyser\ExprHandler\Helper\ForeachEmptyOrObjectNarrowingHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\BreakContinueHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\LabelHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\GotoHandler::class => 'walk-trace.php',
@@ -4777,7 +4778,6 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Virtual\AlwaysRememberedExprHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\ExistingArrayDimFetchHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\IssetExprHandler::class => 'walk-trace.php',
-	\PHPStan\Analyser\ExprHandler\Virtual\PossiblyImpureCallExprHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\SetExistingOffsetValueTypeExprHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\SetOffsetValueTypeExprHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Virtual\FunctionCallableNodeHandler::class => 'walk-trace.php',

@@ -645,6 +645,53 @@ public:
 		return result;
 	}
 
+	/* Mirrors processLoopFinalStmtNodes(). */
+	zv::Val processLoopFinalStmtNodes(zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+	{
+		zv::Val result;
+		pt_engine_with_stack([&]() {
+			zv::Val current = pt_mutating_scope_get_current_expression_result_storage(Z_OBJ_P(scope));
+			if (UNEXPECTED(current.isUndef())) return;
+			bool pushStorage = !(current.ref().isObject() && Z_OBJ_P(current.raw()) == Z_OBJ_P(storage));
+			if (pushStorage && UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), storage))) return;
+			zval thisZv;
+			ZVAL_OBJ(&thisZv, self);
+			zval *statementsHandler = requireStatementsHandler();
+			if (EXPECTED(statementsHandler != NULL)) {
+				result = pt_statements_handler_process_loop_final_stmt_nodes(statementsHandler, &thisZv, parentNode, stmts, scope, storage, nodeCallback, context, lastPass);
+			}
+			if (pushStorage) {
+				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
+				if (UNEXPECTED(EG(exception))) result = zv::Val();
+			}
+		});
+		return result;
+	}
+
+	/* Mirrors processLoopPassStmtNodes(); previous IS_NULL for the first
+	 * pass, record receives this pass's [entries, recording] */
+	zv::Val processLoopPassStmtNodes(zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
+	{
+		zv::Val result;
+		pt_engine_with_stack([&]() {
+			zv::Val current = pt_mutating_scope_get_current_expression_result_storage(Z_OBJ_P(scope));
+			if (UNEXPECTED(current.isUndef())) return;
+			bool pushStorage = !(current.ref().isObject() && Z_OBJ_P(current.raw()) == Z_OBJ_P(storage));
+			if (pushStorage && UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), storage))) return;
+			zval thisZv;
+			ZVAL_OBJ(&thisZv, self);
+			zval *statementsHandler = requireStatementsHandler();
+			if (EXPECTED(statementsHandler != NULL)) {
+				result = pt_statements_handler_process_loop_pass_stmt_nodes(statementsHandler, &thisZv, parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+			}
+			if (pushStorage) {
+				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
+				if (UNEXPECTED(EG(exception))) result = zv::Val();
+			}
+		});
+		return result;
+	}
+
 	/* Mirrors processStmtNode(). */
 	zv::Val processStmtNode(zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
@@ -667,8 +714,6 @@ public:
 
 	bool isReturningStoredExpressionResults() const { return flag(slots::returnStoredExpressionResults); }
 
-	bool isConsumingStoredExpressionResults() const { return flag(slots::consumeStoredExpressionResults); }
-
 	/* Mirrors lookForSetAllowedUndefinedExpressions() /
 	 * lookForUnsetAllowedUndefinedExpressions() over the private
 	 * lookForExpressionCallback() */
@@ -683,12 +728,12 @@ public:
 	}
 
 	/* Mirrors processExprNodeConsumingStored(). */
-	zv::Val processExprNodeConsumingStored(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+	zv::Val processExprNodeConsumingStored(zval *stmt, zval *expr, zval *consumedExpr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
-		bool previous = flag(slots::consumeStoredExpressionResults);
-		setFlag(slots::consumeStoredExpressionResults, true);
+		zv::Val previous = zv::Val::copyOf(slot(slots::consumeStoredExpression).deref());
+		slot(slots::consumeStoredExpression).deref().assign(zv::Val::copyOf(zv::Ref(consumedExpr)));
 		zv::Val result = thisProcessExprNode(stmt, expr, scope, storage, nodeCallback, context);
-		pt_finally([&]() { setFlag(slots::consumeStoredExpressionResults, previous); });
+		pt_finally([&]() { slot(slots::consumeStoredExpression).deref().assign(std::move(previous)); });
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 		return result;
 	}
@@ -1026,6 +1071,29 @@ public:
 
 		zv::Arr empty = zv::Arr::empty();
 		return zv::Val(std::move(empty));
+	}
+
+	/* Mirrors isContextSensitiveStatement(). */
+	[[nodiscard]] bool isContextSensitiveStatement(zval *stmt, bool &out)
+	{
+		zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("convergenceContextSensitiveStatement"));
+		if (UNEXPECTED(cached.isUndef())) return false;
+		if (!cached.isNull()) {
+			if (UNEXPECTED(!cached.ref().isBool())) {
+				zend_type_error("PHPStan\\Analyser\\NodeScopeResolver::isContextSensitiveStatement(): Return value must be of type bool, %s returned", zend_zval_value_name(cached.raw()));
+				return false;
+			}
+			out = cached.ref().isTrue();
+			return true;
+		}
+
+		bool sensitive;
+		if (UNEXPECTED(!hasContextSensitiveConstruct(Z_OBJ_P(stmt), sensitive))) return false;
+		zval value;
+		ZVAL_BOOL(&value, sensitive);
+		if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(stmt), PT_LC("convergenceContextSensitiveStatement"), &value))) return false;
+		out = sensitive;
+		return true;
 	}
 
 	/* Mirrors isReplayableConvergenceBody(). */
@@ -1770,36 +1838,33 @@ private:
 		if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(scope), inTrait))) return zv::Val();
 		if (!inTrait) return zv::Val::null();
 
+		/* $nativeClassReflection = $scope->getClassReflection()->getNativeReflection() */
 		zv::Val classReflection = pt_mutating_scope_get_class_reflection(Z_OBJ_P(scope));
-		if (UNEXPECTED(classReflection.isUndef() || !requireObject(classReflection, "hasNativeMethod"))) return zv::Val();
+		if (UNEXPECTED(classReflection.isUndef() || !requireObject(classReflection, "getNativeReflection"))) return zv::Val();
+		zv::Val nativeClassReflection = pt_class_reflection_get_native_reflection(Z_OBJ_P(classReflection.raw()));
+		if (UNEXPECTED(nativeClassReflection.isUndef())) return zv::Val();
 		zv::Val methodName = identifierToString(stmt);
 		if (UNEXPECTED(methodName.isUndef())) return zv::Val();
-		zv::Val hasNativeMethod = pt_type_call(Z_OBJ_P(classReflection.raw()), PT_LC("hasnativemethod"), 1, methodName.raw());
-		if (UNEXPECTED(hasNativeMethod.isUndef())) return zv::Val();
-		if (Z_TYPE_P(hasNativeMethod.raw()) != IS_TRUE) return zv::Val::null();
+		if (UNEXPECTED(!requireObject(nativeClassReflection, "hasMethod"))) return zv::Val();
+		zv::Val hasMethod = pt_type_call(Z_OBJ_P(nativeClassReflection.raw()), PT_LC("hasmethod"), 1, methodName.raw());
+		if (UNEXPECTED(hasMethod.isUndef())) return zv::Val();
+		if (!zend_is_true(hasMethod.raw())) return zv::Val::null();
 
-		zv::Val classReflectionAgain = pt_mutating_scope_get_class_reflection(Z_OBJ_P(scope));
-		if (UNEXPECTED(classReflectionAgain.isUndef() || !requireObject(classReflectionAgain, "getNativeMethod"))) return zv::Val();
-		zv::Val methodNameAgain = identifierToString(stmt);
-		if (UNEXPECTED(methodNameAgain.isUndef())) return zv::Val();
-		zv::Val methodReflection = pt_type_call(Z_OBJ_P(classReflectionAgain.raw()), PT_LC("getnativemethod"), 1, methodNameAgain.raw());
-		if (UNEXPECTED(methodReflection.isUndef())) return zv::Val();
-		bool isNative;
-		if (UNEXPECTED(!isInstanceValue(methodReflection.raw(), PT_CLASS_NATIVE_METHOD_REFLECTION, isNative))) return zv::Val();
-		if (isNative) return emptyInternalStatementResult(scope, NULL);
-		bool isPhp;
-		if (UNEXPECTED(!isInstanceValue(methodReflection.raw(), PT_CLASS_PHP_METHOD_REFLECTION, isPhp))) return zv::Val();
-		if (!isPhp) return zv::Val::null();
-		zv::Val declaringTrait = pt_type_call(Z_OBJ_P(methodReflection.raw()), PT_LC("getdeclaringtrait"), 0, NULL);
-		if (UNEXPECTED(declaringTrait.isUndef())) return zv::Val();
-		if (declaringTrait.isNull()) return emptyInternalStatementResult(scope, NULL);
-		zv::Val declaringTraitName = requireObject(declaringTrait, "getName") ? pt_class_reflection_get_name(Z_OBJ_P(declaringTrait.raw())) : zv::Val();
-		if (UNEXPECTED(declaringTraitName.isUndef())) return zv::Val();
+		/* $nativeClassReflection->getMethod($methodName)->getBetterReflection()->getDeclaringClass()->getName() */
+		zv::Val nativeMethod = pt_type_call(Z_OBJ_P(nativeClassReflection.raw()), PT_LC("getmethod"), 1, methodName.raw());
+		if (UNEXPECTED(nativeMethod.isUndef() || !requireObject(nativeMethod, "getBetterReflection"))) return zv::Val();
+		zv::Val betterReflectionMethod = pt_reflection_adapter_get_better_reflection(nativeMethod.raw());
+		if (UNEXPECTED(betterReflectionMethod.isUndef() || !requireObject(betterReflectionMethod, "getDeclaringClass"))) return zv::Val();
+		zv::Val declaringClass = pt_better_reflection_member_get_declaring_class(betterReflectionMethod.raw());
+		if (UNEXPECTED(declaringClass.isUndef() || !requireObject(declaringClass, "getName"))) return zv::Val();
+		zv::Val declaringClassName = pt_better_reflection_class_get_name(declaringClass.raw());
+		if (UNEXPECTED(declaringClassName.isUndef())) return zv::Val();
+
 		zv::Val traitReflection = pt_mutating_scope_get_trait_reflection(Z_OBJ_P(scope));
 		if (UNEXPECTED(traitReflection.isUndef() || !requireObject(traitReflection, "getName"))) return zv::Val();
 		zv::Val traitName = pt_class_reflection_get_name(Z_OBJ_P(traitReflection.raw()));
 		if (UNEXPECTED(traitName.isUndef())) return zv::Val();
-		if (!zend_is_identical(declaringTraitName.raw(), traitName.raw())) return emptyInternalStatementResult(scope, NULL);
+		if (!zend_is_identical(declaringClassName.raw(), traitName.raw())) return emptyInternalStatementResult(scope, NULL);
 		return zv::Val::null();
 	}
 
@@ -1881,11 +1946,13 @@ private:
 
 	zv::Val processExprNodeBody(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
-		if (flag(slots::returnStoredExpressionResults) || flag(slots::consumeStoredExpressionResults)) {
+		zv::Ref consumedExpr = slot(slots::consumeStoredExpression).deref();
+		bool consume = consumedExpr.isObject() && consumedExpr.asObject() == Z_OBJ_P(expr);
+		if (flag(slots::returnStoredExpressionResults) || consume) {
 			zv::Val storedResult = pt_expression_result_storage_find(storage, expr);
 			if (UNEXPECTED(storedResult.isUndef())) return zv::Val();
 			if (!storedResult.isNull()) {
-				bool answers = flag(slots::consumeStoredExpressionResults);
+				bool answers = consume;
 				if (!answers) {
 					bool promoted;
 					if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), promoted))) return zv::Val();
@@ -1898,7 +1965,7 @@ private:
 
 					zv::Val reanchored = pt_expression_result_at_ask_position(storedResult.raw(), scope);
 					if (UNEXPECTED(reanchored.isUndef())) return zv::Val();
-					if (flag(slots::consumeStoredExpressionResults) && UNEXPECTED(!thisStoreExpressionResult(storage, expr, reanchored.raw()))) return zv::Val();
+					if (consume && UNEXPECTED(!thisStoreExpressionResult(storage, expr, reanchored.raw()))) return zv::Val();
 					return reanchored;
 				}
 			}
@@ -2128,6 +2195,37 @@ zv::Val pt_node_scope_resolver_process_stmt_nodes_internal(zval *nodeScopeResolv
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisProcessStmtNodesInternal(parentNode, stmts, scope, storage, nodeCallback, context);
 }
 
+zv::Val pt_node_scope_resolver_process_loop_final_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processLoopFinalStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, lastPass);
+	zv::Args argv{parentNode, stmts, scope, storage, nodeCallback, context, lastPass};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processloopfinalstmtnodes"), 7, argv);
+}
+
+bool pt_node_scope_resolver_is_context_sensitive_statement(zval *nodeScopeResolver, zval *stmt, bool &out)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isContextSensitiveStatement(stmt, out);
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("iscontextsensitivestatement"), 1, stmt);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
+zv::Val pt_node_scope_resolver_process_loop_pass_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record)
+{
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processLoopPassStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+	zval recordRef;
+	ZVAL_NULL(&recordRef);
+	ZVAL_MAKE_REF(&recordRef);
+	zval null;
+	ZVAL_NULL(&null);
+	zv::Args argv{parentNode, stmts, scope, storage, nodeCallback, context, previous != NULL ? previous : &null, &recordRef};
+	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processlooppassstmtnodes"), 8, argv);
+	record = zv::Val::copyOf(zv::Ref(Z_REFVAL(recordRef)));
+	zval_ptr_dtor(&recordRef);
+	return result;
+}
+
 zv::Val pt_node_scope_resolver_process_expr_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage)
 {
 	return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).thisProcessExprOnDemand(expr, scope, storage);
@@ -2280,24 +2378,12 @@ bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeSco
 	return true;
 }
 
-bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeScopeResolver, bool &out)
-{
-	if (isNativeResolver(nodeScopeResolver)) {
-		out = NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).isConsumingStoredExpressionResults();
-		return true;
-	}
-	zv::Val result = pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("isconsumingstoredexpressionresults"), 0, NULL);
-	if (UNEXPECTED(result.isUndef())) return false;
-	out = zend_is_true(result.raw());
-	return true;
-}
-
 /* the fetch handlers' (NullsafePropertyFetchHandler.cpp) */
-zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *consumedExpr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 {
-	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processExprNodeConsumingStored(stmt, expr, scope, storage, nodeCallback, context);
-	zv::Args argv{stmt, expr, scope, storage, nodeCallback, context};
-	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnodeconsumingstored"), 6, argv);
+	if (isNativeResolver(nodeScopeResolver)) return NodeScopeResolver(Z_OBJ_P(nodeScopeResolver)).processExprNodeConsumingStored(stmt, expr, consumedExpr, scope, storage, nodeCallback, context);
+	zv::Args argv{stmt, expr, consumedExpr, scope, storage, nodeCallback, context};
+	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("processexprnodeconsumingstored"), 7, argv);
 }
 
 /* the closure walk's (ClosureProcessor.cpp) */
@@ -2370,6 +2456,7 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 	cls.classConstantLong("LOOP_SCOPE_ITERATIONS", 3);
 	cls.classConstantLong("GENERALIZE_AFTER_ITERATION", 1);
 	cls.privateClassConstantString("REPLAYABLE_BODY_ATTRIBUTE", "convergenceReplayableBody");
+	cls.privateClassConstantString("CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE", "convergenceContextSensitiveStatement");
 	ptdecl::NodeScopeResolver::declareProperties(cls);
 
 	/* the real parameter class names: the DI container autowires the
@@ -2453,6 +2540,39 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 		PT_RETURN_VAL(PT_NSR_THIS.processStmtNodes(parentNode, stmts, scope, nodeCallback, context));
 	});
 
+	cls.method(sigs::processLoopFinalStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *lastPass;
+		ZEND_PARSE_PARAMETERS_START(7, 7)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY(lastPass)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_NSR_THIS.processLoopFinalStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, lastPass));
+	});
+
+	cls.method(sigs::processLoopPassStmtNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *parentNode, *stmts, *scope, *storage, *nodeCallback, *context, *previous, *recordRef;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
+			Z_PARAM_OBJECT(parentNode)
+			Z_PARAM_ARRAY(stmts)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_ZVAL(nodeCallback)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_ARRAY_OR_NULL(previous)
+			Z_PARAM_ZVAL(recordRef)
+		ZEND_PARSE_PARAMETERS_END();
+		zv::Val record = zv::Val::null();
+		zv::Val result = PT_NSR_THIS.processLoopPassStmtNodes(parentNode, stmts, scope, storage, nodeCallback, context, previous, record);
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
+		ZEND_TRY_ASSIGN_REF_COPY(recordRef, record.raw());
+		PT_RETURN_VAL(std::move(result));
+	});
+
 	cls.method(sigs::processStmtNodesInternal, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parentNode, *stmts, *scope, *storage, *nodeCallback, *context;
 		ZEND_PARSE_PARAMETERS_START(6, 6)
@@ -2491,11 +2611,6 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 		RETURN_BOOL(PT_NSR_THIS.isReturningStoredExpressionResults());
 	});
 
-	cls.method(sigs::isConsumingStoredExpressionResults, [](INTERNAL_FUNCTION_PARAMETERS) {
-		ZEND_PARSE_PARAMETERS_NONE();
-		RETURN_BOOL(PT_NSR_THIS.isConsumingStoredExpressionResults());
-	});
-
 	cls.method(sigs::lookForSetAllowedUndefinedExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr;
 		ZEND_PARSE_PARAMETERS_START(2, 2)
@@ -2515,16 +2630,17 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 	});
 
 	cls.method(sigs::processExprNodeConsumingStored, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *stmt, *expr, *scope, *storage, *nodeCallback, *context;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		zval *stmt, *expr, *consumedExpr, *scope, *storage, *nodeCallback, *context;
+		ZEND_PARSE_PARAMETERS_START(7, 7)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT(consumedExpr)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_NSR_THIS.processExprNodeConsumingStored(stmt, expr, scope, storage, nodeCallback, context));
+		PT_RETURN_VAL(PT_NSR_THIS.processExprNodeConsumingStored(stmt, expr, consumedExpr, scope, storage, nodeCallback, context));
 	});
 
 	cls.method(sigs::processExprOnDemand, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -2622,6 +2738,16 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 			Z_PARAM_STR(hookName)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_NSR_THIS.getImpurePointsFromPropertyHook(scope, propertyFetch, propertyReflection, hookName));
+	});
+
+	cls.method(sigs::isContextSensitiveStatement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *stmt;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(stmt)
+		ZEND_PARSE_PARAMETERS_END();
+		bool out;
+		if (UNEXPECTED(!PT_NSR_THIS.isContextSensitiveStatement(stmt, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::isReplayableConvergenceBody, [](INTERNAL_FUNCTION_PARAMETERS) {

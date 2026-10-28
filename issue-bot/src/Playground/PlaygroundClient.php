@@ -21,7 +21,7 @@ class PlaygroundClient
 		$response = $this->client->get(sprintf('https://api.phpstan.org/sample?id=%s', $hash));
 
 		$body = (string) $response->getBody();
-		$json = Json::decode($body, Json::FORCE_ARRAY);
+		$json = Json::decode($body, forceArrays: true);
 
 		$versionedErrors = [];
 		foreach ($json['versionedErrors'] as ['phpVersion' => $phpVersion, 'errors' => $errors]) {

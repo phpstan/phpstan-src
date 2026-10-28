@@ -1,0 +1,14 @@
+parameters:
+	level: 8
+	bootstrapFiles:
+		- bootstrap.php
+	paths:
+		- test.php
+	ignoreErrors:
+		# The autoloader includes src/Widget.php for this name, and the file declares Widgets.
+		# The analysis must report the unknown class, not die re-including that file.
+		-
+			message: '#^Parameter \$widget of method BootstrapAutoloaderWrongFile\\Consumer\:\:doFoo\(\) has invalid type BootstrapAutoloaderWrongFile\\Widget\.$#'
+			identifier: class.notFound
+			count: 1
+			path: test.php

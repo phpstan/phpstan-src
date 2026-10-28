@@ -341,8 +341,13 @@ static zend_always_inline zv::Val pt_op_string(const char *s)
 
 /* the Z_PARAM_FUNC parse of a traverse() callback: false = not callable —
  * the caller then takes the engine path, whose zpp raises the TypeError */
+/* TypeTraverser.cpp: fci/fcc of a TypeTraverser's own bound callable
+ * without resolving it by name; false for any other value */
+bool pt_type_traverser_bound_fcc(zval *callable, zend_fcall_info &fci, zend_fcall_info_cache &fcc);
+
 static zend_always_inline bool pt_op_parse_callable(zval *cb, zend_fcall_info &fci, zend_fcall_info_cache &fcc)
 {
+	if (Z_TYPE_P(cb) == IS_ARRAY && pt_type_traverser_bound_fcc(cb, fci, fcc)) return true;
 	if (UNEXPECTED(zend_fcall_info_init(cb, 0, &fci, &fcc, NULL, NULL) != SUCCESS)) return false;
 	/* as Z_PARAM_FUNC does: a trampoline is refetched by the call */
 	zend_release_fcall_info_cache(&fcc);

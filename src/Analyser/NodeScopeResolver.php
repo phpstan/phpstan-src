@@ -41,9 +41,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodCallExpressionNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\StaticMethodCallExpressionNode;
-use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
-use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -80,10 +78,13 @@ class NodeScopeResolver
 	/**
 	 * Consume-stored mode: a walk that deliberately re-enters an
 	 * already-walked subtree (the nullsafe plain twin re-walking its
-	 * receiver) consumes stored results unconditionally instead of
-	 * re-processing - node callbacks fired during the original walk.
+	 * receiver) consumes this node's stored result unconditionally instead
+	 * of re-processing it - node callbacks fired during the original walk.
+	 * Only this exact node is consumed: the rest of the twin (arguments,
+	 * a dynamic name) is walked normally, even when the storage was seeded
+	 * with results of an earlier loop convergence pass.
 	 */
-	private bool $consumeStoredExpressionResults = false;
+	private ?Expr $consumeStoredExpression = null;
 
 	private ?NonNullabilityHelper $nonNullabilityHelper = null;
 
@@ -287,6 +288,70 @@ class NodeScopeResolver
 	}
 
 	/**
+	 * The final walk of a loop body against its last convergence pass (see
+	 * StatementsHandler::processLoopFinalStmtNodes()).
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, RecordingNodeCallback} $lastPass
+	 */
+	public function processLoopFinalStmtNodes(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		array $lastPass,
+	): InternalStatementResult
+	{
+		$pushStorage = $scope->getCurrentExpressionResultStorage() !== $storage;
+		if ($pushStorage) {
+			$scope->pushExpressionResultStorage($storage);
+		}
+		try {
+			return $this->statementsHandler->processLoopFinalStmtNodes($this, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $lastPass);
+		} finally {
+			if ($pushStorage) {
+				$scope->popExpressionResultStorage();
+			}
+		}
+	}
+
+	/**
+	 * One loop convergence pass over $stmts, re-walking only what differs from
+	 * $previous, the previous pass (see StatementsHandler::processLoopPassStmtNodes()).
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $previous
+	 * @param array{array<int, array{StatementListWalkState, int}>, ?RecordingNodeCallback}|null $record
+	 */
+	public function processLoopPassStmtNodes(
+		Node $parentNode,
+		array $stmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+		StatementContext $context,
+		?array $previous,
+		?array &$record,
+	): InternalStatementResult
+	{
+		$pushStorage = $scope->getCurrentExpressionResultStorage() !== $storage;
+		if ($pushStorage) {
+			$scope->pushExpressionResultStorage($storage);
+		}
+		try {
+			return $this->statementsHandler->processLoopPassStmtNodes($this, $parentNode, $stmts, $scope, $storage, $nodeCallback, $context, $previous, $record);
+		} finally {
+			if ($pushStorage) {
+				$scope->popExpressionResultStorage();
+			}
+		}
+	}
+
+	/**
 	 * @param Node\Stmt[] $stmts
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
@@ -349,23 +414,21 @@ class NodeScopeResolver
 
 		if ($stmt instanceof Node\Stmt\ClassMethod) {
 			// a trait method the using class overrides is not analysed here at all -
-			// decided before the node callback is emitted
+			// decided before the node callback is emitted; the override can be the
+			// class's own method, another trait's, or an engine-provided one like
+			// enum cases(), from() and tryFrom(), so it is told by the declaring
+			// class of the native method, not by the kind of its method reflection
 			if (!$scope->isInClass()) {
 				throw new ShouldNotHappenException();
 			}
-			if (
-				$scope->isInTrait()
-				&& $scope->getClassReflection()->hasNativeMethod($stmt->name->toString())
-			) {
-				$methodReflection = $scope->getClassReflection()->getNativeMethod($stmt->name->toString());
-				if ($methodReflection instanceof NativeMethodReflection) {
+			if ($scope->isInTrait()) {
+				$nativeClassReflection = $scope->getClassReflection()->getNativeReflection();
+				$methodName = $stmt->name->toString();
+				if (
+					$nativeClassReflection->hasMethod($methodName)
+					&& $nativeClassReflection->getMethod($methodName)->getBetterReflection()->getDeclaringClass()->getName() !== $scope->getTraitReflection()->getName()
+				) {
 					return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
-				}
-				if ($methodReflection instanceof PhpMethodReflection) {
-					$declaringTrait = $methodReflection->getDeclaringTrait();
-					if ($declaringTrait === null || $declaringTrait->getName() !== $scope->getTraitReflection()->getName()) {
-						return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: []);
-					}
 				}
 			}
 		}
@@ -429,12 +492,6 @@ class NodeScopeResolver
 		return $this->returnStoredExpressionResults;
 	}
 
-	/** Whether the walk consumes stored results unconditionally (see processExprNodeConsumingStored()). */
-	public function isConsumingStoredExpressionResults(): bool
-	{
-		return $this->consumeStoredExpressionResults;
-	}
-
 	public function lookForSetAllowedUndefinedExpressions(MutatingScope $scope, Expr $expr): MutatingScope
 	{
 		return $this->lookForExpressionCallback($scope, $expr, static fn (MutatingScope $scope, Expr $expr): MutatingScope => $scope->setAllowedUndefinedExpression($expr));
@@ -480,22 +537,22 @@ class NodeScopeResolver
 	 * are stored into the given storage - pass a duplicate to keep them isolated.
 	 */
 	/**
-	 * Processes an expression whose already-walked subtrees must be CONSUMED
-	 * from their stored results instead of re-walked: the nullsafe handlers
+	 * Processes an expression whose already-walked receiver must be CONSUMED
+	 * from its stored result instead of re-walked: the nullsafe handlers
 	 * process the receiver once (real callbacks) and then walk the plain twin,
-	 * whose receiver subtree answers from storage, re-anchored to the twin's
+	 * whose receiver answers from storage, re-anchored to the twin's
 	 * (ensured) scope.
 	 *
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function processExprNodeConsumingStored(Node\Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
+	public function processExprNodeConsumingStored(Node\Stmt $stmt, Expr $expr, Expr $consumedExpr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
 	{
-		$previous = $this->consumeStoredExpressionResults;
-		$this->consumeStoredExpressionResults = true;
+		$previous = $this->consumeStoredExpression;
+		$this->consumeStoredExpression = $consumedExpr;
 		try {
 			return $this->processExprNode($stmt, $expr, $scope, $storage, $nodeCallback, $context);
 		} finally {
-			$this->consumeStoredExpressionResults = $previous;
+			$this->consumeStoredExpression = $previous;
 		}
 	}
 
@@ -711,7 +768,8 @@ class NodeScopeResolver
 		ExpressionContext $context,
 	): ExpressionResult
 	{
-		if ($this->returnStoredExpressionResults || $this->consumeStoredExpressionResults) {
+		$consume = $this->consumeStoredExpression === $expr;
+		if ($this->returnStoredExpressionResults || $consume) {
 			$storedResult = $storage->findExpressionResult($expr);
 			// a stored result only answers when the current scope agrees with its
 			// evaluation position on the variables the expression reads - a
@@ -720,7 +778,7 @@ class NodeScopeResolver
 			// re-processes the node on its own scope instead. In CONSUME mode the
 			// divergence is intentional (an ensured-non-null device) and the
 			// stored result is consumed unconditionally, re-anchored below.
-			if ($storedResult !== null && ($this->consumeStoredExpressionResults || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted))) {
+			if ($storedResult !== null && ($consume || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted))) {
 				// a foreign-position answer must not thread its original walk
 				// scopes into THIS walk - re-anchor it to the asking position so
 				// subsequent operands keep evaluating on the asking scope
@@ -729,7 +787,7 @@ class NodeScopeResolver
 				}
 
 				$reanchored = $storedResult->atAskPosition($scope);
-				if ($this->consumeStoredExpressionResults) {
+				if ($consume) {
 					// the re-anchored view IS this walk's result for the node
 					// (the nullsafe twin's receiver at the ensured position) -
 					// store it so later asks (rules' storage reads) see the same
@@ -929,6 +987,8 @@ class NodeScopeResolver
 
 	private const REPLAYABLE_BODY_ATTRIBUTE = 'convergenceReplayableBody';
 
+	private const CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE = 'convergenceContextSensitiveStatement';
+
 	/**
 	 * Whether a recorded convergence pass over the loop body can replace the
 	 * final walk. A pass runs at deep statement context, the final walk at top
@@ -956,6 +1016,20 @@ class NodeScopeResolver
 		$loopNode->setAttribute(self::REPLAYABLE_BODY_ATTRIBUTE, $replayable);
 
 		return $replayable;
+	}
+
+	/** A statement that walks differently in a convergence pass than in the final walk. */
+	public function isContextSensitiveStatement(Node\Stmt $stmt): bool
+	{
+		$cached = $stmt->getAttribute(self::CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE);
+		if ($cached !== null) {
+			return $cached;
+		}
+
+		$sensitive = $this->hasContextSensitiveConstruct($stmt);
+		$stmt->setAttribute(self::CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE, $sensitive);
+
+		return $sensitive;
 	}
 
 	private function hasContextSensitiveConstruct(Node $node): bool

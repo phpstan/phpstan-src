@@ -4560,6 +4560,15 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15251.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug12820(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-12820.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testClassConstantWildcardArguments(): void
 	{
@@ -4582,6 +4591,27 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $type of method ClassConstantWildcardArguments\\ContainerExtension::doFoo() expects \'hasService\', \'nope\' given.',
 				59,
+			],
+		]);
+	}
+
+	public function testDeadCatch(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/dead-catch.php'], [
+			[
+				'Call to an undefined method InvalidArgumentException::nonExistentMethod().',
+				14,
+			],
+			[
+				'Call to an undefined method CallMethodsDeadCatch\\Foo::nonExistentMethod().',
+				15,
+			],
+			[
+				'Call to an undefined method InvalidArgumentException::nonExistentMethod().',
+				26,
 			],
 		]);
 	}

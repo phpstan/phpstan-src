@@ -5,7 +5,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $namespaces = require __DIR__ . '/scoper-namespaces.php';
 
 $stubs = [
-	'../../vendor/hoa/consistency/Prelude.php',
 	'../../vendor/composer/InstalledVersions.php',
 	'../../vendor/composer/installed.php',
 ];
@@ -48,12 +47,6 @@ return [
 	'exclude-files' => $stubs,
 	'php-version' => '7.4',
 	'patchers' => [
-		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'vendor/nette/di/src/DI/Compiler.php') {
-				return $content;
-			}
-			return str_replace('|Nette\\DI\\Statement', sprintf('|\\%s\\Nette\\DI\\Statement', $prefix), $content);
-		},
 		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/nette/di/src/DI/Extensions/DefinitionSchema.php') {
 				return $content;
@@ -106,10 +99,6 @@ return [
 					return $class;
 				}
 
-				if (strpos($class, 'Hoa\\') === 0) {
-					return $class;
-				}
-
 				if (strpos($class, '@') === 0) {
 					return $class;
 				}
@@ -141,25 +130,6 @@ return [
 			return \Nette\Neon\Neon::encode($updatedNeon, \Nette\Neon\Neon::BLOCK);
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if (!in_array($filePath, [
-				'bin/phpstan',
-				'src/Testing/TestCaseSourceLocatorFactory.php',
-				'src/Testing/PHPStanTestCase.php',
-				'vendor/ondrejmirtes/better-reflection/src/SourceLocator/Type/ComposerSourceLocator.php',
-			], true)) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\Composer\\Autoload\\ClassLoader', $prefix), 'Composer\\Autoload\\ClassLoader', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'src/Internal/ComposerHelper.php') {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\Composer\\InstalledVersions', $prefix), 'Composer\\InstalledVersions', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
 			if ($filePath !== 'vendor/jetbrains/phpstorm-stubs/PhpStormStubsMap.php') {
 				return $content;
 			}
@@ -182,38 +152,11 @@ return [
 				return $content;
 			}
 
-			return str_replace('Core/Core_d.php', 'Core/Core_d.stub', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if ($filePath !== 'vendor/ondrejmirtes/better-reflection/src/SourceLocator/SourceStubber/PhpStormStubsSourceStubber.php') {
-				return $content;
-			}
-
 			return str_replace(sprintf('\'%s\\JetBrains\\', $prefix), '\'JetBrains\\', $content);
 		},
 		function (string $filePath, string $prefix, string $content): string {
-			if (!str_starts_with($filePath, 'vendor/nikic/php-parser/lib')) {
-				return $content;
-			}
-
+			// php-scoper prefixes `use PhpParser;` even though the namespace is excluded (php-parser itself, nette/php-generator)
 			return str_replace(sprintf('use %s\\PhpParser;', $prefix), 'use PhpParser;', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (!str_starts_with($filePath, 'vendor/nikic/php-parser/lib')) {
-				return $content;
-			}
-
-			return str_replace([
-				sprintf('\\%s', $prefix),
-				sprintf('\\\\%s', $prefix),
-			], '', $content);
-		},
-		function (string $filePath, string $prefix, string $content): string {
-			if (!str_starts_with($filePath, 'vendor/ondrejmirtes/better-reflection')) {
-				return $content;
-			}
-
-			return str_replace(sprintf('%s\\PropertyHookType', $prefix), 'PropertyHookType', $content);
 		},
 		function (string $filePath, string $prefix, string $content) use ($namespaces): string {
 			if (strpos($filePath, 'src/') !== 0) {
@@ -232,5 +175,10 @@ return [
 	],
 	'exclude-namespaces' => $namespaces['excluded'],
 	'expose-global-functions' => false,
+	// shared with the analysed project's Composer autoloader
+	'exclude-classes' => ['Composer\\Autoload\\ClassLoader', 'Composer\\InstalledVersions'],
+	// symfony/deprecation-contracts declares it in the global namespace and Symfony calls it unqualified
+	// from its own namespaces - without a global alias those calls resolve to a function that does not exist
+	'expose-functions' => ['trigger_deprecation'],
 	'expose-global-classes' => false,
 ];

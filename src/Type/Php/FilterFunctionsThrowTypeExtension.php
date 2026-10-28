@@ -37,15 +37,16 @@ final class FilterFunctionsThrowTypeExtension implements DynamicFunctionThrowTyp
 		Scope $scope,
 	): ?Type
 	{
+		$phpVersions = $scope->getPhpVersion();
 		if (
-			$scope->getPhpVersion()->hasFilterThrowOnFailureConstant()->no()
+			$phpVersions->hasFilterThrowOnFailureConstant()->no()
 			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
 		) {
 			return null;
 		}
 
 		foreach ($this->filterFunctionFlagsHelper->getFlagsTypes($functionReflection, $funcCall, $scope) as $flagsType) {
-			if ($this->filterFunctionReturnTypeHelper->hasFlag('FILTER_THROW_ON_FAILURE', $flagsType)->no()) {
+			if ($this->filterFunctionReturnTypeHelper->hasThrowOnFailureFlag($flagsType, $phpVersions)->no()) {
 				continue;
 			}
 

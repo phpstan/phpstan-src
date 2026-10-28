@@ -604,4 +604,36 @@ class ClassConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/class-constant-on-expr-php-versions.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureAttributeArguments(): void
+	{
+		$tip = 'Learn more at https://phpstan.org/user-guide/discovering-symbols';
+		$this->analyse([__DIR__ . '/data/closure-attribute-class-constant.php'], [
+			[
+				'Access to constant FOO on an unknown class ClosureAttributeClassConstant\\Missing.',
+				26,
+				$tip,
+			],
+			[
+				'Access to constant FOO on an unknown class ClosureAttributeClassConstant\\Missing.',
+				27,
+				$tip,
+			],
+			[
+				'Access to constant FOO on an unknown class ClosureAttributeClassConstant\\Missing.',
+				28,
+				$tip,
+			],
+			[
+				'Access to undefined constant ClosureAttributeClassConstant\\Foo::BAR.',
+				29,
+			],
+			[
+				'Access to constant FOO on an unknown class ClosureAttributeClassConstant\\Missing.',
+				29,
+				$tip,
+			],
+		]);
+	}
+
 }

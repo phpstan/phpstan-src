@@ -18,7 +18,9 @@ use function usort;
  *
  * Extending ExtensionsExtension is required, not cosmetic. Compiler::processExtensions() starts with
  *
- *     $first = $this->getExtensions(ParametersExtension::class) + $this->getExtensions(ExtensionsExtension::class);
+ * ```php
+ * $first = $this->getExtensions(ParametersExtension::class) + $this->getExtensions(ExtensionsExtension::class);
+ * ```
  *
  * and only extensions matching those types by instanceof have their loadConfiguration() called before
  * the compiler snapshots its extension list. Everything registered after that snapshot is rejected with

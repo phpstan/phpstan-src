@@ -29,11 +29,50 @@
  * every gcc/libc target supports — gcc then warns the attribute is ignored */
 #pragma GCC diagnostic ignored "-Wattributes"
 
+/* zend_portability.h first: zend_globals_macros.h includes it itself only
+ * from PHP 8.4, and it brings in the configuration defining ZTS */
+extern "C" {
+#include "php_version.h"
+#include "zend_portability.h"
+#include "zend_globals_macros.h"
+}
+
+/* PHP 8.6's thread-safe EG() and CG() reach the globals at an offset the
+ * headers compute from sizeof(zend_executor_globals) and
+ * sizeof(zend_compiler_globals) — a constant compiled into every use, which
+ * the module API number does not guard: 8.6.0RC4 appended a field to the
+ * executor globals, and an extension built against RC3's headers read and
+ * wrote every EG() field 32 bytes off. Read through the offsets the engine
+ * exports instead, as the headers do up to 8.5, so a field appended by a
+ * later release moves nothing. Redefined before the rest of the headers, so
+ * their inline functions get it too. */
+#if defined(ZTS) && PHP_VERSION_ID >= 80600
+#undef EG
+#undef CG
+#define EG(v) ZEND_TSRMG_FAST(executor_globals_offset, zend_executor_globals *, v)
+#define CG(v) ZEND_TSRMG_FAST(compiler_globals_offset, zend_compiler_globals *, v)
+#endif
+
+/* PHP 8.3 appended `closure` to zend_fcall_info_cache. Against older headers
+ * the shared code declares its own with 8.3's layout (abi.h), on top of the
+ * headers' four-member struct, declared under another name here — so the
+ * shared code compiles to the same frames against every header set. The
+ * older engines read and write the first four members only, and nothing in
+ * the shared code reads `closure`. The engine's structures embedding one by
+ * value keep their layout only when declared before abi.h: their headers
+ * are included below. */
+#if PHP_VERSION_ID < 80300 && !defined(PHPSTANTURBO_ABI_IMPL)
+#define _zend_fcall_info_cache pt_abi_zend_fcall_info_cache_before_83
+#define zend_fcall_info_cache pt_abi_zend_fcall_info_cache_before_83_t
+#define PT_ABI_FCALL_INFO_CACHE_BEFORE_83
+#endif
+
 extern "C" {
 #include "php.h"
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"
 #include "zend_smart_str.h"
+#include "zend_fibers.h"
 }
 
 #pragma GCC diagnostic pop
@@ -177,7 +216,6 @@ enum {
 	PT_CLASS_UNRESOLVABLE_TYPE_RESULT,
 	PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION,
 	PT_CLASS_PROPERTY_INITIALIZATION_EXPR,
-	PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR,
 	PT_CLASS_CONST_FETCH,
 	PT_CLASS_HALT_COMPILER,
 	PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR,
@@ -213,6 +251,7 @@ enum {
 	PT_CLASS_ALWAYS_REMEMBERED_EXPR,
 	PT_CLASS_NATIVE_METHOD_REFLECTION,
 	PT_CLASS_ENUM_CASES_METHOD_REFLECTION,
+	PT_CLASS_BACKED_ENUM_FROM_METHOD_REFLECTION,
 	PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE,
 	PT_CLASS_PROTECTED_PROPERTY_ATTRIBUTE,
 	PT_CLASS_ADAPTER_REFLECTION_METHOD,
@@ -1011,6 +1050,8 @@ extern zend_class_entry *pt_ce_generic_object_type;
 extern zend_class_entry *pt_ce_enum_case_object_type;
 void pt_object_type_rinit();
 void pt_object_type_rshutdown();
+/* TypeTraverser.cpp: the traversals a bailout left in progress */
+void pt_type_traverser_rshutdown();
 /* new ObjectType($className, $subtractedType, $classReflection) / new
  * GenericObjectType($mainType, $types, $subtractedType, $classReflection,
  * $variances) / new EnumCaseObjectType($className, $enumCaseName,
@@ -1149,6 +1190,23 @@ extern zend_class_entry *pt_ce_type_utils;
 extern zend_class_entry *pt_ce_typehint_helper;
 
 /* merged from the parallel port branch */
+/* $scope->services->exprPrinter (MutatingScope.cpp); NULL with an Error
+ * pending, an UNDEF zval when $services is unwritten */
+zval *pt_mutating_scope_expr_printer(zval *scope);
+
+/* facts about what a type contains, remembered on the type object (types
+ * are immutable) — each fact one bit, its "known" bit the next one up
+ * (TypeCombinatorCache.cpp): pt_type_cached_fact() answers 1 / 0, or -1
+ * when not known (or the object carries no header); pt_type_cache_fact()
+ * records it */
+enum : uint32_t
+{
+	PT_TYPE_FACT_CONTAINS_STATIC = 1u << 0,
+	PT_TYPE_FACT_CONTAINS_TEMPLATE = 1u << 2,
+};
+int pt_type_cached_fact(zend_object *type, uint32_t fact);
+void pt_type_cache_fact(zend_object *type, uint32_t fact, bool holds);
+
 /* the static combinator (TypeCombinator.cpp); TypeCombinatorCache.cpp calls
  * its do*() entry points directly */
 extern zend_class_entry *pt_ce_type_combinator;
@@ -1833,6 +1891,7 @@ zv::Val pt_expression_context_enter_throw(zval *context);
 zv::Val pt_expression_context_enter_array_dim_fetch_root(zval *context);
 zv::Val pt_expression_context_enter_unset_target(zval *context);
 zv::Val pt_expression_context_enter_passed_to_type(zval *context, zval *type, zval *nativeType);
+zv::Val pt_expression_context_enter_passed_to_type_resolver(zval *context, zval *resolver);
 zv::Val pt_expression_context_enter_right_side_assign(zval *context, zend_string *variableName, zval *expr);
 zv::Val pt_expression_context_enter_assign_right_side_call_args(zval *context, zval *acceptor);
 zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool direct);
@@ -1846,10 +1905,11 @@ zv::Val pt_expression_context_enter_value_flow(zval *context, zval *target, bool
 [[nodiscard]] bool pt_expression_context_is_value_flow_direct(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_array_dim_fetch_root(zval *context, bool &out);
 [[nodiscard]] bool pt_expression_context_is_unset_target(zval *context, bool &out);
-/* $context->getPassedToType() / getNativePassedToType() /
+/* $context->getPassedToTypeResolver() / getPassedToType() / getNativePassedToType() /
  * getInAssignRightSideVariableName() / getInAssignRightSideExpr() /
  * getInAssignRightSideType() / getInAssignRightSideNativeType() /
  * getValueFlowTarget(); the value or null, UNDEF = pending exception */
+zv::Val pt_expression_context_get_passed_to_type_resolver(zval *context);
 zv::Val pt_expression_context_get_passed_to_type(zval *context);
 zv::Val pt_expression_context_get_native_passed_to_type(zval *context);
 zv::Val pt_expression_context_get_in_assign_right_side_variable_name(zval *context);
@@ -2277,6 +2337,11 @@ extern zend_class_entry *pt_ce_node_scope_resolver;
 zv::Val pt_node_scope_resolver_process_expr_node(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 zv::Val pt_node_scope_resolver_process_stmt_node(zval *nodeScopeResolver, zval *stmt, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 zv::Val pt_node_scope_resolver_process_stmt_nodes_internal(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+/* $nodeScopeResolver->processLoopPassStmtNodes(...); previous IS_NULL for
+ * the first pass, record receives this pass's [entries, recording] */
+zv::Val pt_node_scope_resolver_process_loop_pass_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record);
+zv::Val pt_node_scope_resolver_process_loop_final_stmt_nodes(zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass);
+[[nodiscard]] bool pt_node_scope_resolver_is_context_sensitive_statement(zval *nodeScopeResolver, zval *stmt, bool &out);
 zv::Val pt_node_scope_resolver_process_expr_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope, zval *storage);
 zv::Val pt_node_scope_resolver_process_synthetic_on_demand(zval *nodeScopeResolver, zval *expr, zval *scope);
 zv::Val pt_node_scope_resolver_find_scope_state_type(zval *nodeScopeResolver, zval *expr, zval *scope);
@@ -2303,6 +2368,11 @@ zv::Val pt_statements_handler_process_nodes_with_storage(zval *handler, zval *no
  * null, UNDEF = pending exception */
 zv::Val pt_statements_handler_get_var_tag_dependencies(zval *handler, zval *stmt, zval *scope);
 zv::Val pt_statements_handler_do_process_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+/* $handler->processLoopPassStmtNodes(...): one loop convergence pass re-walking
+ * only what differs from $previous (IS_NULL for the first pass); record
+ * receives this pass's [entries, recording]. UNDEF = pending exception */
+zv::Val pt_statements_handler_process_loop_pass_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *previous, zv::Val &record);
+zv::Val pt_statements_handler_process_loop_final_stmt_nodes(zval *handler, zval *nodeScopeResolver, zval *parentNode, zval *stmts, zval *scope, zval *storage, zval *nodeCallback, zval *context, zval *lastPass);
 zv::Val pt_statements_handler_process_stmt_var_annotation(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
 zv::Val pt_statements_handler_get_overriding_throw_points(zval *handler, zval *statement, zval *scope);
 zv::Val pt_statements_handler_emit_var_tag_changed_node(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
@@ -2912,12 +2982,10 @@ zv::Val pt_arguments_handler_process_args(zval *handler, zval *nodeScopeResolver
  * pending exception */
 [[nodiscard]] bool pt_arguments_handler_process_dropped_args(zval *handler, zval *nodeScopeResolver, zval *stmt, zval *originalCall, zval *normalizedCall, zval *scope, zval *storage, zval *context);
 /* NodeScopeResolver.cpp — $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope,
- * $expr) / ->isReturningStoredExpressionResults() /
- * ->isConsumingStoredExpressionResults(): the native body for the native
+ * $expr) / ->isReturningStoredExpressionResults(): the native body for the native
  * class, the method otherwise; UNDEF / false = pending exception */
 zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval *nodeScopeResolver, zval *scope, zval *expr);
 [[nodiscard]] bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeScopeResolver, bool &out);
-[[nodiscard]] bool pt_node_scope_resolver_is_consuming_stored_expression_results(zval *nodeScopeResolver, bool &out);
 /* MutatingScope.cpp — $scope->pushInFunctionCall($reflection, $parameter,
  * $rememberTypes) ($reflection / $parameter IS_NULL for null) /
  * ->popInFunctionCall() / ->withClosureBindScopeClasses($classes) /
@@ -3083,7 +3151,7 @@ zv::Val pt_non_nullability_helper_revert_non_nullability(zval *helper, zval *sco
 /* NodeScopeResolver.cpp — $nodeScopeResolver->processExprNodeConsumingStored(...):
  * the native body for exactly the native class, the method otherwise; UNDEF =
  * pending exception */
-zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
+zv::Val pt_node_scope_resolver_process_expr_node_consuming_stored(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *consumedExpr, zval *scope, zval *storage, zval *nodeCallback, zval *context);
 
 /* }}} */
 
@@ -3639,7 +3707,6 @@ extern zend_class_entry *pt_ce_unset_offset_expr_handler;
 extern zend_class_entry *pt_ce_always_remembered_expr_handler;
 extern zend_class_entry *pt_ce_existing_array_dim_fetch_handler;
 extern zend_class_entry *pt_ce_isset_expr_handler;
-extern zend_class_entry *pt_ce_possibly_impure_call_expr_handler;
 extern zend_class_entry *pt_ce_set_existing_offset_value_type_expr_handler;
 extern zend_class_entry *pt_ce_set_offset_value_type_expr_handler;
 
@@ -3998,6 +4065,9 @@ enum pt_ietr_binary_operator : uint8_t
  * borrowed and of the twin's parameter types, NULL-free: PHP null as an
  * IS_NULL zval; $constantName a string zval); UNDEF = pending exception */
 zv::Val pt_initializer_expr_type_resolver_get_type(zval *resolver, zval *expr, zval *context);
+/* ->getEnumCaseValueType($className, $caseName, $valueExpr, $context), the
+ * same dispatch; the strings borrowed */
+zv::Val pt_initializer_expr_type_resolver_get_enum_case_value_type(zval *resolver, zend_string *className, zend_string *caseName, zval *valueExpr, zval *context);
 zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_ietr_binary_operator op, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_resolve_concat_type(zval *resolver, zval *left, zval *right);
 zv::Val pt_initializer_expr_type_resolver_resolve_identical_type(zval *resolver, zval *leftType, zval *rightType);
@@ -4008,7 +4078,7 @@ zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, z
 zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval *type, bool isNullable, bool isVariadic, zval *context);
 zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted);
 zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted);
-zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted = false);
 zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_unary_minus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_bitwise_not_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);

@@ -8,6 +8,7 @@ use PHPStan\BetterReflection\Identifier\IdentifierType;
 use PHPStan\BetterReflection\Reflection\Reflection;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
+use Throwable;
 use function class_exists;
 use function interface_exists;
 use function PHPStan\autoloadFunctions;
@@ -19,6 +20,7 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 	public function __construct(
 		private AutoloadSourceLocator $autoloadSourceLocator,
 		private ReflectionClassSourceLocator $reflectionClassSourceLocator,
+		private BootstrapAutoloaderExceptionReporter $exceptionReporter,
 	)
 	{
 	}
@@ -37,7 +39,22 @@ final class AutoloadFunctionsSourceLocator implements SourceLocator
 
 		$autoloadFunctions = autoloadFunctions();
 		foreach ($autoloadFunctions as $autoloadFunction) {
-			$autoloadFunction($className);
+			try {
+				$autoloadFunction($className);
+			} catch (Throwable $e) {
+				// This locator asks every bootstrap-registered autoloader for the class, which is not
+				// the order PHP uses: at runtime the class loader that resolves the class first is
+				// often another one, so an autoloader that throws for names outside its own scope is
+				// never invoked for them and its exception cannot happen. Letting it propagate here
+				// aborts the analysis of the file with an internal error instead, so it is swallowed
+				// and the remaining autoloaders and source locators get their turn. The class may
+				// still have been defined before the throw, so the locators below run either way.
+				// The autoloader ran for real, so its message is its real reason - with --debug,
+				// the reporter prints it.
+				// See https://github.com/phpstan/phpstan/issues/14976
+				$this->exceptionReporter->report($className, $e);
+			}
+
 			$reflection = $this->autoloadSourceLocator->locateIdentifier($reflector, $identifier);
 			if ($reflection !== null) {
 				return $reflection;

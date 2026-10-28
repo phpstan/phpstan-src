@@ -64,6 +64,7 @@ $fixtures = [
 	'interface const' => "<?php\ninterface I { const X = 1; }\n",
 	'enum const' => "<?php\nenum E: string { case A = 'a'; const X = 1; }\n",
 	'global constants' => "<?php\nconst A = 1;\nconst B = 2;\n",
+	'class name before global constant' => "<?php\nfunction f() { return Foo::class; }\nconst AFTER_CLASS_NAME = 1;\nfunction className() {}\nconst AFTER_CLASS_PREFIX = 2;\n",
 	'define' => "<?php\ndefine('FOO', 1);\ndefine(\"N\\\\BAR\", 2);\ndefine('N\\\\\\\\BAZ', 3);\n",
 	'define leading slash' => "<?php\n\\define('SLASHED', 1);\n",
 	'define with variable' => "<?php\ndefine(\$name, 1);\n\$x = 'function evil(';\n",

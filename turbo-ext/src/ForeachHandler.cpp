@@ -66,10 +66,10 @@ pt_method_site pt_feh_get_doc_comment_site;
 
 /* the permanent interned strings of the twin's literals (module startup) */
 zend_string *pt_feh_identical_narrowing_helper_class = nullptr;
+zend_string *pt_feh_empty_or_object_narrowing_helper_class = nullptr;
 zend_string *pt_feh_traversable_class = nullptr;
 zend_string *pt_feh_iterator_aggregate_class = nullptr;
 zend_string *pt_feh_get_iterator = nullptr;
-zend_string *pt_feh_is_object = nullptr;
 
 /* $node->getAttributes() / ->setAttributes($attributes) */
 zv::Val getAttributes(zval *node)
@@ -278,6 +278,15 @@ zv::Val unionOfList(zv::Arr &list)
 
 } // namespace
 
+/* the last convergence pass when it recorded its emissions (its
+ * [entries, recording] record), NULL otherwise */
+static zval *lastRecordedPass(zv::Val &previousPass)
+{
+	if (!previousPass.ref().isArray()) return NULL;
+	zval *recording = zend_hash_index_find(Z_ARRVAL_P(previousPass.raw()), 1);
+	return recording != NULL && Z_TYPE_P(recording) == IS_OBJECT ? previousPass.raw() : NULL;
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\StmtHandler\ForeachHandler; UNDEF = pending
@@ -437,6 +446,8 @@ public:
 		}
 
 		zv::Val replayBodyRecording, replayPassStorage, replayPassResult, replayEntryScope;
+		zv::Val previousPass = zv::Val::null();
+		zv::Val previousPassStorage = zv::Val::null();
 		zv::Val unrolledEndScope;
 		bool unrolled = false;
 		zend_long unrolledTotalKeys = 0;
@@ -487,6 +498,8 @@ public:
 				if (UNEXPECTED(EG(exception))) return zv::Val();
 				zend_long count = 0;
 				zv::Val prevEntryScope;
+				// each pass after the first re-walks only the statements whose
+				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 				bool bodyIsReplayable;
 				if (UNEXPECTED(!pt_node_scope_resolver_is_replayable_convergence_body(nodeScopeResolver, stmt, parts.stmts.raw(), bodyIsReplayable))) return zv::Val();
 				do {
@@ -506,7 +519,9 @@ public:
 					prevEntryScope = zv::Val::copyOf(bodyScope.ref());
 					storage = pt_expression_result_storage_duplicate(originalStorage);
 					if (UNEXPECTED(storage.isUndef())) return zv::Val();
-					zv::Val bodyRecording = ptlh::newPassNodeCallback(bodyIsReplayable);
+					// the statements this pass replays answer from the results the previous pass stored
+					if (!previousPassStorage.isNull() && UNEXPECTED(!pt_expression_result_storage_merge_results(storage.raw(), previousPassStorage.raw()))) return zv::Val();
+					zv::Val bodyRecording = ptlh::newPassNodeCallback(true);
 					if (UNEXPECTED(bodyRecording.isUndef())) return zv::Val();
 					if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope.raw()), storage.raw()))) return zv::Val();
 					zv::Val bodyScopeResult;
@@ -519,8 +534,11 @@ public:
 						if (UNEXPECTED(deepContext.isUndef())) return;
 						zv::Val passContext = pt_statement_context_without_template_argument_resolution(deepContext.raw());
 						if (UNEXPECTED(passContext.isUndef())) return;
-						zv::Val walked = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, parts.stmts.raw(), bodyScope.raw(), storage.raw(), bodyRecording.raw(), passContext.raw());
+						zv::Val passRecord = zv::Val::null();
+						zv::Val walked = pt_node_scope_resolver_process_loop_pass_stmt_nodes(nodeScopeResolver, stmt, parts.stmts.raw(), bodyScope.raw(), storage.raw(), bodyRecording.raw(), passContext.raw(), previousPass.raw(), passRecord);
 						if (UNEXPECTED(walked.isUndef())) return;
+						previousPass = std::move(passRecord);
+						previousPassStorage = zv::Val::copyOf(storage.ref());
 						bodyScopeResult = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
 						if (UNEXPECTED(bodyScopeResult.isUndef())) return;
 						zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
@@ -562,6 +580,7 @@ public:
 		bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), nonEmptyIterateeScope.raw());
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		zv::Val finalEntryScope = zv::Val::copyOf(bodyScope.ref());
+		zval *lastPass = lastRecordedPass(previousPass);
 		zval *storage = originalStorage;
 		bodyScope = enterForeach(nodeScopeResolver, bodyScope.raw(), storage, originalScope.raw(), stmt, parts, foreachIterateeType.raw(), foreachNativeIterateeType.raw(), nodeCallback);
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
@@ -577,6 +596,17 @@ public:
 			if (UNEXPECTED(!pt_expression_result_storage_merge_results(originalStorage, replayPassStorage.raw()))) return zv::Val();
 			if (UNEXPECTED(!pt_node_scope_resolver_replay_recording(nodeScopeResolver, replayBodyRecording.raw(), nodeCallback, originalStorage, scope.raw()))) return zv::Val();
 			finalScopeResult = std::move(replayPassResult);
+		} else if (lastPass != NULL && !previousPassStorage.isNull()) {
+			// the last pass stands in for the statements whose state it walked
+			// with - they replay through the real callback
+			if (UNEXPECTED(!pt_expression_result_storage_merge_results(originalStorage, previousPassStorage.raw()))) return zv::Val();
+			zval *stmts = ptsh::readNodeProperty(pt_feh_stmts_site, stmt, PT_LC("stmts"));
+			if (UNEXPECTED(stmts == NULL)) return zv::Val();
+			zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
+			zv::Val walked = pt_node_scope_resolver_process_loop_final_stmt_nodes(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage, nodeCallback, context, lastPass);
+			if (UNEXPECTED(walked.isUndef())) return zv::Val();
+			finalScopeResult = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
+			if (UNEXPECTED(finalScopeResult.isUndef())) return zv::Val();
 		} else {
 			zv::Val finalPassContext;
 			if (unrolled) {
@@ -735,7 +765,7 @@ public:
 		bool resultAlwaysTerminating;
 		if (UNEXPECTED(!pt_internal_statement_result_is_always_terminating(result, resultAlwaysTerminating))) return zv::Val();
 		if (narrowToEmpty) {
-			zv::Val emptyScope = narrowToEmptyOrObject(nodeScopeResolver, scope.raw(), iteratee);
+			zv::Val emptyScope = narrowToEmptyOrObject(nodeScopeResolver, scope.raw(), iteratee, condResult.raw(), originalStorage);
 			if (UNEXPECTED(emptyScope.isUndef())) return zv::Val();
 			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), emptyScope.raw());
 			if (UNEXPECTED(merged.isUndef())) return zv::Val();
@@ -1194,37 +1224,14 @@ private:
 		return true;
 	}
 
-	/* $nodeScopeResolver->narrowScopeWithCondition($scope, new BooleanOr(new
-	 * Identical($iteratee, new Array_([])), new FuncCall(new
-	 * Name\FullyQualified('is_object'), [new Arg($iteratee)])),
-	 * TypeSpecifierContext::createTruthy()) — the nodes created in the
-	 * twin's order */
-	static zv::Val narrowToEmptyOrObject(zval *nodeScopeResolver, zval *scope, zval *iteratee)
+	/* $this->container->getByType(ForeachEmptyOrObjectNarrowingHelper::class)
+	 *     ->narrowToEmptyOrObject($nodeScopeResolver, $scope, $stmt->expr, $condResult, $storage) */
+	zv::Val narrowToEmptyOrObject(zval *nodeScopeResolver, zval *scope, zval *iteratee, zval *iterateeResult, zval *storage) const
 	{
-		zv::Val emptyArray = newEmptyArrayExpr();
-		if (UNEXPECTED(emptyArray.isUndef())) return zv::Val();
-		zv::Args identicalArgv{iteratee, emptyArray.raw()};
-		zv::Val identical = pt_type_new(PT_CLASS_IDENTICAL_EXPR, 2, identicalArgv);
-		if (UNEXPECTED(identical.isUndef())) return zv::Val();
-		zval isObject;
-		ZVAL_INTERNED_STR(&isObject, pt_feh_is_object);
-		zv::Val name = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, &isObject);
-		if (UNEXPECTED(name.isUndef())) return zv::Val();
-		zv::Val arg = pt_type_new(PT_CLASS_ARG, 1, iteratee);
-		if (UNEXPECTED(arg.isUndef())) return zv::Val();
-		zv::Arr args = zv::Arr::create(1);
-		args.push(std::move(arg));
-		zv::Args callArgv{name.raw(), args.raw()};
-		zv::Val call = pt_type_new(PT_CLASS_FUNC_CALL, 2, callArgv);
-		if (UNEXPECTED(call.isUndef())) return zv::Val();
-		zv::Args orArgv{identical.raw(), call.raw()};
-		zv::Val booleanOr = pt_type_new(PT_CLASS_BOOLEAN_OR_EXPR, 2, orArgv);
-		if (UNEXPECTED(booleanOr.isUndef())) return zv::Val();
-		zend_object *truthy = pt_type_specifier_context_create_truthy();
-		if (UNEXPECTED(truthy == NULL)) return zv::Val();
-		zval truthyContext;
-		ZVAL_OBJ(&truthyContext, truthy);
-		return pt_node_scope_resolver_narrow_scope_with_condition(nodeScopeResolver, scope, booleanOr.raw(), &truthyContext);
+		zv::Val helper = ptlh::containerGetByType(OBJ_PROP_NUM(self, slots::container), pt_feh_empty_or_object_narrowing_helper_class);
+		if (UNEXPECTED(helper.isUndef())) return zv::Val();
+		zv::Args argv{nodeScopeResolver, scope, iteratee, iterateeResult, storage};
+		return pt_type_call(Z_OBJ_P(helper.raw()), PT_LC("narrowtoemptyorobject"), 5, argv);
 	}
 
 	/* Mirrors the private enterForeach(). */
@@ -1288,16 +1295,18 @@ private:
 			}
 		}
 
-		zv::Val constantArrays = typeOp(iterateeType, PT_OP_GET_CONSTANT_ARRAYS, "getConstantArrays");
-		if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
 		bool noDocComment;
 		if (UNEXPECTED(!hasNoDocComment(stmt, noDocComment))) return zv::Val();
-		if (noDocComment) {
+		if (noDocComment && parts.valueVarName != NULL && parts.keyVarName != NULL) {
 			zend_long isConstantArray = pt_type_op_trinary(Z_OBJ_P(iterateeType), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 			if (UNEXPECTED(isConstantArray < 0)) return zv::Val();
-			if (isConstantArray == PT_TRI_YES && ptlh::countOf(constantArrays.raw()) == 1 && parts.valueVarName != NULL && parts.keyVarName != NULL) {
-				scope = addConstantArrayConditionalHolders(scope.raw(), parts, listAt(constantArrays.raw(), 0));
-				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			if (isConstantArray == PT_TRI_YES) {
+				zv::Val constantArrays = typeOp(iterateeType, PT_OP_GET_CONSTANT_ARRAYS, "getConstantArrays");
+				if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
+				if (ptlh::countOf(constantArrays.raw()) == 1) {
+					scope = addConstantArrayConditionalHolders(scope.raw(), parts, listAt(constantArrays.raw(), 0));
+					if (UNEXPECTED(scope.isUndef())) return zv::Val();
+				}
 			}
 		}
 
@@ -1982,10 +1991,10 @@ using phpstanturbo::ForeachHandler;
 PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 {
 	pt_feh_identical_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper"), 1);
+	pt_feh_empty_or_object_narrowing_helper_class = zend_string_init_interned(PT_LC("PHPStan\\Analyser\\ExprHandler\\Helper\\ForeachEmptyOrObjectNarrowingHelper"), 1);
 	pt_feh_traversable_class = zend_string_init_interned(PT_LC("Traversable"), 1);
 	pt_feh_iterator_aggregate_class = zend_string_init_interned(PT_LC("IteratorAggregate"), 1);
 	pt_feh_get_iterator = zend_string_init_interned(PT_LC("getIterator"), 1);
-	pt_feh_is_object = zend_string_init_interned(PT_LC("is_object"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\StmtHandler\\ForeachHandler");
 	ptdecl::ForeachHandler::declareClass(cls);

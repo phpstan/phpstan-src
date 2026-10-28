@@ -21,7 +21,7 @@ function test2(mixed $mixed): void
 		filter_var($mixed, FILTER_VALIDATE_INT, FILTER_FLAG_GLOBAL_RANGE);
 		$foo = 1;
 	} catch (\Filter\FilterFailedException $e) {
-		assertVariableCertainty(TrinaryLogic::createYes(), $foo);
+		assertVariableCertainty(TrinaryLogic::createMaybe(), $foo);
 	}
 
 	assertType('int|false', filter_var($mixed, FILTER_VALIDATE_INT, FILTER_FLAG_GLOBAL_RANGE));

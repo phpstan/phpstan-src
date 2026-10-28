@@ -32,12 +32,17 @@ class ApiClassConstFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/class-const-fetch-out-of-phpstan.php'], [
 			[
 				'Accessing PHPStan\Command\AnalyseCommand::class is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				16,
+				19,
 				$tip,
 			],
 			[
 				'Accessing PHPStan\Analyser\NodeScopeResolver::FOO is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				20,
+				23,
+				$tip,
+			],
+			[
+				'Accessing PHPStan\Turbo\TurboExtensionSelector::MINIMUM_PHP_VERSION_ID is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
+				28,
 				$tip,
 			],
 		]);

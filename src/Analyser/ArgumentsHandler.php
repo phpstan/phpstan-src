@@ -32,8 +32,6 @@ use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
-use PHPStan\Reflection\InitializerExprContext;
-use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -125,7 +123,6 @@ final class ArgumentsHandler
 		private AssignHandler $assignHandler,
 		private ClosureTypeResolver $closureTypeResolver,
 		private ClosureParameterResolver $closureParameterResolver,
-		private InitializerExprTypeResolver $initializerExprTypeResolver,
 	)
 	{
 	}
@@ -242,24 +239,52 @@ final class ArgumentsHandler
 					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
 					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
-			} elseif (
-				$argMetadataIsTypeDriven
-				&& !$arg->unpack
-				&& $arg->value instanceof Expr\Array_
-				&& $this->argConsumesResolvedParameterType($arg->value)
-			) {
-				// An array literal holding closures decides the templates of its own
-				// parameter through its keys and its non-closure values - and those
-				// very templates type the closures nested in it. Pin a SKELETON of the
-				// array (declared closure signatures, scope-known leaves, mixed for
-				// anything that needs a walk) so the per-argument resolution below sees
-				// them; the walk that follows overwrites it with the real type.
-				$gatheredArgTypeByIndex[$i] = $this->gatherArrayArgTypeSkeleton($nodeScopeResolver, $arg->value, $scope);
 			}
 
 			$argMetadataAcceptor = $metadataAcceptor;
+			$passedToTypeResolver = null;
 			if ($metadataAcceptor !== null && $argMetadataIsTypeDriven) {
-				if ($this->argConsumesResolvedParameterType($arg->value)) {
+				if (!$this->argConsumesResolvedParameterType($arg->value)) {
+					// Only a closure/arrow function consumes the generic-RESOLVED
+					// parameter type: its body is inferred from the resolved
+					// callable(T) - directly, or through the in-function-call stack
+					// when nested anywhere inside the argument. Every other argument
+					// reads variant-stable facts off its parameter (by-ref flag,
+					// callable bookkeeping), so one all-mixed count-stable selection
+					// serves them all instead of a full template inference per argument.
+					$countStableMetadataAcceptor ??= $this->selectCountStableMetadataAcceptor($nodeScopeResolver, $args, $parametersAcceptors, $namedArgumentsVariants, $scope);
+					$argMetadataAcceptor = $countStableMetadataAcceptor;
+				} elseif (!$arg->unpack && $arg->value instanceof Expr\Array_) {
+					// An array literal holding closures decides the templates of its
+					// own parameter through its keys and its other values - and those
+					// very templates type the closures in it. ArrayHandler walks the
+					// other items first and resolves the parameter from their types;
+					// the argument's own metadata is variant-stable - the declared
+					// parameter of a single variant, as gatherClosureArgType() pushes.
+					$passedToTypeResolver = function (Type $arrayType) use ($nodeScopeResolver, $args, $arg, $i, $gatheredArgTypeByIndex, $parametersAcceptors, $namedArgumentsVariants, $scope): array {
+						$paddedTypes = [];
+						$paddedUnpack = false;
+						$paddedHasName = false;
+						foreach ($args as $j => $paddedArg) {
+							$paddedOriginalArg = $paddedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $paddedArg;
+							$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, $j === $i ? $arrayType : ($gatheredArgTypeByIndex[$j] ?? new MixedType()));
+						}
+						$parameter = $this->matchArgParameter(
+							$this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope),
+							$arg,
+							$i,
+						);
+						if ($parameter === null) {
+							return [null, null];
+						}
+
+						return [$parameter->getType(), $parameter instanceof ExtendedParameterReflection ? $parameter->getNativeType() : null];
+					};
+					if (count($parametersAcceptors) > 1 || $namedArgumentsVariants !== null) {
+						$countStableMetadataAcceptor ??= $this->selectCountStableMetadataAcceptor($nodeScopeResolver, $args, $parametersAcceptors, $namedArgumentsVariants, $scope);
+						$argMetadataAcceptor = $countStableMetadataAcceptor;
+					}
+				} else {
 					// Resolve the acceptor for this argument from the args gathered SO FAR, padded to the
 					// full argument count with mixed. Closures sort last and by-ref out-params follow the
 					// args that pin them, so determining siblings are already processed; the mixed pad keeps
@@ -273,63 +298,19 @@ final class ArgumentsHandler
 						$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, $gatheredArgTypeByIndex[$j] ?? new MixedType());
 					}
 					$argMetadataAcceptor = $this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope);
-				} else {
-					// Only a closure/arrow function consumes the generic-RESOLVED
-					// parameter type: its body is inferred from the resolved
-					// callable(T) - directly, or through the in-function-call stack
-					// when nested anywhere inside the argument. Every other argument
-					// reads variant-stable facts off its parameter (by-ref flag,
-					// callable bookkeeping), so one all-mixed count-stable selection
-					// serves them all instead of a full template inference per argument.
-					if ($countStableMetadataAcceptor === null) {
-						$paddedTypes = [];
-						$paddedUnpack = false;
-						$paddedHasName = false;
-						foreach ($args as $j => $paddedArg) {
-							$paddedOriginalArg = $paddedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $paddedArg;
-							$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, new MixedType());
-						}
-						$countStableMetadataAcceptor = $this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope);
-					}
-					$argMetadataAcceptor = $countStableMetadataAcceptor;
 				}
 			}
-			$parameters = $argMetadataAcceptor !== null ? $argMetadataAcceptor->getParameters() : null;
 
 			$assignByReference = false;
-			$parameter = null;
+			$parameter = $argMetadataAcceptor !== null ? $this->matchArgParameter($argMetadataAcceptor, $arg, $i) : null;
 			$parameterType = null;
 			$parameterNativeType = null;
-			if ($parameters !== null) {
-				$matchedParameter = null;
-				if ($arg->name !== null) {
-					foreach ($parameters as $p) {
-						if ($p->getName() === $arg->name->toString()) {
-							$matchedParameter = $p;
-							break;
-						}
-					}
-				} elseif (isset($parameters[$i])) {
-					$matchedParameter = $parameters[$i];
-				}
+			if ($parameter !== null) {
+				$assignByReference = $parameter->passedByReference()->createsNewVariable();
+				$parameterType = $parameter->getType();
 
-				if ($matchedParameter !== null) {
-					$assignByReference = $matchedParameter->passedByReference()->createsNewVariable();
-					$parameterType = $matchedParameter->getType();
-
-					if ($matchedParameter instanceof ExtendedParameterReflection) {
-						$parameterNativeType = $matchedParameter->getNativeType();
-					}
-					$parameter = $matchedParameter;
-				} elseif (count($parameters) > 0 && $argMetadataAcceptor->isVariadic()) {
-					$lastParameter = array_last($parameters);
-					$assignByReference = $lastParameter->passedByReference()->createsNewVariable();
-					$parameterType = $lastParameter->getType();
-
-					if ($lastParameter instanceof ExtendedParameterReflection) {
-						$parameterNativeType = $lastParameter->getNativeType();
-					}
-					$parameter = $lastParameter;
+				if ($parameter instanceof ExtendedParameterReflection) {
+					$parameterNativeType = $parameter->getNativeType();
 				}
 			}
 
@@ -370,18 +351,14 @@ final class ArgumentsHandler
 			if ($arg->value instanceof Expr\Closure) {
 
 				$storedClosureArgResult = null;
-				if ($nodeScopeResolver->isReturningStoredExpressionResults() || $nodeScopeResolver->isConsumingStoredExpressionResults()) {
+				if ($nodeScopeResolver->isReturningStoredExpressionResults()) {
 					// an on-demand re-walk of the enclosing call must not re-run the
 					// closure's whole by-ref convergence: consume the main walk's
 					// stored result, or (when the body release already dropped it)
 					// price the closure through getClosureType's per-node cache -
 					// a single body walk on miss, none on repeat asks
 					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
-					// consume mode alone (the nullsafe call's plain-twin walk) is the
-					// FIRST and only walk of these arguments - nothing stored them, so
-					// a miss means "walk it", not "price it silently": pricing skips
-					// the body walk and never fires the closure's node callbacks
-					if ($storedClosureArgResult === null && $nodeScopeResolver->isReturningStoredExpressionResults()) {
+					if ($storedClosureArgResult === null) {
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
 							beforeScope: $scopeToPass,
@@ -528,12 +505,10 @@ final class ArgumentsHandler
 			} elseif ($arg->value instanceof Expr\ArrowFunction) {
 
 				$storedClosureArgResult = null;
-				if ($nodeScopeResolver->isReturningStoredExpressionResults() || $nodeScopeResolver->isConsumingStoredExpressionResults()) {
+				if ($nodeScopeResolver->isReturningStoredExpressionResults()) {
 					// see the Closure branch above - consume or price via the cache
 					$storedClosureArgResult = $storage->findExpressionResult($arg->value);
-					// consume mode alone (the nullsafe call's plain-twin walk) is the
-					// first and only walk of the argument - a miss means walk it
-					if ($storedClosureArgResult === null && $nodeScopeResolver->isReturningStoredExpressionResults()) {
+					if ($storedClosureArgResult === null) {
 						$storedClosureArgResult = $this->expressionResultFactory->create(
 							$scopeToPass,
 							beforeScope: $scopeToPass,
@@ -651,6 +626,9 @@ final class ArgumentsHandler
 				$argContext = $context->enterDeep();
 				if (!$arg->unpack && $arg->value instanceof Expr\Array_) {
 					$argContext = $argContext->enterPassedToType($parameterType, $parameterNativeType);
+					if ($passedToTypeResolver !== null) {
+						$argContext = $argContext->enterPassedToTypeResolver($passedToTypeResolver);
+					}
 				}
 				$exprResult = $nodeScopeResolver->processExprNode($stmt, $arg->value, $scopeToPass, $storage, $nodeCallback, $argContext);
 				$argResults[spl_object_id($arg->value)] = $exprResult;
@@ -997,37 +975,45 @@ final class ArgumentsHandler
 	}
 
 	/**
-	 * A structural stand-in for an array literal argument that holds closures,
-	 * built without walking anything: a nested array literal recurses, a closure /
-	 * arrow function contributes its DECLARED signature
-	 * (ClosureTypeResolver::getDeclaredClosureType()), and every other key/value
-	 * is priced by the scope state it is already tracked as, falling back to the
-	 * constant-expression resolver (literals, ::class, constants, concatenation)
-	 * and ultimately to mixed. Widening a slot to mixed is safe: a template is
-	 * never resolved below its bound, so the skeleton can only ever sharpen the
-	 * resolution.
-	 *
-	 * Unlike gatherClosureArgType() this type never reaches $gatheredTypes: it
-	 * exists solely to resolve the parameter type the nested closures are typed
-	 * from. The argument's real type replaces it once the walk is done.
+	 * @param Node\Arg[] $args
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
 	 */
-	private function gatherArrayArgTypeSkeleton(NodeScopeResolver $nodeScopeResolver, Expr\Array_ $expr, MutatingScope $scope): Type
+	private function selectCountStableMetadataAcceptor(NodeScopeResolver $nodeScopeResolver, array $args, array $parametersAcceptors, ?array $namedArgumentsVariants, MutatingScope $scope): ParametersAcceptor
 	{
-		$initializerContext = InitializerExprContext::fromScope($scope);
-		$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver, $scope, $initializerContext): Type {
-			if ($inner instanceof Expr\Closure || $inner instanceof Expr\ArrowFunction) {
-				return $this->closureTypeResolver->getDeclaredClosureType($scope, $inner);
+		$paddedTypes = [];
+		$paddedUnpack = false;
+		$paddedHasName = false;
+		foreach ($args as $j => $paddedArg) {
+			$paddedOriginalArg = $paddedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $paddedArg;
+			$this->addGatheredArgType($paddedTypes, $paddedUnpack, $paddedHasName, $paddedOriginalArg, $j, new MixedType());
+		}
+
+		return $this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $paddedTypes, $parametersAcceptors, $namedArgumentsVariants, $paddedHasName, $paddedUnpack, $scope);
+	}
+
+	/**
+	 * The parameter the argument is passed to: by name, by position, or the
+	 * variadic one.
+	 */
+	private function matchArgParameter(ParametersAcceptor $acceptor, Node\Arg $arg, int $i): ?ParameterReflection
+	{
+		$parameters = $acceptor->getParameters();
+		if ($arg->name !== null) {
+			foreach ($parameters as $parameter) {
+				if ($parameter->getName() === $arg->name->toString()) {
+					return $parameter;
+				}
 			}
+		} elseif (isset($parameters[$i])) {
+			return $parameters[$i];
+		}
 
-			if ($inner instanceof Expr\Array_) {
-				return $this->initializerExprTypeResolver->getArrayType($inner, $getType);
-			}
+		if (count($parameters) > 0 && $acceptor->isVariadic()) {
+			return array_last($parameters);
+		}
 
-			return $nodeScopeResolver->findScopeStateType($inner, $scope)
-				?? $this->initializerExprTypeResolver->getType($inner, $initializerContext);
-		};
-
-		return $this->initializerExprTypeResolver->getArrayType($expr, $getType);
+		return null;
 	}
 
 	/**

@@ -1088,3 +1088,107 @@ function testExtendedSyntaxEscapedHash(string $string): void {
 		assertType('array{non-falsy-string, numeric-string, non-empty-string}', $matches);
 	}
 }
+
+function testAssertionsAreZeroWidth(string $s): void {
+	// from php-src ext/pcre/tests/bug66121.phpt
+	if (preg_match('/(?<!k)/u', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(?=C)/', $s, $matches)) {
+		assertType('array{string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(\.\d\d((?=0)|\d(?=\d)))/', $s, $matches)) {
+		assertType('array{non-falsy-string, non-falsy-string, string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/$(?<=^(a))/', $s, $matches)) {
+		assertType("array{string, 'a'}", $matches);
+	}
+}
+
+function testGroupsInNegativeAssertionsAreNeverSet(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(?<!(c|d))[ab]/', $s, $matches)) {
+		assertType("array{0: non-falsy-string, 1?: 'c'|'d'}", $matches);
+	}
+}
+
+function testDuplicateNamesInternalOption(string $s): void {
+	// from php-src ext/pcre/tests/bug79257.phpt
+	if (preg_match('/(?J)(?:(?<g>foo)|(?<g>bar))(?<h>baz)/', $s, $matches)) {
+		assertType('array<string>', $matches);
+	}
+
+	// from php-src ext/pcre/tests/bug79257.phpt
+	if (preg_match('/(?J)(?:(?<g>foo)|(?<g>bar))/', $s, $matches, PREG_UNMATCHED_AS_NULL)) {
+		assertType('array<string|null>', $matches);
+	}
+
+	// from php-src ext/pcre/tests/bug79257.phpt
+	if (preg_match_all('/(?J)(?<chr>[ac])(?<num>\d)|(?<chr>[b])/', $s, $matches, PREG_SET_ORDER)) {
+		assertType('list<array<string>>', $matches);
+	}
+}
+
+function testQuantifiedMaybeEmptyAtom(string $s): void {
+	// from PCRE2 testdata/testinput6
+	if (preg_match('/(abc|)+/', $s, $matches)) {
+		assertType("array{string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput6
+	if (preg_match('/^(){3,5}/', $s, $matches)) {
+		assertType("array{string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/((a|)+)+Z/', $s, $matches)) {
+		assertType("array{non-falsy-string, string, string}", $matches);
+	}
+}
+
+function testBackreferences(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/([a-c]*)\1/', $s, $matches)) {
+		assertType("array{string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(\2|a)(\1)/', $s, $matches)) {
+		assertType("array{string, string, string}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput2
+	if (preg_match('/^(..)(\1{2,3})ab/', $s, $matches)) {
+		assertType("array{non-falsy-string, non-falsy-string, string}", $matches);
+	}
+}
+
+function testBranchResetNotInOnlyTopLevelAlternation(string $s): void {
+	// from PCRE2 testdata/testinput2
+	if (preg_match('/(x)(?|(abc)|(xyz))(x)/', $s, $matches)) {
+		assertType('array<string>', $matches);
+	}
+}
+
+function testConditionalSubpatterns(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/^(\()?blah(?(1)(\)))$/', $s, $matches)) {
+		assertType("list{0: non-falsy-string, 1?: ''|'(', 2?: ')'}", $matches);
+	}
+
+	// from PCRE2 testdata/testinput2
+	if (preg_match('/((?(-1)a))/', $s, $matches)) {
+		assertType('array{string, string}', $matches);
+	}
+
+	// from PCRE2 testdata/testinput1
+	if (preg_match('/(?(DEFINE)(?<foo>bar))(?<![-a-z0-9])word/', $s, $matches)) {
+		assertType("array{0: non-falsy-string, foo: 'bar', 1: 'bar'}|array{non-falsy-string}", $matches);
+	}
+}

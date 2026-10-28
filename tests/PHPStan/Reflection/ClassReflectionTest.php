@@ -355,6 +355,32 @@ class ClassReflectionTest extends PHPStanTestCase
 		$this->assertInstanceOf(IntegerType::class, $enum->getBackedEnumType());
 	}
 
+	public static function dataBackedEnumFromMethodFromTrait(): iterable
+	{
+		yield ['from'];
+		yield ['tryFrom'];
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	#[DataProvider('dataBackedEnumFromMethodFromTrait')]
+	public function testBackedEnumFromMethodFromTrait(string $methodName): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$enum = $reflectionProvider->getClass('BackedEnumFromTrait\Foo');
+
+		// the engine-provided method wins over the one from the used trait
+		$nativeMethod = $enum->getNativeReflection()->getMethod($methodName);
+		$this->assertSame('BackedEnumFromTrait\Foo', $nativeMethod->getDeclaringClass()->getName());
+		$nativeParameter = $nativeMethod->getParameters()[0];
+		$this->assertSame('value', $nativeParameter->getName());
+		$this->assertSame('string|int', (string) $nativeParameter->getType());
+
+		$method = $enum->getNativeMethod($methodName);
+		$this->assertSame('BackedEnumFromTrait\Foo', $method->getDeclaringClass()->getName());
+		$this->assertSame('BackedEnum', $method->getPrototype()->getDeclaringClass()->getName());
+		$this->assertSame('value', $method->getOnlyVariant()->getParameters()[0]->getName());
+	}
+
 	public function testIs(): void
 	{
 		$className = static::class;

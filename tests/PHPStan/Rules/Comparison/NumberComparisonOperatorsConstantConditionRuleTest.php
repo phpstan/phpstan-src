@@ -21,7 +21,6 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		// @phpstan-ignore argument.type
 		return new CompositeRule([
 			new NumberComparisonOperatorsConstantConditionRule(
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				$this->treatPhpDocTypesAsCertain,
 				true,

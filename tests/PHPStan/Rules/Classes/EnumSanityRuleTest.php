@@ -190,4 +190,35 @@ class EnumSanityRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.2.0')]
+	public function testBug15458(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15458.php'], [
+			[
+				'Enum case Bug15458\E::A value mixed does not match the "string" type.',
+				7,
+			],
+			[
+				'Enum case Bug15458\IntBacked::A value mixed does not match the "int" type.',
+				12,
+			],
+			[
+				'Enum case Bug15458\Mutual::A value mixed does not match the "string" type.',
+				17,
+			],
+			[
+				'Enum case Bug15458\Mutual::B value mixed does not match the "string" type.',
+				18,
+			],
+			[
+				'Enum case Bug15458\CrossA::A value mixed does not match the "string" type.',
+				23,
+			],
+			[
+				'Enum case Bug15458\CrossB::B value mixed does not match the "string" type.',
+				28,
+			],
+		]);
+	}
+
 }

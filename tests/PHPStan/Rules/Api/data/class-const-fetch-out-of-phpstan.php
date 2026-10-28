@@ -2,10 +2,13 @@
 
 namespace App\ClassConstFetch;
 
+use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Turbo\TurboExtensionSelector;
 
 class Foo
 {
@@ -18,6 +21,11 @@ class Foo
 		echo ScopeFactory::class;
 
 		echo NodeScopeResolver::FOO;
+
+		echo Scope::SUPERGLOBAL_VARIABLES;
+		echo MutatingScope::SUPERGLOBAL_VARIABLES;
+		echo TurboExtensionSelector::EXTENSION_PATH_INI;
+		echo TurboExtensionSelector::MINIMUM_PHP_VERSION_ID;
 	}
 
 }

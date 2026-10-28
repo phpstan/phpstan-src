@@ -27,7 +27,6 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 					self::createReflectionProvider(),
 					$this->treatPhpDocTypesAsCertain,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				$this->treatPhpDocTypesAsCertain,
@@ -339,7 +338,6 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			[
 				'Call to method Bug14705\Foo::isValid() with non-empty-string will always evaluate to true.',
 				87,
-				'If Bug14705\Foo::isValid() is impure, add <fg=cyan>@phpstan-impure</> PHPDoc tag above its declaration. Learn more: <fg=cyan>https://phpstan.org/blog/remembering-and-forgetting-returned-values</>',
 			],
 			[
 				'Call to method Bug14705\Foo::assertValid() with non-empty-string will always evaluate to true.',

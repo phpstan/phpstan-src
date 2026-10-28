@@ -65,9 +65,9 @@ use function implode;
 	$postGenerator = new PostGenerator(new Differ(new UnifiedDiffOutputBuilder('')));
 
 	$application = new Application();
-	$application->add(new DownloadCommand($client, new PlaygroundClient(new \GuzzleHttp\Client()), $issueCommentDownloader, $issueCachePath, $playgroundCachePath));
-	$application->add(new RunCommand($playgroundCachePath, $tmpDir));
-	$application->add(new EvaluateCommand(new TabCreator(), new NewlyUnparsableVersionFilter(), $postGenerator, $client, $issueCommentDownloader, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
+	$application->addCommand(new DownloadCommand($client, new PlaygroundClient(new \GuzzleHttp\Client()), $issueCommentDownloader, $issueCachePath, $playgroundCachePath));
+	$application->addCommand(new RunCommand($playgroundCachePath, $tmpDir));
+	$application->addCommand(new EvaluateCommand(new TabCreator(), new NewlyUnparsableVersionFilter(), $postGenerator, $client, $issueCommentDownloader, $issueCachePath, $playgroundCachePath, $tmpDir, $gitBranch, $phpstanSrcCommitBefore, $phpstanSrcCommitAfter));
 
 	$application->setCatchExceptions(false);
 	$application->run();

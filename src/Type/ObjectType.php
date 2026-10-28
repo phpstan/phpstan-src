@@ -604,7 +604,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($type instanceof ClosureType) {
-			return self::$superTypes[$thisDescription][$description] = new IsSuperTypeOfResult($this->isInstanceOf(Closure::class), []);
+			return self::$superTypes[$thisDescription][$description] = IsSuperTypeOfResult::createFromTrinaryLogic($this->isInstanceOf(Closure::class));
 		}
 
 		if ($type instanceof ObjectWithoutClassType) {

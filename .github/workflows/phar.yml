@@ -48,12 +48,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -106,12 +106,12 @@ jobs:
 
       # Box leaves the members with mtime 0 here, which OPcache refuses to
       # cache at all; the commit date also keeps consecutive builds apart for
-      # opcache.validate_timestamps (see TurboProcessRestarter::resolveOpcacheArgs()).
+      # opcache.validate_timestamps (see OpcacheSettings::resolveIniEntries()).
       # resign.php fails if any member is left at mtime 0.
       - name: "Stamp PHAR member timestamps"
         run: php compiler/build/resign.php tmp/phpstan.phar "$(git log -1 --format=%cI)"
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: phar-file
           path: tmp/phpstan.phar
@@ -119,6 +119,16 @@ jobs:
       - name: "Run PHAR"
         working-directory: "compiler"
         run: "../tmp/phpstan.phar list"
+
+      # The autoloader dump generates the version TurboExtensionEnabler
+      # activates from git; without it in the phar, no turbo binary would
+      # ever activate.
+      - name: "Check the PHAR carries the expected turbo extension version"
+        run: |
+          BAKED="$(php -r 'echo require "phar://" . getcwd() . "/tmp/phpstan.phar/vendor/turbo-extension-version.php";')"
+          EXPECTED="$(php build/turbo-extension-version.php)"
+          echo "PHAR expects: $BAKED, last commit touching turbo-ext/src: $EXPECTED"
+          [ "$BAKED" = "$EXPECTED" ]
 
       - name: "Delete PHAR"
         run: "rm tmp/phpstan.phar"
@@ -149,7 +159,7 @@ jobs:
         id: "checksum"
         run: echo "md5=$(md5sum tmp/phpstan.phar | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: phar-file-checksum
           path: tmp/phpstan.phar
@@ -157,7 +167,7 @@ jobs:
       - name: "Delete checksum PHAR"
         run: "rm tmp/phpstan.phar"
 
-      - uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         id: changes
         with:
           filters: |
@@ -174,12 +184,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
-      # the compiler-tests job runs the phar on PHP 8.2, where no binary exists
-      # and the note is not printed
+      # the compiler-tests job runs the phar only for `list`, which prints
+      # no note
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
@@ -187,7 +197,7 @@ jobs:
           php-version: "8.4"
 
       - name: "Download PHAR"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file
           path: bare
@@ -213,12 +223,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # git log over turbo-ext/src needs full history
@@ -244,7 +254,7 @@ jobs:
           echo "composer.lock: $INSTALLED, native engine ported against: $SUPPORTED_PHP_PARSER_VERSION"
           if [ "$INSTALLED" != "$SUPPORTED_PHP_PARSER_VERSION" ]; then
             echo "::error::nikic/php-parser was updated to $INSTALLED but turbo-ext/src/parser/ was ported against $SUPPORTED_PHP_PARSER_VERSION."
-            echo "::error::Update procedure: diff ParserAbstract.php helpers between the two versions (grammar tables need nothing — they are read at run time), run turbo-ext/bin/generate-parser-actions.php and port any flagged closure bodies via action-overrides/, run turbo-ext/tests/parser-corpus.php and turbo-ext/tests/parser-upstream-corpus.php until byte-identical, run the full suite, then bump SUPPORTED_PHP_PARSER_VERSION here and the extension version pin."
+            echo "::error::Update procedure: diff ParserAbstract.php helpers between the two versions (grammar tables need nothing — they are read at run time), run turbo-ext/bin/generate-parser-actions.php and port any flagged closure bodies via action-overrides/, run turbo-ext/tests/parser-corpus.php and turbo-ext/tests/parser-upstream-corpus.php until byte-identical, run the full suite, then bump SUPPORTED_PHP_PARSER_VERSION here."
             exit 1
           fi
 
@@ -253,17 +263,8 @@ jobs:
           php turbo-ext/bin/generate-parser-actions.php
           git diff --exit-code turbo-ext/src/parser/
 
-      - name: "Check TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION against the last commit touching turbo-ext/src"
+      - name: "Check turbo-ext/VERSION.txt is not committed"
         run: |
-          EXPECTED_SHA="$(git log -1 --format=%H -- turbo-ext/src | cut -c1-7)"
-          ENABLER="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
-          echo "last commit touching turbo-ext/src:                $EXPECTED_SHA"
-          echo "TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION: $ENABLER"
-          if [ "$ENABLER" != "$EXPECTED_SHA" ]; then
-            echo "::error::TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION must be the short SHA of the last commit touching turbo-ext/src/."
-            echo "::error::After changing the native side, verify the implementations still match and add a follow-up commit setting the constant to that commit's short SHA (the binary bakes its version from git at build time). Compute it only after the change lands on the target branch — a pull request commit gets a new SHA when rebased."
-            exit 1
-          fi
           # VERSION.txt is generated into the phpstan/turbo-ext subsplit by
           # subsplit-turbo-ext.yml; a copy committed here would go stale and
           # silently win over git in phpize builds.
@@ -292,12 +293,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # the VERSION.txt written below bakes from git log over turbo-ext/src
@@ -328,7 +329,7 @@ jobs:
       - name: "Verify the built extension reports the expected version"
         run: |
           REPORTED="$(php -d extension="$RUNNER_TEMP/turbo-ext/modules/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
 
@@ -393,12 +394,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -446,12 +447,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # the earlier runs' commits are diffed against HEAD
@@ -529,14 +530,14 @@ jobs:
     steps:
       - name: Harden the runner (Audit all outbound calls)
         if: env.ORIGIN_RUN_ID != '' || matrix.target.family == 'macos'
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       # See turbo-origins. The build steps below are all skipped on this leg.
       - name: "Download the core compiled from identical build inputs"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext"
@@ -556,7 +557,7 @@ jobs:
 
       - name: "Checkout"
         if: env.ORIGIN_RUN_ID == ''
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # The Makefile bakes the version via git log over the watched
@@ -646,14 +647,14 @@ jobs:
         if: env.ORIGIN_RUN_ID == ''
         run: |
           REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "core + extension report: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
 
       # A reused core is uploaded again under the same name, so the
       # turbo-compile legs find it in this run.
       - name: "Upload core artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext/phpstan_turbo_core.so"
@@ -663,7 +664,7 @@ jobs:
       # from the run that compiled it (see find-turbo-origins.sh).
       - name: "Mark the core artifact as reused"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
           path: "turbo-reused.txt"
@@ -691,14 +692,14 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       # See the same two steps in turbo-compile-core.
       - name: "Download the core compiled from identical build inputs"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext"
@@ -711,7 +712,7 @@ jobs:
 
       - name: "Checkout"
         if: env.ORIGIN_RUN_ID == ''
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # the version is baked from git log over turbo-ext/src
@@ -759,13 +760,13 @@ jobs:
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "core + extension report: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           EOF
 
       - name: "Upload core artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext/phpstan_turbo_core.so"
@@ -773,7 +774,7 @@ jobs:
 
       - name: "Mark the core artifact as reused"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
           path: "turbo-reused.txt"
@@ -827,7 +828,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         # the musl arm64 legs are in turbo-compile-musl-arm64
         target:
           - name: "linux-gnu-x86_64"
@@ -860,7 +861,7 @@ jobs:
     steps:
       - name: Harden the runner (Audit all outbound calls)
         if: matrix.target.family == 'macos'
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -872,7 +873,7 @@ jobs:
         run: apk add --no-cache git
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # the version is baked from git log over turbo-ext/src, see
@@ -897,7 +898,7 @@ jobs:
 
       - name: "Download the platform's core"
         if: matrix.variant == 'split'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "phpstan_turbo_core-${{ matrix.target.name }}"
           path: "turbo-ext"
@@ -954,7 +955,7 @@ jobs:
       - name: "Verify the built extension reports the expected version"
         run: |
           REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           # the loader rejects a ts-mismatched binary, so php loading it above
@@ -964,7 +965,7 @@ jobs:
 
       - name: "Upload extension artifact"
         if: matrix.variant == 'split'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: |
@@ -974,7 +975,7 @@ jobs:
 
       - name: "Upload self-contained extension artifact"
         if: matrix.variant == 'pie'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext/phpstan_turbo.so"
@@ -1001,7 +1002,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         # thread-safe for every minor too, see turbo-compile
         ts: ["nts", "zts"]
         # see turbo-compile
@@ -1009,19 +1010,19 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # the version is baked from git log over turbo-ext/src
 
       - name: "Download the platform's core"
         if: matrix.variant == 'split'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "phpstan_turbo_core-linux-musl-arm64"
           path: "turbo-ext"
@@ -1070,7 +1071,7 @@ jobs:
         run: |
           docker exec -i alpine-build sh -e <<'EOF'
           REPORTED="$(php -d extension="$PWD/turbo-ext/phpstan_turbo.so" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$PHP_ZTS" ]
@@ -1078,7 +1079,7 @@ jobs:
 
       - name: "Upload extension artifact"
         if: matrix.variant == 'split'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: |
@@ -1088,7 +1089,7 @@ jobs:
 
       - name: "Upload self-contained extension artifact"
         if: matrix.variant == 'pie'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext/phpstan_turbo.so"
@@ -1124,17 +1125,17 @@ jobs:
       fail-fast: false
       matrix:
         # every PHP the cores run on; thread-safe builds are "<minor>-zts"
-        php-version: ["8.3", "8.4", "8.5", "8.6", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6", "8.2-zts", "8.3-zts", "8.4-zts", "8.5-zts", "8.6-zts"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Download the fingerprint compiled from identical build inputs"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.GATE_ARTIFACT }}
           path: "fingerprints"
@@ -1147,7 +1148,7 @@ jobs:
 
       - name: "Checkout"
         if: env.ORIGIN_RUN_ID == ''
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -1162,7 +1163,7 @@ jobs:
           cp "$SHARED_CORE_WORK_DIR/fingerprints/fingerprint-$GATE_VERSIONS.tsv" fingerprints/
 
       - name: "Upload the fingerprint"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.GATE_ARTIFACT }}
           path: "fingerprints/fingerprint-${{ matrix.php-version }}.tsv"
@@ -1170,7 +1171,7 @@ jobs:
 
       - name: "Mark the fingerprint as reused"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "turbo-reused-${{ env.GATE_ARTIFACT }}"
           path: "turbo-reused.txt"
@@ -1190,18 +1191,18 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: turbo-ext/bin/shared-core
 
       - name: "Download the fingerprints"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: "turbo-gate-fingerprint-*"
           path: "fingerprints"
@@ -1256,6 +1257,7 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - "php:8.2-cli-bookworm"
           - "php:8.3.21-cli-bookworm"
           - "php:8.3.22-cli-bookworm"
           - "php:8.4-cli-bookworm"
@@ -1266,6 +1268,9 @@ jobs:
           - "php:8.6-rc-cli-alpine"
         check: ["tests", "phpstan"]
         include:
+          - image: "php:8.2-cli-bookworm"
+            php-version: "8.2"
+            binary: "linux-gnu-x86_64-php8.2"
           - image: "php:8.3.21-cli-bookworm"
             php-version: "8.3"
             binary: "linux-gnu-x86_64-php8.3"
@@ -1301,14 +1306,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       # vendor/ (and tests/vendor for the tests legs) is installed on the
       # runner host and only read from the mounted workspace: the
@@ -1328,7 +1334,7 @@ jobs:
         run: composer install --working-dir tests
 
       - name: "Download extension artifact"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "phpstan_turbo-${{ matrix.binary }}"
           path: "turbo-ext"
@@ -1442,7 +1448,7 @@ jobs:
       # ubuntu-latest.
       - name: "Download the core compiled from identical build inputs"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext"
@@ -1455,7 +1461,7 @@ jobs:
 
       - name: "Checkout"
         if: env.ORIGIN_RUN_ID == ''
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0 # the version is baked from git log over turbo-ext/src
@@ -1519,7 +1525,7 @@ jobs:
         run: echo "CORE_DIR=turbo-ext" >> "$GITHUB_ENV"
 
       - name: "Upload core artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "${{ env.CORE_DIR }}/phpstan_turbo_core*"
@@ -1527,7 +1533,7 @@ jobs:
 
       - name: "Mark the core artifact as reused"
         if: env.ORIGIN_RUN_ID != ''
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "turbo-reused-${{ env.TURBO_ARTIFACT }}"
           path: "turbo-reused.txt"
@@ -1560,16 +1566,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         # see turbo-compile
         variant: ${{ fromJSON((startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')) && '["split", "pie"]' || '["split"]') }}
-        # The official 8.3 Windows binaries are built with VS16 (linker
-        # 14.2x) and PHP's module loader is one-directional (module toolset
-        # generation <= core's), so the 8.3 DLL must be linked with the v142
-        # toolset — which the windows-2022 image ships alongside the default
-        # v143. The devel pack name carries the same vs infix.
+        # The official 8.2 and 8.3 Windows binaries are built with VS16
+        # (linker 14.2x) and PHP's module loader is one-directional (module
+        # toolset generation <= core's), so their DLLs must be linked with
+        # the v142 toolset — which the windows-2022 image ships alongside the
+        # default v143. The devel pack name carries the same vs infix.
         include:
+          - php-version: "8.2"
+            vs: "vs16"
+            toolset: "14.29"
           - php-version: "8.3"
             vs: "vs16"
             toolset: "14.29"
@@ -1582,7 +1591,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           # full history: the extension version is baked from git log over
@@ -1617,7 +1626,7 @@ jobs:
       # config.w32 expects the library
       - name: "Download the core"
         if: matrix.variant == 'split'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "phpstan_turbo_core-windows-x86_64${{ matrix.ts == 'zts' && '-zts' || '' }}"
           path: "turbo-ext"
@@ -1669,7 +1678,7 @@ jobs:
             cp "turbo-ext/$CORE" ext-out/
           fi
           REPORTED="$(php -d extension="$(cygpath -w "$PWD/ext-out/php_phpstan_turbo.dll")" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "built extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           # the loader rejects a ts-mismatched DLL, so php loading it above
@@ -1679,7 +1688,7 @@ jobs:
           [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$WANT_ZTS" ]
 
       - name: "Upload extension artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: ${{ matrix.variant == 'pie' && 'ext-out/*' || 'ext-out/*.dll' }}
@@ -1696,19 +1705,19 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       # before the download: checkout empties the workspace
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: .github/scripts
 
       - name: "Download extension artifacts"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: "phpstan_turbo-*"
           path: "turbo-artifacts"
@@ -1727,7 +1736,7 @@ jobs:
           find turbo-ext-dist -type f | sort
 
       - name: "Upload aggregated artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "turbo-ext-files"
           path: "turbo-ext-dist"
@@ -1751,19 +1760,19 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       # before the download: checkout empties the workspace
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           sparse-checkout: .github/scripts
 
       - name: "Download the self-contained extension artifacts"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: "phpstan_turbo_pie-*"
           path: "turbo-pie-artifacts"
@@ -1776,7 +1785,7 @@ jobs:
           ls -l pie-assets
 
       - name: "Upload the PIE release assets"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: "turbo-pie-assets"
           path: "pie-assets"
@@ -1849,7 +1858,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         target: ["linux-gnu-x86_64", "linux-gnu-arm64", "macos-arm64", "windows-x86_64"]
         ts: ["nts", "zts"]
         # macOS ships no ZTS binary (see turbo-compile)
@@ -1876,6 +1885,16 @@ jobs:
             container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
           # the linux-gnu ZTS legs, in the image the binary is compiled in
           # (see above); the official php:*-zts images get turbo-docker-run
+          - target: "linux-gnu-x86_64"
+            php-version: "8.2"
+            ts: "zts"
+            runs-on: "ubuntu-latest"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.2-zts"
+          - target: "linux-gnu-arm64"
+            php-version: "8.2"
+            ts: "zts"
+            runs-on: "ubuntu-24.04-arm"
+            container: "ghcr.io/phpstan/turbo-build:gnu-php8.2-zts"
           - target: "linux-gnu-x86_64"
             php-version: "8.3"
             ts: "zts"
@@ -1920,14 +1939,15 @@ jobs:
     steps:
       - name: Harden the runner (Audit all outbound calls)
         if: ${{ !matrix.container }}
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       - name: "Install PHP"
         if: ${{ !matrix.container }}
@@ -1950,6 +1970,11 @@ jobs:
         with:
           ignore-cache: true
 
+      # the autoloader dump reads the expected turbo version from git
+      - name: "Trust the checkout despite the container/host uid mismatch"
+        if: ${{ matrix.container }}
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: "Install Composer dependencies (verified composer)"
         if: ${{ matrix.container }}
         run: |
@@ -1958,7 +1983,7 @@ jobs:
           rm composer.phar
 
       - name: "Download extension artifact"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext"
@@ -1980,7 +2005,7 @@ jobs:
           MATRIX_TS: ${{ matrix.ts }}
         run: |
           REPORTED="$(php -d extension="$TURBO_DLL" -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           # the loader rejects a ts-mismatched binary, so php loading it above
@@ -2041,20 +2066,21 @@ jobs:
       fail-fast: false
       matrix:
         arch: ["x86_64", "arm64"]
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         # thread-safe for every minor too, see turbo-compile
         ts: ["nts", "zts"]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       # The same container, packages and composer as turbo-compile-musl-arm64.
       - name: "Start the Alpine container"
@@ -2081,7 +2107,7 @@ jobs:
           EOF
 
       - name: "Download extension artifact"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: ${{ env.TURBO_ARTIFACT }}
           path: "turbo-ext"
@@ -2090,7 +2116,7 @@ jobs:
         run: |
           docker exec -i alpine-test sh -e <<'EOF'
           REPORTED="$(php -d extension=/work/turbo-ext/phpstan_turbo.so -r 'echo phpversion("phpstan_turbo");')"
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php build/turbo-extension-version.php)"
           echo "extension reports: $REPORTED, enabler expects: $EXPECTED"
           [ "$REPORTED" = "$EXPECTED" ]
           [ "$(php -r 'echo (int) ((bool) PHP_ZTS);')" = "$PHP_ZTS" ]
@@ -2139,7 +2165,7 @@ jobs:
       # vs17-built official PHP loads it fine.
       matrix:
         operating-system: ["ubuntu-latest", "windows-latest"]
-        php-version: ["8.3", "8.4", "8.5", "8.6"]
+        php-version: ["8.2", "8.3", "8.4", "8.5", "8.6"]
         ts: ["nts", "zts"]
         script: ["make tests", "make phpstan"]
         # The Linux ZTS binaries run the same checks in turbo-docker-run, in
@@ -2176,14 +2202,15 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -2201,7 +2228,7 @@ jobs:
         run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - name: "Download extension artifact"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "phpstan_turbo-${{ matrix.operating-system == 'windows-latest' && 'windows-x86_64' || matrix.operating-system == 'macos-latest' && 'macos-arm64' || 'linux-gnu-x86_64' }}-php${{ matrix.php-version }}${{ matrix.ts == 'zts' && '-zts' || '' }}"
           path: "turbo-ext"
@@ -2265,19 +2292,19 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: "Install PHP"
         # Deliberately without `ini-file: development`: that ini lists the
-        # pcntl functions in disable_functions, and TurboProcessRestarter then
-        # returns before TurboExtensionSelector ever runs. With pcntl available
+        # pcntl functions in disable_functions, and RestartManager then never
+        # asks TurboExtensionSelector for the binary. With pcntl available
         # the phar boots through the turbo restart code, which bin/phpstan
         # loads before the Composer autoloader - on PHP < 8.0 without the
         # symfony polyfills (https://github.com/phpstan/phpstan/issues/15137).
@@ -2287,7 +2314,7 @@ jobs:
           php-version: "${{ matrix.php-version }}"
 
       - name: "Download PHAR"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file
           path: tmp
@@ -2336,14 +2363,14 @@ jobs:
         include:
           # below TurboExtensionSelector::MINIMUM_PHP_VERSION_ID there is no
           # binary to find: the workers get the OPcache entries alone
-          - php-version: "8.2"
+          - php-version: "8.1"
             turbo: "off"
           - php-version: "8.5"
             turbo: "on"
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -2355,14 +2382,14 @@ jobs:
           extensions: "opcache"
 
       - name: "Download PHAR"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file
           path: tmp
 
       - name: "Download extension artifact"
         if: matrix.turbo == 'on'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: "phpstan_turbo-windows-x86_64-php${{ matrix.php-version }}"
           path: "tmp/turbo-artifact"
@@ -2493,11 +2520,11 @@ jobs:
       actions: read # find-artifact.js lists runs/artifacts; the by-ID cross-run download authenticates with the workflow token
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -2508,9 +2535,9 @@ jobs:
         run: echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
-        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
+          node-version: 24
           package-manager-cache: false
 
       - name: Install dependencies
@@ -2535,7 +2562,7 @@ jobs:
 
       # saved to phar-file-checksum/phpstan.phar
       - name: Download old artifact by ID
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           artifact-ids: ${{ steps.find-artifact.outputs.artifact_id }}
           run-id: ${{ steps.find-artifact.outputs.run_id }}
@@ -2545,7 +2572,7 @@ jobs:
           path: phar-file-checksum
 
       - name: "Upload old artifact"
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: phar-file-checksum-base
           path: phar-file-checksum/phpstan.phar
@@ -2559,12 +2586,12 @@ jobs:
     steps:
       # saved to phpstan.phar
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Download base phpstan.phar"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file-checksum-base
 
@@ -2585,24 +2612,24 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       # saved to phar-file-checksum/phpstan.phar
       - name: "Download phpstan.phar"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file-checksum
           path: phar-file-checksum
 
       # saved to phar-file-checksum-base/phpstan.phar
       - name: "Download base phpstan.phar"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file-checksum-base
           path: phar-file-checksum-base
@@ -2644,11 +2671,11 @@ jobs:
   commit:
     name: "Commit PHAR"
     if: "github.repository_owner == 'phpstan' && (github.ref == 'refs/heads/2.3.x' || startsWith(github.ref, 'refs/tags/'))"
-    # Gated on every job that produces the committed bits or the version
-    # constant they are staged by: the compile jobs build the staged
-    # binaries (or carry over ones compiled from identical build inputs,
-    # see turbo-origins) and check the version they report; turbo-version
-    # guards the version constant the staging logic compares. The jobs
+    # Gated on every job that produces the committed bits or checks them
+    # against their sources: the compile jobs build the staged binaries (or
+    # carry over ones compiled from identical build inputs, see
+    # turbo-origins) and check the version they report; turbo-version
+    # guards the parity of the native and PHP implementations. The jobs
     # that only test those bits are deliberately not gates: the
     # "Run with Turbo Extension" jobs (turbo-differential,
     # turbo-differential-musl, turbo-run, turbo-docker-run), the shared-core
@@ -2671,7 +2698,7 @@ jobs:
     timeout-minutes: 60
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -2687,7 +2714,7 @@ jobs:
           git_commit_gpgsign: true
 
       - name: "Checkout phpstan-dist"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: phpstan/phpstan
           path: phpstan-dist
@@ -2703,7 +2730,7 @@ jobs:
         run: echo "sha=$(sed -n '2p' .phar-checksum)" >> "$GITHUB_OUTPUT"
 
       - name: "Checkout phpstan-src"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -2739,7 +2766,7 @@ jobs:
           fi
 
       - name: "Download turbo extension artifacts"
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: "phpstan_turbo-*"
           path: "turbo-artifacts"
@@ -2747,7 +2774,7 @@ jobs:
       - name: "Check turbo extension version and binary set"
         id: turbo-difference
         run: |
-          EXPECTED="$(sed -n "s/.*EXPECTED_EXTENSION_VERSION = '\([^']*\)'.*/\1/p" phpstan-src/src/Turbo/TurboExtensionEnabler.php)"
+          EXPECTED="$(php phpstan-src/build/turbo-extension-version.php)"
           CURRENT="$(cat phpstan-dist/turbo-ext/.version 2>/dev/null || echo none)"
           echo "enabler expects: $EXPECTED, dist carries: $CURRENT"
           RESULT=same
@@ -2789,7 +2816,7 @@ jobs:
       # dist does not carry at all are staged even at an unchanged version.
       - name: "Download phpstan.phar"
         if: startsWith(github.ref, 'refs/tags/') || steps.checksum-difference.outputs.result == 'different'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: phar-file
 
@@ -2872,7 +2899,7 @@ jobs:
           echo "$TURBO_VERSION" > phpstan-dist/turbo-ext/.version
 
       - name: "Install lucky_commit"
-        uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0 # v3.4.0
+        uses: baptiste0928/cargo-install@8195d4f734a149db85385bb4102b42efcd373759 # v3.5.0
         with:
           crate: lucky_commit
           args: --no-default-features
@@ -2894,7 +2921,7 @@ jobs:
 
       - name: "Commit PHAR - tag"
         if: "startsWith(github.ref, 'refs/tags/')"
-        uses: stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d # v7.2.0
+        uses: stefanzweifel/git-auto-commit-action@d0b01107b5db882071f96de5dd4b54961ea93f4c # v7.2.1
         with:
           commit_user_name: "phpstan-bot"
           commit_user_email: "ondrej+phpstanbot@mirtes.cz"

@@ -42,12 +42,31 @@ final class PathRoutingParser implements Parser
 
 	public function parseFile(string $file): array
 	{
+		$parser = $this->getParser($file);
+		if ($parser === $this->php8Parser) {
+			return $parser->parseFile($file);
+		}
+
+		return $parser->parseFile($this->fileHelper->normalizePath($file));
+	}
+
+	/**
+	 * Whether parseFile() returns the simplified AST of the file, without function bodies
+	 * and code for other PHP versions, instead of the full AST of an analysed file.
+	 */
+	public function returnsSimplifiedAst(string $file): bool
+	{
+		return $this->getParser($file) === $this->currentPhpVersionSimpleParser;
+	}
+
+	private function getParser(string $file): Parser
+	{
 		$normalizedPath = $this->fileHelper->normalizePath($file, '/');
 		if (str_contains($normalizedPath, 'vendor/jetbrains/phpstorm-stubs')) {
-			return $this->php8Parser->parseFile($file);
+			return $this->php8Parser;
 		}
 		if (str_contains($normalizedPath, 'vendor/phpstan/php-8-stubs/stubs')) {
-			return $this->php8Parser->parseFile($file);
+			return $this->php8Parser;
 		}
 
 		$file = $this->fileHelper->normalizePath($file);
@@ -64,16 +83,16 @@ final class PathRoutingParser implements Parser
 				if ($realFilePath !== false) {
 					$normalizedRealFilePath = $this->fileHelper->normalizePath($realFilePath);
 					if (isset($this->analysedFiles[$normalizedRealFilePath])) {
-						return $this->currentPhpVersionRichParser->parseFile($file);
+						return $this->currentPhpVersionRichParser;
 					}
 				}
 				break;
 			}
 
-			return $this->currentPhpVersionSimpleParser->parseFile($file);
+			return $this->currentPhpVersionSimpleParser;
 		}
 
-		return $this->currentPhpVersionRichParser->parseFile($file);
+		return $this->currentPhpVersionRichParser;
 	}
 
 	public function parseString(string $sourceCode): array

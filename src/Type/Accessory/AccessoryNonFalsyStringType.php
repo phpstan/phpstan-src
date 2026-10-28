@@ -102,7 +102,7 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return new IsSuperTypeOfResult($type->isNonFalsyString(), []);
+		return IsSuperTypeOfResult::createFromTrinaryLogic($type->isNonFalsyString());
 	}
 
 	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
@@ -115,9 +115,8 @@ class AccessoryNonFalsyStringType implements CompoundType, AccessoryType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		return new IsSuperTypeOfResult(
+		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isNonFalsyString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
-			[],
 		);
 	}
 

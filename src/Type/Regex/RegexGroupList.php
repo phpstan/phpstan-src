@@ -8,6 +8,7 @@ use IteratorAggregate;
 use Override;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Type;
+use function array_key_exists;
 use function array_reverse;
 use function count;
 
@@ -128,6 +129,64 @@ final class RegexGroupList implements Countable, IteratorAggregate
 		}
 
 		return $group;
+	}
+
+	/**
+	 * Groups sharing a name (allowed by (?J)) are only understood
+	 * when each of them is in a different branch of the given alternation.
+	 */
+	public function hasDuplicateNamesOutsideOfAlternationBranches(?RegexAlternation $alternation): bool
+	{
+		$groupIdsByName = [];
+		foreach ($this->groups as $captureGroup) {
+			if (!$captureGroup->isNamed()) {
+				continue;
+			}
+
+			$groupIdsByName[$captureGroup->getName()][] = $captureGroup->getId();
+		}
+
+		$branchByGroupId = [];
+		if ($alternation !== null) {
+			foreach ($alternation->getGroupCombinations() as $branch => $groupIds) {
+				foreach ($groupIds as $groupId) {
+					$branchByGroupId[$groupId] = $branch;
+				}
+			}
+		}
+
+		foreach ($groupIdsByName as $groupIds) {
+			if (count($groupIds) === 1) {
+				continue;
+			}
+
+			$branches = [];
+			foreach ($groupIds as $groupId) {
+				if (!array_key_exists($groupId, $branchByGroupId)) {
+					return true;
+				}
+
+				$branch = $branchByGroupId[$groupId];
+				if (array_key_exists($branch, $branches)) {
+					return true;
+				}
+
+				$branches[$branch] = true;
+			}
+		}
+
+		return false;
+	}
+
+	public function hasGroupResettingGroupCounter(): bool
+	{
+		foreach ($this->groups as $captureGroup) {
+			if ($captureGroup->resetsGroupCounter()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public function getOnlyTopLevelAlternation(): ?RegexAlternation

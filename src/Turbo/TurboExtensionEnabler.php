@@ -12,36 +12,61 @@ use function in_array;
 use function is_file;
 use function json_decode;
 use function phpversion;
+use function realpath;
 
 /**
  * Activates the phpstan_turbo extension's shadowing classes.
  *
  * The extension registers nothing under PHPStan's class names at module
  * startup. Once the Composer autoloader is registered, activateIfCompatible()
- * checks the loaded extension's version against EXPECTED_EXTENSION_VERSION
- * and, when it matches, asks Runtime::activateShadowing() to declare the
+ * checks the loaded extension's version against getExpectedVersion() and,
+ * when it matches, asks Runtime::activateShadowing() to declare the
  * native classes under the PHP twins' real names — PHPStan\TrinaryLogic then
  * is the native class, linked like a PHP declaration (parents and interfaces
  * resolved through the autoloader). A mismatched or absent extension never
  * gets the call, and the PHP implementations load as usual.
  *
  * The version is the short SHA of the last commit touching turbo-ext/src/,
- * enforced by the phar.yml turbo-version job; the native classes must
- * behave exactly like the PHP implementations, hence the gate.
+ * which the extension's build bakes into the binary and
+ * build/generate-turbo-manifest.php writes into
+ * vendor/turbo-extension-version.php on every autoloader dump — the phar
+ * carries the file from its compilation. The native classes must behave
+ * exactly like the PHP implementations, hence the gate.
  */
 #[ReferencedByTurboExtension(key: 'turboExtensionEnabler')]
 final class TurboExtensionEnabler
 {
 
-	public const EXPECTED_EXTENSION_VERSION = '6f46059';
-
 	private static bool $active = false;
+
+	private static bool $expectedVersionResolved = false;
+
+	private static ?string $expectedVersion = null;
 
 	private static bool $trustingOwnTypes = false;
 
 	public static function isLoaded(): bool
 	{
 		return extension_loaded('phpstan_turbo');
+	}
+
+	/**
+	 * Null when the autoloader dump could not read it from git, or skipped
+	 * scripts — no extension version is compatible then.
+	 */
+	public static function getExpectedVersion(): ?string
+	{
+		if (!self::$expectedVersionResolved) {
+			$versionFile = dirname(__DIR__, 2) . '/vendor/turbo-extension-version.php';
+			if (is_file($versionFile)) {
+				/** @var string|null $version */
+				$version = require $versionFile;
+				self::$expectedVersion = $version;
+			}
+			self::$expectedVersionResolved = true;
+		}
+
+		return self::$expectedVersion;
 	}
 
 	/**
@@ -55,21 +80,50 @@ final class TurboExtensionEnabler
 		}
 
 		$version = phpversion('phpstan_turbo');
-		if ($version === self::EXPECTED_EXTENSION_VERSION) {
+		if ($version !== false && $version === self::getExpectedVersion()) {
 			return null;
 		}
 
 		return $version === false ? 'unknown' : $version;
 	}
 
+	/**
+	 * The phar the running code is compiled from. Code compiled out of a phar
+	 * carries the phar:// prefix of the path the phar was opened with, and
+	 * Composer's bootstrap.php opens it through __DIR__, a resolved path. A
+	 * path another program passes in, such as one with '..' in it, is
+	 * resolved the same way, so that it matches that prefix.
+	 */
+	private static function resolvePharPath(?string $pharPath): string
+	{
+		if ($pharPath === null) {
+			return Phar::running(false);
+		}
+
+		$resolvedPath = realpath($pharPath);
+		if ($resolvedPath === false) {
+			return '';
+		}
+
+		return $resolvedPath;
+	}
+
 	private static function isCompatible(): bool
 	{
-		return self::isLoaded() && phpversion('phpstan_turbo') === self::EXPECTED_EXTENSION_VERSION;
+		if (!self::isLoaded()) {
+			return false;
+		}
+
+		$version = phpversion('phpstan_turbo');
+
+		return $version !== false && $version === self::getExpectedVersion();
 	}
 
 	/**
 	 * Whether activateIfCompatible() declared the native classes — the
 	 * shadowed class names resolve to them only in that case.
+	 *
+	 * @api
 	 */
 	public static function isActive(): bool
 	{
@@ -90,8 +144,13 @@ final class TurboExtensionEnabler
 	 * implement userland interfaces and may extend userland classes, resolved
 	 * through it) and before anything could autoload one of the shadowed
 	 * classes — a twin already declared cannot be shadowed.
+	 *
+	 * Another program that loads PHPStan's phar, Rector for example, passes
+	 * the path to that phar: Phar::running() only knows the phar that runs.
+	 *
+	 * @api
 	 */
-	public static function activateIfCompatible(): void
+	public static function activateIfCompatible(?string $pharPath = null): void
 	{
 		if (!self::isCompatible()) {
 			return;
@@ -136,7 +195,7 @@ final class TurboExtensionEnabler
 		// would otherwise race on. Fork mode requires the guard, and
 		// ForkParallelChecker only allows fork with the extension active.
 		if (class_exists('Phar', false)) {
-			$pharPath = Phar::running(false);
+			$pharPath = self::resolvePharPath($pharPath);
 			if ($pharPath !== '') {
 				Runtime::enablePharForkGuard($pharPath);
 			}
@@ -178,9 +237,13 @@ final class TurboExtensionEnabler
 	 * compiled earlier keeps its checks. Independent of activateIfCompatible()
 	 * — only the version gate matters here.
 	 *
+	 * Another program that loads PHPStan's phar, Rector for example, passes
+	 * the path to that phar: Phar::running() only knows the phar that runs.
+	 *
+	 * @api
 	 * @param list<string> $argv
 	 */
-	public static function trustOwnTypesIfSuitable(array $argv): void
+	public static function trustOwnTypesIfSuitable(array $argv, ?string $pharPath = null): void
 	{
 		if (!self::isCompatible()) {
 			return;
@@ -191,7 +254,7 @@ final class TurboExtensionEnabler
 		if (!class_exists('Phar', false)) {
 			return;
 		}
-		$pharPath = Phar::running(false);
+		$pharPath = self::resolvePharPath($pharPath);
 		if ($pharPath === '') {
 			return;
 		}

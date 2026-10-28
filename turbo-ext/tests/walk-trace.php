@@ -52,9 +52,15 @@ function walkTraceFiles(string $root, array $paths): array
 		}
 		$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
 		foreach ($iterator as $file) {
-			if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
-				$files[] = $file->getRealPath();
+			if (!$file->isFile() || !str_ends_with($file->getFilename(), '.php')) {
+				continue;
 			}
+			// the twin throws the engine's C stack limit there, which arrived
+			// in PHP 8.3: before, it overflows the C stack
+			if (PHP_VERSION_ID < 80300 && $file->getFilename() === 'describe-recursion-stack-limit.php') {
+				continue;
+			}
+			$files[] = $file->getRealPath();
 		}
 	}
 	sort($files);

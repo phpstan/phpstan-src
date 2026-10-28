@@ -74,6 +74,20 @@ zv::Val getParametersProcessor(zval *container)
 	return service;
 }
 
+/* $this->container->getByType(AttributesHandler::class) */
+zv::Val getAttributesHandler(zval *container)
+{
+	if (UNEXPECTED(Z_TYPE_P(container) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getByType() on %s", zend_zval_value_name(container));
+		return zv::Val();
+	}
+	zval className;
+	ZVAL_STRINGL(&className, "PHPStan\\Analyser\\AttributesHandler", sizeof("PHPStan\\Analyser\\AttributesHandler") - 1);
+	zv::Val service = pt_call_method_cached(pt_cp_get_by_type_site, Z_OBJ_P(container), PT_LC("getbytype"), 1, &className);
+	zval_ptr_dtor(&className);
+	return service;
+}
+
 /* $invalidateExprNode->getExpr(): the final node's promoted $expr, the method
  * of anything else; UNDEF = pending exception */
 zv::Val invalidateExprNodeExpr(zval *node)
@@ -636,7 +650,7 @@ public:
 			if (UNEXPECTED(contextHold.isUndef())) return zv::Val();
 			context = contextHold.raw();
 		}
-		zv::Val parametersDependencies = processParams(nodeScopeResolver, stmt, expr, scopeArg, storage, nodeCallback);
+		zv::Val parametersDependencies = processAttributeGroupsAndParams(nodeScopeResolver, stmt, expr, scopeArg, storage, nodeCallback);
 		if (UNEXPECTED(parametersDependencies.isUndef())) return zv::Val();
 		zv::Val scopeHold = zv::Val::copyOf(zv::Ref(scopeArg));
 		bool observing;
@@ -847,6 +861,28 @@ private:
 		Z_PROP_FLAG_P(OBJ_PROP_NUM(self, index)) = 0;
 	}
 
+	/* Mirrors processAttributeGroupsAndParams(): Dependencies::merge(
+	 * $this->getAttributesHandler()->processAttributeGroups(..., $expr->attrGroups, ...),
+	 * $this->getParametersProcessor()->processParams(..., $expr->params, ...));
+	 * UNDEF = pending exception */
+	zv::Val processAttributeGroupsAndParams(zval *nodeScopeResolver, zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback) const
+	{
+		zv::Val attributesHandler = getAttributesHandler(slot(slots::container));
+		if (UNEXPECTED(attributesHandler.isUndef())) return zv::Val();
+		if (UNEXPECTED(!attributesHandler.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function processAttributeGroups() on %s", zend_zval_value_name(attributesHandler.raw()));
+			return zv::Val();
+		}
+		zval *attrGroups = ptclosure::prop(ptclosure::attrGroupsSite, expr, PT_LC("attrGroups"));
+		if (UNEXPECTED(attrGroups == NULL)) return zv::Val();
+		zv::Val attrGroupsHold = zv::Val::copyOf(zv::Ref(attrGroups));
+		zv::Val attributesDependencies = pt_attributes_handler_process_attribute_groups(attributesHandler.raw(), nodeScopeResolver, stmt, attrGroupsHold.raw(), scope, storage, nodeCallback);
+		if (UNEXPECTED(attributesDependencies.isUndef())) return zv::Val();
+		zv::Val parametersDependencies = processParams(nodeScopeResolver, stmt, expr, scope, storage, nodeCallback);
+		if (UNEXPECTED(parametersDependencies.isUndef())) return zv::Val();
+		return pt_dependencies_merge({attributesDependencies.raw(), parametersDependencies.raw()});
+	}
+
 	/* $this->getParametersProcessor()->processParams($nodeScopeResolver, $stmt,
 	 * $expr->params, $scope, $storage, $nodeCallback): what the parameters
 	 * depend on; UNDEF = pending exception */
@@ -940,7 +976,7 @@ private:
 	 * gatherer; false = pending exception */
 	[[nodiscard]] zend_never_inline bool enterClosure(ClosureWalk &w, zval *passedToType, zval *nativePassedToType) const
 	{
-		w.parametersDependencies = processParams(w.nodeScopeResolver, w.stmt, w.expr, w.scope.raw(), w.storage, w.nodeCallback);
+		w.parametersDependencies = processAttributeGroupsAndParams(w.nodeScopeResolver, w.stmt, w.expr, w.scope.raw(), w.storage, w.nodeCallback);
 		if (UNEXPECTED(w.parametersDependencies.isUndef())) return false;
 
 		zval *closureCallArgs = ptclosure::attribute(w.expr, pt_cp_closure_call_args);

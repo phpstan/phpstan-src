@@ -6,6 +6,7 @@ use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Process\Restart\RestartExtensionRegistry;
 use function php_uname;
 use function phpversion;
 use function sprintf;
@@ -44,7 +45,7 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		));
 
 		if (TurboExtensionEnabler::isLoaded()) {
-			$restartPath = TurboProcessRestarter::getRestartExtensionPath();
+			$restartPath = TurboExtensionSelector::getRestartExtensionPath();
 			if ($restartPath !== null) {
 				$workerBinaryLine = sprintf('%s (loaded via process restart)', $restartPath);
 			} else {
@@ -87,6 +88,10 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 	{
 		if (!TurboExtensionEnabler::isLoaded()) {
 			if ($workerBinary !== null) {
+				if (RestartExtensionRegistry::findTurboExtensionToLoad() !== null) {
+					return 'not loaded here, loaded by the restart an analyse run performs';
+				}
+
 				return 'enabled in worker processes (the main process runs without it)';
 			}
 
@@ -94,15 +99,16 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 		}
 
 		$loadedVersion = phpversion('phpstan_turbo');
-		if ($loadedVersion !== TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION) {
+		$expectedVersion = TurboExtensionEnabler::getExpectedVersion();
+		if ($loadedVersion === false || $loadedVersion !== $expectedVersion) {
 			return sprintf(
 				'inactive (extension version %s, expected %s)',
 				$loadedVersion === false ? 'unknown' : $loadedVersion,
-				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
+				$expectedVersion ?? 'unknown',
 			);
 		}
 
-		return sprintf('enabled (version %s)', TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION);
+		return sprintf('enabled (version %s)', $expectedVersion);
 	}
 
 }

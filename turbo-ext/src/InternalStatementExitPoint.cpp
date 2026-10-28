@@ -52,6 +52,14 @@ public:
 		return pt_statement_exit_point_new(statement, scope);
 	}
 
+	/* Mirrors withScope(): new self($this->statement, $scope) */
+	zv::Val withScope(zval *scope) const
+	{
+		zval *statement = pt_typed_slot(self, slots::statement, self->ce, "statement");
+		if (UNEXPECTED(statement == NULL)) return zv::Val();
+		return create(statement, scope);
+	}
+
 	zv::Val getStatement() const { return read(slots::statement, "statement"); }
 	zv::Val getScope() const { return read(slots::scope, "scope"); }
 
@@ -106,6 +114,8 @@ PT_MINIT_REGISTRATION(pt_register_internal_statement_exit_point)
 	cls.method<&InternalStatementExitPoint::toPublic>(sigs::toPublic);
 
 	cls.method<&InternalStatementExitPoint::getStatement>(sigs::getStatement);
+
+	cls.method<&InternalStatementExitPoint::withScope, zp::Obj>(sigs::withScope);
 
 	cls.method<&InternalStatementExitPoint::getScope>(sigs::getScope);
 

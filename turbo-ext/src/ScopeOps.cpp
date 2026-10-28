@@ -29,7 +29,6 @@ static zend_class_entry *pt_ce_scope_ops;
 static const pt_superglobal_name pt_so_compositional_virtual_key_prefixes[] = {
 	{ PT_LC("__phpstanForeachValueByRef(") },
 	{ PT_LC("__phpstanIntertwinedVariableByReference(") },
-	{ PT_LC("__phpstanPossiblyImpure(") },
 	{ PT_LC("__phpstanPropertyInitialization(") },
 	{ PT_LC("__phpstanRemembered(") },
 };
@@ -145,7 +144,7 @@ public:
 	{
 		*keyOut = NULL;
 
-		zval *exprPrinter = scopeProp(scope, "exprPrinter", sizeof("exprPrinter") - 1);
+		zval *exprPrinter = pt_mutating_scope_expr_printer(scope);
 		if (UNEXPECTED(exprPrinter == NULL)) return zv::Val();
 		if (UNEXPECTED(Z_TYPE_P(exprPrinter) != IS_OBJECT)) {
 			zend_throw_error(NULL, "phpstan_turbo: exprPrinter is not an object");
@@ -446,6 +445,18 @@ public:
 		return zv::Val(std::move(result));
 	}
 
+	/* Mirrors ScopeOps::canBeUndefined(). Returns false with an exception set
+	 * when the node class info cannot be resolved. */
+	static bool canBeUndefined(zend_object *expr, bool *out)
+	{
+		pt_node_class_info *info = pt_get_node_class_info(expr->ce);
+		if (UNEXPECTED(info == NULL)) return false;
+		*out = info->is_variable
+			&& info->name_offset >= 0
+			&& zv::ObjRef(expr).propAtOffset((uint32_t) info->name_offset).deref().isString();
+		return true;
+	}
+
 	/*
 	 * Mirrors ScopeOps::createConditionalExpressions(). The isSuperTypeOf /
 	 * isConstantArray results are cached per guard, exactly like the twin's
@@ -484,7 +495,9 @@ public:
 				if (mergedSlot != NULL) {
 					zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 					if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
-					if (!instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) {
+					bool undefinable;
+					if (UNEXPECTED(!canBeUndefined(holderExpr(mergedHolder), &undefinable))) return zv::Val();
+					if (undefinable) {
 						hasUndefinedTarget = true;
 					}
 				}
@@ -736,7 +749,9 @@ public:
 			if (pt_ht_exists(ours.table(), key, idx)) continue;
 			zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 			if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();
-			if (instanceof_function(holderExpr(mergedHolder)->ce, virtualNodeCe)) continue;
+			bool undefinable;
+			if (UNEXPECTED(!canBeUndefined(holderExpr(mergedHolder), &undefinable))) return zv::Val();
+			if (!undefinable) continue;
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());

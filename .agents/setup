@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Orb setup for phpstan/phpstan-src: PHP toolchain + composer dependencies.
+# Idempotent: skips whatever the (possibly stale) snapshot already provides.
+
+log() { printf '[setup] %s\n' "$*" >&2; }
+
+# Amp runs setup either as root or as the unprivileged orb user with passwordless sudo.
+as_root() {
+	if [ "$(id -u)" -eq 0 ]; then
+		"$@"
+	else
+		sudo "$@"
+	fi
+}
+
+PHP_VERSION=8.4
+
+# --- base utilities -------------------------------------------------------
+missing_pkgs=()
+command -v curl >/dev/null 2>&1 || missing_pkgs+=(ca-certificates curl)
+command -v unzip >/dev/null 2>&1 || missing_pkgs+=(unzip)
+command -v patch >/dev/null 2>&1 || missing_pkgs+=(patch)
+if [ "${#missing_pkgs[@]}" -gt 0 ]; then
+	export DEBIAN_FRONTEND=noninteractive
+	as_root apt-get update -qq
+	as_root apt-get install -y -qq "${missing_pkgs[@]}" >/dev/null
+fi
+
+# --- PHP -------------------------------------------------------------------
+need_php=1
+if command -v php >/dev/null 2>&1 \
+	&& php -r 'exit(version_compare(PHP_VERSION, "8.2", "<") ? 1 : 0);' 2>/dev/null \
+	&& php -m 2>/dev/null | grep -qix '^ds$' \
+	&& php -m 2>/dev/null | grep -qix '^mbstring$'; then
+	need_php=0
+	log "PHP $(php -r 'echo PHP_VERSION;') already installed"
+fi
+
+if [ "$need_php" -eq 1 ]; then
+	log "Installing PHP ${PHP_VERSION} from deb.sury.org (Debian's own PHP has no ext-ds)"
+	export DEBIAN_FRONTEND=noninteractive
+	as_root apt-get update -qq
+	as_root apt-get install -y -qq ca-certificates curl gnupg >/dev/null
+	as_root curl -fsSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+	printf 'deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ bookworm main\n' | as_root tee /etc/apt/sources.list.d/php.list > /dev/null
+	as_root apt-get update -qq
+	as_root apt-get install -y -qq \
+		"php${PHP_VERSION}-cli" \
+		"php${PHP_VERSION}-mbstring" \
+		"php${PHP_VERSION}-ds" \
+		"php${PHP_VERSION}-curl" \
+		"php${PHP_VERSION}-xml" \
+		>/dev/null
+	as_root update-alternatives --set php "/usr/bin/php${PHP_VERSION}" >/dev/null 2>&1 || true
+	log "Installed PHP $(php -r 'echo PHP_VERSION;')"
+fi
+
+# CI runs with memory_limit=-1; the test runner needs it for big analyses.
+if [ -d "/etc/php/${PHP_VERSION}/cli" ]; then
+	printf 'memory_limit=-1\n' | as_root tee "/etc/php/${PHP_VERSION}/cli/conf.d/99-amp-memory.ini" > /dev/null
+fi
+
+# --- Composer ---------------------------------------------------------------
+if ! command -v composer >/dev/null 2>&1; then
+	log "Installing Composer"
+	as_root curl -fsSS https://getcomposer.org/installer | as_root php -- \
+		--install-dir=/usr/local/bin --filename=composer --quiet
+fi
+log "Using $(composer --version 2>/dev/null | head -1)"
+
+# --- Dependencies -----------------------------------------------------------
+# composer.json pins config.platform php 8.2.99, so any >= 8.2 runtime installs
+# the same lockfile. Patches are applied by cweagans/composer-patches on install.
+log "composer install (root)"
+composer install --no-interaction --no-progress
+log "composer install (tests: paratest, phpbench, phpunit)"
+composer install --working-dir tests --no-interaction --no-progress
+
+log "setup complete"

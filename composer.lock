@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "11369100d2f311b85c9afd000980a96c",
+  "content-hash": "b87f04c56b4948b49cb82bb4e0a24d26",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -71,96 +71,17 @@
       "time": "2022-12-23T10:58:28+00:00"
     },
     {
-      "name": "composer/pcre",
-      "version": "3.3.1",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/composer/pcre.git",
-        "reference": "63aaeac21d7e775ff9bc9d45021e1745c97521c4"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/composer/pcre/zipball/63aaeac21d7e775ff9bc9d45021e1745c97521c4",
-        "reference": "63aaeac21d7e775ff9bc9d45021e1745c97521c4",
-        "shasum": ""
-      },
-      "require": {
-        "php": "^7.4 || ^8.0"
-      },
-      "conflict": {
-        "phpstan/phpstan": "<1.11.10"
-      },
-      "require-dev": {
-        "phpstan/phpstan": "^1.11.10",
-        "phpstan/phpstan-strict-rules": "^1.1",
-        "phpunit/phpunit": "^8 || ^9"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-main": "3.x-dev"
-        },
-        "phpstan": {
-          "includes": [
-            "extension.neon"
-          ]
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Composer\\Pcre\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Jordi Boggiano",
-          "email": "j.boggiano@seld.be",
-          "homepage": "http://seld.be"
-        }
-      ],
-      "description": "PCRE wrapping library that offers type-safe preg_* replacements.",
-      "keywords": [
-        "PCRE",
-        "preg",
-        "regex",
-        "regular expression"
-      ],
-      "support": {
-        "issues": "https://github.com/composer/pcre/issues",
-        "source": "https://github.com/composer/pcre/tree/3.3.1"
-      },
-      "funding": [
-        {
-          "url": "https://packagist.com",
-          "type": "custom"
-        },
-        {
-          "url": "https://github.com/composer",
-          "type": "github"
-        },
-        {
-          "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-          "type": "tidelift"
-        }
-      ],
-      "time": "2024-08-27T18:44:43+00:00"
-    },
-    {
       "name": "composer/semver",
-      "version": "3.4.4",
+      "version": "3.5.2",
       "source": {
         "type": "git",
         "url": "https://github.com/composer/semver.git",
-        "reference": "198166618906cb2de69b95d7d47e5fa8aa1b2b95"
+        "reference": "9dfce66f1e97360ea5e6d3e38ab14277e4cc591e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/composer/semver/zipball/198166618906cb2de69b95d7d47e5fa8aa1b2b95",
-        "reference": "198166618906cb2de69b95d7d47e5fa8aa1b2b95",
+        "url": "https://api.github.com/repos/composer/semver/zipball/9dfce66f1e97360ea5e6d3e38ab14277e4cc591e",
+        "reference": "9dfce66f1e97360ea5e6d3e38ab14277e4cc591e",
         "shasum": ""
       },
       "require": {
@@ -202,7 +123,7 @@
           "homepage": "http://robbast.nl"
         }
       ],
-      "description": "Semver library that offers utilities, version constraint parsing and validation.",
+      "description": "Version comparison library that offers utilities, version constraint parsing and validation.",
       "keywords": [
         "semantic",
         "semver",
@@ -212,7 +133,7 @@
       "support": {
         "irc": "ircs://irc.libera.chat:6697/composer",
         "issues": "https://github.com/composer/semver/issues",
-        "source": "https://github.com/composer/semver/tree/3.4.4"
+        "source": "https://github.com/composer/semver/tree/3.5.2"
       },
       "funding": [
         {
@@ -224,73 +145,7 @@
           "type": "github"
         }
       ],
-      "time": "2025-08-20T19:15:30+00:00"
-    },
-    {
-      "name": "composer/xdebug-handler",
-      "version": "3.0.5",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/composer/xdebug-handler.git",
-        "reference": "6c1925561632e83d60a44492e0b344cf48ab85ef"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/composer/xdebug-handler/zipball/6c1925561632e83d60a44492e0b344cf48ab85ef",
-        "reference": "6c1925561632e83d60a44492e0b344cf48ab85ef",
-        "shasum": ""
-      },
-      "require": {
-        "composer/pcre": "^1 || ^2 || ^3",
-        "php": "^7.2.5 || ^8.0",
-        "psr/log": "^1 || ^2 || ^3"
-      },
-      "require-dev": {
-        "phpstan/phpstan": "^1.0",
-        "phpstan/phpstan-strict-rules": "^1.1",
-        "phpunit/phpunit": "^8.5 || ^9.6 || ^10.5"
-      },
-      "type": "library",
-      "autoload": {
-        "psr-4": {
-          "Composer\\XdebugHandler\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "John Stevenson",
-          "email": "john-stevenson@blueyonder.co.uk"
-        }
-      ],
-      "description": "Restarts a process without Xdebug.",
-      "keywords": [
-        "Xdebug",
-        "performance"
-      ],
-      "support": {
-        "irc": "ircs://irc.libera.chat:6697/composer",
-        "issues": "https://github.com/composer/xdebug-handler/issues",
-        "source": "https://github.com/composer/xdebug-handler/tree/3.0.5"
-      },
-      "funding": [
-        {
-          "url": "https://packagist.com",
-          "type": "custom"
-        },
-        {
-          "url": "https://github.com/composer",
-          "type": "github"
-        },
-        {
-          "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-          "type": "tidelift"
-        }
-      ],
-      "time": "2024-05-06T16:37:16+00:00"
+      "time": "2026-10-22T15:37:26+00:00"
     },
     {
       "name": "evenement/evenement",
@@ -341,23 +196,23 @@
     },
     {
       "name": "fidry/cpu-core-counter",
-      "version": "1.3.0",
+      "version": "1.4.1",
       "source": {
         "type": "git",
         "url": "https://github.com/theofidry/cpu-core-counter.git",
-        "reference": "db9508f7b1474469d9d3c53b86f817e344732678"
+        "reference": "d384a7d0d6e67aa497327260ca95023e92dc2032"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/theofidry/cpu-core-counter/zipball/db9508f7b1474469d9d3c53b86f817e344732678",
-        "reference": "db9508f7b1474469d9d3c53b86f817e344732678",
+        "url": "https://api.github.com/repos/theofidry/cpu-core-counter/zipball/d384a7d0d6e67aa497327260ca95023e92dc2032",
+        "reference": "d384a7d0d6e67aa497327260ca95023e92dc2032",
         "shasum": ""
       },
       "require": {
         "php": "^7.2 || ^8.0"
       },
       "require-dev": {
-        "fidry/makefile": "^0.2.0",
+        "fidry/makefile": "^0.2.0 || ^1.1.2",
         "fidry/php-cs-fixer-config": "^1.1.2",
         "phpstan/extension-installer": "^1.2.0",
         "phpstan/phpstan": "^2.0",
@@ -365,6 +220,7 @@
         "phpstan/phpstan-phpunit": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
         "phpunit/phpunit": "^8.5.31 || ^9.5.26",
+        "symfony/polyfill-mbstring": "^1.33",
         "webmozarts/strict-phpunit": "^7.5"
       },
       "type": "library",
@@ -390,7 +246,7 @@
       ],
       "support": {
         "issues": "https://github.com/theofidry/cpu-core-counter/issues",
-        "source": "https://github.com/theofidry/cpu-core-counter/tree/1.3.0"
+        "source": "https://github.com/theofidry/cpu-core-counter/tree/1.4.1"
       },
       "funding": [
         {
@@ -398,26 +254,26 @@
           "type": "github"
         }
       ],
-      "time": "2025-08-14T07:29:31+00:00"
+      "time": "2026-09-29T22:11:39+00:00"
     },
     {
       "name": "guzzlehttp/guzzle",
-      "version": "7.15.1",
+      "version": "7.16.1",
       "source": {
         "type": "git",
         "url": "https://github.com/guzzle/guzzle.git",
-        "reference": "61443dfb33c62f308ee8add20f45b4d6e4bf8d2f"
+        "reference": "81755d989b3007ca7f88a069857553cd08e7dc2e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/guzzle/guzzle/zipball/61443dfb33c62f308ee8add20f45b4d6e4bf8d2f",
-        "reference": "61443dfb33c62f308ee8add20f45b4d6e4bf8d2f",
+        "url": "https://api.github.com/repos/guzzle/guzzle/zipball/81755d989b3007ca7f88a069857553cd08e7dc2e",
+        "reference": "81755d989b3007ca7f88a069857553cd08e7dc2e",
         "shasum": ""
       },
       "require": {
         "ext-json": "*",
-        "guzzlehttp/promises": "^2.5.1",
-        "guzzlehttp/psr7": "^2.13",
+        "guzzlehttp/promises": "^2.6",
+        "guzzlehttp/psr7": "^2.13.2",
         "php": "^7.2.5 || ^8.0",
         "psr/http-client": "^1.0",
         "symfony/deprecation-contracts": "^2.5 || ^3.0",
@@ -510,7 +366,7 @@
       ],
       "support": {
         "issues": "https://github.com/guzzle/guzzle/issues",
-        "source": "https://github.com/guzzle/guzzle/tree/7.15.1"
+        "source": "https://github.com/guzzle/guzzle/tree/7.16.1"
       },
       "funding": [
         {
@@ -526,20 +382,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-07-18T11:23:11+00:00"
+      "time": "2026-10-25T21:35:21+00:00"
     },
     {
       "name": "guzzlehttp/promises",
-      "version": "2.5.1",
+      "version": "2.6.0",
       "source": {
         "type": "git",
         "url": "https://github.com/guzzle/promises.git",
-        "reference": "9ad1e4fc607446a055b95870c7f668e93b5cff29"
+        "reference": "3d88c829bd5f13d13847b39067dbf09a60af2154"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/guzzle/promises/zipball/9ad1e4fc607446a055b95870c7f668e93b5cff29",
-        "reference": "9ad1e4fc607446a055b95870c7f668e93b5cff29",
+        "url": "https://api.github.com/repos/guzzle/promises/zipball/3d88c829bd5f13d13847b39067dbf09a60af2154",
+        "reference": "3d88c829bd5f13d13847b39067dbf09a60af2154",
         "shasum": ""
       },
       "require": {
@@ -594,7 +450,7 @@
       ],
       "support": {
         "issues": "https://github.com/guzzle/promises/issues",
-        "source": "https://github.com/guzzle/promises/tree/2.5.1"
+        "source": "https://github.com/guzzle/promises/tree/2.6.0"
       },
       "funding": [
         {
@@ -610,20 +466,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-07-08T15:48:39+00:00"
+      "time": "2026-10-18T12:46:59+00:00"
     },
     {
       "name": "guzzlehttp/psr7",
-      "version": "2.13.0",
+      "version": "2.13.2",
       "source": {
         "type": "git",
         "url": "https://github.com/guzzle/psr7.git",
-        "reference": "dad89620b7a6edb60c15858442eb2e408b45d8f4"
+        "reference": "adee536f95101929f262b8c59e8a61472f347d58"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/guzzle/psr7/zipball/dad89620b7a6edb60c15858442eb2e408b45d8f4",
-        "reference": "dad89620b7a6edb60c15858442eb2e408b45d8f4",
+        "url": "https://api.github.com/repos/guzzle/psr7/zipball/adee536f95101929f262b8c59e8a61472f347d58",
+        "reference": "adee536f95101929f262b8c59e8a61472f347d58",
         "shasum": ""
       },
       "require": {
@@ -713,7 +569,7 @@
       ],
       "support": {
         "issues": "https://github.com/guzzle/psr7/issues",
-        "source": "https://github.com/guzzle/psr7/tree/2.13.0"
+        "source": "https://github.com/guzzle/psr7/tree/2.13.2"
       },
       "funding": [
         {
@@ -729,914 +585,14 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-07-16T22:23:49+00:00"
-    },
-    {
-      "name": "hoa/compiler",
-      "version": "3.17.08.08",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Compiler.git",
-        "reference": "aa09caf0bf28adae6654ca6ee415ee2f522672de"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Compiler/zipball/aa09caf0bf28adae6654ca6ee415ee2f522672de",
-        "reference": "aa09caf0bf28adae6654ca6ee415ee2f522672de",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0",
-        "hoa/file": "~1.0",
-        "hoa/iterator": "~2.0",
-        "hoa/math": "~1.0",
-        "hoa/protocol": "~1.0",
-        "hoa/regex": "~1.0",
-        "hoa/visitor": "~2.0"
-      },
-      "require-dev": {
-        "hoa/json": "~2.0",
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "3.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Compiler\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Compiler library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "algebraic",
-        "ast",
-        "compiler",
-        "context-free",
-        "coverage",
-        "exhaustive",
-        "grammar",
-        "isotropic",
-        "language",
-        "lexer",
-        "library",
-        "ll1",
-        "llk",
-        "parser",
-        "pp",
-        "random",
-        "regular",
-        "rule",
-        "sampler",
-        "syntax",
-        "token",
-        "trace",
-        "uniform"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Compiler",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Compiler/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Compiler"
-      },
-      "abandoned": true,
-      "time": "2017-08-08T07:44:07+00:00"
-    },
-    {
-      "name": "hoa/consistency",
-      "version": "1.17.05.02",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Consistency.git",
-        "reference": "fd7d0adc82410507f332516faf655b6ed22e4c2f"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Consistency/zipball/fd7d0adc82410507f332516faf655b6ed22e4c2f",
-        "reference": "fd7d0adc82410507f332516faf655b6ed22e4c2f",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/exception": "~1.0",
-        "php": ">=5.5.0"
-      },
-      "require-dev": {
-        "hoa/stream": "~1.0",
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "files": [
-          "Prelude.php"
-        ],
-        "psr-4": {
-          "Hoa\\Consistency\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Consistency library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "autoloader",
-        "callable",
-        "consistency",
-        "entity",
-        "flex",
-        "keyword",
-        "library"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Consistency",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Consistency/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Consistency"
-      },
-      "abandoned": true,
-      "time": "2017-05-02T12:18:12+00:00"
-    },
-    {
-      "name": "hoa/event",
-      "version": "1.17.01.13",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Event.git",
-        "reference": "6c0060dced212ffa3af0e34bb46624f990b29c54"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Event/zipball/6c0060dced212ffa3af0e34bb46624f990b29c54",
-        "reference": "6c0060dced212ffa3af0e34bb46624f990b29c54",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Event\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Event library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "event",
-        "library",
-        "listener",
-        "observer"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Event",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Event/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Event"
-      },
-      "abandoned": true,
-      "time": "2017-01-13T15:30:50+00:00"
-    },
-    {
-      "name": "hoa/exception",
-      "version": "1.17.01.16",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Exception.git",
-        "reference": "091727d46420a3d7468ef0595651488bfc3a458f"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Exception/zipball/091727d46420a3d7468ef0595651488bfc3a458f",
-        "reference": "091727d46420a3d7468ef0595651488bfc3a458f",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/event": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Exception\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Exception library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "exception",
-        "library"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Exception",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Exception/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Exception"
-      },
-      "abandoned": true,
-      "time": "2017-01-16T07:53:27+00:00"
-    },
-    {
-      "name": "hoa/file",
-      "version": "1.17.07.11",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/File.git",
-        "reference": "35cb979b779bc54918d2f9a4e02ed6c7a1fa67ca"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/File/zipball/35cb979b779bc54918d2f9a4e02ed6c7a1fa67ca",
-        "reference": "35cb979b779bc54918d2f9a4e02ed6c7a1fa67ca",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/event": "~1.0",
-        "hoa/exception": "~1.0",
-        "hoa/iterator": "~2.0",
-        "hoa/stream": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\File\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\File library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "Socket",
-        "directory",
-        "file",
-        "finder",
-        "library",
-        "link",
-        "temporary"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/File",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/File/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/File"
-      },
-      "abandoned": true,
-      "time": "2017-07-11T07:42:15+00:00"
-    },
-    {
-      "name": "hoa/iterator",
-      "version": "2.17.01.10",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Iterator.git",
-        "reference": "d1120ba09cb4ccd049c86d10058ab94af245f0cc"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Iterator/zipball/d1120ba09cb4ccd049c86d10058ab94af245f0cc",
-        "reference": "d1120ba09cb4ccd049c86d10058ab94af245f0cc",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "2.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Iterator\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Iterator library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "iterator",
-        "library"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Iterator",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Iterator/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Iterator"
-      },
-      "abandoned": true,
-      "time": "2017-01-10T10:34:47+00:00"
-    },
-    {
-      "name": "hoa/math",
-      "version": "1.17.05.16",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Math.git",
-        "reference": "7150785d30f5d565704912116a462e9f5bc83a0c"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Math/zipball/7150785d30f5d565704912116a462e9f5bc83a0c",
-        "reference": "7150785d30f5d565704912116a462e9f5bc83a0c",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/compiler": "~3.0",
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0",
-        "hoa/iterator": "~2.0",
-        "hoa/protocol": "~1.0",
-        "hoa/zformat": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Math\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Math library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "arrangement",
-        "combination",
-        "combinatorics",
-        "counting",
-        "library",
-        "math",
-        "permutation",
-        "sampler",
-        "set"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Math",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Math/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Math"
-      },
-      "abandoned": true,
-      "time": "2017-05-16T08:02:17+00:00"
-    },
-    {
-      "name": "hoa/protocol",
-      "version": "1.17.01.14",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Protocol.git",
-        "reference": "5c2cf972151c45f373230da170ea015deecf19e2"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Protocol/zipball/5c2cf972151c45f373230da170ea015deecf19e2",
-        "reference": "5c2cf972151c45f373230da170ea015deecf19e2",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "files": [
-          "Wrapper.php"
-        ],
-        "psr-4": {
-          "Hoa\\Protocol\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Protocol library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "library",
-        "protocol",
-        "resource",
-        "stream",
-        "wrapper"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Protocol",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Protocol/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Protocol"
-      },
-      "abandoned": true,
-      "time": "2017-01-14T12:26:10+00:00"
-    },
-    {
-      "name": "hoa/regex",
-      "version": "1.17.01.13",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Regex.git",
-        "reference": "7e263a61b6fb45c1d03d8e5ef77668518abd5bec"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Regex/zipball/7e263a61b6fb45c1d03d8e5ef77668518abd5bec",
-        "reference": "7e263a61b6fb45c1d03d8e5ef77668518abd5bec",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0",
-        "hoa/math": "~1.0",
-        "hoa/protocol": "~1.0",
-        "hoa/ustring": "~4.0",
-        "hoa/visitor": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Regex\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Regex library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "compiler",
-        "library",
-        "regex"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Regex",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Regex/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Regex"
-      },
-      "abandoned": true,
-      "time": "2017-01-13T16:10:24+00:00"
-    },
-    {
-      "name": "hoa/stream",
-      "version": "1.17.02.21",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Stream.git",
-        "reference": "3293cfffca2de10525df51436adf88a559151d82"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Stream/zipball/3293cfffca2de10525df51436adf88a559151d82",
-        "reference": "3293cfffca2de10525df51436adf88a559151d82",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/event": "~1.0",
-        "hoa/exception": "~1.0",
-        "hoa/protocol": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Stream\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Stream library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "Context",
-        "bucket",
-        "composite",
-        "filter",
-        "in",
-        "library",
-        "out",
-        "protocol",
-        "stream",
-        "wrapper"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Stream",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Stream/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Stream"
-      },
-      "abandoned": true,
-      "time": "2017-02-21T16:01:06+00:00"
-    },
-    {
-      "name": "hoa/ustring",
-      "version": "4.17.01.16",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Ustring.git",
-        "reference": "e6326e2739178799b1fe3fdd92029f9517fa17a0"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Ustring/zipball/e6326e2739178799b1fe3fdd92029f9517fa17a0",
-        "reference": "e6326e2739178799b1fe3fdd92029f9517fa17a0",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "suggest": {
-        "ext-iconv": "ext/iconv must be present (or a third implementation) to use Hoa\\Ustring::transcode().",
-        "ext-intl": "To get a better Hoa\\Ustring::toAscii() and Hoa\\Ustring::compareTo()."
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "4.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Ustring\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Ustring library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "library",
-        "search",
-        "string",
-        "unicode"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Ustring",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Ustring/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Ustring"
-      },
-      "abandoned": true,
-      "time": "2017-01-16T07:08:25+00:00"
-    },
-    {
-      "name": "hoa/visitor",
-      "version": "2.17.01.16",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Visitor.git",
-        "reference": "c18fe1cbac98ae449e0d56e87469103ba08f224a"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Visitor/zipball/c18fe1cbac98ae449e0d56e87469103ba08f224a",
-        "reference": "c18fe1cbac98ae449e0d56e87469103ba08f224a",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0"
-      },
-      "require-dev": {
-        "hoa/test": "~2.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "2.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Visitor\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Visitor library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "library",
-        "structure",
-        "visit",
-        "visitor"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Visitor",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Visitor/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Visitor"
-      },
-      "abandoned": true,
-      "time": "2017-01-16T07:02:03+00:00"
-    },
-    {
-      "name": "hoa/zformat",
-      "version": "1.17.01.10",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/hoaproject/Zformat.git",
-        "reference": "522c381a2a075d4b9dbb42eb4592dd09520e4ac2"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/hoaproject/Zformat/zipball/522c381a2a075d4b9dbb42eb4592dd09520e4ac2",
-        "reference": "522c381a2a075d4b9dbb42eb4592dd09520e4ac2",
-        "shasum": ""
-      },
-      "require": {
-        "hoa/consistency": "~1.0",
-        "hoa/exception": "~1.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "1.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Hoa\\Zformat\\": "."
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "BSD-3-Clause"
-      ],
-      "authors": [
-        {
-          "name": "Ivan Enderlin",
-          "email": "ivan.enderlin@hoa-project.net"
-        },
-        {
-          "name": "Hoa community",
-          "homepage": "https://hoa-project.net/"
-        }
-      ],
-      "description": "The Hoa\\Zformat library.",
-      "homepage": "https://hoa-project.net/",
-      "keywords": [
-        "library",
-        "parameter",
-        "zformat"
-      ],
-      "support": {
-        "docs": "https://central.hoa-project.net/Documentation/Library/Zformat",
-        "email": "support@hoa-project.net",
-        "forum": "https://users.hoa-project.net/",
-        "irc": "irc://chat.freenode.net/hoaproject",
-        "issues": "https://github.com/hoaproject/Zformat/issues",
-        "source": "https://central.hoa-project.net/Resource/Library/Zformat"
-      },
-      "abandoned": true,
-      "time": "2017-01-10T10:39:54+00:00"
+      "time": "2026-10-17T23:49:46+00:00"
     },
     {
       "name": "jetbrains/phpstorm-stubs",
       "version": "dev-master",
       "source": {
         "type": "git",
-        "url": "https://github.com/JetBrains/phpstorm-stubs",
+        "url": "https://github.com/JetBrains/phpstorm-stubs.git",
         "reference": "e4f5f6c3de39f3bab3e9f3fca4b8cdb8b061e681"
       },
       "dist": {
@@ -1674,7 +630,10 @@
         "stubs",
         "type"
       ],
-      "time": "2026-09-07T18:07:02+00:00"
+      "support": {
+        "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
+      },
+      "time": "2026-10-19T10:54:17+00:00"
     },
     {
       "name": "nette/bootstrap",
@@ -2385,22 +1344,22 @@
     },
     {
       "name": "ondrejmirtes/better-reflection",
-      "version": "6.73.0.6",
+      "version": "6.75.0.4",
       "source": {
         "type": "git",
         "url": "https://github.com/ondrejmirtes/BetterReflection.git",
-        "reference": "b79afc9c50ddf06e06b838132e4cdef09e3cff03"
+        "reference": "47a79d87807e12860c3f1cafcae5f7380e4539c9"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/b79afc9c50ddf06e06b838132e4cdef09e3cff03",
-        "reference": "b79afc9c50ddf06e06b838132e4cdef09e3cff03",
+        "url": "https://api.github.com/repos/ondrejmirtes/BetterReflection/zipball/47a79d87807e12860c3f1cafcae5f7380e4539c9",
+        "reference": "47a79d87807e12860c3f1cafcae5f7380e4539c9",
         "shasum": ""
       },
       "require": {
         "ext-json": "*",
-        "jetbrains/phpstorm-stubs": "dev-master#dfcad4524db603bd20bdec3aab1a31c5f5128ea3",
-        "nikic/php-parser": "^5.8.0",
+        "jetbrains/phpstorm-stubs": "dev-master#e4f5f6c3de39f3bab3e9f3fca4b8cdb8b061e681",
+        "nikic/php-parser": "^5.9.0",
         "php": "^7.4 || ^8.0"
       },
       "conflict": {
@@ -2411,8 +1370,7 @@
         "phpbench/phpbench": "^1.7.0",
         "phpstan/phpstan": "^2.1.46",
         "phpstan/phpstan-phpunit": "^2.0.16",
-        "phpunit/phpunit": "^13.3.2",
-        "rector/rector": "2.6.7"
+        "phpunit/phpunit": "^13.4.3"
       },
       "suggest": {
         "composer/composer": "Required to use the ComposerSourceLocator"
@@ -2451,9 +1409,9 @@
       ],
       "description": "Better Reflection - an improved code reflection API",
       "support": {
-        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.73.0.6"
+        "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.75.0.4"
       },
-      "time": "2026-10-08T18:30:53+00:00"
+      "time": "2026-10-26T21:37:39+00:00"
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",
@@ -2578,17 +1536,87 @@
       "time": "2025-12-09T08:32:19+00:00"
     },
     {
-      "name": "phpstan/php-8-stubs",
-      "version": "0.4.39",
+      "name": "ondrejmirtes/phplrt-runtime",
+      "version": "4.2.4.1",
       "source": {
         "type": "git",
-        "url": "https://github.com/phpstan/php-8-stubs.git",
-        "reference": "2c3468206b2c52000a698c84ad6dbd946669edf0"
+        "url": "https://github.com/ondrejmirtes/phplrt-runtime.git",
+        "reference": "0a9b3058a8f857f5e2428a5b5040e29bce7017a0"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/2c3468206b2c52000a698c84ad6dbd946669edf0",
-        "reference": "2c3468206b2c52000a698c84ad6dbd946669edf0",
+        "url": "https://api.github.com/repos/ondrejmirtes/phplrt-runtime/zipball/0a9b3058a8f857f5e2428a5b5040e29bce7017a0",
+        "reference": "0a9b3058a8f857f5e2428a5b5040e29bce7017a0",
+        "shasum": ""
+      },
+      "require": {
+        "ext-json": "*",
+        "ext-pcre": "*",
+        "php": "^7.4 || ^8.0",
+        "symfony/polyfill-php80": "^1.23",
+        "symfony/polyfill-php81": "^1.27"
+      },
+      "replace": {
+        "phplrt/lexer": "self.version",
+        "phplrt/lexer-contracts": "self.version",
+        "phplrt/parser": "self.version",
+        "phplrt/parser-contracts": "self.version",
+        "phplrt/position": "self.version",
+        "phplrt/position-contracts": "self.version",
+        "phplrt/position-factory-contracts": "self.version",
+        "phplrt/runtime": "self.version",
+        "phplrt/source": "self.version",
+        "phplrt/source-contracts": "self.version",
+        "phplrt/source-factory-contracts": "self.version"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-main": "4.2.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Phplrt\\Lexer\\": "src/Lexer",
+          "Phplrt\\Parser\\": "src/Parser",
+          "Phplrt\\Source\\": "src/Source",
+          "Phplrt\\Position\\": "src/Position",
+          "Phplrt\\Contracts\\Lexer\\": "src/Contracts/Lexer",
+          "Phplrt\\Contracts\\Parser\\": "src/Contracts/Parser",
+          "Phplrt\\Contracts\\Source\\": "src/Contracts/Source",
+          "Phplrt\\Contracts\\Position\\": "src/Contracts/Position"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Kirill Nesmeyanov",
+          "email": "nesk@xakep.ru"
+        }
+      ],
+      "description": "phplrt runtime (lexer, parser, source, position and their contracts) downgraded to PHP 7.4",
+      "homepage": "https://github.com/phplrt/phplrt",
+      "support": {
+        "issues": "https://github.com/ondrejmirtes/phplrt-runtime/issues",
+        "source": "https://github.com/ondrejmirtes/phplrt-runtime/tree/4.2.4.1"
+      },
+      "time": "2026-10-26T17:32:05+00:00"
+    },
+    {
+      "name": "phpstan/php-8-stubs",
+      "version": "0.4.43",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/phpstan/php-8-stubs.git",
+        "reference": "47d572570d71b2de6d882974c3a2e530cffce481"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/47d572570d71b2de6d882974c3a2e530cffce481",
+        "reference": "47d572570d71b2de6d882974c3a2e530cffce481",
         "shasum": ""
       },
       "type": "library",
@@ -2605,22 +1633,22 @@
       "description": "PHP stubs extracted from php-src",
       "support": {
         "issues": "https://github.com/phpstan/php-8-stubs/issues",
-        "source": "https://github.com/phpstan/php-8-stubs/tree/0.4.39"
+        "source": "https://github.com/phpstan/php-8-stubs/tree/0.4.43"
       },
-      "time": "2026-09-15T00:34:58+00:00"
+      "time": "2026-09-25T00:34:48+00:00"
     },
     {
       "name": "phpstan/phpdoc-parser",
-      "version": "2.3.6",
+      "version": "2.3.11",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpdoc-parser.git",
-        "reference": "1427af4647235b4a73b13940b1f1258d3584f36e"
+        "reference": "c9fb3e1560c6a33eca59c9a2fcb4d9925445a0a4"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/1427af4647235b4a73b13940b1f1258d3584f36e",
-        "reference": "1427af4647235b4a73b13940b1f1258d3584f36e",
+        "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/c9fb3e1560c6a33eca59c9a2fcb4d9925445a0a4",
+        "reference": "c9fb3e1560c6a33eca59c9a2fcb4d9925445a0a4",
         "shasum": ""
       },
       "require": {
@@ -2652,9 +1680,9 @@
       "description": "PHPDoc parser with support for nullable, intersection and generic types",
       "support": {
         "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-        "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.6"
+        "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.11"
       },
-      "time": "2026-09-27T20:07:45+00:00"
+      "time": "2026-10-28T10:46:50+00:00"
     },
     {
       "name": "psr/container",
@@ -2865,56 +1893,6 @@
       "time": "2023-04-04T09:54:51+00:00"
     },
     {
-      "name": "psr/log",
-      "version": "2.0.0",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/php-fig/log.git",
-        "reference": "ef29f6d262798707a9edd554e2b82517ef3a9376"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/php-fig/log/zipball/ef29f6d262798707a9edd554e2b82517ef3a9376",
-        "reference": "ef29f6d262798707a9edd554e2b82517ef3a9376",
-        "shasum": ""
-      },
-      "require": {
-        "php": ">=8.0.0"
-      },
-      "type": "library",
-      "extra": {
-        "branch-alias": {
-          "dev-master": "2.0.x-dev"
-        }
-      },
-      "autoload": {
-        "psr-4": {
-          "Psr\\Log\\": "src"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "PHP-FIG",
-          "homepage": "https://www.php-fig.org/"
-        }
-      ],
-      "description": "Common interface for logging libraries",
-      "homepage": "https://github.com/php-fig/log",
-      "keywords": [
-        "log",
-        "psr",
-        "psr-3"
-      ],
-      "support": {
-        "source": "https://github.com/php-fig/log/tree/2.0.0"
-      },
-      "time": "2021-07-14T16:41:46+00:00"
-    },
-    {
       "name": "ralouphie/getallheaders",
       "version": "3.0.3",
       "source": {
@@ -3036,12 +2014,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/reactphp/child-process.git",
-        "reference": "dfc3fe92ddf58646a2a17908180db712752f23a9"
+        "reference": "62e902dab36d2b33aa925b726230819bf8cd5af4"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/reactphp/child-process/zipball/dfc3fe92ddf58646a2a17908180db712752f23a9",
-        "reference": "dfc3fe92ddf58646a2a17908180db712752f23a9",
+        "url": "https://api.github.com/repos/reactphp/child-process/zipball/62e902dab36d2b33aa925b726230819bf8cd5af4",
+        "reference": "62e902dab36d2b33aa925b726230819bf8cd5af4",
         "shasum": ""
       },
       "require": {
@@ -3051,9 +2029,9 @@
         "react/stream": "^1.4"
       },
       "require-dev": {
-        "phpunit/phpunit": "^9.6 || ^5.7 || ^4.8.36",
+        "phpunit/phpunit": "^9.6 || ^8.5 || ^5.7 || ^4.8.36",
         "react/socket": "^1.16",
-        "sebastian/environment": "^5.0 || ^3.0 || ^2.0 || ^1.0"
+        "sebastian/environment": "^5.0 || ^4.0 || ^2.0 || ^1.0"
       },
       "default-branch": true,
       "type": "library",
@@ -3104,7 +2082,7 @@
           "type": "open_collective"
         }
       ],
-      "time": "2024-12-24T21:22:59+00:00"
+      "time": "2026-10-06T05:20:35+00:00"
     },
     {
       "name": "react/dns",
@@ -3554,16 +2532,16 @@
     },
     {
       "name": "symfony/console",
-      "version": "v5.4.47",
+      "version": "v5.4.54",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/console.git",
-        "reference": "c4ba980ca61a9eb18ee6bcc73f28e475852bb1ed"
+        "reference": "68a4a45af9fcb8c9bee567a88ae29e721fb22986"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/console/zipball/c4ba980ca61a9eb18ee6bcc73f28e475852bb1ed",
-        "reference": "c4ba980ca61a9eb18ee6bcc73f28e475852bb1ed",
+        "url": "https://api.github.com/repos/symfony/console/zipball/68a4a45af9fcb8c9bee567a88ae29e721fb22986",
+        "reference": "68a4a45af9fcb8c9bee567a88ae29e721fb22986",
         "shasum": ""
       },
       "require": {
@@ -3633,7 +2611,7 @@
         "terminal"
       ],
       "support": {
-        "source": "https://github.com/symfony/console/tree/v5.4.47"
+        "source": "https://github.com/symfony/console/tree/v5.4.54"
       },
       "funding": [
         {
@@ -3645,11 +2623,15 @@
           "type": "github"
         },
         {
+          "url": "https://github.com/nicolas-grekas",
+          "type": "github"
+        },
+        {
           "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
           "type": "tidelift"
         }
       ],
-      "time": "2024-11-06T11:30:55+00:00"
+      "time": "2026-10-07T15:50:15+00:00"
     },
     {
       "name": "symfony/deprecation-contracts",
@@ -3870,16 +2852,16 @@
     },
     {
       "name": "symfony/polyfill-intl-grapheme",
-      "version": "v1.38.0",
+      "version": "v1.43.3",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-        "reference": "9c862df890f7c833b1101ac5578ec4dcf199efb5"
+        "reference": "5a8f33c87aeecffce24e721b5064fab05f4becf8"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/9c862df890f7c833b1101ac5578ec4dcf199efb5",
-        "reference": "9c862df890f7c833b1101ac5578ec4dcf199efb5",
+        "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/5a8f33c87aeecffce24e721b5064fab05f4becf8",
+        "reference": "5a8f33c87aeecffce24e721b5064fab05f4becf8",
         "shasum": ""
       },
       "require": {
@@ -3928,7 +2910,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.38.0"
+        "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.43.3"
       },
       "funding": [
         {
@@ -3948,20 +2930,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-05-25T12:39:52+00:00"
+      "time": "2026-10-15T09:18:53+00:00"
     },
     {
       "name": "symfony/polyfill-intl-normalizer",
-      "version": "v1.38.0",
+      "version": "v1.43.0",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-intl-normalizer.git",
-        "reference": "2d446c214bdbe5b71bde5011b060a05fece3ae6b"
+        "reference": "ebd57ccc7edb93d632e184efbe7693d2517bab3b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/2d446c214bdbe5b71bde5011b060a05fece3ae6b",
-        "reference": "2d446c214bdbe5b71bde5011b060a05fece3ae6b",
+        "url": "https://api.github.com/repos/symfony/polyfill-intl-normalizer/zipball/ebd57ccc7edb93d632e184efbe7693d2517bab3b",
+        "reference": "ebd57ccc7edb93d632e184efbe7693d2517bab3b",
         "shasum": ""
       },
       "require": {
@@ -4013,7 +2995,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.38.0"
+        "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.43.0"
       },
       "funding": [
         {
@@ -4033,20 +3015,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-05-25T13:48:31+00:00"
+      "time": "2026-09-23T22:02:09+00:00"
     },
     {
       "name": "symfony/polyfill-mbstring",
-      "version": "v1.38.0",
+      "version": "v1.43.3",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-mbstring.git",
-        "reference": "6b177d03d2eb04a6c9d01bab9818fb93a30ce7fd"
+        "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/6b177d03d2eb04a6c9d01bab9818fb93a30ce7fd",
-        "reference": "6b177d03d2eb04a6c9d01bab9818fb93a30ce7fd",
+        "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/122889ed24dc000165bcbfd77ec412f15cbdfc6a",
+        "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a",
         "shasum": ""
       },
       "require": {
@@ -4098,7 +3080,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.0"
+        "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.3"
       },
       "funding": [
         {
@@ -4118,20 +3100,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-05-25T14:08:27+00:00"
+      "time": "2026-10-28T09:35:49+00:00"
     },
     {
       "name": "symfony/polyfill-php80",
-      "version": "v1.37.0",
+      "version": "v1.43.0",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-php80.git",
-        "reference": "dfb55726c3a76ea3b6459fcfda1ec2d80a682411"
+        "reference": "9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/dfb55726c3a76ea3b6459fcfda1ec2d80a682411",
-        "reference": "dfb55726c3a76ea3b6459fcfda1ec2d80a682411",
+        "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74",
+        "reference": "9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74",
         "shasum": ""
       },
       "require": {
@@ -4182,7 +3164,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-php80/tree/v1.37.0"
+        "source": "https://github.com/symfony/polyfill-php80/tree/v1.43.0"
       },
       "funding": [
         {
@@ -4202,20 +3184,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-04-10T16:19:22+00:00"
+      "time": "2026-09-25T15:50:05+00:00"
     },
     {
       "name": "symfony/polyfill-php81",
-      "version": "v1.37.0",
+      "version": "v1.38.1",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-php81.git",
-        "reference": "4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c"
+        "reference": "6bfb9c766cacffbc8e118cb87217d08ed84e5cd7"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c",
-        "reference": "4a4cfc2d253c21a5ad0e53071df248ed48c6ce5c",
+        "url": "https://api.github.com/repos/symfony/polyfill-php81/zipball/6bfb9c766cacffbc8e118cb87217d08ed84e5cd7",
+        "reference": "6bfb9c766cacffbc8e118cb87217d08ed84e5cd7",
         "shasum": ""
       },
       "require": {
@@ -4262,7 +3244,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-php81/tree/v1.37.0"
+        "source": "https://github.com/symfony/polyfill-php81/tree/v1.38.1"
       },
       "funding": [
         {
@@ -4282,20 +3264,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2024-09-09T11:45:10+00:00"
+      "time": "2026-05-26T12:45:58+00:00"
     },
     {
       "name": "symfony/polyfill-php83",
-      "version": "v1.38.0",
+      "version": "v1.43.0",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-php83.git",
-        "reference": "c4406e07046227db8844a25f89d111da078aaa9c"
+        "reference": "80ccff923a8d61f73ebe9da0aa94e25232f004ce"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/c4406e07046227db8844a25f89d111da078aaa9c",
-        "reference": "c4406e07046227db8844a25f89d111da078aaa9c",
+        "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/80ccff923a8d61f73ebe9da0aa94e25232f004ce",
+        "reference": "80ccff923a8d61f73ebe9da0aa94e25232f004ce",
         "shasum": ""
       },
       "require": {
@@ -4342,7 +3324,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.0"
+        "source": "https://github.com/symfony/polyfill-php83/tree/v1.43.0"
       },
       "funding": [
         {
@@ -4362,20 +3344,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-05-25T12:39:52+00:00"
+      "time": "2026-09-25T15:50:05+00:00"
     },
     {
       "name": "symfony/polyfill-php84",
-      "version": "v1.38.0",
+      "version": "v1.43.0",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-php84.git",
-        "reference": "a0e0aca0368801ec79f8791dea9a7c12af527c93"
+        "reference": "22c6548499cbe5c5bb072fc0c42312dff062a015"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-php84/zipball/a0e0aca0368801ec79f8791dea9a7c12af527c93",
-        "reference": "a0e0aca0368801ec79f8791dea9a7c12af527c93",
+        "url": "https://api.github.com/repos/symfony/polyfill-php84/zipball/22c6548499cbe5c5bb072fc0c42312dff062a015",
+        "reference": "22c6548499cbe5c5bb072fc0c42312dff062a015",
         "shasum": ""
       },
       "require": {
@@ -4422,7 +3404,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-php84/tree/v1.38.0"
+        "source": "https://github.com/symfony/polyfill-php84/tree/v1.43.0"
       },
       "funding": [
         {
@@ -4442,20 +3424,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-05-25T12:12:52+00:00"
+      "time": "2026-09-23T22:01:09+00:00"
     },
     {
       "name": "symfony/polyfill-php85",
-      "version": "v1.38.0",
+      "version": "v1.43.0",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-php85.git",
-        "reference": "3e851ffb42624b64b3b9ec234a0e2074b0f880e3"
+        "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/3e851ffb42624b64b3b9ec234a0e2074b0f880e3",
-        "reference": "3e851ffb42624b64b3b9ec234a0e2074b0f880e3",
+        "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/86a42cbcc07adc331481a5ab310a4024bfc227f6",
+        "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
         "shasum": ""
       },
       "require": {
@@ -4502,7 +3484,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-php85/tree/v1.38.0"
+        "source": "https://github.com/symfony/polyfill-php85/tree/v1.43.0"
       },
       "funding": [
         {
@@ -4522,20 +3504,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-05-25T11:50:50+00:00"
+      "time": "2026-09-25T15:46:47+00:00"
     },
     {
       "name": "symfony/process",
-      "version": "v5.4.51",
+      "version": "v5.4.54",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/process.git",
-        "reference": "467bfc56f18f5ef6d5ccb09324d7e988c1c0a98f"
+        "reference": "485d7b3f15ae329058d2407c9772c57ed4f564de"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/process/zipball/467bfc56f18f5ef6d5ccb09324d7e988c1c0a98f",
-        "reference": "467bfc56f18f5ef6d5ccb09324d7e988c1c0a98f",
+        "url": "https://api.github.com/repos/symfony/process/zipball/485d7b3f15ae329058d2407c9772c57ed4f564de",
+        "reference": "485d7b3f15ae329058d2407c9772c57ed4f564de",
         "shasum": ""
       },
       "require": {
@@ -4568,7 +3550,7 @@
       "description": "Executes commands in sub-processes",
       "homepage": "https://symfony.com",
       "support": {
-        "source": "https://github.com/symfony/process/tree/v5.4.51"
+        "source": "https://github.com/symfony/process/tree/v5.4.54"
       },
       "funding": [
         {
@@ -4588,7 +3570,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-01-26T15:53:37+00:00"
+      "time": "2026-09-01T06:19:14+00:00"
     },
     {
       "name": "symfony/service-contracts",
@@ -4811,20 +3793,20 @@
     },
     {
       "name": "myclabs/deep-copy",
-      "version": "1.13.4",
+      "version": "1.14.0",
       "source": {
         "type": "git",
         "url": "https://github.com/myclabs/DeepCopy.git",
-        "reference": "07d290f0c47959fd5eed98c95ee5602db07e0b6a"
+        "reference": "8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/07d290f0c47959fd5eed98c95ee5602db07e0b6a",
-        "reference": "07d290f0c47959fd5eed98c95ee5602db07e0b6a",
+        "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae",
+        "reference": "8680aa248f8e07bc8fb43f56f0f5fc77a0c96aae",
         "shasum": ""
       },
       "require": {
-        "php": "^7.1 || ^8.0"
+        "php": "^8.0"
       },
       "conflict": {
         "doctrine/collections": "<1.6.8",
@@ -4859,15 +3841,15 @@
       ],
       "support": {
         "issues": "https://github.com/myclabs/DeepCopy/issues",
-        "source": "https://github.com/myclabs/DeepCopy/tree/1.13.4"
+        "source": "https://github.com/myclabs/DeepCopy/tree/1.14.0"
       },
       "funding": [
         {
-          "url": "https://tidelift.com/funding/github/packagist/myclabs/deep-copy",
-          "type": "tidelift"
+          "url": "https://github.com/mnapoli",
+          "type": "github"
         }
       ],
-      "time": "2025-08-01T08:46:24+00:00"
+      "time": "2026-08-11T10:17:44+00:00"
     },
     {
       "name": "phar-io/manifest",
@@ -5050,16 +4032,16 @@
     },
     {
       "name": "phpstan/phpstan-deprecation-rules",
-      "version": "2.0.4",
+      "version": "2.0.5",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-deprecation-rules.git",
-        "reference": "6b5571001a7f04fa0422254c30a0017ec2f2cacc"
+        "reference": "67bedd65c24bc72840afc45aed48b1059dd44bec"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/6b5571001a7f04fa0422254c30a0017ec2f2cacc",
-        "reference": "6b5571001a7f04fa0422254c30a0017ec2f2cacc",
+        "url": "https://api.github.com/repos/phpstan/phpstan-deprecation-rules/zipball/67bedd65c24bc72840afc45aed48b1059dd44bec",
+        "reference": "67bedd65c24bc72840afc45aed48b1059dd44bec",
         "shasum": ""
       },
       "require": {
@@ -5069,7 +4051,8 @@
       "require-dev": {
         "php-parallel-lint/php-parallel-lint": "^1.2",
         "phpstan/phpstan-phpunit": "^2.0",
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "shipmonk/name-collision-detector": "^2.1"
       },
       "type": "phpstan-extension",
       "extra": {
@@ -5094,22 +4077,22 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/phpstan-deprecation-rules/issues",
-        "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/2.0.4"
+        "source": "https://github.com/phpstan/phpstan-deprecation-rules/tree/2.0.5"
       },
-      "time": "2026-02-09T13:21:14+00:00"
+      "time": "2026-07-22T06:50:43+00:00"
     },
     {
       "name": "phpstan/phpstan-nette",
-      "version": "2.0.11",
+      "version": "2.0.15",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-nette.git",
-        "reference": "3dace7c97479012fec932f24f25931588e478157"
+        "reference": "b108419a50b08b35ae7a2bf06a4570f29963179b"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/3dace7c97479012fec932f24f25931588e478157",
-        "reference": "3dace7c97479012fec932f24f25931588e478157",
+        "url": "https://api.github.com/repos/phpstan/phpstan-nette/zipball/b108419a50b08b35ae7a2bf06a4570f29963179b",
+        "reference": "b108419a50b08b35ae7a2bf06a4570f29963179b",
         "shasum": ""
       },
       "require": {
@@ -5157,9 +4140,9 @@
       "description": "Nette Framework class reflection extension for PHPStan",
       "support": {
         "issues": "https://github.com/phpstan/phpstan-nette/issues",
-        "source": "https://github.com/phpstan/phpstan-nette/tree/2.0.11"
+        "source": "https://github.com/phpstan/phpstan-nette/tree/2.0.15"
       },
-      "time": "2026-06-24T08:42:14+00:00"
+      "time": "2026-10-12T07:46:34+00:00"
     },
     {
       "name": "phpstan/phpstan-phpunit",
@@ -5622,26 +4605,26 @@
     },
     {
       "name": "phpunit/phpunit",
-      "version": "11.5.52",
+      "version": "11.5.57",
       "source": {
         "type": "git",
         "url": "https://github.com/sebastianbergmann/phpunit.git",
-        "reference": "b287d32c26f78768e391843c5a59395f24b62605"
+        "reference": "36b75bf56a8535623f5b3e24b27ea1823759da1a"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b287d32c26f78768e391843c5a59395f24b62605",
-        "reference": "b287d32c26f78768e391843c5a59395f24b62605",
+        "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/36b75bf56a8535623f5b3e24b27ea1823759da1a",
+        "reference": "36b75bf56a8535623f5b3e24b27ea1823759da1a",
         "shasum": ""
       },
       "require": {
         "ext-dom": "*",
+        "ext-filter": "*",
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-mbstring": "*",
-        "ext-xml": "*",
         "ext-xmlwriter": "*",
-        "myclabs/deep-copy": "^1.13.4",
+        "myclabs/deep-copy": "^1.14.0",
         "phar-io/manifest": "^2.0.4",
         "phar-io/version": "^3.2.1",
         "php": ">=8.2",
@@ -5704,31 +4687,15 @@
       "support": {
         "issues": "https://github.com/sebastianbergmann/phpunit/issues",
         "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-        "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.52"
+        "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.57"
       },
       "funding": [
         {
-          "url": "https://phpunit.de/sponsors.html",
-          "type": "custom"
-        },
-        {
-          "url": "https://github.com/sebastianbergmann",
-          "type": "github"
-        },
-        {
-          "url": "https://liberapay.com/sebastianbergmann",
-          "type": "liberapay"
-        },
-        {
-          "url": "https://thanks.dev/u/gh/sebastianbergmann",
-          "type": "thanks_dev"
-        },
-        {
-          "url": "https://tidelift.com/funding/github/packagist/phpunit/phpunit",
-          "type": "tidelift"
+          "url": "https://phpunit.de/sponsoring.html",
+          "type": "other"
         }
       ],
-      "time": "2026-02-08T07:05:14+00:00"
+      "time": "2026-10-05T05:47:54+00:00"
     },
     {
       "name": "sebastian/cli-parser",

@@ -359,7 +359,7 @@ class ObjectShapeType implements Type
 			$result = $result->and($isSuperType);
 		}
 
-		return $result->and(new IsSuperTypeOfResult($type->isObject(), []));
+		return $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($type->isObject()));
 	}
 
 	public function equals(Type $type): bool

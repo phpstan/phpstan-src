@@ -24,15 +24,15 @@
  * ObjectType (`$type->className`, `$type->subtractedType`) are read
  * directly, as the twin does from inside the class.
  *
- * The closures the twin hands to RecursionGuard::run() and the
- * `static fn (Type $type): Type => $type` the prototype reflections take
- * are Closures over the internal PHPStanTurbo\ObjectTypeCallback holder
- * (an internal detail with no PHP twin, like the generalize() holder in
- * TypeTraits.cpp): __invoke() replays the captured call, identity()
- * returns its argument.
+ * The closures the twin hands to RecursionGuard::run() are native closures
+ * (Engine.h) replaying the captured call; the `static fn (Type $type): Type
+ * => $type` the prototype reflections take is a Closure over identity() of
+ * the internal PHPStanTurbo\ObjectTypeCallback holder (an internal detail
+ * with no PHP twin, like the generalize() holder in TypeTraits.cpp).
  */
 
 #include "TypeTraits.h"
+#include "Engine.h"
 #include "generated/ObjectType.h"
 #include "AcceptorValues.h"
 
@@ -156,9 +156,27 @@ static zval *pt_ot_enum_cases() { return pt_ot_static(PT_OT_STATIC_ENUM_CASES); 
 static zval *pt_ot_description_cache_order() { return pt_ot_static(PT_OT_STATIC_DESCRIPTION_CACHE_ORDER); }
 static zval *pt_ot_last_touched_description() { return pt_ot_static(PT_OT_STATIC_LAST_TOUCHED_DESCRIPTION); }
 
+/* The plain ObjectTypes (no subtracted type, no class reflection handed
+ * in) native code creates, one per class name: the value is the same, and
+ * the instance's own caches (ancestors, parent, interfaces, the resolved
+ * class reflection) are then computed once. A lazily resolved class
+ * reflection belongs to the container, so the table is dropped with the
+ * container's caches (resetCaches()) and at the end of the request. */
+static HashTable *pt_ot_interned = nullptr;
+
+static void pt_ot_interned_clear()
+{
+	if (pt_ot_interned == nullptr) return;
+	HashTable *interned = pt_ot_interned;
+	pt_ot_interned = nullptr;
+	zend_hash_destroy(interned);
+	FREE_HASHTABLE(interned);
+}
+
 /* resetCaches(): every cache back to [], the LRU and its memo to null */
 static void pt_ot_statics_reset()
 {
+	pt_ot_interned_clear();
 	for (int i = PT_OT_STATIC_SUPER_TYPES; i <= PT_OT_STATIC_ENUM_CASES; i++) {
 		zv::Ref(pt_ot_static((pt_ot_static_kind) i)).assign(zv::Val(zv::Arr::empty()));
 	}
@@ -174,6 +192,7 @@ void pt_object_type_rinit()
 void pt_object_type_rshutdown()
 {
 	pt_ot_statics_ce = nullptr;
+	pt_ot_interned_clear();
 }
 
 /* $cache[$key] — the nested array, created when asked for; NULL when absent */
@@ -239,13 +258,12 @@ static void pt_ot_cache_unset(zval *cache, zend_string *key)
 
 /* }}} */
 
-/* {{{ the callback holder: PHPStanTurbo\ObjectTypeCallback — the closures
- * RecursionGuard::run() / runOnObjectIdentity() / TemplateTypeMap::map()
- * receive, replaying the captured call from __invoke(); identity() is the
- * `static fn (Type $type): Type => $type` of the prototype reflections */
+/* {{{ the callbacks: the native closures RecursionGuard::run() /
+ * runOnObjectIdentity() / TemplateTypeMap::map() receive, replaying the
+ * captured call; the PHPStanTurbo\ObjectTypeCallback holder's identity() is
+ * the `static fn (Type $type): Type => $type` of the prototype reflections */
 
 static zend_class_entry *pt_ce_object_type_callback = nullptr;
-static zend_function *pt_object_type_callback_invoke_fn = nullptr;
 static zend_function *pt_object_type_callback_identity = nullptr;
 
 enum pt_ot_callback_kind
@@ -275,29 +293,30 @@ enum pt_ot_callback_kind
 	PT_OTC_ERROR_TYPE,
 };
 
-static void ZEND_FASTCALL objectTypeCallbackInvoke(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL objectTypeCallbackIdentity(INTERNAL_FUNCTION_PARAMETERS);
+static void otCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value);
 
-/* the Closure over __invoke() of a holder capturing the call; *holder
- * receives the holder object (owned) when the caller reads ->out back;
- * UNDEF = pending exception */
-static zv::Val pt_ot_callback(pt_ot_callback_kind kind, zval *object, zval *arg, zval *scope, zval *holderOut = NULL)
+/* the native closure replaying a call: captures [kind, object, arg, scope]
+ * (each borrowed, NULL for none) and, with outRef (an IS_REFERENCE), the
+ * reference the OFFSET_SET_PARAMETER_TYPES call writes its second type to */
+static zv::Val pt_ot_callback(pt_ot_callback_kind kind, zval *object, zval *arg, zval *scope, zval *outRef = NULL)
 {
-	zval holder;
-	object_init_ex(&holder, pt_ce_object_type_callback);
-	zv::ObjRef ref(&holder);
-	ref.propAtWrite(slots::subtractedType, zv::Val::integer(kind));
-	ref.propAtWrite(slots::cachedParent, object != NULL ? zv::Val::copyOf(zv::Ref(object)) : zv::Val::null());
-	ref.propAtWrite(slots::cachedInterfaces, arg != NULL ? zv::Val::copyOf(zv::Ref(arg)) : zv::Val::null());
-	ref.propAtWrite(slots::currentAncestors, scope != NULL ? zv::Val::copyOf(zv::Ref(scope)) : zv::Val::null());
-	zval closure;
-	pt_abi_create_closure(&closure, pt_object_type_callback_invoke_fn, pt_ce_object_type_callback, pt_ce_object_type_callback, Z_OBJ(holder));
-	if (holderOut != NULL) {
-		ZVAL_COPY_VALUE(holderOut, &holder); /* the closure holds its own reference */
-	} else {
-		zval_ptr_dtor(&holder);
+	zval captures[5];
+	ZVAL_LONG(&captures[0], kind);
+	zval *given[3] = {object, arg, scope};
+	for (uint32_t i = 0; i < 3; i++) {
+		if (given[i] != NULL) {
+			ZVAL_COPY_VALUE(&captures[i + 1], given[i]);
+		} else {
+			ZVAL_NULL(&captures[i + 1]);
+		}
 	}
-	return zv::Val::adopt(closure);
+	uint32_t count = 4;
+	if (outRef != NULL) {
+		ZVAL_COPY_VALUE(&captures[4], outRef);
+		count = 5;
+	}
+	return pt_native_closure_new(&otCallbackBody, count, captures, 1u << 4);
 }
 
 /* static fn (Type $type): Type => $type */
@@ -921,17 +940,10 @@ public:
 		bool isClosure;
 		if (UNEXPECTED(!pt_type_instanceof_ce(type, pt_ce_closure_type, isClosure))) return zv::Val();
 		if (isClosure) {
-			/* new IsSuperTypeOfResult($this->isInstanceOf(Closure::class), []) */
+			/* IsSuperTypeOfResult::createFromTrinaryLogic($this->isInstanceOf(Closure::class)) */
 			zend_long isInstance = thisIsInstanceOfLiteral(PT_LC("Closure"));
 			if (UNEXPECTED(isInstance < 0)) return zv::Val();
-			zval reasons, lazyReasons;
-			ZVAL_EMPTY_ARRAY(&reasons);
-			ZVAL_EMPTY_ARRAY(&lazyReasons); /* the constructor's default */
-			zval result;
-			if (UNEXPECTED(!pt_result_object_create(&result, pt_ce_is_super_type_of_result, pt_trinary_singleton(isInstance), &reasons, &lazyReasons))) {
-				return zv::Val();
-			}
-			return storeSuperType(thisDescriptionStr, descriptionStr, zv::Val::adopt(result));
+			return storeSuperType(thisDescriptionStr, descriptionStr, pt_type_is_super_type_of_result(isInstance));
 		}
 
 		if (isObjectWithoutClass) {
@@ -1964,11 +1976,13 @@ public:
 			/* $acceptedValueType = new NeverType(), overwritten by the closure */
 			zv::Val acceptedValueType = pt_type_new_never_type();
 			if (UNEXPECTED(acceptedValueType.isUndef())) return zv::Val();
-			zval holder;
-			zv::Val acceptedOffsetType = guarded(PT_OTC_OFFSET_SET_PARAMETER_TYPES, NULL, NULL, NULL, &holder);
-			zv::Val holderVal = zv::Val::adopt(holder);
+			zval outRef, none;
+			ZVAL_NULL(&none);
+			ZVAL_NEW_REF(&outRef, &none);
+			zv::Val outRefVal = zv::Val::adopt(outRef);
+			zv::Val acceptedOffsetType = guarded(PT_OTC_OFFSET_SET_PARAMETER_TYPES, NULL, NULL, NULL, outRefVal.raw());
 			if (UNEXPECTED(acceptedOffsetType.isUndef())) return zv::Val();
-			zval *out = OBJ_PROP_NUM(Z_OBJ(holder), slots::cachedDescription);
+			zval *out = Z_REFVAL_P(outRefVal.raw());
 			if (Z_TYPE_P(out) == IS_OBJECT) {
 				acceptedValueType = zv::Val::copyOf(zv::Ref(out));
 			}
@@ -2985,11 +2999,11 @@ private:
 	}
 
 	/* RecursionGuard::run($this, <closure>); UNDEF = pending exception */
-	zv::Val guarded(pt_ot_callback_kind kind, zval *object, zval *arg, zval *scope, zval *holderOut = NULL) const
+	zv::Val guarded(pt_ot_callback_kind kind, zval *object, zval *arg, zval *scope, zval *outRef = NULL) const
 	{
 		zval selfZv;
 		ZVAL_OBJ(&selfZv, self);
-		zv::Val callback = pt_ot_callback(kind, object != NULL ? object : &selfZv, arg, scope, holderOut);
+		zv::Val callback = pt_ot_callback(kind, object != NULL ? object : &selfZv, arg, scope, outRef);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
 		return pt_type_recursion_guard_run(&selfZv, callback.raw());
 	}
@@ -3258,7 +3272,25 @@ using phpstanturbo::ObjectType;
 
 bool pt_object_type_new(zval *out, zend_string *className, zval *subtractedType, zval *classReflection)
 {
-	return pt_val_into(ObjectType::create(className, subtractedType, classReflection), out);
+	if ((subtractedType != NULL && Z_TYPE_P(subtractedType) != IS_NULL) || (classReflection != NULL && Z_TYPE_P(classReflection) != IS_NULL)) {
+		return pt_val_into(ObjectType::create(className, subtractedType, classReflection), out);
+	}
+	if (pt_ot_interned != nullptr) {
+		zval *interned = zend_hash_find(pt_ot_interned, className);
+		if (interned != NULL) {
+			ZVAL_COPY(out, interned);
+			return true;
+		}
+	}
+	zv::Val created = ObjectType::create(className);
+	if (UNEXPECTED(created.isUndef())) return false;
+	if (pt_ot_interned == nullptr) {
+		ALLOC_HASHTABLE(pt_ot_interned);
+		zend_hash_init(pt_ot_interned, 64, NULL, ZVAL_PTR_DTOR, 0);
+	}
+	Z_ADDREF_P(created.raw());
+	zend_hash_add_new(pt_ot_interned, className, created.raw());
+	return pt_val_into(std::move(created), out);
 }
 
 zend_string *pt_object_type_class_name(zend_object *object) { return ObjectType::classNameOf(object); }
@@ -3293,15 +3325,15 @@ zv::Val pt_object_type_referenced_classes_callback(zval *type)
 
 #define PT_THIS ObjectType(Z_OBJ_P(ZEND_THIS))
 
-/* the body of ObjectTypeCallback::__invoke(...$args): replays the captured
- * call (the arguments are ignored, as the twins' closures ignore them);
- * UNDEF = pending exception */
-zv::Val pt_object_type_callback_invoke(zend_object *holder)
+/* the replay of a pt_ot_callback() closure's captured call (the arguments
+ * are ignored, as the twins' closures ignore them); UNDEF = pending
+ * exception */
+static zv::Val otCallbackRun(zval *captures)
 {
-	zend_long kind = Z_LVAL_P(OBJ_PROP_NUM(holder, slots::subtractedType));
-	zval *object = OBJ_PROP_NUM(holder, slots::cachedParent);
-	zval *arg = OBJ_PROP_NUM(holder, slots::cachedInterfaces);
-	zval *scope = OBJ_PROP_NUM(holder, slots::currentAncestors);
+	zend_long kind = Z_LVAL(captures[0]);
+	zval *object = &captures[1];
+	zval *arg = &captures[2];
+	zval *scope = &captures[3];
 	zv::Args args{arg, scope};
 	switch (kind) {
 		case PT_OTC_HAS_PROPERTY:
@@ -3377,7 +3409,7 @@ zv::Val pt_object_type_callback_invoke(zend_object *holder)
 			if (kind == PT_OTC_OFFSET_SET_PARAMETER_TYPES) {
 				zv::Val acceptedValueType = pt_type_call(Z_OBJ_P(valueParameter), PT_LC("gettype"), 0, NULL);
 				if (UNEXPECTED(acceptedValueType.isUndef())) return zv::Val();
-				zv::ObjRef(holder).propAtWrite(slots::cachedDescription, std::move(acceptedValueType));
+				zv::Ref(&captures[4]).deref().assign(std::move(acceptedValueType));
 			}
 			return pt_type_call(Z_OBJ_P(offsetParameter), PT_LC("gettype"), 0, NULL);
 		}
@@ -3393,24 +3425,13 @@ zv::Val pt_object_type_callback_invoke(zend_object *holder)
 	}
 }
 
-/* ObjectTypeCallback::__invoke(...$args) */
-static void ZEND_FASTCALL objectTypeCallbackInvoke(INTERNAL_FUNCTION_PARAMETERS)
+static void otCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 {
-	if (UNEXPECTED(Z_TYPE_P(ZEND_THIS) != IS_OBJECT)) {
-		zend_throw_error(NULL, "phpstan_turbo: ObjectTypeCallback called without its holder");
-		RETURN_THROWS();
-	}
-	PT_RETURN_VAL(pt_object_type_callback_invoke(Z_OBJ_P(ZEND_THIS)));
-}
-
-zif_handler pt_object_type_callback_invoke_handler()
-{
-	return objectTypeCallbackInvoke;
-}
-
-zend_class_entry *pt_object_type_callback_ce()
-{
-	return pt_ce_object_type_callback;
+	(void) argc;
+	(void) argv;
+	zv::Val result = otCallbackRun(captures);
+	if (UNEXPECTED(result.isUndef())) return;
+	*return_value = result.take();
 }
 
 /* ObjectTypeCallback::identity(Type $type): Type */
@@ -3585,18 +3606,11 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 	 * `cls.method(...)` lines with the twin's methods, and the holder's
 	 * methods have none */
 	reg::Class holder("PHPStanTurbo\\ObjectTypeCallback");
-	holder.privateLongProperty("kind", 0);
-	holder.privateNullProperty("object");
-	holder.privateNullProperty("arg");
-	holder.privateNullProperty("scope");
-	holder.privateNullProperty("out");
-	holder.method("__invoke", reg::Public, 0, { reg::variadicObj("args", "mixed") }, objectTypeCallbackInvoke);
 	holder.method("identity", reg::PublicStatic, 1, { reg::obj("type", ptcls::type) }, objectTypeCallbackIdentity, &ptret::type);
 	pt_ce_object_type_callback = holder.register_();
 	pt_ce_object_type_callback->ce_flags |= ZEND_ACC_FINAL;
-	pt_object_type_callback_invoke_fn = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_object_type_callback, function_table), PT_LC("__invoke"));
 	pt_object_type_callback_identity = (zend_function *) zend_hash_str_find_ptr(&PT_CE(pt_ce_object_type_callback, function_table), PT_LC("identity"));
-	ZEND_ASSERT(pt_object_type_callback_invoke_fn != NULL && pt_object_type_callback_identity != NULL);
+	ZEND_ASSERT(pt_object_type_callback_identity != NULL);
 
 	reg::Class cls("PHPStan\\Type\\ObjectType");
 	ptdecl::ObjectType::declareClass(cls);

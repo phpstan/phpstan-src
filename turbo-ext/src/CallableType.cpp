@@ -202,7 +202,7 @@ public:
 					/* TrinaryLogic::and(): the minimum */
 					typePure = variantPure < typePure ? variantPure : typePure;
 				}
-				zv::Val pureResult = pt_type_new_is_super_type_of_result(typePure);
+				zv::Val pureResult = pt_type_is_super_type_of_result(typePure);
 				if (UNEXPECTED(pureResult.isUndef())) return zv::Val();
 				return pt_type_op(Z_OBJ_P(isCallable.raw()), PT_OP_AND, 1, pureResult.raw());
 			}
@@ -264,7 +264,7 @@ public:
 		if (UNEXPECTED(callable < 0)) return zv::Val();
 		/* ->and($otherType instanceof self ? yes : maybe): the minimum */
 		zend_long limit = instanceof_function(Z_OBJCE_P(otherType), pt_ce_callable_type) ? PT_TRI_YES : PT_TRI_MAYBE;
-		return pt_type_new_is_super_type_of_result(callable < limit ? callable : limit);
+		return pt_type_is_super_type_of_result(callable < limit ? callable : limit);
 	}
 
 	/* $this->isSubTypeOf($acceptingType)->toAcceptsResult() */

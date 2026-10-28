@@ -111,16 +111,16 @@ final class CallableTypeHelper
 
 		$pure = $ours->isPure();
 		if ($pure->yes()) {
-			$result = $result->and(new IsSuperTypeOfResult($theirs->isPure(), []));
+			$result = $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($theirs->isPure()));
 		} elseif ($pure->no()) {
-			$result = $result->and(new IsSuperTypeOfResult($theirs->isPure()->negate(), []));
+			$result = $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($theirs->isPure()->negate()));
 		}
 
 		$ourStatic = $ours->isStaticClosure();
 		if ($ourStatic->yes()) {
-			$result = $result->and(new IsSuperTypeOfResult($theirs->isStaticClosure(), []));
+			$result = $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($theirs->isStaticClosure()));
 		} elseif ($ourStatic->no()) {
-			$result = $result->and(new IsSuperTypeOfResult($theirs->isStaticClosure()->negate(), []));
+			$result = $result->and(IsSuperTypeOfResult::createFromTrinaryLogic($theirs->isStaticClosure()->negate()));
 		}
 
 		return $result->and($isReturnTypeSuperType);

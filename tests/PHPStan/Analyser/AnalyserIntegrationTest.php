@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_map;
 use function array_unique;
 use function array_values;
+use function count;
 use function extension_loaded;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -1392,15 +1393,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// crash
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-10049-recursive.php');
-		$this->assertCount(4, $errors);
+		$this->assertCount(5, $errors);
 		$this->assertSame('PHPDoc tag @template for class Bug10049Recursive\SimpleEntity cannot have existing class Bug10049Recursive\SimpleEntity as its name.', $errors[0]->getMessage());
 		$this->assertSame(8, $errors[0]->getLine());
 		$this->assertSame('Type Bug10049Recursive\SimpleEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> in PHPDoc tag @template Bug10049Recursive\SimpleEntity is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[1]->getMessage());
 		$this->assertSame(8, $errors[1]->getLine());
-		$this->assertSame('Type Bug10049Recursive\TestEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\TestEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[2]->getMessage());
-		$this->assertSame(46, $errors[2]->getLine());
-		$this->assertSame('Type Bug10049Recursive\AnotherEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\AnotherEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[3]->getMessage());
-		$this->assertSame(59, $errors[3]->getLine());
+		$this->assertSame('Method Bug10049Recursive\SimpleEntity::__construct() has parameter $table with generic class Bug10049Recursive\SimpleEntity but does not specify its types: SELF', $errors[2]->getMessage());
+		$this->assertSame(13, $errors[2]->getLine());
+		$this->assertSame('Type Bug10049Recursive\TestEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\TestEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[3]->getMessage());
+		$this->assertSame(46, $errors[3]->getLine());
+		$this->assertSame('Type Bug10049Recursive\AnotherEntity in generic type Bug10049Recursive\SimpleEntity<Bug10049Recursive\AnotherEntity> in PHPDoc tag @extends is not subtype of template type SELF of Bug10049Recursive\SimpleEntity<Bug10049Recursive\SimpleEntity> of class Bug10049Recursive\SimpleEntity.', $errors[4]->getMessage());
+		$this->assertSame(59, $errors[4]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
@@ -1713,8 +1716,7 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		// endless loop
 		$errors = $this->runAnalyse(__DIR__ . '/data/pr-5880.php');
-		$this->assertCount(1, $errors);
-		$this->assertSame('Call to an undefined method (T of PR5880EndlessRecursion\A = PR5880EndlessRecursion\A|PR5880EndlessRecursion\B)|T of PR5880EndlessRecursion\B = PR5880EndlessRecursion\A|PR5880EndlessRecursion\B::a().', $errors[0]->getMessage());
+		$this->assertNoErrors($errors);
 	}
 
 	public function testBug14707(): void
@@ -1805,6 +1807,31 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15331.php');
 		$this->assertNoErrors($errors);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15520(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15520.php');
+		$expected = [
+			['Access to an undefined property Bug15520\\Presenter::$undefinedProperty.', 20],
+			['Binary operation "+" between 1 and \'x\' results in an error.', 20],
+			['Call to an undefined method Bug15520\\Presenter::undefinedMethod().', 20],
+			['Method Bug15520\\Category::imageFor() invoked with 2 parameters, 1 required.', 20],
+			['Call to an undefined method Bug15520\\Presenter::undefinedWhile().', 33],
+			['Call to an undefined method Bug15520\\Presenter::undefinedDoWhile().', 46],
+			['Call to an undefined method Bug15520\\Presenter::undefinedFor().', 59],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInClosure().', 74],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInArrowFunction().', 76],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInPropertyName().', 90],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInNested().', 104],
+			['Call to an undefined method Bug15520\\Presenter::undefinedInMethodName().', 105],
+		];
+		$this->assertCount(count($expected), $errors);
+		foreach ($expected as $i => [$message, $line]) {
+			$this->assertSame($message, $errors[$i]->getMessage());
+			$this->assertSame($line, $errors[$i]->getLine());
+		}
 	}
 
 	/**

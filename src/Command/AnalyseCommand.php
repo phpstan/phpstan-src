@@ -113,7 +113,7 @@ final class AnalyseCommand extends Command
 				new InputOption('generate-baseline', 'b', InputOption::VALUE_OPTIONAL, 'Path to a file where the baseline should be saved', false),
 				new InputOption('allow-empty-baseline', mode: InputOption::VALUE_NONE, description: 'Do not error out when the generated baseline is empty'),
 				new InputOption('memory-limit', mode: InputOption::VALUE_REQUIRED, description: 'Memory limit for analysis'),
-				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes'),
+				new InputOption('xdebug', mode: InputOption::VALUE_NONE, description: 'Allow running with Xdebug for debugging purposes (pcov and uopz are still turned off)'),
 				new InputOption('tmp-file', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) Edited file used in place of --instead-of file'),
 				new InputOption('instead-of', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) File being replaced by --tmp-file'),
 				new InputOption('fix', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable errors (experimental)'),
@@ -339,7 +339,7 @@ final class AnalyseCommand extends Command
 				. 'The extension stays inactive and PHPStan runs slower than necessary.' . "\n"
 				. 'Update the extension to the version appropriate for %s.',
 				$incompatibleTurboVersion,
-				TurboExtensionEnabler::EXPECTED_EXTENSION_VERSION,
+				TurboExtensionEnabler::getExpectedVersion() ?? 'unknown',
 				$phpstanVersion === ComposerHelper::UNKNOWN_VERSION ? 'your PHPStan version' : sprintf('PHPStan %s', $phpstanVersion),
 			));
 		} elseif (TurboExtensionSelector::isMissingNextToPhar()) {

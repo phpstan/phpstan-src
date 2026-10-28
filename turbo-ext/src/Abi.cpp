@@ -12,6 +12,21 @@
 #include "zend_fibers.h"
 #include "zend_weakrefs.h"
 
+#if PHP_VERSION_ID < 80300
+#ifdef PHP_WIN32
+#include <windows.h>
+#else
+#include <pthread.h>
+#include <stdio.h>
+#include <sys/resource.h>
+#include <unistd.h>
+#endif
+#ifdef __linux__
+#include <inttypes.h>
+#include <sys/syscall.h>
+#endif
+#endif
+
 
 static const zend_object_handlers *abi_object_handlers(const pt_abi_handlers &overrides)
 {
@@ -30,6 +45,18 @@ static zend_function_entry *abi_function_entries(const reg::FunctionEntry *entri
 {
 	zend_function_entry *functions = (zend_function_entry *) ecalloc(count + 1, sizeof(zend_function_entry));
 	for (size_t i = 0; i < count; i++) {
+#if PHP_VERSION_ID < 80300
+		/* before 8.3, an internal arginfo's class name is a C string under
+		 * the plain name bit; the return type is entry 0 */
+		if (entries[i].argInfo != NULL) {
+			for (uint32_t arg = 0; arg <= entries[i].numArgs; arg++) {
+				zend_type *type = &entries[i].argInfo[arg].type;
+				if (type->type_mask & _ZEND_TYPE_LITERAL_NAME_BIT) {
+					type->type_mask = (type->type_mask & ~_ZEND_TYPE_LITERAL_NAME_BIT) | _ZEND_TYPE_NAME_BIT;
+				}
+			}
+		}
+#endif
 		functions[i].fname = entries[i].fname;
 		functions[i].handler = entries[i].handler;
 		functions[i].arg_info = entries[i].argInfo;
@@ -98,14 +125,143 @@ static void abi_weakrefs_hash_destroy(HashTable *ht)
 #endif
 }
 
+/* {{{ the C stack limit before PHP 8.3
+ *
+ * 8.3's engine knows the bounds of the C stack (EG(stack_base),
+ * EG(stack_limit)); before, this pair stands in for them, determined like
+ * zend_call_stack_init() determines them with the default settings, and
+ * switched along with the fresh stack segments of abi_run_on_fresh_stack().
+ * Plain statics: PHPStan's processes run PHP on one thread. */
+
+#if PHP_VERSION_ID < 80300
+
+/* zend.reserved_stack_size's default in 8.3 (ZEND_ALLOCA_MAX_SIZE + 16 KiB) */
+#define PT_ABI_RESERVED_STACK_SIZE_LIMIT ((size_t) 48 * 1024)
+/* zend_call_stack_default_size() of 8.3, for when the stack cannot be found */
+#define PT_ABI_DEFAULT_STACK_SIZE_LIMIT ((size_t) 2 * 1024 * 1024)
+
+static void *abi_stack_base = nullptr;
+static void *abi_stack_limit = nullptr;
+
+/* the high address and the usable size of the current thread's stack */
+static bool abi_call_stack_get(void **base, size_t *maxSize)
+{
+#if defined(__linux__)
+	if (getpid() == (pid_t) syscall(SYS_gettid)) {
+		/* the main thread: its mapping ends at the base, and it may grow by
+		 * RLIMIT_STACK, up to the mapping below it */
+		uintptr_t position = (uintptr_t) zend_call_stack_position();
+		uintptr_t start, end, previousEnd = 0;
+		bool found = false;
+		char buffer[4096];
+		FILE *maps = fopen("/proc/self/maps", "r");
+		if (maps == NULL) return false;
+		while (fgets(buffer, sizeof(buffer), maps) && sscanf(buffer, "%" SCNxPTR "-%" SCNxPTR, &start, &end) == 2) {
+			if (start <= position && end >= position) {
+				found = true;
+				break;
+			}
+			previousEnd = end;
+		}
+		fclose(maps);
+		struct rlimit limit;
+		if (!found || getrlimit(RLIMIT_STACK, &limit) != 0 || limit.rlim_cur == RLIM_INFINITY) return false;
+		size_t size = limit.rlim_cur;
+		if (end - size < previousEnd) {
+			size = previousEnd - end;
+		}
+		*base = (void *) end;
+		*maxSize = size;
+		return true;
+	}
+	pthread_attr_t attr;
+	void *address;
+	size_t size;
+	if (pthread_getattr_np(pthread_self(), &attr) != 0) return false;
+	bool ok = pthread_attr_getstack(&attr, &address, &size) == 0;
+	if (ok) {
+		size_t guard = 0;
+		/* glibc counts the guard area into the size, musl does not */
+#ifdef __GLIBC__
+		if (pthread_attr_getguardsize(&attr, &guard) != 0) guard = 0;
+#endif
+		*base = (int8_t *) address + size;
+		*maxSize = size - guard;
+	}
+	pthread_attr_destroy(&attr);
+	return ok;
+#elif defined(__APPLE__)
+	*base = pthread_get_stackaddr_np(pthread_self());
+	*maxSize = pthread_get_stacksize_np(pthread_self());
+	return true;
+#elif defined(PHP_WIN32)
+	/* the reserved region less its guard pages and the last uncommitted
+	 * page, as 8.3 computes it. 8.3 reads the limits with
+	 * GetCurrentThreadStackLimits, which 8.2's _WIN32_WINNT does not declare;
+	 * the stack's allocation base and the TEB's StackBase are the same limits */
+	MEMORY_BASIC_INFORMATION stack = {0}, guard = {0}, uncommitted = {0};
+	if (VirtualQuery(&stack, &stack, sizeof(stack)) < sizeof(stack)) return false;
+	ULONG_PTR lowLimit = (ULONG_PTR) stack.AllocationBase;
+	ULONG_PTR highLimit = (ULONG_PTR) ((NT_TIB *) NtCurrentTeb())->StackBase;
+	if (VirtualQuery((void *) lowLimit, &uncommitted, sizeof(uncommitted)) < sizeof(uncommitted)) return false;
+	if (VirtualQuery((int8_t *) uncommitted.BaseAddress + uncommitted.RegionSize, &guard, sizeof(guard)) < sizeof(guard)) return false;
+	size_t size = (size_t) (highLimit - lowLimit);
+	size_t pageSize = zend_get_page_size();
+	if (size <= guard.RegionSize + pageSize) return false;
+	*base = (void *) highLimit;
+	*maxSize = size - guard.RegionSize - pageSize;
+	return true;
+#else
+	(void) base;
+	(void) maxSize;
+	return false;
+#endif
+}
+
+static void *abi_call_stack_limit(void *base, size_t size, size_t reserved)
+{
+	if (UNEXPECTED(size > (uintptr_t) base)) {
+		return nullptr;
+	}
+	return (int8_t *) base - size + reserved;
+}
+
+static void abi_call_stack_init()
+{
+	void *base;
+	size_t size;
+	if (!abi_call_stack_get(&base, &size)) {
+		/* as 8.3 falls back: from here, which is not the actual base */
+		base = zend_call_stack_position();
+		size = PT_ABI_DEFAULT_STACK_SIZE_LIMIT - 32 * 1024;
+	}
+	abi_stack_base = base;
+	abi_stack_limit = abi_call_stack_limit(base, size, PT_ABI_RESERVED_STACK_SIZE_LIMIT);
+}
+
+/* zend_fiber_stack is private to zend_fibers.c; 8.2's begins with these */
+struct AbiFiberStack
+{
+	void *pointer;
+	size_t size;
+};
+
+#endif
+
+/* }}} */
+
 static void abi_call_stack_size_error()
 {
 #if PHP_VERSION_ID >= 80400
 	zend_call_stack_size_error();
-#else
+#elif PHP_VERSION_ID >= 80300
 	/* static in PHP 8.3; the same message */
 	zend_throw_error(nullptr, "Maximum call stack size of %zu bytes (zend.max_allowed_stack_size - zend.reserved_stack_size) reached. Infinite recursion?",
 		(size_t) ((uintptr_t) EG(stack_base) - (uintptr_t) EG(stack_limit)));
+#else
+	/* 8.3's message, without the settings 8.2 does not have */
+	zend_throw_error(nullptr, "Maximum call stack size of %zu bytes reached. Infinite recursion?",
+		(size_t) ((uintptr_t) abi_stack_base - (uintptr_t) abi_stack_limit));
 #endif
 }
 
@@ -117,6 +273,11 @@ static void abi_try_assign_ref_str(zval *zv, zend_string *str)
 static void abi_try_assign_ref_true(zval *zv)
 {
 	ZEND_TRY_ASSIGN_REF_TRUE(zv);
+}
+
+static void abi_try_assign_ref_copy(zval *zv, zval *value)
+{
+	ZEND_TRY_ASSIGN_REF_COPY(zv, value);
 }
 
 /* the neutral ZPP numbering of abi.h, translated for this engine */
@@ -159,8 +320,13 @@ static const zend_expected_type abi_expected_types[] = {
 	Z_EXPECTED_DOUBLE_OR_NULL,
 	Z_EXPECTED_NUMBER,
 	Z_EXPECTED_NUMBER_OR_NULL,
+#if PHP_VERSION_ID >= 80300
 	Z_EXPECTED_NUMBER_OR_STRING,
 	Z_EXPECTED_NUMBER_OR_STRING_OR_NULL,
+#else
+	Z_EXPECTED_LONG, /* not produced before 8.3 */
+	Z_EXPECTED_LONG, /* not produced before 8.3 */
+#endif
 	Z_EXPECTED_ARRAY_OR_STRING,
 	Z_EXPECTED_ARRAY_OR_STRING_OR_NULL,
 	Z_EXPECTED_STRING_OR_LONG,
@@ -200,7 +366,8 @@ static bool abi_parse_arg_bool_slow(const zval *arg, bool *dest, uint32_t num)
 	*dest = status;
 	return true;
 #else
-	return zend_parse_arg_bool_slow(arg, dest, num);
+	/* the zval was not const up to 8.2; neither function writes it */
+	return zend_parse_arg_bool_slow((zval *) arg, dest, num);
 #endif
 }
 
@@ -210,7 +377,7 @@ static bool abi_parse_arg_double_slow(const zval *arg, double *dest, uint32_t nu
 	*dest = zend_parse_arg_double_slow(arg, num);
 	return !zend_isnan(*dest);
 #else
-	return zend_parse_arg_double_slow(arg, dest, num);
+	return zend_parse_arg_double_slow((zval *) arg, dest, num);
 #endif
 }
 
@@ -269,9 +436,20 @@ ZEND_STACK_ALIGNED void freshStackCoroutine(zend_fiber_transfer *transfer)
 	(void) transfer; /* already addresses the caller, which is where it returns */
 	FreshStackCall *call = pt_fresh_stack_call;
 	zend_fiber_context *context = EG(current_fiber_context);
-#ifdef ZEND_CHECK_STACK_LIMIT
+#if PHP_VERSION_ID >= 80300
 	EG(stack_base) = zend_fiber_stack_base(context->stack);
 	EG(stack_limit) = zend_fiber_stack_limit(context->stack);
+#else
+	/* zend_fiber_stack_base() / _limit() of 8.3 */
+	const AbiFiberStack *stack = (const AbiFiberStack *) context->stack;
+	abi_stack_base = (int8_t *) stack->pointer + stack->size;
+#ifdef __APPLE__
+	/* Apple clang's ___chkstk_darwin probes twice the frame size away on
+	 * an alternative stack (8.3 reserves twice as much there) */
+	abi_stack_limit = (int8_t *) stack->pointer + 2 * PT_ABI_RESERVED_STACK_SIZE_LIMIT;
+#else
+	abi_stack_limit = (int8_t *) stack->pointer + PT_ABI_RESERVED_STACK_SIZE_LIMIT;
+#endif
 #endif
 	zend_try {
 		call->body(call->data);
@@ -291,7 +469,13 @@ static void abi_run_on_fresh_stack(void (*body)(void *), void *data)
 {
 	zend_fiber_context context;
 	memset(&context, 0, sizeof(context));
-	if (UNEXPECTED(zend_fiber_init_context(&context, &pt_fresh_stack_kind, freshStackCoroutine, PT_ENGINE_FRESH_STACK_SIZE_LIMIT) == FAILURE)) {
+#if PHP_VERSION_ID >= 80300
+	bool initialized = zend_fiber_init_context(&context, &pt_fresh_stack_kind, freshStackCoroutine, PT_ENGINE_FRESH_STACK_SIZE_LIMIT) == SUCCESS;
+#else
+	/* returned bool up to 8.2 */
+	bool initialized = zend_fiber_init_context(&context, &pt_fresh_stack_kind, freshStackCoroutine, PT_ENGINE_FRESH_STACK_SIZE_LIMIT);
+#endif
+	if (UNEXPECTED(!initialized)) {
 		/* no stack to be had: continue here, where the engine's own stack
 		 * limit decides */
 		if (EG(exception) != NULL) {
@@ -308,9 +492,18 @@ static void abi_run_on_fresh_stack(void (*body)(void *), void *data)
 	transfer.context = &context;
 	transfer.flags = 0;
 	ZVAL_NULL(&transfer.value);
+#if PHP_VERSION_ID < 80300
+	/* 8.3's switch restores the engine's pair, this one is restored here */
+	void *stackBase = abi_stack_base;
+	void *stackLimit = abi_stack_limit;
+#endif
 	/* returns once the body finished; the dead context is destroyed then */
 	zend_fiber_switch_context(&transfer);
 	pt_fresh_stack_call = previous;
+#if PHP_VERSION_ID < 80300
+	abi_stack_base = stackBase;
+	abi_stack_limit = stackLimit;
+#endif
 
 	EG(vm_stack) = call.vmStack;
 	EG(vm_stack_top) = call.vmStackTop;
@@ -341,6 +534,14 @@ void pt_abi_init()
 #undef PT_ABI_CG_FIELD
 #undef PT_ABI_KNOWN_STRING
 #undef PT_ABI_OBJECT_HANDLER
+#if PHP_VERSION_ID >= 80300
+	pt_abi.eg_stack_base = &EG(stack_base);
+	pt_abi.eg_stack_limit = &EG(stack_limit);
+#else
+	abi_call_stack_init();
+	pt_abi.eg_stack_base = &abi_stack_base;
+	pt_abi.eg_stack_limit = &abi_stack_limit;
+#endif
 
 	pt_abi.offset_internal_function_handler = offsetof(zend_internal_function, handler);
 	pt_abi.sizeof_arg_info = sizeof(zend_arg_info);
@@ -364,6 +565,7 @@ void pt_abi_init()
 	pt_abi.call_stack_size_error = abi_call_stack_size_error;
 	pt_abi.try_assign_ref_str = abi_try_assign_ref_str;
 	pt_abi.try_assign_ref_true = abi_try_assign_ref_true;
+	pt_abi.try_assign_ref_copy = abi_try_assign_ref_copy;
 	pt_abi.wrong_parameter_error = abi_wrong_parameter_error;
 	pt_abi.parse_arg_bool_slow = abi_parse_arg_bool_slow;
 	pt_abi.parse_arg_double_slow = abi_parse_arg_double_slow;
@@ -373,4 +575,9 @@ void pt_abi_init()
 	pt_abi.stream_read = abi_stream_read;
 	pt_abi.run_on_fresh_stack = abi_run_on_fresh_stack;
 	pt_abi.is_true = [](const zval *op) -> bool { return zend_is_true((zval *) op); };
+#if PHP_VERSION_ID >= 80300
+	pt_abi.zval_value_name = zend_zval_value_name;
+#else
+	pt_abi.zval_value_name = zend_zval_type_name;
+#endif
 }

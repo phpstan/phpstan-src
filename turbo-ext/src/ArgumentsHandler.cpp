@@ -14,9 +14,10 @@
  * state; the arrays handed to PHP collaborators or stored in the result
  * ($gatheredTypes, $argResults, $byRefArguments, the throw/impure points)
  * are PHP arrays built exactly as the twin builds them. The twin's closures
- * are native closures: the ArgsResult's `static fn () => new MixedType()` and
+ * are native closures: the ArgsResult's `static fn () => new MixedType()`,
  * the four getters handed to ParametersAcceptorSelector::applyIntrinsicArgOverrides()
- * (\Closure-typed, so wrapped by pt_native_closure_to_closure()).
+ * and the passed-to type resolver of an array literal argument (both
+ * \Closure-typed, so wrapped by pt_native_closure_to_closure()).
  *
  * MutatingScope, ExpressionResult, ExpressionResultStorage, ExpressionContext,
  * InternalThrowPoint, ImpurePoint, ArgsResult, SpecifiedTypes, TypeCombinator,
@@ -337,11 +338,6 @@ inline bool nsrCallNodeCallback(zval *nodeScopeResolver, zval *nodeCallback, zva
 inline bool nsrIsReturningStoredExpressionResults(zval *nodeScopeResolver, bool &out)
 {
 	return pt_node_scope_resolver_is_returning_stored_expression_results(nodeScopeResolver, out);
-}
-
-inline bool nsrIsConsumingStoredExpressionResults(zval *nodeScopeResolver, bool &out)
-{
-	return pt_node_scope_resolver_is_consuming_stored_expression_results(nodeScopeResolver, out);
 }
 
 inline bool nsrStoreExpressionResult(zval *nodeScopeResolver, zval *storage, zval *expr, zval *result)
@@ -850,7 +846,7 @@ public:
 			writeSlot(object, i, zv::Val::copyOf(zv::Ref(&argv[i])));
 		}
 		writeSlot(object, slots::implicitThrows, zv::Val::boolean(implicitThrows));
-		for (uint32_t i = slots::assignHandler; i <= slots::initializerExprTypeResolver; i++) {
+		for (uint32_t i = slots::assignHandler; i <= slots::closureParameterResolver; i++) {
 			writeSlot(object, i, zv::Val::copyOf(zv::Ref(&argv[i])));
 		}
 	}
@@ -859,67 +855,6 @@ private:
 	zend_object *self;
 
 	zval *slot(uint32_t index) const { return OBJ_PROP_NUM(self, index); }
-
-	/* the `$getType = function (Expr $inner) use (&$getType, $nodeScopeResolver,
-	 * $scope, $initializerContext): Type` of gatherArrayArgTypeSkeleton() —
-	 * InitializerExprTypeResolver calls it synchronously, over this frame */
-	struct SkeletonFrame
-	{
-		zend_object *self;
-		zval *nodeScopeResolver;
-		zval *scope;
-		zval *initializerContext;
-	};
-
-	static zv::Val skeletonType(void *data, zval *inner)
-	{
-		SkeletonFrame *frame = static_cast<SkeletonFrame *>(data);
-		ZVAL_DEREF(inner);
-		if (UNEXPECTED(Z_TYPE_P(inner) != IS_OBJECT)) {
-			zend_type_error("%s(): Argument #1 ($inner) must be of type PhpParser\\Node\\Expr, %s given", PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977"), zend_zval_value_name(inner));
-			return zv::Val();
-		}
-		ArgumentsHandler handler(frame->self);
-		bool isClosure, isArrowFunction;
-		if (UNEXPECTED(!closureKind(inner, isClosure, isArrowFunction))) return zv::Val();
-		if (isClosure || isArrowFunction) {
-			return pt_closure_type_resolver_get_declared_closure_type(handler.slot(slots::closureTypeResolver), frame->scope, inner);
-		}
-		zend_class_entry *arrayExpr = pt_class(PT_CLASS_ARRAY_EXPR);
-		if (UNEXPECTED(arrayExpr == NULL)) return zv::Val();
-		if (instanceof_function(Z_OBJCE_P(inner), arrayExpr)) {
-			pt_ietr_get_type getTypeCallback{&skeletonType, frame, &skeletonTypeCallable};
-			return pt_initializer_expr_type_resolver_get_array_type(handler.slot(slots::initializerExprTypeResolver), inner, getTypeCallback);
-		}
-		zv::Val stateType = pt_node_scope_resolver_find_scope_state_type(frame->nodeScopeResolver, inner, frame->scope);
-		if (UNEXPECTED(stateType.isUndef())) return zv::Val();
-		if (!stateType.isNull()) return stateType;
-		return pt_initializer_expr_type_resolver_get_type(handler.slot(slots::initializerExprTypeResolver), inner, frame->initializerContext);
-	}
-
-	/* the callback as a PHP callable that outlives the call: the closure
-	 * over copies of what the frame points at */
-	static zv::Val skeletonTypeCallable(void *data)
-	{
-		SkeletonFrame *frame = static_cast<SkeletonFrame *>(data);
-		zval self;
-		ZVAL_OBJ(&self, frame->self);
-		return pt_native_closure(&skeletonTypeBody, &self, frame->nodeScopeResolver, frame->scope, frame->initializerContext);
-	}
-
-	/* the same closure called from PHP — captures: $this, $nodeScopeResolver,
-	 * $scope, $initializerContext */
-	static void skeletonTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
-	{
-		if (UNEXPECTED(argc < 1)) {
-			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 1 expected", PT_AH_CLOSURE("gatherArrayArgTypeSkeleton", "977"), argc);
-			return;
-		}
-		SkeletonFrame frame{Z_OBJ(captures[0]), &captures[1], &captures[2], &captures[3]};
-		zv::Val type = skeletonType(&frame, &argv[0]);
-		if (UNEXPECTED(type.isUndef())) return;
-		type.intoReturnValue(return_value);
-	}
 
 	static void writeSlot(zend_object *object, uint32_t index, zv::Val value)
 	{
@@ -1039,21 +974,6 @@ private:
 		ZVAL_BOOL(&contains, out);
 		pt_node_set_attribute(Z_OBJ_P(value), pt_ah_contains_closure, &contains);
 		return true;
-	}
-
-	/* Mirrors gatherArrayArgTypeSkeleton() (private): a structural stand-in for
-	 * an array literal argument that holds closures, built without walking
-	 * anything - nested array literals recurse, a closure / arrow function
-	 * contributes its declared signature, every other key/value is priced by
-	 * the scope state it is tracked as, falling back to the constant-expression
-	 * resolver. UNDEF = pending exception */
-	zv::Val gatherArrayArgTypeSkeleton(zval *nodeScopeResolver, zval *expr, zval *scope) const
-	{
-		zv::Val initializerContext = pt_initializer_expr_context_from_scope(scope);
-		if (UNEXPECTED(initializerContext.isUndef())) return zv::Val();
-		SkeletonFrame frame{self, nodeScopeResolver, scope, initializerContext.raw()};
-		pt_ietr_get_type getTypeCallback{&skeletonType, &frame, &skeletonTypeCallable};
-		return pt_initializer_expr_type_resolver_get_array_type(slot(slots::initializerExprTypeResolver), expr, getTypeCallback);
 	}
 
 	/* Mirrors gatherClosureArgType() */
@@ -1509,6 +1429,7 @@ private:
 		zv::Val valueHold;
 		zv::Val argContext;
 		zv::Val exprResult;
+		zv::Val passedToTypeResolver; /* UNDEF = null */
 		bool enterExpressionAssignForByRef = false;
 
 		/* back to the defaults in place (no temporary on the C stack) */
@@ -1527,6 +1448,7 @@ private:
 			valueHold.release();
 			argContext.release();
 			exprResult.release();
+			passedToTypeResolver.release();
 			enterExpressionAssignForByRef = false;
 		}
 	};
@@ -1682,6 +1604,134 @@ private:
 		return true;
 	}
 
+	/* Mirrors matchArgParameter(): the parameter the argument is passed to -
+	 * by name, by position, or the variadic one - borrowed from
+	 * parametersHold, NULL for null; false = pending exception */
+	static bool matchArgParameter(zval *acceptor, zval *arg, zend_ulong i, zv::Val &parametersHold, zval *&out)
+	{
+		out = NULL;
+		parametersHold = acceptorGetParameters(acceptor);
+		if (UNEXPECTED(parametersHold.isUndef() || !requireArray(parametersHold.raw(), "getParameters()"))) return false;
+		HashTable *parameters = Z_ARRVAL_P(parametersHold.raw());
+		zv::Val nameHold;
+		zval *name = argName(arg, nameHold);
+		if (UNEXPECTED(name == NULL)) return false;
+		if (Z_TYPE_P(name) != IS_NULL) {
+			for (zv::ArrayEntry entry : zv::TableRef(parameters)) {
+				zval *p = entry.value().deref().raw();
+				zv::Val parameterName = parameterGetName(p);
+				if (UNEXPECTED(parameterName.isUndef())) return false;
+				zv::Val argNameString = identifierToString(name);
+				if (UNEXPECTED(argNameString.isUndef())) return false;
+				if (parameterName.ref().isString() && argNameString.ref().isString() && zend_string_equals(Z_STR_P(parameterName.raw()), Z_STR_P(argNameString.raw()))) {
+					out = p;
+					return true;
+				}
+			}
+		} else {
+			out = issetIndex(parameters, i);
+			if (out != NULL) return true;
+		}
+
+		if (zend_hash_num_elements(parameters) > 0) {
+			bool isVariadic = false;
+			if (UNEXPECTED(!acceptorIsVariadic(acceptor, isVariadic))) return false;
+			if (isVariadic) {
+				out = arrayLast(parameters);
+				ZVAL_DEREF(out);
+			}
+		}
+		return true;
+	}
+
+	/* the twin's `$passedToTypeResolver = function (Type $arrayType) use
+	 * ($nodeScopeResolver, $args, $arg, $i, $gatheredArgTypeByIndex,
+	 * $parametersAcceptors, $namedArgumentsVariants, $scope): array` - over a
+	 * copy of the types gathered so far, as `use` copies the array; a \Closure
+	 * for ExpressionContext::enterPassedToTypeResolver(); UNDEF = pending
+	 * exception */
+	zv::Val createPassedToTypeResolver(Walk &w, ArgRecord &record) const
+	{
+		zv::Arr gathered = zv::Arr::empty();
+		for (uint32_t j = 0; j < w.records.count; j++) {
+			ArgRecord &gatheredRecord = w.records.records[j];
+			if (Z_TYPE(gatheredRecord.gathered) == IS_UNDEF) continue;
+			gathered.arrRef().setIndex(gatheredRecord.key, zv::Ref(&gatheredRecord.gathered));
+		}
+		zv::Val gatheredValue(std::move(gathered));
+		zv::Val holder = pt_native_closure(&passedToTypeResolverBody, self, w.nodeScopeResolver, w.args, record.arg, (zend_long) record.key, gatheredValue.raw(), w.parametersAcceptors, w.namedArgumentsVariants, w.scope.raw());
+		return pt_native_closure_to_closure(holder.raw());
+	}
+
+	/* the resolver's body - captures: $this, $nodeScopeResolver, $args, $arg,
+	 * $i, $gatheredArgTypeByIndex, $parametersAcceptors,
+	 * $namedArgumentsVariants, $scope */
+	static void passedToTypeResolverBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+	{
+		if (UNEXPECTED(argc < 1)) {
+			zend_throw_error(zend_ce_argument_count_error, "Too few arguments to function %s(), %u passed and exactly 1 expected", PT_AH_CLOSURE("processArgs", "264"), argc);
+			return;
+		}
+		zval *arrayType = &argv[0];
+		ZVAL_DEREF(arrayType);
+		zend_class_entry *typeCe = pt_ce_type_interface();
+		if (UNEXPECTED(typeCe == NULL)) return;
+		if (UNEXPECTED(Z_TYPE_P(arrayType) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(arrayType), typeCe))) {
+			zend_type_error("%s(): Argument #1 ($arrayType) must be of type PHPStan\\Type\\Type, %s given", PT_AH_CLOSURE("processArgs", "264"), zend_zval_value_name(arrayType));
+			return;
+		}
+		zv::Val resolved = resolvePassedToType(&captures[1], &captures[2], &captures[3], (zend_ulong) Z_LVAL(captures[4]), &captures[5], &captures[6], &captures[7], &captures[8], arrayType);
+		if (UNEXPECTED(resolved.isUndef())) return;
+		resolved.intoReturnValue(return_value);
+	}
+
+	/* the resolver's body: [$parameter->getType(), its native type] of the
+	 * parameter the argument resolves to with the literal typed $arrayType */
+	static zv::Val resolvePassedToType(zval *nodeScopeResolver, zval *args, zval *arg, zend_ulong i, zval *gathered, zval *parametersAcceptors, zval *namedArgumentsVariants, zval *scope, zval *arrayType)
+	{
+		zv::Arr paddedTypes = zv::Arr::empty();
+		bool paddedUnpack = false;
+		bool paddedHasName = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(args)) {
+			zend_ulong j = entry.indexKey();
+			zval *paddedOriginalArg = originalArgOf(entry.value().deref().raw());
+			zval *type = arrayType;
+			zv::Val mixed;
+			if (j != i) {
+				type = zend_hash_index_find(Z_ARRVAL_P(gathered), j);
+				if (type == NULL || Z_TYPE_P(type) == IS_NULL) {
+					mixed = pt_type_new_mixed_type();
+					if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+					type = mixed.raw();
+				}
+			}
+			if (UNEXPECTED(!addGatheredArgType(paddedTypes, paddedUnpack, paddedHasName, paddedOriginalArg, j, type))) return zv::Val();
+		}
+		zv::Val acceptor = selectArgsMetadataAcceptor(nodeScopeResolver, args, paddedTypes.raw(), parametersAcceptors, namedArgumentsVariants, paddedHasName, paddedUnpack, scope);
+		if (UNEXPECTED(acceptor.isUndef())) return zv::Val();
+		zv::Val parametersHold;
+		zval *parameter = NULL;
+		if (UNEXPECTED(!matchArgParameter(acceptor.raw(), arg, i, parametersHold, parameter))) return zv::Val();
+		zv::Arr result = zv::Arr::create(2);
+		if (parameter == NULL) {
+			result.push(zv::Val::null());
+			result.push(zv::Val::null());
+			return zv::Val(std::move(result));
+		}
+		zv::Val parameterType = parameterGetType(parameter);
+		if (UNEXPECTED(parameterType.isUndef())) return zv::Val();
+		zv::Val parameterNativeType = zv::Val::null();
+		bool isExtended = false;
+		if (UNEXPECTED(!isA(parameter, PT_CLASS_EXTENDED_PARAMETER_REFLECTION, isExtended))) return zv::Val();
+		if (isExtended) {
+			parameterNativeType = parameterGetNativeType(parameter);
+			if (UNEXPECTED(parameterNativeType.isUndef())) return zv::Val();
+		}
+		result.push(std::move(parameterType));
+		result.push(std::move(parameterNativeType));
+		return zv::Val(std::move(result));
+	}
+
 	/* the metadata acceptor selected over every argument's gathered type
 	 * (allMixed: over mixed for all of them), padded with mixed */
 	zend_never_inline zv::Val paddedMetadataAcceptor(Walk &w, bool allMixed) const
@@ -1746,11 +1796,10 @@ private:
 	zend_never_inline zv::Val storedClosureArgResult(Walk &w, zval *value, zval *scopeToPass, bool &failed) const
 	{
 		failed = true;
-		bool returning = false, consuming = false;
+		bool returning = false;
 		if (UNEXPECTED(!nsrIsReturningStoredExpressionResults(w.nodeScopeResolver, returning))) return zv::Val();
-		if (!returning && UNEXPECTED(!nsrIsConsumingStoredExpressionResults(w.nodeScopeResolver, consuming))) return zv::Val();
 		failed = false;
-		if (!returning && !consuming) return zv::Val();
+		if (!returning) return zv::Val();
 
 		failed = true;
 		zv::Val stored = pt_expression_result_storage_find(w.storage, value);
@@ -1758,12 +1807,6 @@ private:
 		if (!stored.isNull()) {
 			failed = false;
 			return stored;
-		}
-		bool returningAgain = false;
-		if (UNEXPECTED(!nsrIsReturningStoredExpressionResults(w.nodeScopeResolver, returningAgain))) return zv::Val();
-		if (!returningAgain) {
-			failed = false;
-			return zv::Val();
 		}
 		zval *closureTypeResolver = slot(slots::closureTypeResolver);
 		zv::Val type = closureTypeResolverGetClosureType(closureTypeResolver, scopeToPass, value, false, w.storage);
@@ -2378,6 +2421,11 @@ private:
 				zv::Val passed = pt_expression_context_enter_passed_to_type(argContext.raw(), a.parameterType.isUndef() ? NULL : a.parameterType.raw(), a.parameterNativeType.isUndef() ? NULL : a.parameterNativeType.raw());
 				if (UNEXPECTED(passed.isUndef())) return false;
 				argContext = std::move(passed);
+				if (!a.passedToTypeResolver.isUndef()) {
+					zv::Val resolving = pt_expression_context_enter_passed_to_type_resolver(argContext.raw(), a.passedToTypeResolver.raw());
+					if (UNEXPECTED(resolving.isUndef())) return false;
+					argContext = std::move(resolving);
+				}
 			}
 		}
 		return true;
@@ -2420,13 +2468,13 @@ private:
 		if (w.metadataAcceptor != NULL && w.argMetadataIsTypeDriven) {
 			bool consumes = false;
 			if (UNEXPECTED(!argConsumesResolvedParameterType(value, consumes))) return false;
+			bool isArrayLiteral = false;
 			if (consumes) {
-				// resolve the acceptor for this argument from the args gathered so
-				// far, padded to the full argument count with mixed
-				a.argMetadataAcceptorHold = paddedMetadataAcceptor(w, false);
-				if (UNEXPECTED(a.argMetadataAcceptorHold.isUndef())) return false;
-				a.argMetadataAcceptor = a.argMetadataAcceptorHold.raw();
-			} else {
+				bool unpack = false;
+				if (UNEXPECTED(!argUnpack(arg, unpack))) return false;
+				if (!unpack && UNEXPECTED(!isA(value, PT_CLASS_ARRAY_EXPR, isArrayLiteral))) return false;
+			}
+			if (!consumes) {
 				// one all-mixed count-stable selection serves every argument not
 				// consuming the resolved parameter type
 				if (w.countStableMetadataAcceptor.isUndef()) {
@@ -2434,41 +2482,31 @@ private:
 					if (UNEXPECTED(w.countStableMetadataAcceptor.isUndef())) return false;
 				}
 				a.argMetadataAcceptor = w.countStableMetadataAcceptor.raw();
+			} else if (isArrayLiteral) {
+				// ArrayHandler walks the literal's other items first and resolves
+				// the parameter from their types; the argument's own metadata is
+				// variant-stable
+				a.passedToTypeResolver = createPassedToTypeResolver(w, record);
+				if (UNEXPECTED(a.passedToTypeResolver.isUndef())) return false;
+				if (zend_hash_num_elements(Z_ARRVAL_P(w.parametersAcceptors)) > 1 || Z_TYPE_P(w.namedArgumentsVariants) != IS_NULL) {
+					if (w.countStableMetadataAcceptor.isUndef()) {
+						w.countStableMetadataAcceptor = paddedMetadataAcceptor(w, true);
+						if (UNEXPECTED(w.countStableMetadataAcceptor.isUndef())) return false;
+					}
+					a.argMetadataAcceptor = w.countStableMetadataAcceptor.raw();
+				}
+			} else {
+				// resolve the acceptor for this argument from the args gathered so
+				// far, padded to the full argument count with mixed
+				a.argMetadataAcceptorHold = paddedMetadataAcceptor(w, false);
+				if (UNEXPECTED(a.argMetadataAcceptorHold.isUndef())) return false;
+				a.argMetadataAcceptor = a.argMetadataAcceptorHold.raw();
 			}
 		}
 
 		if (a.argMetadataAcceptor != NULL) {
-			a.parameters = acceptorGetParameters(a.argMetadataAcceptor);
-			if (UNEXPECTED(a.parameters.isUndef() || !requireArray(a.parameters.raw(), "getParameters()"))) return false;
-			HashTable *parameters = Z_ARRVAL_P(a.parameters.raw());
 			zval *matchedParameter = NULL;
-			zv::Val nameHold;
-			zval *name = argName(arg, nameHold);
-			if (UNEXPECTED(name == NULL)) return false;
-			if (Z_TYPE_P(name) != IS_NULL) {
-				for (zv::ArrayEntry entry : zv::TableRef(parameters)) {
-					zval *p = entry.value().deref().raw();
-					zv::Val parameterName = parameterGetName(p);
-					if (UNEXPECTED(parameterName.isUndef())) return false;
-					zv::Val argNameString = identifierToString(name);
-					if (UNEXPECTED(argNameString.isUndef())) return false;
-					if (parameterName.ref().isString() && argNameString.ref().isString() && zend_string_equals(Z_STR_P(parameterName.raw()), Z_STR_P(argNameString.raw()))) {
-						matchedParameter = p;
-						break;
-					}
-				}
-			} else {
-				matchedParameter = issetIndex(parameters, i);
-			}
-
-			if (matchedParameter == NULL && zend_hash_num_elements(parameters) > 0) {
-				bool isVariadic = false;
-				if (UNEXPECTED(!acceptorIsVariadic(a.argMetadataAcceptor, isVariadic))) return false;
-				if (isVariadic) {
-					matchedParameter = arrayLast(parameters);
-					ZVAL_DEREF(matchedParameter);
-				}
-			}
+			if (UNEXPECTED(!matchArgParameter(a.argMetadataAcceptor, arg, i, a.parameters, matchedParameter))) return false;
 			if (matchedParameter != NULL) {
 				if (UNEXPECTED(!parameterCreatesNewVariable(matchedParameter, a.assignByReference))) return false;
 				a.parameterType = parameterGetType(matchedParameter);
@@ -2581,30 +2619,6 @@ private:
 		if (UNEXPECTED(!closureKind(value, isClosure, isArrowFunction))) return false;
 		if (isClosure || isArrowFunction) {
 			if (UNEXPECTED(!gatherClosureArg(w, record, value))) return false;
-		} else if (w.argMetadataIsTypeDriven) {
-			/* && !$arg->unpack && $arg->value instanceof Expr\Array_
-			 * && $this->argConsumesResolvedParameterType($arg->value) */
-			bool unpack;
-			if (UNEXPECTED(!argUnpack(record.arg, unpack))) return false;
-			if (!unpack) {
-				bool isArray = false;
-				zend_class_entry *arrayExpr = pt_class(PT_CLASS_ARRAY_EXPR);
-				if (UNEXPECTED(arrayExpr == NULL)) return false;
-				isArray = instanceof_function(Z_OBJCE_P(value), arrayExpr);
-				bool consumes = false;
-				if (isArray && UNEXPECTED(!argConsumesResolvedParameterType(value, consumes))) return false;
-				if (isArray && consumes) {
-					// An array literal holding closures decides the templates of its own
-					// parameter through its keys and its non-closure values - and those
-					// very templates type the closures nested in it. Pin a skeleton of the
-					// array so the per-argument resolution below sees them; the walk that
-					// follows overwrites it with the real type.
-					zv::Val skeleton = gatherArrayArgTypeSkeleton(w.nodeScopeResolver, value, w.scope.raw());
-					if (UNEXPECTED(skeleton.isUndef())) return false;
-					zval_ptr_dtor(&record.gathered);
-					record.gathered = skeleton.take();
-				}
-			}
 		}
 
 		if (UNEXPECTED(!prepareArg(w, record, value, isClosure || isArrowFunction, a, a.originalScope))) return false;
@@ -3082,9 +3096,9 @@ PT_MINIT_REGISTRATION(pt_register_arguments_handler)
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter classes exactly (README rule 6) */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *objects[17];
+		zval *objects[16];
 		bool implicitThrows;
-		ZEND_PARSE_PARAMETERS_START(17, 17)
+		ZEND_PARSE_PARAMETERS_START(16, 16)
 			Z_PARAM_OBJECT(objects[0])
 			Z_PARAM_OBJECT(objects[1])
 			Z_PARAM_OBJECT(objects[2])
@@ -3101,10 +3115,9 @@ PT_MINIT_REGISTRATION(pt_register_arguments_handler)
 			Z_PARAM_OBJECT(objects[13])
 			Z_PARAM_OBJECT(objects[14])
 			Z_PARAM_OBJECT(objects[15])
-			Z_PARAM_OBJECT(objects[16])
 		ZEND_PARSE_PARAMETERS_END();
-		zval argv[17];
-		for (uint32_t i = 0; i < 17; i++) {
+		zval argv[16];
+		for (uint32_t i = 0; i < 16; i++) {
 			if (i == slots::implicitThrows) {
 				ZVAL_BOOL(&argv[i], implicitThrows);
 			} else {

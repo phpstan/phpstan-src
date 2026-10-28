@@ -653,4 +653,16 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Methods/data/unconstrained-query-result.php'], []);
 	}
 
+	public function testBug15448(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->analyse([__DIR__ . '/data/bug-15448.php'], []);
+	}
+
+	public function testBug15448ClassNotAnalysed(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->analyse([__DIR__ . '/data/bug-15448-dependency-usage.php'], []);
+	}
+
 }

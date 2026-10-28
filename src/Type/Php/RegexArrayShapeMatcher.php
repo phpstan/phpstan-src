@@ -133,7 +133,7 @@ final class RegexArrayShapeMatcher
 	{
 		$astWalkResult = $this->regexGroupParser->parseGroups($regex);
 		if ($astWalkResult === null) {
-			// regex could not be parsed by Hoa/Regex
+			// regex could not be parsed by RegexParser
 			return null;
 		}
 		$groupList = $astWalkResult->getCapturingGroups();
@@ -148,6 +148,30 @@ final class RegexArrayShapeMatcher
 		$onlyOptionalTopLevelGroup = $regexGroupList->getOnlyOptionalTopLevelGroup();
 		$onlyTopLevelAlternation = $regexGroupList->getOnlyTopLevelAlternation();
 		$flags ??= 0;
+
+		if ($regexGroupList->hasDuplicateNamesOutsideOfAlternationBranches(
+			!$matchesAll && $onlyOptionalTopLevelGroup === null && !$this->containsUnmatchedAsNull($flags, $matchesAll)
+				? $onlyTopLevelAlternation
+				: null,
+		)) {
+			// which of the groups sharing a name sets the named offset is only modelled
+			// for groups in different branches of a top level alternation
+			return null;
+		}
+
+		if (
+			$regexGroupList->hasGroupResettingGroupCounter()
+			&& (
+				$matchesAll
+				|| $onlyOptionalTopLevelGroup !== null
+				|| $onlyTopLevelAlternation === null
+				|| $this->containsUnmatchedAsNull($flags, $matchesAll)
+			)
+		) {
+			// groups in a branch reset (?|...) share offsets, which is only modelled
+			// when its alternation is the only top level alternation
+			return null;
+		}
 
 		if (
 			!$matchesAll
@@ -310,9 +334,18 @@ final class RegexArrayShapeMatcher
 			foreach ($markVerbs as $mark) {
 				$markTypes[] = new ConstantStringType($mark);
 			}
+			$markType = TypeCombinator::union(...$markTypes);
+			if ($matchesAll && $this->containsPatternOrder($flags)) {
+				// marks are keyed by the index of the match that set them, matches without a mark are left out
+				$markType = new IntersectionType([
+					new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $markType),
+					new NonEmptyArrayType(),
+				]);
+			}
+
 			$builder->setOffsetValueType(
 				$this->getKeyType('MARK'),
-				TypeCombinator::union(...$markTypes),
+				$markType,
 				true,
 			);
 		}
@@ -407,7 +440,8 @@ final class RegexArrayShapeMatcher
 					$this->containsSetOrder($flags)
 					&& !$this->containsUnmatchedAsNull($flags, $matchesAll)
 					&& $captureGroup->isOptional()
-					&& !$isTrailingOptional
+					// an unmatched group followed by a matched one is reported as ''
+					&& !$isLastGroup
 				)
 			) {
 				$groupValueType = $this->getValueType(

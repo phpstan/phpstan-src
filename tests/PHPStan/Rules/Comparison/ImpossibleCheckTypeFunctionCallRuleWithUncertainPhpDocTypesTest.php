@@ -26,7 +26,6 @@ class ImpossibleCheckTypeFunctionCallRuleWithUncertainPhpDocTypesTest extends Ru
 					self::createReflectionProvider(),
 					false,
 				),
-				new PossiblyImpureTipHelper(true),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(FunctionCallConstantConditionHelper::class),
 				false,

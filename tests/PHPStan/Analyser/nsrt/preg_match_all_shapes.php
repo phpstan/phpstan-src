@@ -198,3 +198,38 @@ function bug11661(): void {
 	assertType("list<array{0: string, 1?: 'ERR'}>", $results);
 
 }
+
+function setOrderOptionalGroupFollowedByMatchedGroup(string $s): void {
+	// from php-src ext/pcre/tests/bug61780_1.phpt
+	if (preg_match_all('/(4)?(2)?\d/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, 1?: ''|'4', 2?: '2'}>", $matches);
+	}
+
+	// from php-src ext/pcre/tests/bug61780_2.phpt
+	if (preg_match_all('/(?<a>4)?(?<b>2)?\d/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, a?: ''|'4', 1?: ''|'4', b?: '2', 2?: '2'}>", $matches);
+	}
+
+	// from php-src ext/pcre/tests/preg_replace_callback_flags.phpt
+	if (preg_match_all('/(a)|(b)/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, 1?: ''|'a', 2?: 'b'}>", $matches);
+	}
+}
+
+function markVerbs(string $s): void {
+	// from PCRE2 testdata/testinput1
+	if (preg_match_all('/A(*:A)B|XX(*:B)Y/', $s, $matches)) {
+		assertType("array{0: non-empty-list<string>, MARK?: non-empty-array<int<0, max>, 'A'|'B'>}", $matches);
+	}
+
+	if (preg_match_all('/A(*:A)B|XX(*:B)Y/', $s, $matches, PREG_SET_ORDER)) {
+		assertType("non-empty-list<array{0: string, MARK?: 'A'|'B'}>", $matches);
+	}
+}
+
+function testBranchReset(string $s): void {
+	// from PCRE2 testdata/testinput2
+	if (preg_match_all('/(?|(abc)|(xyz))/', $s, $matches)) {
+		assertType('array<list<string>>', $matches);
+	}
+}

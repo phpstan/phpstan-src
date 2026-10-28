@@ -905,4 +905,11 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testEngineProvidedEnumMethodsWinOverTraitMethods(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/backed-enum-from-trait.php'], []);
+	}
+
 }

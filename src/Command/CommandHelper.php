@@ -3,7 +3,6 @@
 namespace PHPStan\Command;
 
 use Composer\Semver\Semver;
-use Composer\XdebugHandler\XdebugHandler;
 use Nette\DI\Helpers;
 use Nette\DI\InvalidConfigurationException;
 use Nette\DI\ServiceCreationException;
@@ -32,6 +31,8 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Process\ForkedChildCrashReporter;
+use PHPStan\Process\Restart\RestartExtensionRegistry;
+use PHPStan\Process\Restart\RestartManager;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use Symfony\Component\Console\Input\InputInterface;
@@ -103,30 +104,20 @@ final class CommandHelper
 		$symfonyErrorOutput = $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output;
 		$errorOutput = new SymfonyOutput($symfonyErrorOutput, new SymfonyStyle(new ErrorsConsoleStyle($input, $symfonyErrorOutput)));
 
-		if (!$allowXdebug) {
-			$xdebug = new XdebugHandler('phpstan');
-			$xdebug->setPersistent();
-			$xdebug->check();
-			unset($xdebug);
-		}
-
 		if ($allowXdebug) {
-			if (!XdebugHandler::isXdebugActive()) {
+			if (!RestartExtensionRegistry::isXdebugActive()) {
 				$errorOutput->getStyle()->note('You are running with "--xdebug" enabled, but the Xdebug PHP extension is not active. The process will not halt at breakpoints.');
 			} else {
 				$errorOutput->getStyle()->note("You are running with \"--xdebug\" enabled, and the Xdebug PHP extension is active.\nThe process will halt at breakpoints, but PHPStan will run much slower.\nUse this only if you are debugging PHPStan itself or your custom extensions.");
 			}
-		} elseif (XdebugHandler::isXdebugActive()) {
+		} elseif (RestartExtensionRegistry::isXdebugActive()) {
 			$errorOutput->getStyle()->note('The Xdebug PHP extension is active, but "--xdebug" is not used. This may slow down performance and the process will not halt at breakpoints.');
-		} elseif ($debugEnabled) {
-			$v = XdebugHandler::getSkippedVersion();
-			if ($v !== '') {
-				$errorOutput->getStyle()->note(
-					"The Xdebug PHP extension is active, but \"--xdebug\" is not used.\n" .
-					"The process was restarted and it will not halt at breakpoints.\n" .
-					'Use "--xdebug" if you want to halt at breakpoints.',
-				);
-			}
+		} elseif ($debugEnabled && RestartManager::wasRestartedFor('xdebug')) {
+			$errorOutput->getStyle()->note(
+				"The Xdebug PHP extension is active, but \"--xdebug\" is not used.\n" .
+				"The process was restarted and it will not halt at breakpoints.\n" .
+				'Use "--xdebug" if you want to halt at breakpoints.',
+			);
 		}
 
 		if ($memoryLimit !== null) {

@@ -130,7 +130,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_UNRESOLVABLE_TYPE_RESULT */ {"unresolvableTypeResult", "PHPStan\\Rules\\PhpDoc\\UnresolvableTypeResult"},
 	/* PT_CLASS_UNDEFINED_VARIABLE_EXCEPTION */ {"undefinedVariableException", "PHPStan\\Analyser\\UndefinedVariableException"},
 	/* PT_CLASS_PROPERTY_INITIALIZATION_EXPR */ {"propertyInitializationExpr", "PHPStan\\Node\\Expr\\PropertyInitializationExpr"},
-	/* PT_CLASS_POSSIBLY_IMPURE_CALL_EXPR */ {"possiblyImpureCallExpr", "PHPStan\\Node\\Expr\\PossiblyImpureCallExpr"},
 	/* PT_CLASS_CONST_FETCH */ {"constFetch", "PhpParser\\Node\\Expr\\ConstFetch"},
 	/* PT_CLASS_HALT_COMPILER */ {"haltCompiler", "PhpParser\\Node\\Stmt\\HaltCompiler"},
 	/* PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR */ {"extendedParametersAcceptor", "PHPStan\\Reflection\\ExtendedParametersAcceptor"},
@@ -166,6 +165,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ALWAYS_REMEMBERED_EXPR */ {"alwaysRememberedExpr", "PHPStan\\Node\\Expr\\AlwaysRememberedExpr"},
 	/* PT_CLASS_NATIVE_METHOD_REFLECTION */ {"nativeMethodReflection", "PHPStan\\Reflection\\Native\\NativeMethodReflection"},
 	/* PT_CLASS_ENUM_CASES_METHOD_REFLECTION */ {"enumCasesMethodReflection", "PHPStan\\Reflection\\Php\\EnumCasesMethodReflection"},
+	/* PT_CLASS_BACKED_ENUM_FROM_METHOD_REFLECTION */ {"backedEnumFromMethodReflection", "PHPStan\\Reflection\\Php\\BackedEnumFromMethodReflection"},
 	/* PT_CLASS_PRIVATE_PROPERTY_ATTRIBUTE */ {"privatePropertyAttribute", "PHPStan\\Reflection\\Attribute\\PrivateProperty"},
 	/* PT_CLASS_PROTECTED_PROPERTY_ATTRIBUTE */ {"protectedPropertyAttribute", "PHPStan\\Reflection\\Attribute\\ProtectedProperty"},
 	/* PT_CLASS_ADAPTER_REFLECTION_METHOD */ {"adapterReflectionMethod", "PHPStan\\BetterReflection\\Reflection\\Adapter\\ReflectionMethod"},
@@ -711,7 +711,29 @@ int32_t pt_instance_prop_offset(zend_class_entry *ce, const char *name, size_t l
 	return (int32_t) info->offset;
 }
 
+/* the infos by class entry in front of the by-name table: every printed,
+ * keyed or attribute-read node asks, over a few hundred node classes */
+static constexpr uint32_t PT_NODE_CLASS_INFO_SLOTS_LIMIT = 256;
+struct pt_node_class_info_slot
+{
+	const zend_class_entry *ce;
+	uint32_t generation;
+	pt_node_class_info *info;
+};
+static pt_node_class_info_slot pt_node_class_info_slots[PT_NODE_CLASS_INFO_SLOTS_LIMIT];
+
+static pt_node_class_info *pt_get_node_class_info_slow(zend_class_entry *ce);
+
 pt_node_class_info *pt_get_node_class_info(zend_class_entry *ce)
+{
+	pt_node_class_info_slot &slot = pt_node_class_info_slots[(((uintptr_t) ce) >> 4) & (PT_NODE_CLASS_INFO_SLOTS_LIMIT - 1)];
+	if (EXPECTED(slot.ce == ce && slot.generation == pt_engine_generation)) return slot.info;
+	pt_node_class_info *info = pt_get_node_class_info_slow(ce);
+	if (EXPECTED(info != NULL)) slot = { ce, pt_engine_generation, info };
+	return info;
+}
+
+static pt_node_class_info *pt_get_node_class_info_slow(zend_class_entry *ce)
 {
 	pt_node_class_info *info;
 	zend_class_entry *variable_ce;

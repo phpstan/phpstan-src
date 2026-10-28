@@ -72,6 +72,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
@@ -94,6 +95,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeResult;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
@@ -512,6 +514,25 @@ final class InitializerExprTypeResolver
 		}
 
 		return new MixedType();
+	}
+
+	/**
+	 * Resolves the backing value of an enum case. A read of the case while
+	 * its value is being resolved gives mixed - like a class constant does - to prevent endless recursions.
+	 */
+	public function getEnumCaseValueType(string $className, string $caseName, Expr $valueExpr, InitializerExprContext $context): Type
+	{
+		$resolvingName = sprintf('%s::%s', $className, $caseName);
+		if (array_key_exists($resolvingName, $this->currentlyResolvingClassConstant)) {
+			return new MixedType();
+		}
+
+		$this->currentlyResolvingClassConstant[$resolvingName] = true;
+		try {
+			return $this->getType($valueExpr, $context);
+		} finally {
+			unset($this->currentlyResolvingClassConstant[$resolvingName]);
+		}
 	}
 
 	/**
@@ -2661,9 +2682,12 @@ final class InitializerExprTypeResolver
 	}
 
 	/**
+	 * With $nativeTypesPromoted, PHPDoc types of the constants are ignored:
+	 * a constant that can be overridden in a child class resolves only to its native type.
+	 *
 	 * @param callable(Expr): Type $getTypeCallback
 	 */
-	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback): Type
+	public function getClassConstFetchTypeByReflection(Name|Expr $class, string $constantName, ?ClassReflection $classReflection, callable $getTypeCallback, bool $nativeTypesPromoted = false): Type
 	{
 		$isObject = false;
 		if ($class instanceof Name) {
@@ -2715,10 +2739,12 @@ final class InitializerExprTypeResolver
 		}
 
 		$types = [];
-		foreach ($constantClassType->getObjectClassNames() as $referencedClass) {
+		$referencedClasses = $constantClassType->getObjectClassNames();
+		foreach ($referencedClasses as $referencedClass) {
 			if (!$this->getReflectionProvider()->hasClass($referencedClass)) {
 				continue;
 			}
+			$fetchedOnType = count($referencedClasses) === 1 ? $constantClassType : new ObjectType($referencedClass);
 
 			$constantClassReflection = $this->getReflectionProvider()->getClass($referencedClass);
 			if (!$constantClassReflection->hasConstant($constantName)) {
@@ -2739,8 +2765,9 @@ final class InitializerExprTypeResolver
 				continue;
 			}
 
-			if (!$isObject && array_key_exists($resolvingName, $this->classConstantValueTypeCache)) {
-				$types[] = $this->classConstantValueTypeCache[$resolvingName];
+			$cacheKey = $nativeTypesPromoted ? $resolvingName . '#native' : $resolvingName;
+			if (!$isObject && array_key_exists($cacheKey, $this->classConstantValueTypeCache)) {
+				$types[] = $this->classConstantValueTypeCache[$cacheKey];
 				continue;
 			}
 
@@ -2758,14 +2785,14 @@ final class InitializerExprTypeResolver
 				if ($reflectionConstant->getType() !== null) {
 					$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $constantClassReflection);
 				}
-				$resolvedType = $this->constantResolver->resolveClassConstantType(
+				$resolvedType = $this->transformStaticType($this->constantResolver->resolveClassConstantType(
 					$constantClassReflection->getName(),
 					$constantName,
 					$constantType,
 					$nativeType,
-					$constantClassReflection->getConstantPhpDocType($constantName),
-				);
-				$this->classConstantValueTypeCache[$resolvingName] = $resolvedType;
+					$nativeTypesPromoted ? null : $constantClassReflection->getConstantPhpDocType($constantName),
+				), $fetchedOnType);
+				$this->classConstantValueTypeCache[$cacheKey] = $resolvedType;
 				$types[] = $resolvedType;
 				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				continue;
@@ -2775,27 +2802,29 @@ final class InitializerExprTypeResolver
 			if (
 				!$constantClassReflection->isFinal()
 				&& !$constantReflection->isFinal()
-				&& !$constantReflection->hasPhpDocType()
+				&& ($nativeTypesPromoted || !$constantReflection->hasPhpDocType())
 				&& !$constantReflection->hasNativeType()
 			) {
 				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				return new MixedType();
 			}
 
-			if (!$constantClassReflection->isFinal()) {
-				$constantType = $constantReflection->getValueType();
-			} else {
+			$nativeType = $constantReflection->getNativeType();
+			if ($constantClassReflection->isFinal() || ($nativeTypesPromoted && $constantReflection->isFinal())) {
 				$constantType = $this->getType($constantReflection->getValueExpr(), InitializerExprContext::fromClassReflection($constantReflection->getDeclaringClass()));
+			} elseif ($nativeTypesPromoted && $nativeType !== null) {
+				$constantType = $nativeType;
+			} else {
+				$constantType = $constantReflection->getValueType();
 			}
 
-			$nativeType = $constantReflection->getNativeType();
-			$constantType = $this->constantResolver->resolveClassConstantType(
+			$constantType = $this->transformStaticType($this->constantResolver->resolveClassConstantType(
 				$constantClassReflection->getName(),
 				$constantName,
 				$constantType,
 				$nativeType,
-				$constantClassReflection->getConstantPhpDocType($constantName),
-			);
+				$nativeTypesPromoted ? null : $constantClassReflection->getConstantPhpDocType($constantName),
+			), $fetchedOnType);
 			unset($this->currentlyResolvingClassConstant[$resolvingName]);
 			$types[] = $constantType;
 		}
@@ -2808,7 +2837,31 @@ final class InitializerExprTypeResolver
 			return new ErrorType();
 		}
 
-		return $constantClassType->getConstant($constantName)->getValueType();
+		return $this->transformStaticType($constantClassType->getConstant($constantName)->getValueType(), $constantClassType);
+	}
+
+	/**
+	 * Resolves `static` in the type of a class constant against the class
+	 * the constant is fetched on.
+	 */
+	private function transformStaticType(Type $type, Type $fetchedOnType): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($fetchedOnType): Type {
+			if (!$type instanceof StaticType) {
+				return $traverse($type);
+			}
+			if ($fetchedOnType instanceof StaticType) {
+				return $traverse($type->changeBaseClass($fetchedOnType->getClassReflection()));
+			}
+			if ($type instanceof GenericStaticType) {
+				$fetchedOnTypeReflections = $fetchedOnType->getObjectClassReflections();
+				if (count($fetchedOnTypeReflections) === 1) {
+					return $traverse($type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType());
+				}
+			}
+
+			return $fetchedOnType;
+		});
 	}
 
 	/**

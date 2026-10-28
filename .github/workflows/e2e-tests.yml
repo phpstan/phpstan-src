@@ -131,8 +131,8 @@ jobs:
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
               UNCHANGED=$([ "$INODE" = "$(ls -i tmp/resultCache.php | awk '{print $1}')" ] && echo unchanged || echo replaced)
-              ../bashunit -a equals 'unchanged' "$UNCHANGED"
-              ../bashunit -a contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              ../bashunit assert equals 'unchanged' "$UNCHANGED"
+              ../bashunit assert contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
               echo >> src/Foo.php
               ../../bin/phpstan
               # The cache is written next to its final path and renamed into place, so saving it
@@ -140,13 +140,13 @@ jobs:
               # next run reads. That is what keeps a run killed mid-save from leaving a partial
               # cache behind.
               REPLACED=$([ "$INODE" != "$(ls -i tmp/resultCache.php | awk '{print $1}')" ] && echo replaced || echo 'written in place')
-              ../bashunit -a equals 'replaced' "$REPLACED"
+              ../bashunit assert equals 'replaced' "$REPLACED"
               # A completed save leaves nothing next to the cache file.
               LEFTOVERS=$(ls tmp/ | grep -c '\.tmp$' || true)
-              ../bashunit -a equals '0' "$LEFTOVERS"
+              ../bashunit assert equals '0' "$LEFTOVERS"
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-11
               echo -n > phpstan-baseline.neon
@@ -166,8 +166,8 @@ jobs:
               cp tmp-a/resultCache.php tmp-b/resultCache.php
               OUTPUT=$(../../bin/phpstan analyse -c moved.neon -vv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a not_contains 'metadata do not match' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'metadata do not match' "$OUTPUT"
           - script: |
               cd e2e/result-cache-truncated
               ../../bin/phpstan -vvv
@@ -176,58 +176,67 @@ jobs:
               php truncate.php
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'an error occurred while loading the cache file' "$OUTPUT"
-              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              ../bashunit assert contains 'an error occurred while loading the cache file' "$OUTPUT"
+              ../bashunit assert contains 'Result cache is saved.' "$OUTPUT"
               # And once more inside a section that is read lazily, which is a different code path.
               php truncate-lazy.php
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'is truncated at entry' "$OUTPUT"
+              ../bashunit assert contains 'is truncated at entry' "$OUTPUT"
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-worker-count
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'largest of 2' "$OUTPUT"
+              ../bashunit assert contains 'largest of 2' "$OUTPUT"
               # Only some files are analysed again, so the result is rebuilt from the cache
               # and must still report the peak memory of the workers.
               echo '// changed' >> src/Foo.php
               echo '// changed' >> src/Bar.php
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'largest of 2' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'largest of 2' "$OUTPUT"
           - script: |
               cd e2e/result-cache-stale-objects
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan -vvv")
               echo "$OUTPUT"
               # Renaming a property inside the cache file is what a cache written by a PHPStan whose
               # classes have changed since looks like: the payload does not carry the property the class
               # now declares, so reconstructing the object leaves it uninitialized and reading it throws.
               php rename-property.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan -vvv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'could not be read back' "$OUTPUT"
-              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              ../bashunit assert contains 'could not be read back' "$OUTPUT"
+              ../bashunit assert contains 'Result cache is saved.' "$OUTPUT"
               # The cache written in its place is usable again.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan -vvv")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan -vvv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored.' "$OUTPUT"
           - script: |
               cd e2e/bug-14514
               composer install
               ../../bin/phpstan analyze bug-14515.php
-          # Fails since the revert of the bootstrap autoloader changes:
+          # Fails until https://github.com/phpstan/phpstan/issues/14988 is fixed again:
           # - script: |
           #     cd e2e/bug-14988
           #     composer install
           #     ../../bin/phpstan analyse
-          # - script: |
-          #     cd e2e/bug-12972b
-          #     composer install
-          #     ../../bin/phpstan analyze
+          - script: |
+              cd e2e/bug-12972b
+              composer install
+              ../../bin/phpstan analyze
+          - script: |
+              cd e2e/debug-class-loader
+              composer install
+              ../../bin/phpstan analyze
+              # With --debug, the analysis runs in the main process, and PHPStan prints the
+              # exception that DebugClassLoader threw for the unknown class.
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyze --debug")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'by a bootstrap autoloader for class DebugClassLoaderE2e\Widget: The autoloader expected class' "$OUTPUT"
           - script: |
               cd e2e/bug-12972c
               composer install
@@ -247,6 +256,18 @@ jobs:
               cd e2e/bug-15231
               ../../bin/phpstan analyze
           - script: |
+              cd e2e/bug-15475
+              # https://github.com/phpstan/phpstan/issues/15475
+              # A run on other paths builds the name scopes of the scanned file from its
+              # simplified AST, without the anonymous class declared in a function body.
+              # A later full run must not reuse them, even with the result cache cleared.
+              ../../bin/phpstan analyse src/usage.php
+              ../../bin/phpstan clear-result-cache
+              ../../bin/phpstan analyse
+          - script: |
+              cd e2e/bug-15482b
+              ../../bin/phpstan analyse
+          - script: |
               cd e2e/bug-15102
               composer install
               ../../bin/phpstan analyze
@@ -254,6 +275,21 @@ jobs:
               cd e2e/bug-15102c
               composer install
               ../../bin/phpstan analyze
+          - script: |
+              cd e2e/bug-15184
+              composer install
+              # The crash needs OPcache: forked workers switch it off, the --debug main process and
+              # spawned workers (pcntl_fork disabled, as on Windows) keep it on.
+              php -r 'if (!extension_loaded("Zend OPcache")) { fwrite(STDERR, "OPcache is not loaded, so this step cannot reproduce the crash.\n"); exit(1); }'
+              ../../bin/phpstan analyze --debug
+              php -d disable_functions=pcntl_fork ../../bin/phpstan analyze
+          - script: |
+              cd e2e/bootstrap-autoloader-wrong-file
+              # The crash needs OPcache: forked workers switch it off, the --debug main process and
+              # spawned workers (pcntl_fork disabled, as on Windows) keep it on.
+              php -r 'if (!extension_loaded("Zend OPcache")) { fwrite(STDERR, "OPcache is not loaded, so this step cannot reproduce the crash.\n"); exit(1); }'
+              ../../bin/phpstan analyze --debug
+              php -d disable_functions=pcntl_fork ../../bin/phpstan analyze
           - script: |
               cd e2e/bug-14724
               composer install
@@ -300,8 +336,8 @@ jobs:
           - script: |
               cd e2e/statement-parameter
               PARAMETERS=$(../../bin/phpstan dump-parameters -c phpstan.neon --json -l 9)
-              ../bashunit -a equals 'PHPSTAN' "$(echo "$PARAMETERS" | jq --raw-output '.statementParameter')"
-              ../bashunit -a equals 'PHPSTAN/suffix' "$(echo "$PARAMETERS" | jq --raw-output '.concatenatedStatementParameter')"
+              ../bashunit assert equals 'PHPSTAN' "$(echo "$PARAMETERS" | jq --raw-output '.statementParameter')"
+              ../bashunit assert equals 'PHPSTAN/suffix' "$(echo "$PARAMETERS" | jq --raw-output '.concatenatedStatementParameter')"
           - script: |
               cd e2e/env-int-key
               env 1=1 ../../bin/phpstan analyse test.php
@@ -312,11 +348,11 @@ jobs:
               # analysed directory) is tracked as a file dependency: editing it re-analyses just the
               # files depending on it instead of invalidating the whole result cache.
               patch -b src/Generated/Foo.php < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
+              ../bashunit assert contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
           - script: |
               cd e2e/bug-15125
               composer install
@@ -329,137 +365,137 @@ jobs:
               ../../bin/phpstan analyse
               OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
-              ../bashunit -a not_contains 'Composer metadata changed but no package versions changed' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
+              ../bashunit assert not_contains 'Composer metadata changed but no package versions changed' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               # --autoload-file is recorded in executedFilesHashes under the path it was given with;
               # a './' segment must not keep the cache from being reused either.
               ../../bin/phpstan analyse -a ./vendor/autoload.php
               OUTPUT=$(../../bin/phpstan analyse -a ./vendor/autoload.php -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-scanned-2
               ../../bin/phpstan analyse
               # Editing a file from scanDirectories re-analyses only the files depending on it -
               # src/Unrelated.php and src/UsesExtra.php are left alone.
               patch -b scanned/Dep.php < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScanned2\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Method ResultCacheE2EScanned2\Foo::doFoo() should return int but returns string.' "$OUTPUT"
               # Undoing the edit makes the error go away again.
               mv scanned/Dep.php.orig scanned/Dep.php
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               # The same for a file listed in scanFiles.
               patch -b scan-file/Extra.php < patch-2.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'UsesExtra.php:10:Method ResultCacheE2EScanned2\UsesExtra::doUsesExtra() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'UsesExtra.php:10:Method ResultCacheE2EScanned2\UsesExtra::doUsesExtra() should return int but returns string.' "$OUTPUT"
               # Deleting a scanned file re-analyses the files depending on it.
               rm scanned/Dep.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Call to method doDep() on an unknown class ResultCacheE2EScanned2\Dep.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Call to method doDep() on an unknown class ResultCacheE2EScanned2\Dep.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-scanned-new-file
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesNew.php:10:Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
+              ../bashunit assert contains 'UsesNew.php:10:Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
               # A file that newly appears in a scanDirectories directory may define a symbol that was
               # reported as unknown somewhere, so the files with errors are re-analysed too - the same
               # way a new analysed file makes them re-analysed. src/Foo.php is still left alone.
               mv new-file/NewlyScanned.php scanned/NewlyScanned.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a not_contains 'Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
-              ../bashunit -a contains 'UsesNew.php:10:Method ResultCacheE2EScannedNewFile\UsesNew::doUsesNew() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'Instantiated class ResultCacheE2EScannedNewFile\NewlyScanned not found.' "$OUTPUT"
+              ../bashunit assert contains 'UsesNew.php:10:Method ResultCacheE2EScannedNewFile\UsesNew::doUsesNew() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-scanned-exported-nodes
               # src/Bar.php refers to a class that does not exist yet, so it has an error from the start.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
               # An edit inside a method body of a scanned file changes nothing the files depending on it
               # can see, so nothing is re-analysed - not the file depending on it, and not the file
               # with the error either. The same as for an analysed file, where only a change in the
               # exported nodes (a signature, a PHPDoc, a visibility) reaches the dependents.
               patch -b scanned/Dep.php < body.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
-              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'Scanned files with changed symbols' "$OUTPUT"
+              ../bashunit assert contains 'Result cache is saved.' "$OUTPUT"
               # The new contents are recorded: the next run has nothing to notice.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Scanned files with changed symbols' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              ../bashunit assert not_contains 'Scanned files with changed symbols' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
               # A changed return type is an exported node change: the file depending on it is
               # re-analysed. A changed signature cannot make a new symbol available, so the file with
               # the error is left alone.
               mv scanned/Dep.php.orig scanned/Dep.php
               patch -b scanned/Dep.php < signature.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
               # A file without any exported nodes appearing in the scanned directory cannot define the
               # missing symbol: nothing is re-analysed.
               mv new-file/NoSymbols.php scanned/NoSymbols.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
               # A file declaring a class may define a symbol reported as unknown, so the files with
               # errors are re-analysed - both of them - and the error about the class is gone.
               mv new-file/NewDep.php scanned/NewDep.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a not_contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Method ResultCacheE2EScannedExportedNodes\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-inner-function
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Outer.php:8:Inner named functions are not supported by PHPStan.' "$OUTPUT"
-              ../bashunit -a contains 'Other.php:10:Method ResultCacheE2EInnerFunction\Other::doOther() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Outer.php:8:Inner named functions are not supported by PHPStan.' "$OUTPUT"
+              ../bashunit assert contains 'Other.php:10:Method ResultCacheE2EInnerFunction\Other::doOther() should return int but returns string.' "$OUTPUT"
               # A function declared inside another function is not an exported node, so an edit of the
               # file declaring it looks like no symbol appeared or disappeared: only the file itself is
               # re-analysed, not every file with errors.
               patch -b src/Outer.php < body.patch
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit assert equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
           - script: |
               cd e2e/result-cache-define-in-function
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Other.php:10:Method ResultCacheE2EDefineInFunction\Other::doOther() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Other.php:10:Method ResultCacheE2EDefineInFunction\Other::doOther() should return int but returns string.' "$OUTPUT"
               # A define() inside a function or method body is not an exported node, so an edit of the
               # file calling it looks like no symbol appeared or disappeared: only the file itself is
               # re-analysed, not every file with errors.
               patch -b src/functions.php < body.patch
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit assert equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
           - script: |
               cd e2e/result-cache-function-shares-method-name
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Caller.php:10:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
+              ../bashunit assert contains 'Caller.php:10:Parameter #1 $string of function strlen expects string, int given.' "$OUTPUT"
               # with-method.php has a method named like the function and is scanned after functions.php,
               # so the cached reflection of the function must still be tied to functions.php
               patch -b src/functions.php < changeReturnType.patch
@@ -467,50 +503,50 @@ jobs:
           - script: |
               cd e2e/result-cache-value-dependency
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesCache.php:7:Service cache does not exist.' "$OUTPUT"
-              ../bashunit -a contains "UsesLocale.php:10:Function ResultCacheE2EValueDependency\usesLocale() should return 'none' but returns 'cs'." "$OUTPUT"
-              ../bashunit -a contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'cs'." "$OUTPUT"
-              ../bashunit -a contains 'Holder.php:17:Method ResultCacheE2EValueDependency\Holder::isDebug() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a contains 'UsesHolder.php:9:Function ResultCacheE2EValueDependency\usesHolder() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a contains 'UsesMayThrow.php:9:Dead catch - RuntimeException is never thrown in the try block.' "$OUTPUT"
-              ../bashunit -a contains 'UsesRegion.php:7:Region eu is used.' "$OUTPUT"
-              ../bashunit -a contains 'UsesView.php:7:View dashboard does not exist.' "$OUTPUT"
-              ../bashunit -a contains 'UsesMake.php:7:Call to an undefined method object::run().' "$OUTPUT"
-              ../bashunit -a not_contains 'UsesMailer.php' "$OUTPUT"
+              ../bashunit assert contains 'UsesCache.php:7:Service cache does not exist.' "$OUTPUT"
+              ../bashunit assert contains "UsesLocale.php:10:Function ResultCacheE2EValueDependency\usesLocale() should return 'none' but returns 'cs'." "$OUTPUT"
+              ../bashunit assert contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'cs'." "$OUTPUT"
+              ../bashunit assert contains 'Holder.php:17:Method ResultCacheE2EValueDependency\Holder::isDebug() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'UsesHolder.php:9:Function ResultCacheE2EValueDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'UsesMayThrow.php:9:Dead catch - RuntimeException is never thrown in the try block.' "$OUTPUT"
+              ../bashunit assert contains 'UsesRegion.php:7:Region eu is used.' "$OUTPUT"
+              ../bashunit assert contains 'UsesView.php:7:View dashboard does not exist.' "$OUTPUT"
+              ../bashunit assert contains 'UsesMake.php:7:Call to an undefined method object::run().' "$OUTPUT"
+              ../bashunit assert not_contains 'UsesMailer.php' "$OUTPUT"
               # The extensions read container.json, which the result cache knows nothing about. A rule and a
               # dynamic return type extension both declare the service they ask about - it is recorded once.
               # A change of its value re-analyses only the file asking about it.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["services"]["mailer"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesMailer.php:7:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
+              ../bashunit assert contains 'UsesMailer.php:7:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
               # Values nobody asked about do not re-analyse anything.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["timezone"] = "UTC"; $c["services"]["router"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit assert equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
               # A value that was missing is watched too.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["services"]["cache"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Service cache does not exist.' "$OUTPUT"
+              ../bashunit assert not_contains 'Service cache does not exist.' "$OUTPUT"
               # Every file asking about the same value is re-analysed.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["locale"] = "en"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesLocale.php:10:Function ResultCacheE2EValueDependency\usesLocale() should return 'none' but returns 'en'." "$OUTPUT"
-              ../bashunit -a contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'en'." "$OUTPUT"
+              ../bashunit assert contains "UsesLocale.php:10:Function ResultCacheE2EValueDependency\usesLocale() should return 'none' but returns 'en'." "$OUTPUT"
+              ../bashunit assert contains "UsesLocaleToo.php:10:Function ResultCacheE2EValueDependency\usesLocaleToo() should return 'none' but returns 'en'." "$OUTPUT"
               # Scope::getFile() is not the file to re-analyse when the extension runs outside the walk of the
               # analysed file: the type of Holder::$debug is inferred from the constructor on a scope of
               # src/Holder.php, whenever the property is first needed, and it is cached. So it is what
@@ -519,125 +555,125 @@ jobs:
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["debug"] = "1"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Holder.php' "$OUTPUT"
+              ../bashunit assert not_contains 'Holder.php' "$OUTPUT"
               # Inside a trait, the value is asked about in the analysis of the class using it - that's the
               # file re-analysed, and the error is reported in the trait.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["services"]["logger"] = "ResultCacheE2EValueDependency\\Mailer"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesLogger.php:7:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
-              ../bashunit -a contains 'LoggerTrait.php (in context of class ResultCacheE2EValueDependency\UsesLoggerTrait):10:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
+              ../bashunit assert contains 'UsesLogger.php:7:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
+              ../bashunit assert contains 'LoggerTrait.php (in context of class ResultCacheE2EValueDependency\UsesLoggerTrait):10:Call to an undefined method ResultCacheE2EValueDependency\Mailer::log().' "$OUTPUT"
               # A dynamic throw type extension tracks the values it reads too.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["throwing"] = "yes"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Dead catch' "$OUTPUT"
+              ../bashunit assert not_contains 'Dead catch' "$OUTPUT"
               # So does a collector: the data it collected is collected again in the analysis of the file.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["region"] = "us"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesRegion.php:7:Region us is used.' "$OUTPUT"
-              ../bashunit -a not_contains 'Region eu is used.' "$OUTPUT"
+              ../bashunit assert contains 'UsesRegion.php:7:Region us is used.' "$OUTPUT"
+              ../bashunit assert not_contains 'Region eu is used.' "$OUTPUT"
               # So does a parameter closure this extension: $this in the closure follows the parameter.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["closureThis"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesWithThis.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
+              ../bashunit assert contains 'UsesWithThis.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
               # So does a type-specifying extension: the narrowed type follows the parameter.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["allowedClass"] = "ResultCacheE2EValueDependency\\Logger"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesIsAllowed.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
+              ../bashunit assert contains 'UsesIsAllowed.php:8:Call to an undefined method ResultCacheE2EValueDependency\Logger::send().' "$OUTPUT"
               # A rule tracking a directory: a file the pattern doesn't match changes nothing...
               echo 'notes' > views/notes.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit assert equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
               # ...a matching file appearing re-analyses the file that looked for it.
               echo '<p>dashboard</p>' > views/dashboard.html
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'View dashboard does not exist.' "$OUTPUT"
+              ../bashunit assert not_contains 'View dashboard does not exist.' "$OUTPUT"
               # ...and so does a matching file whose contents change.
               echo '<p>dashboard, changed</p>' > views/dashboard.html
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              ../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw"
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw"
               # A dynamic return type extension tracking a class named in a string: the class appearing - outside
               # the analysed paths, so no fallback for new files kicks in - re-analyses the file naming it...
               printf '<?php declare(strict_types = 1);\n\nnamespace ResultCacheE2EValueDependency\\Lib;\n\nclass Gadget extends Base\n{\n}\n' > lib/Gadget.php
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'UsesMake.php' "$OUTPUT"
+              ../bashunit assert not_contains 'UsesMake.php' "$OUTPUT"
               # ...a method body edited in its parent class does not...
               sed -i.bak 's/return 1;/return 2;/' lib/Base.php && rm lib/Base.php.bak
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              ../bashunit assert equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
               # ...and a signature changed there does.
               printf '<?php declare(strict_types = 1);\n\nnamespace ResultCacheE2EValueDependency\\Lib;\n\nclass Base\n{\n\n\tpublic function run(): string\n\t{\n\t\treturn \x27x\x27;\n\t}\n\n}\n' > lib/Base.php
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesMake.php:7:Function ResultCacheE2EValueDependency\usesMake() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'UsesMake.php:7:Function ResultCacheE2EValueDependency\usesMake() should return int but returns string.' "$OUTPUT"
               # A class reflection extension tracking on the class: every file using the class is analysed again,
               # also one that got the magic method from the reflection cache without asking the extension.
               php -r '$c = json_decode(file_get_contents("container.json"), true); $c["parameters"]["greeting"] = "1"; file_put_contents("container.json", json_encode($c, JSON_PRETTY_PRINT));'
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesMagic.php:7:Function ResultCacheE2EValueDependency\usesMagic() should return string but returns int.' "$OUTPUT"
-              ../bashunit -a contains 'UsesMagicToo.php:7:Function ResultCacheE2EValueDependency\usesMagicToo() should return string but returns int.' "$OUTPUT"
+              ../bashunit assert contains 'UsesMagic.php:7:Function ResultCacheE2EValueDependency\usesMagic() should return string but returns int.' "$OUTPUT"
+              ../bashunit assert contains 'UsesMagicToo.php:7:Function ResultCacheE2EValueDependency\usesMagicToo() should return string but returns int.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-file-dependency
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'function-1'." "$OUTPUT"
-              ../bashunit -a contains "UsesMethod.php:10:Function ResultCacheE2EFileDependency\usesMethod() should return 'none' but returns 'method-1'." "$OUTPUT"
-              ../bashunit -a contains "UsesStaticMethod.php:10:Function ResultCacheE2EFileDependency\usesStaticMethod() should return 'none' but returns 'static-method-1'." "$OUTPUT"
-              ../bashunit -a contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a contains 'UsesDeprecatedConfig.php:7:Deprecated config asks for an error.' "$OUTPUT"
-              ../bashunit -a not_contains 'Config asks for an error.' "$OUTPUT"
+              ../bashunit assert contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'function-1'." "$OUTPUT"
+              ../bashunit assert contains "UsesMethod.php:10:Function ResultCacheE2EFileDependency\usesMethod() should return 'none' but returns 'method-1'." "$OUTPUT"
+              ../bashunit assert contains "UsesStaticMethod.php:10:Function ResultCacheE2EFileDependency\usesStaticMethod() should return 'none' but returns 'static-method-1'." "$OUTPUT"
+              ../bashunit assert contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'UsesDeprecatedConfig.php:7:Deprecated config asks for an error.' "$OUTPUT"
+              ../bashunit assert not_contains 'Config asks for an error.' "$OUTPUT"
               # The paths declared with the deprecated RuleErrorBuilder::fileDependency() are declared on the
               # scope of the rule's node.
               printf 'quiet\n' > data/deprecated.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Deprecated config asks for an error.' "$OUTPUT"
+              ../bashunit assert not_contains 'Deprecated config asks for an error.' "$OUTPUT"
               # A rule declares its dependency on src/Config.php whether it reports an error or not. The file
               # declares no symbols, so no change of it reaches its exported nodes - any change re-analyses the
               # files of the rule's nodes anyway, next to the changed file itself: src/UsesConfig.php and
@@ -646,42 +682,42 @@ jobs:
               printf "<?php\n\nreturn 'report';\n" > src/Config.php
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesConfig.php:7:Config asks for an error.' "$OUTPUT"
-              ../bashunit -a contains 'ConfigHolder.php:10:Config asks for an error.' "$OUTPUT"
+              ../bashunit assert contains 'UsesConfig.php:7:Config asks for an error.' "$OUTPUT"
+              ../bashunit assert contains 'ConfigHolder.php:10:Config asks for an error.' "$OUTPUT"
               printf "<?php\n\n// a change that keeps the error\nreturn 'report';\n" > src/Config.php
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesConfig.php:7:Config asks for an error.' "$OUTPUT"
+              ../bashunit assert contains 'UsesConfig.php:7:Config asks for an error.' "$OUTPUT"
               # Dynamic return type extensions of a function, a method and a static method declared in
               # src/functions.php and src/Repository.php read a data file each. A change of one re-analyses the
               # file with the call - not the one declaring the function or the method.
               printf 'function-2\n' > data/function.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'function-2'." "$OUTPUT"
+              ../bashunit assert contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'function-2'." "$OUTPUT"
               printf 'method-2\n' > data/method.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesMethod.php:10:Function ResultCacheE2EFileDependency\usesMethod() should return 'none' but returns 'method-2'." "$OUTPUT"
+              ../bashunit assert contains "UsesMethod.php:10:Function ResultCacheE2EFileDependency\usesMethod() should return 'none' but returns 'method-2'." "$OUTPUT"
               printf 'static-method-2\n' > data/static-method.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesStaticMethod.php:10:Function ResultCacheE2EFileDependency\usesStaticMethod() should return 'none' but returns 'static-method-2'." "$OUTPUT"
+              ../bashunit assert contains "UsesStaticMethod.php:10:Function ResultCacheE2EFileDependency\usesStaticMethod() should return 'none' but returns 'static-method-2'." "$OUTPUT"
               # Scope::getFile() is not the file to re-analyse when the extension runs outside the walk of the
               # analysed file: the type of Holder::$value is inferred from the constructor on a scope of
               # src/Holder.php, whenever the property is first needed - in the analysis of src/Holder.php, or of
@@ -690,71 +726,71 @@ jobs:
               printf 'int\n' > data/holder.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a not_contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert not_contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert not_contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
               # Deleting a declared file re-analyses the files depending on it too, and it stays watched while
               # it is missing: creating it again re-analyses them again.
               rm data/function.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'missing'." "$OUTPUT"
+              ../bashunit assert contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'missing'." "$OUTPUT"
               printf 'function-3\n' > data/function.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'function-3'." "$OUTPUT"
+              ../bashunit assert contains "UsesFunction.php:10:Function ResultCacheE2EFileDependency\usesFunction() should return 'none' but returns 'function-3'." "$OUTPUT"
               # The same for what src/Holder.php declares.
               rm data/holder.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
               printf 'int\n' > data/holder.txt
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
-              ../bashunit -a not_contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert not_contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert not_contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
               # And for a declared file that is analysed itself: deleted, it is no longer analysed, and the files
               # of the rule's nodes are re-analysed; created again, all three are - and as with any new file, so
               # are the three files with errors.
               rm src/Config.php
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Config asks for an error.' "$OUTPUT"
+              ../bashunit assert not_contains 'Config asks for an error.' "$OUTPUT"
               printf "<?php\n\nreturn 'report';\n" > src/Config.php
               INFO=$(../../bin/phpstan result-cache-info --json)
               echo "$INFO"
-              ../bashunit -a equals '6' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              ../bashunit assert equals '6' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'UsesConfig.php:7:Config asks for an error.' "$OUTPUT"
+              ../bashunit assert contains 'UsesConfig.php:7:Config asks for an error.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-scanned-trait
               ../../bin/phpstan analyse
               # A trait living in a scanned file is tracked the same way, including through the
               # used-trait dependencies.
               patch -b scanned/DepTrait.php < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'UsesTrait.php:12:Method ResultCacheE2EScannedTrait\UsesTrait::doIt() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'UsesTrait.php:12:Method ResultCacheE2EScannedTrait\UsesTrait::doIt() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-autoloaded
               composer install
@@ -763,60 +799,60 @@ jobs:
               # through the Composer autoloader - is tracked as a file dependency too, so editing it
               # re-analyses the files depending on it instead of leaving stale results behind.
               patch -b other/Dep.php < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:12:Method ResultCacheE2EAutoloaded\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:12:Method ResultCacheE2EAutoloaded\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-autoloaded-constant
               composer install
               # The same sequence on a project file that is neither analysed nor scanned - it is only
               # reachable through the Composer autoloader, so it is tracked through the dependency graph
               # alone.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
               # The constant is renamed to one the class already declares. The file is invalid PHP, but
               # the class still reflects, so the file using the constant is re-analysed through its
               # dependency edge.
               patch -b other/Dep.php < duplicate.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
               # Renamed to something else instead.
               mv other/Dep.php.orig other/Dep.php
               patch -b other/Dep.php < renamed.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
               # Broken the same way again.
               mv other/Dep.php.orig other/Dep.php
               patch -b other/Dep.php < duplicate.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Access to undefined constant ResultCacheE2EAutoloadedConstant\Dep::CON.' "$OUTPUT"
               # And put back the way it was.
               mv other/Dep.php.orig other/Dep.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
               # A syntax error makes the class disappear altogether: the file using it reports an unknown
               # class and records no dependency edge to the file, so nothing but the file being fixed can
               # bring the file using it back - it must be re-analysed once the class is there again.
               patch -b other/Dep.php < broken.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Access to constant CON on an unknown class ResultCacheE2EAutoloadedConstant\Dep.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Access to constant CON on an unknown class ResultCacheE2EAutoloadedConstant\Dep.' "$OUTPUT"
               mv other/Dep.php.orig other/Dep.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Dumped type: 1' "$OUTPUT"
           - script: |
               cd e2e/result-cache-scanned-vendor
               composer install
@@ -825,10 +861,10 @@ jobs:
               # dependency - packages are tracked at package granularity - so editing it still has to
               # invalidate the whole result cache instead of leaving stale results behind.
               patch -b vendor/test/scanned-lib/src/Dep.php < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'changed and belongs to a Composer package.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:12:Method ResultCacheE2EScannedVendor\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'changed and belongs to a Composer package.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:12:Method ResultCacheE2EScannedVendor\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-bootstrap
               ../../bin/phpstan analyse
@@ -836,40 +872,40 @@ jobs:
               # analysis. It stays part of the executedFilesHashes metadata and keeps invalidating the
               # whole result cache - the scanned file tracking does not apply to it.
               patch -b bootstrap.php < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because the metadata do not match: executedFilesHashes' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Method ResultCacheE2EBootstrap\Foo::doFoo() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because the metadata do not match: executedFilesHashes' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Method ResultCacheE2EBootstrap\Foo::doFoo() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-traits
               ../../bin/phpstan analyse
               patch -b src/FooTrait.php < renameFooTraitMethod.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'ClassMentioningClassUsingBarTrait.php:10:Call to an undefined method ResultCacheE2ETraits\ClassUsingBarTrait::doFooTrait(). [identifier=method.notFound]' "$OUTPUT"
+              ../bashunit assert contains 'ClassMentioningClassUsingBarTrait.php:10:Call to an undefined method ResultCacheE2ETraits\ClassUsingBarTrait::doFooTrait(). [identifier=method.notFound]' "$OUTPUT"
           - script: |
               cd e2e/result-cache-trait-alongside-class
               ../../bin/phpstan analyse
               patch -b src/FooTrait.php < changeFooTraitBody.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'FooTrait.php (in context of class ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait):10:Method ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait::doFooTrait() should return stdClass but returns Exception. [identifier=return.type]' "$OUTPUT"
+              ../bashunit assert contains 'FooTrait.php (in context of class ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait):10:Method ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait::doFooTrait() should return stdClass but returns Exception. [identifier=return.type]' "$OUTPUT"
           - script: |
               cd e2e/editor-mode
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:10:Parameter #1 $s of method EditorModeE2E\Bar::requireString() expects string, int given. [identifier=argument.type]' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return int but returns string. [identifier=return.type]' "$OUTPUT"
-              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:10:Parameter #1 $s of method EditorModeE2E\Bar::requireString() expects string, int given. [identifier=argument.type]' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return int but returns string. [identifier=return.type]' "$OUTPUT"
+              ../bashunit assert contains 'Result cache is saved.' "$OUTPUT"
 
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw --tmp-file differentFoo.php --instead-of src/Foo.php")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw --tmp-file differentFoo.php --instead-of src/Foo.php")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return float but returns string. [identifier=return.type]' "$OUTPUT"
-              ../bashunit -a not_contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return int but returns string. [identifier=return.type]' "$OUTPUT"
-              ../bashunit -a not_contains 'differentFoo.php' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:10:Parameter #1 $s of method EditorModeE2E\Bar::requireString() expects string, float given. [identifier=argument.type]' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache was not saved because of --tmp-file and --instead-of CLI options passed (editor mode).' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return float but returns string. [identifier=return.type]' "$OUTPUT"
+              ../bashunit assert not_contains 'Foo.php:10:Method EditorModeE2E\Foo::doFoo() should return int but returns string. [identifier=return.type]' "$OUTPUT"
+              ../bashunit assert not_contains 'differentFoo.php' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:10:Parameter #1 $s of method EditorModeE2E\Bar::requireString() expects string, float given. [identifier=argument.type]' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache was not saved because of --tmp-file and --instead-of CLI options passed (editor mode).' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
@@ -878,55 +914,55 @@ jobs:
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitOne.php < TraitOne.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 2 "$OUTPUT"
-              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
-              ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+              ../bashunit assert line_count 2 "$OUTPUT"
+              ../bashunit assert matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
+              ../bashunit assert contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitTwo.php < TraitTwo.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 2 "$OUTPUT"
-              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
-              ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+              ../bashunit assert line_count 2 "$OUTPUT"
+              ../bashunit assert matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
+              ../bashunit assert contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/trait-caching
               ../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/
               patch -b data/TraitOne.php < TraitOne.patch
               patch -b data/TraitTwo.php < TraitTwo.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyze --no-progress --level 8 --error-format raw data/")
               echo "$OUTPUT"
-              ../bashunit -a line_count 3 "$OUTPUT"
-              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
-              ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
-              ../bashunit -a contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+              ../bashunit assert line_count 3 "$OUTPUT"
+              ../bashunit assert matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
+              ../bashunit assert contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+              ../bashunit assert contains 'Method class@anonymous/TestClassUsingTrait.php:20::doBar() should return stdClass but returns Exception.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c ignore.neon")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c ignore.neon")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
-              ../bashunit -a contains 'tests" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit assert contains 'Invalid entry in ignoreErrors' "$OUTPUT"
+              ../bashunit assert contains 'tests" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c phpneon.php")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c phpneon.php")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Invalid entry in ignoreErrors' "$OUTPUT"
-              ../bashunit -a contains '"src/test.php" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit assert contains 'Invalid entry in ignoreErrors' "$OUTPUT"
+              ../bashunit assert contains '"src/test.php" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c excludePaths.neon")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c excludePaths.neon")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
-              ../bashunit -a contains 'tests" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit assert contains 'Invalid entry in excludePaths' "$OUTPUT"
+              ../bashunit assert contains 'tests" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -c phpneon2.php")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c phpneon2.php")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Invalid entry in excludePaths' "$OUTPUT"
-              ../bashunit -a contains '"src/test.php" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
+              ../bashunit assert contains 'Invalid entry in excludePaths' "$OUTPUT"
+              ../bashunit assert contains '"src/test.php" is neither a directory, nor a file path, nor a fnmatch pattern.' "$OUTPUT"
           - script: |
               cd e2e/bad-exclude-paths
               OUTPUT=$(../../bin/phpstan analyse -c ignoreNonexistentExcludePath.neon)
@@ -943,56 +979,56 @@ jobs:
           - script: |
               cd e2e/bug-11826
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Child process error (exit code 255): PHP Fatal error' "$OUTPUT"
-              ../bashunit -a contains 'Result is incomplete because of severe errors.' "$OUTPUT"
+              ../bashunit assert contains 'Child process error (exit code 255): PHP Fatal error' "$OUTPUT"
+              ../bashunit assert contains 'Result is incomplete because of severe errors.' "$OUTPUT"
           - script: |
               cd e2e/oom-forked-worker
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --memory-limit=300M")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --memory-limit=300M")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Child process error: PHPStan process crashed' "$OUTPUT"
-              ../bashunit -a contains 'Result is incomplete because of severe errors.' "$OUTPUT"
+              ../bashunit assert contains 'Child process error: PHPStan process crashed' "$OUTPUT"
+              ../bashunit assert contains 'Result is incomplete because of severe errors.' "$OUTPUT"
           - script: |
               cd e2e/bug-11857
               composer install
               ../../bin/phpstan
           - script: |
               cd e2e/in-trait
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
-              ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
-              ../bashunit -a contains 'FooTrait.php (in context of class E2EInTrait\Bar):18:Strict comparison using === between E2EInTrait\Bar and null will always evaluate to false.' "$OUTPUT"
-              ../bashunit -a contains 'FooTrait.php (in context of class E2EInTrait\Foo):18:Strict comparison using === between E2EInTrait\Foo and null will always evaluate to false.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan --error-format=raw")
+              ../bashunit assert contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              ../bashunit assert contains 'FooTrait.php (in context of class E2EInTrait\Bar):18:Strict comparison using === between E2EInTrait\Bar and null will always evaluate to false.' "$OUTPUT"
+              ../bashunit assert contains 'FooTrait.php (in context of class E2EInTrait\Foo):18:Strict comparison using === between E2EInTrait\Foo and null will always evaluate to false.' "$OUTPUT"
           - script: |
               cd e2e/bug-14718
               # https://github.com/phpstan/phpstan/issues/14718
               # An inline @phpstan-ignore on an error deduplicated directly into the trait must
               # suppress it, consistently with both an empty and a primed result cache.
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
-              ../bashunit -a exit_code "0" "../../bin/phpstan --error-format=raw"
+              ../bashunit assert exit_code "0" "../../bin/phpstan --error-format=raw"
+              ../bashunit assert exit_code "0" "../../bin/phpstan --error-format=raw"
               # With the ignore removed, the error is reported directly in the trait file.
               sed -i 's# // @phpstan-ignore identical.alwaysFalse##' src/FooTrait.php
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
-              ../bashunit -a contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan --error-format=raw")
+              ../bashunit assert contains 'FooTrait.php:10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
               # An ignoreErrors path may target the error by the trait file (hides it for
               # all using classes) or by a using-class file - a class-pathed entry accounts
               # only for its own class's context, so the other using class's context is
               # still reported (see also the e2e/bug-14932 script).
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon")
-              ../bashunit -a contains 'FooTrait.php (in context of class Bug14718\Bar):10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
-              ../bashunit -a not_contains 'was not matched' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-path.neon")
+              ../bashunit assert contains 'FooTrait.php (in context of class Bug14718\Bar):10:Strict comparison using === between int<0, max> and false will always evaluate to false.' "$OUTPUT"
+              ../bashunit assert not_contains 'was not matched' "$OUTPUT"
               # A generated baseline suppresses the error on re-run, with both an empty and a
               # primed result cache (the issue reported baseline generation as impossible).
               ../../bin/phpstan --generate-baseline=baseline.neon
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
           - script: |
               cd e2e/bug-14932
               # https://github.com/phpstan/phpstan/issues/14932
@@ -1005,97 +1041,97 @@ jobs:
               # trait file (no "in context of"); errors whose message differs per using
               # class stay reported in each class context.
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
-              ../bashunit -a contains 'SomeTrait.php:17:Right side of && is always true.' "$OUTPUT"
-              ../bashunit -a not_contains 'SomeTrait.php (in context of' "$OUTPUT"
-              ../bashunit -a contains 'DiffMessageTrait.php (in context of class Bug14932\AMailer):10:Strict comparison' "$OUTPUT"
-              ../bashunit -a contains 'DiffMessageTrait.php (in context of class Bug14932\BMailer):10:Strict comparison' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              ../bashunit assert contains 'SomeTrait.php:17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit assert not_contains 'SomeTrait.php (in context of' "$OUTPUT"
+              ../bashunit assert contains 'DiffMessageTrait.php (in context of class Bug14932\AMailer):10:Strict comparison' "$OUTPUT"
+              ../bashunit assert contains 'DiffMessageTrait.php (in context of class Bug14932\BMailer):10:Strict comparison' "$OUTPUT"
               # An ignoreErrors path targeting the trait file hides the error from all
               # using classes - with both an empty and a primed result cache.
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-trait-path.neon"
               # An ignoreErrors path targeting one using class accounts only for that
               # class's context: the entry matches (no ignore.unmatched), and the error is
               # still reported in the context of the other class - deterministically, with
               # both an empty and a primed result cache.
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-a-path.neon")
-              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
-              ../bashunit -a not_contains 'was not matched' "$OUTPUT"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-a-path.neon")
-              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-a-path.neon")
+              ../bashunit assert contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit assert not_contains 'was not matched' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-a-path.neon")
+              ../bashunit assert contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
-              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
-              ../bashunit -a not_contains 'was not matched' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
+              ../bashunit assert contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit assert not_contains 'was not matched' "$OUTPUT"
               # Entries covering every using class hide the error completely - this is what
               # a baseline generated by PHPStan <= 2.1 recorded (one entry per class
               # context), so such baselines keep working with no unmatched entries.
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-both-class-paths.neon"
               # A directory path covering the using classes (but not the trait file) accounts
               # per-context too: without count it hides all contexts...
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-dir-path.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-dir-path.neon"
               # ...and with count: 1 it covers one of the two contexts: the other is reported
               # in its context, and the count mismatch reports the true occurrence count.
               ../../bin/phpstan clear-result-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-dir-count.neon")
-              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
-              ../bashunit -a contains 'is expected to occur 1 time, but occurred 2 times' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-dir-count.neon")
+              ../bashunit assert contains 'SomeTrait.php (in context of class Bug14932\BMailer):17:Right side of && is always true.' "$OUTPUT"
+              ../bashunit assert contains 'is expected to occur 1 time, but occurred 2 times' "$OUTPUT"
               # The add-a-using-class flicker from the issue: prime the result cache with
               # BMailer as the trait's only user (the class-pathed entry covers the only
               # context), then add AMailer. The AMailer context is reported - on the
               # partial run and identically on every unchanged run after it.
               rm src/Mailers/AMailer.php
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon"
               cp AMailer.php.dist src/Mailers/AMailer.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
-              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
-              ../bashunit -a contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
+              ../bashunit assert contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw -c ignore-class-b-path.neon")
+              ../bashunit assert contains 'SomeTrait.php (in context of class Bug14932\AMailer):17:Right side of && is always true.' "$OUTPUT"
               # --generate-baseline attributes the fully deduplicated error to the trait
               # file, and the baseline holds on re-run with an empty and a primed cache.
               ../../bin/phpstan clear-result-cache
               ../../bin/phpstan analyse -c generate-only.neon --generate-baseline=baseline.neon
-              ../bashunit -a contains 'path: src/SomeTrait.php' "$(cat baseline.neon)"
-              ../bashunit -a not_contains 'AMailer.php' "$(cat baseline.neon)"
-              ../bashunit -a not_contains 'BMailer.php' "$(cat baseline.neon)"
+              ../bashunit assert contains 'path: src/SomeTrait.php' "$(cat baseline.neon)"
+              ../bashunit assert not_contains 'AMailer.php' "$(cat baseline.neon)"
+              ../bashunit assert not_contains 'BMailer.php' "$(cat baseline.neon)"
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-baseline.neon"
               # Generating a baseline on top of a one-class ignore records the surviving
               # context under its class path, and the combination holds on re-run.
               ../../bin/phpstan clear-result-cache
               ../../bin/phpstan analyse -c ignore-class-a-path.neon --generate-baseline=partial-baseline.neon
-              ../bashunit -a contains 'path: src/Mailers/BMailer.php' "$(cat partial-baseline.neon)"
-              ../bashunit -a not_contains 'SomeTrait.php' "$(cat partial-baseline.neon)"
+              ../bashunit assert contains 'path: src/Mailers/BMailer.php' "$(cat partial-baseline.neon)"
+              ../bashunit assert not_contains 'SomeTrait.php' "$(cat partial-baseline.neon)"
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-partial-baseline.neon"
               # A full generated baseline (trait path for the deduplicated error, class
               # paths for the per-context errors) holds on re-run as well.
               ../../bin/phpstan clear-result-cache
               ../../bin/phpstan --generate-baseline=full-baseline.neon
-              ../bashunit -a contains 'path: src/Mailers/AMailer.php' "$(cat full-baseline.neon)"
-              ../bashunit -a contains 'path: src/Mailers/BMailer.php' "$(cat full-baseline.neon)"
-              ../bashunit -a contains 'path: src/SomeTrait.php' "$(cat full-baseline.neon)"
+              ../bashunit assert contains 'path: src/Mailers/AMailer.php' "$(cat full-baseline.neon)"
+              ../bashunit assert contains 'path: src/Mailers/BMailer.php' "$(cat full-baseline.neon)"
+              ../bashunit assert contains 'path: src/SomeTrait.php' "$(cat full-baseline.neon)"
               ../../bin/phpstan clear-result-cache
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
-              ../bashunit -a exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
+              ../bashunit assert exit_code "0" "../../bin/phpstan analyse --error-format=raw -c with-full-baseline.neon"
           - script: |
               cd e2e/result-cache-meta-extension
               composer install
               ../../bin/phpstan -vvv
               ../../bin/phpstan -vvv --fail-without-result-cache
               echo 'modified-hash' > hash.txt
-              OUTPUT=$(../bashunit -a exit_code "2" "../../bin/phpstan -vvv --fail-without-result-cache")
+              OUTPUT=$(../bashunit assert exit_code "2" "../../bin/phpstan -vvv --fail-without-result-cache")
               echo "$OUTPUT"
-              ../bashunit -a matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because the metadata do not match: metaExtensions' "$OUTPUT"
+              ../bashunit assert matches "Note: Using configuration file .+phpstan.neon." "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because the metadata do not match: metaExtensions' "$OUTPUT"
           - script: |
               cd e2e/result-cache-meta-extension-throw
               composer install
@@ -1103,10 +1139,10 @@ jobs:
               # An exception thrown from ResultCacheMetaExtension::getHash() during result cache
               # restore must fail the run with a non-zero exit code - even when a bootstrap file
               # installs a global exception handler that would otherwise swallow it into exit 0.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan --error-format=raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'boom from getHash' "$OUTPUT"
-              ../bashunit -a not_contains 'Swallowed by global exception handler' "$OUTPUT"
+              ../bashunit assert contains 'boom from getHash' "$OUTPUT"
+              ../bashunit assert not_contains 'Swallowed by global exception handler' "$OUTPUT"
           - script: |
               cd e2e/result-cache-restore-without-reflection
               composer install
@@ -1116,22 +1152,22 @@ jobs:
               cd e2e/result-cache-constants
               ../../bin/phpstan analyse
               patch -b src/Constants.php < changeConstantValue.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'ClassUsingConstant.php:13:Method ResultCacheE2EConstants\ClassUsingConstant::getMode() should return int<1, 3> but returns 5. [identifier=return.type]' "$OUTPUT"
+              ../bashunit assert contains 'ClassUsingConstant.php:13:Method ResultCacheE2EConstants\ClassUsingConstant::getMode() should return int<1, 3> but returns 5. [identifier=return.type]' "$OUTPUT"
               mv src/Constants.php.orig src/Constants.php
               ../../bin/phpstan analyse
               patch -b src/Constants.php < renameConstant.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'ClassUsingConstant.php:13:Constant SOME_MODE not found. [identifier=constant.notFound]' "$OUTPUT"
+              ../bashunit assert contains 'ClassUsingConstant.php:13:Constant SOME_MODE not found. [identifier=constant.notFound]' "$OUTPUT"
           - script: |
               cd e2e/result-cache-define
               ../../bin/phpstan analyse
               patch -b src/define.php < changeDefineValue.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'ClassUsingDefine.php:13:Method ResultCacheE2EDefine\ClassUsingDefine::getMode() should return int<1, 3> but returns 5. [identifier=return.type]' "$OUTPUT"
+              ../bashunit assert contains 'ClassUsingDefine.php:13:Method ResultCacheE2EDefine\ClassUsingDefine::getMode() should return int<1, 3> but returns 5. [identifier=return.type]' "$OUTPUT"
           - script: |
               cd e2e/result-cache-composer-lock
               composer install
@@ -1141,19 +1177,19 @@ jobs:
               # when composer.lock is not committed. The result cache must be kept, not discarded.
               jq '.["content-hash"]="0000000000000000000000000000000000000000"' composer.lock > composer.lock.new
               mv composer.lock.new composer.lock
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               # Change the content hash again AND edit a single source file: the cache is still kept
               # (no package changed), and only the one changed file is reanalysed.
               printf '\n' >> src/Foo.php
               jq '.["content-hash"]="1111111111111111111111111111111111111111"' composer.lock > composer.lock.new
               mv composer.lock.new composer.lock
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Composer metadata changed but no package versions changed; keeping the result cache.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-phar-bootstrap
               # A bootstrapFile living inside a phar is hashed into executedFilesHashes under its
@@ -1169,9 +1205,9 @@ jobs:
               if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
                 echo 'bootstrap path stored without its phar:// scheme'; exit 1
               fi
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-relative-path
               # Cold run: paths are stored relative to the phpstan install (the anchor), so the cache
@@ -1186,9 +1222,9 @@ jobs:
                 exit 1
               fi
               # Warm run: the relative cache re-absolutizes against the current anchor and is fully reused.
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-relative-path
               # An optional excludePath must reach the cache the way a required one does. It used to
@@ -1200,9 +1236,9 @@ jobs:
                 grep -o "$(cd ../.. && pwd)/[^'\"]*" tmp-optional-path/resultCache.php | sort -u | head -20
                 exit 1
               fi
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -c phpstan-optional-path.neon -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -c phpstan-optional-path.neon -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
 
           - script: |
               cd e2e/result-cache-relative-path
@@ -1230,9 +1266,9 @@ jobs:
               # running phpstan in a different worktree in between did not disturb it.
               cd "$MAIN"
               git -C ../.. worktree remove --force "$WORKTREE"
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-package-update
               composer install
@@ -1243,10 +1279,10 @@ jobs:
               # test/logger), not for the whole project.
               patch -p1 < updatePackage.patch
               composer update test/logger --no-cache
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer packages changed (test/logger); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Composer packages changed (test/logger); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-path-repository
               composer install
@@ -1254,56 +1290,56 @@ jobs:
               # Updating an installed package re-analyses only the files depending on it.
               patch -p0 < updatePsrLog.patch
               composer update psr/log --no-cache
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               # Editing a file of an installed package is not a valid thing to do - the next Composer
               # command overwrites it - so PHPStan does not track it and keeps the cached results, even
               # though this edit takes away a method the analysed code calls.
               php -r '$f = "vendor/psr/log/src/LoggerInterface.php"; file_put_contents($f, str_replace("public function info(", "public function renamedInfo(", file_get_contents($f)));'
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a not_contains 'Call to an undefined method' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert not_contains 'Call to an undefined method' "$OUTPUT"
               # A package from a path repository is the opposite case: it is the project's own code,
               # edited in place without any Composer command noticing, so its files are tracked like the
               # project's other non-analysed files. Symlinked, the installed package is the source
               # directory - an edit inside a method body changes nothing the files using it can see.
               patch -b -p0 < symlinked-body.patch
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               # A changed return type does reach them.
               mv symlinked-lib/src/SymlinkedDep.php.orig symlinked-lib/src/SymlinkedDep.php
               patch -b -p0 < symlinked-signature.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'UsesSymlinked.php:16:Method ResultCacheE2EPathRepository\UsesSymlinked::doUsesSymlinked() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'UsesSymlinked.php:16:Method ResultCacheE2EPathRepository\UsesSymlinked::doUsesSymlinked() should return int but returns string.' "$OUTPUT"
               # Undoing it clears the error again.
               mv symlinked-lib/src/SymlinkedDep.php.orig symlinked-lib/src/SymlinkedDep.php
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
               # Copied instead of symlinked, the analysis reads the installed copy, so editing the
               # directory Composer copied from is not something PHPStan can see at all.
               patch -b -p0 < copied-source-signature.patch
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               mv copied-lib/src/CopiedDep.php.orig copied-lib/src/CopiedDep.php
               # The installed copy is tracked the same way the symlinked package is.
               patch -b -p0 < copied-body.patch
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
               mv vendor/test/copied-lib/src/CopiedDep.php.orig vendor/test/copied-lib/src/CopiedDep.php
               patch -b -p0 < copied-signature.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'UsesCopied.php:16:Method ResultCacheE2EPathRepository\UsesCopied::doUsesCopied() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'UsesCopied.php:16:Method ResultCacheE2EPathRepository\UsesCopied::doUsesCopied() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-composer-json
               composer install
@@ -1313,59 +1349,59 @@ jobs:
               # metadata - composerLocks and composerInstalled cover composer.lock and installed.php, and
               # neither of those moves when only composer.json changes.
               patch -p0 < platform.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Function str_contains not found.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Function str_contains not found.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-empty-file-gains-symbol
               # src/script.php declares no symbol, so the cache holds no exported nodes entry for it at
               # all, and src/user.php uses a class that does not exist yet.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'user.php:7:Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
+              ../bashunit assert contains 'user.php:7:Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
               # That file now declares a class. A root symbol appeared, so the files with errors have to
               # be re-analysed, the same way a brand new file makes them re-analysed - the missing
               # exported nodes entry must not be read as "nothing changed".
               mv gains/script.php src/script.php
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
+              ../bashunit assert not_contains 'Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-parse-error
               # src/Thing.php has a parse error, and src/User.php uses the class it would declare. The parse
               # error carries an exception, so src/Thing.php is left out of the result cache, but the rest
               # of it is saved.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
-              ../bashunit -a contains 'Result cache is saved.' "$OUTPUT"
+              ../bashunit assert contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
+              ../bashunit assert contains 'Result cache is saved.' "$OUTPUT"
               test -f tmp/resultCache.php
               # Only src/Thing.php is analysed again, and the result cache is not rewritten.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
+              ../bashunit assert contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
               # Fixing the parse error declares Thing, so the error that src/User.php had in the result
               # cache goes away.
               cp fixed/Thing.php src/Thing.php
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vvv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'not found' "$OUTPUT"
-              # A reflection error, here a class that extends itself, still keeps the result cache from
-              # being saved.
-              cp loop/Loop.php src/Loop.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
-              echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache was not saved because of non-ignorable exception: Reflection error: Circular reference' "$OUTPUT"
+              ../bashunit assert not_contains 'not found' "$OUTPUT"
           - script: |
               cd e2e/result-cache-internal-error
               composer dump-autoload
               # A rule that throws is an internal error. The result cache is not saved.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vvv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Internal error: The rule crashed.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache was not saved' "$OUTPUT"
+              ../bashunit assert contains 'Internal error: The rule crashed.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache was not saved' "$OUTPUT"
+              test ! -f tmp/resultCache.php
+              # An exception about the analysed code other than a parse error, here a class that is not
+              # found, also keeps the result cache from being saved.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c class-not-found.neon -vvv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache was not saved because of non-ignorable exception: Class ResultCacheE2EInternalError\Missing was not found' "$OUTPUT"
               test ! -f tmp/resultCache.php
           - script: |
               cd e2e/result-cache-string-class
@@ -1374,9 +1410,9 @@ jobs:
               # system rather than through a name node, and the dependency graph records no edge from
               # Thing.php to Factory.php. Deleting the class still has to be noticed.
               rm src/Thing.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Factory.php:12:Instantiated class ResultCacheE2EStringClass\Thing not found.' "$OUTPUT"
+              ../bashunit assert contains 'Factory.php:12:Instantiated class ResultCacheE2EStringClass\Thing not found.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-import-type-deleted
               ../../bin/phpstan analyse
@@ -1384,12 +1420,12 @@ jobs:
               # unresolvable, and a file whose PHPDoc cannot be resolved records no dependencies at all -
               # the edge to User.php is dropped. The next edit of Base.php must still reach User.php.
               rm src/Aliases.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
               patch -b -p0 < signature.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'User.php:10:Method ResultCacheE2EImportType\User::doUser() should return int but returns string.' "$OUTPUT"
+              ../bashunit assert contains 'User.php:10:Method ResultCacheE2EImportType\User::doUser() should return int but returns string.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-require-deleted
               ../../bin/phpstan analyse
@@ -1397,22 +1433,22 @@ jobs:
               # of it exists anywhere in the cache. Deleting it has to be noticed all the same: the rule
               # that checks the path reports an error the moment it is gone.
               rm config/app.php
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Path in require() "config/app.php" is not a file or it does not exist.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Path in require() "config/app.php" is not a file or it does not exist.' "$OUTPUT"
               # And putting it back has to clear the error again.
               printf '<?php declare(strict_types = 1);\n\nreturn [];\n' > config/app.php
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'is not a file or it does not exist' "$OUTPUT"
+              ../bashunit assert not_contains 'is not a file or it does not exist' "$OUTPUT"
           - script: |
               cd e2e/result-cache-vendor-class-appears
               composer install
               # The class does not exist yet, and an error about a class that does not exist records no
               # dependency on anything - there is no file to point at.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:10:Parameter $logger of method ResultCacheE2EVendorClassAppears\Foo::doFoo() has invalid type Psr\Log\PluginProvidedLogger.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:10:Parameter $logger of method ResultCacheE2EVendorClassAppears\Foo::doFoo() has invalid type Psr\Log\PluginProvidedLogger.' "$OUTPUT"
               # Composer updates the package, and a plugin writes the class into it on the way - which is
               # what phpstan/phpstan#15164 is about. Nothing the cache knows about points at that file,
               # so the files with errors have to be re-analysed on a package change; otherwise the error
@@ -1420,95 +1456,95 @@ jobs:
               patch -p0 < updatePsrLog.patch
               composer update psr/log --no-cache
               cp plugin-writes/PluginProvidedLogger.php vendor/psr/log/src/PluginProvidedLogger.php
-              OUTPUT=$(../bashunit -a exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-              ../bashunit -a not_contains 'has invalid type Psr\Log\PluginProvidedLogger' "$OUTPUT"
+              ../bashunit assert contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit assert not_contains 'has invalid type Psr\Log\PluginProvidedLogger' "$OUTPUT"
           - script: |
               cd e2e/ext-ds-version
               cp composer-json/v1-platform.json composer.json
               composer install --ignore-platform-reqs
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
               # Only composer.json changes - composer.lock and installed.php stay as they are - and it now
               # selects the ext-ds 2 stubs. src/Bar.php has no error with ext-ds 1, so only its dependency on
               # ext-ds re-analyses it; src/Baz.php does not use ext-ds and stays cached.
               cp composer-json/v2-platform.json composer.json
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+              ../bashunit assert contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Seq' "$OUTPUT"
               cp composer-json/v1-platform.json composer.json
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-              ../bashunit -a contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Vector' "$OUTPUT"
-              ../bashunit -a not_contains 'Bar.php' "$OUTPUT"
+              ../bashunit assert contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Vector' "$OUTPUT"
+              ../bashunit assert not_contains 'Bar.php' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-path-package
               composer install
               # The rule comes from a package Composer symlinked out of the project, so the file the
               # class reflects to is the source directory, outside vendor/ and outside the analysed
               # paths. Editing it has to invalidate the cache: the rule decides what every file reports.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'the rule says one thing' "$OUTPUT"
               patch -p0 < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
-              ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
-              ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit assert contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit assert not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-autoload-dev
               composer install
               # The rule lives in a directory that is only in autoload-dev and is not analysed, so
               # nothing in the dependency graph points at it. Editing it still has to invalidate.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'the rule says one thing' "$OUTPUT"
               patch -p0 < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
-              ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
-              ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit assert contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit assert not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-copied-package
               composer install
               # The rule comes from a path repository Composer copies rather than symlinks, so the
               # installed file really is inside vendor/. It is still the project's own code, edited in
               # place - unlike a downloaded package, which only ever changes through Composer.
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'the rule says one thing' "$OUTPUT"
               patch -p0 < patch.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because extension file' "$OUTPUT"
-              ../bashunit -a contains 'the rule says another thing' "$OUTPUT"
-              ../bashunit -a not_contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit assert contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit assert not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-path-package-update
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'the rule says one thing' "$OUTPUT"
+              ../bashunit assert contains 'the rule says one thing' "$OUTPUT"
               # Only the package's version moves - the rule file stays byte-identical, so its hash says
               # nothing. The package is symlinked, so the rule's class reflects to the source directory
               # rather than to anything under vendor/; the package it belongs to has to be recognised
               # through the link, or a new version of an extension goes unnoticed.
               patch -p0 < updatePackage.patch
               composer update test/rule-lib --no-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'register a class in the container; re-analysing everything.' "$OUTPUT"
+              ../bashunit assert contains 'register a class in the container; re-analysing everything.' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-update
               composer install
@@ -1519,10 +1555,10 @@ jobs:
               # cache must be invalidated, not just the files depending on the package.
               patch -p1 < updatePackage.patch
               composer update test/rule-ext --no-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
-              ../bashunit -a contains 'Subject.php:5:extension rule version 2' "$OUTPUT"
+              ../bashunit assert contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
+              ../bashunit assert contains 'Subject.php:5:extension rule version 2' "$OUTPUT"
           - script: |
               cd e2e/result-cache-extension-installer
               composer install
@@ -1532,10 +1568,10 @@ jobs:
               # phpstan/extension-installer (no includes: in the project config), which is the common case.
               patch -p1 < updatePackage.patch
               composer update test/installer-rule --no-cache
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
-              ../bashunit -a contains 'Subject.php:5:installer rule version 2' "$OUTPUT"
+              ../bashunit assert contains 'and register a class in the container; re-analysing everything.' "$OUTPUT"
+              ../bashunit assert contains 'Subject.php:5:installer rule version 2' "$OUTPUT"
           - script: |
               cd e2e/result-cache-ci-notification
               # https://github.com/phpstan/phpstan/issues/14881
@@ -1546,18 +1582,18 @@ jobs:
               ../../bin/phpstan clear-result-cache
               OUTPUT=$(PHPSTAN_E2E_SLOW_ANALYSIS=1 ../../bin/phpstan analyse 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Persist PHPStan' "$OUTPUT"
-              ../bashunit -a contains 'to make your pipeline dramatically faster' "$OUTPUT"
+              ../bashunit assert contains 'Persist PHPStan' "$OUTPUT"
+              ../bashunit assert contains 'to make your pipeline dramatically faster' "$OUTPUT"
               # The second run is just as slow, but finds the cache present,
               # so the hint is not shown again.
               OUTPUT=$(PHPSTAN_E2E_SLOW_ANALYSIS=1 ../../bin/phpstan analyse 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'to make your pipeline dramatically faster' "$OUTPUT"
+              ../bashunit assert not_contains 'to make your pipeline dramatically faster' "$OUTPUT"
               # A fast run without any result cache does not show the hint either.
               ../../bin/phpstan clear-result-cache
               OUTPUT=$(../../bin/phpstan analyse 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'to make your pipeline dramatically faster' "$OUTPUT"
+              ../bashunit assert not_contains 'to make your pipeline dramatically faster' "$OUTPUT"
           - script: |
               cd e2e/bug-12606
               export CONFIGTEST=test
@@ -1571,28 +1607,28 @@ jobs:
               ../../bin/phpstan
           - script: |
               cd e2e/stub-files-errors
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Method StubFiles\Foo::doFoo() has no return type specified.' "$OUTPUT"
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan")
+              ../bashunit assert contains 'Method StubFiles\Foo::doFoo() has no return type specified.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Method StubFiles\Foo::doFoo() has no return type specified.' "$OUTPUT"
+              ../bashunit assert contains 'Method StubFiles\Foo::doFoo() has no return type specified.' "$OUTPUT"
           - script: |
               cd e2e/bug-15120
               composer install
               ../../bin/phpstan analyse -vvv
               ../../bin/phpstan analyse -vvv
               patch -b stubs/Foo.stub < stub-change.patch
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'should return non-empty-string but returns string' "$OUTPUT"
+              ../bashunit assert contains 'should return non-empty-string but returns string' "$OUTPUT"
               mv stubs/Foo.stub.orig stubs/Foo.stub
               ../../bin/phpstan analyse -vvv
               patch -b stub-files.neon < config-change.patch
               OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Result cache not used because the metadata do not match' "$OUTPUT"
-              ../bashunit -a contains 'configStubFiles' "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because the metadata do not match' "$OUTPUT"
+              ../bashunit assert contains 'configStubFiles' "$OUTPUT"
               mv stub-files.neon.orig stub-files.neon
               ../../bin/phpstan analyse -vvv
           - script: |
@@ -1607,8 +1643,8 @@ jobs:
               patch -b src/Consumer.php < source-change.patch
               OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1 || true)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Undefined constant' "$OUTPUT"
-              ../bashunit -a contains 'No errors' "$OUTPUT"
+              ../bashunit assert not_contains 'Undefined constant' "$OUTPUT"
+              ../bashunit assert contains 'No errors' "$OUTPUT"
               mv src/Consumer.php.orig src/Consumer.php
               ../../bin/phpstan analyse -vvv
               # a changed file with a generic @template bound - resolving it reflects the
@@ -1616,8 +1652,8 @@ jobs:
               patch -b src/Repository.php < generic-change.patch
               OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1 || true)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Undefined constant' "$OUTPUT"
-              ../bashunit -a contains 'No errors' "$OUTPUT"
+              ../bashunit assert not_contains 'Undefined constant' "$OUTPUT"
+              ../bashunit assert contains 'No errors' "$OUTPUT"
               mv src/Repository.php.orig src/Repository.php
               ../../bin/phpstan analyse -vvv
               # a changed file with a non-private property - exporting it asks whether the
@@ -1625,8 +1661,8 @@ jobs:
               patch -b src/Entity.php < property-change.patch
               OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1 || true)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Undefined constant' "$OUTPUT"
-              ../bashunit -a contains 'No errors' "$OUTPUT"
+              ../bashunit assert not_contains 'Undefined constant' "$OUTPUT"
+              ../bashunit assert contains 'No errors' "$OUTPUT"
               mv src/Entity.php.orig src/Entity.php
               ../../bin/phpstan analyse -vvv
           - script: |
@@ -1634,15 +1670,15 @@ jobs:
               ../../bin/phpstan analyze
           - script: |
               cd e2e/report-ignores-without-comments
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan --error-format=raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan --error-format=raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'test.php:4:Ignore with identifier variable.undefined has no comment.' "$OUTPUT"
-              ../bashunit -a contains 'test.php:4:Variable $undefined might not be defined.' "$OUTPUT"
-              ../bashunit -a not_contains 'test.php:7' "$OUTPUT"
-              ../bashunit -a contains 'test.php:10:Ignoring all errors on a line is not allowed.' "$OUTPUT"
-              ../bashunit -a contains 'test.php:10:Variable $yetAnotherUndefined might not be defined.' "$OUTPUT"
-              ../bashunit -a contains 'test.php:12:Ignoring all errors on a line is not allowed.' "$OUTPUT"
-              ../bashunit -a contains 'test.php:12:Variable $yetYetAnotherUndefined might not be defined.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:4:Ignore with identifier variable.undefined has no comment.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:4:Variable $undefined might not be defined.' "$OUTPUT"
+              ../bashunit assert not_contains 'test.php:7' "$OUTPUT"
+              ../bashunit assert contains 'test.php:10:Ignoring all errors on a line is not allowed.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:10:Variable $yetAnotherUndefined might not be defined.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:12:Ignoring all errors on a line is not allowed.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:12:Variable $yetYetAnotherUndefined might not be defined.' "$OUTPUT"
           - script: |
               # The reflection cache for PHP built-in symbols stores absolute paths to the
               # PhpStorm stub files, but its cache key contains only package versions. The
@@ -1661,22 +1697,22 @@ jobs:
               # analysed with PHP 8.4 must not see them
               # (https://github.com/phpstan/phpstan/issues/15150).
               cd e2e/bug-15150
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --error-format=raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format=raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'test.php:11:Function array_first not found.' "$OUTPUT"
-              ../bashunit -a contains 'test.php:12:Function array_last not found.' "$OUTPUT"
-              ../bashunit -a contains 'test.php:21:Instantiated class Filter\FilterException not found.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:11:Function array_first not found.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:12:Function array_last not found.' "$OUTPUT"
+              ../bashunit assert contains 'test.php:21:Instantiated class Filter\FilterException not found.' "$OUTPUT"
               # array_find() exists in the analysed PHP version, PhpStorm stubs describe it
-              ../bashunit -a not_contains 'array_find' "$OUTPUT"
+              ../bashunit assert not_contains 'array_find' "$OUTPUT"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -1692,7 +1728,7 @@ jobs:
         run: "patch src/Analyser/Error.php < e2e/PHPStanErrorPatch.patch"
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -1768,7 +1804,7 @@ jobs:
 
     steps:
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -1803,6 +1839,20 @@ jobs:
             extensions: ":curl"
           - script: "bin/phpstan analyse -l 8 tests/e2e/anon-class/Granularity.php"
             extensions: ""
+          - script: |
+              cd e2e/bug-11359
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 bug-11359.php")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'e2e/bug-11359/bug-11359.php:3:Function mb_ucfirst not found.' "$OUTPUT"
+            php-version: "8.2"
+            extensions: mbstring
+          - script: |
+              cd e2e/bug-11359
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --no-progress --error-format raw --level=8 bug-11359.php")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'Function mb_ucfirst not found.' "$OUTPUT"
+            php-version: "8.4"
+            extensions: mbstring
           - script: "bin/phpstan analyse -l 8 e2e/phpstan-phpunit-190/test.php -c e2e/phpstan-phpunit-190/test.neon"
             extensions: ""
           - script: "bin/phpstan analyse e2e/only-files-not-analysed-trait/src -c e2e/only-files-not-analysed-trait/ignore.neon"
@@ -1864,13 +1914,13 @@ jobs:
               # https://github.com/phpstan/phpstan/issues/15270
               cd e2e/composer-php-version-range-7-and-8
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains '/errors.php:11:Non-capturing catch is supported only on PHP 8.0 and later.' "$OUTPUT"
-              ../bashunit -a contains '/errors.php:23:Named arguments are supported only on PHP 8.0 and later.' "$OUTPUT"
-              ../bashunit -a contains '/errors.php:29:Function ComposerPhpVersionRange7And8Errors\phpdocBoolReturn() never returns false so the return type can be changed to true.' "$OUTPUT"
-              ../bashunit -a not_contains 'no-errors.php' "$OUTPUT"
-              ../bashunit -a not_contains 'php-version-id.php' "$OUTPUT"
+              ../bashunit assert contains '/errors.php:11:Non-capturing catch is supported only on PHP 8.0 and later.' "$OUTPUT"
+              ../bashunit assert contains '/errors.php:23:Named arguments are supported only on PHP 8.0 and later.' "$OUTPUT"
+              ../bashunit assert contains '/errors.php:29:Function ComposerPhpVersionRange7And8Errors\phpdocBoolReturn() never returns false so the return type can be changed to true.' "$OUTPUT"
+              ../bashunit assert not_contains 'no-errors.php' "$OUTPUT"
+              ../bashunit assert not_contains 'php-version-id.php' "$OUTPUT"
           - script: |
               cd e2e/composer-php-version-range-7
               composer install --ignore-platform-reqs
@@ -1878,21 +1928,21 @@ jobs:
           - script: |
               cd e2e/composer-php-version-range-8-0
               composer install
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains '/errors.php:16:Missing parameter $j (int) in call to function ComposerPhpVersionRange80Errors\acceptsThreeInts.' "$OUTPUT"
-              ../bashunit -a contains '/errors.php:16:Unpacked argument (...) cannot be followed by a non-unpacked argument.' "$OUTPUT"
-              ../bashunit -a not_contains 'no-errors.php' "$OUTPUT"
+              ../bashunit assert contains '/errors.php:16:Missing parameter $j (int) in call to function ComposerPhpVersionRange80Errors\acceptsThreeInts.' "$OUTPUT"
+              ../bashunit assert contains '/errors.php:16:Unpacked argument (...) cannot be followed by a non-unpacked argument.' "$OUTPUT"
+              ../bashunit assert not_contains 'no-errors.php' "$OUTPUT"
           - script: |
               cd e2e/composer-php-version-range-8-5
               composer install --ignore-platform-reqs
               ../../bin/phpstan analyse --no-progress
           - script: |
               cd e2e/composer-version-config-invalid
-              OUTPUT=$(../bashunit -a exit_code "1" ../../bin/phpstan)
+              OUTPUT=$(../bashunit assert exit_code "1" ../../bin/phpstan)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Invalid configuration' "$OUTPUT"
-              ../bashunit -a contains 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' "$OUTPUT"
+              ../bashunit assert contains 'Invalid configuration' "$OUTPUT"
+              ../bashunit assert contains 'Invalid PHP version range: phpVersion.max should be greater or equal to phpVersion.min.' "$OUTPUT"
           - script: |
               cd e2e/composer-version-config-patch
               composer install --ignore-platform-reqs
@@ -1903,7 +1953,7 @@ jobs:
               ../../bin/phpstan analyze test.php --level=0
           - script: |
               cd e2e/bug13425
-              timeout 15 ../bashunit -a exit_code "1" "../../bin/phpstan analyze src/ plugins/"
+              timeout 15 ../bashunit assert exit_code "1" "../../bin/phpstan analyze src/ plugins/"
           - script: |
               cd e2e/bug-14036
               composer install
@@ -1912,17 +1962,17 @@ jobs:
               cd e2e/vvv-with-debug
               OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug test.php 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Parallel processing scheduler' "$OUTPUT"
+              ../bashunit assert not_contains 'Parallel processing scheduler' "$OUTPUT"
           - script: |
               cd e2e/vvv-with-debug
               OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv --debug --configuration parallel.neon test.php 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a not_contains 'Parallel processing scheduler' "$OUTPUT"
+              ../bashunit assert not_contains 'Parallel processing scheduler' "$OUTPUT"
           - script: |
               cd e2e/vvv-with-debug
               OUTPUT=$(../../bin/phpstan analyze -l 0 -vvv test.php 2>&1)
               echo "$OUTPUT"
-              ../bashunit -a contains 'Parallel processing scheduler' "$OUTPUT"
+              ../bashunit assert contains 'Parallel processing scheduler' "$OUTPUT"
           - script: |
               cd e2e/bug-14093
               # Use a relative sys_temp_dir so the value starts with a letter (not /), just like Windows
@@ -1945,7 +1995,7 @@ jobs:
               sudo touch /lib/ld-musl-x86_64.so.1
               OUTPUT=$(bin/phpstan diagnose -l 0 -c tests/e2e/data/empty.neon)
               echo "$OUTPUT"
-              e2e/bashunit -a contains 'Turbo platform: linux-gnu-' "$OUTPUT"
+              e2e/bashunit assert contains 'Turbo platform: linux-gnu-' "$OUTPUT"
           - script: |
               # The mirror image of the leg above: an actual musl system must keep
               # picking the musl build - both on Alpine, and (since /etc/alpine-release
@@ -1955,10 +2005,10 @@ jobs:
               DIAGNOSE='php -d memory_limit=-1 bin/phpstan diagnose -l 0 -c tests/e2e/data/empty.neon'
               OUTPUT=$(docker run --rm -v "$PWD:/repo" -w /repo php:8.2-cli-alpine sh -c "$DIAGNOSE")
               echo "$OUTPUT"
-              e2e/bashunit -a contains 'Turbo platform: linux-musl-' "$OUTPUT"
+              e2e/bashunit assert contains 'Turbo platform: linux-musl-' "$OUTPUT"
               OUTPUT=$(docker run --rm -v "$PWD:/repo" -w /repo php:8.2-cli-alpine sh -c "rm /etc/alpine-release && $DIAGNOSE")
               echo "$OUTPUT"
-              e2e/bashunit -a contains 'Turbo platform: linux-musl-' "$OUTPUT"
+              e2e/bashunit assert contains 'Turbo platform: linux-musl-' "$OUTPUT"
           - script: |
               # A parallel worker killed by a signal writes nothing of its own -
               # no PHP error, no shutdown function, an empty capture file. The
@@ -1967,81 +2017,100 @@ jobs:
               # "Some parallel worker jobs have not finished", which is what made
               # https://github.com/phpstan/phpstan/issues/15131 undiagnosable.
               cd e2e/parallel-worker-signal
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress")
               echo "$OUTPUT"
-              ../bashunit -a contains 'killed by signal 9 (SIGKILL)' "$OUTPUT"
+              ../bashunit assert contains 'killed by signal 9 (SIGKILL)' "$OUTPUT"
           - script: |
               # config.platform selects the ext-ds 1 stubs: Ds\Vector exists, Ds\Seq does not.
               cd e2e/ext-ds-version
               cp composer-json/v1-platform.json composer.json
               composer install --ignore-platform-reqs
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Vector' "$OUTPUT"
-              ../bashunit -a not_contains 'Bar.php' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Vector' "$OUTPUT"
+              ../bashunit assert not_contains 'Bar.php' "$OUTPUT"
           - script: |
               # config.platform selects the ext-ds 2 stubs: Ds\Seq exists, Ds\Vector and Ds\Pair::copy() do not.
               cd e2e/ext-ds-version
               cp composer-json/v2-platform.json composer.json
               composer install --ignore-platform-reqs
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Seq' "$OUTPUT"
           - script: |
               # Without a config.platform entry, the major version of the required ext-ds is selected.
               cd e2e/ext-ds-version
               cp composer-json/v2-require.json composer.json
               composer install --ignore-platform-reqs
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Seq' "$OUTPUT"
           - script: |
               # A constraint whose alternatives all stay within one major version (^2.0 || ^2.1) selects that version.
               cd e2e/ext-ds-version
               cp composer-json/v2-same-major-or-require.json composer.json
               composer install --ignore-platform-reqs
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Seq' "$OUTPUT"
           - script: |
               # config.platform names ext-ds 3, which has no stubs, so the required ^2.0 decides instead.
               cd e2e/ext-ds-version
               cp composer-json/v2-unknown-platform.json composer.json
               composer install --ignore-platform-reqs
-              OUTPUT=$(../bashunit -a exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --no-progress --error-format raw")
               echo "$OUTPUT"
-              ../bashunit -a contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
-              ../bashunit -a contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
-              ../bashunit -a not_contains 'Ds\Seq' "$OUTPUT"
+              ../bashunit assert contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
+              ../bashunit assert contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
+              ../bashunit assert not_contains 'Ds\Seq' "$OUTPUT"
+          - script: |
+              cd e2e/bug-15407
+              ../../bin/phpstan analyse --no-progress -vvv 2>&1 | tee -a output.txt
+              ../bashunit assert file_contains output.txt "Restarting process: pcov (pcov.enabled=1)"
+            coverage: "pcov"
+          - script: |
+              cd e2e/bug-15407
+              ../../bin/phpstan analyse --no-progress -vvv 2>&1 | tee -a output.txt
+              ../bashunit assert file_contains output.txt "Restarting process: pcov (pcov.enabled=1)"
+            coverage: "pcov"
+            ini-values: "pcov.enabled=1"
+          - script: |
+              cd e2e/bug-15407
+              # the restart may still happen to activate OPcache, just not for pcov
+              ../../bin/phpstan analyse --no-progress -vvv 2>&1 | tee -a output.txt
+              ../bashunit assert file_not_contains output.txt "pcov (pcov.enabled"
+            coverage: "pcov"
+            ini-values: "pcov.enabled=0"
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
-          coverage: "none"
-          php-version: "8.2"
+          coverage: ${{ matrix.coverage || 'none' }}
+          ini-values: ${{ matrix.ini-values || '' }}
+          php-version: ${{ matrix.php-version || '8.2' }}
           tools: ${{ matrix.tools }}
           extensions: ${{ matrix.extensions }}
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2055,12 +2124,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # the extension bakes its version from `git log -- turbo-ext/src`, and
           # TurboExtensionEnabler activates only the expected version - a shallow
@@ -2076,7 +2145,7 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2084,8 +2153,8 @@ jobs:
         run: make build-turbo
 
       - name: "Load the turbo extension through php.ini"
-        # TurboProcessRestarter re-executes the process with the loaded php.ini
-        # to activate OPcache; an extension passed as -d would not survive that,
+        # the restart re-executes the process with the loaded ini files to
+        # activate OPcache; an extension passed as -d would not survive that,
         # one from the ini scan dir is loaded again
         run: |
           echo "extension=$PWD/turbo-ext/phpstan_turbo.so" | sudo tee "$(php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;')/99-phpstan-turbo.ini"
@@ -2098,8 +2167,8 @@ jobs:
         run: |
           OUTPUT=$(php bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
           echo "$OUTPUT"
-          e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
-          e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
+          e2e/bashunit assert contains 'Turbo extension: enabled' "$OUTPUT"
+          e2e/bashunit assert contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
 
       - name: "Verify PHPSTAN_TURBO=0 does not disable the extension"
         # The env var was an escape hatch that users kept in their scripts long
@@ -2109,7 +2178,7 @@ jobs:
         run: |
           OUTPUT=$(PHPSTAN_TURBO=0 php bin/phpstan diagnose -c e2e/turbo-arena/phpstan.neon)
           echo "$OUTPUT"
-          e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
+          e2e/bashunit assert contains 'Turbo extension: enabled' "$OUTPUT"
 
       - name: "Verify conditional types leave interned types equal to a resolved subject alone"
         # With the extension active TypeCombinator's results are interned, so equal
@@ -2122,11 +2191,11 @@ jobs:
           cd e2e/bug-15151
           OUTPUT=$(php ../../bin/phpstan analyse --no-progress --error-format=raw 2>&1 || true)
           echo "$OUTPUT"
-          ../bashunit -a contains 'reception_formulaire.php:20:Dumped type: mixed' "$OUTPUT"
-          ../bashunit -a contains 'webservice.php:25:Dumped type: mixed' "$OUTPUT"
-          ../bashunit -a not_contains 'Dumped type: array' "$OUTPUT"
+          ../bashunit assert contains 'reception_formulaire.php:20:Dumped type: mixed' "$OUTPUT"
+          ../bashunit assert contains 'webservice.php:25:Dumped type: mixed' "$OUTPUT"
+          ../bashunit assert not_contains 'Dumped type: array' "$OUTPUT"
           # the two dumps are the only errors: count the file:line:message lines
-          ../bashunit -a equals '2' "$(echo "$OUTPUT" | grep -Ec '^/.+:[0-9]+:')"
+          ../bashunit assert equals '2' "$(echo "$OUTPUT" | grep -Ec '^/.+:[0-9]+:')"
 
       - name: "Verify conditional types leave memoized types equal to the argument alone"
         # With the extension active TypeCombinator's results are memoized, so every
@@ -2137,6 +2206,17 @@ jobs:
         run: |
           cd e2e/bug-15268
           php ../../bin/phpstan analyse --no-progress --error-format=raw
+
+      - name: "Verify name scopes built from the simplified AST are not reused for an analysed file"
+        # A run on other paths builds the name scopes of the scanned file from its
+        # simplified AST, without the anonymous class declared in a function body.
+        # A later full run must not reuse them, even with the result cache cleared -
+        # https://github.com/phpstan/phpstan/issues/15475
+        run: |
+          cd e2e/bug-15475
+          php ../../bin/phpstan analyse --no-progress src/usage.php
+          php ../../bin/phpstan clear-result-cache
+          php ../../bin/phpstan analyse --no-progress
 
       - name: "Test"
         # The arena is a per-run POSIX shared-memory object: shm_open() plus an
@@ -2163,7 +2243,7 @@ jobs:
           # bashunit takes the haystack as a single argv entry, and execve caps
           # one argument at 128 KB - a few hundred KB of analysis output only
           # fits through the assertion once grep has narrowed it down
-          ../bashunit -a not_contains 'parallel worker' "$(grep -F 'parallel worker' "$RUNNER_TEMP/small-shm.txt" || true)"
+          ../bashunit assert not_contains 'parallel worker' "$(grep -F 'parallel worker' "$RUNNER_TEMP/small-shm.txt" || true)"
           diff "$RUNNER_TEMP/reference.txt" "$RUNNER_TEMP/small-shm.txt"
 
   turbo-fork-unsafe-extension-e2e-tests:
@@ -2173,12 +2253,12 @@ jobs:
 
     steps:
       - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # the extension bakes its version from `git log -- turbo-ext/src`, and
           # TurboExtensionEnabler activates only the expected version - a shallow
@@ -2194,7 +2274,7 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Install bashunit"
-        uses: "TypedDevs/bashunit@94933c088b0719e0c4cf5e3147dad67f713b970d" # 0.44.0
+        uses: "TypedDevs/bashunit@8d4f357f52df7596f92ece2d6c049d91d45517a2" # 0.52.0
         with:
           directory: "e2e"
 
@@ -2213,8 +2293,8 @@ jobs:
           make -j"$(nproc)"
 
       - name: "Load both extensions through php.ini"
-        # TurboProcessRestarter re-executes the process with the loaded php.ini
-        # to activate OPcache; extensions passed as -d would not survive that,
+        # the restart re-executes the process with the loaded ini files to
+        # activate OPcache; extensions passed as -d would not survive that,
         # ones from the ini scan dir are loaded again
         run: |
           printf 'extension=%s\nextension=%s\n' "$PWD/turbo-ext/phpstan_turbo.so" "$RUNNER_TEMP/forkunsafe/modules/forkunsafe.so" | sudo tee "$(php -r 'echo PHP_CONFIG_FILE_SCAN_DIR;')/99-phpstan-turbo.ini"
@@ -2228,14 +2308,14 @@ jobs:
           timeout 10 php e2e/fork-unsafe-extension/fork-and-exit.php
           CODE=$?
           set -e
-          e2e/bashunit -a equals "124" "$CODE"
+          e2e/bashunit assert equals "124" "$CODE"
 
       - name: "Verify fork mode is actually used"
         run: |
           OUTPUT=$(php bin/phpstan diagnose -c e2e/fork-unsafe-extension/phpstan.neon)
           echo "$OUTPUT"
-          e2e/bashunit -a contains 'Turbo extension: enabled' "$OUTPUT"
-          e2e/bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
+          e2e/bashunit assert contains 'Turbo extension: enabled' "$OUTPUT"
+          e2e/bashunit assert contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
 
       - name: "Test"
         # https://github.com/phpstan/phpstan/issues/15138 - the forked worker
@@ -2244,7 +2324,216 @@ jobs:
         run: |
           cd e2e/fork-unsafe-extension
           rm -rf tmp
-          OUTPUT=$(../bashunit -a exit_code "0" "timeout 120 php ../../bin/phpstan analyse --no-progress -vvv")
+          OUTPUT=$(../bashunit assert exit_code "0" "timeout 120 php ../../bin/phpstan analyse --no-progress -vvv")
           echo "$OUTPUT"
-          ../bashunit -a contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
-          ../bashunit -a contains '[OK] No errors' "$OUTPUT"
+          ../bashunit assert contains 'Mechanism:                 fork (pcntl_fork)' "$OUTPUT"
+          ../bashunit assert contains '[OK] No errors' "$OUTPUT"
+
+  process-restart-e2e-tests:
+    name: "Process restart E2E tests"
+    runs-on: ${{ matrix.operating-system }}
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # pcov armed: one restart, every process - the forked worker
+          # included, which no per-worker `-d` injection could reach - runs
+          # disarmed. pcov stays loaded: the rows disarm rather than unload,
+          # which keeps the extension's own symbols reflectable. setup-php
+          # loads OPcache dormant on CLI, so the same restart activates it in
+          # every Linux row
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=pcov,opcache pcov-armed=no pcov-loaded=yes opcache-cli-on=yes processes=2+ starts=2
+
+          # Windows has no pcntl_exec, so the restart runs as a child process
+          # whose exit code is passed on. OPcache is left alone there: the
+          # workers are spawned, and ProcessHelper activates it for each
+          - operating-system: "windows-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=pcov pcov-armed=no processes=1+ starts=2
+              set +e
+              php ../../bin/phpstan analyse --no-progress --configuration failing.neon
+              EXIT_CODE=$?
+              set -e
+              if [ "$EXIT_CODE" != "1" ]; then
+                echo "FAIL: the restarted process' exit code was not passed on, got $EXIT_CODE"
+                exit 1
+              fi
+
+          # xdebug: one restart disarms it via xdebug.mode=off, and it stays
+          # loaded so xdebug_*() remains reflectable. No note about it being
+          # active either
+          - operating-system: "ubuntu-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress 2>&1 | tee out.txt
+              if grep -q 'The Xdebug PHP extension is active, but' out.txt; then
+                echo "FAIL: xdebug survived the restart armed"
+                exit 1
+              fi
+              php check.php restarted-for=xdebug,opcache xdebug-armed=no xdebug-loaded=yes processes=2+ starts=2
+
+          # XDEBUG_MODE overrides xdebug.mode, so flagging the ini alone would
+          # be silently overridable - the row exports the env var too
+          - operating-system: "ubuntu-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              XDEBUG_MODE=develop,debug php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=xdebug,opcache xdebug-armed=no xdebug-loaded=yes processes=2+ starts=2
+
+          # --xdebug keeps xdebug armed and does not restart for it - only for
+          # OPcache
+          - operating-system: "ubuntu-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress --xdebug 2>&1 | tee out.txt
+              if ! grep -q 'enabled, and the Xdebug PHP extension is active' out.txt; then
+                echo "FAIL: --xdebug did not keep xdebug"
+                exit 1
+              fi
+              php check.php restarted-for=opcache xdebug-armed=yes processes=1+ starts=2
+
+          # xdebug and pcov together: one restart handles both. Both come in
+          # through `extensions` because setup-php's `coverage: xdebug` unloads
+          # pcov. xdebug is armed by its default mode, pcov on the command
+          # line - which also proves the composed ini carries runtime `-d`
+          # overrides over without reconstructing them from $argv
+          - operating-system: "ubuntu-latest"
+            coverage: ""
+            extensions: "xdebug, pcov"
+            script: |
+              php -d pcov.enabled=1 ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=xdebug,pcov,opcache pcov-armed=no xdebug-armed=no processes=2+ starts=2
+
+          # --xdebug with pcov armed: xdebug stays armed, pcov is still
+          # disarmed by the same restart - something xdebug-handler could never
+          # express
+          - operating-system: "ubuntu-latest"
+            coverage: ""
+            extensions: "xdebug, pcov"
+            script: |
+              php -d pcov.enabled=1 ../../bin/phpstan analyse --no-progress --xdebug
+              php check.php restarted-for=pcov,opcache pcov-armed=no xdebug-armed=yes processes=1+ starts=2
+
+          # uopz rewrites opcodes unless uopz.disable=1
+          - operating-system: "ubuntu-latest"
+            coverage: "none"
+            extensions: "uopz"
+            script: |
+              php ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for=uopz,opcache uopz-armed=no processes=2+ starts=2
+
+          # OPcache is dormant on CLI by default - the restart activates it,
+          # and the forked workers inherit the parent's warm opcode cache
+          - operating-system: "ubuntu-latest"
+            coverage: "none"
+            extensions: "opcache"
+            script: |
+              php -d opcache.enable_cli=0 ../../bin/phpstan analyse --no-progress -vvv > out.txt 2>&1
+              cat out.txt
+              php check.php restarted-for=opcache opcache-cli-on=yes processes=2+ starts=2
+              if ! grep -qE 'Mechanism: +fork' out.txt; then
+                echo "FAIL: the workers were not forked under the activated OPcache"
+                exit 1
+              fi
+
+          # a PHP process spawned during the run - by an extension compiling
+          # its own DI container, say - reads the composed ini through PHPRC,
+          # so a forked worker that ends must not delete it; the rule spawns
+          # one in the main process after every worker has ended
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              set +e
+              php ../../bin/phpstan analyse -c spawn.neon -a SpawnedProcessRule.php --no-progress --error-format=raw -vvv > out.txt 2>&1
+              CODE=$?
+              set -e
+              cat out.txt
+              if ! grep -qE 'Mechanism: +fork' out.txt; then
+                echo "FAIL: the workers were not forked"
+                exit 1
+              fi
+              if [ "$CODE" != "0" ]; then
+                echo "FAIL: the analysis exited with $CODE"
+                exit 1
+              fi
+              php check.php restarted-for=pcov,opcache pcov-armed=no processes=2+ starts=2
+
+          # --debug restarts like any other run - it only makes the analysis
+          # serial, --xdebug is what keeps xdebug
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan analyse --no-progress --debug
+              php check.php restarted-for=pcov,opcache pcov-armed=no processes=1 starts=2
+
+          # diagnose never restarts either, it reports what a run would do
+          - operating-system: "ubuntu-latest"
+            coverage: "pcov"
+            extensions: ""
+            script: |
+              php ../../bin/phpstan diagnose 2>&1 | tee out.txt
+              if ! grep -qE 'Restart if started now: +yes - pcov' out.txt; then
+                echo "FAIL: diagnose did not report the restart it would perform"
+                exit 1
+              fi
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        with:
+          coverage: ${{ matrix.coverage }}
+          php-version: "8.2"
+          extensions: ${{ matrix.extensions }}
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
+
+      - name: "Test"
+        working-directory: "e2e/restart-manager"
+        env:
+          SCRIPT: ${{ matrix.script }}
+          # Symfony wraps its notes to the terminal width and prefixes wrapped
+          # lines with "!", which can split a phrase in a way no post-processing
+          # rejoins - and would make the negative assertions pass vacuously
+          COLUMNS: "400"
+        run: |
+          # count every start of the main process, the one before the restart
+          # included - which only an ini-level hook sees
+          LINE=$(php -r 'echo "auto_prepend_file=\"", getcwd(), DIRECTORY_SEPARATOR, "start-log.php\"";')
+          INI=$(php -r 'echo php_ini_loaded_file();')
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            echo "$LINE" >> "$INI"
+          else
+            echo "$LINE" | sudo tee -a "$INI" > /dev/null
+          fi
+          php ../../bin/phpstan clear-result-cache
+          rm -f probe.log starts.log
+          eval "$SCRIPT"

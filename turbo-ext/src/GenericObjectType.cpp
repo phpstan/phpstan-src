@@ -22,10 +22,6 @@ namespace sigs = ptdecl::GenericObjectType::sig;
 
 #include <vector>
 
-#ifdef ZEND_CHECK_STACK_LIMIT
-# include "zend_call_stack.h"
-#endif
-
 zend_class_entry *pt_ce_generic_object_type = nullptr;
 
 /* The twin describes its type arguments through an array_map() closure, and

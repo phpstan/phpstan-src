@@ -33,6 +33,19 @@ if (!class_exists('PHPStanTurbo\Runtime')) {
 	$unknownClasses[] = 'PHPStanTurbo\Runtime';
 }
 
+$unknownFunctions = [];
+foreach ([
+	'uopz_allow_exit', // ext-uopz, only called when the extension is loaded
+	'sapi_windows_set_ctrl_handler', // Windows-only, guarded by function_exists()
+] as $function) {
+	// conditional for the same reason as PHPStanTurbo\Runtime above
+	if (function_exists($function)) {
+		continue;
+	}
+
+	$unknownFunctions[] = $function;
+}
+
 return $config
 	->addPathToScan(__DIR__ . '/../bin', true)
 	->ignoreErrorsOnPackages(
@@ -44,4 +57,5 @@ return $config
 	)
 	->ignoreErrorsOnPackage('phpunit/phpunit', [ErrorType::DEV_DEPENDENCY_IN_PROD]) // prepared test tooling
 	->ignoreErrorsOnPath(__DIR__ . '/../tests', [ErrorType::UNKNOWN_CLASS, ErrorType::UNKNOWN_FUNCTION, ErrorType::SHADOW_DEPENDENCY]) // to be able to test invalid symbols
-	->ignoreUnknownClasses($unknownClasses);
+	->ignoreUnknownClasses($unknownClasses)
+	->ignoreUnknownFunctions($unknownFunctions);

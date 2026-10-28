@@ -26,7 +26,6 @@ final class BooleanAndConstantConditionRule implements Rule
 
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
-		private PossiblyImpureTipHelper $possiblyImpureTipHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private FunctionCallConstantConditionHelper $functionCallConstantConditionHelper,
 		#[AutowiredParameter]
@@ -59,20 +58,18 @@ final class BooleanAndConstantConditionRule implements Rule
 		if ($leftType instanceof ConstantBooleanType) {
 			$addTipLeft = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType($scope, $originalNode->left);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
-				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-				return $this->possiblyImpureTipHelper->addTip($scope, $originalNode->left, $ruleErrorBuilder);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -111,7 +108,7 @@ final class BooleanAndConstantConditionRule implements Rule
 		if ($rightType instanceof ConstantBooleanType && !$scope->isInFirstLevelStatement()) {
 			$addTipRight = function (RuleErrorBuilder $ruleErrorBuilder) use ($rightScope, $originalNode): RuleErrorBuilder {
 				if (!$this->treatPhpDocTypesAsCertain) {
-					return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
 				$booleanNativeType = $this->helper->getNativeBooleanType(
@@ -119,15 +116,13 @@ final class BooleanAndConstantConditionRule implements Rule
 					$originalNode->right,
 				);
 				if ($booleanNativeType instanceof ConstantBooleanType) {
-					return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 				if (!$this->treatPhpDocTypesAsCertainTip) {
-					return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
+					return $ruleErrorBuilder;
 				}
 
-				$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-				return $this->possiblyImpureTipHelper->addTip($rightScope, $originalNode->right, $ruleErrorBuilder);
+				return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 			};
 
 			$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);
@@ -163,20 +158,18 @@ final class BooleanAndConstantConditionRule implements Rule
 			if ($nodeType instanceof ConstantBooleanType) {
 				$addTip = function (RuleErrorBuilder $ruleErrorBuilder) use ($scope, $originalNode): RuleErrorBuilder {
 					if (!$this->treatPhpDocTypesAsCertain) {
-						return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
+						return $ruleErrorBuilder;
 					}
 
 					$booleanNativeType = $scope->getNativeType($originalNode);
 					if ($booleanNativeType instanceof ConstantBooleanType) {
-						return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
+						return $ruleErrorBuilder;
 					}
 					if (!$this->treatPhpDocTypesAsCertainTip) {
-						return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
+						return $ruleErrorBuilder;
 					}
 
-					$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
-
-					return $this->possiblyImpureTipHelper->addTip($scope, $originalNode, $ruleErrorBuilder);
+					return $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 				};
 
 				$isLast = $node->getAttribute(LastConditionVisitor::ATTRIBUTE_NAME);

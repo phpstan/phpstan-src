@@ -20,15 +20,17 @@ use function min;
  * depend on runtime values that can't be known statically. Extension developers
  * encounter TrinaryLogic extensively when querying type properties:
  *
- *     if ($type->isString()->yes()) {
- *         // Definitely a string
- *     }
- *     if ($type->isString()->maybe()) {
- *         // Could be a string (e.g. mixed)
- *     }
- *     if ($type->isString()->no()) {
- *         // Definitely not a string
- *     }
+ * ```php
+ * if ($type->isString()->yes()) {
+ *     // Definitely a string
+ * }
+ * if ($type->isString()->maybe()) {
+ *     // Could be a string (e.g. mixed)
+ * }
+ * if ($type->isString()->no()) {
+ *     // Definitely not a string
+ * }
+ * ```
  *
  * TrinaryLogic supports logical operations (and, or, negate) that propagate
  * uncertainty correctly. It is used as a flyweight — instances are cached and

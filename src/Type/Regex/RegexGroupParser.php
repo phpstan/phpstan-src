@@ -2,13 +2,10 @@
 
 namespace PHPStan\Type\Regex;
 
-use Hoa\Compiler\Llk\Llk;
-use Hoa\Compiler\Llk\Parser;
-use Hoa\Compiler\Llk\TreeNode;
-use Hoa\Exception\Exception;
-use Hoa\File\Read;
 use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
+use Phplrt\Contracts\Parser\Exception\ParserExceptionInterface;
+use Phplrt\Source\StringSource;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\ShouldNotHappenException;
@@ -18,6 +15,9 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\Regex\Parser\RegexNode;
+use PHPStan\Type\Regex\Parser\RegexParser;
+use PHPStan\Type\Regex\Parser\RegexSyntaxException;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -49,9 +49,15 @@ final class RegexGroupParser
 	// to avoid combinatorial explosion from nested optional/bounded quantifications
 	private const LITERALS_LIMIT = 100;
 
-	private static ?Parser $parser = null;
+	private const NEGATIVE_ASSERTIONS = ['#negativelookahead', '#negativelookbehind'];
 
-	/** @var array<string, ?TreeNode> */
+	private const ASSERTIONS = ['#lookahead', '#lookbehind', '#negativelookahead', '#negativelookbehind'];
+
+	private const CONDITIONS = ['#namedcondition', '#absolutecondition', '#relativecondition', '#assertioncondition'];
+
+	private static ?RegexParser $parser = null;
+
+	/** @var array<string, ?RegexNode> */
 	private static array $parsedAst = [];
 
 	public function __construct(
@@ -63,8 +69,7 @@ final class RegexGroupParser
 
 	public function parseGroups(string $regex): ?RegexAstWalkResult
 	{
-		/** @throws void */
-		self::$parser ??= Llk::load(new Read(__DIR__ . '/../../../resources/RegexGrammar.pp'));
+		self::$parser ??= new RegexParser();
 
 		if (array_key_exists($regex, self::$parsedAst)) {
 			$ast = self::$parsedAst[$regex];
@@ -96,10 +101,18 @@ final class RegexGroupParser
 
 			$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
 			try {
-				$ast = self::$parsedAst[$regex] = self::$parser->parse($rawRegex);
-			} catch (Exception) {
+				$ast = self::$parser->parse(StringSource::createFromString($rawRegex));
+			} catch (ParserExceptionInterface | RegexSyntaxException) {
 				return self::$parsedAst[$regex] = null;
 			}
+			if (!$ast instanceof RegexNode) {
+				throw new ShouldNotHappenException();
+			}
+			if ($this->containsSubroutineCall($ast)) {
+				// a subroutine call matches what another group matches, but it does not set that group
+				return self::$parsedAst[$regex] = null;
+			}
+			self::$parsedAst[$regex] = $ast;
 		}
 
 		$this->updateAlternationAstRemoveVerticalBarsAndAddEmptyToken($ast);
@@ -145,12 +158,27 @@ final class RegexGroupParser
 		return $astWalkResult;
 	}
 
-	private function createEmptyTokenTreeNode(TreeNode $parentAst): TreeNode
+	private function createEmptyTokenRegexNode(): RegexNode
 	{
-		return new TreeNode('token', ['token' => 'literal', 'value' => '', 'namespace' => 'default'], parent: $parentAst);
+		return new RegexNode('token', 'literal', '');
 	}
 
-	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(TreeNode $ast): void
+	private function containsSubroutineCall(RegexNode $ast): bool
+	{
+		if ($ast->getId() === 'token' && $ast->getValueToken() === 'subroutine') {
+			return true;
+		}
+
+		foreach ($ast->getChildren() as $child) {
+			if ($this->containsSubroutineCall($child)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function updateAlternationAstRemoveVerticalBarsAndAddEmptyToken(RegexNode $ast): void
 	{
 		$children = $ast->getChildren();
 
@@ -169,13 +197,13 @@ final class RegexGroupParser
 				continue;
 			}
 
-			$children[$i] = $this->createEmptyTokenTreeNode($ast);
+			$children[$i] = $this->createEmptyTokenRegexNode();
 		}
 
 		$ast->setChildren(array_values($children));
 	}
 
-	private function updateCapturingAstAddEmptyToken(TreeNode $ast): void
+	private function updateCapturingAstAddEmptyToken(RegexNode $ast): void
 	{
 		foreach ($ast->getChildren() as $child) {
 			$this->updateCapturingAstAddEmptyToken($child);
@@ -185,12 +213,10 @@ final class RegexGroupParser
 			return;
 		}
 
-		$emptyAlternationAst = new TreeNode('#alternation', parent: $ast);
-		$emptyAlternationAst->setChildren([$this->createEmptyTokenTreeNode($emptyAlternationAst)]);
-		$ast->setChildren([$emptyAlternationAst]);
+		$ast->setChildren([new RegexNode('#alternation', children: [$this->createEmptyTokenRegexNode()])]);
 	}
 
-	private function containsEscapeK(TreeNode $ast): bool
+	private function containsEscapeK(RegexNode $ast): bool
 	{
 		if ($ast->getId() === 'token' && $ast->getValueToken() === 'match_point_reset') {
 			return true;
@@ -206,7 +232,7 @@ final class RegexGroupParser
 	}
 
 	private function walkRegexAst(
-		TreeNode $ast,
+		RegexNode $ast,
 		?RegexAlternation $alternation,
 		int $combinationIndex,
 		bool $inOptionalQuantification,
@@ -265,6 +291,19 @@ final class RegexGroupParser
 				$inOptionalQuantification,
 				$parentGroup,
 				true,
+			);
+			$parentGroup = $group;
+		} elseif (
+			in_array($ast->getId(), self::NEGATIVE_ASSERTIONS, true)
+			|| in_array($ast->getId(), self::CONDITIONS, true)
+		) {
+			// capturing groups in a negative assertion are never set when the whole pattern matches,
+			// capturing groups in a conditional subpattern are set only when its condition says so
+			$group = new RegexNonCapturingGroup(
+				$alternation,
+				true,
+				$parentGroup,
+				false,
 			);
 			$parentGroup = $group;
 		}
@@ -349,7 +388,7 @@ final class RegexGroupParser
 	}
 
 	/** @return array{?int, ?int} */
-	private function getQuantificationRange(TreeNode $node): array
+	private function getQuantificationRange(RegexNode $node): array
 	{
 		if ($node->getId() !== '#quantification') {
 			throw new ShouldNotHappenException();
@@ -358,12 +397,12 @@ final class RegexGroupParser
 		$min = null;
 		$max = null;
 
-		$lastChild = $node->getChild($node->getChildrenNumber() - 1);
-		$value = $lastChild->getValue();
+		$children = $node->getChildren();
+		$lastChild = $children[count($children) - 1];
 
 		// normalize away possessive and lazy quantifier-modifiers
-		$token = str_replace(['_possessive', '_lazy'], '', $value['token']);
-		$value = rtrim($value['value'], '+?');
+		$token = str_replace(['_possessive', '_lazy'], '', $lastChild->getValueToken());
+		$value = rtrim($lastChild->getValueValue(), '+?');
 
 		if ($token === 'n_to_m') {
 			if (sscanf($value, '{%d,%d}', $n, $m) !== 2 || !is_int($n) || !is_int($m)) {
@@ -397,7 +436,7 @@ final class RegexGroupParser
 		return [$min, $max];
 	}
 
-	private function createGroupType(TreeNode $group, bool $maybeConstant, string $patternModifiers): Type
+	private function createGroupType(RegexNode $group, bool $maybeConstant, string $patternModifiers): Type
 	{
 		$rootAlternation = $this->getRootAlternation($group);
 		if ($rootAlternation !== null) {
@@ -448,7 +487,7 @@ final class RegexGroupParser
 		return new StringType();
 	}
 
-	private function getRootAlternation(TreeNode $group): ?TreeNode
+	private function getRootAlternation(RegexNode $group): ?RegexNode
 	{
 		if (
 			$group->getId() === '#capturing'
@@ -471,12 +510,22 @@ final class RegexGroupParser
 	}
 
 	private function walkGroupAst(
-		TreeNode $ast,
+		RegexNode $ast,
 		bool $inClass,
 		string $patternModifiers,
 		RegexGroupWalkResult $walkResult,
 	): RegexGroupWalkResult
 	{
+		if (in_array($ast->getId(), self::ASSERTIONS, true)) {
+			// assertions are zero-width, they do not add anything to the matched string
+			return $walkResult;
+		}
+
+		if (in_array($ast->getId(), self::CONDITIONS, true)) {
+			// which branch of a conditional subpattern matches is not known, it might match an empty string
+			return $walkResult->onlyLiterals(null)->numeric(TrinaryLogic::createNo());
+		}
+
 		$children = $ast->getChildren();
 		$quantifiedLiterals = null;
 
@@ -518,7 +567,9 @@ final class RegexGroupParser
 				$walkResult = $walkResult->inOptionalQuantification(true);
 			}
 
-			if (!$walkResult->isInOptionalQuantification()) {
+			// repeating an atom that might match an empty string might match an empty string too
+			$atomNonFalsy = false;
+			if (!$walkResult->isInOptionalQuantification() && !$this->isMaybeEmptyNode($children[0], $patternModifiers, $atomNonFalsy)) {
 				if ($min >= 1) {
 					$walkResult = $walkResult->nonEmpty(TrinaryLogic::createYes());
 				}
@@ -549,6 +600,11 @@ final class RegexGroupParser
 			$onlyLiterals = $walkResult->getOnlyLiterals();
 			$literalValue = $this->getLiteralValue($ast, $onlyLiterals, !$inClass, $patternModifiers, false);
 			$walkResult = $walkResult->onlyLiterals($onlyLiterals);
+
+			if ($ast->getValueToken() === 'backreference') {
+				// matches what another group matched, the content is not known
+				$walkResult = $walkResult->numeric(TrinaryLogic::createNo());
+			}
 
 			if ($literalValue !== null) {
 				if (Strings::match($literalValue, '/^\d+$/') === null) {
@@ -652,7 +708,7 @@ final class RegexGroupParser
 	 *
 	 * @return array<string>|null
 	 */
-	private function getQuantifiedLiterals(TreeNode $ast, ?int $min, ?int $max, bool $inClass, string $patternModifiers, RegexGroupWalkResult $walkResult): ?array
+	private function getQuantifiedLiterals(RegexNode $ast, ?int $min, ?int $max, bool $inClass, string $patternModifiers, RegexGroupWalkResult $walkResult): ?array
 	{
 		$prefixLiterals = $walkResult->getOnlyLiterals();
 		if ($prefixLiterals === null || $min === null || $max === null) {
@@ -738,13 +794,18 @@ final class RegexGroupParser
 		return array_values($collected);
 	}
 
-	private function isMaybeEmptyNode(TreeNode $node, string $patternModifiers, bool &$isNonFalsy): bool
+	private function isMaybeEmptyNode(RegexNode $node, string $patternModifiers, bool &$isNonFalsy): bool
 	{
+		if (in_array($node->getId(), self::ASSERTIONS, true) || in_array($node->getId(), self::CONDITIONS, true)) {
+			return true;
+		}
+
 		if ($node->getId() === '#quantification') {
 			[$min] = $this->getQuantificationRange($node);
 
 			if ($min > 0) {
-				return false;
+				$atomNonFalsy = false;
+				return $this->isMaybeEmptyNode($node->getChildren()[0], $patternModifiers, $atomNonFalsy);
 			}
 
 			if ($min === 0) {
@@ -792,7 +853,7 @@ final class RegexGroupParser
 	/**
 	 * @param array<string>|null $onlyLiterals
 	 */
-	private function getLiteralValue(TreeNode $node, ?array &$onlyLiterals, bool $appendLiterals, string $patternModifiers, bool $inCharacterClass): ?string
+	private function getLiteralValue(RegexNode $node, ?array &$onlyLiterals, bool $appendLiterals, string $patternModifiers, bool $inCharacterClass): ?string
 	{
 		if ($node->getId() !== 'token') {
 			return null;

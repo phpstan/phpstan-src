@@ -55,7 +55,8 @@ final class AnalyserResultFinalizer
 	 * @param Closure(): void|null $postRuleCallback called when the rule's processNode() has returned or thrown, before its errors are processed
 	 * @param array<string, CollectedDataRuleResult> $previousCollectedDataRuleResults the rule results of the
 	 *        previous run, from the result cache - a rule whose input did not change reuses its errors.
-	 *        Only with the reuseCollectedDataRuleErrors feature toggle, otherwise every rule runs.
+	 *        Only with the reuseCollectedDataRuleErrors feature toggle, otherwise every rule runs. A rule that
+	 *        does not call get() on the node always runs.
 	 */
 	public function finalize(
 		AnalyserResult $analyserResult,
@@ -179,7 +180,8 @@ final class AnalyserResultFinalizer
 				$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $ruleNode);
 			}
 
-			if ($this->reuseCollectedDataRuleErrors) {
+			// a rule that never asked for collected data works with something else, so it runs every time
+			if ($this->reuseCollectedDataRuleErrors && $reads->getCollectorTypes() !== []) {
 				$collectedDataRuleResults[$ruleKey] = $this->createRuleResult($reads, $onlyFiles, $hashCollector, $errors, $ruleValueDependencies);
 			}
 

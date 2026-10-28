@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PHPStan\Analyser\CollectedDataReuse\DescribedClassRule;
 use PHPStan\Analyser\CollectedDataReuse\EarlyReturnRule;
 use PHPStan\Analyser\CollectedDataReuse\FirstCollector;
+use PHPStan\Analyser\CollectedDataReuse\NoCollectedDataRule;
 use PHPStan\Analyser\CollectedDataReuse\OnlyFilesRule;
 use PHPStan\Analyser\CollectedDataReuse\SecondCollector;
 use PHPStan\Analyser\CollectedDataReuse\ThrowingRule;
@@ -116,6 +117,29 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$this->assertSame(2, $onlyFilesRule->runs);
 		$this->assertSame(1, $earlyReturnRule->runs);
 		$this->assertSame([], $this->getMessages($result));
+	}
+
+	public function testRuleThatDoesNotAskForCollectedDataRunsEveryTime(): void
+	{
+		$file = sys_get_temp_dir() . '/phpstan-collected-data-reuse-' . uniqid() . '.txt';
+		file_put_contents($file, 'one');
+		$collectedData = [
+			self::A => [FirstCollector::class => ['a1']],
+		];
+
+		// tracking a value is not enough, the rule has to ask for collected data
+		foreach ([false, true] as $track) {
+			$rule = new NoCollectedDataRule($file, $track);
+			$result = $this->finalize([$rule], $collectedData, false, []);
+			$this->assertSame([], $result->getCollectedDataRuleResults());
+
+			$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+			$this->assertSame(2, $rule->runs);
+			$this->assertSame(0, $result->getReusedRulesCount());
+			$this->assertSame(['Tool says one.'], $this->getMessages($result));
+		}
+
+		unlink($file);
 	}
 
 	public function testRuleThatThrowsIsNotReused(): void

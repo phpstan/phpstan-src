@@ -43,3 +43,11 @@ function c(Queue $q): void
 	inTransaction(function () use ($q): void { $x = $q->peek(); takesInt($q->next()); throw new \Exception(); });
 	inTransaction(function () use ($q): void { if ($q->peek() !== null) { takesTwo($q->next(), throw new \Exception()); } });
 }
+
+/** @throws \RuntimeException */
+function name(): string { return ''; }
+
+function d(): void
+{
+	inTransaction(function (): void { try { var_dump(name()); } catch (\RuntimeException $e) { throw $e; } });
+}

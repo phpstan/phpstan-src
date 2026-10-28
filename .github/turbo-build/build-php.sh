@@ -43,6 +43,12 @@ if [ -z "$PHP_URL" ] || [ -z "$PHP_SHA256" ]; then
 	echo "build-php.sh: php.net lists no tar.xz with a sha256 for PHP $PHP_VERSION" >&2
 	exit 1
 fi
+# install-alpine-php.sh --resolve: the release alone, for the cache key of
+# the PHP it builds
+if [ "${PHP_RESOLVE_ONLY:-0}" = "1" ]; then
+	echo "$PHP_VERSION"
+	exit 0
+fi
 echo "build-php.sh: building PHP $PHP_VERSION from $PHP_URL"
 export PHP_VERSION
 PHP_ZTS="${PHP_ZTS:-0}"

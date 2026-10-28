@@ -29,3 +29,4 @@ e2e/bashunit
 e2e/restart-manager/probe.log
 e2e/restart-manager/starts.log
 e2e/restart-manager/out.txt
+/alpine-php-cache

@@ -928,10 +928,27 @@ jobs:
       - name: "Trust the checkout despite the container/host uid mismatch"
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
+      # The thread-safe legs and 8.2 build PHP from source, minutes on every
+      # leg; install-alpine-php.sh keeps that build in alpine-php-cache, under
+      # a key naming exactly what it built (see the script). Nothing to cache
+      # for a leg installing Alpine's packages (release= is empty).
+      - name: "Resolve the PHP build to cache (Alpine container)"
+        id: alpine-php
+        if: matrix.target.family == 'musl'
+        run: sh .github/scripts/install-alpine-php.sh --resolve >> "$GITHUB_OUTPUT"
+
+      - name: "Restore the PHP build (Alpine container)"
+        if: steps.alpine-php.outputs.release != ''
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: "alpine-php-cache"
+          key: "alpine-php-${{ steps.alpine-php.outputs.release }}-${{ hashFiles('.github/turbo-build/build-php.sh') }}"
+
       # The build needs php/php-config on PATH for the matrix PHP version.
       - name: "Install PHP and build tools (Alpine container)"
         if: matrix.target.family == 'musl'
-        run: sh .github/scripts/install-alpine-php.sh
+        # the container's path of the workspace, which github.workspace is not
+        run: PHP_CACHE_DIR="$GITHUB_WORKSPACE/alpine-php-cache" sh .github/scripts/install-alpine-php.sh
 
       - name: "Install PHP (macOS)"
         if: matrix.target.family == 'macos'
@@ -1098,8 +1115,20 @@ jobs:
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e PHP_ZTS \
+            -e PHP_MINOR -e PHP_ZTS -e PHP_CACHE_DIR=/work/alpine-php-cache \
             "$ALPINE_IMAGE" sleep 7200
+
+      # see turbo-compile
+      - name: "Resolve the PHP build to cache"
+        id: alpine-php
+        run: docker exec alpine-build sh .github/scripts/install-alpine-php.sh --resolve >> "$GITHUB_OUTPUT"
+
+      - name: "Restore the PHP build"
+        if: steps.alpine-php.outputs.release != ''
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: "alpine-php-cache"
+          key: "alpine-php-${{ steps.alpine-php.outputs.release }}-${{ hashFiles('.github/turbo-build/build-php.sh') }}"
 
       - name: "Install PHP and build tools"
         run: docker exec alpine-build sh .github/scripts/install-alpine-php.sh
@@ -2154,8 +2183,20 @@ jobs:
         run: |
           docker run -d --name alpine-test \
             -v "$PWD:/work" -w /work \
-            -e PHP_MINOR -e PHP_ZTS \
+            -e PHP_MINOR -e PHP_ZTS -e PHP_CACHE_DIR=/work/alpine-php-cache \
             "$ALPINE_IMAGE" sleep 7200
+
+      # see turbo-compile
+      - name: "Resolve the PHP build to cache"
+        id: alpine-php
+        run: docker exec alpine-test sh .github/scripts/install-alpine-php.sh --resolve >> "$GITHUB_OUTPUT"
+
+      - name: "Restore the PHP build"
+        if: steps.alpine-php.outputs.release != ''
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: "alpine-php-cache"
+          key: "alpine-php-${{ steps.alpine-php.outputs.release }}-${{ hashFiles('.github/turbo-build/build-php.sh') }}"
 
       - name: "Install PHP and tools"
         run: docker exec alpine-test sh .github/scripts/install-alpine-php.sh

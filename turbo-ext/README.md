@@ -60,6 +60,8 @@ Trusted types need OPcache, because they're an OPcache optimizer pass. PHPStan's
 restart enables OPcache for every run that can fork, with or without Turbo, so
 the baseline without Turbo has OPcache too.
 
+PHPStan Turbo makes [Rector run 2× faster](https://github.com/rectorphp/rector/releases/tag/2.8.0) too.
+
 ## How it works
 
 ### Shadowing

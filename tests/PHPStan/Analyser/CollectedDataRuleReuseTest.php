@@ -312,7 +312,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			reachedInternalErrorsCountLimit: false,
 			peakMemoryUsageBytes: 0,
 			processedFiles: [],
-		), $onlyFiles, false, previousCollectedDataRuleResults: $previousResults);
+		), $onlyFiles, false, null, null, $previousResults);
 	}
 
 	/**

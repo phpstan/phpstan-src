@@ -230,7 +230,10 @@ inline constexpr char strings[] =
 	"exponentiate\0" /* 2989 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3002 */
 	"toPhpDocNode\0" /* 3041 */
-	"hasTemplateOrLateResolvableType"; /* 3054 */
+	"position\0" /* 3054 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3063 */
+	"toNativePhpTypeNode\0" /* 3095 */
+	"hasTemplateOrLateResolvableType"; /* 3115 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $className */
 	reg::packed(10, MAY_BE_NULL, 25, false, false, 43), /* __construct $subtractedType */
@@ -407,6 +410,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(2980, 0, 25), /* exponentiate $exponent */
 	reg::packed(111, 0, 25), /* exponentiate return */
 	reg::packed(111, 0, 3002), /* toPhpDocNode return */
+	reg::packed(3054, 0, 3063), /* toNativePhpTypeNode $position */
 	reg::packed(111, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -530,7 +534,8 @@ inline constexpr sigtab::Sig tryRemove = { { 2955 /* tryRemove */, 1, 169, 1, 17
 inline constexpr sigtab::Sig getFiniteTypes = { { 2965 /* getFiniteTypes */, 0, 171, 0, 171, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig exponentiate = { { 2989 /* exponentiate */, 1, 172, 1, 173, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 3041 /* toPhpDocNode */, 0, 174, 0, 174, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3054 /* hasTemplateOrLateResolvableType */, 0, 175, 0, 175, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3095 /* toNativePhpTypeNode */, 1, 175, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3115 /* hasTemplateOrLateResolvableType */, 0, 176, 0, 176, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ObjectType

@@ -2,6 +2,9 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\ComplexType;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
@@ -627,6 +630,15 @@ interface Type
 	public function traverseSimultaneously(Type $right, callable $cb): Type;
 
 	public function toPhpDocNode(): TypeNode;
+
+	/**
+	 * The native PHP type declaration for this type at the given position,
+	 * widened to what the position allows, e.g. non-empty-string to string.
+	 * Returns null when the type cannot be declared natively there.
+	 *
+	 * @return Identifier|Name|ComplexType|null
+	 */
+	public function toNativePhpTypeNode(NativeTypePosition $position);
 
 	/** @see TypeCombinator::remove() */
 	public function tryRemove(Type $typeToRemove): ?Type;

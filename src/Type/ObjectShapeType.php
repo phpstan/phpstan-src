@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
@@ -585,6 +586,11 @@ class ObjectShapeType implements Type
 		}
 
 		return new ObjectShapeNode($items);
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isObjectAllowed() ? new Identifier('object') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

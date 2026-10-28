@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -973,6 +974,11 @@ class ArrayType implements Type
 				$this->itemType->toPhpDocNode(),
 			],
 		);
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isArrayAllowed() ? new Identifier('array') : null;
 	}
 
 	public function traverseSimultaneously(Type $right, callable $cb): Type

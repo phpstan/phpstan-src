@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use Closure;
+use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Php\PhpVersion;
@@ -1029,6 +1030,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$returnTypeNode,
 			$templateTags,
 		);
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isClassNameAllowed() ? new FullyQualified('Closure') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

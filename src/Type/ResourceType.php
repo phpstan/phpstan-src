@@ -132,6 +132,11 @@ class ResourceType implements Type
 		return new IdentifierTypeNode('resource');
 	}
 
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return null;
+	}
+
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return false;

@@ -100,8 +100,11 @@ inline constexpr char strings[] =
 	"exponentiate\0" /* 901 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 914 */
 	"toPhpDocNode\0" /* 953 */
-	"getFiniteTypes\0" /* 966 */
-	"hasTemplateOrLateResolvableType"; /* 981 */
+	"position\0" /* 966 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 975 */
+	"toNativePhpTypeNode\0" /* 1007 */
+	"getFiniteTypes\0" /* 1027 */
+	"hasTemplateOrLateResolvableType"; /* 1042 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getReferencedClasses return */
 	reg::packed(12, MAY_BE_ARRAY), /* getObjectClassNames return */
@@ -161,6 +164,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(892, 0, 104), /* exponentiate $exponent */
 	reg::packed(12, 0, 104), /* exponentiate return */
 	reg::packed(12, 0, 914), /* toPhpDocNode return */
+	reg::packed(966, 0, 975), /* toNativePhpTypeNode $position */
 	reg::packed(12, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
@@ -216,8 +220,9 @@ inline constexpr sigtab::Sig traverse = { { 854 /* traverse */, 1, 50, 1, 51, ZE
 inline constexpr sigtab::Sig traverseSimultaneously = { { 869 /* traverseSimultaneously */, 2, 52, 2, 54, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig exponentiate = { { 901 /* exponentiate */, 1, 55, 1, 56, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 953 /* toPhpDocNode */, 0, 57, 0, 57, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 966 /* getFiniteTypes */, 0, 58, 0, 58, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 981 /* hasTemplateOrLateResolvableType */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1007 /* toNativePhpTypeNode */, 1, 58, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1027 /* getFiniteTypes */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1042 /* hasTemplateOrLateResolvableType */, 0, 60, 0, 60, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::FloatType

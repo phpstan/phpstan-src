@@ -67,8 +67,11 @@ inline constexpr char strings[] =
 	"generalize\0" /* 426 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 437 */
 	"toPhpDocNode\0" /* 476 */
-	"type\0" /* 489 */
-	"looseCompare"; /* 494 */
+	"position\0" /* 489 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 498 */
+	"toNativePhpTypeNode\0" /* 530 */
+	"type\0" /* 550 */
+	"looseCompare"; /* 555 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_BOOL), /* __construct $value */
 	reg::packed(18, MAY_BE_BOOL), /* getValue return */
@@ -97,7 +100,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(383, 0, 393), /* generalize $precision */
 	reg::packed(18, 0, 105), /* generalize return */
 	reg::packed(18, 0, 437), /* toPhpDocNode return */
-	reg::packed(489, 0, 105), /* looseCompare $type */
+	reg::packed(489, 0, 498), /* toNativePhpTypeNode $position */
+	reg::packed(550, 0, 105), /* looseCompare $type */
 	reg::packed(71, 0, 82), /* looseCompare $phpVersion */
 	reg::packed(18, 0, 197), /* looseCompare return */
 };
@@ -126,7 +130,8 @@ inline constexpr sigtab::Sig isTrue = { { 368 /* isTrue */, 0, 22, 0, 22, ZEND_A
 inline constexpr sigtab::Sig isFalse = { { 375 /* isFalse */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig generalize = { { 426 /* generalize */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 476 /* toPhpDocNode */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig looseCompare = { { 494 /* looseCompare */, 2, 27, 2, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 530 /* toNativePhpTypeNode */, 1, 27, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 555 /* looseCompare */, 2, 28, 2, 30, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantBooleanType

@@ -160,7 +160,10 @@ inline constexpr char strings[] =
 	"getDefaultBaseType\0" /* 1820 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1839 */
 	"toPhpDocNode\0" /* 1878 */
-	"hasTemplateOrLateResolvableType"; /* 1891 */
+	"position\0" /* 1891 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 1900 */
+	"toNativePhpTypeNode\0" /* 1932 */
+	"hasTemplateOrLateResolvableType"; /* 1952 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getReferencedClasses return */
 	reg::packed(12, MAY_BE_ARRAY), /* getObjectClassNames return */
@@ -297,6 +300,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(12, 0, 132), /* getDefaultBaseType return */
 	reg::packed(12, 0, 1839), /* toPhpDocNode return */
+	reg::packed(1891, 0, 1900), /* toNativePhpTypeNode $position */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -398,7 +402,8 @@ inline constexpr sigtab::Sig exponentiate = { { 1792 /* exponentiate */, 1, 130,
 inline constexpr sigtab::Sig getFiniteTypes = { { 1805 /* getFiniteTypes */, 0, 132, 0, 132, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getDefaultBaseType = { { 1820 /* getDefaultBaseType */, 0, 133, 0, 133, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 1878 /* toPhpDocNode */, 0, 134, 0, 134, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1891 /* hasTemplateOrLateResolvableType */, 0, 135, 0, 135, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1932 /* toNativePhpTypeNode */, 1, 135, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1952 /* hasTemplateOrLateResolvableType */, 0, 136, 0, 136, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::OversizedArrayType

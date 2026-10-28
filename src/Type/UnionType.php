@@ -1750,6 +1750,11 @@ class UnionType implements CompoundType
 		return new UnionTypeNode(array_map(static fn (Type $type) => $type->toPhpDocNode(), $this->getSortedTypes()));
 	}
 
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return NativePhpTypeNodeHelper::union($this, $position);
+	}
+
 	/**
 	 * @template T
 	 * @param callable(Type $type): list<T> $getValues

@@ -180,6 +180,15 @@ zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv)
 	return zv::Val::adopt(object);
 }
 
+zv::Val pt_type_native_type_node(zval *position, const char *allowedLc, size_t allowedLen, int nodeClassIdx, const char *name, size_t nameLen)
+{
+	bool allowed;
+	if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(position), allowedLc, allowedLen, 0, NULL, allowed))) return zv::Val();
+	if (!allowed) return zv::Val::null();
+	zv::Val nameZv = zv::Val::string(name, nameLen);
+	return pt_type_new(nodeClassIdx, 1, nameZv.raw());
+}
+
 bool pt_type_instanceof(zval *value, int classIdx, bool &out)
 {
 	zend_class_entry *ce = pt_class(classIdx);
@@ -3852,6 +3861,8 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::exponentiate, lrDelegate);
 	cls.traitMethod(sigs::getFiniteTypes, lrDelegate);
 	cls.traitMethod(sigs::resolve, lrResolve);
+	cls.traitMethod(sigs::toNativePhpTypeNode, lrDelegate);
+
 	cls.traitMethod(sigs::hasTemplateOrLateResolvableType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_TRUE;

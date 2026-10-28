@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use ArrayAccess;
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -1236,6 +1237,15 @@ class MixedType implements CompoundType, SubtractableType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('mixed');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		if (!$this->isExplicitMixed || !$position->isMixedAllowed()) {
+			return null;
+		}
+
+		return new Identifier('mixed');
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

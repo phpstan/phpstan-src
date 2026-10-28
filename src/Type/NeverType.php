@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -660,6 +661,11 @@ class NeverType implements CompoundType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('never');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isNeverAllowed() ? new Identifier('never') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

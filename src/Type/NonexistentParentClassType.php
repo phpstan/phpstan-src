@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Name;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -272,6 +273,11 @@ class NonexistentParentClassType implements Type
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('parent');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isClassNameAllowed() ? new Name('parent') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

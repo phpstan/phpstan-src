@@ -2111,6 +2111,11 @@ class IntersectionType implements CompoundType
 		return new IntersectionTypeNode($describedTypes);
 	}
 
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return NativePhpTypeNodeHelper::intersection($this, $position);
+	}
+
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		foreach ($this->types as $type) {

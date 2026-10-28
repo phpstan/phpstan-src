@@ -3486,6 +3486,16 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { int has = UnionType(self).hasTemplateOrLateResolvableType(); return has < 0 ? zv::Val() : zv::Val::boolean(has == 1); });
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* NativePhpTypeNodeHelper::union($this, $position) */
+		zval args[2];
+		ZVAL_OBJ(&args[0], Z_OBJ_P(ZEND_THIS));
+		ZVAL_COPY_VALUE(&args[1], position);
+		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_NATIVE_PHP_TYPE_NODE_HELPER, PT_LC("union"), 2, args));
+	});
+
 	/* the trait: the class body above wins over every name it declares */
 	ptdecl::UnionType::registerTraits(cls);
 

@@ -1451,6 +1451,19 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, argc, argv); });
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* new Name('static') when $position->isStaticAllowed(), else
+		 * $position->isClassNameAllowed() ? new Name('self') : null */
+		zv::Val node = pt_type_native_type_node(position, PT_LC("isstaticallowed"), PT_CLASS_NAME, PT_LC("static"));
+		if (UNEXPECTED(node.isUndef())) RETURN_THROWS();
+		if (Z_TYPE_P(node.raw()) == IS_NULL) {
+			PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isclassnameallowed"), PT_CLASS_NAME, PT_LC("self")));
+		}
+		PT_RETURN_VAL(std::move(node));
+	});
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::StaticType::registerTraits(cls);

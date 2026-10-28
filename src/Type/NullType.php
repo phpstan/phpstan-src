@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -428,6 +429,11 @@ class NullType implements ConstantScalarType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('null');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isNullAllowed() ? new Identifier('null') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

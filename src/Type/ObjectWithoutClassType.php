@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PhpParser\Node\Identifier;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -223,6 +224,11 @@ class ObjectWithoutClassType implements SubtractableType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('object');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isObjectAllowed() ? new Identifier('object') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

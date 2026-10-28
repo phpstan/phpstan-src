@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Constant;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -13,6 +14,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
@@ -145,6 +147,15 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode($this->value ? 'true' : 'false');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		if ($this->value ? $position->isTrueAllowed() : $position->isFalseAllowed()) {
+			return new Identifier($this->value ? 'true' : 'false');
+		}
+
+		return parent::toNativePhpTypeNode($position);
 	}
 
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType

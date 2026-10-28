@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use Closure;
+use PhpParser\Node\Identifier;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\Tag\TemplateTag;
@@ -846,6 +847,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 			$returnTypeNode,
 			$templateTags,
 		);
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isCallableAllowed() ? new Identifier('callable') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

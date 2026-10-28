@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Constant;
 
 use Nette\Utils\Strings;
+use PhpParser\Node\Identifier;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Php\PhpVersion;
@@ -53,6 +54,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NullType;
@@ -3637,6 +3639,11 @@ class ConstantArrayType implements Type
 			$exportValuesOnly ? $values : $items,
 			$this->shouldBeDescribedAsAList() ? ArrayShapeNode::KIND_LIST : ArrayShapeNode::KIND_ARRAY,
 		);
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isArrayAllowed() ? new Identifier('array') : null;
 	}
 
 	public static function isValidIdentifier(string $value): bool

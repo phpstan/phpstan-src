@@ -596,6 +596,7 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method(sigs::toCoercedArgumentType, utaDelegate);
 	cls.method(sigs::hasTemplateOrLateResolvableType, utaDelegate);
 	cls.method(sigs::toPhpDocNode, utaDelegate);
+	cls.method(sigs::toNativePhpTypeNode, utaDelegate);
 	cls.method(sigs::getReferencedClasses, utaDelegate);
 	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_REFERENCED_CLASSES, argc, argv); });
 	cls.method(sigs::getObjectClassNames, utaDelegate);

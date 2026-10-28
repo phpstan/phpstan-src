@@ -1387,6 +1387,13 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 	pt_type_trait_undecided_comparison(cls);
 	pt_type_trait_non_generalizable(cls);
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isObjectAllowed() ? new Identifier('object') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isobjectallowed"), PT_CLASS_IDENTIFIER, PT_LC("object")));
+	});
+
 	cls.shadow(&pt_ce_object_shape_type);
 }
 

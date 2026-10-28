@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PhpParser\Node\Identifier;
 use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -23,6 +24,7 @@ use PHPStan\Type\InstanceofDeprecated;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -417,6 +419,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode('numeric-string');
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isScalarAllowed() ? new Identifier('string') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

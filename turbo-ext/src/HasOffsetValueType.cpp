@@ -1052,6 +1052,13 @@ PT_MINIT_REGISTRATION(pt_register_has_offset_value_type)
 	cls.method<&HasOffsetValueType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &HasOffsetValueType::hasTemplateOrLateResolvableType>();
 
+	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *position;
+		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
+		/* $position->isArrayAllowed() ? new Identifier('array') : null */
+		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isarrayallowed"), PT_CLASS_IDENTIFIER, PT_LC("array")));
+	});
+
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins
 	 * over every name it declares */

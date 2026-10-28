@@ -49,4 +49,9 @@ class ErrorType extends MixedType
 		return $type instanceof self;
 	}
 
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return null;
+	}
+
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Accessory;
 
+use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -19,6 +20,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -526,6 +528,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 	public function toPhpDocNode(): TypeNode
 	{
 		return new IdentifierTypeNode(''); // no PHPDoc representation
+	}
+
+	public function toNativePhpTypeNode(NativeTypePosition $position)
+	{
+		return $position->isArrayAllowed() ? new Identifier('array') : null;
 	}
 
 	public function hasTemplateOrLateResolvableType(): bool

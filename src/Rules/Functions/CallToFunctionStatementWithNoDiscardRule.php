@@ -9,8 +9,12 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\TrinaryLogic;
+use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function in_array;
+use function ltrim;
 use function sprintf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Stmt\Expression>
@@ -18,6 +22,13 @@ use function sprintf;
 #[RegisteredRule(level: 0)]
 final class CallToFunctionStatementWithNoDiscardRule implements Rule
 {
+
+	private const CALL_USER_FUNC_FUNCTIONS = [
+		'call_user_func',
+		'call_user_func_array',
+		'forward_static_call',
+		'forward_static_call_array',
+	];
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -59,6 +70,8 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
+		$funcCall = $this->unwrapCallUserFunc($funcCall, $scope);
+
 		if ($funcCall->name instanceof Node\Name) {
 			if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
 				return [];
@@ -92,13 +105,9 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 		}
 
 		$callableType = $scope->getType($funcCall->name);
-		if (!$callableType->isCallable()->yes()) {
+		$mustUseReturnValue = $this->getCallableMustUseReturnValue($callableType, $funcCall, $scope);
+		if ($mustUseReturnValue === null) {
 			return [];
-		}
-
-		$mustUseReturnValue = TrinaryLogic::createNo();
-		foreach ($callableType->getCallableParametersAcceptors($scope) as $callableParametersAcceptor) {
-			$mustUseReturnValue = $mustUseReturnValue->or($callableParametersAcceptor->mustUseReturnValue());
 		}
 
 		if ($isInVoidCast) {
@@ -124,6 +133,106 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 				$callableType->describe(VerbosityLevel::value()),
 			))->identifier('callable.resultDiscarded')->nonIgnorable()->build(),
 		];
+	}
+
+	/**
+	 * Replaces call_user_func('foo') and similar with a call of the callback,
+	 * so that the discarded return value of the callback is reported.
+	 */
+	private function unwrapCallUserFunc(Node\Expr\FuncCall $funcCall, Scope $scope): Node\Expr\FuncCall
+	{
+		while ($funcCall->name instanceof Node\Name) {
+			if (!$this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
+				break;
+			}
+
+			$functionName = strtolower($this->reflectionProvider->getFunction($funcCall->name, $scope)->getName());
+			$innerFuncCall = $this->createCallbackFuncCall($functionName, $funcCall);
+			if ($innerFuncCall === null) {
+				break;
+			}
+
+			$funcCall = $innerFuncCall;
+		}
+
+		return $funcCall;
+	}
+
+	private function createCallbackFuncCall(string $functionName, Node\Expr\FuncCall $funcCall): ?Node\Expr\FuncCall
+	{
+		if (!in_array($functionName, self::CALL_USER_FUNC_FUNCTIONS, true)) {
+			return null;
+		}
+
+		$callbackArg = null;
+		$passThruArgs = [];
+		foreach ($funcCall->getArgs() as $i => $arg) {
+			if ($callbackArg === null) {
+				if ($arg->name === null && $i === 0) {
+					$callbackArg = $arg;
+					continue;
+				}
+				if ($arg->name !== null && $arg->name->toString() === 'callback') {
+					$callbackArg = $arg;
+					continue;
+				}
+			}
+
+			$passThruArgs[] = $arg;
+		}
+
+		if ($callbackArg === null) {
+			return null;
+		}
+
+		if (in_array($functionName, ['call_user_func_array', 'forward_static_call_array'], true)) {
+			$passThruArgs = [];
+		}
+
+		return new Node\Expr\FuncCall($callbackArg->value, $passThruArgs, $funcCall->getAttributes());
+	}
+
+	private function getCallableMustUseReturnValue(Type $callableType, Node\Expr\FuncCall $funcCall, Scope $scope): ?TrinaryLogic
+	{
+		$constantStrings = $callableType->getConstantStrings();
+		$callsCallUserFunc = false;
+		foreach ($constantStrings as $constantString) {
+			if (in_array(strtolower(ltrim($constantString->getValue(), '\\')), self::CALL_USER_FUNC_FUNCTIONS, true)) {
+				$callsCallUserFunc = true;
+				break;
+			}
+		}
+
+		if (!$callsCallUserFunc) {
+			if (!$callableType->isCallable()->yes()) {
+				return null;
+			}
+
+			$mustUseReturnValue = TrinaryLogic::createNo();
+			foreach ($callableType->getCallableParametersAcceptors($scope) as $callableParametersAcceptor) {
+				$mustUseReturnValue = $mustUseReturnValue->or($callableParametersAcceptor->mustUseReturnValue());
+			}
+
+			return $mustUseReturnValue;
+		}
+
+		$mustUseReturnValue = null;
+		foreach ($constantStrings as $constantString) {
+			$innerFuncCall = $this->createCallbackFuncCall(strtolower(ltrim($constantString->getValue(), '\\')), $funcCall);
+			if ($innerFuncCall !== null && $innerFuncCall->name instanceof Node\Expr) {
+				$innerMustUseReturnValue = $this->getCallableMustUseReturnValue($scope->getType($innerFuncCall->name), $innerFuncCall, $scope);
+			} else {
+				$innerMustUseReturnValue = $this->getCallableMustUseReturnValue($constantString, $funcCall, $scope);
+			}
+
+			if ($innerMustUseReturnValue === null) {
+				continue;
+			}
+
+			$mustUseReturnValue = $mustUseReturnValue === null ? $innerMustUseReturnValue : $mustUseReturnValue->or($innerMustUseReturnValue);
+		}
+
+		return $mustUseReturnValue;
 	}
 
 }

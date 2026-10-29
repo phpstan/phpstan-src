@@ -46,11 +46,60 @@ class CallToFunctionStatementWithNoDiscardRuleTest extends RuleTestCase
 				'Call to callable Closure(): 1 on a separate line discards return value.',
 				43,
 			],
+			[
+				'Call to callable \'call_user_func\' on a separate line discards return value.',
+				64,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' on a separate line discards return value.',
+				67,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' on a separate line discards return value.',
+				68,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' on a separate line discards return value.',
+				69,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' on a separate line discards return value.',
+				70,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' on a separate line discards return value.',
+				71,
+			],
+			[
+				'Call to callable \'call_user_func\' on a separate line discards return value.',
+				72,
+			],
+			[
+				'Call to callable Closure(int): array on a separate line discards return value.',
+				73,
+			],
+			[
+				'Call to callable array{FunctionCallStatementResultDiscarded\\Foo, \'doFoo\'} on a separate line discards return value.',
+				99,
+			],
+			[
+				'Call to callable array{\'FunctionCallStatementResultDiscarded\\\\Foo\', \'doBar\'} on a separate line discards return value.',
+				100,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' on a separate line discards return value.',
+				101,
+			],
+			[
+				'Call to callable \'call_user_func\'|\'nope\' on a separate line discards return value.',
+				106,
+			],
 		]);
 	}
 
 	// the (void) cast and the pipe operator are PHP 8.5 syntax
 	#[RequiresPhp('>= 8.5.0')]
+
 	public function testRulePhp85(): void
 	{
 		$this->analyse([__DIR__ . '/data/function-call-statement-result-discarded-php85.php'], [
@@ -77,6 +126,10 @@ class CallToFunctionStatementWithNoDiscardRuleTest extends RuleTestCase
 			[
 				'Call to function FunctionCallStatementResultDiscardedPhp85\canDiscard() in (void) cast but function allows discarding return value.',
 				30,
+			],
+			[
+				'Call to callable \'FunctionCallStateme…\' in (void) cast but callable allows discarding return value.',
+				33,
 			],
 		]);
 	}

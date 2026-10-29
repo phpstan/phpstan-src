@@ -28,3 +28,6 @@ $canDiscardCb = 'FunctionCallStatementResultDiscardedPhp85\\canDiscard';
 5 |> (fn ($x) => canDiscard($x));
 (void) 5 |> (fn ($x) => withSideEffects($x));
 (void) 5 |> (fn ($x) => canDiscard($x));
+
+(void) call_user_func('FunctionCallStatementResultDiscardedPhp85\\withSideEffects', 5);
+(void) call_user_func('FunctionCallStatementResultDiscardedPhp85\\canDiscard', 5);

@@ -93,7 +93,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 
 		$cached = $this->cache->load($cacheKey, $variableCacheKey);
 		if (is_array($cached)) {
-			$cached = $this->resolveStubFilename($cached);
+			$cached = $this->mapStubFilenames($cached, fn (string $filename): ?string => $this->resolveStubFilename($filename));
 		}
 		if (is_array($cached)) {
 			if ($identifier->isConstant()) {
@@ -117,7 +117,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 			|| $reflection instanceof ReflectionFunction
 			|| $reflection instanceof ReflectionConstant
 		) {
-			$exported = $this->relativizeStubFilename($reflection->exportToCache());
+			$exported = $this->mapStubFilenames($reflection->exportToCache(), fn (string $filename): ?string => $this->relativizeStubFilename($filename));
 			if ($exported !== null) {
 				$this->cache->save($cacheKey, $variableCacheKey, $exported);
 			}
@@ -127,34 +127,71 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @param array<string, mixed> $exported
+	 * Maps the stub path of every located source in the exported blob: the
+	 * reflection's own, and the ones that the methods an enum gets from the
+	 * engine (cases(), from(), tryFrom()) carry next to it.
+	 *
+	 * @param array<string, mixed> $data
+	 * @param callable(string): ?string $mapFilename
+	 * @return array<string, mixed>|null null when any of the paths cannot be mapped
+	 */
+	private function mapStubFilenames(array $data, callable $mapFilename): ?array
+	{
+		$locatedSource = $this->mapStubFilename($data['locatedSource'] ?? null, $mapFilename);
+		if ($locatedSource === null) {
+			return null;
+		}
+		$data['locatedSource'] = $locatedSource;
+
+		foreach ($data['immediateMethods'] ?? [] as $i => $method) {
+			if (!isset($method['locatedSource'])) {
+				continue;
+			}
+
+			$locatedSource = $this->mapStubFilename($method['locatedSource'], $mapFilename);
+			if ($locatedSource === null) {
+				return null;
+			}
+			$data['immediateMethods'][$i]['locatedSource'] = $locatedSource;
+		}
+
+		return $data;
+	}
+
+	/**
+	 * @param callable(string): ?string $mapFilename
 	 * @return array<string, mixed>|null
 	 */
-	private function relativizeStubFilename(array $exported): ?array
+	private function mapStubFilename(mixed $locatedSource, callable $mapFilename): ?array
 	{
-		$filename = $exported['locatedSource']['data']['filename'] ?? null;
+		$filename = $locatedSource['data']['filename'] ?? null;
 		if (!is_string($filename)) {
 			return null;
 		}
 
+		$filename = $mapFilename($filename);
+		if ($filename === null) {
+			return null;
+		}
+
+		$locatedSource['data']['filename'] = $filename;
+
+		return $locatedSource;
+	}
+
+	private function relativizeStubFilename(string $filename): ?string
+	{
 		$markerPosition = strpos($filename, self::STUBS_DIR_MARKER);
 		if ($markerPosition === false) {
 			return null;
 		}
 
-		$exported['locatedSource']['data']['filename'] = self::RELATIVE_FILENAME_PREFIX . substr($filename, $markerPosition + strlen(self::STUBS_DIR_MARKER));
-
-		return $exported;
+		return self::RELATIVE_FILENAME_PREFIX . substr($filename, $markerPosition + strlen(self::STUBS_DIR_MARKER));
 	}
 
-	/**
-	 * @param array<string, mixed> $cached
-	 * @return array<string, mixed>|null
-	 */
-	private function resolveStubFilename(array $cached): ?array
+	private function resolveStubFilename(string $filename): ?string
 	{
-		$filename = $cached['locatedSource']['data']['filename'] ?? null;
-		if (!is_string($filename) || !str_starts_with($filename, self::RELATIVE_FILENAME_PREFIX)) {
+		if (!str_starts_with($filename, self::RELATIVE_FILENAME_PREFIX)) {
 			return null;
 		}
 
@@ -163,9 +200,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 			return null;
 		}
 
-		$cached['locatedSource']['data']['filename'] = $resolved;
-
-		return $cached;
+		return $resolved;
 	}
 
 	/**
@@ -180,7 +215,7 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 	private function getVariableCacheKey(): string
 	{
 		return $this->variableCacheKey ??= sprintf(
-			'v3-%s-%s-%s-%s',
+			'v4-%s-%s-%s-%s',
 			ComposerHelper::getBetterReflectionVersion(),
 			ComposerHelper::getPhpStormStubsVersion(),
 			$this->phpVersion->getVersionString(),

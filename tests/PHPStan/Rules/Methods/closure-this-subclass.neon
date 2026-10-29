@@ -1,0 +1,5 @@
+services:
+	-
+		class: PHPStan\Rules\Methods\ClosureThisSubclassExtension
+		tags:
+			- phpstan.functionParameterClosureThisExtension

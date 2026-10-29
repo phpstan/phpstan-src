@@ -474,7 +474,10 @@ public:
 				if (selfOutApplies) {
 					zval *receiver = exprVar(normalizedExpr.raw());
 					if (UNEXPECTED(receiver == NULL)) return zv::Val();
-					if (UNEXPECTED(!pt_default_narrowing_helper_is_subject_value_remembered(OBJ_PROP_NUM(self, slots::defaultNarrowingHelper), varResult.raw(), receiver, selfOutApplies))) return zv::Val();
+					int receiverIsNew = isInstanceOf(receiver, PT_CLASS_NEW);
+					if (UNEXPECTED(receiverIsNew < 0)) return zv::Val();
+					selfOutApplies = receiverIsNew == 0;
+					if (selfOutApplies && UNEXPECTED(!pt_default_narrowing_helper_is_subject_value_remembered(OBJ_PROP_NUM(self, slots::defaultNarrowingHelper), varResult.raw(), receiver, selfOutApplies))) return zv::Val();
 				}
 				if (selfOutApplies) {
 					zval *acceptorForGenerics = resolvedParametersAcceptor.isNull() ? parametersAcceptor.raw() : resolvedParametersAcceptor.raw();

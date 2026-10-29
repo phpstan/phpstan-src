@@ -328,9 +328,13 @@ final class MethodCallHandler implements ExprHandler
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
 				// the self-out type describes the object this call ran on - a
-				// receiver whose value is not remembered evaluates to a fresh
+				// receiver whose value is not remembered may evaluate to another
 				// object next time, so its key must not keep that type
-				if ($selfOutType !== null && $this->defaultNarrowingHelper->isSubjectValueRemembered($varResult, $normalizedExpr->var)) {
+				if (
+					$selfOutType !== null
+					&& !$normalizedExpr->var instanceof Expr\New_
+					&& $this->defaultNarrowingHelper->isSubjectValueRemembered($varResult, $normalizedExpr->var)
+				) {
 					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 					$scope = $scope->assignExpression(
 						$normalizedExpr->var,

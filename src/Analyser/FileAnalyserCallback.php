@@ -48,6 +48,9 @@ final class FileAnalyserCallback
 	/** @var LinesToIgnore */
 	private array $unmatchedLineIgnores;
 
+	/** @var array<string, string> */
+	private array $traitFilePaths = [];
+
 	/**
 	 * The registries answer per node class and cache that themselves; this keeps the answer for the
 	 * classes met in this file, so that the walk does not ask them again for every node of a class.
@@ -119,6 +122,7 @@ final class FileAnalyserCallback
 
 			$traitFileName = $node->getTraitReflection()->getFileName();
 			if ($traitFileName !== null) {
+				$this->traitFilePaths[$fileDescription] = $traitFileName;
 				$this->processedFiles[] = $traitFileName;
 			}
 		}
@@ -312,6 +316,14 @@ final class FileAnalyserCallback
 	public function getUnmatchedLineIgnores(): array
 	{
 		return $this->unmatchedLineIgnores;
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function getTraitFilePaths(): array
+	{
+		return $this->traitFilePaths;
 	}
 
 	/**

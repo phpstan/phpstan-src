@@ -2299,6 +2299,9 @@ zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *he
 /* $helper->callMayHaveBeenSkipped($receiverResult, $receiverType, $context);
  * $receiverResult NULL (or a null zval) for null; false = pending exception */
 [[nodiscard]] bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out);
+/* $helper->isSubjectValueRemembered($subjectResult, $subject);
+ * false = pending exception */
+[[nodiscard]] bool pt_default_narrowing_helper_is_subject_value_remembered(zval *helper, zval *subjectResult, zval *subject, bool &out);
 zv::Val pt_default_narrowing_helper_create_for_subject(zval *helper, zval *subject, zval *type, zval *context, zval *scope, zval *resultFor = NULL);
 [[nodiscard]] bool pt_default_narrowing_helper_capture_chain_results(zval *helper, zval *node, zval *storage, zval *chainResults);
 zv::Val pt_default_narrowing_helper_build_chain_type_reader(zval *helper, zval *chainResults, zval *s);

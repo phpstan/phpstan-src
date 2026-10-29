@@ -468,7 +468,15 @@ public:
 			if (!zend_is_true(isStatic.raw())) {
 				zv::Val selfOutType = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_SELF_OUT_TYPE);
 				if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
-				if (!selfOutType.isNull()) {
+				/* mirrors MethodCallHandler::processExpr(): a receiver whose value
+				 * is not remembered keeps no self-out type */
+				bool selfOutApplies = !selfOutType.isNull();
+				if (selfOutApplies) {
+					zval *receiver = exprVar(normalizedExpr.raw());
+					if (UNEXPECTED(receiver == NULL)) return zv::Val();
+					if (UNEXPECTED(!pt_default_narrowing_helper_is_subject_value_remembered(OBJ_PROP_NUM(self, slots::defaultNarrowingHelper), varResult.raw(), receiver, selfOutApplies))) return zv::Val();
+				}
+				if (selfOutApplies) {
 					zval *acceptorForGenerics = resolvedParametersAcceptor.isNull() ? parametersAcceptor.raw() : resolvedParametersAcceptor.raw();
 					zval *normalizedVar = exprVar(normalizedExpr.raw());
 					if (UNEXPECTED(normalizedVar == NULL)) return zv::Val();

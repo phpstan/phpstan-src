@@ -2156,6 +2156,16 @@ bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *
 	return true;
 }
 
+bool pt_default_narrowing_helper_is_subject_value_remembered(zval *helper, zval *subjectResult, zval *subject, bool &out)
+{
+	if (isNativeHelper(helper)) return DefaultNarrowingHelper(Z_OBJ_P(helper)).isSubjectValueRemembered(subjectResult, subject, out);
+	zv::Args argv{subjectResult, subject};
+	zv::Val result = pt_type_call(Z_OBJ_P(helper), PT_LC("issubjectvalueremembered"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 zv::Val pt_default_narrowing_helper_create_for_subject(zval *helper, zval *subject, zval *type, zval *context, zval *scope, zval *resultFor)
 {
 	if (isNativeHelper(helper)) return DefaultNarrowingHelper(Z_OBJ_P(helper)).createForSubject(subject, type, context, scope, nullable(resultFor));
@@ -2251,6 +2261,14 @@ PT_MINIT_REGISTRATION(pt_register_default_narrowing_helper)
 		zval *expr, *exprResult, *context, *s;
 		if (!zp::parse<zp::Obj, zp::ObjOrNull, zp::Obj, zp::Obj>(execute_data, expr, exprResult, context, s)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_DNH_THIS.specifyDefaultTypesWithPlainTwin(expr, exprResult, context, s));
+	});
+
+	cls.method(sigs::isSubjectValueRemembered, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *subjectResult, *subject;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, subjectResult, subject)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!PT_DNH_THIS.isSubjectValueRemembered(subjectResult, subject, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::toSureTypes, [](INTERNAL_FUNCTION_PARAMETERS) {

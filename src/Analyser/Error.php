@@ -71,23 +71,20 @@ final class Error implements JsonSerializable
 
 	public function changeFilePath(string $newFilePath): self
 	{
-		if ($this->traitFilePath !== null) {
-			throw new ShouldNotHappenException('Errors in traits not yet supported');
-		}
-
 		return new self(
 			$this->message,
-			$newFilePath,
+			$this->traitFilePath !== null ? $this->file : $newFilePath,
 			$this->line,
 			$this->canBeIgnored,
 			$newFilePath,
-			null,
+			$this->traitFilePath,
 			$this->tip,
 			$this->nodeLine,
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
 			$this->fixedErrorDiff,
+			$this->traitContexts,
 		);
 	}
 

@@ -951,11 +951,15 @@ jobs:
               grep -F 'MyTrait.php (in context of class Repro\B):12:Ignoring all errors on a line is not allowed.' tmp/cold.txt
               diff -u tmp/cold.txt tmp/warm.txt
               cp src/A.php tmp/A.php
+              ../../bin/phpstan analyse --no-progress --error-format raw --tmp-file tmp/A.php --instead-of src/A.php > tmp/editor.txt 2> tmp/editor-log.txt || test "$?" -eq 1
+              grep -F 'MyTrait.php (in context of class Repro\A):10:Ignore with identifier method.notFound has no comment.' tmp/editor.txt
+              grep -F 'MyTrait.php (in context of class Repro\A):12:Ignoring all errors on a line is not allowed.' tmp/editor.txt
               grep -v 'use MyTrait;' tmp/A.php > src/A.php
               ../../bin/phpstan analyse --no-progress --error-format raw -vvv > tmp/partial.txt 2> tmp/partial-log.txt || test "$?" -eq 1
               grep -F 'Result cache restored. 1 file will be reanalysed.' tmp/partial-log.txt
-              ! grep -F 'in context of class Repro\A' tmp/partial.txt
+              if grep -F 'in context of class Repro\A' tmp/partial.txt; then exit 1; fi
               grep -F 'MyTrait.php (in context of class Repro\B):10:Ignore with identifier method.notFound has no comment.' tmp/partial.txt
+              grep -F 'MyTrait.php (in context of class Repro\B):12:Ignoring all errors on a line is not allowed.' tmp/partial.txt
               cp tmp/A.php src/A.php
           - script: |
               cd e2e/result-cache-traits

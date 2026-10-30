@@ -132,6 +132,30 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-ignore-var at the end of a class body has no effect.',
 				106,
 			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a closure has no effect.',
+				112,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above an arrow function has no effect.',
+				115,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above an arrow function has no effect.',
+				117,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above an elseif branch has no effect.',
+				129,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above an else branch has no effect.',
+				135,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a catch block has no effect.',
+				146,
+			],
 		]);
 	}
 

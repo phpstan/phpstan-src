@@ -220,6 +220,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type string is not subtype of native type int.',
 				167,
 			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type 1.',
+				185,
+			],
 		]);
 	}
 

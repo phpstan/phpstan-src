@@ -81,3 +81,14 @@ function doOneLine(): void
 	$times = getTimes(3);
 	assertType('iterable<(int|string), DateTime>', $times);
 }
+
+function doDescription(): void
+{
+	/** @var list<\DateTime> $times @phpstan-ignore-var because the IDE needs it */
+	$times = getTimes(3);
+	assertType('iterable<(int|string), DateTime>', $times);
+
+	/** @var list<int> $ids unlike a tag followed by @phpstan-ignore-var, this one applies */
+	$ids = [1, 2];
+	assertType('list<int>', $ids);
+}

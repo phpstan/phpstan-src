@@ -87,7 +87,7 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 
 	public function getNodeTypes(): array
 	{
-		return [Node\Stmt::class, Node\PropertyHook::class, Node\Expr\Closure::class, Node\Expr\ArrowFunction::class];
+		return [Node\Stmt::class, Node\PropertyHook::class, Node\Expr\Closure::class, Node\Expr\ArrowFunction::class, Node\Arg::class, Node\ArrayItem::class];
 	}
 
 	public function getNodeType(): string
@@ -104,9 +104,18 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		// closure PHPDocs are only checked for @phpstan-ignore-var, which has no effect there
 		if ($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
 			return array_merge(
-				$this->processMisplacedIgnoreVar($node, $node->getDocComment(), $node instanceof Node\Expr\Closure ? 'above a closure' : 'above an arrow function'),
+				$this->processMisplacedIgnoreVar($node, $node->getDocComment(), self::describeClosure($node)),
 				$this->processParameters($node),
 			);
+		}
+		// php-parser gives the PHPDoc of a closure passed as an argument or written as an
+		// array item to the argument or the item
+		if ($node instanceof Node\Arg || $node instanceof Node\ArrayItem) {
+			if (!$node->value instanceof Node\Expr\Closure && !$node->value instanceof Node\Expr\ArrowFunction) {
+				return [];
+			}
+
+			return $this->processMisplacedIgnoreVar($node, $node->getDocComment(), self::describeClosure($node->value));
 		}
 		if (!$node instanceof Node\Stmt && !$node instanceof Node\PropertyHook) {
 			return [];
@@ -204,6 +213,11 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		return $phpDocTag->name === '@phpstan-ignore-var' || PhpDocNodeResolver::isIgnoreVarInVarTagDescription($phpDocTag);
 	}
 
+	private static function describeClosure(Node\Expr\Closure|Node\Expr\ArrowFunction $node): string
+	{
+		return $node instanceof Node\Expr\Closure ? 'above a closure' : 'above an arrow function';
+	}
+
 	/**
 	 * Null for statements with inline @var tags, the only place @phpstan-ignore-var has an effect.
 	 */
@@ -244,6 +258,16 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		}
 		if ($node instanceof Node\Stmt\TraitUse) {
 			return 'above a trait use';
+		}
+		// NodeScopeResolver processes only the statements inside these, so no @var above them applies
+		if ($node instanceof Node\Stmt\ElseIf_) {
+			return 'above an elseif branch';
+		}
+		if ($node instanceof Node\Stmt\Else_) {
+			return 'above an else branch';
+		}
+		if ($node instanceof Node\Stmt\Catch_) {
+			return 'above a catch block';
 		}
 		if ($node instanceof Node\Stmt\Nop && $scope->isInClass() && $scope->getFunction() === null) {
 			return 'at the end of a class body';

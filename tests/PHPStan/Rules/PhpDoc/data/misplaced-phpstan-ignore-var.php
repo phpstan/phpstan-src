@@ -106,3 +106,45 @@ class OneLineAndParameters
 	 * @phpstan-ignore-var
 	 */
 }
+
+function closuresAsArgumentsAndArrayItems(array $a): void
+{
+	array_map(/** @phpstan-ignore-var */ function (int $x): int {
+		return $x;
+	}, $a);
+	usort($a, /** @phpstan-ignore-var */ static fn (int $x, int $y): int => $x <=> $y);
+	$callbacks = [
+		/** @phpstan-ignore-var */
+		fn (): int => 1,
+	];
+}
+
+function elseIfElseAndCatch(int $x, bool $a, bool $b): void
+{
+	if ($a) {
+		echo 1;
+	}
+	/**
+	 * @var string $x
+	 * @phpstan-ignore-var
+	 */
+	elseif ($b) {
+		echo 2;
+	}
+	/**
+	 * @phpstan-ignore-var
+	 */
+	else {
+		echo 3;
+	}
+
+	try {
+		echo 4;
+	}
+	/**
+	 * @var string $x
+	 * @phpstan-ignore-var
+	 */
+	catch (\Exception $e) {
+	}
+}

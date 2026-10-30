@@ -78,10 +78,14 @@ final class WrongVariableNameInVarTagRule implements Rule
 		$ignoredVarTags = [];
 		$errors = [];
 		$function = $scope->getFunction();
-		// inline @var tags apply in functions and outside classes; elsewhere (above declarations,
-		// enum cases and trait uses, at the end of a class body) InvalidPHPStanDocTagRule reports
-		// the @phpstan-ignore-var tag as misplaced
-		$canIgnoreVarTags = !$node instanceof VirtualNode && !($scope->isInClass() && $function === null);
+		// inline @var tags apply to statements in functions and outside classes; elsewhere (above
+		// declarations, enum cases, trait uses, elseif, else and catch, at the end of a class body)
+		// InvalidPHPStanDocTagRule reports the @phpstan-ignore-var tag as misplaced
+		$canIgnoreVarTags = !$node instanceof VirtualNode
+			&& !$node instanceof Node\Stmt\ElseIf_
+			&& !$node instanceof Node\Stmt\Else_
+			&& !$node instanceof Node\Stmt\Catch_
+			&& !($scope->isInClass() && $function === null);
 		foreach ($node->getComments() as $comment) {
 			if (!$comment instanceof Doc) {
 				continue;

@@ -738,13 +738,14 @@ final class PhpDocNodeResolver
 
 	/**
 	 * phpdoc-parser reads @phpstan-ignore-var written on the line of a @var tag, as in
-	 * a one-line PHPDoc, as the description of that tag.
+	 * a one-line PHPDoc, as the description of that tag. It counts only at the start of
+	 * the description, so a description that mentions the tag keeps the @var applied.
 	 */
 	public static function isIgnoreVarInVarTagDescription(PhpDocTagNode $phpDocTag): bool
 	{
 		return in_array($phpDocTag->name, self::VAR_TAG_NAMES, true)
 			&& $phpDocTag->value instanceof VarTagValueNode
-			&& preg_match('~@phpstan-ignore-var\b~', $phpDocTag->value->description) === 1;
+			&& preg_match('~^@phpstan-ignore-var\b~', $phpDocTag->value->description) === 1;
 	}
 
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool

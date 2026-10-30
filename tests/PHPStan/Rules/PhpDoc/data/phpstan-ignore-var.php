@@ -168,3 +168,21 @@ class GlobalAndStatic
 	}
 
 }
+
+class MaybeDefined
+{
+
+	public function doFoo(bool $b): void
+	{
+		if ($b) {
+			$m = 1;
+		}
+
+		/**
+		 * @var string $m
+		 * @phpstan-ignore-var
+		 */
+		echo 'x';
+	}
+
+}

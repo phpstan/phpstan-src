@@ -8,9 +8,12 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function in_array;
@@ -107,31 +110,82 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 			}
 		}
 
-		$docComment = $node->getDocComment();
-		if ($docComment === null) {
-			return [];
-		}
-		$phpDocString = $docComment->getText();
-		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
-		$phpDocNode = $this->phpDocParser->parse($tokens);
-
 		$errors = [];
-		foreach ($phpDocNode->getTags() as $phpDocTag) {
-			if (!str_starts_with($phpDocTag->name, '@phpstan-')
-				|| in_array($phpDocTag->name, self::POSSIBLE_PHPSTAN_TAGS, true)
-			) {
-				continue;
-			}
+		$docComment = $node->getDocComment();
+		if ($docComment !== null) {
+			$declaration = self::describeDeclaration($node);
+			foreach ($this->parsePhpDoc($docComment->getText())->getTags() as $phpDocTag) {
+				if ($phpDocTag->name === '@phpstan-ignore-var' && $declaration !== null) {
+					$errors[] = self::createMisplacedIgnoreVarError($node, $phpDocTag, $declaration);
+					continue;
+				}
 
-			$errors[] = RuleErrorBuilder::message(sprintf(
-				'Unknown PHPDoc tag: %s',
-				$phpDocTag->name,
-			))
-				->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
-				->identifier('phpDoc.phpstanTag')->build();
+				if (!str_starts_with($phpDocTag->name, '@phpstan-')
+					|| in_array($phpDocTag->name, self::POSSIBLE_PHPSTAN_TAGS, true)
+				) {
+					continue;
+				}
+
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'Unknown PHPDoc tag: %s',
+					$phpDocTag->name,
+				))
+					->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
+					->identifier('phpDoc.phpstanTag')->build();
+			}
+		}
+
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			foreach ($node->params as $param) {
+				$paramDocComment = $param->getDocComment();
+				if (!$param->isPromoted() || $paramDocComment === null) {
+					continue;
+				}
+
+				foreach ($this->parsePhpDoc($paramDocComment->getText())->getTagsByName('@phpstan-ignore-var') as $phpDocTag) {
+					$errors[] = self::createMisplacedIgnoreVarError($param, $phpDocTag, 'a promoted property');
+				}
+			}
 		}
 
 		return $errors;
+	}
+
+	private function parsePhpDoc(string $phpDocString): PhpDocNode
+	{
+		$tokens = new TokenIterator($this->phpDocLexer->tokenize($phpDocString));
+
+		return $this->phpDocParser->parse($tokens);
+	}
+
+	/**
+	 * Null for statements with inline @var tags, the only place @phpstan-ignore-var has an effect.
+	 */
+	private static function describeDeclaration(Node $node): ?string
+	{
+		return match (true) {
+			$node instanceof Node\Stmt\Property => 'a property',
+			$node instanceof Node\PropertyHook => 'a property hook',
+			$node instanceof Node\Stmt\ClassConst => 'a class constant',
+			$node instanceof Node\Stmt\Const_ => 'a constant',
+			$node instanceof Node\Stmt\Function_ => 'a function',
+			$node instanceof Node\Stmt\ClassMethod => 'a method',
+			$node instanceof Node\Stmt\Interface_ => 'an interface',
+			$node instanceof Node\Stmt\Trait_ => 'a trait',
+			$node instanceof Node\Stmt\Enum_ => 'an enum',
+			$node instanceof Node\Stmt\ClassLike => 'a class',
+			default => null,
+		};
+	}
+
+	private static function createMisplacedIgnoreVarError(Node $node, PhpDocTagNode $phpDocTag, string $declaration): IdentifierRuleError
+	{
+		return RuleErrorBuilder::message(sprintf(
+			'PHPDoc tag @phpstan-ignore-var above %s has no effect.',
+			$declaration,
+		))
+			->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
+			->identifier('varTag.misplaced')->build();
 	}
 
 }

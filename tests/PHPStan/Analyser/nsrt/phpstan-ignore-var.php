@@ -63,3 +63,14 @@ function doBaz(int $i): void
 	echo $i;
 	assertType('int', $i);
 }
+
+function doStatic(int $i): void
+{
+	/**
+	 * @var array<int, string> $cache
+	 * @phpstan-ignore-var
+	 */
+	static $cache = [];
+	assertType('array<int, \'x\'>', $cache);
+	$cache[$i] = 'x';
+}

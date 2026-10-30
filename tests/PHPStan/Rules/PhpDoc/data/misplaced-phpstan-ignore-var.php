@@ -68,3 +68,14 @@ trait Baz
 {
 
 }
+
+class UsesTrait
+{
+
+	/**
+	 * @var int $x
+	 * @phpstan-ignore-var
+	 */
+	use Baz;
+
+}

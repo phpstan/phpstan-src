@@ -1100,6 +1100,9 @@ public:
 					isVariableLessTagIgnored = areVarTagsIgnored;
 					continue;
 				}
+				// WrongVariableNameInVarTagRule checks these: with their type not assigned, the
+				// second run of this method for an assignment would report them again
+				if (areVarTagsIgnored) continue;
 				zend_string *name = tagEntry.stringKey();
 				if (assignedVariable != NULL && zend_string_equals(name, assignedVariable)) continue;
 
@@ -1147,7 +1150,6 @@ public:
 					if (UNEXPECTED(changedNode.isUndef())) return zv::Val();
 					if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, changedNode.raw(), scope.raw(), storage))) return zv::Val();
 				}
-				if (areVarTagsIgnored) continue;
 				zv::Val templateArgumentFrame = pt_node_scope_resolver_observing_template_argument_frame(nodeScopeResolver, scope.raw());
 				if (UNEXPECTED(templateArgumentFrame.isUndef())) return zv::Val();
 				if (!templateArgumentFrame.isNull()) {

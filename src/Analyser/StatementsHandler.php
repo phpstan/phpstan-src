@@ -1953,6 +1953,12 @@ final class StatementsHandler
 					continue;
 				}
 
+				// WrongVariableNameInVarTagRule checks these: with their type not assigned, the
+				// second run of this method for an assignment would report them again
+				if ($areVarTagsIgnored) {
+					continue;
+				}
+
 				if ($name === $assignedVariable) {
 					continue;
 				}
@@ -1974,9 +1980,6 @@ final class StatementsHandler
 				$originalType = $scope->getVariableType($name);
 				if (!$originalType->equals($varTag->getType())) {
 					$nodeScopeResolver->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $variableNode), $scope, $storage);
-				}
-				if ($areVarTagsIgnored) {
-					continue;
 				}
 				$templateArgumentFrame = $nodeScopeResolver->observingTemplateArgumentFrame($scope);
 				if ($templateArgumentFrame !== null) {

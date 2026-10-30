@@ -98,4 +98,42 @@ class WithoutVarTag
 		return 1;
 	}
 
+	public function doBaz(object $o): void
+	{
+		/**
+		 * @var array<int $o
+		 * @phpstan-ignore-var
+		 */
+		$o->doFoo();
+	}
+
+}
+
+class ReportedOnce
+{
+
+	public function doFoo(int $other): void
+	{
+		/**
+		 * @var string $a
+		 * @phpstan-ignore-var
+		 */
+		[$a, $b] = [1, 2];
+
+		/**
+		 * @var string $other
+		 * @phpstan-ignore-var
+		 */
+		$x = 1;
+	}
+
+	public function doBar(int $i): int
+	{
+		/**
+		 * @var string $i
+		 * @phpstan-ignore-var
+		 */
+		return $i;
+	}
+
 }

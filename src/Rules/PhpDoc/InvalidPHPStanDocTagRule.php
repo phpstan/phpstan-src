@@ -193,6 +193,12 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		if ($node instanceof Node\Stmt\ClassLike) {
 			return 'a class';
 		}
+		if ($node instanceof Node\Stmt\EnumCase) {
+			return 'an enum case';
+		}
+		if ($node instanceof Node\Stmt\TraitUse) {
+			return 'a trait use';
+		}
 
 		return null;
 	}

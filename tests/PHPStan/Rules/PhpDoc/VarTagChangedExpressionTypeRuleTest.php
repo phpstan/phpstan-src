@@ -54,10 +54,6 @@ class VarTagChangedExpressionTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/phpstan-ignore-var.php'], [
 			[
 				'PHPDoc tag @var with type string is not subtype of native type int.',
-				48,
-			],
-			[
-				'PHPDoc tag @var with type string is not subtype of native type int.',
 				57,
 			],
 		]);

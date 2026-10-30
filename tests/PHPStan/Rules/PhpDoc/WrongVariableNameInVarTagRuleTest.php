@@ -185,6 +185,10 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				38,
 			],
 			[
+				'PHPDoc tag @var with type string is not subtype of native type int.',
+				48,
+			],
+			[
 				'PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.',
 				73,
 			],
@@ -200,7 +204,31 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.',
 				98,
 			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type 1.',
+				121,
+			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type int.',
+				127,
+			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type int.',
+				136,
+			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testMisplacedPhpStanIgnoreVar(): void
+	{
+		$this->analyse([__DIR__ . '/data/misplaced-phpstan-ignore-var.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testMisplacedPhpStanIgnoreVarInEnum(): void
+	{
+		$this->analyse([__DIR__ . '/data/misplaced-phpstan-ignore-var-enum.php'], []);
 	}
 
 	public function testBug3515(): void

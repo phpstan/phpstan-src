@@ -104,6 +104,21 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-ignore-var above a trait has no effect.',
 				65,
 			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a trait use has no effect.',
+				77,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testMisplacedIgnoreVarInEnum(): void
+	{
+		$this->analyse([__DIR__ . '/data/misplaced-phpstan-ignore-var-enum.php'], [
+			[
+				'PHPDoc tag @phpstan-ignore-var above an enum case has no effect.',
+				9,
+			],
 		]);
 	}
 

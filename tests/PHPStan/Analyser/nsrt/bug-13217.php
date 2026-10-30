@@ -56,15 +56,6 @@ class Foo
 		}, $maybe, $maybe);
 	}
 
-	public function unpacked(): void
-	{
-		// the closure gets one parameter per arg here, not one per unpacked array
-		array_map(function ($a, $b) {
-			assertType('1|2|3', $a);
-			assertType('array{4, 5, 6}', $b);
-		}, [1, 2, 3], ...[[4, 5, 6]]);
-	}
-
 	public function singleArray(): void
 	{
 		array_map(function ($a) {

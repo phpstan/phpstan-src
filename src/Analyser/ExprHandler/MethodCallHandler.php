@@ -329,10 +329,13 @@ final class MethodCallHandler implements ExprHandler
 				$selfOutType = $methodReflection->getSelfOutType();
 				// the self-out type describes the object this call ran on - a
 				// receiver whose value is not remembered may evaluate to another
-				// object next time, so its key must not keep that type
+				// object next time, so its key must not keep that type; a new or
+				// clone expression counts as remembered for narrowing, but each
+				// evaluation of it creates another object
 				if (
 					$selfOutType !== null
 					&& !$normalizedExpr->var instanceof Expr\New_
+					&& !$normalizedExpr->var instanceof Expr\Clone_
 					&& $this->defaultNarrowingHelper->isSubjectValueRemembered($varResult, $normalizedExpr->var)
 				) {
 					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;

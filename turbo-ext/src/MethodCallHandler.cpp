@@ -469,7 +469,8 @@ public:
 				zv::Val selfOutType = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_SELF_OUT_TYPE);
 				if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
 				/* mirrors MethodCallHandler::processExpr(): a receiver whose value
-				 * is not remembered keeps no self-out type */
+				 * is not remembered keeps no self-out type, and neither does a
+				 * new or clone expression */
 				bool selfOutApplies = !selfOutType.isNull();
 				if (selfOutApplies) {
 					zval *receiver = exprVar(normalizedExpr.raw());
@@ -477,6 +478,11 @@ public:
 					int receiverIsNew = isInstanceOf(receiver, PT_CLASS_NEW);
 					if (UNEXPECTED(receiverIsNew < 0)) return zv::Val();
 					selfOutApplies = receiverIsNew == 0;
+					if (selfOutApplies) {
+						int receiverIsClone = isInstanceOf(receiver, PT_CLASS_CLONE_EXPR);
+						if (UNEXPECTED(receiverIsClone < 0)) return zv::Val();
+						selfOutApplies = receiverIsClone == 0;
+					}
 					if (selfOutApplies && UNEXPECTED(!pt_default_narrowing_helper_is_subject_value_remembered(OBJ_PROP_NUM(self, slots::defaultNarrowingHelper), varResult.raw(), receiver, selfOutApplies))) return zv::Val();
 				}
 				if (selfOutApplies) {

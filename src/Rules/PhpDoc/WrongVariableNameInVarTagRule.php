@@ -73,6 +73,7 @@ final class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		$varTags = [];
+		$errors = [];
 		$function = $scope->getFunction();
 		foreach ($node->getComments() as $comment) {
 			if (!$comment instanceof Doc) {
@@ -85,15 +86,31 @@ final class WrongVariableNameInVarTagRule implements Rule
 				$function !== null ? $function->getName() : null,
 				$comment->getText(),
 			);
-			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
+			$docVarTags = $resolvedPhpDoc->getVarTags();
+			// above declarations InvalidPHPStanDocTagRule reports the tag as misplaced
+			if (count($docVarTags) === 0 && $resolvedPhpDoc->areVarTagsIgnored() && !$node instanceof VirtualNode) {
+				$errors[] = RuleErrorBuilder::message('PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.')
+					->identifier('varTag.misplaced')
+					->build();
+			}
+			foreach ($docVarTags as $key => $varTag) {
 				$varTags[$key] = $varTag;
 			}
 		}
 
 		if (count($varTags) === 0) {
-			return [];
+			return $errors;
 		}
 
+		return array_merge($errors, $this->processVarTags($node, $scope, $varTags));
+	}
+
+	/**
+	 * @param VarTag[] $varTags
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processVarTags(Node\Stmt $node, Scope $scope, array $varTags): array
+	{
 		if ($node instanceof Node\Stmt\Foreach_) {
 			return $this->processForeach($scope, $node->expr, $node->keyVar, $node->valueVar, $varTags);
 		}

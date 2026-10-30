@@ -184,6 +184,22 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 				'PHPDoc tag @var with type string is not subtype of native type int.',
 				38,
 			],
+			[
+				'PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.',
+				73,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.',
+				78,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.',
+				89,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.',
+				98,
+			],
 		]);
 	}
 

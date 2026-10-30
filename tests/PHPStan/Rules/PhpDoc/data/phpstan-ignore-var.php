@@ -58,3 +58,44 @@ class Foo
 	}
 
 }
+
+class WithoutVarTag
+{
+
+	/**
+	 * @phpstan-ignore-var
+	 */
+	public function doFoo(int $i): void
+	{
+		/**
+		 * @phpstan-ignore-var
+		 */
+		$j = $i;
+
+		/**
+		 * @phpstan-ignore-var
+		 */
+		$this->doBar();
+
+		/**
+		 * @phpstan-var int $k
+		 * @phpstan-ignore-var
+		 */
+		$k = $i;
+
+		/**
+		 * @phpstan-ignore-var
+		 */
+		foreach ([$i] as $item) {
+		}
+	}
+
+	public function doBar(): int
+	{
+		/**
+		 * @phpstan-ignore-var
+		 */
+		return 1;
+	}
+
+}

@@ -163,19 +163,38 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 	 */
 	private static function describeDeclaration(Node $node): ?string
 	{
-		return match (true) {
-			$node instanceof Node\Stmt\Property => 'a property',
-			$node instanceof Node\PropertyHook => 'a property hook',
-			$node instanceof Node\Stmt\ClassConst => 'a class constant',
-			$node instanceof Node\Stmt\Const_ => 'a constant',
-			$node instanceof Node\Stmt\Function_ => 'a function',
-			$node instanceof Node\Stmt\ClassMethod => 'a method',
-			$node instanceof Node\Stmt\Interface_ => 'an interface',
-			$node instanceof Node\Stmt\Trait_ => 'a trait',
-			$node instanceof Node\Stmt\Enum_ => 'an enum',
-			$node instanceof Node\Stmt\ClassLike => 'a class',
-			default => null,
-		};
+		if ($node instanceof Node\Stmt\Property) {
+			return 'a property';
+		}
+		if ($node instanceof Node\PropertyHook) {
+			return 'a property hook';
+		}
+		if ($node instanceof Node\Stmt\ClassConst) {
+			return 'a class constant';
+		}
+		if ($node instanceof Node\Stmt\Const_) {
+			return 'a constant';
+		}
+		if ($node instanceof Node\Stmt\Function_) {
+			return 'a function';
+		}
+		if ($node instanceof Node\Stmt\ClassMethod) {
+			return 'a method';
+		}
+		if ($node instanceof Node\Stmt\Interface_) {
+			return 'an interface';
+		}
+		if ($node instanceof Node\Stmt\Trait_) {
+			return 'a trait';
+		}
+		if ($node instanceof Node\Stmt\Enum_) {
+			return 'an enum';
+		}
+		if ($node instanceof Node\Stmt\ClassLike) {
+			return 'a class';
+		}
+
+		return null;
 	}
 
 	private static function createMisplacedIgnoreVarError(Node $node, PhpDocTagNode $phpDocTag, string $declaration): IdentifierRuleError

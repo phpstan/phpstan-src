@@ -169,6 +169,24 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/var-above-declare.php'], []);
 	}
 
+	public function testPhpStanIgnoreVar(): void
+	{
+		$this->analyse([__DIR__ . '/data/phpstan-ignore-var.php'], [
+			[
+				'PHPDoc tag @var with type string is not subtype of native type int.',
+				26,
+			],
+			[
+				'Variable $wrongName in PHPDoc tag @var does not match assigned variable $j.',
+				32,
+			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type int.',
+				38,
+			],
+		]);
+	}
+
 	public function testBug3515(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3515.php'], []);

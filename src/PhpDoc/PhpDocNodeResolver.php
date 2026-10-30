@@ -68,10 +68,6 @@ final class PhpDocNodeResolver
 	 */
 	public function resolveVarTags(PhpDocNode $phpDocNode, NameScope $nameScope): array
 	{
-		if (count($phpDocNode->getTagsByName('@phpstan-ignore-var')) > 0) {
-			return [];
-		}
-
 		$resolved = [];
 		$resolvedByTag = [];
 		foreach (['@var', '@phan-var', '@psalm-var', '@phpstan-var'] as $tagName) {
@@ -717,6 +713,11 @@ final class PhpDocNodeResolver
 	public function resolveAllMethodsImpure(PhpDocNode $phpDocNode): bool
 	{
 		return count($phpDocNode->getTagsByName('@phpstan-all-methods-impure')) > 0;
+	}
+
+	public function resolveAreVarTagsIgnored(PhpDocNode $phpDocNode): bool
+	{
+		return count($phpDocNode->getTagsByName('@phpstan-ignore-var')) > 0;
 	}
 
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool

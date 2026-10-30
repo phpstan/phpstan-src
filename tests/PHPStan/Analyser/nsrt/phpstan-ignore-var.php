@@ -54,18 +54,12 @@ function doBar(array $items): void
 	}
 }
 
-class Foo
+function doBaz(int $i): void
 {
-
 	/**
-	 * @var list<int>
+	 * @var int<0, max> $i
 	 * @phpstan-ignore-var
 	 */
-	public array $ids = [];
-
-}
-
-function doBaz(Foo $foo): void
-{
-	assertType('array', $foo->ids);
+	echo $i;
+	assertType('int', $i);
 }

@@ -166,9 +166,10 @@ inline constexpr char strings[] =
 	"defaultExpr\0" /* 2563 */
 	"PhpParser\\Node\\Expr\0" /* 2575 */
 	"processStmtVarAnnotation\0" /* 2595 */
-	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 2620 */
-	"findSingleVariableLessVarTag\0" /* 2646 */
-	"emitVarTagChangedNode"; /* 2675 */
+	"isIgnored\0" /* 2620 */
+	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 2630 */
+	"findSingleVariableLessVarTag\0" /* 2656 */
+	"emitVarTagChangedNode"; /* 2685 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
 	reg::packed(43, 0, 68), /* __construct $templateArgumentObserver */
@@ -386,7 +387,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(531, 0, 422), /* processStmtVarAnnotation return */
 	reg::packed(416, 0, 422), /* findSingleVariableLessVarTag $scope */
 	reg::packed(1238, 0, 1243), /* findSingleVariableLessVarTag $stmt */
-	reg::packed(531, MAY_BE_NULL, 2620), /* findSingleVariableLessVarTag return */
+	reg::packed(2620, MAY_BE_BOOL, reg::NoString, true, false), /* findSingleVariableLessVarTag $isIgnored */
+	reg::packed(531, MAY_BE_NULL, 2630), /* findSingleVariableLessVarTag return */
 	reg::packed(357, 0, 375), /* emitVarTagChangedNode $nodeScopeResolver */
 	reg::packed(416, 0, 422), /* emitVarTagChangedNode $scope */
 	reg::packed(624, 0, 477), /* emitVarTagChangedNode $storage */
@@ -438,8 +440,8 @@ inline constexpr sigtab::Sig collectMentionedVariables = { { 2480 /* collectMent
 inline constexpr sigtab::Sig getVarTagDependencies = { { 2506 /* getVarTagDependencies */, 2, 201, 2, 203, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getOverridingThrowPoints = { { 2538 /* getOverridingThrowPoints */, 2, 204, 2, 206, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processStmtVarAnnotation = { { 2595 /* processStmtVarAnnotation */, 6, 207, 6, 213, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 2646 /* findSingleVariableLessVarTag */, 2, 214, 2, 216, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig emitVarTagChangedNode = { { 2675 /* emitVarTagChangedNode */, 6, 217, 6, 223, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 2656 /* findSingleVariableLessVarTag */, 3, 214, 3, 217, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig emitVarTagChangedNode = { { 2685 /* emitVarTagChangedNode */, 6, 218, 6, 224, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementsHandler

@@ -67,3 +67,12 @@ class AboveReturn
 function withPurityTags(callable $callback, int &$count = 0): void
 {
 }
+
+function withIgnoredVar(): void
+{
+	/**
+	 * @var non-empty-string $s
+	 * @phpstan-ignore-var
+	 */
+	$s = 'foo';
+}

@@ -68,6 +68,7 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		'@phpstan-pure-unless-parameter-passed',
 		'@phpstan-all-methods-pure',
 		'@phpstan-all-methods-impure',
+		'@phpstan-ignore-var',
 	];
 
 	public function __construct(

@@ -4323,6 +4323,7 @@ $vapRecordingScope = static fn (\PHPStan\Analyser\MutatingScope $scope): \PHPSta
 $vapScopes = [
 	'file' => $vapRecordingScope($vehScope),
 	'class' => $vapRecordingScope($sfAssignScope),
+	'int $a' => $vapRecordingScope($vehScope->assignVariable('a', new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType(), \PHPStan\TrinaryLogic::createYes())),
 ];
 $vapStmt = static function (array $comments): \PhpParser\Node\Stmt\Expression {
 	return new \PhpParser\Node\Stmt\Expression(new \PhpParser\Node\Expr\Variable('a'), $comments === [] ? [] : ['comments' => $comments]);
@@ -4347,6 +4348,18 @@ $vapStmts = [
 
 	},
 ];
+$vapForeachStmt = static fn (string $doc): \PhpParser\Node\Stmt\Foreach_ => new \PhpParser\Node\Stmt\Foreach_(new \PhpParser\Node\Expr\Variable('a'), new \PhpParser\Node\Expr\Variable('v'), [], ['comments' => [$vapDoc($doc)]]);
+$vapForeachStmts = [
+	'named' => $vapForeachStmt('/** @var int $a */'),
+	'positional' => $vapForeachStmt('/** @var non-empty-array<int> */'),
+	'other variable' => $vapForeachStmt('/** @var int $b */'),
+];
+// what the redundant @var tag detector recorded: tag type and whether every
+// application changed nothing, by statement and tag key
+$vapRecorded = \Closure::bind(static fn (\PHPStan\Analyser\RedundantVarTagDetector $detector): array => array_map(
+	static fn (array $statement): array => array_map(static fn (array $tag): array => [$tag[0]->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $tag[1]], $statement[1]),
+	$detector->applications,
+), null, \PHPStan\Analyser\RedundantVarTagDetector::class);
 $vapNames = [
 	'a' => ['a'],
 	'b' => ['b'],
@@ -4356,9 +4369,11 @@ $vapNames = [
 ];
 $vapResults = [];
 foreach (['php' => \PHPStan\Analyser\VarAnnotationProcessor::class, 'native' => \PHPStanTurbo\VarAnnotationProcessor::class] as $side => $vapClass) {
-	$processor = new $vapClass($vapFileTypeMapper);
+	$vapDetector = new \PHPStan\Analyser\RedundantVarTagDetector();
+	$processor = new $vapClass($vapFileTypeMapper, $vapDetector, true);
 	$r = [];
 	foreach ($vapScopes as $scopeLabel => $scope) {
+		$vapDetector->resetFileAnalysisState();
 		foreach ($vapStmts as $stmtLabel => $stmt) {
 			foreach ($vapNames as $namesLabel => $names) {
 				$label = $scopeLabel . ' / ' . $stmtLabel . ' / ' . $namesLabel;
@@ -4384,6 +4399,12 @@ foreach (['php' => \PHPStan\Analyser\VarAnnotationProcessor::class, 'native' => 
 				}
 			}
 		}
+		foreach ($vapForeachStmts as $stmtLabel => $stmt) {
+			$scope->assigned = [];
+			$result = $processor->processForeachIterateeVarAnnotation($scope, 'a', $stmt);
+			$r[$scopeLabel . ' / foreach ' . $stmtLabel] = [$result === $scope, $scope->assigned];
+		}
+		$r[$scopeLabel . ' / recorded'] = array_values($vapRecorded($vapDetector));
 	}
 	$vapResults[$side] = $r;
 }
@@ -4400,6 +4421,13 @@ check(
 	'VarAnnotationProcessor: the fixture exercises every arm: ' . json_encode(array_intersect_key($vapResults['php'], array_flip(['class / two docs / a b / by ref', 'file / string comments / a / by ref', 'file / overriding node / a / without', 'file / plain comment / a / by ref', 'file / positional / a b / by ref', 'file / positional / keyed / by ref']))),
 );
 check(($vapResults['php']['file / named / a / by ref'][1] ?? null) === true && ($vapResults['php']['class / positional / b / by ref'][2][0][1] ?? null) === 'string', 'VarAnnotationProcessor: the fixture assigns through named and positional tags: ' . json_encode([$vapResults['php']['file / named / a / by ref'] ?? null, $vapResults['php']['class / positional / b / by ref'] ?? null]));
+check(
+	in_array(['int', true], array_merge(...array_map('array_values', $vapResults['php']['int $a / recorded'] ?? [[]])), true)
+	&& in_array(['float', false], array_merge(...array_map('array_values', $vapResults['php']['int $a / recorded'] ?? [[]])), true)
+	&& ($vapResults['php']['file / foreach other variable'] ?? null) === [true, []]
+	&& count($vapResults['php']['file / foreach positional'][1] ?? []) === 1,
+	'VarAnnotationProcessor: the fixture records unchanged and changed tags for the redundant @var tag detector: ' . json_encode(array_intersect_key($vapResults['php'], array_flip(['int $a / recorded', 'file / foreach other variable', 'file / foreach positional']))),
+);
 
 // ---- the analyser value classes ----
 // analyser-values.php builds the value objects on both sides from the same

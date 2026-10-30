@@ -108,6 +108,7 @@ parametersSchema:
 	reportStaticMethodSignatures: bool()
 	reportWrongPhpDocTypeInVarTag: bool()
 	reportAnyTypeWideningInVarTag: bool()
+	reportRedundantVarTag: bool()
 	reportNonIntStringArrayKey: bool()
 	reportUnsafeArrayStringKeyCasting: schema(string(), pattern('detect|prevent'), nullable())
 	reportPossiblyNonexistentGeneralArrayOffset: bool()

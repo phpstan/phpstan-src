@@ -1803,6 +1803,9 @@ private:
 			zv::Val stmtResult = pt_stmt_handler_process(stmtHandler.raw(), &thisZv, stmt, scope.raw(), storage, nodeCallback, context);
 			if (UNEXPECTED(stmtResult.isUndef())) return zv::Val();
 			if (!varTagDependencies.isNull()) {
+				zval *statementsHandler = requireStatementsHandler();
+				if (UNEXPECTED(statementsHandler == NULL)) return zv::Val();
+				if (UNEXPECTED(!pt_statements_handler_emit_redundant_var_tag_nodes(statementsHandler, &thisZv, scope.raw(), storage, stmt, nodeCallback))) return zv::Val();
 				if (UNEXPECTED(Z_TYPE_P(stmtResult.raw()) != IS_OBJECT)) {
 					zend_throw_error(NULL, "Call to a member function getDependencies() on %s", zend_zval_value_name(stmtResult.raw()));
 					return zv::Val();

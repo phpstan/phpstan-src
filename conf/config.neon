@@ -104,6 +104,7 @@ parameters:
 	reportStaticMethodSignatures: false
 	reportWrongPhpDocTypeInVarTag: false
 	reportAnyTypeWideningInVarTag: false
+	reportRedundantVarTag: false
 	reportNonIntStringArrayKey: false
 	reportUnsafeArrayStringKeyCasting: null
 	reportPossiblyNonexistentGeneralArrayOffset: false

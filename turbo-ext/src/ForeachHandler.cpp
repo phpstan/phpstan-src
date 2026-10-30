@@ -1004,6 +1004,12 @@ private:
 		return pt_var_annotation_processor_process_var_annotation(OBJ_PROP_NUM(self, slots::varAnnotationProcessor), scope, names.raw(), stmt, NULL);
 	}
 
+	/* $this->varAnnotationProcessor->processForeachIterateeVarAnnotation($scope, $name, $stmt) */
+	zv::Val processForeachIterateeVarAnnotation(zval *scope, zend_string *name, zval *stmt) const
+	{
+		return pt_var_annotation_processor_process_foreach_iteratee_var_annotation(OBJ_PROP_NUM(self, slots::varAnnotationProcessor), scope, name, stmt);
+	}
+
 	/* static function () use ($condResult, $emptyArrayType): Type — captures:
 	 * $condResult, $emptyArrayType */
 	static void nonEmptyIterateeTypeBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -1240,7 +1246,7 @@ private:
 		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
 		zval *iteratee = parts.expr.raw();
 		if (parts.exprName != NULL) {
-			scope = processVarAnnotation(scope.raw(), parts.exprName, stmt);
+			scope = processForeachIterateeVarAnnotation(scope.raw(), parts.exprName, stmt);
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
 		}
 

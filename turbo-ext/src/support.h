@@ -2380,6 +2380,9 @@ zv::Val pt_statements_handler_process_loop_final_stmt_nodes(zval *handler, zval 
 zv::Val pt_statements_handler_process_stmt_var_annotation(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
 zv::Val pt_statements_handler_get_overriding_throw_points(zval *handler, zval *statement, zval *scope);
 zv::Val pt_statements_handler_emit_var_tag_changed_node(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback);
+/* $handler->emitRedundantVarTagNodes($nodeScopeResolver, $scope, $storage,
+ * $stmt, $nodeCallback); false = pending exception */
+bool pt_statements_handler_emit_redundant_var_tag_nodes(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *nodeCallback);
 zv::Val pt_statements_handler_get_variable_mention_flow(zval *handler, zval *stmt);
 
 /* StatementListWalkState.cpp — new StatementListWalkState($scope) /
@@ -2898,6 +2901,9 @@ zv::Val pt_variable_control_flow_new(zend_string *kind, const pt_variable_contro
 
 extern zend_class_entry *pt_ce_var_annotation_processor;
 zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval *scope, zval *variableNames, zval *node, bool *changed);
+/* $processor->processForeachIterateeVarAnnotation($scope, $variableName,
+ * $node), likewise */
+zv::Val pt_var_annotation_processor_process_foreach_iteratee_var_annotation(zval *processor, zval *scope, zend_string *variableName, zval *node);
 /* {{{ the function-call cluster (FunctionReflectionAccess.cpp,
  * OutputBufferHelper.cpp, FuncCallScopeEffectsHelper.cpp) */
 

@@ -2,12 +2,14 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
+use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\DependencyInjection\ValidatesStubFiles;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
@@ -16,8 +18,10 @@ use PHPStan\PhpDocParser\Parser\TokenIterator;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_merge;
 use function in_array;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 
 /**
@@ -83,7 +87,7 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 
 	public function getNodeTypes(): array
 	{
-		return [Node\Stmt::class, Node\PropertyHook::class];
+		return [Node\Stmt::class, Node\PropertyHook::class, Node\Expr\Closure::class, Node\Expr\ArrowFunction::class];
 	}
 
 	public function getNodeType(): string
@@ -96,6 +100,13 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		// mirrored with InvalidPhpDocTagValueRule
 		if ($node instanceof VirtualNode) {
 			return [];
+		}
+		// closure PHPDocs are only checked for @phpstan-ignore-var, which has no effect there
+		if ($node instanceof Node\Expr\Closure || $node instanceof Node\Expr\ArrowFunction) {
+			return array_merge(
+				$this->processMisplacedIgnoreVar($node, $node->getDocComment(), $node instanceof Node\Expr\Closure ? 'above a closure' : 'above an arrow function'),
+				$this->processParameters($node),
+			);
 		}
 		if (!$node instanceof Node\Stmt && !$node instanceof Node\PropertyHook) {
 			return [];
@@ -113,10 +124,10 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 		$errors = [];
 		$docComment = $node->getDocComment();
 		if ($docComment !== null) {
-			$declaration = self::describeDeclaration($node);
+			$placement = self::describeMisplacement($node, $scope);
 			foreach ($this->parsePhpDoc($docComment->getText())->getTags() as $phpDocTag) {
-				if ($phpDocTag->name === '@phpstan-ignore-var' && $declaration !== null) {
-					$errors[] = self::createMisplacedIgnoreVarError($node, $phpDocTag, $declaration);
+				if ($placement !== null && self::isIgnoreVarTag($phpDocTag)) {
+					$errors[] = self::createMisplacedIgnoreVarError($node, $phpDocTag, $placement);
 					continue;
 				}
 
@@ -135,16 +146,9 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 			}
 		}
 
-		if ($node instanceof Node\Stmt\ClassMethod) {
-			foreach ($node->params as $param) {
-				$paramDocComment = $param->getDocComment();
-				if (!$param->isPromoted() || $paramDocComment === null) {
-					continue;
-				}
-
-				foreach ($this->parsePhpDoc($paramDocComment->getText())->getTagsByName('@phpstan-ignore-var') as $phpDocTag) {
-					$errors[] = self::createMisplacedIgnoreVarError($param, $phpDocTag, 'a promoted property');
-				}
+		if ($node instanceof Node\FunctionLike) {
+			foreach ($this->processParameters($node) as $error) {
+				$errors[] = $error;
 			}
 		}
 
@@ -159,55 +163,100 @@ final class InvalidPHPStanDocTagRule implements MultipleNodeTypesRule
 	}
 
 	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processParameters(Node\FunctionLike $node): array
+	{
+		$errors = [];
+		foreach ($node->getParams() as $param) {
+			$placement = $param->isPromoted() ? 'above a promoted property' : 'above a parameter';
+			foreach ($this->processMisplacedIgnoreVar($param, $param->getDocComment(), $placement) as $error) {
+				$errors[] = $error;
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processMisplacedIgnoreVar(Node $node, ?Doc $docComment, string $placement): array
+	{
+		if ($docComment === null || !str_contains($docComment->getText(), '@phpstan-ignore-var')) {
+			return [];
+		}
+
+		$errors = [];
+		foreach ($this->parsePhpDoc($docComment->getText())->getTags() as $phpDocTag) {
+			if (!self::isIgnoreVarTag($phpDocTag)) {
+				continue;
+			}
+
+			$errors[] = self::createMisplacedIgnoreVarError($node, $phpDocTag, $placement);
+		}
+
+		return $errors;
+	}
+
+	private static function isIgnoreVarTag(PhpDocTagNode $phpDocTag): bool
+	{
+		return $phpDocTag->name === '@phpstan-ignore-var' || PhpDocNodeResolver::isIgnoreVarInVarTagDescription($phpDocTag);
+	}
+
+	/**
 	 * Null for statements with inline @var tags, the only place @phpstan-ignore-var has an effect.
 	 */
-	private static function describeDeclaration(Node $node): ?string
+	private static function describeMisplacement(Node $node, Scope $scope): ?string
 	{
 		if ($node instanceof Node\Stmt\Property) {
-			return 'a property';
+			return 'above a property';
 		}
 		if ($node instanceof Node\PropertyHook) {
-			return 'a property hook';
+			return 'above a property hook';
 		}
 		if ($node instanceof Node\Stmt\ClassConst) {
-			return 'a class constant';
+			return 'above a class constant';
 		}
 		if ($node instanceof Node\Stmt\Const_) {
-			return 'a constant';
+			return 'above a constant';
 		}
 		if ($node instanceof Node\Stmt\Function_) {
-			return 'a function';
+			return 'above a function';
 		}
 		if ($node instanceof Node\Stmt\ClassMethod) {
-			return 'a method';
+			return 'above a method';
 		}
 		if ($node instanceof Node\Stmt\Interface_) {
-			return 'an interface';
+			return 'above an interface';
 		}
 		if ($node instanceof Node\Stmt\Trait_) {
-			return 'a trait';
+			return 'above a trait';
 		}
 		if ($node instanceof Node\Stmt\Enum_) {
-			return 'an enum';
+			return 'above an enum';
 		}
 		if ($node instanceof Node\Stmt\ClassLike) {
-			return 'a class';
+			return 'above a class';
 		}
 		if ($node instanceof Node\Stmt\EnumCase) {
-			return 'an enum case';
+			return 'above an enum case';
 		}
 		if ($node instanceof Node\Stmt\TraitUse) {
-			return 'a trait use';
+			return 'above a trait use';
+		}
+		if ($node instanceof Node\Stmt\Nop && $scope->isInClass() && $scope->getFunction() === null) {
+			return 'at the end of a class body';
 		}
 
 		return null;
 	}
 
-	private static function createMisplacedIgnoreVarError(Node $node, PhpDocTagNode $phpDocTag, string $declaration): IdentifierRuleError
+	private static function createMisplacedIgnoreVarError(Node $node, PhpDocTagNode $phpDocTag, string $placement): IdentifierRuleError
 	{
 		return RuleErrorBuilder::message(sprintf(
-			'PHPDoc tag @phpstan-ignore-var above %s has no effect.',
-			$declaration,
+			'PHPDoc tag @phpstan-ignore-var %s has no effect.',
+			$placement,
 		))
 			->line(PhpDocLineHelper::detectLine($node, $phpDocTag))
 			->identifier('varTag.misplaced')->build();

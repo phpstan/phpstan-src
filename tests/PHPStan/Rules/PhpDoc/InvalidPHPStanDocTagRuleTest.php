@@ -108,6 +108,30 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 				'PHPDoc tag @phpstan-ignore-var above a trait use has no effect.',
 				77,
 			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a property has no effect.',
+				86,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a parameter has no effect.',
+				92,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a closure has no effect.',
+				97,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above a parameter has no effect.',
+				98,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var above an arrow function has no effect.',
+				102,
+			],
+			[
+				'PHPDoc tag @phpstan-ignore-var at the end of a class body has no effect.',
+				106,
+			],
 		]);
 	}
 

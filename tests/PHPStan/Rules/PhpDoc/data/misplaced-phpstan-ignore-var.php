@@ -79,3 +79,30 @@ class UsesTrait
 	use Baz;
 
 }
+
+class OneLineAndParameters
+{
+
+	/** @var list<int> @phpstan-ignore-var */
+	public array $oneLine = [];
+
+	public function doFoo(
+		/**
+		 * @var int
+		 * @phpstan-ignore-var
+		 */
+		$notPromoted,
+	): void
+	{
+		$f = /** @phpstan-ignore-var */ function (
+			/** @phpstan-ignore-var */
+			$x,
+		): void {
+		};
+		$g = /** @phpstan-ignore-var */ fn () => 1;
+	}
+
+	/**
+	 * @phpstan-ignore-var
+	 */
+}

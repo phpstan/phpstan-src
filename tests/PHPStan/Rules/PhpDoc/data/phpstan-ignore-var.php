@@ -137,3 +137,34 @@ class ReportedOnce
 	}
 
 }
+
+class GlobalAndStatic
+{
+
+	public function doFoo(): void
+	{
+		$x = 1;
+		/**
+		 * @var string $x
+		 * @phpstan-ignore-var
+		 */
+		global $x;
+	}
+
+	public function doBar(): void
+	{
+		$n = 'a';
+		/**
+		 * @var int $n
+		 * @phpstan-ignore-var
+		 */
+		static $n = 0;
+	}
+
+	public function doBaz(int $i): void
+	{
+		/** @var string $s @phpstan-ignore-var */
+		$s = $i;
+	}
+
+}

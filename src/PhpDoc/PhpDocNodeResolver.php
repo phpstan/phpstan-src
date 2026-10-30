@@ -30,7 +30,9 @@ use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNullNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\MixinTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeFactory;
@@ -48,6 +50,7 @@ use function array_reverse;
 use function count;
 use function in_array;
 use function method_exists;
+use function preg_match;
 use function str_starts_with;
 use function substr;
 
@@ -720,7 +723,28 @@ final class PhpDocNodeResolver
 
 	public function resolveAreVarTagsIgnored(PhpDocNode $phpDocNode): bool
 	{
-		return count($phpDocNode->getTagsByName('@phpstan-ignore-var')) > 0;
+		if (count($phpDocNode->getTagsByName('@phpstan-ignore-var')) > 0) {
+			return true;
+		}
+
+		foreach ($phpDocNode->getTags() as $phpDocTag) {
+			if (self::isIgnoreVarInVarTagDescription($phpDocTag)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * phpdoc-parser reads @phpstan-ignore-var written on the line of a @var tag, as in
+	 * a one-line PHPDoc, as the description of that tag.
+	 */
+	public static function isIgnoreVarInVarTagDescription(PhpDocTagNode $phpDocTag): bool
+	{
+		return in_array($phpDocTag->name, self::VAR_TAG_NAMES, true)
+			&& $phpDocTag->value instanceof VarTagValueNode
+			&& preg_match('~@phpstan-ignore-var\b~', $phpDocTag->value->description) === 1;
 	}
 
 	public function resolveIsReadOnly(PhpDocNode $phpDocNode): bool

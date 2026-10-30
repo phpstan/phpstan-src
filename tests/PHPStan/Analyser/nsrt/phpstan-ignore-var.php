@@ -74,3 +74,10 @@ function doStatic(int $i): void
 	assertType('array<int, \'x\'>', $cache);
 	$cache[$i] = 'x';
 }
+
+function doOneLine(): void
+{
+	/** @var list<\DateTime> $times @phpstan-ignore-var */
+	$times = getTimes(3);
+	assertType('iterable<(int|string), DateTime>', $times);
+}

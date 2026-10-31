@@ -7,6 +7,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\MultipleNodeTypesRule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -29,6 +31,7 @@ final class InvalidBinaryOperationRule implements MultipleNodeTypesRule
 	public function __construct(
 		private ExprPrinter $exprPrinter,
 		private RuleLevelHelper $ruleLevelHelper,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -44,6 +47,19 @@ final class InvalidBinaryOperationRule implements MultipleNodeTypesRule
 	}
 
 	public function processNode(Node $node, Scope $scope): array
+	{
+		$errors = $this->checkInvalidOperation($node, $scope);
+		if ($errors !== [] || !$node instanceof Node\Expr\BinaryOp\Mod || $scope->getType($node) instanceof ErrorType) {
+			return $errors;
+		}
+
+		return $this->checkModImplicitConversion($node, $scope);
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkInvalidOperation(Node $node, Scope $scope): array
 	{
 		if (
 			!$node instanceof Node\Expr\BinaryOp
@@ -142,6 +158,39 @@ final class InvalidBinaryOperationRule implements MultipleNodeTypesRule
 				->identifier(sprintf('%s.invalid', $identifier))
 				->build(),
 		];
+	}
+
+	/**
+	 * `%` converts both operands to int: a float operand loses precision,
+	 * which PHP 8.1+ reports as deprecated.
+	 *
+	 * @return list<IdentifierRuleError>
+	 */
+	private function checkModImplicitConversion(Node\Expr\BinaryOp\Mod $node, Scope $scope): array
+	{
+		if (!$this->phpVersion->deprecatesImplicitlyFloatConversionToInt()) {
+			return [];
+		}
+
+		$callback = static fn (Type $type): bool => !$type->isFloat()->no();
+		foreach ([$node->left, $node->right] as $operand) {
+			$type = $this->ruleLevelHelper->findTypeToCheck($scope, $operand, '', $callback)->getType();
+			if ($type instanceof ErrorType || $type->toNumber()->isFloat()->no()) {
+				continue;
+			}
+
+			return [
+				RuleErrorBuilder::message(sprintf(
+					'Deprecated in PHP 8.1: Implicit conversion from %s to int loses precision.',
+					$type->describe(VerbosityLevel::value()),
+				))
+					->line($node->left->getStartLine())
+					->identifier('binaryOp.mod.implicitConversion')
+					->build(),
+			];
+		}
+
+		return [];
 	}
 
 }

@@ -1,0 +1,13 @@
+<?php
+
+namespace StubFilesResultCache;
+
+class Foo
+{
+
+	public function doFoo($a): string
+	{
+
+	}
+
+}

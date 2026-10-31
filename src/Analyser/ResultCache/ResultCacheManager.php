@@ -1028,6 +1028,12 @@ final class ResultCacheManager
 
 		if ($newFileAppeared || $notAnalysedFileSymbolsChanged) {
 			foreach (array_keys($filteredErrors) as $fileWithError) {
+				// A stub file has errors from the stub validation, which runs on the full analysis only.
+				// It is not an analysed file, so analysing it would report the errors of all rules in it.
+				if (array_key_exists($fileWithError, $cachedStubFiles)) {
+					continue;
+				}
+
 				$filesToAnalyse[] = $fileWithError;
 			}
 		}

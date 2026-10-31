@@ -187,6 +187,21 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'Result cache restored.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-stub-files-errors
+              # The stub file is validated on the full analysis, and its error is kept in the result cache.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'test.stub:8:Method StubFilesResultCache\Foo::doFoo() has parameter $a with no type specified.' "$OUTPUT"
+              ../bashunit assert not_contains 'return statement is missing' "$OUTPUT"
+              # A new file makes the files with errors re-analysed. The stub file is not one of them,
+              # otherwise the rules for analysed files would report that doFoo() does not return.
+              echo '<?php function doBaz(): void {}' > src/Baz.php
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored.' "$OUTPUT"
+              ../bashunit assert contains 'test.stub:8:Method StubFilesResultCache\Foo::doFoo() has parameter $a with no type specified.' "$OUTPUT"
+              ../bashunit assert not_contains 'return statement is missing' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-worker-count
               OUTPUT=$(../../bin/phpstan -vvv 2>&1)
               echo "$OUTPUT"

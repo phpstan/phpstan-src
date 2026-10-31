@@ -2,6 +2,7 @@
 
 namespace Bug13217;
 
+use function PHPStan\Testing\assertNativeType;
 use function PHPStan\Testing\assertType;
 
 class Foo
@@ -12,6 +13,8 @@ class Foo
 		array_map(function ($a, $b) {
 			assertType('1|2', $a);
 			assertType('3|null', $b);
+			assertNativeType('1|2', $a);
+			assertNativeType('3|null', $b);
 		}, [1, 2], [3]);
 
 		array_map(fn ($a, $b) => assertType('3|null', $b), [1, 2], [3]);
@@ -24,6 +27,8 @@ class Foo
 		array_map(function ($a, $b) {
 			assertType('1|null', $a);
 			assertType('3|4', $b);
+			assertNativeType('1|null', $a);
+			assertNativeType('3|4', $b);
 		}, [1], [3, 4]);
 	}
 
@@ -43,6 +48,8 @@ class Foo
 		array_map(function ($a, $b) {
 			assertType('1|2|null', $a);
 			assertType('3|4|5', $b);
+			assertNativeType('mixed', $a);
+			assertNativeType('3|4|5', $b);
 		}, $maybe, [3, 4, 5]);
 
 		array_map(function ($a, $b) {

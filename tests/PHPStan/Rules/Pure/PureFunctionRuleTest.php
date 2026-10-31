@@ -541,4 +541,26 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessAllMethodsPure(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-all-methods-pure.php'], [
+			[
+				'Impure call to method PureUnlessAllMethodsPure\InheritingReplacer::replace() in pure function PureUnlessAllMethodsPure\passingCount().',
+				111,
+			],
+			[
+				'Impure call to method PureUnlessAllMethodsPure\Replacer::replace() in pure function PureUnlessAllMethodsPure\passingCount().',
+				111,
+			],
+			[
+				'Impure call to method PureUnlessAllMethodsPure\InheritingReplacer::map() in pure function PureUnlessAllMethodsPure\impureCallback().',
+				135,
+			],
+			[
+				'Impure call to method PureUnlessAllMethodsPure\Replacer::map() in pure function PureUnlessAllMethodsPure\impureCallback().',
+				135,
+			],
+		]);
+	}
+
 }

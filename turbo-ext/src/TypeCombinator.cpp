@@ -2166,16 +2166,27 @@ public:
 			// -> `array<X>` still goes to the old collapse path.
 			if (!hasEmptyConstantArray) {
 				// Dedupe using the stripped (accessory-free) describe as the key, but
-				// keep the original (with accessories) as the value: the first
-				// member of a description wins, like the twin's `??=`
+				// keep the original (with accessories) as the value when only one
+				// original has the shape. Two originals of one shape that differ in
+				// their accessories collapse to the stripped shape: keeping either of
+				// them would drop values of the other, and the accessories they share
+				// are added back below.
 				Level cacheLevel(PT_LC("cache"));
 				zv::Arr deduped = zv::Arr::create((uint32_t) arrayTypes.size());
 				for (size_t i = 0; i < strippedArrays.size(); i++) {
 					zv::Val description = describe(strippedArrays[i].raw(), cacheLevel);
 					zend_string *key = describedKey(description);
 					if (UNEXPECTED(key == NULL)) return zv::Val();
-					if (zend_symtable_find(deduped.table(), key) != NULL) continue;
-					deduped.set(key, zv::Val::copyOf(arrayTypes[i].ref()));
+					zval *kept = zend_symtable_find(deduped.table(), key);
+					if (kept == NULL) {
+						deduped.set(key, zv::Val::copyOf(arrayTypes[i].ref()));
+						continue;
+					}
+					zv::Val equal = call(kept, PT_LC("equals"), 1, arrayTypes[i].raw());
+					PT_FAIL_IF_UNDEF(equal);
+					if (zend_is_true(equal.raw())) continue;
+
+					deduped.set(key, zv::Val::copyOf(strippedArrays[i].ref()));
 				}
 
 				// Budget: when more distinct shapes remain than a small union would have,

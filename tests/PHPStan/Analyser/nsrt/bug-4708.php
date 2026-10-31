@@ -87,7 +87,7 @@ function GetASCConfig()
 			}
 		}
 
-		assertType("non-empty-array<int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int)", $result);
+		assertType("non-empty-array<mixed~('ssi'|'utc'), int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int)", $result);
 	}
 
 	assertType("(non-empty-array<int|string>&hasOffsetValue('bew', int)&hasOffsetValue('bsw', int))|array{result: false, dberror: 'xyz'}", $result);

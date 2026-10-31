@@ -16,7 +16,7 @@ function getItemsWithForLoop(array $items): array
 		$items[$i] = 1;
 	}
 
-	assertType('non-empty-list<int>&hasOffsetValue(0, 1)', $items);
+	assertType('non-empty-list<int>', $items);
 	return $items;
 }
 

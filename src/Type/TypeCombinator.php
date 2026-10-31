@@ -1297,10 +1297,22 @@ final class TypeCombinator
 				// per-element accessories like hasOffsetValue (cf. the optional-
 				// properties repro: 4 same-shape members differing only in stacked
 				// hasOffsetValue accessories), while preserving per-member accessories
-				// like list / non-empty on whichever original survives.
+				// like list / non-empty when only one original has the shape. Two
+				// originals of one shape that differ in their accessories collapse to
+				// the stripped shape: keeping either of them would drop values of the
+				// other, and the accessories they share are added back below.
 				$deduped = [];
 				foreach ($strippedArrays as $i => $stripped) {
-					$deduped[$stripped->describe(VerbosityLevel::cache())] ??= $arrayTypes[$i];
+					$key = $stripped->describe(VerbosityLevel::cache());
+					if (!array_key_exists($key, $deduped)) {
+						$deduped[$key] = $arrayTypes[$i];
+						continue;
+					}
+					if ($deduped[$key]->equals($arrayTypes[$i])) {
+						continue;
+					}
+
+					$deduped[$key] = $stripped;
 				}
 				$deduped = array_values($deduped);
 

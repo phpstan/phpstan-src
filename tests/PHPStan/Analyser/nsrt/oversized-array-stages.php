@@ -68,7 +68,7 @@ function phase2TriangularCollapse(): array
 		return [];
 	}
 
-	assertType("non-empty-list<array{kind: 'k1', value: 1, opts: array{a: 1}}|array{kind: 'k2', value: 2, opts: array{a: 2}}|array{kind: 'k3', value: 3, opts: array{a: 3}}|array{kind: 'k4', value: 4, opts: array{a: 4}}|array{kind: 'k5', value: 5, opts: array{a: 5}}|array{kind: 'k6', value: 6, opts: array{a: 6}}|array{kind: 'k7', value: 7, opts: array{a: 7}}|array{kind: 'k8', value: 8, opts: array{a: 8}}>", $items);
+	assertType("non-empty-list<array{kind: 'k1', value: 1, opts: array{a: 1}}|array{kind: 'k2', value: 2, opts: array{a: 2}}|array{kind: 'k3', value: 3, opts: array{a: 3}}|array{kind: 'k4', value: 4, opts: array{a: 4}}|array{kind: 'k5', value: 5, opts: array{a: 5}}|array{kind: 'k6', value: 6, opts: array{a: 6}}|array{kind: 'k7', value: 7, opts: array{a: 7}}>|non-empty-list<array{kind: 'k1', value: 1, opts: array{a: 1}}|array{kind: 'k2', value: 2, opts: array{a: 2}}|array{kind: 'k3', value: 3, opts: array{a: 3}}|array{kind: 'k4', value: 4, opts: array{a: 4}}|array{kind: 'k5', value: 5, opts: array{a: 5}}|array{kind: 'k6', value: 6, opts: array{a: 6}}|array{kind: 'k7', value: 7, opts: array{a: 7}}|array{kind: 'k8', value: 8, opts: array{a: 8}}>", $items);
 
 	return $items;
 }

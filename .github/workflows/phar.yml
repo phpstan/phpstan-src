@@ -1852,6 +1852,11 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 15
 
+    permissions:
+      contents: read # actions/checkout of this repository
+      id-token: write # the Sigstore certificate of the build provenance attestation
+      attestations: write # stores the attestation in this repository
+
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
@@ -1884,6 +1889,21 @@ jobs:
           name: "turbo-pie-assets"
           path: "pie-assets"
           if-no-files-found: "error"
+
+      # SLSA build provenance of every asset, signed through Sigstore and
+      # stored in this repository (`gh attestation verify <file>
+      # --repo phpstan/phpstan-src`) — and of the binary inside each, the
+      # file PIE installs, so an installed extension can be checked too.
+      # Before the upload: the release is immutable once published, and must
+      # not carry unattested assets.
+      - name: "Attest build provenance"
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: |
+            pie-assets/*
+            turbo-pie-artifacts/*/phpstan_turbo.so
+            turbo-pie-artifacts/*/php_phpstan_turbo.dll
 
       - name: "Create the phpstan/turbo-ext release and upload the assets"
         if: startsWith(github.ref, 'refs/tags/')
@@ -2802,6 +2822,12 @@ jobs:
       - turbo-compile-windows
     runs-on: "ubuntu-latest"
     timeout-minutes: 60
+
+    permissions:
+      contents: read # actions/checkout of this repository
+      id-token: write # the Sigstore certificate of the build provenance attestation
+      attestations: write # stores the attestation in this repository
+
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
@@ -3003,6 +3029,33 @@ jobs:
             fi
           done < turbo-layout.tsv
           echo "$TURBO_VERSION" > phpstan-dist/turbo-ext/.version
+
+      # Exactly the binaries this commit changes: an unchanged one in the
+      # dist was not produced by this run (the run that staged it attested
+      # it), and stays out.
+      - name: "List the binaries to attest"
+        id: attest-subjects
+        working-directory: phpstan-dist
+        run: |
+          git add -A
+          SUBJECTS="$(git diff --cached --name-only --diff-filter=AM -- phpstan.phar 'turbo-ext/*/phpstan_turbo*' | sed 's|^|phpstan-dist/|')"
+          if [[ -n "$SUBJECTS" ]]; then
+            printf '%s\n' "$SUBJECTS"
+            {
+              echo "paths<<SUBJECTS"
+              printf '%s\n' "$SUBJECTS"
+              echo "SUBJECTS"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      # SLSA build provenance signed through Sigstore, verifiable with
+      # `gh attestation verify <file> --repo phpstan/phpstan-src`. Before the
+      # commit: a binary that cannot be attested must not ship.
+      - name: "Attest build provenance"
+        if: steps.attest-subjects.outputs.paths != ''
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.attest-subjects.outputs.paths }}
 
       - name: "Install lucky_commit"
         uses: baptiste0928/cargo-install@8195d4f734a149db85385bb4102b42efcd373759 # v3.5.0

@@ -143,6 +143,17 @@ function strlenOfString(string|false $blob): int
 	return $blob !== false ? strlen($blob) : 0;
 }
 
+/** @return null */
+function maybeSideEffects()
+{
+	return null;
+}
+
+function callWithMaybeSideEffects(?Foo $foo): ?Foo
+{
+	return $foo ?: maybeSideEffects();
+}
+
 trait FooTrait
 {
 
@@ -216,6 +227,18 @@ class FalsyObjects
 	public function simpleXmlNot(?\SimpleXMLElement $xml): ?\SimpleXMLElement
 	{
 		return !$xml ? null : $xml;
+	}
+
+}
+
+class ConstantCondition
+{
+
+	public function alwaysFalse(): int
+	{
+		// TernaryOperatorConstantConditionRule reports this
+		$i = 0;
+		return $i ?: 0;
 	}
 
 }

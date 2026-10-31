@@ -87,15 +87,15 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 			],
 			[
 				'Short ternary operator ?: is unnecessary because it always results in $foo.',
-				151,
+				162,
 			],
 			[
 				'Ternary operator is unnecessary because it always results in $s.',
-				190,
+				201,
 			],
 			[
 				'Ternary operator is unnecessary because it always results in $foo.',
-				195,
+				206,
 			],
 		]);
 	}
@@ -143,15 +143,15 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 			],
 			[
 				'Short ternary operator ?: is unnecessary because it always results in $foo.',
-				151,
+				162,
 			],
 			[
 				'Ternary operator is unnecessary because it always results in $s.',
-				190,
+				201,
 			],
 			[
 				'Ternary operator is unnecessary because it always results in $foo.',
-				195,
+				206,
 			],
 		]);
 	}

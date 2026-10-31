@@ -20,6 +20,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use function is_float;
 use function is_string;
 use function sprintf;
 
@@ -77,7 +78,7 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 	{
 		// TernaryOperatorConstantConditionRule already reports these
 		$conditionType = $this->helper->getBooleanType($scope, $node->cond);
-		if ($conditionType->isTrue()->yes() || $conditionType->isFalse()->yes()) {
+		if (count($conditionType->getConstantScalarValues()) === 1) {
 			return null;
 		}
 
@@ -173,7 +174,13 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 		}
 
 		// 0.0 === -0.0, so `$f ?: 0.0` turns -0.0 into 0.0
-		return $otherType->isFloat()->no();
+		foreach ($otherType->getConstantScalarValues() as $value) {
+			if (is_float($value)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -197,12 +204,11 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 		}
 
 		$type = $native ? $scope->getNativeType($cond) : $scope->getType($cond);
-		$objectType = new ObjectWithoutClassType();
-		if ($objectType->isSuperTypeOf($type)->no()) {
+		if ($type->isObject()->no()) {
 			return true;
 		}
 
-		return TypeCombinator::intersect($type, $objectType)->toBoolean()->isTrue()->yes();
+		return TypeCombinator::intersect($type, new ObjectWithoutClassType())->toBoolean()->isTrue()->yes();
 	}
 
 	private function containsCall(Expr $expr): bool

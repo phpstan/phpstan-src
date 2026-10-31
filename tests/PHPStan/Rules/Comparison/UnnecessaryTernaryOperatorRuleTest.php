@@ -40,7 +40,7 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/unnecessary-ternary.php'], [
@@ -100,7 +100,7 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleWithoutTreatingPhpDocTypesAsCertain(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;
@@ -156,7 +156,7 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.1')]
+	#[RequiresPhp('>= 8.1.0')]
 	public function testRuleDisabled(): void
 	{
 		$this->unnecessaryTernary = false;

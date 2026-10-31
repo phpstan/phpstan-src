@@ -13,6 +13,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use function array_filter;
 use function array_map;
 use function array_unique;
 use function array_values;
@@ -1807,6 +1808,18 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 	{
 		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15331.php');
 		$this->assertNoErrors($errors);
+	}
+
+	public function testBug15380(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15380.php');
+		$errors = array_values(array_filter($errors, static fn (Error $error): bool => $error->getIdentifier() !== 'enum.caseOutsideOfEnum'));
+		$this->assertCount(2, $errors);
+		$this->assertSame('Method Bug15380\\Foo::doFoo() has parameter $c with no value type specified in iterable type array.', $errors[0]->getMessage());
+		$this->assertSame(24, $errors[0]->getLine());
+		$this->assertSame('PHPDoc tag @param for parameter $c contains unresolvable type.', $errors[1]->getMessage());
+		$this->assertSame(24, $errors[1]->getLine());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

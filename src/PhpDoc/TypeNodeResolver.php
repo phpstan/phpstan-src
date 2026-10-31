@@ -1260,6 +1260,9 @@ final class TypeNodeResolver
 			if ($reflectionConstant === false) {
 				return new ErrorType();
 			}
+			if ($reflectionConstant->isEnumCase()) {
+				return new EnumCaseObjectType($classReflection->getName(), $constantName);
+			}
 			$declaringClass = $reflectionConstant->getDeclaringClass();
 
 			return $this->initializerExprTypeResolver->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($declaringClass->getName(), $declaringClass->getFileName() ?: null));
@@ -1394,7 +1397,7 @@ final class TypeNodeResolver
 						continue;
 					}
 
-					if ($classReflection->isEnum() && $classReflection->hasEnumCase($classConstantName)) {
+					if ($reflectionConstant->isEnumCase()) {
 						$constantTypes[] = new EnumCaseObjectType($classReflection->getName(), $classConstantName);
 						continue;
 					}
@@ -1423,13 +1426,12 @@ final class TypeNodeResolver
 				return new ErrorType();
 			}
 
-			if ($classReflection->isEnum() && $classReflection->hasEnumCase($constantName)) {
-				return new EnumCaseObjectType($classReflection->getName(), $constantName);
-			}
-
 			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($constantName);
 			if ($reflectionConstant === false) {
 				return new ErrorType();
+			}
+			if ($reflectionConstant->isEnumCase()) {
+				return new EnumCaseObjectType($classReflection->getName(), $constantName);
 			}
 			$declaringClass = $reflectionConstant->getDeclaringClass();
 

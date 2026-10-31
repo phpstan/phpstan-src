@@ -83,6 +83,25 @@ zval *exprArgs(zval *expr) { return nodeProperty(pt_mch_args_site, expr, PT_LC("
 /* $identifier->name */
 zval *identifierName(zval *identifier) { return nodeProperty(pt_mch_identifier_name_site, identifier, PT_LC("name")); }
 
+/* PHP 8.5's clone() function call, such as `clone($x, [...])`: $expr
+ * instanceof FuncCall && $expr->name instanceof Name &&
+ * $expr->name->toLowerString() === 'clone'; -1 = pending exception */
+pt_property_site pt_mch_func_call_name_site;
+pt_property_site pt_mch_function_name_site;
+
+int isCloneFunctionCall(zval *expr)
+{
+	int isFuncCall = isInstanceOf(expr, PT_CLASS_FUNC_CALL);
+	if (isFuncCall <= 0) return isFuncCall;
+	zval *name = nodeProperty(pt_mch_func_call_name_site, expr, PT_LC("name"));
+	if (UNEXPECTED(name == NULL)) return -1;
+	int isName = isInstanceOf(name, PT_CLASS_NAME);
+	if (isName <= 0) return isName;
+	zval *functionName = nodeProperty(pt_mch_function_name_site, name, PT_LC("name"));
+	if (UNEXPECTED(functionName == NULL)) return -1;
+	return Z_TYPE_P(functionName) == IS_STRING && zend_string_equals_literal_ci(Z_STR_P(functionName), "clone") ? 1 : 0;
+}
+
 /* }}} */
 
 /* {{{ small value helpers */
@@ -470,7 +489,7 @@ public:
 				if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
 				/* mirrors MethodCallHandler::processExpr(): a receiver whose value
 				 * is not remembered keeps no self-out type, and neither does a
-				 * new or clone expression */
+				 * new or clone expression or a call of the clone() function */
 				bool selfOutApplies = !selfOutType.isNull();
 				if (selfOutApplies) {
 					zval *receiver = exprVar(normalizedExpr.raw());
@@ -482,6 +501,11 @@ public:
 						int receiverIsClone = isInstanceOf(receiver, PT_CLASS_CLONE_EXPR);
 						if (UNEXPECTED(receiverIsClone < 0)) return zv::Val();
 						selfOutApplies = receiverIsClone == 0;
+					}
+					if (selfOutApplies) {
+						int receiverIsCloneCall = isCloneFunctionCall(receiver);
+						if (UNEXPECTED(receiverIsCloneCall < 0)) return zv::Val();
+						selfOutApplies = receiverIsCloneCall == 0;
 					}
 					if (selfOutApplies && UNEXPECTED(!pt_default_narrowing_helper_is_subject_value_remembered(OBJ_PROP_NUM(self, slots::defaultNarrowingHelper), varResult.raw(), receiver, selfOutApplies))) return zv::Val();
 				}

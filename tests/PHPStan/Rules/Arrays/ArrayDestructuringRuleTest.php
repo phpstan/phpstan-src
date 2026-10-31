@@ -123,4 +123,34 @@ class ArrayDestructuringRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMaybeArray(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-destructuring-maybe-array.php'], [
+			[
+				'Cannot use array destructuring on array<int, int>|false.',
+				13,
+			],
+			[
+				'Offset 0 might not exist on array{0?: int, 1: int}.',
+				13,
+			],
+			[
+				'Cannot use array destructuring on list<int>|false.',
+				21,
+			],
+			[
+				'Cannot use array destructuring on list<list<int>>|false.',
+				29,
+			],
+			[
+				'Offset 0 might not exist on array{0?: int}.',
+				29,
+			],
+			[
+				'Cannot use array destructuring on ArrayAccess<int, int>|false.',
+				37,
+			],
+		]);
+	}
+
 }

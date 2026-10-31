@@ -5,6 +5,7 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_slice;
@@ -17,6 +18,8 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'arrayMapArgs';
 
+	public const PARAMETER_NAMES = ['callback', 'array', 'arrays'];
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
@@ -24,22 +27,22 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_map') {
 				$args = $node->getArgs();
+				$callbackArg = ArgumentsNormalizer::getArgsByPosition($args, self::PARAMETER_NAMES)[0] ?? null;
+				if ($callbackArg === null) {
+					return null;
+				}
+
 				$arrayArgs = [];
-				foreach ($args as $i => $arg) {
-					if ($arg->name === null && $i === 0) {
-						continue;
-					}
-					if ($arg->name !== null && $arg->name->toString() === 'callback') {
+				foreach ($args as $arg) {
+					if ($arg === $callbackArg) {
 						continue;
 					}
 
 					$arrayArgs[] = $arg;
 				}
-				if (isset($args[0])) {
-					$slicedArgs = array_slice($args, 1);
-					if (count($slicedArgs) > 0) {
-						$args[0]->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
-					}
+
+				if (count($arrayArgs) > 0) {
+					$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
 				}
 			}
 		}

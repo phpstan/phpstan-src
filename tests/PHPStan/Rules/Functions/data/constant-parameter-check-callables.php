@@ -8,3 +8,6 @@ $encode([], JSON_PRETTY_PRINT);
 
 // Callable from a function name - wrong
 $encode([], SORT_REGULAR);
+
+// integer literal instead of constant
+$encode([], 4096);

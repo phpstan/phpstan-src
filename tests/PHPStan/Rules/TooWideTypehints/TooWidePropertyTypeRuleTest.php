@@ -144,4 +144,15 @@ class TooWidePropertyTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-11844.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15228(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], [
+			[
+				'Property Bug15228\\OnlyCoalesceAssigned::$x (int|string|null) is never assigned string so it can be removed from the property type.',
+				9,
+			],
+		]);
+	}
+
 }

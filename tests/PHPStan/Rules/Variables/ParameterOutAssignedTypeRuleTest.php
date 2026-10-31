@@ -145,4 +145,19 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15428.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15228(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], [
+			[
+				'Parameter &$p @param-out type of function Bug15228\\writesString() expects int, string given.',
+				16,
+			],
+			[
+				'Parameter &$p @param-out type of function Bug15228\\validWrite() expects list<int>|null, list<string> given.',
+				22,
+			],
+		]);
+	}
+
 }

@@ -2146,7 +2146,7 @@ public:
 			zv::Val keyType = unionOf(keyTypesForGeneralArray);
 			PT_FAIL_IF_UNDEF(keyType);
 			zv::Arr valueTypesArray = listOf(valueTypesForGeneralArray);
-			zv::Val optimizedValueTypes = optimizeConstantArrays(valueTypesArray.raw());
+			zv::Val optimizedValueTypes = optimizeConstantArrays(valueTypesArray.raw(), valueTypesArray.raw());
 			PT_FAIL_IF_UNDEF(optimizedValueTypes);
 			zv::Val valueType = unionSpread(optimizedValueTypes.raw());
 			PT_FAIL_IF_UNDEF(valueType);
@@ -2185,7 +2185,7 @@ public:
 		zv::Arr arrayTypesArray = listOf(arrayTypes);
 		zv::Val reduced = reduceArrays(arrayTypesArray.raw(), true);
 		PT_FAIL_IF_UNDEF(reduced);
-		zv::Val reducedArrayTypes = optimizeConstantArrays(reduced.raw());
+		zv::Val reducedArrayTypes = optimizeConstantArrays(reduced.raw(), arrayTypesArray.raw());
 		PT_FAIL_IF_UNDEF(reducedArrayTypes);
 		zv::Arr result = zv::Arr::adoptVal(std::move(reducedArrayTypes));
 		result.separate();
@@ -2390,8 +2390,24 @@ public:
 		traversed.intoReturnValue(return_value);
 	}
 
-	/* private static optimizeConstantArrays(Type[] $types): Type[] */
-	static zv::Val optimizeConstantArrays(zval *typesArray)
+	/* private static getConstantArrayValueTypesLimit(Type[] $types): int;
+	 * -1 = pending exception */
+	[[nodiscard]] static zend_long getConstantArrayValueTypesLimit(zval *types)
+	{
+		zend_long limit = arrayCountLimit();
+		if (UNEXPECTED(limit < 0)) return -1;
+		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
+			zv::Arr single = zv::Arr::create(1);
+			single.push(zv::Ref(entry.value().raw()));
+			zend_long count = countConstantArrayValueTypes(single.raw());
+			if (UNEXPECTED(count < 0)) return -1;
+			if (count > limit) limit = count;
+		}
+		return limit;
+	}
+
+	/* private static optimizeConstantArrays(Type[] $types, Type[] $unionedTypes): Type[] */
+	static zv::Val optimizeConstantArrays(zval *typesArray, zval *unionedTypes)
 	{
 		zv::Val types = copy(typesArray);
 		zend_long limit = arrayCountLimit();
@@ -2399,6 +2415,10 @@ public:
 		zend_long constantArrayValuesCount = countConstantArrayValueTypes(types.raw());
 		PT_FAIL_IF_NEG(constantArrayValuesCount);
 
+		if (constantArrayValuesCount <= limit) return types;
+
+		limit = getConstantArrayValueTypesLimit(unionedTypes);
+		PT_FAIL_IF_NEG(limit);
 		if (constantArrayValuesCount <= limit) return types;
 
 		/* Stage 1: collapse same-key-set ConstantArrayType variants

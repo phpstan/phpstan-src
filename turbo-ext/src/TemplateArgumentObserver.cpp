@@ -750,6 +750,19 @@ public:
 		}
 		if (isMarker(actual)) return constraints;
 		if (isInstance(actual, pt_ce_never_type)) return constraints;
+		if (isInstance(declared, pt_ce_object_shape_type)) {
+			return observeObjectShapeSend(std::move(constraints), declared, actual, isCallArgument);
+		}
+		if (isInstance(declared, pt_ce_intersection_type)) {
+			zv::Val types = pt_type_op(Z_OBJ_P(declared), PT_OP_GET_TYPES, 0, NULL);
+			if (UNEXPECTED(types.isUndef())) return zv::Val();
+			for (auto entry : zv::ArrRef(types.raw())) {
+				zval *member = entry.value().deref().raw();
+				if (!isInstance(member, pt_ce_object_shape_type)) continue;
+				constraints = observeObjectShapeSend(std::move(constraints), member, actual, isCallArgument);
+				if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			}
+		}
 
 		zv::Val actualReflections = objectClassReflections(actual);
 		if (UNEXPECTED(actualReflections.isUndef())) return zv::Val();
@@ -840,6 +853,54 @@ public:
 		zv::Val actualValue = pt_type_op(Z_OBJ_P(actual), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		if (UNEXPECTED(actualValue.isUndef())) return zv::Val();
 		return observeSend(std::move(constraints), declaredValue.raw(), actualValue.raw(), isCallArgument);
+	}
+
+	/* Mirrors observeObjectShapeSend(). */
+	static zv::Val observeObjectShapeSend(zv::Val constraints, zval *declared, zval *actual, bool isCallArgument)
+	{
+		bool yes;
+		if (UNEXPECTED(!trinaryYes(actual, PT_LC("isobject"), yes))) return zv::Val();
+		if (!yes) return constraints;
+
+		zv::Val scope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
+		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		zv::Val properties = call0(declared, PT_LC("getproperties"), "getProperties");
+		if (UNEXPECTED(properties.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(properties.raw()) != IS_ARRAY)) {
+			zend_type_error("phpstan_turbo: getProperties() must return array");
+			return zv::Val();
+		}
+		for (auto entry : zv::ArrRef(properties.raw())) {
+			/* (string) $name */
+			zv::Val name = entry.hasStringKey()
+				? zv::Val::string(entry.stringKey())
+				: zv::Val::adoptString(zend_long_to_str((zend_long) entry.indexKey()));
+			zend_long hasProperty = pt_type_call_trinary(Z_OBJ_P(actual), PT_LC("hasinstanceproperty"), 1, name.raw());
+			if (UNEXPECTED(hasProperty < 0)) return zv::Val();
+			if (hasProperty != PT_TRI_YES) continue;
+
+			zv::Args args{name.raw(), scope.raw()};
+			zv::Val actualProperty = pt_type_call(Z_OBJ_P(actual), PT_LC("getinstanceproperty"), 2, args);
+			if (UNEXPECTED(actualProperty.isUndef())) {
+				zend_class_entry *missingCe = pt_class(PT_CLASS_MISSING_PROPERTY_FROM_REFLECTION_EXCEPTION);
+				if (EG(exception) == NULL || missingCe == NULL || !instanceof_function(EG(exception)->ce, missingCe)) return zv::Val();
+				zend_clear_exception();
+				continue;
+			}
+			zv::Val flag = call0(actualProperty.raw(), PT_LC("ispublic"), "isPublic");
+			if (UNEXPECTED(flag.isUndef())) return zv::Val();
+			if (!zend_is_true(flag.raw())) continue;
+			flag = call0(actualProperty.raw(), PT_LC("isstatic"), "isStatic");
+			if (UNEXPECTED(flag.isUndef())) return zv::Val();
+			if (zend_is_true(flag.raw())) continue;
+
+			zv::Val actualPropertyType = call0(actualProperty.raw(), PT_LC("getreadabletype"), "getReadableType");
+			if (UNEXPECTED(actualPropertyType.isUndef())) return zv::Val();
+			constraints = observeSend(std::move(constraints), entry.value().deref().raw(), actualPropertyType.raw(), isCallArgument);
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+		}
+
+		return constraints;
 	}
 
 	/* Mirrors observeArgumentSend(). */

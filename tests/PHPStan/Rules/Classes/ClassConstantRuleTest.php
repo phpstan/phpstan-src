@@ -309,6 +309,17 @@ class ClassConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-7675.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.3.0')]
+	public function testBug12387(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12387.php'], [
+			[
+				'Access to protected constant PAGER of class Bug12387\Model.',
+				23,
+			],
+		]);
+	}
+
 	public function testBug8034(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8034.php'], [

@@ -224,6 +224,31 @@ class RichParserTest extends PHPStanTestCase
 
 		yield [
 			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @var int $test' . PHP_EOL .
+			' * @phpstan-ignore-var' . PHP_EOL .
+			' */' . PHP_EOL .
+			'$test = test();',
+			[],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			PHP_EOL .
+			'/**' . PHP_EOL .
+			' * @var int $test' . PHP_EOL .
+			' * @phpstan-ignore-var' . PHP_EOL .
+			' * @phpstan-ignore test' . PHP_EOL .
+			' */' . PHP_EOL .
+			'$test = test();',
+			[
+				8 => [['name' => 'test', 'comment' => null]],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
 			'test(); // @phpstan-ignore identifier (comment), identifier2 (comment2)' . PHP_EOL,
 			[
 				2 => [['name' => 'identifier', 'comment' => 'comment'], ['name' => 'identifier2', 'comment' => 'comment2']],
@@ -491,6 +516,14 @@ class RichParserTest extends PHPStanTestCase
 			'test(); // @phpstan-ignore identifier -- comment' . PHP_EOL, // phpcs comment style
 			[
 				2 => ["Unexpected T_OTHER '--' after identifier, expected comma (,) or end or T_OPEN_PARENTHESIS"],
+			],
+		];
+
+		yield [
+			'<?php' . PHP_EOL .
+			'test(); // @phpstan-ignore-variable' . PHP_EOL,
+			[
+				2 => ["Unexpected T_OTHER '-variable' after @phpstan-ignore, expected identifier"],
 			],
 		];
 

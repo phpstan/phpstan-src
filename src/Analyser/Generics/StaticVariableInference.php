@@ -389,8 +389,15 @@ final class StaticVariableInference
 	private static function hasVarTag(Node\Stmt\Static_ $stmt): bool
 	{
 		$docComment = $stmt->getDocComment();
+		if ($docComment === null) {
+			return false;
+		}
 
-		return $docComment !== null && preg_match('~@(?:phpstan-|psalm-)?var\s~', $docComment->getText()) === 1;
+		$text = $docComment->getText();
+
+		// a @var tag ignored by @phpstan-ignore-var does not type the variable, so it is inferred
+		return preg_match('~@(?:phpstan-|psalm-)?var\s~', $text) === 1
+			&& preg_match('~@phpstan-ignore-var\b~', $text) !== 1;
 	}
 
 }

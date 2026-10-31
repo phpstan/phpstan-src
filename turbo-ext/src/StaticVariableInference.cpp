@@ -137,12 +137,30 @@ bool declaresVar(zend_string *text)
 	return false;
 }
 
+/* preg_match('~@phpstan-ignore-var\b~', $text) === 1 */
+bool ignoresVar(zend_string *text)
+{
+	const char *s = ZSTR_VAL(text);
+	size_t n = ZSTR_LEN(text);
+	const char tag[] = "@phpstan-ignore-var";
+	const size_t len = sizeof(tag) - 1;
+	for (size_t i = 0; i + len <= n; i++) {
+		if (s[i] != '@' || memcmp(s + i, tag, len) != 0) continue;
+		// \b after the word character 'r': the end of the text or a non-word character
+		if (i + len == n) return true;
+		char c = s[i + len];
+		bool isWord = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+		if (!isWord) return true;
+	}
+	return false;
+}
+
 /* Mirrors the private hasVarTag(); false = pending exception */
 [[nodiscard]] bool hasVarTag(zval *stmt, bool &out)
 {
 	zv::Val text = pt_node_doc_comment_text(stmt);
 	if (UNEXPECTED(text.isUndef())) return false;
-	out = text.ref().isString() && declaresVar(Z_STR_P(text.raw()));
+	out = text.ref().isString() && declaresVar(Z_STR_P(text.raw())) && !ignoresVar(Z_STR_P(text.raw()));
 	return true;
 }
 

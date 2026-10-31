@@ -1920,6 +1920,7 @@ final class StatementsHandler
 	{
 		$function = $scope->getFunction();
 		$variableLessTags = [];
+		$isVariableLessTagIgnored = false;
 
 		foreach ($stmt->getComments() as $comment) {
 			if (!$comment instanceof Doc) {
@@ -1944,9 +1945,17 @@ final class StatementsHandler
 				$assignedVariable = $stmt->expr->var->name;
 			}
 
+			$areVarTagsIgnored = $resolvedPhpDoc->areVarTagsIgnored();
 			foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {
 				if (is_int($name)) {
 					$variableLessTags[] = $varTag;
+					$isVariableLessTagIgnored = $areVarTagsIgnored;
+					continue;
+				}
+
+				// WrongVariableNameInVarTagRule checks these: with their type not assigned, the
+				// second run of this method for an assignment would report them again
+				if ($areVarTagsIgnored) {
 					continue;
 				}
 
@@ -1988,7 +1997,7 @@ final class StatementsHandler
 			}
 		}
 
-		if (count($variableLessTags) === 1 && $defaultExpr !== null) {
+		if (count($variableLessTags) === 1 && !$isVariableLessTagIgnored && $defaultExpr !== null) {
 			// only the scope effect here: the changed-type node is emitted by the
 			// statement handler AFTER it walked the expression (emitVarTagChangedNode),
 			// so the rule prices the expression from its stored result rather than
@@ -2002,9 +2011,10 @@ final class StatementsHandler
 	/**
 	 * The single variable-less @var tag on the statement's doc comment, or null
 	 * when there is none or more than one - the shape processStmtVarAnnotation()
-	 * applies to $defaultExpr and emitVarTagChangedNode() reports on.
+	 * applies to $defaultExpr and emitVarTagChangedNode() reports on. $isIgnored
+	 * tells whether its PHPDoc has @phpstan-ignore-var.
 	 */
-	private function findSingleVariableLessVarTag(MutatingScope $scope, Node\Stmt $stmt): ?VarTag
+	private function findSingleVariableLessVarTag(MutatingScope $scope, Node\Stmt $stmt, bool &$isIgnored): ?VarTag
 	{
 		$function = $scope->getFunction();
 		$variableLessTags = [];
@@ -2026,6 +2036,7 @@ final class StatementsHandler
 				}
 
 				$variableLessTags[] = $varTag;
+				$isIgnored = $resolvedPhpDoc->areVarTagsIgnored();
 			}
 		}
 
@@ -2041,12 +2052,16 @@ final class StatementsHandler
 	 */
 	public function emitVarTagChangedNode(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, Expr $defaultExpr, callable $nodeCallback): TemplateArgumentConstraints
 	{
-		$varTag = $this->findSingleVariableLessVarTag($scope, $stmt);
+		$isIgnored = false;
+		$varTag = $this->findSingleVariableLessVarTag($scope, $stmt, $isIgnored);
 		if ($varTag === null) {
 			return TemplateArgumentConstraints::createEmpty();
 		}
 
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
+		if ($isIgnored) {
+			return TemplateArgumentConstraints::createEmpty();
+		}
 		$defaultExprResult = $storage->findExpressionResult($defaultExpr);
 		if ($defaultExprResult === null || $nodeScopeResolver->observingTemplateArgumentFrame($defaultExprResult->getScope()) === null) {
 			return TemplateArgumentConstraints::createEmpty();

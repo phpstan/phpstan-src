@@ -22,6 +22,7 @@ use function array_map;
 use function count;
 use function implode;
 use function in_array;
+use function preg_match;
 use function preg_match_all;
 use function sprintf;
 use function str_contains;
@@ -46,6 +47,9 @@ final class RichParser implements Parser
 	private const PHPDOC_TAG_REGEX = '(@(?:[a-z][a-z0-9-\\\\]+:)?[a-z][a-z0-9-\\\\]*+)';
 
 	private const PHPDOC_DOCTRINE_TAG_REGEX = '(@[a-z_\\\\][a-z0-9_\:\\\\]*[a-z_][a-z0-9_]*)';
+
+	// @phpstan-ignore-var is a PHPDoc tag of its own, not an ignore comment
+	private const IGNORE_COMMENT_REGEX = '~@phpstan-ignore(?!-var\b)~';
 
 	/**
 	 * @param ExtensionsCollection<NodeVisitor> $nodeVisitors
@@ -219,10 +223,10 @@ final class RichParser implements Parser
 				}
 			}
 
-			$ignorePos = strpos($text, '@phpstan-ignore');
-			if ($ignorePos === false) {
+			if (preg_match(self::IGNORE_COMMENT_REGEX, $text, $ignoreMatch, PREG_OFFSET_CAPTURE) !== 1) {
 				continue;
 			}
+			$ignorePos = $ignoreMatch[0][1];
 
 			$ignoreLine = substr_count(substr($text, 0, $ignorePos), "\n") - 1;
 

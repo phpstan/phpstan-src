@@ -87,6 +87,8 @@ final class ClosureSignatureInference
 
 	private const ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureAssignedClosures';
 
+	private const NESTED_ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureNestedAssignedClosures';
+
 	private const REBOUND_VARIABLES_ATTRIBUTE = 'closureSignatureReboundVariables';
 
 	public function __construct(
@@ -118,7 +120,7 @@ final class ClosureSignatureInference
 	 * by variable name - while observing, and in the second pass for a site the
 	 * observation resolved. Empty for a closure whose invocations cannot be
 	 * followed: a generator (invoking it does not run the body), a closure
-	 * invoking its own by-ref variable.
+	 * invoking its own by-ref variable or assigned to it.
 	 *
 	 * @return array<string, Type>
 	 */
@@ -143,10 +145,17 @@ final class ClosureSignatureInference
 			return [];
 		}
 		$reboundNames = self::getReboundVariableNames($body, $frame->getClosureSignatureStmts());
+		$assignedClosures = self::getAssignedClosures($body, $frame->getClosureSignatureStmts(), true);
 		foreach ($names as $name) {
 			// unset or bound to another reference, the variable no longer is the
 			// one the closure writes to - its effects stay the creation-time fixpoint
 			if (isset($reboundNames[$name])) {
+				return [];
+			}
+			// `$f = function () use (&$f)`: the body reaches the closure itself
+			// through the variable - aliased, captured, passed on - so its
+			// invocations cannot all be followed
+			if (in_array($expr, $assignedClosures[$name] ?? [], true)) {
 				return [];
 			}
 		}
@@ -1120,13 +1129,17 @@ final class ClosureSignatureInference
 	}
 
 	/**
+	 * With $nested, also the closures assigned in the function-likes the body
+	 * contains - to the variables of those.
+	 *
 	 * @param Node\Stmt[] $stmts
 	 * @return array<string, list<Closure|ArrowFunction>>
 	 */
-	private static function getAssignedClosures(Node $body, array $stmts): array
+	private static function getAssignedClosures(Node $body, array $stmts, bool $nested = false): array
 	{
+		$attribute = $nested ? self::NESTED_ASSIGNED_CLOSURES_ATTRIBUTE : self::ASSIGNED_CLOSURES_ATTRIBUTE;
 		/** @var array<string, list<Closure|ArrowFunction>>|null $cached */
-		$cached = $body->getAttribute(self::ASSIGNED_CLOSURES_ATTRIBUTE);
+		$cached = $body->getAttribute($attribute);
 		if ($cached !== null) {
 			return $cached;
 		}
@@ -1135,7 +1148,7 @@ final class ClosureSignatureInference
 		$stack = $stmts;
 		while (count($stack) > 0) {
 			$node = array_pop($stack);
-			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+			if (!$nested && ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike)) {
 				continue;
 			}
 			if (
@@ -1160,7 +1173,7 @@ final class ClosureSignatureInference
 				}
 			}
 		}
-		$body->setAttribute(self::ASSIGNED_CLOSURES_ATTRIBUTE, $assigned);
+		$body->setAttribute($attribute, $assigned);
 
 		return $assigned;
 	}

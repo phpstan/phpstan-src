@@ -32,31 +32,40 @@ inline constexpr char strings[] =
 	"\0" /* 0 */
 	"PHPStan\\Type\\Generic\\TemplateTypeScope\0" /* 1 */
 	"createWithAnonymousFunction\0" /* 40 */
-	"functionName\0" /* 68 */
-	"createWithFunction\0" /* 81 */
-	"className\0" /* 100 */
-	"createWithMethod\0" /* 110 */
-	"createWithClass\0" /* 127 */
-	"__construct\0" /* 143 */
-	"getClassName\0" /* 155 */
-	"getFunctionName\0" /* 168 */
-	"other\0" /* 184 */
-	"equals\0" /* 190 */
-	"describe"; /* 197 */
+	"className\0" /* 68 */
+	"aliasName\0" /* 78 */
+	"createWithTypeAlias\0" /* 88 */
+	"functionName\0" /* 108 */
+	"createWithFunction\0" /* 121 */
+	"createWithMethod\0" /* 140 */
+	"createWithClass\0" /* 157 */
+	"__construct\0" /* 173 */
+	"getClassName\0" /* 185 */
+	"getFunctionName\0" /* 198 */
+	"isTypeAlias\0" /* 214 */
+	"getTypeAliasName\0" /* 226 */
+	"other\0" /* 243 */
+	"equals\0" /* 249 */
+	"describe"; /* 256 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* createWithAnonymousFunction return */
-	reg::packed(68, MAY_BE_STRING), /* createWithFunction $functionName */
+	reg::packed(68, MAY_BE_STRING), /* createWithTypeAlias $className */
+	reg::packed(78, MAY_BE_STRING), /* createWithTypeAlias $aliasName */
+	reg::packed(0, 0, 1), /* createWithTypeAlias return */
+	reg::packed(108, MAY_BE_STRING), /* createWithFunction $functionName */
 	reg::packed(0, 0, 1), /* createWithFunction return */
-	reg::packed(100, MAY_BE_STRING), /* createWithMethod $className */
-	reg::packed(68, MAY_BE_STRING), /* createWithMethod $functionName */
+	reg::packed(68, MAY_BE_STRING), /* createWithMethod $className */
+	reg::packed(108, MAY_BE_STRING), /* createWithMethod $functionName */
 	reg::packed(0, 0, 1), /* createWithMethod return */
-	reg::packed(100, MAY_BE_STRING), /* createWithClass $className */
+	reg::packed(68, MAY_BE_STRING), /* createWithClass $className */
 	reg::packed(0, 0, 1), /* createWithClass return */
-	reg::packed(100, MAY_BE_NULL | MAY_BE_STRING), /* __construct $className */
-	reg::packed(68, MAY_BE_NULL | MAY_BE_STRING), /* __construct $functionName */
+	reg::packed(68, MAY_BE_NULL | MAY_BE_STRING), /* __construct $className */
+	reg::packed(108, MAY_BE_NULL | MAY_BE_STRING), /* __construct $functionName */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getClassName return */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getFunctionName return */
-	reg::packed(184, 0, 1), /* equals $other */
+	reg::packed(0, MAY_BE_BOOL), /* isTypeAlias return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_STRING), /* getTypeAliasName return */
+	reg::packed(243, 0, 1), /* equals $other */
 	reg::packed(0, MAY_BE_BOOL), /* equals return */
 	reg::packed(0, MAY_BE_STRING), /* describe return */
 };
@@ -66,14 +75,17 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig createWithAnonymousFunction = { { 40 /* createWithAnonymousFunction */, 0, 0, 0, 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createWithFunction = { { 81 /* createWithFunction */, 1, 1, 1, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createWithMethod = { { 110 /* createWithMethod */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createWithClass = { { 127 /* createWithClass */, 1, 6, 1, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig __construct = { { 143 /* __construct */, 2, 8, 2, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getClassName = { { 155 /* getClassName */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFunctionName = { { 168 /* getFunctionName */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig equals = { { 190 /* equals */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 197 /* describe */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createWithTypeAlias = { { 88 /* createWithTypeAlias */, 2, 1, 2, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createWithFunction = { { 121 /* createWithFunction */, 1, 4, 1, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createWithMethod = { { 140 /* createWithMethod */, 2, 6, 2, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createWithClass = { { 157 /* createWithClass */, 1, 9, 1, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 173 /* __construct */, 2, 11, 2, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getClassName = { { 185 /* getClassName */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFunctionName = { { 198 /* getFunctionName */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTypeAlias = { { 214 /* isTypeAlias */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeAliasName = { { 226 /* getTypeAliasName */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 249 /* equals */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 256 /* describe */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeScope

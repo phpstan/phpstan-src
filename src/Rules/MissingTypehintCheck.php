@@ -19,6 +19,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\GenericTypeAliasType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
@@ -30,6 +31,7 @@ use Traversable;
 use function array_filter;
 use function array_keys;
 use function array_merge;
+use function array_unique;
 use function array_values;
 use function count;
 use function implode;
@@ -158,6 +160,16 @@ final class MissingTypehintCheck
 			}
 			if ($type instanceof TemplateType) {
 				return $type;
+			}
+			if ($type instanceof GenericTypeAliasType) {
+				$missing = $type->getMissingRequiredParamNames();
+				if ($missing !== []) {
+					$objectTypes[] = [
+						sprintf('type alias %s', $type->getAliasName()),
+						implode(', ', array_unique($missing)),
+					];
+				}
+				return $traverse($type);
 			}
 			if ($type instanceof ObjectType) {
 				$classReflection = $type->getClassReflection();

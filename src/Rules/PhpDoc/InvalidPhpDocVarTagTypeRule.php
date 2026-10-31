@@ -121,6 +121,7 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 						->identifier('missingType.generics')
 						->build();
 				}
+
 			}
 
 			$escapedIdentifier = SprintfHelper::escapeFormatString($identifier);

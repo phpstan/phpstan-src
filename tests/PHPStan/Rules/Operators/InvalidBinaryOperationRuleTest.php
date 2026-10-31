@@ -1039,4 +1039,16 @@ class InvalidBinaryOperationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug8288.php'], $expectedErrors);
 	}
 
+	public function testBug11886(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID >= 80100) {
+			$errors[] = [
+				'Deprecated in PHP 8.1: Implicit conversion from 4.1 to int loses precision.',
+				3,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/bug-11886.php'], $errors);
+	}
+
 }

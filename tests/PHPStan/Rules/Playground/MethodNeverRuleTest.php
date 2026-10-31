@@ -36,4 +36,10 @@ class MethodNeverRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug10666(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-10666.php'], []);
+	}
+
 }

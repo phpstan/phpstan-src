@@ -21,7 +21,7 @@ class HelloWorld
 				$meta[$key] = (string)$tag->{$valueName};
 				continue;
 			}
-			assertType('array<string, array{}|array{string}|string>', $meta);
+			assertType('array<string, list<string>|string>', $meta);
 			$meta[$key] = [];
 			assertType('array{}', $meta[$key]);
 			foreach ($tag->{$valueName} as $value) {

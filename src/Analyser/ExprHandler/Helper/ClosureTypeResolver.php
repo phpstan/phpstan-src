@@ -63,7 +63,14 @@ use function spl_object_id;
 final class ClosureTypeResolver implements PerFileAnalysisResettable
 {
 
-	private static int $resolveClosureTypeDepth = 0;
+	/**
+	 * Body-walk depth per closure node (spl_object_id()) - a self-by-ref
+	 * closure re-walking itself is cut off, while different closures nested
+	 * in each other's bodies are not.
+	 *
+	 * @var array<int, int>
+	 */
+	private static array $resolveClosureTypeDepth = [];
 
 	/**
 	 * Per-context resolved closure types, keyed by the closure node. Node
@@ -155,7 +162,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		if (array_key_exists($cacheKey, $cachedTypes)) {
 			return $this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree);
 		}
-		if (self::$resolveClosureTypeDepth >= 2) {
+		$exprId = spl_object_id($expr);
+		if ((self::$resolveClosureTypeDepth[$exprId] ?? 0) >= 2) {
 			return new ClosureType(
 				$parameters,
 				$scope->getFunctionType($expr->returnType, false, false),
@@ -172,7 +180,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 			$arrowFunctionImpurePoints = [];
 			$invalidateExpressions = [];
-			self::$resolveClosureTypeDepth++;
+			self::$resolveClosureTypeDepth[$exprId] = (self::$resolveClosureTypeDepth[$exprId] ?? 0) + 1;
 			$walkStorage = new ExpressionResultStorage();
 			$arrowScope->pushExpressionResultStorage($walkStorage);
 			try {
@@ -208,7 +216,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				);
 			} finally {
 				$arrowScope->popExpressionResultStorage();
-				self::$resolveClosureTypeDepth--;
+				if (--self::$resolveClosureTypeDepth[$exprId] === 0) {
+					unset(self::$resolveClosureTypeDepth[$exprId]);
+				}
 			}
 			$throwPoints = array_map(static fn ($throwPoint) => $throwPoint->toPublic(), $arrowFunctionExprResult->getThrowPoints());
 			$impurePoints = array_merge($arrowFunctionImpurePoints, $arrowFunctionExprResult->getImpurePoints());
@@ -220,7 +230,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey, $contextFree);
 		}
 
-		self::$resolveClosureTypeDepth++;
+		self::$resolveClosureTypeDepth[$exprId] = (self::$resolveClosureTypeDepth[$exprId] ?? 0) + 1;
 
 		$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
 		$closureReturnStatements = [];
@@ -271,7 +281,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			}, StatementContext::createTopLevel())->toPublic();
 		} finally {
 			$closureScope->popExpressionResultStorage();
-			self::$resolveClosureTypeDepth--;
+			if (--self::$resolveClosureTypeDepth[$exprId] === 0) {
+				unset(self::$resolveClosureTypeDepth[$exprId]);
+			}
 		}
 
 		$throwPoints = $closureStatementResult->getThrowPoints();

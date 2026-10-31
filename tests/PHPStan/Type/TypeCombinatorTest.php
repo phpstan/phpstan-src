@@ -3244,6 +3244,33 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ConstantArrayType::class,
 			'array{}',
 		];
+		yield [
+			[
+				new ConstantStringType('array'),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			UnionType::class,
+			"'array'|class-string<T (function foo(), parameter)>",
+		];
+
+		yield [
+			[
+				new ConstantStringType(Exception::class),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			GenericClassStringType::class,
+			'class-string<T (function foo(), parameter)>',
+		];
 	}
 
 	/**
@@ -5822,6 +5849,33 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				new ConstantStringType('array'),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+
+		yield [
+			[
+				new ConstantStringType(Exception::class),
+				new GenericClassStringType(TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('foo'),
+					'T',
+					null,
+					TemplateTypeVariance::createInvariant(),
+				)),
+			],
+			ConstantStringType::class,
+			"'Exception'",
 		];
 	}
 

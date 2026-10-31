@@ -152,10 +152,10 @@ public:
 		return callOnType(PT_LC("accepts"), 2, args);
 	}
 
-	/* the CompoundType callback; for a ConstantStringType yes under a mixed
-	 * generic type, else the generic type's (a StaticType's object type, a
-	 * TemplateType's bound) verdict on its ObjectType, and'ed with maybe
-	 * unless it is a class-string; the generic types' verdict for another
+	/* the CompoundType callback; for a ConstantStringType the generic
+	 * type's (a StaticType's object type, a TemplateType's bound) verdict on
+	 * its ObjectType, and'ed with whether it is a class-string; the generic
+	 * types' verdict for another
 	 * GenericClassStringType; the verdict on ObjectWithoutClassType for a
 	 * ClassStringType; maybe for a StringType; no otherwise; UNDEF =
 	 * pending exception */
@@ -174,7 +174,6 @@ public:
 			zval *ownType = this->type();
 			if (UNEXPECTED(ownType == NULL)) return zv::Val();
 			zv::Val genericType = zv::Val::copyOf(zv::Ref(ownType));
-			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 
 			/* $genericType instanceof StaticType — the shadowing class */
 			bool isStatic = zv::Ref(genericType.raw()).instanceOf(pt_ce_static_type);
@@ -203,16 +202,12 @@ public:
 			}
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
 
+			/* $isSuperType->and(IsSuperTypeOfResult::createFromTrinaryLogic($type->isClassString())) */
 			zend_long isClassString = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isclassstring"), 0, NULL);
 			if (UNEXPECTED(isClassString < 0)) return zv::Val();
-			if (isClassString != PT_TRI_YES) {
-				/* $isSuperType->and(IsSuperTypeOfResult::createMaybe()) */
-				zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
-				if (UNEXPECTED(maybe.isUndef())) return zv::Val();
-				isSuperType = pt_type_op(Z_OBJ_P(isSuperType.raw()), PT_OP_AND, 1, maybe.raw());
-			}
-
-			return isSuperType;
+			zv::Val classStringResult = pt_type_is_super_type_of_result(isClassString);
+			if (UNEXPECTED(classStringResult.isUndef())) return zv::Val();
+			return pt_type_op(Z_OBJ_P(isSuperType.raw()), PT_OP_AND, 1, classStringResult.raw());
 		}
 		if (instanceof_function(typeCe, pt_ce_generic_class_string_type)) {
 			zval *other = typeOf(Z_OBJ_P(type));

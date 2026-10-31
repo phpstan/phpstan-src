@@ -162,10 +162,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
 		if ($type instanceof GenericClassStringType) {
-			$genericType = $type->getGenericType();
-			if ($genericType instanceof MixedType) {
-				return IsSuperTypeOfResult::createMaybe();
+			if (!$this->isClassString()->yes()) {
+				return IsSuperTypeOfResult::createNo();
 			}
+
+			$genericType = $type->getGenericType();
 			if ($genericType instanceof StaticType) {
 				$genericType = $genericType->getStaticObjectType();
 			}

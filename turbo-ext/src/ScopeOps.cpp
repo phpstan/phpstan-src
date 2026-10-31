@@ -603,6 +603,15 @@ public:
 			zv::Val remainder = typeCombinatorRemove(holderType(holder), holderType(theirHolder));
 			if (UNEXPECTED(remainder.isUndef())) return zv::Val();
 			if (remainder.ref().instanceOf(neverTypeCe)) continue;
+			if (Z_OBJ_P(remainder.raw()) != Z_OBJ_P(holderType(holder))) {
+				/* a partial subtraction that still overlaps their branch cannot
+				 * prove ours - fall back to our full type, like the twin */
+				zend_long theirIsSuperTypeOfRemainder;
+				if (UNEXPECTED(!isSuperTypeOfValue(holderType(theirHolder), remainder.raw(), &theirIsSuperTypeOfRemainder))) return zv::Val();
+				if (theirIsSuperTypeOfRemainder != PT_TRI_NO) {
+					remainder = zv::Val::copyOf(zv::Ref(holderType(holder)));
+				}
+			}
 			{
 				zv::Ref mergedHolder = zv::Ref(mergedSlot).deref();
 				if (UNEXPECTED(!pt_check_holder(mergedHolder.raw()))) return zv::Val();

@@ -67,38 +67,40 @@ inline constexpr char strings[] =
 	"strictTypes\0" /* 588 */
 	"PHPStan\\Type\\AcceptsResult\0" /* 600 */
 	"accepts\0" /* 627 */
-	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 635 */
-	"isSuperTypeOf\0" /* 668 */
-	"equals\0" /* 682 */
-	"typeToRemove\0" /* 689 */
-	"tryRemove\0" /* 702 */
-	"PHPStan\\Type\\ObjectShapeType\0" /* 712 */
-	"makePropertyRequired\0" /* 741 */
-	"receivedType\0" /* 762 */
-	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 775 */
-	"inferTemplateTypes\0" /* 812 */
-	"positionVariance\0" /* 831 */
-	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 848 */
-	"getReferencedTemplateTypes\0" /* 890 */
-	"level\0" /* 917 */
-	"PHPStan\\Type\\VerbosityLevel\0" /* 923 */
-	"describe\0" /* 951 */
-	"getEnumCases\0" /* 960 */
-	"PHPStan\\Type\\Enum\\EnumCaseObjectType\0" /* 973 */
-	"getEnumCaseObject\0" /* 1010 */
-	"cb\0" /* 1028 */
-	"traverse\0" /* 1031 */
-	"right\0" /* 1040 */
-	"traverseSimultaneously\0" /* 1046 */
-	"exponent\0" /* 1069 */
-	"exponentiate\0" /* 1078 */
-	"getFiniteTypes\0" /* 1091 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1106 */
-	"toPhpDocNode\0" /* 1145 */
-	"position\0" /* 1158 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 1167 */
-	"toNativePhpTypeNode\0" /* 1199 */
-	"hasTemplateOrLateResolvableType"; /* 1219 */
+	"PHPStan\\Type\\BooleanType\0" /* 635 */
+	"toBoolean\0" /* 660 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 670 */
+	"isSuperTypeOf\0" /* 703 */
+	"equals\0" /* 717 */
+	"typeToRemove\0" /* 724 */
+	"tryRemove\0" /* 737 */
+	"PHPStan\\Type\\ObjectShapeType\0" /* 747 */
+	"makePropertyRequired\0" /* 776 */
+	"receivedType\0" /* 797 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 810 */
+	"inferTemplateTypes\0" /* 847 */
+	"positionVariance\0" /* 866 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 883 */
+	"getReferencedTemplateTypes\0" /* 925 */
+	"level\0" /* 952 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 958 */
+	"describe\0" /* 986 */
+	"getEnumCases\0" /* 995 */
+	"PHPStan\\Type\\Enum\\EnumCaseObjectType\0" /* 1008 */
+	"getEnumCaseObject\0" /* 1045 */
+	"cb\0" /* 1063 */
+	"traverse\0" /* 1066 */
+	"right\0" /* 1075 */
+	"traverseSimultaneously\0" /* 1081 */
+	"exponent\0" /* 1104 */
+	"exponentiate\0" /* 1113 */
+	"getFiniteTypes\0" /* 1126 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1141 */
+	"toPhpDocNode\0" /* 1180 */
+	"position\0" /* 1193 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 1202 */
+	"toNativePhpTypeNode\0" /* 1234 */
+	"hasTemplateOrLateResolvableType"; /* 1254 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $properties */
 	reg::packed(11, MAY_BE_ARRAY), /* __construct $optionalProperties */
@@ -135,32 +137,33 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(583, 0, 146), /* accepts $type */
 	reg::packed(588, MAY_BE_BOOL), /* accepts $strictTypes */
 	reg::packed(42, 0, 600), /* accepts return */
+	reg::packed(42, 0, 635), /* toBoolean return */
 	reg::packed(583, 0, 146), /* isSuperTypeOf $type */
-	reg::packed(42, 0, 635), /* isSuperTypeOf return */
+	reg::packed(42, 0, 670), /* isSuperTypeOf return */
 	reg::packed(583, 0, 146), /* equals $type */
 	reg::packed(42, MAY_BE_BOOL), /* equals return */
-	reg::packed(689, 0, 146), /* tryRemove $typeToRemove */
+	reg::packed(724, 0, 146), /* tryRemove $typeToRemove */
 	reg::packed(42, MAY_BE_NULL, 146), /* tryRemove return */
 	reg::packed(183, MAY_BE_STRING), /* makePropertyRequired $propertyName */
-	reg::packed(42, 0, 712), /* makePropertyRequired return */
-	reg::packed(762, 0, 146), /* inferTemplateTypes $receivedType */
-	reg::packed(42, 0, 775), /* inferTemplateTypes return */
-	reg::packed(831, 0, 848), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(42, 0, 747), /* makePropertyRequired return */
+	reg::packed(797, 0, 146), /* inferTemplateTypes $receivedType */
+	reg::packed(42, 0, 810), /* inferTemplateTypes return */
+	reg::packed(866, 0, 883), /* getReferencedTemplateTypes $positionVariance */
 	reg::packed(42, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
-	reg::packed(917, 0, 923), /* describe $level */
+	reg::packed(952, 0, 958), /* describe $level */
 	reg::packed(42, MAY_BE_STRING), /* describe return */
 	reg::packed(42, MAY_BE_ARRAY), /* getEnumCases return */
-	reg::packed(42, MAY_BE_NULL, 973), /* getEnumCaseObject return */
-	reg::packed(1028, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(42, MAY_BE_NULL, 1008), /* getEnumCaseObject return */
+	reg::packed(1063, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(42, 0, 146), /* traverse return */
-	reg::packed(1040, 0, 146), /* traverseSimultaneously $right */
-	reg::packed(1028, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(1075, 0, 146), /* traverseSimultaneously $right */
+	reg::packed(1063, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(42, 0, 146), /* traverseSimultaneously return */
-	reg::packed(1069, 0, 146), /* exponentiate $exponent */
+	reg::packed(1104, 0, 146), /* exponentiate $exponent */
 	reg::packed(42, 0, 146), /* exponentiate return */
 	reg::packed(42, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(42, 0, 1106), /* toPhpDocNode return */
-	reg::packed(1158, 0, 1167), /* toNativePhpTypeNode $position */
+	reg::packed(42, 0, 1141), /* toPhpDocNode return */
+	reg::packed(1193, 0, 1202), /* toNativePhpTypeNode $position */
 	reg::packed(42, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -185,22 +188,23 @@ inline constexpr sigtab::Sig hasStaticProperty = { { 510 /* hasStaticProperty */
 inline constexpr sigtab::Sig getStaticProperty = { { 528 /* getStaticProperty */, 2, 26, 2, 28, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getUnresolvedStaticPropertyPrototype = { { 546 /* getUnresolvedStaticPropertyPrototype */, 2, 29, 2, 31, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig accepts = { { 627 /* accepts */, 2, 32, 2, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSuperTypeOf = { { 668 /* isSuperTypeOf */, 1, 35, 1, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig equals = { { 682 /* equals */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 702 /* tryRemove */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig makePropertyRequired = { { 741 /* makePropertyRequired */, 1, 41, 1, 42, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig inferTemplateTypes = { { 812 /* inferTemplateTypes */, 1, 43, 1, 44, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 890 /* getReferencedTemplateTypes */, 1, 45, 1, 46, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 951 /* describe */, 1, 47, 1, 48, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getEnumCases = { { 960 /* getEnumCases */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getEnumCaseObject = { { 1010 /* getEnumCaseObject */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverse = { { 1031 /* traverse */, 1, 51, 1, 52, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 1046 /* traverseSimultaneously */, 2, 53, 2, 55, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 1078 /* exponentiate */, 1, 56, 1, 57, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 1091 /* getFiniteTypes */, 0, 58, 0, 58, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 1145 /* toPhpDocNode */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1199 /* toNativePhpTypeNode */, 1, 60, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1219 /* hasTemplateOrLateResolvableType */, 0, 61, 0, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBoolean = { { 660 /* toBoolean */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 703 /* isSuperTypeOf */, 1, 36, 1, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 717 /* equals */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 737 /* tryRemove */, 1, 40, 1, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig makePropertyRequired = { { 776 /* makePropertyRequired */, 1, 42, 1, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig inferTemplateTypes = { { 847 /* inferTemplateTypes */, 1, 44, 1, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 925 /* getReferencedTemplateTypes */, 1, 46, 1, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 986 /* describe */, 1, 48, 1, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEnumCases = { { 995 /* getEnumCases */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEnumCaseObject = { { 1045 /* getEnumCaseObject */, 0, 51, 0, 51, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 1066 /* traverse */, 1, 52, 1, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 1081 /* traverseSimultaneously */, 2, 54, 2, 56, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig exponentiate = { { 1113 /* exponentiate */, 1, 57, 1, 58, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1126 /* getFiniteTypes */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1180 /* toPhpDocNode */, 0, 60, 0, 60, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1234 /* toNativePhpTypeNode */, 1, 61, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1254 /* hasTemplateOrLateResolvableType */, 0, 62, 0, 62, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ObjectShapeType

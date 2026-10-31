@@ -2,7 +2,7 @@
 
 namespace ConstantConditionFunctionCall;
 
-function retObj(): object
+function retObj(): \stdClass
 {
 	return new \stdClass();
 }

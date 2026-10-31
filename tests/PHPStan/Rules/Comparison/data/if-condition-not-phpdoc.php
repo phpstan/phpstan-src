@@ -6,7 +6,7 @@ class IfCondition
 {
 
 	/**
-	 * @param object $object
+	 * @param \stdClass $object
 	 */
 	public function doFoo(
 		self $self,

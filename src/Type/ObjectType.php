@@ -47,6 +47,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Traits\MaybeIterableTypeTrait;
@@ -96,6 +97,17 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		'FFI\CData', // Very funky and weird
 		'SimpleXMLElement',
 		'Threaded',
+	];
+
+	/**
+	 * Internal classes whose instances can be cast to false.
+	 *
+	 * @internal
+	 */
+	public const POSSIBLY_FALSY_CLASSES = [
+		'SimpleXMLElement',
+		'BcMath\Number',
+		'GMP',
 	];
 
 	private ?Type $subtractedType;
@@ -1044,6 +1056,14 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			|| $this->isInstanceOf('GMP')->yes()
 		) {
 			return new BooleanType();
+		}
+
+		// e.g. Countable or Stringable, implemented by these classes
+		$type = $this instanceof TemplateType ? $this->getBound() : $this;
+		foreach (self::POSSIBLY_FALSY_CLASSES as $className) {
+			if ($type->isSuperTypeOf(new self($className))->yes()) {
+				return new BooleanType();
+			}
 		}
 
 		return new ConstantBooleanType(true);

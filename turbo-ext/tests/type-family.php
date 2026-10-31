@@ -1342,6 +1342,7 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 	'objectMinusException' => new $object(new \PHPStan\Type\ObjectType(\Exception::class)),
 	'objectMinusNever' => new $object(new \PHPStan\Type\NeverType()),
 	'objectMinusUnion' => new $object(new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\ObjectType(\Exception::class)])),
+	'objectMinusFalsy' => new $object(new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType('SimpleXMLElement'), new \PHPStan\Type\ObjectType('BcMath\\Number'), new \PHPStan\Type\ObjectType('GMP')])),
 	'templateObject' => new \PHPStan\Type\Generic\TemplateObjectWithoutClassType($objectTemplateScope, new \PHPStan\Type\Generic\TemplateTypeParameterStrategy(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), 'T', new $object(), null),
 	'stdClass' => new \PHPStan\Type\ObjectType(\stdClass::class),
 	'exception' => new \PHPStan\Type\ObjectType(\Exception::class),
@@ -1410,7 +1411,7 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 	$r = [];
 	$others = $objectOthers($objectClass, $staticClass, $thisClass, $genericStaticClass, $shapeClass, $parentClass);
 	$subjects = [];
-	foreach (['object', 'objectMinusStd', 'objectMinusException', 'objectMinusNever', 'objectMinusUnion', 'templateObject', 'static', 'staticException', 'staticMinusRuntime', 'staticAssertTag', 'staticTypedTag', 'staticArrayObject', 'staticEnum', 'this', 'thisException', 'thisMinusRuntime', 'thisAssertTag', 'genericStatic', 'genericStaticMinus', 'genericStaticIterator', 'genericStaticNonGeneric', 'shape', 'shapeRequired', 'shapeA', 'shapeInt', 'shapeEmpty', 'shapeResult', 'shapeResultOptional', 'shapeWrong', 'shapeTemplate', 'templateShape', 'parent'] as $subjectName) {
+	foreach (['object', 'objectMinusStd', 'objectMinusException', 'objectMinusNever', 'objectMinusUnion', 'objectMinusFalsy', 'templateObject', 'static', 'staticException', 'staticMinusRuntime', 'staticAssertTag', 'staticTypedTag', 'staticArrayObject', 'staticEnum', 'this', 'thisException', 'thisMinusRuntime', 'thisAssertTag', 'genericStatic', 'genericStaticMinus', 'genericStaticIterator', 'genericStaticNonGeneric', 'shape', 'shapeRequired', 'shapeA', 'shapeInt', 'shapeEmpty', 'shapeResult', 'shapeResultOptional', 'shapeWrong', 'shapeTemplate', 'templateShape', 'parent'] as $subjectName) {
 		$subjects[$subjectName] = $others[$subjectName];
 	}
 	$subjects['staticEnumMinusCase'] = $subjects['staticEnum']->subtract(new \PHPStan\Type\Enum\EnumCaseObjectType('Random\\IntervalBoundary', 'ClosedOpen'));
@@ -2238,6 +2239,8 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 		'arrayObject' => new $objectClass(\ArrayObject::class),
 		'dateTimeInterface' => new $objectClass(\DateTimeInterface::class),
 		'closure' => new $objectClass(\Closure::class),
+		'stringable' => new $objectClass(\Stringable::class),
+		'countableMinusSimpleXml' => new $objectClass(\Countable::class, new $objectClass('SimpleXMLElement')),
 		'simpleXml' => new $objectClass('SimpleXMLElement'),
 		'gmp' => new $objectClass('GMP'),
 		'curl' => new $objectClass('CurlHandle'),

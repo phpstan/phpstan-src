@@ -6,7 +6,7 @@ class ElseIfCondition
 {
 
 	/**
-	 * @param object $object
+	 * @param \stdClass $object
 	 */
 	public function doFoo(
 		self $self,
@@ -31,7 +31,7 @@ class ElseIfCondition
 class ConditionalAlwaysTrue
 {
 	/**
-	 * @param object $object
+	 * @param \stdClass $object
 	 */
 	public function doFoo(
 		self $self,

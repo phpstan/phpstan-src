@@ -6,7 +6,9 @@ use PhpParser\Node\Identifier;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
@@ -68,6 +70,18 @@ class ObjectWithoutClassType implements SubtractableType
 		return AcceptsResult::createFromBoolean(
 			$type instanceof self || $type instanceof ObjectShapeType || $type->getObjectClassNames() !== [],
 		);
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		$type = $this instanceof TemplateType ? $this->getBound() : $this;
+		foreach (ObjectType::POSSIBLY_FALSY_CLASSES as $className) {
+			if ($type->isSuperTypeOf(new ObjectType($className))->yes()) {
+				return new BooleanType();
+			}
+		}
+
+		return new ConstantBooleanType(true);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

@@ -6,8 +6,8 @@ class Foo
 {
 
 	/**
-	 * @param object $a
-	 * @param object $b
+	 * @param \stdClass $a
+	 * @param \stdClass $b
 	 */
 	public function doFoo($a, $b)
 	{

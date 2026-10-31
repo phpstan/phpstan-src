@@ -4,7 +4,7 @@ namespace SwitchInstanceOf;
 
 use function PHPStan\Testing\assertType;
 
-/** @var object $object */
+/** @var \stdClass $object */
 $object = doFoo();
 
 $foo = doFoo();

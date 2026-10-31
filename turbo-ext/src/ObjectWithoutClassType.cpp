@@ -446,6 +446,21 @@ PT_MINIT_REGISTRATION(pt_register_object_without_class_type)
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
 
+	/* bool when ($this instanceof TemplateType ? $this->getBound() : $this)
+	 * is a supertype of one of ObjectType::POSSIBLY_FALSY_CLASSES, true otherwise */
+	cls.method(sigs::toBoolean, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zend_long superType = pt_type_is_super_type_of_possibly_falsy_class(Z_OBJ_P(ZEND_THIS));
+		if (UNEXPECTED(superType < 0)) RETURN_THROWS();
+		zval result;
+		if (superType == 1) {
+			if (UNEXPECTED(!pt_boolean_type_new(&result))) RETURN_THROWS();
+		} else if (UNEXPECTED(!pt_constant_boolean_type_new(&result, true))) {
+			RETURN_THROWS();
+		}
+		RETURN_COPY_VALUE(&result);
+	});
+
 	/* the traits, in the twin's `use` order (ObjectTypeTrait brings the
 	 * MaybeCallable, MaybeIterable, MaybeOffsetAccessible, NonArray and
 	 * TruthyBoolean traits with it); the class body above wins over every

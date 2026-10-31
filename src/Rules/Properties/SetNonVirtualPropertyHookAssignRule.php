@@ -57,19 +57,19 @@ final class SetNonVirtualPropertyHookAssignRule implements Rule
 				}
 			}
 			if ($finalHookScope === null) {
-				$finalHookScope = $statementResult->getScope();
+				$finalHookScope = $statementResult->getScope()->toWalkScope();
 				continue;
 			}
 
-			$finalHookScope = $finalHookScope->mergeWith($statementResult->getScope());
+			$finalHookScope = $finalHookScope->mergeWith($statementResult->getScope()->toWalkScope());
 		}
 
 		foreach ($node->getReturnStatements() as $returnStatement) {
 			if ($finalHookScope === null) {
-				$finalHookScope = $returnStatement->getScope();
+				$finalHookScope = $returnStatement->getScope()->toWalkScope();
 				continue;
 			}
-			$finalHookScope = $finalHookScope->mergeWith($returnStatement->getScope());
+			$finalHookScope = $finalHookScope->mergeWith($returnStatement->getScope()->toWalkScope());
 		}
 
 		if ($finalHookScope === null) {

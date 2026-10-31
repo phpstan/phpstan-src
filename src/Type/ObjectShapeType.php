@@ -22,9 +22,11 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -272,6 +274,18 @@ class ObjectShapeType implements Type
 		}
 
 		return $result->and(new AcceptsResult($type->isObject(), []));
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		$type = $this instanceof TemplateType ? $this->getBound() : $this;
+		foreach (ObjectType::POSSIBLY_FALSY_CLASSES as $className) {
+			if ($type->isSuperTypeOf(new ObjectType($className))->yes()) {
+				return new BooleanType();
+			}
+		}
+
+		return new ConstantBooleanType(true);
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

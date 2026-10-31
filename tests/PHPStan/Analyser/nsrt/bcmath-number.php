@@ -257,10 +257,10 @@ class Foo
 		assertType('*ERROR*', $a ^ $b);
 		assertType('*ERROR*', $a | $b);
 		assertType('bool', $a && $b);
-		assertType('true', $a || $b);
+		assertType('bool', $a || $b);
 		assertType('bool', $a and $b);
 		assertType('bool', $a xor $b);
-		assertType('true', $a or $b);
+		assertType('bool', $a or $b);
 	}
 
 	/** @param resource $b */
@@ -370,10 +370,10 @@ class Foo
 		assertType('*ERROR*', $a ^ $b);
 		assertType('*ERROR*', $a | $b);
 		assertType('bool', $a && $b);
-		assertType('true', $a || $b);
+		assertType('bool', $a || $b);
 		assertType('bool', $a and $b);
 		assertType('bool', $a xor $b);
-		assertType('true', $a or $b);
+		assertType('bool', $a or $b);
 	}
 
 	public function bcVsNever(Number $a): void

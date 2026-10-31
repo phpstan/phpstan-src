@@ -88,6 +88,31 @@ static void pt_ot_extra_offset_classes_constant(zval *out)
 	Z_TYPE_INFO_P(out) = IS_ARRAY;
 }
 
+/* public const POSSIBLY_FALSY_CLASSES: the class constant is built from this
+ * list, and pt_type_is_super_type_of_possibly_falsy_class() walks it */
+static const pt_superglobal_name pt_ot_possibly_falsy_classes[] = {
+	{"SimpleXMLElement", sizeof("SimpleXMLElement") - 1},
+	{"BcMath\\Number", sizeof("BcMath\\Number") - 1},
+	{"GMP", sizeof("GMP") - 1},
+};
+
+/* the constant's value, built like EXTRA_OFFSET_CLASSES' */
+static void pt_ot_possibly_falsy_classes_constant(zval *out)
+{
+	size_t count = sizeof(pt_ot_possibly_falsy_classes) / sizeof(pt_ot_possibly_falsy_classes[0]);
+	HashTable *list = (HashTable *) pemalloc(sizeof(HashTable), 1);
+	zend_hash_init(list, (uint32_t) count, NULL, NULL, 1);
+	for (size_t i = 0; i < count; i++) {
+		zval value;
+		ZVAL_INTERNED_STR(&value, zend_string_init_interned(pt_ot_possibly_falsy_classes[i].name, pt_ot_possibly_falsy_classes[i].len, 1));
+		zend_hash_next_index_insert(list, &value);
+	}
+	GC_ADD_FLAGS(list, IS_ARRAY_IMMUTABLE);
+	GC_SET_REFCOUNT(list, 2);
+	ZVAL_ARR(out, list);
+	Z_TYPE_INFO_P(out) = IS_ARRAY;
+}
+
 /* new IsSuperTypeOfResult($trinary, $reasons) — AcceptsResult.cpp */
 bool pt_result_object_create(zval *out, zend_class_entry *ce, zval *trinary, zval *reasons, zval *lazyReasons);
 
@@ -1600,7 +1625,8 @@ public:
 		return thisValue();
 	}
 
-	/* bool for SimpleXMLElement / BcMath\Number / GMP, true otherwise;
+	/* bool for SimpleXMLElement / BcMath\Number / GMP and their supertypes,
+	 * true otherwise;
 	 * UNDEF = pending exception */
 	zv::Val toBoolean() const
 	{
@@ -1608,6 +1634,13 @@ public:
 		if (UNEXPECTED(undecided < 0)) return zv::Val();
 		zval result;
 		if (undecided == PT_TRI_YES) {
+			if (UNEXPECTED(!pt_boolean_type_new(&result))) return zv::Val();
+			return zv::Val::adopt(result);
+		}
+		/* e.g. Countable or Stringable, implemented by these classes */
+		zend_long superType = pt_type_is_super_type_of_possibly_falsy_class(self);
+		if (UNEXPECTED(superType < 0)) return zv::Val();
+		if (superType == 1) {
 			if (UNEXPECTED(!pt_boolean_type_new(&result))) return zv::Val();
 			return zv::Val::adopt(result);
 		}
@@ -3317,6 +3350,35 @@ zv::Val pt_object_type_get_class_reflection(zend_object *self) { return ObjectTy
 bool pt_object_type_equals(zend_object *self, zval *type, bool &out) { return ObjectType(self).equals(type, out); }
 zv::Val pt_object_type_get_referenced_classes(zend_object *self) { return ObjectType(self).getReferencedClasses(); }
 zv::Val pt_object_type_is_super_type_of(zend_object *self, zval *type) { return ObjectType(self).isSuperTypeOf(type); }
+
+/* the ObjectType::POSSIBLY_FALSY_CLASSES loop of ObjectType,
+ * ObjectWithoutClassType and ObjectShapeType::toBoolean():
+ * ($this instanceof TemplateType ? $this->getBound() : $this)
+ *     ->isSuperTypeOf(new ObjectType($className))->yes() for any of them */
+zend_long pt_type_is_super_type_of_possibly_falsy_class(zend_object *self)
+{
+	zend_class_entry *templateType = pt_class(PT_CLASS_TEMPLATE_TYPE);
+	if (UNEXPECTED(templateType == NULL)) return -1;
+	zend_object *type = self;
+	zv::Val bound;
+	if (instanceof_function(self->ce, templateType)) {
+		bound = pt_type_call(self, PT_LC("getbound"), 0, NULL);
+		if (UNEXPECTED(bound.isUndef())) return -1;
+		type = zv::Ref(bound.raw()).asObject();
+	}
+	for (const pt_superglobal_name &className : pt_ot_possibly_falsy_classes) {
+		zend_string *name = zend_string_init(className.name, className.len, 0);
+		zv::Val objectType = ObjectType::create(name);
+		zend_string_release(name);
+		if (UNEXPECTED(objectType.isUndef())) return -1;
+		zv::Val result = pt_type_op(type, PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
+		if (UNEXPECTED(result.isUndef())) return -1;
+		zend_long isSuperType = pt_type_result_trinary(result.raw());
+		if (UNEXPECTED(isSuperType < 0)) return -1;
+		if (isSuperType == PT_TRI_YES) return 1;
+	}
+	return 0;
+}
 zv::Val pt_object_type_get_unresolved_property_prototype(zend_object *self, zval *propertyName, zval *scope) { return ObjectType(self).getUnresolvedPropertyPrototype(phpstanturbo::PT_OT_PROPERTY, propertyName, scope); }
 zv::Val pt_object_type_get_unresolved_instance_property_prototype(zend_object *self, zval *propertyName, zval *scope) { return ObjectType(self).getUnresolvedPropertyPrototype(phpstanturbo::PT_OT_INSTANCE_PROPERTY, propertyName, scope); }
 zv::Val pt_object_type_get_unresolved_static_property_prototype(zend_object *self, zval *propertyName, zval *scope) { return ObjectType(self).getUnresolvedPropertyPrototype(phpstanturbo::PT_OT_STATIC_PROPERTY, propertyName, scope); }
@@ -3627,6 +3689,7 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 	/* the twin's declaration order defines the PT_OT_PROP_* slots */
 	cls.privateClassConstantLong("DESCRIPTION_CACHE_LIMIT", PT_OT_DESCRIPTION_CACHE_LIMIT);
 	cls.privateClassConstantValue("EXTRA_OFFSET_CLASSES", pt_ot_extra_offset_classes_constant);
+	cls.classConstantValue("POSSIBLY_FALSY_CLASSES", pt_ot_possibly_falsy_classes_constant);
 	cls.privateTypedClassProperty("subtractedType", "PHPStan\\Type\\Type", true);
 	/* the static caches, in the twin's declaration order too */
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("superTypes");

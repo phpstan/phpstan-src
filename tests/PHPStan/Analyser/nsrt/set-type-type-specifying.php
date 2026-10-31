@@ -110,7 +110,7 @@ function doBoolean(string $s, int $i, float $f, array $a, object $o)
 	assertType('bool', $a);
 
 	settype($o, 'bool');
-	assertType('true', $o);
+	assertType('bool', $o);
 }
 
 function doArray(string $s, int $i, float $f, array $a, object $o)

@@ -17,7 +17,7 @@ class BooleanOr
 	}
 
 	/**
-	 * @param object $object
+	 * @param \stdClass $object
 	 */
 	public function doBar(self $self, $object): void
 	{

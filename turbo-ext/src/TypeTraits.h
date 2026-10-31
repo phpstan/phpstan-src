@@ -400,6 +400,11 @@ zif_handler pt_type_identity_traverse_handler();
 
 /* src/Type/Traits/TruthyBooleanTypeTrait.php */
 void pt_type_trait_truthy_boolean(reg::Class &cls);
+/* whether ($this instanceof TemplateType ? $this->getBound() : $this) is a
+ * supertype of one of ObjectType::POSSIBLY_FALSY_CLASSES (the toBoolean()
+ * loop of ObjectType, ObjectWithoutClassType and ObjectShapeType); 1 / 0,
+ * -1 = pending exception */
+[[nodiscard]] zend_long pt_type_is_super_type_of_possibly_falsy_class(zend_object *self);
 /* src/Type/Traits/MaybeIterableTypeTrait.php */
 void pt_type_trait_maybe_iterable(reg::Class &cls);
 /* src/Type/Traits/MaybeOffsetAccessibleTypeTrait.php */

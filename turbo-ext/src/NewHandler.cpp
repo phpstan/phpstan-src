@@ -1228,15 +1228,20 @@ public:
 			if (UNEXPECTED(defaultType.isUndef()) || !defaultType.isNull()) return defaultType;
 			return templateGetBound(templateType);
 		}
-		if (allowUnresolved) {
-			bool observing;
-			if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame, observing))) return zv::Val();
-			if (observing) return unresolvedWithSite(type, site, templateType);
-		}
-
 		zv::Val templateName = templateGetName(templateType);
 		if (UNEXPECTED(templateName.isUndef())) return zv::Val();
 		if (UNEXPECTED(!requireString(templateName.raw(), "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame::resolve", "templateName"))) return zv::Val();
+		if (allowUnresolved) {
+			bool observing;
+			if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame, observing))) return zv::Val();
+			if (observing) {
+				// a send in a body enclosing this one decided the site
+				zv::Val sent = pt_template_argument_frame_resolve_sent_from_enclosing_body(frame, site, Z_STR_P(templateName.raw()));
+				if (UNEXPECTED(sent.isUndef()) || !sent.isNull()) return sent;
+				return unresolvedWithSite(type, site, templateType);
+			}
+		}
+
 		zv::Val resolved = pt_template_argument_frame_resolve(frame, site, Z_STR_P(templateName.raw()));
 		if (UNEXPECTED(resolved.isUndef()) || !resolved.isNull()) return resolved;
 		zv::Val initialType = unresolvedGetInitialType(type);
@@ -1718,6 +1723,18 @@ private:
 		bool unresolved = synthetic;
 		if (!unresolved && allowUnresolved) {
 			if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame, unresolved))) return;
+			if (unresolved) {
+				// a send in a body enclosing this one decided the site
+				zv::Val name = templateGetName(type);
+				if (UNEXPECTED(name.isUndef())) return;
+				if (UNEXPECTED(!requireString(name.raw(), "PHPStan\\Analyser\\Generics\\TemplateArgumentFrame::resolve", "templateName"))) return;
+				zv::Val resolved = pt_template_argument_frame_resolve_sent_from_enclosing_body(frame, site, Z_STR_P(name.raw()));
+				if (UNEXPECTED(resolved.isUndef())) return;
+				if (!resolved.isNull()) {
+					resolved.intoReturnValue(return_value);
+					return;
+				}
+			}
 		}
 		if (unresolved) {
 			zval marker;

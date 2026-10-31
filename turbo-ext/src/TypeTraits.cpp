@@ -4720,6 +4720,8 @@ public:
 		zv::Val equal = pt_type_op(Z_OBJ_P(boundOnceMore.raw()), PT_OP_EQUALS, 1, removed.raw());
 		if (UNEXPECTED(equal.isUndef())) return zv::Val();
 		if (zend_is_true(equal.raw())) return zv::Val::null();
+		/* if ($bound instanceof NeverType) return $bound; */
+		if (zv::Ref(removed.raw()).instanceOf(pt_ce_never_type)) return removed;
 		return recreateKeepingDefault(removed.raw());
 	}
 

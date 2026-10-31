@@ -128,7 +128,7 @@ class TemplateArgumentResolverTest extends PHPStanTestCase
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument(new CallableType([], $marker, false), new CallableType([], new StringType(), false)));
 		$frame = (new TemplateArgumentResolver())->resolve($constraints, null, []);
 
-		$this->assertSame("1|2|'a'|null", self::describe($frame->resolve($site, 'T')), 'callable parameters are contravariant and contribute nothing');
+		$this->assertSame('int|string|null', self::describe($frame->resolve($site, 'T')), 'callable parameters are contravariant and contribute nothing');
 
 		[$constraints, $site, $ofMarker] = self::constraintsWithA(new ConstantIntegerType(1));
 		$constraints = $constraints->merge((new TemplateArgumentObserver())->collectArgument($ofMarker->getTypes()[0], new ConstantStringType('a')));

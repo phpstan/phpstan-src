@@ -385,12 +385,13 @@ final class IdenticalNarrowingHelper
 
 		// a `$a::class` side falls back only where the old instanceof-style
 		// blocks would fire: a true context with a single class-name string
-		// on the other side; everything else narrows generically
+		// or a `static::class`-like fetch on the other side; everything else
+		// narrows generically
 		if ($context->true()) {
 			foreach ([
-				[$unwrappedLeft, $left, $leftResult, $rightResult],
-				[$unwrappedRight, $right, $rightResult, $leftResult],
-			] as [$sideUnwrapped, $side, $sideResult, $otherResult]) {
+				[$unwrappedLeft, $left, $leftResult, $unwrappedRight, $rightResult],
+				[$unwrappedRight, $right, $rightResult, $unwrappedLeft, $leftResult],
+			] as [$sideUnwrapped, $side, $sideResult, $otherUnwrapped, $otherResult]) {
 				if (!($sideUnwrapped instanceof Expr\ClassConstFetch) || !($sideUnwrapped->class instanceof Expr)) {
 					continue;
 				}
@@ -400,8 +401,21 @@ final class IdenticalNarrowingHelper
 				if ($sideUnwrapped->name instanceof Expr || $sideUnwrapped->name->toLowerString() !== 'class') {
 					continue;
 				}
-				$otherStrings = $otherResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted)->getConstantStrings();
+				$otherType = $otherResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted);
+				$otherStrings = $otherType->getConstantStrings();
 				if (count($otherStrings) !== 1 || $otherStrings[0]->getValue() === '') {
+					// $a::class === static::class narrows $a to the class-string's object type
+					if ($otherUnwrapped instanceof Expr\ClassConstFetch && $otherUnwrapped->class instanceof Name) {
+						$otherObjectType = $otherType->getClassStringObjectType();
+						if ($otherObjectType->isObject()->yes()) {
+							return $this->defaultNarrowingHelper->createForSubject(
+								$sideUnwrapped->class,
+								$otherObjectType,
+								$context,
+								$evaluationScope,
+							)->unionWith($this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $side, $sideResult, $otherType, $context));
+						}
+					}
 					continue;
 				}
 				if (!$this->reflectionProvider->hasClass($otherStrings[0]->getValue())) {

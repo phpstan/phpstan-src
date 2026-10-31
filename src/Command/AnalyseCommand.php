@@ -492,6 +492,12 @@ final class AnalyseCommand extends Command
 			);
 		}
 
+		// CI runners read stdout and stderr through separate pipes and interleave them
+		// non-deterministically, so the output following human-readable stdout output goes to stdout too
+		$summaryOutput = ($generateBaselineFile !== null || $errorFormat === 'table') && (new CiDetector())->isCiDetected()
+			? $inceptionResult->getStdOutput()
+			: $errorOutput;
+
 		if ($generateBaselineFile !== null) {
 			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
 			if (count($internalErrorsTuples) > 0) {
@@ -505,10 +511,10 @@ final class AnalyseCommand extends Command
 					count($internalErrors) === 1 ? 'An internal error' : 'Internal errors',
 				));
 
-				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
+				return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount(), $summaryOutput);
 			}
 
-			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache);
+			return $this->generateBaseline($generateBaselineFile, $inceptionResult, $analysisResult, $output, $allowEmptyBaseline, $baselineExtension, $failWithoutResultCache, $summaryOutput);
 		}
 
 		/** @var ErrorFormatter $errorFormatter */
@@ -532,18 +538,19 @@ final class AnalyseCommand extends Command
 
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 
-			$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
+			$this->runDiagnoseExtensions($container, $summaryOutput, $analysisResult->getProcessedFiles());
 
-			$errorOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
-			$errorOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
-			$errorOutput->writeLineFormatted('   to get all reported errors.');
-			$errorOutput->writeLineFormatted('');
+			$summaryOutput->writeLineFormatted('⚠️  Result is incomplete because of severe errors. ⚠️');
+			$summaryOutput->writeLineFormatted('   Fix these errors first and then re-run PHPStan');
+			$summaryOutput->writeLineFormatted('   to get all reported errors.');
+			$summaryOutput->writeLineFormatted('');
 
 			return $inceptionResult->handleReturn(
 				$exitCode,
 				$analysisResult->getPeakMemoryUsageBytes(),
 				$this->analysisStartTime,
 				$analysisResult->getWorkerCount(),
+				$summaryOutput,
 			);
 		}
 
@@ -640,15 +647,16 @@ final class AnalyseCommand extends Command
 			$exitCode = 2;
 		}
 
-		$this->reportMissingResultCacheInCi($errorOutput, $analysisResult, $onlyFiles);
+		$this->reportMissingResultCacheInCi($summaryOutput, $analysisResult, $onlyFiles);
 
-		$this->runDiagnoseExtensions($container, $inceptionResult->getErrorOutput(), $analysisResult->getProcessedFiles());
+		$this->runDiagnoseExtensions($container, $summaryOutput, $analysisResult->getProcessedFiles());
 
 		return $inceptionResult->handleReturn(
 			$exitCode,
 			$analysisResult->getPeakMemoryUsageBytes(),
 			$this->analysisStartTime,
 			$analysisResult->getWorkerCount(),
+			$summaryOutput,
 		);
 	}
 
@@ -757,13 +765,13 @@ final class AnalyseCommand extends Command
 		return $message;
 	}
 
-	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache): int
+	private function generateBaseline(string $generateBaselineFile, InceptionResult $inceptionResult, AnalysisResult $analysisResult, OutputInterface $output, bool $allowEmptyBaseline, string $baselineExtension, bool $failWithoutResultCache, Output $summaryOutput): int
 	{
 		if (!$allowEmptyBaseline && !$analysisResult->hasErrors()) {
 			$inceptionResult->getStdOutput()->getStyle()->error('No errors were found during the analysis. Baseline could not be generated.');
 			$inceptionResult->getStdOutput()->writeLineFormatted('To allow generating empty baselines, pass <fg=cyan>--allow-empty-baseline</> option.');
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount(), $summaryOutput);
 		}
 
 		$streamOutput = $this->createStreamOutput();
@@ -791,7 +799,7 @@ final class AnalyseCommand extends Command
 		} catch (DirectoryCreatorException $e) {
 			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount(), $summaryOutput);
 		}
 
 		try {
@@ -799,7 +807,7 @@ final class AnalyseCommand extends Command
 		} catch (CouldNotWriteFileException $e) {
 			$inceptionResult->getStdOutput()->writeLineFormatted($e->getMessage());
 
-			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
+			return $inceptionResult->handleReturn(1, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount(), $summaryOutput);
 		}
 
 		$errorsCount = 0;
@@ -839,7 +847,7 @@ final class AnalyseCommand extends Command
 			$exitCode = 2;
 		}
 
-		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
+		return $inceptionResult->handleReturn($exitCode, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount(), $summaryOutput);
 	}
 
 	/**

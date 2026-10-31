@@ -337,8 +337,26 @@ private:
 	}
 
 	/* $resolveProperty($propertyName) of the typeCallback */
-	zv::Val resolveProperty(bool nativeTypesPromoted, zval *reflectionScope, zval *receiverType, zval *expr, zend_string *propertyName) const
+	zv::Val resolveProperty(bool nativeTypesPromoted, zval *reflectionScope, zval *receiverType, zval *varResult, zval *expr, zend_string *propertyName) const
 	{
+		zv::Val nativeReceiverType;
+		if (nativeTypesPromoted) {
+			// unlike getInstancePropertyReflection(), do not pick only the union
+			// members that have the property - a fetch on e.g. a null member
+			// does not produce the property's native type
+			bool containsNullsafe;
+			if (UNEXPECTED(!pt_expression_result_contains_nullsafe(varResult, containsNullsafe))) return zv::Val();
+			if (containsNullsafe) {
+				nativeReceiverType = pt_type_combinator_remove_null(receiverType);
+				if (UNEXPECTED(nativeReceiverType.isUndef())) return zv::Val();
+				receiverType = nativeReceiverType.raw();
+			}
+			zval propertyNameZv;
+			ZVAL_STR(&propertyNameZv, propertyName);
+			zend_long hasInstanceProperty = pt_type_call_trinary(Z_OBJ_P(receiverType), PT_LC("hasinstanceproperty"), 1, &propertyNameZv);
+			if (UNEXPECTED(hasInstanceProperty < 0)) return zv::Val();
+			if (hasInstanceProperty != PT_TRI_YES) return pt_type_new_error_type();
+		}
 		zv::Val propertyReflection = pt_mutating_scope_get_instance_property_reflection(Z_OBJ_P(reflectionScope), receiverType, propertyName);
 		if (UNEXPECTED(propertyReflection.isUndef())) return zv::Val();
 		if (propertyReflection.isNull()) return pt_type_new_error_type();
@@ -383,7 +401,7 @@ private:
 				zend_type_error("PhpParser\\Node\\Identifier::toString(): Return value must be of type string, %s returned", zend_zval_value_name(propertyName));
 				return zv::Val();
 			}
-			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, receiverType.raw(), expr, Z_STR_P(propertyName));
+			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, receiverType.raw(), varResult, expr, Z_STR_P(propertyName));
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			// $shortCircuit($type)
 			bool containsNullsafe;
@@ -438,7 +456,7 @@ private:
 				zend_type_error("%s(): Argument #1 ($propertyName) must be of type string, %s given", pt_pfh_closure_name, zend_zval_value_name(value.raw()));
 				return zv::Val();
 			}
-			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, receiverType.raw(), expr, Z_STR_P(value.raw()));
+			zv::Val type = resolveProperty(nativeTypesPromoted, reflectionScope, receiverType.raw(), varResult, expr, Z_STR_P(value.raw()));
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			types.push(std::move(type));
 		}

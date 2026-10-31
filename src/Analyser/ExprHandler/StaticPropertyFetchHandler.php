@@ -163,8 +163,17 @@ final class StaticPropertyFetchHandler implements ExprHandler
 					$staticPropertyFetchedOnType = TypeCombinator::removeNull($classType)->getObjectTypeOrClassStringObjectType();
 				}
 
-				$resolveProperty = function (string $propertyName) use ($nativeTypesPromoted, $reflectionScope, $staticPropertyFetchedOnType, $expr): Type {
+				$resolveProperty = function (string $propertyName) use ($nativeTypesPromoted, $reflectionScope, $staticPropertyFetchedOnType, $classType, $classResult, $expr): Type {
 					if ($nativeTypesPromoted) {
+						// unlike getStaticPropertyReflection(), do not pick only the union
+						// members that have the property - a fetch on e.g. a null member
+						// does not produce the property's native type
+						if ($classType !== null && !$classResult->containsNullsafe() && TypeCombinator::containsNull($classType)) {
+							return new ErrorType();
+						}
+						if (!$staticPropertyFetchedOnType->hasStaticProperty($propertyName)->yes()) {
+							return new ErrorType();
+						}
 						$propertyReflection = $reflectionScope->getStaticPropertyReflection($staticPropertyFetchedOnType, $propertyName);
 						if ($propertyReflection === null) {
 							return new ErrorType();

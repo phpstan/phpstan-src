@@ -150,9 +150,16 @@ final class PropertyFetchHandler implements ExprHandler
 				// comes from beforeScope; the scope-dependent receiver type is read
 				// from the operand result above.
 				$reflectionScope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-				$resolveProperty = function (string $propertyName) use ($nativeTypesPromoted, $reflectionScope, $receiverType, $expr): Type {
+				$resolveProperty = function (string $propertyName) use ($nativeTypesPromoted, $reflectionScope, $receiverType, $varResult, $expr): Type {
 					if ($nativeTypesPromoted) {
-						$propertyReflection = $reflectionScope->getInstancePropertyReflection($receiverType, $propertyName);
+						// unlike getInstancePropertyReflection(), do not pick only the union
+						// members that have the property - a fetch on e.g. a null member
+						// does not produce the property's native type
+						$nativeReceiverType = $varResult->containsNullsafe() ? TypeCombinator::removeNull($receiverType) : $receiverType;
+						if (!$nativeReceiverType->hasInstanceProperty($propertyName)->yes()) {
+							return new ErrorType();
+						}
+						$propertyReflection = $reflectionScope->getInstancePropertyReflection($nativeReceiverType, $propertyName);
 						if ($propertyReflection === null) {
 							return new ErrorType();
 						}

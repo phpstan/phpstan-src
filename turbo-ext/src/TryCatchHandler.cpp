@@ -156,6 +156,16 @@ inline bool isNeverType(zval *type)
 	return !error;
 }
 
+/* $throwPoint->getScope()->withFunctionCallStackOf($scope); UNDEF = pending
+ * exception */
+zv::Val throwPointScope(zval *throwPoint, zval *scope)
+{
+	zv::Val hold;
+	zval *throwScope = pt_internal_throw_point_scope(throwPoint, hold);
+	if (UNEXPECTED(throwScope == NULL)) return zv::Val();
+	return pt_mutating_scope_with_function_call_stack_of(Z_OBJ_P(throwScope), Z_OBJ_P(scope));
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -469,14 +479,13 @@ public:
 					zv::Val branchThrowPointsHold = zv::Val::copyOf(zv::Ref(branchThrowPoints));
 					if (Z_TYPE_P(branchThrowPointsHold.raw()) == IS_ARRAY) {
 						for (auto throwEntry : zv::ArrRef(branchThrowPointsHold.raw())) {
-							zv::Val scopeHold;
-							zval *throwScope = pt_internal_throw_point_scope(throwEntry.value().deref().raw(), scopeHold);
-							if (UNEXPECTED(throwScope == NULL)) return zv::Val();
+							zv::Val throwScope = throwPointScope(throwEntry.value().deref().raw(), scope);
+							if (UNEXPECTED(throwScope.isUndef())) return zv::Val();
 							if (mergedScope.isNull()) {
-								mergedScope = zv::Val::copyOf(zv::Ref(throwScope));
+								mergedScope = std::move(throwScope);
 								continue;
 							}
-							zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(mergedScope.raw()), throwScope);
+							zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(mergedScope.raw()), throwScope.raw());
 							if (UNEXPECTED(merged.isUndef())) return zv::Val();
 							mergedScope = std::move(merged);
 						}
@@ -535,10 +544,9 @@ public:
 
 			zv::Val catchScope = zv::Val::null();
 			for (auto matchingEntry : zv::ArrRef(matchingThrowPoints.raw())) {
-				zv::Val hold;
-				zval *matchingScope = pt_internal_throw_point_scope(matchingEntry.value().deref().raw(), hold);
-				if (UNEXPECTED(matchingScope == NULL)) return zv::Val();
-				if (UNEXPECTED(!ptlh::mergeOrTake(catchScope, matchingScope))) return zv::Val();
+				zv::Val matchingScope = throwPointScope(matchingEntry.value().deref().raw(), scope);
+				if (UNEXPECTED(matchingScope.isUndef())) return zv::Val();
+				if (UNEXPECTED(!ptlh::mergeOrTake(catchScope, matchingScope.raw()))) return zv::Val();
 			}
 
 			zend_string *variableName = NULL;
@@ -652,10 +660,9 @@ public:
 			if (Z_TYPE_P(catchThrowPoints.raw()) == IS_ARRAY) {
 				for (auto throwEntry : zv::ArrRef(catchThrowPoints.raw())) {
 					if (finallyScope.isNull()) continue;
-					zv::Val hold;
-					zval *throwScope = pt_internal_throw_point_scope(throwEntry.value().deref().raw(), hold);
-					if (UNEXPECTED(throwScope == NULL)) return zv::Val();
-					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finallyScope.raw()), throwScope);
+					zv::Val throwScope = throwPointScope(throwEntry.value().deref().raw(), scope);
+					if (UNEXPECTED(throwScope.isUndef())) return zv::Val();
+					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finallyScope.raw()), throwScope.raw());
 					if (UNEXPECTED(merged.isUndef())) return zv::Val();
 					finallyScope = std::move(merged);
 				}
@@ -668,10 +675,9 @@ public:
 
 		for (auto throwEntry : zv::ArrRef(throwPoints.raw())) {
 			if (finallyScope.isNull()) continue;
-			zv::Val hold;
-			zval *throwScope = pt_internal_throw_point_scope(throwEntry.value().deref().raw(), hold);
-			if (UNEXPECTED(throwScope == NULL)) return zv::Val();
-			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finallyScope.raw()), throwScope);
+			zv::Val throwScope = throwPointScope(throwEntry.value().deref().raw(), scope);
+			if (UNEXPECTED(throwScope.isUndef())) return zv::Val();
+			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finallyScope.raw()), throwScope.raw());
 			if (UNEXPECTED(merged.isUndef())) return zv::Val();
 			finallyScope = std::move(merged);
 		}

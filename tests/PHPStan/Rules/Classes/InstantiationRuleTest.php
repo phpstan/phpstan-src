@@ -289,6 +289,17 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/instantiation-class-exists.php'], []);
 	}
 
+	public function testClassExistsInCatch(): void
+	{
+		$this->analyse([__DIR__ . '/data/instantiation-class-exists-in-catch.php'], [
+			[
+				'Instantiated class InstantiationClassExistsInCatch\Missing not found.',
+				15,
+				'Learn more at https://phpstan.org/user-guide/discovering-symbols',
+			],
+		]);
+	}
+
 	public function testBug3404(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3404.php'], [

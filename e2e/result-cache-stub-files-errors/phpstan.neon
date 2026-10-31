@@ -1,0 +1,7 @@
+parameters:
+	level: 8
+	tmpDir: tmp
+	stubFiles:
+		- stubs/test.stub
+	paths:
+		- src

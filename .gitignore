@@ -25,6 +25,7 @@ e2e/bashunit
 /e2e/result-cache-collected-data-rules/tmp
 /e2e/result-cache-collected-data-rules-tracking/tmp
 /e2e/result-cache-truncated/tmp
+/e2e/result-cache-stub-files-errors/tmp
 /e2e/result-cache-worker-count/tmp
 e2e/restart-manager/probe.log
 e2e/restart-manager/starts.log

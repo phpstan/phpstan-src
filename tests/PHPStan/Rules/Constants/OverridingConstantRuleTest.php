@@ -11,9 +11,17 @@ use const PHP_VERSION_ID;
 class OverridingConstantRuleTest extends RuleTestCase
 {
 
+	private ?bool $checkMissingOverrideConstantAttribute = false;
+
 	protected function getRule(): Rule
 	{
-		return new OverridingConstantRule(true);
+		return new OverridingConstantRule(
+			true,
+			new OverrideAttributeOnConstantCheck(
+				$this->checkMissingOverrideConstantAttribute,
+				checkMissingOverrideMethodAttribute: true,
+			),
+		);
 	}
 
 	public function testRule(): void
@@ -112,6 +120,81 @@ class OverridingConstantRuleTest extends RuleTestCase
 				48,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testOverrideAttribute(): void
+	{
+		$this->checkMissingOverrideConstantAttribute = true;
+		$this->analyse([__DIR__ . '/data/constant-override-attr.php'], [
+			[
+				'Constant ConstantOverrideAttr\\Bar::PRIVATE_FROM_PARENT has #[\\Override] attribute but does not override any constant.',
+				28,
+			],
+			[
+				'Constant ConstantOverrideAttr\\Bar::NOT_OVERRIDING has #[\\Override] attribute but does not override any constant.',
+				31,
+			],
+			[
+				'Constant ConstantOverrideAttr\\Baz::FROM_PARENT overrides constant ConstantOverrideAttr\\Foo::FROM_PARENT but is missing the #[\\Override] attribute.',
+				39,
+			],
+			[
+				'Constant ConstantOverrideAttr\\Baz::ALSO_NOT_OVERRIDING has #[\\Override] attribute but does not override any constant.',
+				41,
+			],
+			[
+				'Constant ConstantOverrideAttr\\BarInterface::NOT_OVERRIDING has #[\\Override] attribute but does not override any constant.',
+				50,
+			],
+			[
+				'Constant ConstantOverrideAttr\\UsesTraitWithoutParent::FROM_PARENT has #[\\Override] attribute but does not override any constant.',
+				56,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.2.0')]
+	public function testMissingOverrideAttributeNotCheckedByDefaultBeforePhp86(): void
+	{
+		$this->checkMissingOverrideConstantAttribute = null;
+		$errors = [];
+		if (PHP_VERSION_ID >= 80600) {
+			$errors[] = [
+				'Constant ConstantOverrideAttr\\Baz::FROM_PARENT overrides constant ConstantOverrideAttr\\Foo::FROM_PARENT but is missing the #[\\Override] attribute.',
+				39,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/constant-override-attr.php'], [
+			[
+				'Constant ConstantOverrideAttr\\Bar::PRIVATE_FROM_PARENT has #[\\Override] attribute but does not override any constant.',
+				28,
+			],
+			[
+				'Constant ConstantOverrideAttr\\Bar::NOT_OVERRIDING has #[\\Override] attribute but does not override any constant.',
+				31,
+			],
+			...$errors,
+			[
+				'Constant ConstantOverrideAttr\\Baz::ALSO_NOT_OVERRIDING has #[\\Override] attribute but does not override any constant.',
+				41,
+			],
+			[
+				'Constant ConstantOverrideAttr\\BarInterface::NOT_OVERRIDING has #[\\Override] attribute but does not override any constant.',
+				50,
+			],
+			[
+				'Constant ConstantOverrideAttr\\UsesTraitWithoutParent::FROM_PARENT has #[\\Override] attribute but does not override any constant.',
+				56,
+			],
+		]);
+	}
+
+	public function testFixOverrideAttribute(): void
+	{
+		$this->checkMissingOverrideConstantAttribute = true;
+		$this->fix(__DIR__ . '/data/constant-override-attr-fix.php', __DIR__ . '/data/constant-override-attr-fix.php.fixed');
 	}
 
 }

@@ -14,6 +14,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
+use function count;
 use function sprintf;
 
 /**
@@ -26,6 +27,7 @@ final class OverridingConstantRule implements Rule
 	public function __construct(
 		#[AutowiredParameter]
 		private bool $checkPhpDocMethodSignatures,
+		private OverrideAttributeOnConstantCheck $overrideAttributeCheck,
 	)
 	{
 	}
@@ -41,10 +43,29 @@ final class OverridingConstantRule implements Rule
 			throw new ShouldNotHappenException();
 		}
 
+		$classReflection = $scope->getClassReflection();
+
+		// the attributes of `const A = 1, B = 2;` apply to every constant, so only fix single declarations
+		$fixableNode = count($node->consts) === 1 ? $node : null;
+
 		$errors = [];
 		foreach ($node->consts as $const) {
 			$constantName = $const->name->toString();
-			$errors = array_merge($errors, $this->processSingleConstant($scope->getClassReflection(), $constantName));
+			$prototype = $this->findPrototype($classReflection, $constantName);
+			$errors = array_merge($errors, $this->overrideAttributeCheck->check(
+				$scope,
+				$classReflection,
+				$constantName,
+				$prototype,
+				$node->attrGroups,
+				$fixableNode,
+				false,
+			));
+			if ($prototype === null) {
+				continue;
+			}
+
+			$errors = array_merge($errors, $this->processSingleConstant($classReflection, $constantName, $prototype));
 		}
 
 		return $errors;
@@ -53,13 +74,8 @@ final class OverridingConstantRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
+	private function processSingleConstant(ClassReflection $classReflection, string $constantName, ClassConstantReflection $prototype): array
 	{
-		$prototype = $this->findPrototype($classReflection, $constantName);
-		if ($prototype === null) {
-			return [];
-		}
-
 		$constantReflection = $classReflection->getConstant($constantName);
 		$errors = [];
 		if ($prototype->isFinal()) {

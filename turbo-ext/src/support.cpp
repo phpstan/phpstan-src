@@ -208,6 +208,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_INSTANTIATION_CALLABLE_NODE */ {"instantiationCallableNode", "PHPStan\\Node\\InstantiationCallableNode"},
 	/* PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR */ {"setOffsetValueTypeExpr", "PHPStan\\Node\\Expr\\SetOffsetValueTypeExpr"},
 	/* PT_CLASS_GATHERED_METHOD_CALL */ {"gatheredMethodCall", "PHPStan\\Node\\Method\\MethodCall"},
+	/* PT_CLASS_GATHERED_METHOD_VARIABLE_WRITES */ {"gatheredMethodVariableWrites", "PHPStan\\Node\\Method\\MethodVariableWrites"},
 	/* PT_CLASS_PROPERTY_READ */ {"propertyRead", "PHPStan\\Node\\Property\\PropertyRead"},
 	/* PT_CLASS_PROPERTY_WRITE */ {"propertyWrite", "PHPStan\\Node\\Property\\PropertyWrite"},
 	/* PT_CLASS_PROPERTY_ASSIGN */ {"propertyAssign", "PHPStan\\Node\\Property\\PropertyAssign"},

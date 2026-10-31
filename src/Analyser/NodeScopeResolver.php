@@ -451,6 +451,7 @@ class NodeScopeResolver
 		if ($stmtHandler !== null) {
 			$stmtResult = $stmtHandler->processStmt($this, $stmt, $scope, $storage, $nodeCallback, $context);
 			if ($varTagDependencies !== null) {
+				$this->statementsHandler->emitRedundantVarTagNodes($this, $scope, $storage, $stmt, $nodeCallback);
 				$stmtResult = $stmtResult->withDependencies(Dependencies::merge($stmtResult->getDependencies(), $varTagDependencies));
 			}
 			if ($overridingThrowPoints !== null) {

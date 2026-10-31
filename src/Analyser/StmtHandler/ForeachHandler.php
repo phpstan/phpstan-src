@@ -537,7 +537,7 @@ final class ForeachHandler implements StmtHandler
 	private function enterForeach(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Foreach_ $stmt, Type $iterateeType, Type $nativeIterateeType, callable $nodeCallback): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
-			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			$scope = $this->varAnnotationProcessor->processForeachIterateeVarAnnotation($scope, $stmt->expr->name, $stmt);
 		}
 
 		if (

@@ -55,6 +55,9 @@ use function substr;
 final class PhpDocNodeResolver
 {
 
+	/** The names of the @var tag, the last one taking precedence. */
+	public const VAR_TAG_NAMES = ['@var', '@phan-var', '@psalm-var', '@phpstan-var'];
+
 	public function __construct(
 		private TypeNodeResolver $typeNodeResolver,
 		private ConstExprNodeResolver $constExprNodeResolver,
@@ -70,7 +73,7 @@ final class PhpDocNodeResolver
 	{
 		$resolved = [];
 		$resolvedByTag = [];
-		foreach (['@var', '@phan-var', '@psalm-var', '@phpstan-var'] as $tagName) {
+		foreach (self::VAR_TAG_NAMES as $tagName) {
 			$tagResolved = [];
 			foreach ($phpDocNode->getVarTagValues($tagName) as $tagValue) {
 				$type = $this->typeNodeResolver->resolve($tagValue->type, $nameScope);

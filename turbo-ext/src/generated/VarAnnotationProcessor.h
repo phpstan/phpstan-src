@@ -11,6 +11,8 @@ namespace ptdecl::VarAnnotationProcessor {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t fileTypeMapper = 0;
+inline constexpr uint32_t redundantVarTagDetector = 1;
+inline constexpr uint32_t reportRedundantVarTag = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -22,6 +24,8 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("fileTypeMapper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\FileTypeMapper");
+	cls.property("redundantVarTagDetector", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\RedundantVarTagDetector");
+	cls.property("reportRedundantVarTag", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -29,31 +33,53 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"fileTypeMapper\0" /* 0 */
 	"PHPStan\\Type\\FileTypeMapper\0" /* 15 */
-	"__construct\0" /* 43 */
-	"scope\0" /* 55 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 61 */
-	"variableNames\0" /* 92 */
-	"node\0" /* 106 */
-	"PhpParser\\Node\\Stmt\0" /* 111 */
-	"changed\0" /* 131 */
-	"false\0" /* 139 */
-	"\0" /* 145 */
-	"processVarAnnotation"; /* 146 */
+	"redundantVarTagDetector\0" /* 43 */
+	"PHPStan\\Analyser\\RedundantVarTagDetector\0" /* 67 */
+	"reportRedundantVarTag\0" /* 108 */
+	"__construct\0" /* 130 */
+	"scope\0" /* 142 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 148 */
+	"variableNames\0" /* 179 */
+	"node\0" /* 193 */
+	"PhpParser\\Node\\Stmt\0" /* 198 */
+	"changed\0" /* 218 */
+	"false\0" /* 226 */
+	"\0" /* 232 */
+	"processVarAnnotation\0" /* 233 */
+	"variableName\0" /* 254 */
+	"PhpParser\\Node\\Stmt\\Foreach_\0" /* 267 */
+	"processForeachIterateeVarAnnotation\0" /* 296 */
+	"narrowedByForeach\0" /* 332 */
+	"applyVarTags"; /* 350 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
-	reg::packed(55, 0, 61), /* processVarAnnotation $scope */
-	reg::packed(92, MAY_BE_ARRAY), /* processVarAnnotation $variableNames */
-	reg::packed(106, 0, 111), /* processVarAnnotation $node */
-	reg::packed(131, MAY_BE_BOOL, reg::NoString, true, false, 139), /* processVarAnnotation $changed */
-	reg::packed(145, 0, 61), /* processVarAnnotation return */
+	reg::packed(43, 0, 67), /* __construct $redundantVarTagDetector */
+	reg::packed(108, MAY_BE_BOOL), /* __construct $reportRedundantVarTag */
+	reg::packed(142, 0, 148), /* processVarAnnotation $scope */
+	reg::packed(179, MAY_BE_ARRAY), /* processVarAnnotation $variableNames */
+	reg::packed(193, 0, 198), /* processVarAnnotation $node */
+	reg::packed(218, MAY_BE_BOOL, reg::NoString, true, false, 226), /* processVarAnnotation $changed */
+	reg::packed(232, 0, 148), /* processVarAnnotation return */
+	reg::packed(142, 0, 148), /* processForeachIterateeVarAnnotation $scope */
+	reg::packed(254, MAY_BE_STRING), /* processForeachIterateeVarAnnotation $variableName */
+	reg::packed(193, 0, 267), /* processForeachIterateeVarAnnotation $node */
+	reg::packed(232, 0, 148), /* processForeachIterateeVarAnnotation return */
+	reg::packed(142, 0, 148), /* applyVarTags $scope */
+	reg::packed(179, MAY_BE_ARRAY), /* applyVarTags $variableNames */
+	reg::packed(193, 0, 198), /* applyVarTags $node */
+	reg::packed(218, MAY_BE_BOOL, reg::NoString, true, false), /* applyVarTags $changed */
+	reg::packed(332, MAY_BE_BOOL), /* applyVarTags $narrowedByForeach */
+	reg::packed(232, 0, 148), /* applyVarTags return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 43 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processVarAnnotation = { { 146 /* processVarAnnotation */, 3, 1, 4, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 130 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processVarAnnotation = { { 233 /* processVarAnnotation */, 3, 3, 4, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processForeachIterateeVarAnnotation = { { 296 /* processForeachIterateeVarAnnotation */, 3, 8, 3, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig applyVarTags = { { 350 /* applyVarTags */, 5, 12, 5, 17, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VarAnnotationProcessor

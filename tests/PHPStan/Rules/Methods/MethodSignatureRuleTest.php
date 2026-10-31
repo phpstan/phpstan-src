@@ -676,4 +676,11 @@ class MethodSignatureRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15128(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-15128.php'], []);
+	}
+
 }

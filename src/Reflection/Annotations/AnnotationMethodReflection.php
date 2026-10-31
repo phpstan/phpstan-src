@@ -33,6 +33,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		private bool $isVariadic,
 		private ?Type $throwType,
 		private TemplateTypeMap $templateTypeMap,
+		private ?bool $isPure = null,
 	)
 	{
 	}
@@ -132,6 +133,9 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		if ($this->returnType->isVoid()->yes()) {
 			return TrinaryLogic::createYes();
 		}
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
 
 		if ((new ThisType($this->declaringClass))->isSuperTypeOf($this->returnType)->yes()) {
 			return TrinaryLogic::createYes();
@@ -172,11 +176,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 
 	public function isPure(): TrinaryLogic
 	{
-		if ($this->hasSideEffects()->yes()) {
-			return TrinaryLogic::createNo();
-		}
-
-		return TrinaryLogic::createMaybe();
+		return $this->hasSideEffects()->negate();
 	}
 
 	public function getPureUnlessCallableIsImpureParameters(): array

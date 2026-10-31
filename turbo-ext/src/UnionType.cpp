@@ -34,6 +34,8 @@
 #include "TypeTraits.h"
 #include "generated/UnionType.h"
 
+#include <vector>
+
 namespace slots = ptdecl::UnionType::slot;
 namespace sigs = ptdecl::UnionType::sig;
 
@@ -612,7 +614,15 @@ public:
 		if (isIterable) {
 			zv::Val arrayOrTraversable = callType(Z_OBJ_P(type), PT_LC("toarrayortraversable"), 0, NULL);
 			if (UNEXPECTED(arrayOrTraversable.isUndef())) return zv::Val();
-			return thisAccepts(arrayOrTraversable.raw(), strictTypes);
+			zv::Val iterableResult = thisAccepts(arrayOrTraversable.raw(), strictTypes);
+			if (UNEXPECTED(iterableResult.isUndef())) return zv::Val();
+			// TA|TB accepts TA, but not the array|Traversable it stands for
+			zend_long iterableResultValue = pt_type_result_trinary(iterableResult.raw());
+			if (UNEXPECTED(iterableResultValue < 0)) return zv::Val();
+			if (iterableResultValue == PT_TRI_YES) return iterableResult;
+			bool isTemplateIterable;
+			if (UNEXPECTED(!isInstance(type, pt_ce_template_iterable_type, isTemplateIterable))) return zv::Val();
+			if (!isTemplateIterable) return iterableResult;
 		}
 
 		/* foreach (self::EQUAL_UNION_CLASSES as $baseClass => $classes) */
@@ -1677,8 +1687,9 @@ public:
 
 	/* inferTemplateTypes(): a received member some member definitely accepts
 	 * is absorbed by it (never excepted), only the rest is inferred against
-	 * the non-naked-template members, then — when that gave nothing —
-	 * against every member; UNDEF = pending exception */
+	 * the non-naked-template members — what those infer nothing from against
+	 * the naked ones — then, when that gave nothing, against every member;
+	 * UNDEF = pending exception */
 	zv::Val inferTemplateTypes(zval *receivedTypeArg) const
 	{
 		zv::Val receivedType = zv::Val::copyOf(zv::Ref(receivedTypeArg));
@@ -1738,11 +1749,18 @@ public:
 			if (UNEXPECTED(receivedType.isUndef())) return zv::Val();
 		}
 
+		// borrowed from ownTypesCopy, which outlives them
+		std::vector<zend_object *> nakedTemplateTypes;
+		std::vector<zend_object *> otherTypes;
 		for (zv::ArrayEntry entry : zv::ArrRef(ownTypesCopy.raw())) {
 			zend_object *type = entry.value().deref().asObject();
 			zv::Val naked = getNakedTemplateType(entry.value().deref().raw());
 			if (UNEXPECTED(naked.isUndef())) return zv::Val();
-			if (!zv::Ref(naked.raw()).isNull()) continue;
+			if (!zv::Ref(naked.raw()).isNull()) {
+				nakedTemplateTypes.push_back(type);
+				continue;
+			}
+			otherTypes.push_back(type);
 			zv::Val inferred = pt_type_call(type, PT_LC("infertemplatetypes"), 1, receivedType.raw());
 			if (UNEXPECTED(inferred.isUndef())) return zv::Val();
 			types = mapUnion(std::move(types), inferred.raw());
@@ -1751,7 +1769,42 @@ public:
 
 		int empty = pt_type_call_is_true(Z_OBJ_P(types.raw()), PT_LC("isempty"), 0, NULL);
 		if (UNEXPECTED(empty < 0)) return zv::Val();
-		if (empty == 0) return types;
+		if (empty == 0) {
+			if (nakedTemplateTypes.empty()) return types;
+
+			// T|Box<T> receiving stdClass|Box<int>: what the other members
+			// infer nothing from is what the naked template types receive
+			zv::Arr unexplainedReceivedTypes = zv::Arr::create(0);
+			for (zv::ArrayEntry received : zv::ArrRef(remainingReceivedTypes.raw())) {
+				zval *remainingReceivedType = received.value().deref().raw();
+				bool explained = false;
+				for (zend_object *otherType : otherTypes) {
+					zv::Val inferred = pt_type_call(otherType, PT_LC("infertemplatetypes"), 1, remainingReceivedType);
+					if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+					int inferredEmpty = pt_type_call_is_true(Z_OBJ_P(inferred.raw()), PT_LC("isempty"), 0, NULL);
+					if (UNEXPECTED(inferredEmpty < 0)) return zv::Val();
+					if (inferredEmpty == 0) {
+						explained = true;
+						break;
+					}
+				}
+				if (!explained) {
+					unexplainedReceivedTypes.push(zv::Ref(remainingReceivedType));
+				}
+			}
+			if (zend_hash_num_elements(unexplainedReceivedTypes.table()) == 0) return types;
+
+			zv::Val unexplainedReceivedType = combinatorUnion(unexplainedReceivedTypes.table());
+			if (UNEXPECTED(unexplainedReceivedType.isUndef())) return zv::Val();
+			for (zend_object *nakedTemplateType : nakedTemplateTypes) {
+				zv::Val inferred = pt_type_call(nakedTemplateType, PT_LC("infertemplatetypes"), 1, unexplainedReceivedType.raw());
+				if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+				types = mapUnion(std::move(types), inferred.raw());
+				if (UNEXPECTED(types.isUndef())) return zv::Val();
+			}
+
+			return types;
+		}
 
 		for (zv::ArrayEntry entry : zv::ArrRef(ownTypesCopy.raw())) {
 			zv::Val inferred = pt_type_call(entry.value().deref().asObject(), PT_LC("infertemplatetypes"), 1, receivedType.raw());

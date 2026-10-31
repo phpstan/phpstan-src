@@ -1472,8 +1472,17 @@ public:
 			if (bConstantArray == PT_TRI_YES) return 0;
 		}
 
-		/* simplify string[] | int[] to (string|int)[] */
-		if (isInstance(a, pt_ce_iterable_type) && isInstance(b, pt_ce_iterable_type)) {
+		/* simplify string[] | int[] to (string|int)[] - but not TKey|TValue
+		 * both of iterable, that would forget the template types */
+		bool iterables = isInstance(a, pt_ce_iterable_type) && isInstance(b, pt_ce_iterable_type);
+		if (iterables) {
+			int aTemplate = isInstanceMap(a, PT_CLASS_TEMPLATE_TYPE);
+			if (UNEXPECTED(aTemplate < 0)) return -1;
+			int bTemplate = aTemplate ? 0 : isInstanceMap(b, PT_CLASS_TEMPLATE_TYPE);
+			if (UNEXPECTED(bTemplate < 0)) return -1;
+			iterables = !aTemplate && !bTemplate;
+		}
+		if (iterables) {
 			zv::Val aKey = call(a, PT_LC("getiterablekeytype"));
 			zv::Val bKey = call(b, PT_LC("getiterablekeytype"));
 			if (UNEXPECTED(aKey.isUndef() || bKey.isUndef())) return -1;
@@ -2018,10 +2027,69 @@ public:
 		return hasOversizedArray ? std::move(emptyArray) : zv::Val::null();
 	}
 
+	/* private static groupArrayTypesByTemplateType(list<Type> $arrayTypes): list<list<Type>>
+	 * — the arrays of each template type, then the rest; false = pending
+	 * exception */
+	static bool groupArrayTypesByTemplateType(TypeList &arrayTypes, std::vector<TypeList> &groups)
+	{
+		TypeList templateNames;
+		TypeList templateScopes;
+		TypeList otherArrayTypes;
+		for (zv::Val &arrayType : arrayTypes) {
+			int isTemplate = isInstanceMap(arrayType.raw(), PT_CLASS_TEMPLATE_TYPE);
+			if (UNEXPECTED(isTemplate < 0)) return false;
+			if (!isTemplate) {
+				otherArrayTypes.push_back(zv::Val::copyOf(arrayType.ref()));
+				continue;
+			}
+
+			zv::Val name = call(arrayType.raw(), PT_LC("getname"));
+			if (UNEXPECTED(name.isUndef())) return false;
+			zv::Val scope = call(arrayType.raw(), PT_LC("getscope"));
+			if (UNEXPECTED(scope.isUndef())) return false;
+			bool grouped = false;
+			for (size_t i = 0; i < templateNames.size(); i++) {
+				if (!zend_is_identical(templateNames[i].raw(), name.raw())) continue;
+				int sameScope = callBool(templateScopes[i].raw(), PT_LC("equals"), 1, scope.raw());
+				if (UNEXPECTED(sameScope < 0)) return false;
+				if (!sameScope) continue;
+				groups[i].push_back(zv::Val::copyOf(arrayType.ref()));
+				grouped = true;
+				break;
+			}
+			if (grouped) continue;
+
+			templateNames.push_back(std::move(name));
+			templateScopes.push_back(std::move(scope));
+			groups.emplace_back();
+			groups.back().push_back(zv::Val::copyOf(arrayType.ref()));
+		}
+
+		if (!otherArrayTypes.empty()) groups.push_back(std::move(otherArrayTypes));
+
+		return true;
+	}
+
 	/* private static processArrayTypes(list<Type> $arrayTypes): Type[] */
 	static zv::Val processArrayTypes(TypeList &arrayTypes)
 	{
 		if (arrayTypes.empty()) return zv::Val(zv::Arr::create(0));
+
+		{
+			std::vector<TypeList> arrayTypeGroups;
+			if (UNEXPECTED(!groupArrayTypesByTemplateType(arrayTypes, arrayTypeGroups))) return zv::Val();
+			if (arrayTypeGroups.size() > 1) {
+				zv::Arr result = zv::Arr::create((uint32_t) arrayTypes.size());
+				for (TypeList &arrayTypeGroup : arrayTypeGroups) {
+					zv::Val processed = processArrayTypes(arrayTypeGroup);
+					PT_FAIL_IF_UNDEF(processed);
+					for (zv::ArrayEntry entry : zv::ArrRef(processed.raw())) {
+						result.push(zv::Ref(entry.value().raw()));
+					}
+				}
+				return zv::Val(std::move(result));
+			}
+		}
 
 		{
 			zv::Val emptyArray = findEmptyArrayNextToOversizedArray(arrayTypes);

@@ -219,7 +219,7 @@ PT_MINIT_REGISTRATION(pt_register_internal_throw_point)
 
 	cls.method(sigs::createImplicit, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *node, *type = NULL;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Opt<zp::ObjOrNull>>(execute_data, scope, node, type)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::ObjOrNull>(execute_data, scope, node, type)) RETURN_THROWS();
 		PT_RETURN_VAL(InternalThrowPoint::createImplicit(scope, node, type));
 	});
 

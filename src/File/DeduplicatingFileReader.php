@@ -30,7 +30,7 @@ final class DeduplicatingFileReader
 
 	public function __construct()
 	{
-		$this->contentsByFile = new LruCache(self::CONTENTS_COUNT_LIMIT);
+		$this->contentsByFile = new LruCache(self::CONTENTS_COUNT_LIMIT, 0, 0);
 	}
 
 	/**

@@ -206,6 +206,13 @@ final class StaticPropertyFetchHandler implements ExprHandler
 				return new MixedType();
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 		return $result->withDependencies(Dependencies::merge(
 			$classResult !== null ? $classResult->getDependencies() : null,
@@ -245,7 +252,7 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), $types, $classNames);
+		return Dependencies::create($scope->getFile(), $types, $classNames, [], [], []);
 	}
 
 	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, StaticPropertyFetch $propertyFetch): ?Type

@@ -209,28 +209,28 @@ final class AnalyseCommand extends Command
 
 		if ($generateBaselineFile === null && $allowEmptyBaseline) {
 			$inceptionResult->getStdOutput()->getStyle()->error('You must pass the --generate-baseline option alongside --allow-empty-baseline.');
-			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 		}
 
 		if ($inceptionResult->getEditorModeTmpFile() !== null) {
 			if ($generateBaselineFile !== null) {
 				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used when generating the baseline.');
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 			if ($pro) {
 				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with PHPStan Pro.');
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 			if ($fix) {
 				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with --fix.');
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 		}
 
 		if ($fix) {
 			if ($generateBaselineFile !== null) {
 				$inceptionResult->getStdOutput()->getStyle()->error('Errors cannot be fixed when generating the baseline.');
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 
 			$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
@@ -267,13 +267,13 @@ final class AnalyseCommand extends Command
 			$baselineExtension = pathinfo($generateBaselineFile, PATHINFO_EXTENSION);
 			if ($baselineExtension === '') {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename must have an extension, %s provided instead.', pathinfo($generateBaselineFile, PATHINFO_BASENAME)));
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 
 			if (!in_array($baselineExtension, ['neon', 'php'], true)) {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('Baseline filename extension must be .neon or .php, .%s was used instead.', $baselineExtension));
 
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 		}
 
@@ -293,20 +293,20 @@ final class AnalyseCommand extends Command
 
 			$inceptionResult->getErrorOutput()->getStyle()->error('No files found to analyse.');
 
-			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 		}
 
 		if ($inceptionResult->getEditorModeInsteadOfFile() !== null) {
 			if (!in_array($inceptionResult->getEditorModeInsteadOfFile(), $files, true)) {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('File %s passed to --instead-of is not in analysed project files.', $inceptionResult->getEditorModeInsteadOfFile()));
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 		}
 
 		if ($inceptionResult->getEditorModeTmpFile() !== null) {
 			if (in_array($inceptionResult->getEditorModeTmpFile(), $files, true)) {
 				$inceptionResult->getStdOutput()->getStyle()->error(sprintf('File %s passed to --tmp-file is already in analysed project files.', $inceptionResult->getEditorModeInsteadOfFile()));
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 		}
 
@@ -356,7 +356,7 @@ final class AnalyseCommand extends Command
 		if ($pro) {
 			if ($generateBaselineFile !== null) {
 				$inceptionResult->getStdOutput()->getStyle()->error('You cannot pass the --generate-baseline option when running PHPStan Pro.');
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 
 			return $this->runFixer($inceptionResult, $container, $input, $output, $files);
@@ -418,7 +418,7 @@ final class AnalyseCommand extends Command
 					$previous = $previous->getPrevious();
 				}
 
-				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 			}
 
 			throw $t;
@@ -851,7 +851,7 @@ final class AnalyseCommand extends Command
 		if ($ciDetector->isCiDetected()) {
 			$inceptionResult->getStdOutput()->writeLineFormatted('PHPStan Pro can\'t run in CI environment yet. Stay tuned!');
 
-			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 		}
 
 		// this process defers bootstrapFiles like the rest of the analyse flow but never
@@ -862,7 +862,7 @@ final class AnalyseCommand extends Command
 		try {
 			$container->getByType(BootstrapFilesRunner::class)->run($inceptionResult->getErrorOutput(), (bool) $input->getOption('debug'));
 		} catch (InceptionNotSuccessfulException) {
-			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
+			return $inceptionResult->handleReturn(1, null, $this->analysisStartTime, 0);
 		}
 
 		/** @var FixerApplication $fixerApplication */

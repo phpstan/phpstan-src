@@ -73,15 +73,15 @@ final class ExpressionResult
 		private array $impurePoints,
 		?callable $typeCallback,
 		callable $specifyTypesCallback,
-		private bool $containsNullsafe = false,
-		private ?IssetabilityDescriptor $issetabilityDescriptor = null,
-		private ?ExpressionResult $truthyScopeOverrideResult = null,
-		private ?ExpressionResult $falseyScopeOverrideResult = null,
-		?callable $createTypesCallback = null,
-		private ?Type $type = null,
-		private ?Type $nativeType = null,
-		private ?ArgsResult $argsResult = null,
-		private ?VariableFlow $variableFlow = null,
+		private bool $containsNullsafe,
+		private ?IssetabilityDescriptor $issetabilityDescriptor,
+		private ?ExpressionResult $truthyScopeOverrideResult,
+		private ?ExpressionResult $falseyScopeOverrideResult,
+		?callable $createTypesCallback,
+		private ?Type $type,
+		private ?Type $nativeType,
+		private ?ArgsResult $argsResult,
+		private ?VariableFlow $variableFlow,
 		private array $specifiedTypes = [],
 		private ?Type $cachedType = null,
 		bool $extensionsDeclined = false,
@@ -241,7 +241,7 @@ final class ExpressionResult
 	 * expression's own type when it is not a chain link (e.g. a method-call-rooted
 	 * base like $this->getFoo()['x']). $useNativeTypes selects native vs phpdoc.
 	 */
-	public function getIssetabilityResolution(MutatingScope $scope, bool $useNativeTypes, bool $reprocessUntrackedLinks = false): IssetabilityResolution
+	public function getIssetabilityResolution(MutatingScope $scope, bool $useNativeTypes, bool $reprocessUntrackedLinks): IssetabilityResolution
 	{
 		if ($this->issetabilityDescriptor !== null) {
 			return $this->issetabilityDescriptor->resolve($scope, $useNativeTypes, $this->expr, $reprocessUntrackedLinks);
@@ -613,7 +613,7 @@ final class ExpressionResult
 	 * narrowing is applied to - so one memoized SpecifiedTypes serves every
 	 * asking position.
 	 */
-	public function getSpecifiedTypes(TypeSpecifierContext $context, bool $nativeTypesPromoted = false): SpecifiedTypes
+	public function getSpecifiedTypes(TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes
 	{
 		$key = (spl_object_id($context) << 1) | ($nativeTypesPromoted ? 1 : 0);
 
@@ -640,7 +640,7 @@ final class ExpressionResult
 	 * computed at the expression's own evaluation point - the asking scope
 	 * reduces to its flavour bit, like getSpecifiedTypes().
 	 */
-	public function getCreatedTypes(Type $type, TypeSpecifierContext $context, bool $nativeTypesPromoted = false): ?SpecifiedTypes
+	public function getCreatedTypes(Type $type, TypeSpecifierContext $context, bool $nativeTypesPromoted): ?SpecifiedTypes
 	{
 		if ($this->createTypesCallback === null) {
 			return null;
@@ -699,7 +699,7 @@ final class ExpressionResult
 		$useNativeTypes = $useNativeTypes || $scope->nativeTypesPromoted;
 		$readScope = $useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope;
 
-		return $this->isScopeAuthoritative($readScope) || $this->askScopeVariableStateMatches($scope, $useNativeTypes);
+		return $this->isScopeAuthoritative($readScope) || $this->askScopeVariableStateMatches($scope, $useNativeTypes, false);
 	}
 
 	/**
@@ -740,7 +740,7 @@ final class ExpressionResult
 	 * Engine-side consumers keep the strict direction: any state divergence -
 	 * including a variable removed since the walk - forces re-pricing.
 	 */
-	public function askScopeVariableStateMatches(MutatingScope $scope, bool $useNativeTypes, bool $ruleFacingAsk = false): bool
+	public function askScopeVariableStateMatches(MutatingScope $scope, bool $useNativeTypes, bool $ruleFacingAsk): bool
 	{
 		// same unpromoted position implies same promoted position - skip the
 		// flavour derivation for the common same-position ask
@@ -845,6 +845,8 @@ final class ExpressionResult
 			projectedNativeType: $fromScope ? null : $this->projectedNativeType,
 			readVariableNames: $this->readVariableNames,
 			dependencies: $this->dependencies,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
 		);
 	}
 

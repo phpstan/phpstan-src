@@ -100,7 +100,13 @@ final class ArrowFunctionHandler implements ExprHandler
 			type: $type,
 			nativeType: $nativeType,
 			typeCallback: null,
-			dependencies: Dependencies::merge($result->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type))),
+			dependencies: Dependencies::merge($result->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type), [], [], [], [])),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			argsResult: null,
 		);
 	}
 
@@ -111,7 +117,7 @@ final class ArrowFunctionHandler implements ExprHandler
 			if (!$param->byRef || !$param->var instanceof Expr\Variable || !is_string($param->var->name)) {
 				continue;
 			}
-			$outputs[] = VariableFlow::read($param->var->name);
+			$outputs[] = VariableFlow::read($param->var->name, null, false, null);
 		}
 
 		return VariableFlow::arrow($expr, $bodyResult->getVariableFlow(), VariableFlow::sequence(...$outputs));

@@ -45,8 +45,8 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
-		private bool $createsNodeCallbackScopes = false,
-		?ExpressionResultStorageStack $expressionResultStorageStack = null,
+		private bool $createsNodeCallbackScopes,
+		?ExpressionResultStorageStack $expressionResultStorageStack,
 	)
 	{
 		$this->expressionResultStorageStack = $expressionResultStorageStack ?? new ExpressionResultStorageStack();

@@ -23,7 +23,7 @@ final class ScopeFactory
 	 */
 	public function create(ScopeContext $context, ?callable $nodeCallback = null): MutatingScope
 	{
-		return $this->internalScopeFactoryFactory->create($nodeCallback)->create($context);
+		return $this->internalScopeFactoryFactory->create($nodeCallback, false, null)->create($context);
 	}
 
 }

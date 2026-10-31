@@ -18,7 +18,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param CollectorData $collectedData
 	 */
-	public function __construct(private array $collectedData, private bool $onlyFiles, private ?CollectedDataNodeReads $reads = null)
+	public function __construct(private array $collectedData, private bool $onlyFiles, private ?CollectedDataNodeReads $reads)
 	{
 		parent::__construct([]);
 	}

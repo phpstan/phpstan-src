@@ -78,14 +78,14 @@ final class UnsetHandler implements StmtHandler
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($scope, $var);
 			$exprResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments())->enterUnsetTarget());
 			$dependencies[] = $exprResult->getDependencies();
-			$variableFlows[] = VariableFlowBuilder::targetRead($var, $storage, $this->hasDestructionSideEffects($exprResult->getType()));
+			$variableFlows[] = VariableFlowBuilder::targetRead($var, $storage, $this->hasDestructionSideEffects($exprResult->getType()), null);
 			$root = $var;
 			while ($root instanceof ArrayDimFetch) {
 				$root = $root->var;
 			}
 			if ($root instanceof Expr\Variable && is_string($root->name)) {
 				$dimResult = $var instanceof ArrayDimFetch && $var->dim !== null ? $storage->findExpressionResult($var->dim) : null;
-				$variableFlows[] = VariableFlow::discard(new VariableWrite($root->name, $var, spl_object_id($var), VariableWrite::KIND_ASSIGN, $var instanceof ArrayDimFetch, $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null, replacesOffset: !($var instanceof ArrayDimFetch) || $var->var === $root));
+				$variableFlows[] = VariableFlow::discard(new VariableWrite($root->name, $var, spl_object_id($var), VariableWrite::KIND_ASSIGN, $var instanceof ArrayDimFetch, $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null, replacesOffset: !($var instanceof ArrayDimFetch) || $var->var === $root, parentId: null));
 			}
 			$scope = $exprResult->getScope();
 			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);

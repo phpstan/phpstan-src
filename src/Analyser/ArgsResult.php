@@ -31,7 +31,7 @@ final class ArgsResult
 		private ExpressionResult $expressionResult,
 		private ?ParametersAcceptor $resolvedParametersAcceptor,
 		private array $argResults,
-		private array $byRefArguments = [],
+		private array $byRefArguments,
 	)
 	{
 	}

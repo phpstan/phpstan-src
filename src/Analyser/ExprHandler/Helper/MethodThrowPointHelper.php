@@ -96,7 +96,7 @@ final class MethodThrowPointHelper
 			&& in_array($methodReflection->getName(), ['invoke', 'invokeArgs'], true)
 			&& in_array($methodReflection->getDeclaringClass()->getName(), [ReflectionMethod::class, ReflectionFunction::class], true)
 		) {
-			return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
+			return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall, null);
 		}
 
 		$throwType = $methodReflection->getThrowType();
@@ -115,7 +115,7 @@ final class MethodThrowPointHelper
 			}
 		} elseif ($this->implicitThrows) {
 			if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($methodCallReturnType)->yes()) {
-				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall);
+				return InternalThrowPoint::createImplicit($scope, $normalizedMethodCall, null);
 			}
 		}
 
@@ -138,7 +138,7 @@ final class MethodThrowPointHelper
 
 		$methodReflection = $scope->getMethodReflection($calledOnType, $methodCall->name->toString());
 		if ($methodReflection === null) {
-			return [InternalThrowPoint::createImplicit($scope, $methodCall)];
+			return [InternalThrowPoint::createImplicit($scope, $methodCall, null)];
 		}
 
 		$parametersAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($methodCall->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants());

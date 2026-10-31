@@ -135,7 +135,7 @@ final class ClassMethodHandler implements StmtHandler
 					$phpDoc = $param->getDocComment()->getText();
 				}
 				$promotedNativeType = $param->type !== null ? ParserNodeTypeToPHPStanType::resolve($param->type, $classReflection) : null;
-				$dependencies[] = Dependencies::create($methodScope->getFile(), [$promotedNativeType, $phpDocParameterTypes[$param->var->name] ?? null]);
+				$dependencies[] = Dependencies::create($methodScope->getFile(), [$promotedNativeType, $phpDocParameterTypes[$param->var->name] ?? null], [], [], [], []);
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassPropertyNode(
 					$param->var->name,
 					$param->flags,
@@ -172,7 +172,7 @@ final class ClassMethodHandler implements StmtHandler
 			if (!$methodReflection instanceof PhpMethodFromParserNodeReflection) {
 				throw new ShouldNotHappenException();
 			}
-			$dependencies[] = Dependencies::create($methodScope->getFile(), [...DependencyTypes::ofDeclaration($methodReflection, true), $methodReflection->getSelfOutType()]);
+			$dependencies[] = Dependencies::create($methodScope->getFile(), [...DependencyTypes::ofDeclaration($methodReflection, true), $methodReflection->getSelfOutType()], [], [], [], []);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassMethodNode($classReflection, $methodReflection, $stmt), $methodScope, $storage);
 		}
 

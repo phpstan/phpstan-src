@@ -44,8 +44,8 @@ final class LazyInternalScopeFactory implements InternalScopeFactory
 	public function __construct(
 		private Container $container,
 		private $nodeCallback,
-		private bool $createsNodeCallbackScopes = false,
-		?ExpressionResultStorageStack $expressionResultStorageStack = null,
+		private bool $createsNodeCallbackScopes,
+		?ExpressionResultStorageStack $expressionResultStorageStack,
 	)
 	{
 		$this->currentSimpleVersionParser = $this->container->getService('currentPhpVersionSimpleParser');

@@ -77,7 +77,7 @@ final class TestCaseSourceLocatorFactory
 					continue;
 				}
 
-				$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath);
+				$composerSourceLocator = $this->composerJsonAndInstalledJsonSourceLocatorMaker->create($composerProjectPath, null);
 				if ($composerSourceLocator === null) {
 					continue;
 				}

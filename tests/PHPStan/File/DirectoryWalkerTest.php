@@ -36,7 +36,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 	public function testWalkAlwaysSeesTheCurrentState(): void
 	{
-		$walker = new DirectoryWalker(new FileStatSignatures());
+		$walker = new DirectoryWalker(new FileStatSignatures(), '');
 
 		$beforeAdding = $walker->walk($this->directory, ['php']);
 		file_put_contents($this->directory . '/second.php', '<?php');
@@ -48,7 +48,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 	public function testWalkCachedIsSharedBetweenCalls(): void
 	{
-		$walker = new DirectoryWalker(new FileStatSignatures());
+		$walker = new DirectoryWalker(new FileStatSignatures(), '');
 
 		$firstWalk = $walker->walkCached($this->directory, ['php']);
 		file_put_contents($this->directory . '/second.php', '<?php');
@@ -65,7 +65,7 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 
 	public function testCachedWalksAreKeyedByExtensions(): void
 	{
-		$walker = new DirectoryWalker(new FileStatSignatures());
+		$walker = new DirectoryWalker(new FileStatSignatures(), '');
 		file_put_contents($this->directory . '/notes.txt', 'x');
 
 		$phpFiles = $walker->walkCached($this->directory, ['php']);

@@ -80,17 +80,17 @@ abstract class VariableFlow
 
 	public static function arrow(ArrowFunction $arrow, ?self $body, ?self $outputs): self
 	{
-		return new VariableControlFlow(self::ARROW, [$body, $outputs], arrow: $arrow);
+		return new VariableControlFlow(self::ARROW, [$body, $outputs], arrow: $arrow, name: null, type: null, level: 1, atLeastOnce: false, canExit: true, catches: [], cases: [], canRepeat: true, canContainAnyThrowable: false, stmt: null, bindings: [], ownWrites: []);
 	}
 
 	/** @param int|string|null $offset */
-	public static function read(string $name, ?int $targetId = null, bool $container = false, $offset = null): ?self
+	public static function read(string $name, ?int $targetId, bool $container, $offset): ?self
 	{
 		if ($name === 'this' || in_array($name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 			return null;
 		}
 
-		return new VariableAccessFlow(self::READ, $name, targetId: $targetId, container: $container, offset: $offset);
+		return new VariableAccessFlow(self::READ, $name, targetId: $targetId, container: $container, offset: $offset, write: null, type: null);
 	}
 
 	public static function conditional(?self $condition, ?self $if, ?self $else): ?self
@@ -101,17 +101,17 @@ abstract class VariableFlow
 	/** @param list<array{self|null, self|null, bool}> $cases */
 	public static function switch(?self $condition, array $cases, bool $exhaustive): self
 	{
-		return new VariableControlFlow(self::SWITCH, [$condition], canExit: !$exhaustive, cases: $cases);
+		return new VariableControlFlow(self::SWITCH, [$condition], canExit: !$exhaustive, cases: $cases, name: null, type: null, level: 1, atLeastOnce: false, catches: [], arrow: null, canRepeat: true, canContainAnyThrowable: false, stmt: null, bindings: [], ownWrites: []);
 	}
 
-	public static function write(VariableWrite $write, ?Type $redundantType = null): self
+	public static function write(VariableWrite $write, ?Type $redundantType): self
 	{
-		return new VariableAccessFlow($write->getParentId() === null ? self::WRITE : self::DEFINE, $write->getVariableName(), $write, $redundantType);
+		return new VariableAccessFlow($write->getParentId() === null ? self::WRITE : self::DEFINE, $write->getVariableName(), $write, $redundantType, null, false, null);
 	}
 
 	public static function discard(VariableWrite $write): self
 	{
-		return new VariableAccessFlow(self::DISCARD, $write->getVariableName(), $write);
+		return new VariableAccessFlow(self::DISCARD, $write->getVariableName(), $write, null, null, false, null);
 	}
 
 	/** The enclosing expression consumes a write's inputs, without reading its target. */
@@ -122,34 +122,34 @@ abstract class VariableFlow
 
 	public static function escape(string $name): self
 	{
-		return new VariableAccessFlow(self::ESCAPE, $name);
+		return new VariableAccessFlow(self::ESCAPE, $name, null, null, null, false, null);
 	}
 
 	public static function mention(string $name): self
 	{
-		return new VariableAccessFlow(self::MENTION, $name);
+		return new VariableAccessFlow(self::MENTION, $name, null, null, null, false, null);
 	}
 
 	/** @param self::READ_ALL|self::MENTION_ALL|self::OPAQUE $kind */
 	public static function all(string $kind): self
 	{
-		return new VariableControlFlow($kind);
+		return new VariableControlFlow($kind, [], null, null, 1, false, true, [], null, [], true, false, null, [], []);
 	}
 
 	/** @param self::RETURN|self::BREAK|self::CONTINUE|self::STOP $kind */
-	public static function exit(string $kind, int $level = 1, ?string $name = null): self
+	public static function exit(string $kind, int $level, ?string $name): self
 	{
-		return new VariableControlFlow($kind, name: $name, level: $level);
+		return new VariableControlFlow($kind, name: $name, level: $level, children: [], type: null, atLeastOnce: false, canExit: true, catches: [], arrow: null, cases: [], canRepeat: true, canContainAnyThrowable: false, stmt: null, bindings: [], ownWrites: []);
 	}
 
-	public static function throwing(Type $type, bool $canContinue, bool $canContainAnyThrowable = false): self
+	public static function throwing(Type $type, bool $canContinue, bool $canContainAnyThrowable): self
 	{
-		return new VariableControlFlow(self::THROW, type: $type, canExit: $canContinue, canContainAnyThrowable: $canContainAnyThrowable);
+		return new VariableControlFlow(self::THROW, type: $type, canExit: $canContinue, canContainAnyThrowable: $canContainAnyThrowable, children: [], name: null, level: 1, atLeastOnce: false, catches: [], arrow: null, cases: [], canRepeat: true, stmt: null, bindings: [], ownWrites: []);
 	}
 
-	public static function loop(?self $condition, ?self $body, ?self $update, bool $atLeastOnce, bool $canExit, bool $canRepeat = true): self
+	public static function loop(?self $condition, ?self $body, ?self $update, bool $atLeastOnce, bool $canExit, bool $canRepeat): self
 	{
-		return new VariableControlFlow(self::LOOP, [$condition, $body, $update], atLeastOnce: $atLeastOnce, canExit: $canExit, canRepeat: $canRepeat);
+		return new VariableControlFlow(self::LOOP, [$condition, $body, $update], atLeastOnce: $atLeastOnce, canExit: $canExit, canRepeat: $canRepeat, name: null, type: null, level: 1, catches: [], arrow: null, cases: [], canContainAnyThrowable: false, stmt: null, bindings: [], ownWrites: []);
 	}
 
 	/**
@@ -168,13 +168,13 @@ abstract class VariableFlow
 			return $flow;
 		}
 
-		return new VariableControlFlow(self::LOOP_STATEMENT, [$flow], stmt: $stmt, bindings: $bindings, ownWrites: $ownWrites);
+		return new VariableControlFlow(self::LOOP_STATEMENT, [$flow], stmt: $stmt, bindings: $bindings, ownWrites: $ownWrites, name: null, type: null, level: 1, atLeastOnce: false, canExit: true, catches: [], arrow: null, cases: [], canRepeat: true, canContainAnyThrowable: false);
 	}
 
 	/** @param list<array{Type, self|null}> $catches */
 	public static function tryCatch(?self $body, array $catches, ?self $finally): self
 	{
-		return new VariableControlFlow(self::TRY_CATCH, [$body, $finally], catches: $catches);
+		return new VariableControlFlow(self::TRY_CATCH, [$body, $finally], catches: $catches, name: null, type: null, level: 1, atLeastOnce: false, canExit: true, arrow: null, cases: [], canRepeat: true, canContainAnyThrowable: false, stmt: null, bindings: [], ownWrites: []);
 	}
 
 }

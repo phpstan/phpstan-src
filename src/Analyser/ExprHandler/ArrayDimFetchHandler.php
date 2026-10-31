@@ -101,6 +101,13 @@ final class ArrayDimFetchHandler implements ExprHandler
 				typeCallback: static fn (): Type => new NeverType(),
 				specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 				dependencies: $varResult->getDependencies(),
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
 			);
 		}
 
@@ -169,19 +176,26 @@ final class ArrayDimFetchHandler implements ExprHandler
 						return $shortCircuit(ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants())->getNativeReturnType());
 					}
 
-					return $shortCircuit($this->methodCallReturnTypeHelper->methodCallReturnType($scope, $offsetAccessibleType, 'offsetGet', $offsetGetCall) ?? new ErrorType());
+					return $shortCircuit($this->methodCallReturnTypeHelper->methodCallReturnType($scope, $offsetAccessibleType, 'offsetGet', $offsetGetCall, null, null) ?? new ErrorType());
 				}
 
 				return $shortCircuit($offsetAccessibleType->getOffsetValueType(($nativeTypesPromoted ? $dimResult->getNativeType() : $dimResult->getType())));
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypesWithNullsafeFan($expr, $context, $beforeScope, $nativeTypesPromoted),
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 
 		// the classes in the type of the value at the offset
 		return $result->withDependencies(Dependencies::merge(
 			$varResult->getDependencies(),
 			$dimResult->getDependencies(),
-			Dependencies::create($beforeScope->getFile(), [$result->getType()]),
+			Dependencies::create($beforeScope->getFile(), [$result->getType()], [], [], [], []),
 		));
 	}
 
@@ -191,7 +205,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			return null;
 		}
 		$target = $context->getValueFlowTarget();
-		return VariableFlow::read($expr->var->name, $target !== null ? $target->getId() : null, offset: $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null);
+		return VariableFlow::read($expr->var->name, $target !== null ? $target->getId() : null, offset: $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null, container: false);
 	}
 
 }

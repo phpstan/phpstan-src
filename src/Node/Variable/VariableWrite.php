@@ -42,10 +42,10 @@ final class VariableWrite
 		private Node $node,
 		private int $id,
 		private int $kind,
-		private bool $offsetWrite = false,
-		private $offset = null,
-		private ?int $parentId = null,
-		private bool $replacesOffset = true,
+		private bool $offsetWrite,
+		private $offset,
+		private ?int $parentId,
+		private bool $replacesOffset,
 	)
 	{
 	}

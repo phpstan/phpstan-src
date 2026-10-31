@@ -666,11 +666,10 @@ PT_MINIT_REGISTRATION(pt_register_variable_flow_builder)
 		bool read;
 		zend_long targetId = 0;
 		bool targetIdIsNull = true;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_OBJECT(target)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_BOOL(read)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_LONG_OR_NULL(targetId, targetIdIsNull)
 		ZEND_PARSE_PARAMETERS_END();
 		zval targetIdValue;
@@ -687,7 +686,7 @@ PT_MINIT_REGISTRATION(pt_register_variable_flow_builder)
 	cls.method(sigs::targetWrite, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *target, *scope, *storage, *redundant = NULL;
 		zend_long kind;
-		if (!zp::parse<zp::Obj, zp::Long, zp::Obj, zp::Obj, zp::Opt<zp::ObjOrNull>>(execute_data, target, kind, scope, storage, redundant)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Long, zp::Obj, zp::Obj, zp::ObjOrNull>(execute_data, target, kind, scope, storage, redundant)) RETURN_THROWS();
 		PT_VFB_RETURN(VariableFlowBuilder::targetWrite(target, kind, scope, storage, redundant));
 	});
 

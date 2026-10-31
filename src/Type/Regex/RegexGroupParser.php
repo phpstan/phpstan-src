@@ -160,7 +160,7 @@ final class RegexGroupParser
 
 	private function createEmptyTokenRegexNode(): RegexNode
 	{
-		return new RegexNode('token', 'literal', '');
+		return new RegexNode('token', 'literal', '', []);
 	}
 
 	private function containsSubroutineCall(RegexNode $ast): bool
@@ -213,7 +213,7 @@ final class RegexGroupParser
 			return;
 		}
 
-		$ast->setChildren([new RegexNode('#alternation', children: [$this->createEmptyTokenRegexNode()])]);
+		$ast->setChildren([new RegexNode('#alternation', children: [$this->createEmptyTokenRegexNode()], valueToken: '', valueValue: '')]);
 	}
 
 	private function containsEscapeK(RegexNode $ast): bool

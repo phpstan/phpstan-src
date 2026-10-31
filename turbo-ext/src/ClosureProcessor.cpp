@@ -1557,7 +1557,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_processor)
 
 	cls.method(sigs::processClosureNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *stmt, *expr, *scope, *storage, *nodeCallback, *context, *passedToType, *nativePassedToType = NULL;
-		ZEND_PARSE_PARAMETERS_START(8, 9)
+		ZEND_PARSE_PARAMETERS_START(9, 9)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_OBJECT(expr)
@@ -1566,7 +1566,6 @@ PT_MINIT_REGISTRATION(pt_register_closure_processor)
 			Z_PARAM_ZVAL(nodeCallback)
 			Z_PARAM_OBJECT(context)
 			Z_PARAM_OBJECT_OR_NULL(passedToType)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(nativePassedToType)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(ClosureProcessor(Z_OBJ_P(ZEND_THIS)).processClosureNode(nodeScopeResolver, stmt, expr, scope, storage, nodeCallback, context, passedToType, nativePassedToType));
@@ -1584,7 +1583,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_processor)
 
 	cls.method(sigs::processArrowFunctionNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *stmt, *expr, *scope, *storage, *nodeCallback, *passedToType, *nativePassedToType = NULL, *context = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 9)
+		ZEND_PARSE_PARAMETERS_START(9, 9)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_OBJECT(expr)
@@ -1592,7 +1591,6 @@ PT_MINIT_REGISTRATION(pt_register_closure_processor)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 			Z_PARAM_OBJECT_OR_NULL(passedToType)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(nativePassedToType)
 			Z_PARAM_OBJECT_OR_NULL(context)
 		ZEND_PARSE_PARAMETERS_END();

@@ -33,6 +33,9 @@ abstract class BenchCase
 			$analyser->analyse([$file], null, null, true, $allAnalysedFiles),
 			false,
 			true,
+			null,
+			null,
+			[],
 		)->getErrors();
 	}
 

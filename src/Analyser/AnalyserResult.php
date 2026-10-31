@@ -50,7 +50,7 @@ final class AnalyserResult
 		private bool $reachedInternalErrorsCountLimit,
 		private int $peakMemoryUsageBytes,
 		private array $processedFiles,
-		private int $workerCount = 0,
+		private int $workerCount,
 	)
 	{
 	}

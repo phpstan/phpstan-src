@@ -737,11 +737,10 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 	cls.method(sigs::returnTypeOfCall, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptor, *scope, *site;
 		bool allowUnresolved = false, allowUnresolvedIsNull = true;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_OBJECT(acceptor)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(site)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL_OR_NULL(allowUnresolved, allowUnresolvedIsNull)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(TemplateArgumentFrame::returnTypeOfCall(acceptor, scope, site, allowUnresolvedIsNull ? -1 : (allowUnresolved ? 1 : 0)));
@@ -750,9 +749,8 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL, *byRefSites = NULL, *staticVariableTypes = NULL, *staticVariableConditionalExpressions = NULL;
 		bool observingClosures = false;
-		ZEND_PARSE_PARAMETERS_START(1, 10)
+		ZEND_PARSE_PARAMETERS_START(10, 10)
 			Z_PARAM_OBJECT_OR_NULL(parent)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(resolutions)
 			Z_PARAM_ARRAY(siteStatementIndexes)
 			Z_PARAM_OBJECT_OR_NULL(closureSignatureBody)
@@ -768,11 +766,10 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 
 	cls.method(sigs::withObservedClosures, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *closureResolutions, *closureSiteStatementIndexes, *settledClosureSites, *byRefSites = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_ARRAY(closureResolutions)
 			Z_PARAM_ARRAY(closureSiteStatementIndexes)
 			Z_PARAM_ARRAY(settledClosureSites)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(byRefSites)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).withObservedClosures(closureResolutions, closureSiteStatementIndexes, settledClosureSites, byRefSites));
@@ -788,10 +785,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 
 	cls.method(sigs::withStaticVariableTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *staticVariableTypes, *statementIndexes, *conditionalExpressions = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_ARRAY(staticVariableTypes)
 			Z_PARAM_ARRAY(statementIndexes)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(conditionalExpressions)
 		ZEND_PARSE_PARAMETERS_END();
 		zval empty;

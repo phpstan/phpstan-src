@@ -62,7 +62,7 @@ final class VariableHandler implements ExprHandler
 	 *
 	 * @return Closure(bool $nativeTypesPromoted): Type
 	 */
-	private function createTypeCallback(Variable $expr, NodeScopeResolver $nodeScopeResolver, MutatingScope $beforeScope, ?ExpressionResult $nameResult = null, ?ExpressionResult $nameArgResult = null): Closure
+	private function createTypeCallback(Variable $expr, NodeScopeResolver $nodeScopeResolver, MutatingScope $beforeScope, ?ExpressionResult $nameResult, ?ExpressionResult $nameArgResult): Closure
 	{
 		return function (bool $nativeTypesPromoted) use ($expr, $nameResult, $nameArgResult, $nodeScopeResolver, $beforeScope): Type {
 			$readScope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
@@ -97,6 +97,16 @@ final class VariableHandler implements ExprHandler
 						impurePoints: [],
 						typeCallback: static fn (): Type => $constantString,
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+						containsNullsafe: false,
+						issetabilityDescriptor: null,
+						truthyScopeOverrideResult: null,
+						falseyScopeOverrideResult: null,
+						createTypesCallback: null,
+						type: null,
+						nativeType: null,
+						argsResult: null,
+						variableFlow: null,
+						dependencies: null,
 					);
 					$specifiedTypes = $this->identicalNarrowingHelper->specifyIdentical(
 						$nodeScopeResolver,
@@ -143,7 +153,7 @@ final class VariableHandler implements ExprHandler
 	 * walking a dynamic name; AssignHandler::prepareTarget() calls it to price a
 	 * read-modify-write target without re-walking it.
 	 */
-	public function composeResult(NodeScopeResolver $nodeScopeResolver, Variable $expr, ?ExpressionResult $nameResult, ExpressionResultStorage $storage, MutatingScope $beforeScope, ?ExpressionContext $context = null): ExpressionResult
+	public function composeResult(NodeScopeResolver $nodeScopeResolver, Variable $expr, ?ExpressionResult $nameResult, ExpressionResultStorage $storage, MutatingScope $beforeScope, ?ExpressionContext $context): ExpressionResult
 	{
 		$scope = $beforeScope;
 		$hasYield = false;
@@ -152,13 +162,13 @@ final class VariableHandler implements ExprHandler
 		$isAlwaysTerminating = false;
 		$variableFlow = null;
 		if (is_string($expr->name)) {
-			$variableFlow = ($context !== null && $context->isUnsetTarget() ? VariableFlow::mention($expr->name) : VariableFlow::read($expr->name, $context !== null && $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null, $context !== null && $context->isArrayDimFetchRoot()));
+			$variableFlow = ($context !== null && $context->isUnsetTarget() ? VariableFlow::mention($expr->name) : VariableFlow::read($expr->name, $context !== null && $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null, $context !== null && $context->isArrayDimFetchRoot(), null));
 			if (in_array($expr->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				$impurePoints[] = new ImpurePoint($scope, $expr, 'superglobal', 'access to superglobal variable', true);
 			}
 		} elseif ($nameResult !== null) {
 			$names = $nameResult->getType()->getConstantStrings();
-			$variableFlow = VariableFlow::sequence($nameResult->getVariableFlow(), $names === [] ? VariableFlow::all(VariableFlow::READ_ALL) : VariableFlow::sequence(...array_map(static fn ($name) => VariableFlow::read($name->getValue()), $names)));
+			$variableFlow = VariableFlow::sequence($nameResult->getVariableFlow(), $names === [] ? VariableFlow::all(VariableFlow::READ_ALL) : VariableFlow::sequence(...array_map(static fn ($name) => VariableFlow::read($name->getValue(), null, false, null), $names)));
 			$hasYield = $nameResult->hasYield();
 			$throwPoints = $nameResult->getThrowPoints();
 			$impurePoints = $nameResult->getImpurePoints();
@@ -179,6 +189,13 @@ final class VariableHandler implements ExprHandler
 			typeCallback: $this->createTypeCallback($expr, $nodeScopeResolver, $beforeScope, $nameResult, is_string($expr->name) ? null : $this->identicalNarrowingHelper->captureFirstArgResult($expr->name, $storage)),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: $nameResult !== null ? $nameResult->getDependencies() : null,
+			containsNullsafe: false,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

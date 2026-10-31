@@ -70,12 +70,11 @@ inline constexpr char strings[] =
 	"processExpr\0" /* 706 */
 	"conditions\0" /* 718 */
 	"condData\0" /* 729 */
-	"[]\0" /* 738 */
-	"PhpParser\\Node\\Expr\\BinaryOp\\Identical|PhpParser\\Node\\Expr\\FuncCall\0" /* 741 */
-	"getFilteringExprForMatchArm\0" /* 809 */
-	"isScopeConditionallyImpossible\0" /* 837 */
-	"varNames\0" /* 868 */
-	"scopeHasNeverVariable"; /* 877 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\Identical|PhpParser\\Node\\Expr\\FuncCall\0" /* 738 */
+	"getFilteringExprForMatchArm\0" /* 806 */
+	"isScopeConditionallyImpossible\0" /* 834 */
+	"varNames\0" /* 865 */
+	"scopeHasNeverVariable"; /* 874 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_VOID), /* resetFileAnalysisState return */
 	reg::packed(24, MAY_BE_BOOL), /* __construct $treatPhpDocTypesAsCertain */
@@ -97,12 +96,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 672), /* processExpr return */
 	reg::packed(362, 0, 396), /* getFilteringExprForMatchArm $expr */
 	reg::packed(718, MAY_BE_ARRAY), /* getFilteringExprForMatchArm $conditions */
-	reg::packed(729, MAY_BE_ARRAY, reg::NoString, false, false, 738), /* getFilteringExprForMatchArm $condData */
-	reg::packed(0, 0, 741), /* getFilteringExprForMatchArm return */
+	reg::packed(729, MAY_BE_ARRAY), /* getFilteringExprForMatchArm $condData */
+	reg::packed(0, 0, 738), /* getFilteringExprForMatchArm return */
 	reg::packed(530, 0, 536), /* isScopeConditionallyImpossible $scope */
 	reg::packed(0, MAY_BE_BOOL), /* isScopeConditionallyImpossible return */
 	reg::packed(530, 0, 536), /* scopeHasNeverVariable $scope */
-	reg::packed(868, MAY_BE_ARRAY), /* scopeHasNeverVariable $varNames */
+	reg::packed(865, MAY_BE_ARRAY), /* scopeHasNeverVariable $varNames */
 	reg::packed(0, MAY_BE_BOOL), /* scopeHasNeverVariable return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -115,9 +114,9 @@ inline constexpr sigtab::Sig __construct = { { 350 /* __construct */, 5, 1, 5, r
 inline constexpr sigtab::Sig supports = { { 387 /* supports */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getCapturedArmScopesAndTypes = { { 423 /* getCapturedArmScopesAndTypes */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 706 /* processExpr */, 7, 10, 7, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFilteringExprForMatchArm = { { 809 /* getFilteringExprForMatchArm */, 2, 18, 3, 21, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isScopeConditionallyImpossible = { { 837 /* isScopeConditionallyImpossible */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig scopeHasNeverVariable = { { 877 /* scopeHasNeverVariable */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getFilteringExprForMatchArm = { { 806 /* getFilteringExprForMatchArm */, 3, 18, 3, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isScopeConditionallyImpossible = { { 834 /* isScopeConditionallyImpossible */, 1, 22, 1, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig scopeHasNeverVariable = { { 874 /* scopeHasNeverVariable */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::MatchHandler

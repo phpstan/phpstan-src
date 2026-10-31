@@ -12489,7 +12489,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 
 	cls.method(sigs::getClosureScopeCacheKey, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *relevantRoots = NULL;
-		if (!zp::parse<zp::Opt<zp::ArrOrNull>>(execute_data, relevantRoots)) RETURN_THROWS();
+		if (!zp::parse<zp::ArrOrNull>(execute_data, relevantRoots)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_THIS.getClosureScopeCacheKey(relevantRoots));
 	});
 
@@ -12973,9 +12973,8 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		bool isPlainWrite = true;
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(isPlainWrite)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.enterExpressionAssign(Z_OBJ_P(expr), isPlainWrite));
@@ -13132,9 +13131,8 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.method(sigs::generalizeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherScope;
 		HashTable *writableVariableNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_OBJECT_OF_CLASS(otherScope, pt_ce_mutating_scope)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_HT_OR_NULL(writableVariableNames)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.generalizeWith(Z_OBJ_P(otherScope), writableVariableNames));

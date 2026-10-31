@@ -166,7 +166,7 @@ final class FuncCallHandler implements ExprHandler
 			// their turn. The closure is then walked on the post-argument scope.
 			$shallowVariants = $this->closureTypeResolver->getDeclaredClosureType($scope, $expr->name)->getCallableParametersAcceptors($scope);
 			$shallowAcceptor = ParametersAcceptorSelector::combineVariantsForNormalization($expr->getArgs(), $shallowVariants, null);
-			$argumentsWalkedAhead = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, null, null, $shallowVariants, null, ArgumentsNormalizer::reorderFuncArguments($shallowAcceptor, $expr) ?? $expr, $scope, $storage, $nodeCallback, $context);
+			$argumentsWalkedAhead = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, null, null, $shallowVariants, null, ArgumentsNormalizer::reorderFuncArguments($shallowAcceptor, $expr) ?? $expr, $scope, $storage, $nodeCallback, $context, null);
 			$scope = $argumentsWalkedAhead->getScope();
 		}
 		if ($expr->name instanceof Expr) {
@@ -194,7 +194,7 @@ final class FuncCallHandler implements ExprHandler
 			) {
 				// processed later
 			} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
-				$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints());
+				$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $expr, null), $parametersAcceptor->getThrowPoints());
 				if (!$this->implicitThrows) {
 					$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
 				}
@@ -266,6 +266,7 @@ final class FuncCallHandler implements ExprHandler
 							new PropertyFetch($cloneExpr, (string) $clonePropertyKeyTypeScalars[0], $propertyAttributes),
 							new TypeExpr($clonePropertiesArgTypeConstantArray->getValueTypes()[$i]),
 							$nodeCallback,
+							null,
 						);
 						continue;
 					}
@@ -278,6 +279,7 @@ final class FuncCallHandler implements ExprHandler
 						new PropertyFetch($cloneExpr, new TypeExpr($clonePropertyKeyType), $propertyAttributes),
 						new TypeExpr($clonePropertiesArgTypeConstantArray->getValueTypes()[$i]),
 						$nodeCallback,
+						null,
 					);
 				}
 			}
@@ -356,7 +358,7 @@ final class FuncCallHandler implements ExprHandler
 				// the arguments are processed; the call resolves from the walked
 				// closure's acceptor, which is the sole variant of its type
 				? $argumentsWalkedAhead->withResolvedParametersAcceptor($parametersAcceptor)
-				: $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+				: $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $functionReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context, null);
 		} finally {
 			if ($argsGatherer !== null) {
 				$nodeScopeResolver->popNodeGatherer();
@@ -480,7 +482,7 @@ final class FuncCallHandler implements ExprHandler
 					$argType = $argsResult->requireArgResult($argExpr)->getTypeOnScope($s, $s->nativeTypesPromoted);
 					if ($argType->isArray()->yes() && ($bothDirections || $createContext->falsey())) {
 						$types = $types->unionWith(
-							$this->defaultNarrowingHelper->createForSubject($argExpr, new NonEmptyArrayType(), $createContext->negate(), $s),
+							$this->defaultNarrowingHelper->createForSubject($argExpr, new NonEmptyArrayType(), $createContext->negate(), $s, null),
 						);
 					}
 				}
@@ -510,6 +512,14 @@ final class FuncCallHandler implements ExprHandler
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
 			argsResult: $argsResult,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $preliminaryResult);
 
@@ -563,7 +573,7 @@ final class FuncCallHandler implements ExprHandler
 				$throwPoints[] = $functionThrowPoint;
 			}
 		} else {
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr, null);
 		}
 
 		$byRefWrittenNames = [];
@@ -589,7 +599,7 @@ final class FuncCallHandler implements ExprHandler
 			self::getCallVariableFlow($functionReflection !== null ? $functionReflection->getName() : null, $normalizedExpr, $argsResult, $scope),
 			VariableFlowBuilder::throws($expr, $throwPoints),
 			$byRefFlow,
-			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP, 1, null) : null,
 		);
 
 		$dependencies = Dependencies::merge(
@@ -789,7 +799,7 @@ final class FuncCallHandler implements ExprHandler
 				|| count($normalizedFuncCall->getArgs()) > 0
 			) {
 				if (!$context->isInThrow() || !(new ObjectType(Throwable::class))->isSuperTypeOf($returnType)->yes()) {
-					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall);
+					return InternalThrowPoint::createImplicit($scope, $normalizedFuncCall, null);
 				}
 			}
 		}
@@ -877,7 +887,7 @@ final class FuncCallHandler implements ExprHandler
 				}
 			}
 
-			return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr);
+			return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr, null);
 		}
 
 		if (!$this->reflectionProvider->hasFunction($expr->name, $reflectionScope)) {
@@ -949,7 +959,7 @@ final class FuncCallHandler implements ExprHandler
 
 		// the typeCallback keeps void; ExpressionResult projects void->null for
 		// value reads, getKeepVoidType() keeps it
-		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr);
+		return TemplateArgumentFrame::returnTypeOfCall($parametersAcceptor, $reflectionScope, $expr, null);
 	}
 
 	/**
@@ -1040,7 +1050,7 @@ final class FuncCallHandler implements ExprHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), $types, reflections: $reflections);
+		return Dependencies::create($scope->getFile(), $types, reflections: $reflections, classNames: [], filePaths: [], usedTraits: []);
 	}
 
 	/**
@@ -1055,7 +1065,7 @@ final class FuncCallHandler implements ExprHandler
 	 *
 	 * @param FuncCall $expr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult): SpecifiedTypes
 	{
 		if ($expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -1270,7 +1280,7 @@ final class FuncCallHandler implements ExprHandler
 				return VariableFlow::all(VariableFlow::READ_ALL);
 			}
 			foreach ($names as $name) {
-				$reads[] = VariableFlow::read($name);
+				$reads[] = VariableFlow::read($name, null, false, null);
 			}
 		}
 		return VariableFlow::sequence(...$reads);

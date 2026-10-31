@@ -253,7 +253,7 @@ final class ContainerFactory
 		array $loaderParameters,
 	): array
 	{
-		$neonAdapter = new NeonCachedFileReader([]);
+		$neonAdapter = new NeonCachedFileReader([], []);
 		$phpAdapter = new PhpAdapter();
 		$allConfigFiles = [];
 		$configArray = [];

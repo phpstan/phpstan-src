@@ -56,7 +56,7 @@ final class IncludeHandler implements ExprHandler
 		// the included file may read any variable
 		$scope = $exprResult->getScope()->afterExtractCall()->invalidateVolatileExpressions();
 
-		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr);
+		$throwPoint = InternalThrowPoint::createImplicit($scope, $expr, null);
 
 		// an included file is a dependency with no symbol to reflect: nothing in it has to be
 		// declared for the analysis to change when it is deleted
@@ -75,14 +75,22 @@ final class IncludeHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::all(VariableFlow::READ_ALL), VariableFlow::throwing($throwPoint->getType(), true)),
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), VariableFlow::all(VariableFlow::READ_ALL), VariableFlow::throwing($throwPoint->getType(), true, false)),
 			hasYield: $exprResult->hasYield(),
 			isAlwaysTerminating: $exprResult->isAlwaysTerminating(),
 			throwPoints: array_merge($exprResult->getThrowPoints(), [$throwPoint]),
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new MixedType(),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
-			dependencies: Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), filePaths: $includedFiles)),
+			dependencies: Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), filePaths: $includedFiles, types: [], classNames: [], reflections: [], usedTraits: [])),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

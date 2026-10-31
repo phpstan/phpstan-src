@@ -24,7 +24,7 @@ final class StaticMethodCallExpressionNode extends NodeAbstract implements Virtu
 	public function __construct(
 		private StaticCall $originalNode,
 		private ExpressionResult $result,
-		private ?ArgsResult $argsResult = null,
+		private ?ArgsResult $argsResult,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());

@@ -352,6 +352,7 @@ final class FixerWorkerRunner
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: memory_get_peak_usage(true),
 				processedFiles: [],
+				workerCount: 0,
 			));
 		}
 

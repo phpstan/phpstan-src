@@ -98,7 +98,7 @@ class RestartManagerTest extends TestCase
 		putenv(sprintf('%s=xdebug,pcov', RestartManager::REASONS_ENV_VARIABLE));
 
 		$this->assertFalse(RestartManager::isEligible($argv));
-		$this->assertSame([], RestartManager::collectReasons($argv));
+		$this->assertSame([], RestartManager::collectReasons($argv, null, 'phpstan'));
 	}
 
 	public function testABlackfireProfiledProcessIsNotRestarted(): void
@@ -133,17 +133,17 @@ class RestartManagerTest extends TestCase
 	{
 		$argv = ['bin/phpstan', 'analyse', 'src'];
 
-		$this->assertFalse(RestartManager::isXdebugAllowed($argv));
-		$this->assertTrue(RestartManager::isXdebugAllowed(['bin/phpstan', 'analyse', '--xdebug', 'src']));
+		$this->assertFalse(RestartManager::isXdebugAllowed($argv, 'phpstan'));
+		$this->assertTrue(RestartManager::isXdebugAllowed(['bin/phpstan', 'analyse', '--xdebug', 'src'], 'phpstan'));
 
 		putenv('PHPSTAN_ALLOW_XDEBUG=1');
-		$this->assertTrue(RestartManager::isXdebugAllowed($argv));
+		$this->assertTrue(RestartManager::isXdebugAllowed($argv, 'phpstan'));
 
 		putenv('PHPSTAN_ALLOW_XDEBUG=0');
-		$this->assertFalse(RestartManager::isXdebugAllowed($argv));
+		$this->assertFalse(RestartManager::isXdebugAllowed($argv, 'phpstan'));
 
 		putenv('PHPSTAN_ALLOW_XDEBUG=');
-		$this->assertFalse(RestartManager::isXdebugAllowed($argv));
+		$this->assertFalse(RestartManager::isXdebugAllowed($argv, 'phpstan'));
 	}
 
 	public function testAnotherApplicationHasItsOwnAllowXdebugEnvVariable(): void
@@ -159,8 +159,8 @@ class RestartManagerTest extends TestCase
 
 	public function testNonRestartingCommandsCollectNoReasons(): void
 	{
-		$this->assertSame([], RestartManager::collectReasons(['bin/phpstan', 'worker']));
-		$this->assertSame([], RestartManager::collectReasons(['bin/phpstan', 'diagnose']));
+		$this->assertSame([], RestartManager::collectReasons(['bin/phpstan', 'worker'], null, 'phpstan'));
+		$this->assertSame([], RestartManager::collectReasons(['bin/phpstan', 'diagnose'], null, 'phpstan'));
 	}
 
 	public function testAForkedWorkerDoesNotDeleteTheComposedIni(): void

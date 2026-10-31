@@ -103,7 +103,7 @@ final class FunctionHandler implements StmtHandler
 			throw new ShouldNotHappenException();
 		}
 
-		$dependencies[] = Dependencies::create($scope->getFile(), DependencyTypes::ofDeclaration($functionReflection, true));
+		$dependencies[] = Dependencies::create($scope->getFile(), DependencyTypes::ofDeclaration($functionReflection, true), [], [], [], []);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InFunctionNode($functionReflection, $stmt), $functionScope, $storage);
 
 		$gatheredReturnStatements = [];

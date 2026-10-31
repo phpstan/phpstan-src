@@ -80,7 +80,7 @@ final class TemplateArgumentStats
 		});
 	}
 
-	public static function increment(string $counter, int $by = 1): void
+	public static function increment(string $counter, int $by): void
 	{
 		self::$counters[$counter] += $by;
 	}

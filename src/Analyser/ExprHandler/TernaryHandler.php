@@ -360,6 +360,14 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 				)->setRootExpr($expr);
 			},
 			dependencies: Dependencies::merge($ternaryCondResult->getDependencies(), $ifResult !== null ? $ifResult->getDependencies() : null, $elseResult->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

@@ -41,7 +41,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 	/**
 	 * @param callable(Node $node, Scope $scope): void|null $nodeCallback
 	 */
-	public function create(?callable $nodeCallback): DirectInternalScopeFactory
+	public function create(?callable $nodeCallback, bool $createsNodeCallbackScopes, ?ExpressionResultStorageStack $expressionResultStorageStack): DirectInternalScopeFactory
 	{
 		return new DirectInternalScopeFactory(
 			$this->container,
@@ -57,6 +57,8 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 			$this->configuredPhpVersionRangeHelper,
 			$nodeCallback,
 			$this->constantResolver,
+			$createsNodeCallbackScopes,
+			$expressionResultStorageStack,
 		);
 	}
 

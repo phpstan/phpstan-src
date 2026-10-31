@@ -24,7 +24,7 @@ final class MethodCallExpressionNode extends NodeAbstract implements VirtualNode
 	public function __construct(
 		private MethodCall $originalNode,
 		private ExpressionResult $result,
-		private ?ArgsResult $argsResult = null,
+		private ?ArgsResult $argsResult,
 	)
 	{
 		parent::__construct($originalNode->getAttributes());

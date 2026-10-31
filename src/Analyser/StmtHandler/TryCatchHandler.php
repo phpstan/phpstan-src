@@ -110,7 +110,7 @@ final class TryCatchHandler implements StmtHandler
 			foreach ($catchNode->types as $catchNodeType) {
 				$caughtClassNames[] = $scope->resolveName($catchNodeType);
 			}
-			$dependencies[] = Dependencies::create($scope->getFile(), classNames: $caughtClassNames);
+			$dependencies[] = Dependencies::create($scope->getFile(), classNames: $caughtClassNames, types: [], reflections: [], filePaths: [], usedTraits: []);
 
 			$originalCatchTypes = [];
 			$catchTypes = [];
@@ -270,7 +270,7 @@ final class TryCatchHandler implements StmtHandler
 			$dependencies[] = $catchScopeResult->getDependencies();
 			$catchScopeForFinally = $catchScopeResult->getScope();
 			$blockScopes[] = $catchScopeForFinally;
-			$catchFlows[] = [$originalCatchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage) : null, $catchScopeResult->getVariableFlow())];
+			$catchFlows[] = [$originalCatchType, VariableFlow::sequence($catchNode->var !== null ? VariableFlowBuilder::targetWrite($catchNode->var, VariableWrite::KIND_CATCH, $catchScopeForFinally, $storage, null) : null, $catchScopeResult->getVariableFlow())];
 
 			$finalScope = $catchScopeResult->isAlwaysTerminating() ? $finalScope : $catchScopeResult->getScope()->mergeWith($finalScope);
 			$alwaysTerminating = $alwaysTerminating && $catchScopeResult->isAlwaysTerminating();

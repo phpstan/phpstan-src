@@ -234,7 +234,6 @@ $nDiffering = [];
 $nMerged = \PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs, $nDiffering);
 check($pDiffering === $nDiffering, 'ScopeOps mergeVariableHolders differingKeys parity: ' . json_encode($pDiffering) . ' vs ' . json_encode($nDiffering));
 check(array_keys($pMerged) === array_keys($nMerged), 'ScopeOps mergeVariableHolders merged keys parity');
-check(array_keys(\PHPStanTurbo\ScopeOps::mergeVariableHolders($mergeNOurs, $mergeNTheirs)) === array_keys($nMerged), 'ScopeOps mergeVariableHolders without differingKeys');
 
 // ---- ConditionalExpressionHolder ----
 $covered[\PHPStan\Analyser\ConditionalExpressionHolder::class] = true;
@@ -734,7 +733,8 @@ $mergeInputs = static function (string $side): array {
 $mergeResults = [];
 foreach ($scopeOpsClasses as $side => $scopeOpsClass) {
 	[$ours, $theirs] = $mergeInputs($side);
-	$merged = $scopeOpsClass::mergeVariableHolders($ours, $theirs);
+	$differingKeys = [];
+	$merged = $scopeOpsClass::mergeVariableHolders($ours, $theirs, $differingKeys);
 	$described = [];
 	foreach ($merged as $exprString => $mergedHolder) {
 		$described[$exprString] = [
@@ -2553,7 +2553,7 @@ $covered[\PHPStan\Type\CallableTypeHelper::class] = true;
 $lruResults = [];
 foreach (['php' => \PHPStan\Internal\LruCache::class, 'native' => \PHPStanTurbo\LruCache::class] as $side => $lruClass) {
 	$r = [];
-	$unbounded = new $lruClass();
+	$unbounded = new $lruClass(0, 0, 0);
 	$r[] = [$unbounded instanceof $lruClass, $unbounded->count(), $unbounded->all(), $unbounded->get('a')];
 	foreach ([['a', 'A', 1], ['10', 'ten', 2], ['b', ['B'], 3], ['0', 0.5, 4], ['a', 'A2', 5], ['01', null, 6], ['-3', true, 0]] as [$k, $v, $w]) {
 		$r[] = [$k, $unbounded->set($k, $v, $w), $unbounded->count(), $unbounded->all()];
@@ -2569,14 +2569,14 @@ foreach (['php' => \PHPStan\Internal\LruCache::class, 'native' => \PHPStanTurbo\
 		$r[] = [get_class($e), $e->getMessage()];
 	}
 
-	$byCount = new $lruClass(3);
+	$byCount = new $lruClass(3, 0, 0);
 	foreach (['a', 'b', 'c', 'd', 'b', 'e', 'f'] as $i => $k) {
 		$r[] = [$k, $byCount->set($k, $i, 0), $byCount->all()];
 	}
 	$r[] = [$byCount->get('b'), $byCount->all()];
 	$r[] = [$byCount->set('g', 7, 0), $byCount->all(), $byCount->count()];
 
-	$byWeight = new $lruClass(maxWeight: 10, weightEvictionFloorCount: 1);
+	$byWeight = new $lruClass(maxWeight: 10, weightEvictionFloorCount: 1, maxCount: 0);
 	foreach ([['a', 4], ['b', 4], ['c', 4], ['huge', 100], ['d', 1], ['huge', 0], ['e', 9], ['f', 1]] as $i => [$k, $w]) {
 		$r[] = [$k, $byWeight->set($k, $i, $w), $byWeight->all()];
 	}
@@ -2667,15 +2667,15 @@ foreach (['php' => \PHPStan\Analyser\VolatileExpressionHelper::class, 'native' =
 	unset($e['$_GET'], $n['$_GET']);
 	$r[] = [$vehClass::invalidateSuperglobals($e, $n), array_keys($e), array_keys($n)];
 	[$e, $n] = $vehInputs($side);
-	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n), array_keys($e), array_keys($n)];
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, \PHPStan\Analyser\VolatileExpressionHelper::EXISTENCE_CHECK_FUNCTION_NAMES, null), array_keys($e), array_keys($n)];
 	[$e, $n] = $vehInputs($side);
-	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['function_exists']), array_keys($e), array_keys($n)];
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['function_exists'], null), array_keys($e), array_keys($n)];
 	[$e, $n] = $vehInputs($side);
 	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['class_exists', 'enum_exists'], '\FOO'), array_keys($e), array_keys($n)];
 	[$e, $n] = $vehInputs($side);
 	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['class_exists'], 'Other'), array_keys($e), array_keys($n)];
 	[$e, $n] = $vehInputs($side);
-	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['strlen']), array_keys($e), array_keys($n)];
+	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['strlen'], null), array_keys($e), array_keys($n)];
 	// the by-reference contract: the caller's copies change, the originals stay
 	[$e, $n] = $vehInputs($side);
 	$copyE = $e;
@@ -2812,28 +2812,28 @@ $vfNodeA = new \PhpParser\Node\Expr\Variable('a');
 $vfNodeB = new \PhpParser\Node\Expr\Variable('b');
 $vfArrow = new \PhpParser\Node\Expr\ArrowFunction(['expr' => $vfNodeA]);
 $vfForeach = new \PhpParser\Node\Stmt\Foreach_($vfNodeA, $vfNodeB);
-$vfWriteA = new \PHPStan\Node\Variable\VariableWrite('a', $vfNodeA, 11, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN);
-$vfWriteItem = new \PHPStan\Node\Variable\VariableWrite('b', $vfNodeB, 12, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, false, null, 11);
+$vfWriteA = new \PHPStan\Node\Variable\VariableWrite('a', $vfNodeA, 11, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, false, null, null, true);
+$vfWriteItem = new \PHPStan\Node\Variable\VariableWrite('b', $vfNodeB, 12, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, false, null, 11, true);
 $vfWriteOffset = new \PHPStan\Node\Variable\VariableWrite('a', $vfNodeA, 13, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k', null, false);
 $vfInt = new \PHPStanTurbo\IntegerType();
 $vfString = new \PHPStanTurbo\StringType();
 $vfResults = [];
 foreach (['php' => \PHPStan\Analyser\VariableFlow::class, 'native' => \PHPStanTurbo\VariableFlow::class] as $side => $vf) {
 	$r = [];
-	$readA = $vf::read('a');
+	$readA = $vf::read('a', null, false, null);
 	$readB = $vf::read('b', 7, true, 'k');
-	$r[] = [$vfDescribe($readA), $vfDescribe($readB), $vfDescribe($vf::read('b', null, false, 3)), $vf::read('this'), $vf::read('_GET'), $vf::read('GLOBALS', 1)];
+	$r[] = [$vfDescribe($readA), $vfDescribe($readB), $vfDescribe($vf::read('b', null, false, 3)), $vf::read('this', null, false, null), $vf::read('_GET', null, false, null), $vf::read('GLOBALS', 1, false, null)];
 	$r[] = [$vf::sequence(), $vf::sequence(null, null), $vf::sequence(null, $readA) === $readA, $vfDescribe($vf::sequence($readA, null, $readB)), $vfDescribe($vf::sequence(...[$readA, $readB, $readA]))];
 	$r[] = [$vf::choice(), $vf::choice($readA) === $readA, $vf::choice($readA, $readA) === $readA, $vf::choice(null, null), $vfDescribe($vf::choice($readA, null)), $vfDescribe($vf::choice($readA, $readB, null))];
 	$r[] = [$vfDescribe($vf::arrow($vfArrow, $readA, null)), $vfDescribe($vf::arrow($vfArrow, null, $readB))];
 	$r[] = [$vfDescribe($vf::conditional($readA, $readB, null)), $vfDescribe($vf::conditional($readA, $readB, $readA)), $vfDescribe($vf::conditional(null, $readB, $readA)), $vf::conditional(null, null, null), $vfDescribe($vf::conditional($readA, null, null))];
 	$r[] = [$vfDescribe($vf::switch($readA, [[$readB, $readA, false], [null, null, true]], true)), $vfDescribe($vf::switch(null, [], false))];
-	$r[] = [$vfDescribe($vf::write($vfWriteA)), $vfDescribe($vf::write($vfWriteItem, $vfInt)), $vfDescribe($vf::write($vfWriteOffset, null)), $vfDescribe($vf::discard($vfWriteA)), $vfDescribe($vf::discard($vfWriteItem))];
+	$r[] = [$vfDescribe($vf::write($vfWriteA, null)), $vfDescribe($vf::write($vfWriteItem, $vfInt)), $vfDescribe($vf::write($vfWriteOffset, null)), $vfDescribe($vf::discard($vfWriteA)), $vfDescribe($vf::discard($vfWriteItem))];
 	$r[] = [$vfDescribe($vf::inputs(11, null)), $vfDescribe($vf::inputs(12, 7))];
 	$r[] = [$vfDescribe($vf::escape('a')), $vfDescribe($vf::escape('this')), $vfDescribe($vf::mention('b')), $vfDescribe($vf::all($vf::READ_ALL)), $vfDescribe($vf::all($vf::MENTION_ALL)), $vfDescribe($vf::all($vf::OPAQUE))];
-	$r[] = [$vfDescribe($vf::exit($vf::RETURN)), $vfDescribe($vf::exit($vf::BREAK, 2)), $vfDescribe($vf::exit($vf::CONTINUE, 1, 'x')), $vfDescribe($vf::exit($vf::STOP, 3, null))];
-	$r[] = [$vfDescribe($vf::throwing($vfInt, true)), $vfDescribe($vf::throwing($vfString, false, true))];
-	$r[] = [$vfDescribe($vf::loop($readA, $readB, null, true, false)), $vfDescribe($vf::loop(null, null, $readA, false, true, false))];
+	$r[] = [$vfDescribe($vf::exit($vf::RETURN, 1, null)), $vfDescribe($vf::exit($vf::BREAK, 2, null)), $vfDescribe($vf::exit($vf::CONTINUE, 1, 'x')), $vfDescribe($vf::exit($vf::STOP, 3, null))];
+	$r[] = [$vfDescribe($vf::throwing($vfInt, true, false)), $vfDescribe($vf::throwing($vfString, false, true))];
+	$r[] = [$vfDescribe($vf::loop($readA, $readB, null, true, false, true)), $vfDescribe($vf::loop(null, null, $readA, false, true, false))];
 	$r[] = [$vf::loopStatement($vfForeach, $readA, [], [$vfWriteA]) === $readA, $vf::loopStatement($vfForeach, null, [], []), $vfDescribe($vf::loopStatement($vfForeach, $readA, [$vfWriteA], [$vfWriteA, $vfWriteOffset]))];
 	$r[] = [$vfDescribe($vf::tryCatch($readA, [[$vfInt, $readB], [$vfString, null]], null)), $vfDescribe($vf::tryCatch(null, [], $readB))];
 	$vfResults[$side] = $r;
@@ -2844,7 +2844,7 @@ $vfRawWrite = (new ReflectionClass(\PHPStan\Node\Variable\VariableWrite::class))
 $vfRawResults = [];
 foreach (['php' => \PHPStan\Analyser\VariableFlow::class, 'native' => \PHPStanTurbo\VariableFlow::class] as $side => $vf) {
 	try {
-		$vf::write($vfRawWrite);
+		$vf::write($vfRawWrite, null);
 		$vfRawResults[$side] = 'no error';
 	} catch (\Error $e) {
 		$vfRawResults[$side] = [get_class($e), $e->getMessage()];
@@ -2868,28 +2868,28 @@ foreach (['php' => 'PHPStan\\Analyser\\', 'native' => 'PHPStanTurbo\\'] as $side
 	$sequence = $ns . 'VariableSequenceFlow';
 	$input = $ns . 'VariableInputFlow';
 	$control = $ns . 'VariableControlFlow';
-	$r[] = $capture(static fn () => new $access('read', 'a'));
+	$r[] = $capture(static fn () => new $access('read', 'a', null, null, null, false, null));
 	$r[] = $capture(static fn () => new $access('write', 'b', $vfWriteA, $vfInt, 3, true, 'k'));
-	$r[] = $capture(static fn () => new $access('read', 'c', offset: 5, container: true));
-	$r[] = $capture(static fn () => new $sequence('choice', [null, new $access('read', 'a')]));
+	$r[] = $capture(static fn () => new $access('read', 'c', offset: 5, container: true, write: null, type: null, targetId: null));
+	$r[] = $capture(static fn () => new $sequence('choice', [null, new $access('read', 'a', null, null, null, false, null)]));
 	$r[] = $capture(static fn () => new $input(4, null));
 	$r[] = $capture(static fn () => new $input(4, 9));
-	$r[] = $capture(static fn () => new $control('return'));
+	$r[] = $capture(static fn () => new $control('return', [], null, null, 1, false, true, [], null, [], true, false, null, [], []));
 	$r[] = $capture(static fn () => new $control('loopStatement', [new $input(1, 2)], 'n', $vfString, 2, true, false, [[$vfInt, null]], $vfArrow, [[null, null, true]], false, true, $vfForeach, [$vfWriteA], [$vfWriteItem]));
-	$r[] = $capture(static fn () => new $control('throw', type: $vfInt, canExit: false, canContainAnyThrowable: true));
-	$r[] = $capture(static fn () => new $control('stop', 'x'));
+	$r[] = $capture(static fn () => new $control('throw', type: $vfInt, canExit: false, canContainAnyThrowable: true, children: [], name: null, level: 1, atLeastOnce: false, catches: [], arrow: null, cases: [], canRepeat: true, stmt: null, bindings: [], ownWrites: []));
+	$r[] = $capture(static fn () => new $control('stop', 'x', null, null, 1, false, true, [], null, [], true, false, null, [], []));
 	// constructor arguments of the right types for a second construction
 	$againArgs = [
-		'access' => ['stop', 'x'],
+		'access' => ['stop', 'x', null, null, null, false, null],
 		'sequence' => ['choice', []],
 		'input' => [2, 3],
-		'control' => ['stop', []],
+		'control' => ['stop', [], null, null, 1, false, true, [], null, [], true, false, null, [], []],
 	];
 	foreach ([
-		'access' => static fn () => new $access('read', 'a'),
+		'access' => static fn () => new $access('read', 'a', null, null, null, false, null),
 		'sequence' => static fn () => new $sequence('sequence', []),
 		'input' => static fn () => new $input(1, null),
-		'control' => static fn () => new $control('return'),
+		'control' => static fn () => new $control('return', [], null, null, 1, false, true, [], null, [], true, false, null, [], []),
 	] as $label => $make) {
 		$flow = $make();
 		$args = $againArgs[$label];
@@ -2929,13 +2929,13 @@ foreach (['php' => \PHPStan\Dependency\Dependencies::class, 'native' => \PHPStan
 		return $values;
 	};
 	$r = [];
-	$a = $deps::create('a.php', [$depsInt, null], ['Foo']);
-	$b = $deps::create('b.php', [], [], [], ['inc.php']);
-	$r[] = [$deps::create('x.php'), $deps::create('x.php', [null, null]), $deps::create('x.php', [], [], [], [], [])];
+	$a = $deps::create('a.php', [$depsInt, null], ['Foo'], [], [], []);
+	$b = $deps::create('b.php', [], [], [], ['inc.php'], []);
+	$r[] = [$deps::create('x.php', [], [], [], [], []), $deps::create('x.php', [null, null], [], [], [], []), $deps::create('x.php', [], [], [], [], [])];
 	$r[] = [$deps::merge(), $deps::merge(null, null), $deps::merge(null, $a) === $a, $deps::merge($a) === $a, $deps::merge(...[$a, null]) === $a];
 	$ab = $deps::merge($a, null, $b);
 	$r[] = [$walk($a), $walk($ab), $walk($deps::merge($ab, $a, $deps::merge($b, $ab)))];
-	$r[] = $walk($deps::create('c.php', [1 => $depsString, 3 => null, 4 => $depsInt]));
+	$r[] = $walk($deps::create('c.php', [1 => $depsString, 3 => null, 4 => $depsInt], [], [], [], []));
 	try {
 		$deps::merge($a, 'x');
 		$r[] = 'merge() of a string';
@@ -3063,7 +3063,7 @@ $vfbThrowPoints = [
 	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfInt, $vfbN['samePos'], true),
 	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfString, $vfbN['otherPos'], false),
 	\PHPStan\Analyser\InternalThrowPoint::createExplicit($vfbScope, $vfInt, $vfbN['noPos'], false),
-	\PHPStan\Analyser\InternalThrowPoint::createImplicit($vfbScope, $vfbN['a']),
+	\PHPStan\Analyser\InternalThrowPoint::createImplicit($vfbScope, $vfbN['a'], null),
 ];
 $vfbSides = [
 	'php' => [\PHPStan\Analyser\VariableFlowBuilder::class, \PHPStan\Analyser\VariableFlow::class, \PHPStan\Analyser\ExpressionResultStorage::class],
@@ -3076,7 +3076,7 @@ foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
 	// hold the PHP flow classes on every side
 	$storedVf = \PHPStan\Analyser\VariableFlow::class;
 	$storage = new $storageClass();
-	$flowA = $storedVf::read('a');
+	$flowA = $storedVf::read('a', null, false, null);
 	$flowB = $storedVf::escape('b');
 	$flowK = $storedVf::mention('k');
 	$storage->storeExpressionResult($vfbN['a'], $vfbMakeResult($flowA, $vfInt));
@@ -3091,7 +3091,7 @@ foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
 	$argsResult = new \PHPStan\Analyser\ArgsResult(
 		$vfbMakeResult(null),
 		null,
-		[spl_object_id($vfbN['a']) => $vfbMakeResult($storedVf::read('a', 99)), spl_object_id($vfbN['closure']) => $vfbMakeResult(null)],
+		[spl_object_id($vfbN['a']) => $vfbMakeResult($storedVf::read('a', 99, false, null)), spl_object_id($vfbN['closure']) => $vfbMakeResult(null)],
 		[spl_object_id($vfbN['call']) => true],
 	);
 
@@ -3118,13 +3118,13 @@ foreach ($vfbSides as $side => [$builder, $vf, $storageClass]) {
 	$r[] = [$vfDescribe($builder::arguments($vfbN['overridingCall'], $argsResult, $storage)), $vfDescribe($builder::throws($vfbN['overridingCall'], $vfbThrowPoints)), $vfDescribe($builder::throws($vfbN['overridingFcc'], $vfbThrowPoints))];
 	$r[] = [$vfDescribe($builder::child($vfbN['a'], $storage)), $builder::child($vfbN['unknown'], $storage), $builder::child($vfbN['name'], $storage), $builder::child(null, $storage), $builder::child($vfbN['one'], $storage)];
 	foreach (['a', 'this', 'get', 'varVar', 'list', 'array', 'dimArrK', 'dimArrNested', 'dimArrNull', 'dimCall', 'dimVarVar', 'dimProp', 'prop', 'propExpr', 'nullsafeProp', 'staticProp', 'staticPropExpr', 'call', 'k'] as $key) {
-		$r[] = [$key, $vfDescribe($builder::targetRead($vfbN[$key], $storage, true)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, false)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, true, 5))];
+		$r[] = [$key, $vfDescribe($builder::targetRead($vfbN[$key], $storage, true, null)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, false, null)), $vfDescribe($builder::targetRead($vfbN[$key], $storage, true, 5))];
 	}
 	foreach (['a', 'this', 'get', 'varVar', 'list', 'array', 'emptyList', 'dimArrK', 'dimArrNested', 'dimArrNull', 'dimStr', 'dimInt', 'dimMaybe', 'dimUnknown', 'dimThis', 'dimGet', 'dimCall', 'dimVarVar', 'dimProp', 'prop', 'call'] as $key) {
-		$write = $builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage);
+		$write = $builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage, null);
 		$r[] = [$key, $vfDescribe($write), $vfDescribe($builder::targetWrite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_PRE_INC, $vfbScope, $storage, $vfInt)), $vfDescribeWrite($builder::writeSite($vfbN[$key], \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, $vfbScope, $storage)), array_map($vfDescribeWrite, $builder::writes($write))];
 	}
-	$r[] = [$builder::writes(null), array_map($vfDescribeWrite, $builder::writes($vf::sequence($vf::write($vfWriteA), $vf::sequence($vf::escape('x'), $vf::write($vfWriteItem)), $vf::choice($vf::write($vfWriteOffset), null)))), $builder::writes($vf::all($vf::OPAQUE))];
+	$r[] = [$builder::writes(null), array_map($vfDescribeWrite, $builder::writes($vf::sequence($vf::write($vfWriteA, null), $vf::sequence($vf::escape('x'), $vf::write($vfWriteItem, null)), $vf::choice($vf::write($vfWriteOffset, null), null)))), $builder::writes($vf::all($vf::OPAQUE))];
 	foreach (['a', 'this', 'varVar', 'dimArrNested', 'dimCall', 'dimVarVar', 'prop', 'call'] as $key) {
 		$r[] = [$key, $vfDescribe($builder::escapeRoot($vfbN[$key]))];
 	}
@@ -3176,117 +3176,117 @@ $vlrFunctions = [
 $vlrFlows = [
 	'empty' => null,
 	'plain' => $vlrF::sequence(
-		$vlrF::write($vlrWrite('a', 1)),
-		$vlrF::read('a'),
+		$vlrF::write($vlrWrite('a', 1), null),
+		$vlrF::read('a', null, false, null),
 		$vlrF::write($vlrWrite('b', 2), $vlrInt),
-		$vlrF::write($vlrWrite('c', 3)),
+		$vlrF::write($vlrWrite('c', 3), null),
 		$vlrF::inputs(3, null),
-		$vlrF::write($vlrWrite('d', 4)),
+		$vlrF::write($vlrWrite('d', 4), null),
 		$vlrF::inputs(4, 5),
-		$vlrF::write($vlrWrite('e', 5)),
-		$vlrF::read('e'),
-		$vlrF::write($vlrWrite('f', 6)),
-		$vlrF::write($vlrWrite('f', 7)),
-		$vlrF::read('f'),
+		$vlrF::write($vlrWrite('e', 5), null),
+		$vlrF::read('e', null, false, null),
+		$vlrF::write($vlrWrite('f', 6), null),
+		$vlrF::write($vlrWrite('f', 7), null),
+		$vlrF::read('f', null, false, null),
 		$vlrF::discard($vlrWrite('g', 8)),
 		$vlrF::mention('m'),
 		$vlrF::escape('h'),
-		$vlrF::write($vlrWrite('h', 9)),
-		$vlrF::write($vlrWrite('this', 10)),
-		$vlrF::write($vlrWrite('_GET', 11)),
-		$vlrF::read('unknown'),
+		$vlrF::write($vlrWrite('h', 9), null),
+		$vlrF::write($vlrWrite('this', 10), null),
+		$vlrF::write($vlrWrite('_GET', 11), null),
+		$vlrF::read('unknown', null, false, null),
 	),
 	'branches' => $vlrF::sequence(
-		$vlrF::write($vlrWrite('a', 1)),
-		$vlrF::conditional($vlrF::read('a'), $vlrF::write($vlrWrite('d', 2)), $vlrF::write($vlrWrite('d', 3))),
-		$vlrF::read('d'),
-		$vlrF::conditional(null, $vlrF::write($vlrWrite('x', 4)), $vlrF::write($vlrWrite('x', 5))),
-		$vlrF::conditional(null, $vlrF::write($vlrWrite('y', 6)), $vlrF::write($vlrWrite('y', 7))),
-		$vlrF::choice($vlrF::read('x'), $vlrF::read('y'), null),
-		$vlrF::switch($vlrF::read('s'), [[$vlrF::read('c1'), $vlrF::sequence($vlrF::write($vlrWrite('sw', 8)), $vlrF::exit($vlrF::BREAK)), false], [null, $vlrF::sequence($vlrF::read('sw'), $vlrF::write($vlrWrite('sw', 9))), true]], false),
-		$vlrF::switch($vlrF::read('s'), [[$vlrF::read('c2'), $vlrF::write($vlrWrite('ex', 10)), false]], true),
-		$vlrF::read('ex'),
-		$vlrF::sequence($vlrF::write($vlrWrite('seq', 11)), $vlrF::read('seq')),
+		$vlrF::write($vlrWrite('a', 1), null),
+		$vlrF::conditional($vlrF::read('a', null, false, null), $vlrF::write($vlrWrite('d', 2), null), $vlrF::write($vlrWrite('d', 3), null)),
+		$vlrF::read('d', null, false, null),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('x', 4), null), $vlrF::write($vlrWrite('x', 5), null)),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('y', 6), null), $vlrF::write($vlrWrite('y', 7), null)),
+		$vlrF::choice($vlrF::read('x', null, false, null), $vlrF::read('y', null, false, null), null),
+		$vlrF::switch($vlrF::read('s', null, false, null), [[$vlrF::read('c1', null, false, null), $vlrF::sequence($vlrF::write($vlrWrite('sw', 8), null), $vlrF::exit($vlrF::BREAK, 1, null)), false], [null, $vlrF::sequence($vlrF::read('sw', null, false, null), $vlrF::write($vlrWrite('sw', 9), null)), true]], false),
+		$vlrF::switch($vlrF::read('s', null, false, null), [[$vlrF::read('c2', null, false, null), $vlrF::write($vlrWrite('ex', 10), null), false]], true),
+		$vlrF::read('ex', null, false, null),
+		$vlrF::sequence($vlrF::write($vlrWrite('seq', 11), null), $vlrF::read('seq', null, false, null)),
 		$vlrF::exit($vlrF::RETURN, 1, 'a'),
-		$vlrF::write($vlrWrite('after', 12)),
+		$vlrF::write($vlrWrite('after', 12), null),
 	),
 	'loops' => $vlrF::sequence(
-		$vlrF::write($vlrWrite('i', 1)),
-		$vlrF::write($vlrWrite('acc', 2)),
-		$vlrF::loop($vlrF::read('i'), $vlrF::sequence($vlrF::read('acc'), $vlrF::write($vlrWrite('acc', 3)), $vlrF::conditional($vlrF::read('stop'), $vlrF::exit($vlrF::BREAK), $vlrF::exit($vlrF::CONTINUE, 1)), $vlrF::write($vlrWrite('unreached', 4))), $vlrF::write($vlrWrite('i', 5)), false, true),
-		$vlrF::read('acc'),
-		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('w', 6)), $vlrF::exit($vlrF::STOP)), null, true, false, false),
-		$vlrF::write($vlrWrite('k', 7)),
-		$vlrF::loopStatement($vlrForeach, $vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)), $vlrF::read('k')), null, false, true), [$vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)], [$vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)]),
-		$vlrF::read('k'),
-		$vlrF::write($vlrWrite('j', 9)),
-		$vlrF::loopStatement($vlrFor, $vlrF::loop($vlrF::read('j'), $vlrF::read('body'), $vlrF::write($vlrWrite('j', 11)), false, true), [$vlrWrite('j', 10)], [$vlrWrite('j', 10), $vlrWrite('j', 11)]),
+		$vlrF::write($vlrWrite('i', 1), null),
+		$vlrF::write($vlrWrite('acc', 2), null),
+		$vlrF::loop($vlrF::read('i', null, false, null), $vlrF::sequence($vlrF::read('acc', null, false, null), $vlrF::write($vlrWrite('acc', 3), null), $vlrF::conditional($vlrF::read('stop', null, false, null), $vlrF::exit($vlrF::BREAK, 1, null), $vlrF::exit($vlrF::CONTINUE, 1, null)), $vlrF::write($vlrWrite('unreached', 4), null)), $vlrF::write($vlrWrite('i', 5), null), false, true, true),
+		$vlrF::read('acc', null, false, null),
+		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('w', 6), null), $vlrF::exit($vlrF::STOP, 1, null)), null, true, false, false),
+		$vlrF::write($vlrWrite('k', 7), null),
+		$vlrF::loopStatement($vlrForeach, $vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY), null), $vlrF::read('k', null, false, null)), null, false, true, true), [$vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)], [$vlrWrite('k', 8, \PHPStan\Node\Variable\VariableWrite::KIND_FOREACH_KEY)]),
+		$vlrF::read('k', null, false, null),
+		$vlrF::write($vlrWrite('j', 9), null),
+		$vlrF::loopStatement($vlrFor, $vlrF::loop($vlrF::read('j', null, false, null), $vlrF::read('body', null, false, null), $vlrF::write($vlrWrite('j', 11), null), false, true, true), [$vlrWrite('j', 10)], [$vlrWrite('j', 10), $vlrWrite('j', 11)]),
 		$vlrF::escape('j'),
 		$vlrF::loopStatement($vlrForeach, null, [], []),
 	),
 	'exceptions' => $vlrF::sequence(
-		$vlrF::write($vlrWrite('t', 1)),
+		$vlrF::write($vlrWrite('t', 1), null),
 		$vlrF::tryCatch(
-			$vlrF::sequence($vlrF::write($vlrWrite('t', 2)), $vlrF::throwing($vlrRuntime, true), $vlrF::write($vlrWrite('t', 3)), $vlrF::throwing($vlrString, false), $vlrF::write($vlrWrite('never', 4))),
-			[[$vlrException, $vlrF::sequence($vlrF::read('t'), $vlrF::write($vlrWrite('t', 5)))], [$vlrThrowable, $vlrF::read('caught')]],
-			$vlrF::sequence($vlrF::read('fin'), $vlrF::write($vlrWrite('fin', 6))),
+			$vlrF::sequence($vlrF::write($vlrWrite('t', 2), null), $vlrF::throwing($vlrRuntime, true, false), $vlrF::write($vlrWrite('t', 3), null), $vlrF::throwing($vlrString, false, false), $vlrF::write($vlrWrite('never', 4), null)),
+			[[$vlrException, $vlrF::sequence($vlrF::read('t', null, false, null), $vlrF::write($vlrWrite('t', 5), null))], [$vlrThrowable, $vlrF::read('caught', null, false, null)]],
+			$vlrF::sequence($vlrF::read('fin', null, false, null), $vlrF::write($vlrWrite('fin', 6), null)),
 		),
-		$vlrF::read('t'),
-		$vlrF::tryCatch($vlrF::sequence($vlrF::write($vlrWrite('u', 7)), $vlrF::throwing($vlrInt, false)), [[$vlrInt, $vlrF::read('u')]], null),
-		$vlrF::loop(null, $vlrF::tryCatch($vlrF::sequence($vlrF::write($vlrWrite('l', 8)), $vlrF::exit($vlrF::BREAK, 1), $vlrF::exit($vlrF::CONTINUE, 2)), [], $vlrF::read('l')), null, true, true),
+		$vlrF::read('t', null, false, null),
+		$vlrF::tryCatch($vlrF::sequence($vlrF::write($vlrWrite('u', 7), null), $vlrF::throwing($vlrInt, false, false)), [[$vlrInt, $vlrF::read('u', null, false, null)]], null),
+		$vlrF::loop(null, $vlrF::tryCatch($vlrF::sequence($vlrF::write($vlrWrite('l', 8), null), $vlrF::exit($vlrF::BREAK, 1, null), $vlrF::exit($vlrF::CONTINUE, 2, null)), [], $vlrF::read('l', null, false, null)), null, true, true, true),
 		$vlrF::throwing($vlrString, false, true),
-		$vlrF::write($vlrWrite('unreachable', 9)),
+		$vlrF::write($vlrWrite('unreachable', 9), null),
 	),
 	'arrow and literals' => $vlrF::sequence(
-		$vlrF::write($vlrWrite('outer', 1)),
-		$vlrF::write($vlrWrite('p', 2)),
-		$vlrF::arrow($vlrArrow, $vlrF::sequence($vlrF::read('p'), $vlrF::read('outer'), $vlrF::write($vlrWrite('inner', 3))), $vlrF::read('res')),
-		$vlrF::read('p'),
-		$vlrF::write($vlrWrite('list', 4)),
-		$vlrF::write($vlrWrite('x', 5, \PHPStan\Node\Variable\VariableWrite::KIND_LIST_ITEM, false, null, 4)),
-		$vlrF::write($vlrWrite('y', 6, \PHPStan\Node\Variable\VariableWrite::KIND_LIST_ITEM, false, null, 4)),
-		$vlrF::read('x'),
+		$vlrF::write($vlrWrite('outer', 1), null),
+		$vlrF::write($vlrWrite('p', 2), null),
+		$vlrF::arrow($vlrArrow, $vlrF::sequence($vlrF::read('p', null, false, null), $vlrF::read('outer', null, false, null), $vlrF::write($vlrWrite('inner', 3), null)), $vlrF::read('res', null, false, null)),
+		$vlrF::read('p', null, false, null),
+		$vlrF::write($vlrWrite('list', 4), null),
+		$vlrF::write($vlrWrite('x', 5, \PHPStan\Node\Variable\VariableWrite::KIND_LIST_ITEM, false, null, 4), null),
+		$vlrF::write($vlrWrite('y', 6, \PHPStan\Node\Variable\VariableWrite::KIND_LIST_ITEM, false, null, 4), null),
+		$vlrF::read('x', null, false, null),
 		$vlrF::inputs(4, null),
-		$vlrF::write($vlrWrite('o', 7, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
-		$vlrF::write($vlrWrite('o', 8, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 1, null, false)),
-		$vlrF::write($vlrWrite('o', 9, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, null)),
+		$vlrF::write($vlrWrite('o', 7, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k'), null),
+		$vlrF::write($vlrWrite('o', 8, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 1, null, false), null),
+		$vlrF::write($vlrWrite('o', 9, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, null), null),
 		$vlrF::read('o', null, false, 'k'),
-		$vlrF::read('o', 12, true),
-		$vlrF::read('o', 12),
-		$vlrF::write($vlrWrite('o', 10, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
+		$vlrF::read('o', 12, true, null),
+		$vlrF::read('o', 12, false, null),
+		$vlrF::write($vlrWrite('o', 10, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k'), null),
 		$vlrF::escape('o'),
 	),
 	'overwrites' => $vlrF::sequence(
-		$vlrF::write($vlrWrite('a', 1)),
-		$vlrF::write($vlrWrite('a', 2)),
-		$vlrF::read('a'),
-		$vlrF::write($vlrWrite('o', 3, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
-		$vlrF::write($vlrWrite('o', 4, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'j')),
-		$vlrF::write($vlrWrite('o', 5, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
-		$vlrF::write($vlrWrite('o', 6, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, null)),
-		$vlrF::write($vlrWrite('o', 7, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 1, null, false)),
-		$vlrF::write($vlrWrite('o', 8)),
-		$vlrF::read('o'),
-		$vlrF::write($vlrWrite('d', 9)),
+		$vlrF::write($vlrWrite('a', 1), null),
+		$vlrF::write($vlrWrite('a', 2), null),
+		$vlrF::read('a', null, false, null),
+		$vlrF::write($vlrWrite('o', 3, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k'), null),
+		$vlrF::write($vlrWrite('o', 4, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'j'), null),
+		$vlrF::write($vlrWrite('o', 5, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k'), null),
+		$vlrF::write($vlrWrite('o', 6, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, null), null),
+		$vlrF::write($vlrWrite('o', 7, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 1, null, false), null),
+		$vlrF::write($vlrWrite('o', 8), null),
+		$vlrF::read('o', null, false, null),
+		$vlrF::write($vlrWrite('d', 9), null),
 		$vlrF::discard($vlrWrite('d', 10)),
-		$vlrF::write($vlrWrite('d', 11)),
-		$vlrF::read('d'),
-		$vlrF::loop(null, $vlrF::write($vlrWrite('l', 12)), null, false, true),
-		$vlrF::write($vlrWrite('c', 13)),
-		$vlrF::conditional(null, $vlrF::write($vlrWrite('c', 16)), null),
-		$vlrF::read('c'),
-		$vlrF::write($vlrWrite('r', 14)),
-		$vlrF::arrow($vlrArrow, $vlrF::write($vlrWrite('r', 15)), null),
-		$vlrF::write($vlrWrite('lit', 17)),
-		$vlrF::write($vlrWrite('lit', 18, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, 'k', 17)),
-		$vlrF::write($vlrWrite('lit', 19, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')),
-		$vlrF::read('lit'),
-		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('lp', 20)), $vlrF::write($vlrWrite('lp', 21, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, 'k', 20))), null, false, true),
+		$vlrF::write($vlrWrite('d', 11), null),
+		$vlrF::read('d', null, false, null),
+		$vlrF::loop(null, $vlrF::write($vlrWrite('l', 12), null), null, false, true, true),
+		$vlrF::write($vlrWrite('c', 13), null),
+		$vlrF::conditional(null, $vlrF::write($vlrWrite('c', 16), null), null),
+		$vlrF::read('c', null, false, null),
+		$vlrF::write($vlrWrite('r', 14), null),
+		$vlrF::arrow($vlrArrow, $vlrF::write($vlrWrite('r', 15), null), null),
+		$vlrF::write($vlrWrite('lit', 17), null),
+		$vlrF::write($vlrWrite('lit', 18, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, 'k', 17), null),
+		$vlrF::write($vlrWrite('lit', 19, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k'), null),
+		$vlrF::read('lit', null, false, null),
+		$vlrF::loop(null, $vlrF::sequence($vlrF::write($vlrWrite('lp', 20), null), $vlrF::write($vlrWrite('lp', 21, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, 'k', 20), null)), null, false, true, true),
 		$vlrF::read('lp', null, false, 'j'),
 	),
-	'read all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::write($vlrWrite('o', 2, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k')), $vlrF::all($vlrF::READ_ALL), $vlrF::write($vlrWrite('b', 3)), $vlrF::mention('c')),
-	'mention all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::MENTION_ALL)),
-	'opaque' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1)), $vlrF::all($vlrF::OPAQUE), $vlrF::read('a')),
+	'read all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1), null), $vlrF::write($vlrWrite('o', 2, \PHPStan\Node\Variable\VariableWrite::KIND_ARRAY_DIM_WRITE, true, 'k'), null), $vlrF::all($vlrF::READ_ALL), $vlrF::write($vlrWrite('b', 3), null), $vlrF::mention('c')),
+	'mention all' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1), null), $vlrF::all($vlrF::MENTION_ALL)),
+	'opaque' => $vlrF::sequence($vlrF::write($vlrWrite('a', 1), null), $vlrF::all($vlrF::OPAQUE), $vlrF::read('a', null, false, null)),
 ];
 // the native side resolves native copies of the trees, over the same writes,
 // nodes and types (built through the native constructors)
@@ -3482,7 +3482,7 @@ foreach ($erSides as $side => $erClass) {
 	$r = [];
 	$erContext = $side === 'php' ? \PHPStan\Analyser\TypeSpecifierContext::class : \PHPStanTurbo\TypeSpecifierContext::class;
 	$erExtensionCalls = 0;
-	$flowA = \PHPStan\Analyser\VariableFlow::read('a');
+	$flowA = \PHPStan\Analyser\VariableFlow::read('a', null, false, null);
 	foreach ($erN as $exprLabel => $expr) {
 		foreach ($erTypes as $typeLabel => [$type, $nativeType]) {
 			$calls = 0;
@@ -3498,8 +3498,8 @@ foreach ($erSides as $side => $erClass) {
 				return new \PHPStan\Analyser\SpecifiedTypes();
 			};
 			$extensions = $exprLabel === 'variable ext' ? $erHitExtensions : $erNoExtensions;
-			$lazy = new $erClass($extensions, $erDefaultNarrowingHelper, $erScope, $erScope, $expr, false, true, [], [], $typeCallback, $specifyCallback, variableFlow: $flowA);
-			$eager = new $erClass($extensions, $erDefaultNarrowingHelper, $erScope, $erScope, $expr, true, false, [], [], null, $specifyCallback, type: $type, nativeType: $nativeType, containsNullsafe: true);
+			$lazy = new $erClass($extensions, $erDefaultNarrowingHelper, $erScope, $erScope, $expr, false, true, [], [], $typeCallback, $specifyCallback, variableFlow: $flowA, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, type: null, nativeType: null, argsResult: null);
+			$eager = new $erClass($extensions, $erDefaultNarrowingHelper, $erScope, $erScope, $expr, true, false, [], [], null, $specifyCallback, type: $type, nativeType: $nativeType, containsNullsafe: true, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null, variableFlow: null);
 			$row = [];
 			foreach (['lazy' => $lazy, 'eager' => $eager] as $kind => $result) {
 				$row[$kind] = [
@@ -3527,21 +3527,21 @@ foreach ($erSides as $side => $erClass) {
 					'answersOther' => $result->answersOnScope($erOtherScope, false),
 					'answersOtherNative' => $result->answersOnScope($erOtherScope, true),
 					'answersWider' => $result->answersOnScope($erWiderScope, false),
-					'askSame' => $result->askScopeVariableStateMatches($erScope, false),
-					'askOther' => $result->askScopeVariableStateMatches($erOtherScope, false),
-					'askOtherNative' => $result->askScopeVariableStateMatches($erOtherScope, true),
+					'askSame' => $result->askScopeVariableStateMatches($erScope, false, false),
+					'askOther' => $result->askScopeVariableStateMatches($erOtherScope, false, false),
+					'askOtherNative' => $result->askScopeVariableStateMatches($erOtherScope, true, false),
 					'askOtherRule' => $result->askScopeVariableStateMatches($erOtherScope, false, true),
 					'askWiderRule' => $result->askScopeVariableStateMatches($erWiderScope, false, true),
-					'askWider' => $result->askScopeVariableStateMatches($erWiderScope, false),
+					'askWider' => $result->askScopeVariableStateMatches($erWiderScope, false, false),
 					'askEmpty' => $result->askScopeVariableStateMatches($vehScope, false, true),
-					'specified' => get_class($result->getSpecifiedTypes($erContext::createTruthy())),
-					'specified memo' => $result->getSpecifiedTypes($erContext::createTruthy()) === $result->getSpecifiedTypes($erContext::createTruthy()),
+					'specified' => get_class($result->getSpecifiedTypes($erContext::createTruthy(), false)),
+					'specified memo' => $result->getSpecifiedTypes($erContext::createTruthy(), false) === $result->getSpecifiedTypes($erContext::createTruthy(), false),
 					'specified for scope' => get_class($result->getSpecifiedTypesForScope($erScope, $erContext::createFalsey())),
-					'created' => $result->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
+					'created' => $result->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy(), false),
 					'created for scope' => $result->getCreatedTypesForScope($erScope, $vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy()),
 					'truthy' => get_class($result->getTruthyScope()) . ($result->getTruthyScope() === $result->getTruthyScope() ? ' memo' : ''),
 					'falsey' => get_class($result->getFalseyScope()) . ($result->getFalseyScope() === $result->getFalseyScope() ? ' memo' : ''),
-					'issetability' => $erDescribeResult($result->getIssetabilityResolution($erScope, false)->getLink()),
+					'issetability' => $erDescribeResult($result->getIssetabilityResolution($erScope, false, false)->getLink()),
 					'issetability native' => $erDescribeResult($result->getIssetabilityResolution($erScope, true, true)->getLink()),
 					'withScope same' => $result->withScope($erScope) === $result,
 					'withScope other' => $erDescribeResult($result->withScope($erOtherScope)),
@@ -3560,12 +3560,12 @@ foreach ($erSides as $side => $erClass) {
 	$r['extension calls'] = $erExtensionCalls;
 	// the constructor's invariants
 	foreach ([
-		'callback and type' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], static fn (bool $n) => $vfInt, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt),
-		'nothing' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes()),
-		'only resolved type' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), resolvedType: $vfInt),
-		'type without native' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt),
-		'both resolved' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), resolvedType: $vfInt, resolvedNativeType: $vfString),
-		'not callable' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], 'no-such-function', static fn () => new \PHPStan\Analyser\SpecifiedTypes()),
+		'callback and type' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], static fn (bool $n) => $vfInt, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null, variableFlow: null),
+		'nothing' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), false, null, null, null, null, null, null, null, null),
+		'only resolved type' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), resolvedType: $vfInt, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, type: null, nativeType: null, argsResult: null, variableFlow: null),
+		'type without native' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, nativeType: null, argsResult: null, variableFlow: null),
+		'both resolved' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), resolvedType: $vfInt, resolvedNativeType: $vfString, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, type: null, nativeType: null, argsResult: null, variableFlow: null),
+		'not callable' => static fn () => new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], 'no-such-function', static fn () => new \PHPStan\Analyser\SpecifiedTypes(), false, null, null, null, null, null, null, null, null),
 	] as $label => $construct) {
 		try {
 			$result = $construct();
@@ -3580,11 +3580,11 @@ foreach ($erSides as $side => $erClass) {
 	$released = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['func call'], false, false, [], [], static function (bool $native) use (&$releaseCalls): \PHPStan\Type\Type {
 		$releaseCalls++;
 		return $native ? new \PHPStanTurbo\VoidType() : new \PHPStanTurbo\UnionType([new \PHPStanTurbo\VoidType(), new \PHPStanTurbo\IntegerType()]);
-	}, static fn () => new \PHPStan\Analyser\SpecifiedTypes());
+	}, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), false, null, null, null, null, null, null, null, null);
 	$r['release'] = [$released->getType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $released->getKeepVoidType(false)->describe(\PHPStan\Type\VerbosityLevel::precise()), $released->getNativeType()->describe(\PHPStan\Type\VerbosityLevel::precise()), $released->getKeepVoidType(true)->describe(\PHPStan\Type\VerbosityLevel::precise()), $releaseCalls, $erDescribeResult($released)];
 	// the override results derive the branch scopes lazily
-	$override = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt);
-	$overridden = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erOtherScope, $erOtherScope, $erN['func call'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), truthyScopeOverrideResult: $override, falseyScopeOverrideResult: $override, type: $vfInt, nativeType: $vfInt, createTypesCallback: static fn (\PHPStan\Type\Type $type, \PHPStan\Analyser\TypeSpecifierContext $context, bool $native) => new \PHPStan\Analyser\SpecifiedTypes([spl_object_id($type) => $native]));
+	$override = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $erN['variable a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $vfInt, nativeType: $vfInt, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null, variableFlow: null);
+	$overridden = new $erClass($erNoExtensions, $erDefaultNarrowingHelper, $erOtherScope, $erOtherScope, $erN['func call'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), truthyScopeOverrideResult: $override, falseyScopeOverrideResult: $override, type: $vfInt, nativeType: $vfInt, createTypesCallback: static fn (\PHPStan\Type\Type $type, \PHPStan\Analyser\TypeSpecifierContext $context, bool $native) => new \PHPStan\Analyser\SpecifiedTypes([spl_object_id($type) => $native]), containsNullsafe: false, issetabilityDescriptor: null, argsResult: null, variableFlow: null);
 	$r['override'] = [$overridden->getTruthyScope() === $override->getTruthyScope(), $overridden->getFalseyScope() === $override->getFalseyScope(), $erDescribeResult($overridden->getCreatedTypes($vfInt, \PHPStan\Analyser\TypeSpecifierContext::createTruthy(), true)), $erDescribeResult($overridden->getCreatedTypesForScope($erScope, $vfString, \PHPStan\Analyser\TypeSpecifierContext::createTruthy())), $erDescribeResult($overridden->finalize($erScope, false, false, [], [], null, null))];
 	$erResults[$side] = $r;
 }
@@ -3858,9 +3858,9 @@ foreach ($stSides as $side => [$stClass, $stNs, $stConstNs, $stLevel, $stResultC
 	$first = $callback($stContextClass::createTruthy(), false);
 	$second = $callback();
 	$o['emptySpecifyCallback call'] = [$describe($first), $first !== $second, $describe($second)];
-	$emptyResult = new $stResultClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $stA, false, false, [], [], null, $callback, type: $vfInt, nativeType: $vfInt);
-	$fromResult = $emptyResult->getSpecifiedTypes($stContextClass::createTruthy());
-	$o['emptySpecifyCallback via ExpressionResult'] = [$describe($fromResult), $fromResult === $emptyResult->getSpecifiedTypes($stContextClass::createTruthy()), $fromResult !== $emptyResult->getSpecifiedTypes($stContextClass::createFalsey())];
+	$emptyResult = new $stResultClass($erNoExtensions, $erDefaultNarrowingHelper, $erScope, $erScope, $stA, false, false, [], [], null, $callback, type: $vfInt, nativeType: $vfInt, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null, variableFlow: null);
+	$fromResult = $emptyResult->getSpecifiedTypes($stContextClass::createTruthy(), false);
+	$o['emptySpecifyCallback via ExpressionResult'] = [$describe($fromResult), $fromResult === $emptyResult->getSpecifiedTypes($stContextClass::createTruthy(), false), $fromResult !== $emptyResult->getSpecifiedTypes($stContextClass::createFalsey(), false)];
 
 	$stObservations[$side] = $o;
 }
@@ -3887,7 +3887,7 @@ $covered[\PHPStan\Analyser\StatementContext::class] = true;
 $ecInt = new \PHPStanTurbo\IntegerType();
 $ecString = new \PHPStanTurbo\StringType();
 $ecExpr = new \PhpParser\Node\Expr\Variable('x');
-$ecWrite = new \PHPStan\Node\Variable\VariableWrite('x', $ecExpr, 7, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN);
+$ecWrite = new \PHPStan\Node\Variable\VariableWrite('x', $ecExpr, 7, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, false, null, null, true);
 $ecTemplateAcceptor = new \PHPStan\Reflection\TrivialParametersAcceptor();
 $ecExtendedAcceptor = new \PHPStan\Reflection\ExtendedFunctionVariant(
 	\PHPStan\Type\Generic\TemplateTypeMap::createEmpty(),
@@ -3952,10 +3952,10 @@ foreach (['php' => [\PHPStan\Analyser\ExpressionContext::class, \PHPStan\Analyse
 		'enterUnsetTarget' => static fn ($c) => $c->enterUnsetTarget(),
 	];
 	foreach ([
-		'topLevel' => $ecClass::createTopLevel(),
+		'topLevel' => $ecClass::createTopLevel(true),
 		'topLevel false' => $ecClass::createTopLevel(false),
 		'topLevel named' => $ecClass::createTopLevel(resolveTemplateArguments: false),
-		'deep' => $ecClass::createDeep(),
+		'deep' => $ecClass::createDeep(true),
 		'deep false' => $ecClass::createDeep(false),
 	] as $startLabel => $start) {
 		$r[$startLabel] = $describe($start);
@@ -4138,11 +4138,11 @@ $hhExprs = [
 	'float' => new \PhpParser\Node\Scalar\Float_(1.5),
 ];
 $hhContexts = [
-	'top' => \PHPStan\Analyser\ExpressionContext::createTopLevel(),
-	'deep' => \PHPStan\Analyser\ExpressionContext::createDeep(),
-	'unset' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterUnsetTarget(),
-	'dim root' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterArrayDimFetchRoot(),
-	'value flow' => \PHPStan\Analyser\ExpressionContext::createDeep()->enterValueFlow(new \PHPStan\Node\Variable\VariableWrite('t', $hhName, 42, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN), true),
+	'top' => \PHPStan\Analyser\ExpressionContext::createTopLevel(true),
+	'deep' => \PHPStan\Analyser\ExpressionContext::createDeep(true),
+	'unset' => \PHPStan\Analyser\ExpressionContext::createDeep(true)->enterUnsetTarget(),
+	'dim root' => \PHPStan\Analyser\ExpressionContext::createDeep(true)->enterArrayDimFetchRoot(),
+	'value flow' => \PHPStan\Analyser\ExpressionContext::createDeep(true)->enterValueFlow(new \PHPStan\Node\Variable\VariableWrite('t', $hhName, 42, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, false, null, null, true), true),
 ];
 // The native VariableHandler creates the native IssetabilityDescriptor, which
 // a native Dependencies as its PHP twin, for the PHP side of a differential
@@ -4262,7 +4262,7 @@ foreach (['php' => [\PHPStan\Analyser\ExprHandler\ScalarHandler::class, \PHPStan
 			if ($handler === $variable) {
 				// no name result for a dynamic name: the twin's typeCallback throws
 				$calls[' / composed'] = static fn ($storage) => $variable->composeResult($hhNodeScopeResolver, $expr, null, $storage, $hhScope, $context);
-				$calls[' / composed without context'] = static fn ($storage) => $variable->composeResult($hhNodeScopeResolver, $expr, null, $storage, $hhScope);
+				$calls[' / composed without context'] = static fn ($storage) => $variable->composeResult($hhNodeScopeResolver, $expr, null, $storage, $hhScope, null);
 			}
 			foreach ($calls as $callLabel => $call) {
 				$storage = new \PHPStan\Analyser\ExpressionResultStorage();
@@ -4362,25 +4362,23 @@ foreach (['php' => \PHPStan\Analyser\VarAnnotationProcessor::class, 'native' => 
 		foreach ($vapStmts as $stmtLabel => $stmt) {
 			foreach ($vapNames as $namesLabel => $names) {
 				$label = $scopeLabel . ' / ' . $stmtLabel . ' / ' . $namesLabel;
-				foreach (['by ref' => true, 'without' => false] as $refLabel => $byRef) {
-					$warnings = [];
-					set_error_handler(static function (int $level, string $message) use (&$warnings): bool {
-						$warnings[] = [$level, $message];
-						return true;
-					});
-					$scope->assigned = [];
-					try {
-						$changed = false;
-						$result = $byRef ? $processor->processVarAnnotation($scope, $names, $stmt, $changed) : $processor->processVarAnnotation($scope, $names, $stmt);
-						$r[$label . ' / ' . $refLabel] = [$result === $scope, $changed, $scope->assigned];
-					} catch (\Throwable $e) {
-						$r[$label . ' / ' . $refLabel] = [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage()), $changed, $scope->assigned];
-					} finally {
-						restore_error_handler();
-					}
-					if ($warnings !== []) {
-						$r[$label . ' / ' . $refLabel][] = $warnings;
-					}
+				$warnings = [];
+				set_error_handler(static function (int $level, string $message) use (&$warnings): bool {
+					$warnings[] = [$level, $message];
+					return true;
+				});
+				$scope->assigned = [];
+				try {
+					$changed = false;
+					$result = $processor->processVarAnnotation($scope, $names, $stmt, $changed);
+					$r[$label] = [$result === $scope, $changed, $scope->assigned];
+				} catch (\Throwable $e) {
+					$r[$label] = [get_class($e), preg_replace('~, called in .*$~', '', $e->getMessage()), $changed, $scope->assigned];
+				} finally {
+					restore_error_handler();
+				}
+				if ($warnings !== []) {
+					$r[$label][] = $warnings;
 				}
 			}
 		}
@@ -4391,15 +4389,15 @@ foreach ($vapResults['php'] as $label => $described) {
 	check($described === ($vapResults['native'][$label] ?? null), "VarAnnotationProcessor parity ($label): " . json_encode($described) . ' vs ' . json_encode($vapResults['native'][$label] ?? null));
 }
 check(
-	count($vapResults['php']['class / two docs / a b / by ref'][2] ?? []) === 2
-	&& ($vapResults['php']['file / string comments / a / by ref'][0] ?? null) === \TypeError::class
-	&& ($vapResults['php']['file / overriding node / a / without'][2][0][1] ?? null) === 'float'
-	&& ($vapResults['php']['file / plain comment / a / by ref'] ?? null) === [true, false, []]
-	&& ($vapResults['php']['file / positional / a b / by ref'][2] ?? null) === []
-	&& ($vapResults['php']['file / positional / keyed / by ref'][0] ?? null) === \TypeError::class,
-	'VarAnnotationProcessor: the fixture exercises every arm: ' . json_encode(array_intersect_key($vapResults['php'], array_flip(['class / two docs / a b / by ref', 'file / string comments / a / by ref', 'file / overriding node / a / without', 'file / plain comment / a / by ref', 'file / positional / a b / by ref', 'file / positional / keyed / by ref']))),
+	count($vapResults['php']['class / two docs / a b'][2] ?? []) === 2
+	&& ($vapResults['php']['file / string comments / a'][0] ?? null) === \TypeError::class
+	&& ($vapResults['php']['file / overriding node / a'][2][0][1] ?? null) === 'float'
+	&& ($vapResults['php']['file / plain comment / a'] ?? null) === [true, false, []]
+	&& ($vapResults['php']['file / positional / a b'][2] ?? null) === []
+	&& ($vapResults['php']['file / positional / keyed'][0] ?? null) === \TypeError::class,
+	'VarAnnotationProcessor: the fixture exercises every arm: ' . json_encode(array_intersect_key($vapResults['php'], array_flip(['class / two docs / a b', 'file / string comments / a', 'file / overriding node / a', 'file / plain comment / a', 'file / positional / a b', 'file / positional / keyed']))),
 );
-check(($vapResults['php']['file / named / a / by ref'][1] ?? null) === true && ($vapResults['php']['class / positional / b / by ref'][2][0][1] ?? null) === 'string', 'VarAnnotationProcessor: the fixture assigns through named and positional tags: ' . json_encode([$vapResults['php']['file / named / a / by ref'] ?? null, $vapResults['php']['class / positional / b / by ref'] ?? null]));
+check(($vapResults['php']['file / named / a'][1] ?? null) === true && ($vapResults['php']['class / positional / b'][2][0][1] ?? null) === 'string', 'VarAnnotationProcessor: the fixture assigns through named and positional tags: ' . json_encode([$vapResults['php']['file / named / a'] ?? null, $vapResults['php']['class / positional / b'] ?? null]));
 
 // ---- the analyser value classes ----
 // analyser-values.php builds the value objects on both sides from the same

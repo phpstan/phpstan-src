@@ -30,11 +30,11 @@ final class TurboProcessRestarter
 	public static function restartIfSuitable(array $argv, ?string $pharPath = null, ?string $appName = null): void
 	{
 		if ($appName === null) {
-			RestartManager::run($argv, $pharPath, ['phpstan_turbo', 'tideways', 'opcache']);
+			RestartManager::run($argv, $pharPath, ['phpstan_turbo', 'tideways', 'opcache'], 'phpstan');
 			return;
 		}
 
-		RestartManager::run($argv, $pharPath, appName: $appName);
+		RestartManager::run($argv, $pharPath, appName: $appName, extensions: null);
 	}
 
 }

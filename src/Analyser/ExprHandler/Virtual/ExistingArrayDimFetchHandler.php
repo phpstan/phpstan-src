@@ -55,6 +55,15 @@ final class ExistingArrayDimFetchHandler implements ExprHandler
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $arrayDimFetchResult->getNativeType() : $arrayDimFetchResult->getType()),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: $arrayDimFetchResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
 		);
 	}
 

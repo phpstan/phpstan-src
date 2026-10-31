@@ -36,16 +36,15 @@ inline constexpr char strings[] =
 	"node\0" /* 106 */
 	"PhpParser\\Node\\Stmt\0" /* 111 */
 	"changed\0" /* 131 */
-	"false\0" /* 139 */
-	"\0" /* 145 */
-	"processVarAnnotation"; /* 146 */
+	"\0" /* 139 */
+	"processVarAnnotation"; /* 140 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
 	reg::packed(55, 0, 61), /* processVarAnnotation $scope */
 	reg::packed(92, MAY_BE_ARRAY), /* processVarAnnotation $variableNames */
 	reg::packed(106, 0, 111), /* processVarAnnotation $node */
-	reg::packed(131, MAY_BE_BOOL, reg::NoString, true, false, 139), /* processVarAnnotation $changed */
-	reg::packed(145, 0, 61), /* processVarAnnotation return */
+	reg::packed(131, MAY_BE_BOOL, reg::NoString, true, false), /* processVarAnnotation $changed */
+	reg::packed(139, 0, 61), /* processVarAnnotation return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -53,7 +52,7 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 43 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processVarAnnotation = { { 146 /* processVarAnnotation */, 3, 1, 4, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processVarAnnotation = { { 140 /* processVarAnnotation */, 4, 1, 4, 5, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VarAnnotationProcessor

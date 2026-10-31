@@ -74,6 +74,7 @@ final class AnalyserRunner
 				reachedInternalErrorsCountLimit: false,
 				peakMemoryUsageBytes: 0,
 				processedFiles: [],
+				workerCount: 0,
 			);
 		}
 

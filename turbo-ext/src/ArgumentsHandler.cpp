@@ -3129,7 +3129,7 @@ PT_MINIT_REGISTRATION(pt_register_arguments_handler)
 
 	cls.method(sigs::processArgs, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *stmt, *calleeReflection, *nakedMethodReflection, *parametersAcceptors, *namedArgumentsVariants, *callLike, *scope, *storage, *nodeCallback, *context, *closureBindScopeFactory = NULL;
-		ZEND_PARSE_PARAMETERS_START(11, 12)
+		ZEND_PARSE_PARAMETERS_START(12, 12)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_ZVAL(calleeReflection)
@@ -3141,7 +3141,6 @@ PT_MINIT_REGISTRATION(pt_register_arguments_handler)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 			Z_PARAM_OBJECT(context)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ZVAL(closureBindScopeFactory)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(ArgumentsHandler(Z_OBJ_P(ZEND_THIS)).processArgs(nodeScopeResolver, stmt, calleeReflection, nakedMethodReflection, parametersAcceptors, namedArgumentsVariants, callLike, scope, storage, nodeCallback, context, closureBindScopeFactory));

@@ -2294,12 +2294,11 @@ PT_MINIT_REGISTRATION(pt_register_default_narrowing_helper)
 
 	cls.method(sigs::createForSubject, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *subject, *type, *context, *scope, *resultFor = NULL;
-		ZEND_PARSE_PARAMETERS_START(4, 5)
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_OBJECT(subject)
 			Z_PARAM_OBJECT(type)
 			Z_PARAM_OBJECT(context)
 			Z_PARAM_OBJECT(scope)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(resultFor, zend_ce_closure)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_DNH_THIS.createForSubject(subject, type, context, scope, resultFor));

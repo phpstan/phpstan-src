@@ -4995,14 +4995,14 @@ $lateSubjects = static fn (): array => [
 	'offsetShapeTKey' => new \PHPStan\Type\OffsetAccessType($lateShape, $lateTKey),
 	'offsetStringInt' => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()),
 	'offsetMixedInt' => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\IntegerType()),
-	'constantStaticKindList' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeStatic, 'KIND_LIST'),
-	'constantObjectKindArray' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_ARRAY'),
-	'constantMissing' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_NONEXISTENT'),
+	'constantStaticKindList' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeStatic, 'KIND_LIST', null),
+	'constantObjectKindArray' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_ARRAY', null),
+	'constantMissing' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_NONEXISTENT', null),
 	'constantStaticKindListNative' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeStatic, 'KIND_LIST', new \PHPStan\Type\StringType()),
-	'constantObjectKindArrayNative' => (new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_ARRAY'))->withNativeType(new \PHPStan\Type\IntegerType()),
+	'constantObjectKindArrayNative' => (new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_ARRAY', null))->withNativeType(new \PHPStan\Type\IntegerType()),
 	'constantObjectWildcardNative' => new \PHPStan\Type\ClassConstantAccessType($lateShapeNodeObject, 'KIND_*', new \PHPStan\Type\StringType()),
-	'constantTShapeNode' => new \PHPStan\Type\ClassConstantAccessType($lateTShapeNode, 'KIND_LIST'),
-	'constantOnInt' => new \PHPStan\Type\ClassConstantAccessType(new \PHPStan\Type\IntegerType(), 'KIND_LIST'),
+	'constantTShapeNode' => new \PHPStan\Type\ClassConstantAccessType($lateTShapeNode, 'KIND_LIST', null),
+	'constantOnInt' => new \PHPStan\Type\ClassConstantAccessType(new \PHPStan\Type\IntegerType(), 'KIND_LIST', null),
 	'newException' => new \PHPStan\Type\NewObjectType(new \PHPStan\Type\ObjectType(\Exception::class)),
 	'newClassString' => new \PHPStan\Type\NewObjectType(new \PHPStan\Type\Generic\GenericClassStringType(new \PHPStan\Type\ObjectType(\Exception::class))),
 	'newTObject' => new \PHPStan\Type\NewObjectType($lateTObject),
@@ -7447,9 +7447,9 @@ if (!class_exists('PHPStanTurboTests\FunctionVariantSubclass', false)) {
 	$genericSignatureFixture = $signatureFixture->withTypes([$string]);
 	$site = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('f'));
 	$otherSite = new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('g'));
-	$observingFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null);
-	$resolvedFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [spl_object_id($site) . '#T' => new \PHPStan\Type\Constant\ConstantStringType('resolved')]);
-	$emptyResolvedFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame($observingFrame, []);
+	$observingFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, null, [], null, [], [], false, [], [], []);
+	$resolvedFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [spl_object_id($site) . '#T' => new \PHPStan\Type\Constant\ConstantStringType('resolved')], [], null, [], [], false, [], [], []);
+	$emptyResolvedFrame = new \PHPStan\Analyser\Generics\TemplateArgumentFrame($observingFrame, [], [], null, [], [], false, [], [], []);
 	$argTypeSets = [
 		'int' => [new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\ObjectType(\stdClass::class)],
 		'string' => [new \PHPStan\Type\Constant\ConstantStringType('s'), new \PHPStan\Type\ObjectType(\ArrayObject::class), new \PHPStan\Type\ClosureType([], $int, false)],
@@ -7977,7 +7977,7 @@ PHP;
 	foreach ($classReflections as $reflectionName => $classReflection) {
 		foreach ($classNodes as $classNodeName => $classNode) {
 			foreach (['class', 'CLASS', 'UNTYPED', 'TYPED', 'DOCUMENTED', 'FINAL_CONST', 'SELF_REF', 'PARENT_CONST', 'One', 'ALIAS', 'NOPE'] as $constantName) {
-				$r["getClassConstFetchTypeByReflection $reflectionName $classNodeName $constantName"] = $catching(static fn () => $resolver->getClassConstFetchTypeByReflection($classNode, $constantName, $classReflection, $getType));
+				$r["getClassConstFetchTypeByReflection $reflectionName $classNodeName $constantName"] = $catching(static fn () => $resolver->getClassConstFetchTypeByReflection($classNode, $constantName, $classReflection, $getType, false));
 			}
 		}
 	}
@@ -8126,7 +8126,7 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 	];
 	$r['constraints private constructor'] = $tacCatching(static fn () => new $C());
 	$r['constraints reconstructed'] = $tacCatching(static fn () => (static fn () => $this->__construct())->call($trees['send']));
-	$r['constraints private constructor bound'] = $tacCatching(static fn () => $viewConstraints((static fn () => new self(null, null, [$markers['m1T'], null, null, false]))->bindTo(null, $C)()));
+	$r['constraints private constructor bound'] = $tacCatching(static fn () => $viewConstraints((static fn () => new self(null, null, [$markers['m1T'], null, null, false], null))->bindTo(null, $C)()));
 	$raw = (new \ReflectionClass($C))->newInstanceWithoutConstructor();
 	foreach (['isEmpty' => static fn () => $raw->isEmpty(), 'merge' => static fn () => $raw->merge($trees['send']), 'merged into' => static fn () => $trees['send']->merge($raw), 'getFacts' => static fn () => $viewConstraints($raw), 'withSite' => static fn () => $viewConstraints($raw->withSite($markers['m1T']))] as $name => $callback) {
 		$r["constraints uninitialized $name"] = $tacCatching($callback);
@@ -8182,7 +8182,7 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 	foreach ($declareds as $declaredName => $declared) {
 		foreach ($actuals as $actualName => $actual) {
 			$r["observer send $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectSend($declared, $actual)));
-			$r["observer argument $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectArgument($declared, $actual)));
+			$r["observer argument $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectArgument($declared, $actual, false)));
 			$r["observer pure argument $declaredName <- $actualName"] = $tacCatching(static fn () => $viewConstraints($observer->collectArgument($declared, $actual, true)));
 		}
 	}
@@ -8213,11 +8213,11 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 		}
 	}
 	$r['observer wrong type'] = $tacCatching(static fn () => $observer->collectSites($sites['s1']));
-	$r['observer wrong acceptor'] = $tacCatching(static fn () => $observer->collectCall($sites['s1'], $int, []));
+	$r['observer wrong acceptor'] = $tacCatching(static fn () => $observer->collectCall($sites['s1'], $int, [], null));
 
 	// the resolver
 	$resolver = new \PHPStan\Analyser\Generics\TemplateArgumentResolver();
-	$parent = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [spl_object_id($sites['s3']) . '#W' => $int]);
+	$parent = new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [spl_object_id($sites['s3']) . '#W' => $int], [], null, [], [], false, [], [], []);
 	$viewFrame = static function (mixed $frame) use ($sites, $precise): mixed {
 		if (!$frame instanceof \PHPStan\Analyser\Generics\TemplateArgumentFrame) {
 			return $frame;
@@ -8233,19 +8233,19 @@ foreach ([\PHPStan\Analyser\Generics\TemplateArgumentConstraints::class => 'isEm
 	};
 	$collected = [
 		'send' => $observer->collectSend($declareds['ao<int, string>'], $actuals['ao<int, m1T>']),
-		'argument' => $observer->collectArgument($declareds['traversable<int, string>'], $actuals['ai<m2T, m2V>']),
-		'call' => $observer->collectCall($sites['s2'], $acceptors['plain'], $argumentSets['positional']),
+		'argument' => $observer->collectArgument($declareds['traversable<int, string>'], $actuals['ai<m2T, m2V>'], false),
+		'call' => $observer->collectCall($sites['s2'], $acceptors['plain'], $argumentSets['positional'], null),
 		'sites' => $observer->collectSites($actuals['ao<int, ao<int, m1T>>']),
 	];
 	foreach ($trees + $collected as $name => $constraints) {
 		foreach (['no parent' => null, 'parent' => $parent] as $parentName => $parentFrame) {
 			foreach (['positions' => [0, 5, 12, 20], 'one position' => [0], 'no positions' => [], 'gapped positions' => [0 => 0, 2 => 12]] as $positionsName => $positions) {
-				$r["resolver $name $parentName $positionsName"] = $tacCatching(static fn () => $viewFrame($resolver->resolve($constraints, $parentFrame, $positions)));
+				$r["resolver $name $parentName $positionsName"] = $tacCatching(static fn () => $viewFrame($resolver->resolve($constraints, $parentFrame, $positions, null, [])));
 			}
 		}
 	}
-	$r['resolver wrong constraints'] = $tacCatching(static fn () => $resolver->resolve($int, null, []));
-	$r['resolver wrong parent'] = $tacCatching(static fn () => $resolver->resolve($empty, $int, []));
+	$r['resolver wrong constraints'] = $tacCatching(static fn () => $resolver->resolve($int, null, [], null, []));
+	$r['resolver wrong parent'] = $tacCatching(static fn () => $resolver->resolve($empty, $int, [], null, []));
 
 	foreach ($r as $key => $value) {
 		$observations["template arguments $key"] = $value;
@@ -8297,15 +8297,15 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	foreach (['$a === $a', '$a === $b', '$a === 1', '$n === null', '$s === $a', '$o === null', '$o->p === null', 'null === $o->p', '$e->message === null', 'null === $e->message', '$e->message === $a', '\Exception::$nope === null', '$x === $x', '$$a === $$a', '1 === 1', '$f->unknown === null'] as $code) {
 		$identical = $exprOf($code);
 		$notIdentical = new \PhpParser\Node\Expr\BinaryOp\NotIdentical($identical->left, $identical->right);
-		$r["richer $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical)));
-		$r["richer not $code"] = $helperCatching(static fn () => $viewResult($helper->getNotIdenticalResult($helperScope, $notIdentical)));
+		$r["richer $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical, null, null, null)));
+		$r["richer not $code"] = $helperCatching(static fn () => $viewResult($helper->getNotIdenticalResult($helperScope, $notIdentical, null, null, null)));
 		$r["richer typed $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical, null, new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantIntegerType(1))));
 		$r["richer typed null $code"] = $helperCatching(static fn () => $viewResult($helper->getIdenticalResult($helperScope, $identical, null, new \PHPStan\Type\NullType(), null)));
 		$r["richer typed not $code"] = $helperCatching(static fn () => $viewResult($helper->getNotIdenticalResult($helperScope, $notIdentical, null, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\NullType())));
 	}
 	$someIdentical = $exprOf('$a === $b');
-	$r['richer wrong expr'] = $helperCatching(static fn () => $helper->getIdenticalResult($helperScope, new \PhpParser\Node\Expr\BinaryOp\NotIdentical($someIdentical->left, $someIdentical->right)));
-	$r['richer wrong type'] = $helperCatching(static fn () => $helper->getNotIdenticalResult($helperScope, new \PhpParser\Node\Expr\BinaryOp\NotIdentical($someIdentical->left, $someIdentical->right), null, $precise));
+	$r['richer wrong expr'] = $helperCatching(static fn () => $helper->getIdenticalResult($helperScope, new \PhpParser\Node\Expr\BinaryOp\NotIdentical($someIdentical->left, $someIdentical->right), null, null, null));
+	$r['richer wrong type'] = $helperCatching(static fn () => $helper->getNotIdenticalResult($helperScope, new \PhpParser\Node\Expr\BinaryOp\NotIdentical($someIdentical->left, $someIdentical->right), null, $precise, null));
 
 	// NullsafeOperatorHelper
 	$levels = static function (\PhpParser\Node\Expr $expr): array {
@@ -8337,19 +8337,19 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	$r['nullsafe wrong'] = $helperCatching(static fn () => \PHPStan\Analyser\NullsafeOperatorHelper::getNullsafeShortcircuitedExpr(new \PhpParser\Node\Name('x')));
 
 	// LoopWrittenVariableNames
-	$write = static fn (string $name, int $id, ?int $parentId = null): \PHPStan\Node\Variable\VariableWrite => new \PHPStan\Node\Variable\VariableWrite($name, new \PhpParser\Node\Expr\Variable($name), $id, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, false, null, $parentId);
+	$write = static fn (string $name, int $id, ?int $parentId = null): \PHPStan\Node\Variable\VariableWrite => new \PHPStan\Node\Variable\VariableWrite($name, new \PhpParser\Node\Expr\Variable($name), $id, \PHPStan\Node\Variable\VariableWrite::KIND_ASSIGN, false, null, $parentId, true);
 	$foreachStmt = $parser->parse('<?php foreach ($xs as $v) {}')[0];
 	$flows = [
 		'none' => null,
-		'read' => \PHPStan\Analyser\VariableFlow::read('r1'),
-		'write' => \PHPStan\Analyser\VariableFlow::write($write('w1', 1)),
-		'define' => \PHPStan\Analyser\VariableFlow::write($write('d1', 2, 1)),
+		'read' => \PHPStan\Analyser\VariableFlow::read('r1', null, false, null),
+		'write' => \PHPStan\Analyser\VariableFlow::write($write('w1', 1), null),
+		'define' => \PHPStan\Analyser\VariableFlow::write($write('d1', 2, 1), null),
 		'escape' => \PHPStan\Analyser\VariableFlow::escape('e1'),
 		'mention' => \PHPStan\Analyser\VariableFlow::mention('m1'),
 		'discard' => \PHPStan\Analyser\VariableFlow::discard($write('x1', 3)),
-		'sequence' => \PHPStan\Analyser\VariableFlow::sequence(\PHPStan\Analyser\VariableFlow::write($write('s1', 4)), \PHPStan\Analyser\VariableFlow::read('s2'), \PHPStan\Analyser\VariableFlow::escape('s3')),
-		'nested' => \PHPStan\Analyser\VariableFlow::loop(\PHPStan\Analyser\VariableFlow::choice(\PHPStan\Analyser\VariableFlow::write($write('c1', 5)), \PHPStan\Analyser\VariableFlow::escape('c2')), \PHPStan\Analyser\VariableFlow::tryCatch(\PHPStan\Analyser\VariableFlow::write($write('t1', 6)), [[new \PHPStan\Type\ObjectType(\Exception::class), \PHPStan\Analyser\VariableFlow::write($write('t2', 7))], [new \PHPStan\Type\ObjectType(\Error::class), null]], \PHPStan\Analyser\VariableFlow::escape('t3')), \PHPStan\Analyser\VariableFlow::switch(\PHPStan\Analyser\VariableFlow::write($write('sw0', 8)), [[\PHPStan\Analyser\VariableFlow::write($write('sw1', 9)), \PHPStan\Analyser\VariableFlow::write($write('sw2', 10)), false], [null, \PHPStan\Analyser\VariableFlow::escape('sw3'), true]], false), false, true),
-		'loop statement' => \PHPStan\Analyser\VariableFlow::loopStatement($foreachStmt, \PHPStan\Analyser\VariableFlow::write($write('ls1', 11)), [$write('b1', 12), $write('b2', 13)], [$write('o1', 14), $write('b1', 15)]),
+		'sequence' => \PHPStan\Analyser\VariableFlow::sequence(\PHPStan\Analyser\VariableFlow::write($write('s1', 4), null), \PHPStan\Analyser\VariableFlow::read('s2', null, false, null), \PHPStan\Analyser\VariableFlow::escape('s3')),
+		'nested' => \PHPStan\Analyser\VariableFlow::loop(\PHPStan\Analyser\VariableFlow::choice(\PHPStan\Analyser\VariableFlow::write($write('c1', 5), null), \PHPStan\Analyser\VariableFlow::escape('c2')), \PHPStan\Analyser\VariableFlow::tryCatch(\PHPStan\Analyser\VariableFlow::write($write('t1', 6), null), [[new \PHPStan\Type\ObjectType(\Exception::class), \PHPStan\Analyser\VariableFlow::write($write('t2', 7), null)], [new \PHPStan\Type\ObjectType(\Error::class), null]], \PHPStan\Analyser\VariableFlow::escape('t3')), \PHPStan\Analyser\VariableFlow::switch(\PHPStan\Analyser\VariableFlow::write($write('sw0', 8), null), [[\PHPStan\Analyser\VariableFlow::write($write('sw1', 9), null), \PHPStan\Analyser\VariableFlow::write($write('sw2', 10), null), false], [null, \PHPStan\Analyser\VariableFlow::escape('sw3'), true]], false), false, true, true),
+		'loop statement' => \PHPStan\Analyser\VariableFlow::loopStatement($foreachStmt, \PHPStan\Analyser\VariableFlow::write($write('ls1', 11), null), [$write('b1', 12), $write('b2', 13)], [$write('o1', 14), $write('b1', 15)]),
 		'inputs' => \PHPStan\Analyser\VariableFlow::inputs(1, 2),
 	];
 	foreach ([
@@ -8605,7 +8605,7 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 		'NewObjectType' => static fn () => new \PHPStan\Type\NewObjectType($nonType),
 		'OffsetAccessType type' => static fn () => new \PHPStan\Type\OffsetAccessType($nonType, new \PHPStan\Type\IntegerType()),
 		'OffsetAccessType offset' => static fn () => new \PHPStan\Type\OffsetAccessType(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), $nonType),
-		'ClassConstantAccessType' => static fn () => new \PHPStan\Type\ClassConstantAccessType($nonType, 'FOO'),
+		'ClassConstantAccessType' => static fn () => new \PHPStan\Type\ClassConstantAccessType($nonType, 'FOO', null),
 		'GetTemplateTypeType' => static fn () => new \PHPStan\Type\Helper\GetTemplateTypeType($nonType, \ArrayAccess::class, 'TKey'),
 		'GenericClassStringType' => static fn () => new \PHPStan\Type\Generic\GenericClassStringType($nonType),
 		'ConditionalType subject' => static fn () => new \PHPStan\Type\ConditionalType($nonType, new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\NullType(), false),

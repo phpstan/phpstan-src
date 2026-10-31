@@ -191,7 +191,7 @@ foreach ($avSides as $side => $c) {
 	$avException = $types['exception'];
 	$avError = $types['error'];
 	$plain = in_array($side, ['native plain', 'native over PHP collaborators'], true);
-	$newResult = static fn (\PhpParser\Node\Expr $expr, \PHPStan\Type\Type $type, bool $hasYield = false, bool $isAlwaysTerminating = false, array $throwPoints = [], array $impurePoints = [], ?object $descriptor = null) => new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $expr, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $type, nativeType: $type, issetabilityDescriptor: $plain ? null : $descriptor);
+	$newResult = static fn (\PhpParser\Node\Expr $expr, \PHPStan\Type\Type $type, bool $hasYield = false, bool $isAlwaysTerminating = false, array $throwPoints = [], array $impurePoints = [], ?object $descriptor = null) => new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $expr, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $type, nativeType: $type, issetabilityDescriptor: $plain ? null : $descriptor, containsNullsafe: false, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null, variableFlow: null);
 
 	// ---- ImpurePoint ----
 	$impure = new $c['ImpurePoint']($avScope, $avN['call'], 'functionCall', 'call to function f', true);
@@ -223,7 +223,7 @@ foreach ($avSides as $side => $c) {
 	// ---- InternalThrowPoint ----
 	$itpExplicit = $c['InternalThrowPoint']::createExplicit($avScope, $avException, $avN['call'], false);
 	$itpExplicitAny = $c['InternalThrowPoint']::createExplicit(canContainAnyThrowable: true, node: $avN['stmt'], type: $avThrowable, scope: $avOtherScope);
-	$itpImplicit = $c['InternalThrowPoint']::createImplicit($avScope, $avN['call']);
+	$itpImplicit = $c['InternalThrowPoint']::createImplicit($avScope, $avN['call'], null);
 	$itpImplicitTyped = $c['InternalThrowPoint']::createImplicit($avScope, $avN['a'], $avError);
 	foreach (['explicit' => $itpExplicit, 'explicit any' => $itpExplicitAny, 'implicit' => $itpImplicit, 'implicit typed' => $itpImplicitTyped] as $label => $itp) {
 		$public = $itp->toPublic();
@@ -250,7 +250,7 @@ foreach ($avSides as $side => $c) {
 	$argCall = $newResult($avN['call'], $avString);
 	$wrapped = $newResult($avN['call'], $avString, true, false, [$itpImplicit], [$impure]);
 	$args = new $c['ArgsResult']($wrapped, null, [spl_object_id($avN['a']) => $argA, spl_object_id($avN['call']) => $argCall], [spl_object_id($avN['a']) => true, spl_object_id($avN['m']) => null]);
-	$argsDefault = new $c['ArgsResult'](argResults: [], resolvedParametersAcceptor: new \PHPStan\Reflection\TrivialParametersAcceptor('f'), expressionResult: $newResult($avN['one'], $avInt, false, true));
+	$argsDefault = new $c['ArgsResult'](argResults: [], resolvedParametersAcceptor: new \PHPStan\Reflection\TrivialParametersAcceptor('f'), expressionResult: $newResult($avN['one'], $avInt, false, true), byRefArguments: []);
 	$acceptor = new \PHPStan\Reflection\TrivialParametersAcceptor();
 	$withAcceptor = $args->withResolvedParametersAcceptor($acceptor);
 	$r['args result'] = [
@@ -327,22 +327,21 @@ foreach ($avSides as $side => $c) {
 		foreach ([[$avScope, false, false], [$avScope, true, false], [$avScope, false, true], [$avOtherScope, true, true], [$avOtherScope->doNotTreatPhpDocTypesAsCertain(), false, true]] as $i => [$scope, $native, $reprocess]) {
 			$row[$i] = $avCatch(static fn () => $descriptor->resolve($scope, $native, $expr, $reprocess));
 		}
-		$row['default reprocess'] = $avCatch(static fn () => $descriptor->resolve(expr: $expr, useNativeTypes: false, scope: $avScope));
 		$row['through the result'] = $avCatch(static fn () => $newResult($expr, $avInt, descriptor: $descriptor)->getIssetabilityResolution($avScope, false, true));
 		$r['issetability ' . $label] = $row;
 	}
 	$r['issetability resolver calls'] = $resolverCalls;
 	$r['issetability private constructor'] = $avCatch(static fn () => new $c['IssetabilityDescriptor']('variable'));
-	$r['issetability uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['IssetabilityDescriptor']))->newInstanceWithoutConstructor()->resolve($avScope, false, $avN['a']));
+	$r['issetability uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['IssetabilityDescriptor']))->newInstanceWithoutConstructor()->resolve($avScope, false, $avN['a'], false));
 	$broken = (new \ReflectionClass($c['IssetabilityDescriptor']))->newInstanceWithoutConstructor();
 	foreach (['kind' => 'offset', 'variableName' => null, 'varResult' => null, 'dimResult' => null, 'innerResult' => null, 'reflectionResolver' => null, 'propertyFetch' => null] as $property => $value) {
 		(new \ReflectionProperty($c['IssetabilityDescriptor'], $property))->setValue($broken, $value);
 	}
-	$r['issetability broken offset'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a']));
+	$r['issetability broken offset'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a'], false));
 	(new \ReflectionProperty($c['IssetabilityDescriptor'], 'kind'))->setValue($broken, 'variable');
-	$r['issetability broken variable'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a']));
+	$r['issetability broken variable'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a'], false));
 	(new \ReflectionProperty($c['IssetabilityDescriptor'], 'kind'))->setValue($broken, 'something else');
-	$r['issetability broken property'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a']));
+	$r['issetability broken property'] = $avCatch(static fn () => $broken->resolve($avScope, false, $avN['a'], false));
 
 	// deep chains (a fresh tree per side: the read variable names are cached
 	// on the nodes)
@@ -350,7 +349,7 @@ foreach ($avSides as $side => $c) {
 	for ($i = 1; $i < $avDeepChainDepth; $i++) {
 		$deepConcat = new \PhpParser\Node\Expr\BinaryOp\Concat($deepConcat, new \PhpParser\Node\Expr\Variable('a' . ($i % 3)));
 	}
-	$r['deep read variable names'] = $avCatch(static fn () => $newResult($deepConcat, $avInt)->askScopeVariableStateMatches($avOtherScope, false));
+	$r['deep read variable names'] = $avCatch(static fn () => $newResult($deepConcat, $avInt)->askScopeVariableStateMatches($avOtherScope, false, false));
 	$deepDescriptor = $c['IssetabilityDescriptor']::variable('arr');
 	for ($i = 1; $i < $avDeepChainDepth; $i++) {
 		$deepDescriptor = $i % 2 === 0
@@ -358,7 +357,7 @@ foreach ($avSides as $side => $c) {
 			: $c['IssetabilityDescriptor']::property($newResult($avN['arr'], $avArray, descriptor: $deepDescriptor), $resolverFor('parent'), $avN['thisParent']);
 	}
 	$r['deep issetability descriptor'] = $avCatch(static function () use ($deepDescriptor, $avScope, $avN, &$avDeepChainsKeptAlive): bool {
-		$resolution = $deepDescriptor->resolve($avScope, false, $avN['dimA']);
+		$resolution = $deepDescriptor->resolve($avScope, false, $avN['dimA'], false);
 		$avDeepChainsKeptAlive[] = $resolution;
 		return $resolution->getLink()->isProperty();
 	});
@@ -386,7 +385,7 @@ check($avResults['php']['issetability property parent'][0][0] === 'ok' && $avRes
 // Exit points leaving the loop at every depth, scopes carrying inference
 // facts (the constructor joins them into the result's scope), end
 // statements, and keyed throw points (toPublic() preserves the keys).
-$avFacts = \Closure::bind(static fn (string $name) => new \PHPStan\Analyser\Generics\TemplateArgumentConstraints(null, null, [$name, null, null, true]), null, \PHPStan\Analyser\Generics\TemplateArgumentConstraints::class);
+$avFacts = \Closure::bind(static fn (string $name) => new \PHPStan\Analyser\Generics\TemplateArgumentConstraints(null, null, [$name, null, null, true], null), null, \PHPStan\Analyser\Generics\TemplateArgumentConstraints::class);
 $avFactScopes = [
 	'f1' => $avScope->withTemplateArgumentConstraints($avFacts('f1')),
 	'f2' => $avOtherScope->withTemplateArgumentConstraints($avFacts('f2')),
@@ -418,7 +417,7 @@ $avStatementResults = [];
 foreach ($avStatementSides as $side => $c) {
 	$r = [];
 	$types = $avThrowTypes[$side === 'php' ? 'php' : 'native'];
-	$flow = \PHPStan\Analyser\VariableFlow::read('a');
+	$flow = \PHPStan\Analyser\VariableFlow::read('a', null, false, null);
 	$exit = static fn (string $stmt, string $scope) => new $c['InternalStatementExitPoint']($avStmt[$stmt], $avKnownScopes[$scope]);
 	$exitPoint = $exit('return', 'f1');
 	$r['exit point'] = [$exitPoint->getStatement() === $avStmt['return'], $exitPoint->getScope() === $avFactScopes['f1'], $avDescribe($exitPoint->toPublic()), $avDescribe($exitPoint)];
@@ -429,7 +428,7 @@ foreach ($avStatementSides as $side => $c) {
 	$r['end statement'] = [$endStatement->getStatement() === $avStmt['return'], $endStatement->getResult() === $inner, $avDescribe($endStatement->toPublic()), $avDescribe($endStatement)];
 	$r['end statement uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['InternalEndStatementResult']))->newInstanceWithoutConstructor()->toPublic());
 
-	$throwPoints = ['x' => $c['InternalThrowPoint']::createImplicit($avScope, $avN['call']), 5 => $c['InternalThrowPoint']::createExplicit($avScope, $types['exception'], $avN['call'], false)];
+	$throwPoints = ['x' => $c['InternalThrowPoint']::createImplicit($avScope, $avN['call'], null), 5 => $c['InternalThrowPoint']::createExplicit($avScope, $types['exception'], $avN['call'], false)];
 	$impurePoints = [new $c['ImpurePoint']($avScope, $avN['call'], 'functionCall', 'f', true)];
 	$exitSets = [
 		'none' => [],
@@ -609,15 +608,15 @@ $avSites['with non-expr original'] = new \PhpParser\Node\Expr\FuncCall(new \PhpP
 foreach ($avSites as $label => $site) {
 	$site->setAttribute('label', $label);
 }
-$avFramedScope = $avScope->withTemplateArgumentFrame(new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, []));
+$avFramedScope = $avScope->withTemplateArgumentFrame(new \PHPStan\Analyser\Generics\TemplateArgumentFrame(null, [], [], null, [], [], false, [], [], []));
 $avFrameResults = [];
 foreach (['php' => [\PHPStan\Analyser\Generics\TemplateArgumentFrame::class, \PHPStan\Analyser\AssignTargetWalkMode::class, \PHPStan\Analyser\PreparedAssignTarget::class], 'native' => [\PHPStanTurbo\TemplateArgumentFrame::class, \PHPStanTurbo\AssignTargetWalkMode::class, \PHPStanTurbo\PreparedAssignTarget::class]] as $side => [$frameClass, $modeClass, $targetClass]) {
 	$r = [];
 	$id = static fn (string $site): int => spl_object_id($avSites[$site]);
-	$root = new $frameClass(null, [$id('site') . '#U' => $avString, $id('other site') . '#T' => $avInt, $id('site') . '#N' => null], [3 => true, 1 => true, 7 => true]);
-	$observing = new $frameClass($root);
-	$observingTop = new $frameClass(null);
-	$leaf = new $frameClass(siteStatementIndexes: [5 => true, 'x' => true, 2 => true], resolutions: [$id('site') . '#V' => $avArray], parent: $observing);
+	$root = new $frameClass(null, [$id('site') . '#U' => $avString, $id('other site') . '#T' => $avInt, $id('site') . '#N' => null], [3 => true, 1 => true, 7 => true], null, [], [], false, [], [], []);
+	$observing = new $frameClass($root, null, [], null, [], [], false, [], [], []);
+	$observingTop = new $frameClass(null, null, [], null, [], [], false, [], [], []);
+	$leaf = new $frameClass(siteStatementIndexes: [5 => true, 'x' => true, 2 => true], resolutions: [$id('site') . '#V' => $avArray], parent: $observing, closureSignatureBody: null, closureSignatureStmts: [], settledClosureSites: [], observingClosures: false, byRefSites: [], staticVariableTypes: [], staticVariableConditionalExpressions: []);
 	$frames = ['root' => $root, 'observing' => $observing, 'observing top' => $observingTop, 'leaf' => $leaf];
 	$frameLabel = static function (string $suffix) use ($frames): string {
 		foreach ($frames as $label => $frame) {
@@ -662,10 +661,10 @@ foreach (['php' => [\PHPStan\Analyser\Generics\TemplateArgumentFrame::class, \PH
 		}
 	}
 	// the by-ref closure sites: found by the node's id holding that very node, then in the parents
-	$byRefRoot = new $frameClass(null, [], byRefSites: [$id('site') => [$avSites['site'], 4, true], $id('other site') => [$avSites['other site'], 2, false], 12345678 => [$avSites['with original'], 9, true]]);
-	$byRefLeaf = new $frameClass($byRefRoot, [], byRefSites: [$id('other site') => [$avSites['other site'], 1, true]]);
+	$byRefRoot = new $frameClass(null, [], byRefSites: [$id('site') => [$avSites['site'], 4, true], $id('other site') => [$avSites['other site'], 2, false], 12345678 => [$avSites['with original'], 9, true]], siteStatementIndexes: [], closureSignatureBody: null, closureSignatureStmts: [], settledClosureSites: [], observingClosures: false, staticVariableTypes: [], staticVariableConditionalExpressions: []);
+	$byRefLeaf = new $frameClass($byRefRoot, [], byRefSites: [$id('other site') => [$avSites['other site'], 1, true]], siteStatementIndexes: [], closureSignatureBody: null, closureSignatureStmts: [], settledClosureSites: [], observingClosures: false, staticVariableTypes: [], staticVariableConditionalExpressions: []);
 	$byRefObserved = $byRefLeaf->withObservedClosures([], [], [], [$id('site') => [$avSites['site'], 7, false]]);
-	$byRefUnobserved = $byRefLeaf->withObservedClosures([], [], []);
+	$byRefUnobserved = $byRefLeaf->withObservedClosures([], [], [], []);
 	foreach (['root' => $byRefRoot, 'leaf' => $byRefLeaf, 'observed' => $byRefObserved, 'unobserved' => $byRefUnobserved, 'none' => $observing] as $label => $frame) {
 		$row = [];
 		foreach ($avSites as $siteLabel => $site) {
@@ -681,8 +680,8 @@ foreach (['php' => [\PHPStan\Analyser\Generics\TemplateArgumentFrame::class, \PH
 		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->resolve($avSites['site'], 'U')),
 		$avCatch(static fn () => (new \ReflectionClass($frameClass))->newInstanceWithoutConstructor()->getResolutionCacheKeySuffix()),
 		$avCatch(static function () use ($frameClass) {
-			$frame = new $frameClass(null);
-			$frame->__construct(null);
+			$frame = new $frameClass(null, null, [], null, [], [], false, [], [], []);
+			$frame->__construct(null, null, [], null, [], [], false, [], [], []);
 			return $frame;
 		}),
 	];
@@ -696,14 +695,15 @@ foreach (['php' => [\PHPStan\Analyser\Generics\TemplateArgumentFrame::class, \PH
 
 	// PreparedAssignTarget: the required arguments only, then every one
 	$getters = ['getKind', 'getVar', 'getAssignedExpr', 'getBeforeScope', 'getScope', 'enterExpressionAssign', 'isAssignOp', 'hasYield', 'getThrowPoints', 'getImpurePoints', 'isAlwaysTerminating', 'getRootVar', 'getVarResult', 'getDimFetchStack', 'getAssignedPropertyExpr', 'getOffsetTypes', 'getOffsetNativeTypes', 'getExistingOffsetTypes', 'getExistingOffsetNativeTypes', 'getOffsetSetTargetResult', 'getObjectResult', 'getPropertyName', 'getPropertyHolderType', 'getTargetReadResult', 'getTargetChainResults', 'getVariableNameResult'];
-	$minimal = new $targetClass($targetClass::KIND_VARIABLE, $avN['a'], $avN['call'], $avScope, $avOtherScope, true, false, true, ['t'], ['i'], false);
+	$minimal = new $targetClass($targetClass::KIND_VARIABLE, $avN['a'], $avN['call'], $avScope, $avOtherScope, true, false, true, ['t'], ['i'], false, null, null, null, null, null, null, null, null, null, null, null, null, null, [], null, null);
 	$someResult = $newResult($avN['a'], $avInt);
 	$full = new $targetClass(
 		$targetClass::KIND_ARRAY_DIM_FETCH, $avN['dim'], $avN['one'], $avOtherScope, $avScope, false, true, false, [], [], true,
 		$avN['arr'], $someResult, [$avN['dim']], $avN['a'], [[null, $avN['dim']]], [[$avInt, $avN['dim']]], [[$avString, $avN['dim']]], [[$avArray, $avN['dim']]],
 		$someResult, $someResult, 'prop', $avString, $someResult, [$someResult], $someResult,
+		null,
 	);
-	$named = new $targetClass(kind: $targetClass::KIND_PROPERTY_FETCH, var: $avN['thisParent'], assignedExpr: $avN['a'], beforeScope: $avScope, scope: $avScope, enterExpressionAssign: false, isAssignOp: false, hasYield: false, throwPoints: [], impurePoints: [], isAlwaysTerminating: false, propertyName: null, objectResult: $someResult, targetChainResults: [$someResult]);
+	$named = new $targetClass(kind: $targetClass::KIND_PROPERTY_FETCH, var: $avN['thisParent'], assignedExpr: $avN['a'], beforeScope: $avScope, scope: $avScope, enterExpressionAssign: false, isAssignOp: false, hasYield: false, throwPoints: [], impurePoints: [], isAlwaysTerminating: false, propertyName: null, objectResult: $someResult, targetChainResults: [$someResult], rootVar: null, varResult: null, dimFetchStack: null, assignedPropertyExpr: null, offsetTypes: null, offsetNativeTypes: null, existingOffsetTypes: null, existingOffsetNativeTypes: null, offsetSetTargetResult: null, propertyHolderType: null, targetReadResult: null, variableNameResult: null, dependencies: null);
 	foreach (['minimal' => $minimal, 'full' => $full, 'named' => $named] as $label => $target) {
 		$row = [];
 		foreach ($getters as $getter) {
@@ -776,15 +776,15 @@ $avFlowDescribe = static fn (?object $flow): mixed => $flow === null ? null : $a
 foreach (['php' => $avSides['php'], 'native' => $avSides['native']] as $side => $c) {
 	$throwPoints = [
 		$c['InternalThrowPoint']::createExplicit($avScope, $avThrowTypes[$side]['exception'], $avFlowCall, false),
-		$c['InternalThrowPoint']::createImplicit($avScope, $avFlowCall),
-		$c['InternalThrowPoint']::createImplicit($avScope, $avN['a']),
+		$c['InternalThrowPoint']::createImplicit($avScope, $avFlowCall, null),
+		$c['InternalThrowPoint']::createImplicit($avScope, $avN['a'], null),
 	];
 	$storage = new \PHPStanTurbo\ExpressionResultStorage();
-	$newResult = static fn (\PhpParser\Node\Expr $expr, \PHPStan\Type\Type $type, ?object $flow = null) => new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $expr, false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $type, nativeType: $type, variableFlow: $flow);
+	$newResult = static fn (\PhpParser\Node\Expr $expr, \PHPStan\Type\Type $type, ?object $flow = null) => new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $expr, false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $type, nativeType: $type, variableFlow: $flow, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null);
 	// each side's flow class: a PHP ExpressionResult holds only the PHP one
 	// under the prefix
 	$flowClass = $side === 'php' ? \PHPStan\Analyser\VariableFlow::class : \PHPStanTurbo\VariableFlow::class;
-	$argsResult = new $c['ArgsResult']($newResult($avFlowCall, $avInt), null, [spl_object_id($avN['a']) => $newResult($avN['a'], $avInt, $flowClass::read('a'))], [spl_object_id($avN['arr']) => true]);
+	$argsResult = new $c['ArgsResult']($newResult($avFlowCall, $avInt), null, [spl_object_id($avN['a']) => $newResult($avN['a'], $avInt, $flowClass::read('a', null, false, null))], [spl_object_id($avN['arr']) => true]);
 	$avFlowThrowPoints[$side] = [
 		$avFlowDescribe(\PHPStanTurbo\VariableFlowBuilder::throws($avFlowCall, $throwPoints)),
 		$avFlowDescribe(\PHPStanTurbo\VariableFlowBuilder::throws($avN['a'], $throwPoints)),
@@ -802,7 +802,7 @@ $avByRefUse = new \PhpParser\Node\ClosureUse($avN['a'], true);
 foreach (['php' => [\PHPStan\Analyser\ProcessClosureResult::class, \PHPStan\Analyser\ProcessArrowFunctionResult::class, $avSides['php']], 'native' => [\PHPStanTurbo\ProcessClosureResult::class, \PHPStanTurbo\ProcessArrowFunctionResult::class, $avSides['native']]] as $side => [$closureResultClass, $arrowResultClass, $c]) {
 	$r = [];
 	$impure = new $c['ImpurePoint']($avScope, $avN['call'], 'functionCall', 'call to function f', true);
-	$throwPoint = $c['InternalThrowPoint']::createImplicit($avScope, $avN['call']);
+	$throwPoint = $c['InternalThrowPoint']::createImplicit($avScope, $avN['call'], null);
 	$plain = new $closureResultClass($avScope, [$throwPoint], [$impure], [], [[$avN['stmt'], $avScope]], [], [], [$impure, $impure]);
 	$byRef = new $closureResultClass(scope: $avOtherScope, throwPoints: [], impurePoints: [], invalidateExpressions: [], gatheredReturnStatements: [], gatheredYieldStatements: [[$avN['call'], $avOtherScope]], executionEnds: [], closureTypeImpurePoints: [], byRefClosureResultScope: $avOtherScope, byRefUses: [$avByRefUse]);
 	foreach (['plain' => $plain, 'by ref' => $byRef] as $label => $result) {
@@ -824,7 +824,7 @@ foreach (['php' => [\PHPStan\Analyser\ProcessClosureResult::class, \PHPStan\Anal
 		$avCatch(static fn () => (new \ReflectionClass($closureResultClass))->newInstanceWithoutConstructor()->getScope()),
 		$avCatch(static fn () => (new \ReflectionClass($closureResultClass))->newInstanceWithoutConstructor()->applyByRefUseScope($avScope)),
 	];
-	$exprResult = new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $avN['a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $avInt, nativeType: $avInt);
+	$exprResult = new $c['ExpressionResult']($avNoExtensions, $avDefaultNarrowingHelper, $avScope, $avScope, $avN['a'], false, false, [], [], null, static fn () => new \PHPStan\Analyser\SpecifiedTypes(), type: $avInt, nativeType: $avInt, containsNullsafe: false, issetabilityDescriptor: null, truthyScopeOverrideResult: null, falseyScopeOverrideResult: null, createTypesCallback: null, argsResult: null, variableFlow: null);
 	$arrow = new $arrowResultClass($exprResult, $avOtherScope, [$throwPoint->toPublic()], [$impure], []);
 	$arrowNamed = new $arrowResultClass(invalidateExpressions: [], closureTypeImpurePoints: [], closureTypeThrowPoints: [], arrowFunctionScope: $avScope, expressionResult: $exprResult);
 	foreach (['positional' => $arrow, 'named' => $arrowNamed] as $label => $result) {
@@ -901,7 +901,7 @@ foreach ($avIssetSides as $side => $c) {
 		}
 		$r['link ' . $label] = $row;
 	}
-	$r['link private constructor'] = $avCatch(static fn () => new $L('variable'));
+	$r['link private constructor'] = $avCatch(static fn () => new $L('variable', null, null, null, null, false, null, null, null, null, null, false, false, null, null, false, false, false, false, false, false, false, null, false));
 	$r['link uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($L))->newInstanceWithoutConstructor()->isVariable());
 	$r['link uninitialized getter'] = $avCatch(static fn () => (new \ReflectionClass($L))->newInstanceWithoutConstructor()->getValueType());
 	$r['link named'] = $avDescribe($L::offset(valueType: $avString, dimType: $avInt, varType: $avArray, hasExpressionTypeOfExpr: true, hasOffsetValue: $avMaybe, isOffsetAccessible: $avYes));
@@ -940,7 +940,7 @@ foreach ($avIssetSides as $side => $c) {
 			'not empty' => $avCatch(static fn () => $resolution->notEmpty()),
 		];
 		foreach ($callbacks as $callbackLabel => $callback) {
-			$row[$callbackLabel] = $avCatch(static fn () => $resolution->isSet($callback));
+			$row[$callbackLabel] = $avCatch(static fn () => $resolution->isSet($callback, null));
 			$row[$callbackLabel . ' true'] = $avCatch(static fn () => $resolution->isSet($callback, true));
 			$row[$callbackLabel . ' false'] = $avCatch(static fn () => $resolution->isSet(result: false, typeCallback: $callback));
 		}
@@ -951,16 +951,16 @@ foreach ($avIssetSides as $side => $c) {
 		$chains['offset / offset / variable']->isSet(static function (\PHPStan\Type\Type $type) use (&$calls): bool {
 			$calls[] = $type->describe(\PHPStan\Type\VerbosityLevel::precise());
 			return true;
-		});
+		}, null);
 		return $calls;
 	})();
-	$r['resolution callback returns int'] = $avCatch(static fn () => $chains['variable yes']->isSet(static fn () => 1));
+	$r['resolution callback returns int'] = $avCatch(static fn () => $chains['variable yes']->isSet(static fn () => 1, null));
 	$r['resolution callback throws'] = $avCatch(static fn () => $chains['offset accessible yes / variable yes']->isSet(static function (): bool {
 		throw new \RuntimeException('callback failed');
-	}));
-	$r['resolution not callable'] = $avCatch(static fn () => $chains['variable yes']->isSet('no such function'));
+	}, null));
+	$r['resolution not callable'] = $avCatch(static fn () => $chains['variable yes']->isSet('no such function', null));
 	$r['resolution bad result'] = $avCatch(static fn () => $chains['variable yes']->isSet(static fn () => true, 1));
-	$r['resolution uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->isSet(static fn () => true));
+	$r['resolution uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->isSet(static fn () => true, null));
 	$r['resolution uninitialized not empty'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->notEmpty());
 	$r['resolution uninitialized link'] = $avCatch(static fn () => (new \ReflectionClass($R))->newInstanceWithoutConstructor()->getLink());
 	$r['resolution named'] = $avDescribe(new $R(inner: null, link: $links['leaf']));
@@ -973,8 +973,8 @@ foreach ($avIssetSides as $side => $c) {
 		$deepUndefinedResolution = new $R($links['offset not accessible'], $deepUndefinedResolution);
 	}
 	$r['deep resolution'] = [
-		$avCatch(static fn () => $deepResolution->isSet(static fn (): bool => true)),
-		$avCatch(static fn () => $deepUndefinedResolution->isSet(static fn (): bool => true)),
+		$avCatch(static fn () => $deepResolution->isSet(static fn (): bool => true, null)),
+		$avCatch(static fn () => $deepUndefinedResolution->isSet(static fn (): bool => true, null)),
 	];
 	$avDeepChainsKeptAlive[] = [$deepResolution, $deepUndefinedResolution];
 

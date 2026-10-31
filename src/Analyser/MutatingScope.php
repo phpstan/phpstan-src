@@ -4557,6 +4557,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					continue;
 				}
 
+				// Array shapes are unsealed in isSuperTypeOf(): array{a?: int} is a supertype
+				// of array{a?: int, b: int}, yet applying the holder would drop the 'b' key
+				// the other branch tracks. The consequent only holds on both paths when the
+				// other branch's state adds nothing to it.
+				if (!TypeCombinator::union($typeHolder->getType(), $otherTargetHolder->getType())->equals($typeHolder->getType())) {
+					continue;
+				}
+
 				$currentConditionalExpressions[$exprString][$key] = $holder;
 			}
 		}

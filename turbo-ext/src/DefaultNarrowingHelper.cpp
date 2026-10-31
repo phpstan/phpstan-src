@@ -2027,15 +2027,19 @@ private:
 				if (UNEXPECTED(resolvedType.isUndef())) return;
 				bool unresolved = resolvedType.isNull();
 				if (!unresolved) {
-					zv::Val bound = pt_type_call(Z_OBJ_P(type), PT_LC("getbound"), 0, NULL);
-					if (UNEXPECTED(bound.isUndef())) return;
-					if (UNEXPECTED(Z_TYPE_P(bound.raw()) != IS_OBJECT)) {
-						(void) callOnNonObject("equals", bound.raw());
-						return;
+					zv::Val functionName = pt_type_call(Z_OBJ_P(templateScope.raw()), PT_LC("getfunctionname"), 0, NULL);
+					if (UNEXPECTED(functionName.isUndef())) return;
+					if (functionName.isNull()) {
+						zv::Val bound = pt_type_call(Z_OBJ_P(type), PT_LC("getbound"), 0, NULL);
+						if (UNEXPECTED(bound.isUndef())) return;
+						if (UNEXPECTED(Z_TYPE_P(bound.raw()) != IS_OBJECT)) {
+							(void) callOnNonObject("equals", bound.raw());
+							return;
+						}
+						zv::Val equals = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_EQUALS, 1, resolvedType.raw());
+						if (UNEXPECTED(equals.isUndef())) return;
+						unresolved = zend_is_true(equals.raw());
 					}
-					zv::Val equals = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_EQUALS, 1, resolvedType.raw());
-					if (UNEXPECTED(equals.isUndef())) return;
-					unresolved = zend_is_true(equals.raw());
 				}
 				if (unresolved) {
 					zval *target = containsUnresolvedTemplate;

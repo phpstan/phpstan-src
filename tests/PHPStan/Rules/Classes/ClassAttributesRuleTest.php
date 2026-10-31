@@ -217,4 +217,15 @@ class ClassAttributesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testArgumentsByName(): void
+	{
+		$this->analyse([__DIR__ . '/data/class-attributes-arguments-by-name.php'], [
+			[
+				'Argument for optional parameter $name of attribute class ClassAttributesArgumentsByName\Route constructor must be passed by name.',
+				24,
+			],
+		]);
+	}
+
 }

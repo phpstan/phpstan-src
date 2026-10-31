@@ -162,6 +162,12 @@ final class ResolvedPhpDocBlock
 
 	private ?bool $acceptsNamedArguments = null;
 
+	private ?bool $requiresArgumentsByName = null;
+
+	private ?bool $requiresOptionalArgumentsByName = null;
+
+	private ?bool $hasStableParameterNames = null;
+
 	private function __construct()
 	{
 	}
@@ -255,6 +261,9 @@ final class ResolvedPhpDocBlock
 		$self->isAllowedPrivateMutation = false;
 		$self->hasConsistentConstructor = false;
 		$self->acceptsNamedArguments = true;
+		$self->requiresArgumentsByName = false;
+		$self->requiresOptionalArgumentsByName = false;
+		$self->hasStableParameterNames = false;
 
 		return $self;
 	}
@@ -267,9 +276,10 @@ final class ResolvedPhpDocBlock
 		// skip $result->phpDocNode
 		$phpDocNodes = $this->phpDocNodes;
 		$acceptsNamedArguments = $this->acceptsNamedArguments();
+		$hasArgumentsByNameTag = $this->requiresArgumentsByName() || $this->requiresOptionalArgumentsByName() || $this->hasStableParameterNames();
 		foreach ($parent->phpDocNodes as $phpDocNode) {
 			$phpDocNodes[] = $phpDocNode;
-			$acceptsNamedArguments = $acceptsNamedArguments && $parent->acceptsNamedArguments();
+			$acceptsNamedArguments = $acceptsNamedArguments && ($hasArgumentsByNameTag || $parent->acceptsNamedArguments());
 		}
 		$result->phpDocNodes = $phpDocNodes;
 		$result->phpDocString = $this->phpDocString;
@@ -313,6 +323,9 @@ final class ResolvedPhpDocBlock
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
+		$result->requiresArgumentsByName = $this->requiresArgumentsByName();
+		$result->requiresOptionalArgumentsByName = $this->requiresOptionalArgumentsByName();
+		$result->hasStableParameterNames = $this->hasStableParameterNames();
 
 		return $result;
 	}
@@ -831,6 +844,27 @@ final class ResolvedPhpDocBlock
 	public function acceptsNamedArguments(): bool
 	{
 		return $this->acceptsNamedArguments ??= $this->phpDocNodeResolver->resolveAcceptsNamedArguments(
+			$this->phpDocNode,
+		);
+	}
+
+	public function requiresArgumentsByName(): bool
+	{
+		return $this->requiresArgumentsByName ??= $this->phpDocNodeResolver->resolveRequiresArgumentsByName(
+			$this->phpDocNode,
+		);
+	}
+
+	public function requiresOptionalArgumentsByName(): bool
+	{
+		return $this->requiresOptionalArgumentsByName ??= $this->phpDocNodeResolver->resolveRequiresOptionalArgumentsByName(
+			$this->phpDocNode,
+		);
+	}
+
+	public function hasStableParameterNames(): bool
+	{
+		return $this->hasStableParameterNames ??= $this->phpDocNodeResolver->resolveHasStableParameterNames(
 			$this->phpDocNode,
 		);
 	}

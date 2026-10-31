@@ -6,6 +6,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\Internal\DeprecatedAttributeHelper;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\AttributeReflectionFactory;
@@ -66,6 +67,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private array $attributes,
 		private array $phpDocParameterPureUnlessCallableIsImpure,
 		private array $phpDocParameterPureUnlessParameterPassed,
+		private ?ResolvedPhpDocBlock $resolvedPhpDocBlock,
 	)
 	{
 	}
@@ -273,6 +275,11 @@ final class PhpFunctionReflection implements FunctionReflection
 			}
 		}
 		return TrinaryLogic::createNo();
+	}
+
+	public function getResolvedPhpDoc(): ?ResolvedPhpDocBlock
+	{
+		return $this->resolvedPhpDocBlock;
 	}
 
 }

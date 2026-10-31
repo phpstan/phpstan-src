@@ -600,6 +600,21 @@ public:
 
 		zend_long authoritative = isScopeAuthoritative(readScope);
 		if (authoritative != 0) return authoritative;
+
+		// the walk position narrowed this very expression (e.g. the right
+		// operand of `$a['k'] === null || is_int($a['k'])`) - a position not
+		// carrying that narrowing must not see it through the memoized type
+		zv::Val positionScopeHolder;
+		zval *positionScope = slot(slots::beforeScope);
+		if (useNativeTypes) {
+			positionScopeHolder = scopeNativeView(positionScope);
+			if (UNEXPECTED(positionScopeHolder.isUndef())) return -1;
+			positionScope = positionScopeHolder.raw();
+		}
+		zend_long positionAuthoritative = isScopeAuthoritative(positionScope);
+		if (positionAuthoritative < 0) return -1;
+		if (positionAuthoritative == 1) return 0;
+
 		return askScopeVariableStateMatches(scope, useNativeTypes, false);
 	}
 

@@ -152,7 +152,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 	 * only calling it tells - for a character range, which has at most 256
 	 * items, and for a zero, infinite or NAN argument, for which it throws.
 	 */
-	private static function getRangeLength(int|float|string $start, int|float|string $end, int|float $step): ?float
+	public static function getRangeLength(int|float|string $start, int|float|string $end, int|float $step): ?float
 	{
 		if (is_string($start) && is_string($end) && !is_numeric($start) && !is_numeric($end)) {
 			return null;

@@ -49,31 +49,37 @@ function lower(): void
 
 function greater(): void
 {
+	// add a upper bound, so we don't need to adjust
+	// the test when PHPStan adds support for PHP8.6+
+	if (PHP_VERSION_ID > 80599) {
+		return;
+	}
+
 	if (
 		version_compare( PHP_VERSION, '8.4', '>' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<80401, max>', $x);
+		assertType('int<80401, 80599>', $x);
 	}
 
 	if (
 		version_compare( PHP_VERSION, '8.4', 'gt' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<80401, max>', $x);
+		assertType('int<80401, 80599>', $x);
 	}
 
 	if (
 		version_compare( PHP_VERSION, '8.4', '>=' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<80400, max>', $x);
+		assertType('int<80400, 80599>', $x);
 	}
 	if (
 		version_compare( PHP_VERSION, '8.4', 'ge' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<80400, max>', $x);
+		assertType('int<80400, 80599>', $x);
 	}
 }
 
@@ -104,49 +110,61 @@ function equal(): void
 
 function not(): void
 {
+	// add a upper bound, so we don't need to adjust
+	// the test when PHPStan adds support for PHP8.6+
+	if (PHP_VERSION_ID > 80599) {
+		return;
+	}
+
 	if (
 		version_compare( PHP_VERSION, '8.4', '!=' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<min, 80399>|int<80401, max>', $x);
+		assertType('int<80000, 80399>|int<80401, 80599>', $x);
 	}
 
 	if (
 		version_compare( PHP_VERSION, '8.4', '<>' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<min, 80399>|int<80401, max>', $x);
+		assertType('int<80000, 80399>|int<80401, 80599>', $x);
 	}
 
 	if (
 		version_compare( PHP_VERSION, '8.4', 'ne' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<min, 80399>|int<80401, max>', $x);
+		assertType('int<80000, 80399>|int<80401, 80599>', $x);
 	}
 }
 
 function inverseOperandLower(): void
 {
+	// add a upper bound, so we don't need to adjust
+	// the test when PHPStan adds support for PHP8.6+
+	if (PHP_VERSION_ID > 80599) {
+		return;
+	}
+
 	if (
 		version_compare( '8.3.12', PHP_VERSION, '<' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<min, 80311>', $x);
+		assertType('int<80313, 80599>', $x);
 	}
 
 	if (
 		version_compare( '8.3.12', PHP_VERSION, '>=' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<80312, max>', $x);
+		assertType('int<80000, 80312>', $x);
 	}
 
 	if (
 		version_compare( '8.3.12', PHP_VERSION, '>' )
 	) {
 		$x = PHP_VERSION_ID;
-		assertType('int<80313, max>', $x);
+		assertType('int<80000, 80311>', $x);
 	}
 }
 

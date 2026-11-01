@@ -29,6 +29,17 @@ use function strtolower;
 final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyingExtension, TypeSpecifierAwareExtension
 {
 
+	private const INVERSE_OPERATORS = [
+		'<' => '>',
+		'lt' => 'gt',
+		'<=' => '>=',
+		'le' => 'ge',
+		'>' => '<',
+		'gt' => 'lt',
+		'>=' => '<=',
+		'ge' => 'le',
+	];
+
 	private TypeSpecifier $typeSpecifier;
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void
@@ -60,7 +71,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& $version1->name->name === 'PHP_VERSION'
 			&& $version2 instanceof String_
 		) {
-			$integerVersionRange = $this->getVersionCompareType($version2->value, isset($args[2]) ? $args[2]->value : null, $scope);
+			$integerVersionRange = $this->getVersionCompareType($version2->value, isset($args[2]) ? $args[2]->value : null, $scope, false);
 
 			if ($integerVersionRange !== null) {
 				$narrowedVersion = TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange);
@@ -78,7 +89,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 			&& $version2->name->name === 'PHP_VERSION'
 			&& $version1 instanceof String_
 		) {
-			$integerVersionRange = $this->getVersionCompareType($version1->value, isset($args[2]) ? $args[2]->value : null, $scope);
+			$integerVersionRange = $this->getVersionCompareType($version1->value, isset($args[2]) ? $args[2]->value : null, $scope, true);
 			if ($integerVersionRange !== null) {
 				$narrowedVersion = TypeCombinator::intersect($scope->getPhpVersion()->getType(), $integerVersionRange);
 				return $this->typeSpecifier->create(
@@ -93,7 +104,7 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 		return new SpecifiedTypes();
 	}
 
-	private function getVersionCompareType(string $value, ?Expr $operator, Scope $scope): ?Type
+	private function getVersionCompareType(string $value, ?Expr $operator, Scope $scope, bool $phpVersionIsSecondOperand): ?Type
 	{
 		$parsedVersion = SimplePhpVersionParser::parseVersion($value);
 		if ($parsedVersion === null) {
@@ -113,6 +124,11 @@ final class VersionCompareFunctionTypeSpecifyingExtension implements FunctionTyp
 
 		if (!in_array($operatorString, VersionCompareFunctionDynamicReturnTypeExtension::VALID_OPERATORS, true)) {
 			return null;
+		}
+
+		if ($phpVersionIsSecondOperand) {
+			// version_compare('8.3', PHP_VERSION, '<') means PHP_VERSION > '8.3'
+			$operatorString = self::INVERSE_OPERATORS[$operatorString] ?? $operatorString;
 		}
 
 		if (in_array($operatorString, ['<', 'lt'], true)) {

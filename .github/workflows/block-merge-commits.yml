@@ -2,6 +2,13 @@ on: pull_request
 
 name: Block merge commits
 
+concurrency:
+  group: block-merge-commits-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: read # Block Merge Commits lists the pull request's commits
+
 jobs:
   message-check:
     name: Block Merge Commits

@@ -7,6 +7,14 @@ on:
     branches:
       - "2.2.x"
 
+concurrency:
+  # a newer push to 2.2.x merges everything an older one would have
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+# The merge is pushed with PHPSTAN_BOT_TOKEN, not the workflow token.
+permissions: {}
+
 jobs:
   merge:
     name: Merge branch
@@ -19,7 +27,7 @@ jobs:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked] -- the persisted PHPSTAN_BOT_TOKEN credentials push the merge below
         with:
           fetch-depth: 0
           ref: '2.3.x'
@@ -28,5 +36,5 @@ jobs:
         run: |
           git config --global user.name "phpstan-bot"
           git config --global user.email "ondrej+phpstanbot@mirtes.cz"
-          git merge --strategy=ort origin/${{ github.ref_name }} -m "Merge branch ${{ github.ref_name }} into 2.3.x"
+          git merge --strategy=ort "origin/${GITHUB_REF_NAME}" -m "Merge branch ${GITHUB_REF_NAME} into 2.3.x"
           git push

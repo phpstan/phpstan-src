@@ -481,7 +481,7 @@ jobs:
     # it runs on ubuntu-latest without a container and carries that core
     # over (runs-on and container cannot read env, hence the lookup of
     # ORIGIN_RUN_ID repeated in both).
-    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)] && 'ubuntu-latest' || matrix.target.runs-on }}
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)] && 'ubuntu-latest' || matrix.target.runs-on }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
     # Container legs pin the binaries' userland floor independently of the
     # runner image: the gnu legs run in the prebuilt ubuntu:22.04-based
     # image (.github/turbo-build/Dockerfile, published to GHCR by
@@ -489,7 +489,7 @@ jobs:
     # Ubuntu 22.04+, Debian 12+) and the jobs run no apt at all — and
     # alpine:3.24 builds the musl variant. The linux-musl-arm64 core is in
     # turbo-compile-core-musl-arm64 (see turbo-compile-musl-arm64 for why).
-    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)]) && (matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.target.php-version) || matrix.target.container) || '' }}
+    container: ${{ !(fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)]) && (matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}', matrix.target.php-version) || matrix.target.container) || '' }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
     needs: turbo-origins
     timeout-minutes: 30
 
@@ -502,7 +502,7 @@ jobs:
       PHP_ZTS: "0"
       TURBO_ARTIFACT: "phpstan_turbo_core-${{ matrix.target.name }}"
       PGO_PROFILE_ARTIFACT: "turbo-pgo-profile-${{ matrix.target.name }}"
-      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)] }}
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-{0}', matrix.target.name)] }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
 
     strategy:
       fail-fast: false
@@ -943,7 +943,8 @@ jobs:
 
       - name: "Restore the PHP build (Alpine container)"
         if: steps.alpine-php.outputs.release != ''
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # only pushes to this repository's branches can write the cache a tag build reads; pull requests write to their own scope
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning]
         with:
           path: "alpine-php-cache"
           key: "alpine-php-${{ steps.alpine-php.outputs.release }}-${{ hashFiles('.github/turbo-build/build-php.sh') }}"
@@ -1129,7 +1130,8 @@ jobs:
 
       - name: "Restore the PHP build"
         if: steps.alpine-php.outputs.release != ''
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # only pushes to this repository's branches can write the cache a tag build reads; pull requests write to their own scope
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning]
         with:
           path: "alpine-php-cache"
           key: "alpine-php-${{ steps.alpine-php.outputs.release }}-${{ hashFiles('.github/turbo-build/build-php.sh') }}"
@@ -1217,7 +1219,7 @@ jobs:
 
     env:
       GATE_ARTIFACT: "turbo-gate-fingerprint-${{ matrix.php-version }}"
-      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('turbo-gate-fingerprint-{0}', matrix.php-version)] }}
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('turbo-gate-fingerprint-{0}', matrix.php-version)] }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
 
     strategy:
       fail-fast: false
@@ -1518,7 +1520,7 @@ jobs:
     # the extension DLL it loads (turbo-compile-windows builds each with its
     # minor's), and a core linked with an older toolset runs on every newer
     # VC runtime.
-    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-windows-x86_64{0}', matrix.ts == 'zts' && '-zts' || '')] && 'ubuntu-latest' || 'windows-2022' }}
+    runs-on: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-windows-x86_64{0}', matrix.ts == 'zts' && '-zts' || '')] && 'ubuntu-latest' || 'windows-2022' }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
     needs: turbo-origins
     timeout-minutes: 40
 
@@ -1531,7 +1533,7 @@ jobs:
       # uses (ships bison and the unix tools phpize/configure expect).
       PHP_SDK_COMMIT: "c73faaf1cce914e2fc04da5587132f8f425996af" # php-sdk-2.7.1
       TURBO_ARTIFACT: "phpstan_turbo_core-windows-x86_64${{ matrix.ts == 'zts' && '-zts' || '' }}"
-      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-windows-x86_64{0}', matrix.ts == 'zts' && '-zts' || '')] }}
+      ORIGIN_RUN_ID: ${{ fromJSON(needs.turbo-origins.outputs.origins || '{}')[format('phpstan_turbo_core-windows-x86_64{0}', matrix.ts == 'zts' && '-zts' || '')] }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
 
     strategy:
       fail-fast: false
@@ -1590,7 +1592,7 @@ jobs:
 
       - name: "Build the core"
         if: env.ORIGIN_RUN_ID == ''
-        shell: cmd
+        shell: cmd # zizmor: ignore[obfuscation] -- the MSVC toolchain set up by msvc-dev-cmd runs from cmd
         working-directory: turbo-ext
         run: |
           for /d %%d in (C:\php-devel\php-*-devel-*) do set DEVEL=%%d
@@ -1709,7 +1711,7 @@ jobs:
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
         run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - name: "Compute the extension version and download the build tools"
@@ -1717,7 +1719,7 @@ jobs:
         env:
           MATRIX_TS: ${{ matrix.ts }}
           MATRIX_VS: ${{ matrix.vs }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
         run: bash .github/scripts/download-php-windows-devel.sh
 
       # the DLL and its import library, into the extension directory where
@@ -1737,7 +1739,7 @@ jobs:
           toolset: ${{ matrix.toolset }}
 
       - name: "Build the extension"
-        shell: cmd
+        shell: cmd # zizmor: ignore[obfuscation] -- the MSVC toolchain set up by msvc-dev-cmd runs from cmd
         working-directory: turbo-ext
         env:
           VARIANT: ${{ matrix.variant }}
@@ -2060,7 +2062,7 @@ jobs:
         if: matrix.target == 'windows-x86_64' && fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
         env:
           MATRIX_TS: ${{ matrix.ts }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
         run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
@@ -2197,7 +2199,8 @@ jobs:
 
       - name: "Restore the PHP build"
         if: steps.alpine-php.outputs.release != ''
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # only pushes to this repository's branches can write the cache a tag build reads; pull requests write to their own scope
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0 # zizmor: ignore[cache-poisoning]
         with:
           path: "alpine-php-cache"
           key: "alpine-php-${{ steps.alpine-php.outputs.release }}-${{ hashFiles('.github/turbo-build/build-php.sh') }}"
@@ -2344,7 +2347,7 @@ jobs:
         if: matrix.operating-system == 'windows-latest' && fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
         env:
           MATRIX_TS: ${{ matrix.ts }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }}
+          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
         run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - name: "Download extension artifact"
@@ -2842,7 +2845,7 @@ jobs:
           ref: 2.3.x
           # deliberately persisted: the push steps below authenticate with
           # this bot token
-          persist-credentials: true
+          persist-credentials: true # zizmor: ignore[artipacked]
 
       - name: "Get previous pushed dist commit"
         id: previous-commit

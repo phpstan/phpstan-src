@@ -12,6 +12,9 @@ concurrency:
   group: lint-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     name: "Lint"
@@ -39,6 +42,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -76,6 +81,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # only the PHP development headers are needed (php-config --includes);
       # the extension is not built here
@@ -118,6 +125,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -146,10 +155,13 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Checkout build-cs"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           repository: "phpstan/build-cs"
           path: "build-cs"
           ref: "2.x"
@@ -190,6 +202,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -216,6 +230,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0

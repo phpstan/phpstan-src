@@ -2,7 +2,7 @@
 
 name: "Test projects"
 
-on:
+on: # zizmor: ignore[concurrency-limits] -- each push dispatches a test of its own commit; a newer push does not supersede it
   push:
     branches:
       - "2.3.x"

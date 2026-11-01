@@ -1901,6 +1901,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -1921,7 +1923,9 @@ jobs:
           directory: "e2e"
 
       - name: "Test"
-        run: "${{ matrix.script }}"
+        env:
+          MATRIX_SCRIPT: ${{ matrix.script }}
+        run: eval "$MATRIX_SCRIPT"
 
   result-cache-e2e-tests-windows:
     name: "Result cache E2E tests on Windows (${{ matrix.name }})"
@@ -1993,6 +1997,8 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -2005,7 +2011,9 @@ jobs:
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
       - name: "Test"
-        run: "${{ matrix.script }}"
+        env:
+          MATRIX_SCRIPT: ${{ matrix.script }}
+        run: eval "$MATRIX_SCRIPT"
 
   e2e-tests:
     name: "E2E tests"
@@ -2285,6 +2293,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -2303,7 +2313,9 @@ jobs:
           directory: "e2e"
 
       - name: "Test"
-        run: ${{ matrix.script }}
+        env:
+          MATRIX_SCRIPT: ${{ matrix.script }}
+        run: eval "$MATRIX_SCRIPT"
 
   turbo-arena-e2e-tests:
     name: "Turbo arena E2E tests"
@@ -2319,6 +2331,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # the extension bakes its version from `git log -- turbo-ext/src`, and
           # TurboExtensionEnabler activates only the expected version - a shallow
           # clone hands us a "dev" build, which would skip the whole test
@@ -2448,6 +2461,7 @@ jobs:
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           # the extension bakes its version from `git log -- turbo-ext/src`, and
           # TurboExtensionEnabler activates only the expected version - a shallow
           # clone hands us a "dev" build, which would skip the whole test

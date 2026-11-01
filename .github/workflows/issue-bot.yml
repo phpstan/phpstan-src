@@ -21,6 +21,9 @@ concurrency:
   group: run-issue-bot-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   download:
     name: "Download data"
@@ -38,6 +41,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -103,6 +108,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -132,15 +139,20 @@ jobs:
       - name: "Extract shard"
         working-directory: "issue-bot"
         id: chunk
+        env:
+          SHARD: ${{ matrix.shard }}
         run: |
-          echo "phpVersion=$(jq -r '.[${{ matrix.shard }}].phpVersion' matrix.json)" >> "$GITHUB_OUTPUT"
-          echo "playgroundExamples=$(jq -r '.[${{ matrix.shard }}].playgroundExamples' matrix.json)" >> "$GITHUB_OUTPUT"
-          echo "chunkNumber=$(jq -r '.[${{ matrix.shard }}].chunkNumber' matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "phpVersion=$(jq -r --argjson shard "$SHARD" '.[$shard].phpVersion' matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "playgroundExamples=$(jq -r --argjson shard "$SHARD" '.[$shard].playgroundExamples' matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "chunkNumber=$(jq -r --argjson shard "$SHARD" '.[$shard].chunkNumber' matrix.json)" >> "$GITHUB_OUTPUT"
 
       - name: "Run PHPStan"
         working-directory: "issue-bot"
         timeout-minutes: 5
-        run: ./console.php run ${{ steps.chunk.outputs.phpVersion }} ${{ steps.chunk.outputs.playgroundExamples }}
+        env:
+          CHUNK_PHP_VERSION: ${{ steps.chunk.outputs.phpVersion }}
+          PLAYGROUND_EXAMPLES: ${{ steps.chunk.outputs.playgroundExamples }}
+        run: ./console.php run "$CHUNK_PHP_VERSION" "$PLAYGROUND_EXAMPLES"
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -161,6 +173,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0

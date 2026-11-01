@@ -1,11 +1,14 @@
 name: "Claude React On Review"
 
-on:
+on: # zizmor: ignore[concurrency-limits] -- every submitted review is handed to the dispatch workflow; a newer review does not supersede an older one
   pull_request_review:
     types: [submitted]
 
+permissions: {}
+
 jobs:
   save-context:
+    name: save-context
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,9 +37,12 @@ jobs:
 
       - name: Save review context
         if: steps.reviewer-permissions.outputs.result == 'true'
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REVIEW_ID: ${{ github.event.review.id }}
         run: |
-          echo "${{ github.event.pull_request.number }}" > pr_number.txt
-          echo "${{ github.event.review.id }}" > review_id.txt
+          echo "$PR_NUMBER" > pr_number.txt
+          echo "$REVIEW_ID" > review_id.txt
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: steps.reviewer-permissions.outputs.result == 'true'

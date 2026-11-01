@@ -21,6 +21,9 @@ concurrency:
   group: apigen-${{ github.ref }} # will be canceled on subsequent pushes in branch
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   apigen:
     name: "Run ApiGen"
@@ -36,6 +39,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
@@ -66,7 +71,7 @@ jobs:
     if: github.repository_owner == 'phpstan'
     runs-on: "ubuntu-latest"
     permissions:
-      id-token: write
+      id-token: write # assumes the deploy role in AWS through OIDC
       contents: read
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -87,16 +92,20 @@ jobs:
           aws-region: us-east-1
 
       - name: "Sync with S3"
+        env:
+          APIREF_BUCKET: ${{ vars.APIREF_BUCKET }}
         run: |
-          aws s3 sync ./docs "s3://${{ vars.APIREF_BUCKET }}/${{ github.ref_name }}" \
+          aws s3 sync ./docs "s3://${APIREF_BUCKET}/${GITHUB_REF_NAME}" \
             --exclude '.git*/*' \
             --follow-symlinks
 
       - name: "Invalidate CloudFront"
+        env:
+          APIREF_DISTRIBUTION_ID: ${{ vars.APIREF_DISTRIBUTION_ID }}
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id "${{ vars.APIREF_DISTRIBUTION_ID }}" \
-            --paths "/${{ github.ref_name }}/*"
+            --distribution-id "${APIREF_DISTRIBUTION_ID}" \
+            --paths "/${GITHUB_REF_NAME}/*"
 
       - uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
         with:

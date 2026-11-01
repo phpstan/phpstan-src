@@ -7,6 +7,10 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron: '0 0 * * 2'
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -27,6 +31,7 @@ jobs:
           ref: 2.3.x
           fetch-depth: '0'
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          persist-credentials: false
       - name: "Install PHP"
         uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
         with:
@@ -38,6 +43,7 @@ jobs:
         with:
           path: "phpstorm-stubs"
           repository: "jetbrains/phpstorm-stubs"
+          persist-credentials: false
       - name: "Update stubs"
         run: "composer require \"jetbrains/phpstorm-stubs:dev-master#$(git -C phpstorm-stubs rev-parse HEAD)\""
       - name: "Remove stubs repo"

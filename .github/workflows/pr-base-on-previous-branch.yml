@@ -3,12 +3,16 @@
 name: "Base PR on previous branch"
 
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] -- runs no code from the pull request (no checkout), only comments with PHPSTAN_BOT_TOKEN
     types:
       - opened
     branches:
       - '2.4.x'
 
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read

@@ -980,7 +980,7 @@ final class ClassReflection
 	 */
 	public function isEnum(): bool
 	{
-		return $this->reflection instanceof ReflectionEnum && $this->reflection->isEnum();
+		return $this->reflection instanceof ReflectionEnum;
 	}
 
 	/**

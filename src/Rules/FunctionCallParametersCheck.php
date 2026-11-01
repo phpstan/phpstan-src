@@ -103,7 +103,7 @@ final class FunctionCallParametersCheck
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
 		?array $renamedNamedArgumentParameterData,
-		FunctionReflection|MethodReflection|null $calleeReflection,
+		FunctionReflection|MethodReflection|null $calleeReflection = null,
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {

@@ -8,7 +8,11 @@ use function array_fill;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function ceil;
 use function count;
+use function floor;
+use function max;
+use function min;
 use function sort;
 use function sprintf;
 
@@ -33,8 +37,8 @@ class SchedulerTest extends TestCase
 				1,
 				30,
 				124,
-				5,
-				[25, 25, 25, 25, 24],
+				12,
+				[11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10],
 			],
 			[
 				16,
@@ -43,7 +47,7 @@ class SchedulerTest extends TestCase
 				30,
 				124,
 				3,
-				[25, 25, 25, 25, 24],
+				[11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10],
 			],
 			[
 				16,
@@ -60,8 +64,17 @@ class SchedulerTest extends TestCase
 				2,
 				30,
 				124,
+				6,
+				[11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 10],
+			],
+			[
+				16,
+				16,
 				2,
-				[25, 25, 25, 25, 24],
+				30,
+				900,
+				15,
+				[30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
 			],
 			[
 				16,
@@ -136,7 +149,8 @@ class SchedulerTest extends TestCase
 			'src/Middleware.php' => 560,
 		];
 
-		$scheduler = new Scheduler(20, 16, 1);
+		// a single process, so the two files stay in one job
+		$scheduler = new Scheduler(20, 1, 1);
 		$schedule = $scheduler->scheduleWork(16, array_keys($fileSizes), static fn (string $file): int => $fileSizes[$file] ?? 0);
 
 		$this->assertSame([['bootstrap.php', 'src/Middleware.php']], $schedule->getJobs());
@@ -187,10 +201,10 @@ class SchedulerTest extends TestCase
 
 	public function testAutoIsStillCappedByTheJobCount(): void
 	{
-		// 40 files -> 2 jobs at size 20, at least 2 jobs per process -> a single
-		// worker no matter how many cores the machine has
+		// 8 files -> 3 jobs even at the smaller size of 3, at least 2 jobs per
+		// process -> a single worker no matter how many cores the machine has
 		$scheduler = new Scheduler(20, Scheduler::AUTO, 2);
-		$schedule = $scheduler->scheduleWork(32, array_fill(0, 40, 'file.php'), static fn (string $file): int => 0);
+		$schedule = $scheduler->scheduleWork(32, array_fill(0, 8, 'file.php'), static fn (string $file): int => 0);
 
 		$this->assertSame(1, $schedule->getNumberOfProcesses());
 	}
@@ -201,6 +215,56 @@ class SchedulerTest extends TestCase
 		$schedule = $scheduler->scheduleWork(32, array_fill(0, 200, 'file.php'), static fn (string $file): int => 0);
 
 		$this->assertSame(20, $schedule->getNumberOfProcesses());
+	}
+
+	public function testSmallRunsUseSmallerJobs(): void
+	{
+		// 50 files -> 3 jobs at size 20, which is one worker - jobs of
+		// round(sqrt(50)) = 7 files make 8 jobs for 4 workers
+		$scheduler = new Scheduler(20, Scheduler::AUTO, 2);
+		$schedule = $scheduler->scheduleWork(14, array_fill(0, 50, 'file.php'), static fn (string $file): int => 0);
+
+		$this->assertSame(4, $schedule->getNumberOfProcesses());
+		$this->assertCount(8, $schedule->getJobs());
+	}
+
+	public function testASingleProcessKeepsTheConfiguredJobSize(): void
+	{
+		// one process analyses its jobs one after another, so smaller jobs
+		// would only change the order of its files
+		$callback = static fn (string $file): int => 0;
+
+		$tooFewFiles = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, array_fill(0, 8, 'file.php'), $callback);
+		$this->assertSame(1, $tooFewFiles->getNumberOfProcesses());
+		$this->assertCount(1, $tooFewFiles->getJobs());
+
+		$oneProcessAllowed = (new Scheduler(20, 1, 2))->scheduleWork(14, array_fill(0, 200, 'file.php'), $callback);
+		$this->assertSame(1, $oneProcessAllowed->getNumberOfProcesses());
+		$this->assertCount(10, $oneProcessAllowed->getJobs());
+
+		$oneCore = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(1, array_fill(0, 200, 'file.php'), $callback);
+		$this->assertSame(1, $oneCore->getNumberOfProcesses());
+		$this->assertCount(10, $oneCore->getJobs());
+	}
+
+	public function testLargeRunsKeepTheConfiguredJobSize(): void
+	{
+		foreach ([381, 400, 4524] as $numberOfFiles) {
+			$schedule = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, array_fill(0, $numberOfFiles, 'file.php'), static fn (string $file): int => 0);
+
+			$this->assertCount((int) ceil($numberOfFiles / 20), $schedule->getJobs(), sprintf('%d files', $numberOfFiles));
+		}
+	}
+
+	public function testSmallerJobsNeverMeanFewerProcesses(): void
+	{
+		$callback = static fn (string $file): int => 0;
+		for ($numberOfFiles = 1; $numberOfFiles <= 1000; $numberOfFiles++) {
+			$schedule = (new Scheduler(20, Scheduler::AUTO, 2))->scheduleWork(14, array_fill(0, $numberOfFiles, 'file.php'), $callback);
+			$configuredJobSizeProcesses = min(max((int) floor((int) ceil($numberOfFiles / 20) / 2), 1), 14);
+
+			$this->assertGreaterThanOrEqual($configuredJobSizeProcesses, $schedule->getNumberOfProcesses(), sprintf('%d files', $numberOfFiles));
+		}
 	}
 
 }

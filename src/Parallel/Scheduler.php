@@ -12,7 +12,9 @@ use function count;
 use function floor;
 use function max;
 use function min;
+use function round;
 use function sprintf;
+use function sqrt;
 use function usort;
 
 #[AutowiredService]
@@ -69,7 +71,20 @@ final class Scheduler implements DiagnoseExtension
 		}
 		usort($files, static fn (string $a, string $b): int => $fileSizes[$b] <=> $fileSizes[$a]);
 
+		[$maximumNumberOfProcesses, $decision] = $this->resolveMaximumNumberOfProcesses($cpuCores);
+
 		$numberOfJobs = (int) ceil(count($files) / $this->jobSize);
+
+		// a warm run often analyses only a few dozen files, which make too few jobs at the
+		// configured size for a second process - smaller jobs let more processes take part
+		$smallerNumberOfJobs = (int) ceil(count($files) / $this->resolveSmallerJobSize(count($files)));
+
+		// one process analyses its jobs one after another, so smaller jobs would only
+		// change the order of its files - analysis results can be sensitive to it
+		if ($this->resolveNumberOfProcesses($smallerNumberOfJobs, $cpuCores, $maximumNumberOfProcesses) > 1) {
+			$numberOfJobs = $smallerNumberOfJobs;
+		}
+
 		$stripedJobs = [];
 		foreach ($files as $i => $file) {
 			$stripedJobs[$i % $numberOfJobs][] = $file;
@@ -83,16 +98,33 @@ final class Scheduler implements DiagnoseExtension
 		unset($stripedJob);
 
 		$jobs = array_values($stripedJobs);
-		$numberOfProcesses = min(
-			max((int) floor(count($jobs) / $this->minimumNumberOfJobsPerProcess), 1),
-			$cpuCores,
-		);
-
-		[$maximumNumberOfProcesses, $decision] = $this->resolveMaximumNumberOfProcesses($cpuCores);
-		$usedNumberOfProcesses = min($numberOfProcesses, $maximumNumberOfProcesses);
+		$usedNumberOfProcesses = $this->resolveNumberOfProcesses(count($jobs), $cpuCores, $maximumNumberOfProcesses);
 		$this->storedData = [$cpuCores, count($files), count($jobs), $usedNumberOfProcesses, $decision];
 
 		return new Schedule($usedNumberOfProcesses, $jobs);
+	}
+
+	/**
+	 * The configured job size, or sqrt(files) when that is smaller. From about jobSize^2
+	 * files upward (381 with the default 20) the configured job size applies unchanged.
+	 *
+	 * @return positive-int
+	 */
+	private function resolveSmallerJobSize(int $numberOfFiles): int
+	{
+		return max(1, min($this->jobSize, (int) round(sqrt($numberOfFiles))));
+	}
+
+	/**
+	 * @param positive-int $maximumNumberOfProcesses
+	 */
+	private function resolveNumberOfProcesses(int $numberOfJobs, int $cpuCores, int $maximumNumberOfProcesses): int
+	{
+		return min(
+			max((int) floor($numberOfJobs / $this->minimumNumberOfJobsPerProcess), 1),
+			$cpuCores,
+			$maximumNumberOfProcesses,
+		);
 	}
 
 	/**

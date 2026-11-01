@@ -87,4 +87,9 @@ class YieldTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-yield-oversized-self-rejection.php'], []);
 	}
 
+	public function testBug15417(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15417.php'], []);
+	}
+
 }

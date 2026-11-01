@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\Generics;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -14,8 +15,10 @@ use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
+use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
+use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
@@ -451,6 +454,18 @@ final class TemplateArgumentObserver
 			// never holds no markers, and is its own iterable key and value type
 			return $constraints;
 		}
+		if ($declared instanceof ObjectShapeType) {
+			return $this->observeObjectShapeSend($constraints, $declared, $actual, $isCallArgument);
+		}
+		if ($declared instanceof IntersectionType) {
+			// object{...}&Foo - the shape's properties are bounds next to Foo's arguments
+			foreach ($declared->getTypes() as $member) {
+				if (!$member instanceof ObjectShapeType) {
+					continue;
+				}
+				$constraints = $this->observeObjectShapeSend($constraints, $member, $actual, $isCallArgument);
+			}
+		}
 
 		$actualReflections = $actual->getObjectClassReflections();
 		if (count($actualReflections) === 1) {
@@ -501,6 +516,38 @@ final class TemplateArgumentObserver
 		$declaredValueType = $declared->getIterableValueType();
 		if (!self::isInertSendTarget($declaredValueType, $isCallArgument)) {
 			$constraints = $this->observeSend($constraints, $declaredValueType, $actual->getIterableValueType(), $isCallArgument);
+		}
+
+		return $constraints;
+	}
+
+	/**
+	 * Each property of the object flows into the declared property of the shape
+	 * (`(object) ['x' => new Foo(1)]` returned as `object{x: Foo<int>}`).
+	 */
+	private function observeObjectShapeSend(TemplateArgumentConstraints $constraints, ObjectShapeType $declared, Type $actual, bool $isCallArgument): TemplateArgumentConstraints
+	{
+		if (!$actual->isObject()->yes()) {
+			return $constraints;
+		}
+
+		$scope = new OutOfClassScope();
+		foreach ($declared->getProperties() as $name => $declaredPropertyType) {
+			$name = (string) $name;
+			if (!$actual->hasInstanceProperty($name)->yes()) {
+				continue;
+			}
+
+			try {
+				$actualProperty = $actual->getInstanceProperty($name, $scope);
+			} catch (MissingPropertyFromReflectionException) {
+				continue;
+			}
+			if (!$actualProperty->isPublic() || $actualProperty->isStatic()) {
+				continue;
+			}
+
+			$constraints = $this->observeSend($constraints, $declaredPropertyType, $actualProperty->getReadableType(), $isCallArgument);
 		}
 
 		return $constraints;

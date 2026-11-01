@@ -1,4 +1,4 @@
-<?php // lint >= 8.0
+<?php
 
 namespace Bug12585;
 
@@ -30,8 +30,12 @@ final class EloquentBuilderRelationParameterExtension implements MethodParameter
     /** @var list<string> */
     private array $methods = ['whereHas', 'withWhereHas'];
 
-    public function __construct(private ReflectionProvider $reflectionProvider)
+    /** @var ReflectionProvider */
+    private $reflectionProvider;
+
+    public function __construct(ReflectionProvider $reflectionProvider)
     {
+        $this->reflectionProvider = $reflectionProvider;
     }
 
     public function isMethodSupported(MethodReflection $methodReflection, ParameterReflection $parameter): bool
@@ -40,10 +44,10 @@ final class EloquentBuilderRelationParameterExtension implements MethodParameter
             return false;
         }
 
-        return in_array($methodReflection->getName(), $this->methods, strict: true);
+        return in_array($methodReflection->getName(), $this->methods, true);
     }
 
-    public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, ParameterReflection $parameter, Scope $scope): Type|null
+    public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, ParameterReflection $parameter, Scope $scope): ?Type
     {
         $method    = $methodReflection->getName();
         $relations = $this->getRelationsFromMethodCall($methodCall, $scope);
@@ -180,7 +184,7 @@ final class EloquentBuilderRelationParameterExtension implements MethodParameter
      * @param array<int, string|TypeWithClassName>|string|TypeWithClassName $models
      * @return ($models is array<int, string|TypeWithClassName> ? Type : ObjectType)
      */
-    private function getBuilderTypeForModels(array|string|TypeWithClassName $models): Type
+    private function getBuilderTypeForModels($models): Type
     {
         $models = is_array($models) ? $models : [$models];
         $models = array_unique($models, SORT_REGULAR);
@@ -215,8 +219,16 @@ final class EloquentBuilderRelationParameterExtension implements MethodParameter
 
 final class ClosureQueryParameter implements ParameterReflection
 {
-    public function __construct(private string $name, private Type $type)
+    /** @var string */
+    private $name;
+
+    /** @var Type */
+    private $type;
+
+    public function __construct(string $name, Type $type)
     {
+        $this->name = $name;
+        $this->type = $type;
     }
 
     public function getName(): string
@@ -244,7 +256,7 @@ final class ClosureQueryParameter implements ParameterReflection
         return false;
     }
 
-    public function getDefaultValue(): Type|null
+    public function getDefaultValue(): ?Type
     {
         return null;
     }

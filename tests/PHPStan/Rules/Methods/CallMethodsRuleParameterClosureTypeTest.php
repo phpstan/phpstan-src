@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<CallMethodsRule>
@@ -21,6 +22,7 @@ class CallMethodsRuleParameterClosureTypeTest extends RuleTestCase
 		return self::getContainer()->getByType(CallMethodsRule::class);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12585(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12585.php'], [

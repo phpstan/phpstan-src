@@ -2,6 +2,7 @@
 
 namespace PHPStan\Testing;
 
+use LogicException;
 use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
@@ -32,10 +33,14 @@ use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function array_merge;
 use function count;
+use function explode;
+use function file_get_contents;
 use function implode;
+use function preg_match_all;
 use function sprintf;
 use function str_replace;
 use function strcmp;
+use function trim;
 use function usort;
 
 /**
@@ -254,6 +259,53 @@ abstract class RuleTestCase extends PHPStanTestCase
 	private function normalizeLineEndings(string $string): string
 	{
 		return str_replace("\r\n", "\n", $string);
+	}
+
+	/**
+	 * Any single line comment prefixed 'error:' is used as expected error
+	 */
+	protected function analyseFileWithErrorsAsComments(string $file): void
+	{
+		$file = self::getFileHelper()->normalizePath($file);
+		$this->analyse([$file], $this->parseExpectedErrorsFromComments($file));
+	}
+
+	/**
+	 * @return list<array{0: string, 1: int}>
+	 */
+	private function parseExpectedErrorsFromComments(string $file): array
+	{
+		$fileData = file_get_contents($file);
+
+		if ($fileData === false) {
+			throw new LogicException('Error while reading data from ' . $file);
+		}
+
+		$fileDataLines = explode("\n", $fileData);
+
+		$expectedErrors = [];
+
+		foreach ($fileDataLines as $line => $row) {
+			$matches = [];
+			$matched = preg_match_all('#// error:(.+)#', $row, $matches);
+
+			if ($matched === false) {
+				throw new LogicException('Error while matching errors');
+			}
+
+			if ($matched === 0) {
+				continue;
+			}
+
+			foreach ($matches[1] as $error) {
+				$expectedErrors[] = [
+					trim($error),
+					$line + 1,
+				];
+			}
+		}
+
+		return $expectedErrors;
 	}
 
 	/**

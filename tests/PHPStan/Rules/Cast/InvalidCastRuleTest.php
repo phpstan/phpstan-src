@@ -40,32 +40,7 @@ class InvalidCastRuleTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/invalid-cast.php'], [
-			[
-				'Cannot cast stdClass to string.',
-				7,
-			],
-			[
-				'Cannot cast stdClass to int.',
-				23,
-			],
-			[
-				'Cannot cast stdClass to float.',
-				24,
-			],
-			[
-				'Cannot cast object to string.',
-				36,
-			],
-			[
-				'Cannot cast Test\\Foo to string.',
-				42,
-			],
-			[
-				'Cannot cast array|float|int to string.',
-				49,
-			],
-		]);
+		$this->analyseFileWithErrorsAsComments(__DIR__ . '/data/invalid-cast.php');
 	}
 
 	public function testBug5162(): void

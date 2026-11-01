@@ -31,8 +31,11 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use function array_column;
 use function array_map;
+use function implode;
 use function is_string;
+use function usort;
 
 #[AutowiredService]
 final class ExportedNodeResolver
@@ -292,16 +295,40 @@ final class ExportedNodeResolver
 	private function exportClassStatements(array $statements, string $namespacedName, NamespaceUses $namespaceUses): array
 	{
 		$exportedNodes = [];
-		foreach ($statements as $statement) {
+		foreach ($statements as $i => $statement) {
 			$exportedNode = $this->exportClassStatement($statement, $namespacedName, $namespaceUses);
 			if ($exportedNode === null) {
 				continue;
 			}
 
-			$exportedNodes[] = $exportedNode;
+			$exportedNodes[] = [$this->getClassStatementSortKey($statement), $i, $exportedNode];
 		}
 
-		return $exportedNodes;
+		usort($exportedNodes, static fn (array $a, array $b): int => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+
+		return array_column($exportedNodes, 2);
+	}
+
+	private function getClassStatementSortKey(Node\Stmt $node): string
+	{
+		if ($node instanceof ClassMethod) {
+			return 'method ' . $node->name->toString();
+		}
+
+		if ($node instanceof Node\Stmt\Property) {
+			return 'property ' . implode(',', array_map(static fn (Node\PropertyItem $prop): string => $prop->name->toString(), $node->props));
+		}
+
+		if ($node instanceof Node\Stmt\ClassConst) {
+			return 'constant ' . implode(',', array_map(static fn (Node\Const_ $const): string => $const->name->toString(), $node->consts));
+		}
+
+		if ($node instanceof Node\Stmt\EnumCase) {
+			// the same key for all cases keeps their order, which is the order of cases()
+			return 'case';
+		}
+
+		throw new ShouldNotHappenException();
 	}
 
 	private function exportClassStatement(Node\Stmt $node, string $namespacedName, NamespaceUses $namespaceUses): ?ExportedNode

@@ -26,20 +26,25 @@ use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Style\SymfonyStyle as SymfonyConsoleStyle;
 use function array_keys;
 use function basename;
+use function clearstatcache;
 use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function is_file;
+use function max;
 use function md5_file;
 use function mkdir;
 use function ord;
 use function rmdir;
+use function stat;
 use function strlen;
 use function strpos;
 use function substr;
 use function sys_get_temp_dir;
+use function time;
 use function uniqid;
 use function unlink;
+use function usleep;
 
 class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 {
@@ -101,6 +106,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 
 	public function testWarmSaveCopiesEveryEntryByteForByte(): void
 	{
+		$this->waitUntilTheFilesAreInThePast();
 		$this->saveFullAnalysis($this->collectedData(['a', 'b', 'c']));
 		$before = md5_file($this->cacheFilePath());
 
@@ -114,9 +120,11 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 
 	public function testPartialSaveEqualsFreshSaveOfMergedData(): void
 	{
+		$this->waitUntilTheFilesAreInThePast();
 		$this->saveFullAnalysis($this->collectedData(['a', 'b', 'c']));
 
 		file_put_contents($this->files[1], "<?php class Cacheb { public function m(): void {} }\n");
+		$this->waitUntilTheFilesAreInThePast();
 		$manager = $this->createManager();
 		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
 		$this->assertSame([$this->files[1]], $resultCache->getFilesToAnalyse());
@@ -186,6 +194,25 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	}
 
 	/**
+	 * A save keeps the stat signature only of a file not modified in the second the save began,
+	 * so without waiting, saves on both sides of a second boundary differ in their signatures.
+	 */
+	private function waitUntilTheFilesAreInThePast(): void
+	{
+		clearstatcache();
+		$latest = 0;
+		foreach ($this->files as $file) {
+			$stat = stat($file);
+			$this->assertIsArray($stat);
+			$latest = max($latest, $stat['mtime'], $stat['ctime']);
+		}
+
+		while (time() <= $latest) {
+			usleep(50_000);
+		}
+	}
+
+	/**
 	 * @param list<string> $names
 	 * @return array<string, array<class-string<MethodWithoutImpurePointsCollector>, list<string>>>
 	 */
@@ -206,7 +233,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	{
 		@unlink($this->cacheFilePath());
 		$manager = $this->createManager();
-		$resultCache = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput());
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
 		$this->assertTrue($resultCache->isFullAnalysis());
 
 		$processed = $manager->process($this->analyserResult($collectedData), $resultCache, $this->nullOutput(), false, true);

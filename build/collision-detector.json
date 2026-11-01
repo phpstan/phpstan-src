@@ -18,6 +18,8 @@
 		"../tests/PHPStan/Levels/data/stubs/function.php",
 		"../tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php",
 		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php",
-		"../tests/PHPStan/Rules/Cast/data/void-cast.php"
+		"../tests/PHPStan/Rules/Cast/data/void-cast.php",
+		"../tests/PHPStan/Dependency/data/exported-member-order-b.php",
+		"../tests/PHPStan/Dependency/data/exported-enum-case-order-b.php"
     ]
 }

@@ -198,7 +198,7 @@ final class FixerWorkerRunner
 					true,
 				);
 				$finalizerResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $isOnlyFiles, false, null, null, $resultCache->getCollectedDataRuleResults());
-				$resultCacheResult->save($finalizerResult->getCollectedDataRuleResults());
+				$resultCacheResult->save($finalizerResult);
 
 				$internalErrors = [];
 				foreach ($finalizerResult->getAnalyserResult()->getInternalErrors() as $internalError) {

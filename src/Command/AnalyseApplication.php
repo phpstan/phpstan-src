@@ -153,7 +153,7 @@ final class AnalyseApplication
 					count($finalizerResult->getCollectedDataRuleResults()),
 				));
 			}
-			$savedResultCache = $resultCacheResult->save($finalizerResult->getCollectedDataRuleResults());
+			$savedResultCache = $resultCacheResult->save($finalizerResult);
 			$analyserResult = $finalizerResult->getAnalyserResult();
 			$internalErrors = $analyserResult->getInternalErrors();
 			$errors = array_merge(

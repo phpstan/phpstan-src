@@ -4,13 +4,13 @@ namespace PHPStan\Analyser\ResultCache;
 
 use Closure;
 use PHPStan\Analyser\AnalyserResult;
-use PHPStan\Analyser\CollectedDataRuleResult;
+use PHPStan\Analyser\FinalizerResult;
 
 final class ResultCacheProcessResult
 {
 
 	/**
-	 * @param Closure(array<string, CollectedDataRuleResult>): bool $saveCallback
+	 * @param Closure(FinalizerResult): bool $saveCallback
 	 */
 	public function __construct(private AnalyserResult $analyserResult, private Closure $saveCallback)
 	{
@@ -25,13 +25,11 @@ final class ResultCacheProcessResult
 	 * Writes the result cache, and says whether it was written.
 	 *
 	 * It is separate from ResultCacheManager::process() so that the caller can run the rules on
-	 * CollectedDataNode on the merged result first, and save their results too.
-	 *
-	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
+	 * CollectedDataNode on the merged result first, and save what they found too.
 	 */
-	public function save(array $collectedDataRuleResults): bool
+	public function save(FinalizerResult $finalizerResult): bool
 	{
-		return ($this->saveCallback)($collectedDataRuleResults);
+		return ($this->saveCallback)($finalizerResult);
 	}
 
 }

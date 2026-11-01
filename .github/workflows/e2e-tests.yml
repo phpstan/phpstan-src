@@ -1623,6 +1623,20 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'register a class in the container; re-analysing everything.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-collector-sweep
+              # Two errors: one from an ordinary rule, one from a rule built on collected data.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'PlainCaller.php:8:Method ResultCacheE2ECollectorSweep\PlainCaller::doPlainCaller() has invalid return type ResultCacheE2ECollectorSweep\Missing.' "$OUTPUT"
+              ../bashunit assert contains 'Caller.php:7:Call to function resultCacheE2ECollectorHelper() on a separate line has no effect.' "$OUTPUT"
+              # One new file defines both missing symbols. The files with errors are re-analysed - including
+              # the file holding the error of the collector-backed rule, which is not in the cached error map.
+              cp appears/nsfns.php src/nsfns.php
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert not_contains 'has invalid return type' "$OUTPUT"
+              ../bashunit assert not_contains 'on a separate line has no effect' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-update
               composer install
               # cold run populates the cache; the shipped rule reports an error, so ignore the exit code

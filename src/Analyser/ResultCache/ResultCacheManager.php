@@ -7,6 +7,7 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\CollectedDataRuleResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FileAnalyserResult;
+use PHPStan\Analyser\FinalizerResult;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
@@ -42,6 +43,7 @@ use function array_filter;
 use function array_intersect;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -106,7 +108,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v23-collectedDataRuleResults';
+	private const CACHE_VERSION = 'v24-filesWithCollectedDataRuleErrors';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
@@ -716,6 +718,18 @@ final class ResultCacheManager
 				}
 			}
 			$collectedDataRuleResults = $transformer->absolutizeCollectedDataRuleResults($collectedDataRuleResults);
+			$storedFilesWithCollectedDataRuleErrors = $data['filesWithCollectedDataRuleErrors'] ?? [];
+			if (!is_array($storedFilesWithCollectedDataRuleErrors)) {
+				throw new RuntimeException('The cached files with errors of the rules on collected data are not an array.');
+			}
+			$filesWithCollectedDataRuleErrors = [];
+			foreach ($storedFilesWithCollectedDataRuleErrors as $fileWithCollectedDataRuleError) {
+				if (!is_string($fileWithCollectedDataRuleError)) {
+					throw new RuntimeException('A cached file with errors of the rules on collected data is not a string.');
+				}
+
+				$filesWithCollectedDataRuleErrors[] = $transformer->absolutizePath($fileWithCollectedDataRuleError);
+			}
 		} catch (Throwable $e) {
 			@unlink($cacheFilePath);
 
@@ -775,10 +789,20 @@ final class ResultCacheManager
 
 			$changedAnalysedFiles[$analysedFile] = true;
 		}
+		// The errors of the rules on CollectedDataNode are not in $errors: those rules run on the merged
+		// collected data on every run, a cached copy would be reported twice. But such an error waits
+		// for a symbol to appear just like any other, and re-analysing its file renews the file's share
+		// of the collected data.
+		$cachedFilesWithCollectedDataRuleErrors = array_fill_keys($filesWithCollectedDataRuleErrors, true);
+		$filteredFilesWithCollectedDataRuleErrors = [];
+
 		// only the stub files with errors so far, which are never analysed
 		$filesWithErrorsAllChanged = $filteredErrors === [];
 		foreach ($allAnalysedFiles as $analysedFile) {
-			if (!array_key_exists($analysedFile, $errors) || array_key_exists($analysedFile, $changedAnalysedFiles)) {
+			if (
+				(!array_key_exists($analysedFile, $errors) && !array_key_exists($analysedFile, $cachedFilesWithCollectedDataRuleErrors))
+				|| array_key_exists($analysedFile, $changedAnalysedFiles)
+			) {
 				continue;
 			}
 
@@ -789,6 +813,9 @@ final class ResultCacheManager
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
+			}
+			if (array_key_exists($analysedFile, $cachedFilesWithCollectedDataRuleErrors)) {
+				$filteredFilesWithCollectedDataRuleErrors[] = $analysedFile;
 			}
 			if (array_key_exists($analysedFile, $locallyIgnoredErrors)) {
 				$filteredLocallyIgnoredErrors[$analysedFile] = $locallyIgnoredErrors[$analysedFile];
@@ -880,6 +907,9 @@ final class ResultCacheManager
 				$filesToAnalyse[] = $dependentFile;
 			}
 		}
+
+		// in the order process() compares them in
+		sort($filteredFilesWithCollectedDataRuleErrors);
 
 		// the freshly computed metadata, so a file that stopped being scanned is not counted
 		$scannedFiles = is_array($meta['scannedFiles'] ?? null) ? $meta['scannedFiles'] : [];
@@ -1036,6 +1066,9 @@ final class ResultCacheManager
 
 				$filesToAnalyse[] = $fileWithError;
 			}
+			foreach ($filteredFilesWithCollectedDataRuleErrors as $fileWithError) {
+				$filesToAnalyse[] = $fileWithError;
+			}
 		}
 
 		foreach ($packageSeededFiles as $packageSeededFile) {
@@ -1105,6 +1138,7 @@ final class ResultCacheManager
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
 			collectedDataRuleResults: $collectedDataRuleResults,
+			filesWithCollectedDataRuleErrors: $filteredFilesWithCollectedDataRuleErrors,
 		);
 	}
 
@@ -1251,7 +1285,7 @@ final class ResultCacheManager
 			$projectConfigArray = $this->getPathTransformer()->relativizeProjectConfig($projectConfigArray);
 			$meta['projectConfig'] = Neon::encode($projectConfigArray);
 		}
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles, array $collectedDataRuleResults) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles, FinalizerResult $finalizerResult) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): bool {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -1337,7 +1371,15 @@ final class ResultCacheManager
 			}
 
 			// in the order save() writes them, which is the order they are restored in
+			$collectedDataRuleResults = $finalizerResult->getCollectedDataRuleResults();
 			ksort($collectedDataRuleResults);
+
+			$filesWithCollectedDataRuleErrors = [];
+			foreach ($finalizerResult->getCollectorErrors() as $collectorError) {
+				$filesWithCollectedDataRuleErrors[$collectorError->getFilePath()] = true;
+			}
+			ksort($filesWithCollectedDataRuleErrors);
+			$filesWithCollectedDataRuleErrors = array_keys($filesWithCollectedDataRuleErrors);
 
 			$stubFiles = $this->getStubFiles();
 			if (
@@ -1350,6 +1392,7 @@ final class ResultCacheManager
 				&& $unmatchedLineIgnores === $resultCache->getUnmatchedLineIgnores()
 				&& $collectedDataByFile === $resultCache->getCollectedData()
 				&& $collectedDataRuleResults === $resultCache->getCollectedDataRuleResults()
+				&& $filesWithCollectedDataRuleErrors === $resultCache->getFilesWithCollectedDataRuleErrors()
 				&& $packageDependencies === $resultCache->getPackageDependencies()
 				&& $exportedNodes === $resultCache->getExportedNodes()
 				&& $cachedExportedNodes->getFiles() === $resultCache->getCachedExportedNodes()->getFiles()
@@ -1368,7 +1411,7 @@ final class ResultCacheManager
 				$currentFileHashes[$file] = self::REANALYSE_FILE_HASH_PREFIX . $currentFileHashes[$file];
 			}
 
-			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles, $collectedDataRuleResults);
+			$this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles, $collectedDataRuleResults, $filesWithCollectedDataRuleErrors);
 
 			if ($output->isVeryVerbose()) {
 				$output->writeLineFormatted('Result cache is saved.');
@@ -1378,7 +1421,7 @@ final class ResultCacheManager
 		};
 
 		if ($resultCache->isFullAnalysis()) {
-			return new ResultCacheProcessResult($analyserResult, function (array $collectedDataRuleResults) use ($save, $output, $analyserResult, $projectConfigArray, $doSave, $freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $freshCollectedDataByFile): bool {
+			return new ResultCacheProcessResult($analyserResult, function (FinalizerResult $finalizerResult) use ($save, $output, $analyserResult, $projectConfigArray, $doSave, $freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $freshCollectedDataByFile): bool {
 				if ($save === false) {
 					if ($output->isVeryVerbose()) {
 						$output->writeLineFormatted('Result cache was not saved because it was not requested.');
@@ -1392,7 +1435,7 @@ final class ResultCacheManager
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
 
-				return $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles, $collectedDataRuleResults);
+				return $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedDataByFile, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles, $finalizerResult);
 			});
 		}
 
@@ -1409,7 +1452,7 @@ final class ResultCacheManager
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());
 
-		$saveCallback = function (array $collectedDataRuleResults) use ($save, $resultCache, $projectConfigArray, $doSave, $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes): bool {
+		$saveCallback = function (FinalizerResult $finalizerResult) use ($save, $resultCache, $projectConfigArray, $doSave, $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes): bool {
 			if ($save === false) {
 				return false;
 			}
@@ -1434,7 +1477,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			return $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $collectedDataRuleResults);
+			return $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedDataByFile, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $finalizerResult);
 		};
 
 		$flatErrors = [];
@@ -1894,6 +1937,7 @@ final class ResultCacheManager
 	 * @param mixed[] $meta
 	 * @param array<string, string> $stubFiles
 	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
+	 * @param list<string> $filesWithCollectedDataRuleErrors
 	 */
 	private function save(
 		int $lastFullAnalysisTime,
@@ -1913,6 +1957,7 @@ final class ResultCacheManager
 		array $meta,
 		array $stubFiles,
 		array $collectedDataRuleResults,
+		array $filesWithCollectedDataRuleErrors,
 	): void
 	{
 		$invertedDependencies = [];
@@ -1999,6 +2044,7 @@ final class ResultCacheManager
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 		$collectedDataRuleResults = $transformer->relativizeCollectedDataRuleResults($collectedDataRuleResults);
+		$filesWithCollectedDataRuleErrors = array_map(static fn (string $path): string => $transformer->relativizePath($path), $filesWithCollectedDataRuleErrors);
 
 		$file = $this->cacheFilePath;
 
@@ -2036,6 +2082,7 @@ final class ResultCacheManager
 			$this->writeArrayFrame($handle, $file, 'unmatchedLineIgnores', $unmatchedLineIgnores);
 			$this->writeArrayFrame($handle, $file, 'collectedData', $collectedData);
 			$this->writeValueFrame($handle, $file, 'collectedDataRuleResults', $collectedDataRuleResults);
+			$this->writeValueFrame($handle, $file, 'filesWithCollectedDataRuleErrors', $filesWithCollectedDataRuleErrors);
 			// An older PHPStan reading this file absolutizes the dependencies before it gets to the
 			// cacheVersion check that makes it discard the file, and fails on a missing section.
 			$this->writeArrayFrame($handle, $file, 'dependencies', []);

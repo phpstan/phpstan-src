@@ -12,7 +12,7 @@ tests-golden-reflection:
 	php vendor/bin/phpunit tests/PHPStan/Reflection/ReflectionProviderGoldenTest.php
 
 lint:
-	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors \
+	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors -e php,php3,php4,php5,phtml,phpt,fixed \
 		--exclude tests/PHPStan/Analyser/data \
 		--exclude tests/bench/data \
 		--exclude tests/bench/RegressionBench.php \

@@ -42,10 +42,10 @@ final class RestartReason
 	public function __construct(
 		private string $extension,
 		private string $description,
-		private array $iniSettings = [],
-		private array $environmentVariables = [],
-		private array $strippedExtensions = [],
-		private array $commandLineArguments = [],
+		private array $iniSettings,
+		private array $environmentVariables,
+		private array $strippedExtensions,
+		private array $commandLineArguments,
 	)
 	{
 	}

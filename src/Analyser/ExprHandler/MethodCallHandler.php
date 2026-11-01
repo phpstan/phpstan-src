@@ -188,6 +188,7 @@ final class MethodCallHandler implements ExprHandler
 			$storage,
 			$nodeCallback,
 			$context,
+			null,
 		);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
@@ -294,6 +295,13 @@ final class MethodCallHandler implements ExprHandler
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
 			argsResult: $argsResult,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $preliminaryResult);
 
@@ -340,7 +348,7 @@ final class MethodCallHandler implements ExprHandler
 		} else {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr, null);
 		}
 		if (
 			$methodReflection === null
@@ -361,7 +369,7 @@ final class MethodCallHandler implements ExprHandler
 			// the short-circuited world evaluates none of the arguments
 			$mayShortCircuit ? VariableFlow::choice($argumentsFlow, null) : $argumentsFlow,
 			VariableFlowBuilder::throws($expr, $throwPoints),
-			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP, 1, null) : null,
 		);
 
 		// the call's scope effects (@param-out, @phpstan-self-out, invalidations)
@@ -380,6 +388,9 @@ final class MethodCallHandler implements ExprHandler
 				$beforeScope->getFile(),
 				[$varResult->getType(), $preliminaryResult->getType(), ...($walkMethodReflection !== null ? DependencyTypes::ofCalledMethod($walkMethodReflection, true) : [])],
 				$walkMethodReflection !== null ? [$walkMethodReflection->getDeclaringClass()->getName()] : [],
+				[],
+				[],
+				[],
 			),
 		);
 		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
@@ -499,7 +510,7 @@ final class MethodCallHandler implements ExprHandler
 	 * @param MethodCall $expr
 	 * @param MethodCall $normalizedExpr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
 			return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context);

@@ -56,51 +56,46 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"kind\0" /* 0 */
 	"children\0" /* 5 */
-	"[]\0" /* 14 */
-	"name\0" /* 17 */
-	"null\0" /* 22 */
-	"type\0" /* 27 */
-	"PHPStan\\Type\\Type\0" /* 32 */
-	"level\0" /* 50 */
-	"1\0" /* 56 */
-	"atLeastOnce\0" /* 58 */
-	"false\0" /* 70 */
-	"canExit\0" /* 76 */
-	"true\0" /* 84 */
-	"catches\0" /* 89 */
-	"arrow\0" /* 97 */
-	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 103 */
-	"cases\0" /* 137 */
-	"canRepeat\0" /* 143 */
-	"canContainAnyThrowable\0" /* 153 */
-	"stmt\0" /* 176 */
-	"PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_\0" /* 181 */
-	"bindings\0" /* 235 */
-	"ownWrites\0" /* 244 */
-	"__construct"; /* 254 */
+	"name\0" /* 14 */
+	"type\0" /* 19 */
+	"PHPStan\\Type\\Type\0" /* 24 */
+	"level\0" /* 42 */
+	"atLeastOnce\0" /* 48 */
+	"canExit\0" /* 60 */
+	"catches\0" /* 68 */
+	"arrow\0" /* 76 */
+	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 82 */
+	"cases\0" /* 116 */
+	"canRepeat\0" /* 122 */
+	"canContainAnyThrowable\0" /* 132 */
+	"stmt\0" /* 155 */
+	"PhpParser\\Node\\Stmt\\Foreach_|PhpParser\\Node\\Stmt\\For_\0" /* 160 */
+	"bindings\0" /* 214 */
+	"ownWrites\0" /* 223 */
+	"__construct"; /* 233 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
-	reg::packed(5, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $children */
-	reg::packed(17, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 22), /* __construct $name */
-	reg::packed(27, MAY_BE_NULL, 32, false, false, 22), /* __construct $type */
-	reg::packed(50, MAY_BE_LONG, reg::NoString, false, false, 56), /* __construct $level */
-	reg::packed(58, MAY_BE_BOOL, reg::NoString, false, false, 70), /* __construct $atLeastOnce */
-	reg::packed(76, MAY_BE_BOOL, reg::NoString, false, false, 84), /* __construct $canExit */
-	reg::packed(89, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $catches */
-	reg::packed(97, MAY_BE_NULL, 103, false, false, 22), /* __construct $arrow */
-	reg::packed(137, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $cases */
-	reg::packed(143, MAY_BE_BOOL, reg::NoString, false, false, 84), /* __construct $canRepeat */
-	reg::packed(153, MAY_BE_BOOL, reg::NoString, false, false, 70), /* __construct $canContainAnyThrowable */
-	reg::packed(176, MAY_BE_NULL, 181, false, false, 22), /* __construct $stmt */
-	reg::packed(235, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $bindings */
-	reg::packed(244, MAY_BE_ARRAY, reg::NoString, false, false, 14), /* __construct $ownWrites */
+	reg::packed(5, MAY_BE_ARRAY), /* __construct $children */
+	reg::packed(14, MAY_BE_NULL | MAY_BE_STRING), /* __construct $name */
+	reg::packed(19, MAY_BE_NULL, 24), /* __construct $type */
+	reg::packed(42, MAY_BE_LONG), /* __construct $level */
+	reg::packed(48, MAY_BE_BOOL), /* __construct $atLeastOnce */
+	reg::packed(60, MAY_BE_BOOL), /* __construct $canExit */
+	reg::packed(68, MAY_BE_ARRAY), /* __construct $catches */
+	reg::packed(76, MAY_BE_NULL, 82), /* __construct $arrow */
+	reg::packed(116, MAY_BE_ARRAY), /* __construct $cases */
+	reg::packed(122, MAY_BE_BOOL), /* __construct $canRepeat */
+	reg::packed(132, MAY_BE_BOOL), /* __construct $canContainAnyThrowable */
+	reg::packed(155, MAY_BE_NULL, 160), /* __construct $stmt */
+	reg::packed(214, MAY_BE_ARRAY), /* __construct $bindings */
+	reg::packed(223, MAY_BE_ARRAY), /* __construct $ownWrites */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 254 /* __construct */, 1, 0, 15, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 233 /* __construct */, 15, 0, 15, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableControlFlow

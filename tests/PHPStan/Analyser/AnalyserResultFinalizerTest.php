@@ -32,6 +32,7 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 			static function () use (&$events): void {
 				$events[] = 'post';
 			},
+			[],
 		)->getAnalyserResult();
 
 		$this->assertSame([
@@ -62,6 +63,7 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 				static function () use (&$events): void {
 					$events[] = 'post';
 				},
+				[],
 			);
 			$this->fail('The exception should have been rethrown in debug mode.');
 		} catch (RuntimeException $e) {
@@ -113,6 +115,7 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 			reachedInternalErrorsCountLimit: false,
 			peakMemoryUsageBytes: 0,
 			processedFiles: [],
+			workerCount: 0,
 		);
 	}
 

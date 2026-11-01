@@ -8,7 +8,7 @@ use Attribute;
  * Marks a class or interface where `instanceof` in user code
  * is error-prone and deprecated.
  *
- * Reported by ApiInstanceofTypeRule. The optional $insteadUse
+ * Reported by ApiInstanceofTypeRule. The nullable $insteadUse
  * describes the Type API to query instead.
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector.
@@ -17,7 +17,7 @@ use Attribute;
 final class InstanceofDeprecated
 {
 
-	public function __construct(public ?string $insteadUse = null)
+	public function __construct(public ?string $insteadUse)
 	{
 	}
 

@@ -579,6 +579,14 @@ class NodeScopeResolver
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 				type: $mixed,
 				nativeType: $mixed,
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				argsResult: null,
+				variableFlow: null,
+				dependencies: null,
 			);
 		}
 
@@ -778,7 +786,7 @@ class NodeScopeResolver
 			// re-processes the node on its own scope instead. In CONSUME mode the
 			// divergence is intentional (an ensured-non-null device) and the
 			// stored result is consumed unconditionally, re-anchored below.
-			if ($storedResult !== null && ($consume || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted))) {
+			if ($storedResult !== null && ($consume || $storedResult->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted, false))) {
 				// a foreign-position answer must not thread its original walk
 				// scopes into THIS walk - re-anchor it to the asking position so
 				// subsequent operands keep evaluating on the asking scope
@@ -843,6 +851,14 @@ class NodeScopeResolver
 				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $newExprResult->getNativeType() : $newExprResult->getType()),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 				dependencies: $newExprResult->getDependencies(),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
 			);
 			$this->storeExpressionResult($storage, $expr, $expressionResult);
 			return $expressionResult;

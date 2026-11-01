@@ -58,14 +58,14 @@ final class AttributesHandler
 						);
 						$expr = new New_($attr->name, $attr->args);
 						$expr = ArgumentsNormalizer::reorderNewArguments($parametersAcceptor, $expr) ?? $expr;
-						$dependencies[] = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants(), $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep())->getDependencies();
+						$dependencies[] = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $constructorReflection->getVariants(), $constructorReflection->getNamedArgumentsVariants(), $expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(true), null)->getDependencies();
 						$nodeScopeResolver->callNodeCallback($nodeCallback, $attr, $scope, $storage);
 						continue;
 					}
 				}
 
 				foreach ($attr->args as $arg) {
-					$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep())->getDependencies();
+					$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(true))->getDependencies();
 					$nodeScopeResolver->callNodeCallback($nodeCallback, $arg, $scope, $storage);
 				}
 				$nodeScopeResolver->callNodeCallback($nodeCallback, $attr, $scope, $storage);

@@ -58,11 +58,11 @@ final class Dependencies
 	 */
 	public static function create(
 		string $file,
-		array $types = [],
-		array $classNames = [],
-		array $reflections = [],
-		array $filePaths = [],
-		array $usedTraits = [],
+		array $types,
+		array $classNames,
+		array $reflections,
+		array $filePaths,
+		array $usedTraits,
 	): ?self
 	{
 		$nonNullTypes = [];

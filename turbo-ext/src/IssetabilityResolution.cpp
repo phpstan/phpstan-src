@@ -438,9 +438,8 @@ PT_MINIT_REGISTRATION(pt_register_issetability_resolution)
 	cls.method(sigs::isSet, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *typeCallback;
 		zval *result = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		ZEND_PARSE_PARAMETERS_START(2, 2)
 			Z_PARAM_ZVAL(typeCallback)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ZVAL(result)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!zend_is_callable(typeCallback, 0, NULL))) {

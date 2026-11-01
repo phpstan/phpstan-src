@@ -67,7 +67,7 @@ final class CachedParser implements Parser
 			$cachedSourceBytesMax,
 			self::SIZE_EVICTION_FLOOR_LIMIT,
 		);
-		$this->cachedSourceByFile = new LruCache(maxWeight: self::MEMOIZED_SOURCE_BYTES_LIMIT);
+		$this->cachedSourceByFile = new LruCache(maxWeight: self::MEMOIZED_SOURCE_BYTES_LIMIT, maxCount: 0, weightEvictionFloorCount: 0);
 	}
 
 	/**

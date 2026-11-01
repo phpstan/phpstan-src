@@ -42,29 +42,27 @@ inline constexpr char strings[] =
 	"name\0" /* 5 */
 	"write\0" /* 10 */
 	"PHPStan\\Node\\Variable\\VariableWrite\0" /* 16 */
-	"null\0" /* 52 */
-	"type\0" /* 57 */
-	"PHPStan\\Type\\Type\0" /* 62 */
-	"targetId\0" /* 80 */
-	"container\0" /* 89 */
-	"false\0" /* 99 */
-	"offset\0" /* 105 */
-	"__construct"; /* 112 */
+	"type\0" /* 52 */
+	"PHPStan\\Type\\Type\0" /* 57 */
+	"targetId\0" /* 75 */
+	"container\0" /* 84 */
+	"offset\0" /* 94 */
+	"__construct"; /* 101 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
 	reg::packed(5, MAY_BE_STRING), /* __construct $name */
-	reg::packed(10, MAY_BE_NULL, 16, false, false, 52), /* __construct $write */
-	reg::packed(57, MAY_BE_NULL, 62, false, false, 52), /* __construct $type */
-	reg::packed(80, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 52), /* __construct $targetId */
-	reg::packed(89, MAY_BE_BOOL, reg::NoString, false, false, 99), /* __construct $container */
-	reg::packed(105, MAY_BE_ANY, reg::NoString, false, false, 52), /* __construct $offset */
+	reg::packed(10, MAY_BE_NULL, 16), /* __construct $write */
+	reg::packed(52, MAY_BE_NULL, 57), /* __construct $type */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_LONG), /* __construct $targetId */
+	reg::packed(84, MAY_BE_BOOL), /* __construct $container */
+	reg::packed(94, MAY_BE_ANY), /* __construct $offset */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 112 /* __construct */, 2, 0, 7, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 101 /* __construct */, 7, 0, 7, reg::NoArg, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableAccessFlow

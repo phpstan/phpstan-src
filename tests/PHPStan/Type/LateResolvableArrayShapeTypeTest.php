@@ -20,13 +20,13 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 	private static function createShape(?array $unsealed): Type
 	{
 		return LateResolvableArrayShapeType::create(
-			[[self::templateType(), new IntegerType(), false]],
+			[[self::templateType(null), new IntegerType(), false]],
 			$unsealed,
 			ArrayShapeNode::KIND_ARRAY,
 		);
 	}
 
-	private static function templateType(?Type $bound = null): Type
+	private static function templateType(?Type $bound): Type
 	{
 		return TemplateTypeFactory::create(
 			TemplateTypeScope::createWithFunction('doFoo'),
@@ -41,7 +41,7 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 	 */
 	public static function dataDescribe(): iterable
 	{
-		$templateType = self::templateType();
+		$templateType = self::templateType(null);
 
 		yield 'sealed' => [
 			LateResolvableArrayShapeType::create(
@@ -145,7 +145,7 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 	 */
 	public static function dataResolve(): iterable
 	{
-		$templateType = self::templateType();
+		$templateType = self::templateType(null);
 
 		yield 'constant key' => [
 			LateResolvableArrayShapeType::create(
@@ -236,8 +236,8 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 	public function testResolvesToTemplateTypeBoundsWhenTheTemplateTypeStays(): void
 	{
 		$type = LateResolvableArrayShapeType::create(
-			[[self::templateType(), new IntegerType(), false]],
-			[self::templateType(), new BooleanType()],
+			[[self::templateType(null), new IntegerType(), false]],
+			[self::templateType(null), new BooleanType()],
 			ArrayShapeNode::KIND_ARRAY,
 		);
 		$this->assertInstanceOf(LateResolvableArrayShapeType::class, $type);
@@ -252,8 +252,8 @@ class LateResolvableArrayShapeTypeTest extends PHPStanTestCase
 	public function testTraverseSimultaneouslyVisitsKeysAndValues(): void
 	{
 		$left = LateResolvableArrayShapeType::create(
-			[[self::templateType(), new IntegerType(), false]],
-			[self::templateType(), new BooleanType()],
+			[[self::templateType(null), new IntegerType(), false]],
+			[self::templateType(null), new BooleanType()],
 			ArrayShapeNode::KIND_ARRAY,
 		);
 		$right = LateResolvableArrayShapeType::create(

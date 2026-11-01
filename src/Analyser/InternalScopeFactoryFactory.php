@@ -12,6 +12,8 @@ interface InternalScopeFactoryFactory
 	 */
 	public function create(
 		?callable $nodeCallback,
+		bool $createsNodeCallbackScopes,
+		?ExpressionResultStorageStack $expressionResultStorageStack,
 	): InternalScopeFactory;
 
 }

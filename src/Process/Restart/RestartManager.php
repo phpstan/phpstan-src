@@ -125,7 +125,7 @@ final class RestartManager
 	 * @param list<string>|null $extensions restart only for these reasons, null for all of them
 	 * @param string $appName prefix of the <APP>_ALLOW_XDEBUG environment variable, see TurboProcessRestarter
 	 */
-	public static function run(array $argv, ?string $pharPath = null, ?array $extensions = null, string $appName = 'phpstan'): void
+	public static function run(array $argv, ?string $pharPath, ?array $extensions, string $appName): void
 	{
 		self::cleanUpComposedIni();
 
@@ -156,7 +156,7 @@ final class RestartManager
 	 * @param list<string> $argv
 	 * @return list<RestartReason>
 	 */
-	public static function collectReasons(array $argv, ?string $pharPath = null, string $appName = 'phpstan'): array
+	public static function collectReasons(array $argv, ?string $pharPath, string $appName): array
 	{
 		if (!self::isEligible($argv)) {
 			return [];
@@ -488,7 +488,7 @@ final class RestartManager
 	 *
 	 * @param list<string> $argv
 	 */
-	public static function isXdebugAllowed(array $argv, string $appName = 'phpstan'): bool
+	public static function isXdebugAllowed(array $argv, string $appName): bool
 	{
 		if (in_array('--xdebug', $argv, true)) {
 			return true;

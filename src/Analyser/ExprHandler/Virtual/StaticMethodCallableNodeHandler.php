@@ -86,6 +86,15 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->initializerExprTypeResolver->getFirstClassCallableType($expr->getOriginalNode(), InitializerExprContext::fromScope($beforeScope), $nativeTypesPromoted),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 
 		return $result->withDependencies(Dependencies::merge(
@@ -133,7 +142,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			$types = [...$types, ...DependencyTypes::ofCalledMethod($methodReflection, false)];
 		}
 
-		return Dependencies::create($scope->getFile(), $types, $classNames);
+		return Dependencies::create($scope->getFile(), $types, $classNames, [], [], []);
 	}
 
 }

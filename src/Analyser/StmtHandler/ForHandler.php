@@ -289,7 +289,7 @@ final class ForHandler implements StmtHandler
 			$dependencies[] = $loopResult->getDependencies();
 			$loopScope = $loopResult->getScope();
 		}
-		$finalScope = $finalScope->generalizeWith($loopScope);
+		$finalScope = $finalScope->generalizeWith($loopScope, null);
 
 		if ($lastCondExpr !== null) {
 			// the loop condition narrows the post-loop scope to its falsey branch,
@@ -349,7 +349,7 @@ final class ForHandler implements StmtHandler
 		$update = VariableFlow::sequence(...$updateFlow);
 		// the body may run or not whatever the condition says: a write in it
 		// does not make an earlier write dead, and a usage in it counts
-		$loop = VariableFlow::loop($condition, $finalScopeResult->getVariableFlow(), $update, false, true);
+		$loop = VariableFlow::loop($condition, $finalScopeResult->getVariableFlow(), $update, false, true, true);
 		$initWrites = VariableFlowBuilder::writes(VariableFlow::sequence(...$initFlow));
 		$bindings = [];
 		foreach ($initWrites as $write) {

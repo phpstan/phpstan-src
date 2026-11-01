@@ -228,7 +228,7 @@ PT_MINIT_REGISTRATION(pt_register_args_result)
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expressionResult, *resolvedParametersAcceptor, *argResults, *byRefArguments = NULL;
-		if (!zp::parse<zp::Obj, zp::ObjOrNull, zp::Arr, zp::Opt<zp::Arr>>(execute_data, expressionResult, resolvedParametersAcceptor, argResults, byRefArguments)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::ObjOrNull, zp::Arr, zp::Arr>(execute_data, expressionResult, resolvedParametersAcceptor, argResults, byRefArguments)) RETURN_THROWS();
 		ArgsResult(Z_OBJ_P(ZEND_THIS)).construct(expressionResult, resolvedParametersAcceptor, argResults, byRefArguments);
 	});
 

@@ -11,7 +11,7 @@ require __DIR__ . '/../../../../../vendor/autoload.php';
 $temporaryIni = (string) getenv('PHPSTAN_RESTART_INI');
 
 // diagnose never restarts, so this only takes ownership of the ini
-RestartManager::run(['bin/phpstan', 'diagnose']);
+RestartManager::run(['bin/phpstan', 'diagnose'], null, null, 'phpstan');
 
 $pid = pcntl_fork();
 if ($pid === 0) {

@@ -351,10 +351,9 @@ namespace {
 	rightType = NULL;
 	zend_class_entry *typeCe = pt_class(PT_CLASS_TYPE);
 	if (UNEXPECTED(typeCe == NULL)) return false;
-	ZEND_PARSE_PARAMETERS_START(2, 5)
+	ZEND_PARSE_PARAMETERS_START(5, 5)
 		Z_PARAM_OBJECT_OF_CLASS(scope, pt_class(PT_CLASS_SCOPE))
 		Z_PARAM_OBJECT_OF_CLASS(expr, pt_class(exprClassIdx))
-		Z_PARAM_OPTIONAL
 		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(nodeScopeResolver, pt_ce_node_scope_resolver)
 		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(leftType, typeCe)
 		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(rightType, typeCe)

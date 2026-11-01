@@ -42,7 +42,7 @@ final class ParametersProcessor
 				continue;
 			}
 
-			$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep())->getDependencies();
+			$dependencies[] = $nodeScopeResolver->processExprNode($stmt, $param->default, $scope, $storage, $nodeCallback, ExpressionContext::createDeep(true))->getDependencies();
 		}
 
 		return Dependencies::merge(...$dependencies);

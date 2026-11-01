@@ -129,7 +129,7 @@ final class VariableLivenessResolver
 				$self->escapedNames[$param->var->name] = true;
 				continue;
 			}
-			$imports[] = VariableFlow::write(new VariableWrite($param->var->name, $param->var, spl_object_id($param->var), VariableWrite::KIND_PARAMETER));
+			$imports[] = VariableFlow::write(new VariableWrite($param->var->name, $param->var, spl_object_id($param->var), VariableWrite::KIND_PARAMETER, false, null, null, true), null);
 		}
 		if ($function instanceof Node\Expr\Closure) {
 			foreach ($function->uses as $use) {
@@ -140,14 +140,14 @@ final class VariableLivenessResolver
 					$self->escapedNames[$use->var->name] = true;
 					continue;
 				}
-				$imports[] = VariableFlow::write(new VariableWrite($use->var->name, $use->var, spl_object_id($use->var), VariableWrite::KIND_CLOSURE_USE));
+				$imports[] = VariableFlow::write(new VariableWrite($use->var->name, $use->var, spl_object_id($use->var), VariableWrite::KIND_CLOSURE_USE, false, null, null, true), null);
 			}
 		}
 		$body = VariableFlow::sequence(...[...$imports, $flow]);
 		$self->collect($body);
 		if ($self->writes !== [] && !$self->opaque) {
 			$self->compileAccesses();
-			$self->liveBefore($body, [], new VariableFlowContext([]));
+			$self->liveBefore($body, [], new VariableFlowContext([], [], [], [], []));
 			$self->resolveDependencies();
 			$self->resolveCoverage();
 		}
@@ -245,7 +245,7 @@ final class VariableLivenessResolver
 				// a by-reference capture aliases the variable - the value it
 				// holds at that point is observable through the alias
 				if ($flow->kind === VariableFlow::ESCAPE && $this->loopStatements !== []) {
-					$next = $this->passBindingProbes($next, $flow->name, null);
+					$next = $this->passBindingProbes($next, $flow->name, null, false);
 				}
 				return $next + ($this->readKeys[spl_object_id($flow)] ?? []);
 			}
@@ -317,8 +317,8 @@ final class VariableLivenessResolver
 			return $names;
 		}
 		if ($flow->kind === VariableFlow::ARROW && $flow->arrow !== null) {
-			$outputs = $this->liveBefore($flow->children[1], [], new VariableFlowContext([]));
-			$names = $this->liveBefore($flow->children[0], $outputs, new VariableFlowContext($outputs, uncaught: $outputs));
+			$outputs = $this->liveBefore($flow->children[1], [], new VariableFlowContext([], [], [], [], []));
+			$names = $this->liveBefore($flow->children[0], $outputs, new VariableFlowContext($outputs, uncaught: $outputs, breaks: [], continues: [], catches: []));
 			foreach ($flow->arrow->params as $param) {
 				if (!$param->var instanceof Node\Expr\Variable || !is_string($param->var->name)) {
 					continue;
@@ -457,7 +457,7 @@ final class VariableLivenessResolver
 	 * @param array<string, true> $next
 	 * @return array<string, true>
 	 */
-	private function passBindingProbes(array $next, string $name, ?VariableWrite $write, bool $discard = false): array
+	private function passBindingProbes(array $next, string $name, ?VariableWrite $write, bool $discard): array
 	{
 		$prefix = sprintf("\0%s\0", $name);
 		foreach (array_keys($next) as $key) {

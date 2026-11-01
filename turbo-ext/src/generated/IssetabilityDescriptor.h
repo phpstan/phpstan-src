@@ -41,62 +41,60 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"kind\0" /* 0 */
 	"variableName\0" /* 5 */
-	"null\0" /* 18 */
-	"varResult\0" /* 23 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 33 */
-	"dimResult\0" /* 67 */
-	"innerResult\0" /* 77 */
-	"reflectionResolver\0" /* 89 */
-	"Closure\0" /* 108 */
-	"propertyFetch\0" /* 116 */
-	"PhpParser\\Node\\Expr\0" /* 130 */
-	"__construct\0" /* 150 */
-	"\0" /* 162 */
-	"PHPStan\\Analyser\\IssetabilityDescriptor\0" /* 163 */
-	"variable\0" /* 203 */
-	"offset\0" /* 212 */
-	"property\0" /* 219 */
-	"scope\0" /* 228 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 234 */
-	"useNativeTypes\0" /* 265 */
-	"expr\0" /* 280 */
-	"reprocessUntrackedLinks\0" /* 285 */
-	"false\0" /* 309 */
-	"PHPStan\\Analyser\\IssetabilityResolution\0" /* 315 */
-	"resolve"; /* 355 */
+	"varResult\0" /* 18 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 28 */
+	"dimResult\0" /* 62 */
+	"innerResult\0" /* 72 */
+	"reflectionResolver\0" /* 84 */
+	"Closure\0" /* 103 */
+	"propertyFetch\0" /* 111 */
+	"PhpParser\\Node\\Expr\0" /* 125 */
+	"__construct\0" /* 145 */
+	"\0" /* 157 */
+	"PHPStan\\Analyser\\IssetabilityDescriptor\0" /* 158 */
+	"variable\0" /* 198 */
+	"offset\0" /* 207 */
+	"property\0" /* 214 */
+	"scope\0" /* 223 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 229 */
+	"useNativeTypes\0" /* 260 */
+	"expr\0" /* 275 */
+	"reprocessUntrackedLinks\0" /* 280 */
+	"PHPStan\\Analyser\\IssetabilityResolution\0" /* 304 */
+	"resolve"; /* 344 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
-	reg::packed(5, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 18), /* __construct $variableName */
-	reg::packed(23, MAY_BE_NULL, 33, false, false, 18), /* __construct $varResult */
-	reg::packed(67, MAY_BE_NULL, 33, false, false, 18), /* __construct $dimResult */
-	reg::packed(77, MAY_BE_NULL, 33, false, false, 18), /* __construct $innerResult */
-	reg::packed(89, MAY_BE_NULL, 108, false, false, 18), /* __construct $reflectionResolver */
-	reg::packed(116, MAY_BE_NULL, 130, false, false, 18), /* __construct $propertyFetch */
+	reg::packed(5, MAY_BE_NULL | MAY_BE_STRING), /* __construct $variableName */
+	reg::packed(18, MAY_BE_NULL, 28), /* __construct $varResult */
+	reg::packed(62, MAY_BE_NULL, 28), /* __construct $dimResult */
+	reg::packed(72, MAY_BE_NULL, 28), /* __construct $innerResult */
+	reg::packed(84, MAY_BE_NULL, 103), /* __construct $reflectionResolver */
+	reg::packed(111, MAY_BE_NULL, 125), /* __construct $propertyFetch */
 	reg::packed(5, MAY_BE_STRING), /* variable $variableName */
-	reg::packed(162, 0, 163), /* variable return */
-	reg::packed(23, 0, 33), /* offset $varResult */
-	reg::packed(67, 0, 33), /* offset $dimResult */
-	reg::packed(162, 0, 163), /* offset return */
-	reg::packed(77, MAY_BE_NULL, 33), /* property $innerResult */
-	reg::packed(89, 0, 108), /* property $reflectionResolver */
-	reg::packed(116, 0, 130), /* property $propertyFetch */
-	reg::packed(162, 0, 163), /* property return */
-	reg::packed(228, 0, 234), /* resolve $scope */
-	reg::packed(265, MAY_BE_BOOL), /* resolve $useNativeTypes */
-	reg::packed(280, 0, 130), /* resolve $expr */
-	reg::packed(285, MAY_BE_BOOL, reg::NoString, false, false, 309), /* resolve $reprocessUntrackedLinks */
-	reg::packed(162, 0, 315), /* resolve return */
+	reg::packed(157, 0, 158), /* variable return */
+	reg::packed(18, 0, 28), /* offset $varResult */
+	reg::packed(62, 0, 28), /* offset $dimResult */
+	reg::packed(157, 0, 158), /* offset return */
+	reg::packed(72, MAY_BE_NULL, 28), /* property $innerResult */
+	reg::packed(84, 0, 103), /* property $reflectionResolver */
+	reg::packed(111, 0, 125), /* property $propertyFetch */
+	reg::packed(157, 0, 158), /* property return */
+	reg::packed(223, 0, 229), /* resolve $scope */
+	reg::packed(260, MAY_BE_BOOL), /* resolve $useNativeTypes */
+	reg::packed(275, 0, 125), /* resolve $expr */
+	reg::packed(280, MAY_BE_BOOL), /* resolve $reprocessUntrackedLinks */
+	reg::packed(157, 0, 304), /* resolve return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 150 /* __construct */, 1, 0, 7, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig variable = { { 203 /* variable */, 1, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig offset = { { 212 /* offset */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig property = { { 219 /* property */, 3, 12, 3, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig resolve = { { 355 /* resolve */, 3, 16, 4, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 145 /* __construct */, 7, 0, 7, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig variable = { { 198 /* variable */, 1, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig offset = { { 207 /* offset */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig property = { { 214 /* property */, 3, 12, 3, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolve = { { 344 /* resolve */, 4, 16, 4, 20, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IssetabilityDescriptor

@@ -147,7 +147,7 @@ final class ArrayHandler implements ExprHandler
 			if ($tracksKeys) {
 				[$keyType, $offset] = $this->getKeyTypeAndOffset($nodeScopeResolver, $arrayItem, $item['keyResult'], $scope, $nextIndex);
 				if ($walk['literalWrite'] !== null) {
-					$item['itemWrite'] = new VariableWrite($walk['literalWrite']->getVariableName(), $arrayItem, spl_object_id($arrayItem), VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, $offset, $walk['literalWrite']->getId());
+					$item['itemWrite'] = new VariableWrite($walk['literalWrite']->getVariableName(), $arrayItem, spl_object_id($arrayItem), VariableWrite::KIND_ARRAY_LITERAL_ITEM, true, $offset, $walk['literalWrite']->getId(), true);
 				}
 			}
 
@@ -353,7 +353,7 @@ final class ArrayHandler implements ExprHandler
 
 			foreach ($walkedResults as $walkedResult) {
 				if ($walkedResult === $valueResult && $item['itemWrite'] !== null) {
-					$variableFlows[] = VariableFlow::write($item['itemWrite']);
+					$variableFlows[] = VariableFlow::write($item['itemWrite'], null);
 				}
 				$variableFlows[] = $walkedResult->getVariableFlow();
 				$hasYield = $hasYield || $walkedResult->hasYield();
@@ -422,6 +422,15 @@ final class ArrayHandler implements ExprHandler
 				return $type;
 			},
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 
 		return $result->withDependencies(Dependencies::merge(
@@ -571,7 +580,7 @@ final class ArrayHandler implements ExprHandler
 			$returnTypes[] = $variant->getReturnType();
 		}
 
-		return Dependencies::create($scope->getFile(), $returnTypes);
+		return Dependencies::create($scope->getFile(), $returnTypes, [], [], [], []);
 	}
 
 	/**

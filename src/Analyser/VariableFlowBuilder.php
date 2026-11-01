@@ -70,10 +70,10 @@ final class VariableFlowBuilder
 		return null;
 	}
 
-	public static function targetRead(Expr $target, ExpressionResultStorage $storage, bool $read, ?int $targetId = null): ?VariableFlow
+	public static function targetRead(Expr $target, ExpressionResultStorage $storage, bool $read, ?int $targetId): ?VariableFlow
 	{
 		if ($target instanceof Expr\Variable) {
-			return is_string($target->name) ? ($read ? VariableFlow::read($target->name, $targetId) : null) : self::child($target->name, $storage);
+			return is_string($target->name) ? ($read ? VariableFlow::read($target->name, $targetId, false, null) : null) : self::child($target->name, $storage);
 		}
 		if ($target instanceof Expr\List_ || $target instanceof Expr\Array_) {
 			return null;
@@ -122,7 +122,7 @@ final class VariableFlowBuilder
 	}
 
 	/** @param VariableWrite::KIND_* $kind */
-	public static function targetWrite(Expr $target, int $kind, MutatingScope $scope, ExpressionResultStorage $storage, ?Type $redundant = null): ?VariableFlow
+	public static function targetWrite(Expr $target, int $kind, MutatingScope $scope, ExpressionResultStorage $storage, ?Type $redundant): ?VariableFlow
 	{
 		if ($target instanceof Expr\List_ || $target instanceof Expr\Array_) {
 			$writes = [];
@@ -130,7 +130,7 @@ final class VariableFlowBuilder
 				if ($item === null) {
 					continue;
 				}
-				$writes[] = VariableFlow::sequence(self::child($item->key, $storage), self::targetRead($item->value, $storage, false), self::targetWrite($item->value, VariableWrite::KIND_LIST_ITEM, $scope, $storage), $item->byRef ? self::escapeRoot($item->value) : null);
+				$writes[] = VariableFlow::sequence(self::child($item->key, $storage), self::targetRead($item->value, $storage, false, null), self::targetWrite($item->value, VariableWrite::KIND_LIST_ITEM, $scope, $storage, null), $item->byRef ? self::escapeRoot($item->value) : null);
 			}
 			return VariableFlow::sequence(...$writes);
 		}
@@ -175,7 +175,7 @@ final class VariableFlowBuilder
 			if ($target->name === 'this' || in_array($target->name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 				return null;
 			}
-			return new VariableWrite($target->name, $target, spl_object_id($target), $kind);
+			return new VariableWrite($target->name, $target, spl_object_id($target), $kind, false, null, null, true);
 		}
 		if (!$target instanceof Expr\ArrayDimFetch) {
 			return null;
@@ -196,7 +196,7 @@ final class VariableFlowBuilder
 		}
 		$dimResult = $first->dim !== null ? $storage->findExpressionResult($first->dim) : null;
 		$offset = $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null;
-		return new VariableWrite($root->name, $target, spl_object_id($target), $kind, true, $offset, replacesOffset: $first === $target);
+		return new VariableWrite($root->name, $target, spl_object_id($target), $kind, true, $offset, replacesOffset: $first === $target, parentId: null);
 	}
 
 	public static function escapeRoot(Expr $expr): ?VariableFlow

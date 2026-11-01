@@ -54,20 +54,19 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\MutatingScope\0" /* 449 */
 	"nameResult\0" /* 480 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 491 */
-	"null\0" /* 525 */
-	"nameArgResult\0" /* 530 */
-	"Closure\0" /* 544 */
-	"createTypeCallback\0" /* 552 */
-	"stmt\0" /* 571 */
-	"PhpParser\\Node\\Stmt\0" /* 576 */
-	"scope\0" /* 596 */
-	"storage\0" /* 602 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 610 */
-	"nodeCallback\0" /* 651 */
-	"context\0" /* 664 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 672 */
-	"processExpr\0" /* 707 */
-	"composeResult"; /* 719 */
+	"nameArgResult\0" /* 525 */
+	"Closure\0" /* 539 */
+	"createTypeCallback\0" /* 547 */
+	"stmt\0" /* 566 */
+	"PhpParser\\Node\\Stmt\0" /* 571 */
+	"scope\0" /* 591 */
+	"storage\0" /* 597 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 605 */
+	"nodeCallback\0" /* 646 */
+	"context\0" /* 659 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 667 */
+	"processExpr\0" /* 702 */
+	"composeResult"; /* 714 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
 	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
@@ -78,23 +77,23 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(320, 0, 355), /* createTypeCallback $expr */
 	reg::packed(384, 0, 402), /* createTypeCallback $nodeScopeResolver */
 	reg::packed(437, 0, 449), /* createTypeCallback $beforeScope */
-	reg::packed(480, MAY_BE_NULL, 491, false, false, 525), /* createTypeCallback $nameResult */
-	reg::packed(530, MAY_BE_NULL, 491, false, false, 525), /* createTypeCallback $nameArgResult */
-	reg::packed(345, 0, 544), /* createTypeCallback return */
+	reg::packed(480, MAY_BE_NULL, 491), /* createTypeCallback $nameResult */
+	reg::packed(525, MAY_BE_NULL, 491), /* createTypeCallback $nameArgResult */
+	reg::packed(345, 0, 539), /* createTypeCallback return */
 	reg::packed(384, 0, 402), /* processExpr $nodeScopeResolver */
-	reg::packed(571, 0, 576), /* processExpr $stmt */
+	reg::packed(566, 0, 571), /* processExpr $stmt */
 	reg::packed(320, 0, 325), /* processExpr $expr */
-	reg::packed(596, 0, 449), /* processExpr $scope */
-	reg::packed(602, 0, 610), /* processExpr $storage */
-	reg::packed(651, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(664, 0, 672), /* processExpr $context */
+	reg::packed(591, 0, 449), /* processExpr $scope */
+	reg::packed(597, 0, 605), /* processExpr $storage */
+	reg::packed(646, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(659, 0, 667), /* processExpr $context */
 	reg::packed(345, 0, 491), /* processExpr return */
 	reg::packed(384, 0, 402), /* composeResult $nodeScopeResolver */
 	reg::packed(320, 0, 355), /* composeResult $expr */
 	reg::packed(480, MAY_BE_NULL, 491), /* composeResult $nameResult */
-	reg::packed(602, 0, 610), /* composeResult $storage */
+	reg::packed(597, 0, 605), /* composeResult $storage */
 	reg::packed(437, 0, 449), /* composeResult $beforeScope */
-	reg::packed(664, MAY_BE_NULL, 672, false, false, 525), /* composeResult $context */
+	reg::packed(659, MAY_BE_NULL, 667), /* composeResult $context */
 	reg::packed(345, 0, 491), /* composeResult return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -104,9 +103,9 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 308 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 346 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createTypeCallback = { { 552 /* createTypeCallback */, 3, 6, 5, 11, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processExpr = { { 707 /* processExpr */, 7, 12, 7, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig composeResult = { { 719 /* composeResult */, 5, 20, 6, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createTypeCallback = { { 547 /* createTypeCallback */, 5, 6, 5, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processExpr = { { 702 /* processExpr */, 7, 12, 7, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig composeResult = { { 714 /* composeResult */, 6, 20, 6, 26, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableHandler

@@ -106,25 +106,23 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\Type\0" /* 1409 */
 	"argsResult\0" /* 1427 */
 	"PHPStan\\Analyser\\ArgsResult\0" /* 1438 */
-	"null\0" /* 1466 */
-	"allowUnresolved\0" /* 1471 */
-	"true\0" /* 1487 */
-	"resolveReturnType\0" /* 1492 */
-	"node\0" /* 1510 */
-	"exactInstantiation\0" /* 1515 */
-	"site\0" /* 1534 */
-	"frame\0" /* 1539 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1545 */
-	"unresolvedArgumentList\0" /* 1593 */
-	"type\0" /* 1616 */
-	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 1621 */
-	"template\0" /* 1673 */
-	"PHPStan\\Type\\Generic\\TemplateType\0" /* 1682 */
-	"rekeyParentTemplateArgument\0" /* 1716 */
-	"resolvedParametersAcceptor\0" /* 1744 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1771 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1809 */
-	"specifyTypes"; /* 1841 */
+	"allowUnresolved\0" /* 1466 */
+	"resolveReturnType\0" /* 1482 */
+	"node\0" /* 1500 */
+	"exactInstantiation\0" /* 1505 */
+	"site\0" /* 1524 */
+	"frame\0" /* 1529 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1535 */
+	"unresolvedArgumentList\0" /* 1583 */
+	"type\0" /* 1606 */
+	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 1611 */
+	"template\0" /* 1663 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 1672 */
+	"rekeyParentTemplateArgument\0" /* 1706 */
+	"resolvedParametersAcceptor\0" /* 1734 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1761 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1799 */
+	"specifyTypes"; /* 1831 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, 0, 96), /* __construct $dynamicStaticMethodThrowTypeExtensions */
@@ -169,32 +167,32 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(657, 0, 662), /* resolveReturnType $expr */
 	reg::packed(1375, MAY_BE_NULL, 1158), /* resolveReturnType $preResolvedAcceptor */
 	reg::packed(1395, MAY_BE_NULL, 1409), /* resolveReturnType $classExprType */
-	reg::packed(1427, MAY_BE_NULL, 1438, false, false, 1466), /* resolveReturnType $argsResult */
-	reg::packed(1471, MAY_BE_BOOL, reg::NoString, false, false, 1487), /* resolveReturnType $allowUnresolved */
+	reg::packed(1427, MAY_BE_NULL, 1438), /* resolveReturnType $argsResult */
+	reg::packed(1466, MAY_BE_BOOL), /* resolveReturnType $allowUnresolved */
 	reg::packed(682, 0, 1409), /* resolveReturnType return */
 	reg::packed(770, 0, 776), /* exactInstantiation $scope */
-	reg::packed(1510, 0, 968), /* exactInstantiation $node */
+	reg::packed(1500, 0, 968), /* exactInstantiation $node */
 	reg::packed(958, 0, 1289), /* exactInstantiation $className */
 	reg::packed(1375, MAY_BE_NULL, 1158), /* exactInstantiation $preResolvedAcceptor */
-	reg::packed(1427, MAY_BE_NULL, 1438, false, false, 1466), /* exactInstantiation $argsResult */
-	reg::packed(1471, MAY_BE_BOOL, reg::NoString, false, false, 1487), /* exactInstantiation $allowUnresolved */
+	reg::packed(1427, MAY_BE_NULL, 1438), /* exactInstantiation $argsResult */
+	reg::packed(1466, MAY_BE_BOOL), /* exactInstantiation $allowUnresolved */
 	reg::packed(682, 0, 1409), /* exactInstantiation return */
 	reg::packed(1088, 0, 1104), /* unresolvedArgumentList $classReflection */
-	reg::packed(1534, 0, 968), /* unresolvedArgumentList $site */
-	reg::packed(1539, MAY_BE_NULL, 1545), /* unresolvedArgumentList $frame */
-	reg::packed(1471, MAY_BE_BOOL), /* unresolvedArgumentList $allowUnresolved */
+	reg::packed(1524, 0, 968), /* unresolvedArgumentList $site */
+	reg::packed(1529, MAY_BE_NULL, 1535), /* unresolvedArgumentList $frame */
+	reg::packed(1466, MAY_BE_BOOL), /* unresolvedArgumentList $allowUnresolved */
 	reg::packed(682, MAY_BE_ARRAY), /* unresolvedArgumentList return */
-	reg::packed(1616, 0, 1621), /* rekeyParentTemplateArgument $type */
-	reg::packed(1534, 0, 968), /* rekeyParentTemplateArgument $site */
-	reg::packed(1673, 0, 1682), /* rekeyParentTemplateArgument $template */
-	reg::packed(1539, MAY_BE_NULL, 1545), /* rekeyParentTemplateArgument $frame */
-	reg::packed(1471, MAY_BE_BOOL), /* rekeyParentTemplateArgument $allowUnresolved */
+	reg::packed(1606, 0, 1611), /* rekeyParentTemplateArgument $type */
+	reg::packed(1524, 0, 968), /* rekeyParentTemplateArgument $site */
+	reg::packed(1663, 0, 1672), /* rekeyParentTemplateArgument $template */
+	reg::packed(1529, MAY_BE_NULL, 1535), /* rekeyParentTemplateArgument $frame */
+	reg::packed(1466, MAY_BE_BOOL), /* rekeyParentTemplateArgument $allowUnresolved */
 	reg::packed(682, 0, 1409), /* rekeyParentTemplateArgument return */
 	reg::packed(770, 0, 776), /* specifyTypes $scope */
 	reg::packed(657, 0, 662), /* specifyTypes $expr */
-	reg::packed(1744, MAY_BE_NULL, 1158), /* specifyTypes $resolvedParametersAcceptor */
-	reg::packed(869, 0, 1771), /* specifyTypes $context */
-	reg::packed(682, 0, 1809), /* specifyTypes return */
+	reg::packed(1734, MAY_BE_NULL, 1158), /* specifyTypes $resolvedParametersAcceptor */
+	reg::packed(869, 0, 1761), /* specifyTypes $context */
+	reg::packed(682, 0, 1799), /* specifyTypes return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -207,11 +205,11 @@ inline constexpr sigtab::Sig processExpr = { { 946 /* processExpr */, 7, 12, 7, 
 inline constexpr sigtab::Sig processConstructorReflection = { { 993 /* processConstructorReflection */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getConstructorImpurePoints = { { 1222 /* getConstructorImpurePoints */, 7, 23, 7, 30, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getConstructorThrowPoint = { { 1350 /* getConstructorThrowPoint */, 7, 31, 7, 38, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveReturnType = { { 1492 /* resolveReturnType */, 4, 39, 6, 45, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig exactInstantiation = { { 1515 /* exactInstantiation */, 4, 46, 6, 52, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig unresolvedArgumentList = { { 1593 /* unresolvedArgumentList */, 4, 53, 4, 57, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig rekeyParentTemplateArgument = { { 1716 /* rekeyParentTemplateArgument */, 5, 58, 5, 63, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyTypes = { { 1841 /* specifyTypes */, 4, 64, 4, 68, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveReturnType = { { 1482 /* resolveReturnType */, 6, 39, 6, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig exactInstantiation = { { 1505 /* exactInstantiation */, 6, 46, 6, 52, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unresolvedArgumentList = { { 1583 /* unresolvedArgumentList */, 4, 53, 4, 57, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig rekeyParentTemplateArgument = { { 1706 /* rekeyParentTemplateArgument */, 5, 58, 5, 63, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 1831 /* specifyTypes */, 4, 64, 4, 68, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::NewHandler

@@ -35,70 +35,69 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"left\0" /* 0 */
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 5 */
-	"null\0" /* 59 */
-	"right\0" /* 64 */
-	"fact\0" /* 70 */
-	"until\0" /* 75 */
-	"__construct\0" /* 81 */
-	"\0" /* 93 */
-	"createEmpty\0" /* 94 */
-	"isEmpty\0" /* 106 */
-	"other\0" /* 114 */
-	"merge\0" /* 120 */
-	"entry\0" /* 126 */
-	"exit\0" /* 132 */
-	"withRecordedFacts\0" /* 137 */
-	"marker\0" /* 155 */
-	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 162 */
-	"withSite\0" /* 214 */
-	"type\0" /* 223 */
-	"PHPStan\\Type\\Type\0" /* 228 */
-	"variance\0" /* 246 */
-	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 255 */
-	"withSend\0" /* 297 */
-	"withLowerBound\0" /* 306 */
-	"withUnconstrainingSend\0" /* 321 */
-	"getFacts"; /* 344 */
+	"right\0" /* 59 */
+	"fact\0" /* 65 */
+	"until\0" /* 70 */
+	"__construct\0" /* 76 */
+	"\0" /* 88 */
+	"createEmpty\0" /* 89 */
+	"isEmpty\0" /* 101 */
+	"other\0" /* 109 */
+	"merge\0" /* 115 */
+	"entry\0" /* 121 */
+	"exit\0" /* 127 */
+	"withRecordedFacts\0" /* 132 */
+	"marker\0" /* 150 */
+	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 157 */
+	"withSite\0" /* 209 */
+	"type\0" /* 218 */
+	"PHPStan\\Type\\Type\0" /* 223 */
+	"variance\0" /* 241 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 250 */
+	"withSend\0" /* 292 */
+	"withLowerBound\0" /* 301 */
+	"withUnconstrainingSend\0" /* 316 */
+	"getFacts"; /* 339 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, MAY_BE_NULL, 5, false, false, 59), /* __construct $left */
-	reg::packed(64, MAY_BE_NULL, 5, false, false, 59), /* __construct $right */
-	reg::packed(70, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 59), /* __construct $fact */
-	reg::packed(75, MAY_BE_NULL, 5, false, false, 59), /* __construct $until */
-	reg::packed(93, 0, 5), /* createEmpty return */
-	reg::packed(93, MAY_BE_BOOL), /* isEmpty return */
-	reg::packed(114, 0, 5), /* merge $other */
-	reg::packed(93, 0, 5), /* merge return */
-	reg::packed(126, MAY_BE_NULL, 5), /* withRecordedFacts $entry */
-	reg::packed(132, 0, 5), /* withRecordedFacts $exit */
-	reg::packed(93, 0, 5), /* withRecordedFacts return */
-	reg::packed(155, 0, 162), /* withSite $marker */
-	reg::packed(93, 0, 5), /* withSite return */
-	reg::packed(155, 0, 162), /* withSend $marker */
-	reg::packed(223, 0, 228), /* withSend $type */
-	reg::packed(246, 0, 255), /* withSend $variance */
-	reg::packed(93, 0, 5), /* withSend return */
-	reg::packed(155, 0, 162), /* withLowerBound $marker */
-	reg::packed(223, 0, 228), /* withLowerBound $type */
-	reg::packed(93, 0, 5), /* withLowerBound return */
-	reg::packed(155, 0, 162), /* withUnconstrainingSend $marker */
-	reg::packed(93, 0, 5), /* withUnconstrainingSend return */
-	reg::packed(93, _ZEND_TYPE_ITERABLE_BIT), /* getFacts return */
+	reg::packed(0, MAY_BE_NULL, 5), /* __construct $left */
+	reg::packed(59, MAY_BE_NULL, 5), /* __construct $right */
+	reg::packed(65, MAY_BE_NULL | MAY_BE_ARRAY), /* __construct $fact */
+	reg::packed(70, MAY_BE_NULL, 5), /* __construct $until */
+	reg::packed(88, 0, 5), /* createEmpty return */
+	reg::packed(88, MAY_BE_BOOL), /* isEmpty return */
+	reg::packed(109, 0, 5), /* merge $other */
+	reg::packed(88, 0, 5), /* merge return */
+	reg::packed(121, MAY_BE_NULL, 5), /* withRecordedFacts $entry */
+	reg::packed(127, 0, 5), /* withRecordedFacts $exit */
+	reg::packed(88, 0, 5), /* withRecordedFacts return */
+	reg::packed(150, 0, 157), /* withSite $marker */
+	reg::packed(88, 0, 5), /* withSite return */
+	reg::packed(150, 0, 157), /* withSend $marker */
+	reg::packed(218, 0, 223), /* withSend $type */
+	reg::packed(241, 0, 250), /* withSend $variance */
+	reg::packed(88, 0, 5), /* withSend return */
+	reg::packed(150, 0, 157), /* withLowerBound $marker */
+	reg::packed(218, 0, 223), /* withLowerBound $type */
+	reg::packed(88, 0, 5), /* withLowerBound return */
+	reg::packed(150, 0, 157), /* withUnconstrainingSend $marker */
+	reg::packed(88, 0, 5), /* withUnconstrainingSend return */
+	reg::packed(88, _ZEND_TYPE_ITERABLE_BIT), /* getFacts return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 81 /* __construct */, 0, 0, 4, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createEmpty = { { 94 /* createEmpty */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isEmpty = { { 106 /* isEmpty */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig merge = { { 120 /* merge */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withRecordedFacts = { { 137 /* withRecordedFacts */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withSite = { { 214 /* withSite */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withSend = { { 297 /* withSend */, 3, 13, 3, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withLowerBound = { { 306 /* withLowerBound */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withUnconstrainingSend = { { 321 /* withUnconstrainingSend */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFacts = { { 344 /* getFacts */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 76 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createEmpty = { { 89 /* createEmpty */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isEmpty = { { 101 /* isEmpty */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig merge = { { 115 /* merge */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withRecordedFacts = { { 132 /* withRecordedFacts */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withSite = { { 209 /* withSite */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withSend = { { 292 /* withSend */, 3, 13, 3, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withLowerBound = { { 301 /* withLowerBound */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withUnconstrainingSend = { { 316 /* withUnconstrainingSend */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFacts = { { 339 /* getFacts */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentConstraints

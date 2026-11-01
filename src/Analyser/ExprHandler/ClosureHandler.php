@@ -93,7 +93,13 @@ final class ClosureHandler implements ExprHandler
 			type: $type,
 			nativeType: $nativeType,
 			typeCallback: null,
-			dependencies: Dependencies::merge($processClosureResult->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type))),
+			dependencies: Dependencies::merge($processClosureResult->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type), [], [], [], [])),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			argsResult: null,
 		);
 	}
 
@@ -105,7 +111,7 @@ final class ClosureHandler implements ExprHandler
 				continue;
 			}
 
-			$uses[] = $use->byRef ? VariableFlow::escape($use->var->name) : VariableFlow::read($use->var->name);
+			$uses[] = $use->byRef ? VariableFlow::escape($use->var->name) : VariableFlow::read($use->var->name, null, false, null);
 		}
 		return VariableFlow::sequence(...$uses);
 	}

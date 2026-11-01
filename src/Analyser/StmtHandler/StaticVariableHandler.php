@@ -80,7 +80,7 @@ final class StaticVariableHandler implements StmtHandler
 				$impurePoints = array_merge($impurePoints, $defaultExprResult->getImpurePoints());
 			}
 
-			$scope = $scope->enterExpressionAssign($var->var);
+			$scope = $scope->enterExpressionAssign($var->var, true);
 			$variableFlows[] = VariableFlow::escape($var->var->name);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var->var, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 			$dependencies[] = $varResult->getDependencies();
@@ -99,7 +99,8 @@ final class StaticVariableHandler implements StmtHandler
 			$vars[] = $var->var->name;
 		}
 
-		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+		$changed = false;
+		$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $changed);
 
 		// how the types of a run of `static` variables depend on each other -
 		// see StaticVariableInference::getRuns()

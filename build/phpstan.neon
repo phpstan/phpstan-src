@@ -8,6 +8,7 @@ includes:
 	- ../conf/bleedingEdge.neon
 	- ../phpstan-baseline.neon
 	- ../phpstan-baseline.php
+	- baseline-optional-parameters.neon
 	- ignore-by-php-version.neon.php
 	- ignore-by-architecture.neon.php
 
@@ -216,6 +217,7 @@ rules:
 	- PHPStan\Build\MemoizationPropertyRule
 	- PHPStan\Build\OrChainIdenticalComparisonToInArrayRule
 	- PHPStan\Build\NoPhpVersionInjectionInScopeAwareExtensionRule
+	- PHPStan\Build\NoOptionalParameterRule
 
 services:
 	-

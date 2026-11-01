@@ -4903,7 +4903,7 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 
 	cls.method(sigs::processVirtualAssign, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *scope, *storage, *stmt, *var, *assignedExpr, *nodeCallback, *assignedExprResult = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 8)
+		ZEND_PARSE_PARAMETERS_START(8, 8)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(storage)
@@ -4911,7 +4911,6 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 			Z_PARAM_OBJECT(var)
 			Z_PARAM_OBJECT(assignedExpr)
 			Z_PARAM_ZVAL(nodeCallback)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(assignedExprResult)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(AssignHandler(Z_OBJ_P(ZEND_THIS)).processVirtualAssign(nodeScopeResolver, scope, storage, stmt, var, assignedExpr, nodeCallback, assignedExprResult));

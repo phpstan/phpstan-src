@@ -50,7 +50,7 @@ class AutoloadFunctionsSourceLocatorTest extends PHPStanTestCase
 		];
 
 		try {
-			$locator = $this->createLocator();
+			$locator = $this->createLocator(null);
 			$reflection = $locator->locateIdentifier(
 				new DefaultReflector($locator),
 				new Identifier('ThrowingAutoloaderAlias', new IdentifierType(IdentifierType::IDENTIFIER_CLASS)),
@@ -76,7 +76,7 @@ class AutoloadFunctionsSourceLocatorTest extends PHPStanTestCase
 		];
 
 		try {
-			$locator = $this->createLocator();
+			$locator = $this->createLocator(null);
 			$reflection = $locator->locateIdentifier(
 				new DefaultReflector($locator),
 				new Identifier('NeverDefinedByAnyAutoloader', new IdentifierType(IdentifierType::IDENTIFIER_CLASS)),
@@ -125,7 +125,7 @@ class AutoloadFunctionsSourceLocatorTest extends PHPStanTestCase
 		$this->assertStringContainsString('by a bootstrap autoloader for class NeverDefinedByAnyAutoloader: Cannot read the class map.', $printed);
 	}
 
-	private function createLocator(?BootstrapAutoloaderExceptionReporter $reporter = null): AutoloadFunctionsSourceLocator
+	private function createLocator(?BootstrapAutoloaderExceptionReporter $reporter): AutoloadFunctionsSourceLocator
 	{
 		$container = self::getContainer();
 

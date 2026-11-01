@@ -63,7 +63,7 @@ final class ImpossibleCheckTypeHelper
 		Scope $scope,
 		Expr $node,
 		ExpressionResult $nodeResult,
-		?ArgsResult $argsResult = null,
+		?ArgsResult $argsResult,
 		array &$reasons = [],
 	): ?bool
 	{
@@ -101,7 +101,7 @@ final class ImpossibleCheckTypeHelper
 	 * call - the narrowed expressions of a SpecifiedTypes entry are arbitrary
 	 * subexpressions - so the lookup stays a membership query.
 	 */
-	private function getArgumentType(Scope $scope, ?ArgsResult $argsResult, Expr $expr, bool $phpDocFlavour = false): Type
+	private function getArgumentType(Scope $scope, ?ArgsResult $argsResult, Expr $expr, bool $phpDocFlavour): Type
 	{
 		if ($argsResult !== null && $scope instanceof MutatingScope) {
 			$argResult = $argsResult->findArgResult($expr);
@@ -158,7 +158,7 @@ final class ImpossibleCheckTypeHelper
 					$arg = $args[0]->value;
 					// through the argument's own result (an assign-in-argument
 					// `assert($x = f())` names the variable the argument assigns)
-					$assertValue = $this->getArgumentType($scope, $argsResult, $arg)->toBoolean();
+					$assertValue = $this->getArgumentType($scope, $argsResult, $arg, false)->toBoolean();
 					$assertValueIsTrue = $assertValue->isTrue()->yes();
 					if (! $assertValueIsTrue && ! $assertValue->isFalse()->yes()) {
 						return null;
@@ -177,7 +177,7 @@ final class ImpossibleCheckTypeHelper
 					return null;
 				} elseif ($functionName === 'in_array' && $argsCount >= 2) {
 					$haystackArg = $args[1]->value;
-					$haystackType = $this->getArgumentType($scope, $argsResult, $haystackArg);
+					$haystackType = $this->getArgumentType($scope, $argsResult, $haystackArg, false);
 					if ($haystackType instanceof MixedType) {
 						return null;
 					}
@@ -187,7 +187,7 @@ final class ImpossibleCheckTypeHelper
 					}
 
 					$needleArg = $args[0]->value;
-					$needleType = $this->getArgumentType($scope, $argsResult, $needleArg);
+					$needleType = $this->getArgumentType($scope, $argsResult, $needleArg, false);
 
 					$isStrictComparison = false;
 					if ($argsCount >= 3) {
@@ -441,7 +441,7 @@ final class ImpossibleCheckTypeHelper
 				continue;
 			}
 
-			$argumentType = $this->getArgumentType($scope, $argsResult, $sureType[0]);
+			$argumentType = $this->getArgumentType($scope, $argsResult, $sureType[0], false);
 
 			/** @var Type $resultType */
 			$resultType = $sureType[1];

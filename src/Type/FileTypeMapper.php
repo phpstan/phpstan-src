@@ -96,7 +96,7 @@ final class FileTypeMapper
 		// 0 kept one entry here rather than meaning "no limit" as it does for the other bounded
 		// caches: the eviction loop ran before the insertion, emptying the cache and then putting
 		// a single entry back. Preserved rather than normalised - see the PR description.
-		$this->memoryCache = new LruCache($nameScopeMapMemoryCacheCountMax === 0 ? 1 : $nameScopeMapMemoryCacheCountMax);
+		$this->memoryCache = new LruCache($nameScopeMapMemoryCacheCountMax === 0 ? 1 : $nameScopeMapMemoryCacheCountMax, 0, 0);
 	}
 
 	/** @api */

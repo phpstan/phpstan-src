@@ -98,7 +98,7 @@ final class PropertyHooksProcessor
 
 			$propertyReflection = $classReflection->getNativeProperty($propertyName);
 
-			$dependencies[] = Dependencies::create($hookScope->getFile(), DependencyTypes::ofDeclaration($hookReflection, false));
+			$dependencies[] = Dependencies::create($hookScope->getFile(), DependencyTypes::ofDeclaration($hookReflection, false), [], [], [], []);
 			$nodeScopeResolver->callNodeCallback($nodeCallback, new InPropertyHookNode(
 				$classReflection,
 				$hookReflection,

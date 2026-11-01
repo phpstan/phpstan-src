@@ -75,7 +75,7 @@ final class EmptyHandler implements ExprHandler
 			throwPoints: $exprResult->getThrowPoints(),
 			impurePoints: $exprResult->getImpurePoints(),
 			typeCallback: static function (bool $nativeTypesPromoted) use ($exprResult, $beforeScope): Type {
-				$result = $exprResult->getIssetabilityResolution($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, false)->notEmpty();
+				$result = $exprResult->getIssetabilityResolution($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, false, false)->notEmpty();
 				if ($result === null) {
 					return new BooleanType();
 				}
@@ -84,7 +84,7 @@ final class EmptyHandler implements ExprHandler
 			},
 			specifyTypesCallback: function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $exprResult, $chainResults, $nodeScopeResolver, $beforeScope, &$foldScopes): SpecifiedTypes {
 				$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-				$isset = $exprResult->getIssetabilityResolution($s, false)->isSet(static fn (): bool => true);
+				$isset = $exprResult->getIssetabilityResolution($s, false, false)->isSet(static fn (): bool => true, null);
 				if ($isset === false) {
 					return new SpecifiedTypes();
 				}
@@ -110,14 +110,14 @@ final class EmptyHandler implements ExprHandler
 				};
 				$leftType = static function (bool $nativeTypesPromoted) use ($exprResult, $beforeScope): Type {
 					$issetabilityScope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-					$result = $exprResult->getIssetabilityResolution($issetabilityScope, false)->isSet(static function (Type $type): ?bool {
+					$result = $exprResult->getIssetabilityResolution($issetabilityScope, false, false)->isSet(static function (Type $type): ?bool {
 						$isNull = $type->isNull();
 						if ($isNull->maybe()) {
 							return null;
 						}
 
 						return !$isNull->yes();
-					});
+					}, null);
 					if ($result === null) {
 						return new BooleanType();
 					}
@@ -173,6 +173,14 @@ final class EmptyHandler implements ExprHandler
 				)->setRootExpr($expr);
 			},
 			dependencies: $exprResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

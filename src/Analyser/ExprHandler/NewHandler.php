@@ -218,7 +218,7 @@ final class NewHandler implements ExprHandler
 				$className = $objectClasses[0];
 				$additionalThrowPoints = $objectExprResult->getThrowPoints();
 			} else {
-				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
+				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr, null)];
 			}
 
 			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
@@ -244,7 +244,7 @@ final class NewHandler implements ExprHandler
 		$variants = $constructorReflection !== null ? $constructorReflection->getVariants() : [];
 		$namedArgumentsVariants = $constructorReflection !== null ? $constructorReflection->getNamedArgumentsVariants() : null;
 		$scopeBeforeArgs = $scope;
-		$argsResult = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
+		$argsResult = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context, null);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
 		$scope = $argsResult->getScope();
 		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
@@ -298,6 +298,16 @@ final class NewHandler implements ExprHandler
 			impurePoints: [],
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 		$nodeScopeResolver->storeExpressionResult($storage, $expr, $preliminaryResult);
 
@@ -308,7 +318,7 @@ final class NewHandler implements ExprHandler
 				$throwPoints[] = $constructorThrowPoint;
 			}
 		} elseif ($classReflection === null || ($isDynamic && $constructorReflection === null && !$classReflection->isFinal())) {
-			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr, null);
 		}
 
 		$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
@@ -323,14 +333,14 @@ final class NewHandler implements ExprHandler
 			$classResult !== null ? $classResult->getVariableFlow() : null,
 			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
 			VariableFlowBuilder::throws($expr, $throwPoints),
-			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
+			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP, 1, null) : null,
 		);
 
 		// the instantiated class - named, or named by a string the type system resolved
 		if ($expr->class instanceof Name) {
-			$ownDependencies = Dependencies::create($beforeScope->getFile(), classNames: [$beforeScope->resolveName($expr->class)]);
+			$ownDependencies = Dependencies::create($beforeScope->getFile(), classNames: [$beforeScope->resolveName($expr->class)], types: [], reflections: [], filePaths: [], usedTraits: []);
 		} elseif ($classResult !== null) {
-			$ownDependencies = Dependencies::create($beforeScope->getFile(), [$preliminaryResult->getType()], DependencyTypes::classNamesOfClassString($classResult->getType()));
+			$ownDependencies = Dependencies::create($beforeScope->getFile(), [$preliminaryResult->getType()], DependencyTypes::classNamesOfClassString($classResult->getType()), [], [], []);
 		} else {
 			$ownDependencies = null;
 		}
@@ -464,7 +474,7 @@ final class NewHandler implements ExprHandler
 			}
 		} elseif ($this->implicitThrows) {
 			if (!$context->isInThrow() || !$constructorReflection->getDeclaringClass()->is(Throwable::class)) {
-				return InternalThrowPoint::createImplicit($scope, $new);
+				return InternalThrowPoint::createImplicit($scope, $new, null);
 			}
 		}
 
@@ -480,7 +490,7 @@ final class NewHandler implements ExprHandler
 	 *
 	 * @param New_ $expr
 	 */
-	private function resolveReturnType(MutatingScope $scope, Expr $expr, ?ParametersAcceptor $preResolvedAcceptor, ?Type $classExprType, ?ArgsResult $argsResult = null, bool $allowUnresolved = true): Type
+	private function resolveReturnType(MutatingScope $scope, Expr $expr, ?ParametersAcceptor $preResolvedAcceptor, ?Type $classExprType, ?ArgsResult $argsResult, bool $allowUnresolved): Type
 	{
 		if ($expr->class instanceof Name) {
 			return $this->exactInstantiation($scope, $expr, $expr->class, $preResolvedAcceptor, $argsResult, $allowUnresolved);
@@ -502,7 +512,7 @@ final class NewHandler implements ExprHandler
 	/**
 	 * @param bool $allowUnresolved false for the native flavour, which never carries UnresolvedTemplateArgumentType
 	 */
-	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult = null, bool $allowUnresolved = true): Type
+	private function exactInstantiation(MutatingScope $scope, New_ $node, Name $className, ?ParametersAcceptor $preResolvedAcceptor, ?ArgsResult $argsResult, bool $allowUnresolved): Type
 	{
 		$resolvedClassName = $scope->resolveName($className);
 		$isStatic = false;

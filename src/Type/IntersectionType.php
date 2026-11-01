@@ -76,7 +76,7 @@ use function usort;
 use const PHP_INT_MAX;
 
 /** @api */
-#[InstanceofDeprecated]
+#[InstanceofDeprecated(insteadUse: null)]
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IntersectionType.cpp')]
 class IntersectionType implements CompoundType
 {

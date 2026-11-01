@@ -51,7 +51,7 @@ final class ResultCache
 		private CachedExportedNodes $cachedExportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
-		private array $collectedDataRuleResults = [],
+		private array $collectedDataRuleResults,
 	)
 	{
 	}

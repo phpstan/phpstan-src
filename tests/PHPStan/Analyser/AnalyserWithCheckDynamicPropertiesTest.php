@@ -28,6 +28,9 @@ class AnalyserWithCheckDynamicPropertiesTest extends PHPStanTestCase
 			$analyser->analyse([$file], null, null, true),
 			false,
 			true,
+			null,
+			null,
+			[],
 		)->getErrors();
 		foreach ($errors as $error) {
 			$this->assertSame($file, $error->getFilePath());

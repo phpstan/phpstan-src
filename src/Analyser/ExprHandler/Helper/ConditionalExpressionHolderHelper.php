@@ -135,7 +135,7 @@ final class ConditionalExpressionHolderHelper
 	 *        holder targets were tracked on; their types are pinned from it at compose
 	 *        time (null = read every target from the applying scope)
 	 */
-	public function buildConditionalHolderRecipe(MutatingScope $composeScope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, ?MutatingScope $nonVariableTargetScope, ?Expr $holderSideExpr = null): ?ConditionalExpressionHolderRecipe
+	public function buildConditionalHolderRecipe(MutatingScope $composeScope, SpecifiedTypes $conditionSpecifiedTypes, SpecifiedTypes $holderSpecifiedTypes, bool $holdersFromSureTypes, bool $holderSideIsNegated, ?MutatingScope $nonVariableTargetScope, ?Expr $holderSideExpr): ?ConditionalExpressionHolderRecipe
 	{
 		// an alternative-form entry (a cross-kind either-branch merge) has no
 		// single condition type; dropping it from the condition set would let

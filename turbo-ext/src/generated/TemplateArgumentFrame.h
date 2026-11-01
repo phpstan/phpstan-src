@@ -52,143 +52,140 @@ inline constexpr char strings[] =
 	"site\0" /* 84 */
 	"PhpParser\\Node\\Expr\0" /* 89 */
 	"allowUnresolved\0" /* 109 */
-	"null\0" /* 125 */
-	"\0" /* 130 */
-	"PHPStan\\Type\\Type\0" /* 131 */
-	"returnTypeOfCall\0" /* 149 */
-	"parent\0" /* 166 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 173 */
-	"resolutions\0" /* 221 */
-	"siteStatementIndexes\0" /* 233 */
-	"[]\0" /* 254 */
-	"closureSignatureBody\0" /* 257 */
-	"PhpParser\\Node\0" /* 278 */
-	"closureSignatureStmts\0" /* 293 */
-	"settledClosureSites\0" /* 315 */
-	"observingClosures\0" /* 335 */
-	"false\0" /* 353 */
-	"byRefSites\0" /* 359 */
-	"staticVariableTypes\0" /* 370 */
-	"staticVariableConditionalExpressions\0" /* 390 */
-	"__construct\0" /* 427 */
-	"var\0" /* 439 */
-	"PhpParser\\Node\\Expr\\Variable\0" /* 443 */
-	"getStaticVariableTypes\0" /* 472 */
-	"stmt\0" /* 495 */
-	"PhpParser\\Node\\Stmt\\Static_\0" /* 500 */
-	"getStaticVariableConditionalExpressions\0" /* 528 */
-	"statementIndexes\0" /* 568 */
-	"conditionalExpressions\0" /* 585 */
-	"withStaticVariableTypes\0" /* 608 */
-	"getByRefSiteMode\0" /* 632 */
-	"getLocalByRefSites\0" /* 649 */
-	"closureResolutions\0" /* 668 */
-	"closureSiteStatementIndexes\0" /* 687 */
-	"withObservedClosures\0" /* 715 */
-	"isSettledClosureSite\0" /* 736 */
-	"getParent\0" /* 757 */
-	"getClosureSignatureBody\0" /* 767 */
-	"getClosureSignatureStmts\0" /* 791 */
-	"isObserving\0" /* 816 */
-	"isObservingClosures\0" /* 828 */
-	"firstSiteStatementIndex\0" /* 848 */
-	"statementIndex\0" /* 872 */
-	"ownsSiteInStatement\0" /* 887 */
-	"hasSiteAtOrAfter\0" /* 907 */
-	"template\0" /* 924 */
-	"PHPStan\\Type\\Generic\\TemplateType\0" /* 933 */
-	"resolveOrUnconstrained\0" /* 967 */
-	"resolve\0" /* 990 */
-	"resolveUnconstrained\0" /* 998 */
-	"templateName\0" /* 1019 */
-	"getResolutionCacheKeySuffix\0" /* 1032 */
-	"key"; /* 1060 */
+	"\0" /* 125 */
+	"PHPStan\\Type\\Type\0" /* 126 */
+	"returnTypeOfCall\0" /* 144 */
+	"parent\0" /* 161 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 168 */
+	"resolutions\0" /* 216 */
+	"siteStatementIndexes\0" /* 228 */
+	"closureSignatureBody\0" /* 249 */
+	"PhpParser\\Node\0" /* 270 */
+	"closureSignatureStmts\0" /* 285 */
+	"settledClosureSites\0" /* 307 */
+	"observingClosures\0" /* 327 */
+	"byRefSites\0" /* 345 */
+	"staticVariableTypes\0" /* 356 */
+	"staticVariableConditionalExpressions\0" /* 376 */
+	"__construct\0" /* 413 */
+	"var\0" /* 425 */
+	"PhpParser\\Node\\Expr\\Variable\0" /* 429 */
+	"getStaticVariableTypes\0" /* 458 */
+	"stmt\0" /* 481 */
+	"PhpParser\\Node\\Stmt\\Static_\0" /* 486 */
+	"getStaticVariableConditionalExpressions\0" /* 514 */
+	"statementIndexes\0" /* 554 */
+	"conditionalExpressions\0" /* 571 */
+	"withStaticVariableTypes\0" /* 594 */
+	"getByRefSiteMode\0" /* 618 */
+	"getLocalByRefSites\0" /* 635 */
+	"closureResolutions\0" /* 654 */
+	"closureSiteStatementIndexes\0" /* 673 */
+	"withObservedClosures\0" /* 701 */
+	"isSettledClosureSite\0" /* 722 */
+	"getParent\0" /* 743 */
+	"getClosureSignatureBody\0" /* 753 */
+	"getClosureSignatureStmts\0" /* 777 */
+	"isObserving\0" /* 802 */
+	"isObservingClosures\0" /* 814 */
+	"firstSiteStatementIndex\0" /* 834 */
+	"statementIndex\0" /* 858 */
+	"ownsSiteInStatement\0" /* 873 */
+	"hasSiteAtOrAfter\0" /* 893 */
+	"template\0" /* 910 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 919 */
+	"resolveOrUnconstrained\0" /* 953 */
+	"resolve\0" /* 976 */
+	"resolveUnconstrained\0" /* 984 */
+	"templateName\0" /* 1005 */
+	"getResolutionCacheKeySuffix\0" /* 1018 */
+	"key"; /* 1046 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 9), /* returnTypeOfCall $acceptor */
 	reg::packed(47, 0, 53), /* returnTypeOfCall $scope */
 	reg::packed(84, 0, 89), /* returnTypeOfCall $site */
-	reg::packed(109, MAY_BE_NULL | MAY_BE_BOOL, reg::NoString, false, false, 125), /* returnTypeOfCall $allowUnresolved */
-	reg::packed(130, 0, 131), /* returnTypeOfCall return */
-	reg::packed(166, MAY_BE_NULL, 173), /* __construct $parent */
-	reg::packed(221, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 125), /* __construct $resolutions */
-	reg::packed(233, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $siteStatementIndexes */
-	reg::packed(257, MAY_BE_NULL, 278, false, false, 125), /* __construct $closureSignatureBody */
-	reg::packed(293, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $closureSignatureStmts */
-	reg::packed(315, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $settledClosureSites */
-	reg::packed(335, MAY_BE_BOOL, reg::NoString, false, false, 353), /* __construct $observingClosures */
-	reg::packed(359, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $byRefSites */
-	reg::packed(370, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $staticVariableTypes */
-	reg::packed(390, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* __construct $staticVariableConditionalExpressions */
-	reg::packed(439, 0, 443), /* getStaticVariableTypes $var */
-	reg::packed(130, MAY_BE_NULL | MAY_BE_ARRAY), /* getStaticVariableTypes return */
-	reg::packed(495, 0, 500), /* getStaticVariableConditionalExpressions $stmt */
-	reg::packed(130, MAY_BE_ARRAY), /* getStaticVariableConditionalExpressions return */
-	reg::packed(370, MAY_BE_ARRAY), /* withStaticVariableTypes $staticVariableTypes */
-	reg::packed(568, MAY_BE_ARRAY), /* withStaticVariableTypes $statementIndexes */
-	reg::packed(585, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* withStaticVariableTypes $conditionalExpressions */
-	reg::packed(130, 0, 173), /* withStaticVariableTypes return */
+	reg::packed(109, MAY_BE_NULL | MAY_BE_BOOL), /* returnTypeOfCall $allowUnresolved */
+	reg::packed(125, 0, 126), /* returnTypeOfCall return */
+	reg::packed(161, MAY_BE_NULL, 168), /* __construct $parent */
+	reg::packed(216, MAY_BE_NULL | MAY_BE_ARRAY), /* __construct $resolutions */
+	reg::packed(228, MAY_BE_ARRAY), /* __construct $siteStatementIndexes */
+	reg::packed(249, MAY_BE_NULL, 270), /* __construct $closureSignatureBody */
+	reg::packed(285, MAY_BE_ARRAY), /* __construct $closureSignatureStmts */
+	reg::packed(307, MAY_BE_ARRAY), /* __construct $settledClosureSites */
+	reg::packed(327, MAY_BE_BOOL), /* __construct $observingClosures */
+	reg::packed(345, MAY_BE_ARRAY), /* __construct $byRefSites */
+	reg::packed(356, MAY_BE_ARRAY), /* __construct $staticVariableTypes */
+	reg::packed(376, MAY_BE_ARRAY), /* __construct $staticVariableConditionalExpressions */
+	reg::packed(425, 0, 429), /* getStaticVariableTypes $var */
+	reg::packed(125, MAY_BE_NULL | MAY_BE_ARRAY), /* getStaticVariableTypes return */
+	reg::packed(481, 0, 486), /* getStaticVariableConditionalExpressions $stmt */
+	reg::packed(125, MAY_BE_ARRAY), /* getStaticVariableConditionalExpressions return */
+	reg::packed(356, MAY_BE_ARRAY), /* withStaticVariableTypes $staticVariableTypes */
+	reg::packed(554, MAY_BE_ARRAY), /* withStaticVariableTypes $statementIndexes */
+	reg::packed(571, MAY_BE_ARRAY), /* withStaticVariableTypes $conditionalExpressions */
+	reg::packed(125, 0, 168), /* withStaticVariableTypes return */
 	reg::packed(84, 0, 89), /* getByRefSiteMode $site */
-	reg::packed(130, MAY_BE_NULL | MAY_BE_STRING), /* getByRefSiteMode return */
-	reg::packed(130, MAY_BE_ARRAY), /* getLocalByRefSites return */
-	reg::packed(668, MAY_BE_ARRAY), /* withObservedClosures $closureResolutions */
-	reg::packed(687, MAY_BE_ARRAY), /* withObservedClosures $closureSiteStatementIndexes */
-	reg::packed(315, MAY_BE_ARRAY), /* withObservedClosures $settledClosureSites */
-	reg::packed(359, MAY_BE_ARRAY, reg::NoString, false, false, 254), /* withObservedClosures $byRefSites */
-	reg::packed(130, 0, 173), /* withObservedClosures return */
+	reg::packed(125, MAY_BE_NULL | MAY_BE_STRING), /* getByRefSiteMode return */
+	reg::packed(125, MAY_BE_ARRAY), /* getLocalByRefSites return */
+	reg::packed(654, MAY_BE_ARRAY), /* withObservedClosures $closureResolutions */
+	reg::packed(673, MAY_BE_ARRAY), /* withObservedClosures $closureSiteStatementIndexes */
+	reg::packed(307, MAY_BE_ARRAY), /* withObservedClosures $settledClosureSites */
+	reg::packed(345, MAY_BE_ARRAY), /* withObservedClosures $byRefSites */
+	reg::packed(125, 0, 168), /* withObservedClosures return */
 	reg::packed(84, 0, 89), /* isSettledClosureSite $site */
-	reg::packed(130, MAY_BE_BOOL), /* isSettledClosureSite return */
-	reg::packed(130, MAY_BE_NULL, 173), /* getParent return */
-	reg::packed(130, MAY_BE_NULL, 278), /* getClosureSignatureBody return */
-	reg::packed(130, MAY_BE_ARRAY), /* getClosureSignatureStmts return */
-	reg::packed(130, MAY_BE_BOOL), /* isObserving return */
-	reg::packed(130, MAY_BE_BOOL), /* isObservingClosures return */
-	reg::packed(130, MAY_BE_NULL | MAY_BE_LONG), /* firstSiteStatementIndex return */
-	reg::packed(872, MAY_BE_LONG), /* ownsSiteInStatement $statementIndex */
-	reg::packed(130, MAY_BE_BOOL), /* ownsSiteInStatement return */
-	reg::packed(872, MAY_BE_LONG), /* hasSiteAtOrAfter $statementIndex */
-	reg::packed(130, MAY_BE_BOOL), /* hasSiteAtOrAfter return */
+	reg::packed(125, MAY_BE_BOOL), /* isSettledClosureSite return */
+	reg::packed(125, MAY_BE_NULL, 168), /* getParent return */
+	reg::packed(125, MAY_BE_NULL, 270), /* getClosureSignatureBody return */
+	reg::packed(125, MAY_BE_ARRAY), /* getClosureSignatureStmts return */
+	reg::packed(125, MAY_BE_BOOL), /* isObserving return */
+	reg::packed(125, MAY_BE_BOOL), /* isObservingClosures return */
+	reg::packed(125, MAY_BE_NULL | MAY_BE_LONG), /* firstSiteStatementIndex return */
+	reg::packed(858, MAY_BE_LONG), /* ownsSiteInStatement $statementIndex */
+	reg::packed(125, MAY_BE_BOOL), /* ownsSiteInStatement return */
+	reg::packed(858, MAY_BE_LONG), /* hasSiteAtOrAfter $statementIndex */
+	reg::packed(125, MAY_BE_BOOL), /* hasSiteAtOrAfter return */
 	reg::packed(84, 0, 89), /* resolveOrUnconstrained $site */
-	reg::packed(924, 0, 933), /* resolveOrUnconstrained $template */
-	reg::packed(130, 0, 131), /* resolveOrUnconstrained return */
+	reg::packed(910, 0, 919), /* resolveOrUnconstrained $template */
+	reg::packed(125, 0, 126), /* resolveOrUnconstrained return */
 	reg::packed(84, 0, 89), /* resolveUnconstrained $site */
-	reg::packed(924, 0, 933), /* resolveUnconstrained $template */
-	reg::packed(990, MAY_BE_CALLABLE), /* resolveUnconstrained $resolve */
-	reg::packed(130, 0, 131), /* resolveUnconstrained return */
+	reg::packed(910, 0, 919), /* resolveUnconstrained $template */
+	reg::packed(976, MAY_BE_CALLABLE), /* resolveUnconstrained $resolve */
+	reg::packed(125, 0, 126), /* resolveUnconstrained return */
 	reg::packed(84, 0, 89), /* resolve $site */
-	reg::packed(1019, MAY_BE_STRING), /* resolve $templateName */
-	reg::packed(130, MAY_BE_NULL, 131), /* resolve return */
-	reg::packed(130, MAY_BE_STRING), /* getResolutionCacheKeySuffix return */
+	reg::packed(1005, MAY_BE_STRING), /* resolve $templateName */
+	reg::packed(125, MAY_BE_NULL, 126), /* resolve return */
+	reg::packed(125, MAY_BE_STRING), /* getResolutionCacheKeySuffix return */
 	reg::packed(84, 0, 89), /* key $site */
-	reg::packed(1019, MAY_BE_STRING), /* key $templateName */
-	reg::packed(130, MAY_BE_STRING), /* key return */
+	reg::packed(1005, MAY_BE_STRING), /* key $templateName */
+	reg::packed(125, MAY_BE_STRING), /* key return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig returnTypeOfCall = { { 149 /* returnTypeOfCall */, 3, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig __construct = { { 427 /* __construct */, 1, 5, 10, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getStaticVariableTypes = { { 472 /* getStaticVariableTypes */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getStaticVariableConditionalExpressions = { { 528 /* getStaticVariableConditionalExpressions */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withStaticVariableTypes = { { 608 /* withStaticVariableTypes */, 2, 19, 3, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getByRefSiteMode = { { 632 /* getByRefSiteMode */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getLocalByRefSites = { { 649 /* getLocalByRefSites */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withObservedClosures = { { 715 /* withObservedClosures */, 3, 26, 4, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSettledClosureSite = { { 736 /* isSettledClosureSite */, 1, 31, 1, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getParent = { { 757 /* getParent */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClosureSignatureBody = { { 767 /* getClosureSignatureBody */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClosureSignatureStmts = { { 791 /* getClosureSignatureStmts */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isObserving = { { 816 /* isObserving */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isObservingClosures = { { 828 /* isObservingClosures */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig firstSiteStatementIndex = { { 848 /* firstSiteStatementIndex */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig ownsSiteInStatement = { { 887 /* ownsSiteInStatement */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasSiteAtOrAfter = { { 907 /* hasSiteAtOrAfter */, 1, 41, 1, 42, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveOrUnconstrained = { { 967 /* resolveOrUnconstrained */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveUnconstrained = { { 998 /* resolveUnconstrained */, 3, 46, 3, 49, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig resolve = { { 990 /* resolve */, 2, 50, 2, 52, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResolutionCacheKeySuffix = { { 1032 /* getResolutionCacheKeySuffix */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig key = { { 1060 /* key */, 2, 54, 2, 56, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig returnTypeOfCall = { { 144 /* returnTypeOfCall */, 4, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 413 /* __construct */, 10, 5, 10, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStaticVariableTypes = { { 458 /* getStaticVariableTypes */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStaticVariableConditionalExpressions = { { 514 /* getStaticVariableConditionalExpressions */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withStaticVariableTypes = { { 594 /* withStaticVariableTypes */, 3, 19, 3, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getByRefSiteMode = { { 618 /* getByRefSiteMode */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getLocalByRefSites = { { 635 /* getLocalByRefSites */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withObservedClosures = { { 701 /* withObservedClosures */, 4, 26, 4, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSettledClosureSite = { { 722 /* isSettledClosureSite */, 1, 31, 1, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParent = { { 743 /* getParent */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureSignatureBody = { { 753 /* getClosureSignatureBody */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClosureSignatureStmts = { { 777 /* getClosureSignatureStmts */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isObserving = { { 802 /* isObserving */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isObservingClosures = { { 814 /* isObservingClosures */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig firstSiteStatementIndex = { { 834 /* firstSiteStatementIndex */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig ownsSiteInStatement = { { 873 /* ownsSiteInStatement */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasSiteAtOrAfter = { { 893 /* hasSiteAtOrAfter */, 1, 41, 1, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveOrUnconstrained = { { 953 /* resolveOrUnconstrained */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveUnconstrained = { { 984 /* resolveUnconstrained */, 3, 46, 3, 49, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolve = { { 976 /* resolve */, 2, 50, 2, 52, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResolutionCacheKeySuffix = { { 1018 /* getResolutionCacheKeySuffix */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig key = { { 1046 /* key */, 2, 54, 2, 56, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateArgumentFrame

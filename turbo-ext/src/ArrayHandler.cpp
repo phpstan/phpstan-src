@@ -374,8 +374,8 @@ private:
 					if (UNEXPECTED(variableName.isUndef())) return false;
 					zv::Val parentId = variableWriteGetter(walk.literalWrite.raw(), &pt_variable_write_slots::id, PT_LC("getid"));
 					if (UNEXPECTED(parentId.isUndef())) return false;
-					zv::Args writeArgv{variableName.raw(), arrayItem, (zend_long) Z_OBJ_HANDLE_P(arrayItem), PT_ARH_KIND_ARRAY_LITERAL_ITEM, true, &offset, parentId.raw()};
-					item.itemWrite = pt_type_new(PT_CLASS_VARIABLE_WRITE, 7, writeArgv);
+					zv::Args writeArgv{variableName.raw(), arrayItem, (zend_long) Z_OBJ_HANDLE_P(arrayItem), PT_ARH_KIND_ARRAY_LITERAL_ITEM, true, &offset, parentId.raw(), true};
+					item.itemWrite = pt_type_new(PT_CLASS_VARIABLE_WRITE, 8, writeArgv);
 					if (UNEXPECTED(item.itemWrite.isUndef())) return false;
 				}
 			}

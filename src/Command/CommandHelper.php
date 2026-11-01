@@ -97,7 +97,7 @@ final class CommandHelper
 		?string $singleReflectionFile,
 		?string $singleReflectionInsteadOfFile,
 		bool $cleanupContainerCache,
-		bool $deferBootstrapFiles = false,
+		bool $deferBootstrapFiles,
 	): InceptionResult
 	{
 		$stdOutput = new SymfonyOutput($output, new SymfonyStyle(new ErrorsConsoleStyle($input, $output)));

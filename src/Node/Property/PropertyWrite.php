@@ -21,7 +21,7 @@ final class PropertyWrite
 		private PropertyFetch|StaticPropertyFetch $fetch,
 		private Scope $scope,
 		private bool $promotedPropertyWrite,
-		private ClassPropertyNode|PropertyAssignNode|AssignRef|null $originalNode = null,
+		private ClassPropertyNode|PropertyAssignNode|AssignRef|null $originalNode,
 	)
 	{
 	}

@@ -110,7 +110,8 @@ final class ForeachHandler implements StmtHandler
 	{
 		$entryScope = $scope;
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
-			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			$changed = false;
+			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt, $changed);
 		}
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->expr, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
@@ -495,16 +496,16 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		$bindingFlow = VariableFlow::sequence(
-			$stmt->keyVar !== null ? VariableFlowBuilder::targetRead($stmt->keyVar, $storage, false) : null,
-			$stmt->keyVar !== null ? VariableFlowBuilder::targetWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY, $finalScope, $storage) : null,
-			VariableFlowBuilder::targetRead($stmt->valueVar, $storage, false),
-			VariableFlowBuilder::targetWrite($stmt->valueVar, $stmt->keyVar !== null ? VariableWrite::KIND_FOREACH_VALUE_WITH_KEY : VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage),
+			$stmt->keyVar !== null ? VariableFlowBuilder::targetRead($stmt->keyVar, $storage, false, null) : null,
+			$stmt->keyVar !== null ? VariableFlowBuilder::targetWrite($stmt->keyVar, VariableWrite::KIND_FOREACH_KEY, $finalScope, $storage, null) : null,
+			VariableFlowBuilder::targetRead($stmt->valueVar, $storage, false, null),
+			VariableFlowBuilder::targetWrite($stmt->valueVar, $stmt->keyVar !== null ? VariableWrite::KIND_FOREACH_VALUE_WITH_KEY : VariableWrite::KIND_FOREACH_VALUE, $finalScope, $storage, null),
 			$stmt->byRef && $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name) ? VariableFlow::escape($stmt->valueVar->name) : null,
 		);
 		// the body may run or not whatever the iterated type says: a write in it
 		// does not make an earlier write dead, and a read in it counts even
 		// when the iterated value is inferred empty
-		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, false, true);
+		$loopFlow = VariableFlow::loop($traversableThrowPoint !== null ? VariableFlow::throwing($traversableThrowPoint->getType(), true, false) : null, VariableFlow::sequence($bindingFlow, $finalScopeResult->getVariableFlow()), null, false, true, true);
 		$bindingWrites = VariableFlowBuilder::writes($bindingFlow);
 		$bindings = [];
 		foreach ($bindingWrites as $write) {
@@ -526,7 +527,7 @@ final class ForeachHandler implements StmtHandler
 				$condResult->getDependencies(),
 				$finalScopeResult->getDependencies(),
 				// the classes in the types of the keys and the values iterated over
-				Dependencies::create($entryScope->getFile(), [$stmt->keyVar !== null ? $entryScope->getIterableKeyType($foreachIterateeType) : null, $entryScope->getIterableValueType($foreachIterateeType)]),
+				Dependencies::create($entryScope->getFile(), [$stmt->keyVar !== null ? $entryScope->getIterableKeyType($foreachIterateeType) : null, $entryScope->getIterableValueType($foreachIterateeType)], [], [], [], []),
 			),
 		);
 	}
@@ -537,7 +538,8 @@ final class ForeachHandler implements StmtHandler
 	private function enterForeach(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $originalScope, Foreach_ $stmt, Type $iterateeType, Type $nativeIterateeType, callable $nodeCallback): MutatingScope
 	{
 		if ($stmt->expr instanceof Variable && is_string($stmt->expr->name)) {
-			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt);
+			$changed = false;
+			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, [$stmt->expr->name], $stmt, $changed);
 		}
 
 		if (
@@ -659,7 +661,8 @@ final class ForeachHandler implements StmtHandler
 			}
 		}
 
-		return $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+		$changed = false;
+		return $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $changed);
 	}
 
 	/**
@@ -919,7 +922,7 @@ final class ForeachHandler implements StmtHandler
 			}
 		}
 
-		return InternalThrowPoint::createImplicit($scope, $iteratee);
+		return InternalThrowPoint::createImplicit($scope, $iteratee, null);
 	}
 
 	/**

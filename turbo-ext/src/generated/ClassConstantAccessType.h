@@ -44,65 +44,64 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\Type\0" /* 5 */
 	"constantName\0" /* 23 */
 	"nativeType\0" /* 36 */
-	"null\0" /* 47 */
-	"__construct\0" /* 52 */
-	"\0" /* 64 */
-	"PHPStan\\Type\\ClassConstantAccessType\0" /* 65 */
-	"withNativeType\0" /* 102 */
-	"getReferencedClasses\0" /* 117 */
-	"positionVariance\0" /* 138 */
-	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 155 */
-	"getReferencedTemplateTypes\0" /* 197 */
-	"equals\0" /* 224 */
-	"level\0" /* 231 */
-	"PHPStan\\Type\\VerbosityLevel\0" /* 237 */
-	"describe\0" /* 265 */
-	"isResolvable\0" /* 274 */
-	"getResult\0" /* 287 */
-	"cb\0" /* 297 */
-	"traverse\0" /* 300 */
-	"right\0" /* 309 */
-	"traverseSimultaneously\0" /* 315 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 338 */
-	"toPhpDocNode"; /* 377 */
+	"__construct\0" /* 47 */
+	"\0" /* 59 */
+	"PHPStan\\Type\\ClassConstantAccessType\0" /* 60 */
+	"withNativeType\0" /* 97 */
+	"getReferencedClasses\0" /* 112 */
+	"positionVariance\0" /* 133 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 150 */
+	"getReferencedTemplateTypes\0" /* 192 */
+	"equals\0" /* 219 */
+	"level\0" /* 226 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 232 */
+	"describe\0" /* 260 */
+	"isResolvable\0" /* 269 */
+	"getResult\0" /* 282 */
+	"cb\0" /* 292 */
+	"traverse\0" /* 295 */
+	"right\0" /* 304 */
+	"traverseSimultaneously\0" /* 310 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 333 */
+	"toPhpDocNode"; /* 372 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* __construct $type */
 	reg::packed(23, MAY_BE_STRING), /* __construct $constantName */
-	reg::packed(36, MAY_BE_NULL, 5, false, false, 47), /* __construct $nativeType */
+	reg::packed(36, MAY_BE_NULL, 5), /* __construct $nativeType */
 	reg::packed(36, 0, 5), /* withNativeType $nativeType */
-	reg::packed(64, 0, 65), /* withNativeType return */
-	reg::packed(64, MAY_BE_ARRAY), /* getReferencedClasses return */
-	reg::packed(138, 0, 155), /* getReferencedTemplateTypes $positionVariance */
-	reg::packed(64, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
+	reg::packed(59, 0, 60), /* withNativeType return */
+	reg::packed(59, MAY_BE_ARRAY), /* getReferencedClasses return */
+	reg::packed(133, 0, 150), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(59, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
 	reg::packed(0, 0, 5), /* equals $type */
-	reg::packed(64, MAY_BE_BOOL), /* equals return */
-	reg::packed(231, 0, 237), /* describe $level */
-	reg::packed(64, MAY_BE_STRING), /* describe return */
-	reg::packed(64, MAY_BE_BOOL), /* isResolvable return */
-	reg::packed(64, 0, 5), /* getResult return */
-	reg::packed(297, MAY_BE_CALLABLE), /* traverse $cb */
-	reg::packed(64, 0, 5), /* traverse return */
-	reg::packed(309, 0, 5), /* traverseSimultaneously $right */
-	reg::packed(297, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
-	reg::packed(64, 0, 5), /* traverseSimultaneously return */
-	reg::packed(64, 0, 338), /* toPhpDocNode return */
+	reg::packed(59, MAY_BE_BOOL), /* equals return */
+	reg::packed(226, 0, 232), /* describe $level */
+	reg::packed(59, MAY_BE_STRING), /* describe return */
+	reg::packed(59, MAY_BE_BOOL), /* isResolvable return */
+	reg::packed(59, 0, 5), /* getResult return */
+	reg::packed(292, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(59, 0, 5), /* traverse return */
+	reg::packed(304, 0, 5), /* traverseSimultaneously $right */
+	reg::packed(292, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(59, 0, 5), /* traverseSimultaneously return */
+	reg::packed(59, 0, 333), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 52 /* __construct */, 2, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withNativeType = { { 102 /* withNativeType */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedClasses = { { 117 /* getReferencedClasses */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 197 /* getReferencedTemplateTypes */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig equals = { { 224 /* equals */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 265 /* describe */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isResolvable = { { 274 /* isResolvable */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResult = { { 287 /* getResult */, 0, 13, 0, 13, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig traverse = { { 300 /* traverse */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 315 /* traverseSimultaneously */, 2, 16, 2, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 377 /* toPhpDocNode */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 47 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withNativeType = { { 97 /* withNativeType */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedClasses = { { 112 /* getReferencedClasses */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 192 /* getReferencedTemplateTypes */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 219 /* equals */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 260 /* describe */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isResolvable = { { 269 /* isResolvable */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResult = { { 282 /* getResult */, 0, 13, 0, 13, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig traverse = { { 295 /* traverse */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 310 /* traverseSimultaneously */, 2, 16, 2, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 372 /* toPhpDocNode */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClassConstantAccessType

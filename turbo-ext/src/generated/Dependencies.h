@@ -47,14 +47,13 @@ inline constexpr char strings[] =
 	"usedTraits\0" /* 44 */
 	"merged\0" /* 55 */
 	"__construct\0" /* 62 */
-	"[]\0" /* 74 */
-	"\0" /* 77 */
-	"PHPStan\\Dependency\\Dependencies\0" /* 78 */
-	"create\0" /* 110 */
-	"dependencies\0" /* 117 */
-	"merge\0" /* 130 */
-	"callback\0" /* 136 */
-	"walk"; /* 145 */
+	"\0" /* 74 */
+	"PHPStan\\Dependency\\Dependencies\0" /* 75 */
+	"create\0" /* 107 */
+	"dependencies\0" /* 114 */
+	"merge\0" /* 127 */
+	"callback\0" /* 133 */
+	"walk"; /* 142 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $file */
 	reg::packed(5, MAY_BE_ARRAY), /* __construct $types */
@@ -64,16 +63,16 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(44, MAY_BE_ARRAY), /* __construct $usedTraits */
 	reg::packed(55, MAY_BE_ARRAY), /* __construct $merged */
 	reg::packed(0, MAY_BE_STRING), /* create $file */
-	reg::packed(5, MAY_BE_ARRAY, reg::NoString, false, false, 74), /* create $types */
-	reg::packed(11, MAY_BE_ARRAY, reg::NoString, false, false, 74), /* create $classNames */
-	reg::packed(22, MAY_BE_ARRAY, reg::NoString, false, false, 74), /* create $reflections */
-	reg::packed(34, MAY_BE_ARRAY, reg::NoString, false, false, 74), /* create $filePaths */
-	reg::packed(44, MAY_BE_ARRAY, reg::NoString, false, false, 74), /* create $usedTraits */
-	reg::packed(77, MAY_BE_NULL, 78), /* create return */
-	reg::packed(117, MAY_BE_NULL, 78, false, true), /* merge $dependencies */
-	reg::packed(77, MAY_BE_NULL, 78), /* merge return */
-	reg::packed(136, MAY_BE_CALLABLE), /* walk $callback */
-	reg::packed(77, MAY_BE_VOID), /* walk return */
+	reg::packed(5, MAY_BE_ARRAY), /* create $types */
+	reg::packed(11, MAY_BE_ARRAY), /* create $classNames */
+	reg::packed(22, MAY_BE_ARRAY), /* create $reflections */
+	reg::packed(34, MAY_BE_ARRAY), /* create $filePaths */
+	reg::packed(44, MAY_BE_ARRAY), /* create $usedTraits */
+	reg::packed(74, MAY_BE_NULL, 75), /* create return */
+	reg::packed(114, MAY_BE_NULL, 75, false, true), /* merge $dependencies */
+	reg::packed(74, MAY_BE_NULL, 75), /* merge return */
+	reg::packed(133, MAY_BE_CALLABLE), /* walk $callback */
+	reg::packed(74, MAY_BE_VOID), /* walk return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -81,9 +80,9 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 62 /* __construct */, 7, 0, 7, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig create = { { 110 /* create */, 1, 7, 6, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig merge = { { 130 /* merge */, 0, 14, 1, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig walk = { { 145 /* walk */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig create = { { 107 /* create */, 6, 7, 6, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig merge = { { 127 /* merge */, 0, 14, 1, 15, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig walk = { { 142 /* walk */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::Dependencies

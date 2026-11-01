@@ -570,11 +570,11 @@ private:
 		return name.isString() ? name.asString() : NULL;
 	}
 
-	/* $imports[] = VariableFlow::write(new VariableWrite($name, $var, spl_object_id($var), $kind)) */
+	/* $imports[] = VariableFlow::write(new VariableWrite($name, $var, spl_object_id($var), $kind, false, null, null, true)) */
 	bool import(zv::Arr &imports, zend_string *name, zval *var, zend_long kind)
 	{
-		zv::Args argv{name, var, zend_long((zend_long) Z_OBJ_HANDLE_P(var)), zend_long(kind)};
-		zv::Val write = pt_type_new(PT_CLASS_VARIABLE_WRITE, 4, argv);
+		zv::Args argv{name, var, zend_long((zend_long) Z_OBJ_HANDLE_P(var)), zend_long(kind), false, zv::null, zv::null, true};
+		zv::Val write = pt_type_new(PT_CLASS_VARIABLE_WRITE, 8, argv);
 		if (UNEXPECTED(write.isUndef())) return false;
 		zv::Val flow = pt_variable_flow_write(write.raw(), NULL);
 		if (UNEXPECTED(flow.isUndef())) return false;

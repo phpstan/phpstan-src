@@ -66,6 +66,16 @@ final class PostIncHandler implements ExprHandler
 			impurePoints: [],
 			typeCallback: $this->incDecTypeHelper->getTypeCallback($expr->var, $varResult, true),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($virtualExpr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 
 		// processVirtualAssign() emits nodes (PropertyAssignNode) carrying the
@@ -88,7 +98,7 @@ final class PostIncHandler implements ExprHandler
 			$assignedScope,
 			beforeScope: $scope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null, VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_POST_INC, $assignedScope, $storage)),
+			variableFlow: VariableFlow::sequence($varResult->getVariableFlow(), $valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null, VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_POST_INC, $assignedScope, $storage, null)),
 			hasYield: $varResult->hasYield(),
 			isAlwaysTerminating: $varResult->isAlwaysTerminating(),
 			throwPoints: $varResult->getThrowPoints(),
@@ -97,6 +107,14 @@ final class PostIncHandler implements ExprHandler
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: $varResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

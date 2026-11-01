@@ -41,7 +41,7 @@ final class CoalesceCompositionHelper
 	 */
 	public function getFalseySpecifiedTypes(MutatingScope $s, MutatingScope $evaluationScope, Expr $leftExpr, ExpressionResult $leftResult, Expr $rootExpr, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$isset = $leftResult->getIssetabilityResolution($evaluationScope, false)->isSet(static fn (): bool => true);
+		$isset = $leftResult->getIssetabilityResolution($evaluationScope, false, false)->isSet(static fn (): bool => true, null);
 
 		if ($isset !== true) {
 			return new SpecifiedTypes();
@@ -95,14 +95,14 @@ final class CoalesceCompositionHelper
 		if ($nativeTypesPromoted) {
 			$evaluationScope = $evaluationScope->doNotTreatPhpDocTypesAsCertain();
 		}
-		$result = $leftResult->getIssetabilityResolution($evaluationScope, $nativeTypesPromoted)->isSet(static function (Type $type): ?bool {
+		$result = $leftResult->getIssetabilityResolution($evaluationScope, $nativeTypesPromoted, false)->isSet(static function (Type $type): ?bool {
 			$isNull = $type->isNull();
 			if ($isNull->maybe()) {
 				return null;
 			}
 
 			return !$isNull->yes();
-		});
+		}, null);
 
 		// the left side's type when it is set: the left read on the left-is-set
 		// narrowed scope (offsets resolve against the HasOffset-narrowed parent).

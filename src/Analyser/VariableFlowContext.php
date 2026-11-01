@@ -17,10 +17,10 @@ final class VariableFlowContext
 	 */
 	public function __construct(
 		public readonly array $return,
-		public readonly array $breaks = [],
-		public readonly array $continues = [],
-		public readonly array $catches = [],
-		public readonly array $uncaught = [],
+		public readonly array $breaks,
+		public readonly array $continues,
+		public readonly array $catches,
+		public readonly array $uncaught,
 	)
 	{
 	}

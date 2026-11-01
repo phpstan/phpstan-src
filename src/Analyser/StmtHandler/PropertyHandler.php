@@ -104,7 +104,7 @@ final class PropertyHandler implements StmtHandler
 				$scope,
 				$storage,
 			);
-			$dependencies[] = Dependencies::create($scope->getFile(), [$nativePropertyType, $phpDocType]);
+			$dependencies[] = Dependencies::create($scope->getFile(), [$nativePropertyType, $phpDocType], [], [], [], []);
 		}
 
 		if (count($stmt->hooks) > 0) {

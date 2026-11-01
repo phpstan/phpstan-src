@@ -105,25 +105,25 @@ inline constexpr char strings[] =
 	"typeCallback\0" /* 292 */
 	"specifyTypesCallback\0" /* 305 */
 	"containsNullsafe\0" /* 326 */
-	"false\0" /* 343 */
-	"issetabilityDescriptor\0" /* 349 */
-	"PHPStan\\Analyser\\IssetabilityDescriptor\0" /* 372 */
-	"null\0" /* 412 */
-	"truthyScopeOverrideResult\0" /* 417 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 443 */
-	"falseyScopeOverrideResult\0" /* 477 */
-	"createTypesCallback\0" /* 503 */
-	"type\0" /* 523 */
-	"PHPStan\\Type\\Type\0" /* 528 */
-	"nativeType\0" /* 546 */
-	"argsResult\0" /* 557 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 568 */
-	"variableFlow\0" /* 596 */
-	"PHPStan\\Analyser\\VariableFlow\0" /* 609 */
-	"specifiedTypes\0" /* 639 */
-	"[]\0" /* 654 */
-	"cachedType\0" /* 657 */
-	"extensionsDeclined\0" /* 668 */
+	"issetabilityDescriptor\0" /* 343 */
+	"PHPStan\\Analyser\\IssetabilityDescriptor\0" /* 366 */
+	"truthyScopeOverrideResult\0" /* 406 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 432 */
+	"falseyScopeOverrideResult\0" /* 466 */
+	"createTypesCallback\0" /* 492 */
+	"type\0" /* 512 */
+	"PHPStan\\Type\\Type\0" /* 517 */
+	"nativeType\0" /* 535 */
+	"argsResult\0" /* 546 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 557 */
+	"variableFlow\0" /* 585 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 598 */
+	"specifiedTypes\0" /* 628 */
+	"[]\0" /* 643 */
+	"cachedType\0" /* 646 */
+	"null\0" /* 657 */
+	"extensionsDeclined\0" /* 662 */
+	"false\0" /* 681 */
 	"cachedNativeType\0" /* 687 */
 	"resolvedType\0" /* 704 */
 	"resolvedNativeType\0" /* 717 */
@@ -197,73 +197,73 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(279, MAY_BE_ARRAY), /* __construct $impurePoints */
 	reg::packed(292, MAY_BE_NULL | MAY_BE_CALLABLE), /* __construct $typeCallback */
 	reg::packed(305, MAY_BE_CALLABLE), /* __construct $specifyTypesCallback */
-	reg::packed(326, MAY_BE_BOOL, reg::NoString, false, false, 343), /* __construct $containsNullsafe */
-	reg::packed(349, MAY_BE_NULL, 372, false, false, 412), /* __construct $issetabilityDescriptor */
-	reg::packed(417, MAY_BE_NULL, 443, false, false, 412), /* __construct $truthyScopeOverrideResult */
-	reg::packed(477, MAY_BE_NULL, 443, false, false, 412), /* __construct $falseyScopeOverrideResult */
-	reg::packed(503, MAY_BE_NULL | MAY_BE_CALLABLE, reg::NoString, false, false, 412), /* __construct $createTypesCallback */
-	reg::packed(523, MAY_BE_NULL, 528, false, false, 412), /* __construct $type */
-	reg::packed(546, MAY_BE_NULL, 528, false, false, 412), /* __construct $nativeType */
-	reg::packed(557, MAY_BE_NULL, 568, false, false, 412), /* __construct $argsResult */
-	reg::packed(596, MAY_BE_NULL, 609, false, false, 412), /* __construct $variableFlow */
-	reg::packed(639, MAY_BE_ARRAY, reg::NoString, false, false, 654), /* __construct $specifiedTypes */
-	reg::packed(657, MAY_BE_NULL, 528, false, false, 412), /* __construct $cachedType */
-	reg::packed(668, MAY_BE_BOOL, reg::NoString, false, false, 343), /* __construct $extensionsDeclined */
-	reg::packed(687, MAY_BE_NULL, 528, false, false, 412), /* __construct $cachedNativeType */
-	reg::packed(704, MAY_BE_NULL, 528, false, false, 412), /* __construct $resolvedType */
-	reg::packed(717, MAY_BE_NULL, 528, false, false, 412), /* __construct $resolvedNativeType */
-	reg::packed(736, MAY_BE_NULL, 528, false, false, 412), /* __construct $projectedType */
-	reg::packed(750, MAY_BE_NULL, 528, false, false, 412), /* __construct $projectedNativeType */
-	reg::packed(770, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 412), /* __construct $readVariableNames */
-	reg::packed(788, MAY_BE_NULL, 801, false, false, 412), /* __construct $dependencies */
+	reg::packed(326, MAY_BE_BOOL), /* __construct $containsNullsafe */
+	reg::packed(343, MAY_BE_NULL, 366), /* __construct $issetabilityDescriptor */
+	reg::packed(406, MAY_BE_NULL, 432), /* __construct $truthyScopeOverrideResult */
+	reg::packed(466, MAY_BE_NULL, 432), /* __construct $falseyScopeOverrideResult */
+	reg::packed(492, MAY_BE_NULL | MAY_BE_CALLABLE), /* __construct $createTypesCallback */
+	reg::packed(512, MAY_BE_NULL, 517), /* __construct $type */
+	reg::packed(535, MAY_BE_NULL, 517), /* __construct $nativeType */
+	reg::packed(546, MAY_BE_NULL, 557), /* __construct $argsResult */
+	reg::packed(585, MAY_BE_NULL, 598), /* __construct $variableFlow */
+	reg::packed(628, MAY_BE_ARRAY, reg::NoString, false, false, 643), /* __construct $specifiedTypes */
+	reg::packed(646, MAY_BE_NULL, 517, false, false, 657), /* __construct $cachedType */
+	reg::packed(662, MAY_BE_BOOL, reg::NoString, false, false, 681), /* __construct $extensionsDeclined */
+	reg::packed(687, MAY_BE_NULL, 517, false, false, 657), /* __construct $cachedNativeType */
+	reg::packed(704, MAY_BE_NULL, 517, false, false, 657), /* __construct $resolvedType */
+	reg::packed(717, MAY_BE_NULL, 517, false, false, 657), /* __construct $resolvedNativeType */
+	reg::packed(736, MAY_BE_NULL, 517, false, false, 657), /* __construct $projectedType */
+	reg::packed(750, MAY_BE_NULL, 517, false, false, 657), /* __construct $projectedNativeType */
+	reg::packed(770, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 657), /* __construct $readVariableNames */
+	reg::packed(788, MAY_BE_NULL, 801, false, false, 657), /* __construct $dependencies */
 	reg::packed(164, 0, 170), /* finalize $scope */
 	reg::packed(238, MAY_BE_BOOL), /* finalize $hasYield */
 	reg::packed(247, MAY_BE_BOOL), /* finalize $isAlwaysTerminating */
 	reg::packed(267, MAY_BE_ARRAY), /* finalize $throwPoints */
 	reg::packed(279, MAY_BE_ARRAY), /* finalize $impurePoints */
-	reg::packed(596, MAY_BE_NULL, 609), /* finalize $variableFlow */
+	reg::packed(585, MAY_BE_NULL, 598), /* finalize $variableFlow */
 	reg::packed(788, MAY_BE_NULL, 801), /* finalize $dependencies */
-	reg::packed(845, 0, 443), /* finalize return */
+	reg::packed(845, 0, 432), /* finalize return */
 	reg::packed(845, 0, 170), /* getScope return */
-	reg::packed(845, MAY_BE_NULL, 609), /* getVariableFlow return */
+	reg::packed(845, MAY_BE_NULL, 598), /* getVariableFlow return */
 	reg::packed(164, 0, 170), /* withScope $scope */
-	reg::packed(845, 0, 443), /* withScope return */
+	reg::packed(845, 0, 432), /* withScope return */
 	reg::packed(845, MAY_BE_NULL, 801), /* getDependencies return */
 	reg::packed(788, MAY_BE_NULL, 801), /* withDependencies $dependencies */
-	reg::packed(845, 0, 443), /* withDependencies return */
+	reg::packed(845, 0, 432), /* withDependencies return */
 	reg::packed(845, 0, 170), /* getBeforeScope return */
 	reg::packed(845, 0, 218), /* getExpr return */
-	reg::packed(845, MAY_BE_NULL, 568), /* getArgsResult return */
+	reg::packed(845, MAY_BE_NULL, 557), /* getArgsResult return */
 	reg::packed(845, MAY_BE_BOOL), /* hasYield return */
 	reg::packed(845, MAY_BE_BOOL), /* containsNullsafe return */
 	reg::packed(164, 0, 170), /* getIssetabilityResolution $scope */
 	reg::packed(960, MAY_BE_BOOL), /* getIssetabilityResolution $useNativeTypes */
-	reg::packed(975, MAY_BE_BOOL, reg::NoString, false, false, 343), /* getIssetabilityResolution $reprocessUntrackedLinks */
+	reg::packed(975, MAY_BE_BOOL), /* getIssetabilityResolution $reprocessUntrackedLinks */
 	reg::packed(845, 0, 999), /* getIssetabilityResolution return */
 	reg::packed(845, MAY_BE_ARRAY), /* getThrowPoints return */
 	reg::packed(845, MAY_BE_ARRAY), /* getImpurePoints return */
 	reg::packed(845, 0, 170), /* getTruthyScope return */
 	reg::packed(845, 0, 170), /* getFalseyScope return */
-	reg::packed(639, 0, 1126), /* withEqualityCheckResult $specifiedTypes */
+	reg::packed(628, 0, 1126), /* withEqualityCheckResult $specifiedTypes */
 	reg::packed(1158, MAY_BE_BOOL), /* withEqualityCheckResult $value */
 	reg::packed(845, 0, 1126), /* withEqualityCheckResult return */
 	reg::packed(845, MAY_BE_BOOL), /* isAlwaysTerminating return */
-	reg::packed(845, 0, 528), /* getType return */
-	reg::packed(845, 0, 528), /* getNativeType return */
+	reg::packed(845, 0, 517), /* getType return */
+	reg::packed(845, 0, 517), /* getNativeType return */
 	reg::packed(1210, 0, 170), /* consultExpressionTypeResolverExtensions $readScope */
-	reg::packed(845, MAY_BE_NULL, 528), /* consultExpressionTypeResolverExtensions return */
+	reg::packed(845, MAY_BE_NULL, 517), /* consultExpressionTypeResolverExtensions return */
 	reg::packed(1260, MAY_BE_BOOL), /* resolveOwnRawType $nativeTypesPromoted */
-	reg::packed(845, 0, 528), /* resolveOwnRawType return */
+	reg::packed(845, 0, 517), /* resolveOwnRawType return */
 	reg::packed(845, MAY_BE_VOID), /* releaseTypeCallbackIfResolved return */
 	reg::packed(1260, MAY_BE_BOOL), /* resolveOwnType $nativeTypesPromoted */
-	reg::packed(845, 0, 528), /* resolveOwnType return */
-	reg::packed(523, 0, 528), /* projectVoidToNull $type */
+	reg::packed(845, 0, 517), /* resolveOwnType return */
+	reg::packed(512, 0, 517), /* projectVoidToNull $type */
 	reg::packed(1260, MAY_BE_BOOL), /* projectVoidToNull $nativeTypesPromoted */
-	reg::packed(845, 0, 528), /* projectVoidToNull return */
+	reg::packed(845, 0, 517), /* projectVoidToNull return */
 	reg::packed(1260, MAY_BE_BOOL), /* projectsVoidToNull $nativeTypesPromoted */
 	reg::packed(845, MAY_BE_BOOL), /* projectsVoidToNull return */
 	reg::packed(1260, MAY_BE_BOOL), /* getKeepVoidType $nativeTypesPromoted */
-	reg::packed(845, 0, 528), /* getKeepVoidType return */
+	reg::packed(845, 0, 517), /* getKeepVoidType return */
 	reg::packed(164, 0, 170), /* hasTrackedExpressionType $scope */
 	reg::packed(845, MAY_BE_BOOL), /* hasTrackedExpressionType return */
 	reg::packed(845, MAY_BE_BOOL), /* canResolveOwnType return */
@@ -272,19 +272,19 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1460, 0, 1468), /* getSpecifiedTypesForScope $context */
 	reg::packed(845, 0, 1126), /* getSpecifiedTypesForScope return */
 	reg::packed(1460, 0, 1468), /* getSpecifiedTypes $context */
-	reg::packed(1260, MAY_BE_BOOL, reg::NoString, false, false, 343), /* getSpecifiedTypes $nativeTypesPromoted */
+	reg::packed(1260, MAY_BE_BOOL), /* getSpecifiedTypes $nativeTypesPromoted */
 	reg::packed(845, 0, 1126), /* getSpecifiedTypes return */
 	reg::packed(164, 0, 170), /* getCreatedTypesForScope $scope */
-	reg::packed(523, 0, 528), /* getCreatedTypesForScope $type */
+	reg::packed(512, 0, 517), /* getCreatedTypesForScope $type */
 	reg::packed(1460, 0, 1468), /* getCreatedTypesForScope $context */
 	reg::packed(845, MAY_BE_NULL, 1126), /* getCreatedTypesForScope return */
-	reg::packed(523, 0, 528), /* getCreatedTypes $type */
+	reg::packed(512, 0, 517), /* getCreatedTypes $type */
 	reg::packed(1460, 0, 1468), /* getCreatedTypes $context */
-	reg::packed(1260, MAY_BE_BOOL, reg::NoString, false, false, 343), /* getCreatedTypes $nativeTypesPromoted */
+	reg::packed(1260, MAY_BE_BOOL), /* getCreatedTypes $nativeTypesPromoted */
 	reg::packed(845, MAY_BE_NULL, 1126), /* getCreatedTypes return */
 	reg::packed(164, 0, 170), /* getTypeOnScope $scope */
 	reg::packed(960, MAY_BE_BOOL), /* getTypeOnScope $useNativeTypes */
-	reg::packed(845, 0, 528), /* getTypeOnScope return */
+	reg::packed(845, 0, 517), /* getTypeOnScope return */
 	reg::packed(164, 0, 170), /* answersOnScope $scope */
 	reg::packed(960, MAY_BE_BOOL), /* answersOnScope $useNativeTypes */
 	reg::packed(845, MAY_BE_BOOL), /* answersOnScope return */
@@ -292,13 +292,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(845, MAY_BE_BOOL), /* isScopeAuthoritative return */
 	reg::packed(164, 0, 170), /* askScopeVariableStateMatches $scope */
 	reg::packed(960, MAY_BE_BOOL), /* askScopeVariableStateMatches $useNativeTypes */
-	reg::packed(1641, MAY_BE_BOOL, reg::NoString, false, false, 343), /* askScopeVariableStateMatches $ruleFacingAsk */
+	reg::packed(1641, MAY_BE_BOOL), /* askScopeVariableStateMatches $ruleFacingAsk */
 	reg::packed(845, MAY_BE_BOOL), /* askScopeVariableStateMatches return */
 	reg::packed(164, 0, 170), /* atAskPosition $scope */
-	reg::packed(845, 0, 443), /* atAskPosition return */
+	reg::packed(845, 0, 432), /* atAskPosition return */
 	reg::packed(201, 0, 170), /* onNonNullabilityDevicedScopes $beforeScope */
 	reg::packed(164, 0, 170), /* onNonNullabilityDevicedScopes $scope */
-	reg::packed(845, 0, 443), /* onNonNullabilityDevicedScopes return */
+	reg::packed(845, 0, 432), /* onNonNullabilityDevicedScopes return */
 	reg::packed(845, MAY_BE_ARRAY), /* getReadVariableNames return */
 	reg::packed(1749, 0, 1754), /* collectReadVariableNames $node */
 	reg::packed(845, MAY_BE_ARRAY), /* collectReadVariableNames return */
@@ -308,7 +308,7 @@ using Sig = reg::Sig<strings, args>;
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 833 /* __construct */, 11, 0, 30, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 833 /* __construct */, 20, 0, 30, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig finalize = { { 846 /* finalize */, 7, 30, 7, 37, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getScope = { { 855 /* getScope */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getVariableFlow = { { 864 /* getVariableFlow */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
@@ -320,7 +320,7 @@ inline constexpr sigtab::Sig getExpr = { { 938 /* getExpr */, 0, 46, 0, 46, ZEND
 inline constexpr sigtab::Sig getArgsResult = { { 946 /* getArgsResult */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasYield = { { 238 /* hasYield */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig containsNullsafe = { { 326 /* containsNullsafe */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getIssetabilityResolution = { { 1039 /* getIssetabilityResolution */, 2, 50, 3, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIssetabilityResolution = { { 1039 /* getIssetabilityResolution */, 3, 50, 3, 53, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getThrowPoints = { { 1065 /* getThrowPoints */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getImpurePoints = { { 1080 /* getImpurePoints */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getTruthyScope = { { 1096 /* getTruthyScope */, 0, 56, 0, 56, ZEND_ACC_PUBLIC } };
@@ -340,13 +340,13 @@ inline constexpr sigtab::Sig hasTrackedExpressionType = { { 1396 /* hasTrackedEx
 inline constexpr sigtab::Sig canResolveOwnType = { { 1421 /* canResolveOwnType */, 0, 80, 0, 80, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasOwnLazyResolution = { { 1439 /* hasOwnLazyResolution */, 0, 81, 0, 81, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getSpecifiedTypesForScope = { { 1506 /* getSpecifiedTypesForScope */, 2, 82, 2, 84, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSpecifiedTypes = { { 1532 /* getSpecifiedTypes */, 1, 85, 2, 87, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSpecifiedTypes = { { 1532 /* getSpecifiedTypes */, 2, 85, 2, 87, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getCreatedTypesForScope = { { 1550 /* getCreatedTypesForScope */, 3, 88, 3, 91, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCreatedTypes = { { 1574 /* getCreatedTypes */, 2, 92, 3, 95, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCreatedTypes = { { 1574 /* getCreatedTypes */, 3, 92, 3, 95, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getTypeOnScope = { { 1590 /* getTypeOnScope */, 2, 96, 2, 98, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig answersOnScope = { { 1605 /* answersOnScope */, 2, 99, 2, 101, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isScopeAuthoritative = { { 1620 /* isScopeAuthoritative */, 1, 102, 1, 103, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig askScopeVariableStateMatches = { { 1655 /* askScopeVariableStateMatches */, 2, 104, 3, 107, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig askScopeVariableStateMatches = { { 1655 /* askScopeVariableStateMatches */, 3, 104, 3, 107, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig atAskPosition = { { 1684 /* atAskPosition */, 1, 108, 1, 109, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig onNonNullabilityDevicedScopes = { { 1698 /* onNonNullabilityDevicedScopes */, 2, 110, 2, 112, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getReadVariableNames = { { 1728 /* getReadVariableNames */, 0, 113, 0, 113, ZEND_ACC_PRIVATE } };

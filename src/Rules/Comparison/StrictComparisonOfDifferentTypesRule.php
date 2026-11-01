@@ -52,9 +52,9 @@ final class StrictComparisonOfDifferentTypesRule implements Rule
 		}
 
 		if ($node instanceof Node\Expr\BinaryOp\Identical) {
-			$nodeTypeResult = $this->richerScopeGetTypeHelper->getIdenticalResult($this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain(), $node);
+			$nodeTypeResult = $this->richerScopeGetTypeHelper->getIdenticalResult($this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain(), $node, null, null, null);
 		} elseif ($node instanceof Node\Expr\BinaryOp\NotIdentical) {
-			$nodeTypeResult = $this->richerScopeGetTypeHelper->getNotIdenticalResult($this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain(), $node);
+			$nodeTypeResult = $this->richerScopeGetTypeHelper->getNotIdenticalResult($this->treatPhpDocTypesAsCertain ? $scope : $scope->doNotTreatPhpDocTypesAsCertain(), $node, null, null, null);
 		} else {
 			return [];
 		}

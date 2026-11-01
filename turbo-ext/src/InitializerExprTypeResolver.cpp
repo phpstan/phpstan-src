@@ -5982,7 +5982,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		zval *class_, *classReflection, *callable;
 		zend_string *constantName;
 		bool nativeTypesPromoted = false;
-		if (!zp::parse<zp::Obj, zp::Str, zp::ObjOrNull, zp::Zval, zp::Opt<zp::Bool>>(execute_data, class_, constantName, classReflection, callable, nativeTypesPromoted)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Str, zp::ObjOrNull, zp::Zval, zp::Bool>(execute_data, class_, constantName, classReflection, callable, nativeTypesPromoted)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgCallable(callable, 4))) RETURN_THROWS();
 		zval nullReflection;
 		if (classReflection == NULL) {

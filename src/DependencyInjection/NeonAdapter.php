@@ -45,7 +45,7 @@ final class NeonAdapter implements Adapter
 	 * @param array<string, mixed> $parameters the parameters already known when the config is loaded
 	 *                                         (rootDir, currentWorkingDirectory, env), see LoaderFactory
 	 */
-	public function __construct(private array $expandRelativePaths, private array $parameters = [])
+	public function __construct(private array $expandRelativePaths, private array $parameters)
 	{
 	}
 

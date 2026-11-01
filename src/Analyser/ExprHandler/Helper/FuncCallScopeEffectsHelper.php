@@ -89,6 +89,7 @@ final class FuncCallScopeEffectsHelper
 			$arrayWalkArrayArg,
 			new NativeTypeExpr($newArrayType, $newArrayNativeType),
 			$nodeCallback,
+			null,
 		)->getScope();
 
 		return $scope;
@@ -166,6 +167,7 @@ final class FuncCallScopeEffectsHelper
 					$isArrayPop ? $arrayArgNativeType->popArray() : $arrayArgNativeType->shiftArray(),
 				),
 				$nodeCallback,
+				null,
 			)->getScope();
 		}
 
@@ -187,6 +189,7 @@ final class FuncCallScopeEffectsHelper
 					$this->getArrayFunctionAppendingType($functionReflection, $scopeBeforeArgs->doNotTreatPhpDocTypesAsCertain(), $normalizedExpr, $argsResult),
 				),
 				$nodeCallback,
+				null,
 			)->getScope();
 		}
 
@@ -211,6 +214,7 @@ final class FuncCallScopeEffectsHelper
 				$arrayArg,
 				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->shuffleArray(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->shuffleArray()),
 				$nodeCallback,
+				null,
 			)->getScope();
 		}
 
@@ -255,6 +259,7 @@ final class FuncCallScopeEffectsHelper
 					$arrayArgNativeType->spliceArray($offsetType, $lengthType, $replacementNativeType),
 				),
 				$nodeCallback,
+				null,
 			)->getScope();
 		}
 
@@ -273,6 +278,7 @@ final class FuncCallScopeEffectsHelper
 				$arrayArg,
 				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->shuffleArray(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->shuffleArray()),
 				$nodeCallback,
+				null,
 			)->getScope();
 		}
 
@@ -291,6 +297,7 @@ final class FuncCallScopeEffectsHelper
 				$arrayArg,
 				new NativeTypeExpr($argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, false)->makeListMaybe(), $argsResult->requireArgResult($arrayArg)->getTypeOnScope($scope, true)->makeListMaybe()),
 				$nodeCallback,
+				null,
 			)->getScope();
 		}
 

@@ -88,7 +88,7 @@ final class RestartExtensionRegistry
 	 *
 	 * @return list<RestartReason>
 	 */
-	public static function collectReasons(bool $allowXdebug, ?string $pharPath = null): array
+	public static function collectReasons(bool $allowXdebug, ?string $pharPath): array
 	{
 		$iniSettings = [];
 		foreach (['xdebug.mode', 'pcov.enabled', 'uopz.disable'] as $name) {
@@ -133,8 +133,8 @@ final class RestartExtensionRegistry
 		array $iniSettings,
 		?string $turboExtensionPath,
 		bool $allowXdebug,
-		array $opcacheIniEntries = [],
-		array $currentOpcacheIniValues = [],
+		array $opcacheIniEntries,
+		array $currentOpcacheIniValues,
 	): array
 	{
 		$reasons = [];
@@ -147,6 +147,8 @@ final class RestartExtensionRegistry
 				// xdebug reads XDEBUG_MODE in preference to the ini setting, so
 				// flagging the ini alone would be silently overridable
 				environmentVariables: ['XDEBUG_MODE' => 'off'],
+				strippedExtensions: [],
+				commandLineArguments: [],
 			);
 		}
 
@@ -158,6 +160,9 @@ final class RestartExtensionRegistry
 				'pcov',
 				'pcov.enabled=1',
 				iniSettings: ['pcov.enabled' => '0'],
+				environmentVariables: [],
+				strippedExtensions: [],
+				commandLineArguments: [],
 			);
 		}
 
@@ -169,6 +174,9 @@ final class RestartExtensionRegistry
 				'uopz',
 				'uopz.disable=0',
 				iniSettings: ['uopz.disable' => '1'],
+				environmentVariables: [],
+				strippedExtensions: [],
+				commandLineArguments: [],
 			);
 		}
 
@@ -185,6 +193,9 @@ final class RestartExtensionRegistry
 					'-d',
 					TurboExtensionSelector::EXTENSION_PATH_INI . '=' . $turboExtensionPath,
 				],
+				iniSettings: [],
+				environmentVariables: [],
+				strippedExtensions: [],
 			);
 		}
 
@@ -196,6 +207,9 @@ final class RestartExtensionRegistry
 				'tideways',
 				'crashes the turbo extension',
 				strippedExtensions: ['tideways'],
+				iniSettings: [],
+				environmentVariables: [],
+				commandLineArguments: [],
 			);
 		}
 
@@ -210,6 +224,9 @@ final class RestartExtensionRegistry
 				'opcache',
 				'not configured the way PHPStan runs fastest',
 				iniSettings: $opcacheSettings,
+				environmentVariables: [],
+				strippedExtensions: [],
+				commandLineArguments: [],
 			);
 		}
 
@@ -328,7 +345,7 @@ final class RestartExtensionRegistry
 	 * The turbo binary the restart should load, null when there is none or
 	 * when loading it would not buy anything.
 	 */
-	public static function findTurboExtensionToLoad(?string $pharPath = null): ?string
+	public static function findTurboExtensionToLoad(?string $pharPath): ?string
 	{
 		if (!self::isForkCapable()) {
 			// fork mode is impossible here (see ForkParallelChecker) and spawned

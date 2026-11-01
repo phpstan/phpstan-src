@@ -32,7 +32,7 @@ use function implode;
 use function sprintf;
 
 /** @api */
-#[InstanceofDeprecated]
+#[InstanceofDeprecated(insteadUse: null)]
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/GenericObjectType.cpp')]
 class GenericObjectType extends ObjectType
 {

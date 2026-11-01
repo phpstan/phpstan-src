@@ -60,6 +60,7 @@ final class BreakContinueHandler implements StmtHandler
 		], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::exit(
 			$stmt instanceof Break_ ? VariableFlow::BREAK : VariableFlow::CONTINUE,
 			$stmt->num instanceof Int_ ? $stmt->num->value : 1,
+			null,
 		), dependencies: Dependencies::merge(...$dependencies));
 	}
 

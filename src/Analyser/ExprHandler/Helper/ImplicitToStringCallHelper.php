@@ -60,6 +60,16 @@ final class ImplicitToStringCallHelper
 				impurePoints: [],
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
+				variableFlow: null,
+				dependencies: null,
 			);
 		}
 
@@ -81,14 +91,14 @@ final class ImplicitToStringCallHelper
 			if ($scope->nativeTypesPromoted) {
 				$toStringReturnType = ParametersAcceptorSelector::combineAcceptors($toStringMethod->getVariants())->getNativeReturnType();
 			} else {
-				$toStringReturnType = $this->methodCallReturnTypeHelper->methodCallReturnType($scope, $exprType, '__toString', $toStringCall) ?? new ErrorType();
+				$toStringReturnType = $this->methodCallReturnTypeHelper->methodCallReturnType($scope, $exprType, '__toString', $toStringCall, null, null) ?? new ErrorType();
 			}
 			$throwPoint = $this->methodThrowPointHelper->getThrowPoint(
 				$toStringMethod,
 				$toStringMethod->getOnlyVariant(),
 				$toStringCall,
 				$scope,
-				ExpressionContext::createDeep(),
+				ExpressionContext::createDeep(true),
 				$toStringReturnType,
 			);
 			if ($throwPoint !== null) {
@@ -106,6 +116,16 @@ final class ImplicitToStringCallHelper
 			impurePoints: $impurePoints,
 			typeCallback: static fn () => new MixedType(),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 	}
 

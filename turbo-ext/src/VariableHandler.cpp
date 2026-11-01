@@ -565,13 +565,12 @@ PT_MINIT_REGISTRATION(pt_register_variable_handler)
 
 	cls.method(sigs::composeResult, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *nodeScopeResolver, *expr, *nameResult, *storage, *beforeScope, *context = NULL;
-		ZEND_PARSE_PARAMETERS_START(5, 6)
+		ZEND_PARSE_PARAMETERS_START(6, 6)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_OBJECT_OR_NULL(nameResult)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_OBJECT(beforeScope)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(context)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(VariableHandler(Z_OBJ_P(ZEND_THIS)).composeResult(nodeScopeResolver, expr, nameResult, storage, beforeScope, context));

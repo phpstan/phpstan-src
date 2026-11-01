@@ -56,7 +56,7 @@ final class PropertyHookThrowPointsResolver
 			}
 
 			if ($this->implicitThrows) {
-				return [InternalThrowPoint::createImplicit($scope, $propertyFetch)];
+				return [InternalThrowPoint::createImplicit($scope, $propertyFetch, null)];
 			}
 
 			return [];
@@ -70,7 +70,7 @@ final class PropertyHookThrowPointsResolver
 				return [InternalThrowPoint::createExplicit($scope, $throwType, $propertyFetch, true)];
 			}
 		} elseif ($this->implicitThrows) {
-			return [InternalThrowPoint::createImplicit($scope, $propertyFetch)];
+			return [InternalThrowPoint::createImplicit($scope, $propertyFetch, null)];
 		}
 
 		return [];

@@ -69,7 +69,7 @@ final class ClosureParameterResolver
 	public function resolveCallableTypeForScope(Expr $expr, MutatingScope $scope): Type
 	{
 		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
-			return $this->closureTypeResolver->getClosureType($scope, $expr, false, $scope->getCurrentExpressionResultStorage());
+			return $this->closureTypeResolver->getClosureType($scope, $expr, false, $scope->getCurrentExpressionResultStorage(), null);
 		}
 
 		return $this->nodeScopeResolver->readTypeOfMaybeStored($expr, $scope);

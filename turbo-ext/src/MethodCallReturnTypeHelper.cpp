@@ -286,7 +286,7 @@ PT_MINIT_REGISTRATION(pt_register_method_call_return_type_helper)
 		zval *scope, *typeWithMethod, *methodCall;
 		zend_string *methodName;
 		zval *preResolvedAcceptor = NULL, *argsResult = NULL;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Str, zp::Obj, zp::Opt<zp::ObjOrNull>, zp::Opt<zp::ObjOrNull>>(execute_data, scope, typeWithMethod, methodName, methodCall, preResolvedAcceptor, argsResult)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Str, zp::Obj, zp::ObjOrNull, zp::ObjOrNull>(execute_data, scope, typeWithMethod, methodName, methodCall, preResolvedAcceptor, argsResult)) RETURN_THROWS();
 		PT_RETURN_VAL(MethodCallReturnTypeHelper(Z_OBJ_P(ZEND_THIS)).methodCallReturnType(scope, typeWithMethod, methodName, methodCall, preResolvedAcceptor, argsResult));
 	});
 

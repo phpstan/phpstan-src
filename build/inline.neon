@@ -17,6 +17,7 @@ services:
 		class: PHPStan\Build\InlineCallCollector
 		arguments:
 			parser: @defaultAnalysisParser
+			directories: null
 		tags:
 			- phpstan.collector
 	-

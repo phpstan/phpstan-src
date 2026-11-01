@@ -490,7 +490,7 @@ final class BinaryOpHandler implements ExprHandler
 								if (count($countables) > 0) {
 									$countableType = TypeCombinator::union(...$countables);
 
-									return $this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $countableType, $context, $scope)->setRootExpr($expr);
+									return $this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $countableType, $context, $scope, null)->setRootExpr($expr);
 								}
 							}
 
@@ -501,7 +501,7 @@ final class BinaryOpHandler implements ExprHandler
 								}
 
 								$result = $result->unionWith(
-									$this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $newType, $context, $scope)->setRootExpr($expr),
+									$this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $newType, $context, $scope, null)->setRootExpr($expr),
 								);
 							}
 						}
@@ -518,7 +518,7 @@ final class BinaryOpHandler implements ExprHandler
 							$arrayArg = $expr->right->getArgs()[0]->value;
 							$dimFetch = new Expr\ArrayDimFetch($arrayArg, $expr->left);
 							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
+								$this->defaultNarrowingHelper->createForSubject($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope, null)->setRootExpr($expr),
 							);
 						}
 					}
@@ -548,7 +548,7 @@ final class BinaryOpHandler implements ExprHandler
 							$arrayArg = $expr->right->left->getArgs()[0]->value;
 							$dimFetch = new Expr\ArrayDimFetch($arrayArg, $expr->left);
 							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject($dimFetch, $countArgType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
+								$this->defaultNarrowingHelper->createForSubject($dimFetch, $countArgType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope, null)->setRootExpr($expr),
 							);
 						}
 					}
@@ -592,7 +592,7 @@ final class BinaryOpHandler implements ExprHandler
 									$accessory = new AccessoryNonFalsyStringType();
 								}
 
-								$result = $result->unionWith($this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr));
+								$result = $result->unionWith($this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $accessory, $context, $scope, null)->setRootExpr($expr));
 							}
 						}
 					}
@@ -656,6 +656,7 @@ final class BinaryOpHandler implements ExprHandler
 									$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
 									TypeSpecifierContext::createTruthy(),
 									$scope,
+									null,
 								)->setRootExpr($expr),
 							);
 						}
@@ -666,6 +667,7 @@ final class BinaryOpHandler implements ExprHandler
 									$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
 									TypeSpecifierContext::createTruthy(),
 									$scope,
+									null,
 								)->setRootExpr($expr),
 							);
 						}
@@ -677,6 +679,7 @@ final class BinaryOpHandler implements ExprHandler
 									$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
 									TypeSpecifierContext::createTruthy(),
 									$scope,
+									null,
 								)->setRootExpr($expr),
 							);
 						}
@@ -687,6 +690,7 @@ final class BinaryOpHandler implements ExprHandler
 									$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
 									TypeSpecifierContext::createTruthy(),
 									$scope,
+									null,
 								)->setRootExpr($expr),
 							);
 						}
@@ -706,6 +710,14 @@ final class BinaryOpHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 			},
 			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

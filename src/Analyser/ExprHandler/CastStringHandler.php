@@ -80,6 +80,14 @@ final class CastStringHandler implements ExprHandler
 				new NotEqual($expr->expr, new String_('')),
 			)->getSpecifiedTypes($context, $nativeTypesPromoted)->setRootExpr($expr),
 			dependencies: $exprResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

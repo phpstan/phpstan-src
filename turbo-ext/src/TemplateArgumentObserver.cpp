@@ -1514,10 +1514,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_observer)
 	cls.method(sigs::collectArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *parameterType, *argumentType;
 		bool isPure = false;
-		ZEND_PARSE_PARAMETERS_START(2, 3)
+		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_OBJECT_OF_CLASS(parameterType, pt_class(PT_CLASS_TYPE))
 			Z_PARAM_OBJECT_OF_CLASS(argumentType, pt_class(PT_CLASS_TYPE))
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(isPure)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(TemplateArgumentObserver::collectArgument(parameterType, argumentType, isPure));
@@ -1525,11 +1524,10 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_observer)
 
 	cls.method(sigs::collectCall, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *site, *acceptor, *argumentTypes, *classTemplates = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 4)
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_OBJECT_OF_CLASS(site, pt_class(PT_CLASS_EXPR))
 			Z_PARAM_OBJECT_OF_CLASS(acceptor, pt_class(PT_CLASS_PARAMETERS_ACCEPTOR))
 			Z_PARAM_ARRAY(argumentTypes)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(classTemplates, pt_ce_template_type_map)
 		ZEND_PARSE_PARAMETERS_END();
 		zval null;

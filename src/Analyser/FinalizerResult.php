@@ -14,8 +14,8 @@ final class FinalizerResult
 		private AnalyserResult $analyserResult,
 		private array $collectorErrors,
 		private array $locallyIgnoredCollectorErrors,
-		private array $collectedDataRuleResults = [],
-		private int $reusedRulesCount = 0,
+		private array $collectedDataRuleResults,
+		private int $reusedRulesCount,
 	)
 	{
 	}

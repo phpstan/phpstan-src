@@ -14,7 +14,7 @@ class LruCacheTest extends PHPStanTestCase
 		// nothing ever put in: without a declared value type the cache is
 		// LruCache<never> and get() is statically null
 		/** @var LruCache<string> $cache */
-		$cache = new LruCache();
+		$cache = new LruCache(0, 0, 0);
 
 		$this->assertNull($cache->get('a'));
 		$this->assertSame(0, $cache->count());
@@ -22,7 +22,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testGetTouchesTheEntry(): void
 	{
-		$cache = new LruCache();
+		$cache = new LruCache(0, 0, 0);
 		$cache->set('a', 'A', 1);
 		$cache->set('b', 'B', 1);
 
@@ -34,7 +34,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testCountEvictionDropsTheLeastRecentlyUsed(): void
 	{
-		$cache = new LruCache(maxCount: 2);
+		$cache = new LruCache(maxCount: 2, maxWeight: 0, weightEvictionFloorCount: 0);
 		$this->assertSame([], $cache->set('a', 'A', 1));
 		$this->assertSame([], $cache->set('b', 'B', 1));
 
@@ -47,7 +47,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testWeightEvictionMakesRoomForTheIncomingEntry(): void
 	{
-		$cache = new LruCache(maxWeight: 10);
+		$cache = new LruCache(maxWeight: 10, maxCount: 0, weightEvictionFloorCount: 0);
 		$cache->set('a', 'A', 6);
 		$this->assertSame([], $cache->set('b', 'B', 4));
 
@@ -57,7 +57,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testWeightEvictionStopsAtTheFloor(): void
 	{
-		$cache = new LruCache(maxWeight: 10, weightEvictionFloorCount: 2);
+		$cache = new LruCache(maxWeight: 10, weightEvictionFloorCount: 2, maxCount: 0);
 		$cache->set('a', 'A', 5);
 		$cache->set('b', 'B', 5);
 
@@ -68,7 +68,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testSetReplacesAnEntryAndAccountsForItsNewWeight(): void
 	{
-		$cache = new LruCache(maxWeight: 10);
+		$cache = new LruCache(maxWeight: 10, maxCount: 0, weightEvictionFloorCount: 0);
 		$cache->set('a', 'A', 9);
 		$cache->set('a', 'AA', 2);
 
@@ -79,7 +79,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testReplaceKeepsTheWeightAndEvictsNothing(): void
 	{
-		$cache = new LruCache(maxCount: 2, maxWeight: 10);
+		$cache = new LruCache(maxCount: 2, maxWeight: 10, weightEvictionFloorCount: 0);
 		$cache->set('a', 'A', 5);
 		$cache->set('b', 'B', 5);
 
@@ -91,7 +91,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testReplacingAMissingEntryIsABug(): void
 	{
-		$cache = new LruCache();
+		$cache = new LruCache(0, 0, 0);
 
 		$this->expectException(ShouldNotHappenException::class);
 		$cache->replace('a', 'A');
@@ -99,7 +99,7 @@ class LruCacheTest extends PHPStanTestCase
 
 	public function testNoLimitsMeansNoEviction(): void
 	{
-		$cache = new LruCache();
+		$cache = new LruCache(0, 0, 0);
 		for ($i = 0; $i < 100; $i++) {
 			$this->assertSame([], $cache->set('k' . $i, $i, 1_000_000));
 		}

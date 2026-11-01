@@ -132,7 +132,7 @@ final class PhpClassReflectionExtension
 		int $memberCacheKeysMax,
 	)
 	{
-		$this->memberCacheOrder = new LruCache($memberCacheKeysMax);
+		$this->memberCacheOrder = new LruCache($memberCacheKeysMax, 0, 0);
 	}
 
 	/**

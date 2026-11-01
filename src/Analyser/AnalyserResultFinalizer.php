@@ -62,23 +62,23 @@ final class AnalyserResultFinalizer
 		AnalyserResult $analyserResult,
 		bool $onlyFiles,
 		bool $debug,
-		?Closure $preRuleCallback = null,
-		?Closure $postRuleCallback = null,
-		array $previousCollectedDataRuleResults = [],
+		?Closure $preRuleCallback,
+		?Closure $postRuleCallback,
+		array $previousCollectedDataRuleResults,
 	): FinalizerResult
 	{
 		if (count($analyserResult->getCollectedData()) === 0) {
-			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], [], [], 0);
 		}
 
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 		if ($hasInternalErrors) {
-			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
+			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], [], [], 0);
 		}
 
 		$nodeType = CollectedDataNode::class;
 		$collectedData = $analyserResult->getCollectedData();
-		$node = new CollectedDataNode($collectedData, $onlyFiles);
+		$node = new CollectedDataNode($collectedData, $onlyFiles, null);
 
 		// Hashed once per collector type and run, in the same order however the files were merged.
 		$collectorHashes = [];
@@ -351,8 +351,8 @@ final class AnalyserResultFinalizer
 		AnalyserResult $analyserResult,
 		array $collectorErrors,
 		array $locallyIgnoredCollectorErrors,
-		array $collectedDataRuleResults = [],
-		int $reusedRulesCount = 0,
+		array $collectedDataRuleResults,
+		int $reusedRulesCount,
 	): FinalizerResult
 	{
 		if (!$this->reportUnmatchedIgnoredErrors) {

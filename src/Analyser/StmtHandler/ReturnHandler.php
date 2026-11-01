@@ -76,7 +76,7 @@ final class ReturnHandler implements StmtHandler
 			new InternalStatementExitPoint($stmt, $scope),
 		], throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: VariableFlow::sequence(
 			$variableFlow,
-			VariableFlow::exit(VariableFlow::RETURN, name: $stmt->expr instanceof Variable && is_string($stmt->expr->name) ? $stmt->expr->name : null),
+			VariableFlow::exit(VariableFlow::RETURN, name: $stmt->expr instanceof Variable && is_string($stmt->expr->name) ? $stmt->expr->name : null, level: 1),
 		), dependencies: Dependencies::merge(...$dependencies));
 	}
 

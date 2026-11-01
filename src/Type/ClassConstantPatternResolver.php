@@ -29,7 +29,7 @@ final class ClassConstantPatternResolver
 	 * With the native type of the parameter or of the return type, the result is decided together
 	 * with it, as TypehintHelper::decideType() does for other PHPDoc types.
 	 */
-	public static function resolve(Type $type, string $pattern, ?Type $nativeType = null): Type
+	public static function resolve(Type $type, string $pattern, ?Type $nativeType): Type
 	{
 		$result = self::resolveConstants($type, $pattern);
 		if ($nativeType === null) {

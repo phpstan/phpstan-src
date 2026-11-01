@@ -112,30 +112,14 @@ zv::Val pt_native_closure_to_closure(zval *closure);
  * implementation (#[GenerateFactory] — every PHPStan container), the native
  * ExpressionResult is constructed directly, with the extensions collection
  * that factory passes and the constructor's own invariants and callable
- * checks; any other factory gets create() through the engine with the
- * optional parameters the call names (`named`) as named arguments. The
+ * checks; any other factory gets create() through the engine. The
  * collection is learned from the factory's first result and cached per
  * factory object (the cache holds the factory, so a new container's factory
  * can never alias a dead one). */
 
-enum : uint32_t
-{
-	PT_ER_NAMED_CONTAINS_NULLSAFE = 1u << 0,
-	PT_ER_NAMED_ISSETABILITY_DESCRIPTOR = 1u << 1,
-	PT_ER_NAMED_TRUTHY_SCOPE_OVERRIDE_RESULT = 1u << 2,
-	PT_ER_NAMED_FALSEY_SCOPE_OVERRIDE_RESULT = 1u << 3,
-	PT_ER_NAMED_CREATE_TYPES_CALLBACK = 1u << 4,
-	PT_ER_NAMED_TYPE = 1u << 5,
-	PT_ER_NAMED_NATIVE_TYPE = 1u << 6,
-	PT_ER_NAMED_ARGS_RESULT = 1u << 7,
-	PT_ER_NAMED_VARIABLE_FLOW = 1u << 8,
-	PT_ER_NAMED_DEPENDENCIES = 1u << 9,
-};
-
 /* create()'s parameters, borrowed: NULL (or an IS_NULL zval) is null, NULL
- * throwPoints / impurePoints are []. The required ones go through the
- * constructor; set an optional one with its with*() setter, which also
- * records that the twin's call passes it. */
+ * throwPoints / impurePoints are []. The first nine go through the
+ * constructor, the others through their with*() setters. */
 struct pt_expression_result_args
 {
 	zval *scope;
@@ -157,23 +141,22 @@ struct pt_expression_result_args
 	zval *argsResult = NULL;
 	zval *variableFlow = NULL;
 	zval *dependencies = NULL;
-	uint32_t named = 0;
 
 	pt_expression_result_args(zval *scope, zval *beforeScope, zval *expr, bool hasYield, bool isAlwaysTerminating, zval *throwPoints, zval *impurePoints, zval *typeCallback, zval *specifyTypesCallback)
 		: scope(scope), beforeScope(beforeScope), expr(expr), hasYield(hasYield), isAlwaysTerminating(isAlwaysTerminating), throwPoints(throwPoints), impurePoints(impurePoints), typeCallback(typeCallback), specifyTypesCallback(specifyTypesCallback)
 	{
 	}
 
-	pt_expression_result_args &withContainsNullsafe(bool value) { containsNullsafe = value; named |= PT_ER_NAMED_CONTAINS_NULLSAFE; return *this; }
-	pt_expression_result_args &withIssetabilityDescriptor(zval *value) { issetabilityDescriptor = value; named |= PT_ER_NAMED_ISSETABILITY_DESCRIPTOR; return *this; }
-	pt_expression_result_args &withTruthyScopeOverrideResult(zval *value) { truthyScopeOverrideResult = value; named |= PT_ER_NAMED_TRUTHY_SCOPE_OVERRIDE_RESULT; return *this; }
-	pt_expression_result_args &withFalseyScopeOverrideResult(zval *value) { falseyScopeOverrideResult = value; named |= PT_ER_NAMED_FALSEY_SCOPE_OVERRIDE_RESULT; return *this; }
-	pt_expression_result_args &withCreateTypesCallback(zval *value) { createTypesCallback = value; named |= PT_ER_NAMED_CREATE_TYPES_CALLBACK; return *this; }
-	pt_expression_result_args &withType(zval *value) { type = value; named |= PT_ER_NAMED_TYPE; return *this; }
-	pt_expression_result_args &withNativeType(zval *value) { nativeType = value; named |= PT_ER_NAMED_NATIVE_TYPE; return *this; }
-	pt_expression_result_args &withArgsResult(zval *value) { argsResult = value; named |= PT_ER_NAMED_ARGS_RESULT; return *this; }
-	pt_expression_result_args &withVariableFlow(zval *value) { variableFlow = value; named |= PT_ER_NAMED_VARIABLE_FLOW; return *this; }
-	pt_expression_result_args &withDependencies(zval *value) { dependencies = value; named |= PT_ER_NAMED_DEPENDENCIES; return *this; }
+	pt_expression_result_args &withContainsNullsafe(bool value) { containsNullsafe = value; return *this; }
+	pt_expression_result_args &withIssetabilityDescriptor(zval *value) { issetabilityDescriptor = value; return *this; }
+	pt_expression_result_args &withTruthyScopeOverrideResult(zval *value) { truthyScopeOverrideResult = value; return *this; }
+	pt_expression_result_args &withFalseyScopeOverrideResult(zval *value) { falseyScopeOverrideResult = value; return *this; }
+	pt_expression_result_args &withCreateTypesCallback(zval *value) { createTypesCallback = value; return *this; }
+	pt_expression_result_args &withType(zval *value) { type = value; return *this; }
+	pt_expression_result_args &withNativeType(zval *value) { nativeType = value; return *this; }
+	pt_expression_result_args &withArgsResult(zval *value) { argsResult = value; return *this; }
+	pt_expression_result_args &withVariableFlow(zval *value) { variableFlow = value; return *this; }
+	pt_expression_result_args &withDependencies(zval *value) { dependencies = value; return *this; }
 };
 
 /* $factory->create(...$args); UNDEF = pending exception */

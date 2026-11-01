@@ -602,9 +602,8 @@ PT_MINIT_REGISTRATION(pt_register_variable_flow)
 		zend_long targetId = 0;
 		bool targetIdIsNull = true;
 		bool container = false;
-		ZEND_PARSE_PARAMETERS_START(1, 4)
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_STR(name)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_LONG_OR_NULL(targetId, targetIdIsNull)
 			Z_PARAM_BOOL(container)
 			Z_PARAM_ZVAL(offset)
@@ -630,7 +629,7 @@ PT_MINIT_REGISTRATION(pt_register_variable_flow)
 
 	cls.method(sigs::write, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *write, *redundantType = NULL;
-		if (!zp::parse<zp::Obj, zp::Opt<zp::ObjOrNull>>(execute_data, write, redundantType)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::ObjOrNull>(execute_data, write, redundantType)) RETURN_THROWS();
 		PT_VF_RETURN(VariableFlow::write(write, redundantType));
 	});
 
@@ -677,21 +676,21 @@ PT_MINIT_REGISTRATION(pt_register_variable_flow)
 	cls.method(sigs::exit, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *kind, *name = NULL;
 		zend_long level = 1;
-		if (!zp::parse<zp::Str, zp::Opt<zp::Long>, zp::Opt<zp::StrOrNull>>(execute_data, kind, level, name)) RETURN_THROWS();
+		if (!zp::parse<zp::Str, zp::Long, zp::StrOrNull>(execute_data, kind, level, name)) RETURN_THROWS();
 		PT_VF_RETURN(VariableFlow::exit_(kind, level, name));
 	});
 
 	cls.method(sigs::throwing, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		bool canContinue, canContainAnyThrowable = false;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Opt<zp::Bool>>(execute_data, type, canContinue, canContainAnyThrowable)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Bool>(execute_data, type, canContinue, canContainAnyThrowable)) RETURN_THROWS();
 		PT_VF_RETURN(VariableFlow::throwing(type, canContinue, canContainAnyThrowable));
 	});
 
 	cls.method(sigs::loop, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *condition, *body, *update;
 		bool atLeastOnce, canExit, canRepeat = true;
-		if (!zp::parse<zp::ObjOrNull, zp::ObjOrNull, zp::ObjOrNull, zp::Bool, zp::Bool, zp::Opt<zp::Bool>>(execute_data, condition, body, update, atLeastOnce, canExit, canRepeat)) RETURN_THROWS();
+		if (!zp::parse<zp::ObjOrNull, zp::ObjOrNull, zp::ObjOrNull, zp::Bool, zp::Bool, zp::Bool>(execute_data, condition, body, update, atLeastOnce, canExit, canRepeat)) RETURN_THROWS();
 		PT_VF_RETURN(VariableFlow::loop(condition, body, update, atLeastOnce, canExit, canRepeat));
 	});
 

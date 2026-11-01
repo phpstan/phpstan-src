@@ -700,7 +700,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 		$changed = VolatileExpressionHelper::invalidateVolatileFunctionCalls($expressionTypes, $nativeExpressionTypes);
 		$changed = VolatileExpressionHelper::invalidateSuperglobals($expressionTypes, $nativeExpressionTypes) || $changed;
-		$changed = VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes) || $changed;
+		$changed = VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes, VolatileExpressionHelper::EXISTENCE_CHECK_FUNCTION_NAMES, null) || $changed;
 
 		if (!$changed) {
 			return $this;
@@ -1036,7 +1036,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 *
 	 * @param list<string>|null $relevantRoots
 	 */
-	public function getClosureScopeCacheKey(?array $relevantRoots = null): string
+	public function getClosureScopeCacheKey(?array $relevantRoots): string
 	{
 		$parts = [];
 		foreach ($this->expressionTypes as $exprString => $expressionTypeHolder) {
@@ -1137,7 +1137,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				// expression reads, e.g. array_filter pricing its callback body
 				// per constant element) must re-price the node on that scope -
 				// the memoized walk-position type answers a different question
-				$counterfactualAsk = !$result->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted);
+				$counterfactualAsk = !$result->askScopeVariableStateMatches($scope, $scope->nativeTypesPromoted, false);
 				if (!$counterfactualAsk) {
 					return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 				}
@@ -1153,7 +1153,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// whose result NodeScopeResolver stores without an eager type.
 		// getClosureType()'s own depth guard answers the self-by-ref ask.
 		if ($node instanceof Expr\Closure || $node instanceof Expr\ArrowFunction) {
-			return $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, false, $storage);
+			return $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($scope, $node, false, $storage, null);
 		}
 
 		if (!$counterfactualAsk && $storage !== null && $storage->findExpressionResult($node) !== null) {
@@ -2460,7 +2460,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		?array $nativeCallableParameters = null,
 	): self
 	{
-		$anonymousFunctionReflection = $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true, $this->getCurrentExpressionResultStorage());
+		$anonymousFunctionReflection = $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $closure, true, $this->getCurrentExpressionResultStorage(), null);
 
 		$scope = $this->enterAnonymousFunctionWithoutReflection($closure, $callableParameters, $nativeCallableParameters);
 
@@ -2687,7 +2687,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 */
 	public function enterArrowFunction(Expr\ArrowFunction $arrowFunction, ?array $callableParameters, ?array $nativeCallableParameters = null): self
 	{
-		$anonymousFunctionReflection = $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true, $this->getCurrentExpressionResultStorage());
+		$anonymousFunctionReflection = $this->services->container->getByType(ClosureTypeResolver::class)->getClosureType($this, $arrowFunction, true, $this->getCurrentExpressionResultStorage(), null);
 
 		$scope = $this->enterArrowFunctionWithoutReflection($arrowFunction, $callableParameters, $nativeCallableParameters);
 
@@ -3000,7 +3000,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		);
 	}
 
-	public function enterExpressionAssign(Expr $expr, bool $isPlainWrite = true): self
+	public function enterExpressionAssign(Expr $expr, bool $isPlainWrite): self
 	{
 		$exprString = $this->getNodeKey($expr);
 		$currentlyAssignedExpressions = $this->currentlyAssignedExpressions;
@@ -4369,7 +4369,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $constraints;
 	}
 
-	private function mergeWithVariableState(?self $otherScope, bool $preserveVacuousConditionals = false): self
+	private function mergeWithVariableState(?self $otherScope, bool $preserveVacuousConditionals): self
 	{
 		if ($otherScope === null || $this === $otherScope) {
 			return $this;
@@ -4869,7 +4869,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/**
 	 * @param array<string, true>|null $writableVariableNames variables the loop can write, null when unknown
 	 */
-	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null): self
+	public function generalizeWith(self $otherScope, ?array $writableVariableNames): self
 	{
 		return $this->generalizeWithVariableState($otherScope, $writableVariableNames)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
 	}
@@ -4949,7 +4949,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
 			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
-				if (!ScopeOps::shouldInvalidateExpression($this, $this->services->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
+				if (!ScopeOps::shouldInvalidateExpression($this, $this->services->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString, false, null, false)) {
 					continue;
 				}
 

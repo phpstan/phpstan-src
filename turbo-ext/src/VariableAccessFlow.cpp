@@ -108,10 +108,9 @@ PT_MINIT_REGISTRATION(pt_register_variable_access_flow)
 		zend_long targetId = 0;
 		bool targetIdIsNull = true;
 		bool container = false;
-		ZEND_PARSE_PARAMETERS_START(2, 7)
+		ZEND_PARSE_PARAMETERS_START(7, 7)
 			Z_PARAM_STR(kind)
 			Z_PARAM_STR(name)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(write)
 			Z_PARAM_OBJECT_OR_NULL(type)
 			Z_PARAM_LONG_OR_NULL(targetId, targetIdIsNull)

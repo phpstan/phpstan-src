@@ -40,24 +40,24 @@ final class IssetabilityDescriptor
 	 */
 	private function __construct(
 		private string $kind,
-		private ?string $variableName = null,
-		private ?ExpressionResult $varResult = null,
-		private ?ExpressionResult $dimResult = null,
-		private ?ExpressionResult $innerResult = null,
-		private ?Closure $reflectionResolver = null,
-		private ?Expr $propertyFetch = null,
+		private ?string $variableName,
+		private ?ExpressionResult $varResult,
+		private ?ExpressionResult $dimResult,
+		private ?ExpressionResult $innerResult,
+		private ?Closure $reflectionResolver,
+		private ?Expr $propertyFetch,
 	)
 	{
 	}
 
 	public static function variable(string $variableName): self
 	{
-		return new self(self::KIND_VARIABLE, variableName: $variableName);
+		return new self(self::KIND_VARIABLE, variableName: $variableName, varResult: null, dimResult: null, innerResult: null, reflectionResolver: null, propertyFetch: null);
 	}
 
 	public static function offset(ExpressionResult $varResult, ExpressionResult $dimResult): self
 	{
-		return new self(self::KIND_OFFSET, varResult: $varResult, dimResult: $dimResult);
+		return new self(self::KIND_OFFSET, varResult: $varResult, dimResult: $dimResult, variableName: null, innerResult: null, reflectionResolver: null, propertyFetch: null);
 	}
 
 	/**
@@ -66,7 +66,7 @@ final class IssetabilityDescriptor
 	 */
 	public static function property(?ExpressionResult $innerResult, Closure $reflectionResolver, Expr $propertyFetch): self
 	{
-		return new self(self::KIND_PROPERTY, innerResult: $innerResult, reflectionResolver: $reflectionResolver, propertyFetch: $propertyFetch);
+		return new self(self::KIND_PROPERTY, innerResult: $innerResult, reflectionResolver: $reflectionResolver, propertyFetch: $propertyFetch, variableName: null, varResult: null, dimResult: null);
 	}
 
 	/**
@@ -75,7 +75,7 @@ final class IssetabilityDescriptor
 	 * ExpressionResult::getIssetabilityResolution); $useNativeTypes selects native
 	 * vs phpdoc types (the rule's treatPhpDocTypesAsCertain).
 	 */
-	public function resolve(MutatingScope $scope, bool $useNativeTypes, Expr $expr, bool $reprocessUntrackedLinks = false): IssetabilityResolution
+	public function resolve(MutatingScope $scope, bool $useNativeTypes, Expr $expr, bool $reprocessUntrackedLinks): IssetabilityResolution
 	{
 		if ($this->kind === self::KIND_VARIABLE) {
 			$variableName = $this->variableName;

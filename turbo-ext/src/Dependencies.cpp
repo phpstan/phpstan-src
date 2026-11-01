@@ -260,9 +260,8 @@ PT_MINIT_REGISTRATION(pt_register_dependencies)
 	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *file;
 		zval *types = NULL, *classNames = NULL, *reflections = NULL, *filePaths = NULL, *usedTraits = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 6)
+		ZEND_PARSE_PARAMETERS_START(6, 6)
 			Z_PARAM_STR(file)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(types)
 			Z_PARAM_ARRAY(classNames)
 			Z_PARAM_ARRAY(reflections)

@@ -132,6 +132,13 @@ final class BooleanOrHandler implements ExprHandler
 				static fn (): MutatingScope => $rightResult->getTruthyScope(),
 			),
 			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 		// store before emitting the virtual node: its rules ask about the raw
 		// expression, and a synchronously invoked rule (the plain resolver,

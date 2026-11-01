@@ -329,7 +329,7 @@ PT_MINIT_REGISTRATION(pt_register_lru_cache)
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long maxCount = 0, maxWeight = 0, weightEvictionFloorCount = 0;
-		if (!zp::parse<zp::Opt<zp::Long>, zp::Opt<zp::Long>, zp::Opt<zp::Long>>(execute_data, maxCount, maxWeight, weightEvictionFloorCount)) RETURN_THROWS();
+		if (!zp::parse<zp::Long, zp::Long, zp::Long>(execute_data, maxCount, maxWeight, weightEvictionFloorCount)) RETURN_THROWS();
 		LruCache(Z_OBJ_P(ZEND_THIS)).construct(maxCount, maxWeight, weightEvictionFloorCount);
 	});
 

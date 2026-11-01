@@ -27,36 +27,36 @@ final class IssetabilityLinkInfo
 
 	private function __construct(
 		private string $kind,
-		private ?string $variableName = null,
-		private ?TrinaryLogic $hasVariable = null,
-		private ?TrinaryLogic $isOffsetAccessible = null,
-		private ?TrinaryLogic $hasOffsetValue = null,
-		private bool $hasExpressionTypeOfExpr = false,
-		private ?Type $varType = null,
-		private ?Type $dimType = null,
-		private ?Type $valueType = null,
-		private ?FoundPropertyReflection $propertyReflection = null,
-		private ?Expr $propertyFetch = null,
-		private bool $reflectionNative = false,
-		private bool $hasNativeType = false,
-		private ?TrinaryLogic $isVirtual = null,
-		private ?Type $nativeType = null,
-		private bool $hasExpressionTypeOfFetch = false,
-		private bool $initializedThisProperty = false,
-		private bool $nativeReflectionExists = false,
-		private bool $nativeIsPromoted = false,
-		private bool $nativeIsReadOnly = false,
-		private bool $nativeIsHooked = false,
-		private bool $nativeHasDefaultValue = false,
-		private ?Expr $leafExpr = null,
-		private bool $leafIsNullsafePropertyFetch = false,
+		private ?string $variableName,
+		private ?TrinaryLogic $hasVariable,
+		private ?TrinaryLogic $isOffsetAccessible,
+		private ?TrinaryLogic $hasOffsetValue,
+		private bool $hasExpressionTypeOfExpr,
+		private ?Type $varType,
+		private ?Type $dimType,
+		private ?Type $valueType,
+		private ?FoundPropertyReflection $propertyReflection,
+		private ?Expr $propertyFetch,
+		private bool $reflectionNative,
+		private bool $hasNativeType,
+		private ?TrinaryLogic $isVirtual,
+		private ?Type $nativeType,
+		private bool $hasExpressionTypeOfFetch,
+		private bool $initializedThisProperty,
+		private bool $nativeReflectionExists,
+		private bool $nativeIsPromoted,
+		private bool $nativeIsReadOnly,
+		private bool $nativeIsHooked,
+		private bool $nativeHasDefaultValue,
+		private ?Expr $leafExpr,
+		private bool $leafIsNullsafePropertyFetch,
 	)
 	{
 	}
 
 	public static function variable(string $variableName, TrinaryLogic $hasVariable, Type $valueType): self
 	{
-		return new self(self::KIND_VARIABLE, variableName: $variableName, hasVariable: $hasVariable, valueType: $valueType);
+		return new self(self::KIND_VARIABLE, variableName: $variableName, hasVariable: $hasVariable, valueType: $valueType, isOffsetAccessible: null, hasOffsetValue: null, hasExpressionTypeOfExpr: false, varType: null, dimType: null, propertyReflection: null, propertyFetch: null, reflectionNative: false, hasNativeType: false, isVirtual: null, nativeType: null, hasExpressionTypeOfFetch: false, initializedThisProperty: false, nativeReflectionExists: false, nativeIsPromoted: false, nativeIsReadOnly: false, nativeIsHooked: false, nativeHasDefaultValue: false, leafExpr: null, leafIsNullsafePropertyFetch: false);
 	}
 
 	public static function offset(TrinaryLogic $isOffsetAccessible, TrinaryLogic $hasOffsetValue, bool $hasExpressionTypeOfExpr, Type $varType, Type $dimType, Type $valueType): self
@@ -69,6 +69,23 @@ final class IssetabilityLinkInfo
 			varType: $varType,
 			dimType: $dimType,
 			valueType: $valueType,
+			variableName: null,
+			hasVariable: null,
+			propertyReflection: null,
+			propertyFetch: null,
+			reflectionNative: false,
+			hasNativeType: false,
+			isVirtual: null,
+			nativeType: null,
+			hasExpressionTypeOfFetch: false,
+			initializedThisProperty: false,
+			nativeReflectionExists: false,
+			nativeIsPromoted: false,
+			nativeIsReadOnly: false,
+			nativeIsHooked: false,
+			nativeHasDefaultValue: false,
+			leafExpr: null,
+			leafIsNullsafePropertyFetch: false,
 		);
 	}
 
@@ -105,12 +122,21 @@ final class IssetabilityLinkInfo
 			nativeIsReadOnly: $nativeIsReadOnly,
 			nativeIsHooked: $nativeIsHooked,
 			nativeHasDefaultValue: $nativeHasDefaultValue,
+			variableName: null,
+			hasVariable: null,
+			isOffsetAccessible: null,
+			hasOffsetValue: null,
+			hasExpressionTypeOfExpr: false,
+			varType: null,
+			dimType: null,
+			leafExpr: null,
+			leafIsNullsafePropertyFetch: false,
 		);
 	}
 
 	public static function leaf(Type $valueType, Expr $leafExpr, bool $leafIsNullsafePropertyFetch): self
 	{
-		return new self(self::KIND_LEAF, valueType: $valueType, leafExpr: $leafExpr, leafIsNullsafePropertyFetch: $leafIsNullsafePropertyFetch);
+		return new self(self::KIND_LEAF, valueType: $valueType, leafExpr: $leafExpr, leafIsNullsafePropertyFetch: $leafIsNullsafePropertyFetch, variableName: null, hasVariable: null, isOffsetAccessible: null, hasOffsetValue: null, hasExpressionTypeOfExpr: false, varType: null, dimType: null, propertyReflection: null, propertyFetch: null, reflectionNative: false, hasNativeType: false, isVirtual: null, nativeType: null, hasExpressionTypeOfFetch: false, initializedThisProperty: false, nativeReflectionExists: false, nativeIsPromoted: false, nativeIsReadOnly: false, nativeIsHooked: false, nativeHasDefaultValue: false);
 	}
 
 	public function isVariable(): bool

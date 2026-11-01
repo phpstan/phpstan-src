@@ -81,20 +81,18 @@ inline constexpr char strings[] =
 	"resolveConditionalTypes\0" /* 699 */
 	"positionVariance\0" /* 723 */
 	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 740 */
-	"null\0" /* 782 */
-	"true\0" /* 787 */
-	"resolveResolvableTemplateTypes\0" /* 792 */
-	"template\0" /* 823 */
-	"PHPStan\\Type\\Generic\\TemplateType\0" /* 832 */
-	"inferred\0" /* 866 */
-	"onlyCovariant\0" /* 875 */
-	"unresolvedOrResolvedTemplateArgument\0" /* 889 */
-	"narrowTemplateTypesInConditionalTypesForParameter\0" /* 926 */
-	"parameterName\0" /* 976 */
-	"getTemplateTypeBoundOnlyByParameter\0" /* 990 */
-	"templateType\0" /* 1026 */
-	"referencesTemplateType\0" /* 1039 */
-	"resolveConditionalTypesForParameter"; /* 1062 */
+	"resolveResolvableTemplateTypes\0" /* 782 */
+	"template\0" /* 813 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 822 */
+	"inferred\0" /* 856 */
+	"onlyCovariant\0" /* 865 */
+	"unresolvedOrResolvedTemplateArgument\0" /* 879 */
+	"narrowTemplateTypesInConditionalTypesForParameter\0" /* 916 */
+	"parameterName\0" /* 966 */
+	"getTemplateTypeBoundOnlyByParameter\0" /* 980 */
+	"templateType\0" /* 1016 */
+	"referencesTemplateType\0" /* 1029 */
+	"resolveConditionalTypesForParameter"; /* 1052 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $parametersAcceptor */
 	reg::packed(65, 0, 89), /* __construct $resolvedTemplateTypeMap */
@@ -120,23 +118,23 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(214, 0, 377), /* resolveConditionalTypes return */
 	reg::packed(694, 0, 377), /* resolveResolvableTemplateTypes $type */
 	reg::packed(723, 0, 740), /* resolveResolvableTemplateTypes $positionVariance */
-	reg::packed(501, MAY_BE_NULL, 506, false, false, 782), /* resolveResolvableTemplateTypes $site */
-	reg::packed(526, MAY_BE_NULL, 532, false, false, 782), /* resolveResolvableTemplateTypes $frame */
-	reg::packed(580, MAY_BE_BOOL, reg::NoString, false, false, 787), /* resolveResolvableTemplateTypes $allowUnresolved */
+	reg::packed(501, MAY_BE_NULL, 506), /* resolveResolvableTemplateTypes $site */
+	reg::packed(526, MAY_BE_NULL, 532), /* resolveResolvableTemplateTypes $frame */
+	reg::packed(580, MAY_BE_BOOL), /* resolveResolvableTemplateTypes $allowUnresolved */
 	reg::packed(214, 0, 377), /* resolveResolvableTemplateTypes return */
-	reg::packed(823, 0, 832), /* unresolvedOrResolvedTemplateArgument $template */
-	reg::packed(866, 0, 377), /* unresolvedOrResolvedTemplateArgument $inferred */
+	reg::packed(813, 0, 822), /* unresolvedOrResolvedTemplateArgument $template */
+	reg::packed(856, 0, 377), /* unresolvedOrResolvedTemplateArgument $inferred */
 	reg::packed(501, 0, 506), /* unresolvedOrResolvedTemplateArgument $site */
 	reg::packed(526, 0, 532), /* unresolvedOrResolvedTemplateArgument $frame */
 	reg::packed(580, MAY_BE_BOOL), /* unresolvedOrResolvedTemplateArgument $allowUnresolved */
-	reg::packed(875, MAY_BE_BOOL), /* unresolvedOrResolvedTemplateArgument $onlyCovariant */
+	reg::packed(865, MAY_BE_BOOL), /* unresolvedOrResolvedTemplateArgument $onlyCovariant */
 	reg::packed(214, 0, 377), /* unresolvedOrResolvedTemplateArgument return */
 	reg::packed(694, 0, 377), /* narrowTemplateTypesInConditionalTypesForParameter $type */
 	reg::packed(214, 0, 377), /* narrowTemplateTypesInConditionalTypesForParameter return */
-	reg::packed(976, MAY_BE_STRING), /* getTemplateTypeBoundOnlyByParameter $parameterName */
-	reg::packed(214, MAY_BE_NULL, 832), /* getTemplateTypeBoundOnlyByParameter return */
+	reg::packed(966, MAY_BE_STRING), /* getTemplateTypeBoundOnlyByParameter $parameterName */
+	reg::packed(214, MAY_BE_NULL, 822), /* getTemplateTypeBoundOnlyByParameter return */
 	reg::packed(694, 0, 377), /* referencesTemplateType $type */
-	reg::packed(1026, 0, 832), /* referencesTemplateType $templateType */
+	reg::packed(1016, 0, 822), /* referencesTemplateType $templateType */
 	reg::packed(214, MAY_BE_BOOL), /* referencesTemplateType return */
 	reg::packed(694, 0, 377), /* resolveConditionalTypesForParameter $type */
 	reg::packed(214, 0, 377), /* resolveConditionalTypesForParameter return */
@@ -161,12 +159,12 @@ inline constexpr sigtab::Sig getPhpDocReturnType = { { 641 /* getPhpDocReturnTyp
 inline constexpr sigtab::Sig getNativeReturnType = { { 661 /* getNativeReturnType */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasBoundArgs = { { 681 /* hasBoundArgs */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolveConditionalTypes = { { 699 /* resolveConditionalTypes */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveResolvableTemplateTypes = { { 792 /* resolveResolvableTemplateTypes */, 2, 22, 5, 27, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig unresolvedOrResolvedTemplateArgument = { { 889 /* unresolvedOrResolvedTemplateArgument */, 6, 28, 6, 34, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig narrowTemplateTypesInConditionalTypesForParameter = { { 926 /* narrowTemplateTypesInConditionalTypesForParameter */, 1, 35, 1, 36, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getTemplateTypeBoundOnlyByParameter = { { 990 /* getTemplateTypeBoundOnlyByParameter */, 1, 37, 1, 38, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig referencesTemplateType = { { 1039 /* referencesTemplateType */, 2, 39, 2, 41, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig resolveConditionalTypesForParameter = { { 1062 /* resolveConditionalTypesForParameter */, 1, 42, 1, 43, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveResolvableTemplateTypes = { { 782 /* resolveResolvableTemplateTypes */, 5, 22, 5, 27, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unresolvedOrResolvedTemplateArgument = { { 879 /* unresolvedOrResolvedTemplateArgument */, 6, 28, 6, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig narrowTemplateTypesInConditionalTypesForParameter = { { 916 /* narrowTemplateTypesInConditionalTypesForParameter */, 1, 35, 1, 36, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getTemplateTypeBoundOnlyByParameter = { { 980 /* getTemplateTypeBoundOnlyByParameter */, 1, 37, 1, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig referencesTemplateType = { { 1029 /* referencesTemplateType */, 2, 39, 2, 41, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveConditionalTypesForParameter = { { 1052 /* resolveConditionalTypesForParameter */, 1, 42, 1, 43, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ResolvedFunctionVariantWithOriginal

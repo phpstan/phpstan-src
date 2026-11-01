@@ -663,13 +663,13 @@ PT_MINIT_REGISTRATION(pt_register_expression_context)
 
 	cls.method(sigs::createTopLevel, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool resolveTemplateArguments = true;
-		if (!zp::parse<zp::Opt<zp::Bool>>(execute_data, resolveTemplateArguments)) RETURN_THROWS();
+		if (!zp::parse<zp::Bool>(execute_data, resolveTemplateArguments)) RETURN_THROWS();
 		PT_RETURN_VAL(ExpressionContext::createTopLevel(resolveTemplateArguments));
 	});
 
 	cls.method(sigs::createDeep, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool resolveTemplateArguments = true;
-		if (!zp::parse<zp::Opt<zp::Bool>>(execute_data, resolveTemplateArguments)) RETURN_THROWS();
+		if (!zp::parse<zp::Bool>(execute_data, resolveTemplateArguments)) RETURN_THROWS();
 		PT_RETURN_VAL(ExpressionContext::createDeep(resolveTemplateArguments));
 	});
 

@@ -26,7 +26,7 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 {
 
 	/** @param non-empty-string $name */
-	private static function template(string $name, ?TemplateTypeVariance $variance = null): TemplateType
+	private static function template(string $name, ?TemplateTypeVariance $variance): TemplateType
 	{
 		return TemplateTypeFactory::create(
 			TemplateTypeScope::createWithClass(A\A::class),
@@ -37,20 +37,20 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 	}
 
 	/** @param non-empty-string $name */
-	private static function marker(Expr $site, ?Type $initialType, string $name = 'T'): UnresolvedTemplateArgumentType
+	private static function marker(Expr $site, ?Type $initialType, string $name): UnresolvedTemplateArgumentType
 	{
-		return new UnresolvedTemplateArgumentType($site, self::template($name), $initialType);
+		return new UnresolvedTemplateArgumentType($site, self::template($name, null), $initialType);
 	}
 
 	public function testEqualsIsOpaqueAndKeyedBySiteAndName(): void
 	{
 		$site = new Variable('a');
 		$otherSite = new Variable('b');
-		$marker = self::marker($site, new ConstantIntegerType(1));
+		$marker = self::marker($site, new ConstantIntegerType(1), 'T');
 
-		$this->assertTrue($marker->equals(self::marker($site, new ConstantIntegerType(2))), 'initial type is ignored');
-		$this->assertTrue($marker->equals(self::marker($site, null)));
-		$this->assertFalse($marker->equals(self::marker($otherSite, new ConstantIntegerType(1))));
+		$this->assertTrue($marker->equals(self::marker($site, new ConstantIntegerType(2), 'T')), 'initial type is ignored');
+		$this->assertTrue($marker->equals(self::marker($site, null, 'T')));
+		$this->assertFalse($marker->equals(self::marker($otherSite, new ConstantIntegerType(1), 'T')));
 		$this->assertFalse($marker->equals(self::marker($site, new ConstantIntegerType(1), 'U')));
 		$this->assertFalse($marker->equals(new ConstantIntegerType(1)));
 		$this->assertFalse((new ConstantIntegerType(1))->equals($marker));
@@ -59,7 +59,7 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 	public function testFiniteValueIdentityDoesNotEraseMarkers(): void
 	{
 		foreach ([new ConstantIntegerType(123), new ConstantStringType('foo'), new ConstantBooleanType(true), new NullType(), new EnumCaseObjectType('PHPStan\Fixture\ManyCasesTestEnum', 'A')] as $initialType) {
-			$marker = self::marker(new Variable('a'), $initialType);
+			$marker = self::marker(new Variable('a'), $initialType, 'T');
 			$union = new UnionType([$marker, new ConstantIntegerType(321)]);
 			$resolvedUnion = new UnionType([$initialType, new ConstantIntegerType(321)]);
 
@@ -71,7 +71,7 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 
 	public function testBehavesAsItsDelegate(): void
 	{
-		$marker = self::marker(new Variable('a'), new ConstantIntegerType(1));
+		$marker = self::marker(new Variable('a'), new ConstantIntegerType(1), 'T');
 
 		$this->assertTrue((new IntegerType())->isSuperTypeOf($marker)->yes());
 		$this->assertTrue((new IntegerType())->accepts($marker, true)->yes());
@@ -80,14 +80,14 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 		$this->assertTrue($marker->isInteger()->yes());
 		$this->assertSame([1], $marker->getConstantScalarValues());
 
-		$unresolvable = self::marker(new Variable('a'), null);
+		$unresolvable = self::marker(new Variable('a'), null, 'T');
 		$this->assertInstanceOf(MixedType::class, $unresolvable->getDelegate());
 		$this->assertTrue($unresolvable->isObject()->maybe());
 	}
 
 	public function testInvariantPositionIsOpaqueCovariantIsTransparent(): void
 	{
-		$marker = self::marker(new Variable('a'), new IntegerType());
+		$marker = self::marker(new Variable('a'), new IntegerType(), 'T');
 		$ofInt = new GenericObjectType(A\A::class, [new IntegerType()]);
 		$ofMarker = new GenericObjectType(A\A::class, [$marker]);
 
@@ -102,20 +102,20 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 	public function testUnionKeepsMarkersOfDifferentSites(): void
 	{
 		$site = new Variable('a');
-		$ofMarker = new GenericObjectType(A\A::class, [self::marker($site, new ConstantIntegerType(1))]);
+		$ofMarker = new GenericObjectType(A\A::class, [self::marker($site, new ConstantIntegerType(1), 'T')]);
 		$ofInt = new GenericObjectType(A\A::class, [new IntegerType()]);
 
 		$union = TypeCombinator::union($ofMarker, $ofInt);
 		$this->assertInstanceOf(UnionType::class, $union);
 		$this->assertCount(2, $union->getTypes());
 
-		$sameSite = TypeCombinator::union($ofMarker, new GenericObjectType(A\A::class, [self::marker($site, new ConstantIntegerType(2))]));
+		$sameSite = TypeCombinator::union($ofMarker, new GenericObjectType(A\A::class, [self::marker($site, new ConstantIntegerType(2), 'T')]));
 		$this->assertInstanceOf(GenericObjectType::class, $sameSite);
 
 		$nullable = TypeCombinator::union($ofMarker, new NullType());
 		$this->assertSame('PHPStan\Type\Test\A\A<unresolved(1)>|null', $nullable->describe(VerbosityLevel::precise()));
 
-		$otherSite = new GenericObjectType(A\A::class, [self::marker(new Variable('b'), new ConstantIntegerType(1))]);
+		$otherSite = new GenericObjectType(A\A::class, [self::marker(new Variable('b'), new ConstantIntegerType(1), 'T')]);
 		$twoSites = TypeCombinator::union($ofMarker, $otherSite);
 		$this->assertInstanceOf(UnionType::class, $twoSites);
 		$this->assertCount(2, $twoSites->getTypes());
@@ -123,21 +123,21 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 
 	public function testDescribe(): void
 	{
-		$a = self::marker(new Variable('a'), new ConstantIntegerType(1));
-		$b = self::marker(new Variable('b'), new ConstantIntegerType(1));
+		$a = self::marker(new Variable('a'), new ConstantIntegerType(1), 'T');
+		$b = self::marker(new Variable('b'), new ConstantIntegerType(1), 'T');
 
 		$this->assertSame('unresolved(1)', $a->describe(VerbosityLevel::value()));
 		$this->assertSame('unresolved(int)', $a->describe(VerbosityLevel::typeOnly()));
 		$this->assertStringStartsWith('unresolved#', $a->describe(VerbosityLevel::cache()));
 		$this->assertNotSame($a->describe(VerbosityLevel::cache()), $b->describe(VerbosityLevel::cache()), 'cache descriptions are unique per site');
-		$this->assertSame('unresolved(mixed)', self::marker(new Variable('a'), null)->describe(VerbosityLevel::precise()));
+		$this->assertSame('unresolved(mixed)', self::marker(new Variable('a'), null, 'T')->describe(VerbosityLevel::precise()));
 	}
 
 	public function testTraverseAndGeneralizeKeepTheSite(): void
 	{
 		$site = new Variable('a');
 		$outer = TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('f'), 'TOuter', new MixedType(), TemplateTypeVariance::createInvariant());
-		$marker = self::marker($site, $outer);
+		$marker = self::marker($site, $outer, 'T');
 
 		$this->assertTrue($marker->hasTemplateOrLateResolvableType());
 		$resolved = TypeTraverser::map($marker, static function (Type $type, callable $traverse) use ($outer): Type {
@@ -152,11 +152,11 @@ class UnresolvedTemplateArgumentTypeTest extends PHPStanTestCase
 		$this->assertInstanceOf(IntegerType::class, $resolved->getInitialType());
 		$this->assertTrue($resolved->equals($marker));
 
-		$generalized = self::marker($site, new ConstantIntegerType(1))->generalize(GeneralizePrecision::lessSpecific());
+		$generalized = self::marker($site, new ConstantIntegerType(1), 'T')->generalize(GeneralizePrecision::lessSpecific());
 		$this->assertInstanceOf(UnresolvedTemplateArgumentType::class, $generalized);
 		$this->assertSame('unresolved(int)', $generalized->describe(VerbosityLevel::precise()));
 
-		$unresolvable = self::marker($site, null);
+		$unresolvable = self::marker($site, null, 'T');
 		$this->assertSame($unresolvable, $unresolvable->generalize(GeneralizePrecision::lessSpecific()));
 	}
 

@@ -448,7 +448,7 @@ final class DefaultNarrowingHelper
 	 *
 	 * @param (Closure(Expr): ?ExpressionResult)|null $resultFor
 	 */
-	public function createForSubject(Expr $subject, Type $type, TypeSpecifierContext $context, Scope $scope, ?Closure $resultFor = null): SpecifiedTypes
+	public function createForSubject(Expr $subject, Type $type, TypeSpecifierContext $context, Scope $scope, ?Closure $resultFor): SpecifiedTypes
 	{
 		$walkScope = $scope->toWalkScope();
 		$subjectResult = $resultFor !== null ? $resultFor($subject) : null;
@@ -563,6 +563,7 @@ final class DefaultNarrowingHelper
 							new HasOffsetType($dimType),
 							$context,
 							$s,
+							null,
 						)->setRootExpr($rootExpr),
 					);
 				} else {
@@ -576,6 +577,7 @@ final class DefaultNarrowingHelper
 								$narrowedKey,
 								$context,
 								$s,
+								null,
 							)->setRootExpr($rootExpr),
 						);
 					}
@@ -587,6 +589,7 @@ final class DefaultNarrowingHelper
 								new NonEmptyArrayType(),
 								$context,
 								$s,
+								null,
 							)->setRootExpr($rootExpr),
 						);
 					}
@@ -601,7 +604,7 @@ final class DefaultNarrowingHelper
 					$this->createForSubject($var->var, new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), $s)->setRootExpr($rootExpr),
+					]), TypeSpecifierContext::createTruthy(), $s, null)->setRootExpr($rootExpr),
 				);
 			} elseif (
 				$var instanceof StaticPropertyFetch
@@ -612,12 +615,12 @@ final class DefaultNarrowingHelper
 					$this->createForSubject($var->class, new IntersectionType([
 						new ObjectWithoutClassType(),
 						new HasPropertyType($var->name->toString()),
-					]), TypeSpecifierContext::createTruthy(), $s)->setRootExpr($rootExpr),
+					]), TypeSpecifierContext::createTruthy(), $s, null)->setRootExpr($rootExpr),
 				);
 			}
 
 			$types = $types->unionWith(
-				$this->createForSubject($var, new NullType(), TypeSpecifierContext::createFalse(), $s)->setRootExpr($rootExpr),
+				$this->createForSubject($var, new NullType(), TypeSpecifierContext::createFalse(), $s, null)->setRootExpr($rootExpr),
 			);
 		}
 
@@ -639,7 +642,7 @@ final class DefaultNarrowingHelper
 		Expr $rootExpr,
 	): SpecifiedTypes
 	{
-		$isset = $varResult->getIssetabilityResolution($s, false)->isSet(static fn (): bool => true);
+		$isset = $varResult->getIssetabilityResolution($s, false, false)->isSet(static fn (): bool => true, null);
 
 		if ($isset === false) {
 			return new SpecifiedTypes();
@@ -652,6 +655,7 @@ final class DefaultNarrowingHelper
 			new NullType(),
 			$context->negate(),
 			$s,
+			null,
 		)->setRootExpr($rootExpr);
 
 		if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
@@ -666,6 +670,7 @@ final class DefaultNarrowingHelper
 					new NullType(),
 					$context,
 					$s,
+					null,
 				))->setRootExpr($rootExpr);
 			}
 
@@ -676,6 +681,7 @@ final class DefaultNarrowingHelper
 					new NullType(),
 					$context->negate(),
 					$s,
+					null,
 				))->setRootExpr($rootExpr);
 			}
 
@@ -685,6 +691,7 @@ final class DefaultNarrowingHelper
 				new NullType(),
 				$context,
 				$s,
+				null,
 			)->setRootExpr($rootExpr);
 		}
 
@@ -698,7 +705,7 @@ final class DefaultNarrowingHelper
 		// the !isset() branch any read that completes yields null - the null pin
 		// is sound for both.
 		if ($isset === null && $isNullable) {
-			$resolution = $varResult->getIssetabilityResolution($s, false);
+			$resolution = $varResult->getIssetabilityResolution($s, false, false);
 			$link = $resolution->getLink();
 			$inner = $resolution->getInner();
 			if (
@@ -706,7 +713,7 @@ final class DefaultNarrowingHelper
 				&& $link->isReflectionNative()
 				&& $link->hasNativeType()
 				&& !$link->isVirtual()->yes()
-				&& ($inner === null || $inner->isSet(static fn (): bool => true) === true)
+				&& ($inner === null || $inner->isSet(static fn (): bool => true, null) === true)
 			) {
 				return $exprType;
 			}
@@ -762,6 +769,7 @@ final class DefaultNarrowingHelper
 							$typeToRemove,
 							TypeSpecifierContext::createFalse(),
 							$s,
+							null,
 						)->setRootExpr($rootExpr);
 
 						if ($s->hasExpressionType($issetExpr->var)->maybe()) {
@@ -771,6 +779,7 @@ final class DefaultNarrowingHelper
 									new NullType(),
 									TypeSpecifierContext::createTruthy(),
 									$s,
+									null,
 								)->setRootExpr($rootExpr),
 							);
 						}

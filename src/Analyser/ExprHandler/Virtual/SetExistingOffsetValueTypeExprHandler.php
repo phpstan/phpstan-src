@@ -61,6 +61,15 @@ final class SetExistingOffsetValueTypeExprHandler implements ExprHandler
 			),
 			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: Dependencies::merge($varResult->getDependencies(), $dimResult->getDependencies(), $valueResult->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
 		);
 	}
 

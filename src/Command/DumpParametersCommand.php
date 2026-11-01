@@ -89,6 +89,7 @@ final class DumpParametersCommand extends Command
 				null,
 				null,
 				false,
+				false,
 			);
 		} catch (InceptionNotSuccessfulException) {
 			return 1;

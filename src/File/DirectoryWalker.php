@@ -86,7 +86,7 @@ final class DirectoryWalker
 	public function __construct(
 		private FileStatSignatures $fileStatSignatures,
 		#[AutowiredParameter]
-		private string $tmpDir = '',
+		private string $tmpDir,
 	)
 	{
 	}

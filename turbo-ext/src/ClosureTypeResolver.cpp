@@ -85,7 +85,7 @@ zv::Val simpleThrowPointImplicit()
 	return pt_call_static_cached(pt_ctr_simple_throw_point_implicit_site, PT_CLASS_SIMPLE_THROW_POINT, PT_LC("createimplicit"), 0, NULL);
 }
 
-/* TemplateArgumentStats::$enabled && TemplateArgumentStats::increment('closureTypeBodyWalks'); false = pending exception */
+/* TemplateArgumentStats::$enabled && TemplateArgumentStats::increment('closureTypeBodyWalks', 1); false = pending exception */
 [[nodiscard]] bool countClosureTypeBodyWalk()
 {
 	zend_class_entry *ce = pt_class(PT_CLASS_TEMPLATE_ARGUMENT_STATS);
@@ -94,10 +94,11 @@ zv::Val simpleThrowPointImplicit()
 	if (UNEXPECTED(enabled == NULL)) return false;
 	ZVAL_DEREF(enabled);
 	if (EXPECTED(Z_TYPE_P(enabled) != IS_TRUE)) return true;
-	zval counter;
-	ZVAL_STRINGL(&counter, "closureTypeBodyWalks", sizeof("closureTypeBodyWalks") - 1);
-	zv::Val result = pt_call_static_cached(pt_ctr_stats_increment_site, PT_CLASS_TEMPLATE_ARGUMENT_STATS, PT_LC("increment"), 1, &counter);
-	zval_ptr_dtor(&counter);
+	zval argv[2];
+	ZVAL_STRINGL(&argv[0], "closureTypeBodyWalks", sizeof("closureTypeBodyWalks") - 1);
+	ZVAL_LONG(&argv[1], 1);
+	zv::Val result = pt_call_static_cached(pt_ctr_stats_increment_site, PT_CLASS_TEMPLATE_ARGUMENT_STATS, PT_LC("increment"), 2, argv);
+	zval_ptr_dtor(&argv[0]);
 	return !result.isUndef();
 }
 
@@ -1582,10 +1583,9 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	cls.method(sigs::getClosureType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr, *storage = NULL, *passedToType = NULL;
 		bool shallow = false;
-		ZEND_PARSE_PARAMETERS_START(2, 5)
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_OBJECT_OF_CLASS(scope, pt_ce_mutating_scope)
 			Z_PARAM_OBJECT(expr)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(shallow)
 			Z_PARAM_OBJECT_OR_NULL(storage)
 			Z_PARAM_OBJECT_OR_NULL(passedToType)
@@ -1597,7 +1597,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	cls.method(sigs::buildClosureTypeForClosure, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr, *returnStatements, *yieldStatements, *executionEnds, *throwPoints, *impurePoints, *invalidateExpressions, *storage = NULL, *passedToType = NULL, *nativePassedToType = NULL;
 		bool native = false;
-		ZEND_PARSE_PARAMETERS_START(8, 12)
+		ZEND_PARSE_PARAMETERS_START(12, 12)
 			Z_PARAM_OBJECT_OF_CLASS(scope, pt_ce_mutating_scope)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_ARRAY(returnStatements)
@@ -1606,7 +1606,6 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 			Z_PARAM_ARRAY(throwPoints)
 			Z_PARAM_ARRAY(impurePoints)
 			Z_PARAM_ARRAY(invalidateExpressions)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(native)
 			Z_PARAM_OBJECT_OR_NULL(storage)
 			Z_PARAM_OBJECT_OR_NULL(passedToType)
@@ -1619,14 +1618,13 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	cls.method(sigs::buildClosureTypeForArrowFunction, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr, *arrowScope, *throwPoints, *impurePoints, *invalidateExpressions, *storage = NULL, *passedToType = NULL, *nativePassedToType = NULL;
 		bool native = false;
-		ZEND_PARSE_PARAMETERS_START(6, 10)
+		ZEND_PARSE_PARAMETERS_START(10, 10)
 			Z_PARAM_OBJECT_OF_CLASS(scope, pt_ce_mutating_scope)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_OBJECT_OF_CLASS(arrowScope, pt_ce_mutating_scope)
 			Z_PARAM_ARRAY(throwPoints)
 			Z_PARAM_ARRAY(impurePoints)
 			Z_PARAM_ARRAY(invalidateExpressions)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(native)
 			Z_PARAM_OBJECT_OR_NULL(storage)
 			Z_PARAM_OBJECT_OR_NULL(passedToType)

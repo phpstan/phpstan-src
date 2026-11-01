@@ -83,6 +83,15 @@ final class FunctionCallableNodeHandler implements ExprHandler
 			impurePoints: $impurePoints,
 			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->resolveType($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, $expr, $nameResult),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 
 		return $result->withDependencies(Dependencies::merge(
@@ -122,7 +131,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), $types, reflections: $reflections);
+		return Dependencies::create($scope->getFile(), $types, reflections: $reflections, classNames: [], filePaths: [], usedTraits: []);
 	}
 
 	private function resolveType(MutatingScope $scope, FunctionCallableNode $expr, ?ExpressionResult $nameResult): Type

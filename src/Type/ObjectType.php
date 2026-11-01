@@ -199,7 +199,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 		self::$lastTouchedDescription = $description;
 
-		self::$descriptionCacheOrder ??= new LruCache(self::DESCRIPTION_CACHE_LIMIT);
+		self::$descriptionCacheOrder ??= new LruCache(self::DESCRIPTION_CACHE_LIMIT, 0, 0);
 		if (self::$descriptionCacheOrder->get($description) !== null) {
 			return;
 		}

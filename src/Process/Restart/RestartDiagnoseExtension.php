@@ -44,7 +44,7 @@ final class RestartDiagnoseExtension implements DiagnoseExtension
 		// the diagnose command does not restart, so it reports the answer an
 		// analyse run started the same way would get. --xdebug is a per-run
 		// option, so it is reported as not given
-		$reasons = RestartExtensionRegistry::collectReasons(false);
+		$reasons = RestartExtensionRegistry::collectReasons(false, null);
 		if ($reasons === []) {
 			return 'no, nothing to neutralize or load';
 		}

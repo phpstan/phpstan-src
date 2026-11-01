@@ -153,7 +153,7 @@ final class ClassLikeHandler implements StmtHandler
 			$declarationDependencies,
 			$attributesDependencies,
 			// the code of a trait is analysed as a part of every class using it
-			Dependencies::create($classScope->getFile(), usedTraits: array_values($classReflection->getTraits(true))),
+			Dependencies::create($classScope->getFile(), usedTraits: array_values($classReflection->getTraits(true)), types: [], classNames: [], reflections: [], filePaths: []),
 			$bodyResult->getDependencies(),
 		));
 	}
@@ -184,7 +184,7 @@ final class ClassLikeHandler implements StmtHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), classNames: $classNames);
+		return Dependencies::create($scope->getFile(), classNames: $classNames, types: [], reflections: [], filePaths: [], usedTraits: []);
 	}
 
 	private function getCurrentClassReflection(Node\Stmt\ClassLike $stmt, string $className, Scope $scope): ClassReflection

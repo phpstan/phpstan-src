@@ -815,7 +815,7 @@ class AnalyserTest extends PHPStanTestCase
 			self::getContainer()->getByType(ValueDependencyCollector::class),
 			false,
 		);
-		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
+		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false, null, null, [])->getAnalyserResult();
 
 		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();

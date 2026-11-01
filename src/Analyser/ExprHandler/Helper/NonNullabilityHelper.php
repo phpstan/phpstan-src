@@ -102,7 +102,7 @@ final class NonNullabilityHelper implements PerFileAnalysisResettable
 	public function ensureShallowNonNullability(MutatingScope $scope, MutatingScope $originalScope, Expr $exprToSpecify): EnsuredNonNullabilityResult
 	{
 		$result = $this->doEnsureShallowNonNullability($scope, $originalScope, $exprToSpecify);
-		$this->pushActiveEnsure($result);
+		$this->pushActiveEnsure($result, ['keys' => [], 'classes' => []]);
 
 		return $result;
 	}
@@ -110,7 +110,7 @@ final class NonNullabilityHelper implements PerFileAnalysisResettable
 	/**
 	 * @param array{keys: array<string, true>, classes: array<class-string<Expr>, true>} $pending
 	 */
-	private function pushActiveEnsure(EnsuredNonNullabilityResult $result, array $pending = ['keys' => [], 'classes' => []]): void
+	private function pushActiveEnsure(EnsuredNonNullabilityResult $result, array $pending): void
 	{
 		$originals = [];
 		foreach ($result->getSpecifiedExpressions() as $specifiedExpression) {
@@ -333,7 +333,7 @@ final class NonNullabilityHelper implements PerFileAnalysisResettable
 	/**
 	 * @param Closure(MutatingScope, Expr): MutatingScope $callback
 	 */
-	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback, bool $includeExpr = true): MutatingScope
+	private function lookForExpressionCallback(MutatingScope $scope, Expr $expr, Closure $callback, bool $includeExpr): MutatingScope
 	{
 		// $includeExpr is false only for the outermost operand: ensuring its chain
 		// links non-null lets it be walked without spurious "possibly null" noise,
@@ -355,18 +355,18 @@ final class NonNullabilityHelper implements PerFileAnalysisResettable
 		}
 
 		if ($expr instanceof ArrayDimFetch) {
-			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
+			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback, true);
 		} elseif ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
-			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback);
+			$scope = $this->lookForExpressionCallback($scope, $expr->var, $callback, true);
 		} elseif ($expr instanceof StaticPropertyFetch && $expr->class instanceof Expr) {
-			$scope = $this->lookForExpressionCallback($scope, $expr->class, $callback);
+			$scope = $this->lookForExpressionCallback($scope, $expr->class, $callback, true);
 		} elseif ($expr instanceof List_) {
 			foreach ($expr->items as $item) {
 				if ($item === null) {
 					continue;
 				}
 
-				$scope = $this->lookForExpressionCallback($scope, $item->value, $callback);
+				$scope = $this->lookForExpressionCallback($scope, $item->value, $callback, true);
 			}
 		}
 

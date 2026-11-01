@@ -138,8 +138,8 @@ private:
 		return pushNew(slotIndex, classIdx, 2, args);
 	}
 
-	/* new PropertyWrite($fetch, $scope, $promoted[, $originalNode]) appended
-	 * to $propertyUsages */
+	/* new PropertyWrite($fetch, $scope, $promoted, $originalNode) appended
+	 * to $propertyUsages; NULL originalNode = null */
 	bool pushPropertyWrite(zval *fetch, zval *scope, bool promoted, zval *originalNode)
 	{
 		zval args[4];
@@ -148,8 +148,10 @@ private:
 		ZVAL_BOOL(&args[2], promoted);
 		if (originalNode != NULL) {
 			ZVAL_COPY_VALUE(&args[3], originalNode);
+		} else {
+			ZVAL_NULL(&args[3]);
 		}
-		return pushNew(slots::propertyUsages, PT_CLASS_PROPERTY_WRITE, originalNode != NULL ? 4 : 3, args);
+		return pushNew(slots::propertyUsages, PT_CLASS_PROPERTY_WRITE, 4, args);
 	}
 
 	static bool throwShouldNotHappen()

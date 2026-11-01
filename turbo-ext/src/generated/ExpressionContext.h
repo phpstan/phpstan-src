@@ -134,9 +134,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(308, MAY_BE_NULL, 115, false, false, 133), /* __construct $passedToType */
 	reg::packed(321, MAY_BE_NULL, 115, false, false, 133), /* __construct $nativePassedToType */
 	reg::packed(340, MAY_BE_NULL, 361, false, false, 133), /* __construct $passedToTypeResolver */
-	reg::packed(166, MAY_BE_BOOL, reg::NoString, false, false, 191), /* createTopLevel $resolveTemplateArguments */
+	reg::packed(166, MAY_BE_BOOL), /* createTopLevel $resolveTemplateArguments */
 	reg::packed(381, 0, 382), /* createTopLevel return */
-	reg::packed(166, MAY_BE_BOOL, reg::NoString, false, false, 191), /* createDeep $resolveTemplateArguments */
+	reg::packed(166, MAY_BE_BOOL), /* createDeep $resolveTemplateArguments */
 	reg::packed(381, 0, 382), /* createDeep return */
 	reg::packed(381, 0, 382), /* enterDeep return */
 	reg::packed(381, 0, 382), /* enterDeepKeepingValueFlow return */
@@ -181,8 +181,8 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 369 /* __construct */, 3, 0, 15, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createTopLevel = { { 417 /* createTopLevel */, 0, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createDeep = { { 432 /* createDeep */, 0, 17, 1, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createTopLevel = { { 417 /* createTopLevel */, 1, 15, 1, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createDeep = { { 432 /* createDeep */, 1, 17, 1, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig enterDeep = { { 443 /* enterDeep */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig enterDeepKeepingValueFlow = { { 453 /* enterDeepKeepingValueFlow */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig withoutValueFlow = { { 479 /* withoutValueFlow */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };

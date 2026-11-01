@@ -39,9 +39,9 @@ final class LruCache
 	 * single entry heavier than $maxWeight cannot flush the whole cache on every insertion
 	 */
 	public function __construct(
-		private int $maxCount = 0,
-		private int $maxWeight = 0,
-		private int $weightEvictionFloorCount = 0,
+		private int $maxCount,
+		private int $maxWeight,
+		private int $weightEvictionFloorCount,
 	)
 	{
 	}

@@ -466,7 +466,7 @@ PT_MINIT_REGISTRATION(pt_register_issetability_descriptor)
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *scope, *expr;
 		bool useNativeTypes, reprocessUntrackedLinks = false;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj, zp::Opt<zp::Bool>>(execute_data, scope, useNativeTypes, expr, reprocessUntrackedLinks)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj, zp::Bool>(execute_data, scope, useNativeTypes, expr, reprocessUntrackedLinks)) RETURN_THROWS();
 		PT_RETURN_VAL(IssetabilityDescriptor(Z_OBJ_P(ZEND_THIS)).resolve(scope, useNativeTypes, expr, reprocessUntrackedLinks));
 	});
 

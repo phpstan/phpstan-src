@@ -17,11 +17,11 @@ final class VariableAccessFlow extends VariableFlow
 	public function __construct(
 		string $kind,
 		public readonly string $name,
-		public readonly ?VariableWrite $write = null,
-		public readonly ?Type $type = null,
-		public readonly ?int $targetId = null,
-		public readonly bool $container = false,
-		public readonly mixed $offset = null,
+		public readonly ?VariableWrite $write,
+		public readonly ?Type $type,
+		public readonly ?int $targetId,
+		public readonly bool $container,
+		public readonly mixed $offset,
 	)
 	{
 		parent::__construct($kind);

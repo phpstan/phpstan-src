@@ -256,7 +256,7 @@ PT_MINIT_REGISTRATION(pt_register_class_constant_access_type)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type, *nativeType = NULL;
 		zend_string *constantName;
-		if (!zp::parse<zp::TypeObj, zp::Str, zp::Opt<zp::TypeObjOrNull>>(execute_data, type, constantName, nativeType)) RETURN_THROWS();
+		if (!zp::parse<zp::TypeObj, zp::Str, zp::TypeObjOrNull>(execute_data, type, constantName, nativeType)) RETURN_THROWS();
 		PT_THIS.construct(type, constantName, nativeType);
 	});
 

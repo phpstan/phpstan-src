@@ -30,7 +30,7 @@ final class RicherScopeGetTypeHelper
 	/**
 	 * @return TypeResult<BooleanType>
 	 */
-	public function getIdenticalResult(Scope $scope, Identical $expr, ?NodeScopeResolver $nodeScopeResolver = null, ?Type $leftType = null, ?Type $rightType = null): TypeResult
+	public function getIdenticalResult(Scope $scope, Identical $expr, ?NodeScopeResolver $nodeScopeResolver, ?Type $leftType, ?Type $rightType): TypeResult
 	{
 		if (
 			$expr->left instanceof Variable
@@ -89,7 +89,7 @@ final class RicherScopeGetTypeHelper
 	/**
 	 * @return TypeResult<BooleanType>
 	 */
-	public function getNotIdenticalResult(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr, ?NodeScopeResolver $nodeScopeResolver = null, ?Type $leftType = null, ?Type $rightType = null): TypeResult
+	public function getNotIdenticalResult(Scope $scope, Node\Expr\BinaryOp\NotIdentical $expr, ?NodeScopeResolver $nodeScopeResolver, ?Type $leftType, ?Type $rightType): TypeResult
 	{
 		$identicalResult = $this->getIdenticalResult($scope, new Identical($expr->left, $expr->right), $nodeScopeResolver, $leftType, $rightType);
 		$identicalType = $identicalResult->type;

@@ -21,9 +21,8 @@ namespace sigs = ptdecl::PreparedAssignTarget::sig;
 
 zend_class_entry *pt_ce_prepared_assign_target = nullptr;
 
-/* the constructor's positional parameter count and the required ones */
+/* the constructor's positional parameter count, all of them required */
 #define PT_PAT_ARG_COUNT 27
-#define PT_PAT_REQUIRED_ARG_COUNT 11
 
 namespace phpstanturbo {
 
@@ -158,7 +157,7 @@ PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 		zval *objects[PT_PAT_ARG_COUNT] = {};
 		zend_string *kindStr = NULL, *propertyNameStr = NULL;
 		bool enterExpressionAssignBool, isAssignOpBool, hasYieldBool, isAlwaysTerminatingBool;
-		ZEND_PARSE_PARAMETERS_START(PT_PAT_REQUIRED_ARG_COUNT, PT_PAT_ARG_COUNT)
+		ZEND_PARSE_PARAMETERS_START(PT_PAT_ARG_COUNT, PT_PAT_ARG_COUNT)
 			Z_PARAM_STR(kindStr)
 			Z_PARAM_OBJECT(objects[1])
 			Z_PARAM_OBJECT(objects[2])
@@ -170,7 +169,6 @@ PT_MINIT_REGISTRATION(pt_register_prepared_assign_target)
 			Z_PARAM_ARRAY(objects[8])
 			Z_PARAM_ARRAY(objects[9])
 			Z_PARAM_BOOL(isAlwaysTerminatingBool)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(objects[11])
 			Z_PARAM_OBJECT_OR_NULL(objects[12])
 			Z_PARAM_ARRAY_OR_NULL(objects[13])

@@ -114,7 +114,7 @@ final class ClosureProcessor
 		callable $nodeCallback,
 		ExpressionContext $context,
 		?Type $passedToType,
-		?Type $nativePassedToType = null,
+		?Type $nativePassedToType,
 	): ProcessClosureResult
 	{
 		return $this->processClosureNodeInternal($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback, $context, $passedToType, $nativePassedToType);
@@ -132,7 +132,7 @@ final class ClosureProcessor
 		callable $nodeCallback,
 		ExpressionContext $context,
 		?Type $passedToType,
-		?Type $nativePassedToType = null,
+		?Type $nativePassedToType,
 	): ProcessClosureResult
 	{
 		$parametersDependencies = $this->processAttributeGroupsAndParams($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback);
@@ -147,14 +147,14 @@ final class ClosureProcessor
 		// the closure's own body may invoke it (use (&$self)): its sites must
 		// exist before the body is observed
 		if ($this->closureSignatureInference->isObserving($scope)) {
-			$scope = $scope->addTemplateArgumentConstraints($this->closureSignatureInference->collectSites($scope, $this->closureTypeResolver->getClosureType($scope, $expr, true, $storage)));
+			$scope = $scope->addTemplateArgumentConstraints($this->closureSignatureInference->collectSites($scope, $this->closureTypeResolver->getClosureType($scope, $expr, true, $storage, null)));
 		}
 
 		$useScope = $scope;
 		foreach ($expr->uses as $use) {
 			if ($use->byRef) {
 				$byRefUses[] = $use;
-				$useScope = $useScope->enterExpressionAssign($use->var);
+				$useScope = $useScope->enterExpressionAssign($use->var, true);
 
 				$inAssignRightSideVariableName = $context->getInAssignRightSideVariableName();
 				$inAssignRightSideExpr = $context->getInAssignRightSideExpr();
@@ -363,7 +363,7 @@ final class ClosureProcessor
 				break;
 			}
 			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-				$closureScope = $prevScope->generalizeWith($closureScope);
+				$closureScope = $prevScope->generalizeWith($closureScope, null);
 			}
 			$count++;
 		}
@@ -495,7 +495,7 @@ final class ClosureProcessor
 			$throwScope = $this->assignByRefUses($scope, $throwPoint->getScope(), $byRefUses);
 			$throwPoints[] = $throwPoint->isExplicit()
 				? InternalThrowPoint::createExplicit($throwScope, $throwPoint->getType(), $call, $throwPoint->canContainAnyThrowable())
-				: InternalThrowPoint::createImplicit($throwScope, $call);
+				: InternalThrowPoint::createImplicit($throwScope, $call, null);
 		}
 
 		return [$this->assignByRefUses($scope, $exitScope, $byRefUses), $throwPoints];
@@ -543,7 +543,7 @@ final class ClosureProcessor
 				break;
 			}
 			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-				$nextEntryScope = $entryScope->generalizeWith($nextEntryScope);
+				$nextEntryScope = $entryScope->generalizeWith($nextEntryScope, null);
 			}
 			$entryScope = $nextEntryScope;
 			$count++;
@@ -739,6 +739,8 @@ final class ClosureProcessor
 			$invalidateExpressions,
 			false,
 			$storage,
+			null,
+			null,
 		);
 
 		return $closureScope->withAnonymousFunctionReflection($refinedClosureType);
@@ -779,11 +781,11 @@ final class ClosureProcessor
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		?Type $passedToType,
-		?Type $nativePassedToType = null,
-		?ExpressionContext $context = null,
+		?Type $nativePassedToType,
+		?ExpressionContext $context,
 	): ProcessArrowFunctionResult
 	{
-		$context ??= ExpressionContext::createTopLevel();
+		$context ??= ExpressionContext::createTopLevel(true);
 		$parametersDependencies = $this->processAttributeGroupsAndParams($nodeScopeResolver, $stmt, $expr, $scope, $storage, $nodeCallback);
 		if ($this->closureSignatureInference->isObserving($scope)) {
 			foreach (ClosureSignatureInference::getArrowFunctionOuterVariables($expr) as $name) {
@@ -863,6 +865,8 @@ final class ClosureProcessor
 			$invalidateExpressions,
 			false,
 			$storage,
+			null,
+			null,
 		);
 		$refinedArrowFunctionScope = $arrowFunctionScope->withAnonymousFunctionReflection($refinedArrowFunctionType);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InArrowFunctionNode($refinedArrowFunctionType, $expr), $refinedArrowFunctionScope, $storage);
@@ -880,6 +884,14 @@ final class ClosureProcessor
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 				dependencies: Dependencies::merge($parametersDependencies, $exprResult->getDependencies()),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
 			),
 			$arrowFunctionScope,
 			$closureTypeThrowPoints,

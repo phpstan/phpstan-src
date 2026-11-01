@@ -64,19 +64,14 @@ zend_string *pt_tar_unconstraining_send = nullptr;
 	return !result.isUndef();
 }
 
-/* TemplateArgumentStats::increment('sitesCreated' / 'closureSitesCreated');
+/* TemplateArgumentStats::increment('sitesCreated' / 'closureSitesCreated', 1);
  * false = pending exception */
 [[nodiscard]] bool statsIncrementSitesCreated(bool closureSite)
 {
-	zval counter;
 	if (closureSite) {
-		ZVAL_STRINGL(&counter, "closureSitesCreated", sizeof("closureSitesCreated") - 1);
-	} else {
-		ZVAL_STRINGL(&counter, "sitesCreated", sizeof("sitesCreated") - 1);
+		return statsIncrement(PT_LC("closureSitesCreated"), 1);
 	}
-	zv::Val result = pt_call_static_cached(pt_tar_stats_increment_site, PT_CLASS_TEMPLATE_ARGUMENT_STATS, PT_LC("increment"), 1, &counter);
-	zval_ptr_dtor(&counter);
-	return !result.isUndef();
+	return statsIncrement(PT_LC("sitesCreated"), 1);
 }
 
 /* $marker->getSite() / ->getInitialType(): the slots of the native class,
@@ -642,11 +637,10 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_resolver)
 
 	cls.method(sigs::resolve, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *constraints, *parent, *statementStartTokenPositions, *closureSignatureBody = NULL, *closureSignatureStmts = NULL;
-		ZEND_PARSE_PARAMETERS_START(3, 5)
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_OBJECT_OF_CLASS(constraints, pt_ce_template_argument_constraints)
 			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(parent, pt_ce_template_argument_frame)
 			Z_PARAM_ARRAY(statementStartTokenPositions)
-			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(closureSignatureBody)
 			Z_PARAM_ARRAY(closureSignatureStmts)
 		ZEND_PARSE_PARAMETERS_END();

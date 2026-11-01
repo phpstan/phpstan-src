@@ -50,19 +50,20 @@ inline constexpr char strings[] =
 	"exprToSpecify\0" /* 211 */
 	"PHPStan\\Analyser\\EnsuredNonNullabilityResult\0" /* 225 */
 	"ensureShallowNonNullability\0" /* 270 */
-	"isPricedFromState\0" /* 298 */
-	"result\0" /* 316 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 323 */
-	"applyPendingEnsure\0" /* 357 */
-	"doEnsureShallowNonNullability\0" /* 376 */
-	"ensureNonNullability\0" /* 406 */
-	"specifiedExpressions\0" /* 427 */
-	"revertNonNullability\0" /* 448 */
-	"callback\0" /* 469 */
-	"Closure\0" /* 478 */
-	"includeExpr\0" /* 486 */
-	"true\0" /* 498 */
-	"lookForExpressionCallback"; /* 503 */
+	"result\0" /* 298 */
+	"pending\0" /* 305 */
+	"pushActiveEnsure\0" /* 313 */
+	"isPricedFromState\0" /* 330 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 348 */
+	"applyPendingEnsure\0" /* 382 */
+	"doEnsureShallowNonNullability\0" /* 401 */
+	"ensureNonNullability\0" /* 431 */
+	"specifiedExpressions\0" /* 452 */
+	"revertNonNullability\0" /* 473 */
+	"callback\0" /* 494 */
+	"Closure\0" /* 503 */
+	"includeExpr\0" /* 511 */
+	"lookForExpressionCallback"; /* 523 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 12), /* __construct $exprPrinter */
 	reg::packed(57, MAY_BE_VOID), /* resetFileAnalysisState return */
@@ -73,12 +74,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(197, 0, 166), /* ensureShallowNonNullability $originalScope */
 	reg::packed(211, 0, 86), /* ensureShallowNonNullability $exprToSpecify */
 	reg::packed(57, 0, 225), /* ensureShallowNonNullability return */
+	reg::packed(298, 0, 225), /* pushActiveEnsure $result */
+	reg::packed(305, MAY_BE_ARRAY), /* pushActiveEnsure $pending */
+	reg::packed(57, MAY_BE_VOID), /* pushActiveEnsure return */
 	reg::packed(81, 0, 86), /* isPricedFromState $expr */
 	reg::packed(160, 0, 166), /* isPricedFromState $scope */
 	reg::packed(57, MAY_BE_BOOL), /* isPricedFromState return */
 	reg::packed(81, 0, 86), /* applyPendingEnsure $expr */
-	reg::packed(316, 0, 323), /* applyPendingEnsure $result */
-	reg::packed(57, 0, 323), /* applyPendingEnsure return */
+	reg::packed(298, 0, 348), /* applyPendingEnsure $result */
+	reg::packed(57, 0, 348), /* applyPendingEnsure return */
 	reg::packed(160, 0, 166), /* doEnsureShallowNonNullability $scope */
 	reg::packed(197, 0, 166), /* doEnsureShallowNonNullability $originalScope */
 	reg::packed(211, 0, 86), /* doEnsureShallowNonNullability $exprToSpecify */
@@ -87,12 +91,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(81, 0, 86), /* ensureNonNullability $expr */
 	reg::packed(57, 0, 225), /* ensureNonNullability return */
 	reg::packed(160, 0, 166), /* revertNonNullability $scope */
-	reg::packed(427, MAY_BE_ARRAY), /* revertNonNullability $specifiedExpressions */
+	reg::packed(452, MAY_BE_ARRAY), /* revertNonNullability $specifiedExpressions */
 	reg::packed(57, 0, 166), /* revertNonNullability return */
 	reg::packed(160, 0, 166), /* lookForExpressionCallback $scope */
 	reg::packed(81, 0, 86), /* lookForExpressionCallback $expr */
-	reg::packed(469, 0, 478), /* lookForExpressionCallback $callback */
-	reg::packed(486, MAY_BE_BOOL, reg::NoString, false, false, 498), /* lookForExpressionCallback $includeExpr */
+	reg::packed(494, 0, 503), /* lookForExpressionCallback $callback */
+	reg::packed(511, MAY_BE_BOOL), /* lookForExpressionCallback $includeExpr */
 	reg::packed(57, 0, 166), /* lookForExpressionCallback return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -104,13 +108,13 @@ inline constexpr sigtab::Sig __construct = { { 45 /* __construct */, 1, 0, 1, re
 inline constexpr sigtab::Sig resetFileAnalysisState = { { 58 /* resetFileAnalysisState */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getActiveEnsuredOriginalType = { { 131 /* getActiveEnsuredOriginalType */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig ensureShallowNonNullability = { { 270 /* ensureShallowNonNullability */, 3, 5, 3, 8, ZEND_ACC_PUBLIC } };
-/* pushActiveEnsure(): no signature — a default value the arginfo source cannot spell */
-inline constexpr sigtab::Sig isPricedFromState = { { 298 /* isPricedFromState */, 2, 9, 2, 11, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig applyPendingEnsure = { { 357 /* applyPendingEnsure */, 2, 12, 2, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig doEnsureShallowNonNullability = { { 376 /* doEnsureShallowNonNullability */, 3, 15, 3, 18, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig ensureNonNullability = { { 406 /* ensureNonNullability */, 2, 19, 2, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig revertNonNullability = { { 448 /* revertNonNullability */, 2, 22, 2, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig lookForExpressionCallback = { { 503 /* lookForExpressionCallback */, 3, 25, 4, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig pushActiveEnsure = { { 313 /* pushActiveEnsure */, 2, 9, 2, 11, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isPricedFromState = { { 330 /* isPricedFromState */, 2, 12, 2, 14, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig applyPendingEnsure = { { 382 /* applyPendingEnsure */, 2, 15, 2, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig doEnsureShallowNonNullability = { { 401 /* doEnsureShallowNonNullability */, 3, 18, 3, 21, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig ensureNonNullability = { { 431 /* ensureNonNullability */, 2, 22, 2, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig revertNonNullability = { { 473 /* revertNonNullability */, 2, 25, 2, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig lookForExpressionCallback = { { 523 /* lookForExpressionCallback */, 4, 28, 4, 32, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::NonNullabilityHelper

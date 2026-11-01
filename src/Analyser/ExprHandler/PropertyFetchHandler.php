@@ -116,7 +116,7 @@ final class PropertyFetchHandler implements ExprHandler
 				$scope = $scope->mergeWith($varResult->getScope());
 			}
 			if ($this->phpVersion->supportsPropertyHooks()) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr, null);
 			}
 		}
 
@@ -194,6 +194,13 @@ final class PropertyFetchHandler implements ExprHandler
 				return new MixedType();
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypesWithNullsafeFan($expr, $context, $beforeScope, $nativeTypesPromoted),
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			dependencies: null,
 		);
 		return $result->withDependencies(Dependencies::merge(
 			$varResult->getDependencies(),
@@ -217,7 +224,7 @@ final class PropertyFetchHandler implements ExprHandler
 			}
 		}
 
-		return Dependencies::create($scope->getFile(), [$fetchedOnType, $result->getType()], $classNames);
+		return Dependencies::create($scope->getFile(), [$fetchedOnType, $result->getType()], $classNames, [], [], []);
 	}
 
 	private function propertyFetchType(MutatingScope $scope, Type $fetchedOnType, string $propertyName, PropertyFetch $propertyFetch): ?Type

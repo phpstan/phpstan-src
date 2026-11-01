@@ -44,7 +44,7 @@ final class TemplateArgumentFrame
 	 * with the inferred template arguments unresolved/resolved under the
 	 * scope's frame, the legacy (generalizing) one otherwise.
 	 */
-	public static function returnTypeOfCall(ParametersAcceptor $acceptor, MutatingScope $scope, Expr $site, ?bool $allowUnresolved = null): Type
+	public static function returnTypeOfCall(ParametersAcceptor $acceptor, MutatingScope $scope, Expr $site, ?bool $allowUnresolved): Type
 	{
 		$frame = $scope->getCurrentTemplateArgumentFrame();
 		if ($frame === null || !$acceptor instanceof ResolvedFunctionVariant) {
@@ -71,15 +71,15 @@ final class TemplateArgumentFrame
 	 */
 	public function __construct(
 		private readonly ?self $parent,
-		private readonly ?array $resolutions = null,
-		private readonly array $siteStatementIndexes = [],
-		private readonly ?Node $closureSignatureBody = null,
-		private readonly array $closureSignatureStmts = [],
-		private readonly array $settledClosureSites = [],
-		private readonly bool $observingClosures = false,
-		private readonly array $byRefSites = [],
-		private readonly array $staticVariableTypes = [],
-		private readonly array $staticVariableConditionalExpressions = [],
+		private readonly ?array $resolutions,
+		private readonly array $siteStatementIndexes,
+		private readonly ?Node $closureSignatureBody,
+		private readonly array $closureSignatureStmts,
+		private readonly array $settledClosureSites,
+		private readonly bool $observingClosures,
+		private readonly array $byRefSites,
+		private readonly array $staticVariableTypes,
+		private readonly array $staticVariableConditionalExpressions,
 	)
 	{
 	}
@@ -118,7 +118,7 @@ final class TemplateArgumentFrame
 	 * @param array<int, true> $statementIndexes
 	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $conditionalExpressions
 	 */
-	public function withStaticVariableTypes(array $staticVariableTypes, array $statementIndexes, array $conditionalExpressions = []): self
+	public function withStaticVariableTypes(array $staticVariableTypes, array $statementIndexes, array $conditionalExpressions): self
 	{
 		return new self(
 			$this->parent,
@@ -178,7 +178,7 @@ final class TemplateArgumentFrame
 	 * @param array<int, true> $settledClosureSites
 	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites
 	 */
-	public function withObservedClosures(array $closureResolutions, array $closureSiteStatementIndexes, array $settledClosureSites, array $byRefSites = []): self
+	public function withObservedClosures(array $closureResolutions, array $closureSiteStatementIndexes, array $settledClosureSites, array $byRefSites): self
 	{
 		return new self(
 			$this->parent,
@@ -190,6 +190,7 @@ final class TemplateArgumentFrame
 			byRefSites: $byRefSites,
 			staticVariableTypes: $this->staticVariableTypes,
 			staticVariableConditionalExpressions: $this->staticVariableConditionalExpressions,
+			observingClosures: false,
 		);
 	}
 

@@ -83,6 +83,13 @@ final class AlwaysRememberedExprHandler implements ExprHandler
 				);
 			},
 			dependencies: $innerResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

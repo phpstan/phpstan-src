@@ -96,6 +96,15 @@ final class PipeHandler implements ExprHandler
 				impurePoints: [],
 				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $callableNodeResult->getNativeType() : $callableNodeResult->getType()),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
+				dependencies: null,
 			));
 		}
 
@@ -114,6 +123,14 @@ final class PipeHandler implements ExprHandler
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $callResult->getNativeType() : $callResult->getType()),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 			dependencies: $callResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

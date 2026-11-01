@@ -23,17 +23,17 @@ final class TemplateArgumentConstraints
 	 * @param self|null $until where the walk of $right stops - see withRecordedFacts()
 	 */
 	private function __construct(
-		private readonly ?self $left = null,
-		private readonly ?self $right = null,
-		private readonly ?array $fact = null,
-		private readonly ?self $until = null,
+		private readonly ?self $left,
+		private readonly ?self $right,
+		private readonly ?array $fact,
+		private readonly ?self $until,
 	)
 	{
 	}
 
 	public static function createEmpty(): self
 	{
-		return new self();
+		return new self(null, null, null, null);
 	}
 
 	public function isEmpty(): bool
@@ -50,7 +50,7 @@ final class TemplateArgumentConstraints
 			return $other;
 		}
 
-		return new self($this, $other);
+		return new self($this, $other, null, null);
 	}
 
 	/**
@@ -67,7 +67,7 @@ final class TemplateArgumentConstraints
 			return $this;
 		}
 
-		return new self($this, $exit, until: $entry);
+		return new self($this, $exit, until: $entry, fact: null);
 	}
 
 	public function withSite(UnresolvedTemplateArgumentType $marker): self
@@ -76,22 +76,22 @@ final class TemplateArgumentConstraints
 			return $this;
 		}
 
-		return new self($this, fact: [$marker, null, null, false]);
+		return new self($this, fact: [$marker, null, null, false], right: null, until: null);
 	}
 
 	public function withSend(UnresolvedTemplateArgumentType $marker, Type $type, TemplateTypeVariance $variance): self
 	{
-		return new self($this, fact: [$marker, $type, $variance, false]);
+		return new self($this, fact: [$marker, $type, $variance, false], right: null, until: null);
 	}
 
 	public function withLowerBound(UnresolvedTemplateArgumentType $marker, Type $type): self
 	{
-		return new self($this, fact: [$marker, $type, null, false]);
+		return new self($this, fact: [$marker, $type, null, false], right: null, until: null);
 	}
 
 	public function withUnconstrainingSend(UnresolvedTemplateArgumentType $marker): self
 	{
-		return new self($this, fact: [$marker, null, null, true]);
+		return new self($this, fact: [$marker, null, null, true], right: null, until: null);
 	}
 
 	/** @return iterable<array{UnresolvedTemplateArgumentType, Type|null, TemplateTypeVariance|null, bool}> */

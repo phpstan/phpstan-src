@@ -33,7 +33,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 	require_once __DIR__ . '/../src/Process/Restart/IniComposer.php';
 	require_once __DIR__ . '/../src/Process/Restart/RestartExecutor.php';
 	require_once __DIR__ . '/../src/Process/Restart/RestartManager.php';
-	RestartManager::run($_SERVER['argv']);
+	RestartManager::run($_SERVER['argv'], null, null, 'phpstan');
 	TurboExtensionEnabler::trustOwnTypesIfSuitable($_SERVER['argv']);
 
 	$analysisStartTime = microtime(true);

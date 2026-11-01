@@ -29,7 +29,7 @@ const pt_superglobal_name pt_veh_volatile_function_names[] = {
 	{ PT_LC("openssl_error_string") },
 };
 
-/* the twin's private EXISTENCE_CHECK_FUNCTION_NAMES */
+/* the twin's EXISTENCE_CHECK_FUNCTION_NAMES */
 const pt_superglobal_name pt_veh_existence_check_function_names[] = {
 	{ PT_LC("class_exists") },
 	{ PT_LC("interface_exists") },
@@ -184,7 +184,7 @@ public:
 
 	/*
 	 * Mirrors invalidateNegativeExistenceChecks(). $functionNames NULL stands
-	 * for the twin's EXISTENCE_CHECK_FUNCTION_NAMES default, $declaredSymbolName
+	 * for EXISTENCE_CHECK_FUNCTION_NAMES, $declaredSymbolName
 	 * NULL for null; UNDEF = pending exception.
 	 */
 	static zv::Val invalidateNegativeExistenceChecks(zval *scope, zval *expressionTypes, zval *nativeExpressionTypes, HashTable *functionNames, zend_string *declaredSymbolName)
@@ -348,7 +348,7 @@ PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 	ptdecl::VolatileExpressionHelper::declareClass(cls);
 	ptdecl::VolatileExpressionHelper::declareProperties(cls);
 	cls.privateClassConstantValue("VOLATILE_FUNCTION_NAMES", pt_veh_volatile_function_names_constant);
-	cls.privateClassConstantValue("EXISTENCE_CHECK_FUNCTION_NAMES", pt_veh_existence_check_function_names_constant);
+	cls.classConstantValue("EXISTENCE_CHECK_FUNCTION_NAMES", pt_veh_existence_check_function_names_constant);
 
 	cls.method(sigs::invalidateVolatileFunctionCalls, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expressionTypes, *nativeExpressionTypes;
@@ -374,7 +374,7 @@ PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 		zval *scope, *expressionTypes, *nativeExpressionTypes;
 		HashTable *functionNames = NULL;
 		zend_string *declaredSymbolName = NULL;
-		if (!zp::parse<zp::Obj, zp::Zval, zp::Zval, zp::Opt<zp::Ht>, zp::Opt<zp::StrOrNull>>(execute_data, scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Zval, zp::Zval, zp::Ht, zp::StrOrNull>(execute_data, scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName)) RETURN_THROWS();
 		expressionTypes = pt_veh_array_ref(expressionTypes, 2);
 		if (UNEXPECTED(expressionTypes == NULL)) RETURN_THROWS();
 		nativeExpressionTypes = pt_veh_array_ref(nativeExpressionTypes, 3);

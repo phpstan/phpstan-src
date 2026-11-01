@@ -124,6 +124,16 @@ final class AssignOpHandler implements ExprHandler
 				$rightResult->getImpurePoints(),
 				typeCallback: static fn () => new MixedType(),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
+				containsNullsafe: false,
+				issetabilityDescriptor: null,
+				truthyScopeOverrideResult: null,
+				falseyScopeOverrideResult: null,
+				createTypesCallback: null,
+				type: null,
+				nativeType: null,
+				argsResult: null,
+				variableFlow: null,
+				dependencies: null,
 			);
 		}
 
@@ -253,6 +263,15 @@ final class AssignOpHandler implements ExprHandler
 			typeCallback: $typeCallback,
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
+			variableFlow: null,
+			dependencies: null,
 		);
 
 		// applyWrite() emits nodes (PropertyAssignNode) whose rules ask about
@@ -296,7 +315,7 @@ final class AssignOpHandler implements ExprHandler
 		$writeFlow = VariableFlow::sequence(
 			$rhsResult->getVariableFlow(),
 			$valueFlowWrite !== null && $context->isValueConsumed() ? VariableFlow::inputs($valueFlowWrite->getId(), $context->getValueFlowTarget() !== null ? $context->getValueFlowTarget()->getId() : null) : null,
-			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE, $scope, $storage),
+			VariableFlowBuilder::targetWrite($expr->var, VariableWrite::KIND_READ_MODIFY_WRITE, $scope, $storage, null),
 		);
 		$variableFlow = VariableFlow::sequence(
 			VariableFlowBuilder::targetRead($expr->var, $storage, true, !($expr instanceof Expr\AssignOp\Coalesce) && $valueFlowWrite !== null ? $valueFlowWrite->getId() : null),
@@ -316,6 +335,13 @@ final class AssignOpHandler implements ExprHandler
 			specifyTypesCallback: $specifyTypesCallback,
 			createTypesCallback: $createTypesCallback,
 			dependencies: Dependencies::merge($rhsResult->getDependencies(), $assignResult->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

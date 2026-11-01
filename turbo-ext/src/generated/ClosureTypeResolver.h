@@ -54,48 +54,46 @@ inline constexpr char strings[] =
 	"scope\0" /* 431 */
 	"PHPStan\\Analyser\\MutatingScope\0" /* 437 */
 	"shallow\0" /* 468 */
-	"false\0" /* 476 */
-	"storage\0" /* 482 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 490 */
-	"null\0" /* 531 */
-	"passedToType\0" /* 536 */
-	"PHPStan\\Type\\Type\0" /* 549 */
-	"PHPStan\\Type\\ClosureType\0" /* 567 */
-	"getClosureType\0" /* 592 */
-	"PhpParser\\Node\\Expr\\Closure\0" /* 607 */
-	"returnStatements\0" /* 635 */
-	"yieldStatements\0" /* 652 */
-	"executionEnds\0" /* 668 */
-	"throwPoints\0" /* 682 */
-	"impurePoints\0" /* 694 */
-	"invalidateExpressions\0" /* 707 */
-	"native\0" /* 729 */
-	"nativePassedToType\0" /* 736 */
-	"buildClosureTypeForClosure\0" /* 755 */
-	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 782 */
-	"arrowScope\0" /* 816 */
-	"buildClosureTypeForArrowFunction\0" /* 827 */
-	"callableParameters\0" /* 860 */
-	"parameters\0" /* 879 */
-	"closureContextCacheKey\0" /* 890 */
-	"freeVariableRoots\0" /* 913 */
-	"PhpParser\\Node\\Expr\0" /* 931 */
-	"readScope\0" /* 951 */
-	"readExprType\0" /* 961 */
-	"isVariadic\0" /* 974 */
-	"cacheKey\0" /* 985 */
-	"contextFree\0" /* 994 */
-	"buildClosureTypeFromClosureWalk\0" /* 1006 */
-	"resolveArrowFunctionReturnType\0" /* 1038 */
-	"deriveOnlyNeverExecutionEnds\0" /* 1069 */
-	"buildDeclaredParameters\0" /* 1098 */
-	"getDeclaredClosureType\0" /* 1122 */
-	"buildParametersAndAcceptors\0" /* 1145 */
-	"cachedClosureData\0" /* 1173 */
-	"createClosureTypeFromCache\0" /* 1191 */
-	"returnType\0" /* 1218 */
-	"usedVariables\0" /* 1229 */
-	"assembleClosureType"; /* 1243 */
+	"storage\0" /* 476 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 484 */
+	"passedToType\0" /* 525 */
+	"PHPStan\\Type\\Type\0" /* 538 */
+	"PHPStan\\Type\\ClosureType\0" /* 556 */
+	"getClosureType\0" /* 581 */
+	"PhpParser\\Node\\Expr\\Closure\0" /* 596 */
+	"returnStatements\0" /* 624 */
+	"yieldStatements\0" /* 641 */
+	"executionEnds\0" /* 657 */
+	"throwPoints\0" /* 671 */
+	"impurePoints\0" /* 683 */
+	"invalidateExpressions\0" /* 696 */
+	"native\0" /* 718 */
+	"nativePassedToType\0" /* 725 */
+	"buildClosureTypeForClosure\0" /* 744 */
+	"PhpParser\\Node\\Expr\\ArrowFunction\0" /* 771 */
+	"arrowScope\0" /* 805 */
+	"buildClosureTypeForArrowFunction\0" /* 816 */
+	"callableParameters\0" /* 849 */
+	"parameters\0" /* 868 */
+	"closureContextCacheKey\0" /* 879 */
+	"freeVariableRoots\0" /* 902 */
+	"PhpParser\\Node\\Expr\0" /* 920 */
+	"readScope\0" /* 940 */
+	"readExprType\0" /* 950 */
+	"isVariadic\0" /* 963 */
+	"cacheKey\0" /* 974 */
+	"contextFree\0" /* 983 */
+	"buildClosureTypeFromClosureWalk\0" /* 995 */
+	"resolveArrowFunctionReturnType\0" /* 1027 */
+	"deriveOnlyNeverExecutionEnds\0" /* 1058 */
+	"buildDeclaredParameters\0" /* 1087 */
+	"getDeclaredClosureType\0" /* 1111 */
+	"buildParametersAndAcceptors\0" /* 1134 */
+	"cachedClosureData\0" /* 1162 */
+	"createClosureTypeFromCache\0" /* 1180 */
+	"returnType\0" /* 1207 */
+	"usedVariables\0" /* 1218 */
+	"assembleClosureType"; /* 1232 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
 	reg::packed(53, 0, 81), /* __construct $initializerExprTypeResolver */
@@ -106,100 +104,100 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(324, MAY_BE_ARRAY), /* findCachedTypes return */
 	reg::packed(431, 0, 437), /* getClosureType $scope */
 	reg::packed(348, 0, 353), /* getClosureType $expr */
-	reg::packed(468, MAY_BE_BOOL, reg::NoString, false, false, 476), /* getClosureType $shallow */
-	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* getClosureType $storage */
-	reg::packed(536, MAY_BE_NULL, 549, false, false, 531), /* getClosureType $passedToType */
-	reg::packed(324, 0, 567), /* getClosureType return */
+	reg::packed(468, MAY_BE_BOOL), /* getClosureType $shallow */
+	reg::packed(476, MAY_BE_NULL, 484), /* getClosureType $storage */
+	reg::packed(525, MAY_BE_NULL, 538), /* getClosureType $passedToType */
+	reg::packed(324, 0, 556), /* getClosureType return */
 	reg::packed(431, 0, 437), /* buildClosureTypeForClosure $scope */
-	reg::packed(348, 0, 607), /* buildClosureTypeForClosure $expr */
-	reg::packed(635, MAY_BE_ARRAY), /* buildClosureTypeForClosure $returnStatements */
-	reg::packed(652, MAY_BE_ARRAY), /* buildClosureTypeForClosure $yieldStatements */
-	reg::packed(668, MAY_BE_ARRAY), /* buildClosureTypeForClosure $executionEnds */
-	reg::packed(682, MAY_BE_ARRAY), /* buildClosureTypeForClosure $throwPoints */
-	reg::packed(694, MAY_BE_ARRAY), /* buildClosureTypeForClosure $impurePoints */
-	reg::packed(707, MAY_BE_ARRAY), /* buildClosureTypeForClosure $invalidateExpressions */
-	reg::packed(729, MAY_BE_BOOL, reg::NoString, false, false, 476), /* buildClosureTypeForClosure $native */
-	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* buildClosureTypeForClosure $storage */
-	reg::packed(536, MAY_BE_NULL, 549, false, false, 531), /* buildClosureTypeForClosure $passedToType */
-	reg::packed(736, MAY_BE_NULL, 549, false, false, 531), /* buildClosureTypeForClosure $nativePassedToType */
-	reg::packed(324, 0, 567), /* buildClosureTypeForClosure return */
+	reg::packed(348, 0, 596), /* buildClosureTypeForClosure $expr */
+	reg::packed(624, MAY_BE_ARRAY), /* buildClosureTypeForClosure $returnStatements */
+	reg::packed(641, MAY_BE_ARRAY), /* buildClosureTypeForClosure $yieldStatements */
+	reg::packed(657, MAY_BE_ARRAY), /* buildClosureTypeForClosure $executionEnds */
+	reg::packed(671, MAY_BE_ARRAY), /* buildClosureTypeForClosure $throwPoints */
+	reg::packed(683, MAY_BE_ARRAY), /* buildClosureTypeForClosure $impurePoints */
+	reg::packed(696, MAY_BE_ARRAY), /* buildClosureTypeForClosure $invalidateExpressions */
+	reg::packed(718, MAY_BE_BOOL), /* buildClosureTypeForClosure $native */
+	reg::packed(476, MAY_BE_NULL, 484), /* buildClosureTypeForClosure $storage */
+	reg::packed(525, MAY_BE_NULL, 538), /* buildClosureTypeForClosure $passedToType */
+	reg::packed(725, MAY_BE_NULL, 538), /* buildClosureTypeForClosure $nativePassedToType */
+	reg::packed(324, 0, 556), /* buildClosureTypeForClosure return */
 	reg::packed(431, 0, 437), /* buildClosureTypeForArrowFunction $scope */
-	reg::packed(348, 0, 782), /* buildClosureTypeForArrowFunction $expr */
-	reg::packed(816, 0, 437), /* buildClosureTypeForArrowFunction $arrowScope */
-	reg::packed(682, MAY_BE_ARRAY), /* buildClosureTypeForArrowFunction $throwPoints */
-	reg::packed(694, MAY_BE_ARRAY), /* buildClosureTypeForArrowFunction $impurePoints */
-	reg::packed(707, MAY_BE_ARRAY), /* buildClosureTypeForArrowFunction $invalidateExpressions */
-	reg::packed(729, MAY_BE_BOOL, reg::NoString, false, false, 476), /* buildClosureTypeForArrowFunction $native */
-	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* buildClosureTypeForArrowFunction $storage */
-	reg::packed(536, MAY_BE_NULL, 549, false, false, 531), /* buildClosureTypeForArrowFunction $passedToType */
-	reg::packed(736, MAY_BE_NULL, 549, false, false, 531), /* buildClosureTypeForArrowFunction $nativePassedToType */
-	reg::packed(324, 0, 567), /* buildClosureTypeForArrowFunction return */
+	reg::packed(348, 0, 771), /* buildClosureTypeForArrowFunction $expr */
+	reg::packed(805, 0, 437), /* buildClosureTypeForArrowFunction $arrowScope */
+	reg::packed(671, MAY_BE_ARRAY), /* buildClosureTypeForArrowFunction $throwPoints */
+	reg::packed(683, MAY_BE_ARRAY), /* buildClosureTypeForArrowFunction $impurePoints */
+	reg::packed(696, MAY_BE_ARRAY), /* buildClosureTypeForArrowFunction $invalidateExpressions */
+	reg::packed(718, MAY_BE_BOOL), /* buildClosureTypeForArrowFunction $native */
+	reg::packed(476, MAY_BE_NULL, 484), /* buildClosureTypeForArrowFunction $storage */
+	reg::packed(525, MAY_BE_NULL, 538), /* buildClosureTypeForArrowFunction $passedToType */
+	reg::packed(725, MAY_BE_NULL, 538), /* buildClosureTypeForArrowFunction $nativePassedToType */
+	reg::packed(324, 0, 556), /* buildClosureTypeForArrowFunction return */
 	reg::packed(431, 0, 437), /* closureContextCacheKey $scope */
 	reg::packed(348, 0, 353), /* closureContextCacheKey $expr */
-	reg::packed(860, MAY_BE_NULL | MAY_BE_ARRAY), /* closureContextCacheKey $callableParameters */
-	reg::packed(879, MAY_BE_ARRAY), /* closureContextCacheKey $parameters */
+	reg::packed(849, MAY_BE_NULL | MAY_BE_ARRAY), /* closureContextCacheKey $callableParameters */
+	reg::packed(868, MAY_BE_ARRAY), /* closureContextCacheKey $parameters */
 	reg::packed(324, MAY_BE_STRING), /* closureContextCacheKey return */
 	reg::packed(348, 0, 353), /* freeVariableRoots $expr */
 	reg::packed(324, MAY_BE_NULL | MAY_BE_ARRAY), /* freeVariableRoots return */
-	reg::packed(482, MAY_BE_NULL, 490), /* readExprType $storage */
-	reg::packed(348, 0, 931), /* readExprType $expr */
-	reg::packed(951, 0, 437), /* readExprType $readScope */
-	reg::packed(729, MAY_BE_BOOL), /* readExprType $native */
-	reg::packed(324, 0, 549), /* readExprType return */
+	reg::packed(476, MAY_BE_NULL, 484), /* readExprType $storage */
+	reg::packed(348, 0, 920), /* readExprType $expr */
+	reg::packed(940, 0, 437), /* readExprType $readScope */
+	reg::packed(718, MAY_BE_BOOL), /* readExprType $native */
+	reg::packed(324, 0, 538), /* readExprType return */
 	reg::packed(431, 0, 437), /* buildClosureTypeFromClosureWalk $scope */
-	reg::packed(348, 0, 607), /* buildClosureTypeFromClosureWalk $expr */
-	reg::packed(879, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $parameters */
-	reg::packed(974, MAY_BE_BOOL), /* buildClosureTypeFromClosureWalk $isVariadic */
-	reg::packed(635, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $returnStatements */
-	reg::packed(652, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $yieldStatements */
-	reg::packed(668, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $executionEnds */
-	reg::packed(682, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $throwPoints */
-	reg::packed(694, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $impurePoints */
-	reg::packed(707, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $invalidateExpressions */
-	reg::packed(985, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 531), /* buildClosureTypeFromClosureWalk $cacheKey */
-	reg::packed(729, MAY_BE_BOOL, reg::NoString, false, false, 476), /* buildClosureTypeFromClosureWalk $native */
-	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* buildClosureTypeFromClosureWalk $storage */
-	reg::packed(994, MAY_BE_BOOL, reg::NoString, false, false, 476), /* buildClosureTypeFromClosureWalk $contextFree */
-	reg::packed(324, 0, 567), /* buildClosureTypeFromClosureWalk return */
+	reg::packed(348, 0, 596), /* buildClosureTypeFromClosureWalk $expr */
+	reg::packed(868, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $parameters */
+	reg::packed(963, MAY_BE_BOOL), /* buildClosureTypeFromClosureWalk $isVariadic */
+	reg::packed(624, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $returnStatements */
+	reg::packed(641, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $yieldStatements */
+	reg::packed(657, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $executionEnds */
+	reg::packed(671, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $throwPoints */
+	reg::packed(683, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $impurePoints */
+	reg::packed(696, MAY_BE_ARRAY), /* buildClosureTypeFromClosureWalk $invalidateExpressions */
+	reg::packed(974, MAY_BE_NULL | MAY_BE_STRING), /* buildClosureTypeFromClosureWalk $cacheKey */
+	reg::packed(718, MAY_BE_BOOL), /* buildClosureTypeFromClosureWalk $native */
+	reg::packed(476, MAY_BE_NULL, 484), /* buildClosureTypeFromClosureWalk $storage */
+	reg::packed(983, MAY_BE_BOOL), /* buildClosureTypeFromClosureWalk $contextFree */
+	reg::packed(324, 0, 556), /* buildClosureTypeFromClosureWalk return */
 	reg::packed(431, 0, 437), /* resolveArrowFunctionReturnType $scope */
-	reg::packed(816, 0, 437), /* resolveArrowFunctionReturnType $arrowScope */
-	reg::packed(348, 0, 782), /* resolveArrowFunctionReturnType $expr */
-	reg::packed(729, MAY_BE_BOOL, reg::NoString, false, false, 476), /* resolveArrowFunctionReturnType $native */
-	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* resolveArrowFunctionReturnType $storage */
-	reg::packed(324, 0, 549), /* resolveArrowFunctionReturnType return */
-	reg::packed(668, MAY_BE_ARRAY), /* deriveOnlyNeverExecutionEnds $executionEnds */
+	reg::packed(805, 0, 437), /* resolveArrowFunctionReturnType $arrowScope */
+	reg::packed(348, 0, 771), /* resolveArrowFunctionReturnType $expr */
+	reg::packed(718, MAY_BE_BOOL), /* resolveArrowFunctionReturnType $native */
+	reg::packed(476, MAY_BE_NULL, 484), /* resolveArrowFunctionReturnType $storage */
+	reg::packed(324, 0, 538), /* resolveArrowFunctionReturnType return */
+	reg::packed(657, MAY_BE_ARRAY), /* deriveOnlyNeverExecutionEnds $executionEnds */
 	reg::packed(324, MAY_BE_NULL | MAY_BE_BOOL), /* deriveOnlyNeverExecutionEnds return */
 	reg::packed(431, 0, 437), /* buildDeclaredParameters $scope */
 	reg::packed(348, 0, 353), /* buildDeclaredParameters $expr */
 	reg::packed(324, MAY_BE_ARRAY), /* buildDeclaredParameters return */
 	reg::packed(431, 0, 437), /* getDeclaredClosureType $scope */
 	reg::packed(348, 0, 353), /* getDeclaredClosureType $expr */
-	reg::packed(324, 0, 567), /* getDeclaredClosureType return */
+	reg::packed(324, 0, 556), /* getDeclaredClosureType return */
 	reg::packed(431, 0, 437), /* buildParametersAndAcceptors $scope */
 	reg::packed(348, 0, 353), /* buildParametersAndAcceptors $expr */
-	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* buildParametersAndAcceptors $storage */
-	reg::packed(536, MAY_BE_NULL, 549, false, false, 531), /* buildParametersAndAcceptors $passedToType */
-	reg::packed(736, MAY_BE_NULL, 549, false, false, 531), /* buildParametersAndAcceptors $nativePassedToType */
+	reg::packed(476, MAY_BE_NULL, 484), /* buildParametersAndAcceptors $storage */
+	reg::packed(525, MAY_BE_NULL, 538), /* buildParametersAndAcceptors $passedToType */
+	reg::packed(725, MAY_BE_NULL, 538), /* buildParametersAndAcceptors $nativePassedToType */
 	reg::packed(324, MAY_BE_ARRAY), /* buildParametersAndAcceptors return */
 	reg::packed(431, 0, 437), /* createClosureTypeFromCache $scope */
 	reg::packed(348, 0, 353), /* createClosureTypeFromCache $expr */
-	reg::packed(879, MAY_BE_ARRAY), /* createClosureTypeFromCache $parameters */
-	reg::packed(974, MAY_BE_BOOL), /* createClosureTypeFromCache $isVariadic */
-	reg::packed(1173, MAY_BE_ARRAY), /* createClosureTypeFromCache $cachedClosureData */
-	reg::packed(994, MAY_BE_BOOL), /* createClosureTypeFromCache $contextFree */
-	reg::packed(324, 0, 567), /* createClosureTypeFromCache return */
+	reg::packed(868, MAY_BE_ARRAY), /* createClosureTypeFromCache $parameters */
+	reg::packed(963, MAY_BE_BOOL), /* createClosureTypeFromCache $isVariadic */
+	reg::packed(1162, MAY_BE_ARRAY), /* createClosureTypeFromCache $cachedClosureData */
+	reg::packed(983, MAY_BE_BOOL), /* createClosureTypeFromCache $contextFree */
+	reg::packed(324, 0, 556), /* createClosureTypeFromCache return */
 	reg::packed(431, 0, 437), /* assembleClosureType $scope */
 	reg::packed(348, 0, 353), /* assembleClosureType $expr */
-	reg::packed(879, MAY_BE_ARRAY), /* assembleClosureType $parameters */
-	reg::packed(974, MAY_BE_BOOL), /* assembleClosureType $isVariadic */
-	reg::packed(1218, 0, 549), /* assembleClosureType $returnType */
-	reg::packed(682, MAY_BE_ARRAY), /* assembleClosureType $throwPoints */
-	reg::packed(694, MAY_BE_ARRAY), /* assembleClosureType $impurePoints */
-	reg::packed(707, MAY_BE_ARRAY), /* assembleClosureType $invalidateExpressions */
-	reg::packed(1229, MAY_BE_ARRAY), /* assembleClosureType $usedVariables */
-	reg::packed(985, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 531), /* assembleClosureType $cacheKey */
-	reg::packed(994, MAY_BE_BOOL, reg::NoString, false, false, 476), /* assembleClosureType $contextFree */
-	reg::packed(324, 0, 567), /* assembleClosureType return */
+	reg::packed(868, MAY_BE_ARRAY), /* assembleClosureType $parameters */
+	reg::packed(963, MAY_BE_BOOL), /* assembleClosureType $isVariadic */
+	reg::packed(1207, 0, 538), /* assembleClosureType $returnType */
+	reg::packed(671, MAY_BE_ARRAY), /* assembleClosureType $throwPoints */
+	reg::packed(683, MAY_BE_ARRAY), /* assembleClosureType $impurePoints */
+	reg::packed(696, MAY_BE_ARRAY), /* assembleClosureType $invalidateExpressions */
+	reg::packed(1218, MAY_BE_ARRAY), /* assembleClosureType $usedVariables */
+	reg::packed(974, MAY_BE_NULL | MAY_BE_STRING), /* assembleClosureType $cacheKey */
+	reg::packed(983, MAY_BE_BOOL), /* assembleClosureType $contextFree */
+	reg::packed(324, 0, 556), /* assembleClosureType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -209,20 +207,20 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 312 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resetFileAnalysisState = { { 325 /* resetFileAnalysisState */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig findCachedTypes = { { 415 /* findCachedTypes */, 1, 5, 1, 6, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getClosureType = { { 592 /* getClosureType */, 2, 7, 5, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig buildClosureTypeForClosure = { { 755 /* buildClosureTypeForClosure */, 8, 13, 12, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig buildClosureTypeForArrowFunction = { { 827 /* buildClosureTypeForArrowFunction */, 6, 26, 10, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig closureContextCacheKey = { { 890 /* closureContextCacheKey */, 4, 37, 4, 41, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig freeVariableRoots = { { 913 /* freeVariableRoots */, 1, 42, 1, 43, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig readExprType = { { 961 /* readExprType */, 4, 44, 4, 48, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig buildClosureTypeFromClosureWalk = { { 1006 /* buildClosureTypeFromClosureWalk */, 10, 49, 14, 63, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveArrowFunctionReturnType = { { 1038 /* resolveArrowFunctionReturnType */, 3, 64, 5, 69, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig deriveOnlyNeverExecutionEnds = { { 1069 /* deriveOnlyNeverExecutionEnds */, 1, 70, 1, 71, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig buildDeclaredParameters = { { 1098 /* buildDeclaredParameters */, 2, 72, 2, 74, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getDeclaredClosureType = { { 1122 /* getDeclaredClosureType */, 2, 75, 2, 77, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig buildParametersAndAcceptors = { { 1145 /* buildParametersAndAcceptors */, 2, 78, 5, 83, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createClosureTypeFromCache = { { 1191 /* createClosureTypeFromCache */, 6, 84, 6, 90, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig assembleClosureType = { { 1243 /* assembleClosureType */, 9, 91, 11, 102, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getClosureType = { { 581 /* getClosureType */, 5, 7, 5, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig buildClosureTypeForClosure = { { 744 /* buildClosureTypeForClosure */, 12, 13, 12, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig buildClosureTypeForArrowFunction = { { 816 /* buildClosureTypeForArrowFunction */, 10, 26, 10, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig closureContextCacheKey = { { 879 /* closureContextCacheKey */, 4, 37, 4, 41, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig freeVariableRoots = { { 902 /* freeVariableRoots */, 1, 42, 1, 43, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readExprType = { { 950 /* readExprType */, 4, 44, 4, 48, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig buildClosureTypeFromClosureWalk = { { 995 /* buildClosureTypeFromClosureWalk */, 14, 49, 14, 63, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveArrowFunctionReturnType = { { 1027 /* resolveArrowFunctionReturnType */, 5, 64, 5, 69, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig deriveOnlyNeverExecutionEnds = { { 1058 /* deriveOnlyNeverExecutionEnds */, 1, 70, 1, 71, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig buildDeclaredParameters = { { 1087 /* buildDeclaredParameters */, 2, 72, 2, 74, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getDeclaredClosureType = { { 1111 /* getDeclaredClosureType */, 2, 75, 2, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig buildParametersAndAcceptors = { { 1134 /* buildParametersAndAcceptors */, 5, 78, 5, 83, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createClosureTypeFromCache = { { 1180 /* createClosureTypeFromCache */, 6, 84, 6, 90, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig assembleClosureType = { { 1232 /* assembleClosureType */, 11, 91, 11, 102, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureTypeResolver

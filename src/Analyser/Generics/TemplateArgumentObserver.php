@@ -53,7 +53,7 @@ final class TemplateArgumentObserver
 	}
 
 	/** Skip ordinary recursive generic relationships that cannot contribute a constraint. */
-	private function containsMarker(Type $type, bool $templateArgumentsOnly = false): bool
+	private function containsMarker(Type $type, bool $templateArgumentsOnly): bool
 	{
 		$contains = false;
 		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains, $templateArgumentsOnly): Type {
@@ -67,7 +67,7 @@ final class TemplateArgumentObserver
 
 	public function collectSend(Type $declared, Type $actual): TemplateArgumentConstraints
 	{
-		$constraints = $this->observeSend(TemplateArgumentConstraints::createEmpty(), $declared, $actual);
+		$constraints = $this->observeSend(TemplateArgumentConstraints::createEmpty(), $declared, $actual, false);
 
 		return $this->observeClosureSend($constraints, $declared, $actual);
 	}
@@ -292,7 +292,7 @@ final class TemplateArgumentObserver
 		return $constraints->merge(ClosureSignatureInference::collectEscapes($type));
 	}
 
-	public function collectArgument(Type $parameterType, Type $argumentType, bool $isPure = false): TemplateArgumentConstraints
+	public function collectArgument(Type $parameterType, Type $argumentType, bool $isPure): TemplateArgumentConstraints
 	{
 		// A pure consumer accepting anything cannot initialize an empty object.
 		if ($isPure && $parameterType instanceof MixedType && !$parameterType instanceof TemplateType) {
@@ -308,7 +308,7 @@ final class TemplateArgumentObserver
 	 *
 	 * @param array<int|string, Type> $argumentTypes
 	 */
-	public function collectCall(Expr $site, ParametersAcceptor $acceptor, array $argumentTypes, ?TemplateTypeMap $classTemplates = null): TemplateArgumentConstraints
+	public function collectCall(Expr $site, ParametersAcceptor $acceptor, array $argumentTypes, ?TemplateTypeMap $classTemplates): TemplateArgumentConstraints
 	{
 		$constraints = TemplateArgumentConstraints::createEmpty();
 		if ($acceptor instanceof ResolvedFunctionVariant) {
@@ -371,7 +371,7 @@ final class TemplateArgumentObserver
 				$members[] = $member;
 				if ($member instanceof UnresolvedTemplateArgumentType) {
 					$naked[] = $member;
-				} elseif ($this->containsMarker($member)) {
+				} elseif ($this->containsMarker($member, false)) {
 					$structural[] = $member;
 				}
 			}
@@ -418,9 +418,9 @@ final class TemplateArgumentObserver
 	 * $actual flows into $declared: a property's writable type, a parameter
 	 * type, a declared return type, a @var type.
 	 */
-	private function observeSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual, bool $isCallArgument = false): TemplateArgumentConstraints
+	private function observeSend(TemplateArgumentConstraints $constraints, Type $declared, Type $actual, bool $isCallArgument): TemplateArgumentConstraints
 	{
-		if ($declared instanceof TemplateType || !$this->containsMarker($actual)) {
+		if ($declared instanceof TemplateType || !$this->containsMarker($actual, false)) {
 			return $constraints;
 		}
 		if ($isCallArgument && $declared instanceof MixedType) {
@@ -595,7 +595,7 @@ final class TemplateArgumentObserver
 
 	private function observeLowerBound(TemplateArgumentConstraints $constraints, Type $parameterType, Type $argumentType): TemplateArgumentConstraints
 	{
-		if (!$this->containsMarker($parameterType)) {
+		if (!$this->containsMarker($parameterType, false)) {
 			return $constraints;
 		}
 		if ($parameterType instanceof UnresolvedTemplateArgumentType) {
@@ -624,7 +624,7 @@ final class TemplateArgumentObserver
 					if ($member instanceof UnresolvedTemplateArgumentType) {
 						continue;
 					}
-					if (!$this->containsMarker($member)) {
+					if (!$this->containsMarker($member, false)) {
 						if ($member->isSuperTypeOf($argumentMember)->yes()) {
 							$taken = true;
 						}

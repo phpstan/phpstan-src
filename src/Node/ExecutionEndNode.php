@@ -20,7 +20,7 @@ final class ExecutionEndNode extends NodeAbstract implements VirtualNode
 		private Node\Stmt $node,
 		private StatementResult $statementResult,
 		private bool $hasNativeReturnTypehint,
-		private ?ExpressionResult $exprResult = null,
+		private ?ExpressionResult $exprResult,
 	)
 	{
 		parent::__construct($node->getAttributes());

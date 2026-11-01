@@ -32,7 +32,7 @@ final class TemplateArgumentResolver
 	 * @param list<int> $statementStartTokenPositions
 	 * @param Node\Stmt[] $closureSignatureStmts
 	 */
-	public function resolve(TemplateArgumentConstraints $constraints, ?TemplateArgumentFrame $parent, array $statementStartTokenPositions, ?Node $closureSignatureBody = null, array $closureSignatureStmts = []): TemplateArgumentFrame
+	public function resolve(TemplateArgumentConstraints $constraints, ?TemplateArgumentFrame $parent, array $statementStartTokenPositions, ?Node $closureSignatureBody, array $closureSignatureStmts): TemplateArgumentFrame
 	{
 		$closureSiteIds = [];
 		[$observations, $siteIndexes] = $this->collectObservations($constraints, $statementStartTokenPositions, false, $closureSiteIds);
@@ -55,17 +55,17 @@ final class TemplateArgumentResolver
 				$closureKeys[$key] = true;
 			}
 			if (TemplateArgumentStats::$enabled) {
-				TemplateArgumentStats::increment('closureObservationPasses');
+				TemplateArgumentStats::increment('closureObservationPasses', 1);
 			}
 
-			return new TemplateArgumentFrame($parent, array_diff_key($resolutions, $closureKeys), $templateSiteStatementIndexes, $closureSignatureBody, $closureSignatureStmts, observingClosures: true);
+			return new TemplateArgumentFrame($parent, array_diff_key($resolutions, $closureKeys), $templateSiteStatementIndexes, $closureSignatureBody, $closureSignatureStmts, observingClosures: true, settledClosureSites: [], byRefSites: [], staticVariableTypes: [], staticVariableConditionalExpressions: []);
 		}
 
 		if (TemplateArgumentStats::$enabled && count($settledClosureSites) > 0) {
 			TemplateArgumentStats::increment('closureSitesSettled', count($settledClosureSites));
 		}
 
-		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites, byRefSites: $this->collectByRefSites($observations, $siteIndexes));
+		return new TemplateArgumentFrame($parent, $resolutions, $this->collectSiteStatementIndexes($siteIndexes, $settledClosureSites), $closureSignatureBody, $closureSignatureStmts, $settledClosureSites, byRefSites: $this->collectByRefSites($observations, $siteIndexes), observingClosures: false, staticVariableTypes: [], staticVariableConditionalExpressions: []);
 	}
 
 	/**
@@ -143,7 +143,7 @@ final class TemplateArgumentResolver
 				continue;
 			}
 
-			TemplateArgumentStats::increment($isClosureMarker ? 'closureSitesCreated' : 'sitesCreated');
+			TemplateArgumentStats::increment($isClosureMarker ? 'closureSitesCreated' : 'sitesCreated', 1);
 		}
 
 		return [$observations, $siteIndexes];

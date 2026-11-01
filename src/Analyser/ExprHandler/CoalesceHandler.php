@@ -67,14 +67,14 @@ final class CoalesceHandler implements ExprHandler
 		// the falsey narrowing of this very node - asking the scope about it
 		// mid-processing would take the on-demand path and recurse
 		$rightSideSpecifiedTypes = $this->coalesceCompositionHelper->getFalseySpecifiedTypes($scope, $scope, $expr->left, $condResult, $expr, TypeSpecifierContext::createFalsey());
-		$leftSurelySetNonNull = $condResult->getIssetabilityResolution($scope, false)->isSet(static function (Type $type): ?bool {
+		$leftSurelySetNonNull = $condResult->getIssetabilityResolution($scope, false, false)->isSet(static function (Type $type): ?bool {
 			$isNull = $type->isNull();
 			if ($isNull->maybe()) {
 				return null;
 			}
 
 			return !$isNull->yes();
-		}) === true;
+		}, null) === true;
 		if (!$leftSurelySetNonNull) {
 			// the right side only evaluates when the left side is null or unset -
 			// the falsey isset() narrowing of the left side, like `??=`; skipped
@@ -184,6 +184,13 @@ final class CoalesceHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context);
 			},
 			dependencies: Dependencies::merge($condResult->getDependencies(), $rightResult->getDependencies()),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

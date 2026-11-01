@@ -38,12 +38,12 @@ final class ExpressionContext
 	{
 	}
 
-	public static function createTopLevel(bool $resolveTemplateArguments = true): self
+	public static function createTopLevel(bool $resolveTemplateArguments): self
 	{
 		return new self(isDeep: false, inAssignRightSideVariableName: null, inAssignRightSideExpr: null, resolveTemplateArguments: $resolveTemplateArguments);
 	}
 
-	public static function createDeep(bool $resolveTemplateArguments = true): self
+	public static function createDeep(bool $resolveTemplateArguments): self
 	{
 		return new self(isDeep: true, inAssignRightSideVariableName: null, inAssignRightSideExpr: null, resolveTemplateArguments: $resolveTemplateArguments);
 	}

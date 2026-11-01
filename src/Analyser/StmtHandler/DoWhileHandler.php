@@ -207,7 +207,7 @@ final class DoWhileHandler implements StmtHandler
 			throwPoints: array_merge($throwPoints, $bodyScopeResult->getThrowPoints()),
 			impurePoints: array_merge($impurePoints, $bodyScopeResult->getImpurePoints()),
 			// the body runs once, then may repeat or not whatever the condition says
-			variableFlow: VariableFlow::loop(null, $bodyScopeResult->getVariableFlow(), $condResult->getVariableFlow(), true, true),
+			variableFlow: VariableFlow::loop(null, $bodyScopeResult->getVariableFlow(), $condResult->getVariableFlow(), true, true, true),
 			dependencies: Dependencies::merge($bodyScopeResult->getDependencies(), $condResult->getDependencies()),
 		);
 	}

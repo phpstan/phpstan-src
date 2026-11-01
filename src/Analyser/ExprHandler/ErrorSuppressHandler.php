@@ -54,6 +54,14 @@ final class ErrorSuppressHandler implements ExprHandler
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $exprResult->getNativeType() : $exprResult->getType()),
 			specifyTypesCallback: static fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $exprResult->getSpecifiedTypes($context, $nativeTypesPromoted)->setRootExpr($expr),
 			dependencies: $exprResult->getDependencies(),
+			containsNullsafe: false,
+			issetabilityDescriptor: null,
+			truthyScopeOverrideResult: null,
+			falseyScopeOverrideResult: null,
+			createTypesCallback: null,
+			type: null,
+			nativeType: null,
+			argsResult: null,
 		);
 	}
 

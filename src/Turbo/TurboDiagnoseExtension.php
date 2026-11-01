@@ -88,7 +88,7 @@ final class TurboDiagnoseExtension implements DiagnoseExtension
 	{
 		if (!TurboExtensionEnabler::isLoaded()) {
 			if ($workerBinary !== null) {
-				if (RestartExtensionRegistry::findTurboExtensionToLoad() !== null) {
+				if (RestartExtensionRegistry::findTurboExtensionToLoad(null) !== null) {
 					return 'not loaded here, loaded by the restart an analyse run performs';
 				}
 

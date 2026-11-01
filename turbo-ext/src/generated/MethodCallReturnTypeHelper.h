@@ -43,11 +43,10 @@ inline constexpr char strings[] =
 	"PhpParser\\Node\\Expr\\MethodCall|PhpParser\\Node\\Expr\\StaticCall\0" /* 268 */
 	"preResolvedAcceptor\0" /* 330 */
 	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 350 */
-	"null\0" /* 388 */
-	"argsResult\0" /* 393 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 404 */
-	"\0" /* 432 */
-	"methodCallReturnType"; /* 433 */
+	"argsResult\0" /* 388 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 399 */
+	"\0" /* 427 */
+	"methodCallReturnType"; /* 428 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 35), /* __construct $dynamicReturnTypeExtensionRegistry */
 	reg::packed(83, 0, 97), /* __construct $storagePrimer */
@@ -55,9 +54,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(213, 0, 228), /* methodCallReturnType $typeWithMethod */
 	reg::packed(246, MAY_BE_STRING), /* methodCallReturnType $methodName */
 	reg::packed(257, 0, 268), /* methodCallReturnType $methodCall */
-	reg::packed(330, MAY_BE_NULL, 350, false, false, 388), /* methodCallReturnType $preResolvedAcceptor */
-	reg::packed(393, MAY_BE_NULL, 404, false, false, 388), /* methodCallReturnType $argsResult */
-	reg::packed(432, MAY_BE_NULL, 228), /* methodCallReturnType return */
+	reg::packed(330, MAY_BE_NULL, 350), /* methodCallReturnType $preResolvedAcceptor */
+	reg::packed(388, MAY_BE_NULL, 399), /* methodCallReturnType $argsResult */
+	reg::packed(427, MAY_BE_NULL, 228), /* methodCallReturnType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -65,7 +64,7 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 164 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig methodCallReturnType = { { 433 /* methodCallReturnType */, 4, 2, 6, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig methodCallReturnType = { { 428 /* methodCallReturnType */, 6, 2, 6, 8, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MethodCallReturnTypeHelper

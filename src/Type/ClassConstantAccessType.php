@@ -24,7 +24,7 @@ final class ClassConstantAccessType implements CompoundType, LateResolvableType
 	public function __construct(
 		private Type $type,
 		private string $constantName,
-		private ?Type $nativeType = null,
+		private ?Type $nativeType,
 	)
 	{
 	}

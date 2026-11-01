@@ -20,7 +20,7 @@ final class OptimizedDirectorySourceLocatorRepository
 	 * With a batch, a locator not created yet is added to it, and cannot be used before the batch
 	 * is scanned.
 	 */
-	public function getOrCreate(string $directory, ?OptimizedDirectorySourceLocatorBatch $batch = null): OptimizedDirectorySourceLocator
+	public function getOrCreate(string $directory, ?OptimizedDirectorySourceLocatorBatch $batch): OptimizedDirectorySourceLocator
 	{
 		if (array_key_exists($directory, $this->locators)) {
 			return $this->locators[$directory];

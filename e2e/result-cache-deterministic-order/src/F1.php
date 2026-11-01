@@ -5,19 +5,18 @@ namespace ResultCacheDeterministicOrderE2E;
 use Test\Logger\Logger;
 use Test\Mailer\Mailer;
 
-// Mailer is declared before Logger on purpose: the packages of one file are collected in the
-// order its dependencies are reflected, so without a sort this file records test/mailer first.
+// without the sort, this file records test/mailer before test/logger
 class F1
 {
 
-	public function __construct(private Mailer $mailer, private Logger $logger)
+	public function __construct(private Logger $logger, private Mailer $mailer)
 	{
 	}
 
 	public function doFoo(): void
 	{
-		$this->mailer->send('hello');
 		$this->logger->info('hello');
+		$this->mailer->send('hello');
 	}
 
 }

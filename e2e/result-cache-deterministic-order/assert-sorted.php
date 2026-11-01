@@ -1,8 +1,6 @@
 <?php declare(strict_types = 1);
 
-// Reads the framed result cache and fails if any of its entry sections is not in key order.
-// The order the workers happen to finish in must not reach the file: a cache that is not
-// reproducible cannot be hashed, compared or deduplicated between two machines.
+// Fails if an entry section of the result cache, or the packages of a file, are not sorted.
 
 $path = $argv[1] ?? null;
 if ($path === null || !is_file($path)) {
@@ -35,7 +33,10 @@ while (($header = fgets($handle)) !== false) {
 
 	[$name, $size] = $parts;
 	if (!str_ends_with($name, '*')) {
-		fread($handle, (int) $size);
+		// a single value, or (with #) payloads described by the index frame before them
+		if ((int) $size > 0) {
+			fread($handle, (int) $size);
+		}
 
 		continue;
 	}
@@ -43,24 +44,20 @@ while (($header = fgets($handle)) !== false) {
 	$name = substr($name, 0, -1);
 	$keys = [];
 	for ($i = 0; $i < (int) $size; $i++) {
-		$length = (int) rtrim((string) fgets($handle), "\n");
-		$entry = unserialize((string) fread($handle, $length));
-		$key = (string) array_key_first($entry);
+		[$keyLength, $valueLength] = array_map('intval', explode(' ', rtrim((string) fgets($handle), "\n"), 2));
+		$key = unserialize((string) fread($handle, $keyLength));
+		$value = unserialize((string) fread($handle, $valueLength));
 		$keys[] = $key;
 		if ($name !== 'packageDependencies') {
 			continue;
 		}
 
-		// The packages of one file are collected in the order its dependencies are reflected,
-		// so their order has to be fixed too, not just the order of the files. Unlike the key
-		// order, this does not depend on how the scheduler composes jobs, so it still fails
-		// without the sort even when the whole project runs as a single job.
-		$packageLists[$key] = $entry[array_key_first($entry)];
+		$packageLists[$key] = $value;
 	}
 
 	$sections++;
 	$sorted = $keys;
-	sort($sorted, SORT_STRING);
+	sort($sorted);
 	if ($keys === $sorted) {
 		continue;
 	}
@@ -82,7 +79,7 @@ if ($packageLists === []) {
 
 $problems = [];
 foreach ($unsorted as $name => $keys) {
-	$problems[] = sprintf('Section "%s" is not in key order: %s', $name, implode(', ', array_map('basename', $keys)));
+	$problems[] = sprintf('Section "%s" is not in key order: %s', $name, implode(', ', array_map(static fn (int|string $key): string => basename((string) $key), $keys)));
 }
 
 foreach ($packageLists as $file => $packages) {

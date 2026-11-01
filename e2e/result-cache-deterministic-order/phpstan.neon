@@ -4,9 +4,7 @@ parameters:
 	paths:
 		- src
 	parallel:
-		# Two jobs of two files each, so the four files reach the main process interleaved
-		# (F1, F3 in one job, F2, F4 in the other) and no worker completion order can put
-		# them in ascending order by accident.
+		# two jobs, so the files reach the main process interleaved
 		jobSize: 2
 		maximumNumberOfProcesses: 4
 		minimumNumberOfJobsPerProcess: 1

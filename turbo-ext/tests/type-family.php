@@ -353,14 +353,25 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 			}
 		}
 	}
-	foreach ([0, 1, -1, 42, PHP_INT_MAX, PHP_INT_MIN, PHP_INT_MAX - 1, PHP_INT_MIN + 1, 0.0, 0.5, -0.5, 2.5, -2.5, 1e30, -1e30, 9.2233720368547758E+18, -9.2233720368547758E+18, 9.2e18, -9.2e18, (float) PHP_INT_MAX, (float) PHP_INT_MIN, PHP_INT_MAX + 1.0, 9223372036854774784.0, 2147483647.0, 2147483646.5, 2147483647.5, -2147483648.0, -2147483648.5, NAN, INF, -INF] as $value) {
+	foreach ([0, 1, -1, 42, PHP_INT_MAX, PHP_INT_MIN, PHP_INT_MAX - 1, PHP_INT_MIN + 1, 0.0, 0.5, -0.5, 2.5, -2.5, 1e30, -1e30, 9.2233720368547758E+18, -9.2233720368547758E+18, 9.2e18, -9.2e18, (float) PHP_INT_MAX, (float) PHP_INT_MIN, PHP_INT_MAX + 1.0, 9223372036854774784.0, 2147483647.0, 2147483646.5, 2147483647.5, -2147483648.0, -2147483648.5, 9007199254740992.0, 9007199254740996.0, -9007199254740996.0, 9223372036854774784.0 - 2048.0, -9223372036854774784.0, NAN, INF, -INF] as $value) {
 		$key = is_float($value) ? var_export($value, true) : (string) $value;
 		foreach (['createAllSmallerThan', 'createAllSmallerThanOrEqualTo', 'createAllGreaterThan', 'createAllGreaterThanOrEqualTo'] as $factory) {
 			$r["$factory $key"] = @$view($rangeClass::$factory($value));
 		}
 	}
+	$fromFloatComparison = new \ReflectionMethod($rangeClass, 'fromFloatComparison');
+	foreach ([2.5, -2.5, 9.2233720368547758E+18, -9.2233720368547758E+18, 9007199254740996.0, NAN] as $value) {
+		foreach (['<', '<=', '>', '>=', '!='] as $operator) {
+			$key = 'fromFloatComparison ' . var_export($value, true) . " $operator";
+			try {
+				$r[$key] = $view($fromFloatComparison->invoke(null, $value, $operator));
+			} catch (\Throwable $e) {
+				$r[$key] = get_class($e);
+			}
+		}
+	}
 	foreach (['5', '1e30', '-1e30', true, null] as $value) {
-		foreach (['createAllSmallerThan', 'createAllGreaterThanOrEqualTo'] as $factory) {
+		foreach (['createAllSmallerThan', 'createAllSmallerThanOrEqualTo', 'createAllGreaterThan', 'createAllGreaterThanOrEqualTo'] as $factory) {
 			try {
 				$r["$factory " . var_export($value, true)] = $view($rangeClass::$factory($value));
 			} catch (\TypeError $e) {

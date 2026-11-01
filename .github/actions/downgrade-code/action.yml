@@ -18,9 +18,11 @@ runs:
     - name: "Transform source code"
       if: inputs.php-version == '7.4' || inputs.php-version == '8.0' || inputs.php-version == '8.1'
       shell: bash
+      env:
+        TARGET_PHP_VERSION: ${{ inputs.php-version }}
       run: |
         composer install --no-interaction --no-progress --working-dir=compiler
-        ./compiler/vendor/bin/simple-downgrade downgrade -c build/downgrade.php ${{ inputs.php-version }}
+        ./compiler/vendor/bin/simple-downgrade downgrade -c build/downgrade.php "$TARGET_PHP_VERSION"
         composer dump
 
     - name: "Re-store PHP version"

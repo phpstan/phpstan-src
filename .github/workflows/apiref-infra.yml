@@ -15,7 +15,11 @@ on:
       - '.github/workflows/apiref-infra.yml'
       - 'apigen/infra/**'
 
-concurrency: apiref-infra
+# deploys queue up instead of cancelling one another, so a CDK deployment is never interrupted
+concurrency: apiref-infra # zizmor: ignore[concurrency-limits]
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -32,6 +36,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install Node"
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -62,7 +68,7 @@ jobs:
     needs: test
     if: "github.event_name == 'push' && github.ref == 'refs/heads/2.3.x'"
     permissions:
-      id-token: write
+      id-token: write # assumes the deploy role in AWS through OIDC
       contents: read
 
     steps:
@@ -73,6 +79,8 @@ jobs:
 
       - name: "Checkout"
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: "Install Node"
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

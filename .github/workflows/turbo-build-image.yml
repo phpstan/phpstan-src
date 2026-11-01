@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-      packages: write
+      packages: write # pushes the per-architecture image to GHCR
 
     strategy:
       fail-fast: false
@@ -89,7 +89,9 @@ jobs:
       # only pushes to 2.3.x (and the cron/manual runs) publish.
       - name: "Log in to GHCR"
         if: github.event_name != 'pull_request'
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: "Push"
         if: github.event_name != 'pull_request'
@@ -102,7 +104,7 @@ jobs:
     runs-on: "ubuntu-latest"
     timeout-minutes: 10
     permissions:
-      packages: write
+      packages: write # pushes the multi-arch manifest to GHCR
 
     strategy:
       matrix:
@@ -118,7 +120,9 @@ jobs:
           egress-policy: audit
 
       - name: "Log in to GHCR"
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: "Create and push the manifest"
         run: docker buildx imagetools create -t "$TAG" "$TAG-amd64" "$TAG-arm64"

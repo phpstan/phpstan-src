@@ -3,11 +3,15 @@
 name: Close issues from merged PRs
 
 on:
-  pull_request_target:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] -- runs no code from the pull request (no checkout), only reads its body and closes issues with PHPSTAN_BOT_TOKEN
     branches:
       - "2.2.x"
     types:
       - closed
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -26,8 +30,10 @@ jobs:
       - name: "Find and close linked issues"
         env:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
         run: |
-          PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --repo "${{ github.repository }}" --json body --jq '.body')
+          PR_BODY=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body --jq '.body')
 
           # Parse "Closes/Fixes https://github.com/phpstan/phpstan/issues/123" and "Closes/Fixes phpstan/phpstan#123" patterns
           NUMBERS=$(echo "$PR_BODY" | grep -oiP '(?:closes?|fix(?:es)?)\s+(?:https://github\.com/phpstan/phpstan/issues/|phpstan/phpstan#)[0-9]+' | grep -oP '[0-9]+$' || true)
@@ -40,5 +46,5 @@ jobs:
 
           echo "$NUMBERS" | while read -r NUMBER; do
             echo "Closing phpstan/phpstan#${NUMBER}"
-            gh issue close "$NUMBER" --repo "phpstan/phpstan" --comment "Closed via merging ${{ github.event.pull_request.html_url }}"
+            gh issue close "$NUMBER" --repo "phpstan/phpstan" --comment "Closed via merging ${PR_URL}"
           done

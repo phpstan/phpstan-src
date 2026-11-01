@@ -1,0 +1,34 @@
+# https://github.com/boostsecurityio/poutine/blob/main/.poutine.sample.yml
+
+rulesConfig:
+  pr_runs_on_self_hosted:
+    allowed_runners:
+      # GitHub-hosted arm64 runner, not a self-hosted one
+      - ubuntu-24.04-arm
+
+skip:
+  # Third-party actions in use, each pinned to a full commit SHA and reviewed
+  # whenever the pin is bumped. A newly added action still gets reported.
+  - rule: github_action_from_unverified_creator_used
+    purl:
+      - pkg:githubactions/astral-sh/setup-uv
+      - pkg:githubactions/baptiste0928/cargo-install
+      - pkg:githubactions/crate-ci/typos
+      - pkg:githubactions/crazy-max/ghaction-import-gpg
+      - pkg:githubactions/dorny/paths-filter
+      - pkg:githubactions/ilammy/msvc-dev-cmd
+      - pkg:githubactions/juliangruber/merge-pull-request-action
+      - pkg:githubactions/morishiri/block-merge-commits-action
+      - pkg:githubactions/peter-evans/create-or-update-comment
+      - pkg:githubactions/peter-evans/create-pull-request
+      - pkg:githubactions/peter-evans/repository-dispatch
+      - pkg:githubactions/ramsey/composer-install
+      - pkg:githubactions/rickstaa/action-create-tag
+      - pkg:githubactions/scholliyt/broken-links-crawler-action
+      - pkg:githubactions/shivammathur/setup-php
+      - pkg:githubactions/stefanzweifel/git-auto-commit-action
+      - pkg:githubactions/synacktiv/action-octoscan
+      - pkg:githubactions/typeddevs/bashunit
+      - pkg:githubactions/wyrihaximus/github-action-get-previous-tag
+      - pkg:githubactions/wyrihaximus/github-action-next-semvers
+      - pkg:githubactions/wyrihaximus/github-action-wait-for-status

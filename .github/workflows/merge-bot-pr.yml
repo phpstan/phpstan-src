@@ -6,6 +6,14 @@ on:
   pull_request:
     types:
       - opened
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# Both steps authenticate with PHPSTAN_BOT_TOKEN, not the workflow token.
+permissions: {}
+
 jobs:
   automerge:
     name: Automerge PRs

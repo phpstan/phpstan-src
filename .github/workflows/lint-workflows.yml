@@ -8,10 +8,15 @@ on:
     branches:
       - "2.3.x"
 
+concurrency:
+  group: lint-workflows-${{ github.head_ref || github.run_id }} # will be canceled on subsequent pushes in pull requests but not branches
+  cancel-in-progress: true
+
 permissions: {}
 
 jobs:
   actionlint:
+    name: actionlint
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner (Audit all outbound calls)
@@ -20,12 +25,16 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Register actionlint problem matcher
+        run: echo "::add-matcher::.github/actionlint-matcher.json"
+
       - name: Check workflow files
-        run: |
-          echo "::add-matcher::.github/actionlint-matcher.json"
-          bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
-          ./actionlint -color
-        shell: bash
+        uses: docker://rhysd/actionlint:1.7.12@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667
+        with:
+          args: -color
 
   octoscan:
     name: Octoscan
@@ -40,11 +49,22 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Run octoscan
         id: octoscan
         uses: synacktiv/action-octoscan@6b1cf2343893dfb9e5f75652388bd2dc83f456b0 # v1.0.0
         with:
-          filter_triggers: ''
+          # Octoscan's default: the workflows an outside contributor can
+          # trigger with elevated privileges (pull_request_target,
+          # workflow_run, ...), where its checkout, local-action and
+          # GITHUB_OUTPUT rules apply. Scanning every trigger reported those
+          # for ordinary push and pull_request workflows too.
+          filter_triggers: external
+          # Every runs-on expression resolves to a GitHub-hosted label;
+          # Poutine checks pull request workflows for self-hosted runners.
+          disable_rules: runner-label
 
       - name: Upload SARIF file to GitHub
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1

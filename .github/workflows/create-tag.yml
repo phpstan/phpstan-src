@@ -2,7 +2,7 @@
 
 name: "Create tag"
 
-on:
+on: # zizmor: ignore[concurrency-limits] -- manually dispatched one-off runs; a newer run does not supersede an older one
   # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_dispatch
   workflow_dispatch:
     inputs:
@@ -15,6 +15,9 @@ on:
           - patch
           - minor
 
+permissions:
+  contents: read
+
 jobs:
   create-tag:
     name: "Create tag"
@@ -26,7 +29,7 @@ jobs:
           egress-policy: audit
 
       - name: "Checkout"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked] -- the persisted PHPSTAN_BOT_TOKEN credentials push the new tag
         with:
           fetch-depth: 0
           token: ${{ secrets.PHPSTAN_BOT_TOKEN }}

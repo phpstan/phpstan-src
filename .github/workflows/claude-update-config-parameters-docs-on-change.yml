@@ -8,12 +8,18 @@ on:
       - '.github/workflows/claude-update-config-parameters-docs-on-change.yml'
       - 'conf/parametersSchema.neon'
 
+# The job only dispatches a workflow in phpstan-bot/phpstan-src with
+# PHPSTAN_BOT_TOKEN; it does not use the workflow token.
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   fix:
+    name: "Update Config Parameters Docs"
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3

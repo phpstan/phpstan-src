@@ -1,17 +1,20 @@
 name: "Claude React On Review Dispatch"
 
-on:
-  workflow_run:
+on: # zizmor: ignore[concurrency-limits] -- one run per submitted review, none supersedes another
+  workflow_run: # zizmor: ignore[dangerous-triggers] -- runs no code from the pull request, only forwards the review's numeric IDs as quoted gh arguments
     workflows: ["Claude React On Review"]
     types: [completed]
 
+permissions:
+  contents: read
+
 jobs:
   dispatch:
+    name: dispatch
     runs-on: ubuntu-latest
     if: github.event.workflow_run.conclusion == 'success'
     permissions:
-      contents: read
-      actions: write
+      actions: read # downloads the review-context artifact of the triggering run
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3

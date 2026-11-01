@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
@@ -20,12 +21,9 @@ use PHPStan\Type\Traits\OperatorTypeTrait;
 use function array_filter;
 use function array_map;
 use function assert;
-use function ceil;
 use function count;
-use function floor;
 use function get_class;
 use function is_int;
-use function is_nan;
 use function is_numeric;
 use function is_string;
 use function max;
@@ -41,9 +39,6 @@ class IntegerRangeType extends IntegerType implements CompoundType
 {
 
 	use OperatorTypeTrait;
-
-	/** The first float above PHP_INT_MAX: 2^63 on 64-bit builds, 2^31 on 32-bit ones, exact on both. */
-	private const FLOAT_ABOVE_INT_MAX = PHP_INT_MAX + 1.0;
 
 	private function __construct(private ?int $min, private ?int $max)
 	{
@@ -102,20 +97,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value, -1);
 		}
 
-		// decided on the ceil() about to be cast: comparing $value with PHP_INT_MAX
-		// converts PHP_INT_MAX to float, which rounds it up to 2^63 on 64-bit builds
-		// but keeps it exact on 32-bit ones, where 2147483647.0 is still in range
-		$ceil = ceil($value);
-		if ($ceil >= self::FLOAT_ABOVE_INT_MAX) {
-			return new IntegerType();
-		}
-
-		if ($value <= PHP_INT_MIN) {
-			return new NeverType();
-		}
-
-		// (int) NAN is 0, but PHP 8.5 warns when it casts NAN
-		return self::fromInterval(null, is_nan($value) ? 0 : (int) $ceil, -1);
+		return self::fromFloatComparison($value, '<');
 	}
 
 	/**
@@ -129,15 +111,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value);
 		}
 
-		if ($value >= PHP_INT_MAX) {
-			return new IntegerType();
-		}
-
-		if ($value < PHP_INT_MIN) {
-			return new NeverType();
-		}
-
-		return self::fromInterval(null, is_nan($value) ? 0 : (int) floor($value));
+		return self::fromFloatComparison($value, '<=');
 	}
 
 	/**
@@ -151,15 +125,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval($value, null, 1);
 		}
 
-		if ($value < PHP_INT_MIN) {
-			return new IntegerType();
-		}
-
-		if ($value >= PHP_INT_MAX) {
-			return new NeverType();
-		}
-
-		return self::fromInterval(is_nan($value) ? 0 : (int) floor($value), null, 1);
+		return self::fromFloatComparison($value, '>');
 	}
 
 	/**
@@ -173,17 +139,49 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval($value, null);
 		}
 
-		if ($value <= PHP_INT_MIN) {
-			return new IntegerType();
+		return self::fromFloatComparison($value, '>=');
+	}
+
+	/**
+	 * The ints for which `$int <$operator> $value` holds. PHP compares an int with a float by converting the
+	 * int to float, which rounds ints beyond 2^53 on 64-bit builds (PHP_INT_MAX >= 2.0 ** 63 holds), so the
+	 * bound cannot be derived from ceil() or floor() of $value. It is searched for with the comparison itself.
+	 *
+	 * @param string $operator '<', '<=', '>' or '>='
+	 */
+	private static function fromFloatComparison(float $value, string $operator): Type
+	{
+		$holds = match ($operator) {
+			'<' => static fn (int $int): bool => $int < $value,
+			'<=' => static fn (int $int): bool => $int <= $value,
+			'>' => static fn (int $int): bool => $int > $value,
+			'>=' => static fn (int $int): bool => $int >= $value,
+			default => throw new ShouldNotHappenException(),
+		};
+
+		$holdsAtMin = $holds(PHP_INT_MIN);
+		if ($holdsAtMin === $holds(PHP_INT_MAX)) {
+			// also a NaN $value, which no comparison holds for
+			return $holdsAtMin ? new IntegerType() : new NeverType();
 		}
 
-		// decided on the ceil() about to be cast, like createAllSmallerThan()
-		$ceil = ceil($value);
-		if ($ceil >= self::FLOAT_ABOVE_INT_MAX) {
-			return new NeverType();
+		// $holds() gives $holdsAtMin for $low and the opposite for $high
+		$low = PHP_INT_MIN;
+		$high = PHP_INT_MAX;
+		while (true) {
+			// floor(($low + $high) / 2) without overflowing
+			$middle = ($low >> 1) + ($high >> 1) + ($low & $high & 1);
+			if ($middle === $low) {
+				break;
+			}
+			if ($holds($middle) === $holdsAtMin) {
+				$low = $middle;
+			} else {
+				$high = $middle;
+			}
 		}
 
-		return self::fromInterval(is_nan($value) ? 0 : (int) $ceil, null);
+		return $holdsAtMin ? self::fromInterval(null, $low) : self::fromInterval($high, null);
 	}
 
 	public function toNumberSet(): NumberSet

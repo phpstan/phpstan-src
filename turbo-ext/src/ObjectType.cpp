@@ -1973,6 +1973,14 @@ public:
 		zend_long arrayAccess = thisIsInstanceOfLiteral(PT_LC("ArrayAccess"));
 		if (UNEXPECTED(arrayAccess < 0)) return zv::Val();
 		if (arrayAccess == PT_TRI_YES) {
+			zv::Val nullOffset;
+			if (offsetType == NULL) {
+				zval nullType;
+				if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+				nullOffset = zv::Val::adopt(nullType);
+				offsetType = nullOffset.raw();
+			}
+
 			/* $acceptedValueType = new NeverType(), overwritten by the closure */
 			zv::Val acceptedValueType = pt_type_new_never_type();
 			if (UNEXPECTED(acceptedValueType.isUndef())) return zv::Val();
@@ -1980,7 +1988,11 @@ public:
 			ZVAL_NULL(&none);
 			ZVAL_NEW_REF(&outRef, &none);
 			zv::Val outRefVal = zv::Val::adopt(outRef);
-			zv::Val acceptedOffsetType = guarded(PT_OTC_OFFSET_SET_PARAMETER_TYPES, NULL, NULL, NULL, outRefVal.raw());
+			/* [$offsetType, $valueType], what offsetSet()'s template types resolve against */
+			zv::Arr writtenTypes = zv::Arr::create(2);
+			writtenTypes.push(zv::Ref(offsetType));
+			writtenTypes.push(zv::Ref(valueType));
+			zv::Val acceptedOffsetType = guarded(PT_OTC_OFFSET_SET_PARAMETER_TYPES, NULL, writtenTypes.raw(), NULL, outRefVal.raw());
 			if (UNEXPECTED(acceptedOffsetType.isUndef())) return zv::Val();
 			zval *out = Z_REFVAL_P(outRefVal.raw());
 			if (Z_TYPE_P(out) == IS_OBJECT) {
@@ -1989,14 +2001,6 @@ public:
 			if (UNEXPECTED(!zv::Ref(acceptedOffsetType.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: the accepted offset type must be %s", ptcls::type);
 				return zv::Val();
-			}
-
-			zv::Val nullOffset;
-			if (offsetType == NULL) {
-				zval nullType;
-				if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
-				nullOffset = zv::Val::adopt(nullType);
-				offsetType = nullOffset.raw();
 			}
 
 			bool rejected = false;
@@ -3373,7 +3377,8 @@ static zv::Val otCallbackRun(zval *captures)
 		}
 		case PT_OTC_OFFSET_SET_PARAMETER_TYPE:
 		case PT_OTC_OFFSET_SET_PARAMETER_TYPES: {
-			/* $parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters() */
+			/* $parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters(),
+			 * or, for setOffsetValueType(), the variant selected from the written types */
 			zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
 			if (UNEXPECTED(outOfClassScope.isUndef())) return zv::Val();
 			zv::Val offsetSet = zv::Val::string(PT_LC("offsetSet"));
@@ -3387,11 +3392,29 @@ static zv::Val otCallbackRun(zval *captures)
 				zend_type_error("phpstan_turbo: getMethod() must return an object");
 				return zv::Val();
 			}
-			zv::Val variant = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT);
-			if (UNEXPECTED(variant.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
-				zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
-				return zv::Val();
+			zv::Val variant;
+			if (kind == PT_OTC_OFFSET_SET_PARAMETER_TYPES) {
+				/* ParametersAcceptorSelector::selectFromTypes([$offsetType, $valueType], $method->getVariants(), false)
+				 * resolves offsetSet()'s method-level template types against the written offset and value */
+				zv::Val variants = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_VARIANTS);
+				if (UNEXPECTED(variants.isUndef())) return zv::Val();
+				if (UNEXPECTED(!zv::Ref(variants.raw()).isArray() || !zv::Ref(arg).isArray())) {
+					zend_type_error("phpstan_turbo: getVariants() and the written types must be arrays");
+					return zv::Val();
+				}
+				variant = pt_parameters_acceptor_selector_select_from_types(arg, variants.raw(), false);
+				if (UNEXPECTED(variant.isUndef())) return zv::Val();
+				if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
+					zend_type_error("phpstan_turbo: selectFromTypes() must return an object");
+					return zv::Val();
+				}
+			} else {
+				variant = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT);
+				if (UNEXPECTED(variant.isUndef())) return zv::Val();
+				if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
+					zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
+					return zv::Val();
+				}
 			}
 			zv::Val parameters = pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_PARAMETERS);
 			if (UNEXPECTED(parameters.isUndef())) return zv::Val();

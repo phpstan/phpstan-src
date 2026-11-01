@@ -24,6 +24,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
@@ -1580,9 +1581,19 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
+			if ($offsetType === null) {
+				$offsetType = new NullType();
+			}
+
 			$acceptedValueType = new NeverType();
-			$acceptedOffsetType = RecursionGuard::run($this, function () use (&$acceptedValueType): Type {
-				$parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters();
+			$acceptedOffsetType = RecursionGuard::run($this, function () use ($offsetType, $valueType, &$acceptedValueType): Type {
+				// Resolve offsetSet()'s method-level template types (e.g. `@template TOffset of key-of<T>`)
+				// against the written offset and value, as for an explicit $object->offsetSet($offset, $value) call.
+				$parameters = ParametersAcceptorSelector::selectFromTypes(
+					[$offsetType, $valueType],
+					$this->getMethod('offsetSet', new OutOfClassScope())->getVariants(),
+					false,
+				)->getParameters();
 				if (count($parameters) < 2) {
 					throw new ShouldNotHappenException(sprintf(
 						'Method %s::%s() has less than 2 parameters.',
@@ -1596,10 +1607,6 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 				return $offsetParameter->getType();
 			});
-
-			if ($offsetType === null) {
-				$offsetType = new NullType();
-			}
 
 			if (
 				(!$offsetType instanceof MixedType && !$acceptedOffsetType->isSuperTypeOf($offsetType)->yes())

@@ -90,4 +90,19 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Variables/data/bug-10783.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug8549(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-8549.php'], [
+			[
+				'Bug8549\Options<array{name: string}> does not accept int.',
+				49,
+			],
+			[
+				'Bug8549\Options<array{name: string, age: int}> does not accept string.',
+				63,
+			],
+		]);
+	}
+
 }

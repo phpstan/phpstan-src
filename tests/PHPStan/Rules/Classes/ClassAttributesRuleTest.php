@@ -9,6 +9,7 @@ use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
+use PHPStan\Rules\ParameterClosureTypeHelper;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
@@ -49,6 +50,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
 					$reflectionProvider,
+					self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 					checkArgumentTypes: true,
 					checkArgumentsPassedByReference: true,
 					checkExtraArguments: true,

@@ -124,6 +124,7 @@ final class CallStaticMethodsRule implements Rule
 			'Constants %s cannot be combined for %s of ' . $lowercasedMethodName . '.',
 			'Combining constants with | is not allowed for %s of ' . $lowercasedMethodName . '.',
 			null,
+			$method,
 		));
 
 		return $errors;

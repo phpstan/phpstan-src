@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\NullsafeCheck;
+use PHPStan\Rules\ParameterClosureTypeHelper;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
@@ -56,6 +57,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$reflectionProvider,
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 				checkArgumentTypes: true,
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,

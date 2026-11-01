@@ -1,0 +1,5 @@
+services:
+	-
+		class: Bug12585\EloquentBuilderRelationParameterExtension
+		tags:
+			- phpstan.methodParameterClosureTypeExtension

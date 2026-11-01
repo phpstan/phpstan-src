@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
@@ -12,6 +13,8 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
+use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ReflectionProvider;
@@ -56,6 +59,7 @@ final class FunctionCallParametersCheck
 		private UnresolvableTypeHelper $unresolvableTypeHelper,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ReflectionProvider $reflectionProvider,
+		private ParameterClosureTypeHelper $parameterClosureTypeHelper,
 		#[AutowiredParameter(ref: '%checkFunctionArgumentTypes%')]
 		private bool $checkArgumentTypes,
 		#[AutowiredParameter]
@@ -99,6 +103,7 @@ final class FunctionCallParametersCheck
 		string $exclusiveConstantsMessage,
 		string $bitmaskNotAllowedMessage,
 		?array $renamedNamedArgumentParameterData,
+		FunctionReflection|MethodReflection|null $calleeReflection,
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
@@ -402,6 +407,21 @@ final class FunctionCallParametersCheck
 					$isStrictTypes = $scope->isDeclareStrictTypes()
 						&& (!$isBuiltin || !$parameterType->isCallable()->yes());
 					$accepts = $this->ruleLevelHelper->accepts($parameterType, $argumentValueType, $isStrictTypes);
+					if (
+						!$accepts->result
+						&& $calleeReflection !== null
+						&& ($argumentValue instanceof Expr\Closure || $argumentValue instanceof Expr\ArrowFunction)
+						&& $scope instanceof DependencyTracker
+					) {
+						// the closure body was analysed with the type from a parameter closure type extension, see ArgumentsHandler
+						$closureParameterType = $this->parameterClosureTypeHelper->getParameterType($funcCall, $calleeReflection, $parameter, $scope);
+						if ($closureParameterType !== null) {
+							$closureAccepts = $this->ruleLevelHelper->accepts($closureParameterType, $argumentValueType, $isStrictTypes);
+							if ($closureAccepts->result) {
+								$accepts = $closureAccepts;
+							}
+						}
+					}
 
 					if (!$accepts->result) {
 						$verbosityLevel = VerbosityLevel::getRecommendedLevelByType($parameterType, $argumentValueType);

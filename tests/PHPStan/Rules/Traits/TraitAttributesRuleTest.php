@@ -10,6 +10,7 @@ use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\FunctionCallParametersCheck;
+use PHPStan\Rules\ParameterClosureTypeHelper;
 use PHPStan\Rules\NullsafeCheck;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -51,6 +52,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 					new UnresolvableTypeHelper(),
 					new PropertyReflectionFinder(),
 					$reflectionProvider,
+					self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 					checkArgumentTypes: true,
 					checkArgumentsPassedByReference: true,
 					checkExtraArguments: true,

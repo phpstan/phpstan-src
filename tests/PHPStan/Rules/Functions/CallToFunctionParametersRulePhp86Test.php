@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NullsafeCheck;
+use PHPStan\Rules\ParameterClosureTypeHelper;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
@@ -36,6 +37,7 @@ class CallToFunctionParametersRulePhp86Test extends RuleTestCase
 				new UnresolvableTypeHelper(),
 				new PropertyReflectionFinder(),
 				$broker,
+				self::getContainer()->getByType(ParameterClosureTypeHelper::class),
 				checkArgumentTypes: true,
 				checkArgumentsPassedByReference: true,
 				checkExtraArguments: true,

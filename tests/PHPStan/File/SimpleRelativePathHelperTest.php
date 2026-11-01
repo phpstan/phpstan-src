@@ -35,7 +35,7 @@ class SimpleRelativePathHelperTest extends TestCase
 				'/project/src',
 				'/project/src/HelloWorld.php',
 				'HelloWorld.php',
-			]
+			],
 		];
 	}
 

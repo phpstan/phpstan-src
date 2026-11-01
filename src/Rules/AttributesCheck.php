@@ -163,6 +163,7 @@ final class AttributesCheck
 					'Constants %s cannot be combined for %s of attribute class ' . $attributeClassName . ' constructor.',
 					'Combining constants with | is not allowed for %s of attribute class ' . $attributeClassName . ' constructor.',
 					null,
+					null,
 				);
 
 				foreach ($parameterErrors as $error) {

@@ -338,6 +338,7 @@ final class InstantiationRule implements Rule
 			'Constants %s cannot be combined for %s of class ' . $classDisplayName . ' constructor.',
 			'Combining constants with | is not allowed for %s of class ' . $classDisplayName . ' constructor.',
 			null,
+			$calledConstructorReflection,
 		));
 	}
 

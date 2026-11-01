@@ -98,6 +98,7 @@ final class CallUserFuncRule implements Rule
 			'Constants %s cannot be combined for %s of ' . $callableDescription . '.',
 			'Combining constants with | is not allowed for %s of ' . $callableDescription . '.',
 			null,
+			null,
 		);
 	}
 

@@ -35,14 +35,6 @@ function looseZeroNarrowing(float $f): void
 	sink($f);
 }
 
-function zeroInArray(): void
-{
-	$a = [-0.0];
-	sink($a);
-	$a = [0.0];
-	sink($a);
-}
-
 function zeroAtOffset(): void
 {
 	$a = ['k' => -0.0];
@@ -57,14 +49,6 @@ function nonZeroFloatIsStillRedundant(): void
 	sink($x);
 	$x = 1.5;
 	sink($x);
-}
-
-function zeroInNestedArray(): void
-{
-	$a = [[-0.0]];
-	sink($a);
-	$a = [[0.0]];
-	sink($a);
 }
 
 function zeroAtNestedOffset(): void

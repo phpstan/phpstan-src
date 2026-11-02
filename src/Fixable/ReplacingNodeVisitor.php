@@ -9,21 +9,27 @@ use PhpParser\NodeVisitorAbstract;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Rules\NodeFix;
 use PHPStan\ShouldNotHappenException;
-use SplObjectStorage;
+use function array_key_exists;
 use function count;
+use function get_class;
 use function is_array;
+use function spl_object_id;
 
 /**
  * Applies the NodeFixes of one error to the nodes of one file. Runs after CloningVisitor in the same traversal.
+ *
+ * Nodes are matched by their class and position in the file, not by identity, so a rule can take them
+ * from any parse of the same file contents. A CollectedDataNode rule parses files itself,
+ * and the parser cache does not keep the parsed nodes of every file until the fixes are made.
  */
 final class ReplacingNodeVisitor extends NodeVisitorAbstract
 {
 
-	/** @var SplObjectStorage<Node, list<callable(Node): (Node|NodeVisitor::REMOVE_NODE)>> */
-	private SplObjectStorage $callbacks;
+	/** @var array<string, list<callable(Node): (Node|NodeVisitor::REMOVE_NODE)>> */
+	private array $callbacks = [];
 
-	/** @var SplObjectStorage<Node, true> original nodes in an array, those can be removed */
-	private SplObjectStorage $removable;
+	/** @var array<string, true> nodes in an array, those can be removed */
+	private array $removable = [];
 
 	private int $appliedCount = 0;
 
@@ -34,12 +40,9 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 	 */
 	public function __construct(array $fixes)
 	{
-		$this->callbacks = new SplObjectStorage();
-		$this->removable = new SplObjectStorage();
 		foreach ($fixes as $fix) {
-			$callbacks = $this->callbacks->contains($fix->node) ? $this->callbacks[$fix->node] : [];
-			$callbacks[] = $fix->callback;
-			$this->callbacks[$fix->node] = $callbacks;
+			// a node without a position cannot be found, it stays in $callbacks so that the fix is not complete
+			$this->callbacks[self::getKey($fix->node) ?? '#' . spl_object_id($fix->node)][] = $fix->callback;
 		}
 	}
 
@@ -56,11 +59,16 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 			}
 
 			foreach ($subNode as $item) {
-				if (!$item instanceof Node || !$this->callbacks->contains($item)) {
+				if (!$item instanceof Node) {
 					continue;
 				}
 
-				$this->removable[$item] = true;
+				$key = self::getKey($item);
+				if ($key === null || !array_key_exists($key, $this->callbacks)) {
+					continue;
+				}
+
+				$this->removable[$key] = true;
 			}
 		}
 
@@ -79,7 +87,8 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		if (!$this->callbacks->contains($origNode)) {
+		$key = self::getKey($origNode);
+		if ($key === null || !array_key_exists($key, $this->callbacks)) {
 			// a statement is invalid without items, remove it when a fix removed all of them
 			if (self::getItems($node) === [] && self::getItems($origNode) !== []) {
 				return NodeVisitor::REMOVE_NODE;
@@ -90,10 +99,10 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 
 		$this->appliedCount++;
 		$newNode = $node;
-		foreach ($this->callbacks[$origNode] as $callback) {
+		foreach ($this->callbacks[$key] as $callback) {
 			$newNode = $callback($newNode);
 			if ($newNode === NodeVisitor::REMOVE_NODE) {
-				if (!$this->removable->contains($origNode)) {
+				if (!array_key_exists($key, $this->removable)) {
 					$this->failed = true;
 					return null;
 				}
@@ -115,6 +124,16 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 	public function isComplete(): bool
 	{
 		return !$this->failed && $this->appliedCount === count($this->callbacks);
+	}
+
+	private static function getKey(Node $node): ?string
+	{
+		$start = $node->getStartFilePos();
+		if ($start < 0) {
+			return null;
+		}
+
+		return get_class($node) . ':' . $start . ':' . $node->getEndFilePos();
 	}
 
 	/**

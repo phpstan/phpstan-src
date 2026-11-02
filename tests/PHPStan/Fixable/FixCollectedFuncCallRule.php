@@ -15,7 +15,7 @@ use function in_array;
 
 /**
  * Renames foo() calls to bar(). The calls are collected per file and fixed in a CollectedDataNode rule,
- * which takes the nodes from the same parser the analysis uses.
+ * which parses the files itself, without the parser cache of the analysis.
  *
  * @implements Rule<CollectedDataNode>
  */

@@ -182,8 +182,8 @@ final class RuleErrorTransformer
 
 	/**
 	 * Without $fileNodes (errors of CollectedDataNode rules, errors transformed inside collectors,
-	 * and fixes in another file), the file is parsed with the cached analysis parser. The rule has to take
-	 * the nodes it fixes from the same parser so that ReplacingNodeVisitor finds them by identity.
+	 * and fixes in another file), the file is parsed with the cached analysis parser. ReplacingNodeVisitor
+	 * finds the fixed nodes by their position, so the rule has to take them from a parse of the same file contents.
 	 * Returns null when some of the nodes cannot be fixed.
 	 *
 	 * @param Node\Stmt[] $fileNodes

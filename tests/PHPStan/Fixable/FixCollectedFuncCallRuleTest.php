@@ -13,7 +13,7 @@ class FixCollectedFuncCallRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new FixCollectedFuncCallRule(self::getContainer()->getService('defaultAnalysisParser'));
+		return new FixCollectedFuncCallRule(self::getContainer()->getService('currentPhpVersionRichParser'));
 	}
 
 	protected function getCollectors(): array

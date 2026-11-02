@@ -583,4 +583,9 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function deprecatesCsvEscapeParameterDefault(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

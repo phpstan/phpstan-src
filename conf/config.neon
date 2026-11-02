@@ -39,6 +39,7 @@ parameters:
 		stricterFunctionMap: false
 		reportPreciseLineForUnusedFunctionParameter: false
 		checkPrintfParameterTypes: false
+		checkUnserializeFunction: false
 		internalTag: false
 		newStaticInAbstractClassStaticMethod: false
 		checkExtensionsForComparisonOperators: false
@@ -110,6 +111,7 @@ parameters:
 	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false
 	checkMissingOverridePropertyAttribute: null
+	checkInsecureUnserialize: false
 	mixinExcludeClasses: []
 	scanFiles: []
 	scanDirectories: []

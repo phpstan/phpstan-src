@@ -970,27 +970,25 @@ jobs:
           - script: |
               cd e2e/fix
               composer install
-              rm -rf src tmp && cp -r original src
+              rm -rf src cycle tmp && cp -r original src && cp -r cycle-original cycle
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Analysing fixed code (round 4)...' "$OUTPUT"
+              ../bashunit assert not_contains 'round 5' "$OUTPUT"
+              ../bashunit assert contains '[OK] 10 errors fixed' "$OUTPUT"
+              diff -u expected/Foo.php src/Foo.php
+              diff -u expected/Ignored-fix.php src/Ignored.php
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix-ignored")
               echo "$OUTPUT"
               ../bashunit assert contains '[OK] 2 errors fixed' "$OUTPUT"
               diff -u expected/Foo.php src/Foo.php
-              diff -u expected/Ignored-fix.php src/Ignored.php
-              rm -rf src && cp -r original src
-              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix-ignored")
-              echo "$OUTPUT"
-              ../bashunit assert contains '[OK] 1 error fixed' "$OUTPUT"
-              diff -u original/Foo.php src/Foo.php
               diff -u expected/Ignored-fix-ignored.php src/Ignored.php
-              rm -rf src && cp -r original src
-              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix --fix-ignored")
-              echo "$OUTPUT"
-              ../bashunit assert contains '[OK] 3 errors fixed' "$OUTPUT"
-              diff -u expected/Foo.php src/Foo.php
-              diff -u expected/Ignored-fix-both.php src/Ignored.php
-              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --fix-ignored")
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --fix --fix-ignored")
               echo "$OUTPUT"
               ../bashunit assert contains 'No fixable errors found' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -c cycle.neon --fix")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Fixing stopped after 10 rounds' "$OUTPUT"
           - script: |
               cd e2e/editor-mode
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")

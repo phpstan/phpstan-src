@@ -3,4 +3,4 @@
 namespace FixE2E;
 
 step4();
-noArgs(1);
+noArgs();

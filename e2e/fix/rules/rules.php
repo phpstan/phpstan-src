@@ -73,3 +73,37 @@ final class NoArgsRule implements Rule
 	}
 
 }
+
+/**
+ * Renames ping() to pong() and back, so fixing never ends.
+ *
+ * @implements Rule<FuncCall>
+ */
+final class PingPongRule implements Rule
+{
+
+	public function getNodeType(): string
+	{
+		return FuncCall::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		if (!$node->name instanceof Node\Name || !in_array($node->name->toString(), ['ping', 'pong'], true)) {
+			return [];
+		}
+
+		$other = $node->name->toString() === 'ping' ? 'pong' : 'ping';
+
+		return [
+			RuleErrorBuilder::message(sprintf('Call %s() instead.', $other))
+				->identifier('fixE2E.pingPong')
+				->fixNode($node, static function (FuncCall $node) use ($other): FuncCall {
+					$node->name = new Node\Name($other);
+					return $node;
+				})
+				->build(),
+		];
+	}
+
+}

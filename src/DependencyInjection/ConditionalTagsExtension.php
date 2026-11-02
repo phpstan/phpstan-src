@@ -6,12 +6,14 @@ use InvalidArgumentException;
 use Nette;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\Statement;
+use Nette\DI\InvalidConfigurationException;
 use Nette\Schema\Expect;
 use Override;
 use PHPStan\ShouldNotHappenException;
-use function array_fill_keys;
+use function array_keys;
 use function array_values;
 use function count;
+use function in_array;
 use function is_array;
 use function sprintf;
 
@@ -19,18 +21,41 @@ use function sprintf;
 final class ConditionalTagsExtension extends CompilerExtension
 {
 
+	/**
+	 * Accepts any tag, the tags of third-party extension interfaces are known only
+	 * after all sections are processed. loadConfiguration() checks them.
+	 */
 	#[Override]
 	public function getConfigSchema(): Nette\Schema\Schema
 	{
-		$tags = array_values(ValidateServiceTagsExtension::getInterfaceTagMapping());
+		return Expect::arrayOf(Expect::arrayOf(Expect::anyOf(
+			Expect::bool(),
+			Expect::type(Statement::class),
+			Expect::listOf(Expect::anyOf(Expect::bool(), Expect::type(Statement::class))),
+		), 'string')->min(1));
+	}
 
-		return Expect::arrayOf(Expect::structure(
-			array_fill_keys($tags, Expect::anyOf(
-				Expect::bool(),
-				Expect::type(Statement::class),
-				Expect::listOf(Expect::anyOf(Expect::bool(), Expect::type(Statement::class))),
-			)),
-		)->min(1));
+	#[Override]
+	public function loadConfiguration(): void
+	{
+		/** @var array<string, array<string, mixed>> $config */
+		$config = $this->config;
+		$tags = array_values(ValidateServiceTagsExtension::getExtendedInterfaceTagMapping($this->compiler));
+		foreach ($config as $type => $typeTags) {
+			foreach (array_keys($typeTags) as $tag) {
+				if (in_array($tag, $tags, true)) {
+					continue;
+				}
+
+				throw new InvalidConfigurationException(sprintf(
+					"Unexpected item '%s › %s › %s', tags of extension interfaces are expected. Map the interface of a custom tag in the %s section.",
+					$this->name,
+					$type,
+					$tag,
+					ExtensionInterfacesExtension::NAME,
+				));
+			}
+		}
 	}
 
 	#[Override]

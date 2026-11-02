@@ -30,10 +30,13 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 		$config = $this->getConfig();
 		$builder = $this->getContainerBuilder();
 		$targets = AttributeTargetsProvider::create();
-		$registeredClasses = AttributeServicesRegistrar::registerServices($builder, $targets, $config->level);
+		$registeredClasses = AttributeServicesRegistrar::registerServices($builder, $targets, $config->level, ValidateServiceTagsExtension::getExtendedInterfaceTagMapping($this->compiler));
 
 		// ResultCacheManager treats these like the classes from the services section of the config
 		$discoveredClasses = [];
+		foreach ($targets->findTargetClasses(ExtensionInterface::class) as $extensionInterface) {
+			$registeredClasses[] = $extensionInterface->name;
+		}
 		foreach ($registeredClasses as $registeredClass) {
 			if (!$targets->isDiscoveredClass($registeredClass)) {
 				continue;

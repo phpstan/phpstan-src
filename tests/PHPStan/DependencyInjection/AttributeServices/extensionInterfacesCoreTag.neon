@@ -1,0 +1,5 @@
+includes:
+	- extensionInterfaces.neon
+
+extensionInterfaces:
+	AttributeServicesFixtures\ExtensionInterfaces\NeonMappedExtension: phpstan.rules.rule

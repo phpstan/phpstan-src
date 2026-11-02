@@ -22,7 +22,6 @@ use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\NonAutowiredService;
 use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\DependencyInjection\ValidateServiceTagsExtension;
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -50,9 +49,10 @@ final class AttributeServicesRegistrar
 {
 
 	/**
+	 * @param array<class-string, string> $interfaceTagMapping tags added to the services implementing the interfaces
 	 * @return list<class-string> the registered classes
 	 */
-	public static function registerServices(ContainerBuilder $builder, AttributeTargetsProvider $targets, ?int $level): array
+	public static function registerServices(ContainerBuilder $builder, AttributeTargetsProvider $targets, ?int $level, array $interfaceTagMapping): array
 	{
 		$registeredClasses = [];
 		$constructorParameters = self::collectConstructorParameters($targets);
@@ -84,7 +84,7 @@ final class AttributeServicesRegistrar
 				continue;
 			}
 
-			foreach (ValidateServiceTagsExtension::getInterfaceTagMapping() as $interface => $tag) {
+			foreach ($interfaceTagMapping as $interface => $tag) {
 				if (!$reflection->implementsInterface($interface)) {
 					continue;
 				}

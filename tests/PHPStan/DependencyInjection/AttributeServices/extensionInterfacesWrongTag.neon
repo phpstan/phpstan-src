@@ -1,0 +1,7 @@
+includes:
+	- extensionInterfaces.neon
+
+services:
+	-
+		class: AttributeServicesFixtures\ExtensionInterfaces\WronglyTaggedService
+		tags: [attributeServicesFixtures.neonMapped]

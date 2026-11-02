@@ -975,7 +975,8 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'Analysing fixed code (round 4)...' "$OUTPUT"
               ../bashunit assert not_contains 'round 5' "$OUTPUT"
-              ../bashunit assert contains '[OK] 10 errors fixed' "$OUTPUT"
+              ../bashunit assert contains 'Round 2: fixed 3 errors in 1 file' "$OUTPUT"
+              ../bashunit assert contains '[OK] 10 errors fixed in 2 files' "$OUTPUT"
               diff -u expected/Foo.php src/Foo.php
               diff -u expected/Ignored-fix.php src/Ignored.php
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix-ignored")

@@ -251,6 +251,7 @@ final class AnalyseCommand extends Command
 			if ($fixReported && !$fixRound) {
 				$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
 			}
+
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -591,6 +592,7 @@ final class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->writeRaw(Json::encode([
 					'fixable' => $fixableErrorsCount,
 					'applied' => $patchResult['appliedCount'],
+					'changedFiles' => $patchResult['changedFiles'],
 				]));
 
 				return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
@@ -600,7 +602,6 @@ final class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->error('No fixable errors found');
 				$exitCode = 1;
 			} else {
-				$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
 				$exitCode = $this->fixInRounds(
 					$inceptionResult,
 					$input,
@@ -608,7 +609,7 @@ final class AnalyseCommand extends Command
 					$patcher->applyToFiles(array_map(
 						static fn (Error $error): array => $error->getFixedErrorDiffs(),
 						$fixableErrors,
-					))['appliedCount'],
+					)),
 				);
 			}
 		} else {
@@ -654,48 +655,76 @@ final class AnalyseCommand extends Command
 	 * in a new process, which also saves the result cache, and fixes what is still fixable.
 	 * This applies fixes skipped because of a conflict and fixes of errors the previous round caused.
 	 */
-	private function fixInRounds(InceptionResult $inceptionResult, InputInterface $input, int $fixableCount, int $appliedCount): int
+	/**
+	 * @param array{changedFiles: list<string>, appliedCount: int, skippedCount: int} $patchResult the first round
+	 */
+	private function fixInRounds(
+		InceptionResult $inceptionResult,
+		InputInterface $input,
+		int $fixableCount,
+		array $patchResult,
+	): int
 	{
 		$errorOutput = $inceptionResult->getErrorOutput();
-		$style = $inceptionResult->getStdOutput()->getStyle();
-		$fixedCount = $appliedCount;
+		$stdOutput = $inceptionResult->getStdOutput();
+		$appliedCount = $patchResult['appliedCount'];
+		$roundChangedFiles = $patchResult['changedFiles'];
+		$fixedCount = 0;
+		$changedFiles = [];
 		$round = 1;
-		while ($appliedCount > 0) {
-			if ($round === self::FIX_ROUNDS_LIMIT) {
-				$style->warning(sprintf(
-					'%d %s fixed. Fixing stopped after %d rounds, run PHPStan again to see what is left.',
-					$fixedCount,
-					$fixedCount === 1 ? 'error' : 'errors',
+		while (true) {
+			$fixedCount += $appliedCount;
+			foreach ($roundChangedFiles as $changedFile) {
+				$changedFiles[$changedFile] = true;
+			}
+			if ($appliedCount > 0) {
+				$errorOutput->writeLineFormatted(sprintf(
+					'🔧 Round %d: fixed %d %s in %d %s',
 					$round,
+					$appliedCount,
+					$appliedCount === 1 ? 'error' : 'errors',
+					count($roundChangedFiles),
+					count($roundChangedFiles) === 1 ? 'file' : 'files',
 				));
+			}
 
-				return 0;
+			if ($appliedCount === 0 || $round === self::FIX_ROUNDS_LIMIT) {
+				break;
 			}
 
 			$round++;
+			$errorOutput->writeLineFormatted('');
 			$errorOutput->writeLineFormatted(sprintf('Analysing fixed code (round %d)...', $round));
 			$command = ProcessHelper::getWorkerCommand(
 				$_SERVER['argv'][0],
 				self::NAME,
 				$inceptionResult->getProjectConfigFile(),
 				array_merge(
-					['--' . self::OPTION_FIX_ROUND, '--' . ErrorsConsoleStyle::OPTION_NO_PROGRESS],
+					['--' . self::OPTION_FIX_ROUND, $errorOutput->isDecorated() ? '--ansi' : '--no-ansi'],
+					(bool) $input->getOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS) ? ['--' . ErrorsConsoleStyle::OPTION_NO_PROGRESS] : [],
 					(bool) $input->getOption('fix') ? ['--fix'] : [],
 					(bool) $input->getOption('fix-ignored') ? ['--fix-ignored'] : [],
 				),
 				$input,
 			);
 			$process = Process::fromShellCommandline($command, timeout: null);
-			$process->run();
+			// the progress bar of the analysis is on stderr, the result of the round on stdout
+			$process->run(static function (string $type, string $buffer) use ($errorOutput): void {
+				if ($type !== Process::ERR) {
+					return;
+				}
+
+				$errorOutput->writeRaw($buffer);
+			});
 			try {
-				/** @var array{fixable: int, applied: int} $roundResult */
+				/** @var array{fixable: int, applied: int, changedFiles: list<string>} $roundResult */
 				$roundResult = Json::decode($process->getOutput(), Json::FORCE_ARRAY);
 			} catch (JsonException) {
-				$style->error(sprintf(
+				$stdOutput->getStyle()->error(sprintf(
 					"%d %s fixed, but analysing the fixed code failed:\n%s",
 					$fixedCount,
 					$fixedCount === 1 ? 'error' : 'errors',
-					trim($process->getOutput() . "\n" . $process->getErrorOutput()),
+					trim($process->getOutput()),
 				));
 
 				return 1;
@@ -703,24 +732,27 @@ final class AnalyseCommand extends Command
 
 			$fixableCount = $roundResult['fixable'];
 			$appliedCount = $roundResult['applied'];
-			$fixedCount += $appliedCount;
+			$roundChangedFiles = $roundResult['changedFiles'];
 		}
 
-		$leftCount = $fixableCount;
-		if ($leftCount > 0) {
-			$style->warning(sprintf(
-				'%d %s fixed, %d %s could not be fixed because of conflicting fixes',
-				$fixedCount,
-				$fixedCount === 1 ? 'error' : 'errors',
-				$leftCount,
-				$leftCount === 1 ? 'error' : 'errors',
+		$summary = sprintf(
+			'%d %s fixed in %d %s',
+			$fixedCount,
+			$fixedCount === 1 ? 'error' : 'errors',
+			count($changedFiles),
+			count($changedFiles) === 1 ? 'file' : 'files',
+		);
+		if ($appliedCount > 0) {
+			$stdOutput->getStyle()->warning(sprintf('%s. Fixing stopped after %d rounds, run PHPStan again to see what is left.', $summary, $round));
+		} elseif ($fixableCount > 0) {
+			$stdOutput->getStyle()->warning(sprintf(
+				'%s, %d %s could not be fixed because of conflicting fixes',
+				$summary,
+				$fixableCount,
+				$fixableCount === 1 ? 'error' : 'errors',
 			));
 		} else {
-			$style->success(sprintf(
-				'%d %s fixed',
-				$fixedCount,
-				$fixedCount === 1 ? 'error' : 'errors',
-			));
+			$stdOutput->getStyle()->success($summary);
 
 			return 0;
 		}

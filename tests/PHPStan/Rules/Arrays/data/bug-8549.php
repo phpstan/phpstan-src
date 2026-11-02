@@ -93,3 +93,21 @@ class CompoundAssignments
 	}
 
 }
+
+class UnionKeys
+{
+
+	/**
+	 * @param Options<array{name: string, age: int}> $options
+	 * @param 'name'|'age' $key
+	 * @param 'name'|'nope' $partlyUnknownKey
+	 */
+	public function union(Options $options, string $key, string $partlyUnknownKey): void
+	{
+		$options[$key] = 'foo';
+		$options[$key] = 1;
+		$options[$key] = 1.5;
+		$options[$partlyUnknownKey] = 'foo';
+	}
+
+}

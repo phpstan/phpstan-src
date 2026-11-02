@@ -252,6 +252,10 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 				'Cannot assign offset 1 to Bug8549\Options<array<string, mixed>>.',
 				75,
 			],
+			[
+				'Cannot assign offset \'name\'|\'nope\' to Bug8549\Options<array<string, int|string>>.',
+				110,
+			],
 		]);
 	}
 

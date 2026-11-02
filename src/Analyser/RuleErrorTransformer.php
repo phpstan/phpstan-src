@@ -102,6 +102,9 @@ final class RuleErrorTransformer
 			}
 		}
 
+		// the file $fileNodes come from - the error can point to another one with RuleErrorBuilder::file()
+		$fileNodesFile = $traitFilePath ?? $filePath;
+
 		if (
 			$ruleError instanceof LineRuleError
 			&& $ruleError->getLine() !== -1
@@ -139,9 +142,10 @@ final class RuleErrorTransformer
 				throw new ShouldNotHappenException('Cannot fix virtual node');
 			}
 
+			$fixingFile = $traitFilePath ?? $filePath;
 			$fixedErrorDiff = $this->fix(
-				$traitFilePath ?? $filePath,
-				$fileNodes,
+				$fixingFile,
+				$fixingFile === $fileNodesFile ? $fileNodes : [],
 				$ruleError->getOriginalNode(),
 				$ruleError->getNewNodeCallable(),
 			);
@@ -164,8 +168,8 @@ final class RuleErrorTransformer
 	}
 
 	/**
-	 * Without $fileNodes (errors of CollectedDataNode rules and errors transformed inside collectors),
-	 * the file is parsed with the cached analysis parser. The rule has to take the node it fixes
+	 * Without $fileNodes (errors of CollectedDataNode rules, errors transformed inside collectors,
+	 * and errors pointing to another file with RuleErrorBuilder::file()), the file is parsed with the cached analysis parser. The rule has to take the node it fixes
 	 * from the same parser so that ReplacingNodeVisitor finds it by identity.
 	 *
 	 * @param Node\Stmt[] $fileNodes

@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\MutatingScope;
@@ -12,6 +13,7 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -916,80 +918,69 @@ final class FunctionCallParametersCheck
 			return false;
 		}
 
-		$parameters = $parametersAcceptor->getParameters();
-		$parameterPositions = [];
-		foreach ($parameters as $i => $parameter) {
-			$parameterPositions[$parameter->getName()] = $i;
-		}
-
-		/** @var array<int, int> $argIndexByPosition */
-		$argIndexByPosition = [];
-		$lastPosition = 0;
-		foreach ($funcCall->getArgs() as $i => $arg) {
+		$args = $funcCall->getArgs();
+		foreach ($args as $arg) {
 			if ($arg->unpack) {
 				return false;
 			}
-			if ($arg->name === null) {
-				$argIndexByPosition[$i] = $i;
-				$lastPosition = max($lastPosition, $i);
-				continue;
-			}
-
-			$position = $parameterPositions[$arg->name->toString()] ?? null;
-			if (
-				$position === null
-				// a named argument that is collected by the variadic parameter keeps its string key
-				|| $parameters[$position]->isVariadic()
-				|| array_key_exists($position, $argIndexByPosition)
-			) {
-				return false;
-			}
-			$argIndexByPosition[$position] = $i;
-			$lastPosition = max($lastPosition, $position);
 		}
 
+		$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, $args);
+		if ($reorderedArgs === null) {
+			return false;
+		}
+
+		$parameters = $parametersAcceptor->getParameters();
+		$passedArgsCount = 0;
 		/** @var array<int, Expr> $defaultValues */
 		$defaultValues = [];
-		for ($position = 0; $position < $lastPosition; $position++) {
-			if (array_key_exists($position, $argIndexByPosition)) {
+		foreach ($reorderedArgs as $position => $reorderedArg) {
+			$parameter = $parameters[$position] ?? null;
+			if ($reorderedArg->value instanceof TypeExpr) {
+				// reorderArgs() fills skipped optional parameters with their default value types
+				$defaultValue = $this->createDefaultValueExpr($reorderedArg->value->getExprType());
+				if ($parameter === null || !$parameter->passedByReference()->no() || $defaultValue === null) {
+					return false;
+				}
+				$defaultValues[$position] = $defaultValue;
 				continue;
 			}
 
-			$parameter = $parameters[$position];
-			$defaultValue = $parameter->getDefaultValue();
-			if (!$parameter->isOptional() || !$parameter->passedByReference()->no() || $defaultValue === null) {
-				return false;
-			}
-
-			if ($defaultValue->isConstantArray()->yes() && $defaultValue->isIterableAtLeastOnce()->no()) {
-				$defaultValues[$position] = new Expr\Array_([]);
+			$passedArgsCount++;
+			/** @var Node\Arg $originalArg */
+			$originalArg = $reorderedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+			if ($originalArg->name === null) {
 				continue;
 			}
 
-			$scalarValues = $defaultValue->getConstantScalarValues();
-			if (count($scalarValues) !== 1) {
+			// reorderArgs() appends unknown named arguments and puts the ones collected by the variadic parameter at its position,
+			// passing them positionally would change their meaning
+			if ($parameter === null || $parameter->isVariadic() || $parameter->getName() !== $originalArg->name->toString()) {
 				return false;
 			}
-			$scalarValue = $scalarValues[0];
-			$defaultValues[$position] = match (true) {
-				$scalarValue === null => new Expr\ConstFetch(new Node\Name('null')),
-				is_bool($scalarValue) => new Expr\ConstFetch(new Node\Name($scalarValue ? 'true' : 'false')),
-				is_int($scalarValue) => new Node\Scalar\Int_($scalarValue),
-				is_float($scalarValue) => new Node\Scalar\Float_($scalarValue),
-				default => new Node\Scalar\String_($scalarValue),
-			};
 		}
 
-		return static function (Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $call) use ($argIndexByPosition, $defaultValues, $lastPosition): Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ {
-			$callArgs = $call->getArgs();
+		// reorderArgs() drops duplicate named arguments
+		if ($passedArgsCount !== count($args)) {
+			return false;
+		}
+
+		return static function (Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $call) use ($parametersAcceptor, $defaultValues): Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ {
+			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, $call->getArgs());
+			if ($reorderedArgs === null) {
+				throw new ShouldNotHappenException();
+			}
+
 			$args = [];
-			for ($position = 0; $position <= $lastPosition; $position++) {
-				if (!array_key_exists($position, $argIndexByPosition)) {
+			foreach ($reorderedArgs as $position => $reorderedArg) {
+				if (array_key_exists($position, $defaultValues)) {
 					$args[] = new Node\Arg(clone $defaultValues[$position]);
 					continue;
 				}
 
-				$arg = clone $callArgs[$argIndexByPosition[$position]];
+				/** @var Node\Arg $originalArg */
+				$originalArg = $reorderedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
+				$arg = clone $originalArg;
 				$arg->name = null;
 				$args[] = $arg;
 			}
@@ -997,6 +988,34 @@ final class FunctionCallParametersCheck
 
 			return $call;
 		};
+	}
+
+	private function createDefaultValueExpr(Type $type): ?Expr
+	{
+		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
+			return new Expr\Array_([]);
+		}
+
+		$scalarValues = $type->getConstantScalarValues();
+		if (count($scalarValues) !== 1) {
+			return null;
+		}
+
+		$scalarValue = $scalarValues[0];
+		if ($scalarValue === null) {
+			return new Expr\ConstFetch(new Node\Name('null'));
+		}
+		if (is_bool($scalarValue)) {
+			return new Expr\ConstFetch(new Node\Name($scalarValue ? 'true' : 'false'));
+		}
+		if (is_int($scalarValue)) {
+			return new Node\Scalar\Int_($scalarValue);
+		}
+		if (is_float($scalarValue)) {
+			return new Node\Scalar\Float_($scalarValue);
+		}
+
+		return new Node\Scalar\String_($scalarValue);
 	}
 
 	private function callReturnsByReference(Expr $expr, Scope $scope): bool

@@ -1,0 +1,11 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\ExtensionInterfaces;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService(autoTag: false)]
+final class UntaggedService implements MyExtension
+{
+
+}

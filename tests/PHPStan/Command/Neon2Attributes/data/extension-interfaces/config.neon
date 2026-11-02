@@ -1,0 +1,16 @@
+extensionInterfaces:
+	Neon2AttributesFixtures\ExtensionInterfaces\MyExtension: my.extension
+	PHPStan\Rules\Rule: phpstan.rules.rule
+
+services:
+	-
+		class: Neon2AttributesFixtures\ExtensionInterfaces\TaggedService
+		tags: [my.extension]
+	-
+		class: Neon2AttributesFixtures\ExtensionInterfaces\UntaggedService
+	-
+		class: Neon2AttributesFixtures\ExtensionInterfaces\ConditionalService
+
+conditionalTags:
+	Neon2AttributesFixtures\ExtensionInterfaces\ConditionalService:
+		my.extension: %myToggle%

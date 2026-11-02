@@ -13,7 +13,9 @@ use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\DependencyInjection\AttributeServices\AttributeTargetsProvider;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\ExtensionInterfacesExtension;
 use PHPStan\DependencyInjection\NonAutowiredService;
+use PHPStan\DependencyInjection\ValidateServiceTagsExtension;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileReader;
@@ -220,6 +222,7 @@ final class Neon2AttributesCommand extends Command
 			$directories,
 			$phpVersion->getVersionId(),
 			self::findOtherServiceNames(array_values(array_diff($allConfigFiles, $configFiles))),
+			ValidateServiceTagsExtension::createInterfaceTagMapping(self::findExtensionInterfaces($allConfigFiles)),
 		);
 
 		/** @var RelativePathHelper $relativePathHelper */
@@ -310,6 +313,33 @@ final class Neon2AttributesCommand extends Command
 		));
 
 		return 0;
+	}
+
+	/**
+	 * The merged extensionInterfaces sections of the config files.
+	 *
+	 * @param list<string> $configFiles
+	 * @return array<mixed>
+	 */
+	private static function findExtensionInterfaces(array $configFiles): array
+	{
+		$extensionInterfaces = [];
+		foreach ($configFiles as $file) {
+			if (!str_ends_with($file, '.neon')) {
+				continue;
+			}
+			try {
+				$config = Neon::decode(FileReader::read($file));
+			} catch (CouldNotReadFileException | NeonException) {
+				continue;
+			}
+			if (!is_array($config) || !is_array($config[ExtensionInterfacesExtension::NAME] ?? null)) {
+				continue;
+			}
+			$extensionInterfaces += $config[ExtensionInterfacesExtension::NAME];
+		}
+
+		return $extensionInterfaces;
 	}
 
 	/**

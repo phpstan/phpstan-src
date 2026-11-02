@@ -101,9 +101,11 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 		$this->assertArrayHasKey('PHPStan\\', $resolvedDirectory->psr4);
 		$this->assertContains($repoRoot . '/src', $resolvedDirectory->psr4['PHPStan\\']);
 
-		$expectedFile = $directory . '/AttributeServicesDirectoriesResolver.php';
+		// only files that can carry PHPStan's DI attributes are part of the key
+		$expectedFile = $directory . '/AttributeServicesDiscoverer.php';
 		$this->assertArrayHasKey($expectedFile, $resolvedDirectory->cacheKeyComponent);
 		$this->assertSame(hash_file('sha256', $expectedFile), $resolvedDirectory->cacheKeyComponent[$expectedFile]);
+		$this->assertArrayNotHasKey($directory . '/AttributeServicesDirectoriesResolver.php', $resolvedDirectory->cacheKeyComponent);
 	}
 
 	public function testProjectOwnClassmapDirectoryFromAutoloadDev(): void

@@ -4,11 +4,12 @@ namespace PHPStan\DependencyInjection\AttributeServices;
 
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileHelper;
+use PHPStan\File\FileReader;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use function count;
-use function hash_file;
+use function hash;
 use function intdiv;
 use function is_array;
 use function is_dir;
@@ -310,9 +311,9 @@ final class AttributeServicesDirectoriesResolver
 	}
 
 	/**
-	 * Content hashes of all PHP files under the directory - the cache-key fallback when
-	 * a package version cannot stand in for the directory contents. Mirrors how config
-	 * files invalidate the container in Configurator::getAllConfigFilesHashes().
+	 * Content hashes of the PHP files under the directory that can carry PHPStan's DI attributes -
+	 * the cache-key fallback when a package version cannot stand in for the directory contents.
+	 * Mirrors how config files invalidate the container in Configurator::getAllConfigFilesHashes().
 	 *
 	 * @param list<string> $errors
 	 * @return array<string, string>
@@ -338,13 +339,18 @@ final class AttributeServicesDirectoriesResolver
 
 		$hashes = [];
 		foreach ($files as $file) {
-			$hash = hash_file('sha256', $file);
-			if ($hash === false) {
-				$errors[] = (new CouldNotReadFileException($file))->getMessage();
+			try {
+				$contents = FileReader::read($file);
+			} catch (CouldNotReadFileException $e) {
+				$errors[] = $e->getMessage();
 				continue;
 			}
 
-			$hashes[$file] = $hash;
+			if (!AttributeServicesDiscoverer::mayAffectDiscovery($contents)) {
+				continue;
+			}
+
+			$hashes[$file] = hash('sha256', $contents);
 		}
 
 		ksort($hashes);

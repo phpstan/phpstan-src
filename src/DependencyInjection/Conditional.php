@@ -17,7 +17,8 @@ use function is_array;
  * or a list of them that all must be met.
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
- * and AutowiredAttributeServicesExtension.
+ * and AutowiredAttributeServicesExtension, and in the attributeServicesDirectories
+ * config section thanks to AttributeServicesDiscoverer.
  *
  * @api
  */
@@ -30,6 +31,8 @@ final class Conditional
 	/**
 	 * On PHP < 8.1, simple-downgrader writes `new` in attribute arguments as the array,
 	 * and composer-attribute-collector turns it back into the object in vendor/attributes.php.
+	 * Code running on PHP 8.0 in the attributeServicesDirectories section can write the array by hand,
+	 * AttributeServicesDiscoverer turns it into the object.
 	 *
 	 * @api
 	 * @param AutowiredService|RegisteredCollector|RegisteredRule|array{

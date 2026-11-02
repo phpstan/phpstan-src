@@ -11,7 +11,6 @@ use Nette\Neon\Entity;
 use Nette\Neon\Neon;
 use Nette\PhpGenerator\Dumper;
 use Nette\PhpGenerator\PhpLiteral;
-use Nette\Utils\Strings;
 use olvlvl\ComposerAttributeCollector\TargetClass;
 use olvlvl\ComposerAttributeCollector\TargetMethodParameter;
 use PHPStan\Collectors\RegistryFactory;
@@ -243,16 +242,47 @@ final class AttributeServicesRegistrar
 	public static function processConstructorParameters(ContainerBuilder $builder, string $className, ServiceDefinition $definition, array $constructorParameters): void
 	{
 		foreach ($constructorParameters[strtolower($className)] ?? [] as $autowiredParameter) {
-			$ref = $autowiredParameter->attribute->ref;
-			if ($ref === null) {
-				$argument = self::createDeferredParameter($builder, '%' . Helpers::escape($autowiredParameter->name) . '%');
-			} elseif (Strings::match($ref, '#^@[\w\\\\]+$#D') !== null) {
-				$argument = new Reference(substr($ref, 1));
-			} else {
-				$argument = self::createDeferredParameter($builder, $ref);
-			}
-			$definition->setArgument($autowiredParameter->name, $argument);
+			$ref = $autowiredParameter->attribute->ref ?? '%' . Helpers::escape($autowiredParameter->name) . '%';
+			$definition->setArgument($autowiredParameter->name, self::createArgument($builder, $ref));
 		}
+	}
+
+	/**
+	 * Treats the reference like a NEON service argument: Nette\DI\Helpers::filterArguments() turns
+	 * `Class::CONST`, `::CONST`, `Enum::Case` and `@service` strings into constants and references,
+	 * also inside the value of a referenced parameter. A parameter with such strings is inlined
+	 * like Nette does in NEON, other parameters are looked up at runtime.
+	 *
+	 * @return mixed
+	 */
+	private static function createArgument(ContainerBuilder $builder, string $ref)
+	{
+		$deferred = self::createDeferredParameter($builder, $ref);
+		if (is_string($deferred)) {
+			return Helpers::filterArguments([$deferred])[0];
+		}
+
+		$expanded = Helpers::expand($ref, $builder->parameters);
+		$filtered = Helpers::filterArguments([$expanded])[0];
+
+		return self::isFiltered($expanded, $filtered) ? $filtered : $deferred;
+	}
+
+	private static function isFiltered(mixed $value, mixed $filtered): bool
+	{
+		if (is_string($value)) {
+			return !is_string($filtered);
+		}
+		if (!is_array($value) || !is_array($filtered)) {
+			return false;
+		}
+		foreach ($value as $key => $item) {
+			if (self::isFiltered($item, $filtered[$key])) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

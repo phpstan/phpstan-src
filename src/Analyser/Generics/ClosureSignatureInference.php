@@ -31,6 +31,7 @@ use function array_values;
 use function count;
 use function in_array;
 use function is_array;
+use function is_bool;
 use function is_string;
 use function spl_object_id;
 use function str_starts_with;
@@ -91,7 +92,7 @@ final class ClosureSignatureInference
 
 	private const REBOUND_VARIABLES_ATTRIBUTE = 'closureSignatureReboundVariables';
 
-	private const NESTED_ASSIGNED_CLOSURES_ATTRIBUTE = 'closureSignatureNestedAssignedClosures';
+	private const ASSIGNED_TO_BY_REF_USE_ATTRIBUTE = 'closureSignatureAssignedToByRefUse';
 
 	public function __construct(
 		#[AutowiredParameter(ref: '%featureToggles.closureSignaturesFromUsages%')]
@@ -147,17 +148,16 @@ final class ClosureSignatureInference
 			return [];
 		}
 		$reboundNames = self::getReboundVariableNames($body, $frame->getClosureSignatureStmts());
-		$assignedClosures = self::getAssignedClosures($body, $frame->getClosureSignatureStmts(), true);
+		if (self::isAssignedToByRefUse($expr, $frame->getClosureSignatureStmts())) {
+			// `$f = function () use (&$f)`: the body reaches the closure itself
+			// through the variable - aliased, captured, passed on - so its
+			// invocations cannot all be followed
+			return [];
+		}
 		foreach ($names as $name) {
 			// unset or bound to another reference, the variable no longer is the
 			// one the closure writes to - its effects stay the creation-time fixpoint
 			if (isset($reboundNames[$name])) {
-				return [];
-			}
-			// `$f = function () use (&$f)`: the body reaches the closure itself
-			// through the variable - aliased, captured, passed on - so its
-			// invocations cannot all be followed
-			if (in_array($expr, $assignedClosures[$name] ?? [], true)) {
 				return [];
 			}
 		}
@@ -1161,17 +1161,13 @@ final class ClosureSignatureInference
 	}
 
 	/**
-	 * With $nested, also the closures assigned in the function-likes the body
-	 * contains - to the variables of those.
-	 *
 	 * @param Node\Stmt[] $stmts
 	 * @return array<string, list<Closure|ArrowFunction>>
 	 */
-	private static function getAssignedClosures(Node $body, array $stmts, bool $nested = false): array
+	private static function getAssignedClosures(Node $body, array $stmts): array
 	{
-		$attribute = $nested ? self::NESTED_ASSIGNED_CLOSURES_ATTRIBUTE : self::ASSIGNED_CLOSURES_ATTRIBUTE;
 		/** @var array<string, list<Closure|ArrowFunction>>|null $cached */
-		$cached = $body->getAttribute($attribute);
+		$cached = $body->getAttribute(self::ASSIGNED_CLOSURES_ATTRIBUTE);
 		if ($cached !== null) {
 			return $cached;
 		}
@@ -1180,7 +1176,7 @@ final class ClosureSignatureInference
 		$stack = $stmts;
 		while (count($stack) > 0) {
 			$node = array_pop($stack);
-			if (!$nested && ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike)) {
+			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
 				continue;
 			}
 			if (
@@ -1205,7 +1201,63 @@ final class ClosureSignatureInference
 				}
 			}
 		}
-		$body->setAttribute($attribute, $assigned);
+		$body->setAttribute(self::ASSIGNED_CLOSURES_ATTRIBUTE, $assigned);
+
+		return $assigned;
+	}
+
+	/**
+	 * Whether the closure is assigned to one of its by-ref variables. The first
+	 * question about a closure in the statements decides it for every closure
+	 * in them, nested function-likes included - a closure created in another
+	 * closure's body is observed through the enclosing body's frame - so each
+	 * closure is decided by one walk.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 */
+	private static function isAssignedToByRefUse(Closure $expr, array $stmts): bool
+	{
+		$assigned = $expr->getAttribute(self::ASSIGNED_TO_BY_REF_USE_ATTRIBUTE);
+		if (is_bool($assigned)) {
+			return $assigned;
+		}
+
+		$stack = $stmts;
+		while (count($stack) > 0) {
+			$node = array_pop($stack);
+			if (
+				$node instanceof Expr\Assign
+				&& $node->var instanceof Expr\Variable
+				&& is_string($node->var->name)
+				&& $node->expr instanceof Closure
+			) {
+				foreach ($node->expr->uses as $use) {
+					if ($use->byRef && $use->var->name === $node->var->name) {
+						$node->expr->setAttribute(self::ASSIGNED_TO_BY_REF_USE_ATTRIBUTE, true);
+						break;
+					}
+				}
+			} elseif ($node instanceof Closure && $node->getAttribute(self::ASSIGNED_TO_BY_REF_USE_ATTRIBUTE) === null) {
+				// an assignment is visited before the closure it assigns
+				$node->setAttribute(self::ASSIGNED_TO_BY_REF_USE_ATTRIBUTE, false);
+			}
+			foreach ($node->getSubNodeNames() as $subNodeName) {
+				$subNode = $node->$subNodeName;
+				if ($subNode instanceof Node) {
+					$stack[] = $subNode;
+				} elseif (is_array($subNode)) {
+					foreach ($subNode as $item) {
+						if (!$item instanceof Node) {
+							continue;
+						}
+						$stack[] = $item;
+					}
+				}
+			}
+		}
+
+		$assigned = $expr->getAttribute(self::ASSIGNED_TO_BY_REF_USE_ATTRIBUTE) === true;
+		$expr->setAttribute(self::ASSIGNED_TO_BY_REF_USE_ATTRIBUTE, $assigned);
 
 		return $assigned;
 	}

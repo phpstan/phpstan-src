@@ -106,11 +106,10 @@ inline constexpr char strings[] =
 	"scanClosedBody\0" /* 1356 */
 	"infersInvocationReturnType\0" /* 1371 */
 	"findAssignedClosures\0" /* 1398 */
-	"nested\0" /* 1419 */
-	"false\0" /* 1426 */
-	"getAssignedClosures\0" /* 1432 */
-	"collectTargetNames\0" /* 1452 */
-	"isContextTyped"; /* 1471 */
+	"getAssignedClosures\0" /* 1419 */
+	"isAssignedToByRefUse\0" /* 1439 */
+	"collectTargetNames\0" /* 1460 */
+	"isContextTyped"; /* 1479 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_BOOL), /* __construct $enabled */
 	reg::packed(20, 0, 27), /* isClosureSignatureMarker $marker */
@@ -217,8 +216,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(79, MAY_BE_ARRAY), /* findAssignedClosures return */
 	reg::packed(884, 0, 889), /* getAssignedClosures $body */
 	reg::packed(836, MAY_BE_ARRAY), /* getAssignedClosures $stmts */
-	reg::packed(1419, MAY_BE_BOOL, reg::NoString, false, false, 1426), /* getAssignedClosures $nested */
 	reg::packed(79, MAY_BE_ARRAY), /* getAssignedClosures return */
+	reg::packed(171, 0, 257), /* isAssignedToByRefUse $expr */
+	reg::packed(836, MAY_BE_ARRAY), /* isAssignedToByRefUse $stmts */
+	reg::packed(79, MAY_BE_BOOL), /* isAssignedToByRefUse return */
 	reg::packed(953, 0, 649), /* collectTargetNames $target */
 	reg::packed(842, MAY_BE_ARRAY, reg::NoString, true, false), /* collectTargetNames $names */
 	reg::packed(79, MAY_BE_VOID), /* collectTargetNames return */
@@ -268,9 +269,10 @@ inline constexpr sigtab::Sig isClosedBody = { { 1343 /* isClosedBody */, 2, 91, 
 inline constexpr sigtab::Sig scanClosedBody = { { 1356 /* scanClosedBody */, 2, 94, 2, 96, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig infersInvocationReturnType = { { 1371 /* infersInvocationReturnType */, 2, 97, 2, 99, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig findAssignedClosures = { { 1398 /* findAssignedClosures */, 2, 100, 2, 102, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAssignedClosures = { { 1432 /* getAssignedClosures */, 2, 103, 3, 106, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig collectTargetNames = { { 1452 /* collectTargetNames */, 2, 107, 2, 109, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isContextTyped = { { 1471 /* isContextTyped */, 1, 110, 1, 111, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getAssignedClosures = { { 1419 /* getAssignedClosures */, 2, 103, 2, 105, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isAssignedToByRefUse = { { 1439 /* isAssignedToByRefUse */, 2, 106, 2, 108, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig collectTargetNames = { { 1460 /* collectTargetNames */, 2, 109, 2, 111, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isContextTyped = { { 1479 /* isContextTyped */, 1, 112, 1, 113, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureSignatureInference

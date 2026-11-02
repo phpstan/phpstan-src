@@ -573,4 +573,9 @@ final class PhpVersion
 		return $this->versionId >= 80300;
 	}
 
+	public function deprecatesTriggerErrorWithUserError(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

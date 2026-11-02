@@ -11,6 +11,7 @@ use AttributeServicesFixtures\DiscoveredNonAutowiredService;
 use AttributeServicesFixtures\DiscoveredRuleLevelEight;
 use AttributeServicesFixtures\DiscoveredRuleLevelThree;
 use AttributeServicesFixtures\DiscoveredService;
+use AttributeServicesFixtures\DiscoveredStaticallyCreated;
 use AttributeServicesFixtures\DiscoveredValue;
 use AttributeServicesFixtures\DiscoveredValueFactory;
 use PHPStan\Collectors\RegistryFactory;
@@ -82,6 +83,13 @@ class AttributeServicesIntegrationTest extends TestCase
 	{
 		$container = self::createContainer();
 		$this->assertInstanceOf(DiscoveredNamedService::class, $container->getService('attributeServicesFixtures.named'));
+	}
+
+	public function testDiscoveredServicesCreatedByStaticFactory(): void
+	{
+		$container = self::createContainer();
+		$this->assertInstanceOf(DiscoveredStaticallyCreated::class, $container->getService('attributeServicesFixtures.staticallyCreated'));
+		$this->assertInstanceOf(DiscoveredStaticallyCreated::class, $container->getService('attributeServicesFixtures.staticallyCreatedNonAutowired'));
 	}
 
 	public function testDiscoveredNonAutowiredService(): void

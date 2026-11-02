@@ -35,6 +35,7 @@ use function is_array;
 use function is_string;
 use function preg_split;
 use function sprintf;
+use function str_starts_with;
 use function strcasecmp;
 use function strtolower;
 use function substr;
@@ -73,8 +74,7 @@ final class AttributeServicesRegistrar
 				->setAutowired($attribute->as);
 
 			if ($attribute->factory !== null) {
-				[$ref, $method] = explode('::', $attribute->factory);
-				$definition->setFactory(new Statement([new Reference(substr($ref, 1)), $method]));
+				$definition->setFactory(self::createFactory($attribute->factory));
 			}
 
 			$registeredClasses[] = $class->name;
@@ -101,8 +101,7 @@ final class AttributeServicesRegistrar
 				->setAutowired(false);
 
 			if ($attribute->factory !== null) {
-				[$ref, $method] = explode('::', $attribute->factory);
-				$definition->setFactory(new Statement([new Reference(substr($ref, 1)), $method]));
+				$definition->setFactory(self::createFactory($attribute->factory));
 			}
 
 			$registeredClasses[] = $class->name;
@@ -245,6 +244,16 @@ final class AttributeServicesRegistrar
 			$ref = $autowiredParameter->attribute->ref ?? '%' . Helpers::escape($autowiredParameter->name) . '%';
 			$definition->setArgument($autowiredParameter->name, self::createArgument($builder, $ref));
 		}
+	}
+
+	/**
+	 * '@service::method' calls a method of another service, 'Class::method' a static method.
+	 */
+	private static function createFactory(string $factory): Statement
+	{
+		[$class, $method] = explode('::', $factory, 2);
+
+		return new Statement([str_starts_with($class, '@') ? new Reference(substr($class, 1)) : $class, $method]);
 	}
 
 	/**

@@ -74,4 +74,28 @@ class RangeFunctionArgumentsHelperTest extends TestCase
 		);
 	}
 
+	/**
+	 * @return iterable<array{TrinaryLogic, int|float|string, int|float|string, int|float, TrinaryLogic}>
+	 */
+	public static function dataRejectsAcrossPhpVersions(): iterable
+	{
+		// PHP 8.3 rejects a negative step on an increasing range, earlier versions ignore its sign
+		yield [TrinaryLogic::createYes(), 1, 10, -1, TrinaryLogic::createYes()];
+		yield [TrinaryLogic::createNo(), 1, 10, -1, TrinaryLogic::createNo()];
+		yield [TrinaryLogic::createMaybe(), 1, 10, -1, TrinaryLogic::createMaybe()];
+
+		// every PHP version agrees on these
+		yield [TrinaryLogic::createMaybe(), 1, 10, 20, TrinaryLogic::createYes()];
+		yield [TrinaryLogic::createMaybe(), 1, 10, 2, TrinaryLogic::createNo()];
+	}
+
+	#[DataProvider('dataRejectsAcrossPhpVersions')]
+	public function testRejectsAcrossPhpVersions(TrinaryLogic $hasStricterRange, int|float|string $start, int|float|string $end, int|float $step, TrinaryLogic $expected): void
+	{
+		$this->assertSame(
+			$expected->describe(),
+			RangeFunctionArgumentsHelper::rejects($hasStricterRange, $start, $end, $step, null)->describe(),
+		);
+	}
+
 }

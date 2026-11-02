@@ -499,6 +499,11 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11463b.php'], []);
 	}
 
+	public function testObjectShapeTemplateKey(): void
+	{
+		$this->analyse([__DIR__ . '/data/object-shape-template-key.php'], []);
+	}
+
 	public function testArrayShapeTemplateKey(): void
 	{
 		$this->analyse([__DIR__ . '/data/array-shape-template-key.php'], [

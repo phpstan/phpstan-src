@@ -659,6 +659,40 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @return iterable<array{string}>
+	 */
+	public static function dataLateResolvableObjectShapeToPhpDocNode(): iterable
+	{
+		yield ['object{TKey: int}'];
+		yield ['object{TKey?: int}'];
+		yield ['object{a: int, TKey: bool}'];
+		yield ['object{\'0 foo\': int, TKey: bool}'];
+		yield ['object{TKey: object{TKey: int}}'];
+		yield ['array{TKey: object{TKey: int}}'];
+	}
+
+	#[DataProvider('dataLateResolvableObjectShapeToPhpDocNode')]
+	public function testLateResolvableObjectShapeToPhpDocNode(string $typeString): void
+	{
+		$nameScope = new NameScope(null, [], null, 'doFoo', new TemplateTypeMap([
+			'TKey' => TemplateTypeFactory::create(
+				TemplateTypeScope::createWithFunction('doFoo'),
+				'TKey',
+				new StringType(),
+				TemplateTypeVariance::createInvariant(),
+			),
+		]));
+
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		$type = $typeStringResolver->resolve($typeString, $nameScope);
+		$this->assertInstanceOf(LateResolvableType::class, $type);
+		$this->assertSame($typeString, (string) $type->toPhpDocNode());
+
+		$typeAgain = $typeStringResolver->resolve((string) $type->toPhpDocNode(), $nameScope);
+		$this->assertTrue($type->equals($typeAgain));
+	}
+
+	/**
 	 * @return iterable<array{Type}>
 	 */
 	public static function dataNamesResolveInNamespace(): iterable

@@ -588,4 +588,9 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function deprecatesUnderscoreClassName(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
 }

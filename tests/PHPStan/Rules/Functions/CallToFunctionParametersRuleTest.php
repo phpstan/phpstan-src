@@ -2244,6 +2244,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testFixNoNamedArguments(): void
+	{
+		$this->fix(__DIR__ . '/data/fix-no-named-arguments.php', __DIR__ . '/data/fix-no-named-arguments.php.fixed');
+	}
+
 	public function testBug11056(): void
 	{
 		$this->checkExplicitMixed = true;

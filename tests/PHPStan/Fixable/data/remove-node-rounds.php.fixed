@@ -1,0 +1,10 @@
+<?php
+
+namespace RemoveNodeRounds;
+
+function doFoo(int ...$args): void
+{
+}
+
+// each argument is removed by its own error, the fixes overlap
+doFoo(1);

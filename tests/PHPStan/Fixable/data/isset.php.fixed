@@ -3,7 +3,7 @@
 namespace FixIsset;
 
 function (): void {
-	echo $fooo;
+	echo $bazz;
 
 	if (isset($barr)) {
 

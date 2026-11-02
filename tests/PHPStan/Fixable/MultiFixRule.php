@@ -37,16 +37,17 @@ class MultiFixRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->name instanceof Name || !$node->getArgs()[0]->value instanceof String_) {
+		if (!$node->name instanceof Name) {
 			return [];
 		}
 
 		$name = $node->name->toLowerString();
-		if ($name !== 'renameall' && $name !== 'renameallornothing') {
+		$args = $node->getArgs();
+		if (($name !== 'renameall' && $name !== 'renameallornothing') || !isset($args[0]) || !$args[0]->value instanceof String_) {
 			return [];
 		}
 
-		$otherFile = dirname($scope->getFile()) . '/' . $node->getArgs()[0]->value->value;
+		$otherFile = dirname($scope->getFile()) . '/' . $args[0]->value->value;
 		$builder = RuleErrorBuilder::message('Renaming foo() to bar().')->identifier('tests.multiFix');
 		foreach ($this->findFooCalls($scope->getFile()) as $call) {
 			$builder->fixNode($call, static function (FuncCall $call): FuncCall {

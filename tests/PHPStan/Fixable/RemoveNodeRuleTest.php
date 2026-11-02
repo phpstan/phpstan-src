@@ -35,6 +35,11 @@ class RemoveNodeRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/remove-node.php', __DIR__ . '/data/remove-node.php.fixed');
 	}
 
+	public function testOverlappingFixesAreAppliedInRounds(): void
+	{
+		$this->fix(__DIR__ . '/data/remove-node-rounds.php', __DIR__ . '/data/remove-node-rounds.php.fixed');
+	}
+
 	public function testNodeNotInArrayIsNotFixable(): void
 	{
 		$fixable = [];

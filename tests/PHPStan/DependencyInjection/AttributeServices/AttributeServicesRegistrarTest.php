@@ -1,13 +1,13 @@
 <?php declare(strict_types = 1);
 
-namespace PHPStan\DependencyInjection;
+namespace PHPStan\DependencyInjection\AttributeServices;
 
 use Nette\DI\ContainerBuilder;
 use Nette\InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-class AutowiredAttributeServicesExtensionTest extends TestCase
+class AttributeServicesRegistrarTest extends TestCase
 {
 
 	/**
@@ -36,14 +36,14 @@ class AutowiredAttributeServicesExtensionTest extends TestCase
 	#[DataProvider('dataIsConditionMet')]
 	public function testIsConditionMet(string|array $if, bool $expected): void
 	{
-		$this->assertSame($expected, AutowiredAttributeServicesExtension::isConditionMet($this->createBuilder(), $if));
+		$this->assertSame($expected, AttributeServicesRegistrar::isConditionMet($this->createBuilder(), $if));
 	}
 
 	public function testMissingParameter(): void
 	{
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage("Missing parameter 'toggles.missing'.");
-		AutowiredAttributeServicesExtension::isConditionMet($this->createBuilder(), 'not(%toggles.missing%)');
+		AttributeServicesRegistrar::isConditionMet($this->createBuilder(), 'not(%toggles.missing%)');
 	}
 
 	private function createBuilder(): ContainerBuilder

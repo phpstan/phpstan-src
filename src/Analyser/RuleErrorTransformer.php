@@ -30,11 +30,16 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function array_key_exists;
 use function array_shift;
+use function array_slice;
 use function count;
 use function get_class;
 use function hash;
+use function min;
+use function preg_split;
 use function str_contains;
 use function str_repeat;
+use const PREG_SPLIT_DELIM_CAPTURE;
+use const PREG_SPLIT_NO_EMPTY;
 
 #[AutowiredService]
 final class RuleErrorTransformer
@@ -45,6 +50,8 @@ final class RuleErrorTransformer
 	private const PRINTERS_LIMIT = 4;
 
 	private Differ $differ;
+
+	private UnifiedDiffOutputBuilder $diffOutputBuilder;
 
 	/** @var array<string, array{code: string, hash: string, tokens: Token[], indent: string|null}> */
 	private array $parsedFiles = [];
@@ -57,7 +64,8 @@ final class RuleErrorTransformer
 		private Parser $parser,
 	)
 	{
-		$this->differ = new Differ(new UnifiedDiffOutputBuilder('', addLineNumbers: true));
+		$this->diffOutputBuilder = new UnifiedDiffOutputBuilder('', addLineNumbers: true);
+		$this->differ = new Differ($this->diffOutputBuilder);
 	}
 
 	/**
@@ -197,7 +205,67 @@ final class RuleErrorTransformer
 			return null;
 		}
 
-		return new FixedErrorDiff($parsedFile['hash'], $this->differ->diff($parsedFile['code'], $newCode));
+		return new FixedErrorDiff($parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
+	}
+
+	/**
+	 * Same output as Differ::diff(), but the common leading and trailing lines are found here in linear time.
+	 * Differ strips them too, but in quadratic time, which made each fix in a large file cost up to a second.
+	 * The middle part is usually just the fixed node.
+	 */
+	private function diff(string $from, string $to): string
+	{
+		$fromLines = self::splitStringByLines($from);
+		$toLines = self::splitStringByLines($to);
+		$fromCount = count($fromLines);
+		$toCount = count($toLines);
+		$minCount = min($fromCount, $toCount);
+
+		$startCount = 0;
+		while ($startCount < $minCount && $fromLines[$startCount] === $toLines[$startCount]) {
+			$startCount++;
+		}
+
+		$endCount = 0;
+		while (
+			$endCount < $minCount - $startCount
+			&& $fromLines[$fromCount - 1 - $endCount] === $toLines[$toCount - 1 - $endCount]
+		) {
+			$endCount++;
+		}
+
+		$diff = [];
+		for ($i = 0; $i < $startCount; $i++) {
+			$diff[] = [$fromLines[$i], Differ::OLD];
+		}
+		foreach ($this->differ->diffToArray(
+			array_slice($fromLines, $startCount, $fromCount - $startCount - $endCount),
+			array_slice($toLines, $startCount, $toCount - $startCount - $endCount),
+		) as $entry) {
+			if ($entry[1] === Differ::DIFF_LINE_END_WARNING) {
+				// the warning would be printed as a context line and shift the line numbers in Patcher
+				continue;
+			}
+			$diff[] = $entry;
+		}
+		for ($i = $fromCount - $endCount; $i < $fromCount; $i++) {
+			$diff[] = [$fromLines[$i], Differ::OLD];
+		}
+
+		return $this->diffOutputBuilder->getDiff($diff);
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private static function splitStringByLines(string $input): array
+	{
+		$lines = preg_split('/(.*\R)/', $input, flags: PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+		if ($lines === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $lines;
 	}
 
 	/**

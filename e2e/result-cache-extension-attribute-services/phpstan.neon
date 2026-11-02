@@ -1,0 +1,8 @@
+attributeServicesDirectories:
+	- src
+
+parameters:
+	level: 0
+	tmpDir: tmp
+	paths:
+		- src

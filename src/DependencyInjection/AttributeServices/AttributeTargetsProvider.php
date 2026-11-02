@@ -83,6 +83,24 @@ final class AttributeTargetsProvider
 	}
 
 	/**
+	 * Whether the class was discovered in the attributeServicesDirectories section
+	 * rather than coming from PHPStan's own vendor/attributes.php.
+	 */
+	public function isDiscoveredClass(string $className): bool
+	{
+		$lowerClassName = strtolower($className);
+		foreach ($this->discoveredTargets->targetClasses as $targets) {
+			foreach ($targets as $target) {
+				if (strtolower($target->name) === $lowerClassName) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param TargetMethodParameter<object> $target
 	 */
 	private static function getParameterKey(TargetMethodParameter $target): string

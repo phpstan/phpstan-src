@@ -219,6 +219,7 @@ parametersSchema:
 	usedLevel: string()
 	cliAutoloadFile: schema(string(), nullable())
 	attributeServicesDirectories: listOf(string())
+	attributeServicesClasses: listOf(string())
 
 	# internal - editor mode
 	singleReflectionFile: schema(string(), nullable())

@@ -1669,6 +1669,24 @@ jobs:
               ../bashunit assert contains 'the rule says another thing' "$OUTPUT"
               ../bashunit assert not_contains 'the rule says one thing' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-extension-attribute-services
+              composer install
+              # The rule is registered through the attributeServicesDirectories section, not in services:.
+              # Editing it has to invalidate the cache, editing another class in the same directory does not.
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'the rule says one thing' "$OUTPUT"
+              patch -p0 < foo.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
+              patch -p0 < rule.patch
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Result cache not used because extension file' "$OUTPUT"
+              ../bashunit assert contains 'the rule says another thing' "$OUTPUT"
+              ../bashunit assert not_contains 'the rule says one thing' "$OUTPUT"
+          - script: |
               cd e2e/result-cache-extension-copied-package
               composer install
               # The rule comes from a path repository Composer copies rather than symlinks, so the

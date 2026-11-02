@@ -1,0 +1,8 @@
+{
+	"name": "phpstan/result-cache-extension-attribute-services-e2e",
+	"autoload": {
+		"psr-4": {
+			"ResultCacheE2EAttributeServices\\": "src/"
+		}
+	}
+}

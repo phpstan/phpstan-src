@@ -48,8 +48,12 @@ use const PREG_SPLIT_DELIM_CAPTURE;
 final class AttributeServicesRegistrar
 {
 
-	public static function registerServices(ContainerBuilder $builder, AttributeTargetsProvider $targets, ?int $level): void
+	/**
+	 * @return list<class-string> the registered classes
+	 */
+	public static function registerServices(ContainerBuilder $builder, AttributeTargetsProvider $targets, ?int $level): array
 	{
+		$registeredClasses = [];
 		$constructorParameters = self::collectConstructorParameters($targets);
 
 		$conditionalTargets = [];
@@ -73,6 +77,7 @@ final class AttributeServicesRegistrar
 				$definition->setFactory(new Statement([new Reference(substr($ref, 1)), $method]));
 			}
 
+			$registeredClasses[] = $class->name;
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 
 			if (!$attribute->autoTag || !$tagged) {
@@ -100,6 +105,7 @@ final class AttributeServicesRegistrar
 				$definition->setFactory(new Statement([new Reference(substr($ref, 1)), $method]));
 			}
 
+			$registeredClasses[] = $class->name;
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
@@ -113,11 +119,12 @@ final class AttributeServicesRegistrar
 			}
 
 			$resultDefinition = $definition->getResultDefinition();
+			$registeredClasses[] = $class->name;
 			self::processConstructorParameters($builder, $class->name, $resultDefinition, $constructorParameters);
 		}
 
 		if ($level === null) {
-			return;
+			return $registeredClasses;
 		}
 
 		foreach (self::findTargetClasses($targets, RegisteredRule::class, $conditionalTargets) as [$class, $tagged]) {
@@ -133,6 +140,7 @@ final class AttributeServicesRegistrar
 				$definition->addTag(LazyRegistry::RULE_TAG);
 			}
 
+			$registeredClasses[] = $class->name;
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
@@ -149,8 +157,11 @@ final class AttributeServicesRegistrar
 				$definition->addTag(RegistryFactory::COLLECTOR_TAG);
 			}
 
+			$registeredClasses[] = $class->name;
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
+
+		return $registeredClasses;
 	}
 
 	/**

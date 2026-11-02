@@ -307,6 +307,8 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			analysedPaths: [$this->directory . '/src'],
 			analysedPathsFromConfig: [],
 			composerAutoloaderProjectPaths: [],
+			attributeServicesDirectories: [],
+			attributeServicesClasses: [],
 			usedLevel: '8',
 			cliAutoloadFile: null,
 			bootstrapFiles: [],

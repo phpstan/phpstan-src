@@ -63,6 +63,7 @@ parametersSchema:
 		unusedVariable: bool()
 		unusedParameters: bool()
 		reuseCollectedDataRuleErrors: bool()
+		reportConflictingPurityTags: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

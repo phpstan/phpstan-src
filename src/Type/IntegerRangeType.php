@@ -145,13 +145,17 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	 */
 	private static function fromFloatComparison(float $value, string $operator): Type
 	{
-		$holds = match ($operator) {
-			'<' => static fn (int $int): bool => $int < $value,
-			'<=' => static fn (int $int): bool => $int <= $value,
-			'>' => static fn (int $int): bool => $int > $value,
-			'>=' => static fn (int $int): bool => $int >= $value,
-			default => throw new ShouldNotHappenException(),
-		};
+		if ($operator === '<') {
+			$holds = static fn (int $int): bool => $int < $value;
+		} elseif ($operator === '<=') {
+			$holds = static fn (int $int): bool => $int <= $value;
+		} elseif ($operator === '>') {
+			$holds = static fn (int $int): bool => $int > $value;
+		} elseif ($operator === '>=') {
+			$holds = static fn (int $int): bool => $int >= $value;
+		} else {
+			throw new ShouldNotHappenException();
+		}
 
 		$holdsAtMin = $holds(PHP_INT_MIN);
 		if ($holdsAtMin === $holds(PHP_INT_MAX)) {

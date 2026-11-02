@@ -162,25 +162,39 @@ class IntegerRangeTypeTest extends PHPStanTestCase
 			'2**53 + 4' => 9007199254740996.0,
 			'-2**53 - 4' => -9007199254740996.0,
 		];
+		$comparisons = [
+			'<' => [
+				static fn (float $value): Type => IntegerRangeType::createAllSmallerThan($value),
+				static fn (int $int, float $value): bool => $int < $value,
+			],
+			'<=' => [
+				static fn (float $value): Type => IntegerRangeType::createAllSmallerThanOrEqualTo($value),
+				static fn (int $int, float $value): bool => $int <= $value,
+			],
+			'>' => [
+				static fn (float $value): Type => IntegerRangeType::createAllGreaterThan($value),
+				static fn (int $int, float $value): bool => $int > $value,
+			],
+			'>=' => [
+				static fn (float $value): Type => IntegerRangeType::createAllGreaterThanOrEqualTo($value),
+				static fn (int $int, float $value): bool => $int >= $value,
+			],
+		];
 		foreach ($values as $label => $value) {
-			foreach (['<', '<=', '>', '>='] as $operator) {
-				yield sprintf('$int %s %s', $operator, $label) => [$operator, $value];
+			foreach ($comparisons as $operator => [$factory, $compare]) {
+				yield sprintf('$int %s %s', $operator, $label) => [$factory, $compare, $value];
 			}
 		}
 	}
 
 	/**
-	 * @param '<'|'<='|'>'|'>=' $operator
+	 * @param callable(float): Type $factory
+	 * @param callable(int, float): bool $compare
 	 */
 	#[DataProvider('dataMatchesPhpComparison')]
-	public function testMatchesPhpComparison(string $operator, float $value): void
+	public function testMatchesPhpComparison(callable $factory, callable $compare, float $value): void
 	{
-		[$type, $compare] = match ($operator) {
-			'<' => [IntegerRangeType::createAllSmallerThan($value), static fn (int $int): bool => $int < $value],
-			'<=' => [IntegerRangeType::createAllSmallerThanOrEqualTo($value), static fn (int $int): bool => $int <= $value],
-			'>' => [IntegerRangeType::createAllGreaterThan($value), static fn (int $int): bool => $int > $value],
-			'>=' => [IntegerRangeType::createAllGreaterThanOrEqualTo($value), static fn (int $int): bool => $int >= $value],
-		};
+		$type = $factory($value);
 
 		// a comparison with a float flips at most once, near the float or at an end of the int range;
 		// the ints converting to one float near 2**63 span 1024 of them
@@ -194,7 +208,7 @@ class IntegerRangeTypeTest extends PHPStanTestCase
 			$from = $center < PHP_INT_MIN + self::PROBED_INTS_AROUND_BOUND ? PHP_INT_MIN : $center - self::PROBED_INTS_AROUND_BOUND;
 			$to = $center > PHP_INT_MAX - self::PROBED_INTS_AROUND_BOUND ? PHP_INT_MAX : $center + self::PROBED_INTS_AROUND_BOUND;
 			for ($int = $from;; $int++) {
-				if ($type->isSuperTypeOf(new ConstantIntegerType($int))->yes() !== $compare($int)) {
+				if ($type->isSuperTypeOf(new ConstantIntegerType($int))->yes() !== $compare($int, $value)) {
 					$mismatches[] = $int;
 				}
 				if ($int === $to) {

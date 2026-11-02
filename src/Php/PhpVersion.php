@@ -548,4 +548,9 @@ final class PhpVersion
 		return $this->versionId >= 70300;
 	}
 
+	public function restrictsGlobalsModification(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
 }

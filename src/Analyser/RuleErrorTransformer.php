@@ -312,11 +312,13 @@ final class RuleErrorTransformer
 	 */
 	private function getParsedFile(string $file): array
 	{
-		if (array_key_exists($file, $this->parsedFiles)) {
+		// the file can change between analyses in one process, like PHPStan Pro or tests
+		$code = FileReader::read($file);
+		if (array_key_exists($file, $this->parsedFiles) && $this->parsedFiles[$file]['code'] === $code) {
 			return $this->parsedFiles[$file];
 		}
 
-		$code = FileReader::read($file);
+		unset($this->parsedFiles[$file]);
 		$this->parser->parse($code);
 
 		if (count($this->parsedFiles) >= self::PARSED_FILES_LIMIT) {

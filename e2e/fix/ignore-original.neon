@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			identifier: fixE2E.step
+			path: src/Ignored.php

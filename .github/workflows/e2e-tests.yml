@@ -970,7 +970,7 @@ jobs:
           - script: |
               cd e2e/fix
               composer install
-              rm -rf src cycle tmp && cp -r original src && cp -r cycle-original cycle
+              rm -rf src cycle tmp && cp -r original src && cp -r cycle-original cycle && cp ignore-original.neon ignore.neon
               OUTPUT=$(AI_AGENT=1 ../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
               echo "$OUTPUT"
               ../bashunit assert contains '7 of the errors can be fixed automatically. Run PHPStan again with --fix' "$OUTPUT"
@@ -984,9 +984,11 @@ jobs:
               diff -u expected/Ignored-fix.php src/Ignored.php
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix-ignored")
               echo "$OUTPUT"
-              ../bashunit assert contains '[OK] 2 errors fixed' "$OUTPUT"
+              # the last round removes the ignoreErrors entry, it does not match anything after the fixes
+              ../bashunit assert contains '[OK] 3 errors fixed in 2 files' "$OUTPUT"
               diff -u expected/Foo.php src/Foo.php
               diff -u expected/Ignored-fix-ignored.php src/Ignored.php
+              diff -u ignore-expected.neon ignore.neon
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --fix --fix-ignored")
               echo "$OUTPUT"
               ../bashunit assert contains 'No fixable errors found' "$OUTPUT"
@@ -1022,6 +1024,25 @@ jobs:
               ../bashunit assert not_contains 'Unmatched one' "$OUTPUT"
               ../bashunit assert not_contains 'NEON' "$OUTPUT"
               ../bashunit assert not_contains 'occurred only' "$OUTPUT"
+          - script: |
+              cd e2e/fix-ignored-entries
+              composer install
+              rm -rf src tmp && cp -r original src && cp baseline-original.php baseline.php && cp baseline-original.neon baseline.neon
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix-ignored")
+              echo "$OUTPUT"
+              # the ignored errors in the first round, the ignores that matched them in the second round:
+              # the PHP baseline entry, the too high count of the NEON baseline entry and the @phpstan-ignore comment
+              ../bashunit assert contains 'Round 1: fixed 5 errors in 3 files' "$OUTPUT"
+              ../bashunit assert contains 'Round 2: fixed 3 errors in 3 files' "$OUTPUT"
+              ../bashunit assert contains '[OK] 8 errors fixed in 5 files' "$OUTPUT"
+              for file in InComment.php InNeonBaseline.php InPhpBaseline.php; do diff -u expected/$file src/$file; done
+              diff -u expected/baseline.php baseline.php
+              diff -u expected/baseline.neon baseline.neon
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
+              echo "$OUTPUT"
+              # the entry that was stale before, in a file --fix-ignored did not change, is left alone
+              ../bashunit assert contains 'Untouched.php:?:Ignored error pattern #^Stale$#' "$OUTPUT"
+              ../bashunit assert not_contains 'src/In' "$OUTPUT"
           - script: |
               cd e2e/editor-mode
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")

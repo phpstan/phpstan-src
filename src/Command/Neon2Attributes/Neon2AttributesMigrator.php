@@ -11,7 +11,8 @@ use Nette\Neon\Parser as NeonParser;
 use Nette\Neon\TokenStream as NeonTokenStream;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\DependencyInjection\ValidateServiceTagsExtension;
+use PHPStan\DependencyInjection\ExtensionInterface;
+use PHPStan\DependencyInjection\ExtensionInterfacesExtension;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\FileReader;
 use PHPStan\Neon\Printer as NeonPrinter;
@@ -77,8 +78,9 @@ final class Neon2AttributesMigrator
 	 * @param list<string> $attributeServicesDirectories
 	 * @param int $phpVersionId the lowest PHP version the attributes must work on, for #[Conditional]
 	 * @param list<string> $otherServiceNames names of services defined outside of $configFiles, an entry with the same name overrides them
+	 * @param array<class-string, string> $interfaceTagMapping all extension interfaces with their tags, including the ones from the extensionInterfaces sections of $configFiles
 	 */
-	public function migrate(array $configFiles, array $attributeServicesDirectories, int $phpVersionId, array $otherServiceNames): Neon2AttributesResult
+	public function migrate(array $configFiles, array $attributeServicesDirectories, int $phpVersionId, array $otherServiceNames, array $interfaceTagMapping): Neon2AttributesResult
 	{
 		// reflection reports real paths, a package from a path repository is a symlink in vendor/
 		$directories = array_map(static fn (string $directory): string => rtrim(strtr(realpath($directory) ?: $directory, '\\', '/'), '/'), $attributeServicesDirectories);
@@ -89,6 +91,8 @@ final class Neon2AttributesMigrator
 		$entries = [];
 		/** @var array<string, array{file: string, item: NeonArrayItemNode, tags: array<mixed>}> $conditionalTags by lowercase class name */
 		$conditionalTags = [];
+		/** @var list<array{file: string, item: NeonArrayItemNode}> $extensionInterfaces */
+		$extensionInterfaces = [];
 		foreach ($configFiles as $file) {
 			try {
 				$code = FileReader::read($file);
@@ -119,6 +123,10 @@ final class Neon2AttributesMigrator
 							continue;
 						}
 						$conditionalTags[strtolower($class)] = ['file' => $file, 'item' => $item, 'tags' => $tags];
+					}
+				} elseif ($section === ExtensionInterfacesExtension::NAME) {
+					foreach ($sectionItem->value->items as $item) {
+						$extensionInterfaces[] = ['file' => $file, 'item' => $item];
 					}
 				}
 			}
@@ -181,7 +189,7 @@ final class Neon2AttributesMigrator
 			}
 
 			$conditional = $conditionalTags[$lowerClass] ?? null;
-			$classAttributes = $this->createClassAttributes($entry['section'], $definition, $reflection, $conditional === null ? null : $conditional['tags'], $phpVersionId);
+			$classAttributes = $this->createClassAttributes($entry['section'], $definition, $reflection, $conditional === null ? null : $conditional['tags'], $phpVersionId, $interfaceTagMapping);
 			if (is_string($classAttributes)) {
 				$kept[] = new KeptService(KeptService::CATEGORY_KEPT, $reflection->getName(), $classAttributes, $entry['file'], $line);
 				continue;
@@ -198,6 +206,33 @@ final class Neon2AttributesMigrator
 				$attributes[] = 'AutowiredParameter';
 			}
 			$converted[] = new ConvertedService($classAttributes->reflection->getName(), $attributes, $entry['file']);
+		}
+
+		foreach ($extensionInterfaces as $entry) {
+			$interface = $entry['item']->key !== null ? $entry['item']->key->toValue() : null;
+			$tag = $entry['item']->value->toValue();
+			$line = $entry['item']->startLine ?? 0;
+			if (!is_string($interface) || !is_string($tag)) {
+				continue;
+			}
+			if (!interface_exists($interface)) {
+				$kept[] = new KeptService(KeptService::CATEGORY_KEPT, $interface, 'interface not found', $entry['file'], $line);
+				continue;
+			}
+			$reflection = new ReflectionClass($interface);
+			$fileName = $reflection->getFileName();
+			if ($fileName === false || !self::isInDirectories(strtr($fileName, '\\', '/'), $directories)) {
+				$kept[] = new KeptService(KeptService::CATEGORY_OUTSIDE, $reflection->getName(), null, $entry['file'], $line);
+				continue;
+			}
+			if (count($reflection->getAttributes(ExtensionInterface::class)) > 0) {
+				$kept[] = new KeptService(KeptService::CATEGORY_KEPT, $reflection->getName(), 'already has #[ExtensionInterface]', $entry['file'], $line);
+				continue;
+			}
+
+			$classEdits[$fileName][] = new ClassAttributes($reflection, new AttributeSpec('ExtensionInterface', ['tag' => $tag]), []);
+			$removedItems[$entry['file']][] = $entry['item'];
+			$converted[] = new ConvertedService($reflection->getName(), ['ExtensionInterface'], $entry['file']);
 		}
 
 		$changedFiles = [];
@@ -383,9 +418,10 @@ final class Neon2AttributesMigrator
 	/**
 	 * @param ReflectionClass<object> $reflection
 	 * @param array<mixed>|null $conditionalTags
+	 * @param array<class-string, string> $interfaceTagMapping
 	 * @return ClassAttributes|string the attributes, or why the definition cannot be converted
 	 */
-	private function createClassAttributes(string $section, ServiceDefinition $definition, ReflectionClass $reflection, ?array $conditionalTags, int $phpVersionId): ClassAttributes|string
+	private function createClassAttributes(string $section, ServiceDefinition $definition, ReflectionClass $reflection, ?array $conditionalTags, int $phpVersionId, array $interfaceTagMapping): ClassAttributes|string
 	{
 		if (!$reflection->isInstantiable() && $definition->generatedFactory === null && $definition->factory === null) {
 			return 'not an instantiable class';
@@ -415,7 +451,7 @@ final class Neon2AttributesMigrator
 		}
 
 		$interfaceTags = [];
-		foreach (ValidateServiceTagsExtension::getInterfaceTagMapping() as $interface => $tag) {
+		foreach ($interfaceTagMapping as $interface => $tag) {
 			if (!$reflection->implementsInterface($interface)) {
 				continue;
 			}
@@ -424,10 +460,10 @@ final class Neon2AttributesMigrator
 		$interfaceTags = array_values(array_unique($interfaceTags));
 		sort($interfaceTags);
 
-		$knownTags = array_values(ValidateServiceTagsExtension::getInterfaceTagMapping());
+		$knownTags = array_values($interfaceTagMapping);
 		foreach ($definition->tags as $tag) {
 			if (!in_array($tag, $knownTags, true)) {
-				return sprintf('custom tag %s has no attribute equivalent', $tag);
+				return sprintf('tag %s is not mapped to an interface in the %s section', $tag, ExtensionInterfacesExtension::NAME);
 			}
 		}
 

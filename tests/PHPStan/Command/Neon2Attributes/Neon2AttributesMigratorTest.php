@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\Neon2Attributes;
 
+use PHPStan\DependencyInjection\ValidateServiceTagsExtension;
 use PHPStan\File\FileReader;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -26,7 +27,7 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 {
 
 	/**
-	 * @return iterable<string, array{0: string, 1: int, 2: list<string>, 3?: list<string>}>
+	 * @return iterable<string, array{0: string, 1: int, 2: list<string>, 3?: list<string>, 4?: array<string, string>}>
 	 */
 	public static function dataMigrate(): iterable
 	{
@@ -44,7 +45,7 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 			'UntaggedExtension: AutowiredService',
 			'TaggedRule: AutowiredService',
 			'kept PartiallyTaggedExtension: tags do not match the implemented extension interfaces, they would add phpstan.constants.alwaysUsedClassConstantsExtension',
-			'kept UnknownTag: custom tag my.own.tag has no attribute equivalent',
+			'kept UnknownTag: tag my.own.tag is not mapped to an interface in the extensionInterfaces section',
 		]];
 
 		yield 'named service' => ['named-service', 80100, [
@@ -148,6 +149,14 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 			'kept JunitFormatter: overrides service errorFormatter.junit',
 		], ['errorFormatter.junit']];
 
+		yield 'extension interfaces' => ['extension-interfaces', 80100, [
+			'TaggedService: AutowiredService',
+			'UntaggedService: AutowiredService',
+			'ConditionalService: Conditional',
+			'MyExtension: ExtensionInterface',
+			'outside PHPStan\\Rules\\Rule',
+		], [], ['Neon2AttributesFixtures\\ExtensionInterfaces\\MyExtension' => 'my.extension']];
+
 		yield 'imports' => ['imports', 80100, [
 			'SortedImports: AutowiredService',
 			'ExistingImport: AutowiredService',
@@ -159,9 +168,10 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 	/**
 	 * @param list<string> $expectedReport
 	 * @param list<string> $otherServiceNames
+	 * @param array<class-string, string> $extensionInterfaces
 	 */
 	#[DataProvider('dataMigrate')]
-	public function testMigrate(string $case, int $phpVersionId, array $expectedReport, array $otherServiceNames = []): void
+	public function testMigrate(string $case, int $phpVersionId, array $expectedReport, array $otherServiceNames = [], array $extensionInterfaces = []): void
 	{
 		$directory = __DIR__ . '/data/' . $case;
 		$configFiles = glob($directory . '/*.neon');
@@ -170,7 +180,7 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 
 		$attributeServicesDirectory = $case === 'outside-directories' ? $directory . '/Inside' : $directory;
 		$migrator = self::getContainer()->getByType(Neon2AttributesMigrator::class);
-		$result = $migrator->migrate($configFiles, [$attributeServicesDirectory], $phpVersionId, $otherServiceNames);
+		$result = $migrator->migrate($configFiles, [$attributeServicesDirectory], $phpVersionId, $otherServiceNames, ValidateServiceTagsExtension::getInterfaceTagMapping() + $extensionInterfaces);
 
 		$namespace = 'Neon2AttributesFixtures\\' . str_replace('-', '', ucwords($case, '-')) . '\\';
 		$report = [];
@@ -208,7 +218,7 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 		try {
 			$configFiles = glob($link . '/*.neon');
 			$this->assertNotFalse($configFiles);
-			$result = self::getContainer()->getByType(Neon2AttributesMigrator::class)->migrate($configFiles, [$link], 80100, []);
+			$result = self::getContainer()->getByType(Neon2AttributesMigrator::class)->migrate($configFiles, [$link], 80100, [], ValidateServiceTagsExtension::getInterfaceTagMapping());
 		} finally {
 			unlink($link);
 		}

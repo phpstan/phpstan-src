@@ -1,0 +1,12 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\ExtensionInterfaces;
+
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Conditional;
+
+#[Conditional(attribute: new AutowiredService(), if: '%myToggle%')]
+final class ConditionalService implements MyExtension
+{
+
+}

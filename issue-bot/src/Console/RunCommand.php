@@ -21,6 +21,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 use function array_key_exists;
+use function array_values;
 use function count;
 use function escapeshellarg;
 use function explode;
@@ -143,7 +144,7 @@ class RunCommand extends Command
 
 						if (count($results) === $total) {
 							ksort($results);
-							$deferred->resolve($results);
+							$deferred->resolve(array_values($results));
 						} else {
 							$runNext();
 						}

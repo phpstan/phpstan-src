@@ -1564,7 +1564,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getOffsetValueType(Type $offsetType): Type
 	{
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
-			return RecursionGuard::run($this, fn (): Type => $this->getMethod('offsetGet', new OutOfClassScope())->getOnlyVariant()->getReturnType());
+			// Resolve offsetGet()'s method-level template types (e.g. `@template TOffset of key-of<T>`)
+			// against the offset, as for an explicit $object->offsetGet($offset) call.
+			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectFromTypes(
+				[$offsetType],
+				$this->getMethod('offsetGet', new OutOfClassScope())->getVariants(),
+				false,
+			)->getReturnType());
 		}
 
 		if (!$this->isExtraOffsetAccessibleClass()->no()) {

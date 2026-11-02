@@ -76,3 +76,20 @@ class MoreCases
 	}
 
 }
+
+class CompoundAssignments
+{
+
+	/**
+	 * @param Options<array{name: string, age: int}> $options
+	 */
+	public function compound(Options $options): void
+	{
+		$options['age'] ??= 5;
+		$options['name'] ??= 'x';
+		$options['age'] += 1;
+		$options['name'] .= 'x';
+		$options['age'] .= 'x';
+	}
+
+}

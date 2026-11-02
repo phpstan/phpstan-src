@@ -1,0 +1,5 @@
+includes:
+	- attributeServices.neon
+
+attributeServicesDirectories:
+	- data/servicesNewInInitializers

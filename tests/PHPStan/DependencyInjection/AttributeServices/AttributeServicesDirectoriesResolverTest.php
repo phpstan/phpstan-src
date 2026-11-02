@@ -9,17 +9,23 @@ use function array_values;
 use function dirname;
 use function hash_file;
 use function str_starts_with;
-use const PHP_VERSION_ID;
+use function strtr;
 
 class AttributeServicesDirectoriesResolverTest extends TestCase
 {
 
+	/**
+	 * With forward slashes like the paths the resolver returns, also on Windows.
+	 */
 	private static function getRepoRoot(): string
 	{
-		return dirname(__DIR__, 4);
+		return strtr(dirname(__DIR__, 4), '\\', '/');
 	}
 
-	private function createResolver(int $phpVersionId = PHP_VERSION_ID): AttributeServicesDirectoriesResolver
+	/**
+	 * PHP 8.0 by default so that the tests run on every PHP version - resolving needs no runtime attributes.
+	 */
+	private function createResolver(int $phpVersionId = 80000): AttributeServicesDirectoriesResolver
 	{
 		$repoRoot = self::getRepoRoot();
 
@@ -83,7 +89,7 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 
 	public function testDirectoryOutsideComposerProjects(): void
 	{
-		$resolver = new AttributeServicesDirectoriesResolver(new FileHelper(self::getRepoRoot()), []);
+		$resolver = new AttributeServicesDirectoriesResolver(new FileHelper(self::getRepoRoot()), [], 80000);
 		$this->expectException(InvalidAttributeServicesDirectoriesException::class);
 		$this->expectExceptionMessage('is not inside any project with Composer metadata known to PHPStan');
 		$resolver->resolve([__DIR__]);

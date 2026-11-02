@@ -2,18 +2,23 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\DI\Compiler;
 use Nette\DI\CompilerExtension;
+use Nette\DI\InvalidConfigurationException;
 use Nette\PhpGenerator\ClassType;
 use olvlvl\ComposerAttributeCollector\Attributes;
 use Override;
 use PhpParser\NodeVisitor;
+use PHPStan\DependencyInjection\AttributeServices\AttributeTargetsProvider;
 use PHPStan\Parser\RichParser;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use function array_flip;
 use function array_key_exists;
 use function array_keys;
-use function count;
+use function interface_exists;
+use function is_array;
+use function is_string;
 use function sprintf;
 
 #[ContainerExtension(name: 'validateServiceTags')]
@@ -24,7 +29,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 	private static ?array $interfaceTagMapping = null;
 
 	/**
-	 * Derived from the #[ExtensionInterface] attribute above each extension interface.
+	 * PHPStan's own extension interfaces, derived from the #[ExtensionInterface] attribute above each of them.
 	 *
 	 * @return array<class-string, string>
 	 */
@@ -52,6 +57,70 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 	}
 
 	/**
+	 * PHPStan's own extension interfaces plus the third-party ones, marked with #[ExtensionInterface]
+	 * in the attributeServicesDirectories section or listed in the extensionInterfaces section.
+	 *
+	 * @return array<class-string, string>
+	 * @throws InvalidConfigurationException
+	 */
+	public static function getExtendedInterfaceTagMapping(Compiler $compiler): array
+	{
+		$configured = [];
+		foreach ($compiler->getExtensions(ExtensionInterfacesExtension::class) as $extension) {
+			$config = $extension->getConfig();
+			if (!is_array($config)) {
+				continue;
+			}
+			$configured += $config;
+		}
+
+		return self::createInterfaceTagMapping($configured);
+	}
+
+	/**
+	 * @param array<mixed> $configured the extensionInterfaces section
+	 * @return array<class-string, string>
+	 * @throws InvalidConfigurationException
+	 */
+	public static function createInterfaceTagMapping(array $configured): array
+	{
+		$mapping = self::getInterfaceTagMapping();
+		$entries = [];
+		foreach (AttributeTargetsProvider::create()->findTargetClasses(ExtensionInterface::class) as $class) {
+			$entries[] = [$class->name, $class->attribute->tag, sprintf('#[ExtensionInterface] on %s', $class->name)];
+		}
+		foreach ($configured as $interface => $tag) {
+			if (!is_string($interface) || !is_string($tag)) {
+				continue;
+			}
+			$entries[] = [$interface, $tag, sprintf('the %s section', ExtensionInterfacesExtension::NAME)];
+		}
+
+		$tagInterfaces = array_flip($mapping);
+		foreach ($entries as [$interface, $tag, $source]) {
+			if (!interface_exists($interface)) {
+				throw new InvalidConfigurationException(sprintf('Interface %s from %s does not exist.', $interface, $source));
+			}
+			$interface = (new ReflectionClass($interface))->getName();
+			if (array_key_exists($interface, $mapping)) {
+				if ($mapping[$interface] === $tag) {
+					continue;
+				}
+
+				throw new InvalidConfigurationException(sprintf('Interface %s is mapped to tag %s, %s maps it to %s.', $interface, $mapping[$interface], $source, $tag));
+			}
+			if (array_key_exists($tag, $tagInterfaces)) {
+				throw new InvalidConfigurationException(sprintf('Tag %s is mapped to interface %s, %s maps it to %s.', $tag, $tagInterfaces[$tag], $source, $interface));
+			}
+
+			$mapping[$interface] = $tag;
+			$tagInterfaces[$tag] = $interface;
+		}
+
+		return $mapping;
+	}
+
+	/**
 	 * Deliberately runs in afterCompile() rather than beforeCompile(): tags are added by other
 	 * extensions' beforeCompile() - ConditionalTagsExtension, and any extension registered from a
 	 * project config file, which the compiler always processes after PHPStan's own ones - and
@@ -65,13 +134,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 	public function afterCompile(ClassType $class): void
 	{
 		$builder = $this->getContainerBuilder();
-		$mapping = self::getInterfaceTagMapping();
-		$mappingCount = count($mapping);
-		$flippedMapping = array_flip($mapping);
-
-		if (count($flippedMapping) !== $mappingCount) {
-			throw new ShouldNotHappenException('A tag is mapped to multiple interfaces');
-		}
+		$flippedMapping = array_flip(self::getExtendedInterfaceTagMapping($this->compiler));
 
 		foreach ($builder->getDefinitions() as $definition) {
 			/** @var class-string|null $className */

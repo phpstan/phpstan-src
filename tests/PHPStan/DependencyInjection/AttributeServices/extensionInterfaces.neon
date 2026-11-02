@@ -1,0 +1,20 @@
+attributeServicesDirectories:
+	- data/extensionInterfaces
+
+extensionInterfaces:
+	AttributeServicesFixtures\ExtensionInterfaces\NeonMappedExtension: attributeServicesFixtures.neonMapped
+
+parameters:
+	attributeServicesFixturesToggle: false
+
+services:
+	-
+		class: AttributeServicesFixtures\ExtensionInterfaces\ConditionallyTaggedService
+
+conditionalTags:
+	AttributeServicesFixtures\ExtensionInterfaces\ConditionallyTaggedService:
+		attributeServicesFixtures.neonMapped: true
+		attributeServicesFixtures.attributeMapped: %attributeServicesFixturesToggle%
+
+parametersSchema:
+	attributeServicesFixturesToggle: bool()

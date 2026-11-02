@@ -73,6 +73,7 @@ final class AttributeServicesDiscoverer
 		RegisteredCollector::class,
 		GenerateFactory::class,
 		Conditional::class,
+		ExtensionInterface::class,
 	];
 
 	/**
@@ -287,14 +288,6 @@ final class AttributeServicesDiscoverer
 		if ($lowerAttributeName === strtolower(ContainerExtension::class)) {
 			$this->errors[] = sprintf(
 				'Attribute #[ContainerExtension] on class %s is not supported in directories from the attributeServicesDirectories section - the list of compiler extensions is fixed before the section is processed. Register the class in the `extensions` section of the configuration file instead.',
-				$className,
-			);
-			return;
-		}
-
-		if ($lowerAttributeName === strtolower(ExtensionInterface::class)) {
-			$this->errors[] = sprintf(
-				'Attribute #[ExtensionInterface] on %s is not supported in directories from the attributeServicesDirectories section - third-party extension interfaces are not supported.',
 				$className,
 			);
 			return;

@@ -14,19 +14,27 @@ use AttributeServicesFixtures\DiscoveredService;
 use AttributeServicesFixtures\DiscoveredStaticallyCreated;
 use AttributeServicesFixtures\DiscoveredValue;
 use AttributeServicesFixtures\DiscoveredValueFactory;
+use AttributeServicesFixtures\ExtensionInterfaces\AttributeMappedService;
+use AttributeServicesFixtures\ExtensionInterfaces\ConditionallyTaggedService;
+use AttributeServicesFixtures\ExtensionInterfaces\NeonMappedService;
+use Nette\DI\InvalidConfigurationException;
 use PHPStan\Collectors\RegistryFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\DependencyInjection\DerivativeContainerFactory;
+use PHPStan\DependencyInjection\MissingImplementedInterfaceInServiceWithTagException;
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
+use Throwable;
 use function array_filter;
+use function array_map;
 use function dirname;
 use function md5;
 use function mkdir;
+use function sort;
 use function strtr;
 use function sys_get_temp_dir;
 use function uniqid;
@@ -125,6 +133,51 @@ class AttributeServicesIntegrationTest extends TestCase
 		$this->assertCount(1, $container->findServiceNamesByType(DiscoveredConditionalService::class));
 	}
 
+	public function testThirdPartyExtensionInterfaces(): void
+	{
+		$container = (new ContainerFactory(__DIR__))->create(self::createTmpDir(), [__DIR__ . '/extensionInterfaces.neon'], [], [dirname(__DIR__, 4)]);
+
+		$attributeMapped = $container->getServicesByTag('attributeServicesFixtures.attributeMapped');
+		$this->assertSame([AttributeMappedService::class], array_map(static fn (object $service): string => $service::class, $attributeMapped));
+
+		$neonMapped = array_map(static fn (object $service): string => $service::class, $container->getServicesByTag('attributeServicesFixtures.neonMapped'));
+		sort($neonMapped);
+		$this->assertSame([ConditionallyTaggedService::class, NeonMappedService::class], $neonMapped);
+	}
+
+	/**
+	 * @return iterable<array{string, class-string<Throwable>, string}>
+	 */
+	public static function dataExtensionInterfacesErrors(): iterable
+	{
+		yield [
+			'extensionInterfacesWrongTag.neon',
+			MissingImplementedInterfaceInServiceWithTagException::class,
+			'Service of type AttributeServicesFixtures\\ExtensionInterfaces\\WronglyTaggedService with tag attributeServicesFixtures.neonMapped does not implement interface AttributeServicesFixtures\\ExtensionInterfaces\\NeonMappedExtension.',
+		];
+		yield [
+			'extensionInterfacesCoreTag.neon',
+			InvalidConfigurationException::class,
+			'Tag phpstan.rules.rule is mapped to interface PHPStan\\Rules\\Rule, the extensionInterfaces section maps it to AttributeServicesFixtures\\ExtensionInterfaces\\NeonMappedExtension.',
+		];
+		yield [
+			'extensionInterfacesMissing.neon',
+			InvalidConfigurationException::class,
+			'Interface AttributeServicesFixtures\\ExtensionInterfaces\\Missing from the extensionInterfaces section does not exist.',
+		];
+	}
+
+	/**
+	 * @param class-string<Throwable> $exceptionClass
+	 */
+	#[DataProvider('dataExtensionInterfacesErrors')]
+	public function testExtensionInterfacesErrors(string $neonFile, string $exceptionClass, string $expectedMessage): void
+	{
+		$this->expectException($exceptionClass);
+		$this->expectExceptionMessage($expectedMessage);
+		(new ContainerFactory(__DIR__))->create(self::createTmpDir(), [__DIR__ . '/' . $neonFile], [], [dirname(__DIR__, 4)]);
+	}
+
 	public function testDiscoveredCollector(): void
 	{
 		$container = self::createContainer();
@@ -189,11 +242,6 @@ class AttributeServicesIntegrationTest extends TestCase
 		yield [
 			'containerExtension.neon',
 			'Attribute #[ContainerExtension] on class AttributeServicesFixtures\ContainerExtension\BadCompilerExtension is not supported in directories from the attributeServicesDirectories section - the list of compiler extensions is fixed before the section is processed. Register the class in the `extensions` section of the configuration file instead.',
-		];
-
-		yield [
-			'extensionInterface.neon',
-			'Attribute #[ExtensionInterface] on AttributeServicesFixtures\ExtensionInterface\BadExtensionInterface is not supported in directories from the attributeServicesDirectories section - third-party extension interfaces are not supported.',
 		];
 
 		yield [

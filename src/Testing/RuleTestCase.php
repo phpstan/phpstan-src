@@ -260,7 +260,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		}
 
 		$patcher = self::getContainer()->getByType(Patcher::class);
-		$patchResult = $patcher->applyDiffs($fixedFile, $diffs); // @phpstan-ignore missingType.checkedException
+		$patchResult = $patcher->applyDiffs(FileReader::read($fixedFile), $diffs); // @phpstan-ignore missingType.checkedException
 		$this->assertSame(0, $patchResult['skippedCount'], 'Some fixes overlap and could not be applied together.');
 
 		$fixedFileContents = FileReader::read($expectedFile);

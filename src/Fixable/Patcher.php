@@ -5,7 +5,6 @@ namespace PHPStan\Fixable;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\File\FileReader;
 use function array_splice;
 use function count;
 use function hash;
@@ -31,11 +30,10 @@ final class Patcher
 	/**
 	 * @param FixedErrorDiff[] $diffs
 	 * @return array{contents: string, skippedCount: int}
-	 * @throws FileChangedException
+	 * @throws FileChangedException when a diff was computed against different contents
 	 */
-	public function applyDiffs(string $fileName, array $diffs): array
+	public function applyDiffs(string $fileContents, array $diffs): array
 	{
-		$fileContents = FileReader::read($fileName);
 		$fileHash = hash('sha256', $fileContents);
 		foreach ($diffs as $diff) {
 			if ($diff->originalHash !== $fileHash) {

@@ -583,7 +583,7 @@ final class AnalyseCommand extends Command
 				foreach ($diffsByFile as $file => $diffs) {
 					$diffsCount = count($diffs);
 					try {
-						$patchResult = $patcher->applyDiffs($file, $diffs);
+						$patchResult = $patcher->applyDiffs(FileReader::read($file), $diffs);
 						$skippedCount += $patchResult['skippedCount'];
 						$errorOutput->getStyle()->progressAdvance($diffsCount);
 					} catch (FileChangedException) {

@@ -4,7 +4,6 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\AnalysedCodeException;
-use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -15,7 +14,6 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
-use PHPStan\File\FileReader;
 use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
@@ -67,7 +65,6 @@ final class FileAnalyser
 		private ExtensionsCollection $ignoreErrorExtensions,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
-		private LineIgnoreFixer $lineIgnoreFixer,
 		#[AutowiredParameter]
 		private bool $reportIgnoresWithoutComments,
 		private ValueDependencyCollector $valueDependencyCollector,
@@ -153,7 +150,7 @@ final class FileAnalyser
 					foreach ($linesToIgnore as $ignoredFile => $lines) {
 						foreach ($lines as $line => $identifiers) {
 							if ($identifiers === null) {
-								$fileErrors[] = new Error(
+								$fileErrors[] = (new Error(
 									'Ignoring all errors on a line is not allowed.',
 									$ignoredFile,
 									$line,
@@ -161,9 +158,7 @@ final class FileAnalyser
 									$ignoredFile,
 									null,
 									'Use @phpstan-ignore with an identifier and a comment (in parentheses).',
-									identifier: 'ignore.allLineErrors',
-									fixedErrorDiffs: $this->fixAllLineErrorsIgnore($ignoredFile, $line, $temporaryFileErrors),
-								);
+								))->withIdentifier('ignore.allLineErrors');
 								unset($linesToIgnore[$ignoredFile][$line]);
 								unset($unmatchedLineIgnores[$ignoredFile][$line]);
 								continue;
@@ -270,40 +265,6 @@ final class FileAnalyser
 			$unmatchedLineIgnores,
 			$processedFiles,
 		);
-	}
-
-	/**
-	 * Replaces the ignore of all errors on the line with an ignore of the identifiers of the errors reported there.
-	 *
-	 * @param list<Error> $temporaryFileErrors
-	 * @return list<FixedErrorDiff>
-	 */
-	private function fixAllLineErrorsIgnore(string $file, int $line, array $temporaryFileErrors): array
-	{
-		$identifiers = [];
-		foreach ($temporaryFileErrors as $error) {
-			if ($error->getFile() !== $file || $error->getLine() !== $line || !$error->canBeIgnored()) {
-				continue;
-			}
-
-			$identifier = $error->getIdentifier();
-			if ($identifier === null) {
-				return [];
-			}
-
-			$identifiers[] = $identifier;
-		}
-		if ($identifiers === [] || !is_file($file)) {
-			return [];
-		}
-
-		$code = FileReader::read($file);
-		$newCode = $this->lineIgnoreFixer->fix($code, $line, $identifiers);
-		if ($newCode === null) {
-			return [];
-		}
-
-		return [$this->ruleErrorTransformer->createFixedErrorDiff($file, $code, $newCode)];
 	}
 
 	/**

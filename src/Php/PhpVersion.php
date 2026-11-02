@@ -543,4 +543,9 @@ final class PhpVersion
 		return $this->versionId >= 70400;
 	}
 
+	public function warnsOnContinueTargetingSwitch(): bool
+	{
+		return $this->versionId >= 70300;
+	}
+
 }

@@ -248,10 +248,6 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
-			if ($fixReported && !$fixRound) {
-				$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
-			}
-
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();

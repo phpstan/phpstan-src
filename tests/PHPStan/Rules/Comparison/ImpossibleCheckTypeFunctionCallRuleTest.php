@@ -292,6 +292,17 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testArrayAllAnyUndecided(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-all-any-undecided.php'], [
+			[
+				'Call to function array_any() with array{} and Closure(mixed): bool will always evaluate to false.',
+				61,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testStructExists(): void
 	{

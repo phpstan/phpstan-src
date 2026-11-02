@@ -73,7 +73,12 @@ final class ArrayAnyFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 				return new SpecifiedTypes();
 			}
 
-			return $this->typeSpecifier->create($arrayArg, $narrowedType, TypeSpecifierContext::createTruthy(), $scope);
+			return $this->narrowingHelper->leaveResultUndecided(
+				$this->typeSpecifier->create($arrayArg, $narrowedType, TypeSpecifierContext::createTruthy(), $scope),
+				$node,
+				$arrayType,
+				$narrowedType,
+			);
 		}
 
 		// At least one element satisfies the predicate: the array is non-empty.
@@ -81,7 +86,12 @@ final class ArrayAnyFunctionTypeSpecifyingExtension implements FunctionTypeSpeci
 			? new NonEmptyArrayType()
 			: TypeCombinator::intersect(new ArrayType(new MixedType(), new MixedType()), new NonEmptyArrayType());
 
-		return $this->typeSpecifier->create($arrayArg, $nonEmptyType, TypeSpecifierContext::createTruthy(), $scope);
+		return $this->narrowingHelper->leaveResultUndecided(
+			$this->typeSpecifier->create($arrayArg, $nonEmptyType, TypeSpecifierContext::createTruthy(), $scope),
+			$node,
+			$arrayType,
+			$nonEmptyType,
+		);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

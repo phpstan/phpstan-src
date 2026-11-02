@@ -2,7 +2,9 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\ArrayType;
@@ -71,6 +73,22 @@ final class ArrayAllAnyNarrowingHelper
 		}
 
 		return TypeCombinator::union(...$results);
+	}
+
+	/**
+	 * The narrowing is a consequence of the call's result, not proof of it: an
+	 * unchanged array type does not make the call always true. Only when the
+	 * narrowed type cannot coexist with the argument's type is the call known
+	 * to be always false, so that verdict is the only one left for the
+	 * impossible-check rules.
+	 */
+	public function leaveResultUndecided(SpecifiedTypes $specifiedTypes, FuncCall $node, Type $arrayType, Type $narrowedType): SpecifiedTypes
+	{
+		if (TypeCombinator::intersect($arrayType, $narrowedType) instanceof NeverType) {
+			return $specifiedTypes;
+		}
+
+		return $specifiedTypes->setRootExpr($node);
 	}
 
 	private function narrowConstantArray(MutatingScope $scope, ConstantArrayType $constantArray, ArrayCallbackPredicate $predicate, bool $truthy): Type

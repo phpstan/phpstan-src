@@ -181,3 +181,27 @@ parameters:
 			identifier: property.internalClass
 			count: 2
 			path: ../src/Analyser/Ignore/UnmatchedIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $id of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 9
+			path: ../src/Analyser/Ignore/LineIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $line of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 10
+			path: ../src/Analyser/Ignore/LineIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $pos of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 4
+			path: ../src/Analyser/Ignore/LineIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $text of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 3
+			path: ../src/Analyser/Ignore/LineIgnoreFixer.php

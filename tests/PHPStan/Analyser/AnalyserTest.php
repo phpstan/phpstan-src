@@ -10,6 +10,7 @@ use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreErrorsConfigFixer;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
+use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
@@ -21,8 +22,11 @@ use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function array_filter;
 use function array_map;
 use function array_merge;
+use function array_slice;
+use function array_values;
 use function assert;
 use function count;
 use function is_string;
@@ -684,6 +688,41 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
+	public function testFixIgnoresOfAllLineErrors(): void
+	{
+		$result = $this->runAnalyser([], false, [
+			__DIR__ . '/data/ignore-next-line.php',
+		], true, true);
+		$allLineErrors = array_values(array_filter($result, static fn ($error) => $error instanceof Error && $error->getIdentifier() === 'ignore.allLineErrors'));
+		$this->assertSame([13, 16, 19, 23, 30, 37, 44, 48], array_map(static fn (Error $error) => $error->getLine(), $allLineErrors));
+
+		// the next-line tag that is not the last tag of its PHPDoc ignores a line without errors
+		$this->assertSame([], $allLineErrors[7]->getFixedErrorDiffs());
+
+		$file = $allLineErrors[0]->getFilePath();
+		$contents = FileReader::read($file);
+		$patched = (new Patcher())->apply([$file => $contents], array_map(static fn (Error $error) => $error->getFixedErrorDiffs(), array_slice($allLineErrors, 0, 7)));
+		$this->assertSame(7, $patched['appliedCount']);
+		$this->assertSame(
+			str_replace(
+				[
+					'@phpstan-ignore-next-line */',
+					"// @phpstan-ignore-next-line\n",
+					"\t * @phpstan-ignore-next-line\n\t\t */",
+					"@phpstan-ignore-next-line Some very loooooooooooooooooooooooooooooooooooooooooooon\n\t\t *                           coooooooooooooooooooooooooooooooooooooooooooooooooomment\n\t\t *                           on many lines.",
+				],
+				[
+					'@phpstan-ignore tests.alwaysFail */',
+					"// @phpstan-ignore tests.alwaysFail\n",
+					"\t * @phpstan-ignore tests.alwaysFail\n\t\t */",
+					'@phpstan-ignore tests.alwaysFail (Some very loooooooooooooooooooooooooooooooooooooooooooon coooooooooooooooooooooooooooooooooooooooooooooooooomment on many lines.)',
+				],
+				$contents,
+			),
+			$patched['contents'][$file],
+		);
+	}
+
 	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
 	{
@@ -793,9 +832,10 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportUnmatchedIgnoredErrors,
 		$filePaths,
 		bool $onlyFiles,
+		bool $reportIgnoresWithoutComments = false,
 	): array
 	{
-		$analyser = $this->createAnalyser();
+		$analyser = $this->createAnalyser($reportIgnoresWithoutComments);
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
@@ -845,7 +885,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
-	private function createAnalyser(): Analyser
+	private function createAnalyser(bool $reportIgnoresWithoutComments): Analyser
 	{
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
@@ -879,7 +919,8 @@ class AnalyserTest extends PHPStanTestCase
 			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
-			false,
+			$container->getByType(LineIgnoreFixer::class),
+			$reportIgnoresWithoutComments,
 			$container->getByType(ValueDependencyCollector::class),
 			$container->getByType(DependencyResolver::class),
 		);

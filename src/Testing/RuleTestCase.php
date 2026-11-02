@@ -11,6 +11,7 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
@@ -128,6 +129,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
+				self::getContainer()->getByType(LineIgnoreFixer::class),
 				false,
 				self::getContainer()->getByType(ValueDependencyCollector::class),
 				self::getContainer()->getByType(DependencyResolver::class),

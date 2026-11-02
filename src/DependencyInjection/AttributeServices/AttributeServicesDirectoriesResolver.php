@@ -26,8 +26,8 @@ use function usort;
 use const PHP_VERSION_ID;
 
 /**
- * Validates the merged `attributeServicesDirectories` section against the analysed project's
- * Composer metadata and computes each directory's contribution to the container cache key.
+ * Validates the merged `attributeServicesDirectories` section and computes each directory's
+ * contribution to the container cache key.
  *
  * Runs on every PHPStan run, before the container compiles - the result decides whether
  * a cached container can be reused, so it cannot sit behind the container cache itself.
@@ -109,12 +109,7 @@ final class AttributeServicesDirectoriesResolver
 				continue;
 			}
 
-			$resolvedDirectory = $this->resolveDirectory($directory, $errors);
-			if ($resolvedDirectory === null) {
-				continue;
-			}
-
-			$resolved[] = $resolvedDirectory;
+			$resolved[] = $this->resolveDirectory($directory, $errors);
 		}
 
 		if (count($errors) > 0) {
@@ -127,50 +122,9 @@ final class AttributeServicesDirectoriesResolver
 	/**
 	 * @param list<string> $errors
 	 */
-	private function resolveDirectory(string $directory, array &$errors): ?ResolvedAttributeServicesDirectory
+	private function resolveDirectory(string $directory, array &$errors): ResolvedAttributeServicesDirectory
 	{
-		$ownership = $this->findOwnership($directory);
-		if ($ownership === null) {
-			$errors[] = sprintf('Directory %s from the attributeServicesDirectories section is not inside any project with Composer metadata known to PHPStan.', $directory);
-			return null;
-		}
-
-		[$project, $package] = $ownership;
-
-		if ($package !== null) {
-			// autoload-dev of a dependency is never installed by Composer
-			$rules = $package->autoload;
-		} elseif ($project->devInstalled) {
-			$rules = $project->rootAutoload->union($project->rootAutoloadDev);
-		} else {
-			$rules = $project->rootAutoload;
-		}
-
-		$psr4 = [];
-		foreach ($rules->psr4 as $namespacePrefix => $baseDirectories) {
-			foreach ($baseDirectories as $baseDirectory) {
-				if (!$this->pathsIntersect($directory, $baseDirectory)) {
-					continue;
-				}
-
-				$psr4[$namespacePrefix][] = $baseDirectory;
-			}
-		}
-
-		$classmapPaths = [];
-		foreach ($rules->classmapPaths as $classmapPath) {
-			if (!$this->pathsIntersect($directory, $classmapPath)) {
-				continue;
-			}
-
-			$classmapPaths[] = $classmapPath;
-		}
-
-		if (count($psr4) === 0 && count($classmapPaths) === 0) {
-			$errors[] = $this->describeUncoveredDirectory($directory, $project, $package);
-			return null;
-		}
-
+		$package = $this->findPackage($directory);
 		if ($package !== null && $package->cacheToken !== null) {
 			$cacheKeyComponent = [$directory => sprintf('package:%s:%s', $package->name, $package->cacheToken)];
 		} else {
@@ -180,89 +134,20 @@ final class AttributeServicesDirectoriesResolver
 		return new ResolvedAttributeServicesDirectory(
 			$directory,
 			$package === null ? null : $package->name,
-			$psr4,
-			$classmapPaths,
-			$project->getAutoloadClassmapPath(),
 			$cacheKeyComponent,
 		);
 	}
 
-	private function describeUncoveredDirectory(string $directory, ComposerProject $project, ?ComposerPackage $package): string
-	{
-		$subject = $package === null
-			? sprintf('the autoload section of %s/composer.json', $project->rootPath)
-			: sprintf('the autoload section of the Composer package %s', $package->name);
-
-		if ($package === null) {
-			foreach ($this->collectPsrAndFilePaths($project->rootAutoloadDev) as $path) {
-				if (!$this->pathsIntersect($directory, $path)) {
-					continue;
-				}
-
-				if (!$project->devInstalled) {
-					return sprintf(
-						'Directory %s from the attributeServicesDirectories section is only covered by the autoload-dev section of %s/composer.json but Composer dependencies were installed with --no-dev.',
-						$directory,
-						$project->rootPath,
-					);
-				}
-			}
-		}
-
-		$unsupportedRules = $package === null
-			? ($project->devInstalled ? $project->rootAutoload->union($project->rootAutoloadDev) : $project->rootAutoload)
-			: $package->autoload;
-		foreach ($unsupportedRules->psr0 as $baseDirectories) {
-			foreach ($baseDirectories as $baseDirectory) {
-				if (!$this->pathsIntersect($directory, $baseDirectory)) {
-					continue;
-				}
-
-				return sprintf(
-					'Directory %s from the attributeServicesDirectories section is only covered by a psr-0 autoload rule of %s. Only psr-4 and classmap rules are supported.',
-					$directory,
-					$subject,
-				);
-			}
-		}
-
-		return sprintf(
-			'Directory %s from the attributeServicesDirectories section is not covered by %s. Add it to autoload.psr-4 or autoload.classmap in composer.json and run composer dump-autoload.',
-			$directory,
-			$subject,
-		);
-	}
-
-	/**
-	 * @return array{ComposerProject, ComposerPackage|null}|null
-	 */
-	private function findOwnership(string $directory): ?array
+	private function findPackage(string $directory): ?ComposerPackage
 	{
 		foreach ($this->getComposerProjects() as $project) {
 			$package = $project->findPackageOfDirectory($directory);
 			if ($package !== null) {
-				return [$project, $package];
+				return $package;
 			}
 		}
 
-		$containing = null;
-		foreach ($this->getComposerProjects() as $project) {
-			if (!$project->containsDirectory($directory)) {
-				continue;
-			}
-
-			if ($containing !== null && strlen($containing->rootPath) >= strlen($project->rootPath)) {
-				continue;
-			}
-
-			$containing = $project;
-		}
-
-		if ($containing === null) {
-			return null;
-		}
-
-		return [$containing, null];
+		return null;
 	}
 
 	/**
@@ -285,29 +170,6 @@ final class AttributeServicesDirectoriesResolver
 		}
 
 		return $this->composerProjects = $projects;
-	}
-
-	/**
-	 * @return list<string>
-	 */
-	private function collectPsrAndFilePaths(AutoloadRules $rules): array
-	{
-		$paths = [];
-		foreach ($rules->psr4 as $baseDirectories) {
-			foreach ($baseDirectories as $baseDirectory) {
-				$paths[] = $baseDirectory;
-			}
-		}
-		foreach ($rules->classmapPaths as $path) {
-			$paths[] = $path;
-		}
-
-		return $paths;
-	}
-
-	private function pathsIntersect(string $a, string $b): bool
-	{
-		return $a === $b || str_starts_with($a, $b . '/') || str_starts_with($b, $a . '/');
 	}
 
 	/**

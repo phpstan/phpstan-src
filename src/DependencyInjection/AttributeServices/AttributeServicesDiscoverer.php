@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\RegisteredCollector;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\File\FileReader;
 use PHPStan\ShouldNotHappenException;
+use PhpToken;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionAttribute;
@@ -31,32 +32,36 @@ use function explode;
 use function function_exists;
 use function interface_exists;
 use function is_array;
-use function is_file;
 use function is_string;
-use function ksort;
-use function preg_match;
+use function realpath;
 use function sort;
 use function sprintf;
 use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
 use function stripos;
-use function strlen;
 use function strtolower;
 use function strtr;
-use function substr;
 use function trait_exists;
 use function usort;
+use const T_ATTRIBUTE;
+use const T_CLASS;
+use const T_INTERFACE;
+use const T_NAME_QUALIFIED;
+use const T_NAMESPACE;
+use const T_STRING;
+use const T_TRAIT;
 
 /**
  * Finds classes carrying PHPStan's DI attributes in the directories listed
  * in the `attributeServicesDirectories` section.
  *
  * Runs only while the container compiles (a container-cache hit never gets here).
- * Class names come from Composer's autoload data - the PSR-4 path contract and
- * vendor/composer/autoload_classmap.php - and the attributes are read with native
- * runtime reflection; no file is ever parsed. A file that looks like it uses one of
- * the attributes but whose class cannot be autoloaded is an explicit error.
+ * Class names are read from the tokens of the files that can use the attributes, the classes
+ * are loaded by the registered autoloaders - Composer's of any type, or the one from
+ * --autoload-file - and the attributes are read with native runtime reflection.
+ * A file that looks like it uses one of the attributes but whose class cannot be
+ * autoloaded from it is an explicit error.
  */
 final class AttributeServicesDiscoverer
 {
@@ -101,9 +106,6 @@ final class AttributeServicesDiscoverer
 		'ValidatesStubFiles',
 	];
 
-	/** @var array<string, array<string, list<string>>> autoload_classmap.php path => file => class names */
-	private array $reverseClassmaps = [];
-
 	/** @var list<string> */
 	private array $errors = [];
 
@@ -118,13 +120,20 @@ final class AttributeServicesDiscoverer
 		$seenClasses = [];
 
 		foreach ($resolvedDirectories->directories as $directory) {
-			foreach ($this->findCandidateClasses($directory) as $className => $file) {
-				if (array_key_exists(strtolower($className), $seenClasses)) {
+			foreach ($this->listPhpFiles($directory->directory) as $file) {
+				$contents = FileReader::read($file);
+				if (!self::isPrefilterPositive($contents)) {
 					continue;
 				}
-				$seenClasses[strtolower($className)] = true;
 
-				$this->collectClass($className, $file, $targetClasses, $targetMethodParameters);
+				foreach (self::findDeclaredClasses($contents) as $className) {
+					if (array_key_exists(strtolower($className), $seenClasses)) {
+						continue;
+					}
+					$seenClasses[strtolower($className)] = true;
+
+					$this->collectClass($className, $file, $contents, $targetClasses, $targetMethodParameters);
+				}
 			}
 		}
 
@@ -145,69 +154,15 @@ final class AttributeServicesDiscoverer
 	}
 
 	/**
-	 * Candidate classes of one directory, derived from Composer's autoload data. Files that
-	 * cannot yield an autoloadable class are only an error when their contents suggest one
-	 * of PHPStan's DI attributes - anything else in the directory is none of our business.
-	 *
-	 * @return array<string, string> class name => file
-	 */
-	private function findCandidateClasses(ResolvedAttributeServicesDirectory $directory): array
-	{
-		$candidates = [];
-		foreach ($this->listPhpFiles($directory->directory) as $file) {
-			$className = $this->derivePsr4ClassName($directory, $file);
-			if ($className !== null) {
-				$candidates[$className] = $file;
-				continue;
-			}
-
-			$classmapClasses = $this->findClassmapClasses($directory, $file);
-			if ($classmapClasses !== null) {
-				if (count($classmapClasses) === 0) {
-					if (self::suggestsDiAttributes(FileReader::read($file))) {
-						$this->errors[] = sprintf(
-							'File %s in a directory from the attributeServicesDirectories section is not present in Composer\'s class map. Run `composer dump-autoload` and try again.',
-							$file,
-						);
-					}
-					continue;
-				}
-
-				foreach ($classmapClasses as $classmapClass) {
-					$candidates[$classmapClass] = $file;
-				}
-				continue;
-			}
-
-			if (!self::suggestsDiAttributes(FileReader::read($file))) {
-				continue;
-			}
-
-			$this->errors[] = sprintf(
-				'File %s in a directory from the attributeServicesDirectories section is not covered by the Composer autoload rules of the directory, so its class cannot be autoloaded.',
-				$file,
-			);
-		}
-
-		ksort($candidates);
-
-		return $candidates;
-	}
-
-	/**
 	 * @param array<class-string, list<TargetClass<object>>> $targetClasses
 	 * @param array<class-string, list<TargetMethodParameter<object>>> $targetMethodParameters
 	 */
-	private function collectClass(string $className, string $file, array &$targetClasses, array &$targetMethodParameters): void
+	private function collectClass(string $className, string $file, string $contents, array &$targetClasses, array &$targetMethodParameters): void
 	{
-		if (!self::isPrefilterPositive(FileReader::read($file))) {
-			return;
-		}
-
 		if (!$this->classCanBeLoaded($className)) {
-			if (self::suggestsDiAttributes(FileReader::read($file))) {
+			if (self::suggestsDiAttributes($contents)) {
 				$this->errors[] = sprintf(
-					'Class %s expected in %s (through a directory from the attributeServicesDirectories section) cannot be autoloaded.',
+					'Class %s declared in %s (through a directory from the attributeServicesDirectories section) cannot be autoloaded.',
 					$className,
 					$file,
 				);
@@ -218,6 +173,20 @@ final class AttributeServicesDiscoverer
 
 		/** @var class-string $className */
 		$reflection = new ReflectionClass($className);
+		$loadedFile = $reflection->getFileName();
+		if ($loadedFile === false || !self::isSameFile($loadedFile, $file)) {
+			// another declaration of the class, like in test data, is none of our business
+			if (self::suggestsDiAttributes($contents)) {
+				$this->errors[] = sprintf(
+					'Class %s declared in %s (through a directory from the attributeServicesDirectories section) is autoloaded from %s instead.',
+					$className,
+					$file,
+					$loadedFile === false ? 'PHP itself' : $loadedFile,
+				);
+			}
+
+			return;
+		}
 
 		foreach ($reflection->getAttributes() as $attribute) {
 			$attributeClass = $this->resolveKnownAttribute($attribute->getName(), self::PUBLIC_CLASS_ATTRIBUTES);
@@ -382,14 +351,83 @@ final class AttributeServicesDiscoverer
 	private function classCanBeLoaded(string $className): bool
 	{
 		try {
-			if (class_exists($className) || interface_exists($className) || trait_exists($className)) {
+			// autoload only once - an autoloader includes the file again on each attempt
+			if (class_exists($className)) {
 				return true;
 			}
 
-			return function_exists('enum_exists') && enum_exists($className);
+			return interface_exists($className, false)
+				|| trait_exists($className, false)
+				|| (function_exists('enum_exists') && enum_exists($className, false));
 		} catch (Throwable) {
 			return false;
 		}
+	}
+
+	private static function isSameFile(string $a, string $b): bool
+	{
+		$realA = realpath($a);
+		$realB = realpath($b);
+
+		return $realA !== false && $realA === $realB;
+	}
+
+	/**
+	 * Names of the classes, interfaces, traits and enums the file declares, none when the file
+	 * has no attribute outside of comments and strings. Loading a class runs the code of its file,
+	 * so classes of files that cannot carry the attributes, like rule test data, are not loaded.
+	 *
+	 * @return list<string>
+	 */
+	private static function findDeclaredClasses(string $contents): array
+	{
+		$tokens = PhpToken::tokenize($contents);
+		$count = count($tokens);
+		$namespace = '';
+		$classes = [];
+		$hasAttribute = false;
+		for ($i = 0; $i < $count; $i++) {
+			$token = $tokens[$i];
+			if ($token->is(T_ATTRIBUTE)) {
+				$hasAttribute = true;
+				continue;
+			}
+			if ($token->is(T_NAMESPACE)) {
+				$next = self::findNextSignificantToken($tokens, $i);
+				$namespace = $next !== null && $next->is([T_STRING, T_NAME_QUALIFIED]) ? $next->text . '\\' : '';
+				continue;
+			}
+
+			// T_ENUM does not exist on PHP 8.0
+			if (!$token->is([T_CLASS, T_INTERFACE, T_TRAIT]) && $token->getTokenName() !== 'T_ENUM') {
+				continue;
+			}
+
+			// skips Foo::class and anonymous classes
+			$next = self::findNextSignificantToken($tokens, $i);
+			if ($next === null || !$next->is(T_STRING)) {
+				continue;
+			}
+
+			$classes[] = $namespace . $next->text;
+		}
+
+		return $hasAttribute ? $classes : [];
+	}
+
+	/**
+	 * @param array<int, PhpToken> $tokens
+	 */
+	private static function findNextSignificantToken(array $tokens, int $i): ?PhpToken
+	{
+		$count = count($tokens);
+		for ($j = $i + 1; $j < $count; $j++) {
+			if (!$tokens[$j]->isIgnorable()) {
+				return $tokens[$j];
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -418,95 +456,6 @@ final class AttributeServicesDiscoverer
 	}
 
 	/**
-	 * FQCN of the file per the PSR-4 path contract, or null when no PSR-4 rule of the
-	 * directory covers the file (or a path segment cannot be a PHP name).
-	 */
-	private function derivePsr4ClassName(ResolvedAttributeServicesDirectory $directory, string $file): ?string
-	{
-		$bestBaseDirectory = null;
-		$bestPrefix = null;
-		foreach ($directory->psr4 as $namespacePrefix => $baseDirectories) {
-			foreach ($baseDirectories as $baseDirectory) {
-				if (!str_starts_with($file, $baseDirectory . '/')) {
-					continue;
-				}
-				if ($bestBaseDirectory !== null && strlen($baseDirectory) <= strlen($bestBaseDirectory)) {
-					continue;
-				}
-
-				$bestBaseDirectory = $baseDirectory;
-				$bestPrefix = $namespacePrefix;
-			}
-		}
-
-		if ($bestBaseDirectory === null || $bestPrefix === null) {
-			return null;
-		}
-
-		$relativePath = substr($file, strlen($bestBaseDirectory) + 1, -4);
-		$segments = explode('/', $relativePath);
-		foreach ($segments as $segment) {
-			if (preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*$/', $segment) !== 1) {
-				return null;
-			}
-		}
-
-		return $bestPrefix . strtr($relativePath, '/', '\\');
-	}
-
-	/**
-	 * Class names Composer's class map records for the file, an empty list when the file
-	 * sits under a classmap rule but the map does not know it (a stale dump), or null
-	 * when no classmap rule of the directory covers the file.
-	 *
-	 * @return list<string>|null
-	 */
-	private function findClassmapClasses(ResolvedAttributeServicesDirectory $directory, string $file): ?array
-	{
-		$covered = false;
-		foreach ($directory->classmapPaths as $classmapPath) {
-			if ($file === $classmapPath || str_starts_with($file, $classmapPath . '/')) {
-				$covered = true;
-				break;
-			}
-		}
-
-		if (!$covered) {
-			return null;
-		}
-
-		$reverseClassmap = $this->getReverseClassmap($directory->autoloadClassmapPath);
-
-		return $reverseClassmap[$file] ?? [];
-	}
-
-	/**
-	 * @return array<string, list<string>> file => class names
-	 */
-	private function getReverseClassmap(string $autoloadClassmapPath): array
-	{
-		if (array_key_exists($autoloadClassmapPath, $this->reverseClassmaps)) {
-			return $this->reverseClassmaps[$autoloadClassmapPath];
-		}
-
-		$reverse = [];
-		if (is_file($autoloadClassmapPath)) {
-			$classmap = require $autoloadClassmapPath;
-			if (is_array($classmap)) {
-				foreach ($classmap as $className => $file) {
-					if (!is_string($className) || !is_string($file)) {
-						continue;
-					}
-
-					$reverse[strtr($file, '\\', '/')][] = $className;
-				}
-			}
-		}
-
-		return $this->reverseClassmaps[$autoloadClassmapPath] = $reverse;
-	}
-
-	/**
 	 * Whether the file contents can change what discovery finds or reports. The container
 	 * cache key of a directory hashes only these files, so editing any other file does not
 	 * recompile the container.
@@ -517,13 +466,16 @@ final class AttributeServicesDiscoverer
 	}
 
 	/**
-	 * Cheap gate before a class is autoloaded: any syntactically possible reference to one of
-	 * PHPStan's attributes - a `use` import, a fully qualified name, an alias of either -
-	 * contains the string "phpstan" case-insensitively, so a file without it cannot use them.
+	 * Cheap gate before the file is tokenized: any syntactically possible reference to one of
+	 * PHPStan's attributes - a `use` import, a group use, a fully qualified name, an alias of
+	 * either - contains "phpstan" and "dependencyinjection" case-insensitively, so a file
+	 * without them cannot use them.
 	 */
 	private static function isPrefilterPositive(string $contents): bool
 	{
-		return str_contains($contents, '#[') && stripos($contents, 'phpstan') !== false;
+		return str_contains($contents, '#[')
+			&& stripos($contents, 'phpstan') !== false
+			&& stripos($contents, 'dependencyinjection') !== false;
 	}
 
 	/**

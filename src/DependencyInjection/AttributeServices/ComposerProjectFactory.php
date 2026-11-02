@@ -19,9 +19,9 @@ use function strlen;
 use function uksort;
 
 /**
- * Builds the Composer metadata view AttributeServicesDirectoriesResolver reasons about:
- * root and per-package autoload rules with absolutized paths, the --no-dev flag,
- * and per-package cache tokens derived from installed.php versions.
+ * Finds the installed packages of a Composer project with cache tokens derived
+ * from installed.php versions, for the container cache key of
+ * AttributeServicesDirectoriesResolver.
  */
 final class ComposerProjectFactory
 {
@@ -37,7 +37,6 @@ final class ComposerProjectFactory
 			return null;
 		}
 
-		$rootPath = rtrim($this->fileHelper->normalizePath($projectPath, '/'), '/');
 		$vendorDirectory = rtrim($this->fileHelper->normalizePath(
 			ComposerHelper::getVendorDirFromComposerConfig($projectPath, $composer),
 			'/',
@@ -45,10 +44,8 @@ final class ComposerProjectFactory
 
 		$installedJson = $this->loadInstalledJson($vendorDirectory);
 		$installedPackages = [];
-		$devInstalled = true;
 		if ($installedJson !== null) {
 			$installedPackages = $installedJson['packages'] ?? $installedJson;
-			$devInstalled = (bool) ($installedJson['dev'] ?? true);
 		}
 
 		$versions = $this->loadInstalledVersions($vendorDirectory);
@@ -70,7 +67,6 @@ final class ComposerProjectFactory
 				$packagesByInstallPath[$installPath] = new ComposerPackage(
 					$package['name'],
 					$this->createCacheToken($package['name'], $installPath, $vendorDirectory, $versions),
-					$this->extractAutoloadRules($package, 'autoload', $installPath),
 				);
 			}
 		}
@@ -78,14 +74,7 @@ final class ComposerProjectFactory
 		// Longest install path first, so a package nested under another package's directory matches first.
 		uksort($packagesByInstallPath, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
 
-		return new ComposerProject(
-			$rootPath,
-			$vendorDirectory,
-			$devInstalled,
-			$this->extractAutoloadRules($composer, 'autoload', $rootPath),
-			$this->extractAutoloadRules($composer, 'autoload-dev', $rootPath),
-			$packagesByInstallPath,
-		);
+		return new ComposerProject($packagesByInstallPath);
 	}
 
 	/**
@@ -172,88 +161,6 @@ final class ComposerProjectFactory
 		}
 
 		return null;
-	}
-
-	/**
-	 * @param array<mixed> $package
-	 */
-	private function extractAutoloadRules(array $package, string $autoloadSection, string $basePath): AutoloadRules
-	{
-		$section = $package[$autoloadSection] ?? [];
-		if (!is_array($section)) {
-			return AutoloadRules::createEmpty();
-		}
-
-		return new AutoloadRules(
-			$this->extractPsrRules($section, 'psr-4', $basePath),
-			$this->extractPathList($section, 'classmap', $basePath),
-			$this->extractPsrRules($section, 'psr-0', $basePath),
-			$this->extractPathList($section, 'files', $basePath),
-		);
-	}
-
-	/**
-	 * @param array<mixed> $section
-	 * @return array<string, list<string>>
-	 */
-	private function extractPsrRules(array $section, string $key, string $basePath): array
-	{
-		$rules = $section[$key] ?? [];
-		if (!is_array($rules)) {
-			return [];
-		}
-
-		$result = [];
-		foreach ($rules as $namespacePrefix => $paths) {
-			if (!is_string($namespacePrefix)) {
-				continue;
-			}
-
-			$absolutePaths = [];
-			foreach (is_array($paths) ? $paths : [$paths] as $path) {
-				if (!is_string($path)) {
-					continue;
-				}
-
-				$absolutePaths[] = $this->absolutizeRulePath($basePath, $path);
-			}
-
-			if ($absolutePaths === []) {
-				continue;
-			}
-
-			$result[$namespacePrefix] = $absolutePaths;
-		}
-
-		return $result;
-	}
-
-	/**
-	 * @param array<mixed> $section
-	 * @return list<string>
-	 */
-	private function extractPathList(array $section, string $key, string $basePath): array
-	{
-		$paths = $section[$key] ?? [];
-		if (!is_array($paths)) {
-			return [];
-		}
-
-		$result = [];
-		foreach ($paths as $path) {
-			if (!is_string($path)) {
-				continue;
-			}
-
-			$result[] = $this->absolutizeRulePath($basePath, $path);
-		}
-
-		return $result;
-	}
-
-	private function absolutizeRulePath(string $basePath, string $path): string
-	{
-		return rtrim($this->fileHelper->normalizePath($basePath . '/' . $path, '/'), '/');
 	}
 
 }

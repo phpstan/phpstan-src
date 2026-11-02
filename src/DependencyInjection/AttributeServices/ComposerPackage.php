@@ -16,7 +16,6 @@ final class ComposerPackage
 	public function __construct(
 		public string $name,
 		public ?string $cacheToken,
-		public AutoloadRules $autoload,
 	)
 	{
 	}

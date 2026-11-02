@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Lexer;
+use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
@@ -12,14 +13,19 @@ use PHPStan\Analyser\Ignore\IgnoreErrorsConfigFixer;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
+use PHPStan\Collectors\Collector;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\File\FileReader;
+use PHPStan\Fixable\FixCollectedFuncCallRule;
+use PHPStan\Fixable\FooFuncCallCollector;
 use PHPStan\Fixable\Patcher;
+use PHPStan\Node\CollectedDataNode;
 use PHPStan\Parser\RichParser;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
+use PHPStan\Rules\Rule;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_filter;
@@ -723,6 +729,24 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
+	public function testFixIgnoreOfAllLineErrorsWithCollectedDataRuleError(): void
+	{
+		$result = $this->runAnalyser([], false, [
+			__DIR__ . '/data/ignore-all-line-errors-collected.php',
+		], true, true, [new FooFuncCallCollector()], [new FixCollectedFuncCallRule(self::getContainer()->getService('currentPhpVersionRichParser'))]);
+		$allLineErrors = array_values(array_filter($result, static fn ($error) => $error instanceof Error && $error->getIdentifier() === 'ignore.allLineErrors'));
+		$this->assertCount(1, $allLineErrors);
+
+		$file = $allLineErrors[0]->getFilePath();
+		$contents = FileReader::read($file);
+		$patched = (new Patcher())->apply([$file => $contents], [$allLineErrors[0]->getFixedErrorDiffs()]);
+		$this->assertSame(1, $patched['appliedCount']);
+		$this->assertSame(
+			str_replace('@phpstan-ignore-next-line', '@phpstan-ignore tests.alwaysFail, tests.renameFoo', $contents),
+			$patched['contents'][$file],
+		);
+	}
+
 	#[DataProvider('dataTrueAndFalse')]
 	public function testIgnoreLine(bool $reportUnmatchedIgnoredErrors): void
 	{
@@ -825,6 +849,8 @@ class AnalyserTest extends PHPStanTestCase
 	/**
 	 * @param mixed[] $ignoreErrors
 	 * @param string|string[] $filePaths
+	 * @param list<Collector<Node, mixed>> $collectors
+	 * @param list<Rule<CollectedDataNode>> $collectedDataRules
 	 * @return string[]|Error[]
 	 */
 	private function runAnalyser(
@@ -833,9 +859,11 @@ class AnalyserTest extends PHPStanTestCase
 		$filePaths,
 		bool $onlyFiles,
 		bool $reportIgnoresWithoutComments = false,
+		array $collectors = [],
+		array $collectedDataRules = [],
 	): array
 	{
-		$analyser = $this->createAnalyser($reportIgnoresWithoutComments);
+		$analyser = $this->createAnalyser($reportIgnoresWithoutComments, $collectors);
 
 		if (is_string($filePaths)) {
 			$filePaths = [$filePaths];
@@ -857,7 +885,7 @@ class AnalyserTest extends PHPStanTestCase
 		$analyserResult = $analyser->analyse($normalizedFilePaths);
 
 		$finalizer = new AnalyserResultFinalizer(
-			new DirectRuleRegistry([]),
+			new DirectRuleRegistry($collectedDataRules),
 			new DirectExtensionsCollection([]),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory(
@@ -866,6 +894,7 @@ class AnalyserTest extends PHPStanTestCase
 			),
 			new LocalIgnoresProcessor(),
 			self::getContainer()->getByType(UnmatchedIgnoreFixer::class),
+			self::getContainer()->getByType(LineIgnoreFixer::class),
 			$reportUnmatchedIgnoredErrors,
 			self::getContainer()->getByType(ValueDependencyCollector::class),
 			false,
@@ -885,12 +914,15 @@ class AnalyserTest extends PHPStanTestCase
 		);
 	}
 
-	private function createAnalyser(bool $reportIgnoresWithoutComments): Analyser
+	/**
+	 * @param list<Collector<Node, mixed>> $collectors
+	 */
+	private function createAnalyser(bool $reportIgnoresWithoutComments, array $collectors): Analyser
 	{
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
 		]);
-		$collectorRegistry = new CollectorRegistry([]);
+		$collectorRegistry = new CollectorRegistry($collectors);
 
 		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();
@@ -919,7 +951,6 @@ class AnalyserTest extends PHPStanTestCase
 			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),
-			$container->getByType(LineIgnoreFixer::class),
 			$reportIgnoresWithoutComments,
 			$container->getByType(ValueDependencyCollector::class),
 			$container->getByType(DependencyResolver::class),

@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser;
 
 use PhpParser\Node;
+use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
@@ -91,6 +92,7 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 			),
 			new LocalIgnoresProcessor(),
 			self::getContainer()->getByType(UnmatchedIgnoreFixer::class),
+			self::getContainer()->getByType(LineIgnoreFixer::class),
 			false,
 			self::getContainer()->getByType(ValueDependencyCollector::class),
 			false,

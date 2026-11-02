@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use Closure;
 use PHPStan\AnalysedCodeException;
+use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
@@ -19,6 +20,7 @@ use PHPStan\Node\CollectedDataNodeReads;
 use PHPStan\Rules\Registry as RuleRegistry;
 use Throwable;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
 use function count;
 use function get_class;
@@ -47,6 +49,7 @@ final class AnalyserResultFinalizer
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		private UnmatchedIgnoreFixer $unmatchedIgnoreFixer,
+		private LineIgnoreFixer $lineIgnoreFixer,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
 		private ValueDependencyCollector $valueDependencyCollector,
@@ -74,12 +77,12 @@ final class AnalyserResultFinalizer
 	): FinalizerResult
 	{
 		if ($analyserResult->getLazyCollectedData()->isEmpty()) {
-			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
+			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
 		$hasInternalErrors = count($analyserResult->getInternalErrors()) > 0 || $analyserResult->hasReachedInternalErrorsCountLimit();
 		if ($hasInternalErrors) {
-			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($analyserResult), [], []);
+			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
 		try {
@@ -89,7 +92,7 @@ final class AnalyserResultFinalizer
 				throw $t;
 			}
 
-			return $this->addUnmatchedIgnoredErrors($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $t)), [], []);
+			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $t)), [], []);
 		}
 
 		$nodeType = CollectedDataNode::class;
@@ -230,7 +233,7 @@ final class AnalyserResultFinalizer
 			$allUnmatchedLineIgnores[$file] = $localIgnoresProcessorResult->getUnmatchedLineIgnores();
 		}
 
-		return $this->addUnmatchedIgnoredErrors(new AnalyserResult(
+		return $this->processInlineIgnores(new AnalyserResult(
 			unorderedErrors: array_merge($errors, $analyserResult->getFilteredPhpErrors()),
 			filteredPhpErrors: [],
 			allPhpErrors: $analyserResult->getAllPhpErrors(),
@@ -403,6 +406,83 @@ final class AnalyserResultFinalizer
 	}
 
 	/**
+	 * Replaces each ignore of all errors on a line with an ignore of the identifiers of the errors reported there,
+	 * including the errors of CollectedDataNode rules.
+	 *
+	 * @param list<Error> $errors
+	 * @return list<Error>
+	 */
+	private function fixAllLineErrorsIgnores(array $errors): array
+	{
+		$allLineErrors = [];
+		foreach ($errors as $error) {
+			if ($error->getIdentifier() !== 'ignore.allLineErrors' || $error->getLine() === null) {
+				continue;
+			}
+
+			$allLineErrors[$error->getFile()][$error->getLine()] = true;
+		}
+		if ($allLineErrors === []) {
+			return $errors;
+		}
+
+		$identifiers = [];
+		foreach ($errors as $error) {
+			$line = $error->getLine();
+			if ($line === null || !isset($allLineErrors[$error->getFile()][$line]) || !$error->canBeIgnored()) {
+				continue;
+			}
+
+			$identifier = $error->getIdentifier();
+			if ($identifier === null) {
+				// such an error cannot be ignored by an identifier
+				$identifiers[$error->getFile()][$line] = false;
+			} elseif (($identifiers[$error->getFile()][$line] ?? null) !== false) {
+				$identifiers[$error->getFile()][$line][] = $identifier;
+			}
+		}
+
+		$fixes = [];
+		foreach ($identifiers as $file => $lines) {
+			if (!is_file($file)) {
+				continue;
+			}
+
+			$code = FileReader::read($file);
+			foreach ($lines as $line => $lineIdentifiers) {
+				if ($lineIdentifiers === false) {
+					continue;
+				}
+
+				$newCode = $this->lineIgnoreFixer->fix($code, $line, $lineIdentifiers);
+				if ($newCode === null) {
+					continue;
+				}
+
+				$fixes[$file][$line] = $this->ruleErrorTransformer->createFixedErrorDiff($file, $code, $newCode);
+			}
+		}
+
+		return array_map(static function (Error $error) use ($fixes): Error {
+			$line = $error->getLine();
+			if ($line === null || $error->getIdentifier() !== 'ignore.allLineErrors' || !isset($fixes[$error->getFile()][$line])) {
+				return $error;
+			}
+
+			return new Error(
+				$error->getMessage(),
+				$error->getFile(),
+				$line,
+				false,
+				$error->getFilePath(),
+				tip: $error->getTip(),
+				identifier: 'ignore.allLineErrors',
+				fixedErrorDiffs: [$fixes[$error->getFile()][$line]],
+			);
+		}, $errors);
+	}
+
+	/**
 	 * @return list<FixedErrorDiff>
 	 */
 	private function fixUnmatchedIgnore(string $file, ?string $code, int $line, ?string $identifier): array
@@ -420,11 +500,14 @@ final class AnalyserResultFinalizer
 	}
 
 	/**
+	 * Fixes ignores of all errors on a line, and reports unmatched inline ignores. Runs after the errors of CollectedDataNode rules
+	 * are known, because they can be reported on the ignored lines too.
+	 *
 	 * @param list<Error> $collectorErrors
 	 * @param list<Error> $locallyIgnoredCollectorErrors
 	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
 	 */
-	private function addUnmatchedIgnoredErrors(
+	private function processInlineIgnores(
 		AnalyserResult $analyserResult,
 		array $collectorErrors,
 		array $locallyIgnoredCollectorErrors,
@@ -432,11 +515,31 @@ final class AnalyserResultFinalizer
 		int $reusedRulesCount = 0,
 	): FinalizerResult
 	{
+		$errors = $this->fixAllLineErrorsIgnores($analyserResult->getUnorderedErrors());
 		if (!$this->reportUnmatchedIgnoredErrors) {
+			$analyserResult = new AnalyserResult(
+				unorderedErrors: $errors,
+				filteredPhpErrors: $analyserResult->getFilteredPhpErrors(),
+				allPhpErrors: $analyserResult->getAllPhpErrors(),
+				locallyIgnoredErrors: $analyserResult->getLocallyIgnoredErrors(),
+				linesToIgnore: $analyserResult->getLinesToIgnore(),
+				unmatchedLineIgnores: $analyserResult->getUnmatchedLineIgnores(),
+				internalErrors: $analyserResult->getInternalErrors(),
+				collectedData: $analyserResult->getLazyCollectedData(),
+				dependencies: $analyserResult->getDependencies(),
+				usedTraitDependencies: $analyserResult->getUsedTraitDependencies(),
+				valueDependencies: $analyserResult->getValueDependencies(),
+				packageDependencies: $analyserResult->getPackageDependencies(),
+				exportedNodes: $analyserResult->getExportedNodes(),
+				reachedInternalErrorsCountLimit: $analyserResult->hasReachedInternalErrorsCountLimit(),
+				peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
+				processedFiles: $analyserResult->getProcessedFiles(),
+				workerCount: $analyserResult->getWorkerCount(),
+			);
+
 			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount);
 		}
 
-		$errors = $analyserResult->getUnorderedErrors();
 		foreach ($analyserResult->getUnmatchedLineIgnores() as $file => $data) {
 			foreach ($data as $ignoredFile => $lines) {
 				if ($ignoredFile !== $file) {

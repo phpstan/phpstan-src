@@ -38,6 +38,7 @@ final class FinalNoParent
 
 /**
  * @param class-string<Foo> $fooClass
+ * @param object{secret: string} $shape
  */
 function bindAll(
 	object $object,
@@ -49,6 +50,7 @@ function bindAll(
 	Foo|NoParent $fooOrNoParent,
 	string $fooClass,
 	$mixed,
+	object $shape,
 ): void
 {
 	\Closure::bind(function () {
@@ -73,6 +75,7 @@ function bindAll(
 	\Closure::bind(static fn () => $this, $object, Foo::class);
 	\Closure::bind(fn () => $this, $mixed, Foo::class);
 	\Closure::bind(fn () => $this, $foo, SubFoo::class);
+	\Closure::bind(fn () => $this, $shape, FooInterface::class);
 }
 
 class Outer

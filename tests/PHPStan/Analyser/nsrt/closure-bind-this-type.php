@@ -38,6 +38,7 @@ class Test
 
 	/**
 	 * @param class-string<Foo> $fooClass
+	 * @param object{secret: string} $shape
 	 */
 	public function doFoo(
 		object $object,
@@ -49,6 +50,7 @@ class Test
 		Foo|NoParent $fooOrNoParent,
 		string $fooClass,
 		$mixed,
+		object $shape,
 	): void
 	{
 		// no bound object: there is no $this, whatever the scope
@@ -110,6 +112,11 @@ class Test
 			assertType('ClosureBindThisType\FinalNoParent', $this);
 			assertNativeType('ClosureBindThisType\FinalNoParent', $this);
 		}, $finalNoParent, FooInterface::class);
+
+		Closure::bind(function () {
+			assertType('object{secret: string}', $this);
+			assertNativeType('object', $this);
+		}, $shape, FooInterface::class);
 
 		Closure::bind(function () {
 			assertType('ClosureBindThisType\Foo|ClosureBindThisType\NoParent', $this);

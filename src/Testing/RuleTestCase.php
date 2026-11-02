@@ -31,6 +31,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
 use function array_merge;
+use function array_unique;
+use function array_values;
 use function count;
 use function implode;
 use function sprintf;
@@ -234,17 +236,31 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 	public function fix(string $file, string $expectedFile): void
 	{
-		[$errors] = $this->gatherAnalyserErrorsWithDelayedErrors([$file]);
+		$this->fixOtherFile($file, $file, $expectedFile);
+	}
+
+	/**
+	 * Analyses $file and $fixedFile together and asserts the fixes of $fixedFile,
+	 * like a trait file or a file the rule points to with RuleErrorBuilder::file().
+	 */
+	public function fixOtherFile(string $file, string $fixedFile, string $expectedFile): void
+	{
+		$fixedFile = $this->getFileHelper()->normalizePath($fixedFile);
+		// a trait is analysed only when its file is analysed too
+		[$errors] = $this->gatherAnalyserErrorsWithDelayedErrors(array_values(array_unique([$this->getFileHelper()->normalizePath($file), $fixedFile])));
 		$diffs = [];
 		foreach ($errors as $error) {
 			if ($error->getFixedErrorDiff() === null) {
+				continue;
+			}
+			if ($this->getFileHelper()->normalizePath($error->getTraitFilePath() ?? $error->getFilePath()) !== $fixedFile) {
 				continue;
 			}
 			$diffs[] = $error->getFixedErrorDiff();
 		}
 
 		$patcher = self::getContainer()->getByType(Patcher::class);
-		$patchResult = $patcher->applyDiffs($file, $diffs); // @phpstan-ignore missingType.checkedException
+		$patchResult = $patcher->applyDiffs($fixedFile, $diffs); // @phpstan-ignore missingType.checkedException
 		$this->assertSame(0, $patchResult['skippedCount'], 'Some fixes overlap and could not be applied together.');
 
 		$fixedFileContents = FileReader::read($expectedFile);

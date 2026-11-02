@@ -1,0 +1,13 @@
+<?php
+
+namespace FixTrait;
+
+trait FixableTrait
+{
+
+	public function doFoo(): void
+	{
+		echo $aa;
+	}
+
+}

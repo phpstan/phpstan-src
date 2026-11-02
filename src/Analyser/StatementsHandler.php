@@ -18,6 +18,7 @@ use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Generics\TemplateArgumentResolver;
 use PHPStan\Analyser\Generics\TemplateArgumentStats;
+use PHPStan\Analyser\Generics\VarTagUsagesInference;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -26,6 +27,7 @@ use PHPStan\Node\ExecutionEndNode;
 use PHPStan\Node\PropertyHookStatementNode;
 use PHPStan\Node\UnreachableStatementNode;
 use PHPStan\Node\VarTagChangedExpressionTypeNode;
+use PHPStan\Node\VarTagUsagesNode;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\GotoLabelVisitor;
 use PHPStan\PhpDoc\Tag\VarTag;
@@ -34,11 +36,15 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
+use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateTypeHelper;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_column;
 use function array_fill_keys;
@@ -89,6 +95,7 @@ final class StatementsHandler
 		private TemplateArgumentResolver $templateArgumentResolver,
 		private Container $container,
 		private StaticVariableInference $staticVariableInference,
+		private VarTagUsagesInference $varTagUsagesInference,
 		#[AutowiredParameter(ref: '%featureToggles.unresolvedTemplateArguments%')]
 		private bool $unresolvedTemplateArguments,
 	)
@@ -540,7 +547,7 @@ final class StatementsHandler
 
 					return [$state->toResult(), $entries];
 				}
-				if ($differingRoots !== null && !$this->statementMentionsAnyVariable($stmts[$i], $this->withByRefClosureHolders($state->scope, $differingRoots))) {
+				if ($differingRoots !== null && !$this->statementMentionsAnyVariable($stmts[$i], $this->withByRefClosureHolders($state->scope, $differingRoots), $state->scope)) {
 					if ($replayTarget !== null && $previousRecording !== null) {
 						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $nextOffset, $replayTarget, $storage, $scope);
 					}
@@ -806,7 +813,7 @@ final class StatementsHandler
 		$scope = $scope->withTemplateArgumentFrame($frame)->withTemplateArgumentConstraints(null);
 		$recording = new RecordingNodeCallback();
 		$state = new StatementListWalkState($scope);
-		/** @var list<array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
+		/** @var array<int, array{StatementListWalkState, int}> $entries the state and recording offset before each statement, plus the final ones */
 		$entries = [];
 		$observationContext = $context->withoutTemplateArgumentResolution();
 		$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
@@ -832,6 +839,29 @@ final class StatementsHandler
 			}
 			[$staticVariableTypes, $staticVariableConditionalExpressions, $constraints, $staticWalk] = $this->inferStaticVariableTypes($nodeScopeResolver, $parentNode, $stmts, $staticSites, $staticStatementIndexes, $parentFrame, $entries, $recording, $storage, $observationContext);
 		}
+		$varTagDeclarations = $this->varTagUsagesInference->getDeclarations($parentNode, $stmts);
+		$varTagTypes = [];
+		$inferredVarTagDeclarations = [];
+		foreach ($varTagDeclarations as $key => [$declarationStmt, $declarationIndex, $declaredName]) {
+			$declaredScope = $entries[$declarationIndex + 1][0]->scope;
+			if ($declaredScope->hasVariableType($declaredName)->no()) {
+				continue;
+			}
+			$varTagTypes[$key] = $declaredScope->getVariableType($declaredName);
+			// a generic `new` whose template arguments the body infers
+			$declaredValue = self::getVarTagDeclaredValue($declarationStmt);
+			if ($declaredValue === null) {
+				continue;
+			}
+			$declaredValueResult = $storage->findExpressionResult($declaredValue);
+			if ($declaredValueResult === null || !self::containsUnresolvedTemplateArgument($declaredValueResult->getType())) {
+				continue;
+			}
+			$inferredVarTagDeclarations[] = [$declarationStmt, $declarationIndex, $declaredName, $varTagTypes[$key]];
+		}
+		$varTagUsages = $inferredVarTagDeclarations !== []
+			? $this->inferVarTagUsages($nodeScopeResolver, $parentNode, $stmts, $inferredVarTagDeclarations, $parentFrame, $staticVariableTypes, $staticVariableConditionalExpressions, $staticStatementIndexes, $entries, $storage, $observationContext, $statementStartTokenPositions)
+			: [];
 		$frame = $this->templateArgumentResolver->resolve($constraints, $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
 		if ($staticVariableTypes !== []) {
 			$frame = $frame->withStaticVariableTypes($staticVariableTypes, $staticStatementIndexes, $staticVariableConditionalExpressions);
@@ -841,7 +871,7 @@ final class StatementsHandler
 			&& $constraints->isEmpty()
 			&& !$this->staticVariableInference->hasFunctionLikeFrom($parentNode, $stmts, $staticWalk[0])
 		) {
-			return $this->replayStaticVariableWalk($nodeScopeResolver, $stmts, $entries, $recording, $staticWalk, $frame, $parentFrame, $parentConstraints, $storage, $nodeCallback, $scope);
+			return $this->replayStaticVariableWalk($nodeScopeResolver, $parentNode, $stmts, $entries, $recording, $staticWalk, $frame, $parentFrame, $parentConstraints, $storage, $nodeCallback, $scope, $varTagTypes, $varTagUsages);
 		}
 		if ($frame->isObservingClosures()) {
 			$frame = $this->observeClosureSignatures($nodeScopeResolver, $parentNode, $stmts, $frame, $entries, $storage, $observationContext, $statementStartTokenPositions);
@@ -850,6 +880,7 @@ final class StatementsHandler
 		$firstSiteStatementIndex = $frame->firstSiteStatementIndex();
 		if ($firstSiteStatementIndex === null) {
 			$nodeScopeResolver->replayRecordingRange($recording, 0, $recording->count(), $nodeCallback, $storage, $scope);
+			$this->emitVarTagUsages($nodeScopeResolver, $parentNode, $stmts, $varTagTypes, $varTagUsages, $frame, $storage, $nodeCallback);
 
 			$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 			return $state->toResult();
@@ -885,6 +916,7 @@ final class StatementsHandler
 				// the recorded end scope, with what this pass collected
 				$state->scope = $entries[$stmtCount][0]->scope->withTemplateArgumentConstraints($state->scope->getTemplateArgumentConstraints());
 				$this->processDeferredByRefClosureBodies($nodeScopeResolver, $frame, $state, $storage, $nodeCallback);
+				$this->emitVarTagUsages($nodeScopeResolver, $parentNode, $stmts, $varTagTypes, $varTagUsages, $frame, $storage, $nodeCallback);
 
 				$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 				return $state->toResult();
@@ -894,7 +926,7 @@ final class StatementsHandler
 			$reWalk = $differingRoots === null
 				|| $hasLabels
 				|| $frame->ownsSiteInStatement($i)
-				|| $this->statementMentionsAnyVariable($stmt, $differingRoots);
+				|| $this->statementMentionsAnyVariable($stmt, $differingRoots, $state->scope);
 			if ($this->debugTemplateArguments) {
 				echo sprintf(
 					"[template-arguments] %s:%d statement %d: %s (differing: %s)\n",
@@ -921,9 +953,260 @@ final class StatementsHandler
 			$state->scope = $state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope);
 		}
 		$this->processDeferredByRefClosureBodies($nodeScopeResolver, $frame, $state, $storage, $nodeCallback);
+		$this->emitVarTagUsages($nodeScopeResolver, $parentNode, $stmts, $varTagTypes, $varTagUsages, $frame, $storage, $nodeCallback);
 
 		$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 		return $state->toResult();
+	}
+
+	/**
+	 * The template arguments the body infers for the generic `new` values its
+	 * `@var` declarations declare (see VarTagUsagesInference): from the first
+	 * declaration on, the body is observed again without those tags - walking,
+	 * like the second pass, only the statements that read what changed - and
+	 * each declared value takes the template arguments this walk infers. The
+	 * facts of this walk are not kept.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param non-empty-list<array{Node\Stmt, int, string, Type}> $declarations
+	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes
+	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $staticVariableConditionalExpressions
+	 * @param array<int, true> $staticStatementIndexes
+	 * @param array<int, array{StatementListWalkState, int}> $entries
+	 * @param list<int> $statementStartTokenPositions
+	 * @return list<array{Node\Stmt, string, Type, Type, Type, MutatingScope}>
+	 */
+	private function inferVarTagUsages(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $stmts,
+		array $declarations,
+		?TemplateArgumentFrame $parentFrame,
+		array $staticVariableTypes,
+		array $staticVariableConditionalExpressions,
+		array $staticStatementIndexes,
+		array $entries,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+		array $statementStartTokenPositions,
+	): array
+	{
+		$stmtCount = count($stmts);
+		$suppressed = [];
+		$indexes = [];
+		$start = $stmtCount;
+		foreach ($declarations as [$stmt, $index]) {
+			$suppressed[spl_object_id($stmt)] = $stmt;
+			$indexes[$index] = true;
+			$start = min($start, $index);
+		}
+		$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts))
+			->withStaticVariableTypes($staticVariableTypes, $staticStatementIndexes, $staticVariableConditionalExpressions)
+			->withSuppressedVarTags($suppressed, $indexes);
+
+		$state = clone $entries[$start][0];
+		$state->scope = $state->scope->withTemplateArgumentFrame($frame);
+		$walkStorage = $storage->duplicate();
+		$walkCallback = new NoopNodeCallback();
+		/** @var list<array{int, MutatingScope}> $statementScopes */
+		$statementScopes = [];
+		$hasLabels = $this->containsLabels($stmts);
+		$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
+		$pushedScope = $state->scope;
+		$pushedScope->pushExpressionResultStorage($walkStorage);
+		try {
+			for ($i = $start; $i < $stmtCount; $i++) {
+				$recordedEntry = $entries[$i][0];
+				$differingRoots = $state->alreadyTerminated === $recordedEntry->alreadyTerminated
+					? $state->scope->getDifferingVariableRoots($recordedEntry->scope)
+					: null;
+				if ($differingRoots === [] && !$frame->hasSiteAtOrAfter($i)) {
+					// converged with the observation pass: the rest of it stands
+					$state->scope = $this->withRecordedConstraints($state->scope, $recordedEntry->scope, $entries[$stmtCount][0]->scope);
+					$this->appendRecordedStatementResults($state, $recordedEntry, $entries[$stmtCount][0]);
+					for ($j = $i; $j < $stmtCount; $j++) {
+						$statementScopes[] = [$j, $entries[$j][0]->scope];
+					}
+					break;
+				}
+
+				$stmt = $stmts[$i];
+				$statementScopes[] = [$i, $state->scope];
+				if (
+					$differingRoots === null
+					|| $hasLabels
+					|| $frame->ownsSiteInStatement($i)
+					|| $this->statementMentionsAnyVariable($stmt, $differingRoots, $state->scope)
+				) {
+					$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $walkStorage, $walkCallback, $context, true);
+					continue;
+				}
+
+				$recordedExit = $entries[$i + 1][0];
+				$this->appendRecordedStatementResults($state, $recordedEntry, $recordedExit);
+				$state->scope = $this->withRecordedConstraints(
+					$state->scope->withRecordedStatementDelta($recordedEntry->scope, $recordedExit->scope),
+					$recordedEntry->scope,
+					$recordedExit->scope,
+				);
+			}
+		} finally {
+			$pushedScope->popExpressionResultStorage();
+			$nodeScopeResolver->restoreNodeGatherers($suspendedGatherers);
+		}
+		$constraints = $state->scope->getTemplateArgumentConstraints() ?? TemplateArgumentConstraints::createEmpty();
+		$usagesFrame = $this->templateArgumentResolver->resolve($constraints, $parentFrame, $statementStartTokenPositions, $parentNode, $stmts);
+
+		$usages = [];
+		foreach ($declarations as [$stmt, $index, $name, $varTagType]) {
+			$declaredScope = $state->scope;
+			foreach ($statementScopes as [$statementIndex, $scope]) {
+				if ($statementIndex > $index) {
+					$declaredScope = $scope;
+					break;
+				}
+			}
+			if ($declaredScope->hasVariableType($name)->no()) {
+				continue;
+			}
+			$declaredValueType = $declaredScope->getVariableType($name);
+			$usages[] = [
+				$stmt,
+				$name,
+				$varTagType,
+				$this->resolveVarTagUsagesType($declaredValueType, $usagesFrame, true),
+				$this->resolveVarTagUsagesType($declaredValueType, $usagesFrame, false),
+				$entries[$index][0]->scope,
+			];
+		}
+
+		return $usages;
+	}
+
+	private static function getVarTagDeclaredValue(Node\Stmt $stmt): ?Expr
+	{
+		if ($stmt instanceof Node\Stmt\Expression && $stmt->expr instanceof Expr\Assign) {
+			return $stmt->expr->expr;
+		}
+		if ($stmt instanceof Node\Stmt\Static_) {
+			return $stmt->vars[0]->default;
+		}
+
+		return null;
+	}
+
+	private static function containsUnresolvedTemplateArgument(Type $type): bool
+	{
+		$contains = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$contains): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				$contains = true;
+			}
+			return $contains ? $type : $traverse($type);
+		});
+		return $contains;
+	}
+
+	/**
+	 * The objects the body creates are exactly of their class, but the tag
+	 * declares what the variable holds, subclasses included. A template
+	 * argument nothing in the body constrains is unknown - the tag may know it.
+	 */
+	private function resolveVarTagUsagesType(Type $type, TemplateArgumentFrame $frame, bool $generalizeTemplateArguments): Type
+	{
+		return TypeTraverser::map(
+			TemplateTypeHelper::removeFinalByKeywordOverrides($type),
+			static function (Type $type, callable $traverse) use ($frame, $generalizeTemplateArguments): Type {
+				if ($type instanceof UnresolvedTemplateArgumentType) {
+					$resolved = $frame->resolve($type->getSite(), $type->getTemplateName());
+					if ($resolved === null || $resolved->equals($type->getDelegate())) {
+						return new MixedType();
+					}
+
+					return $generalizeTemplateArguments ? $resolved->generalize(GeneralizePrecision::templateArgument()) : $resolved;
+				}
+
+				return $traverse($type);
+			},
+		);
+	}
+
+	/**
+	 * The `@var` declarations with what the body assigns to their variables:
+	 * each write with the variable's type after it, and each generic `new`
+	 * with the template arguments inferred without the tag.
+	 *
+	 * @param Node\Stmt[] $stmts
+	 * @param array<int, Type> $varTagTypes
+	 * @param list<array{Node\Stmt, string, Type, Type, Type, MutatingScope}> $varTagUsages
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	private function emitVarTagUsages(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $stmts,
+		array $varTagTypes,
+		array $varTagUsages,
+		TemplateArgumentFrame $frame,
+		ExpressionResultStorage $storage,
+		callable $nodeCallback,
+	): void
+	{
+		foreach ($varTagUsages as [$stmt, $name, $varTagType, $assignedType, $preciseAssignedType, $scope]) {
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new VarTagUsagesNode($stmt, $name, $varTagType, $assignedType, $preciseAssignedType), $scope, $storage);
+		}
+		if ($varTagTypes === []) {
+			return;
+		}
+		foreach ($this->varTagUsagesInference->getWrites($parentNode, $stmts) as [$write, $key, $name]) {
+			if (!isset($varTagTypes[$key])) {
+				continue;
+			}
+			$result = $storage->findExpressionResult($write);
+			if ($result === null) {
+				continue;
+			}
+			$beforeScope = $result->getBeforeScope();
+			if ($beforeScope->hasVariableType($name)->no()) {
+				continue;
+			}
+			// the write again, from what the tag declares: a write after one
+			// the tag does not accept is judged on its own - narrowed to the
+			// tag, the variable keeps what the body knows about its offsets
+			$declaredType = TypeCombinator::intersect($beforeScope->getVariableType($name), $varTagTypes[$key]);
+			if ((new NeverType())->isSuperTypeOf($declaredType)->yes()) {
+				// an earlier write left nothing the tag declares
+				$declaredType = $varTagTypes[$key];
+			}
+			$declaredScope = $beforeScope->specifyExpressionType(
+				new Expr\Variable($name),
+				$declaredType,
+				$beforeScope->doNotTreatPhpDocTypesAsCertain()->getVariableType($name),
+				TrinaryLogic::createYes(),
+			);
+			$writeStorage = $storage->duplicate();
+			$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
+			$declaredScope->pushExpressionResultStorage($writeStorage);
+			try {
+				$writeScope = $nodeScopeResolver->processExprNode(
+					new Node\Stmt\Expression($write),
+					$write,
+					$declaredScope,
+					$writeStorage,
+					new NoopNodeCallback(),
+					ExpressionContext::createTopLevel(resolveTemplateArguments: false),
+				)->getScope();
+			} finally {
+				$declaredScope->popExpressionResultStorage();
+				$nodeScopeResolver->restoreNodeGatherers($suspendedGatherers);
+			}
+			if ($writeScope->hasVariableType($name)->no()) {
+				continue;
+			}
+			// a statement replayed from the observation pass holds its template arguments unresolved
+			$assignedType = $this->resolveVarTagUsagesType($writeScope->getVariableType($name), $frame, false);
+			$nodeScopeResolver->callNodeCallback($nodeCallback, new VarTagUsagesNode($write, $name, $varTagTypes[$key], $assignedType, $assignedType), $beforeScope, $storage);
+		}
 	}
 
 	/**
@@ -1019,7 +1302,7 @@ final class StatementsHandler
 						$differingRoots === null
 						|| $hasLabels
 						|| $frame->ownsSiteInStatement($i)
-						|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
+						|| $this->statementMentionsAnyVariable($stmt, $differingRoots, $state->scope)
 					) {
 						$from = $walkRecording->count();
 						$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $walkStorage, $walkRecording, $context, true);
@@ -1122,9 +1405,12 @@ final class StatementsHandler
 	 * @param array<int, array{StatementListWalkState, int}> $entries
 	 * @param array{int, StatementListWalkState, RecordingNodeCallback, ExpressionResultStorage, list<array{int, int, int}>} $staticWalk
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 * @param array<int, Type> $varTagTypes
+	 * @param list<array{Node\Stmt, string, Type, Type, Type, MutatingScope}> $varTagUsages
 	 */
 	private function replayStaticVariableWalk(
 		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
 		array $stmts,
 		array $entries,
 		RecordingNodeCallback $recording,
@@ -1135,6 +1421,8 @@ final class StatementsHandler
 		ExpressionResultStorage $storage,
 		callable $nodeCallback,
 		MutatingScope $scope,
+		array $varTagTypes,
+		array $varTagUsages,
 	): InternalStatementResult
 	{
 		[$start, $state, $walkRecording, $walkStorage, $walkLog] = $staticWalk;
@@ -1159,6 +1447,7 @@ final class StatementsHandler
 			$state->scope = $entries[$stmtCount][0]->scope;
 		}
 		$this->processDeferredByRefClosureBodies($nodeScopeResolver, $frame, $state, $storage, $nodeCallback);
+		$this->emitVarTagUsages($nodeScopeResolver, $parentNode, $stmts, $varTagTypes, $varTagUsages, $frame, $storage, $nodeCallback);
 
 		$state->scope = $state->scope->withTemplateArgumentFrame($parentFrame)->withTemplateArgumentConstraints($parentConstraints);
 		return $state->toResult();
@@ -1660,7 +1949,7 @@ final class StatementsHandler
 					$differingRoots === null
 					|| $hasLabels
 					|| $frame->ownsSiteInStatement($i)
-					|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
+					|| $this->statementMentionsAnyVariable($stmt, $differingRoots, $state->scope)
 				) {
 					if (TemplateArgumentStats::$enabled) {
 						TemplateArgumentStats::increment('closureObservationStatements');
@@ -1737,7 +2026,8 @@ final class StatementsHandler
 	{
 		$names = [];
 		$mentionsEverything = false;
-		$this->collectMentionedVariables($stmt, $names, $mentionsEverything);
+		$callees = [];
+		$this->collectMentionedVariables($stmt, $names, $mentionsEverything, $callees);
 		if ($mentionsEverything) {
 			return VariableFlow::all(VariableFlow::MENTION_ALL);
 		}
@@ -1752,24 +2042,47 @@ final class StatementsHandler
 	/**
 	 * @param list<string> $variableNames
 	 */
-	private function statementMentionsAnyVariable(Node\Stmt $stmt, array $variableNames): bool
+	private function statementMentionsAnyVariable(Node\Stmt $stmt, array $variableNames, MutatingScope $scope): bool
 	{
-		/** @var array{array<string, true>, bool}|null $mentions */
+		/** @var array{array<string, true>, bool, list<Expr>}|null $mentions */
 		$mentions = $stmt->getAttribute(self::MENTIONED_VARIABLES_ATTRIBUTE);
 		if ($mentions === null) {
 			$names = [];
 			$mentionsEverything = false;
-			$this->collectMentionedVariables($stmt, $names, $mentionsEverything);
-			$mentions = [$names, $mentionsEverything];
+			$callees = [];
+			$this->collectMentionedVariables($stmt, $names, $mentionsEverything, $callees);
+			$mentions = [$names, $mentionsEverything, $callees];
 			$stmt->setAttribute(self::MENTIONED_VARIABLES_ATTRIBUTE, $mentions);
 		}
-		[$names, $mentionsEverything] = $mentions;
+		[$names, $mentionsEverything, $callees] = $mentions;
 		if ($mentionsEverything) {
 			return true;
 		}
 		foreach ($variableNames as $variableName) {
 			if (isset($names[$variableName])) {
 				return true;
+			}
+		}
+
+		// invoking a closure applies its by-ref uses where it runs - see
+		// ClosureSignatureInference - so the statement reads them too
+		foreach ($callees as $callee) {
+			if (!$callee instanceof Expr\Variable || !is_string($callee->name)) {
+				return true;
+			}
+			if ($scope->hasVariableType($callee->name)->no()) {
+				continue;
+			}
+			$calleeType = $scope->getVariableType($callee->name);
+			foreach ($calleeType instanceof UnionType ? $calleeType->getTypes() : [$calleeType] as $member) {
+				if (!$member instanceof ClosureType) {
+					continue;
+				}
+				foreach ($variableNames as $variableName) {
+					if (array_key_exists($variableName, $member->getByRefUseTypes())) {
+						return true;
+					}
+				}
 			}
 		}
 
@@ -1782,11 +2095,13 @@ final class StatementsHandler
 	 * scope, so only its use() clause (and its bound `$this`) count, an arrow
 	 * function captures implicitly and is traversed. Dynamic access
 	 * (`$$name`, compact(), extract(), get_defined_vars(), eval, include)
-	 * mentions everything.
+	 * mentions everything. The callees of the dynamic function calls are
+	 * collected into $callees.
 	 *
 	 * @param array<string, true> $names
+	 * @param list<Expr> $callees
 	 */
-	private function collectMentionedVariables(Node $node, array &$names, bool &$mentionsEverything): void
+	private function collectMentionedVariables(Node $node, array &$names, bool &$mentionsEverything, array &$callees): void
 	{
 		if ($node instanceof Expr\Variable) {
 			if (!is_string($node->name)) {
@@ -1810,6 +2125,9 @@ final class StatementsHandler
 
 			return;
 		}
+		if ($node instanceof Expr\FuncCall && $node->name instanceof Expr) {
+			$callees[] = $node->name;
+		}
 		if ($node instanceof Expr\Eval_ || $node instanceof Expr\Include_) {
 			$mentionsEverything = true;
 		} elseif (
@@ -1823,13 +2141,13 @@ final class StatementsHandler
 		foreach ($node->getSubNodeNames() as $subNodeName) {
 			$subNode = $node->$subNodeName;
 			if ($subNode instanceof Node) {
-				$this->collectMentionedVariables($subNode, $names, $mentionsEverything);
+				$this->collectMentionedVariables($subNode, $names, $mentionsEverything, $callees);
 			} elseif (is_array($subNode)) {
 				foreach ($subNode as $item) {
 					if (!$item instanceof Node) {
 						continue;
 					}
-					$this->collectMentionedVariables($item, $names, $mentionsEverything);
+					$this->collectMentionedVariables($item, $names, $mentionsEverything, $callees);
 				}
 			}
 		}

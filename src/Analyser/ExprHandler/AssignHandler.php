@@ -39,6 +39,7 @@ use PHPStan\Analyser\ExprHandler\Helper\VirtualExprResultHelper;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
+use PHPStan\Analyser\Generics\VarTagUsagesInference;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
@@ -160,6 +161,7 @@ final class AssignHandler implements ExprHandler
 		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
 		private StatementsHandler $statementsHandler,
 		private ArrayUnpackingHelper $arrayUnpackingHelper,
+		private VarTagUsagesInference $varTagUsagesInference,
 	)
 	{
 	}
@@ -276,7 +278,9 @@ final class AssignHandler implements ExprHandler
 		}
 
 		$vars = $nodeScopeResolver->getAssignedVariables($expr->var);
-		if (count($vars) > 0) {
+		// the walk that finds what the variable takes without its @var tag
+		// (see VarTagUsagesInference) leaves the tag out
+		if (count($vars) > 0 && !$this->varTagUsagesInference->isSuppressed($scope, $stmt)) {
 			$varChangedScope = false;
 			$scope = $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt, $varChangedScope);
 			if (!$varChangedScope) {

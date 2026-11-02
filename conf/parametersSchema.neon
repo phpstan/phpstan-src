@@ -60,6 +60,7 @@ parametersSchema:
 		closureSignaturesFromUsages: bool()
 		staticVariablesFromUsages: bool()
 		backedEnumFromParameterType: bool()
+		varTagsReflectUsages: bool()
 		unusedVariable: bool()
 		unusedParameters: bool()
 		reuseCollectedDataRuleErrors: bool()

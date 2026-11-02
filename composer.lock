@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "b518b9cf57ff4c8f1a41dbf9c1b8a11c",
+  "content-hash": "d857d7acaeffd88118d886db0be69cf2",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1415,16 +1415,16 @@
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "source": {
         "type": "git",
         "url": "https://github.com/ondrejmirtes/composer-attribute-collector.git",
-        "reference": "684ef726c6657af26db0ea00393c12b4e9f9ac48"
+        "reference": "2d4e6787dbcfdc7ed28d2cb86f647340205b466c"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/composer-attribute-collector/zipball/684ef726c6657af26db0ea00393c12b4e9f9ac48",
-        "reference": "684ef726c6657af26db0ea00393c12b4e9f9ac48",
+        "url": "https://api.github.com/repos/ondrejmirtes/composer-attribute-collector/zipball/2d4e6787dbcfdc7ed28d2cb86f647340205b466c",
+        "reference": "2d4e6787dbcfdc7ed28d2cb86f647340205b466c",
         "shasum": ""
       },
       "require": {
@@ -1473,10 +1473,10 @@
       ],
       "description": "A convenient and near zero-cost way to retrieve targets of PHP 8 attributes",
       "support": {
-        "source": "https://github.com/ondrejmirtes/composer-attribute-collector/tree/1.3.0"
+        "source": "https://github.com/ondrejmirtes/composer-attribute-collector/tree/1.4.0"
       },
-      "time": "2026-11-02T16:28:34+00:00",
-      "published-time": "2026-11-02T16:28:40+00:00"
+      "time": "2026-11-02T17:12:26+00:00",
+      "published-time": "2026-11-02T17:24:34+00:00"
     },
     {
       "name": "ondrejmirtes/phplrt-runtime",

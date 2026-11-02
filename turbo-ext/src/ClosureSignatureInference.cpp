@@ -30,6 +30,7 @@ zend_string *pt_csi_return_template_name = nullptr;
 zend_string *pt_csi_closed_body_attribute = nullptr;
 zend_string *pt_csi_returns_context_typed_attribute = nullptr;
 zend_string *pt_csi_assigned_closures_attribute = nullptr;
+zend_string *pt_csi_nested_assigned_closures_attribute = nullptr;
 /* the by-ref follow-up's template names and attribute names */
 zend_string *pt_csi_invocation_template_name = nullptr;
 zend_string *pt_csi_by_ref_uses_attribute = nullptr;
@@ -230,9 +231,10 @@ void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv,
 }
 
 /* Mirrors the private static getAssignedClosures(); UNDEF = pending exception */
-zv::Val getAssignedClosures(zval *body, zval *stmts)
+zv::Val getAssignedClosures(zval *body, zval *stmts, bool nested = false)
 {
-	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_assigned_closures_attribute), ZSTR_LEN(pt_csi_assigned_closures_attribute));
+	zend_string *attribute = nested ? pt_csi_nested_assigned_closures_attribute : pt_csi_assigned_closures_attribute;
+	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(body), ZSTR_VAL(attribute), ZSTR_LEN(attribute));
 	if (UNEXPECTED(cached.isUndef())) return zv::Val();
 	if (!cached.isNull()) return cached;
 
@@ -246,15 +248,17 @@ zv::Val getAssignedClosures(zval *body, zval *stmts)
 	for (;;) {
 		zv::Val node = popNode(stack);
 		if (node.isUndef()) break;
-		bool skip;
-		if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, skip))) return zv::Val();
-		if (!skip && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, skip))) return zv::Val();
-		if (skip) continue;
+		if (!nested) {
+			bool skip;
+			if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, skip))) return zv::Val();
+			if (!skip && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, skip))) return zv::Val();
+			if (skip) continue;
+		}
 		if (UNEXPECTED(!collectAssignedClosure(node.raw(), assigned))) return zv::Val();
 		if (UNEXPECTED(!pushSubNodes(node.raw(), stack))) return zv::Val();
 	}
 	zv::Val result(std::move(assigned));
-	if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_assigned_closures_attribute), ZSTR_LEN(pt_csi_assigned_closures_attribute), result.raw()))) return zv::Val();
+	if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(body), ZSTR_VAL(attribute), ZSTR_LEN(attribute), result.raw()))) return zv::Val();
 	return result;
 }
 
@@ -574,7 +578,7 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 }
 
 /* Mirrors the private bodyYieldsOrInvokes(); false = pending exception */
-[[nodiscard]] bool bodyYieldsOrInvokes(zval *stmts, zval *names, bool &out)
+[[nodiscard]] bool bodyYieldsOrInvokes(zval *stmts, zval *names, bool &out, bool checkYield = true)
 {
 	out = false;
 	zv::Arr stack = zv::Arr::create(0);
@@ -583,30 +587,80 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 			stack.push(zv::Val::copyOf(entry.value().deref()));
 		}
 	}
-	/* closures and arrow functions written in the body: their yields are
-	 * their own, but they can invoke the variables on the body's behalf */
-	zv::Arr nestedStack = zv::Arr::create(0);
 	for (;;) {
 		zv::Val node = popNode(stack);
-		bool nested = node.isUndef();
-		if (nested) {
-			node = popNode(nestedStack);
-			if (node.isUndef()) break;
-		}
+		if (node.isUndef()) break;
 		zval *n = node.raw();
 		bool is;
-		bool isNestedFunction;
-		if (UNEXPECTED(!isA(n, PT_CLASS_CLOSURE_EXPR, isNestedFunction))) return false;
-		if (!isNestedFunction && UNEXPECTED(!isA(n, PT_CLASS_ARROW_FUNCTION, isNestedFunction))) return false;
-		if (!nested && isNestedFunction) {
-			nestedStack.push(std::move(node));
+		if (UNEXPECTED(!isA(n, PT_CLASS_CLOSURE_EXPR, is))) return false;
+		if (is) {
+			zv::Arr captured = zv::Arr::create(0);
+			zval *uses = read(pt_csi_by_ref_uses_site, n, PT_LC("uses"));
+			if (UNEXPECTED(uses == NULL)) return false;
+			zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
+			for (auto entry : zv::ArrRef(usesHold.raw())) {
+				zval *var = read(pt_csi_by_ref_use_var_site, entry.value().deref().raw(), PT_LC("var"));
+				if (UNEXPECTED(var == NULL)) return false;
+				zend_string *name;
+				if (UNEXPECTED(!variableStringName(pt_csi_by_ref_variable_name_site, var, name))) return false;
+				if (name == NULL) continue;
+				for (auto candidate : zv::ArrRef(names)) {
+					zval *value = candidate.value().deref().raw();
+					if (Z_TYPE_P(value) == IS_STRING && zend_string_equals(Z_STR_P(value), name)) {
+						captured.push(zv::Ref(value));
+						break;
+					}
+				}
+			}
+			if (zend_hash_num_elements(Z_ARRVAL_P(captured.raw())) > 0) {
+				zval *body = read(pt_csi_stmts_site, n, PT_LC("stmts"));
+				if (UNEXPECTED(body == NULL)) return false;
+				zv::Val bodyHold = zv::Val::copyOf(zv::Ref(body));
+				bool ok = true;
+				pt_engine_with_stack([&]() { ok = bodyYieldsOrInvokes(bodyHold.raw(), captured.raw(), out, false); });
+				if (UNEXPECTED(!ok)) return false;
+				if (out) return true;
+			}
+			continue;
+		}
+		if (UNEXPECTED(!isA(n, PT_CLASS_ARROW_FUNCTION, is))) return false;
+		if (is) {
+			zv::ScratchTable parameters(8);
+			zval *params = read(pt_csi_params_site, n, PT_LC("params"));
+			if (UNEXPECTED(params == NULL)) return false;
+			zv::Val paramsHold = zv::Val::copyOf(zv::Ref(params));
+			for (auto entry : zv::ArrRef(paramsHold.raw())) {
+				zval *var = read(pt_csi_by_ref_param_var_site, entry.value().deref().raw(), PT_LC("var"));
+				if (UNEXPECTED(var == NULL)) return false;
+				zend_string *name;
+				if (UNEXPECTED(!variableStringName(pt_csi_by_ref_variable_name_site, var, name))) return false;
+				if (name == NULL) continue;
+				zval marked;
+				ZVAL_TRUE(&marked);
+				zend_symtable_update(parameters.table(), name, &marked);
+			}
+			zv::Arr captured = zv::Arr::create(0);
+			for (auto candidate : zv::ArrRef(names)) {
+				zval *value = candidate.value().deref().raw();
+				if (Z_TYPE_P(value) == IS_STRING && !zend_symtable_exists(parameters.table(), Z_STR_P(value))) captured.push(zv::Ref(value));
+			}
+			if (zend_hash_num_elements(Z_ARRVAL_P(captured.raw())) > 0) {
+				zval *body = read(pt_csi_arrow_expr_site, n, PT_LC("expr"));
+				if (UNEXPECTED(body == NULL)) return false;
+				zv::Arr bodyHold = zv::Arr::create(1);
+				bodyHold.push(zv::Ref(body));
+				bool ok = true;
+				pt_engine_with_stack([&]() { ok = bodyYieldsOrInvokes(bodyHold.raw(), captured.raw(), out, false); });
+				if (UNEXPECTED(!ok)) return false;
+				if (out) return true;
+			}
 			continue;
 		}
 		if (UNEXPECTED(!isA(n, PT_CLASS_FUNCTION_LIKE, is))) return false;
-		if (is && !isNestedFunction) continue;
+		if (is) continue;
 		if (UNEXPECTED(!isA(n, PT_CLASS_CLASS_LIKE_STMT, is))) return false;
 		if (is) continue;
-		if (!nested) {
+		if (checkYield) {
 			if (UNEXPECTED(!isA(n, PT_CLASS_YIELD, is))) return false;
 			if (!is && UNEXPECTED(!isA(n, PT_CLASS_YIELD_FROM, is))) return false;
 			if (is) {
@@ -630,7 +684,7 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 				}
 			}
 		}
-		if (UNEXPECTED(!pushSubNodes(n, nested ? nestedStack : stack))) return false;
+		if (UNEXPECTED(!pushSubNodes(n, stack))) return false;
 	}
 	return true;
 }
@@ -1023,12 +1077,27 @@ public:
 		if (UNEXPECTED(stmts.isUndef())) return zv::Val();
 		zv::Val reboundNames = getReboundVariableNames(body.raw(), stmts.raw());
 		if (UNEXPECTED(reboundNames.isUndef())) return zv::Val();
+		zv::Val assignedClosures = getAssignedClosures(body.raw(), stmts.raw(), true);
+		if (UNEXPECTED(assignedClosures.isUndef())) return zv::Val();
 		for (auto entry : zv::ArrRef(names.raw())) {
 			zval *name = entry.value().deref().raw();
+			if (Z_TYPE_P(name) != IS_STRING) continue;
 			// unset or bound to another reference, the variable no longer is the
 			// one the closure writes to - its effects stay the creation-time fixpoint
-			if (Z_TYPE_P(name) == IS_STRING && zend_symtable_find(Z_ARRVAL_P(reboundNames.raw()), Z_STR_P(name)) != NULL) {
+			if (zend_symtable_find(Z_ARRVAL_P(reboundNames.raw()), Z_STR_P(name)) != NULL) {
 				return zv::Val(zv::Arr::empty());
+			}
+			// `$f = function () use (&$f)`: the body reaches the closure itself
+			// through the variable - aliased, captured, passed on - so its
+			// invocations cannot all be followed
+			zval *closures = zend_symtable_find(Z_ARRVAL_P(assignedClosures.raw()), Z_STR_P(name));
+			if (closures != NULL && Z_TYPE_P(closures) == IS_ARRAY) {
+				for (auto closure : zv::ArrRef(closures)) {
+					zval *candidate = closure.value().deref().raw();
+					if (Z_TYPE_P(candidate) == IS_OBJECT && Z_OBJ_P(candidate) == Z_OBJ_P(expr)) {
+						return zv::Val(zv::Arr::empty());
+					}
+				}
 			}
 		}
 
@@ -1933,6 +2002,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	pt_csi_closed_body_attribute = zend_string_init_interned(PT_LC("closureSignatureClosedBody"), 1);
 	pt_csi_returns_context_typed_attribute = zend_string_init_interned(PT_LC("closureSignatureReturnsContextTyped"), 1);
 	pt_csi_assigned_closures_attribute = zend_string_init_interned(PT_LC("closureSignatureAssignedClosures"), 1);
+	pt_csi_nested_assigned_closures_attribute = zend_string_init_interned(PT_LC("closureSignatureNestedAssignedClosures"), 1);
 	pt_csi_invocation_template_name = zend_string_init_interned(PT_LC("@invokes"), 1);
 	pt_csi_by_ref_uses_attribute = zend_string_init_interned(PT_LC("closureSignatureByRefUses"), 1);
 	pt_csi_arrow_function_outer_variables_attribute = zend_string_init_interned(PT_LC("closureSignatureArrowFunctionOuterVariables"), 1);
@@ -1950,6 +2020,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	cls.privateClassConstantString("CLOSED_BODY_ATTRIBUTE", "closureSignatureClosedBody");
 	cls.privateClassConstantString("ASSIGNED_CLOSURES_ATTRIBUTE", "closureSignatureAssignedClosures");
 	cls.privateClassConstantString("REBOUND_VARIABLES_ATTRIBUTE", "closureSignatureReboundVariables");
+	cls.privateClassConstantString("NESTED_ASSIGNED_CLOSURES_ATTRIBUTE", "closureSignatureNestedAssignedClosures");
 
 	/* the real parameter types: the DI container autowires the service by
 	 * reflecting the constructor */

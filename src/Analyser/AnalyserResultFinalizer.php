@@ -311,14 +311,10 @@ final class AnalyserResultFinalizer
 
 		// a fix is a diff against the file contents, which can change without changing the collected data
 		foreach ($previousResult->getErrors() as $error) {
-			$fixedErrorDiff = $error->getFixedErrorDiff();
-			if ($fixedErrorDiff === null) {
-				continue;
-			}
-
-			$fixedFile = $error->getTraitFilePath() ?? $error->getFilePath();
-			if (!is_file($fixedFile) || hash_file('sha256', $fixedFile) !== $fixedErrorDiff->originalHash) {
-				return false;
+			foreach ($error->getFixedErrorDiffs() as $fixedErrorDiff) {
+				if (!is_file($fixedErrorDiff->file) || hash_file('sha256', $fixedErrorDiff->file) !== $fixedErrorDiff->originalHash) {
+					return false;
+				}
 			}
 		}
 

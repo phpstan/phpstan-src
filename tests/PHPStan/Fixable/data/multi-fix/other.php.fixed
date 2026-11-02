@@ -1,0 +1,8 @@
+<?php
+
+namespace MultiFix;
+
+function doFoo(): void
+{
+	bar(1);
+}

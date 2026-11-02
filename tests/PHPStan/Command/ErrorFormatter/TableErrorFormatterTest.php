@@ -490,9 +490,9 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 
 	public function testFixableIgnoredErrors(): void
 	{
-		$fixed = new FixedErrorDiff('hash', 'diff');
-		$fixable = new Error('Fixable', 'Foo.php', 12, filePath: 'Foo.php', fixedErrorDiff: $fixed);
-		$ignoredFixable = new Error('Ignored', 'Foo.php', 13, filePath: 'Foo.php', fixedErrorDiff: $fixed);
+		$fixed = [new FixedErrorDiff('Foo.php', 'hash', 'diff')];
+		$fixable = new Error('Fixable', 'Foo.php', 12, filePath: 'Foo.php', fixedErrorDiffs: $fixed);
+		$ignoredFixable = new Error('Ignored', 'Foo.php', 13, filePath: 'Foo.php', fixedErrorDiffs: $fixed);
 
 		// shown with a green build too, the ignored errors are not in the table
 		$formatter = $this->createErrorFormatter(null);

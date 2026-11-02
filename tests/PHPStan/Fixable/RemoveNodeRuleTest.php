@@ -35,7 +35,7 @@ class RemoveNodeRuleTest extends RuleTestCase
 	{
 		$fixable = [];
 		foreach ($this->gatherAnalyserErrors([__DIR__ . '/data/remove-node.php']) as $error) {
-			$fixable[$error->getMessage()] = $error->getFixedErrorDiff() !== null;
+			$fixable[$error->getMessage()] = $error->getFixedErrorDiffs() !== [];
 		}
 
 		$this->assertSame([

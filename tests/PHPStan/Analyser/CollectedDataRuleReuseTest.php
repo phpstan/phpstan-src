@@ -291,7 +291,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$result = $this->finalize([$rule], $collectedData, false, []);
 		$errors = $result->getAnalyserResult()->getUnorderedErrors();
 		$this->assertCount(1, $errors);
-		$this->assertNotNull($errors[0]->getFixedErrorDiff());
+		$this->assertNotSame([], $errors[0]->getFixedErrorDiffs());
 
 		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
 		$this->assertSame(1, $result->getReusedRulesCount());

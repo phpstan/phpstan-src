@@ -6,7 +6,6 @@ use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
-use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\CloningVisitor;
 use PhpParser\Parser;
 use PhpParser\Token;
@@ -24,6 +23,7 @@ use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
+use PHPStan\Rules\NodeFix;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrors\TransformedRuleError;
@@ -137,19 +137,31 @@ final class RuleErrorTransformer
 			$canBeIgnored = false;
 		}
 
-		$fixedErrorDiff = null;
+		$fixedErrorDiffs = [];
 		if ($ruleError instanceof FixableNodeRuleError) {
-			if ($ruleError->getOriginalNode() instanceof VirtualNode) {
-				throw new ShouldNotHappenException('Cannot fix virtual node');
+			$fixesByFile = [];
+			foreach ($ruleError->getNodeFixes() as $nodeFix) {
+				if ($nodeFix->node instanceof VirtualNode) {
+					throw new ShouldNotHappenException('Cannot fix virtual node');
+				}
+
+				$fixesByFile[$nodeFix->file ?? $traitFilePath ?? $filePath][] = $nodeFix;
 			}
 
-			$fixingFile = $traitFilePath ?? $filePath;
-			$fixedErrorDiff = $this->fix(
-				$fixingFile,
-				$fixingFile === $fileNodesFile ? $fileNodes : [],
-				$ruleError->getOriginalNode(),
-				$ruleError->getNewNodeCallable(),
-			);
+			foreach ($fixesByFile as $fixingFile => $fixes) {
+				$fixedErrorDiff = $this->fix(
+					$fixingFile,
+					$fixingFile === $fileNodesFile ? $fileNodes : [],
+					$fixes,
+				);
+				if ($fixedErrorDiff === null) {
+					// the changes are applied together or not at all
+					$fixedErrorDiffs = [];
+					break;
+				}
+
+				$fixedErrorDiffs[] = $fixedErrorDiff;
+			}
 		}
 
 		return new Error(
@@ -164,19 +176,20 @@ final class RuleErrorTransformer
 			get_class($node),
 			$identifier,
 			$metadata,
-			$fixedErrorDiff,
+			$fixedErrorDiffs,
 		);
 	}
 
 	/**
 	 * Without $fileNodes (errors of CollectedDataNode rules, errors transformed inside collectors,
-	 * and errors pointing to another file with RuleErrorBuilder::file()), the file is parsed with the cached analysis parser. The rule has to take the node it fixes
-	 * from the same parser so that ReplacingNodeVisitor finds it by identity.
+	 * and fixes in another file), the file is parsed with the cached analysis parser. The rule has to take
+	 * the nodes it fixes from the same parser so that ReplacingNodeVisitor finds them by identity.
+	 * Returns null when some of the nodes cannot be fixed.
 	 *
 	 * @param Node\Stmt[] $fileNodes
-	 * @param callable(Node): (Node|NodeVisitor::REMOVE_NODE) $newNodeCallable
+	 * @param non-empty-list<NodeFix> $fixes
 	 */
-	private function fix(string $fixingFile, array $fileNodes, Node $originalNode, callable $newNodeCallable): ?FixedErrorDiff
+	private function fix(string $fixingFile, array $fileNodes, array $fixes): ?FixedErrorDiff
 	{
 		if ($fileNodes === []) {
 			if (!is_file($fixingFile)) {
@@ -203,7 +216,7 @@ final class RuleErrorTransformer
 			$visitors[] = $indentDetector;
 		}
 		$visitors[] = new CloningVisitor();
-		$replacingVisitor = new ReplacingNodeVisitor($originalNode, $newNodeCallable);
+		$replacingVisitor = new ReplacingNodeVisitor($fixes);
 		$visitors[] = $replacingVisitor;
 
 		/** @var Stmt[] $newStmts */
@@ -222,7 +235,7 @@ final class RuleErrorTransformer
 			}
 		}
 
-		if (!$replacingVisitor->isFound()) {
+		if (!$replacingVisitor->isComplete()) {
 			return null;
 		}
 
@@ -231,7 +244,7 @@ final class RuleErrorTransformer
 			return null;
 		}
 
-		return new FixedErrorDiff($parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
+		return new FixedErrorDiff($fixingFile, $parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
 	}
 
 	/**

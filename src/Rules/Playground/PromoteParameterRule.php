@@ -116,7 +116,9 @@ final class PromoteParameterRule implements Rule
 				$builder->line($error->getLine());
 			}
 			if ($error instanceof FixableNodeRuleError) {
-				$builder->fixNode($error->getOriginalNode(), $error->getNewNodeCallable());
+				foreach ($error->getNodeFixes() as $nodeFix) {
+					$builder->fixNode($nodeFix->node, $nodeFix->callback, $nodeFix->file);
+				}
 			}
 			$errors[] = $builder->build();
 		}

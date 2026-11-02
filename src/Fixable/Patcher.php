@@ -5,71 +5,147 @@ namespace PHPStan\Fixable;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileReader;
+use PHPStan\File\FileWriter;
+use function array_key_exists;
 use function array_splice;
 use function count;
 use function hash;
 use function implode;
 use function intdiv;
+use function is_file;
 use function str_starts_with;
 use function substr;
 use const PREG_SPLIT_DELIM_CAPTURE;
 use const PREG_SPLIT_NO_EMPTY;
 
 /**
- * Applies unified diffs that were all computed against the same file contents.
+ * Applies unified diffs that were computed against the current contents of the files.
  *
  * Each diff is reduced to its change runs (lines removed from the original file
  * and lines inserted in their place). Runs are spliced into the original file
- * in a single pass, so the cost is linear in the size of the file and the diffs.
- * A diff whose runs overlap a run of an earlier diff is skipped as a whole.
+ * in a single pass, so the cost is linear in the size of the files and the diffs.
+ *
+ * The diffs of one error form a group, which is applied as a whole or skipped
+ * as a whole: when a run of the group overlaps a run of an earlier group, or when
+ * a diff of the group was computed against different contents.
  */
 #[AutowiredService]
 final class Patcher
 {
 
 	/**
-	 * @param FixedErrorDiff[] $diffs
-	 * @return array{contents: string, skippedCount: int}
-	 * @throws FileChangedException when a diff was computed against different contents
+	 * @param array<string, string> $contentsByFile current contents of the files the diffs change
+	 * @param list<list<FixedErrorDiff>> $diffGroups diffs of each error
+	 * @return array{contents: array<string, string>, appliedCount: int, skippedCount: int} contents of the files in $contentsByFile
 	 */
-	public function applyDiffs(string $fileContents, array $diffs): array
+	public function apply(array $contentsByFile, array $diffGroups): array
 	{
-		$fileHash = hash('sha256', $fileContents);
-		foreach ($diffs as $diff) {
-			if ($diff->originalHash !== $fileHash) {
-				throw new FileChangedException();
-			}
+		$hashes = [];
+		foreach ($contentsByFile as $file => $contents) {
+			$hashes[$file] = hash('sha256', $contents);
 		}
 
-		/** @var list<array{int, int, list<string>}> $acceptedRuns sorted by start, non-overlapping */
+		/** @var array<string, list<array{int, int, list<string>}>> $acceptedRuns per file sorted by start, non-overlapping */
 		$acceptedRuns = [];
+		$appliedCount = 0;
 		$skippedCount = 0;
-		foreach ($diffs as $diff) {
-			$insertions = [];
-			foreach (self::parseChangeRuns($diff->diff) as $run) {
-				$index = self::findInsertionIndex($acceptedRuns, $run);
-				if ($index === null) {
+		foreach ($diffGroups as $diffs) {
+			$insertionsByFile = [];
+			foreach ($diffs as $diff) {
+				if (!isset($hashes[$diff->file]) || $hashes[$diff->file] !== $diff->originalHash) {
 					$skippedCount++;
 					continue 2;
 				}
-				if (isset($acceptedRuns[$index]) && $acceptedRuns[$index] === $run) {
-					// another diff makes the exact same change
-					continue;
+
+				$fileRuns = $acceptedRuns[$diff->file] ?? [];
+				$insertions = [];
+				foreach (self::parseChangeRuns($diff->diff) as $run) {
+					$index = self::findInsertionIndex($fileRuns, $run);
+					if ($index === null) {
+						$skippedCount++;
+						continue 3;
+					}
+					if (isset($fileRuns[$index]) && $fileRuns[$index] === $run) {
+						// another error makes the exact same change
+						continue;
+					}
+					$insertions[] = [$index, $run];
 				}
-				$insertions[] = [$index, $run];
+
+				$insertionsByFile[$diff->file] = $insertions;
 			}
 
-			// runs of a single diff are ordered and non-overlapping,
-			// inserting from the last one keeps the earlier indexes valid
-			for ($i = count($insertions) - 1; $i >= 0; $i--) {
-				array_splice($acceptedRuns, $insertions[$i][0], 0, [$insertions[$i][1]]);
+			foreach ($insertionsByFile as $file => $insertions) {
+				$acceptedRuns[$file] ??= [];
+
+				// runs of a single diff are ordered and non-overlapping,
+				// inserting from the last one keeps the earlier indexes valid
+				for ($i = count($insertions) - 1; $i >= 0; $i--) {
+					array_splice($acceptedRuns[$file], $insertions[$i][0], 0, [$insertions[$i][1]]);
+				}
+			}
+			$appliedCount++;
+		}
+
+		$result = $contentsByFile;
+		foreach ($acceptedRuns as $file => $runs) {
+			$result[$file] = self::splice($contentsByFile[$file], $runs);
+		}
+
+		return [
+			'contents' => $result,
+			'appliedCount' => $appliedCount,
+			'skippedCount' => $skippedCount,
+		];
+	}
+
+	/**
+	 * Applies the diffs to the files on disk and writes the changed files.
+	 *
+	 * @param list<list<FixedErrorDiff>> $diffGroups diffs of each error
+	 * @return array{changedFiles: list<string>, appliedCount: int, skippedCount: int}
+	 */
+	public function applyToFiles(array $diffGroups): array
+	{
+		$contentsByFile = [];
+		foreach ($diffGroups as $diffs) {
+			foreach ($diffs as $diff) {
+				if (array_key_exists($diff->file, $contentsByFile) || !is_file($diff->file)) {
+					continue;
+				}
+
+				$contentsByFile[$diff->file] = FileReader::read($diff->file);
 			}
 		}
 
+		$result = $this->apply($contentsByFile, $diffGroups);
+		$changedFiles = [];
+		foreach ($result['contents'] as $file => $contents) {
+			if ($contents === $contentsByFile[$file]) {
+				continue;
+			}
+
+			FileWriter::write($file, $contents);
+			$changedFiles[] = $file;
+		}
+
+		return [
+			'changedFiles' => $changedFiles,
+			'appliedCount' => $result['appliedCount'],
+			'skippedCount' => $result['skippedCount'],
+		];
+	}
+
+	/**
+	 * @param list<array{int, int, list<string>}> $runs
+	 */
+	private static function splice(string $fileContents, array $runs): string
+	{
 		$baseLines = self::splitStringByLines($fileContents);
 		$result = [];
 		$position = 0;
-		foreach ($acceptedRuns as [$start, $removedCount, $addedLines]) {
+		foreach ($runs as [$start, $removedCount, $addedLines]) {
 			for (; $position < $start; $position++) {
 				$result[] = $baseLines[$position];
 			}
@@ -82,10 +158,7 @@ final class Patcher
 			$result[] = $baseLines[$position];
 		}
 
-		return [
-			'contents' => implode('', $result),
-			'skippedCount' => $skippedCount,
-		];
+		return implode('', $result);
 	}
 
 	/**

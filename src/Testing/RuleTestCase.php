@@ -8,6 +8,7 @@ use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
+use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\IgnoreErrorExtension;
 use PHPStan\Analyser\InternalError;
@@ -248,24 +249,30 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$fixedFile = $this->getFileHelper()->normalizePath($fixedFile);
 		// a trait is analysed only when its file is analysed too
 		[$errors] = $this->gatherAnalyserErrorsWithDelayedErrors(array_values(array_unique([$this->getFileHelper()->normalizePath($file), $fixedFile])));
-		$diffs = [];
+		$diffGroups = [];
+		$contentsByFile = [$fixedFile => FileReader::read($fixedFile)];
 		foreach ($errors as $error) {
-			if ($error->getFixedErrorDiff() === null) {
+			if ($error->getFixedErrorDiffs() === []) {
 				continue;
 			}
-			if ($this->getFileHelper()->normalizePath($error->getTraitFilePath() ?? $error->getFilePath()) !== $fixedFile) {
-				continue;
+
+			$diffs = [];
+			foreach ($error->getFixedErrorDiffs() as $diff) {
+				// the fix of an error applies to all its files or none, all of them take part
+				$diffFile = $this->getFileHelper()->normalizePath($diff->file);
+				$contentsByFile[$diffFile] ??= FileReader::read($diffFile);
+				$diffs[] = new FixedErrorDiff($diffFile, $diff->originalHash, $diff->diff);
 			}
-			$diffs[] = $error->getFixedErrorDiff();
+			$diffGroups[] = $diffs;
 		}
 
 		$patcher = self::getContainer()->getByType(Patcher::class);
-		$patchResult = $patcher->applyDiffs(FileReader::read($fixedFile), $diffs); // @phpstan-ignore missingType.checkedException
+		$patchResult = $patcher->apply($contentsByFile, $diffGroups);
 		$this->assertSame(0, $patchResult['skippedCount'], 'Some fixes overlap and could not be applied together.');
 
 		$fixedFileContents = FileReader::read($expectedFile);
 
-		$this->assertSame($this->normalizeLineEndings($fixedFileContents), $this->normalizeLineEndings($patchResult['contents']));
+		$this->assertSame($this->normalizeLineEndings($fixedFileContents), $this->normalizeLineEndings($patchResult['contents'][$fixedFile]));
 	}
 
 	private function normalizeLineEndings(string $string): string

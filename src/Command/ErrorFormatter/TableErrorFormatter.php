@@ -98,7 +98,7 @@ final class TableErrorFormatter implements ErrorFormatter
 		$fileErrors = [];
 		$fixableErrorsCount = 0;
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-			if ($fileSpecificError->getFixedErrorDiff() !== null) {
+			if ($fileSpecificError->getFixedErrorDiffs() !== []) {
 				$fixableErrorsCount++;
 			}
 			if (!isset($fileErrors[$fileSpecificError->getFile()])) {
@@ -121,7 +121,7 @@ final class TableErrorFormatter implements ErrorFormatter
 				) {
 					$message = '<fg=red>' . OutputFormatter::escape($message) . '</>';
 				}
-				if ($error->getFixedErrorDiff() !== null) {
+				if ($error->getFixedErrorDiffs() !== []) {
 					$message .= ' 🔧';
 				}
 				if ($error->getIdentifier() !== null) {

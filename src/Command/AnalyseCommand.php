@@ -4,6 +4,7 @@ namespace PHPStan\Command;
 
 use OndraM\CiDetector\CiDetector;
 use Override;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -20,7 +21,6 @@ use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
-use PHPStan\Fixable\FileChangedException;
 use PHPStan\Fixable\Patcher;
 use PHPStan\Internal\AgentDetector;
 use PHPStan\Internal\BytesHelper;
@@ -555,7 +555,7 @@ final class AnalyseCommand extends Command
 			$fixableErrors = [];
 			if ($fixReported) {
 				foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-					if ($fileSpecificError->getFixedErrorDiff() === null) {
+					if ($fileSpecificError->getFixedErrorDiffs() === []) {
 						continue;
 					}
 
@@ -573,41 +573,13 @@ final class AnalyseCommand extends Command
 				$inceptionResult->getStdOutput()->getStyle()->error('No fixable errors found');
 				$exitCode = 1;
 			} else {
-				$skippedCount = 0;
-				$diffsByFile = [];
-				foreach ($fixableErrors as $fixableError) {
-					$fixFile = $fixableError->getFilePath();
-					if ($fixableError->getTraitFilePath() !== null) {
-						$fixFile = $fixableError->getTraitFilePath();
-					}
-
-					if ($fixableError->getFixedErrorDiff() === null) {
-						throw new ShouldNotHappenException();
-					}
-
-					$diffsByFile[$fixFile][] = $fixableError->getFixedErrorDiff();
-				}
-
 				$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
-				$errorOutput->getStyle()->progressStart($fixableErrorsCount);
 
-				$patcher = $container->getByType(Patcher::class);
-				foreach ($diffsByFile as $file => $diffs) {
-					$diffsCount = count($diffs);
-					try {
-						$patchResult = $patcher->applyDiffs(FileReader::read($file), $diffs);
-						$skippedCount += $patchResult['skippedCount'];
-						$errorOutput->getStyle()->progressAdvance($diffsCount);
-					} catch (FileChangedException) {
-						$skippedCount += $diffsCount;
-						$errorOutput->getStyle()->progressAdvance($diffsCount);
-						continue;
-					}
-
-					FileWriter::write($file, $patchResult['contents']);
-				}
-
-				$errorOutput->getStyle()->progressFinish();
+				$patchResult = $container->getByType(Patcher::class)->applyToFiles(array_map(
+					static fn (Error $error): array => $error->getFixedErrorDiffs(),
+					$fixableErrors,
+				));
+				$skippedCount = $patchResult['skippedCount'];
 
 				if ($skippedCount > 0) {
 					$fixedCount = $fixableErrorsCount - $skippedCount;

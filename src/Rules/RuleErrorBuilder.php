@@ -123,14 +123,9 @@ final class RuleErrorBuilder
 				FixableNodeRuleError::class,
 				[
 					[
-						'originalNode',
-						'\PhpParser\Node',
-						'\PhpParser\Node',
-					],
-					[
-						'newNodeCallable',
-						null,
-						'callable(\PhpParser\Node): (\PhpParser\Node|\PhpParser\NodeVisitor::REMOVE_NODE)',
+						'nodeFixes',
+						'array',
+						'non-empty-list<\PHPStan\Rules\NodeFix>',
 					],
 				],
 			],
@@ -320,37 +315,39 @@ final class RuleErrorBuilder
 	}
 
 	/**
+	 * Every call adds a change to the fix of the error. The changes are applied together or not at all.
+	 * Several changes of the same node are applied in the order they were added.
+	 *
 	 * @internal Experimental
 	 * @template TNode of Node
 	 * @param TNode $node
 	 * @param callable(TNode): (Node|NodeVisitor::REMOVE_NODE) $cb returning NodeVisitor::REMOVE_NODE works like removeNode()
+	 * @param string|null $file the file of the node when it is not the file of the error
 	 * @phpstan-this-out self<T&FixableNodeRuleError>
 	 * @return self<T&FixableNodeRuleError>
 	 */
-	public function fixNode(Node $node, callable $cb): self
+	public function fixNode(Node $node, callable $cb, ?string $file = null): self
 	{
-		$this->properties['originalNode'] = $node;
-		$this->properties['newNodeCallable'] = $cb;
+		// ReplacingNodeVisitor passes the callback only a clone of $node
+		/** @var callable(Node): (Node|NodeVisitor::REMOVE_NODE) $cb */
+		$this->properties['nodeFixes'][] = new NodeFix($node, $cb, $file);
 		$this->type |= self::TYPE_FIXABLE_NODE;
 
 		return $this;
 	}
 
 	/**
-	 * Fixes the error by removing the node. Only a node in an array, like a statement,
-	 * an argument, or an array item, can be removed. Otherwise the error is not fixable.
+	 * Adds removing the node to the fix of the error, see fixNode(). Only a node in an array,
+	 * like a statement, an argument, or an array item, can be removed. Otherwise the error is not fixable.
 	 *
 	 * @internal Experimental
+	 * @param string|null $file the file of the node when it is not the file of the error
 	 * @phpstan-this-out self<T&FixableNodeRuleError>
 	 * @return self<T&FixableNodeRuleError>
 	 */
-	public function removeNode(Node $node): self
+	public function removeNode(Node $node, ?string $file = null): self
 	{
-		$this->properties['originalNode'] = $node;
-		$this->properties['newNodeCallable'] = static fn (): int => NodeVisitor::REMOVE_NODE;
-		$this->type |= self::TYPE_FIXABLE_NODE;
-
-		return $this;
+		return $this->fixNode($node, static fn (): int => NodeVisitor::REMOVE_NODE, $file);
 	}
 
 	/**

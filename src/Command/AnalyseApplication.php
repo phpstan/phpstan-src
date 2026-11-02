@@ -171,14 +171,14 @@ final class AnalyseApplication
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			foreach ($ignoredErrorHelperProcessedResult->getIgnoredErrors() as [$ignoredError]) {
-				if ($ignoredError->getFixedErrorDiff() === null) {
+				if ($ignoredError->getFixedErrorDiffs() === []) {
 					continue;
 				}
 
 				$fixableIgnoredErrors[] = $ignoredError;
 			}
 			foreach ($analyserResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
-				if ($locallyIgnoredError->getFixedErrorDiff() === null) {
+				if ($locallyIgnoredError->getFixedErrorDiffs() === []) {
 					continue;
 				}
 

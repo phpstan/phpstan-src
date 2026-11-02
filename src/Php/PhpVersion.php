@@ -563,4 +563,9 @@ final class PhpVersion
 		return $this->versionId >= 80100;
 	}
 
+	public function deprecatesMbstringPseudoEncodings(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
 }

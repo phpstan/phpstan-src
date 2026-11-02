@@ -41,5 +41,8 @@ return [
 		'Filter',
 		'Foobar',
 		'PDO',
+		// the NewExpression marker simple-downgrader writes into attribute arguments below PHP 8.1,
+		// not a class; the attributes file is generated before scoping and no longer contains it
+		'olvlvl\ComposerAttributeCollector',
 	],
 ];

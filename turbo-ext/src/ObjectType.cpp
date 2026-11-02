@@ -3374,6 +3374,16 @@ static zv::Val otSelectMethodVariant(zend_object *type, zval *methodName, zval *
 		zend_type_error("phpstan_turbo: getVariants() and the argument types must be arrays");
 		return zv::Val();
 	}
+	/* nothing to resolve, so skip the resolution on this hot path:
+	 * if (count($variants) === 1 && !ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($variants[0])) return $variants[0]; */
+	if (zv::ArrRef(variants.raw()).size() == 1) {
+		zval *only = zend_hash_index_find(Z_ARRVAL_P(variants.raw()), 0);
+		if (only != NULL && Z_TYPE_P(only) == IS_OBJECT) {
+			bool hasTemplate;
+			if (UNEXPECTED(!pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_type(only, hasTemplate))) return zv::Val();
+			if (!hasTemplate) return zv::Val::copyOf(zv::Ref(only));
+		}
+	}
 	zv::Val variant = pt_parameters_acceptor_selector_select_from_types(types, variants.raw(), false);
 	if (UNEXPECTED(variant.isUndef())) return zv::Val();
 	if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {

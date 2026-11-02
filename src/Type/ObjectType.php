@@ -24,6 +24,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\Dummy\DummyPropertyReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\UniversalObjectCratesClassReflectionExtension;
 use PHPStan\Reflection\ReflectionProvider;
@@ -1564,13 +1565,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function getOffsetValueType(Type $offsetType): Type
 	{
 		if ($this->isInstanceOf(ArrayAccess::class)->yes()) {
-			// Resolve offsetGet()'s method-level template types (e.g. `@template TOffset of key-of<T>`)
-			// against the offset, as for an explicit $object->offsetGet($offset) call.
-			return RecursionGuard::run($this, fn (): Type => ParametersAcceptorSelector::selectFromTypes(
-				[$offsetType],
-				$this->getMethod('offsetGet', new OutOfClassScope())->getVariants(),
-				false,
-			)->getReturnType());
+			return RecursionGuard::run($this, fn (): Type => $this->selectArrayAccessVariant('offsetGet', [$offsetType])->getReturnType());
 		}
 
 		if (!$this->isExtraOffsetAccessibleClass()->no()) {
@@ -1578,6 +1573,25 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		return new ErrorType();
+	}
+
+	/**
+	 * The variant of an ArrayAccess method (offsetGet() or offsetSet()) for an offset access,
+	 * with its method-level template types (e.g. `@template TOffset of key-of<T>`) resolved
+	 * against the offset (and written value) types, as for an explicit method call.
+	 *
+	 * @param list<Type> $argTypes
+	 */
+	private function selectArrayAccessVariant(string $methodName, array $argTypes): ParametersAcceptor
+	{
+		$variants = $this->getMethod($methodName, new OutOfClassScope())->getVariants();
+
+		// Nothing to resolve, so skip the resolution on this hot path.
+		if (count($variants) === 1 && !ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($variants[0])) {
+			return $variants[0];
+		}
+
+		return ParametersAcceptorSelector::selectFromTypes($argTypes, $variants, false);
 	}
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
@@ -1593,13 +1607,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 			$acceptedValueType = new NeverType();
 			$acceptedOffsetType = RecursionGuard::run($this, function () use ($offsetType, $valueType, &$acceptedValueType): Type {
-				// Resolve offsetSet()'s method-level template types (e.g. `@template TOffset of key-of<T>`)
-				// against the written offset and value, as for an explicit $object->offsetSet($offset, $value) call.
-				$parameters = ParametersAcceptorSelector::selectFromTypes(
-					[$offsetType, $valueType],
-					$this->getMethod('offsetSet', new OutOfClassScope())->getVariants(),
-					false,
-				)->getParameters();
+				$parameters = $this->selectArrayAccessVariant('offsetSet', [$offsetType, $valueType])->getParameters();
 				if (count($parameters) < 2) {
 					throw new ShouldNotHappenException(sprintf(
 						'Method %s::%s() has less than 2 parameters.',

@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Conditional;
 use PHPStan\Node\InClassMethodNode;
 use PHPStan\Rules\Methods\ParentMethodHelper;
 use PHPStan\Rules\Rule;
@@ -17,11 +20,16 @@ use function sprintf;
 /**
  * @implements Rule<InClassMethodNode>
  */
+#[Conditional(
+	attribute: new AutowiredService(),
+	if: '%exceptions.check.throwTypeCovariance%',
+)]
 final class MethodThrowTypeCovarianceRule implements Rule
 {
 
 	public function __construct(
 		private ParentMethodHelper $parentMethodHelper,
+		#[AutowiredParameter(ref: '%exceptions.implicitThrows%')]
 		private bool $implicitThrows,
 	)
 	{

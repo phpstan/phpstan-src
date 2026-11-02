@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -19,6 +21,10 @@ use function in_array;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 5),
+	if: '%featureToggles.checkParameterCastableToNumberFunctions%',
+)]
 final class ParameterCastableToNumberRule implements Rule
 {
 

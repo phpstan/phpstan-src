@@ -6,6 +6,8 @@ use DateInterval;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use Throwable;
 use function count;
 use function sprintf;
@@ -14,6 +16,10 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 5),
+	if: '%featureToggles.checkDateIntervalConstructor%',
+)]
 final class DateIntervalInstantiationRule implements Rule
 {
 

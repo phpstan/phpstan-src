@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Conditional;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,6 +16,10 @@ use function ucfirst;
 /**
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
+#[Conditional(
+	attribute: new AutowiredService(),
+	if: '%exceptions.check.missingCheckedExceptionInThrows%',
+)]
 final class MissingCheckedExceptionInPropertyHookThrowsRule implements Rule
 {
 

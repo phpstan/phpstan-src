@@ -6,6 +6,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
@@ -16,6 +18,10 @@ use function strtolower;
 /**
  * @implements Rule<FuncCall>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 2),
+	if: '%featureToggles.checkDynamicConstantNameValues%',
+)]
 final class ValueAssignedToDefineRule implements Rule
 {
 

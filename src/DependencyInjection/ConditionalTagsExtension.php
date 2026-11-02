@@ -10,7 +10,6 @@ use Nette\Schema\Expect;
 use Override;
 use PHPStan\ShouldNotHappenException;
 use function array_fill_keys;
-use function array_reduce;
 use function array_values;
 use function count;
 use function is_array;
@@ -47,21 +46,38 @@ final class ConditionalTagsExtension extends CompilerExtension
 				throw new ShouldNotHappenException(sprintf('No services of type "%s" found.', $type));
 			}
 			foreach ($services as $service) {
-				foreach ($tags as $tag => $parameter) {
-					$parameter = is_array($parameter)
-						? array_reduce($parameter, fn ($carry, $item) => $carry && $this->resolveValue($item), true)
-						: $this->resolveValue($parameter);
-
-					if ($parameter) {
-						$service->addTag($tag);
+				foreach ($tags as $tag => $condition) {
+					if (!self::isConditionMet($condition)) {
 						continue;
 					}
+
+					$service->addTag($tag);
 				}
 			}
 		}
 	}
 
-	public function resolveValue(mixed $parameter): bool
+	/**
+	 * Shared with the #[Conditional] attribute. A list of conditions must all be met.
+	 *
+	 * @param mixed $condition with parameters already expanded
+	 */
+	public static function isConditionMet(mixed $condition): bool
+	{
+		if (is_array($condition)) {
+			foreach ($condition as $item) {
+				if (!self::resolveValue($item)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		return self::resolveValue($condition);
+	}
+
+	private static function resolveValue(mixed $parameter): bool
 	{
 		if (!$parameter instanceof Statement) {
 			return (bool) $parameter;

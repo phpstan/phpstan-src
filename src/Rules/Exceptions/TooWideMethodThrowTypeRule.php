@@ -5,6 +5,9 @@ namespace PHPStan\Rules\Exceptions;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\Rule;
@@ -21,13 +24,19 @@ use function sprintf;
 /**
  * @implements Rule<MethodReturnStatementsNode>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 4),
+	if: '%exceptions.check.tooWideThrowType%',
+)]
 final class TooWideMethodThrowTypeRule implements Rule
 {
 
 	public function __construct(
 		private FileTypeMapper $fileTypeMapper,
 		private TooWideThrowTypeCheck $check,
+		#[AutowiredParameter(ref: '%checkTooWideThrowTypesInProtectedAndPublicMethods%')]
 		private bool $checkProtectedAndPublicMethods,
+		#[AutowiredParameter(ref: '%exceptions.check.tooWideImplicitThrowType%')]
 		private bool $tooWideImplicitThrows,
 	)
 	{

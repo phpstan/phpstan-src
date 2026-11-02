@@ -4,6 +4,8 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableWritesNode;
@@ -22,6 +24,10 @@ use function ucfirst;
 /**
  * @implements Rule<VariableWritesNode>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 4),
+	if: '%featureToggles.unusedVariable%',
+)]
 final class UnusedVariableRule implements Rule
 {
 

@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Exceptions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\PropertyHookReturnStatementsNode;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -14,11 +17,16 @@ use function ucfirst;
 /**
  * @implements Rule<PropertyHookReturnStatementsNode>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 4),
+	if: '%exceptions.check.tooWideThrowType%',
+)]
 final class TooWidePropertyHookThrowTypeRule implements Rule
 {
 
 	public function __construct(
 		private TooWideThrowTypeCheck $check,
+		#[AutowiredParameter(ref: '%checkTooWideThrowTypesInProtectedAndPublicMethods%')]
 		private bool $checkProtectedAndPublicMethods,
 	)
 	{

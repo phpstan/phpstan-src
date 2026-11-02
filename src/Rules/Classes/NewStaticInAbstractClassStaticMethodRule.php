@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Classes;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -13,6 +15,10 @@ use function strtolower;
 /**
  * @implements Rule<Node\Expr\New_>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 0),
+	if: '%featureToggles.newStaticInAbstractClassStaticMethod%',
+)]
 final class NewStaticInAbstractClassStaticMethodRule implements Rule
 {
 

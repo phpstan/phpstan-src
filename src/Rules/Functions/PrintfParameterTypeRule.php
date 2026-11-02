@@ -4,6 +4,9 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -28,6 +31,10 @@ use function sprintf;
 /**
  * @implements Rule<Node\Expr\FuncCall>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 5),
+	if: '%featureToggles.checkPrintfParameterTypes%',
+)]
 final class PrintfParameterTypeRule implements Rule
 {
 
@@ -46,6 +53,7 @@ final class PrintfParameterTypeRule implements Rule
 		private PrintfFormatParser $printfFormatParser,
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		#[AutowiredParameter]
 		private bool $checkStrictPrintfPlaceholderTypes,
 	)
 	{

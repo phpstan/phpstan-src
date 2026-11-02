@@ -30,7 +30,7 @@ zend_string *pt_csi_return_template_name = nullptr;
 zend_string *pt_csi_closed_body_attribute = nullptr;
 zend_string *pt_csi_returns_context_typed_attribute = nullptr;
 zend_string *pt_csi_assigned_closures_attribute = nullptr;
-zend_string *pt_csi_nested_assigned_closures_attribute = nullptr;
+zend_string *pt_csi_assigned_to_by_ref_use_attribute = nullptr;
 /* the by-ref follow-up's template names and attribute names */
 zend_string *pt_csi_invocation_template_name = nullptr;
 zend_string *pt_csi_by_ref_uses_attribute = nullptr;
@@ -231,10 +231,9 @@ void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv,
 }
 
 /* Mirrors the private static getAssignedClosures(); UNDEF = pending exception */
-zv::Val getAssignedClosures(zval *body, zval *stmts, bool nested = false)
+zv::Val getAssignedClosures(zval *body, zval *stmts)
 {
-	zend_string *attribute = nested ? pt_csi_nested_assigned_closures_attribute : pt_csi_assigned_closures_attribute;
-	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(body), ZSTR_VAL(attribute), ZSTR_LEN(attribute));
+	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_assigned_closures_attribute), ZSTR_LEN(pt_csi_assigned_closures_attribute));
 	if (UNEXPECTED(cached.isUndef())) return zv::Val();
 	if (!cached.isNull()) return cached;
 
@@ -248,17 +247,15 @@ zv::Val getAssignedClosures(zval *body, zval *stmts, bool nested = false)
 	for (;;) {
 		zv::Val node = popNode(stack);
 		if (node.isUndef()) break;
-		if (!nested) {
-			bool skip;
-			if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, skip))) return zv::Val();
-			if (!skip && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, skip))) return zv::Val();
-			if (skip) continue;
-		}
+		bool skip;
+		if (UNEXPECTED(!isA(node.raw(), PT_CLASS_FUNCTION_LIKE, skip))) return zv::Val();
+		if (!skip && UNEXPECTED(!isA(node.raw(), PT_CLASS_CLASS_LIKE_STMT, skip))) return zv::Val();
+		if (skip) continue;
 		if (UNEXPECTED(!collectAssignedClosure(node.raw(), assigned))) return zv::Val();
 		if (UNEXPECTED(!pushSubNodes(node.raw(), stack))) return zv::Val();
 	}
 	zv::Val result(std::move(assigned));
-	if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(body), ZSTR_VAL(attribute), ZSTR_LEN(attribute), result.raw()))) return zv::Val();
+	if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(body), ZSTR_VAL(pt_csi_assigned_closures_attribute), ZSTR_LEN(pt_csi_assigned_closures_attribute), result.raw()))) return zv::Val();
 	return result;
 }
 
@@ -575,6 +572,81 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 	if (UNEXPECTED(name == NULL)) return false;
 	if (Z_TYPE_P(name) == IS_STRING) out = Z_STR_P(name);
 	return true;
+}
+
+/* Mirrors the private static isAssignedToByRefUse(); false = pending exception */
+[[nodiscard]] bool isAssignedToByRefUse(zval *expr, zval *stmts, bool &out)
+{
+	const char *attribute = ZSTR_VAL(pt_csi_assigned_to_by_ref_use_attribute);
+	size_t attributeLength = ZSTR_LEN(pt_csi_assigned_to_by_ref_use_attribute);
+	zv::Val cached = pt_engine_node_get_attribute(Z_OBJ_P(expr), attribute, attributeLength);
+	if (UNEXPECTED(cached.isUndef())) return false;
+	if (Z_TYPE_P(cached.raw()) == IS_TRUE || Z_TYPE_P(cached.raw()) == IS_FALSE) {
+		out = Z_TYPE_P(cached.raw()) == IS_TRUE;
+		return true;
+	}
+
+	zval marked;
+	zv::Arr stack = zv::Arr::create(0);
+	if (Z_TYPE_P(stmts) == IS_ARRAY) {
+		for (auto entry : zv::ArrRef(stmts)) {
+			stack.push(zv::Val::copyOf(entry.value().deref()));
+		}
+	}
+	for (;;) {
+		zv::Val node = popNode(stack);
+		if (node.isUndef()) break;
+		zval *n = node.raw();
+		bool is;
+		if (UNEXPECTED(!isA(n, PT_CLASS_ASSIGN_EXPR, is))) return false;
+		if (is) {
+			zval *var = read(pt_csi_assign_var_site, n, PT_LC("var"));
+			if (UNEXPECTED(var == NULL)) return false;
+			zend_string *name;
+			if (UNEXPECTED(!variableStringName(pt_csi_variable_name_site, var, name))) return false;
+			zval *value = read(pt_csi_assign_expr_site, n, PT_LC("expr"));
+			if (UNEXPECTED(value == NULL)) return false;
+			bool isClosure;
+			if (UNEXPECTED(!isA(value, PT_CLASS_CLOSURE_EXPR, isClosure))) return false;
+			if (name != NULL && isClosure) {
+				zval *uses = read(pt_csi_by_ref_uses_site, value, PT_LC("uses"));
+				if (UNEXPECTED(uses == NULL)) return false;
+				zv::Val usesHold = zv::Val::copyOf(zv::Ref(uses));
+				for (auto entry : zv::ArrRef(usesHold.raw())) {
+					zval *use = entry.value().deref().raw();
+					zval *byRef = read(pt_csi_by_ref_use_by_ref_site, use, PT_LC("byRef"));
+					if (UNEXPECTED(byRef == NULL)) return false;
+					if (!zend_is_true(byRef)) continue;
+					zval *useVar = read(pt_csi_by_ref_use_var_site, use, PT_LC("var"));
+					if (UNEXPECTED(useVar == NULL)) return false;
+					zval *useName = read(pt_csi_by_ref_variable_name_site, useVar, PT_LC("name"));
+					if (UNEXPECTED(useName == NULL)) return false;
+					if (Z_TYPE_P(useName) != IS_STRING || !zend_string_equals(Z_STR_P(useName), name)) continue;
+					ZVAL_TRUE(&marked);
+					if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(value), attribute, attributeLength, &marked))) return false;
+					break;
+				}
+			}
+		} else {
+			if (UNEXPECTED(!isA(n, PT_CLASS_CLOSURE_EXPR, is))) return false;
+			if (is) {
+				zv::Val decided = pt_engine_node_get_attribute(Z_OBJ_P(n), attribute, attributeLength);
+				if (UNEXPECTED(decided.isUndef())) return false;
+				if (decided.isNull()) {
+					// an assignment is visited before the closure it assigns
+					ZVAL_FALSE(&marked);
+					if (UNEXPECTED(!pt_engine_node_set_attribute(Z_OBJ_P(n), attribute, attributeLength, &marked))) return false;
+				}
+			}
+		}
+		if (UNEXPECTED(!pushSubNodes(n, stack))) return false;
+	}
+
+	zv::Val decided = pt_engine_node_get_attribute(Z_OBJ_P(expr), attribute, attributeLength);
+	if (UNEXPECTED(decided.isUndef())) return false;
+	out = Z_TYPE_P(decided.raw()) == IS_TRUE;
+	ZVAL_BOOL(&marked, out);
+	return pt_engine_node_set_attribute(Z_OBJ_P(expr), attribute, attributeLength, &marked);
 }
 
 /* Mirrors the private bodyYieldsOrInvokes(); false = pending exception */
@@ -1077,8 +1149,12 @@ public:
 		if (UNEXPECTED(stmts.isUndef())) return zv::Val();
 		zv::Val reboundNames = getReboundVariableNames(body.raw(), stmts.raw());
 		if (UNEXPECTED(reboundNames.isUndef())) return zv::Val();
-		zv::Val assignedClosures = getAssignedClosures(body.raw(), stmts.raw(), true);
-		if (UNEXPECTED(assignedClosures.isUndef())) return zv::Val();
+		bool assignedToByRefUse = false;
+		if (UNEXPECTED(!isAssignedToByRefUse(expr, stmts.raw(), assignedToByRefUse))) return zv::Val();
+		// `$f = function () use (&$f)`: the body reaches the closure itself
+		// through the variable - aliased, captured, passed on - so its
+		// invocations cannot all be followed
+		if (assignedToByRefUse) return zv::Val(zv::Arr::empty());
 		for (auto entry : zv::ArrRef(names.raw())) {
 			zval *name = entry.value().deref().raw();
 			if (Z_TYPE_P(name) != IS_STRING) continue;
@@ -1086,18 +1162,6 @@ public:
 			// one the closure writes to - its effects stay the creation-time fixpoint
 			if (zend_symtable_find(Z_ARRVAL_P(reboundNames.raw()), Z_STR_P(name)) != NULL) {
 				return zv::Val(zv::Arr::empty());
-			}
-			// `$f = function () use (&$f)`: the body reaches the closure itself
-			// through the variable - aliased, captured, passed on - so its
-			// invocations cannot all be followed
-			zval *closures = zend_symtable_find(Z_ARRVAL_P(assignedClosures.raw()), Z_STR_P(name));
-			if (closures != NULL && Z_TYPE_P(closures) == IS_ARRAY) {
-				for (auto closure : zv::ArrRef(closures)) {
-					zval *candidate = closure.value().deref().raw();
-					if (Z_TYPE_P(candidate) == IS_OBJECT && Z_OBJ_P(candidate) == Z_OBJ_P(expr)) {
-						return zv::Val(zv::Arr::empty());
-					}
-				}
 			}
 		}
 
@@ -2002,7 +2066,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	pt_csi_closed_body_attribute = zend_string_init_interned(PT_LC("closureSignatureClosedBody"), 1);
 	pt_csi_returns_context_typed_attribute = zend_string_init_interned(PT_LC("closureSignatureReturnsContextTyped"), 1);
 	pt_csi_assigned_closures_attribute = zend_string_init_interned(PT_LC("closureSignatureAssignedClosures"), 1);
-	pt_csi_nested_assigned_closures_attribute = zend_string_init_interned(PT_LC("closureSignatureNestedAssignedClosures"), 1);
+	pt_csi_assigned_to_by_ref_use_attribute = zend_string_init_interned(PT_LC("closureSignatureAssignedToByRefUse"), 1);
 	pt_csi_invocation_template_name = zend_string_init_interned(PT_LC("@invokes"), 1);
 	pt_csi_by_ref_uses_attribute = zend_string_init_interned(PT_LC("closureSignatureByRefUses"), 1);
 	pt_csi_arrow_function_outer_variables_attribute = zend_string_init_interned(PT_LC("closureSignatureArrowFunctionOuterVariables"), 1);
@@ -2020,7 +2084,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_signature_inference)
 	cls.privateClassConstantString("CLOSED_BODY_ATTRIBUTE", "closureSignatureClosedBody");
 	cls.privateClassConstantString("ASSIGNED_CLOSURES_ATTRIBUTE", "closureSignatureAssignedClosures");
 	cls.privateClassConstantString("REBOUND_VARIABLES_ATTRIBUTE", "closureSignatureReboundVariables");
-	cls.privateClassConstantString("NESTED_ASSIGNED_CLOSURES_ATTRIBUTE", "closureSignatureNestedAssignedClosures");
+	cls.privateClassConstantString("ASSIGNED_TO_BY_REF_USE_ATTRIBUTE", "closureSignatureAssignedToByRefUse");
 
 	/* the real parameter types: the DI container autowires the service by
 	 * reflecting the constructor */

@@ -93,12 +93,12 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IterableType;
 use PHPStan\Type\KeyOfType;
 use PHPStan\Type\LateResolvableArrayShapeType;
+use PHPStan\Type\LateResolvableObjectShapeType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NewObjectType;
 use PHPStan\Type\NonAcceptingNeverType;
 use PHPStan\Type\NonexistentParentClassType;
 use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectShapeType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OffsetAccessType;
@@ -1272,23 +1272,19 @@ final class TypeNodeResolver
 
 	private function resolveObjectShapeNode(ObjectShapeNode $typeNode, NameScope $nameScope): Type
 	{
-		$properties = [];
-		$optionalProperties = [];
+		$items = [];
 		foreach ($typeNode->items as $itemNode) {
 			if ($itemNode->keyName instanceof IdentifierTypeNode) {
-				$propertyName = $itemNode->keyName->name;
-			} elseif ($itemNode->keyName instanceof ConstExprStringNode) {
-				$propertyName = $itemNode->keyName->value;
+				$keyType = $nameScope->resolveTemplateTypeName($itemNode->keyName->name)
+					?? new ConstantStringType($itemNode->keyName->name);
+			} else {
+				$keyType = new ConstantStringType($itemNode->keyName->value);
 			}
 
-			if ($itemNode->optional) {
-				$optionalProperties[] = $propertyName;
-			}
-
-			$properties[$propertyName] = $this->resolve($itemNode->valueType, $nameScope);
+			$items[] = [$keyType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional];
 		}
 
-		return new ObjectShapeType($properties, $optionalProperties);
+		return LateResolvableObjectShapeType::create($items);
 	}
 
 	private function resolveConstTypeNode(ConstTypeNode $typeNode, NameScope $nameScope): Type

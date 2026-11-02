@@ -2283,6 +2283,25 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testObjectShapeTemplateKey(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/object-shape-template-key.php'], [
+			[
+				'Return type of call to method ObjectShapeTemplateKeyMethods\\Foo::objectKey() contains unresolvable type.',
+				45,
+				'Type stdClass cannot be used as an object shape key.',
+			],
+			[
+				'Return type of call to method ObjectShapeTemplateKeyMethods\\Foo::intKey() contains unresolvable type.',
+				46,
+				'Type int cannot be used as an object shape key.',
+			],
+		]);
+	}
+
 	public function testArrayShapeTemplateKey(): void
 	{
 		$this->checkThisOnly = false;

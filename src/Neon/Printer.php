@@ -17,7 +17,6 @@ use Nette\Utils\Strings;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDocParser\Printer\DiffElem;
 use PHPStan\PhpDocParser\Printer\Differ;
-use WeakMap;
 use function array_slice;
 use function array_values;
 use function count;
@@ -55,13 +54,25 @@ final class Printer
 	 */
 	private const COPY = "\x00";
 
+	/** The PCRE of PHP < 8.2 does not accept a NUL byte in a pattern, only its escape. */
+	private const COPY_PATTERN = '~\x00(\d+)-(\d+)\x00~';
+
 	private const TRIVIA_TOKENS = [Token::Newline, Token::Whitespace, Token::Comment];
 
-	/** @var WeakMap<TokenStream, array{code: string, offsets: list<int>, tokens: list<Token>}> */
-	private WeakMap $streams;
+	/**
+	 * Prepared token streams by spl_object_id(). The stream is kept with them, so that its ID cannot be reused.
+	 * WeakMap is not available on PHP 7.4.
+	 *
+	 * @var array<int, array{stream: TokenStream, code: string, offsets: list<int>, tokens: list<Token>}>
+	 */
+	private array $streams = [];
 
-	/** @var WeakMap<Node, array{originals: array<string, Node|false>, ends: array<int, int>, indent: string}> */
-	private WeakMap $trees;
+	/**
+	 * Prepared original trees by spl_object_id(), with the root node for the same reason.
+	 *
+	 * @var array<int, array{root: Node, originals: array<string, Node|false>, ends: array<int, int>, indent: string}>
+	 */
+	private array $trees = [];
 
 	private string $code = '';
 
@@ -86,8 +97,6 @@ final class Printer
 
 	public function __construct()
 	{
-		$this->streams = new WeakMap();
-		$this->trees = new WeakMap();
 		$this->differ = new Differ(fn (Node $a, Node $b): bool => $a === $b || $this->findOriginal($b) === $a);
 	}
 
@@ -97,7 +106,7 @@ final class Printer
 	 */
 	public function printFormatPreserving(Node $node, Node $originalNode, TokenStream $originalTokens): string
 	{
-		$pieces = Strings::split($this->printWithCopies($node, $originalNode, $originalTokens), '~' . self::COPY . '(\\d+)-(\\d+)' . self::COPY . '~');
+		$pieces = Strings::split($this->printWithCopies($node, $originalNode, $originalTokens), self::COPY_PATTERN);
 		$result = '';
 		for ($i = 0; $i < count($pieces); $i += 3) {
 			$result .= $pieces[$i];
@@ -120,7 +129,7 @@ final class Printer
 	 */
 	public function printChanges(Node $node, Node $originalNode, TokenStream $originalTokens): array
 	{
-		$pieces = Strings::split($this->printWithCopies($node, $originalNode, $originalTokens), '~' . self::COPY . '(\\d+)-(\\d+)' . self::COPY . '~');
+		$pieces = Strings::split($this->printWithCopies($node, $originalNode, $originalTokens), self::COPY_PATTERN);
 		$changes = [];
 		$offset = 0;
 		$replacement = '';
@@ -174,16 +183,15 @@ final class Printer
 			. $this->p($node, $this->indentAt($start))
 			. $this->copy($end + 1, count($this->tokens) - 1);
 
-		$tree = $this->trees[$originalNode];
-		$tree['ends'] = $this->ends;
-		$this->trees[$originalNode] = $tree;
+		$this->trees[spl_object_id($originalNode)]['ends'] = $this->ends;
 
 		return $result;
 	}
 
 	private function prepare(Node $originalNode, TokenStream $originalTokens): void
 	{
-		if (!isset($this->streams[$originalTokens])) {
+		$streamId = spl_object_id($originalTokens);
+		if (!isset($this->streams[$streamId])) {
 			$tokens = array_values($originalTokens->getTokens());
 			$offsets = [];
 			$offset = 0;
@@ -194,25 +202,27 @@ final class Printer
 				$code .= $token->value;
 			}
 			$offsets[] = $offset;
-			$this->streams[$originalTokens] = ['code' => $code, 'offsets' => $offsets, 'tokens' => $tokens];
+			$this->streams[$streamId] = ['stream' => $originalTokens, 'code' => $code, 'offsets' => $offsets, 'tokens' => $tokens];
 		}
 
-		['code' => $this->code, 'offsets' => $this->offsets, 'tokens' => $this->tokens] = $this->streams[$originalTokens];
+		['code' => $this->code, 'offsets' => $this->offsets, 'tokens' => $this->tokens] = $this->streams[$streamId];
 		$this->useCopies = !str_contains($this->code, self::COPY);
 
-		if (!isset($this->trees[$originalNode])) {
+		$treeId = spl_object_id($originalNode);
+		if (!isset($this->trees[$treeId])) {
 			$this->originals = [];
 			$this->ends = [];
 			$this->indentUnit = '';
 			$this->indexOriginals($originalNode);
-			$this->trees[$originalNode] = [
+			$this->trees[$treeId] = [
+				'root' => $originalNode,
 				'originals' => $this->originals,
 				'ends' => [],
 				'indent' => $this->indentUnit !== '' ? $this->indentUnit : self::DEFAULT_INDENT,
 			];
 		}
 
-		$tree = $this->trees[$originalNode];
+		$tree = $this->trees[$treeId];
 		$this->originals = $tree['originals'];
 		$this->ends = $tree['ends'];
 		$this->indentUnit = $tree['indent'];

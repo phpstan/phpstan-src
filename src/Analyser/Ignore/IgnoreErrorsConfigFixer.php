@@ -578,7 +578,7 @@ final class IgnoreErrorsConfigFixer
 
 			$items = [];
 			foreach ($entryItem->value->items as $item) {
-				$key = $item->key?->toValue();
+				$key = $item->key !== null ? $item->key->toValue() : null;
 				if (!is_string($key) || !in_array($key, self::ENTRY_KEYS, true)) {
 					continue 2;
 				}

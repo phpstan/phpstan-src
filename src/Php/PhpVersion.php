@@ -593,4 +593,9 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function deprecatesDebugInfoReturningNull(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
 }

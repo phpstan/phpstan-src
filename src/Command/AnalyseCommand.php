@@ -6,7 +6,6 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use OndraM\CiDetector\CiDetector;
 use Override;
-use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -23,7 +22,8 @@ use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
-use PHPStan\Fixable\Patcher;
+use PHPStan\Fixable\ErrorFixer;
+use PHPStan\Fixable\FixResult;
 use PHPStan\Internal\AgentDetector;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\Internal\ComposerHelper;
@@ -565,7 +565,7 @@ final class AnalyseCommand extends Command
 			$fixableErrors = [];
 			if ($fixReported) {
 				foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-					if ($fileSpecificError->getFixedErrorDiffs() === []) {
+					if (!$fileSpecificError->isFixable()) {
 						continue;
 					}
 
@@ -578,17 +578,14 @@ final class AnalyseCommand extends Command
 				}
 			}
 
-			$patcher = $container->getByType(Patcher::class);
+			$errorFixer = $container->getByType(ErrorFixer::class);
 			$fixableErrorsCount = count($fixableErrors);
 			if ($fixRound) {
-				$patchResult = $patcher->applyToFiles(array_map(
-					static fn (Error $error): array => $error->getFixedErrorDiffs(),
-					$fixableErrors,
-				));
+				$fixResult = $errorFixer->fix($fixableErrors);
 				$inceptionResult->getStdOutput()->writeRaw(Json::encode([
 					'fixable' => $fixableErrorsCount,
-					'applied' => $patchResult['appliedCount'],
-					'changedFiles' => $patchResult['changedFiles'],
+					'applied' => count($fixResult->getFixedErrors()),
+					'changedFiles' => $fixResult->getChangedFiles(),
 				]));
 
 				return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
@@ -602,10 +599,7 @@ final class AnalyseCommand extends Command
 					$inceptionResult,
 					$input,
 					$fixableErrorsCount,
-					$patcher->applyToFiles(array_map(
-						static fn (Error $error): array => $error->getFixedErrorDiffs(),
-						$fixableErrors,
-					)),
+					$errorFixer->fix($fixableErrors),
 				);
 			}
 		} else {
@@ -651,20 +645,17 @@ final class AnalyseCommand extends Command
 	 * in a new process, which also saves the result cache, and fixes what is still fixable.
 	 * This applies fixes skipped because of a conflict and fixes of errors the previous round caused.
 	 */
-	/**
-	 * @param array{changedFiles: list<string>, appliedCount: int, skippedCount: int} $patchResult the first round
-	 */
 	private function fixInRounds(
 		InceptionResult $inceptionResult,
 		InputInterface $input,
 		int $fixableCount,
-		array $patchResult,
+		FixResult $fixResult,
 	): int
 	{
 		$errorOutput = $inceptionResult->getErrorOutput();
 		$stdOutput = $inceptionResult->getStdOutput();
-		$appliedCount = $patchResult['appliedCount'];
-		$roundChangedFiles = $patchResult['changedFiles'];
+		$appliedCount = count($fixResult->getFixedErrors());
+		$roundChangedFiles = $fixResult->getChangedFiles();
 		$fixedCount = 0;
 		$changedFiles = [];
 		$round = 1;

@@ -5,15 +5,11 @@ namespace PHPStan\Fixable;
 use Nette\Utils\Strings;
 use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\File\FileReader;
-use PHPStan\File\FileWriter;
-use function array_key_exists;
 use function array_splice;
 use function count;
 use function hash;
 use function implode;
 use function intdiv;
-use function is_file;
 use function str_starts_with;
 use function substr;
 use const PREG_SPLIT_DELIM_CAPTURE;
@@ -37,7 +33,7 @@ final class Patcher
 	/**
 	 * @param array<string, string> $contentsByFile current contents of the files the diffs change
 	 * @param list<list<FixedErrorDiff>> $diffGroups diffs of each error
-	 * @return array{contents: array<string, string>, appliedCount: int, skippedCount: int} contents of the files in $contentsByFile
+	 * @return array{contents: array<string, string>, appliedCount: int, skippedCount: int, skippedGroups: list<int>} contents of the files in $contentsByFile, keys of the skipped $diffGroups
 	 */
 	public function apply(array $contentsByFile, array $diffGroups): array
 	{
@@ -49,12 +45,12 @@ final class Patcher
 		/** @var array<string, list<array{int, int, list<string>}>> $acceptedRuns per file sorted by start, non-overlapping */
 		$acceptedRuns = [];
 		$appliedCount = 0;
-		$skippedCount = 0;
-		foreach ($diffGroups as $diffs) {
+		$skippedGroups = [];
+		foreach ($diffGroups as $groupKey => $diffs) {
 			$insertionsByFile = [];
 			foreach ($diffs as $diff) {
 				if (!isset($hashes[$diff->file]) || $hashes[$diff->file] !== $diff->originalHash) {
-					$skippedCount++;
+					$skippedGroups[] = $groupKey;
 					continue 2;
 				}
 
@@ -63,7 +59,7 @@ final class Patcher
 				foreach (self::parseChangeRuns($diff->diff) as $run) {
 					$index = self::findInsertionIndex($fileRuns, $run);
 					if ($index === null) {
-						$skippedCount++;
+						$skippedGroups[] = $groupKey;
 						continue 3;
 					}
 					if (isset($fileRuns[$index]) && $fileRuns[$index] === $run) {
@@ -96,44 +92,8 @@ final class Patcher
 		return [
 			'contents' => $result,
 			'appliedCount' => $appliedCount,
-			'skippedCount' => $skippedCount,
-		];
-	}
-
-	/**
-	 * Applies the diffs to the files on disk and writes the changed files.
-	 *
-	 * @param list<list<FixedErrorDiff>> $diffGroups diffs of each error
-	 * @return array{changedFiles: list<string>, appliedCount: int, skippedCount: int}
-	 */
-	public function applyToFiles(array $diffGroups): array
-	{
-		$contentsByFile = [];
-		foreach ($diffGroups as $diffs) {
-			foreach ($diffs as $diff) {
-				if (array_key_exists($diff->file, $contentsByFile) || !is_file($diff->file)) {
-					continue;
-				}
-
-				$contentsByFile[$diff->file] = FileReader::read($diff->file);
-			}
-		}
-
-		$result = $this->apply($contentsByFile, $diffGroups);
-		$changedFiles = [];
-		foreach ($result['contents'] as $file => $contents) {
-			if ($contents === $contentsByFile[$file]) {
-				continue;
-			}
-
-			FileWriter::write($file, $contents);
-			$changedFiles[] = $file;
-		}
-
-		return [
-			'changedFiles' => $changedFiles,
-			'appliedCount' => $result['appliedCount'],
-			'skippedCount' => $result['skippedCount'],
+			'skippedCount' => count($skippedGroups),
+			'skippedGroups' => $skippedGroups,
 		];
 	}
 

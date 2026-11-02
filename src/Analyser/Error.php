@@ -377,6 +377,15 @@ final class Error implements JsonSerializable
 	}
 
 	/**
+	 * Whether the rule attached a fix with RuleErrorBuilder::fixNode() or removeNode(),
+	 * to be applied with ErrorFixer or `phpstan analyse --fix`.
+	 */
+	public function isFixable(): bool
+	{
+		return $this->fixedErrorDiffs !== [];
+	}
+
+	/**
 	 * @internal Experimental
 	 * @deprecated Use getFixedErrorDiffs(), a fix can change several files.
 	 */

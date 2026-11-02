@@ -20,14 +20,18 @@ use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use function array_filter;
 use function dirname;
 use function md5;
 use function mkdir;
+use function strtr;
 use function sys_get_temp_dir;
 use function uniqid;
+use const PHP_VERSION_ID;
 
+#[RequiresPhp('>= 8.0.0')]
 class AttributeServicesIntegrationTest extends TestCase
 {
 
@@ -44,7 +48,10 @@ class AttributeServicesIntegrationTest extends TestCase
 		self::$tmpDir = self::createTmpDir();
 		$containerFactory = new ContainerFactory(__DIR__);
 
-		return self::$container = $containerFactory->create(self::$tmpDir, [__DIR__ . '/attributeServices.neon'], [], [dirname(__DIR__, 4)]);
+		// PHP 8.0 cannot even load a class with `new` in attribute arguments
+		$configFile = PHP_VERSION_ID >= 80100 ? 'attributeServicesNewInInitializers.neon' : 'attributeServices.neon';
+
+		return self::$container = $containerFactory->create(self::$tmpDir, [__DIR__ . '/' . $configFile], [], [dirname(__DIR__, 4)]);
 	}
 
 	private static function createTmpDir(): string
@@ -91,11 +98,18 @@ class AttributeServicesIntegrationTest extends TestCase
 		$this->assertCount(0, array_filter($rules, static fn ($rule): bool => $rule instanceof DiscoveredRuleLevelEight));
 	}
 
-	public function testDiscoveredConditional(): void
+	#[RequiresPhp('>= 8.1.0')]
+	public function testDiscoveredConditionalWithNewInAttributeArguments(): void
 	{
 		$container = self::createContainer();
 		$rules = $container->getServicesByTag(LazyRegistry::RULE_TAG);
 		$this->assertCount(1, array_filter($rules, static fn ($rule): bool => $rule instanceof DiscoveredConditionalRule));
+	}
+
+	public function testDiscoveredConditional(): void
+	{
+		$container = self::createContainer();
+		$rules = $container->getServicesByTag(LazyRegistry::RULE_TAG);
 		$this->assertCount(0, array_filter($rules, static fn ($rule): bool => $rule instanceof DiscoveredConditionalRuleNotMet));
 
 		// the services are registered even when the condition is not met, only their tags are skipped
@@ -122,7 +136,11 @@ class AttributeServicesIntegrationTest extends TestCase
 	public function testDirectoriesParameterIsAbsolutized(): void
 	{
 		$container = self::createContainer();
-		$this->assertSame([__DIR__ . '/data/services'], $container->getParameter('attributeServicesDirectories'));
+		$expected = [strtr(__DIR__, '\\', '/') . '/data/services'];
+		if (PHP_VERSION_ID >= 80100) {
+			$expected[] = strtr(__DIR__, '\\', '/') . '/data/servicesNewInInitializers';
+		}
+		$this->assertSame($expected, $container->getParameter('attributeServicesDirectories'));
 	}
 
 	public function testRegisteredDiscoveredClassesParameter(): void

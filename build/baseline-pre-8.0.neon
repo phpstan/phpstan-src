@@ -37,9 +37,16 @@ parameters:
 			path: ../src/DependencyInjection/AttributeServices/AttributeServicesDiscoverer.php
 
 		-
-			message: '#^(Parameter \$attribute of method .+ has invalid type|Call to method \w+\(\) on an unknown class) ReflectionAttribute\.$#'
-			count: 5
-			path: ../src/DependencyInjection/AttributeServices/AttributeServicesDiscoverer.php
+			rawMessage: 'Class AttributeServicesFixtures\DiscoveredConditionalRuleNotMet not found.'
+			identifier: class.notFound
+			count: 3
+			path: ../tests/PHPStan/DependencyInjection/AttributeServices/AttributeServicesIntegrationTest.php
+
+		-
+			rawMessage: 'Class AttributeServicesFixtures\DiscoveredConditionalService not found.'
+			identifier: class.notFound
+			count: 1
+			path: ../tests/PHPStan/DependencyInjection/AttributeServices/AttributeServicesIntegrationTest.php
 
 		-
 			rawMessage: 'Call to an undefined method ReflectionClass::isReadOnly().'

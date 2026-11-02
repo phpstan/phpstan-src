@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use Nette\Utils\Json;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Testing\ErrorFormatterTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -250,6 +251,19 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		$content = $this->getOutputContent();
 		$json = Json::decode($content, Json::FORCE_ARRAY);
 		$this->assertSame($expectedTip, $json['files']['/foo/bar.php']['messages'][0]['tip']);
+	}
+
+	public function testFormatFixable(): void
+	{
+		$formatter = new JsonErrorFormatter(false);
+		$formatter->formatErrors(new AnalysisResult([
+			new Error('Fixable', '/foo/bar.php', 1, fixedErrorDiffs: [new FixedErrorDiff('/foo/bar.php', 'hash', 'diff')]),
+			new Error('Not fixable', '/foo/bar.php', 2),
+		], [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
+
+		$json = Json::decode($this->getOutputContent(), Json::FORCE_ARRAY);
+		$this->assertTrue($json['files']['/foo/bar.php']['messages'][0]['fixable']);
+		$this->assertArrayNotHasKey('fixable', $json['files']['/foo/bar.php']['messages'][1]);
 	}
 
 }

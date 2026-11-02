@@ -546,12 +546,23 @@ final class ClosureSignatureInference
 	private static function bodyYieldsOrInvokes(array $stmts, array $names): bool
 	{
 		$stack = $stmts;
-		while (count($stack) > 0) {
-			$node = array_pop($stack);
-			if ($node instanceof Node\FunctionLike || $node instanceof Node\Stmt\ClassLike) {
+		// closures and arrow functions written in the body: their yields are
+		// their own, but they can invoke the variables on the body's behalf
+		$nestedStack = [];
+		while (count($stack) > 0 || count($nestedStack) > 0) {
+			$nested = count($stack) === 0;
+			$node = $nested ? array_pop($nestedStack) : array_pop($stack);
+			if (!$nested && ($node instanceof Closure || $node instanceof ArrowFunction)) {
+				$nestedStack[] = $node;
 				continue;
 			}
-			if ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom) {
+			if (
+				($node instanceof Node\FunctionLike && !$node instanceof Closure && !$node instanceof ArrowFunction)
+				|| $node instanceof Node\Stmt\ClassLike
+			) {
+				continue;
+			}
+			if (!$nested && ($node instanceof Expr\Yield_ || $node instanceof Expr\YieldFrom)) {
 				return true;
 			}
 			if (
@@ -564,13 +575,14 @@ final class ClosureSignatureInference
 			}
 			foreach ($node->getSubNodeNames() as $subNodeName) {
 				$subNode = $node->$subNodeName;
-				if ($subNode instanceof Node) {
-					$stack[] = $subNode;
-				} elseif (is_array($subNode)) {
-					foreach ($subNode as $item) {
-						if (!$item instanceof Node) {
-							continue;
-						}
+				$subNodes = is_array($subNode) ? $subNode : [$subNode];
+				foreach ($subNodes as $item) {
+					if (!$item instanceof Node) {
+						continue;
+					}
+					if ($nested) {
+						$nestedStack[] = $item;
+					} else {
 						$stack[] = $item;
 					}
 				}

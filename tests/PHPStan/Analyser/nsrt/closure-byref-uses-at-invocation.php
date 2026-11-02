@@ -504,4 +504,41 @@ class Foo
 		assertType('int', $x);
 	}
 
+	/**
+	 * @param callable(callable(): void, callable(): void): void $then
+	 */
+	public function invokesItselfFromNestedClosure(callable $then): void
+	{
+		$rejected = false;
+		$runNext = function () use (&$runNext, &$rejected, $then): void {
+			assertType('bool', $rejected);
+			if ($rejected) {
+				return;
+			}
+			$then(
+				function () use ($runNext): void {
+					$runNext();
+				},
+				function () use (&$rejected): void {
+					$rejected = true;
+				},
+			);
+		};
+		$runNext();
+	}
+
+	public function nestedGeneratorKeepsInvocationsFollowed(): void
+	{
+		$x = 1;
+		$c = function () use (&$x): void {
+			assertType('1', $x);
+			$g = function () {
+				yield 1;
+			};
+			$x = 'a';
+		};
+		$c();
+		assertType("'a'", $x);
+	}
+
 }

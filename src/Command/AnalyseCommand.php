@@ -43,15 +43,18 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Process\Process;
 use Throwable;
+use function array_fill_keys;
 use function array_filter;
 use function array_intersect;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_reverse;
 use function array_values;
 use function count;
 use function dirname;
+use function escapeshellarg;
 use function filesize;
 use function fopen;
 use function get_class;
@@ -67,6 +70,7 @@ use function preg_match;
 use function rewind;
 use function sprintf;
 use function str_contains;
+use function str_starts_with;
 use function stream_get_contents;
 use function strlen;
 use function substr;
@@ -97,6 +101,8 @@ final class AnalyseCommand extends Command
 	private const FIX_ROUNDS_LIMIT = 10;
 
 	private const OPTION_FIX_ROUND = 'fix-round';
+
+	private const OPTION_FIXED_IGNORED_IN = 'fixed-ignored-in';
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -131,6 +137,7 @@ final class AnalyseCommand extends Command
 				new InputOption('fix', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable errors (experimental)'),
 				new InputOption('fix-ignored', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable ignored errors, can be combined with --fix (experimental)'),
 				new InputOption(self::OPTION_FIX_ROUND, mode: InputOption::VALUE_NONE, description: '(Internal) Run one round of --fix and print its counts as JSON'),
+				new InputOption(self::OPTION_FIXED_IGNORED_IN, mode: InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, description: '(Internal) Files changed by the previous rounds of --fix-ignored'),
 				new InputOption('watch', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('pro', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', mode: InputOption::VALUE_NONE, description: 'Return non-zero exit code when result cache is not used'),
@@ -578,6 +585,22 @@ final class AnalyseCommand extends Command
 				foreach ($analysisResult->getFixableIgnoredErrors() as $fixableIgnoredError) {
 					$fixableErrors[] = $fixableIgnoredError;
 				}
+				if (!$fixReported) {
+					// a fixed ignored error leaves behind the ignore that matched it, like an unmatched baseline entry
+					// or a count that is too high, those are reported in the files the previous rounds changed
+					$fixedIgnoredIn = array_fill_keys($input->getOption(self::OPTION_FIXED_IGNORED_IN), true);
+					foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+						if (
+							!$fileSpecificError->isFixable()
+							|| !str_starts_with($fileSpecificError->getIdentifier() ?? '', 'ignore.')
+							|| !isset($fixedIgnoredIn[$fileSpecificError->getFilePath()])
+						) {
+							continue;
+						}
+
+						$fixableErrors[] = $fileSpecificError;
+					}
+				}
 			}
 
 			$errorFixer = $container->getByType(ErrorFixer::class);
@@ -702,6 +725,7 @@ final class AnalyseCommand extends Command
 					(bool) $input->getOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS) ? ['--' . ErrorsConsoleStyle::OPTION_NO_PROGRESS] : [],
 					(bool) $input->getOption('fix') ? ['--fix'] : [],
 					(bool) $input->getOption('fix-ignored') ? ['--fix-ignored'] : [],
+					array_map(static fn (string $file): string => '--' . self::OPTION_FIXED_IGNORED_IN . '=' . escapeshellarg($file), array_keys($changedFiles)),
 				),
 				$input,
 			);

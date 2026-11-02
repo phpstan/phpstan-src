@@ -1,0 +1,7 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call modern\(\) instead\.$#'
+			identifier: fixIgnoredEntriesE2E.rename
+			count: 3
+			path: src/InNeonBaseline.php

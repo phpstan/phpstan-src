@@ -1,0 +1,12 @@
+includes:
+	- baseline.php
+	- baseline.neon
+
+parameters:
+	level: 0
+	paths:
+		- src
+	tmpDir: tmp
+
+rules:
+	- FixIgnoredEntriesE2E\RenameRule

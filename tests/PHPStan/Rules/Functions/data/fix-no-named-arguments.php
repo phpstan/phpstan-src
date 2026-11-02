@@ -49,4 +49,6 @@ function (): void {
 	variadic(1, 2, x: 3);
 	objectDefault(1, c: 4);
 	objectDefault(1, b: new \stdClass());
+	foo(1, unknown: 2);
+	foo(b: 1, b: 2, a: 3);
 };

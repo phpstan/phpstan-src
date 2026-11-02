@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Traits;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\Api\ApiRuleHelper;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -64,6 +65,7 @@ class TraitAttributesRuleTest extends RuleTestCase
 					$reflectionProvider,
 					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
+				new ApiRuleHelper(),
 				deprecationRulesInstalled: true,
 			),
 		);

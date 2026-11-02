@@ -18,6 +18,8 @@ use function is_array;
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
  * and AutowiredAttributeServicesExtension.
+ *
+ * @api
  */
 #[Attribute(flags: Attribute::TARGET_CLASS)]
 final class Conditional
@@ -29,6 +31,7 @@ final class Conditional
 	 * On PHP < 8.1, simple-downgrader writes `new` in attribute arguments as the array,
 	 * and composer-attribute-collector turns it back into the object in vendor/attributes.php.
 	 *
+	 * @api
 	 * @param AutowiredService|RegisteredCollector|RegisteredRule|array{
 	 *     'olvlvl\ComposerAttributeCollector\NewExpression': array{
 	 *         class-string<AutowiredService>,

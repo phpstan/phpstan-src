@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\Api\ApiRuleHelper;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -62,6 +63,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 					$reflectionProvider,
 					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
+				new ApiRuleHelper(),
 				deprecationRulesInstalled: true,
 			),
 		);
@@ -215,6 +217,19 @@ class ClassAttributesRuleTest extends RuleTestCase
 			[
 				'Attribute class Deprecated cannot be used with enum DeprecatedAttrOnClass\Baz.',
 				19,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPhpStanApiAttributes(): void
+	{
+		$tip = "If you think it should be covered by backward compatibility promise, open a discussion:\n   https://github.com/phpstan/phpstan/discussions\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise";
+		$this->analyse([__DIR__ . '/data/api-attributes.php'], [
+			[
+				'Using attribute PHPStan\\DependencyInjection\\ContainerExtension is not covered by backward compatibility promise. The attribute might change in a minor PHPStan version.',
+				56,
+				$tip,
 			],
 		]);
 	}

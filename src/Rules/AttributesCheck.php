@@ -11,8 +11,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Api\ApiRuleHelper;
 use function array_key_exists;
 use function count;
 use function sprintf;
@@ -26,6 +28,7 @@ final class AttributesCheck
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $functionCallParametersCheck,
 		private ClassNameCheck $classCheck,
+		private ApiRuleHelper $apiRuleHelper,
 		#[AutowiredParameter]
 		private bool $deprecationRulesInstalled,
 	)
@@ -64,6 +67,19 @@ final class AttributesCheck
 						->line($attribute->getStartLine())
 						->build();
 					continue;
+				}
+
+				if (
+					$this->apiRuleHelper->isPhpStanCode($scope, $attributeClass->getName(), $attributeClass->getFileName())
+					&& !$this->isApi($attributeClass)
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Using attribute %s is not covered by backward compatibility promise. The attribute might change in a minor PHPStan version.',
+						$attributeClass->getDisplayName(),
+					))->identifier('phpstanApi.attribute')->tip(sprintf(
+						"If you think it should be covered by backward compatibility promise, open a discussion:\n   %s\n\n   See also:\n   https://phpstan.org/developing-extensions/backward-compatibility-promise",
+						'https://github.com/phpstan/phpstan/discussions',
+					))->line($attribute->getStartLine())->build();
 				}
 
 				if ($attributeClass->isAbstract()) {
@@ -173,6 +189,17 @@ final class AttributesCheck
 		}
 
 		return $errors;
+	}
+
+	private function isApi(ClassReflection $attributeClass): bool
+	{
+		foreach ($attributeClass->getResolvedPhpDoc()?->getPhpDocNodes() ?? [] as $phpDocNode) {
+			if (count($phpDocNode->getTagsByName('@api')) > 0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

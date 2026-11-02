@@ -301,7 +301,6 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			exportedNodeFetcher: $container->getByType(ExportedNodeFetcher::class),
 			scanFileFinder: $container->getService('fileFinderScan'),
 			stubFilesProvider: $container->getByType(StubFilesProvider::class),
-			fileHelper: $container->getByType(FileHelper::class),
 			packageDependencyResolver: $container->getByType(PackageDependencyResolver::class),
 			extensionVersionProvider: $container->getByType(ExtensionVersionProvider::class),
 			cacheFilePath: $this->cacheFilePath(),

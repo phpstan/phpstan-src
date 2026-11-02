@@ -25,7 +25,6 @@ use PHPStan\ExtensionInstaller\GeneratedConfig;
 use PHPStan\File\CouldNotReadFileException;
 use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\File\FileFinder;
-use PHPStan\File\FileHelper;
 use PHPStan\File\FileStatSignatures;
 use PHPStan\Internal\ArrayHelper;
 use PHPStan\Internal\ComposerHelper;
@@ -203,7 +202,6 @@ final class ResultCacheManager
 		#[AutowiredParameter(ref: '@fileFinderScan')]
 		private FileFinder $scanFileFinder,
 		private StubFilesProvider $stubFilesProvider,
-		private FileHelper $fileHelper,
 		private PackageDependencyResolver $packageDependencyResolver,
 		private ExtensionVersionProvider $extensionVersionProvider,
 		#[AutowiredParameter(ref: '%resultCachePath%')]
@@ -2852,16 +2850,6 @@ final class ResultCacheManager
 		$this->alreadyProcessed = [];
 		$projectExtensionFiles = [];
 		if ($projectConfig !== null) {
-			$vendorDirs = [];
-			foreach ($this->composerAutoloaderProjectPaths as $autoloaderProjectPath) {
-				$composer = ComposerHelper::getComposerConfig($autoloaderProjectPath);
-				if ($composer === null) {
-					continue;
-				}
-				$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($autoloaderProjectPath, $composer);
-				$vendorDirs[] = $this->fileHelper->normalizePath($vendorDirectory);
-			}
-
 			$classes = ProjectConfigHelper::getServiceClassNames($projectConfig);
 			foreach ($classes as $class) {
 				try {
@@ -2882,7 +2870,7 @@ final class ResultCacheManager
 
 				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
 				if (count($allServiceFiles) === 0) {
-					if ($this->isFileOfInstalledPackage($this->fileHelper->normalizePath($fileName), $vendorDirs)) {
+					if ($this->packageDependencyResolver->isFileOfInstalledPackage($fileName)) {
 						continue;
 					}
 
@@ -2901,29 +2889,6 @@ final class ResultCacheManager
 		}
 
 		return $projectExtensionFiles;
-	}
-
-	/**
-	 * Whether the file belongs to a package Composer installed, which only changes when Composer
-	 * changes it - editing one is not a thing to do, and a version change is noticed through the
-	 * metadata instead. A package from a path repository is the exception: it is the project's own
-	 * code, sitting in vendor/ because Composer copied it there, and it is edited in place.
-	 *
-	 * @param list<string> $vendorDirs
-	 */
-	private function isFileOfInstalledPackage(string $normalizedFileName, array $vendorDirs): bool
-	{
-		foreach ($vendorDirs as $vendorDir) {
-			if (!str_starts_with($normalizedFileName, $vendorDir)) {
-				continue;
-			}
-
-			$package = $this->packageDependencyResolver->resolvePackage($normalizedFileName);
-
-			return $package === null || !$this->packageDependencyResolver->isPathPackage($package);
-		}
-
-		return false;
 	}
 
 	/**

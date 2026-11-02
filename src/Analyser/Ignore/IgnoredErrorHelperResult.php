@@ -51,6 +51,7 @@ final class IgnoredErrorHelperResult
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
+		private IgnoreErrorsConfigFixer $configFixer,
 		private array $errors,
 		private array $otherIgnoreErrors,
 		private array $ignoreErrorsByFile,
@@ -374,14 +375,21 @@ final class IgnoredErrorHelperResult
 						$matchedLine = $matchedAt[$i]['line'] ?? null;
 						// $realCount is at least 1 (it was incremented in the closure)
 						// and strictly less than count, so count is always >= 2.
-						$errors[] = (new Error(sprintf(
-							'%s %s is expected to occur %d times, but occurred only %d %s.',
-							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
-							IgnoredError::stringifyPattern($unmatchedIgnoredError),
-							$unmatchedIgnoredError['count'],
-							$realCount,
-							$realCount === 1 ? 'time' : 'times',
-						), $matchedFile ?? '', $matchedLine, false))->withIdentifier('ignore.count');
+						$errors[] = new Error(
+							sprintf(
+								'%s %s is expected to occur %d times, but occurred only %d %s.',
+								IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
+								IgnoredError::stringifyPattern($unmatchedIgnoredError),
+								$unmatchedIgnoredError['count'],
+								$realCount,
+								$realCount === 1 ? 'time' : 'times',
+							),
+							$matchedFile ?? '',
+							$matchedLine,
+							false,
+							identifier: 'ignore.count',
+							fixedErrorDiffs: $this->configFixer->lowerCount($unmatchedIgnoredError, $realCount),
+						);
 					}
 				} elseif (isset($unmatchedIgnoredError['realPath'])) {
 					if (!array_key_exists($unmatchedIgnoredError['realPath'], $analysedFilesKeys)) {
@@ -392,7 +400,7 @@ final class IgnoredErrorHelperResult
 						continue;
 					}
 
-					$errors[] = (new Error(
+					$errors[] = new Error(
 						sprintf(
 							'%s %s was not matched in reported errors.',
 							IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
@@ -400,7 +408,9 @@ final class IgnoredErrorHelperResult
 						),
 						$unmatchedIgnoredError['realPath'],
 						canBeIgnored: false,
-					))->withIdentifier('ignore.unmatched');
+						identifier: 'ignore.unmatched',
+						fixedErrorDiffs: $this->configFixer->removeUnmatched($unmatchedIgnoredError),
+					);
 				} elseif (!$onlyFiles) {
 					$stringErrors[] = sprintf(
 						'%s %s was not matched in reported errors.',

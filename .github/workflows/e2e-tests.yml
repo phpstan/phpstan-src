@@ -994,6 +994,32 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'Fixing stopped after 10 rounds' "$OUTPUT"
           - script: |
+              cd e2e/fix-baseline
+              composer install
+              mkdir -p vendor/acme/rules && cp vendor-baseline.php vendor/acme/rules/baseline.php
+              rm -rf tmp && cp baseline-original.php baseline.php
+              OUTPUT=$(AI_AGENT=1 ../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
+              echo "$OUTPUT"
+              # two unmatched messages and an unmatched entry of the PHP baseline, and a count higher than the occurrences;
+              # not the entries in NEON and in vendor/, and not a count lower than the occurrences (--generate-baseline does that)
+              ../bashunit assert contains '4 of the errors can be fixed automatically. Run PHPStan again with --fix' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --fix --generate-baseline")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Errors cannot be fixed when generating the baseline.' "$OUTPUT"
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix")
+              echo "$OUTPUT"
+              # removing the last two messages of the list conflicts, the second one goes in the next round
+              ../bashunit assert contains 'Round 2: fixed 1 error in 1 file' "$OUTPUT"
+              ../bashunit assert contains '[OK] 4 errors fixed in 1 file' "$OUTPUT"
+              diff -u baseline-expected.php baseline.php
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'Ignored error pattern #^Unmatched in NEON$#' "$OUTPUT"
+              ../bashunit assert contains 'Ignored error pattern #^Unmatched in vendor$#' "$OUTPUT"
+              ../bashunit assert contains 'is expected to occur 1 time, but occurred 2 times.' "$OUTPUT"
+              ../bashunit assert not_contains 'Unmatched one' "$OUTPUT"
+              ../bashunit assert not_contains 'occurred only' "$OUTPUT"
+          - script: |
               cd e2e/editor-mode
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"

@@ -1,0 +1,15 @@
+includes:
+	- baseline.php
+	# a config file of an installed package is never fixed
+	- vendor/acme/rules/baseline.php
+
+parameters:
+	level: 8
+	paths:
+		- src
+	tmpDir: tmp
+	ignoreErrors:
+		# NEON config files are not fixed yet
+		-
+			message: '#^Unmatched in NEON$#'
+			path: src/Foo.php

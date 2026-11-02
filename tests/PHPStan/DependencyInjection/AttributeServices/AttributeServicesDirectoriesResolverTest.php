@@ -87,15 +87,17 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 		$resolver->resolve([__DIR__ . '/does-not-exist']);
 	}
 
-	public function testDirectoryOutsideComposerProjects(): void
+	public function testDirectoryOutsideComposerProjectsIsHashed(): void
 	{
 		$resolver = new AttributeServicesDirectoriesResolver(new FileHelper(self::getRepoRoot()), [], 80000);
-		$this->expectException(InvalidAttributeServicesDirectoriesException::class);
-		$this->expectExceptionMessage('is not inside any project with Composer metadata known to PHPStan');
-		$resolver->resolve([__DIR__]);
+		$resolved = $resolver->resolve([__DIR__]);
+
+		$this->assertCount(1, $resolved->directories);
+		$this->assertNull($resolved->directories[0]->packageName);
+		$this->assertArrayHasKey(__DIR__ . '/data/psr4Mismatch/WellPlaced.php', $resolved->directories[0]->cacheKeyComponent);
 	}
 
-	public function testProjectOwnPsr4Directory(): void
+	public function testProjectOwnDirectory(): void
 	{
 		$repoRoot = self::getRepoRoot();
 		$directory = $repoRoot . '/src/DependencyInjection/AttributeServices';
@@ -104,26 +106,12 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 		$this->assertCount(1, $resolved->directories);
 		$resolvedDirectory = $resolved->directories[0];
 		$this->assertNull($resolvedDirectory->packageName);
-		$this->assertArrayHasKey('PHPStan\\', $resolvedDirectory->psr4);
-		$this->assertContains($repoRoot . '/src', $resolvedDirectory->psr4['PHPStan\\']);
 
 		// only files that can carry PHPStan's DI attributes are part of the key
 		$expectedFile = $directory . '/AttributeServicesDiscoverer.php';
 		$this->assertArrayHasKey($expectedFile, $resolvedDirectory->cacheKeyComponent);
 		$this->assertSame(hash_file('sha256', $expectedFile), $resolvedDirectory->cacheKeyComponent[$expectedFile]);
 		$this->assertArrayNotHasKey($directory . '/AttributeServicesDirectoriesResolver.php', $resolvedDirectory->cacheKeyComponent);
-	}
-
-	public function testProjectOwnClassmapDirectoryFromAutoloadDev(): void
-	{
-		$repoRoot = self::getRepoRoot();
-		$resolved = $this->createResolver()->resolve([__DIR__]);
-
-		$this->assertCount(1, $resolved->directories);
-		$resolvedDirectory = $resolved->directories[0];
-		$this->assertNull($resolvedDirectory->packageName);
-		$this->assertContains($repoRoot . '/tests/PHPStan', $resolvedDirectory->classmapPaths);
-		$this->assertSame($repoRoot . '/vendor/composer/autoload_classmap.php', $resolvedDirectory->autoloadClassmapPath);
 	}
 
 	public function testVendorPackageDirectory(): void
@@ -138,14 +126,6 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 
 		$this->assertSame([$directory], array_keys($resolvedDirectory->cacheKeyComponent));
 		$this->assertTrue(str_starts_with(array_values($resolvedDirectory->cacheKeyComponent)[0], 'package:nikic/php-parser:'));
-	}
-
-	public function testUncoveredDirectory(): void
-	{
-		$resolver = $this->createResolver();
-		$this->expectException(InvalidAttributeServicesDirectoriesException::class);
-		$this->expectExceptionMessage('is not covered by the autoload section of');
-		$resolver->resolve([self::getRepoRoot() . '/bin']);
 	}
 
 	public function testNestedDirectoriesDeduplicated(): void
@@ -166,7 +146,7 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 		try {
 			$resolver->resolve([
 				__DIR__ . '/does-not-exist',
-				self::getRepoRoot() . '/bin',
+				'%rootDir%/src',
 			]);
 			$this->fail('Expected InvalidAttributeServicesDirectoriesException.');
 		} catch (InvalidAttributeServicesDirectoriesException $e) {

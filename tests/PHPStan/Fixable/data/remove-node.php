@@ -5,6 +5,14 @@ namespace RemoveNode;
 class Foo
 {
 
+	const REMOVE_A = 1, REMOVE_B = 2;
+
+	const KEEP = 1, REMOVE_C = 2;
+
+	public $removeA, $removeB;
+
+	public $keep, $removeC;
+
 	public function doFoo(): void
 	{
 		echo 1;

@@ -19,10 +19,14 @@ class RemoveNodeRuleTest extends RuleTestCase
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/remove-node.php'], [
-			['Removing Stmt_Expression.', 11],
-			['Removing Arg.', 13],
-			['Removing Expr_FuncCall.', 14],
-			['Removing Stmt_ClassMethod.', 22],
+			['Removing items.', 8],
+			['Removing items.', 10],
+			['Removing items.', 12],
+			['Removing items.', 14],
+			['Removing Stmt_Expression.', 19],
+			['Removing Arg.', 21],
+			['Removing Expr_FuncCall.', 22],
+			['Removing Stmt_ClassMethod.', 30],
 		]);
 	}
 
@@ -39,6 +43,7 @@ class RemoveNodeRuleTest extends RuleTestCase
 		}
 
 		$this->assertSame([
+			'Removing items.' => true,
 			'Removing Stmt_Expression.' => true,
 			'Removing Arg.' => true,
 			'Removing Expr_FuncCall.' => false,

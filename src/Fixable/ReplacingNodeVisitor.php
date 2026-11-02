@@ -75,7 +75,16 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 	public function leaveNode(Node $node): Node|int|null
 	{
 		$origNode = $node->getAttribute('origNode');
-		if (!$origNode instanceof Node || !$this->callbacks->contains($origNode)) {
+		if (!$origNode instanceof Node) {
+			return null;
+		}
+
+		if (!$this->callbacks->contains($origNode)) {
+			// a statement is invalid without items, remove it when a fix removed all of them
+			if (self::getItems($node) === [] && self::getItems($origNode) !== []) {
+				return NodeVisitor::REMOVE_NODE;
+			}
+
 			return null;
 		}
 
@@ -106,6 +115,30 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 	public function isComplete(): bool
 	{
 		return !$this->failed && $this->appliedCount === count($this->callbacks);
+	}
+
+	/**
+	 * @return array<Node>|null
+	 */
+	private static function getItems(Node $node): ?array
+	{
+		if ($node instanceof Node\Stmt\ClassConst || $node instanceof Node\Stmt\Const_) {
+			return $node->consts;
+		}
+		if ($node instanceof Node\Stmt\Property) {
+			return $node->props;
+		}
+		if ($node instanceof Node\Stmt\Use_ || $node instanceof Node\Stmt\GroupUse) {
+			return $node->uses;
+		}
+		if ($node instanceof Node\Stmt\Global_ || $node instanceof Node\Stmt\Static_ || $node instanceof Node\Stmt\Unset_) {
+			return $node->vars;
+		}
+		if ($node instanceof Node\Stmt\Echo_) {
+			return $node->exprs;
+		}
+
+		return null;
 	}
 
 }

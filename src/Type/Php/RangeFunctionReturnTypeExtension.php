@@ -149,14 +149,9 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 				return TypeCombinator::union(...$constantReturnTypes);
 			}
 
-			// nothing is returned when every combination of the constant arguments throws
-			if (
-				$constantCombinations > 0
-				&& $throwingCombinations === $constantCombinations
-				&& $startType->isConstantScalarValue()->yes()
-				&& $endType->isConstantScalarValue()->yes()
-				&& $stepType->isConstantScalarValue()->yes()
-			) {
+			// nothing is returned when every combination of the constant arguments throws; an argument
+			// that is only partly a constant has no constant scalar types, so it leaves no combination
+			if ($constantCombinations > 0 && $throwingCombinations === $constantCombinations) {
 				return new NeverType();
 			}
 		}

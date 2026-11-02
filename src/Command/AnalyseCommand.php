@@ -6,6 +6,7 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use OndraM\CiDetector\CiDetector;
 use Override;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -42,6 +43,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\Process\Process;
 use Throwable;
+use function array_filter;
 use function array_intersect;
 use function array_key_exists;
 use function array_map;
@@ -620,6 +622,15 @@ final class AnalyseCommand extends Command
 				$errorOutput->writeLineFormatted('Do not use assert() or inline @var PHPDoc tag to override PHPStan\'s inferred type.');
 				$errorOutput->writeLineFormatted('Do not add type casts just to silence errors.');
 				$errorOutput->writeLineFormatted('Do not widen parameter or return types just to make the error go away.');
+
+				$fixableErrorsCount = count(array_filter($analysisResult->getFileSpecificErrors(), static fn (Error $error): bool => $error->isFixable()));
+				if ($fixableErrorsCount > 0) {
+					$errorOutput->writeLineFormatted('');
+					$errorOutput->writeLineFormatted(sprintf(
+						'%d of the errors can be fixed automatically. Run PHPStan again with --fix to fix them first, then fix the rest.',
+						$fixableErrorsCount,
+					));
+				}
 			}
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 		}

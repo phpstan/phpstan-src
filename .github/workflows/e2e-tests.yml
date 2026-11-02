@@ -971,6 +971,9 @@ jobs:
               cd e2e/fix
               composer install
               rm -rf src cycle tmp && cp -r original src && cp -r cycle-original cycle
+              OUTPUT=$(AI_AGENT=1 ../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
+              echo "$OUTPUT"
+              ../bashunit assert contains '7 of the errors can be fixed automatically. Run PHPStan again with --fix' "$OUTPUT"
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix")
               echo "$OUTPUT"
               ../bashunit assert contains 'Analysing fixed code (round 4)...' "$OUTPUT"

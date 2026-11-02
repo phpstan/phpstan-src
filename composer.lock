@@ -4148,16 +4148,16 @@
     },
     {
       "name": "phpstan/phpstan-strict-rules",
-      "version": "2.1.x-dev",
+      "version": "2.1.1",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-strict-rules.git",
-        "reference": "19b5b5bcc9cdf0789acb67e264d0782097e18c08"
+        "reference": "fe4a0afae773eedf178fab17ed9361c0061d2804"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/19b5b5bcc9cdf0789acb67e264d0782097e18c08",
-        "reference": "19b5b5bcc9cdf0789acb67e264d0782097e18c08",
+        "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/fe4a0afae773eedf178fab17ed9361c0061d2804",
+        "reference": "fe4a0afae773eedf178fab17ed9361c0061d2804",
         "shasum": ""
       },
       "require": {
@@ -4171,7 +4171,6 @@
         "phpunit/phpunit": "^9.6",
         "shipmonk/name-collision-detector": "^2.1"
       },
-      "default-branch": true,
       "type": "phpstan-extension",
       "extra": {
         "phpstan": {
@@ -4195,9 +4194,10 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
-        "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.1.x"
+        "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.1.1"
       },
-      "time": "2026-09-22T19:46:32+00:00"
+      "time": "2026-11-02T08:16:15+00:00",
+      "published-time": "2026-11-02T10:55:07+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",

@@ -228,7 +228,7 @@ class ClassAttributesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/api-attributes.php'], [
 			[
 				'Using attribute PHPStan\\DependencyInjection\\ContainerExtension is not covered by backward compatibility promise. The attribute might change in a minor PHPStan version.',
-				56,
+				64,
 				$tip,
 			],
 		]);

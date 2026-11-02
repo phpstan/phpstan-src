@@ -12,11 +12,14 @@ use Attribute;
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
  * and AutowiredAttributeServicesExtension.
+ *
+ * @api
  */
 #[Attribute(flags: Attribute::TARGET_PARAMETER)]
 final class AutowiredParameter
 {
 
+	/** @api */
 	public function __construct(public ?string $ref = null)
 	{
 	}

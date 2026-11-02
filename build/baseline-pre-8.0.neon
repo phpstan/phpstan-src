@@ -157,3 +157,27 @@ parameters:
 			identifier: property.internalClass
 			count: 3
 			path: ../src/Parser/RichParser.php
+
+		-
+			rawMessage: Access to property $id of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 6
+			path: ../src/Analyser/Ignore/UnmatchedIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $line of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 7
+			path: ../src/Analyser/Ignore/UnmatchedIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $pos of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 1
+			path: ../src/Analyser/Ignore/UnmatchedIgnoreFixer.php
+
+		-
+			rawMessage: Access to property $text of internal class Symfony\Polyfill\Php80\PhpToken from outside its root namespace Symfony.
+			identifier: property.internalClass
+			count: 2
+			path: ../src/Analyser/Ignore/UnmatchedIgnoreFixer.php

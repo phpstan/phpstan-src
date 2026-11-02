@@ -11,6 +11,7 @@ use PHPStan\Analyser\CollectedDataReuse\SecondCollector;
 use PHPStan\Analyser\CollectedDataReuse\ThrowingRule;
 use PHPStan\Analyser\CollectedDataReuse\TrackingRule;
 use PHPStan\Analyser\CollectedDataReuse\UnregisteredValueRule;
+use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\Collectors\CollectedData;
@@ -342,6 +343,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory(self::createReflectionProvider(), self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),
+			self::getContainer()->getByType(UnmatchedIgnoreFixer::class),
 			false,
 			$valueDependencyCollector ?? self::getContainer()->getByType(ValueDependencyCollector::class),
 			$reuse,

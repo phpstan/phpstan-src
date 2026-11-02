@@ -248,6 +248,14 @@ final class RuleErrorTransformer
 	}
 
 	/**
+	 * A fix that is not made through nodes, like removing a comment.
+	 */
+	public function createFixedErrorDiff(string $file, string $originalCode, string $newCode): FixedErrorDiff
+	{
+		return new FixedErrorDiff($file, hash('sha256', $originalCode), $this->diff($originalCode, $newCode));
+	}
+
+	/**
 	 * Same output as Differ::diff(), but the common leading and trailing lines are found here in linear time.
 	 * Differ strips them too, but in quadratic time, which made each fix in a large file cost up to a second.
 	 * The middle part is usually just the fixed node.

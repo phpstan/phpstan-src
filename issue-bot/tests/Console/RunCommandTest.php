@@ -19,7 +19,7 @@ class RunCommandTest extends TestCase
 					'errors' => 2,
 					'messages' => [
 						['message' => 'Dumped type: int', 'line' => 5, 'identifier' => 'phpstan.dumpType'],
-						['message' => 'Something else', 'line' => 7, 'identifier' => 'foo.bar'],
+						['message' => 'Something else', 'line' => 7, 'identifier' => 'foo.bar', 'fixable' => true],
 					],
 				],
 			],
@@ -33,6 +33,7 @@ class RunCommandTest extends TestCase
 		self::assertSame('Dumped type: int', $errors[0]->getMessage());
 		self::assertSame('phpstan.dumpType', $errors[0]->getIdentifier());
 		self::assertSame(7, $errors[1]->getLine());
+		self::assertSame('Something else 🔧', $errors[1]->getMessage());
 	}
 
 	public function testExtractTopLevelErrorsWhenNoFileErrors(): void

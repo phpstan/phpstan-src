@@ -54,9 +54,9 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ./issue-bot/tmp
-          key: "issue-bot-download-v8-${{ github.run_id }}"
+          key: "issue-bot-download-v9-${{ github.run_id }}"
           restore-keys: |
-            issue-bot-download-v8-
+            issue-bot-download-v9-
 
       - name: "Download data"
         working-directory: "issue-bot"

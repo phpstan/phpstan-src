@@ -262,7 +262,7 @@ class RunCommand extends Command
 				if (strpos($messageText, 'Internal error') !== false) {
 					throw new Exception(sprintf('While analysing %s: %s', $hash, $messageText));
 				}
-				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null);
+				$errors[] = new PlaygroundError($message['line'] ?? -1, $messageText, $message['identifier'] ?? null, $message['fixable'] ?? false);
 			}
 		}
 

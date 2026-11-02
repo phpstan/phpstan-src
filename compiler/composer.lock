@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d9dba2db8294ec1e0002d4542a36a82f",
+    "content-hash": "2ba44f022d0e13c4aeeb90e90c440df1",
     "packages": [
         {
             "name": "nette/neon",
@@ -220,16 +220,16 @@
         },
         {
             "name": "ondrejmirtes/simple-downgrader",
-            "version": "2.2.9",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ondrejmirtes/simple-downgrader.git",
-                "reference": "b12a15de3c3aaed7c15bbb6f26fd734557fee0e7"
+                "reference": "58fddfa10b45ac17e69e2d08352d14c0fa8b855b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/b12a15de3c3aaed7c15bbb6f26fd734557fee0e7",
-                "reference": "b12a15de3c3aaed7c15bbb6f26fd734557fee0e7",
+                "url": "https://api.github.com/repos/ondrejmirtes/simple-downgrader/zipball/58fddfa10b45ac17e69e2d08352d14c0fa8b855b",
+                "reference": "58fddfa10b45ac17e69e2d08352d14c0fa8b855b",
                 "shasum": ""
             },
             "require": {
@@ -263,9 +263,10 @@
             "description": "Simple Downgrader",
             "support": {
                 "issues": "https://github.com/ondrejmirtes/simple-downgrader/issues",
-                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.2.9"
+                "source": "https://github.com/ondrejmirtes/simple-downgrader/tree/2.3.0"
             },
-            "time": "2026-09-30T19:26:40+00:00"
+            "time": "2026-11-02T17:22:35+00:00",
+            "published-time": "2026-11-02T17:24:35+00:00"
         },
         {
             "name": "phpstan/phpdoc-parser",
@@ -3308,5 +3309,5 @@
     "platform-overrides": {
         "php": "8.2.99"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.11.0"
 }

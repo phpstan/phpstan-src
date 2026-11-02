@@ -583,20 +583,36 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 			stack.push(zv::Val::copyOf(entry.value().deref()));
 		}
 	}
+	/* closures and arrow functions written in the body: their yields are
+	 * their own, but they can invoke the variables on the body's behalf */
+	zv::Arr nestedStack = zv::Arr::create(0);
 	for (;;) {
 		zv::Val node = popNode(stack);
-		if (node.isUndef()) break;
+		bool nested = node.isUndef();
+		if (nested) {
+			node = popNode(nestedStack);
+			if (node.isUndef()) break;
+		}
 		zval *n = node.raw();
 		bool is;
+		bool isNestedFunction;
+		if (UNEXPECTED(!isA(n, PT_CLASS_CLOSURE_EXPR, isNestedFunction))) return false;
+		if (!isNestedFunction && UNEXPECTED(!isA(n, PT_CLASS_ARROW_FUNCTION, isNestedFunction))) return false;
+		if (!nested && isNestedFunction) {
+			nestedStack.push(std::move(node));
+			continue;
+		}
 		if (UNEXPECTED(!isA(n, PT_CLASS_FUNCTION_LIKE, is))) return false;
-		if (is) continue;
+		if (is && !isNestedFunction) continue;
 		if (UNEXPECTED(!isA(n, PT_CLASS_CLASS_LIKE_STMT, is))) return false;
 		if (is) continue;
-		if (UNEXPECTED(!isA(n, PT_CLASS_YIELD, is))) return false;
-		if (!is && UNEXPECTED(!isA(n, PT_CLASS_YIELD_FROM, is))) return false;
-		if (is) {
-			out = true;
-			return true;
+		if (!nested) {
+			if (UNEXPECTED(!isA(n, PT_CLASS_YIELD, is))) return false;
+			if (!is && UNEXPECTED(!isA(n, PT_CLASS_YIELD_FROM, is))) return false;
+			if (is) {
+				out = true;
+				return true;
+			}
 		}
 		if (UNEXPECTED(!isA(n, PT_CLASS_FUNC_CALL, is))) return false;
 		if (is) {
@@ -614,7 +630,7 @@ zv::Val anonymousMarker(zval *site, zend_string *name, zend_long variance, zval 
 				}
 			}
 		}
-		if (UNEXPECTED(!pushSubNodes(n, stack))) return false;
+		if (UNEXPECTED(!pushSubNodes(n, nested ? nestedStack : stack))) return false;
 	}
 	return true;
 }

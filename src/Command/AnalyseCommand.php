@@ -21,7 +21,6 @@ use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
 use PHPStan\Fixable\FileChangedException;
-use PHPStan\Fixable\MergeConflictException;
 use PHPStan\Fixable\Patcher;
 use PHPStan\Internal\AgentDetector;
 use PHPStan\Internal\BytesHelper;
@@ -584,24 +583,26 @@ final class AnalyseCommand extends Command
 				foreach ($diffsByFile as $file => $diffs) {
 					$diffsCount = count($diffs);
 					try {
-						$finalFileContents = $patcher->applyDiffs($file, $diffs);
+						$patchResult = $patcher->applyDiffs($file, $diffs);
+						$skippedCount += $patchResult['skippedCount'];
 						$errorOutput->getStyle()->progressAdvance($diffsCount);
-					} catch (FileChangedException | MergeConflictException) {
+					} catch (FileChangedException) {
 						$skippedCount += $diffsCount;
 						$errorOutput->getStyle()->progressAdvance($diffsCount);
 						continue;
 					}
 
-					FileWriter::write($file, $finalFileContents);
+					FileWriter::write($file, $patchResult['contents']);
 				}
 
 				$errorOutput->getStyle()->progressFinish();
 
 				if ($skippedCount > 0) {
+					$fixedCount = $fixableErrorsCount - $skippedCount;
 					$inceptionResult->getStdOutput()->getStyle()->warning(sprintf(
 						'%d %s fixed, %d %s skipped',
-						$fixableErrorsCount,
-						$fixableErrorsCount === 1 ? 'error' : 'errors',
+						$fixedCount,
+						$fixedCount === 1 ? 'error' : 'errors',
 						$skippedCount,
 						$skippedCount === 1 ? 'error' : 'errors',
 					));

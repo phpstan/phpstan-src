@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "b4aec40b93330400ac2e7427e2d76f11",
+  "content-hash": "a8d2789a6b389b1d8f79dd929b0d5cba",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1476,64 +1476,6 @@
         "source": "https://github.com/ondrejmirtes/composer-attribute-collector/tree/1.2.0"
       },
       "time": "2026-07-23T20:44:20+00:00"
-    },
-    {
-      "name": "ondrejmirtes/php-merge",
-      "version": "4.1.2",
-      "source": {
-        "type": "git",
-        "url": "https://github.com/ondrejmirtes/php-merge.git",
-        "reference": "0c661fbe3efde0619f3652688862ed65f1f34dd1"
-      },
-      "dist": {
-        "type": "zip",
-        "url": "https://api.github.com/repos/ondrejmirtes/php-merge/zipball/0c661fbe3efde0619f3652688862ed65f1f34dd1",
-        "reference": "0c661fbe3efde0619f3652688862ed65f1f34dd1",
-        "shasum": ""
-      },
-      "require": {
-        "php": "^7.4 || ^8.0",
-        "sebastian/diff": "^2.0|^3.0|^4.0|^5.0|^6.0|^7.0"
-      },
-      "require-dev": {
-        "escapestudios/symfony2-coding-standard": "^3.5",
-        "phpstan/phpstan": "~1",
-        "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpunit/phpunit": "~6|~7|~8|~9|~10|~11|~12",
-        "squizlabs/php_codesniffer": "~3",
-        "symplify/git-wrapper": "^9.1|^10.0"
-      },
-      "type": "library",
-      "autoload": {
-        "psr-0": {
-          "PhpMerge": "src/"
-        }
-      },
-      "notification-url": "https://packagist.org/downloads/",
-      "license": [
-        "MIT"
-      ],
-      "authors": [
-        {
-          "name": "Fabian Bircher",
-          "email": "opensource@fabianbircher.com"
-        },
-        {
-          "name": "Ondrej Mirtes",
-          "email": "ondrej@mirtes.cz"
-        }
-      ],
-      "description": "A PHP merge utility using the Diff php library or the command line git.",
-      "homepage": "https://github.com/bircher/php-merge",
-      "keywords": [
-        "git",
-        "merge",
-        "php-merge"
-      ],
-      "support": {
-        "source": "https://github.com/ondrejmirtes/php-merge/tree/4.1.2"
-      },
-      "time": "2025-12-09T08:32:19+00:00"
     },
     {
       "name": "ondrejmirtes/phplrt-runtime",

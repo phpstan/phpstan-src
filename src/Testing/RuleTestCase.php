@@ -244,11 +244,12 @@ abstract class RuleTestCase extends PHPStanTestCase
 		}
 
 		$patcher = self::getContainer()->getByType(Patcher::class);
-		$newFileContents = $patcher->applyDiffs($file, $diffs); // @phpstan-ignore missingType.checkedException, missingType.checkedException
+		$patchResult = $patcher->applyDiffs($file, $diffs); // @phpstan-ignore missingType.checkedException
+		$this->assertSame(0, $patchResult['skippedCount'], 'Some fixes overlap and could not be applied together.');
 
 		$fixedFileContents = FileReader::read($expectedFile);
 
-		$this->assertSame($this->normalizeLineEndings($fixedFileContents), $this->normalizeLineEndings($newFileContents));
+		$this->assertSame($this->normalizeLineEndings($fixedFileContents), $this->normalizeLineEndings($patchResult['contents']));
 	}
 
 	private function normalizeLineEndings(string $string): string

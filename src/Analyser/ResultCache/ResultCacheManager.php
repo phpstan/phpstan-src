@@ -187,6 +187,8 @@ final class ResultCacheManager
 	 * @param string[] $analysedPaths
 	 * @param string[] $analysedPathsFromConfig
 	 * @param string[] $composerAutoloaderProjectPaths
+	 * @param string[] $attributeServicesDirectories
+	 * @param list<string> $attributeServicesClasses classes registered from attributeServicesDirectories
 	 * @param string[] $bootstrapFiles
 	 * @param string[] $scanFiles
 	 * @param string[] $scanDirectories
@@ -212,6 +214,10 @@ final class ResultCacheManager
 		private array $analysedPathsFromConfig,
 		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter]
+		private array $attributeServicesDirectories,
+		#[AutowiredParameter]
+		private array $attributeServicesClasses,
 		#[AutowiredParameter]
 		private string $usedLevel,
 		#[AutowiredParameter]
@@ -2805,6 +2811,15 @@ final class ResultCacheManager
 	 */
 	private function changedPackagesProvideContainerClass(?array $projectConfig, array $changedPackagesLookup): bool
 	{
+		// Directories from the attributeServicesDirectories section register services straight from
+		// their classes, so a changed package owning one of them can affect the analysis of every file.
+		foreach ($this->attributeServicesDirectories as $attributeServicesDirectory) {
+			$package = $this->packageDependencyResolver->resolveDirectoryPackage($attributeServicesDirectory);
+			if ($package !== null && array_key_exists($package, $changedPackagesLookup)) {
+				return true;
+			}
+		}
+
 		// Extensions registered directly in the project config (services:/rules:) or via an included
 		// extension neon file: resolve each service class to the package that owns its file.
 		if ($projectConfig !== null) {
@@ -2849,42 +2864,43 @@ final class ResultCacheManager
 	{
 		$this->alreadyProcessed = [];
 		$projectExtensionFiles = [];
+		$classes = $this->attributeServicesClasses;
 		if ($projectConfig !== null) {
-			$classes = ProjectConfigHelper::getServiceClassNames($projectConfig);
-			foreach ($classes as $class) {
-				try {
-					// does not use static reflection to reduce file-parsing
-					$classReflection = new ReflectionClass($class); /** @phpstan-ignore argument.type */
-				} catch (ReflectionException) {
+			$classes = array_merge(ProjectConfigHelper::getServiceClassNames($projectConfig), $classes);
+		}
+		foreach ($classes as $class) {
+			try {
+				// does not use static reflection to reduce file-parsing
+				$classReflection = new ReflectionClass($class); /** @phpstan-ignore argument.type */
+			} catch (ReflectionException) {
+				continue;
+			}
+
+			$fileName = $classReflection->getFileName();
+			if ($fileName === false) {
+				continue;
+			}
+
+			if (str_starts_with($fileName, 'phar://')) {
+				continue;
+			}
+
+			$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
+			if (count($allServiceFiles) === 0) {
+				if ($this->packageDependencyResolver->isFileOfInstalledPackage($fileName)) {
 					continue;
 				}
 
-				$fileName = $classReflection->getFileName();
-				if ($fileName === false) {
+				$projectExtensionFiles[$fileName] = [$this->getFileHash($fileName), false, $class];
+				continue;
+			}
+
+			foreach ($allServiceFiles as $serviceFile) {
+				if (array_key_exists($serviceFile, $projectExtensionFiles)) {
 					continue;
 				}
 
-				if (str_starts_with($fileName, 'phar://')) {
-					continue;
-				}
-
-				$allServiceFiles = $this->getAllDependencies($fileName, $dependencies);
-				if (count($allServiceFiles) === 0) {
-					if ($this->packageDependencyResolver->isFileOfInstalledPackage($fileName)) {
-						continue;
-					}
-
-					$projectExtensionFiles[$fileName] = [$this->getFileHash($fileName), false, $class];
-					continue;
-				}
-
-				foreach ($allServiceFiles as $serviceFile) {
-					if (array_key_exists($serviceFile, $projectExtensionFiles)) {
-						continue;
-					}
-
-					$projectExtensionFiles[$serviceFile] = [$this->getFileHash($serviceFile), true, $class];
-				}
+				$projectExtensionFiles[$serviceFile] = [$this->getFileHash($serviceFile), true, $class];
 			}
 		}
 

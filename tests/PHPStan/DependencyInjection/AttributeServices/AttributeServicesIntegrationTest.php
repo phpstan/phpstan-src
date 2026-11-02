@@ -11,10 +11,12 @@ use AttributeServicesFixtures\DiscoveredNonAutowiredService;
 use AttributeServicesFixtures\DiscoveredRuleLevelEight;
 use AttributeServicesFixtures\DiscoveredRuleLevelThree;
 use AttributeServicesFixtures\DiscoveredService;
+use AttributeServicesFixtures\DiscoveredValue;
 use AttributeServicesFixtures\DiscoveredValueFactory;
 use PHPStan\Collectors\RegistryFactory;
 use PHPStan\DependencyInjection\Container;
 use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\DependencyInjection\DerivativeContainerFactory;
 use PHPStan\Rules\LazyRegistry;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -121,6 +123,27 @@ class AttributeServicesIntegrationTest extends TestCase
 	{
 		$container = self::createContainer();
 		$this->assertSame([__DIR__ . '/data/services'], $container->getParameter('attributeServicesDirectories'));
+	}
+
+	public function testRegisteredDiscoveredClassesParameter(): void
+	{
+		$container = self::createContainer();
+		$classes = $container->getParameter('attributeServicesClasses');
+		$this->assertIsArray($classes);
+		$this->assertContains(DiscoveredService::class, $classes);
+		$this->assertContains(DiscoveredRuleLevelThree::class, $classes);
+		$this->assertContains(DiscoveredConditionalRuleNotMet::class, $classes);
+		$this->assertNotContains(DiscoveredRuleLevelEight::class, $classes);
+		$this->assertContains(DiscoveredValue::class, $classes);
+	}
+
+	public function testDerivativeContainerSeesDiscoveredServices(): void
+	{
+		$container = self::createContainer();
+		$derivativeContainer = $container->getByType(DerivativeContainerFactory::class)
+			->create([dirname(__DIR__, 4) . '/conf/config.stubValidator.neon'], ['allStubFiles' => []]);
+		$service = $derivativeContainer->getByType(DiscoveredService::class);
+		$this->assertSame(__DIR__, $service->getCurrentWorkingDirectory());
 	}
 
 	#[DataProvider('dataErrors')]

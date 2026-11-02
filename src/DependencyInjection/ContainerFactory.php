@@ -157,6 +157,8 @@ final class ContainerFactory
 			'usedLevel' => $usedLevel,
 			'cliAutoloadFile' => $cliAutoloadFile,
 			'attributeServicesDirectories' => $attributeServicesDirectories->getDirectoryPaths(),
+			// filled by AutowiredAttributeServicesExtension
+			'attributeServicesClasses' => [],
 			'env' => Environment::getCleanedArray(),
 		], $additionalParameters));
 		$configurator->addDynamicParameters([

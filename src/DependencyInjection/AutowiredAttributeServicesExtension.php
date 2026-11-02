@@ -9,6 +9,7 @@ use Override;
 use PHPStan\DependencyInjection\AttributeServices\AttributeServicesRegistrar;
 use PHPStan\DependencyInjection\AttributeServices\AttributeTargetsProvider;
 use stdClass;
+use function array_keys;
 
 #[ContainerExtension(name: 'autowiredAttributeServices')]
 final class AutowiredAttributeServicesExtension extends CompilerExtension
@@ -27,11 +28,20 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	{
 		/** @var stdClass&object{level: int|null} $config */
 		$config = $this->getConfig();
-		AttributeServicesRegistrar::registerServices(
-			$this->getContainerBuilder(),
-			AttributeTargetsProvider::create(),
-			$config->level,
-		);
+		$builder = $this->getContainerBuilder();
+		$targets = AttributeTargetsProvider::create();
+		$registeredClasses = AttributeServicesRegistrar::registerServices($builder, $targets, $config->level);
+
+		// ResultCacheManager treats these like the classes from the services section of the config
+		$discoveredClasses = [];
+		foreach ($registeredClasses as $registeredClass) {
+			if (!$targets->isDiscoveredClass($registeredClass)) {
+				continue;
+			}
+
+			$discoveredClasses[$registeredClass] = true;
+		}
+		$builder->parameters['attributeServicesClasses'] = array_keys($discoveredClasses);
 	}
 
 }

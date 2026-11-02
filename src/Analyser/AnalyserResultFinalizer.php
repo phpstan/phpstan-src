@@ -20,6 +20,8 @@ use function array_key_exists;
 use function array_merge;
 use function count;
 use function get_class;
+use function hash_file;
+use function is_file;
 use function ksort;
 use function md5;
 use function serialize;
@@ -303,6 +305,19 @@ final class AnalyserResultFinalizer
 			$id = ValueDependencyCollector::getId($extensionClass, $storedKey);
 			$currentValues[$id] ??= $extension->getValue($extension->keyFromResultCache($storedKey));
 			if ($currentValues[$id] !== $value) {
+				return false;
+			}
+		}
+
+		// a fix is a diff against the file contents, which can change without changing the collected data
+		foreach ($previousResult->getErrors() as $error) {
+			$fixedErrorDiff = $error->getFixedErrorDiff();
+			if ($fixedErrorDiff === null) {
+				continue;
+			}
+
+			$fixedFile = $error->getTraitFilePath() ?? $error->getFilePath();
+			if (!is_file($fixedFile) || hash_file('sha256', $fixedFile) !== $fixedErrorDiff->originalHash) {
 				return false;
 			}
 		}

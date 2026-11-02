@@ -16,6 +16,8 @@ use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Parser\Parser as AnalysisParser;
+use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
@@ -34,6 +36,7 @@ use function array_slice;
 use function count;
 use function get_class;
 use function hash;
+use function is_file;
 use function min;
 use function preg_split;
 use function str_contains;
@@ -62,6 +65,8 @@ final class RuleErrorTransformer
 	public function __construct(
 		#[AutowiredParameter(ref: '@currentPhpVersionPhpParser')]
 		private Parser $parser,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
+		private AnalysisParser $analysisParser,
 	)
 	{
 		$this->diffOutputBuilder = new UnifiedDiffOutputBuilder('', addLineNumbers: true);
@@ -159,13 +164,29 @@ final class RuleErrorTransformer
 	}
 
 	/**
+	 * Without $fileNodes (errors of CollectedDataNode rules and errors transformed inside collectors),
+	 * the file is parsed with the cached analysis parser. The rule has to take the node it fixes
+	 * from the same parser so that ReplacingNodeVisitor finds it by identity.
+	 *
 	 * @param Node\Stmt[] $fileNodes
 	 * @param callable(Node): Node $newNodeCallable
 	 */
 	private function fix(string $fixingFile, array $fileNodes, Node $originalNode, callable $newNodeCallable): ?FixedErrorDiff
 	{
 		if ($fileNodes === []) {
-			return null;
+			if (!is_file($fixingFile)) {
+				return null;
+			}
+
+			try {
+				$fileNodes = $this->analysisParser->parseFile($fixingFile);
+			} catch (ParserErrorsException) {
+				return null;
+			}
+
+			if ($fileNodes === []) {
+				return null;
+			}
 		}
 
 		$parsedFile = $this->getParsedFile($fixingFile);

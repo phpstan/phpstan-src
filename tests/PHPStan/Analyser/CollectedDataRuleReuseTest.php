@@ -15,6 +15,8 @@ use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\File\FileHelper;
+use PHPStan\Fixable\FixCollectedFuncCallRule;
+use PHPStan\Fixable\FooFuncCallCollector;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\DirectRegistry;
 use PHPStan\Rules\Rule;
@@ -273,6 +275,31 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$result = $finalize($result->getCollectedDataRuleResults());
 		$this->assertSame(2, $rule->runs);
 		$this->assertSame(['Class is described by three.'], $this->getMessages($result));
+
+		unlink($file);
+	}
+
+	public function testRuleWithFixRunsAgainWhenTheFixedFileChanged(): void
+	{
+		$file = sys_get_temp_dir() . '/phpstan-collected-data-reuse-fix-' . uniqid() . '.php';
+		file_put_contents($file, "<?php\n\nfoo(1);\n");
+		$rule = new FixCollectedFuncCallRule(self::getContainer()->getService('defaultAnalysisParser'));
+		$collectedData = [
+			$file => [FooFuncCallCollector::class => [3]],
+		];
+
+		$result = $this->finalize([$rule], $collectedData, false, []);
+		$errors = $result->getAnalyserResult()->getUnorderedErrors();
+		$this->assertCount(1, $errors);
+		$this->assertNotNull($errors[0]->getFixedErrorDiff());
+
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$this->assertSame(1, $result->getReusedRulesCount());
+
+		// the collected data stays the same, but the diff of the fix no longer applies
+		file_put_contents($file, "<?php\n\nfoo(1);\n// edited\n");
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$this->assertSame(0, $result->getReusedRulesCount());
 
 		unlink($file);
 	}

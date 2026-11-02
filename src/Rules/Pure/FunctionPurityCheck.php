@@ -32,106 +32,6 @@ final class FunctionPurityCheck
 {
 
 	/**
-	 * @param 'Function'|'Method'|'PropertyHook' $identifier
-	 * @param ExtendedParameterReflection[] $parameters
-	 * @param ImpurePoint[] $impurePoints
-	 * @param ThrowPoint[] $throwPoints
-	 * @param Stmt[] $statements
-	 * @return list<IdentifierRuleError>
-	 */
-	public function check(
-		Scope $scope,
-		string $functionDescription,
-		string $identifier,
-		FunctionReflection|ExtendedMethodReflection $functionReflection,
-		array $parameters,
-		Type $returnType,
-		array $impurePoints,
-		array $throwPoints,
-		array $statements,
-		bool $isConstructor,
-	): array
-	{
-		$errors = $this->checkSignature($scope, $functionDescription, $identifier, $functionReflection, $parameters, $returnType, $isConstructor);
-		$isPure = $functionReflection->isPure();
-		$pureUnlessCallableParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessCallableIsImpureParameters());
-		$pureUnlessParameterPassedParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessParameterPassedParameters());
-
-		if ($isPure->yes()) {
-			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
-		} elseif ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== []) {
-			// A function declared @pure-unless-callable-is-impure is pure except
-			// for the flagged callables, so its body is checked for purity while
-			// the flagged callables' own invocations are exempt. The same holds for
-			// @pure-unless-parameter-passed: writing through the flagged by-ref
-			// parameter is not an impure point, so the rest of the body still has
-			// to be pure for the conditional verdict to hold.
-			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
-		} elseif ($isPure->no()) {
-			if (
-				count($throwPoints) === 0
-				&& count($impurePoints) === 0
-				&& count($functionReflection->getAsserts()->getAll()) === 0
-				&& (
-					!$functionReflection instanceof ExtendedMethodReflection
-					|| $functionReflection->isFinal()->yes()
-					|| $functionReflection->getDeclaringClass()->isFinal()
-				)
-			) {
-				$errors[] = RuleErrorBuilder::message(sprintf(
-					'%s is marked as impure but does not have any side effects.',
-					$functionDescription,
-				))->identifier(sprintf('impure%s.pure', $identifier))->build();
-			}
-		} elseif ($returnType->isVoid()->yes()) {
-			if (
-				count($throwPoints) === 0
-				&& count($impurePoints) === 0
-				&& !$isConstructor
-				&& (!$functionReflection instanceof ExtendedMethodReflection || $functionReflection->isPrivate())
-				&& count($functionReflection->getAsserts()->getAll()) === 0
-			) {
-				$hasByRef = false;
-				foreach ($parameters as $parameter) {
-					if (!$parameter->passedByReference()->createsNewVariable()) {
-						continue;
-					}
-
-					$hasByRef = true;
-					break;
-				}
-
-				$statements = array_filter($statements, static function (Stmt $stmt): bool {
-					if ($stmt instanceof Stmt\Nop) {
-						return false;
-					}
-
-					if (!$stmt instanceof Stmt\Expression) {
-						return true;
-					}
-					if (!$stmt->expr instanceof FuncCall) {
-						return true;
-					}
-					if (!$stmt->expr->name instanceof Name) {
-						return true;
-					}
-
-					return !in_array($stmt->expr->name->toString(), CallToFunctionStatementWithoutSideEffectsRule::PHPSTAN_TESTING_FUNCTIONS, true);
-				});
-
-				if (!$hasByRef && count($statements) > 0) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'%s returns void but does not have any side effects.',
-						$functionDescription,
-					))->identifier('void.pure')->build();
-				}
-			}
-		}
-
-		return $errors;
-	}
-
-	/**
 	 * The checks of a purity declaration that need only the signature, so they
 	 * also apply to methods without a body.
 	 *
@@ -242,6 +142,106 @@ final class FunctionPurityCheck
 					'%s is marked as pure but returns void.',
 					$functionDescription,
 				))->identifier(sprintf('pure%s.void', $identifier))->build();
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param 'Function'|'Method'|'PropertyHook' $identifier
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @param ImpurePoint[] $impurePoints
+	 * @param ThrowPoint[] $throwPoints
+	 * @param Stmt[] $statements
+	 * @return list<IdentifierRuleError>
+	 */
+	public function check(
+		Scope $scope,
+		string $functionDescription,
+		string $identifier,
+		FunctionReflection|ExtendedMethodReflection $functionReflection,
+		array $parameters,
+		Type $returnType,
+		array $impurePoints,
+		array $throwPoints,
+		array $statements,
+		bool $isConstructor,
+	): array
+	{
+		$errors = $this->checkSignature($scope, $functionDescription, $identifier, $functionReflection, $parameters, $returnType, $isConstructor);
+		$isPure = $functionReflection->isPure();
+		$pureUnlessCallableParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessCallableIsImpureParameters());
+		$pureUnlessParameterPassedParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessParameterPassedParameters());
+
+		if ($isPure->yes()) {
+			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
+		} elseif ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== []) {
+			// A function declared @pure-unless-callable-is-impure is pure except
+			// for the flagged callables, so its body is checked for purity while
+			// the flagged callables' own invocations are exempt. The same holds for
+			// @pure-unless-parameter-passed: writing through the flagged by-ref
+			// parameter is not an impure point, so the rest of the body still has
+			// to be pure for the conditional verdict to hold.
+			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
+		} elseif ($isPure->no()) {
+			if (
+				count($throwPoints) === 0
+				&& count($impurePoints) === 0
+				&& count($functionReflection->getAsserts()->getAll()) === 0
+				&& (
+					!$functionReflection instanceof ExtendedMethodReflection
+					|| $functionReflection->isFinal()->yes()
+					|| $functionReflection->getDeclaringClass()->isFinal()
+				)
+			) {
+				$errors[] = RuleErrorBuilder::message(sprintf(
+					'%s is marked as impure but does not have any side effects.',
+					$functionDescription,
+				))->identifier(sprintf('impure%s.pure', $identifier))->build();
+			}
+		} elseif ($returnType->isVoid()->yes()) {
+			if (
+				count($throwPoints) === 0
+				&& count($impurePoints) === 0
+				&& !$isConstructor
+				&& (!$functionReflection instanceof ExtendedMethodReflection || $functionReflection->isPrivate())
+				&& count($functionReflection->getAsserts()->getAll()) === 0
+			) {
+				$hasByRef = false;
+				foreach ($parameters as $parameter) {
+					if (!$parameter->passedByReference()->createsNewVariable()) {
+						continue;
+					}
+
+					$hasByRef = true;
+					break;
+				}
+
+				$statements = array_filter($statements, static function (Stmt $stmt): bool {
+					if ($stmt instanceof Stmt\Nop) {
+						return false;
+					}
+
+					if (!$stmt instanceof Stmt\Expression) {
+						return true;
+					}
+					if (!$stmt->expr instanceof FuncCall) {
+						return true;
+					}
+					if (!$stmt->expr->name instanceof Name) {
+						return true;
+					}
+
+					return !in_array($stmt->expr->name->toString(), CallToFunctionStatementWithoutSideEffectsRule::PHPSTAN_TESTING_FUNCTIONS, true);
+				});
+
+				if (!$hasByRef && count($statements) > 0) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'%s returns void but does not have any side effects.',
+						$functionDescription,
+					))->identifier('void.pure')->build();
+				}
 			}
 		}
 

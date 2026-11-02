@@ -16,6 +16,7 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
@@ -31,37 +32,30 @@ final class FunctionPurityCheck
 {
 
 	/**
+	 * The checks of a purity declaration that need only the signature, so they
+	 * also apply to methods without a body.
+	 *
 	 * @param 'Function'|'Method'|'PropertyHook' $identifier
 	 * @param ExtendedParameterReflection[] $parameters
-	 * @param ImpurePoint[] $impurePoints
-	 * @param ThrowPoint[] $throwPoints
-	 * @param Stmt[] $statements
 	 * @return list<IdentifierRuleError>
 	 */
-	public function check(
+	public function checkSignature(
 		Scope $scope,
 		string $functionDescription,
 		string $identifier,
 		FunctionReflection|ExtendedMethodReflection $functionReflection,
 		array $parameters,
 		Type $returnType,
-		array $impurePoints,
-		array $throwPoints,
-		array $statements,
 		bool $isConstructor,
 	): array
 	{
 		$errors = [];
-		$isPure = $functionReflection->isPure();
 
 		$pureUnlessCallableParameters = $functionReflection->getPureUnlessCallableIsImpureParameters();
-		$pureUnlessCallableParamNames = [];
 		foreach ($parameters as $parameter) {
 			if (!array_key_exists($parameter->getName(), $pureUnlessCallableParameters)) {
 				continue;
 			}
-
-			$pureUnlessCallableParamNames[$parameter->getName()] = true;
 
 			$acceptors = $parameter->getType()->getCallableParametersAcceptors($scope);
 			if (count($acceptors) === 0) {
@@ -92,13 +86,10 @@ final class FunctionPurityCheck
 		}
 
 		$pureUnlessParameterPassedParameters = $functionReflection->getPureUnlessParameterPassedParameters();
-		$pureUnlessParameterPassedParamNames = [];
 		foreach ($parameters as $parameter) {
 			if (!array_key_exists($parameter->getName(), $pureUnlessParameterPassedParameters)) {
 				continue;
 			}
-
-			$pureUnlessParameterPassedParamNames[$parameter->getName()] = true;
 
 			if (!$parameter->isOptional()) {
 				$errors[] = RuleErrorBuilder::message(sprintf(
@@ -127,7 +118,7 @@ final class FunctionPurityCheck
 			))->identifier(sprintf('pure%s.parameterPassedNotByRef', $identifier))->build();
 		}
 
-		if ($isPure->yes()) {
+		if ($functionReflection->isPure()->yes()) {
 			foreach ($parameters as $parameter) {
 				if (!$parameter->passedByReference()->createsNewVariable()) {
 					continue;
@@ -152,7 +143,38 @@ final class FunctionPurityCheck
 					$functionDescription,
 				))->identifier(sprintf('pure%s.void', $identifier))->build();
 			}
+		}
 
+		return $errors;
+	}
+
+	/**
+	 * @param 'Function'|'Method'|'PropertyHook' $identifier
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @param ImpurePoint[] $impurePoints
+	 * @param ThrowPoint[] $throwPoints
+	 * @param Stmt[] $statements
+	 * @return list<IdentifierRuleError>
+	 */
+	public function check(
+		Scope $scope,
+		string $functionDescription,
+		string $identifier,
+		FunctionReflection|ExtendedMethodReflection $functionReflection,
+		array $parameters,
+		Type $returnType,
+		array $impurePoints,
+		array $throwPoints,
+		array $statements,
+		bool $isConstructor,
+	): array
+	{
+		$errors = $this->checkSignature($scope, $functionDescription, $identifier, $functionReflection, $parameters, $returnType, $isConstructor);
+		$isPure = $functionReflection->isPure();
+		$pureUnlessCallableParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessCallableIsImpureParameters());
+		$pureUnlessParameterPassedParamNames = $this->collectFlaggedParameterNames($parameters, $functionReflection->getPureUnlessParameterPassedParameters());
+
+		if ($isPure->yes()) {
 			$errors = array_merge($errors, $this->reportImpurePoints($impurePoints, $pureUnlessCallableParamNames, $functionDescription));
 		} elseif ($pureUnlessCallableParamNames !== [] || $pureUnlessParameterPassedParamNames !== []) {
 			// A function declared @pure-unless-callable-is-impure is pure except
@@ -224,6 +246,25 @@ final class FunctionPurityCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @param array<string, TrinaryLogic> $flaggedParameters
+	 * @return array<string, true>
+	 */
+	private function collectFlaggedParameterNames(array $parameters, array $flaggedParameters): array
+	{
+		$names = [];
+		foreach ($parameters as $parameter) {
+			if (!array_key_exists($parameter->getName(), $flaggedParameters)) {
+				continue;
+			}
+
+			$names[$parameter->getName()] = true;
+		}
+
+		return $names;
 	}
 
 	/**

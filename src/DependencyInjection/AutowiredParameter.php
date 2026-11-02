@@ -6,7 +6,7 @@ use Attribute;
 
 /**
  * Autowires constructor parameters in service classes using #[AutowiredService],
- * #[GeneratedFactory], #[RegisteredRule] or #[RegisteredCollector] attributes.
+ * #[GenerateFactory], #[RegisteredRule] or #[RegisteredCollector] attributes.
  *
  * If ref is omitted, it looks for parameter of the same name.
  *

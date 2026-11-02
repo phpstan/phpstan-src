@@ -568,4 +568,9 @@ final class PhpVersion
 		return $this->versionId >= 80200;
 	}
 
+	public function deprecatesGetClassWithoutArguments(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
 }

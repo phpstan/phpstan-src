@@ -1,0 +1,11 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Misc;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService(as: AutowiredSelf::class)]
+final class AutowiredSelf
+{
+
+}

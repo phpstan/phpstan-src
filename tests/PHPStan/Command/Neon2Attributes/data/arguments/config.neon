@@ -1,0 +1,46 @@
+services:
+	-
+		class: Neon2AttributesFixtures\Arguments\Named
+		arguments:
+			treatPhpDocTypesAsCertain: %treatPhpDocTypesAsCertain%
+			tip: %tips.treatPhpDocTypesAsCertain%
+			other: @Neon2AttributesFixtures\Arguments\Positional
+			literal: foo
+			concatenated: %tmpDir%/cache
+	-
+		class: Neon2AttributesFixtures\Arguments\Positional
+		arguments:
+			- %checkUninitializedProperties%
+			- @myService
+	- Neon2AttributesFixtures\Arguments\Entity(%checkUninitializedProperties%)
+	myService:
+		class: Neon2AttributesFixtures\Arguments\OnlyNamed
+	-
+		class: Neon2AttributesFixtures\Arguments\NonString
+		arguments:
+			flag: true
+	-
+		class: Neon2AttributesFixtures\Arguments\Inherited
+		arguments:
+			flag: %checkUninitializedProperties%
+	-
+		class: Neon2AttributesFixtures\Arguments\Call
+		arguments:
+			value: @Neon2AttributesFixtures\Arguments\Positional::get()
+	-
+		class: Neon2AttributesFixtures\Arguments\DottedReference
+		arguments:
+			formatter: @errorFormatter.ciDetected
+	-
+		class: Neon2AttributesFixtures\Arguments\InlineArray
+		arguments:
+			list: [a, b]
+	-
+		class: Neon2AttributesFixtures\Arguments\AlreadyParameter
+		arguments:
+			checkUninitializedProperties: %checkUninitializedProperties%
+			named: @myService
+	-
+		class: Neon2AttributesFixtures\Arguments\DifferentParameter
+		arguments:
+			checkUninitializedProperties: %treatPhpDocTypesAsCertain%

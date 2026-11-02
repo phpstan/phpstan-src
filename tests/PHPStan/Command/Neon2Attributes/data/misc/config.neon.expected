@@ -1,0 +1,7 @@
+services:
+	- Neon2AttributesFixtures\Misc\Missing
+	-
+		class: Neon2AttributesFixtures\Misc\CreatedInterface
+		factory: Neon2AttributesFixtures\Misc\FactoryEntity
+	-
+		factory: @Neon2AttributesFixtures\Misc\FactoryEntity::create()

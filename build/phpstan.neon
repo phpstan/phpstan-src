@@ -198,6 +198,7 @@ parameters:
 			paths:
 				- ../src/Neon/*
 				- ../src/Analyser/Ignore/IgnoreErrorsConfigFixer.php
+				- ../src/Command/Neon2Attributes/Neon2AttributesMigrator.php
 				- ../tests/PHPStan/Neon/*
 		-
 			rawMessage: 'Property PHPStan\Command\CommandHelper::$reservedMemory is never read' # intentional

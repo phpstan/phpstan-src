@@ -1,0 +1,37 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\ConditionalPhp80;
+
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
+
+#[Conditional(attribute: ['olvlvl\ComposerAttributeCollector\NewExpression' => [AutowiredService::class, []]], if: '%featureToggles.bleedingEdge%')]
+final class ConditionalExtension implements ReadWritePropertiesExtension
+{
+
+	public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
+	{
+		return false;
+	}
+
+	public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
+	{
+		return false;
+	}
+
+	public function isInitialized(PropertyReflection $property, string $propertyName): bool
+	{
+		return false;
+	}
+
+	public function __construct(
+		#[AutowiredParameter(ref: '%checkUninitializedProperties%')]
+		private bool $flag,
+	)
+	{
+	}
+
+}

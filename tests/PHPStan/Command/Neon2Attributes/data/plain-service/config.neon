@@ -1,0 +1,4 @@
+services:
+	- Neon2AttributesFixtures\PlainService\StringEntry
+	-
+		class: Neon2AttributesFixtures\PlainService\ClassEntry

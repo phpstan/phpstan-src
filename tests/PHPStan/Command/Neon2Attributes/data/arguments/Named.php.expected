@@ -1,0 +1,27 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Arguments;
+
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
+final class Named
+{
+
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
+		private bool $tip,
+		#[AutowiredParameter(ref: '@Neon2AttributesFixtures\Arguments\Positional')]
+		private Positional $other,
+		#[AutowiredParameter(ref: 'foo')]
+		private string $literal,
+		#[AutowiredParameter(ref: '%tmpDir%/cache')]
+		private string $concatenated,
+	)
+	{
+	}
+
+}

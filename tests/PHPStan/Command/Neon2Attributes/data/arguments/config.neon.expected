@@ -1,0 +1,21 @@
+services:
+	-
+		class: Neon2AttributesFixtures\Arguments\NonString
+		arguments:
+			flag: true
+	-
+		class: Neon2AttributesFixtures\Arguments\Inherited
+		arguments:
+			flag: %checkUninitializedProperties%
+	-
+		class: Neon2AttributesFixtures\Arguments\Call
+		arguments:
+			value: @Neon2AttributesFixtures\Arguments\Positional::get()
+	-
+		class: Neon2AttributesFixtures\Arguments\InlineArray
+		arguments:
+			list: [a, b]
+	-
+		class: Neon2AttributesFixtures\Arguments\DifferentParameter
+		arguments:
+			checkUninitializedProperties: %treatPhpDocTypesAsCertain%

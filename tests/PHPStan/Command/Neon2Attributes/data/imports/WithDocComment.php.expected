@@ -1,0 +1,21 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Imports;
+
+use PHPStan\DependencyInjection\AutowiredService;
+use stdClass;
+
+/**
+ * Some description.
+ */
+#[\Attribute]
+#[AutowiredService]
+final class WithDocComment
+{
+
+	public function get(): stdClass
+	{
+		return new stdClass();
+	}
+
+}

@@ -1,0 +1,25 @@
+# Extension config
+parameters:
+	formatting:
+		enabled: true # inline comment
+
+parametersSchema:
+	formatting: structure([
+		enabled: bool()
+	])
+
+services:
+	# kept because of setup
+	-
+		class: Neon2AttributesFixtures\Formatting\Kept
+		setup:
+			- setUp()
+
+	# converted
+	-
+		class: Neon2AttributesFixtures\Formatting\Converted
+
+	-
+		class: Neon2AttributesFixtures\Formatting\AlsoKept
+		setup:
+			- setUp()

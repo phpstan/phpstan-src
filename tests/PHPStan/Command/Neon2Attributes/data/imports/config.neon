@@ -1,0 +1,5 @@
+services:
+	- Neon2AttributesFixtures\Imports\SortedImports
+	- Neon2AttributesFixtures\Imports\ExistingImport
+	- Neon2AttributesFixtures\Imports\ConflictingImport
+	- Neon2AttributesFixtures\Imports\WithDocComment

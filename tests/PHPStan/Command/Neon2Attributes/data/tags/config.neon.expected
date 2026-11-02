@@ -1,0 +1,9 @@
+services:
+	-
+		class: Neon2AttributesFixtures\Tags\PartiallyTaggedExtension
+		tags:
+			- phpstan.properties.readWriteExtension
+	-
+		class: Neon2AttributesFixtures\Tags\UnknownTag
+		tags:
+			- my.own.tag

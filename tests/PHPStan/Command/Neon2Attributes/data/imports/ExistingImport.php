@@ -1,0 +1,15 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Imports;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+final class ExistingImport
+{
+
+	public function get(): ?AutowiredService
+	{
+		return null;
+	}
+
+}

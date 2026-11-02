@@ -1,0 +1,12 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Autowired;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService(as: SomeInterface::class)]
+final class AsOneType implements SomeInterface, OtherInterface
+{
+
+
+}

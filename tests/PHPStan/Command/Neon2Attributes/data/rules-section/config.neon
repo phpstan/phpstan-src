@@ -1,0 +1,5 @@
+parameters:
+	foo: true
+
+rules:
+	- Neon2AttributesFixtures\RulesSection\MyRule

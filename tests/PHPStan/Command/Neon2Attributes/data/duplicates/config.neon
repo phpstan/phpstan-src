@@ -1,0 +1,13 @@
+services:
+	-
+		class: Neon2AttributesFixtures\Duplicates\TwiceInServices
+	-
+		class: Neon2AttributesFixtures\Duplicates\TwiceInServices
+	-
+		class: Neon2AttributesFixtures\Duplicates\InServicesAndRules
+		tags:
+			- phpstan.rules.rule
+	- Neon2AttributesFixtures\Duplicates\InTwoFiles
+
+rules:
+	- Neon2AttributesFixtures\Duplicates\InServicesAndRules

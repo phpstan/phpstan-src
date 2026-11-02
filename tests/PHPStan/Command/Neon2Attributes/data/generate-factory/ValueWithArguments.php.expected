@@ -1,0 +1,20 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\GenerateFactory;
+
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\GenerateFactory;
+
+#[GenerateFactory(interface: ValueWithArgumentsFactory::class)]
+final class ValueWithArguments
+{
+
+	public function __construct(
+		public string $name,
+		#[AutowiredParameter]
+		public string $tmpDir,
+	)
+	{
+	}
+
+}

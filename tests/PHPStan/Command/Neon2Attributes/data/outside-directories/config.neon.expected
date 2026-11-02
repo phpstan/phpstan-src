@@ -1,0 +1,8 @@
+services:
+	- Neon2AttributesFixtures\OutsideDirectories\OutsideService
+	- PHPStan\Rules\Properties\PropertyDescriptor
+	-
+		class: Neon2AttributesFixtures\OutsideDirectories\OutsideStatic
+		factory: Neon2AttributesFixtures\OutsideDirectories\OutsideStatic::create()
+	errorFormatter.github:
+		class: PHPStan\Command\ErrorFormatter\GithubErrorFormatter

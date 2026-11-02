@@ -113,6 +113,21 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testAppendResolvesOffsetSetAgainstNull(): void
+	{
+		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-append.php'], [
+			[
+				'OffsetAccessValueAssignmentAppend\Storage does not accept string.',
+				35,
+			],
+			[
+				'OffsetAccessValueAssignmentAppend\Storage does not accept int.',
+				38,
+			],
+		]);
+	}
+
 	public function testCoalesceAssign(): void
 	{
 		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-coalesce.php'], [

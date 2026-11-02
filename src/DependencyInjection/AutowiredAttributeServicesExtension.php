@@ -68,14 +68,13 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 		$conditionalTargets = [];
 		foreach (Attributes::findTargetClasses(Conditional::class) as $class) {
-			if (!self::isConditionMet($builder, $class->attribute->if)) {
-				continue;
-			}
-
-			$conditionalTargets[] = new TargetClass($class->attribute->attribute, $class->name);
+			$conditionalTargets[] = [
+				new TargetClass($class->attribute->attribute, $class->name),
+				self::isConditionMet($builder, $class->attribute->if),
+			];
 		}
 
-		foreach (self::findTargetClasses(AutowiredService::class, $conditionalTargets) as $class) {
+		foreach (self::findTargetClasses(AutowiredService::class, $conditionalTargets) as [$class, $tagged]) {
 			$reflection = new ReflectionClass($class->name);
 			$attribute = $class->attribute;
 
@@ -90,7 +89,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 
-			if (!$attribute->autoTag) {
+			if (!$attribute->autoTag || !$tagged) {
 				continue;
 			}
 
@@ -103,7 +102,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			}
 		}
 
-		foreach (self::findTargetClasses(NonAutowiredService::class, $conditionalTargets) as $class) {
+		foreach (Attributes::findTargetClasses(NonAutowiredService::class) as $class) {
 			$attribute = $class->attribute;
 
 			$definition = $builder->addDefinition($attribute->name)
@@ -118,7 +117,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
-		foreach (self::findTargetClasses(GenerateFactory::class, $conditionalTargets) as $class) {
+		foreach (Attributes::findTargetClasses(GenerateFactory::class) as $class) {
 			$attribute = $class->attribute;
 			$definition = $builder->addFactoryDefinition(null)
 				->setImplement($attribute->interface);
@@ -137,7 +136,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			return;
 		}
 
-		foreach (self::findTargetClasses(RegisteredRule::class, $conditionalTargets) as $class) {
+		foreach (self::findTargetClasses(RegisteredRule::class, $conditionalTargets) as [$class, $tagged]) {
 			$attribute = $class->attribute;
 			if ($attribute->level > $config->level) {
 				continue;
@@ -145,13 +144,15 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			$definition = $builder->addDefinition(null)
 				->setFactory($class->name)
-				->setAutowired($class->name)
-				->addTag(LazyRegistry::RULE_TAG);
+				->setAutowired($class->name);
+			if ($tagged) {
+				$definition->addTag(LazyRegistry::RULE_TAG);
+			}
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
-		foreach (self::findTargetClasses(RegisteredCollector::class, $conditionalTargets) as $class) {
+		foreach (self::findTargetClasses(RegisteredCollector::class, $conditionalTargets) as [$class, $tagged]) {
 			$attribute = $class->attribute;
 			if ($attribute->level > $config->level) {
 				continue;
@@ -159,8 +160,10 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			$definition = $builder->addDefinition(null)
 				->setFactory($class->name)
-				->setAutowired($class->name)
-				->addTag(RegistryFactory::COLLECTOR_TAG);
+				->setAutowired($class->name);
+			if ($tagged) {
+				$definition->addTag(RegistryFactory::COLLECTOR_TAG);
+			}
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
@@ -169,25 +172,27 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 	/**
 	 * @template T of object
 	 * @param class-string<T> $attributeClass
-	 * @param list<TargetClass<object>> $conditionalTargets attributes wrapped in a met #[Conditional]
-	 * @return array<TargetClass<T>>
+	 * @param list<array{TargetClass<object>, bool}> $conditionalTargets attributes wrapped in #[Conditional] and whether the condition is met
+	 * @return list<array{TargetClass<T>, bool}> targets and whether they get their tags
 	 */
 	private static function findTargetClasses(string $attributeClass, array $conditionalTargets): array
 	{
-		$targets = Attributes::findTargetClasses($attributeClass);
-		foreach ($conditionalTargets as $target) {
+		$targets = [];
+		foreach (Attributes::findTargetClasses($attributeClass) as $target) {
+			$targets[] = [$target, true];
+		}
+		foreach ($conditionalTargets as [$target, $isConditionMet]) {
 			if (!$target->attribute instanceof $attributeClass) {
 				continue;
 			}
 
-			$targets[] = new TargetClass($target->attribute, $target->name);
+			$targets[] = [new TargetClass($target->attribute, $target->name), $isConditionMet];
 		}
 
 		return $targets;
 	}
 
 	/**
-	 * Evaluated while loading the configuration because an unmet condition means the service is not registered at all.
 	 * The strings are NEON values like in the conditionalTags config section, so 'not(%foo%)' is supported too.
 	 *
 	 * @param string|non-empty-list<string> $if

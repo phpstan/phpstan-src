@@ -18,7 +18,6 @@ use PHPStan\Type\TypeUtils;
 use function array_key_exists;
 use function in_array;
 use const SORT_FLAG_CASE;
-use const SORT_LOCALE_STRING;
 use const SORT_NATURAL;
 use const SORT_NUMERIC;
 use const SORT_REGULAR;
@@ -30,6 +29,9 @@ use const SORT_STRING;
 #[RegisteredRule(level: 5)]
 final class SortParameterCastableToStringRule implements Rule
 {
+
+	/** Value of SORT_LOCALE_STRING; the constant itself is deprecated since PHP 8.6. */
+	private const SORT_LOCALE_STRING = 5;
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -98,7 +100,7 @@ final class SortParameterCastableToStringRule implements Rule
 		foreach ($constantIntFlags as $flag) {
 			if ($flag->getValue() === SORT_NUMERIC) {
 				$mustBeCastableToFloat = true;
-			} elseif (in_array($flag->getValue() & (~SORT_FLAG_CASE), [SORT_STRING, SORT_LOCALE_STRING, SORT_NATURAL], true)) {
+			} elseif (in_array($flag->getValue() & (~SORT_FLAG_CASE), [SORT_STRING, self::SORT_LOCALE_STRING, SORT_NATURAL], true)) {
 				$mustBeCastableToString = true;
 			}
 		}

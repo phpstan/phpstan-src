@@ -87,15 +87,12 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 			if (!$definition instanceof ServiceDefinition) {
 				continue;
 			}
-			$className = $definition->getType();
-			if ($className === null) {
-				continue;
-			}
-
 			// only wire arguments into definitions that actually invoke the constructor,
-			// not aliases of other services (factory: @otherService) or method factories
+			// not aliases of other services (factory: @otherService) or method factories;
+			// the constructor is the one of the factory class, which can differ from the type (class: Interface, factory: Implementation)
 			$creatorEntity = $definition->getCreator()->getEntity();
-			if ($creatorEntity !== null && (!is_string($creatorEntity) || strcasecmp($creatorEntity, $className) !== 0)) {
+			$className = $creatorEntity ?? $definition->getType();
+			if (!is_string($className)) {
 				continue;
 			}
 

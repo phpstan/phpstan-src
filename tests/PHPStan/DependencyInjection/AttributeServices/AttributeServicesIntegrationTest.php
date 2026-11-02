@@ -6,6 +6,8 @@ use AttributeServicesFixtures\DiscoveredCollector;
 use AttributeServicesFixtures\DiscoveredConditionalRule;
 use AttributeServicesFixtures\DiscoveredConditionalRuleNotMet;
 use AttributeServicesFixtures\DiscoveredConditionalService;
+use AttributeServicesFixtures\DiscoveredImplementation;
+use AttributeServicesFixtures\DiscoveredInterface;
 use AttributeServicesFixtures\DiscoveredNamedService;
 use AttributeServicesFixtures\DiscoveredNonAutowiredService;
 use AttributeServicesFixtures\DiscoveredRuleLevelEight;
@@ -91,6 +93,13 @@ class AttributeServicesIntegrationTest extends TestCase
 	{
 		$container = self::createContainer();
 		$this->assertInstanceOf(DiscoveredNamedService::class, $container->getService('attributeServicesFixtures.named'));
+	}
+
+	public function testDiscoveredServiceAutowiredAsInterface(): void
+	{
+		$container = self::createContainer();
+		$this->assertInstanceOf(DiscoveredImplementation::class, $container->getByType(DiscoveredInterface::class));
+		$this->assertSame([], $container->findServiceNamesByType(DiscoveredImplementation::class));
 	}
 
 	public function testDiscoveredServicesCreatedByStaticFactory(): void

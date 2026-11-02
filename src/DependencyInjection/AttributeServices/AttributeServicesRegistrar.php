@@ -66,15 +66,21 @@ final class AttributeServicesRegistrar
 		}
 
 		foreach (self::findTargetClasses($targets, AutowiredService::class, $conditionalTargets) as [$class, $tagged]) {
-			$reflection = new ReflectionClass($class->name);
 			$attribute = $class->attribute;
 
+			// a single type in `as` becomes the service type like `class: Interface, factory: Implementation` in NEON,
+			// otherwise Nette would autowire the service as the implementation class too
+			$type = is_string($attribute->as) ? $attribute->as : $class->name;
+			$reflection = new ReflectionClass($type);
+
 			$definition = $builder->addDefinition($attribute->name)
-				->setType($class->name)
+				->setType($type)
 				->setAutowired($attribute->as);
 
 			if ($attribute->factory !== null) {
 				$definition->setFactory(self::createFactory($attribute->factory));
+			} elseif ($type !== $class->name) {
+				$definition->setFactory($class->name);
 			}
 
 			$registeredClasses[] = $class->name;

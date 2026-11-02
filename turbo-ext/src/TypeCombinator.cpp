@@ -2185,7 +2185,9 @@ public:
 		zv::Arr arrayTypesArray = listOf(arrayTypes);
 		zv::Val reduced = reduceArrays(arrayTypesArray.raw(), true);
 		PT_FAIL_IF_UNDEF(reduced);
-		zv::Val reducedArrayTypes = optimizeConstantArrays(reduced.raw());
+		int noLarger = isReducedToNoLargerShape(reduced.raw(), arrayTypesArray.raw());
+		PT_FAIL_IF_NEG(noLarger);
+		zv::Val reducedArrayTypes = noLarger ? std::move(reduced) : optimizeConstantArrays(reduced.raw());
 		PT_FAIL_IF_UNDEF(reducedArrayTypes);
 		zv::Arr result = zv::Arr::adoptVal(std::move(reducedArrayTypes));
 		result.separate();
@@ -2388,6 +2390,36 @@ public:
 		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
 		if (UNEXPECTED(traversed.isUndef())) return;
 		traversed.intoReturnValue(return_value);
+	}
+
+	/* private static isReducedToNoLargerShape(Type[] $reducedArrayTypes,
+	 * Type[] $arrayTypes): bool; -1 = pending exception */
+	[[nodiscard]] static int isReducedToNoLargerShape(zval *reducedArrayTypes, zval *arrayTypes)
+	{
+		if (countOf(reducedArrayTypes) != 1) return 0;
+		zval *reducedArray = nullptr;
+		for (zv::ArrayEntry entry : zv::ArrRef(reducedArrayTypes)) {
+			reducedArray = entry.value().raw();
+		}
+		zend_long isConstantArray = callTrinary(reducedArray, PT_LC("isconstantarray"));
+		if (isConstantArray < 0) return -1;
+		if (isConstantArray != PT_TRI_YES) return 0;
+
+		zend_long reducedCount = countConstantArrayValueTypes(reducedArrayTypes);
+		if (reducedCount < 0) return -1;
+		zend_long limit = arrayCountLimit();
+		if (limit < 0) return -1;
+		if (reducedCount <= limit) return 0;
+
+		for (zv::ArrayEntry entry : zv::ArrRef(arrayTypes)) {
+			zv::Arr single = zv::Arr::create(1);
+			single.push(copy(entry.value().raw()));
+			zend_long count = countConstantArrayValueTypes(single.raw());
+			if (count < 0) return -1;
+			if (count >= reducedCount) return 1;
+		}
+
+		return 0;
 	}
 
 	/* private static optimizeConstantArrays(Type[] $types): Type[] */

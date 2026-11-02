@@ -290,29 +290,43 @@ final class Neon2AttributesMigrator
 			}
 			$factory = null;
 		}
+		$autowired = $value['autowired'] ?? true;
+		if ($factory !== null && is_string($factoryClass) && !str_starts_with($factoryClass, '@') && !str_contains($factoryClass, '::') && is_a($factoryClass, $class, true)) {
+			// `class: FooInterface` with `factory: Foo` or `factory: Foo(...)` creates Foo autowired as FooInterface
+			if (array_key_exists('autowired', $value)) {
+				return sprintf('autowired of a service created by %s', $factoryClass);
+			}
+			if ($factory instanceof Entity) {
+				if (array_key_exists('arguments', $value)) {
+					return 'arguments in two places';
+				}
+				$arguments = $factory->attributes;
+			}
+			$autowired = ltrim($class, '\\');
+			$class = $factoryClass;
+			$factory = null;
+		}
 		if ($factory !== null && !self::isServiceMethodFactory($factory)) {
 			$factoryValue = $factory instanceof Entity ? $factory->value : $factory;
 			if (!is_string($factoryValue)) {
 				return 'factory is not a method of another service';
 			}
 			if (!str_starts_with($factoryValue, '@')) {
-				if (str_contains($factoryValue, '::')) {
-					return 'static factory method';
-				}
-				if (is_a($factoryValue, $class, true)) {
-					return sprintf('service type differs from the created class %s', $factoryValue);
+				if (!str_contains($factoryValue, '::')) {
+					return 'created by another class';
 				}
 
-				return 'created by another class';
-			}
-			if (str_contains($factoryValue, '%')) {
+				if ($factory instanceof Entity && $factory->attributes !== []) {
+					return 'arguments of a static factory method';
+				}
+				$factory = ltrim($factoryValue, '\\');
+			} elseif (str_contains($factoryValue, '%')) {
 				return 'factory service is chosen by a parameter';
-			}
-			if (!str_contains($factoryValue, '::')) {
+			} elseif (!str_contains($factoryValue, '::')) {
 				return 'factory is a reference to another service';
+			} else {
+				return 'factory is not a method of another service';
 			}
-
-			return 'factory is not a method of another service';
 		}
 		if ($factory instanceof Entity) {
 			$factory = $factory->value;
@@ -328,7 +342,7 @@ final class Neon2AttributesMigrator
 			}
 		}
 
-		return new ServiceDefinition($class, $name, $arguments, $factory, $value['autowired'] ?? true, array_values($tags), null);
+		return new ServiceDefinition(ltrim($class, '\\'), $name, $arguments, $factory, $autowired, array_values($tags), null);
 	}
 
 	/**

@@ -1,0 +1,12 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Factory;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService(factory: 'Neon2AttributesFixtures\Factory\CreatedFactory::createStatically')]
+final class StaticallyCreated
+{
+
+
+}

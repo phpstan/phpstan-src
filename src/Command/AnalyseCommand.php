@@ -116,6 +116,7 @@ final class AnalyseCommand extends Command
 				new InputOption('tmp-file', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) Edited file used in place of --instead-of file'),
 				new InputOption('instead-of', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) File being replaced by --tmp-file'),
 				new InputOption('fix', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable errors (experimental)'),
+				new InputOption('fix-ignored', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable ignored errors, can be combined with --fix (experimental)'),
 				new InputOption('watch', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('pro', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', mode: InputOption::VALUE_NONE, description: 'Return non-zero exit code when result cache is not used'),
@@ -155,7 +156,9 @@ final class AnalyseCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
 		$pro = (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
-		$fix = (bool) $input->getOption('fix');
+		$fixReported = (bool) $input->getOption('fix');
+		$fixIgnored = (bool) $input->getOption('fix-ignored');
+		$fix = $fixReported || $fixIgnored;
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
 
 		/** @var string|false|null $generateBaselineFile */
@@ -221,7 +224,7 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 			if ($fix) {
-				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with --fix.');
+				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with --fix and --fix-ignored.');
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 		}
@@ -232,7 +235,9 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
-			$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
+			if ($fixReported) {
+				$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
+			}
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -548,12 +553,19 @@ final class AnalyseCommand extends Command
 
 		if ($fix) {
 			$fixableErrors = [];
-			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if ($fileSpecificError->getFixedErrorDiff() === null) {
-					continue;
-				}
+			if ($fixReported) {
+				foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+					if ($fileSpecificError->getFixedErrorDiff() === null) {
+						continue;
+					}
 
-				$fixableErrors[] = $fileSpecificError;
+					$fixableErrors[] = $fileSpecificError;
+				}
+			}
+			if ($fixIgnored) {
+				foreach ($analysisResult->getFixableIgnoredErrors() as $fixableIgnoredError) {
+					$fixableErrors[] = $fixableIgnoredError;
+				}
 			}
 
 			$fixableErrorsCount = count($fixableErrors);

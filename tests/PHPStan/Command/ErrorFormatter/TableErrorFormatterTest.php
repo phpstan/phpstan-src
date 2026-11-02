@@ -4,6 +4,7 @@ namespace PHPStan\Command\ErrorFormatter;
 
 use Override;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\Command\AnalysisResult;
 use PHPStan\Command\CommandHelper;
 use PHPStan\File\FuzzyRelativePathHelper;
@@ -485,6 +486,27 @@ class TableErrorFormatterTest extends ErrorFormatterTestCase
 		$formatter->formatErrors(new AnalysisResult($errors, [], [], [], [], false, null, true, 0, false, []), $this->getOutput());
 
 		$this->assertStringContainsString($expected, $this->getOutputContent());
+	}
+
+	public function testFixableIgnoredErrors(): void
+	{
+		$fixed = new FixedErrorDiff('hash', 'diff');
+		$fixable = new Error('Fixable', 'Foo.php', 12, filePath: 'Foo.php', fixedErrorDiff: $fixed);
+		$ignoredFixable = new Error('Ignored', 'Foo.php', 13, filePath: 'Foo.php', fixedErrorDiff: $fixed);
+
+		// shown with a green build too, the ignored errors are not in the table
+		$formatter = $this->createErrorFormatter(null);
+		$formatter->formatErrors(new AnalysisResult([], [], [], [], [], false, null, true, 0, false, fixableIgnoredErrors: [$ignoredFixable, $ignoredFixable]), $this->getOutput(true));
+		$output = $this->getOutputContent(true);
+		$this->assertStringContainsString("\e[90m🔧 2 ignored errors can be fixed automatically. Run PHPStan again with --fix-ignored.\e[39m", $output);
+		$this->assertStringNotContainsString('Ignored', $output);
+
+		$formatter = $this->createErrorFormatter(null);
+		$formatter->formatErrors(new AnalysisResult([$fixable], [], [], [], [], false, null, true, 0, false, fixableIgnoredErrors: [$ignoredFixable]), $this->getOutput());
+		$this->assertStringContainsString(
+			"🔧 1 error can be fixed automatically. Run PHPStan again with --fix.\n🔧 1 ignored error can be fixed automatically. Run PHPStan again with --fix-ignored.\n",
+			$this->getOutputContent(),
+		);
 	}
 
 	public function testEditorUrlWithTrait(): void

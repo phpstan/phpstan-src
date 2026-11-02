@@ -77,6 +77,7 @@ final class TableErrorFormatter implements ErrorFormatter
 
 		if (!$analysisResult->hasErrors() && !$analysisResult->hasWarnings()) {
 			$style->success('No errors');
+			$this->printFixableIgnoredErrors($analysisResult, $output);
 
 			if ($this->showTipsOfTheDay) {
 				if ($analysisResult->isDefaultLevelUsed()) {
@@ -223,10 +224,24 @@ final class TableErrorFormatter implements ErrorFormatter
 
 		if ($fixableErrorsCount > 0) {
 			$output->writeLineFormatted(sprintf('🔧 %d %s can be fixed automatically. Run PHPStan again with <fg=cyan>--fix</>.', $fixableErrorsCount, $fixableErrorsCount === 1 ? 'error' : 'errors'));
-			$output->writeLineFormatted('');
+			if (count($analysisResult->getFixableIgnoredErrors()) === 0) {
+				$output->writeLineFormatted('');
+			}
 		}
+		$this->printFixableIgnoredErrors($analysisResult, $output);
 
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;
+	}
+
+	private function printFixableIgnoredErrors(AnalysisResult $analysisResult, Output $output): void
+	{
+		$count = count($analysisResult->getFixableIgnoredErrors());
+		if ($count === 0) {
+			return;
+		}
+
+		$output->writeLineFormatted(sprintf('<fg=gray>🔧 %d ignored %s can be fixed automatically. Run PHPStan again with --fix-ignored.</>', $count, $count === 1 ? 'error' : 'errors'));
+		$output->writeLineFormatted('');
 	}
 
 	private function formatLineNumber(?int $lineNumber): string

@@ -968,6 +968,30 @@ jobs:
               echo "$OUTPUT"
               ../bashunit assert contains 'FooTrait.php (in context of class ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait):10:Method ResultCacheE2ETraitAlongsideClass\ClassUsingFooTrait::doFooTrait() should return stdClass but returns Exception. [identifier=return.type]' "$OUTPUT"
           - script: |
+              cd e2e/fix
+              composer install
+              rm -rf src tmp && cp -r original src
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix")
+              echo "$OUTPUT"
+              ../bashunit assert contains '[OK] 2 errors fixed' "$OUTPUT"
+              diff -u expected/Foo.php src/Foo.php
+              diff -u expected/Ignored-fix.php src/Ignored.php
+              rm -rf src && cp -r original src
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix-ignored")
+              echo "$OUTPUT"
+              ../bashunit assert contains '[OK] 1 error fixed' "$OUTPUT"
+              diff -u original/Foo.php src/Foo.php
+              diff -u expected/Ignored-fix-ignored.php src/Ignored.php
+              rm -rf src && cp -r original src
+              OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix --fix-ignored")
+              echo "$OUTPUT"
+              ../bashunit assert contains '[OK] 3 errors fixed' "$OUTPUT"
+              diff -u expected/Foo.php src/Foo.php
+              diff -u expected/Ignored-fix-both.php src/Ignored.php
+              OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --fix-ignored")
+              echo "$OUTPUT"
+              ../bashunit assert contains 'No fixable errors found' "$OUTPUT"
+          - script: |
               cd e2e/editor-mode
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse -vv --error-format raw")
               echo "$OUTPUT"

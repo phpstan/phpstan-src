@@ -2,12 +2,14 @@
 
 namespace PHPStan\Analyser\Ignore;
 
+use Closure;
 use Generator;
 use Override;
 use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\Fixable\Patcher;
+use PHPStan\Neon\Printer as NeonPrinter;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function file_put_contents;
@@ -214,17 +216,104 @@ class IgnoreErrorsConfigFixerTest extends PHPStanTestCase
 		$this->assertSame([], $lowerCount ? $fixer->lowerCount($ignoreError, 1) : $fixer->removeUnmatched($ignoreError));
 	}
 
-	public function testNeonIsNotFixed(): void
+	public static function dataNeon(): Generator
 	{
-		$file = __DIR__ . '/' . uniqid('baseline-') . '.neon';
-		file_put_contents($file, "parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tpath: Foo.php\n");
-		try {
-			$fixer = $this->createFixerForFiles([$file]);
-			$path = __DIR__ . '/Foo.php';
-			$this->assertSame([], $fixer->removeUnmatched(['message' => '#^A$#', 'path' => $path, 'realPath' => $path]));
-		} finally {
-			@unlink($file);
-		}
+		$entries = "parameters:\n\tignoreErrors:\n"
+			. "\t\t# A\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tcount: 5\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessage: '#^100%% sure$#' # percent\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^C$#'\n\t\t\t\t- '#^D$#'\n\t\t\tpath: Foo.php\n"
+			. "\tlevel: 8\n";
+
+		yield 'entry with the comment above it' => [
+			$entries,
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^A$#', 'count' => 5, 'path' => $path, 'realPath' => $path]),
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t-\n\t\t\tmessage: '#^100%% sure$#' # percent\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^C$#'\n\t\t\t\t- '#^D$#'\n\t\t\tpath: Foo.php\n"
+			. "\tlevel: 8\n",
+		];
+
+		yield 'escaped percent sign in the message' => [
+			$entries,
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^100% sure$#', 'path' => $path, 'realPath' => $path]),
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t# A\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tcount: 5\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^C$#'\n\t\t\t\t- '#^D$#'\n\t\t\tpath: Foo.php\n"
+			. "\tlevel: 8\n",
+		];
+
+		yield 'item of a list' => [
+			$entries,
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^D$#', 'path' => $path, 'realPath' => $path]),
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t# A\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tcount: 5\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessage: '#^100%% sure$#' # percent\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^C$#'\n\t\t\tpath: Foo.php\n"
+			. "\tlevel: 8\n",
+		];
+
+		yield 'lower count' => [
+			$entries,
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->lowerCount(['message' => '#^A$#', 'count' => 5, 'path' => $path, 'realPath' => $path], 2),
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t# A\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tcount: 2\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessage: '#^100%% sure$#' # percent\n\t\t\tpath: Foo.php\n"
+			. "\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^C$#'\n\t\t\t\t- '#^D$#'\n\t\t\tpath: Foo.php\n"
+			. "\tlevel: 8\n",
+		];
+
+		yield 'only entry' => [
+			"parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tidentifier: foo.bar\n\t\t\tpath: Foo.php\n",
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['identifier' => 'foo.bar', 'path' => $path, 'realPath' => $path]),
+			"parameters:\n\tignoreErrors: []\n",
+		];
+
+		yield 'CRLF line breaks' => [
+			"parameters:\r\n\tignoreErrors:\r\n\t\t-\r\n\t\t\tmessage: '#^A$#'\r\n\t\t\tpath: Foo.php\r\n\tlevel: 8\r\n",
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^A$#', 'path' => $path, 'realPath' => $path]),
+			"parameters:\r\n\tignoreErrors: []\r\n\tlevel: 8\r\n",
+		];
+	}
+
+	/**
+	 * @param Closure(IgnoreErrorsConfigFixer, string): list<FixedErrorDiff> $fix
+	 */
+	#[DataProvider('dataNeon')]
+	public function testNeon(string $code, Closure $fix, string $expected): void
+	{
+		[$fixer, $file] = $this->createFixer($code, 'neon');
+
+		$this->assertSame($expected, $this->apply($file, $code, $fix($fixer, __DIR__ . '/Foo.php')));
+	}
+
+	public function testNeonCountOfDuplicateEntriesIsNotLowered(): void
+	{
+		[$fixer] = $this->createFixer(
+			"parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tcount: 2\n\t\t\tpath: Foo.php\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tcount: 3\n\t\t\tpath: Foo.php\n",
+			'neon',
+		);
+		$path = __DIR__ . '/Foo.php';
+
+		$this->assertSame([], $fixer->lowerCount(['message' => '#^A$#', 'count' => 5, 'path' => $path, 'realPath' => $path], 1));
+	}
+
+	public function testNeonRemovingAllItemsOfListTakesTwoRounds(): void
+	{
+		$code = "parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^A$#'\n\t\t\t\t- '#^B$#'\n\t\t\tpath: Foo.php\n\t\t-\n\t\t\tmessage: '#^C$#'\n\t\t\tpath: Foo.php\n\t\t-\n\t\t\tmessage: '#^D$#'\n\t\t\tpath: Foo.php\n";
+		[$fixer, $file] = $this->createFixer($code, 'neon');
+		$path = __DIR__ . '/Foo.php';
+
+		$result = self::getContainer()->getByType(Patcher::class)->apply([$file => $code], [
+			$fixer->removeUnmatched(['message' => '#^A$#', 'path' => $path, 'realPath' => $path]),
+			$fixer->removeUnmatched(['message' => '#^B$#', 'path' => $path, 'realPath' => $path]),
+			$fixer->removeUnmatched(['message' => '#^C$#', 'path' => $path, 'realPath' => $path]),
+			$fixer->removeUnmatched(['message' => '#^D$#', 'path' => $path, 'realPath' => $path]),
+		]);
+		$this->assertSame(2, $result['appliedCount']);
+		$this->assertSame(
+			"parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^B$#'\n\t\t\tpath: Foo.php\n\t\t-\n\t\t\tmessage: '#^D$#'\n\t\t\tpath: Foo.php\n",
+			$result['contents'][$file],
+		);
 	}
 
 	/**
@@ -232,9 +321,9 @@ class IgnoreErrorsConfigFixerTest extends PHPStanTestCase
 	 *
 	 * @return array{IgnoreErrorsConfigFixer, string}
 	 */
-	private function createFixer(string $code): array
+	private function createFixer(string $code, string $extension = 'php'): array
 	{
-		$file = __DIR__ . '/' . uniqid('baseline-') . '.php';
+		$file = __DIR__ . '/' . uniqid('baseline-') . '.' . $extension;
 		file_put_contents($file, $code);
 		$this->filesToDelete[] = $file;
 
@@ -264,6 +353,7 @@ class IgnoreErrorsConfigFixerTest extends PHPStanTestCase
 		return new IgnoreErrorsConfigFixer(
 			$container->getService('currentPhpVersionPhpParser'),
 			$container->getByType(PackageDependencyResolver::class),
+			new NeonPrinter(),
 			$container->getByType(FileHelper::class),
 			$configFiles,
 			sys_get_temp_dir(),

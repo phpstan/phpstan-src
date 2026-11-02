@@ -1,0 +1,18 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Undefined variable\: \$g$#'
+			identifier: variable.undefined
+			count: 5 # lowered to 3
+			path: src/Foo.php
+
+		# removed together with this comment
+		-
+			message: '#^Unmatched in NEON$#'
+			path: src/Foo.php
+
+		-
+			messages:
+				- '#^Unmatched in a NEON list$#'
+				- '#^Undefined variable\: \$h$#'
+			path: src/Foo.php

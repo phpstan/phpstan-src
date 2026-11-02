@@ -1,5 +1,6 @@
 includes:
 	- baseline.php
+	- baseline.neon
 	# a config file of an installed package is never fixed
 	- vendor/acme/rules/baseline.php
 
@@ -8,8 +9,3 @@ parameters:
 	paths:
 		- src
 	tmpDir: tmp
-	ignoreErrors:
-		# NEON config files are not fixed yet
-		-
-			message: '#^Unmatched in NEON$#'
-			path: src/Foo.php

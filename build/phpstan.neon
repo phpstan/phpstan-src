@@ -192,6 +192,14 @@ parameters:
 			count: 1
 			path: ../src/Command/WorkerCommand.php
 		-
+			# nette/neon 3 marks its syntax tree, lexer and parser @internal. The format-preserving printer
+			# and the ignoreErrors fixer build on them, composer.json pins nette/neon to one version.
+			message: '#internal class Nette\\Neon\\#'
+			paths:
+				- ../src/Neon/*
+				- ../src/Analyser/Ignore/IgnoreErrorsConfigFixer.php
+				- ../tests/PHPStan/Neon/*
+		-
 			rawMessage: 'Property PHPStan\Command\CommandHelper::$reservedMemory is never read' # intentional
 			reportUnmatched: false
 	reportStaticMethodSignatures: true

@@ -1,0 +1,12 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Undefined variable\: \$g$#'
+			identifier: variable.undefined
+			count: 3 # lowered to 3
+			path: src/Foo.php
+
+		-
+			messages:
+				- '#^Undefined variable\: \$h$#'
+			path: src/Foo.php

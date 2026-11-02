@@ -25,3 +25,11 @@ function qux(): void
 	echo $f;
 	echo $f;
 }
+
+function quux(): void
+{
+	echo $g;
+	echo $g;
+	echo $g;
+	echo $h;
+}

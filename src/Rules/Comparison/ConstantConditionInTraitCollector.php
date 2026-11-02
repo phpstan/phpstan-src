@@ -11,7 +11,7 @@ use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
 
 /**
- * @implements CollectorWithPaths<never, array{class-string<Rule<covariant Node>>, trait-string, string, null}|array{class-string<Rule<covariant Node>>, trait-string, string, bool, Error|array<mixed>}>
+ * @implements CollectorWithPaths<never, array{class-string<Rule<covariant Node>>, trait-string, string, null}|array{class-string<Rule<covariant Node>>, trait-string, string, bool|string, Error|array<mixed>}>
  */
 final class ConstantConditionInTraitCollector implements CollectorWithPaths
 {
@@ -27,9 +27,9 @@ final class ConstantConditionInTraitCollector implements CollectorWithPaths
 	}
 
 	/**
-	 * @param array{class-string<Rule<covariant Node>>, trait-string, string, null}|array{class-string<Rule<covariant Node>>, trait-string, string, bool, Error|array<mixed>} $data
+	 * @param array{class-string<Rule<covariant Node>>, trait-string, string, null}|array{class-string<Rule<covariant Node>>, trait-string, string, bool|string, Error|array<mixed>} $data
 	 * @param callable(string): string $transformPath
-	 * @return array{class-string<Rule<covariant Node>>, trait-string, string, null}|array{class-string<Rule<covariant Node>>, trait-string, string, bool, Error|array<mixed>}
+	 * @return array{class-string<Rule<covariant Node>>, trait-string, string, null}|array{class-string<Rule<covariant Node>>, trait-string, string, bool|string, Error|array<mixed>}
 	 */
 	public static function transformCollectedDataPaths($data, callable $transformPath)
 	{

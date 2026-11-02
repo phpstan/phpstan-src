@@ -5,10 +5,13 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -55,6 +58,7 @@ final class SortWithoutEffectRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private bool $treatPhpDocTypesAsCertain,
 		private bool $treatPhpDocTypesAsCertainTip,
 	)
@@ -66,7 +70,7 @@ final class SortWithoutEffectRule implements Rule
 		return FuncCall::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!($node->name instanceof Node\Name)) {
 			return [];
@@ -93,11 +97,18 @@ final class SortWithoutEffectRule implements Rule
 
 		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 		if ($normalizedFuncCall === null) {
+			// From here on the call is a sort call, so every way out has to be recorded for the
+			// trait collector: a context that reports nothing and says nothing is indistinguishable
+			// from one that was never analysed, and the remaining contexts then look unanimous.
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+
 			return [];
 		}
 
 		$args = $normalizedFuncCall->getArgs();
 		if (!array_key_exists(0, $args)) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+
 			return [];
 		}
 
@@ -111,6 +122,8 @@ final class SortWithoutEffectRule implements Rule
 
 		$reason = $this->findNoEffectReason($arrayType, $keyPreserving, $keysAlreadySorted);
 		if ($reason === null) {
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+
 			return [];
 		}
 
@@ -127,9 +140,20 @@ final class SortWithoutEffectRule implements Rule
 			}
 		}
 
-		return [
-			$errorBuilder->build(),
-		];
+		$ruleError = $errorBuilder->build();
+
+		// A trait body is analysed once per using class, so self::/static:: in it resolves to a
+		// different type in each of them. A one-element enum makes a generic sortedCases() helper look
+		// pointless in that enum's context while the same line is fine in every other, and reporting it
+		// asks the author to change shared code for one consumer. The collector reports only what all
+		// the using classes agree on, which keeps a call that is pointless whichever class runs it.
+		if ($scope->isInTrait()) {
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, $reason, $ruleError);
+
+			return [];
+		}
+
+		return [$ruleError];
 	}
 
 	/**

@@ -1,0 +1,11 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Factory;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService(as: CreatedInterface::class)]
+final class Implementation implements CreatedInterface
+{
+
+}

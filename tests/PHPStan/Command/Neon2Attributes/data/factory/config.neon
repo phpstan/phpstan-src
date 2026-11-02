@@ -28,3 +28,6 @@ services:
 	-
 		class: Neon2AttributesFixtures\Factory\SameClassWithArguments
 		factory: \Neon2AttributesFixtures\Factory\SameClassWithArguments(%tmpDir%)
+	-
+		class: Neon2AttributesFixtures\Factory\StaticWithArguments
+		factory: Neon2AttributesFixtures\Factory\StaticWithArguments::create(%tmpDir%)

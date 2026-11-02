@@ -55,14 +55,15 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 		yield 'factory' => ['factory', 80100, [
 			'Created: AutowiredService',
 			'CreatedFactory: AutowiredService',
+			'StaticallyCreated: AutowiredService',
 			'ArrayCreated: AutowiredService',
+			'Implementation: AutowiredService',
 			'TypedInterface: AutowiredService',
 			'SameClass: AutowiredService',
 			'SameClassWithArguments: AutowiredService, AutowiredParameter',
-			'kept StaticallyCreated: static factory method',
 			'kept ParameterCreated: factory service is chosen by a parameter',
 			'kept Aliased: factory is a reference to another service',
-			'kept CreatedInterface: service type differs from the created class Neon2AttributesFixtures\\Factory\\Implementation',
+			'kept StaticWithArguments: arguments of a static factory method',
 		]];
 
 		yield 'autowired' => ['autowired', 80100, [

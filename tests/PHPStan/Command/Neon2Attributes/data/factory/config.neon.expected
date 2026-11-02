@@ -1,13 +1,10 @@
 services:
 	-
-		class: Neon2AttributesFixtures\Factory\StaticallyCreated
-		factory: Neon2AttributesFixtures\Factory\CreatedFactory::createStatically()
-	-
 		class: Neon2AttributesFixtures\Factory\ParameterCreated
 		factory: @%factoryService%::create
 	-
 		class: Neon2AttributesFixtures\Factory\Aliased
 		factory: @Neon2AttributesFixtures\Factory\CreatedFactory
 	-
-		class: Neon2AttributesFixtures\Factory\CreatedInterface
-		factory: Neon2AttributesFixtures\Factory\Implementation
+		class: Neon2AttributesFixtures\Factory\StaticWithArguments
+		factory: Neon2AttributesFixtures\Factory\StaticWithArguments::create(%tmpDir%)

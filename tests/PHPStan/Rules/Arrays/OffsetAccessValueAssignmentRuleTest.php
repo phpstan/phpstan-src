@@ -106,6 +106,10 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 				'Bug8549\Options<array{name: string, age: int}> does not accept string.',
 				92,
 			],
+			[
+				'Bug8549\Options<array{name: string, age: int}> does not accept float.',
+				109,
+			],
 		]);
 	}
 

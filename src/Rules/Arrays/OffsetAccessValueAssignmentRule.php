@@ -68,22 +68,26 @@ final class OffsetAccessValueAssignmentRule implements MultipleNodeTypesRule
 		// resolve against the written key. An offset that is not accepted is reported by OffsetAccessAssignmentRule,
 		// so only the value is checked here.
 		$dimType = $arrayDimFetch->dim !== null ? $scope->getType($arrayDimFetch->dim) : null;
-		$offsetTypeFor = static function (Type $varType) use ($dimType): Type {
-			if ($dimType === null || $varType->setOffsetValueType($dimType, new MixedType()) instanceof ErrorType) {
-				return new MixedType();
+		$acceptsValue = static function (Type $varType) use ($dimType, $assignedValueType): bool {
+			if ($dimType !== null) {
+				if (!$varType->setOffsetValueType($dimType, $assignedValueType) instanceof ErrorType) {
+					return true;
+				}
+
+				// The write is rejected. If the offset alone is accepted, the value is what is rejected.
+				if (!$varType->setOffsetValueType($dimType, new MixedType()) instanceof ErrorType) {
+					return false;
+				}
 			}
 
-			return $dimType;
+			return !$varType->setOffsetValueType(new MixedType(), $assignedValueType) instanceof ErrorType;
 		};
 
 		$arrayTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$arrayDimFetch->var,
 			'',
-			static function (Type $varType) use ($assignedValueType, $offsetTypeFor): bool {
-				$result = $varType->setOffsetValueType($offsetTypeFor($varType), $assignedValueType);
-				return !($result instanceof ErrorType);
-			},
+			$acceptsValue,
 		);
 		$arrayType = $arrayTypeResult->getType();
 		if ($arrayType instanceof ErrorType) {
@@ -93,8 +97,7 @@ final class OffsetAccessValueAssignmentRule implements MultipleNodeTypesRule
 		if (!$isOffsetAccessible->yes()) {
 			return [];
 		}
-		$resultType = $arrayType->setOffsetValueType($offsetTypeFor($arrayType), $assignedValueType);
-		if (!$resultType instanceof ErrorType) {
+		if ($acceptsValue($arrayType)) {
 			return [];
 		}
 

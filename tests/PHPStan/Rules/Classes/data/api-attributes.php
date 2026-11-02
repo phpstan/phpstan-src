@@ -2,6 +2,7 @@
 
 namespace ApiAttributes;
 
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\ContainerExtension;
@@ -13,6 +14,13 @@ use PHPStan\DependencyInjection\RegisteredRule;
 #[AutowiredService]
 class Service
 {
+
+	public function __construct(
+		#[AutowiredParameter(ref: '%tmpDir%')]
+		private string $tmpDir,
+	)
+	{
+	}
 
 }
 

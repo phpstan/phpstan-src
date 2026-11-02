@@ -17,6 +17,7 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<ParamAttributesRule>
@@ -90,6 +91,12 @@ class ParamAttributesRuleTest extends RuleTestCase
 	public function testBug10298(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10298.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPhpStanApiAttributes(): void
+	{
+		$this->analyse([__DIR__ . '/../Classes/data/api-attributes.php'], []);
 	}
 
 }

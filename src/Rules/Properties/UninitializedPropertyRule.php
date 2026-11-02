@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Conditional;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
@@ -13,6 +15,10 @@ use function sprintf;
 /**
  * @implements Rule<ClassPropertiesNode>
  */
+#[Conditional(
+	attribute: new AutowiredService(),
+	if: '%checkUninitializedProperties%',
+)]
 final class UninitializedPropertyRule implements Rule
 {
 

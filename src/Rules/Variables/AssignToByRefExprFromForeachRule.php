@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\PropertyAssignNode;
@@ -16,6 +18,10 @@ use function sprintf;
 /**
  * @implements MultipleNodeTypesRule<NodeAbstract>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 1),
+	if: '%featureToggles.assignToByRefForeachExpr%',
+)]
 final class AssignToByRefExprFromForeachRule implements MultipleNodeTypesRule
 {
 

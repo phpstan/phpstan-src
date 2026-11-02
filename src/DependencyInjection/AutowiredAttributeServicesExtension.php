@@ -8,12 +8,15 @@ use Nette\DI\Definitions\Reference;
 use Nette\DI\Definitions\ServiceDefinition;
 use Nette\DI\Definitions\Statement;
 use Nette\DI\Helpers;
+use Nette\Neon\Entity;
+use Nette\Neon\Neon;
 use Nette\PhpGenerator\Dumper;
 use Nette\PhpGenerator\PhpLiteral;
 use Nette\Schema\Expect;
 use Nette\Schema\Schema;
 use Nette\Utils\Strings;
 use olvlvl\ComposerAttributeCollector\Attributes;
+use olvlvl\ComposerAttributeCollector\TargetClass;
 use olvlvl\ComposerAttributeCollector\TargetMethodParameter;
 use Override;
 use PHPStan\Collectors\RegistryFactory;
@@ -63,7 +66,16 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			$constructorParameters[$lowerClass][] = $parameter;
 		}
 
-		foreach (Attributes::findTargetClasses(AutowiredService::class) as $class) {
+		$conditionalTargets = [];
+		foreach (Attributes::findTargetClasses(Conditional::class) as $class) {
+			if (!self::isConditionMet($builder, $class->attribute->if)) {
+				continue;
+			}
+
+			$conditionalTargets[] = new TargetClass($class->attribute->attribute, $class->name);
+		}
+
+		foreach (self::findTargetClasses(AutowiredService::class, $conditionalTargets) as $class) {
 			$reflection = new ReflectionClass($class->name);
 			$attribute = $class->attribute;
 
@@ -91,7 +103,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			}
 		}
 
-		foreach (Attributes::findTargetClasses(NonAutowiredService::class) as $class) {
+		foreach (self::findTargetClasses(NonAutowiredService::class, $conditionalTargets) as $class) {
 			$attribute = $class->attribute;
 
 			$definition = $builder->addDefinition($attribute->name)
@@ -106,7 +118,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
-		foreach (Attributes::findTargetClasses(GenerateFactory::class) as $class) {
+		foreach (self::findTargetClasses(GenerateFactory::class, $conditionalTargets) as $class) {
 			$attribute = $class->attribute;
 			$definition = $builder->addFactoryDefinition(null)
 				->setImplement($attribute->interface);
@@ -125,7 +137,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			return;
 		}
 
-		foreach (Attributes::findTargetClasses(RegisteredRule::class) as $class) {
+		foreach (self::findTargetClasses(RegisteredRule::class, $conditionalTargets) as $class) {
 			$attribute = $class->attribute;
 			if ($attribute->level > $config->level) {
 				continue;
@@ -139,7 +151,7 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
 
-		foreach (Attributes::findTargetClasses(RegisteredCollector::class) as $class) {
+		foreach (self::findTargetClasses(RegisteredCollector::class, $conditionalTargets) as $class) {
 			$attribute = $class->attribute;
 			if ($attribute->level > $config->level) {
 				continue;
@@ -152,6 +164,47 @@ final class AutowiredAttributeServicesExtension extends CompilerExtension
 
 			self::processConstructorParameters($builder, $class->name, $definition, $constructorParameters);
 		}
+	}
+
+	/**
+	 * @template T of object
+	 * @param class-string<T> $attributeClass
+	 * @param list<TargetClass<object>> $conditionalTargets attributes wrapped in a met #[Conditional]
+	 * @return array<TargetClass<T>>
+	 */
+	private static function findTargetClasses(string $attributeClass, array $conditionalTargets): array
+	{
+		$targets = Attributes::findTargetClasses($attributeClass);
+		foreach ($conditionalTargets as $target) {
+			if (!$target->attribute instanceof $attributeClass) {
+				continue;
+			}
+
+			$targets[] = new TargetClass($target->attribute, $target->name);
+		}
+
+		return $targets;
+	}
+
+	/**
+	 * Evaluated while loading the configuration because an unmet condition means the service is not registered at all.
+	 * The strings are NEON values like in the conditionalTags config section, so 'not(%foo%)' is supported too.
+	 *
+	 * @param string|non-empty-list<string> $if
+	 */
+	public static function isConditionMet(ContainerBuilder $builder, string|array $if): bool
+	{
+		$condition = [];
+		foreach ((array) $if as $item) {
+			$value = Neon::decode($item);
+			if ($value instanceof Entity) {
+				$value = new Statement($value->value, $value->attributes);
+			}
+
+			$condition[] = Helpers::expand($value, $builder->parameters, true);
+		}
+
+		return ConditionalTagsExtension::isConditionMet($condition);
 	}
 
 	/**

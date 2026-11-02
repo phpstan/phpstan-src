@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
@@ -20,6 +22,10 @@ use function str_starts_with;
  *
  * @implements Rule<VariableWritesNode>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 4),
+	if: '%featureToggles.unusedParameters%',
+)]
 final class UnusedMethodParametersRule implements Rule
 {
 

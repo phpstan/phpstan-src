@@ -5,6 +5,8 @@ namespace PHPStan\Rules\Constants;
 use PhpParser\Node;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
@@ -13,6 +15,10 @@ use function sprintf;
 /**
  * @implements Rule<Node\Stmt\Const_>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 2),
+	if: '%featureToggles.checkDynamicConstantNameValues%',
+)]
 final class ValueAssignedToGlobalConstantRule implements Rule
 {
 

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\VariableWritesNode;
 use PHPStan\Rules\Rule;
@@ -14,6 +16,10 @@ use function sprintf;
 /**
  * @implements Rule<VariableWritesNode>
  */
+#[Conditional(
+	attribute: new RegisteredRule(level: 4),
+	if: '%featureToggles.unusedParameters%',
+)]
 final class UnusedFunctionParametersRule implements Rule
 {
 

@@ -245,6 +245,12 @@ parameters:
 			rawMessage: 'Call to static method expand() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
 			identifier: staticMethod.internalClass
 			count: 1
+			path: src/DependencyInjection/AutowiredAttributeServicesExtension.php
+
+		-
+			rawMessage: 'Call to static method expand() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
+			identifier: staticMethod.internalClass
+			count: 1
 			path: src/DependencyInjection/ContainerFactory.php
 
 		-

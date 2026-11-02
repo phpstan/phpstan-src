@@ -1,0 +1,7 @@
+services:
+	-
+		implement: Neon2AttributesFixtures\GenerateFactory\ValueFactory
+	-
+		implement: Neon2AttributesFixtures\GenerateFactory\ValueWithArgumentsFactory
+		arguments:
+			tmpDir: %tmpDir%

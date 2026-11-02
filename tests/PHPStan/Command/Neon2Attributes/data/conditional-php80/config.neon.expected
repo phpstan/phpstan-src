@@ -1,0 +1,21 @@
+services:
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\TaggedAndConditional
+		tags:
+			- phpstan.rules.rule
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\DifferentConditions
+
+rules:
+	- Neon2AttributesFixtures\ConditionalPhp80\RuleSectionConditional
+
+conditionalTags:
+	Neon2AttributesFixtures\ConditionalPhp80\TaggedAndConditional:
+		phpstan.collector: %featureToggles.bleedingEdge%
+	Neon2AttributesFixtures\ConditionalPhp80\DifferentConditions:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%
+		phpstan.collector: %checkUninitializedProperties%
+	Neon2AttributesFixtures\ConditionalPhp80\RuleSectionConditional:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%
+	Neon2AttributesFixtures\ConditionalPhp80\RegisteredElsewhere:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%

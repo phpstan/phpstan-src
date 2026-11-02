@@ -1,0 +1,21 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Arguments;
+
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
+final class AlreadyParameter
+{
+
+	public function __construct(
+		#[AutowiredParameter]
+		private bool $checkUninitializedProperties,
+		#[AutowiredParameter(ref: '@myService')]
+		private OnlyNamed $named,
+	)
+	{
+	}
+
+}

@@ -1,0 +1,18 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Imports;
+
+use Countable;
+use PHPStan\DependencyInjection\AutowiredService;
+use stdClass;
+
+#[AutowiredService]
+final class SortedImports
+{
+
+	public function get(): ?Countable
+	{
+		return new stdClass() instanceof Countable ? null : null;
+	}
+
+}

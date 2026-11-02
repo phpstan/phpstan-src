@@ -1,0 +1,19 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Factory;
+
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
+final class SameClassWithArguments
+{
+
+	public function __construct(
+		#[AutowiredParameter(ref: '%tmpDir%')]
+		private string $directory,
+	)
+	{
+	}
+
+}

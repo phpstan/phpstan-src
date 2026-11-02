@@ -1,0 +1,4 @@
+services:
+	myService:
+		class: Neon2AttributesFixtures\NamedService\Named
+	otherService: Neon2AttributesFixtures\NamedService\NamedString

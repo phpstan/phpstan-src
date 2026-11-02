@@ -1,0 +1,28 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\ConditionalPhp81;
+
+use PhpParser\Node;
+use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\Rules\Rule;
+
+/**
+ * @implements Rule<Node\Expr\New_>
+ */
+#[Conditional(attribute: new AutowiredService(), if: 'not(%featureToggles.bleedingEdge%)')]
+final class NegatedRule implements Rule
+{
+
+	public function getNodeType(): string
+	{
+		return Node\Expr\New_::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		return [];
+	}
+
+}

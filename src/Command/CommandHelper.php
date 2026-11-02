@@ -183,21 +183,9 @@ final class CommandHelper
 			})($autoloadFile);
 		}
 		if ($projectConfigFile === null) {
-			$discoverableConfigNames = [
-				'.phpstan.neon',
-				'phpstan.neon',
-				'.phpstan.neon.dist',
-				'phpstan.neon.dist',
-				'.phpstan.dist.neon',
-				'phpstan.dist.neon',
-			];
-			foreach ($discoverableConfigNames as $discoverableConfigName) {
-				$discoverableConfigFile = $currentWorkingDirectory . DIRECTORY_SEPARATOR . $discoverableConfigName;
-				if (is_file($discoverableConfigFile)) {
-					$projectConfigFile = $discoverableConfigFile;
-					$errorOutput->writeLineFormatted(sprintf('Note: Using configuration file %s.', $projectConfigFile));
-					break;
-				}
+			$projectConfigFile = self::findDiscoverableConfigFile($currentWorkingDirectory);
+			if ($projectConfigFile !== null) {
+				$errorOutput->writeLineFormatted(sprintf('Note: Using configuration file %s.', $projectConfigFile));
 			}
 		} else {
 			$projectConfigFile = $currentWorkingDirectoryFileHelper->normalizePath($currentWorkingDirectoryFileHelper->absolutizePath($projectConfigFile));
@@ -662,6 +650,26 @@ final class CommandHelper
 
 			throw new InceptionNotSuccessfulException();
 		}
+	}
+
+	public static function findDiscoverableConfigFile(string $currentWorkingDirectory): ?string
+	{
+		$discoverableConfigNames = [
+			'.phpstan.neon',
+			'phpstan.neon',
+			'.phpstan.neon.dist',
+			'phpstan.neon.dist',
+			'.phpstan.dist.neon',
+			'phpstan.dist.neon',
+		];
+		foreach ($discoverableConfigNames as $discoverableConfigName) {
+			$discoverableConfigFile = $currentWorkingDirectory . DIRECTORY_SEPARATOR . $discoverableConfigName;
+			if (is_file($discoverableConfigFile)) {
+				return $discoverableConfigFile;
+			}
+		}
+
+		return null;
 	}
 
 }

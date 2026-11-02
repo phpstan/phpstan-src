@@ -1,0 +1,9 @@
+services:
+	-
+		class: Neon2AttributesFixtures\Autowired\NotAutowiredWithoutName
+		autowired: false
+	notAutowiredExtension:
+		class: Neon2AttributesFixtures\Autowired\NotAutowiredTagged
+		autowired: false
+		tags:
+			- phpstan.properties.readWriteExtension

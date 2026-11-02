@@ -236,6 +236,18 @@ parameters:
 			path: src/Command/ErrorsConsoleStyle.php
 
 		-
+			rawMessage: 'Call to method __construct() of internal class PhpParser\Internal\TokenStream from outside its root namespace PhpParser.'
+			identifier: method.internalClass
+			count: 1
+			path: src/Command/Neon2Attributes/PhpClassAttributesWriter.php
+
+		-
+			rawMessage: Instantiation of internal class PhpParser\Internal\TokenStream.
+			identifier: new.internalClass
+			count: 1
+			path: src/Command/Neon2Attributes/PhpClassAttributesWriter.php
+
+		-
 			rawMessage: 'Call to static method escape() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
 			identifier: staticMethod.internalClass
 			count: 1

@@ -1,0 +1,39 @@
+services:
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\ConditionalRule
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\NegatedRule
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\ListRule
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\ConditionalExtension
+		arguments:
+			flag: %checkUninitializedProperties%
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\TaggedAndConditional
+		tags:
+			- phpstan.rules.rule
+	-
+		class: Neon2AttributesFixtures\ConditionalPhp80\DifferentConditions
+
+rules:
+	- Neon2AttributesFixtures\ConditionalPhp80\RuleSectionConditional
+
+conditionalTags:
+	Neon2AttributesFixtures\ConditionalPhp80\ConditionalRule:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%
+	Neon2AttributesFixtures\ConditionalPhp80\NegatedRule:
+		phpstan.rules.rule: not(%featureToggles.bleedingEdge%)
+	Neon2AttributesFixtures\ConditionalPhp80\ListRule:
+		phpstan.rules.rule: [%featureToggles.bleedingEdge%, not(%checkUninitializedProperties%)]
+	Neon2AttributesFixtures\ConditionalPhp80\ConditionalExtension:
+		phpstan.properties.readWriteExtension: %featureToggles.bleedingEdge%
+	Neon2AttributesFixtures\ConditionalPhp80\TaggedAndConditional:
+		phpstan.collector: %featureToggles.bleedingEdge%
+	Neon2AttributesFixtures\ConditionalPhp80\DifferentConditions:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%
+		phpstan.collector: %checkUninitializedProperties%
+	Neon2AttributesFixtures\ConditionalPhp80\RuleSectionConditional:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%
+	Neon2AttributesFixtures\ConditionalPhp80\RegisteredElsewhere:
+		phpstan.rules.rule: %featureToggles.bleedingEdge%

@@ -1,0 +1,5 @@
+services:
+	errorFormatter.junit:
+		class: Neon2AttributesFixtures\Overrides\JunitFormatter
+	ownName:
+		class: Neon2AttributesFixtures\Overrides\Own

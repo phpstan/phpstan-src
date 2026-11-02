@@ -1,0 +1,12 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Formatting;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
+final class Converted
+{
+
+
+}

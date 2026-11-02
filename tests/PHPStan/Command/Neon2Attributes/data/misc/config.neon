@@ -1,0 +1,15 @@
+services:
+	- Neon2AttributesFixtures\Misc\Missing
+	-
+		factory: Neon2AttributesFixtures\Misc\FactoryKey
+	- factory: Neon2AttributesFixtures\Misc\FactoryEntity(%tmpDir%)
+	-
+		class: Neon2AttributesFixtures\Misc\AutowiredSelf
+		autowired: self
+	-
+		class: Neon2AttributesFixtures\Misc\CreatedInterface
+		factory: Neon2AttributesFixtures\Misc\FactoryEntity
+	-
+		factory: @Neon2AttributesFixtures\Misc\FactoryEntity::create()
+	-
+		type: Neon2AttributesFixtures\Misc\TypeEntry

@@ -1,0 +1,12 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\PlainService;
+
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
+final class ClassEntry
+{
+
+
+}

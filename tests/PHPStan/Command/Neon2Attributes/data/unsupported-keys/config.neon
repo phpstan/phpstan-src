@@ -1,0 +1,14 @@
+services:
+	-
+		class: Neon2AttributesFixtures\UnsupportedKeys\WithSetup
+		setup:
+			- setFoo(1)
+	-
+		class: Neon2AttributesFixtures\UnsupportedKeys\TagsWithValues
+		tags:
+			phpstan.rules.rule: 10
+	-
+		class: Neon2AttributesFixtures\UnsupportedKeys\AbstractService
+	-
+		class: Neon2AttributesFixtures\UnsupportedKeys\AlreadyAttributed
+	alias: @Neon2AttributesFixtures\UnsupportedKeys\WithSetup

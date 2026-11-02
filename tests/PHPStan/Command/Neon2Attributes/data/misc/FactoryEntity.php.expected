@@ -1,0 +1,16 @@
+<?php declare(strict_types = 1);
+
+namespace Neon2AttributesFixtures\Misc;
+
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\AutowiredService;
+
+#[AutowiredService]
+final class FactoryEntity
+{
+
+	public function __construct(#[AutowiredParameter] private string $tmpDir)
+	{
+	}
+
+}

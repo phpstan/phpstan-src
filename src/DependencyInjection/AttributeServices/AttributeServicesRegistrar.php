@@ -33,6 +33,7 @@ use function count;
 use function explode;
 use function implode;
 use function is_array;
+use function is_string;
 use function preg_split;
 use function sprintf;
 use function strcasecmp;
@@ -212,17 +213,27 @@ final class AttributeServicesRegistrar
 	 */
 	public static function isConditionMet(ContainerBuilder $builder, string|array $if): bool
 	{
-		$condition = [];
-		foreach ((array) $if as $item) {
-			$value = Neon::decode($item);
-			if ($value instanceof Entity) {
-				$value = new Statement($value->value, $value->attributes);
-			}
+		// a single string is passed on as it is - like in conditionalTags, it can expand to a list of conditions
+		if (is_string($if)) {
+			return ConditionalTagsExtension::isConditionMet(self::expandCondition($builder, $if));
+		}
 
-			$condition[] = Helpers::expand($value, $builder->parameters, true);
+		$condition = [];
+		foreach ($if as $item) {
+			$condition[] = self::expandCondition($builder, $item);
 		}
 
 		return ConditionalTagsExtension::isConditionMet($condition);
+	}
+
+	private static function expandCondition(ContainerBuilder $builder, string $condition): mixed
+	{
+		$value = Neon::decode($condition);
+		if ($value instanceof Entity) {
+			$value = new Statement($value->value, $value->attributes);
+		}
+
+		return Helpers::expand($value, $builder->parameters, true);
 	}
 
 	/**

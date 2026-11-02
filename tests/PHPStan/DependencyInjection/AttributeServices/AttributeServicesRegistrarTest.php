@@ -28,6 +28,9 @@ class AttributeServicesRegistrarTest extends TestCase
 		yield [['%disabled%', '%enabled%'], false];
 		yield [['%enabled%', 'not(%toggles.disabled%)'], true];
 		yield [['%enabled%', 'not(%toggles.enabled%)'], false];
+		// like strictRules.booleansInLoopConditions: [%strictRules.allRules%, %featureToggles.bleedingEdge%]
+		yield ['%enabledList%', true];
+		yield ['%mixedList%', false];
 	}
 
 	/**
@@ -53,6 +56,8 @@ class AttributeServicesRegistrarTest extends TestCase
 			'enabled' => true,
 			'disabled' => false,
 			'reference' => '%enabled%',
+			'enabledList' => [true, '%enabled%'],
+			'mixedList' => ['%enabled%', '%disabled%'],
 			'toggles' => [
 				'enabled' => true,
 				'disabled' => false,

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RuleErrors;
 
 use PhpParser\Node;
+use PhpParser\NodeVisitor;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
@@ -26,7 +27,7 @@ final class RuleError421 implements RuleError, FileRuleError, MetadataRuleError,
 
 	public Node $originalNode;
 
-	/** @var callable(Node): Node */
+	/** @var callable(Node): (Node|NodeVisitor::REMOVE_NODE) */
 	public $newNodeCallable;
 
 	/** @var list<string> */
@@ -61,7 +62,7 @@ final class RuleError421 implements RuleError, FileRuleError, MetadataRuleError,
 	}
 
 	/**
-	 * @return callable(Node): Node
+	 * @return callable(Node): (Node|NodeVisitor::REMOVE_NODE)
 	 */
 	public function getNewNodeCallable(): callable
 	{

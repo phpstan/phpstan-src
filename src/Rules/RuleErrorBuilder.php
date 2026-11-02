@@ -3,6 +3,7 @@
 namespace PHPStan\Rules;
 
 use PhpParser\Node;
+use PhpParser\NodeVisitor;
 use PHPStan\Analyser\Error;
 use PHPStan\ShouldNotHappenException;
 use function array_map;
@@ -129,7 +130,7 @@ final class RuleErrorBuilder
 					[
 						'newNodeCallable',
 						null,
-						'callable(\PhpParser\Node): \PhpParser\Node',
+						'callable(\PhpParser\Node): (\PhpParser\Node|\PhpParser\NodeVisitor::REMOVE_NODE)',
 					],
 				],
 			],
@@ -322,7 +323,7 @@ final class RuleErrorBuilder
 	 * @internal Experimental
 	 * @template TNode of Node
 	 * @param TNode $node
-	 * @param callable(TNode): Node $cb
+	 * @param callable(TNode): (Node|NodeVisitor::REMOVE_NODE) $cb returning NodeVisitor::REMOVE_NODE works like removeNode()
 	 * @phpstan-this-out self<T&FixableNodeRuleError>
 	 * @return self<T&FixableNodeRuleError>
 	 */
@@ -330,6 +331,23 @@ final class RuleErrorBuilder
 	{
 		$this->properties['originalNode'] = $node;
 		$this->properties['newNodeCallable'] = $cb;
+		$this->type |= self::TYPE_FIXABLE_NODE;
+
+		return $this;
+	}
+
+	/**
+	 * Fixes the error by removing the node. Only a node in an array, like a statement,
+	 * an argument, or an array item, can be removed. Otherwise the error is not fixable.
+	 *
+	 * @internal Experimental
+	 * @phpstan-this-out self<T&FixableNodeRuleError>
+	 * @return self<T&FixableNodeRuleError>
+	 */
+	public function removeNode(Node $node): self
+	{
+		$this->properties['originalNode'] = $node;
+		$this->properties['newNodeCallable'] = static fn (): int => NodeVisitor::REMOVE_NODE;
 		$this->type |= self::TYPE_FIXABLE_NODE;
 
 		return $this;

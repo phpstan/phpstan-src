@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RuleErrors;
 
 use PhpParser\Node;
+use PhpParser\NodeVisitor;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\MetadataRuleError;
 use PHPStan\Rules\RuleError;
@@ -23,7 +24,7 @@ final class RuleError169 implements RuleError, TipRuleError, MetadataRuleError, 
 
 	public Node $originalNode;
 
-	/** @var callable(Node): Node */
+	/** @var callable(Node): (Node|NodeVisitor::REMOVE_NODE) */
 	public $newNodeCallable;
 
 	public function getMessage(): string
@@ -50,7 +51,7 @@ final class RuleError169 implements RuleError, TipRuleError, MetadataRuleError, 
 	}
 
 	/**
-	 * @return callable(Node): Node
+	 * @return callable(Node): (Node|NodeVisitor::REMOVE_NODE)
 	 */
 	public function getNewNodeCallable(): callable
 	{

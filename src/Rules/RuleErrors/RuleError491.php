@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\RuleErrors;
 
 use PhpParser\Node;
+use PhpParser\NodeVisitor;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\LineRuleError;
@@ -28,7 +29,7 @@ final class RuleError491 implements RuleError, LineRuleError, TipRuleError, Meta
 
 	public Node $originalNode;
 
-	/** @var callable(Node): Node */
+	/** @var callable(Node): (Node|NodeVisitor::REMOVE_NODE) */
 	public $newNodeCallable;
 
 	/** @var list<string> */
@@ -63,7 +64,7 @@ final class RuleError491 implements RuleError, LineRuleError, TipRuleError, Meta
 	}
 
 	/**
-	 * @return callable(Node): Node
+	 * @return callable(Node): (Node|NodeVisitor::REMOVE_NODE)
 	 */
 	public function getNewNodeCallable(): callable
 	{

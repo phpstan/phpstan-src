@@ -1,0 +1,22 @@
+<?php
+
+namespace RemoveNode;
+
+class Foo
+{
+
+	public function doFoo(): void
+	{
+		echo 1;
+		echo 2;
+		sprintf('%s', 'a');
+		if (removeMe()) {
+			echo 3;
+		}
+	}
+
+	public function doBar(): void
+	{
+	}
+
+}

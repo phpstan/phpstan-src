@@ -6,6 +6,7 @@ use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
+use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitor\CloningVisitor;
 use PhpParser\Parser;
 use PhpParser\Token;
@@ -173,7 +174,7 @@ final class RuleErrorTransformer
 	 * from the same parser so that ReplacingNodeVisitor finds it by identity.
 	 *
 	 * @param Node\Stmt[] $fileNodes
-	 * @param callable(Node): Node $newNodeCallable
+	 * @param callable(Node): (Node|NodeVisitor::REMOVE_NODE) $newNodeCallable
 	 */
 	private function fix(string $fixingFile, array $fileNodes, Node $originalNode, callable $newNodeCallable): ?FixedErrorDiff
 	{

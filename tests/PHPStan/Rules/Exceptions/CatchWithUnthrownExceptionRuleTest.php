@@ -1664,6 +1664,14 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - ValueError is never thrown in the try block.',
 				115,
 			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				128,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				136,
+			],
 		]);
 	}
 

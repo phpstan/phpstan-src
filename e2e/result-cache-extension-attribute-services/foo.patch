@@ -1,0 +1,11 @@
+--- src/Foo.php
++++ src/Foo.php
+@@ -5,4 +5,8 @@
+ class Foo
+ {
+ 
++	public function bar(): void
++	{
++	}
++
+ }

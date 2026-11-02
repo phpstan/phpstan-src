@@ -1,0 +1,11 @@
+--- src/MyRule.php
++++ src/MyRule.php
+@@ -22,7 +22,7 @@
+ 
+ 	public function processNode(Node $node, Scope $scope): array
+ 	{
+-		return [RuleErrorBuilder::message('the rule says one thing')->identifier('test.myRule')->build()];
++		return [RuleErrorBuilder::message('the rule says another thing')->identifier('test.myRule')->build()];
+ 	}
+ 
+ }

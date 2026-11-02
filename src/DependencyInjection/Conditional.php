@@ -3,6 +3,8 @@
 namespace PHPStan\DependencyInjection;
 
 use Attribute;
+use PHPStan\ShouldNotHappenException;
+use function is_array;
 
 /**
  * Registers the class with the wrapped attribute, but adds the tags only when the condition is met:
@@ -21,14 +23,34 @@ use Attribute;
 final class Conditional
 {
 
+	public AutowiredService|RegisteredCollector|RegisteredRule $attribute;
+
 	/**
+	 * On PHP < 8.1, simple-downgrader writes `new` in attribute arguments as the array,
+	 * and composer-attribute-collector turns it back into the object in vendor/attributes.php.
+	 *
+	 * @param AutowiredService|RegisteredCollector|RegisteredRule|array{
+	 *     'olvlvl\ComposerAttributeCollector\NewExpression': array{
+	 *         class-string<AutowiredService>,
+	 *         array{0?: string|null, 1?: string|null, 2?: true|list<class-string>|class-string, 3?: bool}
+	 *         |array{name?: string|null, factory?: string|null, as?: true|list<class-string>|class-string, autoTag?: bool},
+	 *     }|array{
+	 *         class-string<RegisteredCollector>|class-string<RegisteredRule>,
+	 *         array{int}|array{level: int},
+	 *     },
+	 * } $attribute
 	 * @param string|non-empty-list<string> $if
 	 */
 	public function __construct(
-		public AutowiredService|RegisteredCollector|RegisteredRule $attribute,
+		AutowiredService|RegisteredCollector|RegisteredRule|array $attribute,
 		public string|array $if,
 	)
 	{
+		if (is_array($attribute)) {
+			throw new ShouldNotHappenException('The attribute should have been instantiated in vendor/attributes.php.');
+		}
+
+		$this->attribute = $attribute;
 	}
 
 }

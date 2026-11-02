@@ -193,7 +193,12 @@ final class AttributesCheck
 
 	private function isApi(ClassReflection $attributeClass): bool
 	{
-		foreach ($attributeClass->getResolvedPhpDoc()?->getPhpDocNodes() ?? [] as $phpDocNode) {
+		$phpDoc = $attributeClass->getResolvedPhpDoc();
+		if ($phpDoc === null) {
+			return false;
+		}
+
+		foreach ($phpDoc->getPhpDocNodes() as $phpDocNode) {
 			if (count($phpDocNode->getTagsByName('@api')) > 0) {
 				return true;
 			}

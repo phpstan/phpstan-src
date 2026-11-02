@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\Api\ApiRuleHelper;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -64,6 +65,7 @@ class MethodAttributesRuleTest extends RuleTestCase
 					$reflectionProvider,
 					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
+				new ApiRuleHelper(),
 				deprecationRulesInstalled: true,
 			),
 		);

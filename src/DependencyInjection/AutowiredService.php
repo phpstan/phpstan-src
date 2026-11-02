@@ -13,12 +13,15 @@ use Attribute;
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
  * and AutowiredAttributeServicesExtension.
+ *
+ * @api
  */
 #[Attribute(flags: Attribute::TARGET_CLASS)]
 final class AutowiredService
 {
 
 	/**
+	 * @api
 	 * @param true|list<class-string>|class-string $as
 	 */
 	public function __construct(

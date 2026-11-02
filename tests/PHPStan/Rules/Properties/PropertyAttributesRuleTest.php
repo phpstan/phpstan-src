@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\Api\ApiRuleHelper;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
@@ -58,6 +59,7 @@ class PropertyAttributesRuleTest extends RuleTestCase
 					$reflectionProvider,
 					$container->getExtensionsCollection(RestrictedClassNameUsageExtension::class),
 				),
+				new ApiRuleHelper(),
 				deprecationRulesInstalled: true,
 			),
 		);

@@ -9,11 +9,14 @@ use Attribute;
  *
  * Works thanks to https://github.com/ondrejmirtes/composer-attribute-collector
  * and AutowiredAttributeServicesExtension.
+ *
+ * @api
  */
 #[Attribute(flags: Attribute::TARGET_CLASS)]
 final class RegisteredRule
 {
 
+	/** @api */
 	public function __construct(public int $level)
 	{
 	}

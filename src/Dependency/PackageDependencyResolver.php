@@ -47,6 +47,9 @@ final class PackageDependencyResolver
 	/** @var array<string, true>|null names of the installed packages that came from a path repository */
 	private ?array $pathPackages = null;
 
+	/** @var list<string>|null normalized vendor directories of the analysed project */
+	private ?array $vendorDirs = null;
+
 	/** @var array{classes: array<string, string>, functions: array<string, string>, constants: array<string, string>}|null symbol => extension name */
 	private ?array $versionedExtensionSymbols = null;
 
@@ -85,6 +88,29 @@ final class PackageDependencyResolver
 	public function isPathPackage(string $package): bool
 	{
 		return array_key_exists($package, $this->getPathPackages());
+	}
+
+	/**
+	 * Whether the file belongs to a package Composer installed, which only changes when Composer
+	 * changes it - editing one is not a thing to do. A package from a path repository is the exception:
+	 * it is the project's own code, sitting in vendor/ because Composer copied it there, and it is edited in place.
+	 */
+	public function isFileOfInstalledPackage(string $file): bool
+	{
+		$this->resolveInstalledPackages();
+
+		$normalizedFile = $this->fileHelper->normalizePath($file);
+		foreach ($this->vendorDirs as $vendorDir) {
+			if (!str_starts_with($normalizedFile, $vendorDir)) {
+				continue;
+			}
+
+			$package = $this->resolvePackage($normalizedFile);
+
+			return $package === null || !$this->isPathPackage($package);
+		}
+
+		return false;
 	}
 
 	private function doResolvePackage(string $file): ?string
@@ -282,22 +308,26 @@ final class PackageDependencyResolver
 	 *
 	 * @phpstan-assert !null $this->installPathToPackage
 	 * @phpstan-assert !null $this->pathPackages
+	 * @phpstan-assert !null $this->vendorDirs
 	 */
 	private function resolveInstalledPackages(): void
 	{
-		if ($this->installPathToPackage !== null && $this->pathPackages !== null) {
+		if ($this->installPathToPackage !== null && $this->pathPackages !== null && $this->vendorDirs !== null) {
 			return;
 		}
 
 		$map = [];
 		$pathPackages = [];
+		$vendorDirs = [];
 		foreach ($this->composerAutoloaderProjectPaths as $autoloadPath) {
 			$composer = ComposerHelper::getComposerConfig($autoloadPath);
 			if ($composer === null) {
 				continue;
 			}
 
-			$composerDirectory = ComposerHelper::getVendorDirFromComposerConfig($autoloadPath, $composer) . '/composer';
+			$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($autoloadPath, $composer);
+			$vendorDirs[] = $this->fileHelper->normalizePath($vendorDirectory);
+			$composerDirectory = $vendorDirectory . '/composer';
 
 			foreach ($this->readPathPackageNames($composerDirectory . '/installed.json') as $pathPackage) {
 				$pathPackages[$pathPackage] = true;
@@ -350,6 +380,7 @@ final class PackageDependencyResolver
 
 		$this->installPathToPackage = $map;
 		$this->pathPackages = $pathPackages;
+		$this->vendorDirs = $vendorDirs;
 	}
 
 	/**

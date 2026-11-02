@@ -118,4 +118,24 @@ class Foo
 		}
 	}
 
+	public function doBar(bool $flag, string $s): void
+	{
+		// a guard with an upper bound only would leave the analysed PHP version at 8.0
+		if (PHP_VERSION_ID >= 70400 && PHP_VERSION_ID < 80100) {
+			// PHP 7 does not throw, PHP 8.0 does
+			try {
+				$a = range(1, 10, 0);
+			} catch (\ValueError $e) {
+
+			}
+		}
+
+		// only a part of the boundary is a constant
+		try {
+			$a = range($flag ? 1 : $s, 10);
+		} catch (\ValueError $e) {
+
+		}
+	}
+
 }

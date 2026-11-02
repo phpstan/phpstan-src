@@ -9,6 +9,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function is_string;
 use function sprintf;
+use function str_ends_with;
 use function substr;
 
 /**
@@ -29,6 +30,11 @@ class FixIssetRule implements Rule
 		}
 
 		$lastCharacter = substr($node->name, -1);
+		if (str_ends_with($node->name, $lastCharacter . $lastCharacter)) {
+			// already renamed, a fix has to make its error go away
+			return [];
+		}
+
 		$newName = $node->name . $lastCharacter;
 
 		return [

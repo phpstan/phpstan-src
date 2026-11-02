@@ -2,9 +2,9 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
-use PhpParser\Node;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
+use PHPStan\Rules\NodeFix;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
 
@@ -22,10 +22,8 @@ final class RuleError141 implements RuleError, FileRuleError, TipRuleError, Fixa
 
 	public string $tip;
 
-	public Node $originalNode;
-
-	/** @var callable(Node): Node */
-	public $newNodeCallable;
+	/** @var non-empty-list<NodeFix> */
+	public array $nodeFixes;
 
 	public function getMessage(): string
 	{
@@ -47,17 +45,12 @@ final class RuleError141 implements RuleError, FileRuleError, TipRuleError, Fixa
 		return $this->tip;
 	}
 
-	public function getOriginalNode(): Node
-	{
-		return $this->originalNode;
-	}
-
 	/**
-	 * @return callable(Node): Node
+	 * @return non-empty-list<NodeFix>
 	 */
-	public function getNewNodeCallable(): callable
+	public function getNodeFixes(): array
 	{
-		return $this->newNodeCallable;
+		return $this->nodeFixes;
 	}
 
 }

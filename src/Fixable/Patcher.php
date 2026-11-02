@@ -3,163 +3,215 @@
 namespace PHPStan\Fixable;
 
 use Nette\Utils\Strings;
-use PhpMerge\internal\Hunk;
-use PhpMerge\internal\Line;
-use PhpMerge\MergeConflict;
-use PhpMerge\PhpMerge;
 use PHPStan\Analyser\FixedErrorDiff;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\File\FileReader;
-use ReflectionClass;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
-use function array_map;
+use function array_splice;
 use function count;
 use function hash;
 use function implode;
+use function intdiv;
 use function str_starts_with;
 use function substr;
-use const PHP_VERSION_ID;
 use const PREG_SPLIT_DELIM_CAPTURE;
 use const PREG_SPLIT_NO_EMPTY;
 
+/**
+ * Applies unified diffs that were computed against the current contents of the files.
+ *
+ * Each diff is reduced to its change runs (lines removed from the original file
+ * and lines inserted in their place). Runs are spliced into the original file
+ * in a single pass, so the cost is linear in the size of the files and the diffs.
+ *
+ * The diffs of one error form a group, which is applied as a whole or skipped
+ * as a whole: when a run of the group overlaps a run of an earlier group, or when
+ * a diff of the group was computed against different contents.
+ */
 #[AutowiredService]
 final class Patcher
 {
 
-	private Differ $differ;
-
-	public function __construct()
+	/**
+	 * @param array<string, string> $contentsByFile current contents of the files the diffs change
+	 * @param list<list<FixedErrorDiff>> $diffGroups diffs of each error
+	 * @return array{contents: array<string, string>, appliedCount: int, skippedCount: int, skippedGroups: list<int>} contents of the files in $contentsByFile, keys of the skipped $diffGroups
+	 */
+	public function apply(array $contentsByFile, array $diffGroups): array
 	{
-		$this->differ = new Differ(new UnifiedDiffOutputBuilder());
+		$hashes = [];
+		foreach ($contentsByFile as $file => $contents) {
+			$hashes[$file] = hash('sha256', $contents);
+		}
+
+		/** @var array<string, list<array{int, int, list<string>}>> $acceptedRuns per file sorted by start, non-overlapping */
+		$acceptedRuns = [];
+		$appliedCount = 0;
+		$skippedGroups = [];
+		foreach ($diffGroups as $groupKey => $diffs) {
+			$insertionsByFile = [];
+			foreach ($diffs as $diff) {
+				if (!isset($hashes[$diff->file]) || $hashes[$diff->file] !== $diff->originalHash) {
+					$skippedGroups[] = $groupKey;
+					continue 2;
+				}
+
+				$fileRuns = $acceptedRuns[$diff->file] ?? [];
+				$insertions = [];
+				foreach (self::parseChangeRuns($diff->diff) as $run) {
+					$index = self::findInsertionIndex($fileRuns, $run);
+					if ($index === null) {
+						$skippedGroups[] = $groupKey;
+						continue 3;
+					}
+					if (isset($fileRuns[$index]) && $fileRuns[$index] === $run) {
+						// another error makes the exact same change
+						continue;
+					}
+					$insertions[] = [$index, $run];
+				}
+
+				$insertionsByFile[$diff->file] = $insertions;
+			}
+
+			foreach ($insertionsByFile as $file => $insertions) {
+				$acceptedRuns[$file] ??= [];
+
+				// runs of a single diff are ordered and non-overlapping,
+				// inserting from the last one keeps the earlier indexes valid
+				for ($i = count($insertions) - 1; $i >= 0; $i--) {
+					array_splice($acceptedRuns[$file], $insertions[$i][0], 0, [$insertions[$i][1]]);
+				}
+			}
+			$appliedCount++;
+		}
+
+		$result = $contentsByFile;
+		foreach ($acceptedRuns as $file => $runs) {
+			$result[$file] = self::splice($contentsByFile[$file], $runs);
+		}
+
+		return [
+			'contents' => $result,
+			'appliedCount' => $appliedCount,
+			'skippedCount' => count($skippedGroups),
+			'skippedGroups' => $skippedGroups,
+		];
 	}
 
 	/**
-	 * @param FixedErrorDiff[] $diffs
-	 * @throws FileChangedException
-	 * @throws MergeConflictException
+	 * @param list<array{int, int, list<string>}> $runs
 	 */
-	public function applyDiffs(string $fileName, array $diffs): string
+	private static function splice(string $fileContents, array $runs): string
 	{
-		$fileContents = FileReader::read($fileName);
-		$fileHash = hash('sha256', $fileContents);
-		$diffHunks = [];
-		foreach ($diffs as $diff) {
-			if ($diff->originalHash !== $fileHash) {
-				throw new FileChangedException();
-			}
-
-			$diffHunks[] = Hunk::createArray(Line::createArray($this->reconstructFullDiff($fileContents, $diff->diff)));
-		}
-
-		if (count($diffHunks) === 0) {
-			return $fileContents;
-		}
-
-		$baseLines = Line::createArray(array_map(
-			static fn ($l) => [$l, Differ::OLD],
-			self::splitStringByLines($fileContents),
-		));
-
-		$refMerge = new ReflectionClass(PhpMerge::class);
-		$refMergeMethod = $refMerge->getMethod('mergeHunks');
-		if (PHP_VERSION_ID < 80100) {
-			$refMergeMethod->setAccessible(true);
-		}
-
-		$result = Line::createArray(array_map(
-			static fn ($l) => [$l, Differ::OLD],
-			$refMergeMethod->invokeArgs(null, [
-				$baseLines,
-				$diffHunks[0],
-				[],
-			]),
-		));
-
-		for ($i = 0; $i < count($diffHunks); $i++) {
-			/** @var MergeConflict[] $conflicts */
-			$conflicts = [];
-			$merged = $refMergeMethod->invokeArgs(null, [
-				$baseLines,
-				Hunk::createArray(Line::createArray($this->differ->diffToArray($fileContents, implode('', array_map(static fn ($l) => $l->getContent(), $result))))),
-				$diffHunks[$i],
-				&$conflicts,
-			]);
-			if (count($conflicts) > 0) {
-				throw new MergeConflictException();
-			}
-
-			$result = Line::createArray(array_map(
-				static fn ($l) => [$l, Differ::OLD],
-				$merged,
-			));
-
-		}
-
-		return implode('', array_map(static fn ($l) => $l->getContent(), $result));
-	}
-
-	/**
-	 * @return array<array{mixed, Differ::OLD|Differ::ADDED|Differ::REMOVED}>
-	 */
-	private function reconstructFullDiff(string $originalText, string $unifiedDiff): array
-	{
-		$originalLines = self::splitStringByLines($originalText);
-		$diffLines = self::splitStringByLines($unifiedDiff);
+		$baseLines = self::splitStringByLines($fileContents);
 		$result = [];
+		$position = 0;
+		foreach ($runs as [$start, $removedCount, $addedLines]) {
+			for (; $position < $start; $position++) {
+				$result[] = $baseLines[$position];
+			}
+			foreach ($addedLines as $addedLine) {
+				$result[] = $addedLine;
+			}
+			$position += $removedCount;
+		}
+		for ($baseLinesCount = count($baseLines); $position < $baseLinesCount; $position++) {
+			$result[] = $baseLines[$position];
+		}
 
-		$origLineNo = 0;
-		$diffPos = 0;
+		return implode('', $result);
+	}
 
-		while ($diffPos < count($diffLines)) {
-			$line = $diffLines[$diffPos];
-
-			$matches = Strings::match($line, '/^@@ -(\d+),?(\d*) \+(\d+),?(\d*) @@/');
-			if ($matches !== null) {
-				// Parse hunk header
-				$origStart = (int) $matches[1] - 1; // 0-based
-				$diffPos++;
-
-				// Emit kept lines before hunk
-				while ($origLineNo < $origStart) {
-					$result[] = [$originalLines[$origLineNo], Differ::OLD];
-					$origLineNo++;
-				}
-
-				// Process hunk
-				while ($diffPos < count($diffLines)) {
-					$line = $diffLines[$diffPos];
-					if (str_starts_with($line, '@@')) {
-						break; // next hunk
-					}
-
-					$prefix = $line[0] ?? '';
-					$content = substr($line, 1);
-
-					if ($prefix === ' ') {
-						$result[] = [$content, Differ::OLD];
-						$origLineNo++;
-					} elseif ($prefix === '-') {
-						$result[] = [$content, Differ::REMOVED];
-						$origLineNo++;
-					} elseif ($prefix === '+') {
-						$result[] = [$content, Differ::ADDED];
-					}
-
-					$diffPos++;
-				}
+	/**
+	 * Returns the index in $acceptedRuns where $run belongs, or null when it conflicts with an accepted run.
+	 * When the run at the returned index is identical to $run, the change is already accepted.
+	 *
+	 * @param list<array{int, int, list<string>}> $acceptedRuns
+	 * @param array{int, int, list<string>} $run
+	 */
+	private static function findInsertionIndex(array $acceptedRuns, array $run): ?int
+	{
+		// lower bound by [start, removedCount] - insertions come before replacements starting at the same line
+		$low = 0;
+		$high = count($acceptedRuns);
+		while ($low < $high) {
+			$mid = intdiv($low + $high, 2);
+			if ([$acceptedRuns[$mid][0], $acceptedRuns[$mid][1]] < [$run[0], $run[1]]) {
+				$low = $mid + 1;
 			} else {
-				$diffPos++;
+				$high = $mid;
 			}
 		}
 
-		// Emit remaining lines as kept
-		while ($origLineNo < count($originalLines)) {
-			$result[] = [$originalLines[$origLineNo], Differ::OLD];
-			$origLineNo++;
+		if (isset($acceptedRuns[$low]) && $acceptedRuns[$low] === $run) {
+			return $low;
+		}
+		if ($low > 0 && !self::isBefore($acceptedRuns[$low - 1], $run)) {
+			return null;
+		}
+		if (isset($acceptedRuns[$low]) && !self::isBefore($run, $acceptedRuns[$low])) {
+			return null;
 		}
 
-		return $result;
+		return $low;
+	}
+
+	/**
+	 * @param array{int, int, list<string>} $a
+	 * @param array{int, int, list<string>} $b
+	 */
+	private static function isBefore(array $a, array $b): bool
+	{
+		if ($a[1] === 0 && $b[1] === 0 && $a[0] === $b[0]) {
+			// two different insertions at the same line - their order is ambiguous
+			return false;
+		}
+
+		return $a[0] + $a[1] <= $b[0];
+	}
+
+	/**
+	 * @return list<array{int, int, list<string>}> [0-based start line in the original file, number of removed lines, added lines]
+	 */
+	private static function parseChangeRuns(string $unifiedDiff): array
+	{
+		$runs = [];
+		$run = null;
+		$originalLine = 0;
+		foreach (self::splitStringByLines($unifiedDiff) as $line) {
+			if (str_starts_with($line, '@@')) {
+				if ($run !== null) {
+					$runs[] = $run;
+					$run = null;
+				}
+				$matches = Strings::match($line, '/^@@ -(\d+)/');
+				if ($matches !== null) {
+					$originalLine = (int) $matches[1] - 1;
+				}
+				continue;
+			}
+
+			$prefix = $line[0];
+			if ($prefix === '-') {
+				$run ??= [$originalLine, 0, []];
+				$run[1]++;
+				$originalLine++;
+			} elseif ($prefix === '+') {
+				$run ??= [$originalLine, 0, []];
+				$run[2][] = substr($line, 1);
+			} elseif ($prefix === ' ') {
+				if ($run !== null) {
+					$runs[] = $run;
+					$run = null;
+				}
+				$originalLine++;
+			}
+		}
+
+		if ($run !== null) {
+			$runs[] = $run;
+		}
+
+		return $runs;
 	}
 
 	/**

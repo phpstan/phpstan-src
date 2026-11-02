@@ -2,8 +2,11 @@
 
 namespace PHPStan\Command;
 
+use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use OndraM\CiDetector\CiDetector;
 use Override;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
 use PHPStan\Command\ErrorFormatter\BaselineNeonErrorFormatter;
 use PHPStan\Command\ErrorFormatter\BaselinePhpErrorFormatter;
@@ -20,14 +23,14 @@ use PHPStan\File\FileWriter;
 use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\File\RelativePathHelper;
-use PHPStan\Fixable\FileChangedException;
-use PHPStan\Fixable\MergeConflictException;
-use PHPStan\Fixable\Patcher;
+use PHPStan\Fixable\ErrorFixer;
+use PHPStan\Fixable\FixResult;
 use PHPStan\Internal\AgentDetector;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
+use PHPStan\Process\ProcessHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Turbo\TurboExtensionSelector;
@@ -38,10 +41,13 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Output\StreamOutput;
+use Symfony\Component\Process\Process;
 use Throwable;
+use function array_filter;
 use function array_intersect;
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function array_reverse;
 use function array_values;
 use function count;
@@ -64,6 +70,7 @@ use function str_contains;
 use function stream_get_contents;
 use function strlen;
 use function substr;
+use function trim;
 use const PATHINFO_BASENAME;
 use const PATHINFO_EXTENSION;
 
@@ -85,6 +92,11 @@ final class AnalyseCommand extends Command
 	 * a persisted result cache to be worth nagging about.
 	 */
 	private const RESULT_CACHE_CI_NOTIFICATION_ELAPSED_LIMIT = 60.0;
+
+	/** Fixes can lead to new fixable errors, or to new fixes forever. */
+	private const FIX_ROUNDS_LIMIT = 10;
+
+	private const OPTION_FIX_ROUND = 'fix-round';
 
 	/**
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -117,6 +129,8 @@ final class AnalyseCommand extends Command
 				new InputOption('tmp-file', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) Edited file used in place of --instead-of file'),
 				new InputOption('instead-of', mode: InputOption::VALUE_REQUIRED, description: '(Editor mode) File being replaced by --tmp-file'),
 				new InputOption('fix', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable errors (experimental)'),
+				new InputOption('fix-ignored', mode: InputOption::VALUE_NONE, description: 'Fix auto-fixable ignored errors, can be combined with --fix (experimental)'),
+				new InputOption(self::OPTION_FIX_ROUND, mode: InputOption::VALUE_NONE, description: '(Internal) Run one round of --fix and print its counts as JSON'),
 				new InputOption('watch', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('pro', mode: InputOption::VALUE_NONE, description: 'Launch PHPStan Pro'),
 				new InputOption('fail-without-result-cache', mode: InputOption::VALUE_NONE, description: 'Return non-zero exit code when result cache is not used'),
@@ -156,7 +170,10 @@ final class AnalyseCommand extends Command
 		$allowXdebug = $input->getOption('xdebug');
 		$debugEnabled = (bool) $input->getOption('debug');
 		$pro = (bool) $input->getOption('watch') || (bool) $input->getOption('pro');
-		$fix = (bool) $input->getOption('fix');
+		$fixReported = (bool) $input->getOption('fix');
+		$fixIgnored = (bool) $input->getOption('fix-ignored');
+		$fix = $fixReported || $fixIgnored;
+		$fixRound = (bool) $input->getOption(self::OPTION_FIX_ROUND);
 		$failWithoutResultCache = (bool) $input->getOption('fail-without-result-cache');
 
 		/** @var string|false|null $generateBaselineFile */
@@ -222,7 +239,7 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 			if ($fix) {
-				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with --fix.');
+				$inceptionResult->getStdOutput()->getStyle()->error('Editor mode options --tmp-file and --instead-of cannot be used with --fix and --fix-ignored.');
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 		}
@@ -233,7 +250,6 @@ final class AnalyseCommand extends Command
 				return $inceptionResult->handleReturn(1, null, $this->analysisStartTime);
 			}
 
-			$inceptionResult->getErrorOutput()->getStyle()->note('The --fix CLI option no longer launches PHPStan Pro. Use --pro instead if you want to launch PHPStan Pro');
 		}
 
 		$errorOutput = $inceptionResult->getErrorOutput();
@@ -370,7 +386,7 @@ final class AnalyseCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 
-		if ($fix) {
+		if ($fix && !$fixRound) {
 			$inceptionResult->getErrorOutput()->writeLineFormatted('Analysing files...');
 		}
 
@@ -549,70 +565,44 @@ final class AnalyseCommand extends Command
 
 		if ($fix) {
 			$fixableErrors = [];
-			foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
-				if ($fileSpecificError->getFixedErrorDiff() === null) {
-					continue;
-				}
+			if ($fixReported) {
+				foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+					if (!$fileSpecificError->isFixable()) {
+						continue;
+					}
 
-				$fixableErrors[] = $fileSpecificError;
+					$fixableErrors[] = $fileSpecificError;
+				}
+			}
+			if ($fixIgnored) {
+				foreach ($analysisResult->getFixableIgnoredErrors() as $fixableIgnoredError) {
+					$fixableErrors[] = $fixableIgnoredError;
+				}
 			}
 
+			$errorFixer = $container->getByType(ErrorFixer::class);
 			$fixableErrorsCount = count($fixableErrors);
+			if ($fixRound) {
+				$fixResult = $errorFixer->fix($fixableErrors);
+				$inceptionResult->getStdOutput()->writeRaw(Json::encode([
+					'fixable' => $fixableErrorsCount,
+					'applied' => count($fixResult->getFixedErrors()),
+					'changedFiles' => $fixResult->getChangedFiles(),
+				]));
+
+				return $inceptionResult->handleReturn(0, $analysisResult->getPeakMemoryUsageBytes(), $this->analysisStartTime, $analysisResult->getWorkerCount());
+			}
+
 			if ($fixableErrorsCount === 0) {
 				$inceptionResult->getStdOutput()->getStyle()->error('No fixable errors found');
 				$exitCode = 1;
 			} else {
-				$skippedCount = 0;
-				$diffsByFile = [];
-				foreach ($fixableErrors as $fixableError) {
-					$fixFile = $fixableError->getFilePath();
-					if ($fixableError->getTraitFilePath() !== null) {
-						$fixFile = $fixableError->getTraitFilePath();
-					}
-
-					if ($fixableError->getFixedErrorDiff() === null) {
-						throw new ShouldNotHappenException();
-					}
-
-					$diffsByFile[$fixFile][] = $fixableError->getFixedErrorDiff();
-				}
-
-				$inceptionResult->getErrorOutput()->writeLineFormatted('Fixing errors...');
-				$errorOutput->getStyle()->progressStart($fixableErrorsCount);
-
-				$patcher = $container->getByType(Patcher::class);
-				foreach ($diffsByFile as $file => $diffs) {
-					$diffsCount = count($diffs);
-					try {
-						$finalFileContents = $patcher->applyDiffs($file, $diffs);
-						$errorOutput->getStyle()->progressAdvance($diffsCount);
-					} catch (FileChangedException | MergeConflictException) {
-						$skippedCount += $diffsCount;
-						$errorOutput->getStyle()->progressAdvance($diffsCount);
-						continue;
-					}
-
-					FileWriter::write($file, $finalFileContents);
-				}
-
-				$errorOutput->getStyle()->progressFinish();
-
-				if ($skippedCount > 0) {
-					$inceptionResult->getStdOutput()->getStyle()->warning(sprintf(
-						'%d %s fixed, %d %s skipped',
-						$fixableErrorsCount,
-						$fixableErrorsCount === 1 ? 'error' : 'errors',
-						$skippedCount,
-						$skippedCount === 1 ? 'error' : 'errors',
-					));
-				} else {
-					$inceptionResult->getStdOutput()->getStyle()->success(sprintf(
-						'%d %s fixed',
-						$fixableErrorsCount,
-						$fixableErrorsCount === 1 ? 'error' : 'errors',
-					));
-				}
-				$exitCode = 0;
+				$exitCode = $this->fixInRounds(
+					$inceptionResult,
+					$input,
+					$fixableErrorsCount,
+					$errorFixer->fix($fixableErrors),
+				);
 			}
 		} else {
 			if (AgentDetector::isRunningInAgent() && count($analysisResult->getFileSpecificErrors()) > 0) {
@@ -632,6 +622,15 @@ final class AnalyseCommand extends Command
 				$errorOutput->writeLineFormatted('Do not use assert() or inline @var PHPDoc tag to override PHPStan\'s inferred type.');
 				$errorOutput->writeLineFormatted('Do not add type casts just to silence errors.');
 				$errorOutput->writeLineFormatted('Do not widen parameter or return types just to make the error go away.');
+
+				$fixableErrorsCount = count(array_filter($analysisResult->getFileSpecificErrors(), static fn (Error $error): bool => $error->isFixable()));
+				if ($fixableErrorsCount > 0) {
+					$errorOutput->writeLineFormatted('');
+					$errorOutput->writeLineFormatted(sprintf(
+						'%d of the errors can be fixed automatically. Run PHPStan again with --fix to fix them first, then fix the rest.',
+						$fixableErrorsCount,
+					));
+				}
 			}
 			$exitCode = $errorFormatter->formatErrors($analysisResult, $inceptionResult->getStdOutput());
 		}
@@ -650,6 +649,114 @@ final class AnalyseCommand extends Command
 			$this->analysisStartTime,
 			$analysisResult->getWorkerCount(),
 		);
+	}
+
+	/**
+	 * After the fixes of the first round are written, every next round analyses the changed code
+	 * in a new process, which also saves the result cache, and fixes what is still fixable.
+	 * This applies fixes skipped because of a conflict and fixes of errors the previous round caused.
+	 */
+	private function fixInRounds(
+		InceptionResult $inceptionResult,
+		InputInterface $input,
+		int $fixableCount,
+		FixResult $fixResult,
+	): int
+	{
+		$errorOutput = $inceptionResult->getErrorOutput();
+		$stdOutput = $inceptionResult->getStdOutput();
+		$appliedCount = count($fixResult->getFixedErrors());
+		$roundChangedFiles = $fixResult->getChangedFiles();
+		$fixedCount = 0;
+		$changedFiles = [];
+		$round = 1;
+		while (true) {
+			$fixedCount += $appliedCount;
+			foreach ($roundChangedFiles as $changedFile) {
+				$changedFiles[$changedFile] = true;
+			}
+			if ($appliedCount > 0) {
+				$errorOutput->writeLineFormatted(sprintf(
+					'🔧 Round %d: fixed %d %s in %d %s',
+					$round,
+					$appliedCount,
+					$appliedCount === 1 ? 'error' : 'errors',
+					count($roundChangedFiles),
+					count($roundChangedFiles) === 1 ? 'file' : 'files',
+				));
+			}
+
+			if ($appliedCount === 0 || $round === self::FIX_ROUNDS_LIMIT) {
+				break;
+			}
+
+			$round++;
+			$errorOutput->writeLineFormatted('');
+			$errorOutput->writeLineFormatted(sprintf('Analysing fixed code (round %d)...', $round));
+			$command = ProcessHelper::getWorkerCommand(
+				$_SERVER['argv'][0],
+				self::NAME,
+				$inceptionResult->getProjectConfigFile(),
+				array_merge(
+					['--' . self::OPTION_FIX_ROUND, $errorOutput->isDecorated() ? '--ansi' : '--no-ansi'],
+					(bool) $input->getOption(ErrorsConsoleStyle::OPTION_NO_PROGRESS) ? ['--' . ErrorsConsoleStyle::OPTION_NO_PROGRESS] : [],
+					(bool) $input->getOption('fix') ? ['--fix'] : [],
+					(bool) $input->getOption('fix-ignored') ? ['--fix-ignored'] : [],
+				),
+				$input,
+			);
+			$process = Process::fromShellCommandline($command, timeout: null);
+			// the progress bar of the analysis is on stderr, the result of the round on stdout
+			$process->run(static function (string $type, string $buffer) use ($errorOutput): void {
+				if ($type !== Process::ERR) {
+					return;
+				}
+
+				$errorOutput->writeRaw($buffer);
+			});
+			try {
+				/** @var array{fixable: int, applied: int, changedFiles: list<string>} $roundResult */
+				$roundResult = Json::decode($process->getOutput(), Json::FORCE_ARRAY);
+			} catch (JsonException) {
+				$stdOutput->getStyle()->error(sprintf(
+					"%d %s fixed, but analysing the fixed code failed:\n%s",
+					$fixedCount,
+					$fixedCount === 1 ? 'error' : 'errors',
+					trim($process->getOutput()),
+				));
+
+				return 1;
+			}
+
+			$fixableCount = $roundResult['fixable'];
+			$appliedCount = $roundResult['applied'];
+			$roundChangedFiles = $roundResult['changedFiles'];
+		}
+
+		$summary = sprintf(
+			'%d %s fixed in %d %s',
+			$fixedCount,
+			$fixedCount === 1 ? 'error' : 'errors',
+			count($changedFiles),
+			count($changedFiles) === 1 ? 'file' : 'files',
+		);
+		if ($appliedCount > 0) {
+			$stdOutput->getStyle()->warning(sprintf('%s. Fixing stopped after %d rounds, run PHPStan again to see what is left.', $summary, $round));
+		} elseif ($fixableCount > 0) {
+			$stdOutput->getStyle()->warning(sprintf(
+				'%s, %d %s could not be fixed because of conflicting fixes',
+				$summary,
+				$fixableCount,
+				$fixableCount === 1 ? 'error' : 'errors',
+			));
+		} else {
+			$stdOutput->getStyle()->success($summary);
+
+			return 0;
+		}
+
+		// some fixable errors are left, like errors left after the analysis
+		return 1;
 	}
 
 	private function reportMissingResultCacheInCi(Output $errorOutput, AnalysisResult $analysisResult, bool $onlyFiles): void

@@ -25,6 +25,7 @@ final class AnalysisResult
 	 * @param list<string> $warnings
 	 * @param list<CollectedData>|(Closure(): list<CollectedData>) $collectedData A closure defers decoding the result cache until asked
 	 * @param list<string> $processedFiles
+	 * @param list<Error> $fixableIgnoredErrors ignored errors that --fix-ignored can fix
 	 */
 	public function __construct(
 		array $fileSpecificErrors,
@@ -40,6 +41,7 @@ final class AnalysisResult
 		private array $processedFiles = [],
 		private bool $resultCacheExisted = true,
 		private int $workerCount = 0,
+		private array $fixableIgnoredErrors = [],
 	)
 	{
 		usort(
@@ -202,7 +204,18 @@ final class AnalysisResult
 			$this->isResultCacheUsed,
 			$this->processedFiles,
 			$this->resultCacheExisted,
+			$this->workerCount,
+			$this->fixableIgnoredErrors,
 		);
+	}
+
+	/**
+	 * @api
+	 * @return list<Error>
+	 */
+	public function getFixableIgnoredErrors(): array
+	{
+		return $this->fixableIgnoredErrors;
 	}
 
 }

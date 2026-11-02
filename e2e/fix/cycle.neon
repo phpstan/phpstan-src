@@ -1,0 +1,8 @@
+parameters:
+	level: 0
+	paths:
+		- cycle
+	tmpDir: tmp
+
+rules:
+	- FixE2E\PingPongRule

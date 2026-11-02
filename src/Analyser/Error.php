@@ -11,6 +11,8 @@ use PHPStan\ShouldNotHappenException;
 use ReturnTypeWillChange;
 use Throwable;
 use function array_key_exists;
+use function array_map;
+use function count;
 use function is_bool;
 use function sprintf;
 
@@ -27,6 +29,7 @@ final class Error implements JsonSerializable
 	 *
 	 * @param class-string<Node>|null $nodeType
 	 * @param mixed[] $metadata
+	 * @param list<FixedErrorDiff> $fixedErrorDiffs one diff per fixed file
 	 * @param array<string, string> $traitContexts
 	 */
 	public function __construct(
@@ -41,7 +44,7 @@ final class Error implements JsonSerializable
 		private ?string $nodeType = null,
 		private ?string $identifier = null,
 		private array $metadata = [],
-		private ?FixedErrorDiff $fixedErrorDiff = null,
+		private array $fixedErrorDiffs = [],
 		private array $traitContexts = [],
 	)
 	{
@@ -87,7 +90,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->renameFixedFile($this->getFilePath(), $newFilePath),
 		);
 	}
 
@@ -105,7 +108,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->traitFilePath === null ? $this->fixedErrorDiffs : $this->renameFixedFile($this->traitFilePath, $newFilePath),
 			$this->traitContexts,
 		);
 	}
@@ -128,7 +131,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 			$this->traitContexts,
 		);
 	}
@@ -169,7 +172,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 			$traitContexts,
 		);
 	}
@@ -196,7 +199,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 		);
 	}
 
@@ -222,7 +225,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			array_map(static fn (FixedErrorDiff $diff): FixedErrorDiff => new FixedErrorDiff($transformPath($diff->file), $diff->originalHash, $diff->diff), $this->fixedErrorDiffs),
 			$this->transformTraitContexts($transformPath),
 		);
 	}
@@ -265,7 +268,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 			$this->traitContexts,
 		);
 	}
@@ -288,7 +291,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 			$this->traitContexts,
 		);
 	}
@@ -311,7 +314,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$identifier,
 			$this->metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 			$this->traitContexts,
 		);
 	}
@@ -337,7 +340,7 @@ final class Error implements JsonSerializable
 			$this->nodeType,
 			$this->identifier,
 			$metadata,
-			$this->fixedErrorDiff,
+			$this->fixedErrorDiffs,
 			$this->traitContexts,
 		);
 	}
@@ -374,11 +377,44 @@ final class Error implements JsonSerializable
 	}
 
 	/**
+	 * Whether the rule attached a fix with RuleErrorBuilder::fixNode() or removeNode(),
+	 * to be applied with ErrorFixer or `phpstan analyse --fix`.
+	 */
+	public function isFixable(): bool
+	{
+		return $this->fixedErrorDiffs !== [];
+	}
+
+	/**
 	 * @internal Experimental
+	 * @deprecated Use getFixedErrorDiffs(), a fix can change several files.
 	 */
 	public function getFixedErrorDiff(): ?FixedErrorDiff
 	{
-		return $this->fixedErrorDiff;
+		// one diff of a fix of several files would apply only a part of the fix
+		return count($this->fixedErrorDiffs) === 1 ? $this->fixedErrorDiffs[0] : null;
+	}
+
+	/**
+	 * The diffs are applied together or not at all.
+	 *
+	 * @internal Experimental
+	 * @return list<FixedErrorDiff>
+	 */
+	public function getFixedErrorDiffs(): array
+	{
+		return $this->fixedErrorDiffs;
+	}
+
+	/**
+	 * @return list<FixedErrorDiff>
+	 */
+	private function renameFixedFile(string $oldFile, string $newFile): array
+	{
+		return array_map(
+			static fn (FixedErrorDiff $diff): FixedErrorDiff => $diff->file === $oldFile ? new FixedErrorDiff($newFile, $diff->originalHash, $diff->diff) : $diff,
+			$this->fixedErrorDiffs,
+		);
 	}
 
 	/**
@@ -388,13 +424,6 @@ final class Error implements JsonSerializable
 	#[Override]
 	public function jsonSerialize()
 	{
-		$fixedErrorDiffHash = null;
-		$fixedErrorDiffDiff = null;
-		if ($this->fixedErrorDiff !== null) {
-			$fixedErrorDiffHash = $this->fixedErrorDiff->originalHash;
-			$fixedErrorDiffDiff = $this->fixedErrorDiff->diff;
-		}
-
 		return [
 			'message' => $this->message,
 			'file' => $this->file,
@@ -407,8 +436,7 @@ final class Error implements JsonSerializable
 			'nodeType' => $this->nodeType,
 			'identifier' => $this->identifier,
 			'metadata' => $this->metadata,
-			'fixedErrorDiffHash' => $fixedErrorDiffHash,
-			'fixedErrorDiffDiff' => $fixedErrorDiffDiff,
+			'fixedErrorDiffs' => array_map(static fn (FixedErrorDiff $diff): array => [$diff->file, $diff->originalHash, $diff->diff], $this->fixedErrorDiffs),
 			'traitContexts' => $this->traitContexts,
 		];
 	}
@@ -418,9 +446,9 @@ final class Error implements JsonSerializable
 	 */
 	public static function decode(array $json): self
 	{
-		$fixedErrorDiff = null;
-		if ($json['fixedErrorDiffHash'] !== null && $json['fixedErrorDiffDiff'] !== null) {
-			$fixedErrorDiff = new FixedErrorDiff($json['fixedErrorDiffHash'], $json['fixedErrorDiffDiff']);
+		$fixedErrorDiffs = [];
+		foreach ($json['fixedErrorDiffs'] ?? [] as [$file, $hash, $diff]) {
+			$fixedErrorDiffs[] = new FixedErrorDiff($file, $hash, $diff);
 		}
 
 		return new self(
@@ -435,7 +463,7 @@ final class Error implements JsonSerializable
 			$json['nodeType'] ?? null,
 			$json['identifier'] ?? null,
 			$json['metadata'] ?? [],
-			$fixedErrorDiff,
+			$fixedErrorDiffs,
 			$json['traitContexts'] ?? [],
 		);
 	}
@@ -457,7 +485,7 @@ final class Error implements JsonSerializable
 			$properties['nodeType'] ?? null,
 			$properties['identifier'] ?? null,
 			$properties['metadata'] ?? [],
-			$properties['fixedErrorDiff'] ?? null,
+			$properties['fixedErrorDiffs'] ?? [],
 			$properties['traitContexts'] ?? [],
 		);
 	}

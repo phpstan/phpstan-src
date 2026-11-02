@@ -16,11 +16,14 @@ use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Parser\Parser as AnalysisParser;
+use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
+use PHPStan\Rules\NodeFix;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\RuleErrors\TransformedRuleError;
@@ -30,11 +33,17 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function array_key_exists;
 use function array_shift;
+use function array_slice;
 use function count;
 use function get_class;
 use function hash;
+use function is_file;
+use function min;
+use function preg_split;
 use function str_contains;
 use function str_repeat;
+use const PREG_SPLIT_DELIM_CAPTURE;
+use const PREG_SPLIT_NO_EMPTY;
 
 #[AutowiredService]
 final class RuleErrorTransformer
@@ -46,6 +55,8 @@ final class RuleErrorTransformer
 
 	private Differ $differ;
 
+	private UnifiedDiffOutputBuilder $diffOutputBuilder;
+
 	/** @var array<string, array{code: string, hash: string, tokens: Token[], indent: string|null}> */
 	private array $parsedFiles = [];
 
@@ -55,9 +66,12 @@ final class RuleErrorTransformer
 	public function __construct(
 		#[AutowiredParameter(ref: '@currentPhpVersionPhpParser')]
 		private Parser $parser,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
+		private AnalysisParser $analysisParser,
 	)
 	{
-		$this->differ = new Differ(new UnifiedDiffOutputBuilder('', addLineNumbers: true));
+		$this->diffOutputBuilder = new UnifiedDiffOutputBuilder('', addLineNumbers: true);
+		$this->differ = new Differ($this->diffOutputBuilder);
 	}
 
 	/**
@@ -88,6 +102,9 @@ final class RuleErrorTransformer
 				$traitFilePath = $traitReflection->getFileName();
 			}
 		}
+
+		// the file $fileNodes come from - the error can point to another one with RuleErrorBuilder::file()
+		$fileNodesFile = $traitFilePath ?? $filePath;
 
 		if (
 			$ruleError instanceof LineRuleError
@@ -120,18 +137,31 @@ final class RuleErrorTransformer
 			$canBeIgnored = false;
 		}
 
-		$fixedErrorDiff = null;
+		$fixedErrorDiffs = [];
 		if ($ruleError instanceof FixableNodeRuleError) {
-			if ($ruleError->getOriginalNode() instanceof VirtualNode) {
-				throw new ShouldNotHappenException('Cannot fix virtual node');
+			$fixesByFile = [];
+			foreach ($ruleError->getNodeFixes() as $nodeFix) {
+				if ($nodeFix->node instanceof VirtualNode) {
+					throw new ShouldNotHappenException('Cannot fix virtual node');
+				}
+
+				$fixesByFile[$nodeFix->file ?? $traitFilePath ?? $filePath][] = $nodeFix;
 			}
 
-			$fixedErrorDiff = $this->fix(
-				$traitFilePath ?? $filePath,
-				$fileNodes,
-				$ruleError->getOriginalNode(),
-				$ruleError->getNewNodeCallable(),
-			);
+			foreach ($fixesByFile as $fixingFile => $fixes) {
+				$fixedErrorDiff = $this->fix(
+					$fixingFile,
+					$fixingFile === $fileNodesFile ? $fileNodes : [],
+					$fixes,
+				);
+				if ($fixedErrorDiff === null) {
+					// the changes are applied together or not at all
+					$fixedErrorDiffs = [];
+					break;
+				}
+
+				$fixedErrorDiffs[] = $fixedErrorDiff;
+			}
 		}
 
 		return new Error(
@@ -146,18 +176,35 @@ final class RuleErrorTransformer
 			get_class($node),
 			$identifier,
 			$metadata,
-			$fixedErrorDiff,
+			$fixedErrorDiffs,
 		);
 	}
 
 	/**
+	 * Without $fileNodes (errors of CollectedDataNode rules, errors transformed inside collectors,
+	 * and fixes in another file), the file is parsed with the cached analysis parser. ReplacingNodeVisitor
+	 * finds the fixed nodes by their position, so the rule has to take them from a parse of the same file contents.
+	 * Returns null when some of the nodes cannot be fixed.
+	 *
 	 * @param Node\Stmt[] $fileNodes
-	 * @param callable(Node): Node $newNodeCallable
+	 * @param non-empty-list<NodeFix> $fixes
 	 */
-	private function fix(string $fixingFile, array $fileNodes, Node $originalNode, callable $newNodeCallable): ?FixedErrorDiff
+	private function fix(string $fixingFile, array $fileNodes, array $fixes): ?FixedErrorDiff
 	{
 		if ($fileNodes === []) {
-			return null;
+			if (!is_file($fixingFile)) {
+				return null;
+			}
+
+			try {
+				$fileNodes = $this->analysisParser->parseFile($fixingFile);
+			} catch (ParserErrorsException) {
+				return null;
+			}
+
+			if ($fileNodes === []) {
+				return null;
+			}
 		}
 
 		$parsedFile = $this->getParsedFile($fixingFile);
@@ -169,7 +216,7 @@ final class RuleErrorTransformer
 			$visitors[] = $indentDetector;
 		}
 		$visitors[] = new CloningVisitor();
-		$replacingVisitor = new ReplacingNodeVisitor($originalNode, $newNodeCallable);
+		$replacingVisitor = new ReplacingNodeVisitor($fixes);
 		$visitors[] = $replacingVisitor;
 
 		/** @var Stmt[] $newStmts */
@@ -188,7 +235,7 @@ final class RuleErrorTransformer
 			}
 		}
 
-		if (!$replacingVisitor->isFound()) {
+		if (!$replacingVisitor->isComplete()) {
 			return null;
 		}
 
@@ -197,7 +244,75 @@ final class RuleErrorTransformer
 			return null;
 		}
 
-		return new FixedErrorDiff($parsedFile['hash'], $this->differ->diff($parsedFile['code'], $newCode));
+		return new FixedErrorDiff($fixingFile, $parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
+	}
+
+	/**
+	 * A fix that is not made through nodes, like removing a comment.
+	 */
+	public function createFixedErrorDiff(string $file, string $originalCode, string $newCode): FixedErrorDiff
+	{
+		return new FixedErrorDiff($file, hash('sha256', $originalCode), $this->diff($originalCode, $newCode));
+	}
+
+	/**
+	 * Same output as Differ::diff(), but the common leading and trailing lines are found here in linear time.
+	 * Differ strips them too, but in quadratic time, which made each fix in a large file cost up to a second.
+	 * The middle part is usually just the fixed node.
+	 */
+	private function diff(string $from, string $to): string
+	{
+		$fromLines = self::splitStringByLines($from);
+		$toLines = self::splitStringByLines($to);
+		$fromCount = count($fromLines);
+		$toCount = count($toLines);
+		$minCount = min($fromCount, $toCount);
+
+		$startCount = 0;
+		while ($startCount < $minCount && $fromLines[$startCount] === $toLines[$startCount]) {
+			$startCount++;
+		}
+
+		$endCount = 0;
+		while (
+			$endCount < $minCount - $startCount
+			&& $fromLines[$fromCount - 1 - $endCount] === $toLines[$toCount - 1 - $endCount]
+		) {
+			$endCount++;
+		}
+
+		$diff = [];
+		for ($i = 0; $i < $startCount; $i++) {
+			$diff[] = [$fromLines[$i], Differ::OLD];
+		}
+		foreach ($this->differ->diffToArray(
+			array_slice($fromLines, $startCount, $fromCount - $startCount - $endCount),
+			array_slice($toLines, $startCount, $toCount - $startCount - $endCount),
+		) as $entry) {
+			if ($entry[1] === Differ::DIFF_LINE_END_WARNING) {
+				// the warning would be printed as a context line and shift the line numbers in Patcher
+				continue;
+			}
+			$diff[] = $entry;
+		}
+		for ($i = $fromCount - $endCount; $i < $fromCount; $i++) {
+			$diff[] = [$fromLines[$i], Differ::OLD];
+		}
+
+		return $this->diffOutputBuilder->getDiff($diff);
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private static function splitStringByLines(string $input): array
+	{
+		$lines = preg_split('/(.*\R)/', $input, flags: PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+		if ($lines === false) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $lines;
 	}
 
 	/**
@@ -205,11 +320,13 @@ final class RuleErrorTransformer
 	 */
 	private function getParsedFile(string $file): array
 	{
-		if (array_key_exists($file, $this->parsedFiles)) {
+		// the file can change between analyses in one process, like PHPStan Pro or tests
+		$code = FileReader::read($file);
+		if (array_key_exists($file, $this->parsedFiles) && $this->parsedFiles[$file]['code'] === $code) {
 			return $this->parsedFiles[$file];
 		}
 
-		$code = FileReader::read($file);
+		unset($this->parsedFiles[$file]);
 		$this->parser->parse($code);
 
 		if (count($this->parsedFiles) >= self::PARSED_FILES_LIMIT) {

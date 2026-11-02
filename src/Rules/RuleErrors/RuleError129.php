@@ -2,8 +2,8 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
-use PhpParser\Node;
 use PHPStan\Rules\FixableNodeRuleError;
+use PHPStan\Rules\NodeFix;
 use PHPStan\Rules\RuleError;
 
 /**
@@ -14,27 +14,20 @@ final class RuleError129 implements RuleError, FixableNodeRuleError
 
 	public string $message;
 
-	public Node $originalNode;
-
-	/** @var callable(Node): Node */
-	public $newNodeCallable;
+	/** @var non-empty-list<NodeFix> */
+	public array $nodeFixes;
 
 	public function getMessage(): string
 	{
 		return $this->message;
 	}
 
-	public function getOriginalNode(): Node
-	{
-		return $this->originalNode;
-	}
-
 	/**
-	 * @return callable(Node): Node
+	 * @return non-empty-list<NodeFix>
 	 */
-	public function getNewNodeCallable(): callable
+	public function getNodeFixes(): array
 	{
-		return $this->newNodeCallable;
+		return $this->nodeFixes;
 	}
 
 }

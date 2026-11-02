@@ -2,13 +2,13 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
-use PhpParser\Node;
 use PHPStan\Rules\FileDependenciesRuleError;
 use PHPStan\Rules\FileRuleError;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\LineRuleError;
 use PHPStan\Rules\MetadataRuleError;
+use PHPStan\Rules\NodeFix;
 use PHPStan\Rules\RuleError;
 
 /**
@@ -30,10 +30,8 @@ final class RuleError439 implements RuleError, LineRuleError, FileRuleError, Ide
 	/** @var mixed[] */
 	public array $metadata;
 
-	public Node $originalNode;
-
-	/** @var callable(Node): Node */
-	public $newNodeCallable;
+	/** @var non-empty-list<NodeFix> */
+	public array $nodeFixes;
 
 	/** @var list<string> */
 	public array $fileDependencies;
@@ -71,17 +69,12 @@ final class RuleError439 implements RuleError, LineRuleError, FileRuleError, Ide
 		return $this->metadata;
 	}
 
-	public function getOriginalNode(): Node
-	{
-		return $this->originalNode;
-	}
-
 	/**
-	 * @return callable(Node): Node
+	 * @return non-empty-list<NodeFix>
 	 */
-	public function getNewNodeCallable(): callable
+	public function getNodeFixes(): array
 	{
-		return $this->newNodeCallable;
+		return $this->nodeFixes;
 	}
 
 	/**

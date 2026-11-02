@@ -1,0 +1,13 @@
+parameters:
+	level: 0
+	paths:
+		- src
+	tmpDir: tmp
+	ignoreErrors:
+		-
+			identifier: fixE2E.step
+			path: src/Ignored.php
+
+rules:
+	- FixE2E\StepRule
+	- FixE2E\NoArgsRule

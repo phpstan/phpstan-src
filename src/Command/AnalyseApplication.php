@@ -79,6 +79,7 @@ final class AnalyseApplication
 
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
 		$fileSpecificErrors = [];
+		$fixableIgnoredErrors = [];
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
 			$notFileSpecificErrors = $ignoredErrorHelperResult->getErrors();
 			$internalErrors = [];
@@ -169,6 +170,20 @@ final class AnalyseApplication
 			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
+			foreach ($ignoredErrorHelperProcessedResult->getIgnoredErrors() as [$ignoredError]) {
+				if ($ignoredError->getFixedErrorDiffs() === []) {
+					continue;
+				}
+
+				$fixableIgnoredErrors[] = $ignoredError;
+			}
+			foreach ($analyserResult->getLocallyIgnoredErrors() as $locallyIgnoredError) {
+				if ($locallyIgnoredError->getFixedErrorDiffs() === []) {
+					continue;
+				}
+
+				$fixableIgnoredErrors[] = $locallyIgnoredError;
+			}
 			$collectedData = $resultCacheResult->getSavedCollectedData() ?? $analyserResult->getLazyCollectedData();
 		}
 
@@ -186,6 +201,7 @@ final class AnalyseApplication
 			$processedFiles,
 			$resultCacheExisted,
 			$workerCount,
+			$fixableIgnoredErrors,
 		);
 	}
 

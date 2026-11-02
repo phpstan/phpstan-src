@@ -11,10 +11,13 @@ use PHPStan\Analyser\CollectedDataReuse\SecondCollector;
 use PHPStan\Analyser\CollectedDataReuse\ThrowingRule;
 use PHPStan\Analyser\CollectedDataReuse\TrackingRule;
 use PHPStan\Analyser\CollectedDataReuse\UnregisteredValueRule;
+use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\File\FileHelper;
+use PHPStan\Fixable\FixCollectedFuncCallRule;
+use PHPStan\Fixable\FooFuncCallCollector;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\DirectRegistry;
 use PHPStan\Rules\Rule;
@@ -277,6 +280,31 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		unlink($file);
 	}
 
+	public function testRuleWithFixRunsAgainWhenTheFixedFileChanged(): void
+	{
+		$file = sys_get_temp_dir() . '/phpstan-collected-data-reuse-fix-' . uniqid() . '.php';
+		file_put_contents($file, "<?php\n\nfoo(1);\n");
+		$rule = new FixCollectedFuncCallRule(self::getContainer()->getService('defaultAnalysisParser'));
+		$collectedData = [
+			$file => [FooFuncCallCollector::class => [3]],
+		];
+
+		$result = $this->finalize([$rule], $collectedData, false, []);
+		$errors = $result->getAnalyserResult()->getUnorderedErrors();
+		$this->assertCount(1, $errors);
+		$this->assertNotSame([], $errors[0]->getFixedErrorDiffs());
+
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$this->assertSame(1, $result->getReusedRulesCount());
+
+		// the collected data stays the same, but the diff of the fix no longer applies
+		file_put_contents($file, "<?php\n\nfoo(1);\n// edited\n");
+		$result = $this->finalize([$rule], $collectedData, false, $result->getCollectedDataRuleResults());
+		$this->assertSame(0, $result->getReusedRulesCount());
+
+		unlink($file);
+	}
+
 	public function testEveryRuleRunsWithoutTheFeatureToggle(): void
 	{
 		$rule = new EarlyReturnRule();
@@ -315,6 +343,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory(self::createReflectionProvider(), self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),
+			self::getContainer()->getByType(UnmatchedIgnoreFixer::class),
 			false,
 			$valueDependencyCollector ?? self::getContainer()->getByType(ValueDependencyCollector::class),
 			$reuse,

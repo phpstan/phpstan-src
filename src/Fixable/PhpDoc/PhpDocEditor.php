@@ -9,8 +9,11 @@ use PHPStan\PhpDocParser\Ast\NodeTraverser;
 use PHPStan\PhpDocParser\Ast\NodeVisitor\CloningVisitor;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Lexer\Lexer;
+use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
+use PHPStan\PhpDocParser\Parser\TypeParser;
+use PHPStan\PhpDocParser\ParserConfig;
 use PHPStan\PhpDocParser\Printer\Printer;
 use function count;
 
@@ -22,8 +25,17 @@ use function count;
 final class PhpDocEditor
 {
 
-	public function __construct(private Printer $printer, private Lexer $lexer, private PhpDocParser $phpDocParser)
+	private Lexer $lexer;
+
+	private PhpDocParser $phpDocParser;
+
+	public function __construct(private Printer $printer)
 	{
+		// format-preserving printing needs token indexes, which the parser used by analysis does not collect
+		$config = new ParserConfig(['lines' => true, 'indexes' => true]);
+		$constExprParser = new ConstExprParser($config);
+		$this->lexer = new Lexer($config);
+		$this->phpDocParser = new PhpDocParser($config, new TypeParser($config, $constExprParser), $constExprParser);
 	}
 
 	/**
@@ -32,11 +44,23 @@ final class PhpDocEditor
 	public function edit(\PhpParser\Node $node, callable $callback): void
 	{
 		$doc = $node->getDocComment();
-		if ($doc === null) {
-			$phpDoc = '/** */';
-		} else {
-			$phpDoc = $doc->getText();
+		$phpDoc = $this->editText($doc === null ? '/** */' : $doc->getText(), $callback);
+		if ($phpDoc === null) {
+			$node->setAttribute('comments', []);
+			return;
 		}
+
+		$node->setDocComment(new Doc($phpDoc));
+	}
+
+	/**
+	 * Edits the text of a PHPDoc with format-preserving printing.
+	 *
+	 * @param callable(Node): (Node|Node[]|null) $callback
+	 * @return string|null null when the PHPDoc is left without contents
+	 */
+	public function editText(string $phpDoc, callable $callback): ?string
+	{
 		$tokens = new TokenIterator($this->lexer->tokenize($phpDoc));
 		$phpDocNode = $this->phpDocParser->parse($tokens);
 
@@ -51,12 +75,10 @@ final class PhpDocEditor
 		[$newPhpDocNode] = $traverser->traverse([$newPhpDocNode]);
 
 		if (count($newPhpDocNode->children) === 0) {
-			$node->setAttribute('comments', []);
-			return;
+			return null;
 		}
 
-		$doc = new Doc($this->printer->printFormatPreserving($newPhpDocNode, $phpDocNode, $tokens));
-		$node->setDocComment($doc);
+		return $this->printer->printFormatPreserving($newPhpDocNode, $phpDocNode, $tokens);
 	}
 
 }

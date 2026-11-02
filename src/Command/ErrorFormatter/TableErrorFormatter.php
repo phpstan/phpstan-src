@@ -77,6 +77,7 @@ final class TableErrorFormatter implements ErrorFormatter
 
 		if (!$analysisResult->hasErrors() && !$analysisResult->hasWarnings()) {
 			$style->success('No errors');
+			$this->printFixableIgnoredErrors($analysisResult, $output);
 
 			if ($this->showTipsOfTheDay) {
 				if ($analysisResult->isDefaultLevelUsed()) {
@@ -95,7 +96,11 @@ final class TableErrorFormatter implements ErrorFormatter
 
 		/** @var array<string, Error[]> $fileErrors */
 		$fileErrors = [];
+		$fixableErrorsCount = 0;
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
+			if ($fileSpecificError->getFixedErrorDiffs() !== []) {
+				$fixableErrorsCount++;
+			}
 			if (!isset($fileErrors[$fileSpecificError->getFile()])) {
 				$fileErrors[$fileSpecificError->getFile()] = [];
 			}
@@ -115,6 +120,9 @@ final class TableErrorFormatter implements ErrorFormatter
 					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable', 'phpstan.dumpType', 'phpstan.unknownExpectation'], true)
 				) {
 					$message = '<fg=red>' . OutputFormatter::escape($message) . '</>';
+				}
+				if ($error->getFixedErrorDiffs() !== []) {
+					$message .= ' 🔧';
 				}
 				if ($error->getIdentifier() !== null) {
 					$message .= "\n";
@@ -214,7 +222,26 @@ final class TableErrorFormatter implements ErrorFormatter
 			}
 		}
 
+		if ($fixableErrorsCount > 0) {
+			$output->writeLineFormatted(sprintf('🔧 %d %s can be fixed automatically. Run PHPStan again with <fg=cyan>--fix</>.', $fixableErrorsCount, $fixableErrorsCount === 1 ? 'error' : 'errors'));
+			if (count($analysisResult->getFixableIgnoredErrors()) === 0) {
+				$output->writeLineFormatted('');
+			}
+		}
+		$this->printFixableIgnoredErrors($analysisResult, $output);
+
 		return $analysisResult->getTotalErrorsCount() > 0 ? 1 : 0;
+	}
+
+	private function printFixableIgnoredErrors(AnalysisResult $analysisResult, Output $output): void
+	{
+		$count = count($analysisResult->getFixableIgnoredErrors());
+		if ($count === 0) {
+			return;
+		}
+
+		$output->writeLineFormatted(sprintf('<fg=gray>🔧 %d ignored %s can be fixed automatically. Run PHPStan again with --fix-ignored.</>', $count, $count === 1 ? 'error' : 'errors'));
+		$output->writeLineFormatted('');
 	}
 
 	private function formatLineNumber(?int $lineNumber): string

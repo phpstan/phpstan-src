@@ -17,7 +17,6 @@ $polyfills = [
 ];
 
 $pinnedToSupportPhp72 = [
-	'symfony/process',
 	'symfony/service-contracts',
 	'symfony/string',
 ];

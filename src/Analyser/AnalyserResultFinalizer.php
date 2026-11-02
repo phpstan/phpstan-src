@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use Closure;
 use PHPStan\AnalysedCodeException;
+use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
@@ -12,6 +13,7 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
+use PHPStan\File\FileReader;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Node\CollectedDataNodeReads;
 use PHPStan\Rules\Registry as RuleRegistry;
@@ -20,6 +22,8 @@ use function array_key_exists;
 use function array_merge;
 use function count;
 use function get_class;
+use function hash_file;
+use function is_file;
 use function ksort;
 use function md5;
 use function serialize;
@@ -42,6 +46,7 @@ final class AnalyserResultFinalizer
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
+		private UnmatchedIgnoreFixer $unmatchedIgnoreFixer,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
 		private ValueDependencyCollector $valueDependencyCollector,
@@ -307,6 +312,15 @@ final class AnalyserResultFinalizer
 			}
 		}
 
+		// a fix is a diff against the file contents, which can change without changing the collected data
+		foreach ($previousResult->getErrors() as $error) {
+			foreach ($error->getFixedErrorDiffs() as $fixedErrorDiff) {
+				if (!is_file($fixedErrorDiff->file) || hash_file('sha256', $fixedErrorDiff->file) !== $fixedErrorDiff->originalHash) {
+					return false;
+				}
+			}
+		}
+
 		return true;
 	}
 
@@ -389,6 +403,23 @@ final class AnalyserResultFinalizer
 	}
 
 	/**
+	 * @return list<FixedErrorDiff>
+	 */
+	private function fixUnmatchedIgnore(string $file, ?string $code, int $line, ?string $identifier): array
+	{
+		if ($code === null) {
+			return [];
+		}
+
+		$newCode = $this->unmatchedIgnoreFixer->fix($code, $line, $identifier);
+		if ($newCode === null) {
+			return [];
+		}
+
+		return [$this->ruleErrorTransformer->createFixedErrorDiff($file, $code, $newCode)];
+	}
+
+	/**
 	 * @param list<Error> $collectorErrors
 	 * @param list<Error> $locallyIgnoredCollectorErrors
 	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
@@ -412,26 +443,31 @@ final class AnalyserResultFinalizer
 					continue;
 				}
 
+				$code = is_file($file) ? FileReader::read($file) : null;
 				foreach ($lines as $line => $identifiers) {
 					if ($identifiers === null) {
-						$errors[] = (new Error(
+						$errors[] = new Error(
 							sprintf('No error to ignore is reported on line %d.', $line),
 							$file,
 							$line,
 							false,
 							$file,
-						))->withIdentifier('ignore.unmatchedLine');
+							identifier: 'ignore.unmatchedLine',
+							fixedErrorDiffs: $this->fixUnmatchedIgnore($file, $code, $line, null),
+						);
 						continue;
 					}
 
 					foreach ($identifiers as $identifier) {
-						$errors[] = (new Error(
+						$errors[] = new Error(
 							sprintf('No error with identifier %s is reported on line %d.', $identifier['name'], $line),
 							$file,
 							$line,
 							false,
 							$file,
-						))->withIdentifier('ignore.unmatchedIdentifier');
+							identifier: 'ignore.unmatchedIdentifier',
+							fixedErrorDiffs: $this->fixUnmatchedIgnore($file, $code, $line, $identifier['name']),
+						);
 					}
 				}
 			}

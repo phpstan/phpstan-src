@@ -2,9 +2,9 @@
 
 namespace PHPStan\Rules\RuleErrors;
 
-use PhpParser\Node;
 use PHPStan\Rules\FixableNodeRuleError;
 use PHPStan\Rules\LineRuleError;
+use PHPStan\Rules\NodeFix;
 use PHPStan\Rules\NonIgnorableRuleError;
 use PHPStan\Rules\RuleError;
 use PHPStan\Rules\TipRuleError;
@@ -21,10 +21,8 @@ final class RuleError203 implements RuleError, LineRuleError, TipRuleError, NonI
 
 	public string $tip;
 
-	public Node $originalNode;
-
-	/** @var callable(Node): Node */
-	public $newNodeCallable;
+	/** @var non-empty-list<NodeFix> */
+	public array $nodeFixes;
 
 	public function getMessage(): string
 	{
@@ -41,17 +39,12 @@ final class RuleError203 implements RuleError, LineRuleError, TipRuleError, NonI
 		return $this->tip;
 	}
 
-	public function getOriginalNode(): Node
-	{
-		return $this->originalNode;
-	}
-
 	/**
-	 * @return callable(Node): Node
+	 * @return non-empty-list<NodeFix>
 	 */
-	public function getNewNodeCallable(): callable
+	public function getNodeFixes(): array
 	{
-		return $this->newNodeCallable;
+		return $this->nodeFixes;
 	}
 
 }

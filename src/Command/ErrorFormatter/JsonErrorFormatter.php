@@ -54,6 +54,10 @@ final class JsonErrorFormatter implements ErrorFormatter
 				$message['identifier'] = $fileSpecificError->getIdentifier();
 			}
 
+			if ($fileSpecificError->isFixable()) {
+				$message['fixable'] = true;
+			}
+
 			$errorsArray['files']->$file['messages'][] = $message;
 		}
 

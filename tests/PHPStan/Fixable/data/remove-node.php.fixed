@@ -1,0 +1,26 @@
+<?php
+
+namespace RemoveNode;
+
+class Foo
+{
+
+	const KEEP = 1;
+
+	public $keep;
+
+	public function doFoo(): void
+	{
+		echo 1;
+		echo 2;
+		sprintf('%s', 'a');
+		if (removeMe()) {
+			echo 3;
+		}
+	}
+
+	public function doBar(): void
+	{
+	}
+
+}

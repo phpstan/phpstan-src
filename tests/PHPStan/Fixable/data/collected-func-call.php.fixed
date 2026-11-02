@@ -1,0 +1,19 @@
+<?php
+
+namespace FixCollectedFuncCall;
+
+function foo(int $i): int { return $i; }
+function bar(int $i): int { return $i; }
+
+class Foo
+{
+
+	public function doFoo(): int
+	{
+		return bar(1)
+			+ bar(2);
+	}
+
+}
+
+echo bar(3);

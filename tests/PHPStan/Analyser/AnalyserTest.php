@@ -9,9 +9,12 @@ use PhpParser\Parser\Php7;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
+use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
 use PHPStan\Dependency\DependencyResolver;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
+use PHPStan\File\FileReader;
+use PHPStan\Fixable\Patcher;
 use PHPStan\Parser\RichParser;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -669,6 +672,15 @@ class AnalyserTest extends PHPStanTestCase
 			$this->assertStringContainsString('No error to ignore is reported on line', $result[$i]->getMessage());
 			$this->assertSame($line, $result[$i]->getLine());
 		}
+
+		$file = $result[0]->getFilePath();
+		$contents = FileReader::read($file);
+		$patched = (new Patcher())->apply([$file => $contents], [$result[0]->getFixedErrorDiffs(), $result[1]->getFixedErrorDiffs()]);
+		$this->assertSame(2, $patched['appliedCount']);
+		$this->assertSame(
+			str_replace(["\t\t/** @phpstan-ignore-next-line */\n", "\t\t * @phpstan-ignore-next-line\n"], '', $contents),
+			$patched['contents'][$file],
+		);
 	}
 
 	#[DataProvider('dataTrueAndFalse')]
@@ -811,6 +823,7 @@ class AnalyserTest extends PHPStanTestCase
 				self::getContainer()->getService('typeSpecifier'),
 			),
 			new LocalIgnoresProcessor(),
+			self::getContainer()->getByType(UnmatchedIgnoreFixer::class),
 			$reportUnmatchedIgnoredErrors,
 			self::getContainer()->getByType(ValueDependencyCollector::class),
 			false,

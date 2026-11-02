@@ -1,0 +1,56 @@
+<?php // lint >= 8.0
+
+namespace FixNoNamedArgumentsFunction;
+
+/**
+ * @no-named-arguments
+ */
+function foo(int $a, int $b = 2, ?string $c = null, bool $d = false, array $e = [], float $f = -1.5, string $g = 'x'): void
+{
+
+}
+
+/**
+ * @no-named-arguments
+ */
+function byRef(int $a, &$b = null, int $c = 3): void
+{
+
+}
+
+/**
+ * @no-named-arguments
+ */
+function variadic(int $a, int ...$rest): void
+{
+
+}
+
+/**
+ * @no-named-arguments
+ */
+function objectDefault(int $a, \stdClass $b = new \stdClass(), int $c = 3): void
+{
+
+}
+
+function (): void {
+	foo(1);
+	foo(1, 5);
+	foo(1, 2, 'c');
+	foo(
+		1,
+		2,
+		null,
+		true,
+		[],
+		-1.5,
+		'y',
+	);
+	foo(foo(4, 3), 2, null, false, [1]);
+	byRef(1, c: 4);
+	variadic(1);
+	variadic(1, 2, x: 3);
+	objectDefault(1, c: 4);
+	objectDefault(1, new \stdClass());
+};

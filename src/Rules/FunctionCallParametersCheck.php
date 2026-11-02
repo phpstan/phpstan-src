@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules;
 
+use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\CollectedDataEmitter;
@@ -43,6 +44,8 @@ use function array_merge;
 use function count;
 use function implode;
 use function in_array;
+use function is_bool;
+use function is_float;
 use function is_int;
 use function is_string;
 use function lcfirst;
@@ -336,6 +339,7 @@ final class FunctionCallParametersCheck
 			return $errors;
 		}
 
+		$positionalArgumentsFix = null;
 		foreach ($argumentsWithParameters as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter, $originalParameter]) {
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
@@ -375,10 +379,15 @@ final class FunctionCallParametersCheck
 
 			if (!$acceptsNamedArguments->yes()) {
 				if ($argumentName !== null) {
-					$errors[] = RuleErrorBuilder::message(sprintf($namedArgumentMessage, sprintf('named argument $%s', $argumentName)))
+					$errorBuilder = RuleErrorBuilder::message(sprintf($namedArgumentMessage, sprintf('named argument $%s', $argumentName)))
 						->identifier('argument.named')
-						->line($argumentLine)
-						->build();
+						->line($argumentLine);
+					$positionalArgumentsFix ??= $this->createPositionalArgumentsFix($parametersAcceptor, $funcCall);
+					if ($positionalArgumentsFix !== false) {
+						// every named argument of the call reports the same fix, the identical changes are applied once
+						$errorBuilder->fixNode($funcCall, $positionalArgumentsFix);
+					}
+					$errors[] = $errorBuilder->build();
 				} elseif ($unpack) {
 					$unpackedArrayType = $scope->getType($argumentValue);
 					$hasStringKey = $unpackedArrayType->getIterableKeyType()->isString();
@@ -890,6 +899,104 @@ final class FunctionCallParametersCheck
 		}
 
 		return null;
+	}
+
+	/**
+	 * Rewrites the call to pass every argument positionally, skipped optional parameters get their default values.
+	 *
+	 * @return (Closure(Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_): (Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_))|false
+	 */
+	private function createPositionalArgumentsFix(
+		ParametersAcceptor $parametersAcceptor,
+		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
+	): Closure|false
+	{
+		if ((bool) $funcCall->getAttribute('isAttribute', false)) {
+			// the call was created from an attribute, it is not in the file
+			return false;
+		}
+
+		$parameters = $parametersAcceptor->getParameters();
+		$parameterPositions = [];
+		foreach ($parameters as $i => $parameter) {
+			$parameterPositions[$parameter->getName()] = $i;
+		}
+
+		/** @var array<int, int> $argIndexByPosition */
+		$argIndexByPosition = [];
+		$lastPosition = 0;
+		foreach ($funcCall->getArgs() as $i => $arg) {
+			if ($arg->unpack) {
+				return false;
+			}
+			if ($arg->name === null) {
+				$argIndexByPosition[$i] = $i;
+				$lastPosition = max($lastPosition, $i);
+				continue;
+			}
+
+			$position = $parameterPositions[$arg->name->toString()] ?? null;
+			if (
+				$position === null
+				// a named argument that is collected by the variadic parameter keeps its string key
+				|| $parameters[$position]->isVariadic()
+				|| array_key_exists($position, $argIndexByPosition)
+			) {
+				return false;
+			}
+			$argIndexByPosition[$position] = $i;
+			$lastPosition = max($lastPosition, $position);
+		}
+
+		/** @var array<int, Expr> $defaultValues */
+		$defaultValues = [];
+		for ($position = 0; $position < $lastPosition; $position++) {
+			if (array_key_exists($position, $argIndexByPosition)) {
+				continue;
+			}
+
+			$parameter = $parameters[$position];
+			$defaultValue = $parameter->getDefaultValue();
+			if (!$parameter->isOptional() || !$parameter->passedByReference()->no() || $defaultValue === null) {
+				return false;
+			}
+
+			if ($defaultValue->isConstantArray()->yes() && $defaultValue->isIterableAtLeastOnce()->no()) {
+				$defaultValues[$position] = new Expr\Array_([]);
+				continue;
+			}
+
+			$scalarValues = $defaultValue->getConstantScalarValues();
+			if (count($scalarValues) !== 1) {
+				return false;
+			}
+			$scalarValue = $scalarValues[0];
+			$defaultValues[$position] = match (true) {
+				$scalarValue === null => new Expr\ConstFetch(new Node\Name('null')),
+				is_bool($scalarValue) => new Expr\ConstFetch(new Node\Name($scalarValue ? 'true' : 'false')),
+				is_int($scalarValue) => new Node\Scalar\Int_($scalarValue),
+				is_float($scalarValue) => new Node\Scalar\Float_($scalarValue),
+				default => new Node\Scalar\String_($scalarValue),
+			};
+		}
+
+		return static function (Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $call) use ($argIndexByPosition, $defaultValues, $lastPosition): Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ {
+			$callArgs = $call->getArgs();
+			$args = [];
+			for ($position = 0; $position <= $lastPosition; $position++) {
+				if (!array_key_exists($position, $argIndexByPosition)) {
+					$args[] = new Node\Arg(clone $defaultValues[$position]);
+					continue;
+				}
+
+				$arg = clone $callArgs[$argIndexByPosition[$position]];
+				$arg->name = null;
+				$args[] = $arg;
+			}
+			$call->args = $args;
+
+			return $call;
+		};
 	}
 
 	private function callReturnsByReference(Expr $expr, Scope $scope): bool

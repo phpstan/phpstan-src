@@ -37,6 +37,7 @@ final class IgnoredErrorHelper
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
+		private IgnoreErrorsConfigFixer $configFixer,
 		#[AutowiredParameter]
 		private array $ignoreErrors,
 		#[AutowiredParameter]
@@ -170,7 +171,7 @@ final class IgnoredErrorHelper
 			}
 		}
 
-		return new IgnoredErrorHelperResult($this->fileHelper, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors);
+		return new IgnoredErrorHelperResult($this->fileHelper, $this->configFixer, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors);
 	}
 
 }

@@ -8,6 +8,7 @@ use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser\Php7;
 use PHPStan\Analyser\Generics\TemplateArgumentObserver;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
+use PHPStan\Analyser\Ignore\IgnoreErrorsConfigFixer;
 use PHPStan\Analyser\Ignore\IgnoreLexer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Collectors\Registry as CollectorRegistry;
@@ -802,6 +803,7 @@ class AnalyserTest extends PHPStanTestCase
 
 		$ignoredErrorHelper = new IgnoredErrorHelper(
 			$this->getFileHelper(),
+			self::getContainer()->getByType(IgnoreErrorsConfigFixer::class),
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,
 		);

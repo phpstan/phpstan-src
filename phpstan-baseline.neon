@@ -55,6 +55,12 @@ parameters:
 			path: src/Analyser/ExprHandler/Helper/IncDecTypeHelper.php
 
 		-
+			rawMessage: 'Call to static method expand() of internal class Nette\DI\Helpers from outside its root namespace Nette.'
+			identifier: staticMethod.internalClass
+			count: 1
+			path: src/Analyser/Ignore/IgnoreErrorsConfigFixer.php
+
+		-
 			rawMessage: Casting to string something that's already string.
 			identifier: cast.useless
 			count: 4

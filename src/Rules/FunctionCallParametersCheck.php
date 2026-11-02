@@ -5,7 +5,6 @@ namespace PHPStan\Rules;
 use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\MutatingScope;
@@ -13,7 +12,6 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -918,69 +916,68 @@ final class FunctionCallParametersCheck
 			return false;
 		}
 
-		$args = $funcCall->getArgs();
-		foreach ($args as $arg) {
+		$parameters = $parametersAcceptor->getParameters();
+		$parameterPositions = [];
+		foreach ($parameters as $i => $parameter) {
+			$parameterPositions[$parameter->getName()] = $i;
+		}
+
+		/** @var array<int, int> $argIndexByPosition */
+		$argIndexByPosition = [];
+		$lastPosition = 0;
+		foreach ($funcCall->getArgs() as $i => $arg) {
 			if ($arg->unpack) {
 				return false;
 			}
-		}
-
-		$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, $args);
-		if ($reorderedArgs === null) {
-			return false;
-		}
-
-		$parameters = $parametersAcceptor->getParameters();
-		$passedArgsCount = 0;
-		/** @var array<int, Expr> $defaultValues */
-		$defaultValues = [];
-		foreach ($reorderedArgs as $position => $reorderedArg) {
-			$parameter = $parameters[$position] ?? null;
-			if ($reorderedArg->value instanceof TypeExpr) {
-				// reorderArgs() fills skipped optional parameters with their default value types
-				$defaultValue = $this->createDefaultValueExpr($reorderedArg->value->getExprType());
-				if ($parameter === null || !$parameter->passedByReference()->no() || $defaultValue === null) {
-					return false;
-				}
-				$defaultValues[$position] = $defaultValue;
+			if ($arg->name === null) {
+				$argIndexByPosition[$i] = $i;
+				$lastPosition = max($lastPosition, $i);
 				continue;
 			}
 
-			$passedArgsCount++;
-			/** @var Node\Arg $originalArg */
-			$originalArg = $reorderedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
-			if ($originalArg->name === null) {
-				continue;
-			}
-
-			// reorderArgs() appends unknown named arguments and puts the ones collected by the variadic parameter at its position,
-			// passing them positionally would change their meaning
-			if ($parameter === null || $parameter->isVariadic() || $parameter->getName() !== $originalArg->name->toString()) {
+			$position = $parameterPositions[$arg->name->toString()] ?? null;
+			if (
+				$position === null
+				// a named argument that is collected by the variadic parameter keeps its string key
+				|| $parameters[$position]->isVariadic()
+				|| array_key_exists($position, $argIndexByPosition)
+			) {
 				return false;
 			}
+			$argIndexByPosition[$position] = $i;
+			$lastPosition = max($lastPosition, $position);
 		}
 
-		// reorderArgs() drops duplicate named arguments
-		if ($passedArgsCount !== count($args)) {
-			return false;
-		}
-
-		return static function (Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $call) use ($parametersAcceptor, $defaultValues): Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ {
-			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, $call->getArgs());
-			if ($reorderedArgs === null) {
-				throw new ShouldNotHappenException();
+		/** @var array<int, Expr> $defaultValues */
+		$defaultValues = [];
+		for ($position = 0; $position < $lastPosition; $position++) {
+			if (array_key_exists($position, $argIndexByPosition)) {
+				continue;
 			}
 
+			$parameter = $parameters[$position];
+			$defaultValue = $parameter->getDefaultValue();
+			if (!$parameter->isOptional() || !$parameter->passedByReference()->no() || $defaultValue === null) {
+				return false;
+			}
+
+			$defaultValueExpr = $this->createDefaultValueExpr($defaultValue);
+			if ($defaultValueExpr === null) {
+				return false;
+			}
+			$defaultValues[$position] = $defaultValueExpr;
+		}
+
+		return static function (Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $call) use ($argIndexByPosition, $defaultValues, $lastPosition): Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ {
+			$callArgs = $call->getArgs();
 			$args = [];
-			foreach ($reorderedArgs as $position => $reorderedArg) {
-				if (array_key_exists($position, $defaultValues)) {
+			for ($position = 0; $position <= $lastPosition; $position++) {
+				if (!array_key_exists($position, $argIndexByPosition)) {
 					$args[] = new Node\Arg(clone $defaultValues[$position]);
 					continue;
 				}
 
-				/** @var Node\Arg $originalArg */
-				$originalArg = $reorderedArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
-				$arg = clone $originalArg;
+				$arg = clone $callArgs[$argIndexByPosition[$position]];
 				$arg->name = null;
 				$args[] = $arg;
 			}

@@ -13,6 +13,7 @@ use function array_unique;
 use function hash_file;
 use function is_dir;
 use function is_file;
+use function is_readable;
 
 #[AutowiredService]
 final class FileMonitor
@@ -56,7 +57,12 @@ final class FileMonitor
 		$finderResult = $this->analyseFileFinder->findFiles($this->analysedPaths);
 		$fileHashes = [];
 		foreach (array_unique(array_merge($finderResult->getFiles(), $filePaths, $this->getScannedFiles($finderResult->getFiles()))) as $filePath) {
-			$fileHashes[$filePath] = $this->getFileHash($filePath);
+			$hash = $this->getFileHash($filePath);
+			if ($hash === null) {
+				continue;
+			}
+
+			$fileHashes[$filePath] = $hash;
 		}
 
 		$this->fileHashes = $fileHashes;
@@ -80,15 +86,21 @@ final class FileMonitor
 		$deletedFiles = [];
 		$filePaths = array_unique(array_merge($finderResult->getFiles(), $this->filePaths, $this->getScannedFiles($finderResult->getFiles())));
 		foreach ($filePaths as $filePath) {
+			// a file that cannot be read is missing, like a config file during a git checkout,
+			// it is deleted now and new when it is back
+			$newHash = $this->getFileHash($filePath);
+			if ($newHash === null) {
+				continue;
+			}
+
 			if (!array_key_exists($filePath, $oldFileHashes)) {
 				$newFiles[] = $filePath;
-				$fileHashes[$filePath] = $this->getFileHash($filePath);
+				$fileHashes[$filePath] = $newHash;
 				continue;
 			}
 
 			$oldHash = $oldFileHashes[$filePath];
 			unset($oldFileHashes[$filePath]);
-			$newHash = $this->getFileHash($filePath);
 			$fileHashes[$filePath] = $newHash;
 			if ($oldHash === $newHash) {
 				continue;
@@ -110,12 +122,15 @@ final class FileMonitor
 		);
 	}
 
-	private function getFileHash(string $filePath): string
+	private function getFileHash(string $filePath): ?string
 	{
-		$hash = hash_file('sha256', $filePath);
+		if (!is_file($filePath) || !is_readable($filePath)) {
+			return null;
+		}
 
+		$hash = @hash_file('sha256', $filePath);
 		if ($hash === false) {
-			throw new CouldNotReadFileException($filePath);
+			return null;
 		}
 
 		return $hash;

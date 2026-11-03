@@ -102,6 +102,11 @@ final class FunctionReturnStatementsNode extends NodeAbstract implements ReturnS
 		return [];
 	}
 
+	public function getFunction(): Function_
+	{
+		return $this->function;
+	}
+
 	public function getFunctionReflection(): PhpFunctionFromParserNodeReflection
 	{
 		return $this->functionReflection;

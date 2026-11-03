@@ -92,6 +92,11 @@ final class MethodReturnStatementsNode extends NodeAbstract implements ReturnSta
 		return $this->yieldStatements;
 	}
 
+	public function getClassMethod(): ClassMethod
+	{
+		return $this->classMethod;
+	}
+
 	public function getClassReflection(): ClassReflection
 	{
 		return $this->classReflection;

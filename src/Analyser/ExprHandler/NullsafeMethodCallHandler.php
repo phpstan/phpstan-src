@@ -52,7 +52,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof NullsafeMethodCall;
+		return $expr instanceof NullsafeMethodCall && !$expr->isPartialFunctionApplication();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

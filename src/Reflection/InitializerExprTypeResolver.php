@@ -199,6 +199,9 @@ final class InitializerExprTypeResolver
 		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
 			return $this->getFirstClassCallableType($expr, $context, false);
 		}
+		if ($expr instanceof Expr\CallLike && $expr->isPartialFunctionApplication()) {
+			return new ObjectType(Closure::class);
+		}
 		if ($expr instanceof Expr\Closure && $expr->static) {
 			$parameters = [];
 			$isVariadic = false;

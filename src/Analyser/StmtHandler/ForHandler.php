@@ -81,7 +81,7 @@ final class ForHandler implements StmtHandler
 				&& $lastCondExpr->left instanceof Variable
 				&& $lastCondExpr->right instanceof FuncCall
 				&& $lastCondExpr->right->name instanceof Name
-				&& !$lastCondExpr->right->isFirstClassCallable()
+				&& !$lastCondExpr->right->isPartialFunctionApplication()
 				&& in_array($lastCondExpr->right->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($lastCondExpr->right->getArgs()) > 0
 				&& $lastCondExpr->right->getArgs()[0]->value instanceof Variable
@@ -106,7 +106,7 @@ final class ForHandler implements StmtHandler
 				&& $lastCondExpr->right instanceof Variable
 				&& $lastCondExpr->left instanceof FuncCall
 				&& $lastCondExpr->left->name instanceof Name
-				&& !$lastCondExpr->left->isFirstClassCallable()
+				&& !$lastCondExpr->left->isPartialFunctionApplication()
 				&& in_array($lastCondExpr->left->name->toLowerString(), ['count', 'sizeof'], true)
 				&& count($lastCondExpr->left->getArgs()) > 0
 				&& $lastCondExpr->left->getArgs()[0]->value instanceof Variable

@@ -644,7 +644,7 @@ final class ForeachHandler implements StmtHandler
 		if (
 			$stmt->expr instanceof FuncCall
 			&& $stmt->expr->name instanceof Name
-			&& !$stmt->expr->isFirstClassCallable()
+			&& !$stmt->expr->isPartialFunctionApplication()
 			&& $stmt->expr->name->toLowerString() === 'array_keys'
 			&& $stmt->valueVar instanceof Variable
 		) {

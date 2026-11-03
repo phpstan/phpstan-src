@@ -2136,12 +2136,12 @@ public:
 		return isInstance(name.deref(), classIdx, out);
 	}
 
-	/* !$call->isFirstClassCallable() && $call->getArgs() === []; false = pending exception */
+	/* !$call->isPartialFunctionApplication() && $call->getArgs() === []; false = pending exception */
 	[[nodiscard]] static bool isArgumentLessPlainCall(zend_object *call, bool &out)
 	{
-		bool fcc;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(call, fcc))) return false;
-		if (fcc) {
+		bool pfa;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(call, pfa))) return false;
+		if (pfa) {
 			out = false;
 			return true;
 		}
@@ -2518,17 +2518,18 @@ public:
 		if (UNEXPECTED(expressionType.isUndef())) return zv::Val();
 		if (!expressionType.isNull()) return expressionType;
 
-		/* NodeScopeResolver intercepts a first-class callable CallLike before
-		 * the ExprHandler dispatch - no handler supports the original node,
-		 * its closure type lives on the stored result's typeCallback */
+		/* NodeScopeResolver intercepts a first-class callable or a partial
+		 * function application before the ExprHandler dispatch - no handler
+		 * supports the original node, its closure type lives on the stored
+		 * result's typeCallback */
 		zval nodeZv;
 		ZVAL_OBJ(&nodeZv, node);
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(zv::Ref(&nodeZv), PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {
-			bool fcc;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(node, fcc))) return zv::Val();
-			if (fcc) return resolveTypeOfNewWorldHandlerNode(node);
+			bool pfa;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(node, pfa))) return zv::Val();
+			if (pfa) return resolveTypeOfNewWorldHandlerNode(node);
 		}
 
 		zv::Ref container = service(PT_MSS_CONTAINER);
@@ -3097,7 +3098,7 @@ public:
 		zval nodeZv;
 		ZVAL_OBJ(&nodeZv, node);
 		/* !Match_ && !Yield_ && !YieldFrom && ((!FuncCall && !MethodCall &&
-		 * !NullsafeMethodCall && !StaticCall) || isFirstClassCallable()) */
+		 * !NullsafeMethodCall && !StaticCall) || isPartialFunctionApplication()) */
 		bool plain = true;
 		static const int valueClasses[] = { PT_CLASS_MATCH, PT_CLASS_YIELD, PT_CLASS_YIELD_FROM };
 		for (int classIdx : valueClasses) {
@@ -3116,7 +3117,7 @@ public:
 				if (isCall) break;
 			}
 			if (isCall) {
-				if (UNEXPECTED(!pt_call_like_is_first_class_callable(node, plain))) return zv::Val();
+				if (UNEXPECTED(!pt_call_like_is_partial_function_application(node, plain))) return zv::Val();
 			}
 		}
 		if (plain) return getScopeStateType(node);
@@ -5456,9 +5457,9 @@ public:
 		if (UNEXPECTED(!isInstance(expr.ref(), PT_CLASS_FUNC_CALL, isFuncCall))) return false;
 		if (!isFuncCall) return true;
 		zend_object *call = expr.ref().asObject();
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(call, firstClassCallable))) return false;
-		if (firstClassCallable) return true;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(call, partialFunctionApplication))) return false;
+		if (partialFunctionApplication) return true;
 		zv::Ref name = nodeProp(call, PT_LC("name"));
 		if (UNEXPECTED(name.raw() == NULL)) return false;
 		bool isFullyQualified;

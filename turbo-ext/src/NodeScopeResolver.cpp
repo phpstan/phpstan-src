@@ -746,11 +746,11 @@ public:
 		zv::Val handler = pt_expr_handler_registry_resolve(Z_OBJ_P(expr), container.raw());
 		if (UNEXPECTED(handler.isUndef())) return zv::Val();
 		if (handler.isNull()) {
-			bool firstClassCallable = false;
+			bool partialFunctionApplication = false;
 			bool isCallLike;
 			if (UNEXPECTED(!isInstance(Z_OBJ_P(expr), PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
-			if (isCallLike && UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
-			if (!firstClassCallable) {
+			if (isCallLike && UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), partialFunctionApplication))) return zv::Val();
+			if (!partialFunctionApplication) {
 				zv::Val mixed = pt_type_new_mixed_type();
 				if (UNEXPECTED(mixed.isUndef())) return zv::Val();
 				zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
@@ -1981,9 +1981,9 @@ private:
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(exprObject, PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {
-			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(exprObject, firstClassCallable))) return zv::Val();
-			if (firstClassCallable) return processFirstClassCallable(stmt, expr, scope, storage, nodeCallback, context);
+			bool partialFunctionApplication;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(exprObject, partialFunctionApplication))) return zv::Val();
+			if (partialFunctionApplication) return processPartialFunctionApplication(stmt, expr, scope, storage, nodeCallback, context);
 		}
 
 		zv::Ref container = slot(slots::container);
@@ -2058,14 +2058,19 @@ private:
 		return expressionResult;
 	}
 
-	/* the first-class-callable branch of processExprNodeInternal() */
-	zv::Val processFirstClassCallable(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
+	/* the partial-function-application branch of processExprNodeInternal(),
+	 * first-class callables included */
+	zv::Val processPartialFunctionApplication(zval *stmt, zval *expr, zval *scope, zval *storage, zval *nodeCallback, zval *context)
 	{
 		zend_object *exprObject = Z_OBJ_P(expr);
 		zv::Val newExpr;
-		bool is;
-		if (UNEXPECTED(!isInstance(exprObject, PT_CLASS_FUNC_CALL, is))) return zv::Val();
-		if (is) {
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(exprObject, firstClassCallable))) return zv::Val();
+		bool is = false;
+		if (firstClassCallable && UNEXPECTED(!isInstance(exprObject, PT_CLASS_FUNC_CALL, is))) return zv::Val();
+		if (!firstClassCallable) {
+			newExpr = pt_type_new(PT_CLASS_PARTIAL_FUNCTION_APPLICATION_NODE, 1, expr);
+		} else if (is) {
 			zval *name = nodeProperty(pt_nsr_name_site, exprObject, PT_LC("name"));
 			if (UNEXPECTED(name == NULL)) return zv::Val();
 			zv::Args argv{name, expr};
@@ -2098,11 +2103,12 @@ private:
 						if (UNEXPECTED(!isInstanceValue(classNode, PT_CLASS_CLASS_STMT, anonymousClass))) return zv::Val();
 					}
 					if (!is || anonymousClass) {
-						pt_throw_should_not_happen();
-						return zv::Val();
+						// $a?->b(...) and new class (...) {} do not compile
+						newExpr = pt_type_new(PT_CLASS_PARTIAL_FUNCTION_APPLICATION_NODE, 1, expr);
+					} else {
+						zv::Args argv{classNode, expr};
+						newExpr = pt_type_new(PT_CLASS_INSTANTIATION_CALLABLE_NODE, 2, argv);
 					}
-					zv::Args argv{classNode, expr};
-					newExpr = pt_type_new(PT_CLASS_INSTANTIATION_CALLABLE_NODE, 2, argv);
 				}
 			}
 		}

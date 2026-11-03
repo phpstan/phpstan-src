@@ -152,7 +152,7 @@ final class PossiblyPureCallTransitivePurityResolver
 	private function resolveCall(Node $expr, Scope $scope): ?array
 	{
 		if ($expr instanceof Node\Expr\FuncCall) {
-			if ($expr->isFirstClassCallable()) {
+			if ($expr->isPartialFunctionApplication()) {
 				return null;
 			}
 			if (!$expr->name instanceof Node\Name) {
@@ -166,7 +166,7 @@ final class PossiblyPureCallTransitivePurityResolver
 		}
 
 		if ($expr instanceof Node\Expr\MethodCall || $expr instanceof Node\Expr\NullsafeMethodCall) {
-			if ($expr->isFirstClassCallable()) {
+			if ($expr->isPartialFunctionApplication()) {
 				return null;
 			}
 			if (!$expr->name instanceof Node\Identifier) {
@@ -207,7 +207,7 @@ final class PossiblyPureCallTransitivePurityResolver
 		}
 
 		if ($expr instanceof Node\Expr\StaticCall) {
-			if ($expr->isFirstClassCallable()) {
+			if ($expr->isPartialFunctionApplication()) {
 				return null;
 			}
 			if (!$expr->name instanceof Node\Identifier) {

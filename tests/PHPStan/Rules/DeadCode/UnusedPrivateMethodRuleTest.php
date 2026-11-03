@@ -78,6 +78,11 @@ class UnusedPrivateMethodRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/callable-unused-private-method.php'], []);
 	}
 
+	public function testPartialFunctionApplication(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-unused-private-method.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testEnums(): void
 	{

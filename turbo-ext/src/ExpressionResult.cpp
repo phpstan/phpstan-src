@@ -991,17 +991,17 @@ private:
 		if (instanceof_function(expr->ce, funcCallCe)) {
 			zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
 			if (name.raw() == NULL || !name.deref().instanceOf(nameCe)) return 0;
-			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, firstClassCallable))) return -1;
-			return firstClassCallable ? 0 : 1;
+			bool partialFunctionApplication;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, partialFunctionApplication))) return -1;
+			return partialFunctionApplication ? 0 : 1;
 		}
 
 		if (!instanceof_function(expr->ce, methodCallCe) && !instanceof_function(expr->ce, nullsafeMethodCallCe) && !instanceof_function(expr->ce, staticCallCe)) {
 			return 0;
 		}
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, firstClassCallable))) return -1;
-		return firstClassCallable ? 0 : 1;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, partialFunctionApplication))) return -1;
+		return partialFunctionApplication ? 0 : 1;
 	}
 
 	/* Mirrors hasTrackedExpressionType(); -1 = pending exception, else 0/1. */

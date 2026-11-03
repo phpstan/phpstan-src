@@ -201,9 +201,9 @@ public:
 			zend_object *expr = zv::ObjRef(exprTypeHolder.asObject()).propAt(PT_ETH_PROP_EXPR).asObject();
 
 			if (!instanceof_function(expr->ce, funcCallCe)) continue;
-			bool isFirstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, isFirstClassCallable))) return zv::Val();
-			if (isFirstClassCallable) continue;
+			bool isPartialFunctionApplication;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, isPartialFunctionApplication))) return zv::Val();
+			if (isPartialFunctionApplication) continue;
 			zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
 			if (UNEXPECTED(name.raw() == NULL)) continue;
 			name = name.deref();

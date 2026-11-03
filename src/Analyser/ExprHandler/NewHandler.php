@@ -110,7 +110,7 @@ final class NewHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof New_ && !$expr->isFirstClassCallable();
+		return $expr instanceof New_ && !$expr->isPartialFunctionApplication();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

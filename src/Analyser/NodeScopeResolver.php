@@ -39,6 +39,7 @@ use PHPStan\Node\FunctionCallExpressionNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Node\MethodCallExpressionNode;
+use PHPStan\Node\PartialFunctionApplicationNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Node\StaticMethodCallExpressionNode;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
@@ -564,7 +565,7 @@ class NodeScopeResolver
 		// throw stays: real source nodes must have a handler.
 		if (
 			ExprHandlerRegistry::resolve($expr, $this->container) === null
-			&& !($expr instanceof Expr\CallLike && $expr->isFirstClassCallable())
+			&& !($expr instanceof Expr\CallLike && $expr->isPartialFunctionApplication())
 		) {
 			$mixed = new MixedType();
 			return $this->expressionResultFactory->create(
@@ -815,8 +816,10 @@ class NodeScopeResolver
 		ExpressionContext $context,
 	): ExpressionResult
 	{
-		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
-			if ($expr instanceof FuncCall) {
+		if ($expr instanceof Expr\CallLike && $expr->isPartialFunctionApplication()) {
+			if (!$expr->isFirstClassCallable()) {
+				$newExpr = new PartialFunctionApplicationNode($expr);
+			} elseif ($expr instanceof FuncCall) {
 				$newExpr = new FunctionCallableNode($expr->name, $expr);
 			} elseif ($expr instanceof MethodCall) {
 				$newExpr = new MethodCallableNode($expr->var, $expr->name, $expr);
@@ -825,7 +828,8 @@ class NodeScopeResolver
 			} elseif ($expr instanceof New_ && !$expr->class instanceof Class_) {
 				$newExpr = new InstantiationCallableNode($expr->class, $expr);
 			} else {
-				throw new ShouldNotHappenException();
+				// $a?->b(...) and new class (...) {} do not compile
+				$newExpr = new PartialFunctionApplicationNode($expr);
 			}
 
 			$newExprResult = $this->processExprNode($stmt, $newExpr, $scope, $storage, $nodeCallback, $context);
@@ -838,8 +842,7 @@ class NodeScopeResolver
 				throwPoints: $newExprResult->getThrowPoints(),
 				impurePoints: $newExprResult->getImpurePoints(),
 				variableFlow: $newExprResult->getVariableFlow(),
-				// the first-class callable closure type lives on the *CallableNode
-				// result; delegate so getType() of the original CallLike answers from it
+				// the closure type lives on the result of the virtual node; delegate so getType() of the original CallLike answers from it
 				typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $newExprResult->getNativeType() : $newExprResult->getType()),
 				specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 				dependencies: $newExprResult->getDependencies(),

@@ -206,7 +206,7 @@ pt_property_site pt_nh_static_call_args_site;
 pt_property_site pt_nh_name_name_site;
 
 zval *exprClass(zval *expr) { return nodeProperty(pt_nh_class_site, expr, PT_LC("class")); }
-/* $expr->getArgs() of a New_ that is not a first-class callable (the handler
+/* $expr->getArgs() of a New_ that is not a partial function application (the handler
  * never sees one), and $expr->args: its $args */
 zval *exprArgs(zval *expr) { return nodeProperty(pt_nh_args_site, expr, PT_LC("args")); }
 /* $methodCall->getArgs() of the synthetic constructor StaticCall (its own
@@ -344,9 +344,9 @@ public:
 			out = false;
 			return true;
 		}
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return false;
-		out = !firstClassCallable;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), partialFunctionApplication))) return false;
+		out = !partialFunctionApplication;
 		return true;
 	}
 

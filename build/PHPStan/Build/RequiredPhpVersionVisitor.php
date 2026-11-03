@@ -120,6 +120,10 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 			}
 		}
 
+		if ($node instanceof Node\Expr\CallLike && $node->isPartialFunctionApplication() && !$node->isFirstClassCallable()) {
+			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsPartialFunctionApplication(), 'partial function application', $node);
+		}
+
 		if ($node instanceof Node\Arg && $node->name !== null) {
 			$this->require(static fn (PhpVersion $phpVersion) => $phpVersion->supportsNamedArguments(), 'named arguments', $node);
 		}
@@ -211,7 +215,7 @@ final class RequiredPhpVersionVisitor extends NodeVisitorAbstract
 	{
 		$minorVersionIterator = new PhpMinorVersionIterator(
 			new PhpVersion(70400),
-			new PhpVersion(80500),
+			new PhpVersion(80600),
 		);
 
 		foreach ($minorVersionIterator as $phpVersion) {

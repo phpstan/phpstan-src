@@ -203,14 +203,14 @@ zend_string *identifierString(zval *identifier)
 	return Z_TYPE_P(name) == IS_STRING ? Z_STR_P(name) : NULL;
 }
 
-/* $call->getArgs(): the raw `args` of a call that is not a first-class
- * callable (what getRawArgs() returns for every CallLike), the method —
+/* $call->getArgs(): the raw `args` of a call that is not a partial function
+ * application (what getRawArgs() returns for every CallLike), the method —
  * whose assert() fires — for one that is; UNDEF = pending exception */
 zv::Val callArgs(zval *call)
 {
-	bool firstClassCallable;
-	if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return zv::Val();
-	if (UNEXPECTED(firstClassCallable)) return pt_type_call(Z_OBJ_P(call), PT_LC("getargs"), 0, NULL);
+	bool partialFunctionApplication;
+	if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), partialFunctionApplication))) return zv::Val();
+	if (UNEXPECTED(partialFunctionApplication)) return pt_type_call(Z_OBJ_P(call), PT_LC("getargs"), 0, NULL);
 	zval *args = nodeProp(pt_dnh_args_site, call, PT_LC("args"));
 	if (UNEXPECTED(Z_TYPE_P(args) == IS_UNDEF)) return zv::Val::null();
 	return zv::Val::copyOf(zv::Ref(args));
@@ -376,9 +376,9 @@ public:
 	zv::Val specifyTypesForNode(zval *scope, zval *node, zval *context) const
 	{
 		if (isA(node, PT_CLASS_CALL_LIKE)) {
-			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(node), firstClassCallable))) return zv::Val();
-			if (firstClassCallable) return emptyTypesRooted(node);
+			bool partialFunctionApplication;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(node), partialFunctionApplication))) return zv::Val();
+			if (partialFunctionApplication) return emptyTypesRooted(node);
 		} else if (UNEXPECTED(EG(exception))) {
 			return zv::Val();
 		}

@@ -646,7 +646,7 @@ private:
 	}
 
 	/* $call instanceof FuncCall && $call->name instanceof Name &&
-	 * !$call->isFirstClassCallable() && in_array($call->name->toLowerString(),
+	 * !$call->isPartialFunctionApplication() && in_array($call->name->toLowerString(),
 	 * ['count', 'sizeof'], true) && count($call->getArgs()) > 0 &&
 	 * $call->getArgs()[0]->value instanceof Variable — the array argument
 	 * (borrowed from `hold`), NULL otherwise (and on a pending exception,
@@ -660,12 +660,12 @@ private:
 			return NULL;
 		}
 		if (!ptsh::isInstanceOf(name, PT_CLASS_NAME, error)) return NULL;
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) {
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), partialFunctionApplication))) {
 			error = true;
 			return NULL;
 		}
-		if (firstClassCallable) return NULL;
+		if (partialFunctionApplication) return NULL;
 		zv::Val lower = ptlh::nameToLowerString(name);
 		if (UNEXPECTED(lower.isUndef())) {
 			error = true;

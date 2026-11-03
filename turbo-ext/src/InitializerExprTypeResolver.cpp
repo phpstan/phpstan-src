@@ -1103,6 +1103,11 @@ public:
 					if (firstClassCallable) {
 						return getFirstClassCallableType(expr, context, false);
 					}
+					bool partialFunctionApplication;
+					if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), partialFunctionApplication))) return zv::Val();
+					if (partialFunctionApplication) {
+						return newObjectTypeLiteral(PT_LC("Closure"));
+					}
 					break;
 				}
 				case ARM_CLOSURE: {

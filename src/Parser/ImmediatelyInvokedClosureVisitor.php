@@ -22,7 +22,7 @@ final class ImmediatelyInvokedClosureVisitor extends NodeVisitorAbstract
 		if (
 			$node instanceof Node\Expr\FuncCall
 			&& ($node->name instanceof Node\Expr\Closure || $node->name instanceof Node\Expr\ArrowFunction)
-			&& !$node->isFirstClassCallable()
+			&& !$node->isPartialFunctionApplication()
 		) {
 			$node->name->setAttribute(self::ATTRIBUTE_NAME, true);
 			$node->name->setAttribute(self::ARGS_ATTRIBUTE_NAME, $node->args);

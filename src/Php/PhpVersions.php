@@ -158,6 +158,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsPartialFunctionApplication(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80600, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsReadOnlyClasses(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;

@@ -527,13 +527,13 @@ final class ExpressionResult
 
 		$expr = $this->expr;
 		if ($expr instanceof Expr\FuncCall) {
-			return $expr->name instanceof Node\Name && !$expr->isFirstClassCallable();
+			return $expr->name instanceof Node\Name && !$expr->isPartialFunctionApplication();
 		}
 
 		return ($expr instanceof Expr\MethodCall
 			|| $expr instanceof Expr\NullsafeMethodCall
 			|| $expr instanceof Expr\StaticCall)
-			&& !$expr->isFirstClassCallable();
+			&& !$expr->isPartialFunctionApplication();
 	}
 
 	/**

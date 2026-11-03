@@ -2757,9 +2757,9 @@ private:
 	[[nodiscard]] bool processInArrayForConditionalExpressionsAfterAssign(zval *nsr, zval *scope, zend_string *variableName, zv::Val &conditionalExpressions, zval *assignedExpr, zval *assignedType, zval *rhsImpurePoints)
 	{
 		if (!ahNameIs(AH_PROP(assignedExpr, name), PT_LC("in_array"))) return true;
-		bool firstClassCallable;
-		AH_OKB(pt_call_like_is_first_class_callable(Z_OBJ_P(assignedExpr), firstClassCallable));
-		if (firstClassCallable) return true;
+		bool partialFunctionApplication;
+		AH_OKB(pt_call_like_is_partial_function_application(Z_OBJ_P(assignedExpr), partialFunctionApplication));
+		if (partialFunctionApplication) return true;
 		{
 			zend_long isTrue = ahCallTri(assignedType, PT_LC("istrue"), 0, NULL);
 			AH_OKB(isTrue >= 0);
@@ -4269,9 +4269,9 @@ private:
 			call = AH_PROP(assignedExpr, left);
 		}
 		if (call == NULL) return ahEmptyArray();
-		bool firstClassCallable;
-		AH_OK(pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable));
-		if (firstClassCallable) return ahEmptyArray();
+		bool partialFunctionApplication;
+		AH_OK(pt_call_like_is_partial_function_application(Z_OBJ_P(call), partialFunctionApplication));
+		if (partialFunctionApplication) return ahEmptyArray();
 
 		zv::Val argResults = ahEmptyArray();
 		HashTable *args = ahArgs(call);
@@ -4370,16 +4370,16 @@ private:
 
 		bool isFuncCall = ahIs(exprExpr, PT_CLASS_FUNC_CALL);
 		zval *funcName = isFuncCall ? AH_PROP(exprExpr, name) : NULL;
-		bool firstClassCallable = false;
+		bool partialFunctionApplication = false;
 		if (isFuncCall && ahIs(funcName, PT_CLASS_NAME)) {
-			AH_OK(pt_call_like_is_first_class_callable(Z_OBJ_P(exprExpr), firstClassCallable));
+			AH_OK(pt_call_like_is_partial_function_application(Z_OBJ_P(exprExpr), partialFunctionApplication));
 		}
 
 		// infer $arr[$key] after $key = array_key_first/last($arr)
 		if (
 			isFuncCall
 			&& ahIs(funcName, PT_CLASS_NAME)
-			&& !firstClassCallable
+			&& !partialFunctionApplication
 			&& (ahNameIs(funcName, PT_LC("array_key_first")) || ahNameIs(funcName, PT_LC("array_key_last")))
 			&& ahArgCount(exprExpr) >= 1
 		) {
@@ -4422,7 +4422,7 @@ private:
 		if (
 			isFuncCall
 			&& ahIs(funcName, PT_CLASS_NAME)
-			&& !firstClassCallable
+			&& !partialFunctionApplication
 			&& ahArgCount(exprExpr) >= 2
 		) {
 			zval *arrayArg = NULL;
@@ -4494,7 +4494,7 @@ private:
 			if (
 				isFuncCall
 				&& ahIs(funcName, PT_CLASS_NAME)
-				&& !firstClassCallable
+				&& !partialFunctionApplication
 				&& ahNameIs(funcName, PT_LC("array_rand"))
 				&& ahArgCount(exprExpr) >= 1
 			) {
@@ -4531,14 +4531,14 @@ private:
 			if (ahIs(exprExpr, PT_CLASS_BINARY_OP_MINUS)) {
 				zval *left = AH_PROP(exprExpr, left);
 				zval *right = AH_PROP(exprExpr, right);
-				bool leftFirstClassCallable = false;
+				bool leftPartialFunctionApplication = false;
 				bool leftIsCall = ahIs(left, PT_CLASS_FUNC_CALL) && ahIs(AH_PROP(left, name), PT_CLASS_NAME);
 				if (leftIsCall) {
-					AH_OK(pt_call_like_is_first_class_callable(Z_OBJ_P(left), leftFirstClassCallable));
+					AH_OK(pt_call_like_is_partial_function_application(Z_OBJ_P(left), leftPartialFunctionApplication));
 				}
 				if (
 					leftIsCall
-					&& !leftFirstClassCallable
+					&& !leftPartialFunctionApplication
 					&& ahIs(right, PT_CLASS_SCALAR_INT)
 					&& isIntOne(right)
 					&& (ahNameIs(AH_PROP(left, name), PT_LC("count")) || ahNameIs(AH_PROP(left, name), PT_LC("sizeof")))

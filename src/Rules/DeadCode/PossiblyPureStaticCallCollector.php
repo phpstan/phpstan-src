@@ -29,7 +29,7 @@ final class PossiblyPureStaticCallCollector implements Collector
 		$expr = $node->expr;
 		if ($expr instanceof Node\Expr\BinaryOp\Pipe) {
 			if ($expr->right instanceof Node\Expr\StaticCall) {
-				if (!$expr->right->isFirstClassCallable()) {
+				if (!$expr->right->isPartialFunctionApplication()) {
 					return null;
 				}
 
@@ -38,7 +38,7 @@ final class PossiblyPureStaticCallCollector implements Collector
 				$expr = $expr->right->expr;
 			}
 		}
-		if (!$expr instanceof Node\Expr\StaticCall || $expr->isFirstClassCallable()) {
+		if (!$expr instanceof Node\Expr\StaticCall || $expr->isPartialFunctionApplication()) {
 			return null;
 		}
 		if (!$expr->name instanceof Node\Identifier) {

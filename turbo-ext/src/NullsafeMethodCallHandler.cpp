@@ -153,7 +153,13 @@ public:
 	{
 		int is = isInstanceOf(expr, PT_CLASS_NULLSAFE_METHOD_CALL);
 		if (UNEXPECTED(is < 0)) return false;
-		out = is == 1;
+		if (is != 1) {
+			out = false;
+			return true;
+		}
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), partialFunctionApplication))) return false;
+		out = !partialFunctionApplication;
 		return true;
 	}
 

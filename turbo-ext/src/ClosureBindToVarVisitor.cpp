@@ -44,7 +44,7 @@ public:
 		zend_string *methodName = visitors::nameString(method, identifierProp);
 		if (methodName == NULL || !visitors::lowerEquals(methodName, "bindto")) return true;
 		zval *args = argsProp.of(node);
-		if (visitors::isFirstClassCallable(args)) return true;
+		if (visitors::isPartialFunctionApplication(args)) return true;
 
 		zend_object *arg = visitors::argAt(args, 0);
 		zval *var = varProp.of(node);

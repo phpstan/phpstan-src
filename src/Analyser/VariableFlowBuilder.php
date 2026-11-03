@@ -23,7 +23,7 @@ final class VariableFlowBuilder
 		// a callback the callee invokes immediately throws through the call -
 		// its throw points are re-created on the callback argument node
 		$callbackArguments = [];
-		if ($expr instanceof Expr\CallLike && !$expr->isFirstClassCallable()) {
+		if ($expr instanceof Expr\CallLike && !$expr->isPartialFunctionApplication()) {
 			foreach ($expr->getArgs() as $arg) {
 				if (!$arg->value instanceof Expr\Closure && !$arg->value instanceof Expr\ArrowFunction) {
 					continue;

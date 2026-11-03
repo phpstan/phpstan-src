@@ -68,19 +68,21 @@ inline constexpr char strings[] =
 	"shiftLeftOverflows\0" /* 547 */
 	"negateNumber\0" /* 566 */
 	"toIntBound\0" /* 579 */
-	"getTypeFromValue\0" /* 590 */
-	"getNeverType\0" /* 607 */
-	"negate\0" /* 620 */
-	"numeratorType\0" /* 627 */
-	"divisorType\0" /* 641 */
-	"intDivide\0" /* 653 */
-	"getIntervals\0" /* 663 */
-	"numeratorMin\0" /* 676 */
-	"numeratorMax\0" /* 689 */
-	"divideIntervals\0" /* 702 */
-	"numerator\0" /* 718 */
-	"divisor\0" /* 728 */
-	"divideBounds"; /* 736 */
+	"PHPStan\\Type\\ConstantScalarType\0" /* 590 */
+	"toIntegerOperand\0" /* 622 */
+	"getTypeFromValue\0" /* 639 */
+	"getNeverType\0" /* 656 */
+	"negate\0" /* 669 */
+	"numeratorType\0" /* 676 */
+	"divisorType\0" /* 690 */
+	"intDivide\0" /* 702 */
+	"getIntervals\0" /* 712 */
+	"numeratorMin\0" /* 725 */
+	"numeratorMax\0" /* 738 */
+	"divideIntervals\0" /* 751 */
+	"numerator\0" /* 767 */
+	"divisor\0" /* 777 */
+	"divideBounds"; /* 785 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* concat $left */
 	reg::packed(23, 0, 5), /* concat $right */
@@ -172,6 +174,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(63, 0, 5), /* negateNumber return */
 	reg::packed(465, MAY_BE_DOUBLE), /* toIntBound $value */
 	reg::packed(63, MAY_BE_NULL | MAY_BE_LONG), /* toIntBound return */
+	reg::packed(249, 0, 590), /* toIntegerOperand $type */
+	reg::packed(63, MAY_BE_LONG), /* toIntegerOperand return */
 	reg::packed(465, 0), /* getTypeFromValue $value */
 	reg::packed(63, 0, 5), /* getTypeFromValue return */
 	reg::packed(71, 0, 5), /* getNeverType $leftType */
@@ -180,19 +184,19 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(249, 0, 5), /* negate $type */
 	reg::packed(29, 0, 40), /* negate $phpVersion */
 	reg::packed(63, 0, 5), /* negate return */
-	reg::packed(627, 0, 5), /* intDivide $numeratorType */
-	reg::packed(641, 0, 5), /* intDivide $divisorType */
+	reg::packed(676, 0, 5), /* intDivide $numeratorType */
+	reg::packed(690, 0, 5), /* intDivide $divisorType */
 	reg::packed(29, 0, 40), /* intDivide $phpVersion */
 	reg::packed(63, 0, 5), /* intDivide return */
 	reg::packed(249, 0, 5), /* getIntervals $type */
 	reg::packed(63, MAY_BE_NULL | MAY_BE_ARRAY), /* getIntervals return */
-	reg::packed(676, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideIntervals $numeratorMin */
-	reg::packed(689, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideIntervals $numeratorMax */
+	reg::packed(725, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideIntervals $numeratorMin */
+	reg::packed(738, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideIntervals $numeratorMax */
 	reg::packed(205, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideIntervals $divisorMin */
 	reg::packed(216, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideIntervals $divisorMax */
 	reg::packed(63, 0, 5), /* divideIntervals return */
-	reg::packed(718, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBounds $numerator */
-	reg::packed(728, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBounds $divisor */
+	reg::packed(767, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBounds $numerator */
+	reg::packed(777, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBounds $divisor */
 	reg::packed(63, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBounds return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -227,13 +231,14 @@ inline constexpr sigtab::Sig integerRangeMath = { { 524 /* integerRangeMath */, 
 inline constexpr sigtab::Sig shiftLeftOverflows = { { 547 /* shiftLeftOverflows */, 2, 83, 2, 85, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig negateNumber = { { 566 /* negateNumber */, 1, 86, 1, 87, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig toIntBound = { { 579 /* toIntBound */, 1, 88, 1, 89, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getTypeFromValue = { { 590 /* getTypeFromValue */, 1, 90, 1, 91, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getNeverType = { { 607 /* getNeverType */, 2, 92, 2, 94, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig negate = { { 620 /* negate */, 2, 95, 2, 97, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intDivide = { { 653 /* intDivide */, 3, 98, 3, 101, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getIntervals = { { 663 /* getIntervals */, 1, 102, 1, 103, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig divideIntervals = { { 702 /* divideIntervals */, 4, 104, 4, 108, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig divideBounds = { { 736 /* divideBounds */, 2, 109, 2, 111, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toIntegerOperand = { { 622 /* toIntegerOperand */, 1, 90, 1, 91, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getTypeFromValue = { { 639 /* getTypeFromValue */, 1, 92, 1, 93, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getNeverType = { { 656 /* getNeverType */, 2, 94, 2, 96, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig negate = { { 669 /* negate */, 2, 97, 2, 99, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intDivide = { { 702 /* intDivide */, 3, 100, 3, 103, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIntervals = { { 712 /* getIntervals */, 1, 104, 1, 105, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig divideIntervals = { { 751 /* divideIntervals */, 4, 106, 4, 110, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig divideBounds = { { 785 /* divideBounds */, 2, 111, 2, 113, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::OperatorTypeHelper

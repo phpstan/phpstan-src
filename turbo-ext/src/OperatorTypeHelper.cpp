@@ -357,11 +357,9 @@ public:
 						return -1;
 					}
 
-					zv::Val leftValue = callOn(leftNumberType.raw(), mGetValue);
-					if (UNEXPECTED(leftValue.isUndef())) return -1;
-					zv::Val rightValue = callOn(rightNumberType.raw(), mGetValue);
-					if (UNEXPECTED(rightValue.isUndef())) return -1;
-					zv::Val resultValue = applyOperation(operation, operationCallable, leftValue.raw(), rightValue.raw());
+					zval leftInteger, rightInteger;
+					if (UNEXPECTED(!toIntegerOperand(leftTypeInner, leftInteger) || !toIntegerOperand(rightTypeInner, rightInteger))) return -1;
+					zv::Val resultValue = applyOperation(operation, operationCallable, &leftInteger, &rightInteger);
 					if (UNEXPECTED(resultValue.isUndef())) return -1;
 					resultType = typeFromValue(resultValue.raw());
 				}
@@ -371,6 +369,23 @@ public:
 		}
 		result = unionOf(resultTypes);
 		return result.isUndef() ? -1 : 0;
+	}
+
+	/* Mirrors toIntegerOperand(): the only value of
+	 * $type->toInteger()->getConstantScalarValues(), as an IS_LONG zval */
+	static bool toIntegerOperand(zval *type, zval &integer)
+	{
+		zv::Val integerType = callOn(type, mToInteger);
+		if (UNEXPECTED(integerType.isUndef())) return false;
+		zv::Val values = callOn(integerType.raw(), mGetConstantScalarValues);
+		if (UNEXPECTED(values.isUndef()) || UNEXPECTED(!requireArray(values.raw()))) return false;
+		zval *value = zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0);
+		if (zend_hash_num_elements(Z_ARRVAL_P(values.raw())) != 1 || value == NULL || Z_TYPE_P(value) != IS_LONG) {
+			pt_throw_should_not_happen();
+			return false;
+		}
+		ZVAL_LONG(&integer, Z_LVAL_P(value));
+		return true;
 	}
 
 	/* $operationCallable($a, $b) or the operator */
@@ -451,27 +466,26 @@ public:
 						break;
 					case IETR_MOD: {
 						zval rightInteger;
-						ZVAL_LONG(&rightInteger, zval_get_long(rightValue.raw()));
+						if (UNEXPECTED(!toIntegerOperand(rightEntry.value().raw(), rightInteger))) return -1;
 						if (Z_LVAL(rightInteger) == 0) {
 							result = newErrorType();
 							return result.isUndef() ? -1 : 0;
 						}
 						zval leftInteger;
-						ZVAL_LONG(&leftInteger, zval_get_long(leftValue.raw()));
+						if (UNEXPECTED(!toIntegerOperand(leftEntry.value().raw(), leftInteger))) return -1;
 						resultValue = phpOp(mod_function, &leftInteger, &rightInteger);
 						break;
 					}
 					case IETR_SHIFT_LEFT:
 					case IETR_SHIFT_RIGHT: {
-						zval zero;
-						ZVAL_LONG(&zero, 0);
-						if (lessThan(rightValue.raw(), &zero)) {
+						zval rightInteger;
+						if (UNEXPECTED(!toIntegerOperand(rightEntry.value().raw(), rightInteger))) return -1;
+						if (Z_LVAL(rightInteger) < 0) {
 							result = newErrorType();
 							return result.isUndef() ? -1 : 0;
 						}
-						zval leftInteger, rightInteger;
-						ZVAL_LONG(&leftInteger, zval_get_long(leftValue.raw()));
-						ZVAL_LONG(&rightInteger, zval_get_long(rightValue.raw()));
+						zval leftInteger;
+						if (UNEXPECTED(!toIntegerOperand(leftEntry.value().raw(), leftInteger))) return -1;
 						resultValue = phpOp(kind == IETR_SHIFT_LEFT ? shift_left_function : shift_right_function, &leftInteger, &rightInteger);
 						break;
 					}
@@ -2322,6 +2336,20 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	});
 
 	cls.method(sigs::getNeverType, OT_TYPES_GLUE(OperatorTypeHelper::getNeverType(leftType, rightType)));
+
+	cls.method(sigs::toIntegerOperand, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		if (!zp::parse<zp::Obj>(execute_data, type)) RETURN_THROWS();
+		zend_class_entry *ce = pt_class(PT_CLASS_CONSTANT_SCALAR_TYPE);
+		if (UNEXPECTED(ce == NULL)) RETURN_THROWS();
+		if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(type), ce))) {
+			zend_argument_type_error(1, "must be of type PHPStan\\Type\\ConstantScalarType, %s given", zend_zval_value_name(type));
+			RETURN_THROWS();
+		}
+		zval integer;
+		if (UNEXPECTED(!OperatorTypeHelper::toIntegerOperand(type, integer))) RETURN_THROWS();
+		RETURN_LONG(Z_LVAL(integer));
+	});
 
 	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type, *phpVersion;

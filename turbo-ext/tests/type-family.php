@@ -7797,6 +7797,12 @@ $observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(
 		'mod' => '%',
 	];
 	$integerOperands = ['int0' => $int(0), 'int7' => $int(7), 'int-3' => $int(-3), 'intMax' => $int(PHP_INT_MAX), 'intMin' => $int(PHP_INT_MIN), 'range0-10' => $range(0, 10), 'rangeMin--1' => $range(null, -1), 'range5-max' => $range(5, null), 'range-4-6' => $range(-4, 6), 'rangeMin-max' => $range(-1000, null), 'unionRangeConst' => $operands['unionRangeConst'], 'benevolentRanges' => new \PHPStan\Type\BenevolentUnionType([$range(0, 3), $int(-8)])];
+	$overflowingOperands = ['overflowingNumericString' => new \PHPStan\Type\Constant\ConstantStringType('9223372036854775808'), 'negativeOverflowingNumericString' => new \PHPStan\Type\Constant\ConstantStringType('-9223372036854775809')];
+	foreach ($integerOperands + $overflowingOperands as $name => $operand) {
+		foreach ($operand->getConstantScalarTypes() as $i => $constant) {
+			$r["toIntegerOperand $name $i"] = $catching(static fn () => $staticPrivate('toIntegerOperand', $constant));
+		}
+	}
 	foreach ($nodes as $nodeName => $node) {
 		foreach ($integerOperands as $leftName => $left) {
 			foreach ($integerOperands as $rightName => $right) {
@@ -7839,9 +7845,9 @@ $observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(
 	$operatorMethods = ['arithmeticAdd', 'arithmeticSubtract', 'arithmeticMultiply', 'arithmeticDivide', 'arithmeticIntDivide', 'arithmeticModulo', 'arithmeticPower', 'bitwiseAnd', 'bitwiseOr', 'bitwiseXor', 'bitwiseShiftLeft', 'bitwiseShiftRight', 'stringConcatenate', 'arrayUnion'];
 	foreach ([70400, 80500] as $operatorVersionId) {
 		$operatorVersion = new \PHPStan\Php\PhpVersion($operatorVersionId);
-		foreach ($operands + $integerOperands as $leftName => $left) {
+		foreach ($operands + $integerOperands + $overflowingOperands as $leftName => $left) {
 			$r["arithmeticNegate $operatorVersionId $leftName"] = $catching(static fn () => $left->arithmeticNegate($operatorVersion));
-			foreach ($operands + $integerOperands as $rightName => $right) {
+			foreach ($operands + $integerOperands + $overflowingOperands as $rightName => $right) {
 				foreach ($operatorMethods as $operatorMethod) {
 					$r["$operatorMethod $operatorVersionId $leftName $rightName"] = $catching(static fn () => $left->$operatorMethod($right, $operatorVersion));
 				}

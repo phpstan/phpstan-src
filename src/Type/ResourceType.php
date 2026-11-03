@@ -17,6 +17,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
@@ -36,6 +37,7 @@ class ResourceType implements Type
 	use NonOffsetAccessibleTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -117,7 +119,7 @@ class ResourceType implements Type
 		return new BooleanType();
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new ErrorType();
 	}

@@ -109,10 +109,11 @@ foreach ($ieCalls as $label => $call) {
 		// the twin resolver computes `$a - 3` over the native int and its own
 		// constant 3: the native int is not a supertype of the twin's 3, so
 		// their union mixes both families, which the prefix does not let
-		// through either - the type callback was kept before that
+		// through either (the native int's arithmeticSubtract() meets the twin's
+		// 3 in OperatorTypeHelper) - the type callback was kept before that
 		check(
 			($label === 'ClassConstFetchHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\Dependencies'))
-			|| ($label === 'BinaryOpHandler' && str_contains($e->getMessage(), 'PHPStanTurbo\\TrinaryLogic returned')),
+			|| ($label === 'BinaryOpHandler' && (str_contains($e->getMessage(), 'PHPStanTurbo\\TrinaryLogic returned') || str_contains($e->getMessage(), 'PHPStanTurbo\\VerbosityLevel given'))),
 			"escaping getTypeCallback ($label): " . get_class($e) . ': ' . $e->getMessage(),
 		);
 	} catch (\Throwable $e) {

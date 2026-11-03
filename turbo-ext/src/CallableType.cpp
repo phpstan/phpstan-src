@@ -1203,8 +1203,8 @@ PT_MINIT_REGISTRATION(pt_register_callable_type)
 		ZEND_PARSE_PARAMETERS_NONE();
 		ctReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.isCommonCallableSlot());
 	});
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(1, 1);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
 		PT_RETURN_VAL(pt_type_new_error_type());
 	});
 	cls.method(sigs::getFiniteTypes, ctEmptyArray0);

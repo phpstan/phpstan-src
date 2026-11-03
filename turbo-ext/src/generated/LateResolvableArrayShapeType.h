@@ -34,6 +34,7 @@ inline void declareProperties(reg::Class &cls)
 inline void registerTraits(reg::Class &cls)
 {
 	pt_type_trait_late_resolvable(cls);
+	pt_type_trait_operator(cls);
 	pt_type_trait_non_generalizable(cls);
 }
 

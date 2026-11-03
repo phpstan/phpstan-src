@@ -39,6 +39,7 @@
 #include "generated/MaybeObjectTypeTrait.h"
 #include "generated/MaybeStringTypeTrait.h"
 #include "generated/LateResolvableTypeTrait.h"
+#include "generated/OperatorTypeTrait.h"
 #include "generated/TemplateTypeTrait.h"
 
 #pragma GCC diagnostic push
@@ -2309,7 +2310,7 @@ void pt_type_trait_array(reg::Class &cls)
 	cls.traitMethod(sigs::isVoid, trinaryNo0);
 	cls.traitOp(PT_OP_IS_VOID, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::isScalar, trinaryNo0);
-	cls.traitMethod(sigs::exponentiate, errorType1);
+	cls.traitMethod(sigs::arithmeticPower, errorType2);
 
 	cls.traitMethod(sigs::chunkArray, arrayTraitChunkArray);
 }
@@ -3866,7 +3867,7 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, otherType, phpVersion)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_LR_THIS.isGreaterThanOrEqual(otherType, phpVersion));
 	});
-	cls.traitMethod(sigs::exponentiate, lrDelegate);
+	cls.traitMethod(sigs::arithmeticPower, lrDelegate);
 	cls.traitMethod(sigs::getFiniteTypes, lrDelegate);
 	cls.traitMethod(sigs::resolve, lrResolve);
 	cls.traitMethod(sigs::toNativePhpTypeNode, lrDelegate);
@@ -5409,6 +5410,53 @@ zv::Val pt_prototype_resolved_method(PrototypeKind kind, const PrototypeTransfor
 zv::Val pt_prototype_resolved_property(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *resolvedDeclaringClass, zend_object *property, bool resolveTemplateTypeMapToBounds)
 {
 	return protoResolved(false, kind, transformer, resolvedDeclaringClass, property, resolveTemplateTypeMapToBounds, NULL);
+}
+
+/* }}} */
+
+/* {{{ OperatorTypeTrait */
+
+/* $this-><operator>($right, $phpVersion): OperatorTypeHelper::<operator>($this, $right, $phpVersion) */
+template <pt_operator_type_op Op>
+static void ZEND_FASTCALL operatorBinary(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *right, *phpVersion;
+	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
+	PT_RETURN_VAL(pt_operator_type_helper_binary(Op, ZEND_THIS, right, phpVersion));
+}
+
+void pt_type_trait_operator(reg::Class &cls)
+{
+	namespace sigs = ptdecl::OperatorTypeTrait::sig;
+	/* $this->arithmeticPower($exponent, new PhpVersion(PhpVersionFactory::MAX_PHP_VERSION)) */
+	cls.traitMethod(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *exponent;
+		if (!zp::parse<zp::Obj>(execute_data, exponent)) RETURN_THROWS();
+		zval versionId;
+		ZVAL_LONG(&versionId, PT_PHP_VERSION_FACTORY_MAX_PHP_VERSION);
+		zv::Val phpVersion = pt_type_new(PT_CLASS_PHP_VERSION, 1, &versionId);
+		if (UNEXPECTED(phpVersion.isUndef())) RETURN_THROWS();
+		zv::Args argv{exponent, phpVersion.raw()};
+		PT_RETURN_VAL(pt_type_call(PT_THIS_OBJ, PT_LC("arithmeticpower"), 2, argv));
+	});
+	cls.traitMethod(sigs::arithmeticAdd, operatorBinary<PT_OPERATOR_ADD>);
+	cls.traitMethod(sigs::arithmeticSubtract, operatorBinary<PT_OPERATOR_SUBTRACT>);
+	cls.traitMethod(sigs::arithmeticMultiply, operatorBinary<PT_OPERATOR_MULTIPLY>);
+	cls.traitMethod(sigs::arithmeticDivide, operatorBinary<PT_OPERATOR_DIVIDE>);
+	cls.traitMethod(sigs::arithmeticIntDivide, operatorBinary<PT_OPERATOR_INT_DIVIDE>);
+	cls.traitMethod(sigs::arithmeticModulo, operatorBinary<PT_OPERATOR_MODULO>);
+	cls.traitMethod(sigs::arithmeticNegate, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(pt_operator_type_helper_negate(ZEND_THIS, phpVersion));
+	});
+	cls.traitMethod(sigs::bitwiseAnd, operatorBinary<PT_OPERATOR_BITWISE_AND>);
+	cls.traitMethod(sigs::bitwiseOr, operatorBinary<PT_OPERATOR_BITWISE_OR>);
+	cls.traitMethod(sigs::bitwiseXor, operatorBinary<PT_OPERATOR_BITWISE_XOR>);
+	cls.traitMethod(sigs::bitwiseShiftLeft, operatorBinary<PT_OPERATOR_SHIFT_LEFT>);
+	cls.traitMethod(sigs::bitwiseShiftRight, operatorBinary<PT_OPERATOR_SHIFT_RIGHT>);
+	cls.traitMethod(sigs::stringConcatenate, operatorBinary<PT_OPERATOR_CONCATENATE>);
+	cls.traitMethod(sigs::arrayUnion, operatorBinary<PT_OPERATOR_ARRAY_UNION>);
 }
 
 /* }}} */

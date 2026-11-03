@@ -178,8 +178,9 @@ public:
 	zv::Val traverseSimultaneously() const { return thisValue(); }
 
 	/* ExponentiateHelper::exponentiate($this, $exponent) */
-	zv::Val exponentiate(zval *exponent) const
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
+		(void) phpVersion;
 		zv::Args args{self, exponent};
 		return pt_type_call_static(PT_CLASS_EXPONENTIATE_HELPER, PT_LC("exponentiate"), 2, args);
 	}
@@ -427,7 +428,7 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously());
 	});
 
-	cls.method<&FloatType::exponentiate, zp::Obj>(sigs::exponentiate);
+	cls.method<&FloatType::arithmeticPower, zp::Obj, zp::Obj>(sigs::arithmeticPower);
 
 	cls.method<&FloatType::toPhpDocNode>(sigs::toPhpDocNode);
 

@@ -37,6 +37,7 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use Throwable;
 use function array_diff_assoc;
 use function array_fill_keys;
@@ -59,6 +60,7 @@ class UnionType implements CompoundType
 {
 
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	public const EQUAL_UNION_CLASSES = [
 		DateTimeInterface::class => [DateTimeImmutable::class, DateTime::class],
@@ -1653,9 +1655,9 @@ class UnionType implements CompoundType
 		return new UnionType($innerTypes);
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return $this->unionTypes(static fn (Type $type): Type => $type->exponentiate($exponent));
+		return $this->unionTypes(static fn (Type $type): Type => $type->arithmeticPower($exponent, $phpVersion));
 	}
 
 	public function getFiniteTypes(): array

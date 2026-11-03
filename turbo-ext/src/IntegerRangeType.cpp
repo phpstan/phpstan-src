@@ -842,7 +842,7 @@ public:
 	 * an IntegerRangeType exponent's bounds or a constant int exponent
 	 * when every power stays an int; ExponentiateHelper otherwise; UNDEF =
 	 * pending exception */
-	zv::Val exponentiate(zval *exponent) const
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
 		bool isUnion;
 		if (UNEXPECTED(!pt_union_type_instanceof(exponent, isUnion))) return zv::Val();
@@ -860,8 +860,9 @@ public:
 					zend_type_error("phpstan_turbo: UnionType::getTypes() must return %s instances", ZSTR_VAL(pt_ce_integer_type->name));
 					return zv::Val();
 				}
-				/* $this->exponentiate($unionType) */
-				zv::Val result = isExact() ? exponentiate(unionType) : pt_type_call(self, PT_LC("exponentiate"), 1, unionType);
+				/* $this->arithmeticPower($unionType, $phpVersion) */
+				zv::Args args{unionType, phpVersion};
+				zv::Val result = isExact() ? arithmeticPower(unionType, phpVersion) : pt_type_call(self, PT_LC("arithmeticpower"), 2, args);
 				if (UNEXPECTED(result.isUndef())) return zv::Val();
 				results.push(std::move(result));
 			}
@@ -913,8 +914,8 @@ public:
 			}
 		}
 
-		/* parent::exponentiate($exponent) */
-		return pt_integer_type_exponentiate(self, exponent);
+		/* parent::arithmeticPower($exponent, $phpVersion) */
+		return pt_integer_type_arithmetic_power(self, exponent, phpVersion);
 	}
 
 	/* every integer of a bounded range as a ConstantIntegerType, unless
@@ -1496,7 +1497,7 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 		pt_irt_try(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntegerRangeType::tryRemove);
 	});
 
-	cls.method<&IntegerRangeType::exponentiate, zp::Obj>(sigs::exponentiate);
+	cls.method<&IntegerRangeType::arithmeticPower, zp::Obj, zp::Obj>(sigs::arithmeticPower);
 
 	cls.method<&IntegerRangeType::getFiniteTypes>(sigs::getFiniteTypes);
 
@@ -1504,6 +1505,7 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 
 	cls.method<&IntegerRangeType::looseCompare, zp::Obj, zp::Zval>(sigs::looseCompare);
 
+	pt_type_trait_operator(cls);
 	cls.shadow(&pt_ce_integer_range_type);
 }
 

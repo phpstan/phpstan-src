@@ -202,7 +202,7 @@ public:
 	static zv::Val generalize() { return pt_type_new_string_type(); }
 
 	/* new BenevolentUnionType([new FloatType(), new IntegerType()]) */
-	static zv::Val exponentiate() { return pt_type_new_float_or_int_benevolent_union(); }
+	static zv::Val arithmeticPower() { return pt_type_new_float_or_int_benevolent_union(); }
 
 	/* new IdentifierTypeNode('non-falsy-string') */
 	static zv::Val toPhpDocNode() { return pt_type_new_identifier_type_node(PT_LC("non-falsy-string")); }
@@ -468,9 +468,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_non_falsy_string_type)
 	cls.method(sigs::traverseSimultaneously, anfsThis2);
 	cls.method(sigs::generalize, anfsString1);
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(1, 1);
-		PT_RETURN_VAL(AccessoryNonFalsyStringType::exponentiate());
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		PT_RETURN_VAL(AccessoryNonFalsyStringType::arithmeticPower());
 	});
 
 	cls.method(sigs::getFiniteTypes, anfsEmptyArray0);

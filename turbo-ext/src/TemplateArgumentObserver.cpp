@@ -16,11 +16,11 @@
 
 #include "support.h"
 #include "generated/TemplateArgumentObserver.h"
+#include "TypeTraits.h"
 #include "generated/UnresolvedTemplateArgumentType.h"
 
 namespace sigs = ptdecl::TemplateArgumentObserver::sig;
 #include "zv.h"
-#include "TypeTraits.h"
 #include "TypeOps.h"
 #include "Engine.h"
 #include "AcceptorValues.h"

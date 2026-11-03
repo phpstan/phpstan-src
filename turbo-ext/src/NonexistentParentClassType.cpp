@@ -195,7 +195,7 @@ PT_MINIT_REGISTRATION(pt_register_nonexistent_parent_class_type)
 		RETURN_NULL();
 	});
 	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
-	cls.method(sigs::exponentiate, npcError1);
+	cls.method(sigs::arithmeticPower, npcError2);
 	cls.method(sigs::getFiniteTypes, npcEmptyArray0);
 
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) {

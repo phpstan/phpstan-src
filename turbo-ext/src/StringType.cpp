@@ -317,8 +317,9 @@ public:
 	static zv::Val getFiniteTypes() { return zv::Val(zv::Arr::empty()); }
 
 	/* ExponentiateHelper::exponentiate($this, $exponent) */
-	zv::Val exponentiate(zval *exponent) const
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
+		(void) phpVersion;
 		zv::Args args{self, exponent};
 		return pt_type_call_static(PT_CLASS_EXPONENTIATE_HELPER, PT_LC("exponentiate"), 2, args);
 	}
@@ -601,7 +602,7 @@ PT_MINIT_REGISTRATION(pt_register_string_type)
 
 	cls.method<&StringType::getFiniteTypes>(sigs::getFiniteTypes);
 
-	cls.method<&StringType::exponentiate, zp::Obj>(sigs::exponentiate);
+	cls.method<&StringType::arithmeticPower, zp::Obj, zp::Obj>(sigs::arithmeticPower);
 
 	cls.method<&StringType::toPhpDocNode>(sigs::toPhpDocNode);
 

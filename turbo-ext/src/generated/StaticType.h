@@ -38,6 +38,7 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_non_generic(cls);
 	pt_type_trait_undecided_comparison(cls);
 	pt_type_trait_non_generalizable(cls);
+	pt_type_trait_operator(cls);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -228,14 +229,14 @@ inline constexpr char strings[] =
 	"typeToRemove\0" /* 3203 */
 	"tryRemove\0" /* 3216 */
 	"exponent\0" /* 3226 */
-	"exponentiate\0" /* 3235 */
-	"getFiniteTypes\0" /* 3248 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3263 */
-	"toPhpDocNode\0" /* 3302 */
-	"position\0" /* 3315 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 3324 */
-	"toNativePhpTypeNode\0" /* 3356 */
-	"hasTemplateOrLateResolvableType"; /* 3376 */
+	"arithmeticPower\0" /* 3235 */
+	"getFiniteTypes\0" /* 3251 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3266 */
+	"toPhpDocNode\0" /* 3305 */
+	"position\0" /* 3318 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3327 */
+	"toNativePhpTypeNode\0" /* 3359 */
+	"hasTemplateOrLateResolvableType"; /* 3379 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 16), /* __construct $classReflection */
 	reg::packed(51, MAY_BE_NULL, 66, false, false, 84), /* __construct $subtractedType */
@@ -441,11 +442,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(101, MAY_BE_NULL, 66), /* getSubtractedType return */
 	reg::packed(3203, 0, 66), /* tryRemove $typeToRemove */
 	reg::packed(101, MAY_BE_NULL, 66), /* tryRemove return */
-	reg::packed(3226, 0, 66), /* exponentiate $exponent */
-	reg::packed(101, 0, 66), /* exponentiate return */
+	reg::packed(3226, 0, 66), /* arithmeticPower $exponent */
+	reg::packed(2613, 0, 2624), /* arithmeticPower $phpVersion */
+	reg::packed(101, 0, 66), /* arithmeticPower return */
 	reg::packed(101, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(101, 0, 3263), /* toPhpDocNode return */
-	reg::packed(3315, 0, 3324), /* toNativePhpTypeNode $position */
+	reg::packed(101, 0, 3266), /* toPhpDocNode return */
+	reg::packed(3318, 0, 3327), /* toNativePhpTypeNode $position */
 	reg::packed(101, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -582,11 +584,11 @@ inline constexpr sigtab::Sig getTypeWithoutSubtractedType = { { 3135 /* getTypeW
 inline constexpr sigtab::Sig changeSubtractedType = { { 3164 /* changeSubtractedType */, 1, 199, 1, 200, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getSubtractedType = { { 3185 /* getSubtractedType */, 0, 201, 0, 201, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig tryRemove = { { 3216 /* tryRemove */, 1, 202, 1, 203, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 3235 /* exponentiate */, 1, 204, 1, 205, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 3248 /* getFiniteTypes */, 0, 206, 0, 206, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 3302 /* toPhpDocNode */, 0, 207, 0, 207, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3356 /* toNativePhpTypeNode */, 1, 208, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3376 /* hasTemplateOrLateResolvableType */, 0, 209, 0, 209, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 3235 /* arithmeticPower */, 2, 204, 2, 206, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 3251 /* getFiniteTypes */, 0, 207, 0, 207, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 3305 /* toPhpDocNode */, 0, 208, 0, 208, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3359 /* toNativePhpTypeNode */, 1, 209, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3379 /* hasTemplateOrLateResolvableType */, 0, 210, 0, 210, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StaticType

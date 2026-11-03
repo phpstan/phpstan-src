@@ -15,6 +15,7 @@ use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use function array_filter;
 use function array_map;
 use function assert;
@@ -34,6 +35,8 @@ use const PHP_INT_MIN;
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IntegerRangeType.cpp')]
 class IntegerRangeType extends IntegerType implements CompoundType
 {
+
+	use OperatorTypeTrait;
 
 	private function __construct(private ?int $min, private ?int $max)
 	{
@@ -673,12 +676,12 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return null;
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		if ($exponent instanceof UnionType) {
 			$results = [];
 			foreach ($exponent->getTypes() as $unionType) {
-				$results[] = $this->exponentiate($unionType);
+				$results[] = $this->arithmeticPower($unionType, $phpVersion);
 			}
 			return TypeCombinator::union(...$results);
 		}
@@ -716,7 +719,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			}
 		}
 
-		return parent::exponentiate($exponent);
+		return parent::arithmeticPower($exponent, $phpVersion);
 	}
 
 	/**

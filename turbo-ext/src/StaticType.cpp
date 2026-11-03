@@ -1437,8 +1437,8 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 
 	cls.method<&StaticType::tryRemove, zp::Obj>(sigs::tryRemove);
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("exponentiate"), 1, 1);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("arithmeticpower"), 2, 2);
 	});
 	cls.method(sigs::getFiniteTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("getfinitetypes"), 0, 0);

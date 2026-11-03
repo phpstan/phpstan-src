@@ -19,6 +19,7 @@ use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use Traversable;
@@ -39,6 +40,7 @@ class IterableType implements CompoundType
 	use UndecidedBooleanTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	/** @api */
 	public function __construct(
@@ -517,7 +519,7 @@ class IterableType implements CompoundType
 		return null;
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new ErrorType();
 	}

@@ -4,6 +4,7 @@ namespace PHPStan\Type;
 
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprStringNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -29,6 +30,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_filter;
 use function array_key_exists;
@@ -47,6 +49,7 @@ class ObjectShapeType implements Type
 	use ObjectTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	/**
 	 * @api
@@ -546,7 +549,7 @@ class ObjectShapeType implements Type
 		return new self($properties, $this->optionalProperties);
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {
 			return TypeCombinator::union($this, $exponent);

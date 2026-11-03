@@ -415,7 +415,7 @@ PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 		PT_ARGS(2, 2);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
 	});
-	cls.method(sigs::exponentiate, smtError1);
+	cls.method(sigs::arithmeticPower, smtError2);
 	cls.method(sigs::getFiniteTypes, smtEmptyArray0);
 
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) {

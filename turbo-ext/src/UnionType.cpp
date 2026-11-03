@@ -2029,7 +2029,11 @@ public:
 		return unionOrSingle(std::move(innerTypes), true);
 	}
 
-	zv::Val exponentiate(zval *exponent) const { return unionTypes(UnionMemberOp::call(PT_LC("exponentiate"), 1, exponent)); }
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
+	{
+		zv::Args args{exponent, phpVersion};
+		return unionTypes(UnionMemberOp::call(PT_LC("arithmeticpower"), 2, args));
+	}
 
 	/* $this->finiteTypes ??= the members' finite types uniqued by their
 	 * value key (their cache description without one), [] beyond
@@ -3464,8 +3468,8 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	cls.method(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::tryRemove);
 	});
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		pt_ut_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::exponentiate);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_ut_value_two_objects(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::arithmeticPower);
 	});
 	cls.method(sigs::getFiniteTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::getFiniteTypes);

@@ -23,6 +23,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function count;
@@ -42,6 +43,7 @@ class StringType implements Type
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -343,7 +345,7 @@ class StringType implements Type
 		return [];
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return ExponentiateHelper::exponentiate($this, $exponent);
 	}

@@ -186,14 +186,14 @@ inline constexpr char strings[] =
 	"isGreaterThan\0" /* 3008 */
 	"isGreaterThanOrEqual\0" /* 3022 */
 	"exponent\0" /* 3043 */
-	"exponentiate\0" /* 3052 */
-	"getFiniteTypes\0" /* 3065 */
-	"resolve\0" /* 3080 */
-	"getResult\0" /* 3088 */
-	"position\0" /* 3098 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 3107 */
-	"toNativePhpTypeNode\0" /* 3139 */
-	"hasTemplateOrLateResolvableType"; /* 3159 */
+	"arithmeticPower\0" /* 3052 */
+	"getFiniteTypes\0" /* 3068 */
+	"resolve\0" /* 3083 */
+	"getResult\0" /* 3091 */
+	"position\0" /* 3101 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3110 */
+	"toNativePhpTypeNode\0" /* 3142 */
+	"hasTemplateOrLateResolvableType"; /* 3162 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* getObjectClassNames return */
 	reg::packed(0, MAY_BE_ARRAY), /* getObjectClassReflections return */
@@ -400,12 +400,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(2350, 0, 99), /* isGreaterThanOrEqual $otherType */
 	reg::packed(2360, 0, 2371), /* isGreaterThanOrEqual $phpVersion */
 	reg::packed(0, 0, 283), /* isGreaterThanOrEqual return */
-	reg::packed(3043, 0, 99), /* exponentiate $exponent */
-	reg::packed(0, 0, 99), /* exponentiate return */
+	reg::packed(3043, 0, 99), /* arithmeticPower $exponent */
+	reg::packed(2360, 0, 2371), /* arithmeticPower $phpVersion */
+	reg::packed(0, 0, 99), /* arithmeticPower return */
 	reg::packed(0, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(0, 0, 99), /* resolve return */
 	reg::packed(0, 0, 99), /* getResult return */
-	reg::packed(3098, 0, 3107), /* toNativePhpTypeNode $position */
+	reg::packed(3101, 0, 3110), /* toNativePhpTypeNode $position */
 	reg::packed(0, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -538,12 +539,12 @@ inline constexpr sigtab::Sig isSubTypeOf = { { 2969 /* isSubTypeOf */, 1, 194, 1
 inline constexpr sigtab::Sig isAcceptedBy = { { 2995 /* isAcceptedBy */, 2, 196, 2, 198, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isGreaterThan = { { 3008 /* isGreaterThan */, 2, 199, 2, 201, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isGreaterThanOrEqual = { { 3022 /* isGreaterThanOrEqual */, 2, 202, 2, 204, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 3052 /* exponentiate */, 1, 205, 1, 206, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 3065 /* getFiniteTypes */, 0, 207, 0, 207, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolve = { { 3080 /* resolve */, 0, 208, 0, 208, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getResult = { { 3088 /* getResult */, 0, 209, 0, 209, ZEND_ACC_PROTECTED | ZEND_ACC_ABSTRACT } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3139 /* toNativePhpTypeNode */, 1, 210, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3159 /* hasTemplateOrLateResolvableType */, 0, 211, 0, 211, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 3052 /* arithmeticPower */, 2, 205, 2, 207, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 3068 /* getFiniteTypes */, 0, 208, 0, 208, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolve = { { 3083 /* resolve */, 0, 209, 0, 209, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getResult = { { 3091 /* getResult */, 0, 210, 0, 210, ZEND_ACC_PROTECTED | ZEND_ACC_ABSTRACT } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3142 /* toNativePhpTypeNode */, 1, 211, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3162 /* hasTemplateOrLateResolvableType */, 0, 212, 0, 212, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::LateResolvableTypeTrait

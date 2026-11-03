@@ -1285,8 +1285,8 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 		RETURN_COPY_VALUE(&result);
 	});
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(1, 1);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
 		PT_RETURN_VAL(pt_type_new_error_type());
 	});
 	cls.method(sigs::getFiniteTypes, cltEmptyArray0);

@@ -51,6 +51,7 @@ use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function array_key_exists;
 use function array_map;
@@ -68,6 +69,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	use NonOffsetAccessibleTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	/** @var list<ParameterReflection> */
 	private array $parameters;
@@ -982,7 +984,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return new BooleanType();
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new ErrorType();
 	}

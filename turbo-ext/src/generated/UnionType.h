@@ -42,6 +42,7 @@ inline void declareProperties(reg::Class &cls)
 inline void registerTraits(reg::Class &cls)
 {
 	pt_type_trait_non_generalizable(cls);
+	pt_type_trait_operator(cls);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -256,23 +257,23 @@ inline constexpr char strings[] =
 	"typeToRemove\0" /* 3547 */
 	"tryRemove\0" /* 3560 */
 	"exponent\0" /* 3570 */
-	"exponentiate\0" /* 3579 */
-	"getFiniteTypes\0" /* 3592 */
-	"getResult\0" /* 3607 */
-	"unionResults\0" /* 3617 */
-	"notBenevolentUnionResults\0" /* 3630 */
-	"getType\0" /* 3656 */
-	"unionTypes\0" /* 3664 */
-	"getValues\0" /* 3675 */
-	"criteria\0" /* 3685 */
-	"pickFromTypes\0" /* 3694 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3708 */
-	"toPhpDocNode\0" /* 3747 */
-	"position\0" /* 3760 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 3769 */
-	"toNativePhpTypeNode\0" /* 3801 */
-	"notBenevolentPickFromTypes\0" /* 3821 */
-	"hasTemplateOrLateResolvableType"; /* 3848 */
+	"arithmeticPower\0" /* 3579 */
+	"getFiniteTypes\0" /* 3595 */
+	"getResult\0" /* 3610 */
+	"unionResults\0" /* 3620 */
+	"notBenevolentUnionResults\0" /* 3633 */
+	"getType\0" /* 3659 */
+	"unionTypes\0" /* 3667 */
+	"getValues\0" /* 3678 */
+	"criteria\0" /* 3688 */
+	"pickFromTypes\0" /* 3697 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3711 */
+	"toPhpDocNode\0" /* 3750 */
+	"position\0" /* 3763 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3772 */
+	"toNativePhpTypeNode\0" /* 3804 */
+	"notBenevolentPickFromTypes\0" /* 3824 */
+	"hasTemplateOrLateResolvableType"; /* 3851 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -512,21 +513,22 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(35, 0, 54), /* traverseSimultaneously return */
 	reg::packed(3547, 0, 54), /* tryRemove $typeToRemove */
 	reg::packed(35, MAY_BE_NULL, 54), /* tryRemove return */
-	reg::packed(3570, 0, 54), /* exponentiate $exponent */
-	reg::packed(35, 0, 54), /* exponentiate return */
+	reg::packed(3570, 0, 54), /* arithmeticPower $exponent */
+	reg::packed(1803, 0, 1814), /* arithmeticPower $phpVersion */
+	reg::packed(35, 0, 54), /* arithmeticPower return */
 	reg::packed(35, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(3607, MAY_BE_CALLABLE), /* unionResults $getResult */
+	reg::packed(3610, MAY_BE_CALLABLE), /* unionResults $getResult */
 	reg::packed(35, 0, 426), /* unionResults return */
-	reg::packed(3607, MAY_BE_CALLABLE), /* notBenevolentUnionResults $getResult */
+	reg::packed(3610, MAY_BE_CALLABLE), /* notBenevolentUnionResults $getResult */
 	reg::packed(35, 0, 426), /* notBenevolentUnionResults return */
-	reg::packed(3656, MAY_BE_CALLABLE), /* unionTypes $getType */
+	reg::packed(3659, MAY_BE_CALLABLE), /* unionTypes $getType */
 	reg::packed(35, 0, 54), /* unionTypes return */
-	reg::packed(3675, MAY_BE_CALLABLE), /* pickFromTypes $getValues */
-	reg::packed(3685, MAY_BE_CALLABLE), /* pickFromTypes $criteria */
+	reg::packed(3678, MAY_BE_CALLABLE), /* pickFromTypes $getValues */
+	reg::packed(3688, MAY_BE_CALLABLE), /* pickFromTypes $criteria */
 	reg::packed(35, MAY_BE_ARRAY), /* pickFromTypes return */
-	reg::packed(35, 0, 3708), /* toPhpDocNode return */
-	reg::packed(3760, 0, 3769), /* toNativePhpTypeNode $position */
-	reg::packed(3675, MAY_BE_CALLABLE), /* notBenevolentPickFromTypes $getValues */
+	reg::packed(35, 0, 3711), /* toPhpDocNode return */
+	reg::packed(3763, 0, 3772), /* toNativePhpTypeNode $position */
+	reg::packed(3678, MAY_BE_CALLABLE), /* notBenevolentPickFromTypes $getValues */
 	reg::packed(35, MAY_BE_ARRAY), /* notBenevolentPickFromTypes return */
 	reg::packed(35, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
@@ -677,16 +679,16 @@ inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 3482 /* getReferen
 inline constexpr sigtab::Sig traverse = { { 3509 /* traverse */, 1, 231, 1, 232, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverseSimultaneously = { { 3524 /* traverseSimultaneously */, 2, 233, 2, 235, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig tryRemove = { { 3560 /* tryRemove */, 1, 236, 1, 237, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 3579 /* exponentiate */, 1, 238, 1, 239, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 3592 /* getFiniteTypes */, 0, 240, 0, 240, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig unionResults = { { 3617 /* unionResults */, 1, 241, 1, 242, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig notBenevolentUnionResults = { { 3630 /* notBenevolentUnionResults */, 1, 243, 1, 244, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig unionTypes = { { 3664 /* unionTypes */, 1, 245, 1, 246, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig pickFromTypes = { { 3694 /* pickFromTypes */, 2, 247, 2, 249, ZEND_ACC_PROTECTED } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 3747 /* toPhpDocNode */, 0, 250, 0, 250, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3801 /* toNativePhpTypeNode */, 1, 251, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3821 /* notBenevolentPickFromTypes */, 1, 252, 1, 253, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3848 /* hasTemplateOrLateResolvableType */, 0, 254, 0, 254, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 3579 /* arithmeticPower */, 2, 238, 2, 240, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 3595 /* getFiniteTypes */, 0, 241, 0, 241, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unionResults = { { 3620 /* unionResults */, 1, 242, 1, 243, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig notBenevolentUnionResults = { { 3633 /* notBenevolentUnionResults */, 1, 244, 1, 245, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unionTypes = { { 3667 /* unionTypes */, 1, 246, 1, 247, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig pickFromTypes = { { 3697 /* pickFromTypes */, 2, 248, 2, 250, ZEND_ACC_PROTECTED } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 3750 /* toPhpDocNode */, 0, 251, 0, 251, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3804 /* toNativePhpTypeNode */, 1, 252, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3824 /* notBenevolentPickFromTypes */, 1, 253, 1, 254, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3851 /* hasTemplateOrLateResolvableType */, 0, 255, 0, 255, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionType

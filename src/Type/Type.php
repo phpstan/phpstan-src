@@ -386,8 +386,60 @@ interface Type
 	 */
 	public function getFiniteTypes(): array;
 
-	/** Models the ** operator. */
+	/**
+	 * Models the ** operator.
+	 *
+	 * @deprecated Use arithmeticPower() instead.
+	 */
 	public function exponentiate(Type $exponent): Type;
+
+	/**
+	 * Models the + operator on numbers. The operators of these methods return ErrorType
+	 * for an invalid operation, they do not call OperatorTypeSpecifyingExtensions.
+	 */
+	public function arithmeticAdd(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the - operator. */
+	public function arithmeticSubtract(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the * operator. */
+	public function arithmeticMultiply(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the / operator. */
+	public function arithmeticDivide(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models intdiv(). */
+	public function arithmeticIntDivide(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the % operator. */
+	public function arithmeticModulo(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the ** operator. */
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type;
+
+	/** Models the unary - operator. */
+	public function arithmeticNegate(PhpVersion $phpVersion): Type;
+
+	/** Models the & operator. */
+	public function bitwiseAnd(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the | operator. */
+	public function bitwiseOr(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the ^ operator. */
+	public function bitwiseXor(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the << operator. */
+	public function bitwiseShiftLeft(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the >> operator. */
+	public function bitwiseShiftRight(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the . operator. */
+	public function stringConcatenate(Type $right, PhpVersion $phpVersion): Type;
+
+	/** Models the + operator on arrays. */
+	public function arrayUnion(Type $right, PhpVersion $phpVersion): Type;
 
 	public function isCallable(): TrinaryLogic;
 

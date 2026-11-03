@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Traits;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
@@ -14,6 +15,8 @@ use PHPStan\Type\TypeCombinator;
 
 trait ArrayTypeTrait
 {
+
+	use OperatorTypeTrait;
 
 	public function isArray(): TrinaryLogic
 	{
@@ -200,7 +203,7 @@ trait ArrayTypeTrait
 		return TrinaryLogic::createNo();
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new ErrorType();
 	}

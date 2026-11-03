@@ -305,7 +305,7 @@ public:
 	zv::Val getFiniteTypes() const { return getConstantScalarTypes(); }
 
 	/* new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]) */
-	static zv::Val exponentiate()
+	static zv::Val arithmeticPower()
 	{
 		zv::Val zero = pt_type_new_constant_integer(0);
 		if (UNEXPECTED(zero.isUndef())) return zv::Val();
@@ -703,10 +703,10 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 
 	cls.method<&NullType::getFiniteTypes>(sigs::getFiniteTypes);
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *exponent;
-		if (!zp::parse<zp::Obj>(execute_data, exponent)) RETURN_THROWS();
-		PT_RETURN_VAL(NullType::exponentiate());
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *exponent, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, exponent, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(NullType::arithmeticPower());
 	});
 
 	cls.method<&NullType::toPhpDocNode>(sigs::toPhpDocNode);

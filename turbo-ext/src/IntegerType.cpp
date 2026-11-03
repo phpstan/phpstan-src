@@ -185,8 +185,9 @@ public:
 	static zv::Val getFiniteTypes() { return zv::Val(zv::Arr::empty()); }
 
 	/* ExponentiateHelper::exponentiate($this, $exponent) */
-	zv::Val exponentiate(zval *exponent) const
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
+		(void) phpVersion;
 		zv::Args args{self, exponent};
 		return pt_type_call_static(PT_CLASS_EXPONENTIATE_HELPER, PT_LC("exponentiate"), 2, args);
 	}
@@ -232,9 +233,9 @@ zv::Val pt_integer_type_loose_compare(zend_object *self, zval *type, zval *phpVe
 	return IntegerType::looseCompare(type, phpVersion);
 }
 
-zv::Val pt_integer_type_exponentiate(zend_object *self, zval *exponent)
+zv::Val pt_integer_type_arithmetic_power(zend_object *self, zval *exponent, zval *phpVersion)
 {
-	return IntegerType(self).exponentiate(exponent);
+	return IntegerType(self).arithmeticPower(exponent, phpVersion);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -329,7 +330,7 @@ PT_MINIT_REGISTRATION(pt_register_integer_type)
 
 	cls.method<&IntegerType::getFiniteTypes>(sigs::getFiniteTypes);
 
-	cls.method<&IntegerType::exponentiate, zp::Obj>(sigs::exponentiate);
+	cls.method<&IntegerType::arithmeticPower, zp::Obj, zp::Obj>(sigs::arithmeticPower);
 
 	cls.method<&IntegerType::toPhpDocNode>(sigs::toPhpDocNode);
 

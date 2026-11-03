@@ -7670,6 +7670,7 @@ if (PHP_VERSION_ID >= 80300) {
 	require_once $initializerFixture;
 }
 $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new ReflectionMethod(\PHPStan\Reflection\InitializerExprTypeResolver::class, 'getType'))->isInternal();
+$observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(\PHPStan\Type\OperatorTypeHelper::class, 'add'))->isInternal();
 {
 	$resolver = $stringContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
 	$r = [];
@@ -7774,7 +7775,6 @@ $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new Re
 		$r["getUnaryMinusType $name"] = $catching(static fn () => $resolver->getUnaryMinusType($te($operand), $getType));
 		$r["getUnaryPlusType $name"] = $catching(static fn () => $resolver->getUnaryPlusType($te($operand), $getType));
 		$r["getBitwiseNotType $name"] = $catching(static fn () => $resolver->getBitwiseNotType($te($operand), $getType));
-		$r["getUnaryMinusTypeFromType $name"] = $catching(static fn () => $resolver->getUnaryMinusTypeFromType($te($operand), $operand));
 		$r["getBitwiseNotTypeFromType $name"] = $catching(static fn () => $resolver->getBitwiseNotTypeFromType($operand));
 		$r["getCastObjectType $name"] = $catching(static fn () => $resolver->getCastObjectType($operand));
 		foreach ($castClasses as $castName => $castClass) {
@@ -7783,43 +7783,44 @@ $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new Re
 	}
 	$r['getCastObjectType union of shapes'] = $catching(static fn () => $resolver->getCastObjectType(new \PHPStan\Type\UnionType([$operands['constArray'], $operands['constShape'], new \PHPStan\Type\ObjectType(\stdClass::class)])));
 
-	// the private helpers, called in the class's scope
+	// the private helpers of OperatorTypeHelper (the operators' arithmetic
+	// moved there from the resolver), called in the class's scope
+	$staticPrivate = static fn (string $method, mixed ...$args): mixed => \Closure::bind(static fn () => self::$method(...$args), null, \PHPStan\Type\OperatorTypeHelper::class)();
 	$private = static fn (string $method, mixed ...$args): mixed => (fn () => $this->$method(...$args))->call($resolver);
-	$staticPrivate = static fn (string $method, mixed ...$args): mixed => \Closure::bind(static fn () => self::$method(...$args), null, \PHPStan\Reflection\InitializerExprTypeResolver::class)();
 	$nodes = [
-		'plus' => new \PhpParser\Node\Expr\BinaryOp\Plus($te($int(1)), $te($int(1))),
-		'minus' => new \PhpParser\Node\Expr\BinaryOp\Minus($te($int(1)), $te($int(1))),
-		'mul' => new \PhpParser\Node\Expr\BinaryOp\Mul($te($int(1)), $te($int(1))),
-		'div' => new \PhpParser\Node\Expr\BinaryOp\Div($te($int(1)), $te($int(1))),
-		'shiftLeft' => new \PhpParser\Node\Expr\BinaryOp\ShiftLeft($te($int(1)), $te($int(1))),
-		'shiftRight' => new \PhpParser\Node\Expr\BinaryOp\ShiftRight($te($int(1)), $te($int(1))),
-		'mod' => new \PhpParser\Node\Expr\BinaryOp\Mod($te($int(1)), $te($int(1))),
+		'plus' => '+',
+		'minus' => '-',
+		'mul' => '*',
+		'div' => '/',
+		'shiftLeft' => '<<',
+		'shiftRight' => '>>',
+		'mod' => '%',
 	];
 	$integerOperands = ['int0' => $int(0), 'int7' => $int(7), 'int-3' => $int(-3), 'intMax' => $int(PHP_INT_MAX), 'intMin' => $int(PHP_INT_MIN), 'range0-10' => $range(0, 10), 'rangeMin--1' => $range(null, -1), 'range5-max' => $range(5, null), 'range-4-6' => $range(-4, 6), 'rangeMin-max' => $range(-1000, null), 'unionRangeConst' => $operands['unionRangeConst'], 'benevolentRanges' => new \PHPStan\Type\BenevolentUnionType([$range(0, 3), $int(-8)])];
 	foreach ($nodes as $nodeName => $node) {
 		foreach ($integerOperands as $leftName => $left) {
 			foreach ($integerOperands as $rightName => $right) {
-				$r["integerRangeMath $nodeName $leftName $rightName"] = $catching(static fn () => $left instanceof \PHPStan\Type\UnionType ? 'skip' : $private('integerRangeMath', $left, $node, $right));
-				$r["resolveCommonMath $nodeName $leftName $rightName"] = $catching(static fn () => $private('resolveCommonMath', $node, $left, $right));
+				$r["integerRangeMath $nodeName $leftName $rightName"] = $catching(static fn () => $left instanceof \PHPStan\Type\UnionType ? 'skip' : $staticPrivate('integerRangeMath', $left, $node, $right));
+				$r["resolveCommonMath $nodeName $leftName $rightName"] = $catching(static fn () => $staticPrivate('resolveCommonMath', $node, $left, $right));
 			}
 		}
 	}
 	foreach ($operands as $name => $operand) {
-		$r["optimizeScalarType $name"] = $catching(static fn () => $private('optimizeScalarType', $operand));
-		$r["getNonNegativeIntegerBounds $name"] = $catching(static fn () => $private('getNonNegativeIntegerBounds', $operand));
-		$r["computeBitwiseAndRange $name range0-10"] = $catching(static fn () => $private('computeBitwiseAndRange', $operand, $range(0, 10)));
-		$r["computeBitwiseOrXorRange $name int7"] = $catching(static fn () => $private('computeBitwiseOrXorRange', $operand, $int(7)));
-		$r["getNeverType $name never"] = $catching(static fn () => $private('getNeverType', $operand, $operands['neverExplicit']));
-		$r["getFiniteOrConstantScalarTypes $name unionConsts"] = $catching(static fn () => $private('getFiniteOrConstantScalarTypes', $operand, $operands['unionConsts'], static fn ($a, $b) => $a | $b));
+		$r["optimizeScalarType $name"] = $catching(static fn () => $staticPrivate('optimizeScalarType', $operand));
+		$r["getNonNegativeIntegerBounds $name"] = $catching(static fn () => $staticPrivate('getNonNegativeIntegerBounds', $operand));
+		$r["computeBitwiseAndRange $name range0-10"] = $catching(static fn () => $staticPrivate('computeBitwiseAndRange', $operand, $range(0, 10)));
+		$r["computeBitwiseOrXorRange $name int7"] = $catching(static fn () => $staticPrivate('computeBitwiseOrXorRange', $operand, $int(7)));
+		$r["getNeverType $name never"] = $catching(static fn () => $staticPrivate('getNeverType', $operand, $operands['neverExplicit']));
+		$r["getFiniteOrConstantScalarTypes $name unionConsts"] = $catching(static fn () => $staticPrivate('getFiniteOrConstantScalarTypes', $operand, $operands['unionConsts'], static fn ($a, $b) => $a | $b));
 	}
 	foreach ([0, 1, 5, 200, 1000, PHP_INT_MAX] as $value) {
 		$r["allBitsMask $value"] = $catching(static fn () => $staticPrivate('allBitsMask', $value));
 	}
 	foreach ($operands as $name => $operand) {
-		$r["getIntegerBounds $name"] = $catching(static fn () => $private('getIntegerBounds', $operand));
+		$r["getIntegerBounds $name"] = $catching(static fn () => $staticPrivate('getIntegerBounds', $operand));
 	}
 	foreach ($integerOperands as $name => $operand) {
-		$r["getIntegerBounds $name"] = $catching(static fn () => $private('getIntegerBounds', $operand));
+		$r["getIntegerBounds $name"] = $catching(static fn () => $staticPrivate('getIntegerBounds', $operand));
 	}
 	foreach ([[null, 5], [-7, 3], [PHP_INT_MIN, 1], [PHP_INT_MIN + 1, 1], [0, 0], [3, null], [-2, -9]] as [$divisorMin, $divisorMax]) {
 		$r['getMaxModuloMagnitude ' . var_export($divisorMin, true) . ' ' . var_export($divisorMax, true)] = $catching(static fn () => $staticPrivate('getMaxModuloMagnitude', $divisorMin, $divisorMax));
@@ -7831,7 +7832,24 @@ $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new Re
 		$r["toIntBound $i"] = $catching(static fn () => $staticPrivate('toIntBound', $value));
 	}
 	foreach ([null, true, 1, 1.5, 'x'] as $i => $value) {
-		$r["getTypeFromValue $i"] = $catching(static fn () => $private('getTypeFromValue', $value));
+		$r["getTypeFromValue $i"] = $catching(static fn () => $staticPrivate('getTypeFromValue', $value));
+	}
+	// the operator methods of OperatorTypeTrait (their bodies are OperatorTypeHelper's)
+	// over every pair of operands, at two PHP versions
+	$operatorMethods = ['arithmeticAdd', 'arithmeticSubtract', 'arithmeticMultiply', 'arithmeticDivide', 'arithmeticIntDivide', 'arithmeticModulo', 'arithmeticPower', 'bitwiseAnd', 'bitwiseOr', 'bitwiseXor', 'bitwiseShiftLeft', 'bitwiseShiftRight', 'stringConcatenate', 'arrayUnion'];
+	foreach ([70400, 80500] as $operatorVersionId) {
+		$operatorVersion = new \PHPStan\Php\PhpVersion($operatorVersionId);
+		foreach ($operands + $integerOperands as $leftName => $left) {
+			$r["arithmeticNegate $operatorVersionId $leftName"] = $catching(static fn () => $left->arithmeticNegate($operatorVersion));
+			foreach ($operands + $integerOperands as $rightName => $right) {
+				foreach ($operatorMethods as $operatorMethod) {
+					$r["$operatorMethod $operatorVersionId $leftName $rightName"] = $catching(static fn () => $left->$operatorMethod($right, $operatorVersion));
+				}
+			}
+		}
+	}
+	foreach ($operands as $name => $operand) {
+		$r["exponentiate $name int7"] = $catching(static fn () => $operand->exponentiate($int(7)));
 	}
 	$r['resolveConstantArrayTypeComparison callback'] = $catching(static fn () => $viewResult($private('resolveConstantArrayTypeComparison', $operands['constArray'], $operands['constArray'], static fn ($a, $b) => new \PHPStan\Type\TypeResult(new \PHPStan\Type\BooleanType(), ['reason']))));
 	$shapes = [

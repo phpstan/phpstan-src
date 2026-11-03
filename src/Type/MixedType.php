@@ -41,6 +41,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use function get_class;
@@ -55,6 +56,7 @@ class MixedType implements CompoundType, SubtractableType
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGeneralizableTypeTrait;
 	use SubstractableTypeTrait;
+	use OperatorTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -1221,7 +1223,7 @@ class MixedType implements CompoundType, SubtractableType
 		return $this->subtract($typeToRemove);
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new BenevolentUnionType([
 			new FloatType(),

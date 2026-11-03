@@ -682,8 +682,9 @@ public:
 	/* TypeCombinator::union($this, $exponent) unless the exponent is never
 	 * or no subtype of $this, float|int (benevolent) otherwise; UNDEF =
 	 * pending exception */
-	zv::Val exponentiate(zval *exponent) const
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
+		(void) phpVersion;
 		if (!instanceof_function(Z_OBJCE_P(exponent), pt_ce_never_type)) {
 			zv::Val isSuperType = isExact() ? isSuperTypeOf(exponent) : pt_type_op(self, PT_OP_IS_SUPER_TYPE_OF, 1, exponent);
 			if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
@@ -1366,7 +1367,7 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously(right, &fci, &fcc));
 	});
 
-	cls.method<&ObjectShapeType::exponentiate, zp::Obj>(sigs::exponentiate);
+	cls.method<&ObjectShapeType::arithmeticPower, zp::Obj, zp::Obj>(sigs::arithmeticPower);
 
 	cls.method(sigs::getFiniteTypes, ostEmptyArray0);
 
@@ -1394,6 +1395,7 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isobjectallowed"), PT_CLASS_IDENTIFIER, PT_LC("object")));
 	});
 
+	pt_type_trait_operator(cls);
 	cls.shadow(&pt_ce_object_shape_type);
 }
 

@@ -36,6 +36,7 @@ use PHPStan\Type\Traits\MaybeObjectTypeTrait;
 use PHPStan\Type\Traits\MaybeStringTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
@@ -61,6 +62,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	public function __construct(private ConstantStringType|ConstantIntegerType $offsetType, private Type $valueType)
 	{
@@ -555,7 +557,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return new self($this->offsetType, $newValueType);
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new ErrorType();
 	}

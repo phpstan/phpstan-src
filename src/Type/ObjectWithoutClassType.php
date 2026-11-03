@@ -3,6 +3,7 @@
 namespace PHPStan\Type;
 
 use PhpParser\Node\Identifier;
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -10,6 +11,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\ObjectTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 
@@ -24,6 +26,7 @@ class ObjectWithoutClassType implements SubtractableType
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
 	use SubstractableTypeTrait;
+	use OperatorTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -204,7 +207,7 @@ class ObjectWithoutClassType implements SubtractableType
 		return $this->subtract($typeToRemove);
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		if (!$exponent instanceof NeverType && !$this->isSuperTypeOf($exponent)->no()) {
 			return TypeCombinator::union($this, $exponent);

@@ -483,7 +483,7 @@ PT_MINIT_REGISTRATION(pt_register_non_empty_array_type)
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, neaThis2);
-	cls.method(sigs::exponentiate, neaError1);
+	cls.method(sigs::arithmeticPower, neaError2);
 	cls.method(sigs::getFiniteTypes, neaEmptyArray0);
 
 	cls.method<&NonEmptyArrayType::getDefaultBaseType>(sigs::getDefaultBaseType);

@@ -28,6 +28,7 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_non_iterable(cls);
 	pt_type_trait_non_removeable(cls);
 	pt_type_trait_non_generalizable(cls);
+	pt_type_trait_operator(cls);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -166,14 +167,14 @@ inline constexpr char strings[] =
 	"right\0" /* 2415 */
 	"traverseSimultaneously\0" /* 2421 */
 	"exponent\0" /* 2444 */
-	"exponentiate\0" /* 2453 */
-	"getFiniteTypes\0" /* 2466 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 2481 */
-	"toPhpDocNode\0" /* 2520 */
-	"position\0" /* 2533 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 2542 */
-	"toNativePhpTypeNode\0" /* 2574 */
-	"hasTemplateOrLateResolvableType"; /* 2594 */
+	"arithmeticPower\0" /* 2453 */
+	"getFiniteTypes\0" /* 2469 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 2484 */
+	"toPhpDocNode\0" /* 2523 */
+	"position\0" /* 2536 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 2545 */
+	"toNativePhpTypeNode\0" /* 2577 */
+	"hasTemplateOrLateResolvableType"; /* 2597 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* getReferencedClasses return */
 	reg::packed(0, MAY_BE_ARRAY), /* getObjectClassNames return */
@@ -317,11 +318,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(2415, 0, 92), /* traverseSimultaneously $right */
 	reg::packed(2403, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(0, 0, 92), /* traverseSimultaneously return */
-	reg::packed(2444, 0, 92), /* exponentiate $exponent */
-	reg::packed(0, 0, 92), /* exponentiate return */
+	reg::packed(2444, 0, 92), /* arithmeticPower $exponent */
+	reg::packed(1521, 0, 1532), /* arithmeticPower $phpVersion */
+	reg::packed(0, 0, 92), /* arithmeticPower return */
 	reg::packed(0, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(0, 0, 2481), /* toPhpDocNode return */
-	reg::packed(2533, 0, 2542), /* toNativePhpTypeNode $position */
+	reg::packed(0, 0, 2484), /* toPhpDocNode return */
+	reg::packed(2536, 0, 2545), /* toNativePhpTypeNode $position */
 	reg::packed(0, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -418,11 +420,11 @@ inline constexpr sigtab::Sig getEnumCases = { { 2335 /* getEnumCases */, 0, 135,
 inline constexpr sigtab::Sig getEnumCaseObject = { { 2385 /* getEnumCaseObject */, 0, 136, 0, 136, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverse = { { 2406 /* traverse */, 1, 137, 1, 138, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverseSimultaneously = { { 2421 /* traverseSimultaneously */, 2, 139, 2, 141, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 2453 /* exponentiate */, 1, 142, 1, 143, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 2466 /* getFiniteTypes */, 0, 144, 0, 144, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 2520 /* toPhpDocNode */, 0, 145, 0, 145, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 2574 /* toNativePhpTypeNode */, 1, 146, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2594 /* hasTemplateOrLateResolvableType */, 0, 147, 0, 147, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 2453 /* arithmeticPower */, 2, 142, 2, 144, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 2469 /* getFiniteTypes */, 0, 145, 0, 145, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 2523 /* toPhpDocNode */, 0, 146, 0, 146, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 2577 /* toNativePhpTypeNode */, 1, 147, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2597 /* hasTemplateOrLateResolvableType */, 0, 148, 0, 148, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StrictMixedType

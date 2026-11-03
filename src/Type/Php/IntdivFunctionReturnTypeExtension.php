@@ -12,8 +12,6 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use function count;
 
-// operators take the configured PHP version, like InitializerExprTypeResolver does
-// @phpstan-ignore phpstan.phpVersionInjection
 #[AutowiredService]
 final class IntdivFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {

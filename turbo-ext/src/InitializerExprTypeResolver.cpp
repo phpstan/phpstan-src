@@ -1429,9 +1429,12 @@ public:
 			zv::Arr resultTypes = zv::Arr::create((uint32_t) (leftValuesCount * rightValuesCount));
 			for (zv::ArrayEntry leftEntry : zv::ArrRef(leftValues.raw())) {
 				for (zv::ArrayEntry rightEntry : zv::ArrRef(rightValues.raw())) {
+					/* LooseComparisonHelper::compareValues($leftValue, $rightValue, $this->phpVersion) ?? 1 */
+					zv::Args args{leftEntry.value().raw(), rightEntry.value().raw(), prop(slots::phpVersion)};
+					zv::Val compared = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("comparevalues"), 3, args);
+					if (UNEXPECTED(compared.isUndef())) return zv::Val();
 					zval comparison;
-					ZVAL_LONG(&comparison, zend_compare(leftEntry.value().raw(), rightEntry.value().raw()));
-					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+					ZVAL_LONG(&comparison, Z_TYPE_P(compared.raw()) == IS_LONG ? Z_LVAL_P(compared.raw()) : 1);
 					IETR_VAL(resultType, typeFromValue(&comparison));
 					resultTypes.push(std::move(resultType));
 				}

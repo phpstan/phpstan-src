@@ -79,6 +79,7 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
@@ -1329,7 +1330,7 @@ final class InitializerExprTypeResolver
 			$resultTypes = [];
 			foreach ($leftValues as $leftValue) {
 				foreach ($rightValues as $rightValue) {
-					$resultType = $this->getTypeFromValue($leftValue <=> $rightValue);
+					$resultType = new ConstantIntegerType(LooseComparisonHelper::compareValues($leftValue, $rightValue, $this->phpVersion) ?? 1);
 					$resultTypes[] = $resultType;
 				}
 			}

@@ -1087,9 +1087,13 @@ static void constantScalarSmaller(INTERNAL_FUNCTION_PARAMETERS, bool orEqual)
 		if (UNEXPECTED(selfValue == NULL)) RETURN_THROWS();
 		zv::Val otherValue = constantScalarGetValue(Z_OBJ_P(otherType));
 		if (UNEXPECTED(otherValue.isUndef())) RETURN_THROWS();
-		int comparison = zend_compare(selfValue, otherValue.raw());
-		if (UNEXPECTED(EG(exception))) RETURN_THROWS();
-		PT_RETURN_TRINARY((orEqual ? comparison <= 0 : comparison < 0) ? PT_TRI_YES : PT_TRI_NO);
+		/* LooseComparisonHelper::compareValues($this->value, $otherType->getValue(), $phpVersion):
+		 * the configured PHP version's comparison, not the runtime's zend_compare() */
+		zv::Args args{selfValue, otherValue.raw(), phpVersion};
+		zv::Val comparison = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("comparevalues"), 3, args);
+		if (UNEXPECTED(comparison.isUndef())) RETURN_THROWS();
+		bool holds = Z_TYPE_P(comparison.raw()) == IS_LONG && (orEqual ? Z_LVAL_P(comparison.raw()) <= 0 : Z_LVAL_P(comparison.raw()) < 0);
+		PT_RETURN_TRINARY(holds ? PT_TRI_YES : PT_TRI_NO);
 	}
 
 	bool compound;

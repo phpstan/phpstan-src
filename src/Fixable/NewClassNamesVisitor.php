@@ -376,10 +376,22 @@ final class NewClassNamesVisitor extends NodeVisitorAbstract
 
 	/**
 	 * Function and constant names are not class names,
+	 * a use statement imports a name as it is written,
 	 * and `self` is not valid PHP everywhere a class name is.
 	 */
 	private function markNames(Node $node): void
 	{
+		if ($node instanceof Stmt\Use_) {
+			foreach ($node->uses as $useItem) {
+				if (!$useItem->name instanceof FullyQualified || $useItem->name->getAttribute('origNode') !== null) {
+					continue;
+				}
+
+				$useItem->name = new Name($useItem->name->toString());
+			}
+			return;
+		}
+
 		if ($node instanceof Node\Expr\FuncCall || $node instanceof Node\Expr\ConstFetch) {
 			$node->name->setAttribute(self::SKIP_ATTRIBUTE, true);
 			return;

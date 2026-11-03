@@ -357,7 +357,7 @@ final class OperatorTypeHelper
 						throw new ShouldNotHappenException();
 					}
 
-					$resultValue = $operationCallable($leftNumberType->getValue(), $rightNumberType->getValue());
+					$resultValue = $operationCallable(self::toIntegerOperand($leftTypeInner), self::toIntegerOperand($rightTypeInner));
 					$resultType = self::getTypeFromValue($resultValue);
 				}
 				$resultTypes[] = $resultType;
@@ -464,12 +464,12 @@ final class OperatorTypeHelper
 							throw new ShouldNotHappenException();
 						}
 
-						$rightIntegerValue = (int) $rightNumberType->getValue();
+						$rightIntegerValue = self::toIntegerOperand($rightTypeInner);
 						if ($rightIntegerValue === 0) {
 							return new ErrorType();
 						}
 
-						$resultType = self::getTypeFromValue((int) $leftNumberType->getValue() % $rightIntegerValue);
+						$resultType = self::getTypeFromValue(self::toIntegerOperand($leftTypeInner) % $rightIntegerValue);
 						$resultTypes[] = $resultType;
 					}
 				}
@@ -965,11 +965,12 @@ final class OperatorTypeHelper
 							throw new ShouldNotHappenException();
 						}
 
-						if ($rightNumberType->getValue() < 0) {
+						$rightIntegerValue = self::toIntegerOperand($rightTypeInner);
+						if ($rightIntegerValue < 0) {
 							return new ErrorType();
 						}
 
-						$resultType = self::getTypeFromValue(intval($leftNumberType->getValue()) << intval($rightNumberType->getValue()));
+						$resultType = self::getTypeFromValue(self::toIntegerOperand($leftTypeInner) << $rightIntegerValue);
 						$resultTypes[] = $resultType;
 					}
 				}
@@ -1018,11 +1019,12 @@ final class OperatorTypeHelper
 							throw new ShouldNotHappenException();
 						}
 
-						if ($rightNumberType->getValue() < 0) {
+						$rightIntegerValue = self::toIntegerOperand($rightTypeInner);
+						if ($rightIntegerValue < 0) {
 							return new ErrorType();
 						}
 
-						$resultType = self::getTypeFromValue(intval($leftNumberType->getValue()) >> intval($rightNumberType->getValue()));
+						$resultType = self::getTypeFromValue(self::toIntegerOperand($leftTypeInner) >> $rightIntegerValue);
 						$resultTypes[] = $resultType;
 					}
 				}
@@ -1557,6 +1559,21 @@ final class OperatorTypeHelper
 		}
 
 		return (int) $value;
+	}
+
+	/**
+	 * The integer a constant operand of %, <<, >>, &, | and ^ becomes: numeric
+	 * strings out of the int range saturate like an (int) cast instead of
+	 * wrapping around like the float toNumber() gives.
+	 */
+	private static function toIntegerOperand(ConstantScalarType $type): int
+	{
+		$values = $type->toInteger()->getConstantScalarValues();
+		if (count($values) !== 1 || !is_int($values[0])) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $values[0];
 	}
 
 	/**

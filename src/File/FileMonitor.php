@@ -69,6 +69,34 @@ final class FileMonitor
 		$this->filePaths = $filePaths;
 	}
 
+	/**
+	 * Files to watch besides the analysed and scanned ones, from now on.
+	 *
+	 * @param array<string> $filePaths
+	 */
+	public function watchFiles(array $filePaths): void
+	{
+		if ($this->fileHashes === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		foreach ($filePaths as $filePath) {
+			if (array_key_exists($filePath, $this->fileHashes)) {
+				continue;
+			}
+
+			// as it is now, not a change to report
+			$hash = $this->getFileHash($filePath);
+			if ($hash === null) {
+				continue;
+			}
+
+			$this->fileHashes[$filePath] = $hash;
+		}
+
+		$this->filePaths = $filePaths;
+	}
+
 	public function getChanges(): FileMonitorResult
 	{
 		if ($this->fileHashes === null || $this->filePaths === null) {

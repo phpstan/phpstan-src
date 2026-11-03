@@ -12,6 +12,7 @@ use PHPStan\Analyser\InternalError;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Analyser\ResultCache\ResultCacheManager;
 use PHPStan\Analyser\ResultCache\ResultCacheManagerFactory;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
@@ -50,7 +51,12 @@ use const JSON_INVALID_UTF8_IGNORE;
 final class FixerWorkerRunner
 {
 
+	/**
+	 * @param string[] $allConfigFiles
+	 */
 	public function __construct(
+		#[AutowiredParameter]
+		private array $allConfigFiles,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private AnalyserResultFinalizer $analyserResultFinalizer,
@@ -91,6 +97,14 @@ final class FixerWorkerRunner
 
 			/** @var ResultCacheManager $resultCacheManager */
 			$resultCacheManager = $this->resultCacheManagerFactory->create([]);
+
+			// the config read for this analysis, files included since PHPStan Pro started are watched from now on
+			$out->write([
+				'action' => 'watchedConfigFiles',
+				'result' => [
+					'files' => $this->allConfigFiles,
+				],
+			]);
 
 			$out->write([
 				'action' => 'analysisStart',

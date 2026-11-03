@@ -99,13 +99,12 @@ final class ConstExprNodeResolver
 			if (!$classReflection->hasConstant($node->name)) {
 				return new ErrorType();
 			}
-			if ($classReflection->isEnum() && $classReflection->hasEnumCase($node->name)) {
-				return new EnumCaseObjectType($classReflection->getName(), $node->name);
-			}
-
 			$reflectionConstant = $classReflection->getNativeReflection()->getReflectionConstant($node->name);
 			if ($reflectionConstant === false) {
 				return new ErrorType();
+			}
+			if ($reflectionConstant->isEnumCase()) {
+				return new EnumCaseObjectType($classReflection->getName(), $node->name);
 			}
 			$declaringClass = $reflectionConstant->getDeclaringClass();
 

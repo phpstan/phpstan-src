@@ -304,19 +304,6 @@ public:
 	/* [$this] */
 	zv::Val getFiniteTypes() const { return getConstantScalarTypes(); }
 
-	/* new UnionType([new ConstantIntegerType(0), new ConstantIntegerType(1)]) */
-	static zv::Val arithmeticPower()
-	{
-		zv::Val zero = pt_type_new_constant_integer(0);
-		if (UNEXPECTED(zero.isUndef())) return zv::Val();
-		zv::Val one = pt_type_new_constant_integer(1);
-		if (UNEXPECTED(one.isUndef())) return zv::Val();
-		zv::Arr types = zv::Arr::create(2);
-		types.push(std::move(zero));
-		types.push(std::move(one));
-		return pt_type_new_union(std::move(types));
-	}
-
 	/* new IdentifierTypeNode('null') */
 	static zv::Val toPhpDocNode()
 	{
@@ -703,10 +690,14 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 
 	cls.method<&NullType::getFiniteTypes>(sigs::getFiniteTypes);
 
+	/* ExponentiateHelper::exponentiate($this, $exponent) */
 	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *exponent, *phpVersion;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, exponent, phpVersion)) RETURN_THROWS();
-		PT_RETURN_VAL(NullType::arithmeticPower());
+		zval self;
+		ZVAL_OBJ(&self, Z_OBJ_P(ZEND_THIS));
+		zv::Args args{&self, exponent};
+		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_EXPONENTIATE_HELPER, PT_LC("exponentiate"), 2, args));
 	});
 
 	cls.method<&NullType::toPhpDocNode>(sigs::toPhpDocNode);

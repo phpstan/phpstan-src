@@ -233,11 +233,6 @@ zv::Val pt_integer_type_loose_compare(zend_object *self, zval *type, zval *phpVe
 	return IntegerType::looseCompare(type, phpVersion);
 }
 
-zv::Val pt_integer_type_arithmetic_power(zend_object *self, zval *exponent, zval *phpVersion)
-{
-	return IntegerType(self).arithmeticPower(exponent, phpVersion);
-}
-
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS IntegerType(Z_OBJ_P(ZEND_THIS))

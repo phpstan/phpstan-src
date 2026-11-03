@@ -1316,12 +1316,6 @@ parameters:
 			path: src/Type/Generic/TemplateUnionType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/IntegerRangeType.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\IntegerType is error-prone and deprecated. Use Type::isInteger() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 3

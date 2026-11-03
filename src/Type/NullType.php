@@ -420,12 +420,7 @@ class NullType implements ConstantScalarType
 
 	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return new UnionType(
-			[
-				new ConstantIntegerType(0),
-				new ConstantIntegerType(1),
-			],
-		);
+		return ExponentiateHelper::exponentiate($this, $exponent);
 	}
 
 	public function toPhpDocNode(): TypeNode

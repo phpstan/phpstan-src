@@ -70,8 +70,8 @@ function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 	assertType('int<2, max>', pow($range, $positiveInt));
 	assertType('int<2, max>', $range ** $positiveInt);
 
-	assertType('int<min, 27>', pow($range, $range2));
-	assertType('int<min, 27>', $range ** $range2);
+	assertType('(float|int)', pow($range, $range2));
+	assertType('(float|int)', $range ** $range2);
 
 	assertType('(float|int)', pow($range, PHP_INT_MAX));
 	assertType('(float|int)', $range ** PHP_INT_MAX);
@@ -82,8 +82,8 @@ function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 	assertType('(float|int)', pow($positiveInt, $range2));
 	assertType('(float|int)', $positiveInt ** $range2);
 
-	assertType('int<-6, 16>|int<1296, 4096>', pow($unionRange1, $unionRange2));
-	assertType('int<-6, 16>|int<1296, 4096>', $unionRange1 ** $unionRange2);
+	assertType('int<-7776, -1024>|int<-32, -1>|int<1, 64>|int<256, 1296>|int<4096, 46656>', pow($unionRange1, $unionRange2));
+	assertType('int<-7776, -1024>|int<-32, -1>|int<1, 64>|int<256, 1296>|int<4096, 46656>', $unionRange1 ** $unionRange2);
 
 	assertType('int<2, 4>|int<16, 64>', pow(2, $unionRange2));
 	assertType('int<2, 4>|int<16, 64>', 2 ** $unionRange2);
@@ -94,8 +94,8 @@ function foo($positiveInt, $range2, $unionRange1, $unionRange2): void {
 	assertType('1', pow(true, $unionRange2));
 	assertType('1', true ** $unionRange2);
 
-	assertType('0|1', pow(null, $unionRange2));
-	assertType('0|1', null ** $unionRange2);
+	assertType('0', pow(null, $unionRange2));
+	assertType('0', null ** $unionRange2);
 }
 
 /**
@@ -124,8 +124,8 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 	assertType('*ERROR*', pow($bool, $arr));
 	assertType('*ERROR*', pow($bool, []));
 
-	assertType('0|1', pow(null, "123"));
-	assertType('0|1', pow(null, $intA));
+	assertType('0', pow(null, "123"));
+	assertType('(float|int)', pow(null, $intA));
 	assertType('1', "123" ** null);
 	assertType('1', $intA ** null);
 	assertType('1.0', $float ** null);
@@ -162,9 +162,9 @@ function doFoo(int $intA, int $intB, string $s, bool $bool, $numericS, float $fl
 
 	assertType('NAN', pow(-1,5.5));
 
-	assertType('1', pow($s, 0));
-	assertType('1', $s ** '0');
-	assertType('1', $s ** false);
+	assertType('1|1.0', pow($s, 0));
+	assertType('1|1.0', $s ** '0');
+	assertType('1|1.0', $s ** false);
 	assertType('(float|int)', pow($s, 1));
 	assertType('(float|int)', $s ** '1');
 	assertType('*ERROR*', $s ** $arr);

@@ -2139,10 +2139,25 @@ public:
 		});
 	}
 
+	/* every member's power intersected, unless a member's is an ErrorType,
+	 * which decides for the value (intersecting it, a MixedType, would hide
+	 * it) */
 	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
+		zval *types = this->types();
+		if (UNEXPECTED(types == NULL)) return zv::Val();
+		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
 		zv::Args args{exponent, phpVersion};
-		return intersectCall(PT_LC("arithmeticpower"), 2, args);
+		zv::Arr results = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(typesCopy.raw())));
+		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
+			zv::Val result = callType(entry.value().deref().asObject(), PT_LC("arithmeticpower"), 2, args);
+			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			if (Z_TYPE_P(result.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(result.raw()), pt_ce_error_type)) {
+				return result;
+			}
+			results.push(std::move(result));
+		}
+		return intersectOperands(results.arrRef());
 	}
 
 	/* the finite types every member has, keyed by enum case or type-only

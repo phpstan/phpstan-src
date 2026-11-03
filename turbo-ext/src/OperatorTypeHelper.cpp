@@ -170,7 +170,14 @@ public:
 			IETR_VAL(emptyStringType, newConstantStringType(Z_STR(emptyString)));
 			IETR_VAL(leftNumericStringNonEmpty, pt_type_combinator_remove(leftStringType.raw(), emptyStringType.raw()));
 			IETR_TRI(leftNumeric, triOn(leftNumericStringNonEmpty.raw(), mIsNumericString));
-			if (leftNumeric == PT_TRI_YES) {
+			bool numericResult = leftNumeric == PT_TRI_YES;
+			if (numericResult) {
+				/* '' . '' is not numeric */
+				IETR_TRI(leftNonEmpty, triOn(leftStringType.raw(), mIsNonEmptyString));
+				IETR_TRI(rightNonEmpty, triOn(rightStringType.raw(), mIsNonEmptyString));
+				numericResult = pt_trinary_or(leftNonEmpty, rightNonEmpty) == PT_TRI_YES;
+			}
+			if (numericResult) {
 				IETR_TRI(leftIsInteger, triOn(left, mIsInteger));
 				bool integerValidation = leftIsInteger == PT_TRI_YES;
 

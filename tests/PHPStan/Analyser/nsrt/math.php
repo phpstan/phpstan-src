@@ -46,16 +46,16 @@ class Foo
 		assertType('int<min, 4>', $rangeFiveRight - 1);
 
 		assertType('int', $rangeFiveLeft + $rangeFiveRight);
-		assertType('int', $rangeFiveLeft - $rangeFiveRight);
+		assertType('int<-10, max>', $rangeFiveLeft - $rangeFiveRight);
 
 		assertType('int', $rangeFiveRight + $rangeFiveLeft);
-		assertType('int', $rangeFiveRight - $rangeFiveLeft);
+		assertType('int<min, 10>', $rangeFiveRight - $rangeFiveLeft);
 
 		assertType('int<-10, 10>', $rangeFiveBoth + $rangeFiveBoth);
 		assertType('int<-10, 10>', $rangeFiveBoth - $rangeFiveBoth);
 
 		assertType('int<-10, max>', $rangeFiveBoth + $rangeFiveLeft);
-		assertType('int', $rangeFiveBoth - $rangeFiveLeft);
+		assertType('int<min, 10>', $rangeFiveBoth - $rangeFiveLeft);
 
 		assertType('int<min, 10>', $rangeFiveBoth + $rangeFiveRight);
 		assertType('int<-10, max>', $rangeFiveBoth - $rangeFiveRight);

@@ -1502,12 +1502,6 @@ parameters:
 			path: src/Type/OperatorTypeHelper.php
 
 		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
-			identifier: varTag.type
-			count: 4
-			path: src/Type/OperatorTypeHelper.php
-
-		-
 			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
 			identifier: varTag.type
 			count: 6

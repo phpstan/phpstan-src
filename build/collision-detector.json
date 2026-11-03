@@ -21,6 +21,7 @@
 		"../tests/PHPStan/Rules/Cast/data/void-cast.php",
 		"../tests/PHPStan/Analyser/nsrt/partial-function-application.php",
 		"../tests/PHPStan/Rules/DeadCode/data/partial-function-application-unused-private-method.php",
-		"../tests/PHPStan/Rules/Functions/data/partial-function-application.php"
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-php-versions.php"
     ]
 }

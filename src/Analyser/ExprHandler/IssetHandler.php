@@ -74,7 +74,7 @@ final class IssetHandler implements ExprHandler
 		foreach ($expr->vars as $var) {
 			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
-			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
+			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep()->enterIssetTarget());
 			$varResults[] = $varResult;
 			$scope = $varResult->getScope();
 			$hasYield = $hasYield || $varResult->hasYield();

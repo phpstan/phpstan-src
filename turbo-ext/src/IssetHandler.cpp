@@ -229,7 +229,9 @@ public:
 			{
 				zv::Val deepContext = pt_expression_context_enter_deep(context);
 				if (UNEXPECTED(deepContext.isUndef())) return zv::Val();
-				varResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, var, scope.raw(), storage, nodeCallback, deepContext.raw());
+				zv::Val subjectContext = pt_expression_context_enter_isset_target(deepContext.raw());
+				if (UNEXPECTED(subjectContext.isUndef())) return zv::Val();
+				varResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, var, scope.raw(), storage, nodeCallback, subjectContext.raw());
 				if (UNEXPECTED(varResult.isUndef())) return zv::Val();
 			}
 			varResults.push(zv::Ref(varResult.raw()));

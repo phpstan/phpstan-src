@@ -37,6 +37,7 @@ inline constexpr uint32_t targetReadResult = 23;
 inline constexpr uint32_t targetChainResults = 24;
 inline constexpr uint32_t variableNameResult = 25;
 inline constexpr uint32_t dependencies = 26;
+inline constexpr uint32_t illegalOffsetDimFetches = 27;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -74,6 +75,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("targetChainResults", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("variableNameResult", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Analyser\\ExpressionResult");
 	cls.property("dependencies", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Dependency\\Dependencies");
+	cls.property("illegalOffsetDimFetches", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -113,31 +115,33 @@ inline constexpr char strings[] =
 	"variableNameResult\0" /* 470 */
 	"dependencies\0" /* 489 */
 	"PHPStan\\Dependency\\Dependencies\0" /* 502 */
-	"__construct\0" /* 534 */
-	"\0" /* 546 */
-	"getDependencies\0" /* 547 */
-	"getKind\0" /* 563 */
-	"getVar\0" /* 571 */
-	"getAssignedExpr\0" /* 578 */
-	"getBeforeScope\0" /* 594 */
-	"getScope\0" /* 609 */
-	"getThrowPoints\0" /* 618 */
-	"getImpurePoints\0" /* 633 */
-	"getRootVar\0" /* 649 */
-	"getVarResult\0" /* 660 */
-	"getDimFetchStack\0" /* 673 */
-	"getAssignedPropertyExpr\0" /* 690 */
-	"getOffsetTypes\0" /* 714 */
-	"getOffsetNativeTypes\0" /* 729 */
-	"getExistingOffsetTypes\0" /* 750 */
-	"getExistingOffsetNativeTypes\0" /* 773 */
-	"getOffsetSetTargetResult\0" /* 802 */
-	"getObjectResult\0" /* 827 */
-	"getPropertyName\0" /* 843 */
-	"getPropertyHolderType\0" /* 859 */
-	"getTargetReadResult\0" /* 881 */
-	"getTargetChainResults\0" /* 901 */
-	"getVariableNameResult"; /* 923 */
+	"illegalOffsetDimFetches\0" /* 534 */
+	"__construct\0" /* 558 */
+	"\0" /* 570 */
+	"getDependencies\0" /* 571 */
+	"getKind\0" /* 587 */
+	"getVar\0" /* 595 */
+	"getAssignedExpr\0" /* 602 */
+	"getBeforeScope\0" /* 618 */
+	"getScope\0" /* 633 */
+	"getThrowPoints\0" /* 642 */
+	"getImpurePoints\0" /* 657 */
+	"getRootVar\0" /* 673 */
+	"getVarResult\0" /* 684 */
+	"getDimFetchStack\0" /* 697 */
+	"getAssignedPropertyExpr\0" /* 714 */
+	"getOffsetTypes\0" /* 738 */
+	"getOffsetNativeTypes\0" /* 753 */
+	"getExistingOffsetTypes\0" /* 774 */
+	"getExistingOffsetNativeTypes\0" /* 797 */
+	"getOffsetSetTargetResult\0" /* 826 */
+	"getObjectResult\0" /* 851 */
+	"getPropertyName\0" /* 867 */
+	"getPropertyHolderType\0" /* 883 */
+	"getTargetReadResult\0" /* 905 */
+	"getTargetChainResults\0" /* 925 */
+	"getVariableNameResult\0" /* 947 */
+	"getIllegalOffsetDimFetches"; /* 969 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $kind */
 	reg::packed(5, 0, 9), /* __construct $var */
@@ -166,67 +170,70 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(448, MAY_BE_ARRAY, reg::NoString, false, false, 467), /* __construct $targetChainResults */
 	reg::packed(470, MAY_BE_NULL, 201, false, false, 186), /* __construct $variableNameResult */
 	reg::packed(489, MAY_BE_NULL, 502, false, false, 186), /* __construct $dependencies */
-	reg::packed(546, MAY_BE_NULL, 502), /* getDependencies return */
-	reg::packed(546, MAY_BE_STRING), /* getKind return */
-	reg::packed(546, 0, 9), /* getVar return */
-	reg::packed(546, 0, 9), /* getAssignedExpr return */
-	reg::packed(546, 0, 54), /* getBeforeScope return */
-	reg::packed(546, 0, 54), /* getScope return */
-	reg::packed(546, MAY_BE_BOOL), /* enterExpressionAssign return */
-	reg::packed(546, MAY_BE_BOOL), /* isAssignOp return */
-	reg::packed(546, MAY_BE_BOOL), /* hasYield return */
-	reg::packed(546, MAY_BE_ARRAY), /* getThrowPoints return */
-	reg::packed(546, MAY_BE_ARRAY), /* getImpurePoints return */
-	reg::packed(546, MAY_BE_BOOL), /* isAlwaysTerminating return */
-	reg::packed(546, 0, 9), /* getRootVar return */
-	reg::packed(546, 0, 201), /* getVarResult return */
-	reg::packed(546, MAY_BE_ARRAY), /* getDimFetchStack return */
-	reg::packed(546, 0, 9), /* getAssignedPropertyExpr return */
-	reg::packed(546, MAY_BE_ARRAY), /* getOffsetTypes return */
-	reg::packed(546, MAY_BE_ARRAY), /* getOffsetNativeTypes return */
-	reg::packed(546, MAY_BE_ARRAY), /* getExistingOffsetTypes return */
-	reg::packed(546, MAY_BE_ARRAY), /* getExistingOffsetNativeTypes return */
-	reg::packed(546, 0, 201), /* getOffsetSetTargetResult return */
-	reg::packed(546, 0, 201), /* getObjectResult return */
-	reg::packed(546, MAY_BE_NULL | MAY_BE_STRING), /* getPropertyName return */
-	reg::packed(546, 0, 413), /* getPropertyHolderType return */
-	reg::packed(546, 0, 201), /* getTargetReadResult return */
-	reg::packed(546, MAY_BE_ARRAY), /* getTargetChainResults return */
-	reg::packed(546, MAY_BE_NULL, 201), /* getVariableNameResult return */
+	reg::packed(534, MAY_BE_ARRAY, reg::NoString, false, false, 467), /* __construct $illegalOffsetDimFetches */
+	reg::packed(570, MAY_BE_NULL, 502), /* getDependencies return */
+	reg::packed(570, MAY_BE_STRING), /* getKind return */
+	reg::packed(570, 0, 9), /* getVar return */
+	reg::packed(570, 0, 9), /* getAssignedExpr return */
+	reg::packed(570, 0, 54), /* getBeforeScope return */
+	reg::packed(570, 0, 54), /* getScope return */
+	reg::packed(570, MAY_BE_BOOL), /* enterExpressionAssign return */
+	reg::packed(570, MAY_BE_BOOL), /* isAssignOp return */
+	reg::packed(570, MAY_BE_BOOL), /* hasYield return */
+	reg::packed(570, MAY_BE_ARRAY), /* getThrowPoints return */
+	reg::packed(570, MAY_BE_ARRAY), /* getImpurePoints return */
+	reg::packed(570, MAY_BE_BOOL), /* isAlwaysTerminating return */
+	reg::packed(570, 0, 9), /* getRootVar return */
+	reg::packed(570, 0, 201), /* getVarResult return */
+	reg::packed(570, MAY_BE_ARRAY), /* getDimFetchStack return */
+	reg::packed(570, 0, 9), /* getAssignedPropertyExpr return */
+	reg::packed(570, MAY_BE_ARRAY), /* getOffsetTypes return */
+	reg::packed(570, MAY_BE_ARRAY), /* getOffsetNativeTypes return */
+	reg::packed(570, MAY_BE_ARRAY), /* getExistingOffsetTypes return */
+	reg::packed(570, MAY_BE_ARRAY), /* getExistingOffsetNativeTypes return */
+	reg::packed(570, 0, 201), /* getOffsetSetTargetResult return */
+	reg::packed(570, 0, 201), /* getObjectResult return */
+	reg::packed(570, MAY_BE_NULL | MAY_BE_STRING), /* getPropertyName return */
+	reg::packed(570, 0, 413), /* getPropertyHolderType return */
+	reg::packed(570, 0, 201), /* getTargetReadResult return */
+	reg::packed(570, MAY_BE_ARRAY), /* getTargetChainResults return */
+	reg::packed(570, MAY_BE_NULL, 201), /* getVariableNameResult return */
+	reg::packed(570, MAY_BE_ARRAY), /* getIllegalOffsetDimFetches return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 534 /* __construct */, 11, 0, 27, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDependencies = { { 547 /* getDependencies */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getKind = { { 563 /* getKind */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getVar = { { 571 /* getVar */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAssignedExpr = { { 578 /* getAssignedExpr */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getBeforeScope = { { 594 /* getBeforeScope */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getScope = { { 609 /* getScope */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterExpressionAssign = { { 91 /* enterExpressionAssign */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isAssignOp = { { 113 /* isAssignOp */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasYield = { { 124 /* hasYield */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getThrowPoints = { { 618 /* getThrowPoints */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getImpurePoints = { { 633 /* getImpurePoints */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isAlwaysTerminating = { { 158 /* isAlwaysTerminating */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getRootVar = { { 649 /* getRootVar */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getVarResult = { { 660 /* getVarResult */, 0, 40, 0, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDimFetchStack = { { 673 /* getDimFetchStack */, 0, 41, 0, 41, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAssignedPropertyExpr = { { 690 /* getAssignedPropertyExpr */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOffsetTypes = { { 714 /* getOffsetTypes */, 0, 43, 0, 43, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOffsetNativeTypes = { { 729 /* getOffsetNativeTypes */, 0, 44, 0, 44, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getExistingOffsetTypes = { { 750 /* getExistingOffsetTypes */, 0, 45, 0, 45, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getExistingOffsetNativeTypes = { { 773 /* getExistingOffsetNativeTypes */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOffsetSetTargetResult = { { 802 /* getOffsetSetTargetResult */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectResult = { { 827 /* getObjectResult */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPropertyName = { { 843 /* getPropertyName */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPropertyHolderType = { { 859 /* getPropertyHolderType */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getTargetReadResult = { { 881 /* getTargetReadResult */, 0, 51, 0, 51, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getTargetChainResults = { { 901 /* getTargetChainResults */, 0, 52, 0, 52, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getVariableNameResult = { { 923 /* getVariableNameResult */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 558 /* __construct */, 11, 0, 28, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDependencies = { { 571 /* getDependencies */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKind = { { 587 /* getKind */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVar = { { 595 /* getVar */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssignedExpr = { { 602 /* getAssignedExpr */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getBeforeScope = { { 618 /* getBeforeScope */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 633 /* getScope */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterExpressionAssign = { { 91 /* enterExpressionAssign */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAssignOp = { { 113 /* isAssignOp */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasYield = { { 124 /* hasYield */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getThrowPoints = { { 642 /* getThrowPoints */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getImpurePoints = { { 657 /* getImpurePoints */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAlwaysTerminating = { { 158 /* isAlwaysTerminating */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getRootVar = { { 673 /* getRootVar */, 0, 40, 0, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVarResult = { { 684 /* getVarResult */, 0, 41, 0, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDimFetchStack = { { 697 /* getDimFetchStack */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAssignedPropertyExpr = { { 714 /* getAssignedPropertyExpr */, 0, 43, 0, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetTypes = { { 738 /* getOffsetTypes */, 0, 44, 0, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetNativeTypes = { { 753 /* getOffsetNativeTypes */, 0, 45, 0, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExistingOffsetTypes = { { 774 /* getExistingOffsetTypes */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getExistingOffsetNativeTypes = { { 797 /* getExistingOffsetNativeTypes */, 0, 47, 0, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetSetTargetResult = { { 826 /* getOffsetSetTargetResult */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectResult = { { 851 /* getObjectResult */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyName = { { 867 /* getPropertyName */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyHolderType = { { 883 /* getPropertyHolderType */, 0, 51, 0, 51, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTargetReadResult = { { 905 /* getTargetReadResult */, 0, 52, 0, 52, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTargetChainResults = { { 925 /* getTargetChainResults */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVariableNameResult = { { 947 /* getVariableNameResult */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIllegalOffsetDimFetches = { { 969 /* getIllegalOffsetDimFetches */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::PreparedAssignTarget

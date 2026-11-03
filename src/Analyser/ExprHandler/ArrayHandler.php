@@ -20,7 +20,9 @@ use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
+use PHPStan\Analyser\ExprHandler\Helper\IllegalOffsetTypeHelper;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\Scope;
@@ -33,6 +35,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
 use PHPStan\Node\Variable\VariableWrite;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -41,8 +44,10 @@ use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use TypeError;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -69,6 +74,7 @@ final class ArrayHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
 		private ClosureTypeResolver $closureTypeResolver,
+		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -360,6 +366,16 @@ final class ArrayHandler implements ExprHandler
 				$throwPoints = array_merge($throwPoints, $walkedResult->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $walkedResult->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $walkedResult->isAlwaysTerminating();
+			}
+			if (
+				$arrayItem->key !== null
+				&& $keyResult !== null
+				&& $this->phpVersion->throwsTypeErrorForIllegalOffsets()
+				&& IllegalOffsetTypeHelper::mayOffsetThrowTypeError($keyResult->getType())
+			) {
+				// an array or an object key throws TypeError once the key and the value were evaluated
+				$throwPoints[] = InternalThrowPoint::createExplicit($walkedResults[count($walkedResults) - 1]->getScope(), new ObjectType(TypeError::class), $arrayItem->key, false);
+				$variableFlows[] = VariableFlow::throwing(new ObjectType(TypeError::class), true);
 			}
 			if (!$arrayItem->byRef) {
 				continue;

@@ -63,6 +63,8 @@ using phpstanturbo::visitors::NodeProp;
 constexpr zend_long PT_IETR_CALCULATE_SCALARS_LIMIT = PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT;
 constexpr zend_long PT_IETR_IS_SCALAR_TYPE = 1;
 constexpr zend_long PT_IETR_IS_UNKNOWN = 2;
+/* the twin's private CALCULATE_ARRAYS_LIMIT */
+constexpr zend_long PT_IETR_CALCULATE_ARRAYS_LIMIT = 32;
 
 #define IETR_VAL(name, expr) \
 	zv::Val name = (expr); \
@@ -3772,30 +3774,125 @@ public:
 			return oversizedArrayBuild(prop(slots::oversizedArrayBuilder), expr, callable.raw());
 		}
 
+		// $valueTypes / $keyTypes: the item types read up front, by item
+		// position; UNDEF = not read up front, a null key type = no key
+		uint32_t itemCount = zend_hash_num_elements(Z_ARRVAL_P(items));
+		std::vector<zv::Val> valueTypes(itemCount);
+		std::vector<zv::Val> keyTypes(itemCount);
+		if (zend_is_true(prop(slots::preciseArrayShapeUnpacking))) {
+			// $constantArrayVariantsByItemIndex: UNDEF for an item not unpacked
+			std::vector<zv::Val> constantArrayVariants(itemCount);
+			zend_long constantArraysCombinationsCount = 1;
+			bool hasConstantArrayUnion = false;
+			bool canResolveConstantArraysPrecisely = true;
+			size_t itemIndex = 0;
+			for (zv::ArrayEntry itemEntry : zv::ArrRef(items)) {
+				size_t index = itemIndex++;
+				zval *arrayItem = itemEntry.value().deref().raw();
+				if (UNEXPECTED(Z_TYPE_P(arrayItem) != IS_OBJECT)) {
+					// a list() hole: the twin reads null off it with the engine's
+					// warnings and hands the callback null
+					zend_error(E_WARNING, "Attempt to read property \"value\" on %s", zend_zval_value_name(arrayItem));
+					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+					zval nullValue;
+					ZVAL_NULL(&nullValue);
+					valueTypes[index] = getTypeOf(getTypeCallback, &nullValue);
+					if (UNEXPECTED(valueTypes[index].isUndef())) return zv::Val();
+					zend_error(E_WARNING, "Attempt to read property \"unpack\" on %s", zend_zval_value_name(arrayItem));
+					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+					zend_error(E_WARNING, "Attempt to read property \"key\" on %s", zend_zval_value_name(arrayItem));
+					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+					keyTypes[index] = zv::Val::null();
+					continue;
+				}
+				zval *itemValue = nodeProp(pt_ietr_array_item_value, arrayItem);
+				if (UNEXPECTED(itemValue == NULL)) return zv::Val();
+				valueTypes[index] = getTypeOf(getTypeCallback, itemValue);
+				if (UNEXPECTED(valueTypes[index].isUndef())) return zv::Val();
+				zval *unpack = nodeProp(pt_ietr_array_item_unpack, arrayItem);
+				if (UNEXPECTED(unpack == NULL)) return zv::Val();
+				if (!zend_is_true(unpack)) {
+					zval *key = nodeProp(pt_ietr_array_item_key, arrayItem);
+					if (UNEXPECTED(key == NULL)) return zv::Val();
+					if (Z_TYPE_P(key) != IS_NULL) {
+						keyTypes[index] = getTypeOf(getTypeCallback, key);
+						if (UNEXPECTED(keyTypes[index].isUndef())) return zv::Val();
+					} else {
+						keyTypes[index] = zv::Val::null();
+					}
+					continue;
+				}
+
+				IETR_VAL(constantArrays, callOn(valueTypes[index].raw(), mGetConstantArrays));
+				if (UNEXPECTED(!requireArray(constantArrays.raw()))) return zv::Val();
+				zend_long constantArraysCount = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw()));
+				constantArrayVariants[index] = std::move(constantArrays);
+
+				if (constantArraysCount == 0) {
+					canResolveConstantArraysPrecisely = false;
+					continue;
+				}
+
+				if (constantArraysCount > 1) {
+					hasConstantArrayUnion = true;
+				}
+
+				if (constantArraysCount > PT_IETR_CALCULATE_ARRAYS_LIMIT
+					|| constantArraysCombinationsCount > PT_IETR_CALCULATE_ARRAYS_LIMIT / constantArraysCount
+				) {
+					canResolveConstantArraysPrecisely = false;
+					continue;
+				}
+
+				constantArraysCombinationsCount *= constantArraysCount;
+			}
+
+			if (hasConstantArrayUnion && canResolveConstantArraysPrecisely) {
+				return preciseUnpackedArrayType(items, valueTypes, keyTypes, constantArrayVariants);
+			}
+		}
+
 		IETR_VAL(arrayBuilder, pt_constant_array_type_builder_create_empty());
 		zval isList;
 		ZVAL_NULL(&isList);
 		zv::Arr hasOffsetValueTypes = zv::Arr::create(0);
+		size_t itemIndex = 0;
 		for (zv::ArrayEntry itemEntry : zv::ArrRef(items)) {
+			size_t index = itemIndex++;
 			zval *arrayItem = itemEntry.value().deref().raw();
 			if (UNEXPECTED(Z_TYPE_P(arrayItem) != IS_OBJECT)) {
 				// a list() hole: the twin reads null off it with the engine's
-				// warnings and hands the callback null
-				zend_error(E_WARNING, "Attempt to read property \"value\" on %s", zend_zval_value_name(arrayItem));
-				if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
-				zval nullValue;
-				ZVAL_NULL(&nullValue);
-				IETR_VAL(holeValueType, getTypeOf(getTypeCallback, &nullValue));
+				// warnings and hands the callback null - unless both were read
+				// up front
+				zv::Val holeValueType;
+				if (!valueTypes[index].isUndef()) {
+					holeValueType = zv::Val::copyOf(zv::Ref(valueTypes[index].raw()));
+				} else {
+					zend_error(E_WARNING, "Attempt to read property \"value\" on %s", zend_zval_value_name(arrayItem));
+					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+					zval nullValue;
+					ZVAL_NULL(&nullValue);
+					holeValueType = getTypeOf(getTypeCallback, &nullValue);
+					if (UNEXPECTED(holeValueType.isUndef())) return zv::Val();
+				}
 				zend_error(E_WARNING, "Attempt to read property \"unpack\" on %s", zend_zval_value_name(arrayItem));
 				if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
-				zend_error(E_WARNING, "Attempt to read property \"key\" on %s", zend_zval_value_name(arrayItem));
-				if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+				if (keyTypes[index].isUndef()) {
+					zend_error(E_WARNING, "Attempt to read property \"key\" on %s", zend_zval_value_name(arrayItem));
+					if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+				}
 				if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(arrayBuilder.raw(), NULL, holeValueType.raw()))) return zv::Val();
 				continue;
 			}
-			zval *itemValue = nodeProp(pt_ietr_array_item_value, arrayItem);
-			if (UNEXPECTED(itemValue == NULL)) return zv::Val();
-			IETR_VAL(valueType, getTypeOf(getTypeCallback, itemValue));
+			zv::Val valueType;
+			if (!valueTypes[index].isUndef()) {
+				valueType = zv::Val::copyOf(zv::Ref(valueTypes[index].raw()));
+			} else {
+				zval *itemValue = nodeProp(pt_ietr_array_item_value, arrayItem);
+				if (UNEXPECTED(itemValue == NULL)) return zv::Val();
+				valueType = getTypeOf(getTypeCallback, itemValue);
+				if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+			}
 			zval *unpack = nodeProp(pt_ietr_array_item_unpack, arrayItem);
 			if (UNEXPECTED(unpack == NULL)) return zv::Val();
 			if (zend_is_true(unpack)) {
@@ -3850,14 +3947,18 @@ public:
 					if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(arrayBuilder.raw(), offsetType.raw(), iterableValueType.raw(), atLeastOnce != PT_TRI_YES))) return zv::Val();
 				}
 			} else {
-				zval *key = nodeProp(pt_ietr_array_item_key, arrayItem);
-				if (UNEXPECTED(key == NULL)) return zv::Val();
 				zv::Val keyType;
-				if (Z_TYPE_P(key) != IS_NULL) {
-					keyType = getTypeOf(getTypeCallback, key);
-					if (UNEXPECTED(keyType.isUndef())) return zv::Val();
+				if (!keyTypes[index].isUndef()) {
+					keyType = zv::Val::copyOf(zv::Ref(keyTypes[index].raw()));
+				} else {
+					zval *key = nodeProp(pt_ietr_array_item_key, arrayItem);
+					if (UNEXPECTED(key == NULL)) return zv::Val();
+					if (Z_TYPE_P(key) != IS_NULL) {
+						keyType = getTypeOf(getTypeCallback, key);
+						if (UNEXPECTED(keyType.isUndef())) return zv::Val();
+					}
 				}
-				if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(arrayBuilder.raw(), keyType.isUndef() ? NULL : keyType.raw(), valueType.raw()))) return zv::Val();
+				if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(arrayBuilder.raw(), keyType.isNull() ? NULL : keyType.raw(), valueType.raw()))) return zv::Val();
 			}
 		}
 
@@ -3887,6 +3988,95 @@ public:
 		}
 
 		return arrayType;
+	}
+
+	/* the precise arm of getArrayType(): every combination of the unpacked
+	 * items' constant arrays built on its own builder, the arrays unioned */
+	zv::Val preciseUnpackedArrayType(zval *items, std::vector<zv::Val> &valueTypes, std::vector<zv::Val> &keyTypes, std::vector<zv::Val> &constantArrayVariants) const
+	{
+		zv::Arr arrayBuilders = zv::Arr::create(1);
+		{
+			IETR_VAL(emptyBuilder, pt_constant_array_type_builder_create_empty());
+			arrayBuilders.push(std::move(emptyBuilder));
+		}
+		int keepStringKeys = phpVersionAtLeast(prop(slots::phpVersion), 80100, PT_LC("supportsarrayunpackingwithstringkeys"));
+		if (UNEXPECTED(keepStringKeys < 0)) return zv::Val();
+
+		size_t itemIndex = 0;
+		for (zv::ArrayEntry itemEntry : zv::ArrRef(items)) {
+			size_t index = itemIndex++;
+			zval *arrayItem = itemEntry.value().deref().raw();
+			bool unpack = false;
+			if (UNEXPECTED(Z_TYPE_P(arrayItem) != IS_OBJECT)) {
+				zend_error(E_WARNING, "Attempt to read property \"unpack\" on %s", zend_zval_value_name(arrayItem));
+				if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+			} else {
+				zval *unpackValue = nodeProp(pt_ietr_array_item_unpack, arrayItem);
+				if (UNEXPECTED(unpackValue == NULL)) return zv::Val();
+				unpack = zend_is_true(unpackValue);
+			}
+			if (!unpack) {
+				zval *keyType = keyTypes[index].isNull() ? NULL : keyTypes[index].raw();
+				for (zv::ArrayEntry builderEntry : zv::ArrRef(arrayBuilders.raw())) {
+					if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(builderEntry.value().raw(), keyType, valueTypes[index].raw()))) return zv::Val();
+				}
+
+				continue;
+			}
+
+			zv::Arr newArrayBuilders = zv::Arr::create(0);
+			for (zv::ArrayEntry builderEntry : zv::ArrRef(arrayBuilders.raw())) {
+				zval *arrayBuilder = builderEntry.value().raw();
+				for (zv::ArrayEntry arrayEntry : zv::ArrRef(constantArrayVariants[index].raw())) {
+					zval *constantArray = arrayEntry.value().raw();
+					zend_object *cloned = Z_OBJ_HANDLER_P(arrayBuilder, clone_obj)(Z_OBJ_P(arrayBuilder));
+					if (UNEXPECTED(cloned == NULL || EG(exception) != NULL)) {
+						if (cloned != NULL) {
+							OBJ_RELEASE(cloned);
+						}
+						return zv::Val();
+					}
+					zval clonedZv;
+					ZVAL_OBJ(&clonedZv, cloned);
+					zv::Val newArrayBuilder = zv::Val::adopt(clonedZv);
+
+					IETR_VAL(constantArrayKeyTypes, callOn(constantArray, mGetKeyTypes));
+					if (UNEXPECTED(!requireArray(constantArrayKeyTypes.raw()))) return zv::Val();
+					for (zv::ArrayEntry keyEntry : zv::ArrRef(constantArrayKeyTypes.raw())) {
+						zval *keyType = keyEntry.value().raw();
+						zval j;
+						entryKey(keyEntry, j);
+						zval *offsetType = NULL;
+						if (keepStringKeys) {
+							/* is_string($keyType->getValue()) */
+							IETR_VAL(keyValue, callOn(keyType, mGetValue));
+							if (Z_TYPE_P(keyValue.raw()) == IS_STRING) {
+								offsetType = keyType;
+							}
+						}
+						IETR_VAL(constantArrayValueTypes, callOn(constantArray, mGetValueTypes));
+						zval *valueType = Z_TYPE_P(constantArrayValueTypes.raw()) == IS_ARRAY ? arrayOffsetForRead(constantArrayValueTypes.raw(), &j) : NULL;
+						if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+						zval nullValue;
+						ZVAL_NULL(&nullValue);
+						IETR_VAL(optional, callOn(constantArray, mIsOptionalKey, 1, &j));
+						if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(newArrayBuilder.raw(), offsetType, valueType != NULL ? valueType : &nullValue, zend_is_true(optional.raw())))) return zv::Val();
+					}
+
+					newArrayBuilders.push(std::move(newArrayBuilder));
+				}
+			}
+
+			arrayBuilders = std::move(newArrayBuilders);
+		}
+
+		zv::Arr arrayTypes = zv::Arr::create(zend_hash_num_elements(arrayBuilders.table()));
+		for (zv::ArrayEntry builderEntry : zv::ArrRef(arrayBuilders.raw())) {
+			IETR_VAL(arrayType, pt_constant_array_type_builder_get_array(builderEntry.value().raw()));
+			arrayTypes.push(std::move(arrayType));
+		}
+
+		return unionOf(arrayTypes);
 	}
 
 	/* the unpack arm of getArrayType() over the item's constant arrays:
@@ -5723,6 +5913,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	reg::Class cls("PHPStan\\Reflection\\InitializerExprTypeResolver");
 	ptdecl::InitializerExprTypeResolver::declareClass(cls);
 	cls.classConstantLong("CALCULATE_SCALARS_LIMIT", PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT);
+	cls.privateClassConstantLong("CALCULATE_ARRAYS_LIMIT", PT_IETR_CALCULATE_ARRAYS_LIMIT);
 	cls.privateClassConstantLong("IS_SCALAR_TYPE", PT_IETR_IS_SCALAR_TYPE);
 	cls.privateClassConstantLong("IS_UNKNOWN", PT_IETR_IS_UNKNOWN);
 	ptdecl::InitializerExprTypeResolver::declareProperties(cls);
@@ -5731,8 +5922,8 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *constantResolver, *reflectionProviderProvider, *phpVersion, *operatorTypeSpecifyingExtensionRegistry, *unaryOperatorTypeSpecifyingExtensionRegistry, *oversizedArrayBuilder;
-		bool usePathConstantsAsConstantString;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		bool usePathConstantsAsConstantString, preciseArrayShapeUnpacking;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
 			Z_PARAM_OBJECT(constantResolver)
 			Z_PARAM_OBJECT(reflectionProviderProvider)
 			Z_PARAM_OBJECT(phpVersion)
@@ -5740,6 +5931,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 			Z_PARAM_OBJECT(unaryOperatorTypeSpecifyingExtensionRegistry)
 			Z_PARAM_OBJECT(oversizedArrayBuilder)
 			Z_PARAM_BOOL(usePathConstantsAsConstantString)
+			Z_PARAM_BOOL(preciseArrayShapeUnpacking)
 		ZEND_PARSE_PARAMETERS_END();
 		zend_object *self = Z_OBJ_P(ZEND_THIS);
 		pt_write_slot(self, slots::constantResolver, constantResolver);
@@ -5751,6 +5943,8 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		zval flag = {};
 		ZVAL_BOOL(&flag, usePathConstantsAsConstantString);
 		pt_write_slot(self, slots::usePathConstantsAsConstantString, &flag);
+		ZVAL_BOOL(&flag, preciseArrayShapeUnpacking);
+		pt_write_slot(self, slots::preciseArrayShapeUnpacking, &flag);
 	});
 
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) {

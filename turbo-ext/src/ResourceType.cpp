@@ -39,9 +39,9 @@ static void ZEND_FASTCALL rtError0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
-static void ZEND_FASTCALL rtError1(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL rtError2(INTERNAL_FUNCTION_PARAMETERS)
 {
-	PT_ARGS(1, 1);
+	PT_ARGS(2, 2);
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
@@ -123,7 +123,7 @@ PT_MINIT_REGISTRATION(pt_register_resource_type)
 		RETURN_COPY_VALUE(&result);
 	});
 
-	cls.method(sigs::exponentiate, rtError1);
+	cls.method(sigs::arithmeticPower, rtError2);
 	cls.method(sigs::getFiniteTypes, rtEmptyArray0);
 
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) {

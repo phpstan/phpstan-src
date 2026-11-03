@@ -465,9 +465,9 @@ static void ZEND_FASTCALL hotError0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
-static void ZEND_FASTCALL hotError1(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL hotError2(INTERNAL_FUNCTION_PARAMETERS)
 {
-	PT_ARGS(1, 1);
+	PT_ARGS(2, 2);
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
@@ -688,7 +688,7 @@ PT_MINIT_REGISTRATION(pt_register_has_offset_type)
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, hotThis2);
-	cls.method(sigs::exponentiate, hotError1);
+	cls.method(sigs::arithmeticPower, hotError2);
 	cls.method(sigs::getFiniteTypes, hotEmptyArray0);
 
 	cls.method<&HasOffsetType::getDefaultBaseType>(sigs::getDefaultBaseType);

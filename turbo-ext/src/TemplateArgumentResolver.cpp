@@ -15,11 +15,11 @@
 
 #include "support.h"
 #include "generated/TemplateArgumentResolver.h"
+#include "TypeTraits.h"
 #include "generated/UnresolvedTemplateArgumentType.h"
 
 namespace sigs = ptdecl::TemplateArgumentResolver::sig;
 #include "zv.h"
-#include "TypeTraits.h"
 #include "Engine.h"
 
 #include "zend_smart_str.h"

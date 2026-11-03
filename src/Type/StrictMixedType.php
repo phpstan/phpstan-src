@@ -25,6 +25,7 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/StrictMixedType.cpp')]
@@ -36,6 +37,7 @@ class StrictMixedType implements CompoundType
 	use NonIterableTypeTrait;
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	public function getReferencedClasses(): array
 	{
@@ -508,7 +510,7 @@ class StrictMixedType implements CompoundType
 		return $this;
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new ErrorType();
 	}

@@ -23,6 +23,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
@@ -53,6 +54,8 @@ use function sprintf;
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../../turbo-ext/src/UnresolvedTemplateArgumentType.cpp')]
 final class UnresolvedTemplateArgumentType implements CompoundType
 {
+
+	use OperatorTypeTrait;
 
 	public function __construct(
 		private Expr $site,
@@ -658,9 +661,9 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->getDelegate()->getFiniteTypes();
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return $this->getDelegate()->exponentiate($exponent);
+		return $this->getDelegate()->arithmeticPower($exponent, $phpVersion);
 	}
 
 	public function isCallable(): TrinaryLogic

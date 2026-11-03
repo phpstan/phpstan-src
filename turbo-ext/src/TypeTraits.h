@@ -268,11 +268,11 @@ zv::Val pt_integer_range_create_all_greater_than_or_equal_to(zval *value);
  * (ConstantIntegerType.cpp); false = pending exception */
 [[nodiscard]] bool pt_constant_integer_get_value(zend_object *object, zend_long &out);
 
-/* the bodies of IntegerType::looseCompare() and IntegerType::exponentiate()
+/* the bodies of IntegerType::looseCompare() and IntegerType::arithmeticPower()
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending
  * exception */
 zv::Val pt_integer_type_loose_compare(zend_object *self, zval *type, zval *phpVersion);
-zv::Val pt_integer_type_exponentiate(zend_object *self, zval *exponent);
+zv::Val pt_integer_type_arithmetic_power(zend_object *self, zval *exponent, zval *phpVersion);
 
 /* the bodies of StringType's offset methods and tryRemove() (StringType.cpp),
  * for the children's parent:: calls; the setOffsetValueType() body takes
@@ -1021,6 +1021,12 @@ inline constexpr reg::Arg templateTypeScope = reg::obj("", ptcls::templateTypeSc
 inline constexpr reg::Arg templateTypeStrategy = reg::obj("", ptcls::templateTypeStrategy);
 inline constexpr reg::Arg templateTypeVariance = reg::obj("", ptcls::templateTypeVariance);
 } // namespace ptret
+
+/* src/Type/Traits/OperatorTypeTrait.php — the operator methods, each
+ * handing $this to OperatorTypeHelper (OperatorTypeHelper.cpp), and the
+ * deprecated exponentiate() calling $this->arithmeticPower() with the
+ * newest PhpVersion. */
+void pt_type_trait_operator(reg::Class &cls);
 
 /* src/Type/Generic/TemplateTypeTrait.php — besides the trait's methods the
  * registrar declares its six private properties (name, scope, strategy,

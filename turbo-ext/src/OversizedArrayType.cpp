@@ -232,6 +232,12 @@ static void ZEND_FASTCALL oaError1(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
+static void ZEND_FASTCALL oaError2(INTERNAL_FUNCTION_PARAMETERS)
+{
+	PT_ARGS(2, 2);
+	PT_RETURN_VAL(pt_type_new_error_type());
+}
+
 static void ZEND_FASTCALL oaMixed0(INTERNAL_FUNCTION_PARAMETERS)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
@@ -434,7 +440,7 @@ PT_MINIT_REGISTRATION(pt_register_oversized_array_type)
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, oaThis2);
-	cls.method(sigs::exponentiate, oaError1);
+	cls.method(sigs::arithmeticPower, oaError2);
 	cls.method(sigs::getFiniteTypes, oaEmptyArray0);
 
 	cls.method<&OversizedArrayType::getDefaultBaseType>(sigs::getDefaultBaseType);

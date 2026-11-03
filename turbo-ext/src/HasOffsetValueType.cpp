@@ -775,9 +775,9 @@ static void ZEND_FASTCALL hovtError0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
-static void ZEND_FASTCALL hovtError1(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL hovtError2(INTERNAL_FUNCTION_PARAMETERS)
 {
-	PT_ARGS(1, 1);
+	PT_ARGS(2, 2);
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
@@ -1042,7 +1042,7 @@ PT_MINIT_REGISTRATION(pt_register_has_offset_value_type)
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously(right, &fci, &fcc));
 	});
 
-	cls.method(sigs::exponentiate, hovtError1);
+	cls.method(sigs::arithmeticPower, hovtError2);
 	cls.method(sigs::getFiniteTypes, hovtEmptyArray0);
 
 	cls.method<&HasOffsetValueType::getDefaultBaseType>(sigs::getDefaultBaseType);

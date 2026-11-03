@@ -1010,7 +1010,7 @@ public:
 	}
 
 	/* new BenevolentUnionType([new FloatType(), new IntegerType()]) */
-	static zv::Val exponentiate()
+	static zv::Val arithmeticPower()
 	{
 		zv::Arr types = zv::Arr::create(2);
 		if (UNEXPECTED(!pushNew(types, pt_float_type_new) || !pushInteger(types))) return zv::Val();
@@ -1882,9 +1882,9 @@ PT_MINIT_REGISTRATION(pt_register_mixed_type)
 
 	cls.method<&MixedType::tryRemove, zp::Obj>(sigs::tryRemove);
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(1, 1);
-		PT_RETURN_VAL(MixedType::exponentiate());
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		PT_RETURN_VAL(MixedType::arithmeticPower());
 	});
 
 	cls.method(sigs::getFiniteTypes, mtEmptyArray0);

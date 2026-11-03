@@ -25,6 +25,7 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function get_class;
 use function sprintf;
@@ -37,6 +38,7 @@ class StaticType implements TypeWithClassName, SubtractableType
 	use NonGenericTypeTrait;
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	private ?Type $subtractedType;
 
@@ -919,9 +921,9 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return null;
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return $this->getStaticObjectType()->exponentiate($exponent);
+		return $this->getStaticObjectType()->arithmeticPower($exponent, $phpVersion);
 	}
 
 	public function getFiniteTypes(): array

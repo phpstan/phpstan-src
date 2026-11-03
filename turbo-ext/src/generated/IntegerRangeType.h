@@ -27,6 +27,12 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("max", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_LONG);
 }
 
+/* the shared registrars of the traits the twin uses, in its own order (a used trait's own traits after it) */
+inline void registerTraits(reg::Class &cls)
+{
+	pt_type_trait_operator(cls);
+}
+
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
@@ -93,11 +99,11 @@ inline constexpr char strings[] =
 	"typeToRemove\0" /* 845 */
 	"tryRemove\0" /* 858 */
 	"exponent\0" /* 868 */
-	"exponentiate\0" /* 877 */
-	"getFiniteTypes\0" /* 890 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 905 */
-	"toPhpDocNode\0" /* 944 */
-	"looseCompare"; /* 957 */
+	"arithmeticPower\0" /* 877 */
+	"getFiniteTypes\0" /* 893 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 908 */
+	"toPhpDocNode\0" /* 947 */
+	"looseCompare"; /* 960 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* __construct $min */
 	reg::packed(4, MAY_BE_NULL | MAY_BE_LONG), /* __construct $max */
@@ -171,10 +177,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(28, MAY_BE_NULL, 29), /* tryIntersect return */
 	reg::packed(845, 0, 29), /* tryRemove $typeToRemove */
 	reg::packed(28, MAY_BE_NULL, 29), /* tryRemove return */
-	reg::packed(868, 0, 29), /* exponentiate $exponent */
-	reg::packed(28, 0, 29), /* exponentiate return */
+	reg::packed(868, 0, 29), /* arithmeticPower $exponent */
+	reg::packed(546, 0, 557), /* arithmeticPower $phpVersion */
+	reg::packed(28, 0, 29), /* arithmeticPower return */
 	reg::packed(28, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(28, 0, 905), /* toPhpDocNode return */
+	reg::packed(28, 0, 908), /* toPhpDocNode return */
 	reg::packed(287, 0, 29), /* looseCompare $type */
 	reg::packed(546, 0, 557), /* looseCompare $phpVersion */
 	reg::packed(28, 0, 745), /* looseCompare return */
@@ -217,10 +224,10 @@ inline constexpr sigtab::Sig toString = { { 814 /* toString */, 0, 65, 0, 65, ZE
 inline constexpr sigtab::Sig tryUnion = { { 823 /* tryUnion */, 1, 66, 1, 67, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig tryIntersect = { { 832 /* tryIntersect */, 1, 68, 1, 69, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig tryRemove = { { 858 /* tryRemove */, 1, 70, 1, 71, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 877 /* exponentiate */, 1, 72, 1, 73, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 890 /* getFiniteTypes */, 0, 74, 0, 74, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 944 /* toPhpDocNode */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig looseCompare = { { 957 /* looseCompare */, 2, 76, 2, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 877 /* arithmeticPower */, 2, 72, 2, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 893 /* getFiniteTypes */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 947 /* toPhpDocNode */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 960 /* looseCompare */, 2, 77, 2, 79, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IntegerRangeType

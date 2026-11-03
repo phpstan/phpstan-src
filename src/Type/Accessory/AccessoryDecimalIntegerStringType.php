@@ -31,6 +31,7 @@ use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -59,6 +60,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 	use NonIterableTypeTrait;
 	use UndecidedComparisonCompoundTypeTrait;
 	use NonGenericTypeTrait;
+	use OperatorTypeTrait;
 
 	/** @api */
 	public function __construct(private bool $inverse = false)
@@ -459,7 +461,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		return new StringType();
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new BenevolentUnionType([
 			new FloatType(),

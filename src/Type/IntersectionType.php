@@ -54,6 +54,7 @@ use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use function array_filter;
 use function array_intersect_key;
 use function array_key_exists;
@@ -83,6 +84,7 @@ class IntersectionType implements CompoundType
 
 	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
+	use OperatorTypeTrait;
 
 	/**
 	 * Sorting must not reorder $types: describe() sorts for readability, but $types is the
@@ -1772,9 +1774,9 @@ class IntersectionType implements CompoundType
 		return $this->intersectTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->exponentiate($exponent));
+		return $this->intersectTypes(static fn (Type $type): Type => $type->arithmeticPower($exponent, $phpVersion));
 	}
 
 	public function getFiniteTypes(): array

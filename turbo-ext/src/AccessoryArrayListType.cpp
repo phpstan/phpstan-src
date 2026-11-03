@@ -321,9 +321,9 @@ static void ZEND_FASTCALL aalError0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
-static void ZEND_FASTCALL aalError1(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL aalError2(INTERNAL_FUNCTION_PARAMETERS)
 {
-	PT_ARGS(1, 1);
+	PT_ARGS(2, 2);
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
@@ -556,7 +556,7 @@ PT_MINIT_REGISTRATION(pt_register_accessory_array_list_type)
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.op(PT_OP_TRAVERSE, PT_OP_LAMBDA { return pt_op_traverse_identity(self); });
 	cls.method(sigs::traverseSimultaneously, aalThis2);
-	cls.method(sigs::exponentiate, aalError1);
+	cls.method(sigs::arithmeticPower, aalError2);
 	cls.method(sigs::getFiniteTypes, aalEmptyArray0);
 
 	cls.method<&AccessoryArrayListType::getDefaultBaseType>(sigs::getDefaultBaseType);

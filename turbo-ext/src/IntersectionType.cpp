@@ -2139,7 +2139,11 @@ public:
 		});
 	}
 
-	zv::Val exponentiate(zval *exponent) const { return intersectCall(PT_LC("exponentiate"), 1, exponent); }
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
+	{
+		zv::Args args{exponent, phpVersion};
+		return intersectCall(PT_LC("arithmeticpower"), 2, args);
+	}
 
 	/* the finite types every member has, keyed by enum case or type-only
 	 * description, [] beyond CALCULATE_SCALARS_LIMIT */
@@ -3697,8 +3701,8 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 	cls.method(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::tryRemove);
 	});
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		pt_it_value_object(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::exponentiate);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_it_value_two_objects(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::arithmeticPower);
 	});
 	cls.method(sigs::getFiniteTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::getFiniteTypes);

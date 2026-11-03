@@ -27,6 +27,8 @@ use PHPStan\Type\Type;
 trait LateResolvableTypeTrait
 {
 
+	use OperatorTypeTrait;
+
 	private ?Type $result = null;
 
 	public function getObjectClassNames(): array
@@ -692,9 +694,9 @@ trait LateResolvableTypeTrait
 		return $otherType->isSmallerThanOrEqual($result, $phpVersion);
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return $this->resolve()->exponentiate($exponent);
+		return $this->resolve()->arithmeticPower($exponent, $phpVersion);
 	}
 
 	public function getFiniteTypes(): array

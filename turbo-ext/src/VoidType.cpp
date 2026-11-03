@@ -125,7 +125,7 @@ public:
 	/* $this */
 	zv::Val traverseSimultaneously() const { return thisValue(); }
 
-	static zv::Val exponentiate() { return pt_type_new_error_type(); }
+	static zv::Val arithmeticPower() { return pt_type_new_error_type(); }
 
 	static zv::Val getFiniteTypes() { return zv::Val(zv::Arr::empty()); }
 
@@ -362,10 +362,10 @@ PT_MINIT_REGISTRATION(pt_register_void_type)
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously());
 	});
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *exponent;
-		if (!zp::parse<zp::Obj>(execute_data, exponent)) RETURN_THROWS();
-		PT_RETURN_VAL(VoidType::exponentiate());
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *exponent, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, exponent, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(VoidType::arithmeticPower());
 	});
 
 	cls.method<&VoidType::getFiniteTypes>(sigs::getFiniteTypes);

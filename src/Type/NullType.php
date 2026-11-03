@@ -21,6 +21,7 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isNull()')]
@@ -35,6 +36,7 @@ class NullType implements ConstantScalarType
 	use FalseyBooleanTypeTrait;
 	use NonGenericTypeTrait;
 	use NonRemoveableTypeTrait;
+	use OperatorTypeTrait;
 
 	/** @api */
 	public function __construct()
@@ -416,7 +418,7 @@ class NullType implements ConstantScalarType
 		return [$this];
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		return new UnionType(
 			[

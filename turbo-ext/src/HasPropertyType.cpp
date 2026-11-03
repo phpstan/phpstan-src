@@ -264,9 +264,9 @@ static void ZEND_FASTCALL hptError0(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
-static void ZEND_FASTCALL hptError1(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL hptError2(INTERNAL_FUNCTION_PARAMETERS)
 {
-	PT_ARGS(1, 1);
+	PT_ARGS(2, 2);
 	PT_RETURN_VAL(pt_type_new_error_type());
 }
 
@@ -389,7 +389,7 @@ PT_MINIT_REGISTRATION(pt_register_has_property_type)
 	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return zv::Val::null(); });
 	cls.method("traverse", reg::Public, 1, { reg::callableArg("cb") }, pt_type_identity_traverse_handler(), &ptret::type);
 	cls.method(sigs::traverseSimultaneously, hptThis2);
-	cls.method(sigs::exponentiate, hptError1);
+	cls.method(sigs::arithmeticPower, hptError2);
 	cls.method(sigs::getFiniteTypes, hptEmptyArray0);
 
 	cls.method(sigs::getDefaultBaseType, [](INTERNAL_FUNCTION_PARAMETERS) {

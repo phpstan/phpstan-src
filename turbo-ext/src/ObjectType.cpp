@@ -2713,7 +2713,7 @@ public:
 
 	/* }}} */
 
-	/* {{{ tryRemove(), exponentiate(), toPhpDocNode(), hasTemplateOrLateResolvableType() */
+	/* {{{ tryRemove(), arithmeticPower(), toPhpDocNode(), hasTemplateOrLateResolvableType() */
 
 	/* the rest of an EQUAL_UNION_CLASSES base class when one of its classes
 	 * is removed, $this->subtract() for a subtype, null otherwise; UNDEF =
@@ -2828,8 +2828,9 @@ public:
 
 	/* $this|$exponent when both may be objects, ErrorType otherwise; UNDEF
 	 * = pending exception */
-	zv::Val exponentiate(zval *exponent) const
+	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
+		(void) phpVersion;
 		zv::Val object = pt_type_new_object_without_class_type();
 		if (UNEXPECTED(object.isUndef())) return zv::Val();
 		if (!zv::Ref(exponent).instanceOf(pt_ce_never_type)) {
@@ -3929,8 +3930,10 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 	cls.method(sigs::getFiniteTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::getFiniteTypes);
 	});
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		pt_ot_value_of_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::exponentiate);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *exponent, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, exponent, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.arithmeticPower(exponent, phpVersion));
 	});
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::toPhpDocNode);

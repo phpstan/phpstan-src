@@ -32,6 +32,7 @@ inline void registerTraits(reg::Class &cls)
 	pt_type_trait_undecided_comparison(cls);
 	pt_type_trait_non_removeable(cls);
 	pt_type_trait_non_generalizable(cls);
+	pt_type_trait_operator(cls);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -109,14 +110,14 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\Enum\\EnumCaseObjectType\0" /* 1358 */
 	"getEnumCaseObject\0" /* 1395 */
 	"exponent\0" /* 1413 */
-	"exponentiate\0" /* 1422 */
-	"getFiniteTypes\0" /* 1435 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1450 */
-	"toPhpDocNode\0" /* 1489 */
-	"position\0" /* 1502 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 1511 */
-	"toNativePhpTypeNode\0" /* 1543 */
-	"hasTemplateOrLateResolvableType"; /* 1563 */
+	"arithmeticPower\0" /* 1422 */
+	"getFiniteTypes\0" /* 1438 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1453 */
+	"toPhpDocNode\0" /* 1492 */
+	"position\0" /* 1505 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 1514 */
+	"toNativePhpTypeNode\0" /* 1546 */
+	"hasTemplateOrLateResolvableType"; /* 1566 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* describe $level */
 	reg::packed(34, MAY_BE_STRING), /* describe return */
@@ -192,11 +193,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(34, 0, 1307), /* looseCompare return */
 	reg::packed(34, MAY_BE_ARRAY), /* getEnumCases return */
 	reg::packed(34, MAY_BE_NULL, 1358), /* getEnumCaseObject return */
-	reg::packed(1413, 0, 79), /* exponentiate $exponent */
-	reg::packed(34, 0, 79), /* exponentiate return */
+	reg::packed(1413, 0, 79), /* arithmeticPower $exponent */
+	reg::packed(1273, 0, 1284), /* arithmeticPower $phpVersion */
+	reg::packed(34, 0, 79), /* arithmeticPower return */
 	reg::packed(34, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(34, 0, 1450), /* toPhpDocNode return */
-	reg::packed(1502, 0, 1511), /* toNativePhpTypeNode $position */
+	reg::packed(34, 0, 1453), /* toPhpDocNode return */
+	reg::packed(1505, 0, 1514), /* toNativePhpTypeNode $position */
 	reg::packed(34, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -246,11 +248,11 @@ inline constexpr sigtab::Sig isScalar = { { 1259 /* isScalar */, 0, 68, 0, 68, Z
 inline constexpr sigtab::Sig looseCompare = { { 1332 /* looseCompare */, 2, 69, 2, 71, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getEnumCases = { { 1345 /* getEnumCases */, 0, 72, 0, 72, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getEnumCaseObject = { { 1395 /* getEnumCaseObject */, 0, 73, 0, 73, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 1422 /* exponentiate */, 1, 74, 1, 75, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 1435 /* getFiniteTypes */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 1489 /* toPhpDocNode */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1543 /* toNativePhpTypeNode */, 1, 78, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1563 /* hasTemplateOrLateResolvableType */, 0, 79, 0, 79, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 1422 /* arithmeticPower */, 2, 74, 2, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1438 /* getFiniteTypes */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1492 /* toPhpDocNode */, 0, 78, 0, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1546 /* toNativePhpTypeNode */, 1, 79, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1566 /* hasTemplateOrLateResolvableType */, 0, 80, 0, 80, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NonexistentParentClassType

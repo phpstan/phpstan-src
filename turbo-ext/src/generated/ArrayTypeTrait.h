@@ -53,10 +53,12 @@ inline constexpr char strings[] =
 	"isVoid\0" /* 605 */
 	"isScalar\0" /* 612 */
 	"exponent\0" /* 621 */
-	"exponentiate\0" /* 630 */
-	"lengthType\0" /* 643 */
-	"preserveKeys\0" /* 654 */
-	"chunkArray"; /* 667 */
+	"phpVersion\0" /* 630 */
+	"PHPStan\\Php\\PhpVersion\0" /* 641 */
+	"arithmeticPower\0" /* 664 */
+	"lengthType\0" /* 680 */
+	"preserveKeys\0" /* 691 */
+	"chunkArray"; /* 704 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* isArray return */
 	reg::packed(0, 0, 30), /* toArray return */
@@ -96,10 +98,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 30), /* getObjectTypeOrClassStringObjectType return */
 	reg::packed(0, 0, 1), /* isVoid return */
 	reg::packed(0, 0, 1), /* isScalar return */
-	reg::packed(621, 0, 30), /* exponentiate $exponent */
-	reg::packed(0, 0, 30), /* exponentiate return */
-	reg::packed(643, 0, 30), /* chunkArray $lengthType */
-	reg::packed(654, 0, 1), /* chunkArray $preserveKeys */
+	reg::packed(621, 0, 30), /* arithmeticPower $exponent */
+	reg::packed(630, 0, 641), /* arithmeticPower $phpVersion */
+	reg::packed(0, 0, 30), /* arithmeticPower return */
+	reg::packed(680, 0, 30), /* chunkArray $lengthType */
+	reg::packed(691, 0, 1), /* chunkArray $preserveKeys */
 	reg::packed(0, 0, 30), /* chunkArray return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -144,8 +147,8 @@ inline constexpr sigtab::Sig getClassStringObjectType = { { 543 /* getClassStrin
 inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 568 /* getObjectTypeOrClassStringObjectType */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isVoid = { { 605 /* isVoid */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isScalar = { { 612 /* isScalar */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig exponentiate = { { 630 /* exponentiate */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig chunkArray = { { 667 /* chunkArray */, 2, 40, 2, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 664 /* arithmeticPower */, 2, 38, 2, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig chunkArray = { { 704 /* chunkArray */, 2, 41, 2, 43, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayTypeTrait

@@ -245,7 +245,7 @@ public:
 	}
 
 	/* new BenevolentUnionType([new FloatType(), new IntegerType()]) */
-	static zv::Val exponentiate() { return pt_type_new_float_or_int_benevolent_union(); }
+	static zv::Val arithmeticPower() { return pt_type_new_float_or_int_benevolent_union(); }
 
 	/* new IdentifierTypeNode('numeric-string') */
 	static zv::Val toPhpDocNode() { return pt_type_new_identifier_type_node(PT_LC("numeric-string")); }
@@ -525,9 +525,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_numeric_string_type)
 		pt_ans_one_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &AccessoryNumericStringType::tryRemove);
 	});
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(1, 1);
-		PT_RETURN_VAL(AccessoryNumericStringType::exponentiate());
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		PT_RETURN_VAL(AccessoryNumericStringType::arithmeticPower());
 	});
 
 	cls.method(sigs::getFiniteTypes, ansEmptyArray0);

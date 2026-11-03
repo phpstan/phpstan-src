@@ -4089,6 +4089,39 @@ zv::Val pt_initializer_expr_type_resolver_get_bitwise_not_type(zval *resolver, z
 
 /* }}} */
 
+/* {{{ OperatorTypeHelper.cpp — the shadowing PHPStan\Type\OperatorTypeHelper
+ * (a final class of static methods) */
+
+extern zend_class_entry *pt_ce_operator_type_helper;
+/* PhpVersionFactory::MAX_PHP_VERSION — the PhpVersion OperatorTypeTrait's
+ * deprecated exponentiate() hands arithmeticPower() (smoke.php holds it
+ * against the class constant) */
+#define PT_PHP_VERSION_FACTORY_MAX_PHP_VERSION 80699
+/* the binary operators of the Type methods OperatorTypeTrait delegates */
+enum pt_operator_type_op : uint8_t
+{
+	PT_OPERATOR_ADD,
+	PT_OPERATOR_SUBTRACT,
+	PT_OPERATOR_MULTIPLY,
+	PT_OPERATOR_DIVIDE,
+	PT_OPERATOR_INT_DIVIDE,
+	PT_OPERATOR_MODULO,
+	PT_OPERATOR_BITWISE_AND,
+	PT_OPERATOR_BITWISE_OR,
+	PT_OPERATOR_BITWISE_XOR,
+	PT_OPERATOR_SHIFT_LEFT,
+	PT_OPERATOR_SHIFT_RIGHT,
+	PT_OPERATOR_CONCATENATE,
+	PT_OPERATOR_ARRAY_UNION,
+};
+/* OperatorTypeHelper::add() / subtract() / ... / concat() / arrayUnion()
+ * ($left, $right, $phpVersion) and ::negate($type, $phpVersion) (all
+ * borrowed); UNDEF = pending exception */
+zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval *right, zval *phpVersion);
+zv::Val pt_operator_type_helper_negate(zval *type, zval *phpVersion);
+
+/* }}} */
+
 /* {{{ InitializerExprContext.cpp — the context a constant expression is
  * priced in */
 

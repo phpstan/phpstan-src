@@ -53,6 +53,7 @@ use PHPStan\Type\Traits\MaybeIterableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
+use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use Stringable;
@@ -81,6 +82,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	use UndecidedComparisonTypeTrait;
 	use NonGeneralizableTypeTrait;
 	use SubstractableTypeTrait;
+	use OperatorTypeTrait;
 
 	private const DESCRIPTION_CACHE_LIMIT = 1024;
 
@@ -2120,7 +2122,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->getEnumCases();
 	}
 
-	public function exponentiate(Type $exponent): Type
+	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
 		$object = new ObjectWithoutClassType();
 		if (!$exponent instanceof NeverType && !$object->isSuperTypeOf($this)->no() && !$object->isSuperTypeOf($exponent)->no()) {

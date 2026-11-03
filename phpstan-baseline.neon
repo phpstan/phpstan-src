@@ -428,45 +428,9 @@ parameters:
 			path: src/Reflection/ClassReflection.php
 
 		-
-			rawMessage: Binary operation "&" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: Binary operation "*" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: Binary operation "+" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: Binary operation "-" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: Binary operation "^" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: Binary operation "|" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 18
+			count: 2
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
@@ -479,30 +443,6 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantBooleanType is error-prone and deprecated. Use Type::isTrue() or Type::isFalse() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 3
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 6
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of native type int.
-			identifier: varTag.nativeType
-			count: 1
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
-			identifier: varTag.type
-			count: 4
-			path: src/Reflection/InitializerExprTypeResolver.php
-
-		-
-			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
-			identifier: varTag.type
-			count: 6
 			path: src/Reflection/InitializerExprTypeResolver.php
 
 		-
@@ -1512,6 +1452,72 @@ parameters:
 			identifier: phpstanApi.instanceofType
 			count: 4
 			path: src/Type/ObjectWithoutClassType.php
+
+		-
+			rawMessage: Binary operation "&" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: Binary operation "*" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: Binary operation "+" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: Binary operation "-" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: Binary operation "^" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: Binary operation "|" between bool|float|int|string|null and bool|float|int|string|null results in an error.
+			identifier: binaryOp.invalid
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 16
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 6
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: PHPDoc tag @var with type float|int is not subtype of native type int.
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: PHPDoc tag @var with type float|int is not subtype of type int.
+			identifier: varTag.type
+			count: 4
+			path: src/Type/OperatorTypeHelper.php
+
+		-
+			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
+			identifier: varTag.type
+			count: 6
+			path: src/Type/OperatorTypeHelper.php
 
 		-
 			rawMessage: Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.

@@ -34,6 +34,7 @@ inline void declareProperties(reg::Class &cls)
 inline void registerTraits(reg::Class &cls)
 {
 	pt_type_trait_array(cls);
+	pt_type_trait_operator(cls);
 	pt_type_trait_maybe_callable(cls);
 	pt_type_trait_non_object(cls);
 	pt_type_trait_undecided_boolean(cls);

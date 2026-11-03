@@ -162,7 +162,7 @@ public:
 	static zv::Val generalize() { return pt_type_new_string_type(); }
 
 	/* new BenevolentUnionType([new FloatType(), new IntegerType()]) */
-	static zv::Val exponentiate() { return pt_type_new_float_or_int_benevolent_union(); }
+	static zv::Val arithmeticPower() { return pt_type_new_float_or_int_benevolent_union(); }
 
 	/* new IdentifierTypeNode('literal-string') */
 	static zv::Val toPhpDocNode() { return pt_type_new_identifier_type_node(PT_LC("literal-string")); }
@@ -446,9 +446,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_literal_string_type)
 	cls.method(sigs::traverseSimultaneously, alsThis2);
 	cls.method(sigs::generalize, alsString1);
 
-	cls.method(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(1, 1);
-		PT_RETURN_VAL(AccessoryLiteralStringType::exponentiate());
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		PT_RETURN_VAL(AccessoryLiteralStringType::arithmeticPower());
 	});
 
 	cls.method(sigs::getFiniteTypes, alsEmptyArray0);

@@ -16,12 +16,12 @@
 
 #include "support.h"
 #include "generated/TemplateArgumentConstraints.h"
+#include "TypeTraits.h"
 #include "generated/UnresolvedTemplateArgumentType.h"
 
 namespace slots = ptdecl::TemplateArgumentConstraints::slot;
 namespace sigs = ptdecl::TemplateArgumentConstraints::sig;
 #include "zv.h"
-#include "TypeTraits.h"
 #include "Engine.h"
 
 #include <vector>

@@ -495,7 +495,10 @@ PT_MINIT_REGISTRATION(pt_register_never_type)
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
-	cls.method(sigs::exponentiate, ntThis1);
+	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
+		PT_ARGS(2, 2);
+		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
+	});
 	cls.method(sigs::getFiniteTypes, ntEmptyArray0);
 
 	cls.method<&NeverType::toPhpDocNode>(sigs::toPhpDocNode);

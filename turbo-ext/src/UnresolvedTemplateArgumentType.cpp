@@ -678,7 +678,7 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method(sigs::getEnumCaseObject, utaDelegate);
 	cls.op(PT_OP_GET_ENUM_CASE_OBJECT, PT_OP_LAMBDA { return UnresolvedTemplateArgumentType(self).delegateOp(PT_OP_GET_ENUM_CASE_OBJECT, argc, argv); });
 	cls.method(sigs::getFiniteTypes, utaDelegate);
-	cls.method(sigs::exponentiate, utaDelegate);
+	cls.method(sigs::arithmeticPower, utaDelegate);
 	cls.method(sigs::isCallable, utaDelegate);
 	cls.method(sigs::getCallableParametersAcceptors, utaDelegate);
 	cls.method(sigs::isCloneable, utaDelegate);
@@ -727,6 +727,7 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method(sigs::getReferencedTemplateTypes, utaDelegate);
 	cls.method(sigs::toAbsoluteNumber, utaDelegate);
 
+	pt_type_trait_operator(cls);
 	cls.shadow(&pt_ce_unresolved_template_argument_type);
 }
 

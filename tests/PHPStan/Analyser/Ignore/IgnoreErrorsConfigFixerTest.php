@@ -216,6 +216,90 @@ class IgnoreErrorsConfigFixerTest extends PHPStanTestCase
 		$this->assertSame([], $lowerCount ? $fixer->lowerCount($ignoreError, 1) : $fixer->removeUnmatched($ignoreError));
 	}
 
+	public static function dataEntryWithoutPath(): Generator
+	{
+		$php = "<?php\nreturn ['parameters' => ['ignoreErrors' => [\n"
+			. "\t'#^A$#',\n"
+			. "\t['message' => '#^A$#', 'path' => __DIR__ . '/Foo.php'],\n"
+			. "\t['message' => '#^A$#', 'identifier' => 'foo.bar'],\n"
+			. "\t['rawMessage' => 'B'],\n"
+			. "]]];\n";
+
+		yield 'PHP string pattern, not the entries with a path or an identifier' => [
+			$php,
+			'php',
+			'#^A$#',
+			3,
+			"<?php\nreturn ['parameters' => ['ignoreErrors' => [\n"
+			. "\t['message' => '#^A$#', 'path' => __DIR__ . '/Foo.php'],\n"
+			. "\t['message' => '#^A$#', 'identifier' => 'foo.bar'],\n"
+			. "\t['rawMessage' => 'B'],\n"
+			. "]]];\n",
+		];
+
+		yield 'PHP entry' => [
+			$php,
+			'php',
+			['rawMessage' => 'B'],
+			6,
+			"<?php\nreturn ['parameters' => ['ignoreErrors' => [\n"
+			. "\t'#^A$#',\n"
+			. "\t['message' => '#^A$#', 'path' => __DIR__ . '/Foo.php'],\n"
+			. "\t['message' => '#^A$#', 'identifier' => 'foo.bar'],\n"
+			. "]]];\n",
+		];
+
+		$neon = "parameters:\n\tignoreErrors:\n"
+			. "\t\t- '#^100%% sure$#'\n"
+			. "\t\t-\n\t\t\tmessage: '#^100%% sure$#'\n\t\t\tpath: Foo.php\n"
+			. "\t\t-\n\t\t\trawMessages:\n\t\t\t\t- B\n\t\t\t\t- C\n"
+			. "\tlevel: 8\n";
+
+		yield 'NEON string pattern' => [
+			$neon,
+			'neon',
+			'#^100% sure$#',
+			3,
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t-\n\t\t\tmessage: '#^100%% sure$#'\n\t\t\tpath: Foo.php\n"
+			. "\t\t-\n\t\t\trawMessages:\n\t\t\t\t- B\n\t\t\t\t- C\n"
+			. "\tlevel: 8\n",
+		];
+
+		yield 'NEON item of a list' => [
+			$neon,
+			'neon',
+			['rawMessage' => 'C'],
+			7,
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t- '#^100%% sure$#'\n"
+			. "\t\t-\n\t\t\tmessage: '#^100%% sure$#'\n\t\t\tpath: Foo.php\n"
+			. "\t\t-\n\t\t\trawMessages:\n\t\t\t\t- B\n"
+			. "\tlevel: 8\n",
+		];
+	}
+
+	/**
+	 * @param string|array{message?: string, rawMessage?: string} $ignoreError
+	 */
+	#[DataProvider('dataEntryWithoutPath')]
+	public function testEntryWithoutPath(string $code, string $extension, string|array $ignoreError, int $line, string $expected): void
+	{
+		[$fixer, $file] = $this->createFixer($code, $extension);
+
+		$this->assertSame([$file, $line], $fixer->findEntryLocation($ignoreError));
+		$this->assertSame($expected, $this->apply($file, $code, $fixer->removeUnmatched($ignoreError)));
+	}
+
+	public function testEntryWithPathsIsNotFound(): void
+	{
+		[$fixer] = $this->createFixer("parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tpaths:\n\t\t\t\t- Foo.php\n\t\t\t\t- Bar.php\n", 'neon');
+		$ignoreError = ['message' => '#^A$#', 'paths' => [1 => __DIR__ . '/Bar.php']];
+
+		$this->assertNull($fixer->findEntryLocation($ignoreError));
+		$this->assertSame([], $fixer->removeUnmatched($ignoreError));
+	}
+
 	public static function dataNeon(): Generator
 	{
 		$entries = "parameters:\n\tignoreErrors:\n"

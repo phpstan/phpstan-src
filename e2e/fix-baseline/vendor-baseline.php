@@ -5,4 +5,5 @@ return ['parameters' => ['ignoreErrors' => [
 		'message' => '#^Unmatched in vendor$#',
 		'path' => __DIR__ . '/../../../src/Foo.php',
 	],
+	'#^Unmatched in vendor without a path$#',
 ]]];

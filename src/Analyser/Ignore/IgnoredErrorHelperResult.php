@@ -412,10 +412,25 @@ final class IgnoredErrorHelperResult
 						fixedErrorDiffs: $this->configFixer->removeUnmatched($unmatchedIgnoredError),
 					);
 				} elseif (!$onlyFiles) {
-					$stringErrors[] = sprintf(
+					$message = sprintf(
 						'%s %s was not matched in reported errors.',
 						IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
 						IgnoredError::stringifyPattern($unmatchedIgnoredError),
+					);
+					// without a file of its own, the error is reported in the config file the entry is in
+					$location = $this->configFixer->findEntryLocation($unmatchedIgnoredError);
+					if ($location === null) {
+						$stringErrors[] = $message;
+						continue;
+					}
+
+					$errors[] = new Error(
+						$message,
+						$location[0],
+						$location[1],
+						canBeIgnored: false,
+						identifier: 'ignore.unmatched',
+						fixedErrorDiffs: $this->configFixer->removeUnmatched($unmatchedIgnoredError),
 					);
 				}
 			}

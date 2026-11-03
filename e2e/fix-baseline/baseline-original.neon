@@ -16,3 +16,8 @@ parameters:
 				- '#^Unmatched in a NEON list$#'
 				- '#^Undefined variable\: \$h$#'
 			path: src/Foo.php
+
+		# entries without a path are reported in this file
+		- '#^Unmatched without a path$#'
+		-
+			rawMessage: 'Unmatched without a path either'

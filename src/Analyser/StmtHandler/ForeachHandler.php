@@ -352,6 +352,15 @@ final class ForeachHandler implements StmtHandler
 
 		if ($unrolledEndScope !== null) {
 			$finalScope = $unrolledEndScope;
+		} elseif (count($breakExitPoints) === 0) {
+			$backEdgeScopes = [];
+			if ($finalScopeResult->isEndReachable()) {
+				$backEdgeScopes[] = $finalScopeResult->getScope();
+			}
+			foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
+				$backEdgeScopes[] = $continueExitPoint->getScope();
+			}
+			$finalScope = ForeachIterationOffsetWritesHelper::makeWrittenOffsetsRequired($nodeScopeResolver, $stmt, $finalScope, $backEdgeScopes, $foreachIterateeType, $foreachNativeIterateeType, $finalScopeResult->getImpurePoints());
 		}
 
 		// $scope is the post-loop scope; the body may have modified the iteratee

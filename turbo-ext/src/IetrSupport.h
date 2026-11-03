@@ -583,18 +583,40 @@ inline int isEmptyConstantString(zval *type)
 	return constantStringValueIsEmpty(type);
 }
 
-/* Strings::match($value, '#^\d+$#') !== null: ASCII digits, a final
- * newline allowed before the end ($ without D) */
+/* Strings::match($value, '#^\d+\z#') !== null: ASCII digits only */
 inline bool isDecimalDigits(zend_string *value)
 {
 	size_t length = ZSTR_LEN(value);
-	if (length > 0 && ZSTR_VAL(value)[length - 1] == '\n') length--;
 	if (length == 0) return false;
 	for (size_t i = 0; i < length; i++) {
 		char c = ZSTR_VAL(value)[i];
 		if (c < '0' || c > '9') return false;
 	}
 	return true;
+}
+
+/* Strings::match($value, '#^\d+(\.\d*)?([eE][+-]?\d+)?\z#') !== null:
+ * digits, an optional fraction and an optional exponent, nothing else */
+inline bool isNumberAfterInteger(zend_string *value)
+{
+	const char *c = ZSTR_VAL(value);
+	const char *end = c + ZSTR_LEN(value);
+	auto digits = [&c, end]() -> size_t {
+		const char *start = c;
+		while (c < end && *c >= '0' && *c <= '9') c++;
+		return (size_t) (c - start);
+	};
+	if (digits() == 0) return false;
+	if (c < end && *c == '.') {
+		c++;
+		digits();
+	}
+	if (c < end && (*c == 'e' || *c == 'E')) {
+		c++;
+		if (c < end && (*c == '+' || *c == '-')) c++;
+		if (digits() == 0) return false;
+	}
+	return c == end;
 }
 
 /* $type instanceof ConstantIntegerType && $type->getValue() === 0; -1 =

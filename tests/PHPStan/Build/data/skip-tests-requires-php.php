@@ -2,6 +2,7 @@
 
 namespace SkipTestsWithRequiresPhpAttributeRule;
 
+use PHPUnit\Framework\Attributes\RequiresPhp;
 use PHPUnit\Framework\TestCase;
 use const PHP_VERSION_ID;
 
@@ -26,6 +27,24 @@ class FooTest extends TestCase
 	{
 		if ($a || $b) {
 			return;
+		}
+	}
+
+	#[RequiresPhp('< 8.4.0')]
+	public function testVersionCheckWithExistingAttribute(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped();
+		}
+	}
+
+	/**
+	 * @requires PHP < 8.4.0
+	 */
+	public function testVersionCheckWithExistingAnnotation(): void
+	{
+		if (PHP_VERSION_ID < 80000) {
+			$this->markTestSkipped();
 		}
 	}
 

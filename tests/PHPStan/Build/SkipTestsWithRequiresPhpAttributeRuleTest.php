@@ -21,7 +21,7 @@ class SkipTestsWithRequiresPhpAttributeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/skip-tests-requires-php.php'], [
 			[
 				'Skip tests with #[RequiresPhp] attribute instead.',
-				13,
+				14,
 			],
 		]);
 	}

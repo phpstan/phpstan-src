@@ -18,13 +18,9 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 		return new PropertiesInInterfaceRule();
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
 	public function testPhpVersionNarrowedScope(): void
 	{
-		// @phpstan-ignore phpstan.skipTestsRequiresPhp
-		if (PHP_VERSION_ID < 80000) {
-			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
-		}
-
 		$errors = [
 			[
 				'Interfaces can include properties only on PHP 8.4 and later.',
@@ -44,7 +40,6 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 	#[RequiresPhp('< 8.4.0')]
 	public function testPhp83AndPropertiesInInterface(): void
 	{
-		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
@@ -71,7 +66,6 @@ class PropertiesInInterfaceRuleTest extends RuleTestCase
 	#[RequiresPhp('< 8.4.0')]
 	public function testPhp83AndPropertyHooksInInterface(): void
 	{
-		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}

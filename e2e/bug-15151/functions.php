@@ -42,7 +42,7 @@ function validate_array(mixed $val): ?array {
 /**
  * @template T of mixed
  * @param T $val
- * @return ($val is string ? T&string : ($val is int ? decimal-int-string : ($val is float ? ?numeric-string : null)))
+ * @return ($val is string ? T&string : ($val is int ? decimal-int-string : ($val is float ? ?non-empty-string : null)))
  */
 function validate_string(mixed $val): ?string {
     if (\is_string($val)) {

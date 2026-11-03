@@ -14,6 +14,7 @@ use function array_values;
 use function glob;
 use function implode;
 use function is_file;
+use function rmdir;
 use function sort;
 use function sprintf;
 use function str_replace;
@@ -23,6 +24,7 @@ use function sys_get_temp_dir;
 use function ucwords;
 use function uniqid;
 use function unlink;
+use const DIRECTORY_SEPARATOR;
 
 #[RequiresPhp('>= 8.0.0')]
 class Neon2AttributesMigratorTest extends PHPStanTestCase
@@ -226,7 +228,12 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 			$this->assertNotFalse($configFiles);
 			$result = self::getContainer()->getByType(Neon2AttributesMigrator::class)->migrate($configFiles, [$link], 80100, [], ValidateServiceTagsExtension::getInterfaceTagMapping());
 		} finally {
-			unlink($link);
+			// a symlink to a directory is removed with rmdir() on Windows
+			if (DIRECTORY_SEPARATOR === '\\') {
+				rmdir($link);
+			} else {
+				unlink($link);
+			}
 		}
 
 		$this->assertSame([], $result->getKeptServices());

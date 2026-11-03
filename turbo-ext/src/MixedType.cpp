@@ -126,8 +126,15 @@ public:
 		return true;
 	}
 
-	/* AcceptsResult::createYes() */
-	static zv::Val accepts() { return pt_type_accepts_result(PT_TRI_YES); }
+	/* a no carrying the reason when the subtracted type is a supertype of
+	 * $type (no NeverType), AcceptsResult::createYes() otherwise; UNDEF =
+	 * pending exception */
+	zv::Val accepts(zval *type) const
+	{
+		zval *subtracted = subtractedType();
+		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
+		return pt_type_accepts_unless_eliminated(self, subtracted, type);
+	}
 
 	/* yes/maybe by the explicitness and the subtracted types of the two
 	 * mixed types; UNDEF = pending exception */
@@ -184,29 +191,9 @@ public:
 		zend_long value = pt_type_result_trinary(result.raw());
 		if (UNEXPECTED(value < 0)) return zv::Val();
 		if (value == PT_TRI_NO) {
-			/* IsSuperTypeOfResult::createNo([sprintf('Type %s has already been eliminated from %s.',
-			 *   $this->subtractedType->describe(VerbosityLevel::precise()),
-			 *   $this->describe(VerbosityLevel::typeOnly()))]) */
-			zval subtractedDescriptionRaw;
-			if (UNEXPECTED(!pt_type_describe_precise(subtracted, &subtractedDescriptionRaw))) return zv::Val();
-			zv::Val subtractedDescription = zv::Val::adopt(subtractedDescriptionRaw);
-			zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
-			if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
-			zv::Val ownDescription = isExact() ? describe(typeOnly.raw()) : pt_type_op(self, PT_OP_DESCRIBE, 1, typeOnly.raw());
-			if (UNEXPECTED(ownDescription.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(subtractedDescription.raw()).isString() || !zv::Ref(ownDescription.raw()).isString())) {
-				zend_type_error("phpstan_turbo: describe() must return string");
-				return zv::Val();
-			}
-			smart_str reason = {NULL, 0};
-			smart_str_appendl(&reason, "Type ", 5);
-			smart_str_append(&reason, zv::Ref(subtractedDescription.raw()).asString());
-			smart_str_appendl(&reason, " has already been eliminated from ", sizeof(" has already been eliminated from ") - 1);
-			smart_str_append(&reason, zv::Ref(ownDescription.raw()).asString());
-			smart_str_appendc(&reason, '.');
-			smart_str_0(&reason);
-			zv::Arr reasons = zv::Arr::create(1);
-			reasons.push(zv::Val::adoptString(reason.s));
+			/* IsSuperTypeOfResult::createNo([sprintf('Type %s has already been eliminated from %s.', ...)]) */
+			zv::Val reasons = pt_type_eliminated_reasons(self, subtracted);
+			if (UNEXPECTED(reasons.isUndef())) return zv::Val();
 			return pt_type_call_static_ce(pt_ce_is_super_type_of_result, PT_LC("createno"), 1, reasons.raw());
 		}
 
@@ -1320,6 +1307,54 @@ zv::Val pt_mixed_type_describe(zend_object *self, zval *level)
 	return MixedType(self).describe(level);
 }
 
+/* {{{ the subtracted-type reasons MixedType and StrictMixedType share */
+
+zv::Val pt_type_eliminated_reasons(zend_object *self, zval *subtracted)
+{
+	/* [sprintf('Type %s has already been eliminated from %s.',
+	 *   $this->subtractedType->describe(VerbosityLevel::precise()),
+	 *   $this->describe(VerbosityLevel::typeOnly()))] */
+	zval subtractedDescriptionRaw;
+	if (UNEXPECTED(!pt_type_describe_precise(subtracted, &subtractedDescriptionRaw))) return zv::Val();
+	zv::Val subtractedDescription = zv::Val::adopt(subtractedDescriptionRaw);
+	zv::Val typeOnly = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_TYPE_ONLY);
+	if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
+	zv::Val ownDescription = pt_type_op(self, PT_OP_DESCRIBE, 1, typeOnly.raw());
+	if (UNEXPECTED(ownDescription.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(subtractedDescription.raw()).isString() || !zv::Ref(ownDescription.raw()).isString())) {
+		zend_type_error("phpstan_turbo: describe() must return string");
+		return zv::Val();
+	}
+	smart_str reason = {NULL, 0};
+	smart_str_appendl(&reason, "Type ", 5);
+	smart_str_append(&reason, zv::Ref(subtractedDescription.raw()).asString());
+	smart_str_appendl(&reason, " has already been eliminated from ", sizeof(" has already been eliminated from ") - 1);
+	smart_str_append(&reason, zv::Ref(ownDescription.raw()).asString());
+	smart_str_appendc(&reason, '.');
+	smart_str_0(&reason);
+	zv::Arr reasons = zv::Arr::create(1);
+	reasons.push(zv::Val::adoptString(reason.s));
+	return zv::Val(std::move(reasons));
+}
+
+zv::Val pt_type_accepts_unless_eliminated(zend_object *self, zval *subtracted, zval *type)
+{
+	/* $this->subtractedType !== null && !$type instanceof NeverType
+	 * && $this->subtractedType->isSuperTypeOf($type)->yes() */
+	if (Z_TYPE_P(subtracted) == IS_NULL || instanceof_function(Z_OBJCE_P(type), pt_ce_never_type)) return pt_type_accepts_result(PT_TRI_YES);
+	zv::Val isSuperType = pt_type_op(Z_OBJ_P(subtracted), PT_OP_IS_SUPER_TYPE_OF, 1, type);
+	if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+	zend_long value = pt_type_result_trinary(isSuperType.raw());
+	if (UNEXPECTED(value < 0)) return zv::Val();
+	if (value != PT_TRI_YES) return pt_type_accepts_result(PT_TRI_YES);
+
+	zv::Val reasons = pt_type_eliminated_reasons(self, subtracted);
+	if (UNEXPECTED(reasons.isUndef())) return zv::Val();
+	return pt_type_call_static_ce(pt_ce_accepts_result, PT_LC("createno"), 1, reasons.raw());
+}
+
+/* }}} */
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS MixedType(Z_OBJ_P(ZEND_THIS))
@@ -1528,10 +1563,12 @@ PT_MINIT_REGISTRATION(pt_register_mixed_type)
 	cls.method(sigs::getConstantStrings, mtEmptyArray0);
 
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(2, 2);
-		PT_RETURN_VAL(MixedType::accepts());
+		zval *type;
+		bool strictTypes;
+		if (!zp::parse<zp::TypeObj, zp::Bool>(execute_data, type, strictTypes)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.accepts(type));
 	});
-	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return MixedType::accepts(); });
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return MixedType(self).accepts(argv); });
 
 	cls.method(sigs::isSuperTypeOfMixed, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;

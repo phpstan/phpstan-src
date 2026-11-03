@@ -60,7 +60,7 @@ final class TemplateMixedType extends MixedType implements TemplateType
 			$this->strategy,
 			$this->variance,
 			$this->name,
-			new StrictMixedType(),
+			new StrictMixedType($this->getSubtractedType()),
 			$this->default,
 		);
 	}

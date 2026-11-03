@@ -388,6 +388,16 @@ bool pt_type_verbosity_case(zval *level, pt_verbosity_case &out);
 void ZEND_FASTCALL pt_type_trait_substractable_describe_subtracted_type(INTERNAL_FUNCTION_PARAMETERS);
 zv::Val pt_type_describe_subtracted_type(zval *subtractedType, zval *level);
 
+/* MixedType.cpp: the reasons of a no about an eliminated subtracted type —
+ * [sprintf('Type %s has already been eliminated from %s.',
+ * $subtractedType->describe(VerbosityLevel::precise()),
+ * $self->describe(VerbosityLevel::typeOnly()))] — and the accepts() body
+ * of MixedType and StrictMixedType built on it: a no when $subtracted
+ * (IS_NULL for null) is a supertype of $type and $type is no NeverType,
+ * AcceptsResult::createYes() otherwise; UNDEF = pending exception */
+zv::Val pt_type_eliminated_reasons(zend_object *self, zval *subtracted);
+zv::Val pt_type_accepts_unless_eliminated(zend_object *self, zval *subtracted, zval *type);
+
 /* JustNullableTypeTrait's identity traverse() handler, for a class whose own
  * traverse() returns $this — registering it under that handler lets
  * NonGeneralizableTypeTrait's generalize() take its no-callback fast path */
@@ -909,6 +919,9 @@ inline zv::Val pt_type_finite_type_set_key(zval *type)
  * constructor body on the object ($subtractedType NULL for null)
  * (MixedType.cpp) */
 void pt_mixed_type_construct(zend_object *self, bool isExplicitMixed, zval *subtractedType);
+/* parent::__construct($subtractedType) — StrictMixedType's constructor
+ * body on the object ($subtractedType NULL for null) (StrictMixedType.cpp) */
+void pt_strict_mixed_type_construct(zend_object *self, zval *subtractedType);
 /* the body of MixedType::describe() run on the object (its own class
  * answering the $this-calls inside it, as parent:: keeps it); UNDEF =
  * pending exception (MixedType.cpp) */

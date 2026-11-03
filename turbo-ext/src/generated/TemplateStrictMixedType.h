@@ -10,12 +10,12 @@ namespace ptdecl::TemplateStrictMixedType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t name = 0;
-inline constexpr uint32_t scope = 1;
-inline constexpr uint32_t strategy = 2;
-inline constexpr uint32_t variance = 3;
-inline constexpr uint32_t bound = 4;
-inline constexpr uint32_t default_ = 5;
+inline constexpr uint32_t name = 1;
+inline constexpr uint32_t scope = 2;
+inline constexpr uint32_t strategy = 3;
+inline constexpr uint32_t variance = 4;
+inline constexpr uint32_t bound = 5;
+inline constexpr uint32_t default_ = 6;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

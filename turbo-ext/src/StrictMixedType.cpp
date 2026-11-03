@@ -4,27 +4,77 @@
  *
  * Declared as PHPStan\Type\StrictMixedType itself at activation: not final
  * (the PHP TemplateStrictMixedType extends it), implementing
- * PHPStan\Type\CompoundType. The twin has no state and no constructor.
+ * PHPStan\Type\CompoundType. State is the twin's promoted `private ?Type
+ * $subtractedType`, a declared typed property slot (IS_PROP_UNINIT until
+ * the constructor writes it), so the std object handlers do GC/clone and
+ * the TemplateStrictMixedType trait slots follow it.
  *
- * The twin makes no `$this->method()` calls of its own.
+ * The `$this->method()` calls the twin makes (describeSubtractedType() and,
+ * for the reason of a no, describe()) go through the object's class entry.
  */
 
 #include "TypeTraits.h"
 #include "generated/StrictMixedType.h"
 
+namespace slots = ptdecl::StrictMixedType::slot;
 namespace sigs = ptdecl::StrictMixedType::sig;
 
 zend_class_entry *pt_ce_strict_mixed_type = nullptr;
 
 namespace phpstanturbo {
 
-/* Mirrors PHPStan\Type\StrictMixedType. The twin has no state, and none
- * of its methods reads $this, so every method is static. */
+/* Mirrors PHPStan\Type\StrictMixedType. State lives in the PHP object's
+ * $subtractedType; the methods that do not read it are static. */
 class StrictMixedType
 {
 public:
-	/* AcceptsResult::createYes() */
-	static zv::Val accepts() { return pt_type_accepts_result(PT_TRI_YES); }
+	explicit StrictMixedType(zend_object *self) : self(self) {}
+
+	/* __construct(private ?Type $subtractedType = null); $subtractedType
+	 * borrowed, NULL for null */
+	void construct(zval *subtractedType)
+	{
+		zval *slot = OBJ_PROP_NUM(self, slots::subtractedType);
+		/* the slot is overwritten in place: a repeated parent::__construct()
+		 * call from a subclass would otherwise leak the first value */
+		zval previous;
+		ZVAL_COPY_VALUE(&previous, slot);
+		if (subtractedType == NULL) {
+			ZVAL_NULL(slot);
+		} else {
+			ZVAL_COPY(slot, subtractedType);
+		}
+		Z_PROP_FLAG_P(slot) = 0; /* no longer IS_PROP_UNINIT */
+		if (Z_TYPE(previous) != IS_UNDEF) {
+			zval_ptr_dtor(&previous);
+		}
+	}
+
+	/* $this->subtractedType (borrowed, IS_NULL or IS_OBJECT); NULL with an
+	 * Error pending when the constructor never ran — the twin's
+	 * typed-property read raises the same */
+	zval *subtractedType() const { return subtractedTypeOf(self); }
+
+	/* $type->subtractedType of another StrictMixedType instance */
+	static zval *subtractedTypeOf(zend_object *object)
+	{
+		zval *slot = OBJ_PROP_NUM(object, slots::subtractedType);
+		if (UNEXPECTED(Z_TYPE_P(slot) == IS_UNDEF)) {
+			zend_throw_error(NULL, "Typed property %s::$subtractedType must not be accessed before initialization", ZSTR_VAL(pt_ce_strict_mixed_type->name));
+			return NULL;
+		}
+		return slot;
+	}
+
+	/* a no carrying the reason when the subtracted type is a supertype of
+	 * $type (no NeverType), AcceptsResult::createYes() otherwise; UNDEF =
+	 * pending exception */
+	zv::Val accepts(zval *type) const
+	{
+		zval *subtracted = subtractedType();
+		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
+		return pt_type_accepts_unless_eliminated(self, subtracted, type);
+	}
 
 	/* yes for a StrictMixedType or a MixedType that is no TemplateMixedType,
 	 * maybe otherwise; UNDEF = pending exception */
@@ -47,17 +97,63 @@ public:
 		return pt_type_is_super_type_of_result(yes ? PT_TRI_YES : PT_TRI_MAYBE);
 	}
 
-	/* $type instanceof self */
-	static bool equals(zval *type) { return instanceof_function(Z_OBJCE_P(type), pt_ce_strict_mixed_type); }
+	/* $type instanceof self with an equal subtracted type (both null, or
+	 * both set and equals()); false = pending exception */
+	[[nodiscard]] bool equals(zval *type, bool &out) const
+	{
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_strict_mixed_type)) {
+			out = false;
+			return true;
+		}
+		zval *subtracted = subtractedType();
+		if (UNEXPECTED(subtracted == NULL)) return false;
+		zval *typeSubtracted = subtractedTypeOf(Z_OBJ_P(type));
+		if (UNEXPECTED(typeSubtracted == NULL)) return false;
+		if (Z_TYPE_P(subtracted) == IS_NULL) {
+			out = Z_TYPE_P(typeSubtracted) == IS_NULL;
+			return true;
+		}
+		if (Z_TYPE_P(typeSubtracted) == IS_NULL) {
+			out = false;
+			return true;
+		}
+		return pt_type_op_bool(Z_OBJ_P(subtracted), PT_OP_EQUALS, 1, typeSubtracted, out);
+	}
 
-	/* $level->handle(): 'mixed' for the type-only, value and precise
-	 * levels, 'strict-mixed' for the cache level; UNDEF = pending exception */
-	static zv::Val describe(zval *level)
+	/* $level->handle(): 'mixed' for the type-only and value levels, 'mixed'
+	 * and the described subtracted type for the precise level,
+	 * 'strict-mixed' and the described subtracted type for the cache level;
+	 * UNDEF = pending exception */
+	zv::Val describe(zval *level) const
 	{
 		pt_verbosity_case which;
 		if (UNEXPECTED(!pt_type_verbosity_case(level, which))) return zv::Val();
-		if (which == PT_VERBOSITY_CACHE) return zv::Val::string("strict-mixed", sizeof("strict-mixed") - 1);
-		return zv::Val::string("mixed", sizeof("mixed") - 1);
+		if (which == PT_VERBOSITY_TYPE_ONLY || which == PT_VERBOSITY_VALUE) return zv::Val::string("mixed", sizeof("mixed") - 1);
+
+		/* $this->describeSubtractedType($this->subtractedType, $level) */
+		zval *subtracted = subtractedType();
+		if (UNEXPECTED(subtracted == NULL)) return zv::Val();
+		zv::Val subtractedDescription;
+		if (EXPECTED(pt_type_method_is(self, PT_LC("describesubtractedtype"), pt_type_trait_substractable_describe_subtracted_type))) {
+			subtractedDescription = pt_type_describe_subtracted_type(subtracted, level);
+		} else {
+			zv::Args args{subtracted, level};
+			subtractedDescription = pt_type_call(self, PT_LC("describesubtractedtype"), 2, args);
+		}
+		if (UNEXPECTED(subtractedDescription.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(subtractedDescription.raw()).isString())) {
+			zend_type_error("phpstan_turbo: describeSubtractedType() must return string");
+			return zv::Val();
+		}
+		smart_str description = {NULL, 0};
+		if (which == PT_VERBOSITY_CACHE) {
+			smart_str_appendl(&description, "strict-mixed", sizeof("strict-mixed") - 1);
+		} else {
+			smart_str_appendl(&description, "mixed", sizeof("mixed") - 1);
+		}
+		smart_str_append(&description, zv::Ref(subtractedDescription.raw()).asString());
+		smart_str_0(&description);
+		return zv::Val::adoptString(description.s);
 	}
 
 	/* new ErrorType() */
@@ -114,6 +210,8 @@ public:
 	}
 
 private:
+	zend_object *self;
+
 	/* `$type instanceof self || ($type instanceof MixedType && !$type
 	 * instanceof TemplateMixedType)`; false = pending exception */
 	[[nodiscard]] static bool isStrictOrPlainMixed(zval *type, bool &out)
@@ -144,6 +242,13 @@ private:
 } // namespace phpstanturbo
 
 using phpstanturbo::StrictMixedType;
+
+#define PT_THIS StrictMixedType(Z_OBJ_P(ZEND_THIS))
+
+void pt_strict_mixed_type_construct(zend_object *self, zval *subtractedType)
+{
+	StrictMixedType(self).construct(subtractedType);
+}
 
 /* {{{ engine ABI glue: parameter parsing + registration */
 
@@ -234,11 +339,27 @@ PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 	cls.op(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getConstantStrings, smtEmptyArray0);
 
-	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
-		PT_ARGS(2, 2);
-		PT_RETURN_VAL(StrictMixedType::accepts());
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *subtractedType = NULL;
+		if (!zp::parse<zp::Opt<zp::TypeObjOrNull>>(execute_data, subtractedType)) RETURN_THROWS();
+		PT_THIS.construct(subtractedType);
 	});
-	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return StrictMixedType::accepts(); });
+
+	cls.method(sigs::getSubtractedType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zval *subtracted = PT_THIS.subtractedType();
+		if (UNEXPECTED(subtracted == NULL)) RETURN_THROWS();
+		RETURN_COPY(subtracted);
+	});
+	cls.op(PT_OP_GET_SUBTRACTED_TYPE, PT_OP_LAMBDA { zval *subtracted = StrictMixedType(self).subtractedType(); return subtracted == NULL ? zv::Val() : zv::Val::copyOf(zv::Ref(subtracted)); });
+
+	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		bool strictTypes;
+		if (!zp::parse<zp::TypeObj, zp::Bool>(execute_data, type, strictTypes)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.accepts(type));
+	});
+	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return StrictMixedType(self).accepts(argv); });
 
 	cls.method(sigs::isAcceptedBy, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *acceptingType;
@@ -260,19 +381,11 @@ PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 	});
 	cls.op(PT_OP_IS_SUB_TYPE_OF, PT_OP_LAMBDA { return StrictMixedType::isSubTypeOf(argv); });
 
-	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *type;
-		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
-		RETURN_BOOL(StrictMixedType::equals(type));
-	});
-	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(StrictMixedType::equals(argv)); });
+	cls.method<&StrictMixedType::equals, zp::TypeObj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &StrictMixedType::equals>();
 
-	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *level;
-		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
-		PT_RETURN_VAL(StrictMixedType::describe(level));
-	});
-	cls.op(PT_OP_DESCRIBE, PT_OP_LAMBDA { return StrictMixedType::describe(argv); });
+	cls.method<&StrictMixedType::describe, zp::Obj>(sigs::describe);
+	cls.op<PT_OP_DESCRIBE, &StrictMixedType::describe>();
 
 	cls.method(sigs::getTemplateType, smtError2);
 	cls.method(sigs::isObject, smtNo0);

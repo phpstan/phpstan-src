@@ -67,7 +67,7 @@ public:
 		return pt_type_accepts_result(PT_TRI_YES);
 	}
 
-	/* new TemplateStrictMixedType($this->scope, $this->strategy, $this->variance, $this->name, new StrictMixedType(), $this->default) */
+	/* new TemplateStrictMixedType($this->scope, $this->strategy, $this->variance, $this->name, new StrictMixedType($this->getSubtractedType()), $this->default) */
 	zv::Val toStrictMixedType() const
 	{
 		zend_string *name = pt_template_type_name(self, pt_ce_template_mixed_type);
@@ -77,7 +77,9 @@ public:
 		zval *variance = strategy == NULL ? NULL : pt_template_type_variance(self, pt_ce_template_mixed_type);
 		zval *defaultType = variance == NULL ? NULL : pt_template_type_default(self, pt_ce_template_mixed_type);
 		if (UNEXPECTED(defaultType == NULL)) return zv::Val();
-		zv::Val strictMixed = pt_type_new_ce(pt_ce_strict_mixed_type, 0, NULL);
+		zv::Val subtracted = pt_type_op(self, PT_OP_GET_SUBTRACTED_TYPE, 0, NULL);
+		if (UNEXPECTED(subtracted.isUndef())) return zv::Val();
+		zv::Val strictMixed = pt_type_new_ce(pt_ce_strict_mixed_type, 1, subtracted.raw());
 		if (UNEXPECTED(strictMixed.isUndef())) return zv::Val();
 		zval created;
 		if (UNEXPECTED(!pt_template_strict_mixed_type_new(&created, scope, strategy, variance, name, strictMixed.raw(), defaultType))) return zv::Val();

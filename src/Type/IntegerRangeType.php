@@ -24,6 +24,8 @@ use function count;
 use function floor;
 use function get_class;
 use function is_int;
+use function is_numeric;
+use function is_string;
 use function max;
 use function min;
 use function sprintf;
@@ -323,6 +325,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
+		$unorderedComparison = $this->compareEachInteger($otherType, $phpVersion, static fn (ConstantIntegerType $integer): TrinaryLogic => $integer->isSmallerThan($otherType, $phpVersion));
+		if ($unorderedComparison !== null) {
+			return $unorderedComparison;
+		}
+
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createYes();
 		} else {
@@ -350,6 +357,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
+		$unorderedComparison = $this->compareEachInteger($otherType, $phpVersion, static fn (ConstantIntegerType $integer): TrinaryLogic => $integer->isSmallerThanOrEqual($otherType, $phpVersion));
+		if ($unorderedComparison !== null) {
+			return $unorderedComparison;
+		}
+
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createYes();
 		} else {
@@ -377,6 +389,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
+		$unorderedComparison = $this->compareEachInteger($otherType, $phpVersion, static fn (ConstantIntegerType $integer): TrinaryLogic => $otherType->isSmallerThan($integer, $phpVersion));
+		if ($unorderedComparison !== null) {
+			return $unorderedComparison;
+		}
+
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createNo();
 		} else {
@@ -404,6 +421,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
+		$unorderedComparison = $this->compareEachInteger($otherType, $phpVersion, static fn (ConstantIntegerType $integer): TrinaryLogic => $otherType->isSmallerThanOrEqual($integer, $phpVersion));
+		if ($unorderedComparison !== null) {
+			return $unorderedComparison;
+		}
+
 		if ($this->min === null) {
 			$minIsSmaller = TrinaryLogic::createNo();
 		} else {
@@ -427,6 +449,38 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return TrinaryLogic::extremeIdentity($minIsSmaller, $maxIsSmaller);
+	}
+
+	/**
+	 * PHP 8 compares an integer with a non-numeric string as strings, which
+	 * does not keep the order of the integers ('10' < '1abc' < '2'), so the
+	 * bounds do not decide the comparison then and each integer does.
+	 *
+	 * @param callable(ConstantIntegerType): TrinaryLogic $compare
+	 */
+	private function compareEachInteger(Type $otherType, PhpVersion $phpVersion, callable $compare): ?TrinaryLogic
+	{
+		if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+			return null;
+		}
+
+		$hasNonNumericString = false;
+		foreach ($otherType->getConstantScalarValues() as $value) {
+			if (is_string($value) && !is_numeric($value)) {
+				$hasNonNumericString = true;
+				break;
+			}
+		}
+		if (!$hasNonNumericString) {
+			return null;
+		}
+
+		$integers = $this->getFiniteTypes();
+		if ($integers === []) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::extremeIdentity(...array_map($compare, $integers));
 	}
 
 	public function getSmallerType(PhpVersion $phpVersion): Type

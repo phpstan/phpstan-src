@@ -40,7 +40,7 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 	public function loadConfiguration(): void
 	{
 		$builder = $this->getContainerBuilder();
-		foreach (ValidateServiceTagsExtension::getInterfaceTagMapping() as $interface => $tag) {
+		foreach (ValidateServiceTagsExtension::getExtendedInterfaceTagMapping($this->compiler) as $interface => $tag) {
 			$builder->addDefinition(self::getCollectionServiceName($interface))
 				->setType(LazyExtensionsCollection::class)
 				->setArgument('tagName', $tag)
@@ -53,7 +53,7 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 	{
 		require_once __DIR__ . '/../../vendor/attributes.php';
 		$builder = $this->getContainerBuilder();
-		$mapping = ValidateServiceTagsExtension::getInterfaceTagMapping();
+		$mapping = ValidateServiceTagsExtension::getExtendedInterfaceTagMapping($this->compiler);
 
 		$parametersByClass = [];
 		foreach (Attributes::findTargetMethodParameters(AutowiredExtensions::class) as $parameter) {
@@ -61,7 +61,7 @@ final class AutowiredExtensionsExtension extends CompilerExtension
 				throw new ShouldNotHappenException(sprintf('Attribute #[AutowiredExtensions] is only supported on constructor parameters, found on %s::%s() $%s.', $parameter->class, $parameter->method, $parameter->name));
 			}
 			if (!array_key_exists($parameter->attribute->of, $mapping)) {
-				throw new ShouldNotHappenException(sprintf('Interface %s referenced by #[AutowiredExtensions] on %s::__construct() $%s is not marked with the #[ExtensionInterface] attribute.', $parameter->attribute->of, $parameter->class, $parameter->name));
+				throw new ShouldNotHappenException(sprintf('Interface %s referenced by #[AutowiredExtensions] on %s::__construct() $%s is not marked with the #[ExtensionInterface] attribute nor listed in the extensionInterfaces section.', $parameter->attribute->of, $parameter->class, $parameter->name));
 			}
 
 			$nativeType = null;

@@ -41,8 +41,6 @@ use const T_WHITESPACE;
 final class RichParser implements Parser
 {
 
-	public const VISITOR_SERVICE_TAG = 'phpstan.parser.richParserNodeVisitor';
-
 	private const PHPDOC_TAG_REGEX = '(@(?:[a-z][a-z0-9-\\\\]+:)?[a-z][a-z0-9-\\\\]*+)';
 
 	private const PHPDOC_DOCTRINE_TAG_REGEX = '(@[a-z_\\\\][a-z0-9_\:\\\\]*[a-z_][a-z0-9_]*)';

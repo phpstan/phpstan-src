@@ -8,9 +8,7 @@ use Nette\DI\InvalidConfigurationException;
 use Nette\PhpGenerator\ClassType;
 use olvlvl\ComposerAttributeCollector\Attributes;
 use Override;
-use PhpParser\NodeVisitor;
 use PHPStan\DependencyInjection\AttributeServices\AttributeTargetsProvider;
-use PHPStan\Parser\RichParser;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
 use function array_flip;
@@ -30,6 +28,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 
 	/**
 	 * PHPStan's own extension interfaces, derived from the #[ExtensionInterface] attribute above each of them.
+	 * Vendor interfaces like PhpParser\NodeVisitor are in the extensionInterfaces section of conf/config.neon.
 	 *
 	 * @return array<class-string, string>
 	 */
@@ -41,10 +40,7 @@ final class ValidateServiceTagsExtension extends CompilerExtension
 
 		require_once __DIR__ . '/../../vendor/attributes.php';
 
-		$mapping = [
-			// vendor interface - cannot carry the #[ExtensionInterface] attribute
-			NodeVisitor::class => RichParser::VISITOR_SERVICE_TAG,
-		];
+		$mapping = [];
 		foreach (Attributes::findTargetClasses(ExtensionInterface::class) as $class) {
 			// the attribute is not repeatable but the collector does not validate that
 			if (array_key_exists($class->name, $mapping)) {

@@ -127,7 +127,11 @@ final class OperatorTypeHelper
 		}
 
 		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));
-		if ($leftNumericStringNonEmpty->isNumericString()->yes()) {
+		if (
+			$leftNumericStringNonEmpty->isNumericString()->yes()
+			// '' . '' is not numeric
+			&& $leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()
+		) {
 			// after the digits of an integer, a sign or a whitespace is not numeric,
 			// and PHP 7 does not allow a trailing newline
 			$validationCallback = $left->isInteger()->yes()

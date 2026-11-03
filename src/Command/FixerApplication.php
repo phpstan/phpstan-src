@@ -63,6 +63,9 @@ final class FixerApplication
 
 	private bool $fileMonitorActive = true;
 
+	/** @var string[] watched files besides the analysed ones and the config files */
+	private array $watchedFilesWithoutConfig = [];
+
 	/**
 	 * @param string[] $analysedPaths
 	 * @param string[] $composerAutoloaderProjectPaths
@@ -146,13 +149,13 @@ final class FixerApplication
 				}
 			});
 
-			$this->fileMonitor->initialize(array_merge(
+			$this->watchedFilesWithoutConfig = array_merge(
 				$this->getComposerLocks(),
 				$this->getComposerInstalled(),
 				$this->getExecutedFiles(),
 				$this->getStubFiles(),
-				$this->allConfigFiles,
-			));
+			);
+			$this->fileMonitor->initialize(array_merge($this->watchedFilesWithoutConfig, $this->allConfigFiles));
 
 			$this->analyse(
 				$loop,
@@ -427,12 +430,18 @@ final class FixerApplication
 		/** @var int<0, 65535> $serverPort */
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
-		$server->on('connection', static function (ConnectionInterface $connection) use ($phpstanFixerEncoder): void {
+		$server->on('connection', function (ConnectionInterface $connection) use ($phpstanFixerEncoder): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$decoder = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: 128 * 1024 * 1024);
-			$decoder->on('data', static function (array $data) use ($phpstanFixerEncoder): void {
+			$decoder->on('data', function (array $data) use ($phpstanFixerEncoder): void {
+				// the config files of this analysis, the config may include other files than at the start
+				if ($data['action'] === 'watchedConfigFiles') {
+					$this->fileMonitor->watchFiles(array_merge($this->watchedFilesWithoutConfig, $data['result']['files']));
+					return;
+				}
+
 				$phpstanFixerEncoder->write($data);
 			});
 		});

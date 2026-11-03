@@ -85,6 +85,22 @@ static void pt_ah_assign_op_binary_ops_constant(zval *out)
 	Z_TYPE_INFO_P(out) = IS_ARRAY;
 }
 
+/* the twin's RESULT_PROVENANCE_FUNCTIONS */
+static const pt_superglobal_name pt_ah_result_provenance_functions[] = {
+	{ PT_LC("count") },
+	{ PT_LC("sizeof") },
+	{ PT_LC("gettype") },
+	{ PT_LC("get_class") },
+	{ PT_LC("get_debug_type") },
+};
+
+static HashTable *pt_ah_result_provenance_functions_list = NULL;
+
+static void pt_ah_result_provenance_functions_constant(zval *out)
+{
+	pt_persistent_list_into(out, pt_ah_result_provenance_functions_list);
+}
+
 /* VariableWrite::KIND_ASSIGN / KIND_READ_MODIFY_WRITE */
 #define PT_AH_KIND_ASSIGN 1
 #define PT_AH_KIND_READ_MODIFY_WRITE 2
@@ -2155,6 +2171,15 @@ private:
 				}
 			}
 
+			{
+				bool provenanceCall;
+				AH_OKB(resolveResultProvenanceCall(assignedExpr.raw(), varName, provenanceCall));
+				if (provenanceCall) {
+					zv::Str targetExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(varName), ZSTR_LEN(varName)));
+					AH_SETB(scope, pt_mutating_scope_record_result_provenance(Z_OBJ_P(scope.raw()), targetExprString.get(), assignedExpr.raw()));
+				}
+			}
+
 			if (ahIs(assignedExpr.raw(), PT_CLASS_ARRAY_EXPR)) {
 				AH_VALB(rootVariable, newVariable(varName));
 				AH_SETB(scope, processArrayByRefItems(nsr, scope.raw(), storage, varName, assignedExpr.raw(), rootVariable.raw()));
@@ -2750,6 +2775,52 @@ private:
 			}
 		}
 
+		return true;
+	}
+
+	/* private (twin resolveResultProvenanceCall()): whether the assigned
+	 * expression is a whitelisted pure call over a plain variable whose
+	 * result the target variable now provably holds; false = pending
+	 * exception */
+	[[nodiscard]] bool resolveResultProvenanceCall(zval *assignedExpr, zend_string *targetVariableName, bool &out)
+	{
+		out = false;
+		if (!ahIs(assignedExpr, PT_CLASS_FUNC_CALL)) return true;
+		zval *name = AH_PROP(assignedExpr, name);
+		if (!ahIs(name, PT_CLASS_NAME)) return true;
+		bool firstClassCallable;
+		AH_OKB(pt_call_like_is_first_class_callable(Z_OBJ_P(assignedExpr), firstClassCallable));
+		if (firstClassCallable) return true;
+		bool listed = false;
+		for (const pt_superglobal_name &function : pt_ah_result_provenance_functions) {
+			if (ahNameIs(name, function.name, function.len)) {
+				listed = true;
+				break;
+			}
+		}
+		if (!listed) return true;
+
+		HashTable *args = ahArgs(assignedExpr);
+		if (args == NULL || zend_hash_num_elements(args) != 1) return true;
+		zval *arg0 = zend_hash_index_find(args, 0);
+		if (arg0 == NULL) return true;
+		ZVAL_DEREF(arg0);
+		if (zend_is_true(AH_PROP(arg0, unpack)) || Z_TYPE_P(AH_PROP(arg0, name)) != IS_NULL) return true;
+
+		zend_string *argName = ahStringVariableName(AH_PROP(arg0, value));
+		if (
+			argName == NULL
+			// the call read the target's pre-assignment value - after the
+			// assignment the record would describe the variable through itself
+			|| zend_string_equals(argName, targetVariableName)
+			// closure binds rebind $this without touching provenance
+			|| zend_string_equals_literal(argName, "this")
+			|| pt_is_superglobal_name(argName)
+		) {
+			return true;
+		}
+
+		out = true;
 		return true;
 	}
 
@@ -4866,6 +4937,8 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 	cls.privateClassConstantLong("TERNARY_ARM_EXCLUDED_VALUES_LIMIT", PT_AH_TERNARY_ARM_EXCLUDED_VALUES_LIMIT);
 	cls.privateClassConstantLong("DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT", PT_AH_DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT);
 	cls.privateClassConstantValue("ASSIGN_OP_BINARY_OPS", pt_ah_assign_op_binary_ops_constant);
+	pt_ah_result_provenance_functions_list = pt_persistent_string_list(pt_ah_result_provenance_functions, sizeof(pt_ah_result_provenance_functions) / sizeof(pt_ah_result_provenance_functions[0]));
+	cls.privateClassConstantValue("RESULT_PROVENANCE_FUNCTIONS", pt_ah_result_provenance_functions_constant);
 	cls.privateClassConstantLong("ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT", PT_AH_ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT);
 
 	/* the real parameter class names: the DI container autowires the

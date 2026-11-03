@@ -519,6 +519,8 @@ enum {
 	/* the class names of Type::toPhpDocNode() and how describe() prints them */
 	PT_CLASS_FULLY_QUALIFIED_NAME_NODE,
 	PT_CLASS_TYPE_NODE_DESCRIBER,
+	/* the entries of MutatingScope::$resultProvenance */
+	PT_CLASS_RESULT_PROVENANCE,
 	PT_CLASS_COUNT
 };
 
@@ -2421,6 +2423,9 @@ zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *varia
 zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType);
 zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty);
 zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters = false, zval *invalidatingClass = NULL, bool keepPropertyFetches = false);
+/* $scope->getResultProvenanceCall($exprString) / ->recordResultProvenance($exprString, $call) */
+zv::Val pt_mutating_scope_get_result_provenance_call(zend_object *scope, zend_string *exprString);
+zv::Val pt_mutating_scope_record_result_provenance(zend_object *scope, zend_string *exprString, zval *call);
 
 /* ExpressionResult.cpp — $result->withScope($scope) / getArgsResult() /
  * getTypeOnScope($scope, $useNativeTypes) /

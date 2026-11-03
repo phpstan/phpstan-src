@@ -319,6 +319,7 @@ enum : uint32_t
 	PT_MS_PROP_NATIVE_TYPES_PROMOTED,
 	PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME,
 	PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS,
+	PT_MS_PROP_RESULT_PROVENANCE,
 	PT_MS_PROP_COUNT,
 };
 
@@ -546,27 +547,51 @@ struct CreateArgs
 		NATIVE_TYPES_PROMOTED,
 		TEMPLATE_ARGUMENT_FRAME,
 		TEMPLATE_ARGUMENT_CONSTRAINTS,
+		RESULT_PROVENANCE,
 		COUNT,
 	};
 
 	zval argv[COUNT];
 	zv::Val owned[COUNT];
+	/* whether the twin's site passes $resultProvenance: the sites that do
+	 * not stop at $templateArgumentConstraints, which a PHP factory sees in
+	 * func_get_args() */
+	bool passesResultProvenance = false;
 
 	CreateArgs()
 	{
 		for (uint32_t i = 0; i < COUNT; i++) {
 			ZVAL_NULL(&argv[i]);
 		}
+		/* the one parameter whose default is not null: `array $resultProvenance = []` */
+		ZVAL_EMPTY_ARRAY(&argv[RESULT_PROVENANCE]);
 	}
 
-	void set(uint32_t i, zv::Ref borrowed) { ZVAL_COPY_VALUE(&argv[i], borrowed.raw()); }
+	/* the number of arguments the twin's site passes */
+	uint32_t count() const { return passesResultProvenance ? COUNT : RESULT_PROVENANCE; }
+
+	void set(uint32_t i, zv::Ref borrowed) { ZVAL_COPY_VALUE(&argv[i], borrowed.raw()); passed(i); }
 	void setBool(uint32_t i, bool value) { ZVAL_BOOL(&argv[i], value); }
 	void setNull(uint32_t i) { ZVAL_NULL(&argv[i]); }
-	void setEmptyArray(uint32_t i) { ZVAL_EMPTY_ARRAY(&argv[i]); }
+	void setEmptyArray(uint32_t i) { ZVAL_EMPTY_ARRAY(&argv[i]); passed(i); }
 	void setOwned(uint32_t i, zv::Val value)
 	{
 		owned[i] = std::move(value);
 		ZVAL_COPY_VALUE(&argv[i], owned[i].raw());
+		passed(i);
+	}
+	/* a site that passes no $resultProvenance (the parameter's default) */
+	void omitResultProvenance()
+	{
+		owned[RESULT_PROVENANCE] = zv::Val();
+		ZVAL_EMPTY_ARRAY(&argv[RESULT_PROVENANCE]);
+		passesResultProvenance = false;
+	}
+
+private:
+	void passed(uint32_t i)
+	{
+		if (i == RESULT_PROVENANCE) passesResultProvenance = true;
 	}
 };
 
@@ -898,7 +923,7 @@ public:
 	/* $factory->create(...$args) through the method */
 	static zv::Val factoryCreateCall(zend_object *factory, CreateArgs &args)
 	{
-		return pt_type_call(factory, PT_LC("create"), CreateArgs::COUNT, args.argv);
+		return pt_type_call(factory, PT_LC("create"), args.count(), args.argv);
 	}
 
 	static zv::Val factoryCreate(zend_object *factory, CreateArgs &args)
@@ -929,6 +954,7 @@ public:
 			CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS,
 			CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS,
 			CreateArgs::IN_FUNCTION_CALLS_STACK,
+			CreateArgs::RESULT_PROVENANCE,
 		};
 		if (UNEXPECTED(Z_TYPE(args.argv[CreateArgs::CONTEXT]) != IS_OBJECT)) return factoryCreateCall(factory, args);
 		for (uint32_t i = 0; i < sizeof(arrayArgs) / sizeof(arrayArgs[0]); i++) {
@@ -965,6 +991,7 @@ public:
 		a.nativeTypesPromoted = Z_TYPE(args.argv[CreateArgs::NATIVE_TYPES_PROMOTED]) == IS_TRUE;
 		a.templateArgumentFrame = &args.argv[CreateArgs::TEMPLATE_ARGUMENT_FRAME];
 		a.templateArgumentConstraints = &args.argv[CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS];
+		a.resultProvenance = &args.argv[CreateArgs::RESULT_PROVENANCE];
 		MutatingScope(Z_OBJ(scope)).construct(a);
 		return zv::Val::adopt(scope);
 	}
@@ -986,8 +1013,8 @@ public:
 			(void) uninitializedProperty("context");
 			return false;
 		}
-		if (UNEXPECTED(slot(PT_MS_PROP_EXPRESSION_TYPES).isUndef() || slot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS).isUndef())) {
-			(void) uninitializedProperty(slot(PT_MS_PROP_EXPRESSION_TYPES).isUndef() ? "expressionTypes" : "templateArgumentConstraints");
+		if (UNEXPECTED(slot(PT_MS_PROP_EXPRESSION_TYPES).isUndef() || slot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS).isUndef() || slot(PT_MS_PROP_RESULT_PROVENANCE).isUndef())) {
+			(void) uninitializedProperty(slot(PT_MS_PROP_EXPRESSION_TYPES).isUndef() ? "expressionTypes" : (slot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS).isUndef() ? "templateArgumentConstraints" : "resultProvenance"));
 			return false;
 		}
 		a.set(CreateArgs::CONTEXT, slot(PT_MS_PROP_CONTEXT));
@@ -1004,6 +1031,7 @@ public:
 		a.set(CreateArgs::NATIVE_TYPES_PROMOTED, slot(PT_MS_PROP_NATIVE_TYPES_PROMOTED));
 		a.set(CreateArgs::TEMPLATE_ARGUMENT_FRAME, slot(PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME));
 		a.set(CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS, slot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS));
+		a.set(CreateArgs::RESULT_PROVENANCE, slot(PT_MS_PROP_RESULT_PROVENANCE));
 		return true;
 	}
 
@@ -1035,7 +1063,7 @@ public:
 
 	/* {{{ __construct */
 
-	/* the 20 constructor arguments as zpp delivers them (NULL = a defaulted
+	/* the 21 constructor arguments as zpp delivers them (NULL = a defaulted
 	 * optional parameter) */
 	struct ConstructArgs
 	{
@@ -1050,6 +1078,7 @@ public:
 		zval *parentScope;
 		bool nativeTypesPromoted;
 		zval *templateArgumentFrame, *templateArgumentConstraints;
+		zval *resultProvenance;
 	};
 
 	void construct(const ConstructArgs &a)
@@ -1075,6 +1104,7 @@ public:
 		writeSlot(PT_MS_PROP_NATIVE_TYPES_PROMOTED, zv::Val::boolean(a.nativeTypesPromoted));
 		writeSlot(PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME, optional(a.templateArgumentFrame));
 		writeSlot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS, optional(a.templateArgumentConstraints));
+		writeSlot(PT_MS_PROP_RESULT_PROVENANCE, optionalArray(a.resultProvenance));
 	}
 
 	static zv::Val optional(zval *value) { return value == NULL ? zv::Val::null() : zv::Val::copyOf(zv::Ref(value)); }
@@ -1503,6 +1533,8 @@ public:
 		if (UNEXPECTED(!fillDispatched(a, true, true))) return zv::Val();
 		a.setEmptyArray(CreateArgs::CONDITIONAL_EXPRESSIONS);
 		a.setBool(CreateArgs::AFTER_EXTRACT_CALL, true);
+		/* the twin passes no $resultProvenance: extract() may have overwritten anything */
+		a.omitResultProvenance();
 		return scopeFactoryCreate(a);
 	}
 
@@ -2303,6 +2335,7 @@ public:
 			{ PT_MS_PROP_NATIVE_TYPES_PROMOTED, CreateArgs::NATIVE_TYPES_PROMOTED, "nativeTypesPromoted" },
 			{ PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME, CreateArgs::TEMPLATE_ARGUMENT_FRAME, "templateArgumentFrame" },
 			{ PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS, CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS, "templateArgumentConstraints" },
+			{ PT_MS_PROP_RESULT_PROVENANCE, CreateArgs::RESULT_PROVENANCE, "resultProvenance" },
 		};
 		for (const auto &entry : tailFromSlots) {
 			if (UNEXPECTED(!requireSlot(entry.slot, entry.name))) return zv::Val();
@@ -3189,6 +3222,7 @@ public:
 			{ PT_MS_PROP_PARENT_SCOPE, CreateArgs::PARENT_SCOPE, "parentScope" },
 			{ PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME, CreateArgs::TEMPLATE_ARGUMENT_FRAME, "templateArgumentFrame" },
 			{ PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS, CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS, "templateArgumentConstraints" },
+			{ PT_MS_PROP_RESULT_PROVENANCE, CreateArgs::RESULT_PROVENANCE, "resultProvenance" },
 		};
 		for (const auto &entry : fromSlots) {
 			if (UNEXPECTED(!requireSlot(entry.slot, entry.name))) return zv::Val();
@@ -3662,6 +3696,7 @@ public:
 		a.setBool(CreateArgs::AFTER_EXTRACT_CALL, false);
 		a.setNull(CreateArgs::PARENT_SCOPE);
 		a.setBool(CreateArgs::NATIVE_TYPES_PROMOTED, false);
+		a.omitResultProvenance();
 		return scopeFactoryCreate(a);
 	}
 
@@ -4743,6 +4778,8 @@ public:
 		a.setBool(CreateArgs::NATIVE_TYPES_PROMOTED, false);
 		a.set(CreateArgs::TEMPLATE_ARGUMENT_FRAME, slot(PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME));
 		a.set(CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS, slot(PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS));
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		a.set(CreateArgs::RESULT_PROVENANCE, slot(PT_MS_PROP_RESULT_PROVENANCE));
 		return scopeFactoryCreate(a);
 	}
 
@@ -5443,6 +5480,7 @@ public:
 		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
 		a.setBool(CreateArgs::AFTER_EXTRACT_CALL, false);
 		a.set(CreateArgs::PARENT_SCOPE, zv::Ref(thisZval()));
+		a.omitResultProvenance();
 		return scopeFactoryCreate(a);
 	}
 
@@ -7001,6 +7039,10 @@ public:
 		zv::Val exprString = thisGetNodeKey(expressionToInvalidate);
 		if (UNEXPECTED(exprString.isUndef())) return zv::Val();
 		zv::Str key = zv::Str::adopt(zval_get_string(exprString.raw()));
+
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		zv::Val filteredResultProvenance = filterResultProvenance(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()), key.get());
+		if (UNEXPECTED(filteredResultProvenance.isUndef())) return zv::Val();
 		zv::Ref exprPrinter = service(PT_MSS_EXPR_PRINTER);
 		if (UNEXPECTED(!exprPrinter.isObject())) return uninitializedProperty("exprPrinter");
 		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes")
@@ -7019,7 +7061,14 @@ public:
 			Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()),
 			keepPropertyFetches);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
-		if (result.ref().isNull()) return self_();
+		if (result.ref().isNull()) {
+			if (zend_hash_num_elements(Z_ARRVAL_P(filteredResultProvenance.raw())) == zend_hash_num_elements(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()))) {
+				return self_();
+			}
+			zv::Val scope = openSpecificationScope();
+			if (UNEXPECTED(scope.isUndef() || !assignResultProvenance(scope, filteredResultProvenance.raw()))) return zv::Val();
+			return scope;
+		}
 		zval *expressionTypes = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 0);
 		zval *nativeExpressionTypes = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 1);
 		zval *conditionalExpressions = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 2);
@@ -7027,7 +7076,126 @@ public:
 			zend_throw_error(NULL, "phpstan_turbo: ScopeOps::invalidateExpressionEntries() answered an unexpected shape");
 			return zv::Val();
 		}
-		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(conditionalExpressions), true);
+		zv::Val scope = scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(conditionalExpressions), true);
+		if (UNEXPECTED(scope.isUndef() || !assignResultProvenance(scope, filteredResultProvenance.raw()))) return zv::Val();
+		return scope;
+	}
+
+	/* $scope->resultProvenance = $value on a scope this class just created;
+	 * false = pending exception */
+	[[nodiscard]] static bool assignResultProvenance(zv::Val &scope, zval *value)
+	{
+		if (UNEXPECTED(Z_TYPE_P(scope.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Attempt to assign property \"resultProvenance\" on %s", zend_zval_value_name(scope.raw()));
+			return false;
+		}
+		zend_object *object = Z_OBJ_P(scope.raw());
+		zend_update_property(object->ce, object, PT_LC("resultProvenance"), value);
+		return EXPECTED(EG(exception) == NULL);
+	}
+
+	/* $provenance->getCallExprString() of a ResultProvenance entry (the PHP
+	 * class); UNDEF = pending exception */
+	static zv::Val resultProvenanceCallExprString(zval *provenance)
+	{
+		ZVAL_DEREF(provenance);
+		if (UNEXPECTED(Z_TYPE_P(provenance) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getCallExprString() on %s", zend_zval_value_name(provenance));
+			return zv::Val();
+		}
+		return pt_type_call(Z_OBJ_P(provenance), PT_LC("getcallexprstring"), 0, NULL);
+	}
+
+	/* (twin getResultProvenanceCall()) */
+	zv::Val getResultProvenanceCall(zend_string *exprString)
+	{
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		zval *provenance = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()), exprString);
+		if (provenance != NULL) ZVAL_DEREF(provenance);
+		if (provenance == NULL || Z_TYPE_P(provenance) == IS_NULL) return zv::Val::null();
+		if (UNEXPECTED(Z_TYPE_P(provenance) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getCall() on %s", zend_zval_value_name(provenance));
+			return zv::Val();
+		}
+		return pt_type_call(Z_OBJ_P(provenance), PT_LC("getcall"), 0, NULL);
+	}
+
+	/* (twin recordResultProvenance()) */
+	zv::Val recordResultProvenance(zend_string *exprString, zval *call)
+	{
+		zv::Val scope = openSpecificationScope();
+		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		zv::Arr resultProvenance = zv::Arr::copyOfTable(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()));
+		zv::Val callExprString = thisGetNodeKey(call);
+		if (UNEXPECTED(callExprString.isUndef())) return zv::Val();
+		zv::Args args{call, callExprString.raw()};
+		zv::Val provenance = pt_type_new(PT_CLASS_RESULT_PROVENANCE, 2, args);
+		if (UNEXPECTED(provenance.isUndef())) return zv::Val();
+		resultProvenance.separate();
+		zval provenanceZv;
+		ZVAL_COPY(&provenanceZv, provenance.raw());
+		zend_symtable_update(resultProvenance.table(), exprString, &provenanceZv);
+		zv::Val resultProvenanceValue(std::move(resultProvenance));
+		if (UNEXPECTED(!assignResultProvenance(scope, resultProvenanceValue.raw()))) return zv::Val();
+		return scope;
+	}
+
+	/* private static (twin intersectResultProvenance()) */
+	static zv::Val intersectResultProvenance(HashTable *ours, HashTable *theirs)
+	{
+		if (zend_hash_num_elements(ours) == 0 || zend_hash_num_elements(theirs) == 0) return zv::Val(zv::Arr::empty());
+
+		zv::Arr intersected = zv::Arr::create(0);
+		for (auto entry : zv::TableRef(ours)) {
+			zend_string *key = entry.stringKeyOrNull();
+			zval *their = pt_ht_find(theirs, key, entry.indexKey());
+			if (their != NULL) ZVAL_DEREF(their);
+			if (their == NULL || Z_TYPE_P(their) == IS_NULL) continue;
+			zv::Val theirCallExprString = resultProvenanceCallExprString(their);
+			if (UNEXPECTED(theirCallExprString.isUndef())) return zv::Val();
+			zv::Val ourCallExprString = resultProvenanceCallExprString(entry.value().raw());
+			if (UNEXPECTED(ourCallExprString.isUndef())) return zv::Val();
+			if (!zend_is_identical(theirCallExprString.raw(), ourCallExprString.raw())) continue;
+
+			zval provenance;
+			ZVAL_COPY(&provenance, entry.value().deref().raw());
+			pt_ht_update(intersected.table(), key, entry.indexKey(), &provenance);
+		}
+
+		return zv::Val(std::move(intersected));
+	}
+
+	/* private static (twin filterResultProvenance()) */
+	static zv::Val filterResultProvenance(HashTable *resultProvenance, zend_string *exprStringToInvalidate)
+	{
+		if (zend_hash_num_elements(resultProvenance) == 0) return zv::Val(zv::Arr::copyOfTable(resultProvenance));
+
+		zv::Arr filtered = zv::Arr::create(0);
+		for (auto entry : zv::TableRef(resultProvenance)) {
+			zv::Str exprString = entryKey(entry.stringKeyOrNull(), entry.indexKey());
+			if (strContains(exprString.get(), exprStringToInvalidate)) continue;
+			zv::Val callExprString = resultProvenanceCallExprString(entry.value().raw());
+			if (UNEXPECTED(callExprString.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(callExprString.raw()) != IS_STRING)) {
+				zend_type_error("str_contains(): Argument #1 ($haystack) must be of type string, %s given", zend_zval_value_name(callExprString.raw()));
+				return zv::Val();
+			}
+			if (strContains(Z_STR_P(callExprString.raw()), exprStringToInvalidate)) continue;
+
+			zval provenance;
+			ZVAL_COPY(&provenance, entry.value().deref().raw());
+			pt_ht_update(filtered.table(), entry.stringKeyOrNull(), entry.indexKey(), &provenance);
+		}
+
+		return zv::Val(std::move(filtered));
+	}
+
+	/* str_contains($haystack, $needle) */
+	static bool strContains(zend_string *haystack, zend_string *needle)
+	{
+		if (ZSTR_LEN(needle) == 0) return true;
+		return zend_memnstr(ZSTR_VAL(haystack), ZSTR_VAL(needle), ZSTR_LEN(needle), ZSTR_VAL(haystack) + ZSTR_LEN(haystack)) != NULL;
 	}
 
 	/* ScopeOps::scopeWith($this, ...) with the twin's argument list: the
@@ -8002,6 +8170,7 @@ public:
 			{ CreateArgs::NATIVE_TYPES_PROMOTED, PT_MS_PROP_NATIVE_TYPES_PROMOTED, PT_LC("nativeTypesPromoted") },
 			{ CreateArgs::TEMPLATE_ARGUMENT_FRAME, PT_MS_PROP_TEMPLATE_ARGUMENT_FRAME, PT_LC("templateArgumentFrame") },
 			{ CreateArgs::TEMPLATE_ARGUMENT_CONSTRAINTS, PT_MS_PROP_TEMPLATE_ARGUMENT_CONSTRAINTS, PT_LC("templateArgumentConstraints") },
+			{ CreateArgs::RESULT_PROVENANCE, PT_MS_PROP_RESULT_PROVENANCE, PT_LC("resultProvenance") },
 		};
 		for (auto &property : properties) {
 			zval *value = otherProp(scopeObject, property.slot, property.name, property.len);
@@ -8411,7 +8580,7 @@ public:
 			return zv::Val();
 		}
 
-		return scopeWithTables(
+		zv::Val mergedScope = scopeWithTables(
 			Z_ARRVAL_P(mergedTypes),
 			Z_ARRVAL_P(mergedNativeTypes),
 			Z_ARRVAL_P(conditionalExpressions.raw()),
@@ -8420,6 +8589,15 @@ public:
 			(HashTable *) &zend_empty_array,
 			slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
 			slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL) && theirAfterExtractCall);
+		if (UNEXPECTED(mergedScope.isUndef())) return zv::Val();
+		/* scopeWith() copied our side's provenance - a merge keeps only
+		 * entries identical in both branches */
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		HashTable *theirResultProvenance = otherTable(otherScope, PT_MS_PROP_RESULT_PROVENANCE, PT_LC("resultProvenance"));
+		if (UNEXPECTED(theirResultProvenance == NULL)) return zv::Val();
+		zv::Val resultProvenance = intersectResultProvenance(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()), theirResultProvenance);
+		if (UNEXPECTED(resultProvenance.isUndef() || !assignResultProvenance(mergedScope, resultProvenance.raw()))) return zv::Val();
+		return mergedScope;
 	}
 
 	/* private (twin 4476) — drops the keys of class-constant fetches that
@@ -8772,6 +8950,9 @@ public:
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		HashTable *finallyResultProvenance = otherTable(finallyScope, PT_MS_PROP_RESULT_PROVENANCE, PT_LC("resultProvenance"));
+		if (UNEXPECTED(finallyResultProvenance == NULL)) return zv::Val();
+		PT_MS_ARG_CREATE(a, CreateArgs::RESULT_PROVENANCE, intersectResultProvenance(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()), finallyResultProvenance));
 		return scopeFactoryCreate(a);
 	}
 
@@ -8870,6 +9051,8 @@ public:
 		zv::Arr expressionTypes = zv::Arr::copyOfTable(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()));
 		if (zend_hash_num_elements(byRefUses) == 0) return self_();
 
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		zv::Val resultProvenance = copyOfSlot(PT_MS_PROP_RESULT_PROVENANCE);
 		for (auto entry : zv::TableRef(byRefUses)) {
 			zv::Ref use = entry.value().deref();
 			if (UNEXPECTED(!use.isObject())) {
@@ -8892,6 +9075,8 @@ public:
 			}
 			zend_string *variableName = name.asString();
 			zv::Str variableExprString = zv::Str::adopt(dollarName(variableName));
+			resultProvenance = filterResultProvenance(Z_ARRVAL_P(resultProvenance.raw()), variableExprString.get());
+			if (UNEXPECTED(resultProvenance.isUndef())) return zv::Val();
 
 			zval variableNameZv;
 			ZVAL_STR(&variableNameZv, variableName);
@@ -8939,6 +9124,7 @@ public:
 		a.setBool(CreateArgs::IN_FIRST_LEVEL_STATEMENT, slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT));
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
+		a.setOwned(CreateArgs::RESULT_PROVENANCE, std::move(resultProvenance));
 		return scopeFactoryCreate(a);
 	}
 
@@ -8969,6 +9155,9 @@ public:
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		HashTable *finalResultProvenance = otherTable(finalScope, PT_MS_PROP_RESULT_PROVENANCE, PT_LC("resultProvenance"));
+		if (UNEXPECTED(finalResultProvenance == NULL)) return zv::Val();
+		PT_MS_ARG_CREATE(a, CreateArgs::RESULT_PROVENANCE, intersectResultProvenance(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()), finalResultProvenance));
 		return scopeFactoryCreate(a);
 	}
 
@@ -9079,6 +9268,9 @@ public:
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
+		HashTable *otherResultProvenance = otherTable(otherScope, PT_MS_PROP_RESULT_PROVENANCE, PT_LC("resultProvenance"));
+		if (UNEXPECTED(otherResultProvenance == NULL)) return zv::Val();
+		PT_MS_ARG_CREATE(a, CreateArgs::RESULT_PROVENANCE, intersectResultProvenance(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()), otherResultProvenance));
 		return scopeFactoryCreate(a);
 	}
 
@@ -10173,6 +10365,15 @@ public:
 				zend_string_release(describedString);
 				descriptions.set(key.get(), zv::Val::string(value.get()));
 			}
+		}
+
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_RESULT_PROVENANCE, "resultProvenance"))) return zv::Val();
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(slot(PT_MS_PROP_RESULT_PROVENANCE).raw()))) {
+			zv::Str exprString = entryKey(entry.stringKeyOrNull(), entry.indexKey());
+			zv::Str key = zv::Str::adopt(zend_strpprintf(0, "result provenance of %s", ZSTR_VAL(exprString.get())));
+			zv::Val callExprString = resultProvenanceCallExprString(entry.value().raw());
+			if (UNEXPECTED(callExprString.isUndef())) return zv::Val();
+			descriptions.set(key.get(), std::move(callExprString));
 		}
 
 		return zv::Val(std::move(descriptions));
@@ -12093,6 +12294,24 @@ zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_objec
 	return pt_type_call(scope, PT_LC("specifyexpressiontype"), 4, argv);
 }
 
+/* the result-provenance entries (AssignHandler.cpp, IdenticalNarrowingHelper.cpp) */
+zv::Val pt_mutating_scope_get_result_provenance_call(zend_object *scope, zend_string *exprString)
+{
+	if (PT_MS_INHERITS(scope, "getresultprovenancecall")) return MutatingScope(scope).getResultProvenanceCall(exprString);
+	zval argv[1];
+	ZVAL_STR(&argv[0], exprString);
+	return pt_type_call(scope, PT_LC("getresultprovenancecall"), 1, argv);
+}
+
+zv::Val pt_mutating_scope_record_result_provenance(zend_object *scope, zend_string *exprString, zval *call)
+{
+	if (PT_MS_INHERITS(scope, "recordresultprovenance")) return MutatingScope(scope).recordResultProvenance(exprString, call);
+	zval argv[2];
+	ZVAL_STR(&argv[0], exprString);
+	ZVAL_COPY_VALUE(&argv[1], call);
+	return pt_type_call(scope, PT_LC("recordresultprovenance"), 2, argv);
+}
+
 zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches)
 {
 	if (invalidatingClass != NULL && Z_TYPE_P(invalidatingClass) == IS_NULL) invalidatingClass = NULL;
@@ -12306,6 +12525,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.property("nativeTypesPromoted", ZEND_ACC_PUBLIC, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("templateArgumentFrame", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, MAY_BE_NULL, templateArgumentFrame);
 	cls.property("templateArgumentConstraints", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, MAY_BE_NULL, templateArgumentConstraints);
+	cls.property("resultProvenance", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	/* the twin's `private static array $globalConstantFetchKeys = []`, which
 	 * getGlobalConstantType() memoizes into on both sides. Declared after the
 	 * instance properties even though the twin declares it before them: a
@@ -12339,10 +12559,11 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		reg::withDefault(reg::boolArg("nativeTypesPromoted"), "false"),
 		reg::withDefault(reg::obj("templateArgumentFrame", templateArgumentFrame, true), "null"),
 		reg::withDefault(reg::obj("templateArgumentConstraints", templateArgumentConstraints, true), "null"),
+		reg::withDefault(reg::arrayArg("resultProvenance"), "[]"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		MutatingScope::ConstructArgs a = {};
 		a.inFirstLevelStatement = true;
-		ZEND_PARSE_PARAMETERS_START(3, 20)
+		ZEND_PARSE_PARAMETERS_START(3, 21)
 			Z_PARAM_OBJECT(a.services)
 			Z_PARAM_OBJECT(a.scopeFactory)
 			Z_PARAM_OBJECT(a.context)
@@ -12364,6 +12585,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 			Z_PARAM_BOOL(a.nativeTypesPromoted)
 			Z_PARAM_OBJECT_OR_NULL(a.templateArgumentFrame)
 			Z_PARAM_OBJECT_OR_NULL(a.templateArgumentConstraints)
+			Z_PARAM_ARRAY(a.resultProvenance)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_THIS.construct(a);
 	});
@@ -13082,6 +13304,10 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.method<&MutatingScope::getConditionalExpressions>(sigs::getConditionalExpressions);
 
 	cls.method<&MutatingScope::addConditionalExpressions, zp::Str, zp::Ht>(sigs::addConditionalExpressions);
+
+	cls.method<&MutatingScope::getResultProvenanceCall, zp::Str>(sigs::getResultProvenanceCall);
+
+	cls.method<&MutatingScope::recordResultProvenance, zp::Str, zp::Obj>(sigs::recordResultProvenance);
 
 	cls.method<&MutatingScope::exitFirstLevelStatements>(sigs::exitFirstLevelStatements);
 

@@ -272,7 +272,6 @@ zv::Val pt_integer_range_create_all_greater_than_or_equal_to(zval *value);
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending
  * exception */
 zv::Val pt_integer_type_loose_compare(zend_object *self, zval *type, zval *phpVersion);
-zv::Val pt_integer_type_arithmetic_power(zend_object *self, zval *exponent, zval *phpVersion);
 
 /* the bodies of StringType's offset methods and tryRemove() (StringType.cpp),
  * for the children's parent:: calls; the setOffsetValueType() body takes

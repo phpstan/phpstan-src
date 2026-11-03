@@ -838,86 +838,6 @@ public:
 		return zv::Val::null();
 	}
 
-	/* the union over a UnionType exponent's members; the bounds raised to
-	 * an IntegerRangeType exponent's bounds or a constant int exponent
-	 * when every power stays an int; ExponentiateHelper otherwise; UNDEF =
-	 * pending exception */
-	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
-	{
-		bool isUnion;
-		if (UNEXPECTED(!pt_union_type_instanceof(exponent, isUnion))) return zv::Val();
-		if (isUnion) {
-			zv::Val types = pt_type_call(Z_OBJ_P(exponent), PT_LC("gettypes"), 0, NULL);
-			if (UNEXPECTED(types.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(types.raw()).isArray())) {
-				zend_type_error("phpstan_turbo: UnionType::getTypes() must return array");
-				return zv::Val();
-			}
-			zv::Arr results = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(types.raw())));
-			for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
-				zval *unionType = entry.value().deref().raw();
-				if (UNEXPECTED(Z_TYPE_P(unionType) != IS_OBJECT)) {
-					zend_type_error("phpstan_turbo: UnionType::getTypes() must return %s instances", ZSTR_VAL(pt_ce_integer_type->name));
-					return zv::Val();
-				}
-				/* $this->arithmeticPower($unionType, $phpVersion) */
-				zv::Args args{unionType, phpVersion};
-				zv::Val result = isExact() ? arithmeticPower(unionType, phpVersion) : pt_type_call(self, PT_LC("arithmeticpower"), 2, args);
-				if (UNEXPECTED(result.isUndef())) return zv::Val();
-				results.push(std::move(result));
-			}
-			return pt_type_combinator_call_spread(PT_LC("union"), results.table());
-		}
-
-		/* $this->getMin() / $this->getMax() — through the object's class */
-		NullableLong min, max;
-		if (UNEXPECTED(!pt_integer_range_bounds(self, min, max))) return zv::Val();
-
-		if (instanceof_function(Z_OBJCE_P(exponent), pt_ce_integer_range_type)) {
-			NullableLong exponentMin, exponentMax;
-			if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(exponent), exponentMin, exponentMax))) return zv::Val();
-			zval poweredMin, poweredMax;
-			ZVAL_NULL(&poweredMin);
-			ZVAL_NULL(&poweredMax);
-			if (!min.isNull && !exponentMin.isNull) {
-				if (UNEXPECTED(!phpPow(min.value, exponentMin.value, &poweredMin))) return zv::Val();
-			}
-			if (!max.isNull && !exponentMax.isNull) {
-				if (UNEXPECTED(!phpPow(max.value, exponentMax.value, &poweredMax))) return zv::Val();
-			}
-
-			if ((Z_TYPE(poweredMin) != IS_NULL || Z_TYPE(poweredMax) != IS_NULL) && Z_TYPE(poweredMin) != IS_DOUBLE && Z_TYPE(poweredMax) != IS_DOUBLE) {
-				return fromInterval(NullableLong::from(&poweredMin), NullableLong::from(&poweredMax), 0);
-			}
-		}
-
-		bool isConstantScalar;
-		if (UNEXPECTED(!pt_type_instanceof(exponent, PT_CLASS_CONSTANT_SCALAR_TYPE, isConstantScalar))) return zv::Val();
-		if (isConstantScalar) {
-			zv::Val exponentValue = pt_type_call(Z_OBJ_P(exponent), PT_LC("getvalue"), 0, NULL);
-			if (UNEXPECTED(exponentValue.isUndef())) return zv::Val();
-			if (zv::Ref(exponentValue.raw()).isLong()) {
-				zend_long e = zv::Ref(exponentValue.raw()).asLong();
-				zval poweredMin, poweredMax;
-				ZVAL_NULL(&poweredMin);
-				ZVAL_NULL(&poweredMax);
-				if (!min.isNull) {
-					if (UNEXPECTED(!phpPow(min.value, e, &poweredMin))) return zv::Val();
-				}
-				if (!max.isNull) {
-					if (UNEXPECTED(!phpPow(max.value, e, &poweredMax))) return zv::Val();
-				}
-
-				if (Z_TYPE(poweredMin) != IS_DOUBLE && Z_TYPE(poweredMax) != IS_DOUBLE) {
-					return fromInterval(NullableLong::from(&poweredMin), NullableLong::from(&poweredMax), 0);
-				}
-			}
-		}
-
-		/* parent::arithmeticPower($exponent, $phpVersion) */
-		return pt_integer_type_arithmetic_power(self, exponent, phpVersion);
-	}
-
 	/* every integer of a bounded range as a ConstantIntegerType, unless
 	 * there are more than InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
 	 * of them (or the range is unbounded): then []; UNDEF = pending
@@ -1497,7 +1417,6 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 		pt_irt_try(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntegerRangeType::tryRemove);
 	});
 
-	cls.method<&IntegerRangeType::arithmeticPower, zp::Obj, zp::Obj>(sigs::arithmeticPower);
 
 	cls.method<&IntegerRangeType::getFiniteTypes>(sigs::getFiniteTypes);
 

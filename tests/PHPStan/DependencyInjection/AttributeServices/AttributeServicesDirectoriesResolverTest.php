@@ -94,7 +94,7 @@ class AttributeServicesDirectoriesResolverTest extends TestCase
 
 		$this->assertCount(1, $resolved->directories);
 		$this->assertNull($resolved->directories[0]->packageName);
-		$this->assertArrayHasKey(__DIR__ . '/data/psr4Mismatch/WellPlaced.php', $resolved->directories[0]->cacheKeyComponent);
+		$this->assertArrayHasKey(strtr(__DIR__, '\\', '/') . '/data/psr4Mismatch/WellPlaced.php', $resolved->directories[0]->cacheKeyComponent);
 	}
 
 	public function testProjectOwnDirectory(): void

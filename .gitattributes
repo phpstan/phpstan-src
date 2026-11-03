@@ -2,5 +2,6 @@
 *.stub linguist-language=PHP
 
 tests/PHPStan/Command/ErrorFormatter/data/WindowsNewlines.php eol=crlf
+tests/PHPStan/Command/Neon2Attributes/data/** text eol=lf
 
 .github/workflows/*.lock.yml linguist-generated=true merge=ours

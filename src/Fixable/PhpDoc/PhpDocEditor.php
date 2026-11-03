@@ -19,7 +19,6 @@ use function count;
 
 /**
  * @api
- * @internal Experimental
  */
 #[AutowiredService]
 final class PhpDocEditor

@@ -190,7 +190,7 @@ public:
 
 					if (
 						is_numeric_string(ZSTR_VAL(string), ZSTR_LEN(string), NULL, NULL, false) == 0
-						|| !(integerValidation ? ZSTR_VAL(string)[0] != '-' : isDecimalDigits(string))
+						|| !(integerValidation ? isNumberAfterInteger(string) : isDecimalDigits(string))
 					) {
 						allRightConstantsZeroOrMore = false;
 						break;

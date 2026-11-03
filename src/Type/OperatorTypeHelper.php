@@ -36,7 +36,6 @@ use function is_int;
 use function is_numeric;
 use function max;
 use function min;
-use function str_starts_with;
 use const INF;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
@@ -129,9 +128,11 @@ final class OperatorTypeHelper
 
 		$leftNumericStringNonEmpty = TypeCombinator::remove($leftStringType, new ConstantStringType(''));
 		if ($leftNumericStringNonEmpty->isNumericString()->yes()) {
+			// after the digits of an integer, a sign or a whitespace is not numeric,
+			// and PHP 7 does not allow a trailing newline
 			$validationCallback = $left->isInteger()->yes()
-				? static fn (string $value): bool => !str_starts_with($value, '-')
-				: static fn (string $value): bool => Strings::match($value, '#^\d+$#') !== null;
+				? static fn (string $value): bool => Strings::match($value, '#^\d+(\.\d*)?([eE][+-]?\d+)?\z#') !== null
+				: static fn (string $value): bool => Strings::match($value, '#^\d+\z#') !== null;
 
 			$allRightConstantsZeroOrMore = false;
 			foreach ($rightConstantStrings as $rightConstantString) {

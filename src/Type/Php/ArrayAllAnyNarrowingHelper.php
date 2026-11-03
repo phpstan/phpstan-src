@@ -77,10 +77,11 @@ final class ArrayAllAnyNarrowingHelper
 
 	/**
 	 * The narrowing is a consequence of the call's result, not proof of it: an
-	 * unchanged array type does not make the call always true. Only when the
-	 * narrowed type cannot coexist with the argument's type is the call known
-	 * to be always false, so that verdict is the only one left for the
-	 * impossible-check rules.
+	 * unchanged array type does not make the result certain. Only a narrowed
+	 * type that cannot coexist with the argument's type proves the specified
+	 * result impossible, so that is the only verdict left for the
+	 * impossible-check rules (also when an extension asks for the falsey
+	 * narrowing of a nested call, as an assertFalse() would).
 	 */
 	public function leaveResultUndecided(SpecifiedTypes $specifiedTypes, FuncCall $node, Type $arrayType, Type $narrowedType): SpecifiedTypes
 	{

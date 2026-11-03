@@ -324,6 +324,12 @@ final class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	// see https://wiki.php.net/rfc/saner-numeric-strings
+	public function allowsTrailingWhitespaceInNumericStrings(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function supportsCallableInstanceMethods(): bool
 	{
 		return $this->versionId < 80000;

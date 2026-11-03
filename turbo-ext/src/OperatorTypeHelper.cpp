@@ -1141,29 +1141,20 @@ public:
 		}
 
 		if (kind == IETR_MUL) {
-			{
-				IETR_VAL(leftNumberType, callOn(leftType, mToNumber));
-				int zero = isConstantIntegerZero(leftNumberType.raw());
-				if (UNEXPECTED(zero < 0)) return zv::Val();
-				if (zero) {
-					IETR_TRI(rightIsFloat, triOn(rightType, mIsFloat));
-					if (rightIsFloat == PT_TRI_YES) {
-						return newConstantFloatType(0.0);
-					}
-					return newConstantIntegerType(0);
-				}
+			/* zero times an integer is always 0; times a float it is 0.0, -0.0 or NAN */
+			IETR_VAL(leftNumberType, callOn(leftType, mToNumber));
+			IETR_VAL(rightNumberType, callOn(rightType, mToNumber));
+			int leftZero = isConstantIntegerZero(leftNumberType.raw());
+			if (UNEXPECTED(leftZero < 0)) return zv::Val();
+			if (leftZero) {
+				IETR_TRI(rightIsInteger, triOn(rightNumberType.raw(), mIsInteger));
+				if (rightIsInteger == PT_TRI_YES) return newConstantIntegerType(0);
 			}
-			{
-				IETR_VAL(rightNumberType, callOn(rightType, mToNumber));
-				int zero = isConstantIntegerZero(rightNumberType.raw());
-				if (UNEXPECTED(zero < 0)) return zv::Val();
-				if (zero) {
-					IETR_TRI(leftIsFloat, triOn(leftType, mIsFloat));
-					if (leftIsFloat == PT_TRI_YES) {
-						return newConstantFloatType(0.0);
-					}
-					return newConstantIntegerType(0);
-				}
+			int rightZero = isConstantIntegerZero(rightNumberType.raw());
+			if (UNEXPECTED(rightZero < 0)) return zv::Val();
+			if (rightZero) {
+				IETR_TRI(leftIsInteger, triOn(leftNumberType.raw(), mIsInteger));
+				if (leftIsInteger == PT_TRI_YES) return newConstantIntegerType(0);
 			}
 		}
 

@@ -920,18 +920,13 @@ final class OperatorTypeHelper
 			$rightType = self::optimizeScalarType($rightType);
 		}
 
+		// zero times an integer is always 0; times a float it is 0.0, -0.0 or NAN
 		$leftNumberType = $leftType->toNumber();
-		if ($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() === 0) {
-			if ($rightType->isFloat()->yes()) {
-				return new ConstantFloatType(0.0);
-			}
-			return new ConstantIntegerType(0);
-		}
 		$rightNumberType = $rightType->toNumber();
-		if ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() === 0) {
-			if ($leftType->isFloat()->yes()) {
-				return new ConstantFloatType(0.0);
-			}
+		if (
+			($leftNumberType instanceof ConstantIntegerType && $leftNumberType->getValue() === 0 && $rightNumberType->isInteger()->yes())
+			|| ($rightNumberType instanceof ConstantIntegerType && $rightNumberType->getValue() === 0 && $leftNumberType->isInteger()->yes())
+		) {
 			return new ConstantIntegerType(0);
 		}
 

@@ -1300,55 +1300,12 @@ final class OperatorTypeHelper
 				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax + $operand->getMax() : null;
 			}
 		} elseif ($operator === '-') {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin - $operand->getValue() : null;
+			// [a, b] - [c, d] is [a - d, b - c]
+			/** @var int|float|null $min */
+			$min = $rangeMin !== null && $operandMax !== null ? $rangeMin - $operandMax : null;
 
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax - $operand->getValue() : null;
-			} else {
-				if ($rangeMin === $rangeMax && $rangeMin !== null
-					&& ($operand->getMin() === null || $operand->getMax() === null)) {
-					$min = null;
-					$max = $rangeMin;
-				} else {
-					if ($operand->getMin() === null) {
-						$min = null;
-					} elseif ($rangeMin !== null) {
-						if ($operand->getMax() !== null) {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMax();
-						} else {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMin();
-						}
-					} else {
-						$min = null;
-					}
-
-					if ($operand->getMax() === null) {
-						$min = null;
-						$max = null;
-					} elseif ($rangeMax !== null) {
-						if ($rangeMin !== null && $operand->getMin() === null) {
-							/** @var int|float $min */
-							$min = $rangeMin - $operand->getMax();
-							$max = null;
-						} elseif ($operand->getMin() !== null) {
-							/** @var int|float $max */
-							$max = $rangeMax - $operand->getMin();
-						} else {
-							$max = null;
-						}
-					} else {
-						$max = null;
-					}
-
-					if ($min !== null && $max !== null && $min > $max) {
-						[$min, $max] = [$max, $min];
-					}
-				}
-			}
+			/** @var int|float|null $max */
+			$max = $rangeMax !== null && $operandMin !== null ? $rangeMax - $operandMin : null;
 		} elseif ($operator === '*') {
 			$min1 = $rangeMin === 0 || $operandMin === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMin ?? -INF);
 			$min2 = $rangeMin === 0 || $operandMax === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMax ?? INF);

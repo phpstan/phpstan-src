@@ -1528,50 +1528,12 @@ public:
 				}
 				break;
 			case IETR_MINUS:
-				if (operandIsConstant) {
-					if (Z_TYPE(rangeMin) != IS_NULL && UNEXPECTED(!scalarOp(sub_function, &rangeMin, operandValue, &min))) return zv::Val();
-					if (Z_TYPE(rangeMax) != IS_NULL && UNEXPECTED(!scalarOp(sub_function, &rangeMax, operandValue, &max))) return zv::Val();
-				} else {
-					if (identical(&rangeMin, &rangeMax) && Z_TYPE(rangeMin) != IS_NULL
-						&& (Z_TYPE(operandMin) == IS_NULL || Z_TYPE(operandMax) == IS_NULL)) {
-						ZVAL_NULL(&min);
-						ZVAL_COPY_VALUE(&max, &rangeMin);
-					} else {
-						if (Z_TYPE(operandMin) == IS_NULL) {
-							ZVAL_NULL(&min);
-						} else if (Z_TYPE(rangeMin) != IS_NULL) {
-							if (Z_TYPE(operandMax) != IS_NULL) {
-								if (UNEXPECTED(!scalarOp(sub_function, &rangeMin, &operandMax, &min))) return zv::Val();
-							} else {
-								if (UNEXPECTED(!scalarOp(sub_function, &rangeMin, &operandMin, &min))) return zv::Val();
-							}
-						} else {
-							ZVAL_NULL(&min);
-						}
-
-						if (Z_TYPE(operandMax) == IS_NULL) {
-							ZVAL_NULL(&min);
-							ZVAL_NULL(&max);
-						} else if (Z_TYPE(rangeMax) != IS_NULL) {
-							if (Z_TYPE(rangeMin) != IS_NULL && Z_TYPE(operandMin) == IS_NULL) {
-								if (UNEXPECTED(!scalarOp(sub_function, &rangeMin, &operandMax, &min))) return zv::Val();
-								ZVAL_NULL(&max);
-							} else if (Z_TYPE(operandMin) != IS_NULL) {
-								if (UNEXPECTED(!scalarOp(sub_function, &rangeMax, &operandMin, &max))) return zv::Val();
-							} else {
-								ZVAL_NULL(&max);
-							}
-						} else {
-							ZVAL_NULL(&max);
-						}
-
-						if (Z_TYPE(min) != IS_NULL && Z_TYPE(max) != IS_NULL && greaterThan(&min, &max)) {
-							zval swap;
-							ZVAL_COPY_VALUE(&swap, &min);
-							ZVAL_COPY_VALUE(&min, &max);
-							ZVAL_COPY_VALUE(&max, &swap);
-						}
-					}
+				/* [a, b] - [c, d] is [a - d, b - c] */
+				if (Z_TYPE(rangeMin) != IS_NULL && Z_TYPE(operandMax) != IS_NULL) {
+					if (UNEXPECTED(!scalarOp(sub_function, &rangeMin, &operandMax, &min))) return zv::Val();
+				}
+				if (Z_TYPE(rangeMax) != IS_NULL && Z_TYPE(operandMin) != IS_NULL) {
+					if (UNEXPECTED(!scalarOp(sub_function, &rangeMax, &operandMin, &max))) return zv::Val();
 				}
 				break;
 			case IETR_MUL: {

@@ -69,6 +69,7 @@ use const PREG_SPLIT_NO_EMPTY;
  *
  * The entry is looked for in the whole config cascade, except for files of installed Composer packages.
  * The ignoreErrors parameter is merged from all of them, so the entry can come from more than one file.
+ * Entries without a path, including the ones written as a plain string pattern, are fixed too.
  *
  * Baselines can have tens of thousands of entries and each fixed error needs its own diff, which covers
  * only the changed lines. In a PHP config file, a fix is an edit of the source range of the parsed node,
@@ -83,6 +84,7 @@ use const PREG_SPLIT_NO_EMPTY;
  *     format: 'php',
  *     items: array<string, Node\ArrayItem>,
  *     removableNode: Node|null,
+ *     line: int,
  * }
  * @phpstan-type NeonConfigEntry = array{
  *     file: string,
@@ -90,7 +92,8 @@ use const PREG_SPLIT_NO_EMPTY;
  *     format: 'neon',
  *     items: array<string, NeonArrayItemNode>,
  *     path: non-empty-list<NeonNode>,
- *     entryValue: NeonArrayNode,
+ *     entryValue: NeonNode,
+ *     line: int,
  * }
  * @phpstan-type ConfigEntry = PhpConfigEntry|NeonConfigEntry
  * @phpstan-type Edit = array{start: int, end: int, replacement: string, line: int}
@@ -101,13 +104,16 @@ final class IgnoreErrorsConfigFixer
 
 	private const ENTRY_KEYS = ['message', 'messages', 'rawMessage', 'rawMessages', 'identifier', 'identifiers', 'path', 'paths', 'count', 'reportUnmatched'];
 
+	/** key of the entries without a path in getEntriesByPath(), a normalized path is never empty */
+	private const NO_PATH = '';
+
 	private const MATCHED_FIELDS = [
 		'message' => 'messages',
 		'rawMessage' => 'rawMessages',
 		'identifier' => 'identifiers',
 	];
 
-	/** @var array<string, list<ConfigEntry>>|null entries by normalized path */
+	/** @var array<string, list<ConfigEntry>>|null entries by normalized path, or by self::NO_PATH */
 	private ?array $entriesByPath = null;
 
 	/** @var array<string, array{code: string, hash: string}> contents of the config files the entries were found in */
@@ -136,10 +142,28 @@ final class IgnoreErrorsConfigFixer
 	}
 
 	/**
-	 * @param ExpandedIgnoredErrorData $ignoreError
+	 * Config file and line of the entry, for reporting an entry without a path.
+	 *
+	 * @param string|ExpandedIgnoredErrorData $ignoreError
+	 * @return array{string, int}|null
+	 */
+	public function findEntryLocation(string|array $ignoreError): ?array
+	{
+		$entries = $this->findEntries($ignoreError);
+		if ($entries === []) {
+			return null;
+		}
+
+		$entry = $entries[0][0];
+
+		return [$entry['file'], $entry['line']];
+	}
+
+	/**
+	 * @param string|ExpandedIgnoredErrorData $ignoreError
 	 * @return list<FixedErrorDiff>
 	 */
-	public function removeUnmatched(array $ignoreError): array
+	public function removeUnmatched(string|array $ignoreError): array
 	{
 		$editsByFile = [];
 		$neonChangesByFile = [];
@@ -360,18 +384,22 @@ final class IgnoreErrorsConfigFixer
 	 * Entries the expanded entry was made of. The list item is set when the entry matched through a list
 	 * like `messages` that has other items too, only that item can then be removed.
 	 *
-	 * @param ExpandedIgnoredErrorData $ignoreError
+	 * @param string|ExpandedIgnoredErrorData $ignoreError
 	 * @return list<array{ConfigEntry, string|null, int|null}> the entry, and the list field and position of the item
 	 */
-	private function findEntries(array $ignoreError): array
+	private function findEntries(string|array $ignoreError): array
 	{
+		if (is_string($ignoreError)) {
+			$ignoreError = ['message' => $ignoreError];
+		}
+
 		$path = $ignoreError['realPath'] ?? $ignoreError['path'] ?? null;
-		if ($path === null) {
+		if ($path === null && isset($ignoreError['paths'])) {
 			return [];
 		}
 
 		$found = [];
-		foreach ($this->getEntriesByPath()[$this->normalizePath($path)] ?? [] as $entry) {
+		foreach ($this->getEntriesByPath()[$path !== null ? $this->normalizePath($path) : self::NO_PATH] ?? [] as $entry) {
 			$listField = null;
 			$position = null;
 			foreach (self::MATCHED_FIELDS as $field => $matchedListField) {
@@ -432,6 +460,12 @@ final class IgnoreErrorsConfigFixer
 			$entries = str_ends_with($configFile, '.php') ? $this->findPhpEntries($configFile) : $this->findNeonEntries($configFile);
 			foreach ($entries as $entry) {
 				$path = $entry['values']['path'] ?? null;
+				if ($path === null) {
+					if (!isset($entry['values']['paths'])) {
+						$this->entriesByPath[self::NO_PATH][] = $entry;
+					}
+					continue;
+				}
 				if (!is_string($path)) {
 					continue;
 				}
@@ -496,6 +530,39 @@ final class IgnoreErrorsConfigFixer
 
 			foreach ($node->items as $item) {
 				$removableNodes[spl_object_id($item->value)] = $item;
+
+				// plain string patterns, unlike entry arrays, are told apart from other strings only by being in an ignoreErrors list
+				if (
+					!$item->key instanceof Node\Scalar\String_
+					|| $item->key->value !== 'ignoreErrors'
+					|| !$item->value instanceof Expr\Array_
+				) {
+					continue;
+				}
+
+				foreach ($item->value->items as $patternItem) {
+					if ($patternItem->key !== null || $patternItem->value instanceof Expr\Array_) {
+						continue;
+					}
+
+					try {
+						$pattern = Helpers::expand($evaluator->evaluateDirectly($patternItem->value), $parameters);
+					} catch (ConstExprEvaluationException | InvalidArgumentException) {
+						continue;
+					}
+					if (!is_string($pattern)) {
+						continue;
+					}
+
+					$entries[] = [
+						'file' => $file,
+						'values' => ['message' => $pattern],
+						'format' => 'php',
+						'items' => [],
+						'removableNode' => $patternItem,
+						'line' => $patternItem->getStartLine(),
+					];
+				}
 			}
 
 			$items = [];
@@ -516,7 +583,7 @@ final class IgnoreErrorsConfigFixer
 				$values[$item->key->value] = $value;
 			}
 
-			if (!isset($values['path']) || (isset($values['count']) && !is_int($values['count']))) {
+			if ($values === [] || (isset($values['count']) && !is_int($values['count']))) {
 				continue;
 			}
 
@@ -526,6 +593,7 @@ final class IgnoreErrorsConfigFixer
 				'format' => 'php',
 				'items' => $items,
 				'removableNode' => $removableNodes[spl_object_id($node)] ?? null,
+				'line' => $node->getStartLine(),
 			];
 		}
 
@@ -572,12 +640,9 @@ final class IgnoreErrorsConfigFixer
 		$adapter = new NeonAdapter(['[parameters][ignoreErrors][][path]', '[parameters][ignoreErrors][][paths][]'], $parameters);
 		$entries = [];
 		foreach ($ignoreErrorsItem->value->items as $entryItem) {
-			if (!$entryItem->value instanceof NeonArrayNode) {
-				continue;
-			}
-
 			$items = [];
-			foreach ($entryItem->value->items as $item) {
+			// a plain string pattern has no items
+			foreach ($entryItem->value instanceof NeonArrayNode ? $entryItem->value->items : [] as $item) {
 				$key = $item->key !== null ? $item->key->toValue() : null;
 				if (!is_string($key) || !in_array($key, self::ENTRY_KEYS, true)) {
 					continue 2;
@@ -594,7 +659,10 @@ final class IgnoreErrorsConfigFixer
 				continue;
 			}
 
-			if (!is_array($values) || !isset($values['path']) || (isset($values['count']) && !is_int($values['count']))) {
+			if (is_string($values)) {
+				$values = ['message' => $values];
+			}
+			if (!is_array($values) || $values === [] || (isset($values['count']) && !is_int($values['count']))) {
 				continue;
 			}
 
@@ -605,6 +673,7 @@ final class IgnoreErrorsConfigFixer
 				'items' => $items,
 				'path' => [$root, $parametersItem, $parametersItem->value, $ignoreErrorsItem, $ignoreErrorsItem->value, $entryItem],
 				'entryValue' => $entryItem->value,
+				'line' => $entryItem->startLine ?? 1,
 			];
 		}
 

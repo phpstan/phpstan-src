@@ -1004,22 +1004,26 @@ jobs:
               echo "$OUTPUT"
               # two unmatched messages, an unmatched entry, and a count higher than the occurrences in the PHP baseline,
               # an unmatched message, an unmatched entry, and a count higher than the occurrences in the NEON baseline;
-              # not the entry in vendor/, and not a count lower than the occurrences (--generate-baseline does that)
-              ../bashunit assert contains '7 of the errors can be fixed automatically. Run PHPStan again with --fix' "$OUTPUT"
+              # and two entries without a path in the NEON baseline, reported in it;
+              # not the entries in vendor/, and not a count lower than the occurrences (--generate-baseline does that)
+              ../bashunit assert contains '9 of the errors can be fixed automatically. Run PHPStan again with --fix' "$OUTPUT"
+              ../bashunit assert contains 'baseline.neon:21:Ignored error pattern #^Unmatched without a path$# was not matched' "$OUTPUT"
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --fix --generate-baseline")
               echo "$OUTPUT"
               ../bashunit assert contains 'Errors cannot be fixed when generating the baseline.' "$OUTPUT"
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix")
               echo "$OUTPUT"
               # removing the last two messages of the PHP list conflicts, and so does removing the NEON entry
-              # and the first message of the entry after it, the second one goes in the next round
-              ../bashunit assert contains 'Round 2: fixed 2 errors in 2 files' "$OUTPUT"
-              ../bashunit assert contains '[OK] 7 errors fixed in 2 files' "$OUTPUT"
+              # and the first message of the entry after it, and so does removing the two neighbouring entries without a path,
+              # the second one goes in the next round
+              ../bashunit assert contains 'Round 2: fixed 3 errors in 2 files' "$OUTPUT"
+              ../bashunit assert contains '[OK] 9 errors fixed in 2 files' "$OUTPUT"
               diff -u baseline-expected.php baseline.php
               diff -u baseline-expected.neon baseline.neon
               OUTPUT=$(../bashunit assert exit_code "1" "../../bin/phpstan analyse --error-format raw")
               echo "$OUTPUT"
               ../bashunit assert contains 'Ignored error pattern #^Unmatched in vendor$#' "$OUTPUT"
+              ../bashunit assert contains 'Ignored error pattern #^Unmatched in vendor without a path$# was not matched' "$OUTPUT"
               ../bashunit assert contains 'is expected to occur 1 time, but occurred 2 times.' "$OUTPUT"
               ../bashunit assert not_contains 'Unmatched one' "$OUTPUT"
               ../bashunit assert not_contains 'NEON' "$OUTPUT"

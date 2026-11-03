@@ -131,6 +131,8 @@ final class OperatorTypeHelper
 			$leftNumericStringNonEmpty->isNumericString()->yes()
 			// '' . '' is not numeric
 			&& $leftStringType->isNonEmptyString()->or($rightStringType->isNonEmptyString())->yes()
+			// '1 ' is numeric on PHP 8, '1 5' is not
+			&& !self::canEndInWhitespace($left, $leftStringType, $phpVersion)
 		) {
 			// after the digits of an integer, a sign or a whitespace is not numeric,
 			// and PHP 7 does not allow a trailing newline
@@ -168,6 +170,30 @@ final class OperatorTypeHelper
 		}
 
 		return new StringType();
+	}
+
+	/**
+	 * Whether the string a numeric left operand of . becomes can end in
+	 * whitespace, which PHP 8 allows in numeric strings and PHP 7 does not.
+	 */
+	private static function canEndInWhitespace(Type $left, Type $leftStringType, PhpVersion $phpVersion): bool
+	{
+		if ($left->isInteger()->yes() || $left->isFloat()->yes() || $leftStringType->isDecimalIntegerString()->yes()) {
+			return false;
+		}
+
+		$constantStrings = $leftStringType->getConstantStrings();
+		if (count($constantStrings) > 0) {
+			foreach ($constantStrings as $constantString) {
+				if (Strings::match($constantString->getValue(), '#\\s\\z#') !== null) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return $phpVersion->allowsTrailingWhitespaceInNumericStrings();
 	}
 
 	public static function bitwiseAnd(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type

@@ -84,6 +84,7 @@ inline constexpr Method mGetConstantScalarTypes{"getConstantScalarTypes"};
 inline constexpr Method mGetConstantScalarValues{"getConstantScalarValues", PT_OP_GET_CONSTANT_SCALAR_VALUES};
 inline constexpr Method mGetFiniteTypes{"getFiniteTypes"};
 inline constexpr Method mGetConstantStrings{"getConstantStrings"};
+inline constexpr Method mIsDecimalIntegerString{"isDecimalIntegerString"};
 inline constexpr Method mGetConstantArrays{"getConstantArrays", PT_OP_GET_CONSTANT_ARRAYS};
 inline constexpr Method mIsInteger{"isInteger", PT_OP_IS_INTEGER};
 inline constexpr Method mIsString{"isString", PT_OP_IS_STRING};

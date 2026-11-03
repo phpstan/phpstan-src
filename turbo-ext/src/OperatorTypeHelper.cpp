@@ -11,9 +11,9 @@
  * arithmetic runs on the engine's own operator functions (add_function(),
  * mod_function(), bitwise_and_function(), zend_compare(), ...), so int
  * overflow into float, float-to-int truncation and the mixed-type
- * comparisons behave exactly like the twin's PHP operators. None of the
- * operators depends on the PhpVersion yet; the twin's parameter is accepted
- * and passed along.
+ * comparisons behave exactly like the twin's PHP operators. Only concat()
+ * reads the PhpVersion so far (trailing whitespace in numeric strings); the
+ * other operators accept it and pass it along.
  */
 
 #include "support.h"
@@ -43,7 +43,7 @@ public:
 	/* {{{ concat() */
 
 	/* Mirrors concat(). */
-	static zv::Val concat(zval *left, zval *right)
+	static zv::Val concat(zval *left, zval *right, zval *phpVersion)
 	{
 		IETR_VAL(leftStringType, callOn(left, mToString));
 		IETR_VAL(rightStringType, callOn(right, mToString));
@@ -176,6 +176,12 @@ public:
 				IETR_TRI(leftNonEmpty, triOn(leftStringType.raw(), mIsNonEmptyString));
 				IETR_TRI(rightNonEmpty, triOn(rightStringType.raw(), mIsNonEmptyString));
 				numericResult = pt_trinary_or(leftNonEmpty, rightNonEmpty) == PT_TRI_YES;
+			}
+			if (numericResult) {
+				/* '1 ' is numeric on PHP 8, '1 5' is not */
+				int endsInWhitespace = canEndInWhitespace(left, leftStringType.raw(), phpVersion);
+				if (UNEXPECTED(endsInWhitespace < 0)) return zv::Val();
+				numericResult = endsInWhitespace == 0;
 			}
 			if (numericResult) {
 				IETR_TRI(leftIsInteger, triOn(left, mIsInteger));
@@ -403,6 +409,44 @@ public:
 		}
 		ZVAL_LONG(&integer, Z_LVAL_P(value));
 		return true;
+	}
+
+	/* Mirrors canEndInWhitespace(): 1 / 0, -1 = pending exception */
+	static int canEndInWhitespace(zval *left, zval *leftStringType, zval *phpVersion)
+	{
+		zend_long leftIsInteger = triOn(left, mIsInteger);
+		if (UNEXPECTED(leftIsInteger < 0)) return -1;
+		if (leftIsInteger == PT_TRI_YES) return 0;
+		zend_long leftIsFloat = triOn(left, mIsFloat);
+		if (UNEXPECTED(leftIsFloat < 0)) return -1;
+		if (leftIsFloat == PT_TRI_YES) return 0;
+		zend_long leftIsDecimal = triOn(leftStringType, mIsDecimalIntegerString);
+		if (UNEXPECTED(leftIsDecimal < 0)) return -1;
+		if (leftIsDecimal == PT_TRI_YES) return 0;
+
+		zv::Val constantStrings = callOn(leftStringType, mGetConstantStrings);
+		if (UNEXPECTED(constantStrings.isUndef()) || UNEXPECTED(!requireArray(constantStrings.raw()))) return -1;
+		if (zend_hash_num_elements(Z_ARRVAL_P(constantStrings.raw())) > 0) {
+			for (zv::ArrayEntry entry : zv::ArrRef(constantStrings.raw())) {
+				zv::Val value = constantStringValue(entry.value().raw());
+				if (UNEXPECTED(value.isUndef())) return -1;
+				if (UNEXPECTED(Z_TYPE_P(value.raw()) != IS_STRING)) {
+					pt_throw_should_not_happen();
+					return -1;
+				}
+				/* Strings::match($value, '#\s\z#'): PCRE's \s */
+				size_t length = Z_STRLEN_P(value.raw());
+				if (length > 0) {
+					char last = Z_STRVAL_P(value.raw())[length - 1];
+					if (last == ' ' || last == '\t' || last == '\n' || last == '\v' || last == '\f' || last == '\r') return 1;
+				}
+			}
+			return 0;
+		}
+
+		bool allows;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_ALLOWS_TRAILING_WHITESPACE_IN_NUMERIC_STRINGS, allows))) return -1;
+		return allows ? 1 : 0;
 	}
 
 	/* $operationCallable($a, $b) or the operator */
@@ -2079,7 +2123,6 @@ using phpstanturbo::NullableLong;
 
 zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval *right, zval *phpVersion)
 {
-	(void) phpVersion;
 	switch (op) {
 		case PT_OPERATOR_ADD:
 			return OperatorTypeHelper::add(left, right);
@@ -2104,7 +2147,7 @@ zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval 
 		case PT_OPERATOR_SHIFT_RIGHT:
 			return OperatorTypeHelper::shift(IETR_SHIFT_RIGHT, left, right);
 		case PT_OPERATOR_CONCATENATE:
-			return OperatorTypeHelper::concat(left, right);
+			return OperatorTypeHelper::concat(left, right, phpVersion);
 		case PT_OPERATOR_ARRAY_UNION:
 			return OperatorTypeHelper::arrayUnion(left, right);
 	}
@@ -2207,7 +2250,7 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	cls.privateClassConstantLong("IS_UNKNOWN", PT_IETR_IS_UNKNOWN);
 	ptdecl::OperatorTypeHelper::declareProperties(cls);
 
-	cls.method(sigs::concat, OT_BINARY_GLUE(OperatorTypeHelper::concat(leftType, rightType)));
+	cls.method(sigs::concat, OT_BINARY_GLUE(OperatorTypeHelper::concat(leftType, rightType, phpVersion)));
 	cls.method(sigs::bitwiseAnd, OT_BINARY_GLUE(OperatorTypeHelper::bitwise(IETR_BITWISE_AND, leftType, rightType)));
 	cls.method(sigs::bitwiseOr, OT_BINARY_GLUE(OperatorTypeHelper::bitwise(IETR_BITWISE_OR, leftType, rightType)));
 	cls.method(sigs::bitwiseXor, OT_BINARY_GLUE(OperatorTypeHelper::bitwise(IETR_BITWISE_XOR, leftType, rightType)));
@@ -2253,6 +2296,14 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	cls.method(sigs::shiftLeft, OT_BINARY_GLUE(OperatorTypeHelper::shift(IETR_SHIFT_LEFT, leftType, rightType)));
 	cls.method(sigs::shiftRight, OT_BINARY_GLUE(OperatorTypeHelper::shift(IETR_SHIFT_RIGHT, leftType, rightType)));
 	cls.method(sigs::optimizeScalarType, OT_TYPE_GLUE(OperatorTypeHelper::optimizeScalarType(type)));
+	cls.method(sigs::canEndInWhitespace, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *left, *leftStringType, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, left, leftStringType, phpVersion)) RETURN_THROWS();
+		if (UNEXPECTED(!otArgType(left, 1) || !otArgType(leftStringType, 2) || !otArgPhpVersion(phpVersion, 3))) RETURN_THROWS();
+		int result = OperatorTypeHelper::canEndInWhitespace(left, leftStringType, phpVersion);
+		if (UNEXPECTED(result < 0)) RETURN_THROWS();
+		RETURN_BOOL(result == 1);
+	});
 	cls.method(sigs::getNonNegativeIntegerBounds, OT_TYPE_GLUE(OperatorTypeHelper::getNonNegativeIntegerBoundsValue(type)));
 	cls.method(sigs::computeBitwiseAndRange, OT_TYPES_GLUE(OperatorTypeHelper::computeBitwiseAndRange(leftType, rightType)));
 	cls.method(sigs::computeBitwiseOrXorRange, OT_TYPES_GLUE(OperatorTypeHelper::computeBitwiseOrXorRange(leftType, rightType)));

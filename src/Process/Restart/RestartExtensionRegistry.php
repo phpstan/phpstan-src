@@ -90,15 +90,7 @@ final class RestartExtensionRegistry
 	 */
 	public static function collectReasons(bool $allowXdebug, ?string $pharPath = null): array
 	{
-		$iniSettings = [];
-		foreach (['xdebug.mode', 'pcov.enabled', 'uopz.disable'] as $name) {
-			$value = ini_get($name);
-			if ($value === false) {
-				continue;
-			}
-
-			$iniSettings[$name] = $value;
-		}
+		$iniSettings = self::getStartupSwitches();
 
 		// XDEBUG_MODE wins over the ini file, so the effective mode - not the
 		// configured one - is what decides. Resolved here rather than in
@@ -118,6 +110,30 @@ final class RestartExtensionRegistry
 			$opcacheIniEntries,
 			OpcacheSettings::getCurrentIniValues($opcacheIniEntries),
 		);
+	}
+
+	/**
+	 * The startup switches of the flag rows (xdebug.mode, pcov.enabled,
+	 * uopz.disable) as the current process has them, for each extension that
+	 * is loaded. A switch set with `-d` - `php -d xdebug.mode=off` - leaves
+	 * nothing to restart for, and is not inherited by spawned workers either,
+	 * so ProcessHelper passes these on.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function getStartupSwitches(): array
+	{
+		$iniSettings = [];
+		foreach (['xdebug.mode', 'pcov.enabled', 'uopz.disable'] as $name) {
+			$value = ini_get($name);
+			if ($value === false) {
+				continue;
+			}
+
+			$iniSettings[$name] = $value;
+		}
+
+		return $iniSettings;
 	}
 
 	/**

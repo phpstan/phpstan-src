@@ -2576,6 +2576,17 @@ jobs:
               fi
               php check.php restarted-for=xdebug,opcache xdebug-armed=no xdebug-loaded=yes processes=2+ starts=2
 
+          # xdebug armed in php.ini, disarmed with `php -d xdebug.mode=off`:
+          # nothing to restart for, and the spawned workers do not inherit the
+          # -d flag - ProcessHelper has to pass the switch on, or they run with
+          # the php.ini's xdebug.mode
+          - operating-system: "windows-latest"
+            coverage: "xdebug"
+            extensions: ""
+            script: |
+              php -d xdebug.mode=off ../../bin/phpstan analyse --no-progress
+              php check.php restarted-for= xdebug-armed=no xdebug-loaded=yes processes=2+ starts=1
+
           # XDEBUG_MODE overrides xdebug.mode, so flagging the ini alone would
           # be silently overridable - the row exports the env var too
           - operating-system: "ubuntu-latest"

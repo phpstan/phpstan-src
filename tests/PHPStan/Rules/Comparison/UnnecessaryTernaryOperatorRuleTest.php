@@ -40,6 +40,28 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 		return $this->treatPhpDocTypesAsCertain;
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testCalls(): void
+	{
+		$this->analyse([__DIR__ . '/data/unnecessary-ternary-calls.php'], [
+			[
+				'Short ternary operator ?: is unnecessary because it always results in $foo.',
+				43,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Short ternary operator ?: is unnecessary because it always results in $foo.',
+				48,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Short ternary operator ?: is unnecessary because it always results in $foo.',
+				82,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testRule(): void
 	{

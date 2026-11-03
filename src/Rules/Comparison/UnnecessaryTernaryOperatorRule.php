@@ -17,7 +17,9 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function is_float;
@@ -213,7 +215,9 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 
 	private function containsCall(Expr $expr): bool
 	{
-		return (new NodeFinder())->findFirstInstanceOf([$expr], Expr\FuncCall::class) !== null;
+		return (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Expr\FuncCall
+			|| $node instanceof Expr\MethodCall
+			|| $node instanceof Expr\StaticCall) !== null;
 	}
 
 	/**
@@ -274,25 +278,75 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 		}
 
 		if ($expr instanceof Expr\FuncCall) {
-			if (!$expr->name instanceof Node\Name || $expr->isFirstClassCallable()) {
+			if ($expr->isFirstClassCallable() || !$this->areArgsPure($expr, $scope)) {
 				return false;
 			}
-			if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
-				return false;
-			}
-			if (!$this->reflectionProvider->getFunction($expr->name, $scope)->hasSideEffects()->no()) {
-				return false;
-			}
-			foreach ($expr->getArgs() as $arg) {
-				if ($arg->unpack || $arg->byRef || !$this->isPure($arg->value, $scope)) {
-					return false;
-				}
+			if ($expr->name instanceof Node\Name) {
+				return $this->reflectionProvider->hasFunction($expr->name, $scope)
+					&& $this->reflectionProvider->getFunction($expr->name, $scope)->hasSideEffects()->no();
 			}
 
-			return true;
+			return $this->isPure($expr->name, $scope) && $this->isPureCallable($scope->getType($expr->name), $scope);
+		}
+
+		if ($expr instanceof Expr\MethodCall) {
+			if (!$expr->name instanceof Node\Identifier || $expr->isFirstClassCallable() || !$this->isPure($expr->var, $scope) || !$this->areArgsPure($expr, $scope)) {
+				return false;
+			}
+
+			return $this->isPureMethod($scope->getType($expr->var), $expr->name->toString(), $scope);
+		}
+
+		if ($expr instanceof Expr\StaticCall) {
+			if (!$expr->class instanceof Node\Name || !$expr->name instanceof Node\Identifier || $expr->isFirstClassCallable() || !$this->areArgsPure($expr, $scope)) {
+				return false;
+			}
+			$className = $scope->resolveName($expr->class);
+			if (!$this->reflectionProvider->hasClass($className)) {
+				return false;
+			}
+
+			return $this->isPureMethod(new ObjectType($className), $expr->name->toString(), $scope);
 		}
 
 		return false;
+	}
+
+	private function areArgsPure(Expr\CallLike $call, Scope $scope): bool
+	{
+		foreach ($call->getArgs() as $arg) {
+			if ($arg->unpack || $arg->byRef || !$this->isPure($arg->value, $scope)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private function isPureMethod(Type $calledOnType, string $methodName, Scope $scope): bool
+	{
+		if (!$calledOnType->canCallMethods()->yes() || !$calledOnType->hasMethod($methodName)->yes()) {
+			return false;
+		}
+
+		$method = $scope->getMethodReflection($calledOnType, $methodName);
+
+		return $method !== null && $method->hasSideEffects()->no();
+	}
+
+	private function isPureCallable(Type $type, Scope $scope): bool
+	{
+		if (!$type->isCallable()->yes()) {
+			return false;
+		}
+
+		foreach ($type->getCallableParametersAcceptors($scope) as $acceptor) {
+			if (!$acceptor->isPure()->yes()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

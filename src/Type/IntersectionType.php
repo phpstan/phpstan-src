@@ -1776,7 +1776,18 @@ class IntersectionType implements CompoundType
 
 	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => $type->arithmeticPower($exponent, $phpVersion));
+		// a member that errors decides for the value; intersecting an ErrorType,
+		// a MixedType, with the other members' results would hide it
+		$results = [];
+		foreach ($this->types as $type) {
+			$result = $type->arithmeticPower($exponent, $phpVersion);
+			if ($result instanceof ErrorType) {
+				return $result;
+			}
+			$results[] = $result;
+		}
+
+		return self::intersectOperands($results);
 	}
 
 	public function getFiniteTypes(): array

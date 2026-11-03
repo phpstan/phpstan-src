@@ -847,6 +847,20 @@ class OverridingMethodRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/fix-override-attribute.php', __DIR__ . '/data/fix-override-attribute.php.fixed');
 	}
 
+	public function testFixOverrideImported(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->checkMissingOverrideMethodAttribute = true;
+		$this->fix(__DIR__ . '/data/fix-override-attribute-imported.php', __DIR__ . '/data/fix-override-attribute-imported.php.fixed');
+	}
+
+	public function testFixOverrideGlobalNamespace(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->checkMissingOverrideMethodAttribute = true;
+		$this->fix(__DIR__ . '/data/fix-override-attribute-global.php', __DIR__ . '/data/fix-override-attribute-global.php.fixed');
+	}
+
 	public function testFixWithTabs(): void
 	{
 		$this->phpVersionId = PHP_VERSION_ID;

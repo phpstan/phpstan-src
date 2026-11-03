@@ -9,7 +9,7 @@ use const PHP_VERSION_ID;
 class FooTest extends TestCase
 {
 
-	#[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.0.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testVersionCheck(): void
 	{
 	}

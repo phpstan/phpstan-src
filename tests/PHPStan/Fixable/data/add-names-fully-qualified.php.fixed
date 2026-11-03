@@ -1,0 +1,32 @@
+<?php
+
+namespace AddNames;
+
+use AddNamesImported\Foo;
+use AddNamesImported\Sub;
+use AddNamesAliased\Baz as AliasedBaz;
+
+class SameNamespace
+{
+
+}
+
+class Bar
+{
+
+	/**
+	 * @param self $p1
+	 * @param SameNamespace $p2
+	 * @param Foo $p3
+	 * @param Sub\Lorem $p4
+	 * @param AliasedBaz $p5
+	 * @param \AddNamesOther\AddNamesUnique $p6
+	 * @param \Override $p7
+	 * @param \AddNamesOther\Foo $p8
+	 * @param \AddNamesOther\SameNamespace $p9
+	 */
+	public function doFoo(self $p1, SameNamespace $p2, Foo $p3, Sub\Lorem $p4, AliasedBaz $p5, \AddNamesOther\AddNamesUnique $p6, \Override $p7, \AddNamesOther\Foo $p8, \AddNamesOther\SameNamespace $p9): void
+	{
+	}
+
+}

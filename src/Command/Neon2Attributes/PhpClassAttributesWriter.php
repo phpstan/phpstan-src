@@ -2,18 +2,20 @@
 
 namespace PHPStan\Command\Neon2Attributes;
 
+use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\CloningVisitor;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\ParserFactory;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileReader;
+use PHPStan\Fixable\NewClassNamesVisitor;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\ShouldNotHappenException;
 use function array_is_list;
-use function array_key_exists;
 use function count;
 use function is_array;
 use function is_bool;
@@ -24,9 +26,6 @@ use function sprintf;
 use function str_contains;
 use function str_repeat;
 use function strcasecmp;
-use function strrpos;
-use function strtolower;
-use function substr;
 
 /**
  * Adds attributes to classes and their constructor parameters, keeping the rest of the file as it was.
@@ -62,20 +61,27 @@ final class PhpClassAttributesWriter
 			$this->addAttributes($file, $newStmts, $edit);
 		}
 
+		$nameResolver = new NameResolver(new Collecting(), ['replaceNodes' => false]);
+		/** @var list<Node\Stmt> $newStmts */
+		$newStmts = (new NodeTraverser(
+			$nameResolver,
+			new NewClassNamesVisitor($nameResolver->getNameContext(), importNames: true, preferSelf: false),
+		))->traverse($newStmts);
+
 		return (new AttributesPrinter(['indent' => $indent]))->printFormatPreserving($newStmts, $oldStmts, $tokens);
 	}
 
 	/**
 	 * @param list<Node\Stmt> $stmts
 	 */
-	private function addAttributes(string $file, array &$stmts, ClassAttributes $edit): void
+	private function addAttributes(string $file, array $stmts, ClassAttributes $edit): void
 	{
 		$className = $edit->reflection->getName();
 		$namespace = $edit->reflection->getNamespaceName();
 		$shortName = $edit->reflection->getShortName();
 
 		if ($namespace === '') {
-			$this->addAttributesInScope($stmts, '', $shortName, $edit);
+			$this->addAttributesInScope($stmts, $shortName, $edit);
 			return;
 		}
 
@@ -83,7 +89,7 @@ final class PhpClassAttributesWriter
 			if (!$stmt instanceof Node\Stmt\Namespace_ || $stmt->name === null || strcasecmp($stmt->name->toString(), $namespace) !== 0) {
 				continue;
 			}
-			if ($this->addAttributesInScope($stmt->stmts, $namespace, $shortName, $edit)) {
+			if ($this->addAttributesInScope($stmt->stmts, $shortName, $edit)) {
 				return;
 			}
 		}
@@ -94,7 +100,7 @@ final class PhpClassAttributesWriter
 	/**
 	 * @param list<Node\Stmt> $stmts statements of a namespace, or of a file without one
 	 */
-	private function addAttributesInScope(array &$stmts, string $namespace, string $shortName, ClassAttributes $edit): bool
+	private function addAttributesInScope(array $stmts, string $shortName, ClassAttributes $edit): bool
 	{
 		$class = null;
 		foreach ($stmts as $stmt) {
@@ -109,8 +115,7 @@ final class PhpClassAttributesWriter
 			return false;
 		}
 
-		$scope = new ImportScope($namespace, $stmts);
-		$class->attrGroups[] = new Node\AttributeGroup([$this->createAttribute($scope, $edit->attribute)]);
+		$class->attrGroups[] = new Node\AttributeGroup([$this->createAttribute($edit->attribute)]);
 
 		$constructor = $class->getMethod('__construct');
 		$isOneLine = $constructor !== null
@@ -125,41 +130,44 @@ final class PhpClassAttributesWriter
 					continue;
 				}
 
-				$param->attrGroups[] = new Node\AttributeGroup([$this->createAttribute($scope, $attribute)]);
+				$param->attrGroups[] = new Node\AttributeGroup([$this->createAttribute($attribute)]);
 				$param->setAttribute(AttributesPrinter::INLINE_ATTRIBUTES, $isOneLine);
 			}
 		}
 
-		$stmts = $scope->stmts;
-
 		return true;
 	}
 
-	private function createAttribute(ImportScope $scope, AttributeSpec $attribute): Node\Attribute
+	private function createAttribute(AttributeSpec $attribute): Node\Attribute
 	{
-		return new Node\Attribute($this->createName($scope, self::DI_NAMESPACE . $attribute->name), $this->createArgs($scope, $attribute));
+		return new Node\Attribute(new Node\Name\FullyQualified(self::DI_NAMESPACE . $attribute->name), $this->createArgs($attribute));
 	}
 
 	/**
 	 * @return list<Node\Arg>
 	 */
-	private function createArgs(ImportScope $scope, AttributeSpec $attribute): array
+	private function createArgs(AttributeSpec $attribute): array
 	{
 		$args = [];
 		foreach ($attribute->arguments as $name => $value) {
-			$args[] = new Node\Arg($this->createExpr($scope, $value), name: new Node\Identifier($name));
+			$args[] = new Node\Arg($this->createExpr($value), name: new Node\Identifier($name));
 		}
 
 		return $args;
 	}
 
-	private function createExpr(ImportScope $scope, mixed $value): Node\Expr
+	private function createExpr(mixed $value): Node\Expr
 	{
 		if ($value instanceof AttributeSpec) {
-			return new Node\Expr\New_($this->createName($scope, self::DI_NAMESPACE . $value->name), $this->createArgs($scope, $value));
+			return new Node\Expr\New_(new Node\Name\FullyQualified(self::DI_NAMESPACE . $value->name), $this->createArgs($value));
 		}
 		if ($value instanceof ClassReference) {
-			return new Node\Expr\ClassConstFetch($this->createName($scope, $value->className), 'class');
+			$className = ltrim($value->className, '\\');
+			if ($className === '') {
+				throw new ShouldNotHappenException('Empty class name.');
+			}
+
+			return new Node\Expr\ClassConstFetch(new Node\Name\FullyQualified($className), 'class');
 		}
 		if (is_string($value)) {
 			return new Node\Scalar\String_($value);
@@ -175,8 +183,8 @@ final class PhpClassAttributesWriter
 			$isList = array_is_list($value);
 			foreach ($value as $key => $item) {
 				$items[] = new Node\ArrayItem(
-					$this->createExpr($scope, $item),
-					$isList ? null : $this->createExpr($scope, $key),
+					$this->createExpr($item),
+					$isList ? null : $this->createExpr($key),
 				);
 			}
 
@@ -184,38 +192,6 @@ final class PhpClassAttributesWriter
 		}
 
 		throw new ShouldNotHappenException();
-	}
-
-	/**
-	 * Uses the short name and adds a use statement unless the short name already means another class in the file.
-	 */
-	private function createName(ImportScope $scope, string $className): Node\Name
-	{
-		$className = ltrim($className, '\\');
-		$position = strrpos($className, '\\');
-		$shortName = $position === false ? $className : substr($className, $position + 1);
-		if ($className === '' || $shortName === '') {
-			throw new ShouldNotHappenException(sprintf('Invalid class name %s.', $className));
-		}
-		$lowerShortName = strtolower($shortName);
-
-		if (array_key_exists($lowerShortName, $scope->uses)) {
-			return strcasecmp($scope->uses[$lowerShortName], $className) === 0
-				? new Node\Name($shortName)
-				: new Node\Name\FullyQualified($className);
-		}
-
-		$localName = $scope->namespace === '' ? $shortName : $scope->namespace . '\\' . $shortName;
-		if (strcasecmp($localName, $className) === 0) {
-			return new Node\Name($shortName);
-		}
-		if (array_key_exists($lowerShortName, $scope->unqualifiedNames)) {
-			return new Node\Name\FullyQualified($className);
-		}
-
-		$scope->addUse($className, $lowerShortName);
-
-		return new Node\Name($shortName);
 	}
 
 }

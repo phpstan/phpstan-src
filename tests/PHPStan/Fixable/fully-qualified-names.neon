@@ -1,0 +1,4 @@
+parameters:
+	fixer:
+		importNames: false
+		preferSelf: true

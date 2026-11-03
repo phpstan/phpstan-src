@@ -2,16 +2,19 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\ErrorHandler\Collecting;
 use PhpParser\Internal\TokenStream;
 use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\CloningVisitor;
+use PhpParser\NodeVisitor\NameResolver;
 use PhpParser\Parser;
 use PhpParser\Token;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileReader;
+use PHPStan\Fixable\NewClassNamesVisitor;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
@@ -68,6 +71,10 @@ final class RuleErrorTransformer
 		private Parser $parser,
 		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
 		private AnalysisParser $analysisParser,
+		#[AutowiredParameter(ref: '%fixer.importNames%')]
+		private bool $importNames,
+		#[AutowiredParameter(ref: '%fixer.preferSelf%')]
+		private bool $preferSelf,
 	)
 	{
 		$this->diffOutputBuilder = new UnifiedDiffOutputBuilder('', addLineNumbers: true);
@@ -238,6 +245,13 @@ final class RuleErrorTransformer
 		if (!$replacingVisitor->isComplete()) {
 			return null;
 		}
+
+		$nameResolver = new NameResolver(new Collecting(), ['replaceNodes' => false]);
+		/** @var Stmt[] $newStmts */
+		$newStmts = (new NodeTraverser(
+			$nameResolver,
+			new NewClassNamesVisitor($nameResolver->getNameContext(), $this->importNames, $this->preferSelf),
+		))->traverse($newStmts);
 
 		$newCode = $this->getPrinter($indent)->printFormatPreserving($newStmts, $fileNodes, $parsedFile['tokens']);
 		if ($parsedFile['code'] === $newCode) {

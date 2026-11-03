@@ -272,7 +272,17 @@ public:
 			(leftIsString == PT_TRI_YES || leftMixed)
 			&& (rightIsString == PT_TRI_YES || rightMixed)
 		) {
-			return newStringType();
+			/* with a mixed operand that is not a string, the string is a number */
+			if (leftIsString == PT_TRI_YES && rightIsString == PT_TRI_YES) {
+				return newStringType();
+			}
+
+			IETR_VAL(integerType, newIntegerType());
+			IETR_VAL(stringType, newStringType());
+			zv::Arr types = zv::Arr::create(2);
+			types.push(std::move(integerType));
+			types.push(std::move(stringType));
+			return newBenevolentUnionType(types);
 		}
 		if (leftIsString == PT_TRI_MAYBE && rightIsString == PT_TRI_MAYBE) {
 			return newErrorType();

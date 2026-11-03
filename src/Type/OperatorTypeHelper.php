@@ -196,7 +196,12 @@ final class OperatorTypeHelper
 			($leftIsString->yes() || $leftType instanceof MixedType)
 			&& ($rightIsString->yes() || $rightType instanceof MixedType)
 		) {
-			return new StringType();
+			// with a mixed operand that is not a string, the string is a number
+			if ($leftIsString->yes() && $rightIsString->yes()) {
+				return new StringType();
+			}
+
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if ($leftIsString->maybe() && $rightIsString->maybe()) {
 			return new ErrorType();
@@ -244,7 +249,12 @@ final class OperatorTypeHelper
 			($leftIsString->yes() || $leftType instanceof MixedType)
 			&& ($rightIsString->yes() || $rightType instanceof MixedType)
 		) {
-			return new StringType();
+			// with a mixed operand that is not a string, the string is a number
+			if ($leftIsString->yes() && $rightIsString->yes()) {
+				return new StringType();
+			}
+
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if ($leftIsString->maybe() && $rightIsString->maybe()) {
 			return new ErrorType();
@@ -292,7 +302,12 @@ final class OperatorTypeHelper
 			($leftIsString->yes() || $leftType instanceof MixedType)
 			&& ($rightIsString->yes() || $rightType instanceof MixedType)
 		) {
-			return new StringType();
+			// with a mixed operand that is not a string, the string is a number
+			if ($leftIsString->yes() && $rightIsString->yes()) {
+				return new StringType();
+			}
+
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
 		}
 		if ($leftIsString->maybe() && $rightIsString->maybe()) {
 			return new ErrorType();

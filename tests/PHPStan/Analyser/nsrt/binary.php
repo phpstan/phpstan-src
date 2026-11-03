@@ -41,6 +41,9 @@ class Foo
 		$string2 = $string;
 		$string3 = $string;
 		$string4 = $string;
+		$stringAnd = $string;
+		$stringOr = $string;
+		$stringXor = $string;
 
 		$fooString = 'foo';
 		$fooString1 = $fooString;
@@ -355,7 +358,7 @@ class Foo
 		assertType('string', $string ?? $integer);
 		assertType('int|string', $stringOrNull ?? $integer);
 		assertType('\'Foo\'', \Foo::class);
-		assertType('106', $line);
+		assertType('109', $line);
 		assertType('literal-string&non-falsy-string', $dir);
 		assertType('literal-string&non-falsy-string', $file);
 		assertType('\'BinaryOperations\\\\NestedNamespace\'', $namespace);
@@ -502,13 +505,13 @@ class Foo
 		assertType('*ERROR*', "bla" ^ 3);
 		assertType('6', "5" ^ 3);
 		assertType('int<0, 3>', $integer6 &= 3);
-		assertType('*ERROR*', $string &= 3);
+		assertType('*ERROR*', $stringAnd &= 3);
 		assertType('string', $string &= "x");
 		assertType('int', $integer7 |= 3);
-		assertType('*ERROR*', $string |= 3);
+		assertType('*ERROR*', $stringOr |= 3);
 		assertType('string', $string |= "x");
 		assertType('int', $integer8 ^= 3);
-		assertType('*ERROR*', $string ^= 3);
+		assertType('*ERROR*', $stringXor ^= 3);
 		assertType('string', $string ^= "x");
 		assertType('\'f\'', $fooString[0]);
 		assertType('*ERROR*', $fooString[4]);

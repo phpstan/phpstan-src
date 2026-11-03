@@ -458,6 +458,13 @@ final class RestartManager
 		$arguments[] = '-d';
 		$arguments[] = 'memory_limit=' . ini_get('memory_limit');
 
+		// `php -d xdebug.mode=off` left nothing to restart for, and the
+		// restarted process must not get the php.ini's armed xdebug back
+		foreach (RestartExtensionRegistry::getStartupSwitches() as $name => $value) {
+			$arguments[] = '-d';
+			$arguments[] = $name . '=' . $value;
+		}
+
 		return $arguments;
 	}
 

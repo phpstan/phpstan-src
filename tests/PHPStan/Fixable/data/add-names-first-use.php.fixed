@@ -1,0 +1,20 @@
+<?php declare(strict_types = 1);
+
+namespace AddNamesFirstUse;
+
+use AddNamesOther\Ipsum;
+use AddNamesOther\Lorem;
+
+class Foo
+{
+
+	/**
+	 * @param Lorem $p1
+	 * @param Ipsum $p2
+	 * @param Lorem $p3
+	 */
+	public function doFoo(Lorem $p1, Ipsum $p2, Lorem $p3): void
+	{
+	}
+
+}

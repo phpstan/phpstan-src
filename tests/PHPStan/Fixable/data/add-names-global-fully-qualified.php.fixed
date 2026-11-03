@@ -1,0 +1,15 @@
+<?php
+
+class AddNamesGlobal
+{
+
+	/**
+	 * @param Override $p1
+	 * @param self $p2
+	 * @param \AddNamesOther\AddNamesUnique $p3
+	 */
+	public function doFoo(Override $p1, self $p2, \AddNamesOther\AddNamesUnique $p3): void
+	{
+	}
+
+}

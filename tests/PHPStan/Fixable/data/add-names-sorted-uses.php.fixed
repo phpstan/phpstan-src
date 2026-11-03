@@ -1,0 +1,29 @@
+<?php
+
+namespace AddNamesSortedUses;
+
+use AddNamesOther\Alpha;
+use AddNamesOther\Beta;
+use AddNamesOther\Gamma;
+use AddNamesOther\someFunction;
+use AddNamesOther\Zeta;
+use function AddNamesOther\someFunction;
+
+/**
+ * @property Delta $delta
+ */
+class Foo
+{
+
+	/**
+	 * @param Beta $p1
+	 * @param Zeta $p2
+	 * @param \AddNamesOther\Delta $p3
+	 * @param someFunction $p4
+	 */
+	public function doFoo(Alpha $a, Gamma $g, Beta $p1, Zeta $p2, \AddNamesOther\Delta $p3, someFunction $p4): void
+	{
+		someFunction();
+	}
+
+}

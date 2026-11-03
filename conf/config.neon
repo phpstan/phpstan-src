@@ -248,6 +248,9 @@ parameters:
 	errorFormat: null
 	sysGetTempDir: ::sys_get_temp_dir()
 	sourceLocatorPlaygroundMode: false
+	fixer:
+		importNames: true
+		preferSelf: false
 	pro:
 		dnsServers:
 			- '1.1.1.2'

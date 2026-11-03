@@ -189,6 +189,10 @@ parametersSchema:
 	editorUrl: schema(string(), nullable())
 	editorUrlTitle: schema(string(), nullable())
 	errorFormat: schema(string(), nullable())
+	fixer: structure([
+		importNames: bool(),
+		preferSelf: bool()
+	])
 	pro: structure([
 		dnsServers: schema(listOf(string()), min(1)),
 		tmpDir: string()

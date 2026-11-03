@@ -19,6 +19,6 @@ function doFoo(string $numericString, string $decimalIntString, int $int, float 
 	// integers, floats and decimal-int-strings never end in whitespace
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $decimalIntString . '5');
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', $int . $nonNegative);
-	assertType('non-falsy-string&numeric-string&uppercase-string', $float . $nonNegative);
+	assertType('non-falsy-string&uppercase-string', $float . $nonNegative); // not numeric because of INF and NAN
 	assertType('lowercase-string&non-falsy-string&numeric-string&uppercase-string', '15' . $nonNegative);
 }

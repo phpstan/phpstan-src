@@ -76,7 +76,7 @@ class HelloWorld
 
 		// https://3v4l.org/BCS2K
 		assertType('non-falsy-string&uppercase-string', $float.$float);
-		assertType('non-falsy-string&numeric-string&uppercase-string', $float.$positiveInt);
+		assertType('non-falsy-string&uppercase-string', $float.$positiveInt);
 		assertType('non-falsy-string&uppercase-string', $float.$negativeInt);
 		assertType('non-falsy-string&uppercase-string', $float.$i);
 		assertType('non-falsy-string&uppercase-string', $i.$float);

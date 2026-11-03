@@ -120,21 +120,21 @@ public:
 	/* new IntegerType() */
 	static zv::Val toInteger() { return integerType(); }
 
-	/* new IntersectionType([new StringType(), new AccessoryUppercaseStringType(),
-	 * new AccessoryNumericStringType()]) */
+	/* new IntersectionType([new StringType(), new AccessoryNonEmptyStringType(),
+	 * new AccessoryUppercaseStringType()]): INF, -INF and NAN are not numeric */
 	static zv::Val toString()
 	{
 		zval stringZv;
 		if (UNEXPECTED(!pt_string_type_new(&stringZv))) return zv::Val();
 		zv::Val string = zv::Val::adopt(stringZv);
+		zv::Val nonEmpty = pt_type_new_shadowed(pt_accessory_non_empty_string_type_new);
+		if (UNEXPECTED(nonEmpty.isUndef())) return zv::Val();
 		zv::Val uppercase = pt_type_new_shadowed(pt_accessory_uppercase_string_type_new);
 		if (UNEXPECTED(uppercase.isUndef())) return zv::Val();
-		zv::Val numeric = pt_type_new_shadowed(pt_accessory_numeric_string_type_new);
-		if (UNEXPECTED(numeric.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(3);
 		types.push(std::move(string));
+		types.push(std::move(nonEmpty));
 		types.push(std::move(uppercase));
-		types.push(std::move(numeric));
 		return pt_intersection_of(std::move(types));
 	}
 

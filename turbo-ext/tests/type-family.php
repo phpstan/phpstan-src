@@ -214,6 +214,8 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 	'string' => new \PHPStan\Type\StringType(),
 	'string0' => new \PHPStan\Type\Constant\ConstantStringType('0'),
 	'stringFoo' => new \PHPStan\Type\Constant\ConstantStringType('foo'),
+	'string1abc' => new \PHPStan\Type\Constant\ConstantStringType('1abc'),
+	'string1abcOr100' => new \PHPStan\Type\UnionType([new \PHPStan\Type\Constant\ConstantStringType('1abc'), new $constInt(100)]),
 	'numericString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
 	'union' => new \PHPStan\Type\UnionType([new $constInt(1), new $constInt(2), new $constInt(3)]),
 	'unionMixed' => new \PHPStan\Type\UnionType([new $constInt(5), new \PHPStan\Type\NullType()]),

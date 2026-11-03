@@ -474,6 +474,55 @@ public:
 	/* new IntegerType() */
 	static zv::Val generalize() { return integer(); }
 
+	/* compareEachInteger(): when PHP 8 compares the integers with a
+	 * non-numeric constant string of $otherType as strings, which does not
+	 * keep their order, `compare` of each integer of a finite range combined
+	 * by extremeIdentity (maybe for an infinite range); 0 = the bounds
+	 * decide, 1 = `out` set, -1 = pending exception */
+	template <typename Compare>
+	[[nodiscard]] int compareEachInteger(zval *otherType, zval *phpVersion, Compare compare, zend_long &out) const
+	{
+		bool castsNumbersToStrings;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_CASTS_NUMBERS_TO_STRINGS_ON_LOOSE_COMPARISON, castsNumbersToStrings))) return -1;
+		if (!castsNumbersToStrings) return 0;
+
+		zv::Val values = pt_type_call(Z_OBJ_P(otherType), PT_LC("getconstantscalarvalues"), 0, NULL);
+		if (UNEXPECTED(values.isUndef())) return -1;
+		if (UNEXPECTED(Z_TYPE_P(values.raw()) != IS_ARRAY)) {
+			zend_type_error("phpstan_turbo: getConstantScalarValues() must return array");
+			return -1;
+		}
+		bool hasNonNumericString = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(values.raw())) {
+			zval *value = entry.value().raw();
+			if (Z_TYPE_P(value) == IS_STRING && is_numeric_string(Z_STRVAL_P(value), Z_STRLEN_P(value), NULL, NULL, false) == 0) {
+				hasNonNumericString = true;
+				break;
+			}
+		}
+		if (!hasNonNumericString) return 0;
+
+		zv::Val integers = isExact() ? getFiniteTypes() : pt_type_call(self, PT_LC("getfinitetypes"), 0, NULL);
+		if (UNEXPECTED(integers.isUndef())) return -1;
+		if (UNEXPECTED(Z_TYPE_P(integers.raw()) != IS_ARRAY)) {
+			zend_type_error("phpstan_turbo: getFiniteTypes() must return array");
+			return -1;
+		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(integers.raw())) == 0) {
+			out = PT_TRI_MAYBE;
+			return 1;
+		}
+
+		bool first = true;
+		for (zv::ArrayEntry entry : zv::ArrRef(integers.raw())) {
+			zend_long result = compare(entry.value().raw());
+			if (UNEXPECTED(result < 0)) return -1;
+			out = first || out == result ? result : PT_TRI_MAYBE;
+			first = false;
+		}
+		return 1;
+	}
+
 	/* isSmallerThan() / isSmallerThanOrEqual(): the bounds as
 	 * ConstantIntegerTypes compared against $otherType (an unbounded min
 	 * is smaller, an unbounded max is not), and 0's own comparison when it
@@ -483,6 +532,16 @@ public:
 	{
 		const char *method = orEqual ? "issmallerthanorequal" : "issmallerthan";
 		size_t methodLen = orEqual ? sizeof("issmallerthanorequal") - 1 : sizeof("issmallerthan") - 1;
+		{
+			/* $integer->isSmallerThan[OrEqual]($otherType, $phpVersion) */
+			zend_long unordered;
+			int each = compareEachInteger(otherType, phpVersion, [&](zval *integer) -> zend_long {
+				zv::Args args{otherType, phpVersion};
+				return pt_type_call_trinary(Z_OBJ_P(integer), method, methodLen, 2, args);
+			}, unordered);
+			if (UNEXPECTED(each < 0)) return -1;
+			if (each > 0) return unordered;
+		}
 		NullableLong min = NullableLong::null(), max = NullableLong::null();
 		if (UNEXPECTED(!bounds(min, max))) return -1;
 		zv::Args args{otherType, phpVersion};
@@ -524,6 +583,16 @@ public:
 	{
 		const char *method = orEqual ? "issmallerthanorequal" : "issmallerthan";
 		size_t methodLen = orEqual ? sizeof("issmallerthanorequal") - 1 : sizeof("issmallerthan") - 1;
+		{
+			/* $otherType->isSmallerThan[OrEqual]($integer, $phpVersion) */
+			zend_long unordered;
+			int each = compareEachInteger(otherType, phpVersion, [&](zval *integer) -> zend_long {
+				zv::Args args{integer, phpVersion};
+				return pt_type_call_trinary(Z_OBJ_P(otherType), method, methodLen, 2, args);
+			}, unordered);
+			if (UNEXPECTED(each < 0)) return -1;
+			if (each > 0) return unordered;
+		}
 		NullableLong min = NullableLong::null(), max = NullableLong::null();
 		if (UNEXPECTED(!bounds(min, max))) return -1;
 
@@ -1363,6 +1432,30 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 		zval *precision;
 		if (!zp::parse<zp::Obj>(execute_data, precision)) RETURN_THROWS();
 		PT_RETURN_VAL(IntegerRangeType::generalize());
+	});
+
+	/* the private compareEachInteger() with its $compare callable */
+	cls.method(sigs::compareEachInteger, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType, *phpVersion, *compare;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval>(execute_data, otherType, phpVersion, compare)) RETURN_THROWS();
+		if (UNEXPECTED(!zend_is_callable(compare, 0, NULL))) {
+			zend_argument_type_error(3, "must be of type callable, %s given", zend_zval_value_name(compare));
+			RETURN_THROWS();
+		}
+		zend_long out = PT_TRI_MAYBE;
+		int each = PT_THIS.compareEachInteger(otherType, phpVersion, [compare](zval *integer) -> zend_long {
+			zv::Args args{integer};
+			zv::Val result = pt_type_call_callable(compare, 1, args);
+			if (UNEXPECTED(result.isUndef())) return -1;
+			if (UNEXPECTED(Z_TYPE_P(result.raw()) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(result.raw()), pt_ce_trinary))) {
+				zend_type_error("phpstan_turbo: the comparison must return TrinaryLogic");
+				return -1;
+			}
+			return pt_trinary_value(Z_OBJ_P(result.raw()));
+		}, out);
+		if (UNEXPECTED(each < 0)) RETURN_THROWS();
+		if (each == 0) RETURN_NULL();
+		ZVAL_COPY(return_value, pt_trinary_singleton(out));
 	});
 
 	cls.method(sigs::isSmallerThan, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -56,7 +56,7 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 			],
 			[
 				'Short ternary operator ?: is unnecessary because it always results in $foo.',
-				82,
+				87,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 		]);

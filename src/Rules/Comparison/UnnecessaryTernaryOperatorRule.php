@@ -325,7 +325,7 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 
 	private function isPureMethod(Type $calledOnType, string $methodName, Scope $scope): bool
 	{
-		if (!$calledOnType->canCallMethods()->yes() || !$calledOnType->hasMethod($methodName)->yes()) {
+		if (!$calledOnType->hasMethod($methodName)->yes()) {
 			return false;
 		}
 

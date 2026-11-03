@@ -53,6 +53,11 @@ class Foo
 		return $foo ?: $this->maybeImpureNull();
 	}
 
+	public function nullableReceiver(?Foo $foo, ?Foo $other): ?Foo
+	{
+		return $foo ?: $other->pureNull();
+	}
+
 	public function sizeOfFalse(string|false $s): int
 	{
 		return $s === false ? 0 : $this->size($s);

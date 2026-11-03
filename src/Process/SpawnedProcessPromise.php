@@ -13,12 +13,11 @@ use function stream_get_contents;
 use function tmpfile;
 
 /**
- * ProcessPromise backed by a freshly spawned PHP process (react/child-process).
- *
- * @see ForkedProcessPromise for the pcntl_fork()-based alternative that skips
- * the per-worker application re-boot.
+ * A freshly spawned PHP process (react/child-process) as a promise that resolves
+ * with its output on success and rejects with ProcessCrashedException or
+ * ProcessCanceledException otherwise.
  */
-final class SpawnedProcessPromise implements ProcessPromise
+final class SpawnedProcessPromise
 {
 
 	/** @var Deferred<string> */

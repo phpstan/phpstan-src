@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use function array_values;
 use function count;
 use function get_class;
+use function preg_match;
 use function sprintf;
 
 /**
@@ -40,6 +41,21 @@ final class SkipTestsWithRequiresPhpAttributeRule implements Rule
 		}
 
 		if (count($originalNode->stmts) === 0) {
+			return [];
+		}
+
+		foreach ($originalNode->attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				if ($attr->name->toString() === 'PHPUnit\\Framework\\Attributes\\RequiresPhp') {
+					// RequiresPhp is not repeatable
+					return [];
+				}
+			}
+		}
+
+		// the code downgrade for PHPUnit 9 turns #[RequiresPhp] into @requires PHP
+		$docComment = $originalNode->getDocComment();
+		if ($docComment !== null && preg_match('/@requires\s+PHP\s/', $docComment->getText()) === 1) {
 			return [];
 		}
 
@@ -116,7 +132,7 @@ final class SkipTestsWithRequiresPhpAttributeRule implements Rule
 					$node->stmts = array_values($stmts);
 					$node->attrGroups[] = new Node\AttributeGroup([
 						new Attribute(new Node\Name\FullyQualified('PHPUnit\\Framework\\Attributes\\RequiresPhp'), [
-							new Node\Arg(new Node\Scalar\String_(sprintf('%s %s', $inverseBinaryOpSigil, $phpVersion->getVersionString()))),
+							new Node\Arg(new Node\Scalar\String_(sprintf('%s %d.%d.%d', $inverseBinaryOpSigil, $phpVersion->getMajorVersionId(), $phpVersion->getMinorVersionId(), $phpVersion->getPatchVersionId()))),
 						]),
 					]);
 

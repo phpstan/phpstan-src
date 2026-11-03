@@ -44,7 +44,6 @@ class PropertyInClassRuleTest extends RuleTestCase
 	#[RequiresPhp('< 8.4.0')]
 	public function testPhpLessThan84AndHookedPropertiesInClass(): void
 	{
-		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}
@@ -60,7 +59,6 @@ class PropertyInClassRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.4.0')]
 	public function testPhp84AndHookedPropertiesWithoutBodiesInClass(): void
 	{
-		// @phpstan-ignore phpstan.skipTestsRequiresPhp
 		if (PHP_VERSION_ID < 80000) {
 			$this->markTestSkipped('Property hooks cause syntax error on PHP 7.4');
 		}

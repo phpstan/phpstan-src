@@ -256,9 +256,10 @@ public:
 		return exported;
 	}
 
-	/* maybe/no for a GenericClassStringType by whether its generic type (a
-	 * StaticType's object type, a TemplateType's bound; mixed is maybe) is
-	 * a supertype of this value's ObjectType; maybe/no for a
+	/* no for a GenericClassStringType unless this is a class-string, else
+	 * maybe/no by whether its generic type (a StaticType's object type, a
+	 * TemplateType's bound) is a supertype of this value's ObjectType;
+	 * maybe/no for a
 	 * ClassStringType by whether this is a class-string; yes/no against
 	 * another ConstantStringType's value; maybe for any other StringType;
 	 * the CompoundType callback; no otherwise; UNDEF = pending exception */
@@ -266,9 +267,12 @@ public:
 	{
 		zend_class_entry *typeCe = Z_OBJCE_P(type);
 		if (instanceof_function(typeCe, pt_ce_generic_class_string_type)) {
+			zend_long isClass = thisIsClassString();
+			if (UNEXPECTED(isClass < 0)) return zv::Val();
+			if (isClass != PT_TRI_YES) return pt_type_is_super_type_of_result(PT_TRI_NO);
+
 			zv::Val genericType = pt_type_call(Z_OBJ_P(type), PT_LC("getgenerictype"), 0, NULL);
 			if (UNEXPECTED(genericType.isUndef())) return zv::Val();
-			if (zv::Ref(genericType.raw()).instanceOf(pt_ce_mixed_type)) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
 			/* $genericType instanceof StaticType — the shadowing class */
 			bool isStatic = zv::Ref(genericType.raw()).instanceOf(pt_ce_static_type);
 			if (isStatic) {

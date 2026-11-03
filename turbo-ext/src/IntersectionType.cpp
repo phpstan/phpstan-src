@@ -1339,7 +1339,31 @@ public:
 		int callableArray = isCallableArray();
 		if (UNEXPECTED(callableArray < 0)) return -1;
 		if (callableArray == 1) return PT_TRI_YES;
-		return memoizedCall(slots::isList, PT_LC("islist"));
+		zval *slot = OBJ_PROP_NUM(self, slots::isList);
+		if (Z_TYPE_P(slot) == IS_OBJECT) return pt_type_trinary_value(slot);
+		return memoize(slots::isList, computeIsList());
+	}
+
+	/* the members' answers; a maybe turns no when the intersection is
+	 * non-empty and no member can have the key 0 (the members are asked
+	 * directly: hasOffsetValueType() of the intersection asks isList());
+	 * -1 = pending exception */
+	[[nodiscard]] zend_long computeIsList() const
+	{
+		zend_long isList = intersectResultsCall(PT_LC("islist"), 0, NULL);
+		if (isList != PT_TRI_MAYBE) return isList;
+
+		zv::Val zero = constantInteger(0);
+		if (UNEXPECTED(zero.isUndef())) return -1;
+		zend_long nonEmpty = thisTrinary(PT_LC("isiterableatleastonce"), &IntersectionType::isIterableAtLeastOnce);
+		if (UNEXPECTED(nonEmpty < 0)) return -1;
+		if (nonEmpty == PT_TRI_YES) {
+			zend_long hasZero = intersectResults([&](zval *type) { return pt_type_op_trinary(Z_OBJ_P(type), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, zero.raw()); });
+			if (UNEXPECTED(hasZero < 0)) return -1;
+			if (hasZero == PT_TRI_NO) return PT_TRI_NO;
+		}
+
+		return isList;
 	}
 
 	zend_long isString() const { return memoizedCall(slots::isString, PT_LC("isstring")); }

@@ -70,12 +70,13 @@ inline constexpr char strings[] =
 	"optional\0" /* 311 */
 	"false\0" /* 320 */
 	"setOffsetValueType\0" /* 326 */
-	"markNonListKey\0" /* 345 */
-	"oversized\0" /* 360 */
-	"degradeToGeneralArray\0" /* 370 */
-	"disableClosureDegradation\0" /* 392 */
-	"disableArrayDegradation\0" /* 418 */
-	"getArray"; /* 442 */
+	"isListAfterAddingKey\0" /* 345 */
+	"markNonListKey\0" /* 366 */
+	"oversized\0" /* 381 */
+	"degradeToGeneralArray\0" /* 391 */
+	"disableClosureDegradation\0" /* 413 */
+	"disableArrayDegradation\0" /* 439 */
+	"getArray"; /* 463 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $keyTypes */
 	reg::packed(9, MAY_BE_ARRAY), /* __construct $valueTypes */
@@ -96,9 +97,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(263, 0, 245), /* setOffsetValueType $valueType */
 	reg::packed(311, MAY_BE_BOOL, reg::NoString, false, false, 320), /* setOffsetValueType $optional */
 	reg::packed(98, MAY_BE_VOID), /* setOffsetValueType return */
+	reg::packed(237, 0, 245), /* isListAfterAddingKey $keyType */
+	reg::packed(98, 0, 56), /* isListAfterAddingKey return */
 	reg::packed(311, MAY_BE_BOOL), /* markNonListKey $optional */
 	reg::packed(98, MAY_BE_VOID), /* markNonListKey return */
-	reg::packed(360, MAY_BE_BOOL, reg::NoString, false, false, 320), /* degradeToGeneralArray $oversized */
+	reg::packed(381, MAY_BE_BOOL, reg::NoString, false, false, 320), /* degradeToGeneralArray $oversized */
 	reg::packed(98, MAY_BE_VOID), /* degradeToGeneralArray return */
 	reg::packed(98, MAY_BE_VOID), /* disableClosureDegradation return */
 	reg::packed(98, MAY_BE_VOID), /* disableArrayDegradation return */
@@ -116,12 +119,13 @@ inline constexpr sigtab::Sig createFromConstantArray = { { 213 /* createFromCons
 inline constexpr sigtab::Sig makeUnsealed = { { 273 /* makeUnsealed */, 2, 9, 2, 11, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig mergeUnsealed = { { 286 /* mergeUnsealed */, 2, 12, 2, 14, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig setOffsetValueType = { { 326 /* setOffsetValueType */, 2, 15, 3, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig markNonListKey = { { 345 /* markNonListKey */, 1, 19, 1, 20, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig degradeToGeneralArray = { { 370 /* degradeToGeneralArray */, 0, 21, 1, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig disableClosureDegradation = { { 392 /* disableClosureDegradation */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig disableArrayDegradation = { { 418 /* disableArrayDegradation */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getArray = { { 442 /* getArray */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isList = { { 49 /* isList */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isListAfterAddingKey = { { 345 /* isListAfterAddingKey */, 1, 19, 1, 20, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig markNonListKey = { { 366 /* markNonListKey */, 1, 21, 1, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig degradeToGeneralArray = { { 391 /* degradeToGeneralArray */, 0, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig disableClosureDegradation = { { 413 /* disableClosureDegradation */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig disableArrayDegradation = { { 439 /* disableArrayDegradation */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getArray = { { 463 /* getArray */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isList = { { 49 /* isList */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantArrayTypeBuilder

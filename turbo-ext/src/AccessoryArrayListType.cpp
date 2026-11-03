@@ -39,13 +39,18 @@ public:
 		return pt_type_new_accepts_result(isList);
 	}
 
-	/* yes for an equal type; the CompoundType callback; else the list
+	/* yes for an equal type; no when the type is never a list (a compound
+	 * type can know that only as a whole, e.g. a non-empty array that
+	 * cannot have the key 0); the CompoundType callback; else the list
 	 * verdict; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
 		bool equal;
 		if (UNEXPECTED(!thisEquals(type, equal))) return zv::Val();
 		if (equal) return pt_type_is_super_type_of_result(PT_TRI_YES);
+		zend_long isList = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_LIST, 0, NULL);
+		if (UNEXPECTED(isList < 0)) return zv::Val();
+		if (isList == PT_TRI_NO) return pt_type_is_super_type_of_result(PT_TRI_NO);
 		bool compound;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
 		if (compound) {
@@ -53,8 +58,6 @@ public:
 			ZVAL_OBJ(&selfZv, self);
 			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
 		}
-		zend_long isList = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_LIST, 0, NULL);
-		if (UNEXPECTED(isList < 0)) return zv::Val();
 		return pt_type_is_super_type_of_result(isList);
 	}
 

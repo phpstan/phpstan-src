@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
@@ -18,9 +19,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use function array_filter;
 use function array_map;
 use function assert;
-use function ceil;
 use function count;
-use function floor;
 use function get_class;
 use function is_float;
 use function is_int;
@@ -92,17 +91,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value, -1);
 		}
 
-		// a float never holds PHP_INT_MAX itself, so the first float past the
-		// int range is (float) PHP_INT_MAX: every int is smaller than that
-		if ($value >= PHP_INT_MAX) {
-			return new IntegerType();
-		}
-
-		if ($value <= PHP_INT_MIN) {
-			return new NeverType();
-		}
-
-		return self::fromInterval(null, (int) ceil($value), -1);
+		return self::fromFloatComparison($value, '<');
 	}
 
 	/**
@@ -116,15 +105,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval(null, $value);
 		}
 
-		if ($value >= PHP_INT_MAX) {
-			return new IntegerType();
-		}
-
-		if ($value < PHP_INT_MIN) {
-			return new NeverType();
-		}
-
-		return self::fromInterval(null, (int) floor($value));
+		return self::fromFloatComparison($value, '<=');
 	}
 
 	/**
@@ -138,15 +119,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval($value, null, 1);
 		}
 
-		if ($value < PHP_INT_MIN) {
-			return new IntegerType();
-		}
-
-		if ($value >= PHP_INT_MAX) {
-			return new NeverType();
-		}
-
-		return self::fromInterval((int) floor($value), null, 1);
+		return self::fromFloatComparison($value, '>');
 	}
 
 	/**
@@ -160,17 +133,53 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return self::fromInterval($value, null);
 		}
 
-		if ($value <= PHP_INT_MIN) {
-			return new IntegerType();
+		return self::fromFloatComparison($value, '>=');
+	}
+
+	/**
+	 * The ints for which `$int <$operator> $value` holds. PHP compares an int with a float by converting the
+	 * int to float, which rounds ints beyond 2^53 on 64-bit builds (PHP_INT_MAX >= 2.0 ** 63 holds), so the
+	 * bound cannot be derived from ceil() or floor() of $value. It is searched for with the comparison itself.
+	 *
+	 * @param string $operator '<', '<=', '>' or '>='
+	 */
+	private static function fromFloatComparison(float $value, string $operator): Type
+	{
+		if ($operator === '<') {
+			$holds = static fn (int $int): bool => $int < $value;
+		} elseif ($operator === '<=') {
+			$holds = static fn (int $int): bool => $int <= $value;
+		} elseif ($operator === '>') {
+			$holds = static fn (int $int): bool => $int > $value;
+		} elseif ($operator === '>=') {
+			$holds = static fn (int $int): bool => $int >= $value;
+		} else {
+			throw new ShouldNotHappenException();
 		}
 
-		// (float) PHP_INT_MAX is already past the int range, so no int
-		// reaches it
-		if ($value >= PHP_INT_MAX) {
-			return new NeverType();
+		$holdsAtMin = $holds(PHP_INT_MIN);
+		if ($holdsAtMin === $holds(PHP_INT_MAX)) {
+			// also a NaN $value, which no comparison holds for
+			return $holdsAtMin ? new IntegerType() : new NeverType();
 		}
 
-		return self::fromInterval((int) ceil($value), null);
+		// $holds() gives $holdsAtMin for $low and the opposite for $high
+		$low = PHP_INT_MIN;
+		$high = PHP_INT_MAX;
+		while (true) {
+			// floor(($low + $high) / 2) without overflowing
+			$middle = ($low >> 1) + ($high >> 1) + ($low & $high & 1);
+			if ($middle === $low) {
+				break;
+			}
+			if ($holds($middle) === $holdsAtMin) {
+				$low = $middle;
+			} else {
+				$high = $middle;
+			}
+		}
+
+		return $holdsAtMin ? self::fromInterval(null, $low) : self::fromInterval($high, null);
 	}
 
 	public function getMin(): ?int

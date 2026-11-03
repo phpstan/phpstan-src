@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 use function array_diff;
 use function array_keys;
+use function array_map;
 use function array_values;
 use function glob;
 use function implode;
@@ -16,6 +17,7 @@ use function is_file;
 use function sort;
 use function sprintf;
 use function str_replace;
+use function strtr;
 use function symlink;
 use function sys_get_temp_dir;
 use function ucwords;
@@ -194,8 +196,12 @@ class Neon2AttributesMigratorTest extends PHPStanTestCase
 		}
 		$this->assertSame($expectedReport, $report);
 
-		$changedFiles = $result->getChangedFiles();
-		$files = [...$configFiles, ...self::findPhpFiles($directory)];
+		// reflection reports the PHP files with backslashes on Windows
+		$changedFiles = [];
+		foreach ($result->getChangedFiles() as $file => $code) {
+			$changedFiles[strtr($file, '\\', '/')] = $code;
+		}
+		$files = array_map(static fn (string $file): string => strtr($file, '\\', '/'), [...$configFiles, ...self::findPhpFiles($directory)]);
 		foreach ($files as $file) {
 			$expectedFile = $file . '.expected';
 			$expected = is_file($expectedFile) ? FileReader::read($expectedFile) : FileReader::read($file);

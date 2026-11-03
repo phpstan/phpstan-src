@@ -34,6 +34,7 @@ use Throwable;
 use function array_filter;
 use function array_map;
 use function dirname;
+use function get_class;
 use function md5;
 use function mkdir;
 use function sort;
@@ -147,9 +148,9 @@ class AttributeServicesIntegrationTest extends TestCase
 		$container = (new ContainerFactory(__DIR__))->create(self::createTmpDir(), [__DIR__ . '/extensionInterfaces.neon'], [], [dirname(__DIR__, 4)]);
 
 		$attributeMapped = $container->getServicesByTag('attributeServicesFixtures.attributeMapped');
-		$this->assertSame([AttributeMappedService::class], array_map(static fn (object $service): string => $service::class, $attributeMapped));
+		$this->assertSame([AttributeMappedService::class], array_map(static fn (object $service): string => get_class($service), $attributeMapped));
 
-		$neonMapped = array_map(static fn (object $service): string => $service::class, $container->getServicesByTag('attributeServicesFixtures.neonMapped'));
+		$neonMapped = array_map(static fn (object $service): string => get_class($service), $container->getServicesByTag('attributeServicesFixtures.neonMapped'));
 		sort($neonMapped);
 		$this->assertSame([ConditionallyTaggedService::class, NeonMappedService::class], $neonMapped);
 	}

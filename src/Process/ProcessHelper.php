@@ -4,6 +4,7 @@ namespace PHPStan\Process;
 
 use PHPStan\Command\AnalyseCommand;
 use PHPStan\Process\Restart\OpcacheSettings;
+use PHPStan\Process\Restart\RestartExtensionRegistry;
 use PHPStan\Process\Restart\RestartManager;
 use PHPStan\Turbo\TurboExtensionSelector;
 use Symfony\Component\Console\Input\InputInterface;
@@ -76,9 +77,10 @@ final class ProcessHelper
 
 		$parentPid = getmypid();
 		self::$spawnedWorkerCount++;
-		foreach (self::resolveWorkerIniEntries(OpcacheSettings::getIniEntries(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, self::$spawnedWorkerCount) as $iniEntry) {
+		foreach (self::resolveWorkerIniEntries(OpcacheSettings::getIniEntries(), RestartExtensionRegistry::getStartupSwitches(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, self::$spawnedWorkerCount) as $iniEntry) {
 			$processCommandArray[] = '-d';
-			$processCommandArray[] = $iniEntry;
+			// xdebug.mode can be a list with spaces in it
+			$processCommandArray[] = escapeshellarg($iniEntry);
 		}
 
 		foreach ([$mainScript, $commandName] as $arg) {
@@ -154,17 +156,27 @@ final class ProcessHelper
 	 * model spawned workers have elsewhere, where the segment is an anonymous
 	 * mapping private to the process.
 	 *
+	 * The startup switches of xdebug, pcov and uopz are repeated as the
+	 * spawning process has them. Where it got them through `-d` - `php -d
+	 * xdebug.mode=off` with xdebug armed in the php.ini - it had nothing to
+	 * restart for, and the worker would otherwise run with the php.ini's
+	 * armed extension.
+	 *
 	 * The restart marker closes the loop: the worker's configuration is
 	 * decided here, so the worker must not restart itself.
 	 *
 	 * @param list<string> $opcacheArgs OpcacheSettings::getIniEntries() of the spawning process
+	 * @param array<string, string> $startupSwitches RestartExtensionRegistry::getStartupSwitches() of the spawning process
 	 * @return list<string>
 	 */
-	public static function resolveWorkerIniEntries(array $opcacheArgs, string $osFamily, int $parentPid, int $workerNumber): array
+	public static function resolveWorkerIniEntries(array $opcacheArgs, array $startupSwitches, string $osFamily, int $parentPid, int $workerNumber): array
 	{
 		$entries = $opcacheArgs;
 		if ($entries !== [] && $osFamily === 'Windows') {
 			$entries[] = sprintf('opcache.cache_id=phpstan-%d-%d', $parentPid, $workerNumber);
+		}
+		foreach ($startupSwitches as $name => $value) {
+			$entries[] = sprintf('%s=%s', $name, $value);
 		}
 		$entries[] = RestartManager::RESTARTED_INI . '=1';
 

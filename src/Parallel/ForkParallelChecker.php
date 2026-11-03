@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Diagnose\DiagnoseExtension;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\Restart\OpcacheSettings;
+use PHPStan\Process\Restart\RestartExtensionRegistry;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use function function_exists;
 use function getmypid;
@@ -72,7 +73,7 @@ final class ForkParallelChecker implements DiagnoseExtension
 		// (see ProcessHelper); the extension path is on the turbo lines
 		$parentPid = getmypid();
 		$output->writeLineFormatted('Worker -d entries:');
-		foreach (ProcessHelper::resolveWorkerIniEntries(OpcacheSettings::getIniEntries(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, 1) as $iniEntry) {
+		foreach (ProcessHelper::resolveWorkerIniEntries(OpcacheSettings::getIniEntries(), RestartExtensionRegistry::getStartupSwitches(), PHP_OS_FAMILY, $parentPid === false ? 0 : $parentPid, 1) as $iniEntry) {
 			$output->writeLineFormatted(sprintf(
 				'  %s%s',
 				$iniEntry,

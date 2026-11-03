@@ -94,3 +94,11 @@ function impureCallable(?Foo $foo, callable $cb): ?Foo
 {
 	return $foo ?: $cb();
 }
+
+/**
+ * @param (pure-callable(): null)|null $cb
+ */
+function nullableCallable(?Foo $foo, $cb): ?Foo
+{
+	return $foo ?: $cb();
+}

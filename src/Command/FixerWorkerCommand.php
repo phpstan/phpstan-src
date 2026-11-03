@@ -98,9 +98,6 @@ final class FixerWorkerCommand extends Command
 			throw new ShouldNotHappenException();
 		}
 
-		// Everything after the boot lives in FixerWorkerRunner so a
-		// pcntl_fork()-ed child can reuse it without re-booting (see
-		// FixerApplication).
 		$fixerWorkerRunner = $container->getByType(FixerWorkerRunner::class);
 
 		return $fixerWorkerRunner->run(

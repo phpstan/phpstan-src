@@ -39,11 +39,9 @@ use const JSON_INVALID_UTF8_IGNORE;
 /**
  * The PHPStan Pro worker logic that runs *after* the application boot.
  *
- * Extracted from FixerWorkerCommand so it can be reused without re-booting: a
- * pcntl_fork()-ed child (see ForkedProcessPromise) inherits the already-booted
- * DI container and calls run() directly, while FixerWorkerCommand still calls
- * it after the expensive CommandHelper::begin() boot of a freshly spawned
- * process.
+ * FixerWorkerCommand calls it after the CommandHelper::begin() boot of the
+ * process FixerApplication spawns for each analysis. The analysis itself
+ * forks its workers where that is supported (see ParallelAnalyser).
  *
  * It connects back to FixerApplication's TCP server, restores the result
  * cache, analyses the changed files and streams the results.
@@ -82,8 +80,6 @@ final class FixerWorkerRunner
 			throw new ShouldNotHappenException();
 		}
 
-		// Always a fresh event loop: in a forked child the parent's inherited
-		// loop must never be touched.
 		$loop = new StreamSelectLoop();
 		$tcpConnector = new TcpConnector($loop);
 		$tcpConnector->connect(sprintf('127.0.0.1:%d', $serverPort))->then(function (ConnectionInterface $connection) use ($errorOutput, $inceptionFiles, $isOnlyFiles, $projectConfigArray, $configuration, $input, $ignoredErrorHelperResult, $loop): void {

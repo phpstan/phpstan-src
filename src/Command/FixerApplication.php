@@ -11,7 +11,6 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
 use Phar;
-use PHPStan\Analyser\Ignore\IgnoredErrorHelper;
 use PHPStan\Analyser\InternalError;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -19,18 +18,14 @@ use PHPStan\File\FileMonitor;
 use PHPStan\File\FileMonitorResult;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
-use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Internal\HttpClientFactory;
-use PHPStan\Parallel\ForkParallelChecker;
 use PHPStan\PhpDoc\StubFilesProvider;
-use PHPStan\Process\ForkedProcessPromise;
 use PHPStan\Process\ProcessCanceledException;
 use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
-use PHPStan\Process\ProcessPromise;
 use PHPStan\Process\SpawnedProcessPromise;
 use PHPStan\ShouldNotHappenException;
 use React\ChildProcess\Process;
@@ -76,7 +71,6 @@ final class FixerApplication
 	 */
 	public function __construct(
 		private FileMonitor $fileMonitor,
-		private IgnoredErrorHelper $ignoredErrorHelper,
 		private StubFilesProvider $stubFilesProvider,
 		#[AutowiredParameter]
 		private array $analysedPaths,
@@ -97,8 +91,6 @@ final class FixerApplication
 		#[AutowiredParameter]
 		private string $usedLevel,
 		private HttpClientFactory $httpClientFactory,
-		private ForkParallelChecker $forkParallelChecker,
-		private FixerWorkerRunner $fixerWorkerRunner,
 	)
 	{
 	}
@@ -121,7 +113,7 @@ final class FixerApplication
 		/** @var int<0, 65535> $serverPort */
 		$serverPort = parse_url($serverAddress, PHP_URL_PORT);
 
-		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $inceptionResult, $projectConfigFile, $input, $output, $mainScript, $filesCount): void {
+		$server->on('connection', function (ConnectionInterface $connection) use ($loop, $projectConfigFile, $input, $output, $mainScript, $filesCount): void {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
@@ -164,14 +156,13 @@ final class FixerApplication
 
 			$this->analyse(
 				$loop,
-				$inceptionResult,
 				$mainScript,
 				$projectConfigFile,
 				$input,
 				$encoder,
 			);
 
-			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $inceptionResult, $mainScript, $projectConfigFile, $input, $encoder): void {
+			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $mainScript, $projectConfigFile, $input, $encoder): void {
 				if ($this->processInProgress !== null) {
 					$this->processInProgress->cancel();
 					$this->processInProgress = null;
@@ -185,7 +176,6 @@ final class FixerApplication
 
 				$this->analyse(
 					$loop,
-					$inceptionResult,
 					$mainScript,
 					$projectConfigFile,
 					$input,
@@ -424,18 +414,12 @@ final class FixerApplication
 
 	private function analyse(
 		LoopInterface $loop,
-		InceptionResult $inceptionResult,
 		string $mainScript,
 		?string $projectConfigFile,
 		InputInterface $input,
 		Encoder $phpstanFixerEncoder,
 	): void
 	{
-		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
-		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			throw new ShouldNotHappenException();
-		}
-
 		// TCP server for fixer:worker (TCP client)
 		$server = new TcpServer('127.0.0.1:0', $loop);
 		/** @var string $serverAddress */
@@ -453,16 +437,20 @@ final class FixerApplication
 			});
 		});
 
-		$process = $this->createProcessPromise(
-			$this->forkParallelChecker->isSupported(),
-			$loop,
-			$server,
+		// Always a fresh process, never a fork of this one: this process runs as long as
+		// PHPStan Pro does, so its container and config are the ones it started with.
+		// A spawned fixer:worker reads the config files again, which picks up edits
+		// like errors added to the baseline. It still forks its own analysis workers.
+		$process = new SpawnedProcessPromise($loop, ProcessHelper::getWorkerCommand(
 			$mainScript,
+			'fixer:worker',
 			$projectConfigFile,
+			[
+				'--server-port',
+				(string) $serverPort,
+			],
 			$input,
-			$serverPort,
-			$inceptionResult,
-		);
+		));
 		$this->processInProgress = $process->run();
 
 		$this->processInProgress->then(function () use ($server): void {
@@ -571,52 +559,6 @@ final class FixerApplication
 		}
 
 		return $stubFiles;
-	}
-
-	/**
-	 * @param int<0, 65535> $serverPort
-	 */
-	private function createProcessPromise(
-		bool $useFork,
-		LoopInterface $loop,
-		TcpServer $server,
-		string $mainScript,
-		?string $projectConfigFile,
-		InputInterface $input,
-		int $serverPort,
-		InceptionResult $inceptionResult,
-	): ProcessPromise
-	{
-		if ($useFork) {
-			try {
-				[$inceptionFiles, $isOnlyFiles] = $inceptionResult->getFiles();
-			} catch (PathNotFoundException | InceptionNotSuccessfulException) {
-				throw new ShouldNotHappenException();
-			}
-
-			return new ForkedProcessPromise(
-				$loop,
-				$this->fixerWorkerRunner,
-				$server,
-				$inceptionFiles,
-				$isOnlyFiles,
-				$inceptionResult->getProjectConfigArray(),
-				$projectConfigFile,
-				$serverPort,
-				$input,
-			);
-		}
-
-		return new SpawnedProcessPromise($loop, ProcessHelper::getWorkerCommand(
-			$mainScript,
-			'fixer:worker',
-			$projectConfigFile,
-			[
-				'--server-port',
-				(string) $serverPort,
-			],
-			$input,
-		));
 	}
 
 }

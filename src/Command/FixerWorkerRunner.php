@@ -24,6 +24,7 @@ use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\TcpConnector;
 use Symfony\Component\Console\Input\InputInterface;
+use Throwable;
 use function array_diff;
 use function array_key_exists;
 use function count;
@@ -88,7 +89,8 @@ final class FixerWorkerRunner
 
 		$loop = new StreamSelectLoop();
 		$tcpConnector = new TcpConnector($loop);
-		$tcpConnector->connect(sprintf('127.0.0.1:%d', $serverPort))->then(function (ConnectionInterface $connection) use ($errorOutput, $inceptionFiles, $isOnlyFiles, $projectConfigArray, $configuration, $input, $ignoredErrorHelperResult, $loop): void {
+		$out = null;
+		$tcpConnector->connect(sprintf('127.0.0.1:%d', $serverPort))->then(function (ConnectionInterface $connection) use ($errorOutput, $inceptionFiles, $isOnlyFiles, $projectConfigArray, $configuration, $input, $ignoredErrorHelperResult, $loop, &$out): PromiseInterface {
 			// phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
@@ -164,7 +166,7 @@ final class FixerWorkerRunner
 				return $aTime <=> $bTime;
 			});
 
-			$this->runAnalyser(
+			return $this->runAnalyser(
 				$loop,
 				$filesToAnalyse,
 				$inceptionFiles,
@@ -284,6 +286,30 @@ final class FixerWorkerRunner
 					],
 				]);
 			});
+		})->catch(static function (Throwable $e) use (&$out, $loop): void {
+			// without an end the worker would wait forever and FixerApplication would not analyse again
+			if (!$out instanceof Encoder) {
+				// FixerApplication is gone
+				$loop->stop();
+				return;
+			}
+
+			$out->write(['action' => 'analysisCrash', 'data' => [
+				'internalErrors' => [new InternalError(
+					$e->getMessage(),
+					'running PHPStan Pro worker',
+					InternalError::prepareTrace($e),
+					$e->getTraceAsString(),
+					shouldReportBug: false,
+				)],
+			]]);
+			$out->end([
+				'action' => 'analysisEnd',
+				'result' => [
+					'ignoreFileErrors' => [],
+					'ignoreNotFileErrors' => [],
+				],
+			]);
 		});
 		$loop->run();
 

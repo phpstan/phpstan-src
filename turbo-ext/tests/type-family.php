@@ -2598,6 +2598,51 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 	$r['after reset getMethod'] = $attempt(static fn () => $subjects['trinary']->getMethod('yes', $outOfClassScope));
 	$r['after reset getEnumCases'] = $view($subjects['enum']->getEnumCases());
 	$r['after reset getAncestorWithClassName'] = $view((new $objectClass(\ArrayIterator::class))->getAncestorWithClassName(\Traversable::class));
+	// offsetGet()/offsetSet() variants resolved against the offset and the
+	// written value: method-level template types (TOffset of key-of<TArray>,
+	// TArray[TOffset]) and a conditional type on the offset, the fast path
+	// of a variant with nothing to resolve (ArrayObject) alongside
+	require_once __DIR__ . '/type-family-array-access-fixture.php';
+	$nameKey = new \PHPStan\Type\Constant\ConstantStringType('name');
+	$ageKey = new \PHPStan\Type\Constant\ConstantStringType('age');
+	$shapeBuilder = \PHPStan\Type\Constant\ConstantArrayTypeBuilder::createEmpty();
+	$shapeBuilder->setOffsetValueType($nameKey, new \PHPStan\Type\StringType());
+	$shapeBuilder->setOffsetValueType($ageKey, new \PHPStan\Type\IntegerType());
+	$arrayAccessSubjects = [
+		'templatedShape' => new $genericClass(\PHPStanTurboTests\TemplatedArrayAccessFixture::class, [$shapeBuilder->getArray()]),
+		'templatedMap' => new $genericClass(\PHPStanTurboTests\TemplatedArrayAccessFixture::class, [new \PHPStan\Type\ArrayType(new \PHPStan\Type\StringType(), new \PHPStan\Type\MixedType())]),
+		'templatedRaw' => new $objectClass(\PHPStanTurboTests\TemplatedArrayAccessFixture::class),
+		'conditional' => new $objectClass(\PHPStanTurboTests\ConditionalArrayAccessFixture::class),
+		'arrayObject' => new $genericClass(\ArrayObject::class, [new \PHPStan\Type\StringType(), new \PHPStan\Type\IntegerType()]),
+	];
+	$arrayAccessOffsets = [
+		'name' => $nameKey,
+		'age' => $ageKey,
+		'nope' => new \PHPStan\Type\Constant\ConstantStringType('nope'),
+		'nameOrAge' => new \PHPStan\Type\UnionType([$nameKey, $ageKey]),
+		'string' => new \PHPStan\Type\StringType(),
+		'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+		'null' => new \PHPStan\Type\NullType(),
+		'mixed' => new \PHPStan\Type\MixedType(),
+	];
+	$arrayAccessValues = [
+		'x' => new \PHPStan\Type\Constant\ConstantStringType('x'),
+		'1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
+		'float' => new \PHPStan\Type\FloatType(),
+		'mixed' => new \PHPStan\Type\MixedType(),
+	];
+	foreach ($arrayAccessSubjects as $subjectName => $subject) {
+		foreach ($arrayAccessOffsets as $offsetName => $offset) {
+			$r["array access $subjectName getOffsetValueType $offsetName"] = $attempt(static fn () => $subject->getOffsetValueType($offset));
+			$r["array access $subjectName hasOffsetValueType $offsetName"] = $attempt(static fn () => $subject->hasOffsetValueType($offset));
+			foreach ($arrayAccessValues as $valueName => $value) {
+				$r["array access $subjectName setOffsetValueType $offsetName $valueName"] = $attempt(static fn () => $subject->setOffsetValueType($offset, $value));
+			}
+		}
+		foreach ($arrayAccessValues as $valueName => $value) {
+			$r["array access $subjectName setOffsetValueType append $valueName"] = $attempt(static fn () => $subject->setOffsetValueType(null, $value));
+		}
+	}
 	foreach ($r as $key => $value) {
 		$observations["object $key"] = $value;
 	}

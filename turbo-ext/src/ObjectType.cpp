@@ -281,6 +281,8 @@ enum pt_ot_callback_kind
 	/* ... ->getIterableKeyType() / ->getIterableValueType() on top */
 	PT_OTC_METHOD_RETURN_ITERABLE_KEY_TYPE,
 	PT_OTC_METHOD_RETURN_ITERABLE_VALUE_TYPE,
+	/* offsetGet()'s return type, resolved against [$offsetType] in arg */
+	PT_OTC_OFFSET_GET_RETURN_TYPE,
 	/* the offsetSet() parameter types: the first one returned, the second
 	 * one into ->out when asked for */
 	PT_OTC_OFFSET_SET_PARAMETER_TYPE,
@@ -1950,8 +1952,10 @@ public:
 		zend_long arrayAccess = thisIsInstanceOfLiteral(PT_LC("ArrayAccess"));
 		if (UNEXPECTED(arrayAccess < 0)) return zv::Val();
 		if (arrayAccess == PT_TRI_YES) {
-			zv::Val offsetGet = zv::Val::string(PT_LC("offsetGet"));
-			return guardedMethodReturnType(PT_OTC_METHOD_RETURN_TYPE, offsetGet.raw());
+			/* [$offsetType], what offsetGet()'s template types resolve against */
+			zv::Arr offsetTypes = zv::Arr::create(1);
+			offsetTypes.push(zv::Ref(offsetType));
+			return guarded(PT_OTC_OFFSET_GET_RETURN_TYPE, NULL, offsetTypes.raw(), NULL);
 		}
 
 		zend_long extra = isExtraOffsetAccessibleClass();
@@ -1973,6 +1977,14 @@ public:
 		zend_long arrayAccess = thisIsInstanceOfLiteral(PT_LC("ArrayAccess"));
 		if (UNEXPECTED(arrayAccess < 0)) return zv::Val();
 		if (arrayAccess == PT_TRI_YES) {
+			zv::Val nullOffset;
+			if (offsetType == NULL) {
+				zval nullType;
+				if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
+				nullOffset = zv::Val::adopt(nullType);
+				offsetType = nullOffset.raw();
+			}
+
 			/* $acceptedValueType = new NeverType(), overwritten by the closure */
 			zv::Val acceptedValueType = pt_type_new_never_type();
 			if (UNEXPECTED(acceptedValueType.isUndef())) return zv::Val();
@@ -1980,7 +1992,11 @@ public:
 			ZVAL_NULL(&none);
 			ZVAL_NEW_REF(&outRef, &none);
 			zv::Val outRefVal = zv::Val::adopt(outRef);
-			zv::Val acceptedOffsetType = guarded(PT_OTC_OFFSET_SET_PARAMETER_TYPES, NULL, NULL, NULL, outRefVal.raw());
+			/* [$offsetType, $valueType], what offsetSet()'s template types resolve against */
+			zv::Arr writtenTypes = zv::Arr::create(2);
+			writtenTypes.push(zv::Ref(offsetType));
+			writtenTypes.push(zv::Ref(valueType));
+			zv::Val acceptedOffsetType = guarded(PT_OTC_OFFSET_SET_PARAMETER_TYPES, NULL, writtenTypes.raw(), NULL, outRefVal.raw());
 			if (UNEXPECTED(acceptedOffsetType.isUndef())) return zv::Val();
 			zval *out = Z_REFVAL_P(outRefVal.raw());
 			if (Z_TYPE_P(out) == IS_OBJECT) {
@@ -1989,14 +2005,6 @@ public:
 			if (UNEXPECTED(!zv::Ref(acceptedOffsetType.raw()).isObject())) {
 				zend_type_error("phpstan_turbo: the accepted offset type must be %s", ptcls::type);
 				return zv::Val();
-			}
-
-			zv::Val nullOffset;
-			if (offsetType == NULL) {
-				zval nullType;
-				if (UNEXPECTED(!pt_null_type_new(&nullType))) return zv::Val();
-				nullOffset = zv::Val::adopt(nullType);
-				offsetType = nullOffset.raw();
 			}
 
 			bool rejected = false;
@@ -3335,6 +3343,56 @@ zv::Val pt_object_type_referenced_classes_callback(zval *type)
 
 #define PT_THIS ObjectType(Z_OBJ_P(ZEND_THIS))
 
+/* $type->getMethod($methodName, new OutOfClassScope()); UNDEF = pending
+ * exception */
+static zv::Val otGetMethodOutOfClass(zend_object *type, zval *methodName)
+{
+	zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
+	if (UNEXPECTED(outOfClassScope.isUndef())) return zv::Val();
+	zv::Args methodArgs{methodName, outOfClassScope.raw()};
+	zv::Val method = (type->ce == pt_ce_object_type || pt_type_method_is(type, PT_LC("getmethod"), otGetMethod))
+		? ObjectType(type).getMethod(methodName, outOfClassScope.raw())
+		: pt_type_call(type, PT_LC("getmethod"), 2, methodArgs);
+	if (UNEXPECTED(method.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(method.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: getMethod() must return an object");
+		return zv::Val();
+	}
+	return method;
+}
+
+/* ParametersAcceptorSelector::selectFromTypes($types, $type->getMethod($methodName, new OutOfClassScope())->getVariants(), false):
+ * the method's variant with its method-level template types resolved
+ * against the given argument types; UNDEF = pending exception */
+static zv::Val otSelectMethodVariant(zend_object *type, zval *methodName, zval *types)
+{
+	zv::Val method = otGetMethodOutOfClass(type, methodName);
+	if (UNEXPECTED(method.isUndef())) return zv::Val();
+	zv::Val variants = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_VARIANTS);
+	if (UNEXPECTED(variants.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(variants.raw()).isArray() || !zv::Ref(types).isArray())) {
+		zend_type_error("phpstan_turbo: getVariants() and the argument types must be arrays");
+		return zv::Val();
+	}
+	/* nothing to resolve, so skip the resolution on this hot path:
+	 * if (count($variants) === 1 && !ParametersAcceptorSelector::hasAcceptorTemplateOrLateResolvableType($variants[0])) return $variants[0]; */
+	if (zv::ArrRef(variants.raw()).size() == 1) {
+		zval *only = zend_hash_index_find(Z_ARRVAL_P(variants.raw()), 0);
+		if (only != NULL && Z_TYPE_P(only) == IS_OBJECT) {
+			bool hasTemplate;
+			if (UNEXPECTED(!pt_parameters_acceptor_selector_has_acceptor_template_or_late_resolvable_type(only, hasTemplate))) return zv::Val();
+			if (!hasTemplate) return zv::Val::copyOf(zv::Ref(only));
+		}
+	}
+	zv::Val variant = pt_parameters_acceptor_selector_select_from_types(types, variants.raw(), false);
+	if (UNEXPECTED(variant.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
+		zend_type_error("phpstan_turbo: selectFromTypes() must return an object");
+		return zv::Val();
+	}
+	return variant;
+}
+
 /* the replay of a pt_ot_callback() closure's captured call (the arguments
  * are ignored, as the twins' closures ignore them); UNDEF = pending
  * exception */
@@ -3371,27 +3429,32 @@ static zv::Val otCallbackRun(zval *captures)
 			if (kind == PT_OTC_METHOD_RETURN_ITERABLE_KEY_TYPE) return pt_type_op(Z_OBJ_P(returnType.raw()), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
 			return pt_type_op(Z_OBJ_P(returnType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 		}
+		case PT_OTC_OFFSET_GET_RETURN_TYPE: {
+			/* ParametersAcceptorSelector::selectFromTypes([$offsetType], $this->getMethod('offsetGet', new OutOfClassScope())->getVariants(), false)->getReturnType() */
+			zv::Val offsetGet = zv::Val::string(PT_LC("offsetGet"));
+			zv::Val variant = otSelectMethodVariant(Z_OBJ_P(object), offsetGet.raw(), arg);
+			if (UNEXPECTED(variant.isUndef())) return zv::Val();
+			return pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_RETURN_TYPE);
+		}
 		case PT_OTC_OFFSET_SET_PARAMETER_TYPE:
 		case PT_OTC_OFFSET_SET_PARAMETER_TYPES: {
-			/* $parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters() */
-			zv::Val outOfClassScope = pt_type_new(PT_CLASS_OUT_OF_CLASS_SCOPE, 0, NULL);
-			if (UNEXPECTED(outOfClassScope.isUndef())) return zv::Val();
+			/* $parameters = $this->getMethod('offsetSet', new OutOfClassScope())->getOnlyVariant()->getParameters(),
+			 * or, for setOffsetValueType(), the variant selected from the written types */
 			zv::Val offsetSet = zv::Val::string(PT_LC("offsetSet"));
-			zv::Args methodArgs{offsetSet.raw(), outOfClassScope.raw()};
 			zend_object *type = Z_OBJ_P(object);
-			zv::Val method = (type->ce == pt_ce_object_type || pt_type_method_is(type, PT_LC("getmethod"), otGetMethod))
-				? ObjectType(type).getMethod(offsetSet.raw(), outOfClassScope.raw())
-				: pt_type_call(type, PT_LC("getmethod"), 2, methodArgs);
-			if (UNEXPECTED(method.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(method.raw()).isObject())) {
-				zend_type_error("phpstan_turbo: getMethod() must return an object");
-				return zv::Val();
-			}
-			zv::Val variant = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT);
-			if (UNEXPECTED(variant.isUndef())) return zv::Val();
-			if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
-				zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
-				return zv::Val();
+			zv::Val variant;
+			if (kind == PT_OTC_OFFSET_SET_PARAMETER_TYPES) {
+				variant = otSelectMethodVariant(type, offsetSet.raw(), arg);
+				if (UNEXPECTED(variant.isUndef())) return zv::Val();
+			} else {
+				zv::Val method = otGetMethodOutOfClass(type, offsetSet.raw());
+				if (UNEXPECTED(method.isUndef())) return zv::Val();
+				variant = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_ONLY_VARIANT);
+				if (UNEXPECTED(variant.isUndef())) return zv::Val();
+				if (UNEXPECTED(!zv::Ref(variant.raw()).isObject())) {
+					zend_type_error("phpstan_turbo: getOnlyVariant() must return an object");
+					return zv::Val();
+				}
 			}
 			zv::Val parameters = pt_parameters_acceptor_call(variant.raw(), PT_PA_GET_PARAMETERS);
 			if (UNEXPECTED(parameters.isUndef())) return zv::Val();

@@ -34,6 +34,7 @@ use function array_keys;
 use function array_map;
 use function array_values;
 use function count;
+use function dirname;
 use function getcwd;
 use function implode;
 use function is_array;
@@ -222,7 +223,11 @@ final class Neon2AttributesCommand extends Command
 			$directories,
 			$phpVersion->getVersionId(),
 			self::findOtherServiceNames(array_values(array_diff($allConfigFiles, $configFiles))),
-			ValidateServiceTagsExtension::createInterfaceTagMapping(self::findExtensionInterfaces($allConfigFiles)),
+			ValidateServiceTagsExtension::createInterfaceTagMapping(self::findExtensionInterfaces([
+				// PHPStan's own config.neon is not among allConfigFiles
+				dirname(__DIR__, 2) . '/conf/config.neon',
+				...$allConfigFiles,
+			])),
 		);
 
 		/** @var RelativePathHelper $relativePathHelper */

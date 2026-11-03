@@ -271,6 +271,10 @@ parameters:
 autowiredAttributeServices:
 	level: null
 
+# vendor interfaces cannot carry the #[PHPStan\DependencyInjection\ExtensionInterface] attribute
+extensionInterfaces:
+	PhpParser\NodeVisitor: phpstan.parser.richParserNodeVisitor
+
 # autowired services are registered with the help of attributes
 # like #[PHPStan\DependencyInjection\AutowiredService] or #[PHPStan\DependencyInjection\GenerateFactory],
 # optionally wrapped in #[PHPStan\DependencyInjection\Conditional]

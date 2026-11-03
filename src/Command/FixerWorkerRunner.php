@@ -17,7 +17,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Parallel\ParallelAnalyser;
 use PHPStan\Parallel\Scheduler;
 use PHPStan\Process\CpuCoreCounter;
-use PHPStan\ShouldNotHappenException;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
 use React\Promise\PromiseInterface;
@@ -30,6 +29,7 @@ use function array_key_exists;
 use function count;
 use function filemtime;
 use function filesize;
+use function implode;
 use function in_array;
 use function is_file;
 use function memory_get_peak_usage;
@@ -83,9 +83,6 @@ final class FixerWorkerRunner
 	): int
 	{
 		$ignoredErrorHelperResult = $this->ignoredErrorHelper->initialize();
-		if (count($ignoredErrorHelperResult->getErrors()) > 0) {
-			throw new ShouldNotHappenException();
-		}
 
 		$loop = new StreamSelectLoop();
 		$tcpConnector = new TcpConnector($loop);
@@ -95,6 +92,28 @@ final class FixerWorkerRunner
 			$jsonInvalidUtf8Ignore = defined('JSON_INVALID_UTF8_IGNORE') ? JSON_INVALID_UTF8_IGNORE : 0;
 			// phpcs:enable
 			$out = new Encoder($connection, $jsonInvalidUtf8Ignore);
+
+			// the config was edited since PHPStan Pro started, it reports what is wrong like the analyse command
+			if (count($ignoredErrorHelperResult->getErrors()) > 0) {
+				$out->write(['action' => 'analysisCrash', 'data' => [
+					'internalErrors' => [new InternalError(
+						implode("\n", $ignoredErrorHelperResult->getErrors()),
+						'reading ignoreErrors in the configuration',
+						trace: [],
+						traceAsString: null,
+						shouldReportBug: false,
+					)],
+				]]);
+				$out->end([
+					'action' => 'analysisEnd',
+					'result' => [
+						'ignoreFileErrors' => [],
+						'ignoreNotFileErrors' => [],
+					],
+				]);
+
+				return resolve(null);
+			}
 			//$in = new Decoder($connection, true, 512, $jsonInvalidUtf8Ignore, 128 * 1024 * 1024);
 
 			/** @var ResultCacheManager $resultCacheManager */

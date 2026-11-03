@@ -5,6 +5,9 @@ namespace PHPStan\Analyser;
 use Bug4288\MyClass;
 use Bug4713\Service;
 use ExtendingKnownClassWithCheck\Foo;
+use PHPStan\DependencyInjection\Container;
+use PHPStan\DependencyInjection\ContainerFactory;
+use PHPStan\File\FileHelper;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
@@ -19,6 +22,7 @@ use function array_values;
 use function count;
 use function extension_loaded;
 use function sprintf;
+use function sys_get_temp_dir;
 use const PHP_VERSION_ID;
 
 #[CoversNothing]
@@ -1834,16 +1838,32 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 	}
 
+	public function testBug15380(): void
+	{
+		$containerFactory = new ContainerFactory(__DIR__);
+		$container = $containerFactory->create(sys_get_temp_dir() . '/phpstan-tests', [
+			__DIR__ . '/data/bug-15380.neon',
+		], []);
+
+		try {
+			$errors = $this->runAnalyse(__DIR__ . '/data/bug-15380.php', null, $container);
+			$this->assertNoErrors($errors);
+		} finally {
+			self::getContainer();
+		}
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>
 	 */
-	private function runAnalyse(string $file, ?array $allAnalysedFiles = null): array
+	private function runAnalyse(string $file, ?array $allAnalysedFiles = null, ?Container $container = null): array
 	{
-		$file = $this->getFileHelper()->normalizePath($file);
+		$container ??= self::getContainer();
+		$file = $container->getByType(FileHelper::class)->normalizePath($file);
 
-		$analyser = self::getContainer()->getByType(Analyser::class);
-		$finalizer = self::getContainer()->getByType(AnalyserResultFinalizer::class);
+		$analyser = $container->getByType(Analyser::class);
+		$finalizer = $container->getByType(AnalyserResultFinalizer::class);
 		$errors = $finalizer->finalize(
 			$analyser->analyse([$file], null, null, true, $allAnalysedFiles),
 			false,

@@ -2779,6 +2779,11 @@ final class InitializerExprTypeResolver
 					unset($this->currentlyResolvingClassConstant[$resolvingName]);
 					continue;
 				}
+				if ($reflectionConstant->isEnumCase()) {
+					$types[] = new EnumCaseObjectType($constantClassReflection->getName(), $constantName);
+					unset($this->currentlyResolvingClassConstant[$resolvingName]);
+					continue;
+				}
 				$reflectionConstantDeclaringClass = $reflectionConstant->getDeclaringClass();
 				$constantType = $this->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($reflectionConstantDeclaringClass->getName(), $reflectionConstantDeclaringClass->getFileName() ?: null));
 				$nativeType = null;

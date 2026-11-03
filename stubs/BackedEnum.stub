@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @template-covariant T of int|string = int|string
+ */
+interface BackedEnum extends UnitEnum
+{
+
+	/** @var T */
+	public readonly int|string $value;
+
+	/**
+	 * @template TValue of T
+	 * @param TValue $value
+	 * @return static
+	 * @throws \ValueError
+	 * @throws \TypeError
+	 */
+	public static function from(int|string $value): static;
+
+	/**
+	 * @template TValue of T
+	 * @param TValue $value
+	 * @return static|null
+	 */
+	public static function tryFrom(int|string $value): ?static;
+
+}

@@ -464,6 +464,7 @@ public:
 	static zv::Val crGetFileName(zv::Ref cr) { return crCall(cr, PT_LC("getfilename"), [](ClassReflection other) { return other.getFileName(); }); }
 	static zv::Val crGetAncestors(zv::Ref cr) { return crCall(cr, PT_LC("getancestors"), [](ClassReflection other) { return other.getAncestors(); }); }
 	static zv::Val crGetTypeAliases(zv::Ref cr) { return crCall(cr, PT_LC("gettypealiases"), [](ClassReflection other) { return other.getTypeAliases(); }); }
+	static zv::Val crGetTemplateTags(zv::Ref cr) { return crCall(cr, PT_LC("gettemplatetags"), [](ClassReflection other) { return other.getTemplateTags(); }); }
 	static zv::Val crGetTemplateTypeMap(zv::Ref cr) { return crCall(cr, PT_LC("gettemplatetypemap"), [](ClassReflection other) { return other.getTemplateTypeMap(); }); }
 	static zv::Val crGetActiveTemplateTypeMap(zv::Ref cr) { return crCall(cr, PT_LC("getactivetemplatetypemap"), [](ClassReflection other) { return other.getActiveTemplateTypeMap(); }); }
 	static zv::Val crGetCallSiteVarianceMap(zv::Ref cr) { return crCall(cr, PT_LC("getcallsitevariancemap"), [](ClassReflection other) { return other.getCallSiteVarianceMap(); }); }
@@ -540,6 +541,56 @@ public:
 			list.push(std::move(errorType));
 		}
 		return crWithTypes(cr, list.ref());
+	}
+
+	/* list<Type> — type arguments for a generic ancestor that is not
+	 * described by an @implements or @extends tag: the declared template
+	 * defaults when every template type has one, otherwise one fresh
+	 * ErrorType per template type */
+	static zv::Val getUnspecifiedAncestorTypes(zv::Ref ancestor)
+	{
+		zv::Val templateTags = crGetTemplateTags(ancestor);
+		if (UNEXPECTED(templateTags.isUndef())) return zv::Val();
+		zv::Arr defaults = zv::Arr::create(countOf(templateTags.ref()));
+		bool allDefaults = true;
+		if (templateTags.ref().isArray()) {
+			for (auto entry : zv::ArrRef(templateTags.raw())) {
+				zv::Ref templateTag = entry.value().deref();
+				if (UNEXPECTED(!templateTag.isObject())) {
+					zend_throw_error(NULL, "Call to a member function getDefault() on %s", zend_zval_value_name(templateTag.raw()));
+					return zv::Val();
+				}
+				zv::Val defaultType = pt_type_call(templateTag.asObject(), PT_LC("getdefault"), 0, NULL);
+				if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+				if (defaultType.isNull()) {
+					allDefaults = false;
+					break;
+				}
+				defaults.push(std::move(defaultType));
+			}
+		}
+		if (allDefaults) return zv::Val(std::move(defaults));
+
+		zv::Val map = crGetTemplateTypeMap(ancestor);
+		if (UNEXPECTED(map.isUndef())) return zv::Val();
+		zv::Val types = callOn(map.ref(), PT_LC("gettypes"), 0, NULL);
+		if (UNEXPECTED(types.isUndef())) return zv::Val();
+		uint32_t count = countOf(types.ref());
+		zv::Arr errorTypes = zv::Arr::create(count);
+		for (uint32_t i = 0; i < count; i++) {
+			zv::Val errorType = pt_type_new_error_type();
+			if (UNEXPECTED(errorType.isUndef())) return zv::Val();
+			errorTypes.push(std::move(errorType));
+		}
+		return zv::Val(std::move(errorTypes));
+	}
+
+	/* $cr->withTypes($this->getUnspecifiedAncestorTypes($cr)) */
+	static zv::Val crWithUnspecifiedAncestorTypes(zv::Ref cr)
+	{
+		zv::Val types = getUnspecifiedAncestorTypes(cr);
+		if (UNEXPECTED(types.isUndef())) return zv::Val();
+		return crWithTypes(cr, types.ref());
 	}
 
 	/* }}} */
@@ -2470,6 +2521,12 @@ public:
 			for (auto entry : zv::ArrRef(immediateInterfaces.raw())) {
 				if (UNEXPECTED(!addCollectedInterfaces(interfaces, entry.value()))) return zv::Val();
 			}
+
+			/* An interface resolved on this class itself is more specific
+			 * than the same interface reached through one of its ancestors. */
+			for (auto entry : zv::ArrRef(immediateInterfaces.raw())) {
+				setAtKey(interfaces, entry, zv::Val::copyOf(entry.value()));
+			}
 		}
 
 		writeSlot(PT_CR_PROP_CACHED_INTERFACES, zv::Val::copyOf(interfaces.ref()));
@@ -2617,13 +2674,32 @@ public:
 			bool immediateGeneric;
 			if (UNEXPECTED(!crIsGeneric(immediateInterface.ref(), immediateGeneric))) return zv::Val();
 			if (immediateGeneric) {
-				zv::Val withErrorTypes = crWithErrorTypes(immediateInterface.ref());
-				if (UNEXPECTED(withErrorTypes.isUndef())) return zv::Val();
-				immediateInterfaces.set(immediateNameStr, std::move(withErrorTypes));
+				zv::Val withDefaults = crWithUnspecifiedAncestorTypes(immediateInterface.ref());
+				if (UNEXPECTED(withDefaults.isUndef())) return zv::Val();
+				immediateInterfaces.set(immediateNameStr, std::move(withDefaults));
 				continue;
 			}
 
 			immediateInterfaces.set(immediateNameStr, std::move(immediateInterface));
+		}
+
+		/* PHP implicitly implements BackedEnum on backed enums, so there is
+		 * no @implements tag that could carry the backing type. */
+		zv::Val backedEnumType = getBackedEnumType();
+		if (UNEXPECTED(backedEnumType.isUndef())) return zv::Val();
+		if (!backedEnumType.isNull()) {
+			zv::Str backedEnumName = zv::Str::adopt(zend_string_init(PT_LC("BackedEnum"), 0));
+			bool has;
+			if (UNEXPECTED(!providerHasClass(backedEnumName.get(), has))) return zv::Val();
+			if (has) {
+				zv::Val backedEnum = providerGetClass(backedEnumName.get());
+				if (UNEXPECTED(backedEnum.isUndef())) return zv::Val();
+				zv::Arr types = zv::Arr::create(1);
+				types.push(std::move(backedEnumType));
+				zv::Val withTypes = crWithTypes(backedEnum.ref(), types.ref());
+				if (UNEXPECTED(withTypes.isUndef())) return zv::Val();
+				immediateInterfaces.set(backedEnumName.get(), std::move(withTypes));
+			}
 		}
 
 		return zv::Val(std::move(immediateInterfaces));
@@ -4993,6 +5069,12 @@ PT_MINIT_REGISTRATION(pt_register_class_reflection)
 	});
 
 	cls.method<&ClassReflection::getImmediateInterfaces>(sigs::getImmediateInterfaces);
+
+	cls.method(sigs::getUnspecifiedAncestorTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *ancestor;
+		if (!zp::parse<zp::Obj>(execute_data, ancestor)) RETURN_THROWS();
+		PT_RETURN_VAL(ClassReflection::getUnspecifiedAncestorTypes(zv::Ref(ancestor)));
+	});
 
 	cls.method(sigs::getTraits, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool recursive = false;

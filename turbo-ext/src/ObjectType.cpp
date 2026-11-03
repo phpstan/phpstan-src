@@ -2618,6 +2618,20 @@ public:
 
 		zv::Val interfaces = getInterfaces();
 		if (UNEXPECTED(interfaces.isUndef())) return zv::Val();
+		/* An interface resolved on this class itself is more specific than
+		 * the same interface reached through one of its ancestors. */
+		for (zv::ArrayEntry entry : zv::ArrRef(interfaces.raw())) {
+			zv::Ref interface = entry.value().deref();
+			if (UNEXPECTED(!interface.isObject())) {
+				zend_type_error("phpstan_turbo: getInterfaces() must return objects");
+				return zv::Val();
+			}
+			zv::Val interfaceClassName = pt_type_call(interface.asObject(), PT_LC("getclassname"), 0, NULL);
+			if (UNEXPECTED(interfaceClassName.isUndef())) return zv::Val();
+			if (!zend_is_identical(interfaceClassName.raw(), className)) continue;
+			return storeAncestor(descriptionStr, classNameStr, zv::Val::copyOf(interface));
+		}
+
 		for (zv::ArrayEntry entry : zv::ArrRef(interfaces.raw())) {
 			zv::Ref interface = entry.value().deref();
 			if (UNEXPECTED(!interface.isObject())) {

@@ -1158,4 +1158,24 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testGenericBackedEnum(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/generic-backed-enum.php'], [
+			[
+				'Parameter #1 $value of static method BackedEnum<int>::from() expects TValue of int, string given.',
+				23,
+			],
+			[
+				'Parameter #1 $value of static method BackedEnum<string>::tryFrom() expects TValue of string, int given.',
+				24,
+			],
+			[
+				'Parameter #1 $value of static method BackedEnum<string>::from() expects TValue of string, int given.',
+				36,
+			],
+		]);
+	}
+
 }

@@ -61,6 +61,7 @@ use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\StringType;
@@ -805,10 +806,15 @@ final class PhpClassReflectionExtension
 			$this->findMethodTrait($methodReflection),
 		);
 
-		if ($this->backedEnumFromParameterType && in_array(strtolower($methodReflection->getName()), ['from', 'tryfrom'], true)) {
+		if (in_array(strtolower($methodReflection->getName()), ['from', 'tryfrom'], true)) {
 			$backedEnumType = $declaringClass->getBackedEnumType();
 			if ($backedEnumType !== null) {
-				return new BackedEnumFromMethodReflection($method, $backedEnumType);
+				// Without the toggle the parameter stays the int|string reflection
+				// declares, not the TValue of T the generic BackedEnum stub gives it.
+				return new BackedEnumFromMethodReflection(
+					$method,
+					$this->backedEnumFromParameterType ? $backedEnumType : new UnionType([new IntegerType(), new StringType()]),
+				);
 			}
 		}
 

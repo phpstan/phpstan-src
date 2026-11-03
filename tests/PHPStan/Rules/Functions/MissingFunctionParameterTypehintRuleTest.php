@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Rules\MissingTypehintCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<MissingFunctionParameterTypehintRule>
@@ -94,6 +95,12 @@ class MissingFunctionParameterTypehintRuleTest extends RuleTestCase
 				191,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testGenericBackedEnum(): void
+	{
+		$this->analyse([__DIR__ . '/data/generic-backed-enum-typehints.php'], []);
 	}
 
 }

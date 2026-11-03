@@ -166,6 +166,7 @@ parameters:
 		- ../stubs/ArrayObject.stub
 		- ../stubs/WeakReference.stub
 		- ../stubs/SensitiveParameterValue.stub
+		- ../stubs/BackedEnum.stub
 		- ../stubs/ImagickPixel.stub
 		- ../stubs/PDOStatement.stub
 		- ../stubs/date.stub

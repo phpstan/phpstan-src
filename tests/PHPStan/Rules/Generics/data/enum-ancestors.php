@@ -107,3 +107,27 @@ enum Foo9 implements GenericDefault
 {
 
 }
+
+/**
+ * @implements \BackedEnum<string>
+ */
+enum BackedEnumRightTag: string
+{
+
+}
+
+/**
+ * @implements \BackedEnum<string>
+ */
+enum BackedEnumWrongTag: int
+{
+
+}
+
+/**
+ * @implements \BackedEnum<int>
+ */
+enum BackedEnumTagOnPureEnum
+{
+
+}

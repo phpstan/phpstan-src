@@ -510,9 +510,11 @@ foreach ($pcreBackedEnumFromOffObservations['php'] as $pcreKey => $pcreExpected)
 	$pcreDifference = $pcreFirstDifference($pcreExpected, $pcreBackedEnumFromOffObservations['native'][$pcreKey] ?? '(missing)');
 	check($pcreDifference === null, 'PhpClassReflectionExtension backedEnumFromParameterType off ' . $pcreKey . ' ' . ($pcreDifference ?? ''));
 }
+[$pcrePhpSide] = $pcreBuildSides(true, 4096, null, false);
+$pcreOffFromParameterType = $pcrePhpSide->getMethod($pcreReflectionProvider->getClass('PhpClassReflectionFamilyFixture\FixtureBackedEnum'), 'from')->getOnlyVariant()->getParameters()[0]->getType()->describe(\PHPStan\Type\VerbosityLevel::precise());
 check(
-	$pcreBackedEnumFromOffObservations['php']['getMethod from']['class'] !== $pcreObservations['php']['PhpClassReflectionFamilyFixture\FixtureBackedEnum::from']['getMethod']['class'],
-	'PhpClassReflectionExtension backedEnumFromParameterType off: from() is not wrapped',
+	$pcreOffFromParameterType === 'int|string',
+	'PhpClassReflectionExtension backedEnumFromParameterType off: from() takes int|string (' . $pcreOffFromParameterType . ')',
 );
 // }}}
 

@@ -56,6 +56,14 @@ class EnumAncestorsRuleTest extends RuleTestCase
 				'Call-site variance annotation of covariant EnumGenericAncestors\NonGeneric in generic type EnumGenericAncestors\Generic<covariant EnumGenericAncestors\NonGeneric, int> in PHPDoc tag @implements is not allowed.',
 				93,
 			],
+			[
+				'The @implements tag of enum EnumGenericAncestors\BackedEnumWrongTag specifies BackedEnum<string> but the enum is backed by int.',
+				122,
+			],
+			[
+				'Enum EnumGenericAncestors\BackedEnumTagOnPureEnum has @implements tag, but does not implement any interface.',
+				130,
+			],
 		]);
 	}
 

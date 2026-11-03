@@ -131,7 +131,12 @@ public:
 				if (isTemplate) {
 					zend_long backedEnumBound = boundIsBackedEnum(t);
 					if (UNEXPECTED(backedEnumBound < 0)) return zv::Val();
-					if (backedEnumBound == 1) return intOrString();
+					if (backedEnumBound == 1) {
+						zv::Val backingType = boundBackingType(t);
+						if (UNEXPECTED(backingType.isUndef())) return zv::Val();
+						if (!backingType.isNull()) return backingType;
+						return intOrString();
+					}
 				}
 			}
 			zv::Arr valueTypes = zv::Arr::create(zend_hash_num_elements(cases));
@@ -217,6 +222,72 @@ private:
 		zend_long value = pt_type_result_trinary(result.raw());
 		if (UNEXPECTED(value < 0)) return -1;
 		return value == PT_TRI_YES ? 1 : 0;
+	}
+
+	/* the union of the BackedEnum type arguments of every class of the
+	 * template type's bound; null when one of them has none (or an error
+	 * type), UNDEF = pending exception */
+	static zv::Val boundBackingType(zval *templateType)
+	{
+		zv::Val bound = pt_type_call(Z_OBJ_P(templateType), PT_LC("getbound"), 0, NULL);
+		if (UNEXPECTED(bound.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(bound.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getBound() must return %s", ptcls::type);
+			return zv::Val();
+		}
+		zv::Val classReflections = pt_type_call(Z_OBJ_P(bound.raw()), PT_LC("getobjectclassreflections"), 0, NULL);
+		if (UNEXPECTED(classReflections.isUndef())) return zv::Val();
+		if (!zv::Ref(classReflections.raw()).isArray()) return zv::Val::null();
+
+		zval backedEnumName;
+		ZVAL_STR(&backedEnumName, zend_string_init(PT_LC("BackedEnum"), 0));
+		zv::Val backedEnumNameOwned = zv::Val::adopt(backedEnumName);
+		zv::Arr backingTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(classReflections.raw())));
+		for (zv::ArrayEntry entry : zv::ArrRef(classReflections.raw())) {
+			zv::Ref classReflection = entry.value().deref();
+			if (UNEXPECTED(!classReflection.isObject())) {
+				zend_type_error("phpstan_turbo: getObjectClassReflections() must return a list of ClassReflection");
+				return zv::Val();
+			}
+			zv::Val ancestor = pt_type_call(classReflection.asObject(), PT_LC("getancestorwithclassname"), 1, backedEnumNameOwned.raw());
+			if (UNEXPECTED(ancestor.isUndef())) return zv::Val();
+			if (!zv::Ref(ancestor.raw()).isObject()) return zv::Val::null();
+
+			zv::Val map = pt_type_call(Z_OBJ_P(ancestor.raw()), PT_LC("getactivetemplatetypemap"), 0, NULL);
+			if (UNEXPECTED(map.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(map.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: getActiveTemplateTypeMap() must return a TemplateTypeMap");
+				return zv::Val();
+			}
+			zv::Val ancestorTypes = pt_type_call(Z_OBJ_P(map.raw()), PT_LC("gettypes"), 0, NULL);
+			if (UNEXPECTED(ancestorTypes.isUndef())) return zv::Val();
+			if (!zv::Ref(ancestorTypes.raw()).isArray() || zend_hash_num_elements(Z_ARRVAL_P(ancestorTypes.raw())) != 1) return zv::Val::null();
+
+			zv::Val backingType;
+			for (zv::ArrayEntry typeEntry : zv::ArrRef(ancestorTypes.raw())) {
+				backingType = zv::Val::copyOf(typeEntry.value().deref());
+			}
+			if (UNEXPECTED(!zv::Ref(backingType.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: TemplateTypeMap::getTypes() must return a list of %s", ptcls::type);
+				return zv::Val();
+			}
+			bool isError;
+			if (UNEXPECTED(!pt_type_instanceof_ce(backingType.raw(), pt_ce_error_type, isError))) return zv::Val();
+			if (isError) return zv::Val::null();
+
+			backingTypes.push(std::move(backingType));
+		}
+
+		uint32_t count = zend_hash_num_elements(backingTypes.table());
+		if (count == 0) return zv::Val::null();
+		zval *argv = (zval *) safe_emalloc(count, sizeof(zval), 0);
+		uint32_t i = 0;
+		for (zv::ArrayEntry typeEntry : zv::ArrRef(backingTypes.raw())) {
+			ZVAL_COPY_VALUE(&argv[i++], typeEntry.value().raw());
+		}
+		zv::Val union_ = pt_type_combinator_union(count, argv);
+		efree(argv);
+		return union_;
 	}
 
 	/* new UnionType([new IntegerType(), new StringType()]) */

@@ -1596,6 +1596,22 @@ final class OperatorTypeHelper
 
 	public static function negate(Type $type, PhpVersion $phpVersion): Type
 	{
+		// each member negates on its own: -(int<1, 5>|1.5) is int<-5, -1>|-1.5
+		$number = $type->toNumber();
+		if ($number instanceof UnionType) {
+			$negatedTypes = [];
+			foreach ($number->getTypes() as $innerType) {
+				$negatedTypes[] = self::negate($innerType, $phpVersion);
+			}
+
+			$negated = TypeCombinator::union(...$negatedTypes);
+			if ($number instanceof BenevolentUnionType) {
+				return TypeUtils::toBenevolentUnion($negated);
+			}
+
+			return $negated;
+		}
+
 		$negated = self::negateNumber($type);
 		if ($negated instanceof IntegerRangeType) {
 			return self::multiply($type, new ConstantIntegerType(-1), $phpVersion);

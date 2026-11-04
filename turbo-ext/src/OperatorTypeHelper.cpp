@@ -1838,6 +1838,23 @@ public:
 	/* Mirrors negate(). */
 	static zv::Val negate(zval *type)
 	{
+		// each member negates on its own: -(int<1, 5>|1.5) is int<-5, -1>|-1.5
+		IETR_VAL(number, callOn(type, mToNumber));
+		if (isA(number.raw(), pt_ce_union_type)) {
+			IETR_VAL(innerTypes, callOn(number.raw(), mGetTypes));
+			if (UNEXPECTED(!requireArray(innerTypes.raw()))) return zv::Val();
+			zv::Arr negatedTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(innerTypes.raw())));
+			for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
+				IETR_VAL(negatedType, negate(entry.value().raw()));
+				negatedTypes.push(std::move(negatedType));
+			}
+
+			IETR_VAL(negatedUnion, unionOf(negatedTypes));
+			if (isA(number.raw(), pt_ce_benevolent_union_type)) return toBenevolentUnion(negatedUnion.raw());
+
+			return negatedUnion;
+		}
+
 		IETR_VAL(negated, negateNumber(type));
 		if (isA(negated.raw(), pt_ce_integer_range_type)) {
 			IETR_VAL(minusOne, newConstantIntegerType(-1));

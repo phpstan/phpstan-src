@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ResultCache;
 use Nette\Utils\Strings;
 use Override;
 use PHPStan\Analyser\AnalyserResult;
+use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FinalizerResult;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Command\Output;
@@ -193,6 +194,51 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		$this->assertTrue($resultCache->isFullAnalysis());
 	}
 
+	public function testFileChangedDuringTheAnalysisIsAnalysedAgainWithTheFilesUsingIt(): void
+	{
+		[$a, $b, $c] = $this->files;
+		$dependencies = [$b => [$a]];
+		$this->waitUntilTheFilesAreInThePast();
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		// a file with an error unrelated to a, analysed again only when a new symbol appears
+		$processed = $manager->process($this->analyserResult([], $dependencies, $this->files, [$c]), $resultCache, $this->nullOutput(), false, true);
+		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
+
+		file_put_contents($a, "<?php class Cachea { public function m(): int {} }\n");
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$a, $b], $resultCache->getFilesToAnalyse());
+		// written after b read it, before a itself was read
+		file_put_contents($a, "<?php class Cachea { public function m(): string {} }\n");
+		$processed = $manager->process($this->analyserResult([], $dependencies, [$a, $b]), $resultCache, $this->nullOutput(), false, true);
+		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
+
+		$resultCache = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$a, $b], $resultCache->getFilesToAnalyse());
+	}
+
+	public function testFileChangedAndChangedBackDuringTheAnalysisIsAnalysedAgain(): void
+	{
+		$a = $this->files[0];
+		$this->saveFullAnalysis([]);
+
+		$hashed = "<?php class Cachea { public function m(): int {} }\n";
+		file_put_contents($a, $hashed);
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$a], $resultCache->getFilesToAnalyse());
+		// analysed while it was different, then undone in the editor in a later second
+		file_put_contents($a, "<?php class Cachea { public function m(): string {} }\n");
+		$this->waitUntilTheFilesAreInThePast();
+		file_put_contents($a, $hashed);
+		$processed = $manager->process($this->analyserResult([], [], [$a]), $resultCache, $this->nullOutput(), false, true);
+		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
+
+		$resultCache = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$a], $resultCache->getFilesToAnalyse());
+	}
+
 	/**
 	 * A save keeps the stat signature only of a file not modified in the second the save began,
 	 * so without waiting, saves on both sides of a second boundary differ in their signatures.
@@ -243,16 +289,29 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 
 	/**
 	 * @param array<string, array<class-string<MethodWithoutImpurePointsCollector>, list<string>>> $collectedData
+	 * @param array<string, list<string>> $dependencies of the files that depend on others
+	 * @param list<string> $filesWithExportedNodes analysed files whose exported nodes are read now
+	 * @param list<string> $filesWithErrors
 	 */
-	private function analyserResult(array $collectedData): AnalyserResult
+	private function analyserResult(array $collectedData, array $dependencies = [], array $filesWithExportedNodes = [], array $filesWithErrors = []): AnalyserResult
 	{
-		$dependencies = [];
 		foreach ($this->files as $file) {
-			$dependencies[$file] = [];
+			$dependencies[$file] ??= [];
+		}
+
+		$exportedNodeFetcher = self::getContainer()->getByType(ExportedNodeFetcher::class);
+		$exportedNodes = [];
+		foreach ($filesWithExportedNodes as $file) {
+			$exportedNodes[$file] = $exportedNodeFetcher->fetchNodes($file);
+		}
+
+		$errors = [];
+		foreach ($filesWithErrors as $file) {
+			$errors[] = new Error('An error.', $file, 1);
 		}
 
 		return new AnalyserResult(
-			unorderedErrors: [],
+			unorderedErrors: $errors,
 			filteredPhpErrors: [],
 			allPhpErrors: [],
 			locallyIgnoredErrors: [],
@@ -264,7 +323,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			usedTraitDependencies: [],
 			valueDependencies: ['values' => [], 'dependents' => []],
 			packageDependencies: [],
-			exportedNodes: [],
+			exportedNodes: $exportedNodes,
 			reachedInternalErrorsCountLimit: false,
 			peakMemoryUsageBytes: 0,
 			processedFiles: $this->files,

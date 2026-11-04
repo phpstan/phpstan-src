@@ -1513,11 +1513,6 @@ parameters:
 			count: 1
 			path: src/Type/OperatorTypeHelper.php
 
-		-
-			rawMessage: PHPDoc tag @var with type float|int|null is not subtype of type int|null.
-			identifier: varTag.type
-			count: 6
-			path: src/Type/OperatorTypeHelper.php
 
 		-
 			rawMessage: Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.

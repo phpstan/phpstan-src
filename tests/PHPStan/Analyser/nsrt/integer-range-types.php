@@ -311,7 +311,7 @@ class X {
 		assertType('float<-0.4, 0.0>', -2 / $rMax);
 
 		assertType('int<-5, max>', $rMin / -1);
-		assertType('float<min, -2.5>|int<min, -2>', $rMax / -2);
+		assertType('float<min, -2.5>|int<min, -3>', $rMax / -2);
 	}
 
 	/**

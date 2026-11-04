@@ -569,10 +569,7 @@ public:
 	/* Mirrors divide(). */
 	static zv::Val divide(zval *leftType, zval *rightType, zval *phpVersion)
 	{
-		IETR_VAL(floatRangeResult, floatRangeMath(IETR_DIV, leftType, rightType, phpVersion));
-		if (!floatRangeResult.isNull()) return floatRangeResult;
-
-		IETR_VAL(result, getDivTypeFromTypes(leftType, rightType));
+		IETR_VAL(result, getDivTypeFromTypes(leftType, rightType, phpVersion));
 
 		IETR_TRI(leftIsInteger, triOn(leftType, mIsInteger));
 		if (leftIsInteger == PT_TRI_YES) {
@@ -593,12 +590,6 @@ public:
 						}
 					}
 				}
-
-				// the float of an int division lies between the quotients of the bounds
-				IETR_VAL(floatType, getIntegerDivisionFloatType(leftType, rightType, phpVersion));
-				if (!floatType.isNull()) {
-					return replaceFloatType(result.raw(), floatType.raw());
-				}
 			}
 		}
 
@@ -606,7 +597,7 @@ public:
 	}
 
 	/* Mirrors getDivTypeFromTypes(). */
-	static zv::Val getDivTypeFromTypes(zval *leftType, zval *rightType)
+	static zv::Val getDivTypeFromTypes(zval *leftType, zval *rightType, zval *phpVersion)
 	{
 		zv::Val result;
 		int constant = constantScalarArithmetic(leftType, rightType, IETR_DIV, result);
@@ -635,7 +626,7 @@ public:
 			}
 		}
 
-		return resolveCommonMath(IETR_DIV, leftType, rightType);
+		return resolveCommonMath(IETR_DIV, leftType, rightType, phpVersion);
 	}
 
 	/* Mirrors modulo(). */
@@ -747,23 +738,6 @@ public:
 		return fromInterval(rangeMin, rangeMax);
 	}
 
-	/* Mirrors toIntBound(): the bound an overflowing float stands for, since
-	 * the values past the int range are floats. ZEND_LONG_MAX is not
-	 * representable as a double, so the first double past the int range is
-	 * (double) ZEND_LONG_MAX itself. */
-	static void toIntBound(double value, zval *out)
-	{
-		if (!std::isfinite(value)) {
-			ZVAL_NULL(out);
-		} else if (value >= (double) ZEND_LONG_MAX) {
-			ZVAL_LONG(out, ZEND_LONG_MAX);
-		} else if (value <= (double) ZEND_LONG_MIN) {
-			ZVAL_LONG(out, ZEND_LONG_MIN);
-		} else {
-			ZVAL_LONG(out, (zend_long) value);
-		}
-	}
-
 	/* private static: the highest possible absolute value of `$x % $divisor`,
 	 * one less than the largest possible absolute value of the divisor; null
 	 * when there is no such bound. A divisor reaching PHP_INT_MIN is reported
@@ -873,21 +847,9 @@ public:
 		return zv::Val(std::move(pair));
 	}
 
-	/* shiftLeftOverflows() for the private method's glue; false = pending
-	 * exception */
-	[[nodiscard]] static bool shiftLeftOverflowsValue(zend_long value, zend_long shift, bool &out)
-	{
-		zval shiftZv;
-		ZVAL_LONG(&shiftZv, shift);
-		return shiftLeftOverflows(value, &shiftZv, out);
-	}
-
 	/* Mirrors add(). */
 	static zv::Val add(zval *leftType, zval *rightType, zval *phpVersion)
 	{
-		IETR_VAL(floatRangeResult, floatRangeMath(IETR_PLUS, leftType, rightType, phpVersion));
-		if (!floatRangeResult.isNull()) return floatRangeResult;
-
 		if (isA(leftType, pt_ce_never_type) || isA(rightType, pt_ce_never_type)) {
 			return getNeverType(leftType, rightType);
 		}
@@ -998,7 +960,7 @@ public:
 			}
 		}
 
-		return resolveCommonMath(IETR_PLUS, leftType, rightType);
+		return resolveCommonMath(IETR_PLUS, leftType, rightType, phpVersion);
 	}
 
 	/* Mirrors arrayUnion(). */
@@ -1207,9 +1169,6 @@ public:
 	/* Mirrors subtract() / multiply() (kind IETR_MINUS / IETR_MUL). */
 	static zv::Val subtractOrMultiply(IetrBinaryKind kind, zval *leftType, zval *rightType, zval *phpVersion)
 	{
-		IETR_VAL(floatRangeResult, floatRangeMath(kind, leftType, rightType, phpVersion));
-		if (!floatRangeResult.isNull()) return floatRangeResult;
-
 		zv::Val result;
 		int constant = constantScalarArithmetic(leftType, rightType, kind, result);
 		if (UNEXPECTED(constant < 0)) return zv::Val();
@@ -1244,11 +1203,11 @@ public:
 			}
 		}
 
-		return resolveCommonMath(kind, leftType, rightType);
+		return resolveCommonMath(kind, leftType, rightType, phpVersion);
 	}
 
 	/* Mirrors shiftLeft() / shiftRight(). */
-	static zv::Val shift(IetrBinaryKind kind, zval *leftType, zval *rightType)
+	static zv::Val shift(IetrBinaryKind kind, zval *leftType, zval *rightType, zval *phpVersion)
 	{
 		if (isA(leftType, pt_ce_never_type) || isA(rightType, pt_ce_never_type)) {
 			return getNeverType(leftType, rightType);
@@ -1279,7 +1238,7 @@ public:
 			}
 		}
 
-		return resolveCommonMath(kind, leftType, rightType);
+		return resolveCommonMath(kind, leftType, rightType, phpVersion);
 	}
 
 	/* Mirrors optimizeScalarType(). */
@@ -1420,48 +1379,33 @@ public:
 
 	/* }}} */
 
-	/* {{{ resolveCommonMath() / integerRangeMath() */
+	/* {{{ resolveCommonMath() */
 
 	/* Mirrors resolveCommonMath() ($operator as `kind`). */
-	static zv::Val resolveCommonMath(IetrBinaryKind kind, zval *leftType, zval *rightType)
+	static zv::Val resolveCommonMath(IetrBinaryKind kind, zval *leftType, zval *rightType, zval *phpVersion)
 	{
 		IETR_VAL(types, union2(leftType, rightType));
 		IETR_VAL(leftNumberType, callOn(leftType, mToNumber));
 		IETR_VAL(rightNumberType, callOn(rightType, mToNumber));
 
 		bool typesMixed = isA(types.raw(), pt_ce_mixed_type);
-		if (
-			!typesMixed
-			&& (
-				isA(rightNumberType.raw(), pt_ce_integer_range_type)
-				|| isA(rightNumberType.raw(), pt_ce_constant_integer_type)
-				|| isA(rightNumberType.raw(), pt_ce_union_type)
-			)
-		) {
-			if (isA(leftNumberType.raw(), pt_ce_integer_range_type) || isA(leftNumberType.raw(), pt_ce_constant_integer_type)) {
-				return integerRangeMath(leftNumberType.raw(), kind, rightNumberType.raw());
-			} else if (isA(leftNumberType.raw(), pt_ce_union_type)) {
-				IETR_VAL(leftTypes, callOn(leftNumberType.raw(), mGetTypes));
-				if (UNEXPECTED(!requireArray(leftTypes.raw()))) return zv::Val();
-				zv::Arr unionParts = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(leftTypes.raw())));
-
-				for (zv::ArrayEntry entry : zv::ArrRef(leftTypes.raw())) {
-					IETR_VAL(numberType, callOn(entry.value().raw(), mToNumber));
-					if (isA(numberType.raw(), pt_ce_integer_range_type) || isA(numberType.raw(), pt_ce_constant_integer_type)) {
-						IETR_VAL(part, integerRangeMath(numberType.raw(), kind, rightNumberType.raw()));
-						unionParts.push(std::move(part));
-					} else {
-						unionParts.push(std::move(numberType));
-					}
+		if (!typesMixed) {
+			NumberSetData leftNumberSet, rightNumberSet;
+			bool leftHas = false, rightHas = false;
+			if (UNEXPECTED(!pt_type_to_number_set(leftNumberType.raw(), leftNumberSet, leftHas))) return zv::Val();
+			if (UNEXPECTED(!pt_type_to_number_set(rightNumberType.raw(), rightNumberSet, rightHas))) return zv::Val();
+			if (leftHas && rightHas) {
+				IETR_VAL(result, pt_number_set_calculate(kind, leftNumberSet, rightNumberSet, phpVersion));
+				if (
+					isA(leftNumberType.raw(), pt_ce_benevolent_union_type)
+					|| isA(rightNumberType.raw(), pt_ce_benevolent_union_type)
+					|| isA(leftType, pt_ce_benevolent_union_type)
+					|| isA(rightType, pt_ce_benevolent_union_type)
+				) {
+					return toBenevolentUnion(result.raw());
 				}
 
-				IETR_VAL(union_, unionOf(unionParts));
-				if (isA(leftNumberType.raw(), pt_ce_benevolent_union_type)) {
-					IETR_VAL(benevolent, toBenevolentUnion(union_.raw()));
-					return callOn(benevolent.raw(), mToNumber);
-				}
-
-				return callOn(union_.raw(), mToNumber);
+				return result;
 			}
 		}
 
@@ -1514,297 +1458,6 @@ public:
 		}
 
 		return resultType;
-	}
-
-	/* Mirrors integerRangeMath() ($range a ConstantIntegerType or
-	 * IntegerRangeType, $operator as `kind`). */
-	static zv::Val integerRangeMath(zval *range, IetrBinaryKind kind, zval *operandIn)
-	{
-		zval rangeMin, rangeMax;
-		if (isA(range, pt_ce_integer_range_type)) {
-			NullableLong min, max;
-			if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(range), min, max))) return zv::Val();
-			setNullableLong(&rangeMin, min);
-			setNullableLong(&rangeMax, max);
-		} else {
-			IETR_VAL(value, callOn(range, mGetValue));
-			if (UNEXPECTED(Z_TYPE_P(value.raw()) != IS_LONG)) {
-				// the twin's `$range->getValue()` of a ConstantIntegerType is always an int
-				pt_throw_should_not_happen();
-				return zv::Val();
-			}
-			ZVAL_LONG(&rangeMin, Z_LVAL_P(value.raw()));
-			ZVAL_COPY_VALUE(&rangeMax, &rangeMin);
-		}
-
-		if (isA(operandIn, pt_ce_union_type)) {
-			IETR_VAL(operandTypes, callOn(operandIn, mGetTypes));
-			if (UNEXPECTED(!requireArray(operandTypes.raw()))) return zv::Val();
-			zv::Arr unionParts = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(operandTypes.raw())));
-
-			for (zv::ArrayEntry entry : zv::ArrRef(operandTypes.raw())) {
-				zval *type = entry.value().raw();
-				IETR_VAL(numberType, callOn(type, mToNumber));
-				if (isA(numberType.raw(), pt_ce_integer_range_type) || isA(numberType.raw(), pt_ce_constant_integer_type)) {
-					IETR_VAL(part, integerRangeMath(range, kind, numberType.raw()));
-					unionParts.push(std::move(part));
-				} else {
-					IETR_VAL(part, callOn(type, mToNumber));
-					unionParts.push(std::move(part));
-				}
-			}
-
-			IETR_VAL(union_, unionOf(unionParts));
-			if (isA(operandIn, pt_ce_benevolent_union_type)) {
-				IETR_VAL(benevolent, toBenevolentUnion(union_.raw()));
-				return callOn(benevolent.raw(), mToNumber);
-			}
-
-			return callOn(union_.raw(), mToNumber);
-		}
-
-		IETR_VAL(operand, callOn(operandIn, mToNumber));
-		zval operandMin, operandMax;
-		bool operandIsConstant;
-		if (isA(operand.raw(), pt_ce_integer_range_type)) {
-			NullableLong min, max;
-			if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(operand.raw()), min, max))) return zv::Val();
-			setNullableLong(&operandMin, min);
-			setNullableLong(&operandMax, max);
-			operandIsConstant = false;
-		} else if (isA(operand.raw(), pt_ce_constant_integer_type)) {
-			zend_long value;
-			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(operand.raw()), value))) return zv::Val();
-			ZVAL_LONG(&operandMin, value);
-			ZVAL_LONG(&operandMax, value);
-			operandIsConstant = true;
-		} else {
-			return operand;
-		}
-
-		// $operand->getValue() of a ConstantIntegerType operand
-		zval *operandValue = &operandMin;
-
-		// the int|float|null results; floats and the INF sentinels are plain
-		// doubles, so every zval here is scalar and needs no release
-		zval min, max;
-		ZVAL_NULL(&min);
-		ZVAL_NULL(&max);
-
-		zval zero;
-		ZVAL_LONG(&zero, 0);
-
-		switch (kind) {
-			case IETR_PLUS:
-				if (operandIsConstant) {
-					if (Z_TYPE(rangeMin) != IS_NULL && UNEXPECTED(!scalarOp(add_function, &rangeMin, operandValue, &min))) return zv::Val();
-					if (Z_TYPE(rangeMax) != IS_NULL && UNEXPECTED(!scalarOp(add_function, &rangeMax, operandValue, &max))) return zv::Val();
-				} else {
-					if (Z_TYPE(rangeMin) != IS_NULL && Z_TYPE(operandMin) != IS_NULL && UNEXPECTED(!scalarOp(add_function, &rangeMin, &operandMin, &min))) return zv::Val();
-					if (Z_TYPE(rangeMax) != IS_NULL && Z_TYPE(operandMax) != IS_NULL && UNEXPECTED(!scalarOp(add_function, &rangeMax, &operandMax, &max))) return zv::Val();
-				}
-				break;
-			case IETR_MINUS:
-				/* [a, b] - [c, d] is [a - d, b - c] */
-				if (Z_TYPE(rangeMin) != IS_NULL && Z_TYPE(operandMax) != IS_NULL) {
-					if (UNEXPECTED(!scalarOp(sub_function, &rangeMin, &operandMax, &min))) return zv::Val();
-				}
-				if (Z_TYPE(rangeMax) != IS_NULL && Z_TYPE(operandMin) != IS_NULL) {
-					if (UNEXPECTED(!scalarOp(sub_function, &rangeMax, &operandMin, &max))) return zv::Val();
-				}
-				break;
-			case IETR_MUL: {
-				zval minusInf, inf;
-				ZVAL_DOUBLE(&minusInf, -std::numeric_limits<double>::infinity());
-				ZVAL_DOUBLE(&inf, std::numeric_limits<double>::infinity());
-				zval min1, min2, max1, max2;
-				if (UNEXPECTED(!mulOrZero(&rangeMin, &operandMin, &minusInf, &minusInf, &min1))) return zv::Val();
-				if (UNEXPECTED(!mulOrZero(&rangeMin, &operandMax, &minusInf, &inf, &min2))) return zv::Val();
-				if (UNEXPECTED(!mulOrZero(&rangeMax, &operandMin, &inf, &minusInf, &max1))) return zv::Val();
-				if (UNEXPECTED(!mulOrZero(&rangeMax, &operandMax, &inf, &inf, &max2))) return zv::Val();
-
-				zv::Args extremes{&min1, &min2, &max1, &max2};
-				IETR_VAL(minValue, phpMinMax(false, 4, extremes));
-				IETR_VAL(maxValue, phpMinMax(true, 4, extremes));
-				ZVAL_COPY_VALUE(&min, minValue.raw());
-				ZVAL_COPY_VALUE(&max, maxValue.raw());
-
-				if (!std::isfinite(zval_get_double(&min))) {
-					ZVAL_NULL(&min);
-				}
-				if (!std::isfinite(zval_get_double(&max))) {
-					ZVAL_NULL(&max);
-				}
-				break;
-			}
-			case IETR_DIV: {
-				if (operandIsConstant) {
-					if (Z_TYPE(rangeMin) != IS_NULL && Z_LVAL_P(operandValue) != 0) {
-						if (UNEXPECTED(!scalarOp(div_function, &rangeMin, operandValue, &min))) return zv::Val();
-					}
-					if (Z_TYPE(rangeMax) != IS_NULL && Z_LVAL_P(operandValue) != 0) {
-						if (UNEXPECTED(!scalarOp(div_function, &rangeMax, operandValue, &max))) return zv::Val();
-					}
-				} else {
-					// Avoid division by zero when looking for the min and the max by using the closest int
-					if (identical(&operandMin, &zero)) {
-						ZVAL_LONG(&operandMin, 1);
-					}
-					if (identical(&operandMax, &zero)) {
-						ZVAL_LONG(&operandMax, -1);
-					}
-
-					if (
-						(lessThan(&operandMin, &zero) || Z_TYPE(operandMin) == IS_NULL)
-						&& (greaterThan(&operandMax, &zero) || Z_TYPE(operandMax) == IS_NULL)
-					) {
-						IETR_VAL(negativeOperand, fromIntervalZv(&operandMin, &zero));
-						IETR_VAL(positiveOperand, fromIntervalZv(&zero, &operandMax));
-						return splitDivision(range, kind, negativeOperand.raw(), positiveOperand.raw(), true);
-					}
-					if (
-						(lessThan(&rangeMin, &zero) || Z_TYPE(rangeMin) == IS_NULL)
-						&& (greaterThan(&rangeMax, &zero) || Z_TYPE(rangeMax) == IS_NULL)
-					) {
-						IETR_VAL(negativeRange, fromIntervalZv(&rangeMin, &zero));
-						IETR_VAL(positiveRange, fromIntervalZv(&zero, &rangeMax));
-						return splitDivision(operand.raw(), kind, negativeRange.raw(), positiveRange.raw(), false);
-					}
-
-					zval minusInf, inf;
-					ZVAL_DOUBLE(&minusInf, -std::numeric_limits<double>::infinity());
-					ZVAL_DOUBLE(&inf, std::numeric_limits<double>::infinity());
-					zval *rangeMinOrInf = Z_TYPE(rangeMin) != IS_NULL ? &rangeMin : &minusInf;
-					zval *rangeMaxOrInf = Z_TYPE(rangeMax) != IS_NULL ? &rangeMax : &inf;
-					zval rangeMinSign, rangeMaxSign;
-					ZVAL_LONG(&rangeMinSign, zend_compare(rangeMinOrInf, &zero));
-					ZVAL_LONG(&rangeMaxSign, zend_compare(rangeMaxOrInf, &zero));
-
-					zval negativeTenth, positiveTenth;
-					ZVAL_DOUBLE(&negativeTenth, -0.1);
-					ZVAL_DOUBLE(&positiveTenth, 0.1);
-					zval min1, min2, max1, max2;
-					if (UNEXPECTED(!scalarOp(Z_TYPE(operandMin) != IS_NULL ? div_function : mul_function, Z_TYPE(operandMin) != IS_NULL ? rangeMinOrInf : &rangeMinSign, Z_TYPE(operandMin) != IS_NULL ? &operandMin : &negativeTenth, &min1))) return zv::Val();
-					if (UNEXPECTED(!scalarOp(Z_TYPE(operandMax) != IS_NULL ? div_function : mul_function, Z_TYPE(operandMax) != IS_NULL ? rangeMinOrInf : &rangeMinSign, Z_TYPE(operandMax) != IS_NULL ? &operandMax : &positiveTenth, &min2))) return zv::Val();
-					if (UNEXPECTED(!scalarOp(Z_TYPE(operandMin) != IS_NULL ? div_function : mul_function, Z_TYPE(operandMin) != IS_NULL ? rangeMaxOrInf : &rangeMaxSign, Z_TYPE(operandMin) != IS_NULL ? &operandMin : &negativeTenth, &max1))) return zv::Val();
-					if (UNEXPECTED(!scalarOp(Z_TYPE(operandMax) != IS_NULL ? div_function : mul_function, Z_TYPE(operandMax) != IS_NULL ? rangeMaxOrInf : &rangeMaxSign, Z_TYPE(operandMax) != IS_NULL ? &operandMax : &positiveTenth, &max2))) return zv::Val();
-
-					zv::Args extremes{&min1, &min2, &max1, &max2};
-					IETR_VAL(minValue, phpMinMax(false, 4, extremes));
-					IETR_VAL(maxValue, phpMinMax(true, 4, extremes));
-					ZVAL_COPY_VALUE(&min, minValue.raw());
-					ZVAL_COPY_VALUE(&max, maxValue.raw());
-
-					if (Z_TYPE(min) == IS_DOUBLE && Z_DVAL(min) == -std::numeric_limits<double>::infinity()) {
-						ZVAL_NULL(&min);
-					}
-					if (Z_TYPE(max) == IS_DOUBLE && Z_DVAL(max) == std::numeric_limits<double>::infinity()) {
-						ZVAL_NULL(&max);
-					}
-				}
-
-				if (Z_TYPE(min) != IS_NULL && Z_TYPE(max) != IS_NULL && greaterThan(&min, &max)) {
-					zval swap;
-					ZVAL_COPY_VALUE(&swap, &min);
-					ZVAL_COPY_VALUE(&min, &max);
-					ZVAL_COPY_VALUE(&max, &swap);
-				}
-
-				if (Z_TYPE(min) == IS_DOUBLE) {
-					toIntBound(std::ceil(Z_DVAL(min)), &min);
-				}
-				if (Z_TYPE(max) == IS_DOUBLE) {
-					toIntBound(std::floor(Z_DVAL(max)), &max);
-				}
-
-				// invert maximas on division with negative constants
-				bool rangeNegativeConstant = false;
-				if (isA(range, pt_ce_constant_integer_type)) {
-					zend_long value;
-					if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(range), value))) return zv::Val();
-					rangeNegativeConstant = value < 0;
-				}
-				if ((rangeNegativeConstant || (operandIsConstant && Z_LVAL_P(operandValue) < 0))
-					&& (Z_TYPE(min) == IS_NULL || Z_TYPE(max) == IS_NULL)) {
-					zval swap;
-					ZVAL_COPY_VALUE(&swap, &min);
-					ZVAL_COPY_VALUE(&min, &max);
-					ZVAL_COPY_VALUE(&max, &swap);
-				}
-
-				if (Z_TYPE(min) == IS_NULL && Z_TYPE(max) == IS_NULL) {
-					return newIntFloatUnion(true);
-				}
-
-				IETR_VAL(rangeType, fromIntervalZv(&min, &max));
-				IETR_VAL(floatType, newFloatType());
-				return union2(rangeType.raw(), floatType.raw());
-			}
-			case IETR_SHIFT_LEFT:
-			case IETR_SHIFT_RIGHT: {
-				if (!operandIsConstant) {
-					return newIntegerType();
-				}
-				if (Z_LVAL_P(operandValue) < 0) {
-					return newErrorType();
-				}
-				if (kind == IETR_SHIFT_LEFT) {
-					// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on
-					// open bounds still include the platform's minimum or maximum integer
-					bool minOverflows = false;
-					bool maxOverflows = false;
-					if (UNEXPECTED(!shiftLeftOverflows(Z_TYPE(rangeMin) == IS_NULL ? ZEND_LONG_MIN : zval_get_long(&rangeMin), operandValue, minOverflows))) return zv::Val();
-					if (!minOverflows && UNEXPECTED(!shiftLeftOverflows(Z_TYPE(rangeMax) == IS_NULL ? ZEND_LONG_MAX : zval_get_long(&rangeMax), operandValue, maxOverflows))) return zv::Val();
-					if (minOverflows || maxOverflows) {
-						return newIntegerType();
-					}
-				}
-				pt_ietr_binary_op shift = kind == IETR_SHIFT_LEFT ? shift_left_function : shift_right_function;
-				if (Z_TYPE(rangeMin) != IS_NULL) {
-					zval rangeMinInteger;
-					ZVAL_LONG(&rangeMinInteger, zval_get_long(&rangeMin));
-					if (UNEXPECTED(!scalarOp(shift, &rangeMinInteger, operandValue, &min))) return zv::Val();
-				}
-				if (Z_TYPE(rangeMax) != IS_NULL) {
-					zval rangeMaxInteger;
-					ZVAL_LONG(&rangeMaxInteger, zval_get_long(&rangeMax));
-					if (UNEXPECTED(!scalarOp(shift, &rangeMaxInteger, operandValue, &max))) return zv::Val();
-				}
-				break;
-			}
-			default:
-				pt_throw_should_not_happen();
-				return zv::Val();
-		}
-
-		if (Z_TYPE(min) == IS_DOUBLE) {
-			ZVAL_NULL(&min);
-		}
-		if (Z_TYPE(max) == IS_DOUBLE) {
-			ZVAL_NULL(&max);
-		}
-
-		return fromIntervalZv(&min, &max);
-	}
-
-	/* the Div arm's split around zero: TypeCombinator::union(
-	 * integerRangeMath(fixed, negative), integerRangeMath(fixed, positive)
-	 * )->toNumber() and the int|float -> benevolent rewrite; the split side
-	 * is the operand (operandSplit) or the range */
-	static zv::Val splitDivision(zval *fixed, IetrBinaryKind kind, zval *negative, zval *positive, bool operandSplit)
-	{
-		IETR_VAL(negativeResult, operandSplit ? integerRangeMath(fixed, kind, negative) : integerRangeMath(negative, kind, fixed));
-		IETR_VAL(positiveResult, operandSplit ? integerRangeMath(fixed, kind, positive) : integerRangeMath(positive, kind, fixed));
-		IETR_VAL(union_, union2(negativeResult.raw(), positiveResult.raw()));
-		IETR_VAL(result, callOn(union_.raw(), mToNumber));
-
-		IETR_VAL(intFloat, newIntFloatUnion(false));
-		IETR_VAL(equals, callOn(result.raw(), mEquals, 1, intFloat.raw()));
-		if (zend_is_true(equals.raw())) {
-			return newIntFloatUnion(true);
-		}
-
-		return result;
 	}
 
 	/* }}} */
@@ -1887,399 +1540,6 @@ public:
 
 	/* }}} */
 
-	/* {{{ floatRangeMath() */
-
-	/* the floats a member stands for: [min, max, whether NAN, whether an
-	 * infinite bound is a value] (an unbounded int reaches the infinity on
-	 * that side, which it never is); NAN alone is the empty interval
-	 * [INF, -INF] */
-	struct FloatInterval
-	{
-		double min;
-		double max;
-		bool nan;
-		bool infinities;
-	};
-
-	/* a member with the integers it is (none for a float member) and the
-	 * floats it stands for */
-	struct FloatIntervalMember
-	{
-		bool isInteger;
-		NumberSetData::IntegerInterval integers;
-		FloatInterval interval;
-	};
-
-	/* The denormal next to zero, the divisor of smallest magnitude. */
-	static constexpr double SMALLEST_POSITIVE_FLOAT = 4.9E-324;
-
-	/* Mirrors floatRangeMath(): null when no operand holds a float range or
-	 * a member is not a number the intervals describe. */
-	static zv::Val floatRangeMath(IetrBinaryKind kind, zval *leftType, zval *rightType, zval *phpVersion)
-	{
-		bool leftHas = false, rightHas = false;
-		std::vector<FloatIntervalMember> leftMembers, rightMembers;
-		if (UNEXPECTED(!getFloatIntervalMembers(leftType, leftHas, leftMembers))) return zv::Val();
-		if (UNEXPECTED(!getFloatIntervalMembers(rightType, rightHas, rightMembers))) return zv::Val();
-		if (!leftHas || !rightHas) return zv::Val::null();
-
-		bool hasFloatRange = false;
-		for (std::vector<FloatIntervalMember> *members : {&leftMembers, &rightMembers}) {
-			for (FloatIntervalMember &member : *members) {
-				// a float member that is neither a constant nor plain float
-				if (member.isInteger || member.interval.min >= member.interval.max || member.interval.nan) continue;
-				hasFloatRange = true;
-			}
-		}
-		if (!hasFloatRange) return zv::Val::null();
-
-		if (kind == IETR_DIV) {
-			for (FloatIntervalMember &member : rightMembers) {
-				if (member.interval.min == 0.0 && member.interval.max == 0.0) return zv::Val::null();
-			}
-		}
-
-		if ((zend_long) leftMembers.size() * (zend_long) rightMembers.size() > PT_IETR_CALCULATE_SCALARS_LIMIT) {
-			IETR_TRI(leftIsFloat, triOn(leftType, mIsFloat));
-			if (leftIsFloat == PT_TRI_YES) return newFloatType();
-			IETR_TRI(rightIsFloat, triOn(rightType, mIsFloat));
-			if (rightIsFloat == PT_TRI_YES) return newFloatType();
-
-			return newIntFloatUnion(false);
-		}
-
-		zv::Arr resultTypes = zv::Arr::create((uint32_t) (leftMembers.size() * rightMembers.size()));
-		for (FloatIntervalMember &leftMember : leftMembers) {
-			for (FloatIntervalMember &rightMember : rightMembers) {
-				if (leftMember.isInteger && rightMember.isInteger) {
-					IETR_VAL(leftType_, pt_integer_range_from_interval(leftMember.integers.min, leftMember.integers.max, 0));
-					IETR_VAL(rightType_, pt_integer_range_from_interval(rightMember.integers.min, rightMember.integers.max, 0));
-					zv::Val pairResult;
-					if (kind == IETR_PLUS) {
-						pairResult = add(leftType_.raw(), rightType_.raw(), phpVersion);
-					} else if (kind == IETR_DIV) {
-						pairResult = divide(leftType_.raw(), rightType_.raw(), phpVersion);
-					} else {
-						pairResult = subtractOrMultiply(kind, leftType_.raw(), rightType_.raw(), phpVersion);
-					}
-					if (UNEXPECTED(pairResult.isUndef())) return zv::Val();
-					resultTypes.push(std::move(pairResult));
-					continue;
-				}
-
-				bool splitDivisor = kind == IETR_DIV && rightMember.isInteger;
-				FloatInterval divisorIntervals[3];
-				size_t divisorCount = splitDivisor ? splitIntegerDivisor(rightMember.interval, divisorIntervals) : 1;
-				if (!splitDivisor) divisorIntervals[0] = rightMember.interval;
-				for (size_t i = 0; i < divisorCount; i++) {
-					IETR_VAL(pairResult, floatIntervalMath(kind, leftMember.interval, divisorIntervals[i], phpVersion));
-					resultTypes.push(std::move(pairResult));
-				}
-			}
-		}
-
-		return unionOf(resultTypes);
-	}
-
-	/* Mirrors getFloatIntervalMembers(); has = false for its null; false =
-	 * pending exception */
-	[[nodiscard]] static bool getFloatIntervalMembers(zval *type, bool &has, std::vector<FloatIntervalMember> &members)
-	{
-		has = false;
-		if (isA(type, pt_ce_benevolent_union_type)) return true;
-
-		NumberSetData numberSet;
-		if (UNEXPECTED(!pt_type_to_number_set(type, numberSet, has))) return false;
-		if (!has) return true;
-
-		for (const NumberSetData::IntegerInterval &integers : numberSet.integerIntervals) {
-			members.push_back({true, integers, {
-				integers.min.isNull ? -HUGE_VAL : static_cast<double>(integers.min.value),
-				integers.max.isNull ? HUGE_VAL : static_cast<double>(integers.max.value),
-				false,
-				false,
-			}});
-		}
-		// plain float is one member: the full interval and NAN
-		bool plainFloat = isPlainFloat(numberSet);
-		NumberSetData::IntegerInterval noIntegers = {NullableLong::null(), NullableLong::null()};
-		for (const NumberSetData::FloatInterval &floats : numberSet.floatIntervals) {
-			members.push_back({false, noIntegers, {floats.min, floats.max, plainFloat, true}});
-		}
-		if (numberSet.nan && !plainFloat) {
-			members.push_back({false, noIntegers, {HUGE_VAL, -HUGE_VAL, true, true}});
-		}
-
-		return true;
-	}
-
-	/* Mirrors isPlainFloat(). */
-	static bool isPlainFloat(const NumberSetData &numberSet)
-	{
-		return numberSet.nan
-			&& numberSet.floatIntervals.size() == 1
-			&& numberSet.floatIntervals[0].min == -HUGE_VAL
-			&& numberSet.floatIntervals[0].max == HUGE_VAL;
-	}
-
-	/* getFloatIntervalMembers() for the private method's glue */
-	static zv::Val getFloatIntervalMembersValue(zval *type)
-	{
-		bool has = false;
-		std::vector<FloatIntervalMember> members;
-		if (UNEXPECTED(!getFloatIntervalMembers(type, has, members))) return zv::Val();
-		if (!has) return zv::Val::null();
-
-		zv::Arr list = zv::Arr::create((uint32_t) members.size());
-		for (FloatIntervalMember &member : members) {
-			zv::Arr pair = zv::Arr::create(2);
-			pair.push(member.isInteger ? integerIntervalValue(member.integers) : zv::Val::null());
-			pair.push(floatIntervalValue(member.interval));
-			list.push(zv::Val(std::move(pair)));
-		}
-
-		return zv::Val(std::move(list));
-	}
-
-	/* Mirrors floatIntervalMath(). */
-	static zv::Val floatIntervalMath(IetrBinaryKind kind, FloatInterval left, FloatInterval right, zval *phpVersion)
-	{
-		double leftMin = left.min, leftMax = left.max;
-		double rightMin = right.min, rightMax = right.max;
-		bool nan = left.nan || right.nan;
-		zv::Arr resultTypes = zv::Arr::create(4);
-
-		if (leftMin <= leftMax && rightMin <= rightMax) {
-			bool leftHasZero = leftMin <= 0.0 && leftMax >= 0.0;
-			bool rightHasZero = rightMin <= 0.0 && rightMax >= 0.0;
-			// the infinities that stand for an unbounded int are not values
-			bool leftHasNegativeInfinity = left.infinities && leftMin == -HUGE_VAL;
-			bool leftHasPositiveInfinity = left.infinities && leftMax == HUGE_VAL;
-			bool rightHasNegativeInfinity = right.infinities && rightMin == -HUGE_VAL;
-			bool rightHasPositiveInfinity = right.infinities && rightMax == HUGE_VAL;
-			bool leftHasInfinity = leftHasNegativeInfinity || leftHasPositiveInfinity;
-			bool rightHasInfinity = rightHasNegativeInfinity || rightHasPositiveInfinity;
-
-			double rightIntervals[2][2] = {{rightMin, rightMax}, {0.0, 0.0}};
-			size_t rightIntervalCount = 1;
-			if (kind == IETR_PLUS) {
-				nan = nan || (leftHasPositiveInfinity && rightHasNegativeInfinity) || (leftHasNegativeInfinity && rightHasPositiveInfinity);
-			} else if (kind == IETR_MINUS) {
-				nan = nan || (leftHasPositiveInfinity && rightHasPositiveInfinity) || (leftHasNegativeInfinity && rightHasNegativeInfinity);
-			} else if (kind == IETR_MUL) {
-				nan = nan || (leftHasZero && rightHasInfinity) || (rightHasZero && leftHasInfinity);
-			} else {
-				nan = nan || (leftHasInfinity && rightHasInfinity);
-				if (rightHasZero) {
-					// both zeros are divisors: x / 0.0 and x / -0.0 are opposite infinities
-					rightIntervalCount = 0;
-					if (rightMin < 0.0) {
-						rightIntervals[rightIntervalCount][0] = rightMin;
-						rightIntervals[rightIntervalCount][1] = -SMALLEST_POSITIVE_FLOAT;
-						rightIntervalCount++;
-					}
-					if (rightMax > 0.0) {
-						rightIntervals[rightIntervalCount][0] = SMALLEST_POSITIVE_FLOAT;
-						rightIntervals[rightIntervalCount][1] = rightMax;
-						rightIntervalCount++;
-					}
-					bool throws;
-					if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_THROWS_ON_DIVISION_BY_ZERO, throws))) return zv::Val();
-					if (!throws) {
-						nan = nan || leftHasZero;
-						if (leftMin < 0.0 || leftMax > 0.0) {
-							IETR_VAL(full, pt_float_range_from_interval(-HUGE_VAL, HUGE_VAL));
-							resultTypes.push(std::move(full));
-						}
-					}
-				}
-			}
-
-			for (size_t i = 0; i < rightIntervalCount; i++) {
-				double intervalMin = rightIntervals[i][0];
-				double intervalMax = rightIntervals[i][1];
-				bool hasCorner = false;
-				double cornerMin = 0.0, cornerMax = 0.0;
-				auto addCorner = [&](double corner) {
-					if (!hasCorner) {
-						cornerMin = corner;
-						cornerMax = corner;
-						hasCorner = true;
-						return;
-					}
-					// min() / max() keep the first of equal values
-					if (corner < cornerMin) cornerMin = corner;
-					if (corner > cornerMax) cornerMax = corner;
-				};
-				for (double leftBound : {leftMin, leftMax}) {
-					for (double rightBound : {intervalMin, intervalMax}) {
-						double corner = calculateFloat(kind, leftBound, rightBound);
-						if (!std::isnan(corner)) {
-							addCorner(corner);
-							continue;
-						}
-
-						// the NAN of a corner is added above, the floats next to it bound the rest
-						double leftValues[2], rightValues[2];
-						size_t leftCount = getFloatBoundWithInnerNeighbour(leftBound, leftMin, leftMax, leftValues);
-						size_t rightCount = getFloatBoundWithInnerNeighbour(rightBound, intervalMin, intervalMax, rightValues);
-						for (size_t l = 0; l < leftCount; l++) {
-							for (size_t r = 0; r < rightCount; r++) {
-								corner = calculateFloat(kind, leftValues[l], rightValues[r]);
-								if (std::isnan(corner)) continue;
-								addCorner(corner);
-							}
-						}
-					}
-				}
-
-				if (!hasCorner) continue;
-
-				IETR_VAL(range, pt_float_range_from_interval(cornerMin, cornerMax));
-				resultTypes.push(std::move(range));
-			}
-		}
-
-		if (nan) {
-			IETR_VAL(nanType, newConstantFloatType(static_cast<double>(NAN)));
-			resultTypes.push(std::move(nanType));
-		}
-
-		return unionOf(resultTypes);
-	}
-
-	/* Mirrors calculateFloat(). */
-	static double calculateFloat(IetrBinaryKind kind, double left, double right)
-	{
-		if (kind == IETR_PLUS) return left + right;
-		if (kind == IETR_MINUS) return left - right;
-		if (kind == IETR_MUL) return left * right;
-
-		return left / right;
-	}
-
-	/* Mirrors splitIntegerDivisor(): an integer divisor next to zero is -1
-	 * or 1, not a denormal; the count of intervals written */
-	static size_t splitIntegerDivisor(FloatInterval interval, FloatInterval out[3])
-	{
-		if (interval.min > 0.0 || interval.max < 0.0) {
-			out[0] = interval;
-			return 1;
-		}
-
-		size_t count = 0;
-		if (interval.min < 0.0) out[count++] = {interval.min, -1.0, false, false};
-		out[count++] = {0.0, 0.0, false, false};
-		if (interval.max > 0.0) out[count++] = {1.0, interval.max, false, false};
-
-		return count;
-	}
-
-	/* splitIntegerDivisor() for the private method's glue */
-	static zv::Val splitIntegerDivisorValue(FloatInterval interval)
-	{
-		FloatInterval intervals[3];
-		size_t count = splitIntegerDivisor(interval, intervals);
-		zv::Arr list = zv::Arr::create((uint32_t) count);
-		for (size_t i = 0; i < count; i++) {
-			list.push(floatIntervalValue(intervals[i]));
-		}
-
-		return zv::Val(std::move(list));
-	}
-
-	/* the array{float, float, bool, bool} of an interval */
-	static zv::Val floatIntervalValue(const FloatInterval &interval)
-	{
-		zval min, max;
-		ZVAL_DOUBLE(&min, interval.min);
-		ZVAL_DOUBLE(&max, interval.max);
-		zv::Arr value = zv::Arr::create(4);
-		value.push(zv::Val::adopt(min));
-		value.push(zv::Val::adopt(max));
-		value.push(zv::Val::boolean(interval.nan));
-		value.push(zv::Val::boolean(interval.infinities));
-		return zv::Val(std::move(value));
-	}
-
-	/* Mirrors getIntegerDivisionFloatType(): null when an operand is not
-	 * made of numbers or every quotient but NAN is possible */
-	static zv::Val getIntegerDivisionFloatType(zval *leftType, zval *rightType, zval *phpVersion)
-	{
-		bool leftHas = false, rightHas = false;
-		std::vector<FloatIntervalMember> leftMembers, rightMembers;
-		if (UNEXPECTED(!getFloatIntervalMembers(leftType, leftHas, leftMembers))) return zv::Val();
-		if (UNEXPECTED(!getFloatIntervalMembers(rightType, rightHas, rightMembers))) return zv::Val();
-		if (!leftHas || !rightHas) return zv::Val::null();
-		if ((zend_long) leftMembers.size() * (zend_long) rightMembers.size() > PT_IETR_CALCULATE_SCALARS_LIMIT) return zv::Val::null();
-
-		zv::Arr floatTypes = zv::Arr::create((uint32_t) (leftMembers.size() * rightMembers.size() * 3));
-		for (FloatIntervalMember &leftMember : leftMembers) {
-			for (FloatIntervalMember &rightMember : rightMembers) {
-				FloatInterval divisorIntervals[3];
-				size_t divisorCount = splitIntegerDivisor(rightMember.interval, divisorIntervals);
-				for (size_t i = 0; i < divisorCount; i++) {
-					IETR_VAL(floatType, floatIntervalMath(IETR_DIV, leftMember.interval, divisorIntervals[i], phpVersion));
-					floatTypes.push(std::move(floatType));
-				}
-			}
-		}
-
-		// a quotient that can be any float but NAN reads better as float, like int + 1.5 does
-		IETR_VAL(floatType, unionOf(floatTypes));
-		IETR_VAL(fullRange, pt_float_range_from_interval(-HUGE_VAL, HUGE_VAL));
-		IETR_VAL(isFullRange, callOn(floatType.raw(), mEquals, 1, fullRange.raw()));
-		if (Z_TYPE_P(isFullRange.raw()) == IS_TRUE) return zv::Val::null();
-
-		return floatType;
-	}
-
-	/* Mirrors replaceFloatType(): a plain FloatType, alone or in a union,
-	 * replaced by floatType */
-	static zv::Val replaceFloatType(zval *type, zval *floatType)
-	{
-		if (Z_TYPE_P(type) == IS_OBJECT && Z_OBJCE_P(type) == pt_ce_float_type) return zv::Val::copyOf(zv::Ref(floatType));
-		if (!isA(type, pt_ce_union_type)) return zv::Val::copyOf(zv::Ref(type));
-
-		IETR_VAL(innerTypes, callOn(type, mGetTypes));
-		if (UNEXPECTED(!requireArray(innerTypes.raw()))) return zv::Val();
-		zv::Arr types = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(innerTypes.raw())));
-		for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
-			zval *innerType = entry.value().raw();
-			bool isFloat = Z_TYPE_P(innerType) == IS_OBJECT && Z_OBJCE_P(innerType) == pt_ce_float_type;
-			types.push(zv::Ref(isFloat ? floatType : innerType));
-		}
-
-		IETR_VAL(union_, unionOf(types));
-		if (isA(type, pt_ce_benevolent_union_type)) return toBenevolentUnion(union_.raw());
-
-		return union_;
-	}
-
-	/* Mirrors getFloatBoundWithInnerNeighbour(): the count of values written */
-	static size_t getFloatBoundWithInnerNeighbour(double bound, double min, double max, double out[2])
-	{
-		out[0] = bound;
-		if (min == max) return 1;
-
-		if (bound == HUGE_VAL) {
-			out[1] = std::numeric_limits<double>::max();
-			return 2;
-		}
-		if (bound == -HUGE_VAL) {
-			out[1] = -std::numeric_limits<double>::max();
-			return 2;
-		}
-		if (bound == 0.0) {
-			out[1] = bound == min ? SMALLEST_POSITIVE_FLOAT : -SMALLEST_POSITIVE_FLOAT;
-			return 2;
-		}
-
-		return 1;
-	}
-
-	/* }}} */
-
 	/* {{{ small private helpers of the twin */
 
 	/* Mirrors getNeverType(). */
@@ -2306,20 +1566,6 @@ public:
 	}
 
 	/* }}} */
-
-	/* private static: a left shift that does not fit into an integer wraps
-	 * around instead of turning into a float, so the shifted value no longer
-	 * preserves the ordering of its operand — `($value << $shift) >> $shift
-	 * !== $value` through the engine's operators; false = pending exception */
-	[[nodiscard]] static bool shiftLeftOverflows(zend_long value, zval *shift, bool &out)
-	{
-		zval operand, shifted, restored;
-		ZVAL_LONG(&operand, value);
-		if (UNEXPECTED(!scalarOp(shift_left_function, &operand, shift, &shifted))) return false;
-		if (UNEXPECTED(!scalarOp(shift_right_function, &shifted, shift, &restored))) return false;
-		out = Z_TYPE(restored) != IS_LONG || Z_LVAL(restored) != value;
-		return true;
-	}
 
 	/* {{{ intDivide() */
 
@@ -2545,9 +1791,9 @@ zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval 
 		case PT_OPERATOR_BITWISE_XOR:
 			return OperatorTypeHelper::bitwise(IETR_BITWISE_XOR, left, right);
 		case PT_OPERATOR_SHIFT_LEFT:
-			return OperatorTypeHelper::shift(IETR_SHIFT_LEFT, left, right);
+			return OperatorTypeHelper::shift(IETR_SHIFT_LEFT, left, right, phpVersion);
 		case PT_OPERATOR_SHIFT_RIGHT:
-			return OperatorTypeHelper::shift(IETR_SHIFT_RIGHT, left, right);
+			return OperatorTypeHelper::shift(IETR_SHIFT_RIGHT, left, right, phpVersion);
 		case PT_OPERATOR_CONCATENATE:
 			return OperatorTypeHelper::concat(left, right, phpVersion);
 		case PT_OPERATOR_ARRAY_UNION:
@@ -2588,30 +1834,7 @@ bool otArgPhpVersion(zval *value, uint32_t arg)
 	return false;
 }
 
-/* the array{float, float, bool, bool} of the interval parameters
- * (PHPStan checks the shape, the engine does not); false = thrown */
-bool otFloatInterval(zval *value, uint32_t arg, OperatorTypeHelper::FloatInterval &out)
-{
-	if (Z_TYPE_P(value) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(value)) == 4) {
-		zval *min = zend_hash_index_find(Z_ARRVAL_P(value), 0);
-		zval *max = zend_hash_index_find(Z_ARRVAL_P(value), 1);
-		zval *nan = zend_hash_index_find(Z_ARRVAL_P(value), 2);
-		zval *infinities = zend_hash_index_find(Z_ARRVAL_P(value), 3);
-		if (
-			min != NULL && max != NULL && nan != NULL && infinities != NULL
-			&& Z_TYPE_P(min) == IS_DOUBLE && Z_TYPE_P(max) == IS_DOUBLE
-			&& (Z_TYPE_P(nan) == IS_TRUE || Z_TYPE_P(nan) == IS_FALSE)
-			&& (Z_TYPE_P(infinities) == IS_TRUE || Z_TYPE_P(infinities) == IS_FALSE)
-		) {
-			out = {Z_DVAL_P(min), Z_DVAL_P(max), Z_TYPE_P(nan) == IS_TRUE, Z_TYPE_P(infinities) == IS_TRUE};
-			return true;
-		}
-	}
-	zend_argument_type_error(arg, "must be of type array{float, float, bool, bool}, %s given", zend_zval_value_name(value));
-	return false;
-}
-
-/* the operator string of resolveCommonMath() / integerRangeMath(); false =
+/* the operator string of resolveCommonMath(); false =
  * the ValueError of an operator the twin does not handle */
 bool otOperatorKind(zend_string *operator_, IetrBinaryKind &kind)
 {
@@ -2672,7 +1895,6 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	ptdecl::OperatorTypeHelper::declareClass(cls);
 	cls.privateClassConstantLong("IS_SCALAR_TYPE", PT_IETR_IS_SCALAR_TYPE);
 	cls.privateClassConstantLong("IS_UNKNOWN", PT_IETR_IS_UNKNOWN);
-	cls.privateClassConstantValue("SMALLEST_POSITIVE_FLOAT", [](zval *out) { ZVAL_DOUBLE(out, OperatorTypeHelper::SMALLEST_POSITIVE_FLOAT); });
 	ptdecl::OperatorTypeHelper::declareProperties(cls);
 
 	cls.method(sigs::concat, OT_BINARY_GLUE(OperatorTypeHelper::concat(leftType, rightType, phpVersion)));
@@ -2696,7 +1918,7 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	});
 
 	cls.method(sigs::divide, OT_BINARY_GLUE(OperatorTypeHelper::divide(leftType, rightType, phpVersion)));
-	cls.method(sigs::getDivTypeFromTypes, OT_TYPES_GLUE(OperatorTypeHelper::getDivTypeFromTypes(leftType, rightType)));
+	cls.method(sigs::getDivTypeFromTypes, OT_BINARY_GLUE(OperatorTypeHelper::getDivTypeFromTypes(leftType, rightType, phpVersion)));
 	cls.method(sigs::modulo, OT_BINARY_GLUE(OperatorTypeHelper::modulo(leftType, rightType)));
 
 	cls.method(sigs::getMaxModuloMagnitude, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -2719,8 +1941,8 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	cls.method(sigs::tryArrayUnion, OT_TYPES_GLUE(OperatorTypeHelper::tryArrayUnion(leftType, rightType)));
 	cls.method(sigs::subtract, OT_BINARY_GLUE(OperatorTypeHelper::subtractOrMultiply(IETR_MINUS, leftType, rightType, phpVersion)));
 	cls.method(sigs::multiply, OT_BINARY_GLUE(OperatorTypeHelper::subtractOrMultiply(IETR_MUL, leftType, rightType, phpVersion)));
-	cls.method(sigs::shiftLeft, OT_BINARY_GLUE(OperatorTypeHelper::shift(IETR_SHIFT_LEFT, leftType, rightType)));
-	cls.method(sigs::shiftRight, OT_BINARY_GLUE(OperatorTypeHelper::shift(IETR_SHIFT_RIGHT, leftType, rightType)));
+	cls.method(sigs::shiftLeft, OT_BINARY_GLUE(OperatorTypeHelper::shift(IETR_SHIFT_LEFT, leftType, rightType, phpVersion)));
+	cls.method(sigs::shiftRight, OT_BINARY_GLUE(OperatorTypeHelper::shift(IETR_SHIFT_RIGHT, leftType, rightType, phpVersion)));
 	cls.method(sigs::optimizeScalarType, OT_TYPE_GLUE(OperatorTypeHelper::optimizeScalarType(type)));
 	cls.method(sigs::canEndInWhitespace, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *left, *leftStringType, *phpVersion;
@@ -2742,39 +1964,15 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 
 	cls.method(sigs::resolveCommonMath, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *operator_;
-		zval *leftType, *rightType;
-		if (!zp::parse<zp::Str, zp::Obj, zp::Obj>(execute_data, operator_, leftType, rightType)) RETURN_THROWS();
-		if (UNEXPECTED(!otArgType(leftType, 2) || !otArgType(rightType, 3))) RETURN_THROWS();
+		zval *leftType, *rightType, *phpVersion;
+		if (!zp::parse<zp::Str, zp::Obj, zp::Obj, zp::Obj>(execute_data, operator_, leftType, rightType, phpVersion)) RETURN_THROWS();
+		if (UNEXPECTED(!otArgType(leftType, 2) || !otArgType(rightType, 3) || !otArgPhpVersion(phpVersion, 4))) RETURN_THROWS();
 		IetrBinaryKind kind;
 		if (UNEXPECTED(!otOperatorKind(operator_, kind))) RETURN_THROWS();
-		PT_RETURN_VAL(OperatorTypeHelper::resolveCommonMath(kind, leftType, rightType));
-	});
-
-	cls.method(sigs::integerRangeMath, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *range, *operand;
-		zend_string *operator_;
-		if (!zp::parse<zp::Obj, zp::Str, zp::Obj>(execute_data, range, operator_, operand)) RETURN_THROWS();
-		if (UNEXPECTED(!otArgType(range, 1) || !otArgType(operand, 3))) RETURN_THROWS();
-		IetrBinaryKind kind;
-		if (UNEXPECTED(!otOperatorKind(operator_, kind))) RETURN_THROWS();
-		PT_RETURN_VAL(OperatorTypeHelper::integerRangeMath(range, kind, operand));
-	});
-
-	cls.method(sigs::shiftLeftOverflows, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_long value, shift;
-		if (!zp::parse<zp::Long, zp::Long>(execute_data, value, shift)) RETURN_THROWS();
-		bool out = false;
-		if (UNEXPECTED(!OperatorTypeHelper::shiftLeftOverflowsValue(value, shift, out))) RETURN_THROWS();
-		RETURN_BOOL(out);
+		PT_RETURN_VAL(OperatorTypeHelper::resolveCommonMath(kind, leftType, rightType, phpVersion));
 	});
 
 	cls.method(sigs::negateNumber, OT_TYPE_GLUE(OperatorTypeHelper::negateNumber(type)));
-
-	cls.method(sigs::toIntBound, [](INTERNAL_FUNCTION_PARAMETERS) {
-		double value;
-		if (!zp::parse<zp::Double>(execute_data, value)) RETURN_THROWS();
-		OperatorTypeHelper::toIntBound(value, return_value);
-	});
 
 	cls.method(sigs::getTypeFromValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *value;
@@ -2807,75 +2005,6 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 
 	cls.method(sigs::intDivide, OT_BINARY_GLUE(OperatorTypeHelper::intDivide(leftType, rightType)));
 
-	cls.method(sigs::floatRangeMath, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_string *operator_;
-		zval *leftType, *rightType, *phpVersion;
-		if (!zp::parse<zp::Str, zp::Obj, zp::Obj, zp::Obj>(execute_data, operator_, leftType, rightType, phpVersion)) RETURN_THROWS();
-		if (UNEXPECTED(!otArgType(leftType, 2) || !otArgType(rightType, 3) || !otArgPhpVersion(phpVersion, 4))) RETURN_THROWS();
-		IetrBinaryKind kind;
-		if (UNEXPECTED(!otOperatorKind(operator_, kind))) RETURN_THROWS();
-		PT_RETURN_VAL(OperatorTypeHelper::floatRangeMath(kind, leftType, rightType, phpVersion));
-	});
-
-	cls.method(sigs::getFloatIntervalMembers, OT_TYPE_GLUE(OperatorTypeHelper::getFloatIntervalMembersValue(type)));
-	cls.method(sigs::isPlainFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *numberSet;
-		if (!zp::parse<zp::Obj>(execute_data, numberSet)) RETURN_THROWS();
-		phpstanturbo::NumberSetData data;
-		if (UNEXPECTED(!pt_number_set_read(Z_OBJ_P(numberSet), data))) RETURN_THROWS();
-		RETURN_BOOL(OperatorTypeHelper::isPlainFloat(data));
-	});
-
-	cls.method(sigs::splitIntegerDivisor, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *interval;
-		if (!zp::parse<zp::Zval>(execute_data, interval)) RETURN_THROWS();
-		OperatorTypeHelper::FloatInterval parsed;
-		if (UNEXPECTED(!otFloatInterval(interval, 1, parsed))) RETURN_THROWS();
-		PT_RETURN_VAL(OperatorTypeHelper::splitIntegerDivisorValue(parsed));
-	});
-
-	cls.method(sigs::getIntegerDivisionFloatType, OT_BINARY_GLUE(OperatorTypeHelper::getIntegerDivisionFloatType(leftType, rightType, phpVersion)));
-	cls.method(sigs::replaceFloatType, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *type, *floatType;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, type, floatType)) RETURN_THROWS();
-		if (UNEXPECTED(!otArgType(type, 1) || !otArgType(floatType, 2))) RETURN_THROWS();
-		PT_RETURN_VAL(OperatorTypeHelper::replaceFloatType(type, floatType));
-	});
-
-	cls.method(sigs::floatIntervalMath, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_string *operator_;
-		zval *left, *right, *phpVersion;
-		if (!zp::parse<zp::Str, zp::Zval, zp::Zval, zp::Obj>(execute_data, operator_, left, right, phpVersion)) RETURN_THROWS();
-		if (UNEXPECTED(!otArgPhpVersion(phpVersion, 4))) RETURN_THROWS();
-		IetrBinaryKind kind;
-		if (UNEXPECTED(!otOperatorKind(operator_, kind))) RETURN_THROWS();
-		OperatorTypeHelper::FloatInterval intervals[2];
-		zval *arguments[2] = { left, right };
-		for (uint32_t i = 0; i < 2; i++) {
-			if (UNEXPECTED(!otFloatInterval(arguments[i], i + 2, intervals[i]))) RETURN_THROWS();
-		}
-		PT_RETURN_VAL(OperatorTypeHelper::floatIntervalMath(kind, intervals[0], intervals[1], phpVersion));
-	});
-
-	cls.method(sigs::calculateFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_string *operator_;
-		double left, right;
-		if (!zp::parse<zp::Str, zp::Double, zp::Double>(execute_data, operator_, left, right)) RETURN_THROWS();
-		IetrBinaryKind kind;
-		if (UNEXPECTED(!otOperatorKind(operator_, kind))) RETURN_THROWS();
-		RETURN_DOUBLE(OperatorTypeHelper::calculateFloat(kind, left, right));
-	});
-
-	cls.method(sigs::getFloatBoundWithInnerNeighbour, [](INTERNAL_FUNCTION_PARAMETERS) {
-		double bound, min, max;
-		if (!zp::parse<zp::Double, zp::Double, zp::Double>(execute_data, bound, min, max)) RETURN_THROWS();
-		double values[2];
-		size_t count = OperatorTypeHelper::getFloatBoundWithInnerNeighbour(bound, min, max, values);
-		array_init_size(return_value, (uint32_t) count);
-		for (size_t i = 0; i < count; i++) {
-			add_next_index_double(return_value, values[i]);
-		}
-	});
 	cls.method(sigs::getIntervals, OT_TYPE_GLUE(OperatorTypeHelper::getIntervalsValue(type)));
 
 	cls.method(sigs::divideIntervals, [](INTERNAL_FUNCTION_PARAMETERS) {

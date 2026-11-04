@@ -59,6 +59,19 @@ class Foo
 	}
 
 	/**
+	 * @param int<1, 5> $r
+	 * @param 1.5|2 $u
+	 * @param 1.5|int<1, 2> $v
+	 */
+	public function floatMembersOfIntegerUnions(int $r, $u, $v): void
+	{
+		assertType('float<2.5, 6.5>|int<3, 7>', $r + $u);
+		assertType('float<1.5, 7.5>|int<1, 10>', $r * $v);
+		assertType('float<-3.5, 0.5>|int<-4, 1>', $v - $r);
+		assertType('int', $v << 1);
+	}
+
+	/**
 	 * @param float<1, 2> $a
 	 * @param float<-3.5, 4.5> $b
 	 * @param positive-float $p

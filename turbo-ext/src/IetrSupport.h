@@ -668,4 +668,9 @@ inline void setNullableLong(zval *out, NullableLong value)
 
 } // namespace phpstanturbo::ietr
 
+/* the arithmetic of NumberSet::add() & co. (NumberSet.cpp) on the sets'
+ * data: `kind` IETR_PLUS, _MINUS, _MUL, _DIV, _SHIFT_LEFT or _SHIFT_RIGHT;
+ * UNDEF = pending exception */
+zv::Val pt_number_set_calculate(phpstanturbo::ietr::IetrBinaryKind kind, const phpstanturbo::NumberSetData &left, const phpstanturbo::NumberSetData &right, zval *phpVersion);
+
 #endif

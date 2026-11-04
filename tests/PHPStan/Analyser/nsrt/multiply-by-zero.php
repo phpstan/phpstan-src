@@ -10,12 +10,12 @@ use function PHPStan\Testing\assertType;
 function doFoo(int $int, float $float, int|float $intOrFloat, string $numericString, bool $bool): void
 {
 	// 0 * 1.5 is 0.0, 0 * -1.5 is -0.0 and 0 * INF is NAN
-	assertType('float', 0 * $float);
-	assertType('float', $float * 0);
-	assertType('float', null * $float);
-	assertType('float|int', 0 * $intOrFloat);
-	assertType('float|int', null * $numericString);
-	assertType('float|int', $numericString * false);
+	assertType('0.0|NAN', 0 * $float);
+	assertType('0.0|NAN', $float * 0);
+	assertType('0.0|NAN', null * $float);
+	assertType('0|0.0|NAN', 0 * $intOrFloat);
+	assertType('0|0.0|NAN', null * $numericString);
+	assertType('0|0.0|NAN', $numericString * false);
 
 	// an integer times zero is always the integer 0
 	assertType('0', 0 * $int);

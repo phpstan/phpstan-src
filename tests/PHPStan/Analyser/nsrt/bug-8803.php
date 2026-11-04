@@ -22,8 +22,8 @@ class HelloWorld
 			assertType('int<1, 14>', $offset);
 			assertType('int<2, 21>', $value);
 			assertType('int<2, 21>', $value2);
-			assertType('float', $value3);
-			assertType('float', $value4);
+			assertType('float<1001.0, 1014.0>', $value3);
+			assertType('float<1001.0, 1014.0>', $value4);
 		}
 	}
 

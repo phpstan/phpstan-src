@@ -22,25 +22,16 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function abs;
 use function array_merge;
-use function assert;
-use function ceil;
 use function count;
-use function floor;
-use function get_class;
 use function in_array;
 use function intdiv;
-use function intval;
-use function is_finite;
 use function is_float;
 use function is_infinite;
 use function is_int;
-use function is_nan;
 use function is_numeric;
 use function max;
 use function min;
 use const INF;
-use const NAN;
-use const PHP_FLOAT_MAX;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -54,9 +45,6 @@ final class OperatorTypeHelper
 
 	private const IS_SCALAR_TYPE = 1;
 	private const IS_UNKNOWN = 2;
-
-	/** The denormal next to zero, the divisor of smallest magnitude. */
-	private const SMALLEST_POSITIVE_FLOAT = 4.9E-324;
 
 	public static function concat(Type $left, Type $right, PhpVersion $phpVersion): Type
 	{
@@ -421,12 +409,7 @@ final class OperatorTypeHelper
 
 	public static function divide(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
 	{
-		$floatRangeResult = self::floatRangeMath('/', $leftType, $rightType, $phpVersion);
-		if ($floatRangeResult !== null) {
-			return $floatRangeResult;
-		}
-
-		$result = self::getDivTypeFromTypes($leftType, $rightType);
+		$result = self::getDivTypeFromTypes($leftType, $rightType, $phpVersion);
 
 		if ($leftType->isInteger()->yes() && $rightType->isInteger()->yes()) {
 			$modType = self::modulo($leftType, $rightType, $phpVersion);
@@ -439,68 +422,12 @@ final class OperatorTypeHelper
 				}
 			}
 
-			// the float of an int division lies between the quotients of the bounds
-			$floatType = self::getIntegerDivisionFloatType($leftType, $rightType, $phpVersion);
-			if ($floatType !== null) {
-				return self::replaceFloatType($result, $floatType);
-			}
 		}
 
 		return $result;
 	}
 
-	private static function getIntegerDivisionFloatType(Type $leftType, Type $rightType, PhpVersion $phpVersion): ?Type
-	{
-		$leftMembers = self::getFloatIntervalMembers($leftType);
-		$rightMembers = self::getFloatIntervalMembers($rightType);
-		if ($leftMembers === null || $rightMembers === null) {
-			return null;
-		}
-		if (count($leftMembers) * count($rightMembers) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			return null;
-		}
-
-		$floatTypes = [];
-		foreach ($leftMembers as [, $leftInterval]) {
-			foreach ($rightMembers as [, $rightInterval]) {
-				foreach (self::splitIntegerDivisor($rightInterval) as $divisorInterval) {
-					$floatTypes[] = self::floatIntervalMath('/', $leftInterval, $divisorInterval, $phpVersion);
-				}
-			}
-		}
-
-		// a quotient that can be any float but NAN reads better as float, like int + 1.5 does
-		$floatType = TypeCombinator::union(...$floatTypes);
-		if ($floatType->equals(FloatRangeType::fromInterval(-INF, INF))) {
-			return null;
-		}
-
-		return $floatType;
-	}
-
-	private static function replaceFloatType(Type $type, Type $floatType): Type
-	{
-		if (get_class($type) === FloatType::class) {
-			return $floatType;
-		}
-		if (!$type instanceof UnionType) {
-			return $type;
-		}
-
-		$types = [];
-		foreach ($type->getTypes() as $innerType) {
-			$types[] = get_class($innerType) === FloatType::class ? $floatType : $innerType;
-		}
-
-		$union = TypeCombinator::union(...$types);
-		if ($type instanceof BenevolentUnionType) {
-			return TypeUtils::toBenevolentUnion($union);
-		}
-
-		return $union;
-	}
-
-	private static function getDivTypeFromTypes(Type $leftType, Type $rightType): Type
+	private static function getDivTypeFromTypes(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
 	{
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
@@ -545,7 +472,7 @@ final class OperatorTypeHelper
 			}
 		}
 
-		return self::resolveCommonMath('/', $leftType, $rightType);
+		return self::resolveCommonMath('/', $leftType, $rightType, $phpVersion);
 	}
 
 	public static function modulo(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -725,11 +652,6 @@ final class OperatorTypeHelper
 
 	public static function add(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
 	{
-		$floatRangeResult = self::floatRangeMath('+', $leftType, $rightType, $phpVersion);
-		if ($floatRangeResult !== null) {
-			return $floatRangeResult;
-		}
-
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return self::getNeverType($leftType, $rightType);
 		}
@@ -830,7 +752,7 @@ final class OperatorTypeHelper
 			}
 		}
 
-		return self::resolveCommonMath('+', $leftType, $rightType);
+		return self::resolveCommonMath('+', $leftType, $rightType, $phpVersion);
 	}
 
 	public static function arrayUnion(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -978,11 +900,6 @@ final class OperatorTypeHelper
 
 	public static function subtract(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
 	{
-		$floatRangeResult = self::floatRangeMath('-', $leftType, $rightType, $phpVersion);
-		if ($floatRangeResult !== null) {
-			return $floatRangeResult;
-		}
-
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -1016,16 +933,11 @@ final class OperatorTypeHelper
 			$rightType = self::optimizeScalarType($rightType);
 		}
 
-		return self::resolveCommonMath('-', $leftType, $rightType);
+		return self::resolveCommonMath('-', $leftType, $rightType, $phpVersion);
 	}
 
 	public static function multiply(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
 	{
-		$floatRangeResult = self::floatRangeMath('*', $leftType, $rightType, $phpVersion);
-		if ($floatRangeResult !== null) {
-			return $floatRangeResult;
-		}
-
 		$leftTypes = $leftType->getConstantScalarTypes();
 		$rightTypes = $rightType->getConstantScalarTypes();
 		$leftTypesCount = count($leftTypes);
@@ -1069,7 +981,7 @@ final class OperatorTypeHelper
 			return new ConstantIntegerType(0);
 		}
 
-		return self::resolveCommonMath('*', $leftType, $rightType);
+		return self::resolveCommonMath('*', $leftType, $rightType, $phpVersion);
 	}
 
 	public static function shiftLeft(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -1123,7 +1035,7 @@ final class OperatorTypeHelper
 			return new ErrorType();
 		}
 
-		return self::resolveCommonMath('<<', $leftType, $rightType);
+		return self::resolveCommonMath('<<', $leftType, $rightType, $phpVersion);
 	}
 
 	public static function shiftRight(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -1177,7 +1089,7 @@ final class OperatorTypeHelper
 			return new ErrorType();
 		}
 
-		return self::resolveCommonMath('>>', $leftType, $rightType);
+		return self::resolveCommonMath('>>', $leftType, $rightType, $phpVersion);
 	}
 
 	private static function optimizeScalarType(Type $type): Type
@@ -1292,44 +1204,43 @@ final class OperatorTypeHelper
 	/**
 	 * @param '+'|'-'|'*'|'/'|'<<'|'>>' $operator
 	 */
-	private static function resolveCommonMath(string $operator, Type $leftType, Type $rightType): Type
+	/**
+	 * @param '+'|'-'|'*'|'/'|'<<'|'>>' $operator
+	 */
+	private static function resolveCommonMath(string $operator, Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
 	{
 		$types = TypeCombinator::union($leftType, $rightType);
 		$leftNumberType = $leftType->toNumber();
 		$rightNumberType = $rightType->toNumber();
 
-		if (
-			!$types instanceof MixedType
-			&& (
-				$rightNumberType instanceof IntegerRangeType
-				|| $rightNumberType instanceof ConstantIntegerType
-				|| $rightNumberType instanceof UnionType
-			)
-		) {
-			if ($leftNumberType instanceof IntegerRangeType || $leftNumberType instanceof ConstantIntegerType) {
-				return self::integerRangeMath(
-					$leftNumberType,
-					$operator,
-					$rightNumberType,
-				);
-			} elseif ($leftNumberType instanceof UnionType) {
-				$unionParts = [];
-
-				foreach ($leftNumberType->getTypes() as $type) {
-					$numberType = $type->toNumber();
-					if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
-						$unionParts[] = self::integerRangeMath($numberType, $operator, $rightNumberType);
-					} else {
-						$unionParts[] = $numberType;
-					}
+		if (!$types instanceof MixedType) {
+			$leftNumberSet = $leftNumberType->toNumberSet();
+			$rightNumberSet = $rightNumberType->toNumberSet();
+			if ($leftNumberSet !== null && $rightNumberSet !== null) {
+				if ($operator === '+') {
+					$result = $leftNumberSet->add($rightNumberSet, $phpVersion);
+				} elseif ($operator === '-') {
+					$result = $leftNumberSet->subtract($rightNumberSet, $phpVersion);
+				} elseif ($operator === '*') {
+					$result = $leftNumberSet->multiply($rightNumberSet, $phpVersion);
+				} elseif ($operator === '/') {
+					$result = $leftNumberSet->divide($rightNumberSet, $phpVersion);
+				} elseif ($operator === '<<') {
+					$result = $leftNumberSet->shiftLeft($rightNumberSet, $phpVersion);
+				} else {
+					$result = $leftNumberSet->shiftRight($rightNumberSet, $phpVersion);
 				}
 
-				$union = TypeCombinator::union(...$unionParts);
-				if ($leftNumberType instanceof BenevolentUnionType) {
-					return TypeUtils::toBenevolentUnion($union)->toNumber();
+				if (
+					$leftNumberType instanceof BenevolentUnionType
+					|| $rightNumberType instanceof BenevolentUnionType
+					|| $leftType instanceof BenevolentUnionType
+					|| $rightType instanceof BenevolentUnionType
+				) {
+					return TypeUtils::toBenevolentUnion($result);
 				}
 
-				return $union->toNumber();
+				return $result;
 			}
 		}
 
@@ -1377,230 +1288,6 @@ final class OperatorTypeHelper
 		return $resultType;
 	}
 
-	/**
-	 * @param ConstantIntegerType|IntegerRangeType $range
-	 * @param '+'|'-'|'*'|'/'|'<<'|'>>' $operator
-	 */
-	private static function integerRangeMath(Type $range, string $operator, Type $operand): Type
-	{
-		if ($range instanceof IntegerRangeType) {
-			$rangeMin = $range->getMin();
-			$rangeMax = $range->getMax();
-		} else {
-			$rangeMin = $range->getValue();
-			$rangeMax = $rangeMin;
-		}
-
-		if ($operand instanceof UnionType) {
-
-			$unionParts = [];
-
-			foreach ($operand->getTypes() as $type) {
-				$numberType = $type->toNumber();
-				if ($numberType instanceof IntegerRangeType || $numberType instanceof ConstantIntegerType) {
-					$unionParts[] = self::integerRangeMath($range, $operator, $numberType);
-				} else {
-					$unionParts[] = $type->toNumber();
-				}
-			}
-
-			$union = TypeCombinator::union(...$unionParts);
-			if ($operand instanceof BenevolentUnionType) {
-				return TypeUtils::toBenevolentUnion($union)->toNumber();
-			}
-
-			return $union->toNumber();
-		}
-
-		$operand = $operand->toNumber();
-		if ($operand instanceof IntegerRangeType) {
-			$operandMin = $operand->getMin();
-			$operandMax = $operand->getMax();
-		} elseif ($operand instanceof ConstantIntegerType) {
-			$operandMin = $operand->getValue();
-			$operandMax = $operand->getValue();
-		} else {
-			return $operand;
-		}
-
-		if ($operator === '+') {
-			if ($operand instanceof ConstantIntegerType) {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null ? $rangeMin + $operand->getValue() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null ? $rangeMax + $operand->getValue() : null;
-			} else {
-				/** @var int|float|null $min */
-				$min = $rangeMin !== null && $operand->getMin() !== null ? $rangeMin + $operand->getMin() : null;
-
-				/** @var int|float|null $max */
-				$max = $rangeMax !== null && $operand->getMax() !== null ? $rangeMax + $operand->getMax() : null;
-			}
-		} elseif ($operator === '-') {
-			// [a, b] - [c, d] is [a - d, b - c]
-			/** @var int|float|null $min */
-			$min = $rangeMin !== null && $operandMax !== null ? $rangeMin - $operandMax : null;
-
-			/** @var int|float|null $max */
-			$max = $rangeMax !== null && $operandMin !== null ? $rangeMax - $operandMin : null;
-		} elseif ($operator === '*') {
-			$min1 = $rangeMin === 0 || $operandMin === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMin ?? -INF);
-			$min2 = $rangeMin === 0 || $operandMax === 0 ? 0 : ($rangeMin ?? -INF) * ($operandMax ?? INF);
-			$max1 = $rangeMax === 0 || $operandMin === 0 ? 0 : ($rangeMax ?? INF) * ($operandMin ?? -INF);
-			$max2 = $rangeMax === 0 || $operandMax === 0 ? 0 : ($rangeMax ?? INF) * ($operandMax ?? INF);
-
-			$min = min($min1, $min2, $max1, $max2);
-			$max = max($min1, $min2, $max1, $max2);
-
-			if (!is_finite($min)) {
-				$min = null;
-			}
-			if (!is_finite($max)) {
-				$max = null;
-			}
-		} elseif ($operator === '/') {
-			if ($operand instanceof ConstantIntegerType) {
-				$min = $rangeMin !== null && $operand->getValue() !== 0 ? $rangeMin / $operand->getValue() : null;
-				$max = $rangeMax !== null && $operand->getValue() !== 0 ? $rangeMax / $operand->getValue() : null;
-			} else {
-				// Avoid division by zero when looking for the min and the max by using the closest int
-				$operandMin = $operandMin !== 0 ? $operandMin : 1;
-				$operandMax = $operandMax !== 0 ? $operandMax : -1;
-
-				if (
-					($operandMin < 0 || $operandMin === null)
-					&& ($operandMax > 0 || $operandMax === null)
-				) {
-					$negativeOperand = IntegerRangeType::fromInterval($operandMin, 0);
-					assert($negativeOperand instanceof IntegerRangeType);
-					$positiveOperand = IntegerRangeType::fromInterval(0, $operandMax);
-					assert($positiveOperand instanceof IntegerRangeType);
-
-					$result = TypeCombinator::union(
-						self::integerRangeMath($range, $operator, $negativeOperand),
-						self::integerRangeMath($range, $operator, $positiveOperand),
-					)->toNumber();
-
-					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
-						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-					}
-
-					return $result;
-				}
-				if (
-					($rangeMin < 0 || $rangeMin === null)
-					&& ($rangeMax > 0 || $rangeMax === null)
-				) {
-					$negativeRange = IntegerRangeType::fromInterval($rangeMin, 0);
-					assert($negativeRange instanceof IntegerRangeType);
-					$positiveRange = IntegerRangeType::fromInterval(0, $rangeMax);
-					assert($positiveRange instanceof IntegerRangeType);
-
-					$result = TypeCombinator::union(
-						self::integerRangeMath($negativeRange, $operator, $operand),
-						self::integerRangeMath($positiveRange, $operator, $operand),
-					)->toNumber();
-
-					if ($result->equals(new UnionType([new IntegerType(), new FloatType()]))) {
-						return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-					}
-
-					return $result;
-				}
-
-				$rangeMinSign = ($rangeMin ?? -INF) <=> 0;
-				$rangeMaxSign = ($rangeMax ?? INF) <=> 0;
-
-				$min1 = $operandMin !== null ? ($rangeMin ?? -INF) / $operandMin : $rangeMinSign * -0.1;
-				$min2 = $operandMax !== null ? ($rangeMin ?? -INF) / $operandMax : $rangeMinSign * 0.1;
-				$max1 = $operandMin !== null ? ($rangeMax ?? INF) / $operandMin : $rangeMaxSign * -0.1;
-				$max2 = $operandMax !== null ? ($rangeMax ?? INF) / $operandMax : $rangeMaxSign * 0.1;
-
-				$min = min($min1, $min2, $max1, $max2);
-				$max = max($min1, $min2, $max1, $max2);
-
-				if ($min === -INF) {
-					$min = null;
-				}
-				if ($max === INF) {
-					$max = null;
-				}
-			}
-
-			if ($min !== null && $max !== null && $min > $max) {
-				[$min, $max] = [$max, $min];
-			}
-
-			if (is_float($min)) {
-				$min = self::toIntBound(ceil($min));
-			}
-			if (is_float($max)) {
-				$max = self::toIntBound(floor($max));
-			}
-
-			// invert maximas on division with negative constants
-			if ((($range instanceof ConstantIntegerType && $range->getValue() < 0)
-					|| ($operand instanceof ConstantIntegerType && $operand->getValue() < 0))
-				&& ($min === null || $max === null)) {
-				[$min, $max] = [$max, $min];
-			}
-
-			if ($min === null && $max === null) {
-				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
-			}
-
-			return TypeCombinator::union(IntegerRangeType::fromInterval($min, $max), new FloatType());
-		} elseif ($operator === '<<') {
-			if (!$operand instanceof ConstantIntegerType) {
-				return new IntegerType();
-			}
-			if ($operand->getValue() < 0) {
-				return new ErrorType();
-			}
-			// an overflowing shift wraps around, which breaks the monotonicity the bounds rely on
-			// open bounds still include the platform's minimum or maximum integer
-			if (
-				self::shiftLeftOverflows($rangeMin ?? PHP_INT_MIN, $operand->getValue())
-				|| self::shiftLeftOverflows($rangeMax ?? PHP_INT_MAX, $operand->getValue())
-			) {
-				return new IntegerType();
-			}
-
-			$min = $rangeMin !== null ? intval($rangeMin) << $operand->getValue() : null;
-			$max = $rangeMax !== null ? intval($rangeMax) << $operand->getValue() : null;
-		} elseif ($operator === '>>') {
-			if (!$operand instanceof ConstantIntegerType) {
-				return new IntegerType();
-			}
-			if ($operand->getValue() < 0) {
-				return new ErrorType();
-			}
-			$min = $rangeMin !== null ? intval($rangeMin) >> $operand->getValue() : null;
-			$max = $rangeMax !== null ? intval($rangeMax) >> $operand->getValue() : null;
-		} else {
-			throw new ShouldNotHappenException();
-		}
-
-		if (is_float($min)) {
-			$min = null;
-		}
-		if (is_float($max)) {
-			$max = null;
-		}
-
-		return IntegerRangeType::fromInterval($min, $max);
-	}
-
-	/**
-	 * A left shift that does not fit into an integer wraps around instead of turning
-	 * into a float, so the shifted value no longer preserves the ordering of its operand.
-	 */
-	private static function shiftLeftOverflows(int $value, int $shift): bool
-	{
-		return ($value << $shift) >> $shift !== $value;
-	}
-
 	private static function negateNumber(Type $type): Type
 	{
 		$type = $type->toNumber();
@@ -1630,29 +1317,6 @@ final class OperatorTypeHelper
 	}
 
 	/**
-	 * The bound an overflowing float stands for: an int operation whose result
-	 * leaves the int range yields a float there, so the integer part of the
-	 * result reaches no further than the int range does. Casting the float
-	 * instead would wrap the bound around (and warns since PHP 8.5): note that
-	 * PHP_INT_MAX is not representable as a float, so the first float past the
-	 * int range is (float) PHP_INT_MAX itself.
-	 */
-	private static function toIntBound(float $value): ?int
-	{
-		if (!is_finite($value)) {
-			return null;
-		}
-		if ($value >= (float) PHP_INT_MAX) {
-			return PHP_INT_MAX;
-		}
-		if ($value <= (float) PHP_INT_MIN) {
-			return PHP_INT_MIN;
-		}
-
-		return (int) $value;
-	}
-
-	/**
 	 * The integer a constant operand of %, <<, >>, &, | and ^ becomes: numeric
 	 * strings out of the int range saturate like an (int) cast instead of
 	 * wrapping around like the float toNumber() gives.
@@ -1673,283 +1337,6 @@ final class OperatorTypeHelper
 	private static function getTypeFromValue($value): Type
 	{
 		return ConstantTypeHelper::getTypeFromValue($value);
-	}
-
-	/**
-	 * Interval arithmetic for operands that hold a float range. Each pair of
-	 * their members is computed on its own: two integers by the integer
-	 * operators, anything else as floats at the corners of the intervals,
-	 * since a rounded IEEE operation is monotonic in each operand on either
-	 * side of zero. The NAN a pair can yield is added separately.
-	 *
-	 * @param '+'|'-'|'*'|'/' $operator
-	 */
-	private static function floatRangeMath(string $operator, Type $leftType, Type $rightType, PhpVersion $phpVersion): ?Type
-	{
-		$leftMembers = self::getFloatIntervalMembers($leftType);
-		$rightMembers = self::getFloatIntervalMembers($rightType);
-		if ($leftMembers === null || $rightMembers === null) {
-			return null;
-		}
-
-		$hasFloatRange = false;
-		foreach ([$leftMembers, $rightMembers] as $members) {
-			foreach ($members as [$integerInterval, [$min, $max, $nan]]) {
-				// a float member that is neither a constant nor plain float
-				if ($integerInterval !== null || $min >= $max || $nan) {
-					continue;
-				}
-
-				$hasFloatRange = true;
-			}
-		}
-		if (!$hasFloatRange) {
-			return null;
-		}
-
-		if ($operator === '/') {
-			foreach ($rightMembers as [, [$min, $max]]) {
-				if ($min === 0.0 && $max === 0.0) {
-					return null;
-				}
-			}
-		}
-
-		if (count($leftMembers) * count($rightMembers) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
-			if ($leftType->isFloat()->yes() || $rightType->isFloat()->yes()) {
-				return new FloatType();
-			}
-
-			return new UnionType([new IntegerType(), new FloatType()]);
-		}
-
-		$resultTypes = [];
-		foreach ($leftMembers as [$leftInteger, $leftInterval]) {
-			foreach ($rightMembers as [$rightInteger, $rightInterval]) {
-				if ($leftInteger !== null && $rightInteger !== null) {
-					$leftMember = IntegerRangeType::fromInterval($leftInteger[0], $leftInteger[1]);
-					$rightMember = IntegerRangeType::fromInterval($rightInteger[0], $rightInteger[1]);
-					if ($operator === '+') {
-						$resultTypes[] = self::add($leftMember, $rightMember, $phpVersion);
-					} elseif ($operator === '-') {
-						$resultTypes[] = self::subtract($leftMember, $rightMember, $phpVersion);
-					} elseif ($operator === '*') {
-						$resultTypes[] = self::multiply($leftMember, $rightMember, $phpVersion);
-					} else {
-						$resultTypes[] = self::divide($leftMember, $rightMember, $phpVersion);
-					}
-					continue;
-				}
-
-				foreach ($operator === '/' && $rightInteger !== null ? self::splitIntegerDivisor($rightInterval) : [$rightInterval] as $divisorInterval) {
-					$resultTypes[] = self::floatIntervalMath($operator, $leftInterval, $divisorInterval, $phpVersion);
-				}
-			}
-		}
-
-		return TypeCombinator::union(...$resultTypes);
-	}
-
-	/**
-	 * An integer divisor next to zero is -1 or 1, not a denormal: the
-	 * negative part, zero on its own and the positive part.
-	 *
-	 * @param array{float, float, bool, bool} $interval
-	 * @return list<array{float, float, bool, bool}>
-	 */
-	private static function splitIntegerDivisor(array $interval): array
-	{
-		[$min, $max] = $interval;
-		if ($min > 0.0 || $max < 0.0) {
-			return [$interval];
-		}
-
-		$intervals = [];
-		if ($min < 0.0) {
-			$intervals[] = [$min, -1.0, false, false];
-		}
-		$intervals[] = [0.0, 0.0, false, false];
-		if ($max > 0.0) {
-			$intervals[] = [1.0, $max, false, false];
-		}
-
-		return $intervals;
-	}
-
-	/**
-	 * The members of a number type, each with the integers it is (null for a
-	 * float member) and the floats it stands for: [min, max, whether NAN,
-	 * whether an infinite bound is a value]. An int without a bound reaches the
-	 * infinity on that side, which it never is, and NAN alone is an empty interval.
-	 *
-	 * @return list<array{array{int|null, int|null}|null, array{float, float, bool, bool}}>|null
-	 */
-	private static function getFloatIntervalMembers(Type $type): ?array
-	{
-		if ($type instanceof BenevolentUnionType) {
-			return null;
-		}
-
-		$numberSet = $type->toNumberSet();
-		if ($numberSet === null) {
-			return null;
-		}
-
-		$members = [];
-		foreach ($numberSet->getIntegerIntervals() as $integerInterval) {
-			[$min, $max] = $integerInterval;
-			$members[] = [$integerInterval, [$min === null ? -INF : (float) $min, $max === null ? INF : (float) $max, false, false]];
-		}
-		// plain float is one member: the full interval and NAN
-		$plainFloat = self::isPlainFloat($numberSet);
-		foreach ($numberSet->getFloatIntervals() as [$min, $max]) {
-			$members[] = [null, [$min, $max, $plainFloat, true]];
-		}
-		if ($numberSet->hasNan() && !$plainFloat) {
-			$members[] = [null, [INF, -INF, true, true]];
-		}
-
-		return $members;
-	}
-
-	/**
-	 * Whether the floats of the set are all of them, which a union holds as one
-	 * FloatType member.
-	 */
-	private static function isPlainFloat(NumberSet $numberSet): bool
-	{
-		return $numberSet->hasNan() && $numberSet->getFloatIntervals() === [[-INF, INF]];
-	}
-
-	/**
-	 * @param '+'|'-'|'*'|'/' $operator
-	 * @param array{float, float, bool, bool} $left
-	 * @param array{float, float, bool, bool} $right
-	 */
-	private static function floatIntervalMath(string $operator, array $left, array $right, PhpVersion $phpVersion): Type
-	{
-		[$leftMin, $leftMax, $nan, $leftInfinities] = $left;
-		[$rightMin, $rightMax, $rightNan, $rightInfinities] = $right;
-		$nan = $nan || $rightNan;
-		$resultTypes = [];
-
-		if ($leftMin <= $leftMax && $rightMin <= $rightMax) {
-			$leftHasZero = $leftMin <= 0.0 && $leftMax >= 0.0;
-			$rightHasZero = $rightMin <= 0.0 && $rightMax >= 0.0;
-			// the infinities that stand for an unbounded int are not values
-			$leftHasNegativeInfinity = $leftInfinities && $leftMin === -INF;
-			$leftHasPositiveInfinity = $leftInfinities && $leftMax === INF;
-			$rightHasNegativeInfinity = $rightInfinities && $rightMin === -INF;
-			$rightHasPositiveInfinity = $rightInfinities && $rightMax === INF;
-			$leftHasInfinity = $leftHasNegativeInfinity || $leftHasPositiveInfinity;
-			$rightHasInfinity = $rightHasNegativeInfinity || $rightHasPositiveInfinity;
-
-			$rightIntervals = [[$rightMin, $rightMax]];
-			if ($operator === '+') {
-				$nan = $nan || ($leftHasPositiveInfinity && $rightHasNegativeInfinity) || ($leftHasNegativeInfinity && $rightHasPositiveInfinity);
-			} elseif ($operator === '-') {
-				$nan = $nan || ($leftHasPositiveInfinity && $rightHasPositiveInfinity) || ($leftHasNegativeInfinity && $rightHasNegativeInfinity);
-			} elseif ($operator === '*') {
-				$nan = $nan || ($leftHasZero && $rightHasInfinity) || ($rightHasZero && $leftHasInfinity);
-			} else {
-				$nan = $nan || ($leftHasInfinity && $rightHasInfinity);
-				if ($rightHasZero) {
-					// both zeros are divisors: x / 0.0 and x / -0.0 are opposite infinities
-					$rightIntervals = [];
-					if ($rightMin < 0.0) {
-						$rightIntervals[] = [$rightMin, -self::SMALLEST_POSITIVE_FLOAT];
-					}
-					if ($rightMax > 0.0) {
-						$rightIntervals[] = [self::SMALLEST_POSITIVE_FLOAT, $rightMax];
-					}
-					if (!$phpVersion->throwsOnDivisionByZero()) {
-						$nan = $nan || $leftHasZero;
-						if ($leftMin < 0.0 || $leftMax > 0.0) {
-							$resultTypes[] = FloatRangeType::fromInterval(-INF, INF);
-						}
-					}
-				}
-			}
-
-			foreach ($rightIntervals as [$intervalMin, $intervalMax]) {
-				$corners = [];
-				foreach ([$leftMin, $leftMax] as $leftBound) {
-					foreach ([$intervalMin, $intervalMax] as $rightBound) {
-						$corner = self::calculateFloat($operator, $leftBound, $rightBound);
-						if (!is_nan($corner)) {
-							$corners[] = $corner;
-							continue;
-						}
-
-						// the NAN of a corner is added above, the floats next to it bound the rest
-						foreach (self::getFloatBoundWithInnerNeighbour($leftBound, $leftMin, $leftMax) as $leftValue) {
-							foreach (self::getFloatBoundWithInnerNeighbour($rightBound, $intervalMin, $intervalMax) as $rightValue) {
-								$corner = self::calculateFloat($operator, $leftValue, $rightValue);
-								if (is_nan($corner)) {
-									continue;
-								}
-								$corners[] = $corner;
-							}
-						}
-					}
-				}
-
-				if ($corners === []) {
-					continue;
-				}
-
-				$resultTypes[] = FloatRangeType::fromInterval(min($corners), max($corners));
-			}
-		}
-
-		if ($nan) {
-			$resultTypes[] = new ConstantFloatType(NAN);
-		}
-
-		return TypeCombinator::union(...$resultTypes);
-	}
-
-	/**
-	 * @param '+'|'-'|'*'|'/' $operator
-	 */
-	private static function calculateFloat(string $operator, float $left, float $right): float
-	{
-		if ($operator === '+') {
-			return $left + $right;
-		}
-		if ($operator === '-') {
-			return $left - $right;
-		}
-		if ($operator === '*') {
-			return $left * $right;
-		}
-
-		return $left / $right;
-	}
-
-	/**
-	 * The bound and, when the interval goes on past an infinite or zero bound,
-	 * the next float inside it: the values a NAN corner is the limit of.
-	 *
-	 * @return list<float>
-	 */
-	private static function getFloatBoundWithInnerNeighbour(float $bound, float $min, float $max): array
-	{
-		if ($min === $max) {
-			return [$bound];
-		}
-
-		if ($bound === INF) {
-			return [$bound, PHP_FLOAT_MAX];
-		}
-		if ($bound === -INF) {
-			return [$bound, -PHP_FLOAT_MAX];
-		}
-		if ($bound === 0.0) {
-			return [$bound, $bound === $min ? self::SMALLEST_POSITIVE_FLOAT : -self::SMALLEST_POSITIVE_FLOAT];
-		}
-
-		return [$bound];
 	}
 
 	private static function getNeverType(Type $leftType, Type $rightType): Type

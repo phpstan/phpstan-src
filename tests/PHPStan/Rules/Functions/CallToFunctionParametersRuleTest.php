@@ -3413,4 +3413,41 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		];
 	}
 
+	public function testFloatRangeArgument(): void
+	{
+		$this->analyse([__DIR__ . '/data/float-range-argument.php'], [
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\unit expects float<0.0, 1.0>, float given.',
+				17,
+			],
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\unit expects float<0.0, 1.0>, 5.0 given.',
+				18,
+			],
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\unit expects float<0.0, 1.0>, NAN given.',
+				19,
+				'NAN is in no float range. Use float<0.0, 1.0>|NAN to accept it.',
+			],
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\unit expects float<0.0, 1.0>, int given.',
+				20,
+			],
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\unit expects float<0.0, 1.0>, 2 given.',
+				21,
+			],
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\notNan expects float<min, max>, float given.',
+				25,
+				'NAN is in no float range. Use float<min, max>|NAN to accept it.',
+			],
+			[
+				'Parameter #1 $x of function FloatRangeArgument\\notNan expects float<min, max>, NAN given.',
+				26,
+				'NAN is in no float range. Use float<min, max>|NAN to accept it.',
+			],
+		]);
+	}
+
 }

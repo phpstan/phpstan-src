@@ -184,7 +184,7 @@ final class VerbosityLevel
 				$veryVerbose = true;
 				return $type;
 			}
-			if ($type instanceof IntegerRangeType) {
+			if ($type instanceof IntegerRangeType || $type instanceof FloatRangeType) {
 				$moreVerbose = true;
 				return $type;
 			}

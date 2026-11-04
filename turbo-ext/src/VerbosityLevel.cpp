@@ -253,7 +253,7 @@ static void moreVerboseCallback(zval *state0, zval *state1, uint32_t argc, zval 
 		ZVAL_TRUE(state1);
 		RETURN_COPY(type);
 	}
-	if (instanceof_function(object->ce, pt_ce_integer_range_type)) {
+	if (instanceof_function(object->ce, pt_ce_integer_range_type) || instanceof_function(object->ce, pt_ce_float_range_type)) {
 		ZVAL_TRUE(state0);
 		RETURN_COPY(type);
 	}

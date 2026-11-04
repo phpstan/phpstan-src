@@ -36,6 +36,8 @@ use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 use function sprintf;
+use const INF;
+use const NAN;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -450,6 +452,26 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 		yield [
 			ClosureType::createPure(),
 			'pure-Closure',
+		];
+
+		yield [
+			FloatRangeType::fromInterval(1.0, 2.0),
+			'float<1.0, 2.0>',
+		];
+
+		yield [
+			FloatRangeType::fromInterval(-INF, 0.0),
+			'float<min, 0.0>',
+		];
+
+		yield [
+			FloatRangeType::fromInterval(-1.5, INF),
+			'float<-1.5, max>',
+		];
+
+		yield [
+			TypeCombinator::union(FloatRangeType::fromInterval(0.0, 1.0), new ConstantFloatType(NAN)),
+			'(NAN | float<0.0, 1.0>)',
 		];
 	}
 

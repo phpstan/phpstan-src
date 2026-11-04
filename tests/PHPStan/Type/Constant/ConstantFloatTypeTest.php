@@ -3,8 +3,15 @@
 namespace PHPStan\Type\Constant;
 
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\FloatRangeType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function sprintf;
+use const INF;
+use const NAN;
 
 class ConstantFloatTypeTest extends PHPStanTestCase
 {
@@ -46,6 +53,36 @@ class ConstantFloatTypeTest extends PHPStanTestCase
 	): void
 	{
 		$this->assertSame($expectedDescription, $type->describe(VerbosityLevel::precise()));
+	}
+
+	public static function dataAccepts(): iterable
+	{
+		$range = FloatRangeType::fromInterval(1.0, 2.0);
+
+		yield [new ConstantFloatType(1.5), $range, TrinaryLogic::createMaybe()];
+		yield [new ConstantFloatType(1.0), $range, TrinaryLogic::createMaybe()];
+		yield [new ConstantFloatType(5.0), $range, TrinaryLogic::createNo()];
+		yield [new ConstantFloatType(NAN), $range, TrinaryLogic::createNo()];
+		yield [new ConstantFloatType(INF), $range, TrinaryLogic::createNo()];
+		yield [new ConstantFloatType(INF), FloatRangeType::fromInterval(1.0, INF), TrinaryLogic::createMaybe()];
+		yield [new ConstantFloatType(-0.0), FloatRangeType::fromInterval(0.0, 1.0), TrinaryLogic::createMaybe()];
+		yield [new ConstantFloatType(5.0), TypeCombinator::union($range, new ConstantFloatType(5.0)), TrinaryLogic::createMaybe()];
+		yield [new ConstantFloatType(5.0), TypeCombinator::union($range, FloatRangeType::fromInterval(3.0, 4.0)), TrinaryLogic::createNo()];
+	}
+
+	#[DataProvider('dataAccepts')]
+	public function testAccepts(ConstantFloatType $type, Type $otherType, TrinaryLogic $expectedResult): void
+	{
+		$this->assertSame(
+			$expectedResult->describe(),
+			$type->accepts($otherType, true)->result->describe(),
+			sprintf('%s -> accepts(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
+		$this->assertSame(
+			$expectedResult->describe(),
+			$type->isSuperTypeOf($otherType)->result->describe(),
+			sprintf('%s -> isSuperTypeOf(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
+		);
 	}
 
 }

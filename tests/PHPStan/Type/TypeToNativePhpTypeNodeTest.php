@@ -29,6 +29,7 @@ use Traversable;
 use function array_map;
 use function implode;
 use function sprintf;
+use const INF;
 
 class TypeToNativePhpTypeNodeTest extends PHPStanTestCase
 {
@@ -48,6 +49,8 @@ class TypeToNativePhpTypeNodeTest extends PHPStanTestCase
 		// scalars are widened, the round trip gives the widened type
 		yield [new IntegerType(), NativeTypePosition::parameter($php80), 'int', 'int'];
 		yield [IntegerRangeType::fromInterval(1, 5), NativeTypePosition::parameter($php80), 'int', 'int'];
+		yield [FloatRangeType::fromInterval(1.0, 5.0), NativeTypePosition::parameter($php80), 'float', 'float'];
+		yield [TypeCombinator::addNull(FloatRangeType::fromInterval(-INF, 0.0)), NativeTypePosition::returnType($php74), '?float', 'float|null'];
 		yield [new ConstantStringType('foo'), NativeTypePosition::returnType($php80), 'string', 'string'];
 		yield [new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]), NativeTypePosition::parameter($php80), 'string', 'string'];
 		yield [TypeCombinator::union(new ConstantStringType('a'), new ConstantStringType('b')), NativeTypePosition::parameter($php74), 'string', 'string'];

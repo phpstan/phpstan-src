@@ -7,6 +7,7 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
@@ -15,6 +16,7 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use function array_map;
 use function get_class;
 use function is_finite;
 use function is_float;
@@ -44,7 +46,7 @@ use const PHP_INT_MIN;
  * integer, and every interval operation the integer one.
  */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FloatRangeType.cpp')]
-class FloatRangeType extends FloatType
+class FloatRangeType extends FloatType implements CompoundType
 {
 
 	private function __construct(private float $min, private float $max)
@@ -176,14 +178,34 @@ class FloatRangeType extends FloatType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return sprintf(
-			'float<%s, %s>',
-			$this->min === -INF ? 'min' : (new ConstantFloatType($this->min))->describe(VerbosityLevel::precise()),
-			$this->max === INF ? 'max' : (new ConstantFloatType($this->max))->describe(VerbosityLevel::precise()),
+		return $level->handle(
+			static fn (): string => 'float',
+			fn (): string => sprintf(
+				'float<%s, %s>',
+				$this->min === -INF ? 'min' : (new ConstantFloatType($this->min))->describe(VerbosityLevel::precise()),
+				$this->max === INF ? 'max' : (new ConstantFloatType($this->max))->describe(VerbosityLevel::precise()),
+			),
 		);
 	}
 
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
+	{
+		$result = $this->acceptsWithoutReasons($type, $strictTypes);
+		if ($result->yes() || (new ConstantFloatType(NAN))->isSuperTypeOf($type)->no()) {
+			return $result;
+		}
+
+		// tell why when NAN is all that is not accepted
+		if (!$this->acceptsWithoutReasons(TypeCombinator::remove($type, new ConstantFloatType(NAN)), $strictTypes)->yes()) {
+			return $result;
+		}
+
+		return new AcceptsResult($result->result, [
+			sprintf('NAN is in no float range. Use %s|NAN to accept it.', $this->describe(VerbosityLevel::precise())),
+		]);
+	}
+
+	private function acceptsWithoutReasons(Type $type, bool $strictTypes): AcceptsResult
 	{
 		// an integer is coerced to the float closest to it, which keeps the order of the integers
 		if ($type instanceof ConstantIntegerType) {
@@ -239,6 +261,83 @@ class FloatRangeType extends FloatType
 		}
 
 		return IsSuperTypeOfResult::createNo();
+	}
+
+	public function isSubTypeOf(Type $otherType): IsSuperTypeOfResult
+	{
+		if ($otherType instanceof parent || $otherType instanceof IntersectionType) {
+			return $otherType->isSuperTypeOf($this);
+		}
+
+		if ($otherType instanceof UnionType) {
+			return IsSuperTypeOfResult::createNo()->or(...array_map(fn (Type $innerType): IsSuperTypeOfResult => $innerType->isSuperTypeOf($this), $otherType->getTypes()));
+		}
+
+		// the other type cannot tell floats apart
+		return $otherType->isSuperTypeOf(new FloatType());
+	}
+
+	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
+	{
+		if ($acceptingType instanceof parent || $acceptingType instanceof IntersectionType) {
+			return $acceptingType->isSuperTypeOf($this)->toAcceptsResult();
+		}
+
+		if ($acceptingType instanceof UnionType) {
+			return AcceptsResult::createNo()->or(...array_map(fn (Type $innerType): AcceptsResult => $innerType->accepts($this, $strictTypes), $acceptingType->getTypes()));
+		}
+
+		// the other type cannot tell floats apart
+		return $acceptingType->accepts(new FloatType(), $strictTypes);
+	}
+
+	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
+	{
+		return $this->compareEachPoint($otherType, false, false, $phpVersion) ?? parent::isSmallerThan($otherType, $phpVersion);
+	}
+
+	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
+	{
+		return $this->compareEachPoint($otherType, false, true, $phpVersion) ?? parent::isSmallerThanOrEqual($otherType, $phpVersion);
+	}
+
+	public function isGreaterThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
+	{
+		return $this->compareEachPoint($otherType, true, false, $phpVersion) ?? $otherType->isSmallerThan(new FloatType(), $phpVersion);
+	}
+
+	public function isGreaterThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
+	{
+		return $this->compareEachPoint($otherType, true, true, $phpVersion) ?? $otherType->isSmallerThanOrEqual(new FloatType(), $phpVersion);
+	}
+
+	/**
+	 * Compares $otherType with each float of the range, the other type on the
+	 * left of `<` or `<=` when $otherOnLeft. Numbers, booleans and null compare
+	 * with the floats in their order, so the comparison holds for the whole range
+	 * when it holds for both bounds. A bool or null compares by truthiness, which
+	 * changes only at zero. Null for other types, which can compare with floats
+	 * in any order.
+	 */
+	private function compareEachPoint(Type $otherType, bool $otherOnLeft, bool $orEqual, PhpVersion $phpVersion): ?TrinaryLogic
+	{
+		$ordered = TypeCombinator::union(new IntegerType(), new FloatType(), new BooleanType(), new NullType());
+		if (!$ordered->isSuperTypeOf($otherType)->yes()) {
+			return null;
+		}
+
+		$points = [new ConstantFloatType($this->min), new ConstantFloatType($this->max)];
+		if (!$this->excludesZero()) {
+			$points[] = new ConstantFloatType(0.0);
+		}
+
+		$results = [];
+		foreach ($points as $point) {
+			[$left, $right] = $otherOnLeft ? [$otherType, $point] : [$point, $otherType];
+			$results[] = $orEqual ? $left->isSmallerThanOrEqual($right, $phpVersion) : $left->isSmallerThan($right, $phpVersion);
+		}
+
+		return TrinaryLogic::extremeIdentity(...$results);
 	}
 
 	public function equals(Type $type): bool

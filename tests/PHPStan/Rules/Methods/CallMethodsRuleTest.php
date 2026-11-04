@@ -4581,6 +4581,19 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15251.php'], []);
 	}
 
+	public function testBug15393(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-15393.php'], [
+			[
+				'Parameter #3 $options of method Redis::set() expects array|int|null, string given.',
+				11,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug12820(): void
 	{

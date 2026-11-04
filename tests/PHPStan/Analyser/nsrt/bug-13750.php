@@ -94,6 +94,30 @@ class Analogous
 		}
 	}
 
+	public function strlen(string $s): void
+	{
+		if (strlen($s) > 2) {
+		}
+		assertType('int<0, max>', strlen($s));
+		if ($s !== '') {
+			assertType('int<1, max>', strlen($s));
+		}
+	}
+
+	/** @param array<mixed> $arr */
+	public function keepsInformativeMergedCount(array $arr): void
+	{
+		if (count($arr) === 0) {
+			return;
+		}
+		if (count($arr) > 5) {
+		}
+		assertType('int<1, max>', count($arr));
+		if (count($arr) > 2) {
+			assertType('int<3, max>', count($arr));
+		}
+	}
+
 	/** @param array<mixed> $arr */
 	public function keepsNarrowerCount(array $arr): void
 	{

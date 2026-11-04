@@ -47,6 +47,8 @@ use function get_class;
 use function http_build_query;
 use function ini_get;
 use function is_file;
+use function microtime;
+use function min;
 use function parse_url;
 use function sprintf;
 use function unlink;
@@ -58,6 +60,15 @@ use const PHP_VERSION_ID;
 #[AutowiredService]
 final class FixerApplication
 {
+
+	/**
+	 * A burst of changes, like a git checkout or a coding standard fixer at work,
+	 * is analysed once it is over, not as soon as its first file changes.
+	 */
+	private const CHANGES_QUIET_SECONDS = 0.5;
+
+	/** Changes that never stop for that long are analysed this long after the first one anyway. */
+	private const CHANGES_WAIT_SECONDS_LIMIT = 2.0;
 
 	/** @var PromiseInterface<string>|null  */
 	private PromiseInterface|null $processInProgress = null;
@@ -168,16 +179,18 @@ final class FixerApplication
 				$encoder,
 			);
 
-			$this->monitorFileChanges($loop, function (FileMonitorResult $changes) use ($loop, $mainScript, $projectConfigFile, $input, $encoder): void {
+			$this->monitorFileChanges($loop, static function (FileMonitorResult $changes) use ($encoder): void {
+				if (count($changes->getChangedFiles()) === 0) {
+					return;
+				}
+
+				$encoder->write(['action' => 'changedFiles', 'data' => [
+					'paths' => $changes->getChangedFiles(),
+				]]);
+			}, function () use ($loop, $mainScript, $projectConfigFile, $input, $encoder): void {
 				if ($this->processInProgress !== null) {
 					$this->processInProgress->cancel();
 					$this->processInProgress = null;
-				}
-
-				if (count($changes->getChangedFiles()) > 0) {
-					$encoder->write(['action' => 'changedFiles', 'data' => [
-						'paths' => $changes->getChangedFiles(),
-					]]);
 				}
 
 				$this->analyse(
@@ -394,16 +407,19 @@ final class FixerApplication
 	}
 
 	/**
-	 * @param callable(FileMonitorResult): void $hasChangesCallback
+	 * @param callable(FileMonitorResult): void $hasChangesCallback called for every poll with changes, the code shown can follow them right away
+	 * @param callable(): void $changesSettledCallback called once the changes stop, to analyse them
 	 */
-	private function monitorFileChanges(LoopInterface $loop, callable $hasChangesCallback): void
+	private function monitorFileChanges(LoopInterface $loop, callable $hasChangesCallback, callable $changesSettledCallback): void
 	{
 		if ($this->fileMonitor === null) {
 			throw new ShouldNotHappenException();
 		}
 		$fileMonitor = $this->fileMonitor;
 		$interval = $fileMonitor->getPollInterval();
-		$callback = function () use (&$callback, $loop, $hasChangesCallback, $fileMonitor, $interval): void {
+		$firstChangeAt = null;
+		$lastChangeAt = null;
+		$callback = function () use (&$callback, &$firstChangeAt, &$lastChangeAt, $loop, $hasChangesCallback, $changesSettledCallback, $fileMonitor, $interval): void {
 			if (!$this->fileMonitorActive) {
 				$loop->addTimer($interval, $callback);
 				return;
@@ -413,12 +429,29 @@ final class FixerApplication
 				return;
 			}
 			$changes = $fileMonitor->getChanges();
+			$now = microtime(true);
 
 			if ($changes->hasAnyChanges()) {
+				$firstChangeAt ??= $now;
+				$lastChangeAt = $now;
 				$hasChangesCallback($changes);
 			}
 
-			$loop->addTimer($interval, $callback);
+			if ($firstChangeAt === null || $lastChangeAt === null) {
+				$loop->addTimer($interval, $callback);
+				return;
+			}
+
+			if ($now - $lastChangeAt >= self::CHANGES_QUIET_SECONDS || $now - $firstChangeAt >= self::CHANGES_WAIT_SECONDS_LIMIT) {
+				$firstChangeAt = null;
+				$lastChangeAt = null;
+				$changesSettledCallback();
+				$loop->addTimer($interval, $callback);
+				return;
+			}
+
+			// the monitor may poll less often than this, the end of the changes is noticed by the next poll
+			$loop->addTimer(min($interval, self::CHANGES_QUIET_SECONDS), $callback);
 		};
 		$loop->addTimer($interval, $callback);
 	}

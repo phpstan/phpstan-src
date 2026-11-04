@@ -196,4 +196,16 @@ final class Assertions
 		return self::create($assertTags);
 	}
 
+	/** Whether any tag is @phpstan-assert-if-true or @phpstan-assert-if-false. */
+	public function hasConditionalAsserts(): bool
+	{
+		foreach ($this->asserts as $assert) {
+			if ($assert->getIf() !== AssertTag::NULL) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 }

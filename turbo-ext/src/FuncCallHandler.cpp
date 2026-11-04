@@ -1079,7 +1079,7 @@ public:
 			zv::Val assertsHold;
 			zval *assertions = pt_function_reflection_asserts(functionReflection.raw(), assertsHold);
 			if (UNEXPECTED(assertions == NULL)) return zv::Val();
-			if (UNEXPECTED(!ptcall::hasConditionalAsserts(assertions, hasConditionalAsserts))) return zv::Val();
+			if (UNEXPECTED(!pt_assertions_has_conditional_asserts(assertions, hasConditionalAsserts))) return zv::Val();
 		}
 		zv::Val typeCallback = isEarlyTerminating
 			? pt_native_closure(&neverTypeCallbackBody)

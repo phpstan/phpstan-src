@@ -303,7 +303,7 @@ final class StaticCallHandler implements ExprHandler
 		// (native-types-promoted, or on-demand / synthetic pricing) the acceptor is
 		// re-derived from the already-processed argument results on the asking scope.
 		$storageRef = WeakReference::create($storage);
-		$hasConditionalAsserts = $methodReflection !== null && ImpossibleCheckTypeHelper::hasConditionalAsserts($methodReflection->getAsserts());
+		$hasConditionalAsserts = $methodReflection !== null && $methodReflection->getAsserts()->hasConditionalAsserts();
 		$typeCallback = $isEarlyTerminating
 			? static fn (bool $nativeTypesPromoted): Type => new NeverType(true)
 			: function (bool $nativeTypesPromoted) use ($beforeScope, $expr, $classResult, $nameResult, $resolvedParametersAcceptor, $argsResult, $storageRef, $hasConditionalAsserts): Type {

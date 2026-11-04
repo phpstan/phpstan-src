@@ -134,23 +134,6 @@ inline zv::Val assertionsGetAll(zval *assertions)
 	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(all)) : std::move(hold);
 }
 
-/* ImpossibleCheckTypeHelper::hasConditionalAsserts($assertions): whether any
- * tag is @phpstan-assert-if-true/-if-false; false = pending exception */
-[[nodiscard]] inline bool hasConditionalAsserts(zval *assertions, bool &out)
-{
-	zv::Val all = assertionsGetAll(assertions);
-	if (UNEXPECTED(all.isUndef())) return false;
-	if (Z_TYPE_P(all.raw()) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(all.raw())) == 0) {
-		out = false;
-		return true;
-	}
-	zv::Val unconditional = pt_assertions_get_asserts(assertions, PT_ASSERTIONS_UNCONDITIONAL);
-	if (UNEXPECTED(unconditional.isUndef())) return false;
-	out = Z_TYPE_P(unconditional.raw()) == IS_ARRAY
-		&& zend_hash_num_elements(Z_ARRVAL_P(all.raw())) > zend_hash_num_elements(Z_ARRVAL_P(unconditional.raw()));
-	return true;
-}
-
 inline pt_method_site resolveConditionalAssertReturnTypeSite;
 
 /* $impossibleCheckTypeHelper->resolveConditionalAssertReturnType($scope, $node,

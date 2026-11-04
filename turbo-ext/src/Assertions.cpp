@@ -144,6 +144,29 @@ public:
 		return filterByIf(asserts, "", 0, false, PT_AS_CLOSURE("getAsserts", "58"));
 	}
 
+	/* foreach ($this->asserts as $assert) { if ($assert->getIf() !==
+	 * AssertTag::NULL) return true; } return false; — false = pending exception */
+	[[nodiscard]] bool hasConditionalAsserts(bool &out) const
+	{
+		zval *asserts = slot();
+		if (UNEXPECTED(asserts == NULL)) return false;
+		for (zv::ArrayEntry entry : zv::TableRef(Z_ARRVAL_P(asserts))) {
+			zval *tag = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(tag) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getIf() on %s", zend_zval_value_name(tag));
+				return false;
+			}
+			bool unconditional;
+			if (UNEXPECTED(!tagIfIs(tag, "", 0, unconditional))) return false;
+			if (!unconditional) {
+				out = true;
+				return true;
+			}
+		}
+		out = false;
+		return true;
+	}
+
 	/* array_merge(the IF_TRUE tags, the negated IF_FALSE non-equality tags) */
 	zv::Val getAssertsIfTrue() const
 	{
@@ -465,6 +488,21 @@ zv::Val pt_assertions_get_asserts(zval *assertions, int which)
 	return result;
 }
 
+bool pt_assertions_has_conditional_asserts(zval *assertions, bool &out)
+{
+	if (EXPECTED(Z_TYPE_P(assertions) == IS_OBJECT && Z_OBJCE_P(assertions) == pt_ce_assertions)) {
+		return Assertions(Z_OBJ_P(assertions)).hasConditionalAsserts(out);
+	}
+	if (UNEXPECTED(Z_TYPE_P(assertions) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function hasConditionalAsserts() on %s", zend_zval_value_name(assertions));
+		return false;
+	}
+	zv::Val result = pt_type_call(Z_OBJ_P(assertions), PT_LC("hasconditionalasserts"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 zval *pt_assertions_all(zval *assertions, zv::Val &hold)
 {
 	if (EXPECTED(Z_TYPE_P(assertions) == IS_OBJECT && Z_OBJCE_P(assertions) == pt_ce_assertions)) {
@@ -578,6 +616,8 @@ PT_MINIT_REGISTRATION(pt_register_assertions)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(Assertions::create(assertTags));
 	});
+
+	cls.method<&Assertions::hasConditionalAsserts>(sigs::hasConditionalAsserts);
 
 	cls.shadow(&pt_ce_assertions);
 }

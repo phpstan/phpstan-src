@@ -406,7 +406,7 @@ final class FuncCallHandler implements ExprHandler
 		// inside resolveReturnType), the acceptor is re-derived from the
 		// already-processed argument results on the asking scope.
 		$storageRef = WeakReference::create($storage);
-		$hasConditionalAsserts = $functionReflection !== null && ImpossibleCheckTypeHelper::hasConditionalAsserts($functionReflection->getAsserts());
+		$hasConditionalAsserts = $functionReflection !== null && $functionReflection->getAsserts()->hasConditionalAsserts();
 		$typeCallback = $isEarlyTerminating
 			? static fn (bool $nativeTypesPromoted): Type => new NeverType(true)
 			: function (bool $nativeTypesPromoted) use ($nodeScopeResolver, $beforeScope, $expr, $nameResult, $resolvedParametersAcceptor, $argsResult, $storageRef, $hasConditionalAsserts): Type {

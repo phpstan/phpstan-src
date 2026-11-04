@@ -3940,6 +3940,8 @@ zv::Val pt_assertions_map_types(zval *assertions, zval *callable);
 #define PT_ASSERTIONS_IF_TRUE 1
 #define PT_ASSERTIONS_IF_FALSE 2
 zv::Val pt_assertions_get_asserts(zval *assertions, int which);
+/* $assertions->hasConditionalAsserts(); false = pending exception */
+[[nodiscard]] bool pt_assertions_has_conditional_asserts(zval *assertions, bool &out);
 
 /* }}} */
 

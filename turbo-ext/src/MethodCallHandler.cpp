@@ -401,7 +401,7 @@ public:
 		if (!methodReflection.isNull()) {
 			zv::Val assertions = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_ASSERTS);
 			if (UNEXPECTED(assertions.isUndef())) return zv::Val();
-			if (UNEXPECTED(!ptcall::hasConditionalAsserts(assertions.raw(), hasConditionalAsserts))) return zv::Val();
+			if (UNEXPECTED(!pt_assertions_has_conditional_asserts(assertions.raw(), hasConditionalAsserts))) return zv::Val();
 		}
 		zv::Val typeCallback = isEarlyTerminating
 			? pt_native_closure(&earlyTerminatingTypeCallbackBody)

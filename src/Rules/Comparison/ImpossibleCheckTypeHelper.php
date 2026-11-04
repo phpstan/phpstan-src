@@ -15,7 +15,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -92,13 +91,6 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		return $specifiedValue;
-	}
-
-	public static function hasConditionalAsserts(Assertions $assertions): bool
-	{
-		$all = $assertions->getAll();
-
-		return $all !== [] && count($all) > count($assertions->getAsserts());
 	}
 
 	/**

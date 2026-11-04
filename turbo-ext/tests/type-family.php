@@ -7564,6 +7564,7 @@ $observations['native ' . \PHPStan\Reflection\Assertions::class] = (new Reflecti
 			'asserts' => $catching(static fn () => $viewTags($a->getAsserts())),
 			'ifTrue' => $catching(static fn () => $viewTags($a->getAssertsIfTrue())),
 			'ifFalse' => $catching(static fn () => $viewTags($a->getAssertsIfFalse())),
+			'hasConditionalAsserts' => $catching(static fn () => $a->hasConditionalAsserts()),
 			'isEmpty' => $a === \PHPStan\Reflection\Assertions::createEmpty(),
 		];
 	};

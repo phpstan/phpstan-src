@@ -51,7 +51,8 @@ inline constexpr char strings[] =
 	"PHPStan\\PhpDoc\\ResolvedPhpDocBlock\0" /* 238 */
 	"createFromResolvedPhpDocBlock\0" /* 273 */
 	"assertTags\0" /* 303 */
-	"createFromAssertTags"; /* 314 */
+	"createFromAssertTags\0" /* 314 */
+	"hasConditionalAsserts"; /* 335 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $asserts */
 	reg::packed(20, MAY_BE_ARRAY), /* getAll return */
@@ -75,6 +76,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(20, 0, 83), /* createFromResolvedPhpDocBlock return */
 	reg::packed(303, MAY_BE_ARRAY), /* createFromAssertTags $assertTags */
 	reg::packed(20, 0, 83), /* createFromAssertTags return */
+	reg::packed(20, MAY_BE_BOOL), /* hasConditionalAsserts return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -95,6 +97,7 @@ inline constexpr sigtab::Sig create = { { 207 /* create */, 1, 15, 1, 16, ZEND_A
 inline constexpr sigtab::Sig createEmpty = { { 214 /* createEmpty */, 0, 17, 0, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig createFromResolvedPhpDocBlock = { { 273 /* createFromResolvedPhpDocBlock */, 1, 18, 1, 19, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig createFromAssertTags = { { 314 /* createFromAssertTags */, 1, 20, 1, 21, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasConditionalAsserts = { { 335 /* hasConditionalAsserts */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::Assertions

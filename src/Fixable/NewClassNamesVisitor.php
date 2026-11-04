@@ -95,6 +95,31 @@ final class NewClassNamesVisitor extends NodeVisitorAbstract
 		$this->phpDocParser = new PhpDocParser($config, new TypeParser($config, $constExprParser), $constExprParser);
 	}
 
+	/**
+	 * Whether the nodes that the fixes returned contain a class name
+	 * or a PHPDoc that this visitor may need to write.
+	 *
+	 * @param Node[] $fixedNodes
+	 */
+	public static function hasWork(array $fixedNodes): bool
+	{
+		return (new NodeFinder())->findFirst($fixedNodes, static function (Node $node): bool {
+			$originalNode = $node->getAttribute('origNode');
+			if ($node instanceof FullyQualified && $originalNode === null) {
+				return true;
+			}
+
+			$doc = $node->getDocComment();
+			if ($doc === null) {
+				return false;
+			}
+
+			$originalDoc = $originalNode instanceof Node ? $originalNode->getDocComment() : null;
+
+			return $originalDoc === null || $originalDoc->getText() !== $doc->getText();
+		}) !== null;
+	}
+
 	#[Override]
 	public function beforeTraverse(array $nodes): ?array
 	{

@@ -9,6 +9,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function sprintf;
+use const INF;
 
 class FloatTypeTest extends PHPStanTestCase
 {
@@ -57,6 +58,18 @@ class FloatTypeTest extends PHPStanTestCase
 					new ResourceType(),
 				]),
 				TrinaryLogic::createNo(),
+			],
+			[
+				FloatRangeType::fromInterval(1.0, 2.0),
+				TrinaryLogic::createYes(),
+			],
+			[
+				FloatRangeType::fromInterval(-INF, INF),
+				TrinaryLogic::createYes(),
+			],
+			[
+				TypeCombinator::union(FloatRangeType::fromInterval(1.0, 2.0), new StringType()),
+				TrinaryLogic::createMaybe(),
 			],
 		];
 	}

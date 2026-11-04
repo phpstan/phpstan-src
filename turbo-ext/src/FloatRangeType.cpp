@@ -29,6 +29,9 @@ zend_class_entry *pt_ce_float_range_type = nullptr;
 
 namespace phpstanturbo {
 
+/* the lowercase name and length of isSmallerThan() or isSmallerThanOrEqual() */
+#define SMALLER_THAN(orEqual) ((orEqual) ? "issmallerthanorequal" : "issmallerthan"), ((orEqual) ? sizeof("issmallerthanorequal") - 1 : sizeof("issmallerthan") - 1)
+
 /* Mirrors PHPStan\Type\FloatRangeType. State lives in the PHP object's
  * $min and $max. */
 class FloatRangeType
@@ -176,7 +179,16 @@ public:
 	/* sprintf('float<%s, %s>', ...) with 'min' for -INF, 'max' for INF and
 	 * the bounds as ConstantFloatType describes them precisely; UNDEF =
 	 * pending exception */
-	zv::Val describe() const
+	zv::Val describe(zval *level) const
+	{
+		zv::Val typeOnly = pt_type_call(Z_OBJ_P(level), PT_LC("istypeonly"), 0, NULL);
+		if (UNEXPECTED(typeOnly.isUndef())) return zv::Val();
+		if (zend_is_true(typeOnly.raw())) return zv::Val::string("float", 5);
+		return describeBounds();
+	}
+
+	/* the value-level description */
+	zv::Val describeBounds() const
 	{
 		double min = 0.0, max = 0.0;
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
@@ -196,10 +208,59 @@ public:
 		return zv::Val::adoptString(str.s);
 	}
 
+	/* acceptsWithoutReasons(), with the NAN reason when NAN is all that
+	 * is not accepted; UNDEF = pending exception */
+	zv::Val accepts(zval *type, bool strictTypes) const
+	{
+		zv::Val result = acceptsWithoutReasons(type, strictTypes);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		zend_long accepted = pt_type_result_trinary(result.raw());
+		if (UNEXPECTED(accepted < 0)) return zv::Val();
+		if (accepted == PT_TRI_YES) return result;
+
+		zv::Val nanType = nan();
+		if (UNEXPECTED(nanType.isUndef())) return zv::Val();
+		zv::Val canBeNan = pt_type_op(Z_OBJ_P(nanType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, type);
+		if (UNEXPECTED(canBeNan.isUndef())) return zv::Val();
+		zend_long canBeNanValue = pt_type_result_trinary(canBeNan.raw());
+		if (UNEXPECTED(canBeNanValue < 0)) return zv::Val();
+		if (canBeNanValue == PT_TRI_NO) return result;
+
+		// tell why when NAN is all that is not accepted
+		zv::Val rest = pt_type_combinator_remove(type, nanType.raw());
+		if (UNEXPECTED(rest.isUndef())) return zv::Val();
+		zv::Val restResult = acceptsWithoutReasons(rest.raw(), strictTypes);
+		if (UNEXPECTED(restResult.isUndef())) return zv::Val();
+		zend_long restAccepted = pt_type_result_trinary(restResult.raw());
+		if (UNEXPECTED(restAccepted < 0)) return zv::Val();
+		if (restAccepted != PT_TRI_YES) return result;
+
+		zv::Val description = describeBounds();
+		if (UNEXPECTED(description.isUndef())) return zv::Val();
+		smart_str str = {NULL, 0};
+		smart_str_appends(&str, "NAN is in no float range. Use ");
+		smart_str_append(&str, Z_STR_P(description.raw()));
+		smart_str_appends(&str, "|NAN to accept it.");
+		smart_str_0(&str);
+		zv::Arr reasons = zv::Arr::create(1);
+		reasons.push(zv::Val::adoptString(str.s));
+
+		zval rv;
+		ZVAL_UNDEF(&rv);
+		zval *trinary = zend_read_property(Z_OBJCE_P(result.raw()), Z_OBJ_P(result.raw()), PT_LC("result"), 0, &rv);
+		if (UNEXPECTED(trinary == NULL || EG(exception))) return zv::Val();
+		zv::Val trinaryCopy = zv::Val::copyOf(zv::Ref(trinary));
+		zval_ptr_dtor(&rv);
+		zval reasonsZv = reasons.take();
+		zval created;
+		if (UNEXPECTED(!pt_accepts_result_create(&created, trinaryCopy.raw(), &reasonsZv))) return zv::Val();
+		return zv::Val::adopt(created);
+	}
+
 	/* an integer through the float it converts to, the other FloatTypes
 	 * through isSuperTypeOf(), the CompoundType callback, no otherwise;
 	 * UNDEF = pending exception */
-	zv::Val accepts(zval *type, bool strictTypes) const
+	zv::Val acceptsWithoutReasons(zval *type, bool strictTypes) const
 	{
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_constant_integer_type)) {
 			zend_long value;
@@ -267,6 +328,123 @@ public:
 		}
 
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
+	}
+
+	/* the float types and intersections answer for the range, each union
+	 * member is asked, any other type as for a float; UNDEF = pending
+	 * exception */
+	zv::Val isSubTypeOf(zval *otherType) const
+	{
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_float_type) || instanceof_function(Z_OBJCE_P(otherType), pt_ce_intersection_type)) {
+			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
+		}
+
+		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_union_type)) {
+			zv::Arr results;
+			if (UNEXPECTED(!eachUnionMember(otherType, results, [&](zval *innerType) {
+				return pt_type_op(Z_OBJ_P(innerType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
+			}))) return zv::Val();
+			zv::Val no = pt_type_is_super_type_of_result(PT_TRI_NO);
+			if (UNEXPECTED(no.isUndef())) return zv::Val();
+			return pt_is_super_type_of_result_spread(Z_OBJ_P(no.raw()), false, results.table());
+		}
+
+		// the other type cannot tell floats apart
+		zv::Val floatType = pt_val_of<pt_float_type_new>();
+		if (UNEXPECTED(floatType.isUndef())) return zv::Val();
+		return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, floatType.raw());
+	}
+
+	/* isSubTypeOf()'s split for acceptance; UNDEF = pending exception */
+	zv::Val isAcceptedBy(zval *acceptingType, bool strictTypes) const
+	{
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+		if (instanceof_function(Z_OBJCE_P(acceptingType), pt_ce_float_type) || instanceof_function(Z_OBJCE_P(acceptingType), pt_ce_intersection_type)) {
+			return toAcceptsResult(pt_type_op(Z_OBJ_P(acceptingType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv));
+		}
+
+		zval strict;
+		ZVAL_BOOL(&strict, strictTypes);
+		if (instanceof_function(Z_OBJCE_P(acceptingType), pt_ce_union_type)) {
+			zv::Arr results;
+			if (UNEXPECTED(!eachUnionMember(acceptingType, results, [&](zval *innerType) {
+				zv::Args args{&selfZv, &strict};
+				return pt_type_op(Z_OBJ_P(innerType), PT_OP_ACCEPTS, 2, args);
+			}))) return zv::Val();
+			zv::Val no = pt_type_accepts_result(PT_TRI_NO);
+			if (UNEXPECTED(no.isUndef())) return zv::Val();
+			HashTable *table = results.table();
+			return pt_type_call(Z_OBJ_P(no.raw()), PT_LC("or"), zend_hash_num_elements(table), table->arPacked);
+		}
+
+		// the other type cannot tell floats apart
+		zv::Val floatType = pt_val_of<pt_float_type_new>();
+		if (UNEXPECTED(floatType.isUndef())) return zv::Val();
+		zv::Args args{floatType.raw(), &strict};
+		return pt_type_op(Z_OBJ_P(acceptingType), PT_OP_ACCEPTS, 2, args);
+	}
+
+	/* isSmallerThan() & co.: the PT_TRI_* value, -1 = pending exception */
+	zend_long compare(zval *otherType, zval *phpVersion, bool greater, bool orEqual) const
+	{
+		zend_long out = PT_TRI_MAYBE;
+		int each = compareEachPoint(otherType, greater, orEqual, phpVersion, out);
+		if (UNEXPECTED(each < 0)) return -1;
+		if (each > 0) return out;
+
+		zv::Args args{otherType, phpVersion};
+		if (!greater) {
+			zv::Val result = pt_type_call_parent(pt_ce_float_range_type, self, SMALLER_THAN(orEqual), 2, args);
+			if (UNEXPECTED(result.isUndef())) return -1;
+			return pt_type_trinary_value(result.raw());
+		}
+
+		zv::Val floatType = pt_val_of<pt_float_type_new>();
+		if (UNEXPECTED(floatType.isUndef())) return -1;
+		zv::Args otherArgs{floatType.raw(), phpVersion};
+		return pt_type_call_trinary(Z_OBJ_P(otherType), SMALLER_THAN(orEqual), 2, otherArgs);
+	}
+
+	/* compareEachPoint(): 0 for null, 1 with out set, -1 = pending exception */
+	int compareEachPoint(zval *otherType, bool otherOnLeft, bool orEqual, zval *phpVersion, zend_long &out) const
+	{
+		zval ordered[4];
+		if (UNEXPECTED(!pt_integer_type_new(&ordered[0]))) return -1;
+		if (UNEXPECTED(!pt_float_type_new(&ordered[1]))) { zval_ptr_dtor(&ordered[0]); return -1; }
+		if (UNEXPECTED(!pt_boolean_type_new(&ordered[2]))) { zval_ptr_dtor(&ordered[0]); zval_ptr_dtor(&ordered[1]); return -1; }
+		if (UNEXPECTED(!pt_null_type_new(&ordered[3]))) { zval_ptr_dtor(&ordered[0]); zval_ptr_dtor(&ordered[1]); zval_ptr_dtor(&ordered[2]); return -1; }
+		zv::Val orderedType = pt_type_combinator_union(4, ordered);
+		for (zval &type : ordered) zval_ptr_dtor(&type);
+		if (UNEXPECTED(orderedType.isUndef())) return -1;
+		zv::Val isOrdered = pt_type_op(Z_OBJ_P(orderedType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, otherType);
+		if (UNEXPECTED(isOrdered.isUndef())) return -1;
+		zend_long isOrderedValue = pt_type_result_trinary(isOrdered.raw());
+		if (UNEXPECTED(isOrderedValue < 0)) return -1;
+		if (isOrderedValue != PT_TRI_YES) return 0;
+
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return -1;
+		double points[3] = {min, max, 0.0};
+		int count = excludesZero(min, max) ? 2 : 3;
+		zend_long minValue = PT_TRI_YES, maxValue = PT_TRI_NO;
+		for (int i = 0; i < count; i++) {
+			zv::Val point = pt_type_new_constant_float(points[i]);
+			if (UNEXPECTED(point.isUndef())) return -1;
+			zval *left = otherOnLeft ? otherType : point.raw();
+			zval *right = otherOnLeft ? point.raw() : otherType;
+			zv::Args args{right, phpVersion};
+			zend_long result = pt_type_call_trinary(Z_OBJ_P(left), SMALLER_THAN(orEqual), 2, args);
+			if (UNEXPECTED(result < 0)) return -1;
+			if (result < minValue) minValue = result;
+			if (result > maxValue) maxValue = result;
+		}
+
+		// TrinaryLogic::extremeIdentity()
+		out = minValue == maxValue ? minValue : PT_TRI_MAYBE;
+		return 1;
 	}
 
 	/* $type instanceof self && $this->min === $type->min && $this->max === $type->max;
@@ -564,6 +742,31 @@ private:
 
 	static zv::Val nan() { return pt_type_new_constant_float(static_cast<double>(NAN)); }
 
+	/* $callback($innerType) for each of the union's getTypes(), the
+	 * results collected; false = pending exception */
+	template<typename Callback>
+	static bool eachUnionMember(zval *unionType, zv::Arr &results, Callback callback)
+	{
+		zv::Val types = pt_type_call(Z_OBJ_P(unionType), PT_LC("gettypes"), 0, NULL);
+		if (UNEXPECTED(types.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(types.raw()) != IS_ARRAY)) {
+			zend_type_error("phpstan_turbo: UnionType::getTypes() must return an array");
+			return false;
+		}
+		results = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(types.raw())));
+		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+			zval *innerType = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(innerType) != IS_OBJECT)) {
+				zend_type_error("phpstan_turbo: UnionType::getTypes() must return Type instances");
+				return false;
+			}
+			zv::Val result = callback(innerType);
+			if (UNEXPECTED(result.isUndef())) return false;
+			results.push(std::move(result));
+		}
+		return true;
+	}
+
 	static zv::Val constantBoolean(bool value)
 	{
 		zval result;
@@ -693,6 +896,14 @@ static void pt_frt_comparison_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (FloatR
 }
 
 /* getMin() / getMax() */
+/* isSmallerThan() & co.: (Type $otherType, PhpVersion $phpVersion) */
+static void pt_frt_comparison(INTERNAL_FUNCTION_PARAMETERS, bool greater, bool orEqual)
+{
+	zval *otherType, *phpVersion;
+	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, otherType, phpVersion)) RETURN_THROWS();
+	PT_RETURN_TRINARY_OR_THROW(PT_THIS.compare(otherType, phpVersion, greater, orEqual));
+}
+
 static void pt_frt_bound(INTERNAL_FUNCTION_PARAMETERS, bool (FloatRangeType::*method)(double &) const)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
@@ -759,18 +970,47 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 		pt_frt_bound(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getMax);
 	});
 
-	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *level;
-		if (!zp::parse<zp::Obj>(execute_data, level)) RETURN_THROWS();
-		PT_RETURN_VAL(PT_THIS.describe());
-	});
+	cls.method<&FloatRangeType::describe, zp::Obj>(sigs::describe);
 	cls.op<PT_OP_DESCRIBE, &FloatRangeType::describe>();
 
 	cls.method<&FloatRangeType::accepts, zp::Obj, zp::Bool>(sigs::accepts);
 	cls.op(PT_OP_ACCEPTS, PT_OP_LAMBDA { return FloatRangeType(self).accepts(argv, (Z_TYPE(argv[1]) == IS_TRUE)); });
+	cls.method<&FloatRangeType::acceptsWithoutReasons, zp::Obj, zp::Bool>(sigs::acceptsWithoutReasons);
 
 	cls.method<&FloatRangeType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &FloatRangeType::isSuperTypeOf>();
+
+	cls.method<&FloatRangeType::isSubTypeOf, zp::Obj>(sigs::isSubTypeOf);
+	cls.op<PT_OP_IS_SUB_TYPE_OF, &FloatRangeType::isSubTypeOf>();
+
+	cls.method<&FloatRangeType::isAcceptedBy, zp::Obj, zp::Bool>(sigs::isAcceptedBy);
+
+	cls.method(sigs::isSmallerThan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, false, false);
+	});
+
+	cls.method(sigs::isSmallerThanOrEqual, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, false, true);
+	});
+
+	cls.method(sigs::isGreaterThan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, true, false);
+	});
+
+	cls.method(sigs::isGreaterThanOrEqual, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison(INTERNAL_FUNCTION_PARAM_PASSTHRU, true, true);
+	});
+
+	cls.method(sigs::compareEachPoint, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType, *phpVersion;
+		bool otherOnLeft, orEqual;
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Bool, zp::Obj>(execute_data, otherType, otherOnLeft, orEqual, phpVersion)) RETURN_THROWS();
+		zend_long out = PT_TRI_MAYBE;
+		int each = PT_THIS.compareEachPoint(otherType, otherOnLeft, orEqual, phpVersion, out);
+		if (UNEXPECTED(each < 0)) RETURN_THROWS();
+		if (each == 0) RETURN_NULL();
+		PT_RETURN_TRINARY(out);
+	});
 
 	cls.method<&FloatRangeType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &FloatRangeType::equals>();

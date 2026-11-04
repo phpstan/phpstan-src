@@ -3244,6 +3244,151 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ConstantArrayType::class,
 			'array{}',
 		];
+		// float ranges
+		yield [
+			[
+				'float<1, 2>',
+				'float<3, 4>',
+			],
+			UnionType::class,
+			'float<1.0, 2.0>|float<3.0, 4.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<2, 4>',
+			],
+			FloatRangeType::class,
+			'float<1.0, 4.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<1.25, 1.5>',
+			],
+			FloatRangeType::class,
+			'float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<2.0000000000000004, 3>',
+			],
+			FloatRangeType::class,
+			'float<1.0, 3.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float',
+			],
+			FloatType::class,
+			'float',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'2.0',
+			],
+			FloatRangeType::class,
+			'float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'3.0',
+			],
+			UnionType::class,
+			'3.0|float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'NAN',
+			],
+			UnionType::class,
+			'NAN|float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<min, max>',
+				'NAN',
+			],
+			FloatType::class,
+			'float',
+		];
+		yield [
+			[
+				'float<min, 0>',
+				'float<0, max>',
+			],
+			FloatRangeType::class,
+			'float<min, max>',
+		];
+		yield [
+			[
+				'float<min, -0.0>',
+				'0.0',
+			],
+			FloatRangeType::class,
+			'float<min, 0.0>',
+		];
+		yield [
+			[
+				'float<1, max>',
+				'INF',
+			],
+			FloatRangeType::class,
+			'float<1.0, max>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'INF',
+			],
+			UnionType::class,
+			'INF|float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'int<1, 2>',
+			],
+			UnionType::class,
+			'float<1.0, 2.0>|int<1, 2>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'1',
+			],
+			UnionType::class,
+			'1|float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'numeric-string',
+			],
+			UnionType::class,
+			'float<1.0, 2.0>|numeric-string',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'1.0|1.5',
+			],
+			FloatRangeType::class,
+			'float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<0, max>',
+				'float<min, 0>|NAN',
+			],
+			FloatType::class,
+			'float',
+		];
 	}
 
 	/**
@@ -5822,6 +5967,160 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			NeverType::class,
 			'*NEVER*=implicit',
+		];
+
+		// float ranges
+		yield [
+			[
+				'float<1, 2>',
+				'float<3, 4>',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<2, 4>',
+			],
+			ConstantFloatType::class,
+			'2.0',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<1.5, 4>',
+			],
+			FloatRangeType::class,
+			'float<1.5, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<1.25, 1.5>',
+			],
+			FloatRangeType::class,
+			'float<1.25, 1.5>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float',
+			],
+			FloatRangeType::class,
+			'float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'2.0',
+			],
+			ConstantFloatType::class,
+			'2.0',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'3.0',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'NAN',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<min, 0>',
+				'float<0, max>',
+			],
+			ConstantFloatType::class,
+			'0.0',
+		];
+		yield [
+			[
+				'float<min, -0.0>',
+				'0.0',
+			],
+			ConstantFloatType::class,
+			'0.0',
+		];
+		yield [
+			[
+				'float<1, max>',
+				'INF',
+			],
+			ConstantFloatType::class,
+			'INF',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'int<1, 2>',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'1',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'numeric-string',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'mixed',
+			],
+			FloatRangeType::class,
+			'float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<1, 2>|null',
+			],
+			FloatRangeType::class,
+			'float<1.0, 2.0>',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'1.0|1.5',
+			],
+			UnionType::class,
+			'1.0|1.5',
+		];
+		yield [
+			[
+				'float<1, 2>',
+				'float<5, 6>|int',
+			],
+			NeverType::class,
+			'*NEVER*=implicit',
+		];
+		yield [
+			[
+				'float<0, max>',
+				'float<min, 0>|NAN',
+			],
+			ConstantFloatType::class,
+			'0.0',
 		];
 	}
 

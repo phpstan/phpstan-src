@@ -43,6 +43,21 @@ class VerbosityLevelTest extends PHPStanTestCase
 			),
 			VerbosityLevel::precise(),
 		];
+		yield [
+			FloatRangeType::fromInterval(0.0, 1.0),
+			new FloatType(),
+			VerbosityLevel::value(),
+		];
+		yield [
+			TypeCombinator::addNull(FloatRangeType::fromInterval(0.0, 1.0)),
+			null,
+			VerbosityLevel::value(),
+		];
+		yield [
+			new FloatType(),
+			FloatRangeType::fromInterval(0.0, 1.0),
+			VerbosityLevel::typeOnly(),
+		];
 	}
 
 	#[DataProvider('dataGetRecommendedLevelByType')]

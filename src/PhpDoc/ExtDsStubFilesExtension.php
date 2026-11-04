@@ -16,6 +16,10 @@ final class ExtDsStubFilesExtension implements StubFilesExtension
 	public function getFiles(): array
 	{
 		$version = $this->extensionVersionProvider->getExtensionVersions()['ds'] ?? null;
+		if ($version === 2) {
+			return [__DIR__ . '/../../stubs/ext-ds-v2.stub'];
+		}
+
 		if ($version !== null && $version !== 1) {
 			return [];
 		}

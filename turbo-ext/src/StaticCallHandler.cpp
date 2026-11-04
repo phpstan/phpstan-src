@@ -172,7 +172,7 @@ pt_property_site pt_sch_arg_value_site;
 
 zval *exprClass(zval *expr) { return nodeProperty(pt_sch_class_site, expr, PT_LC("class")); }
 zval *exprName(zval *expr) { return nodeProperty(pt_sch_name_site, expr, PT_LC("name")); }
-/* $expr->getArgs() of a StaticCall that is not a first-class callable (the
+/* $expr->getArgs() of a StaticCall that is not a partial function application (the
  * handler never sees one), and $expr->args: its $args */
 zval *exprArgs(zval *expr) { return nodeProperty(pt_sch_args_site, expr, PT_LC("args")); }
 /* $identifier->name / ->toString() */
@@ -319,9 +319,9 @@ public:
 			out = false;
 			return true;
 		}
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return false;
-		out = !firstClassCallable;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), partialFunctionApplication))) return false;
+		out = !partialFunctionApplication;
 		return true;
 	}
 

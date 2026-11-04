@@ -26,7 +26,7 @@ final class ClosureBindArgVisitor extends NodeVisitorAbstract
 			&& $node->class->toLowerString() === 'closure'
 			&& $node->name instanceof Identifier
 			&& $node->name->toLowerString() === 'bind'
-			&& !$node->isFirstClassCallable()
+			&& !$node->isPartialFunctionApplication()
 		) {
 			$args = $node->getArgs();
 			if (count($args) > 1) {

@@ -30,7 +30,7 @@ final class PossiblyPureFuncCallCollector implements Collector
 		$expr = $node->expr;
 		if ($expr instanceof Node\Expr\BinaryOp\Pipe) {
 			if ($expr->right instanceof Node\Expr\FuncCall) {
-				if (!$expr->right->isFirstClassCallable()) {
+				if (!$expr->right->isPartialFunctionApplication()) {
 					return null;
 				}
 
@@ -42,7 +42,7 @@ final class PossiblyPureFuncCallCollector implements Collector
 		if (!$expr instanceof Node\Expr\FuncCall) {
 			return null;
 		}
-		if ($expr->isFirstClassCallable()) {
+		if ($expr->isPartialFunctionApplication()) {
 			return null;
 		}
 		if (!$expr->name instanceof Node\Name) {

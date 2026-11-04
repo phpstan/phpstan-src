@@ -29,7 +29,7 @@ final class PossiblyPureMethodCallCollector implements Collector
 		$expr = $node->expr;
 		if ($expr instanceof Node\Expr\BinaryOp\Pipe) {
 			if ($expr->right instanceof Node\Expr\MethodCall || $expr->right instanceof Node\Expr\NullsafeMethodCall) {
-				if (!$expr->right->isFirstClassCallable()) {
+				if (!$expr->right->isPartialFunctionApplication()) {
 					return null;
 				}
 
@@ -42,7 +42,7 @@ final class PossiblyPureMethodCallCollector implements Collector
 		if (!$expr instanceof Node\Expr\MethodCall && !$expr instanceof Node\Expr\NullsafeMethodCall) {
 			return null;
 		}
-		if ($expr->isFirstClassCallable()) {
+		if ($expr->isPartialFunctionApplication()) {
 			return null;
 		}
 		if (!$expr->name instanceof Node\Identifier) {

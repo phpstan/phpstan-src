@@ -10,7 +10,7 @@
  *
  * The helpers here are the operations those visitor bodies share: reading a
  * subnode at a memoized property offset, php-parser's toLowerString()
- * comparison, and CallLike::isFirstClassCallable()/getArgs().
+ * comparison, and CallLike::isPartialFunctionApplication()/getArgs().
  */
 
 #ifndef PHPSTANTURBO_PARSER_VISITORS_H
@@ -115,18 +115,17 @@ inline zend_string *nameString(zend_object *node, NodeProp &nameProp)
 }
 
 /*
- * CallLike::isFirstClassCallable(): exactly one raw argument, and it is a
- * VariadicPlaceholder. `rawArgs` is the call's own $args slot.
+ * CallLike::isPartialFunctionApplication(): some raw argument is a `?` or a
+ * `...` placeholder, i.e. not an Arg. `rawArgs` is the call's own $args slot.
  */
-inline bool isFirstClassCallable(zval *rawArgs)
+inline bool isPartialFunctionApplication(zval *rawArgs)
 {
-	if (rawArgs == NULL || Z_TYPE_P(rawArgs) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(rawArgs)) != 1) return false;
-	zend_class_entry *placeholder = pt_class(PT_CLASS_VARIADIC_PLACEHOLDER);
-	if (UNEXPECTED(placeholder == NULL)) return false;
-	/* current($rawArgs) — the first element of a freshly built list */
+	if (rawArgs == NULL || Z_TYPE_P(rawArgs) != IS_ARRAY) return false;
+	zend_class_entry *arg = pt_class(PT_CLASS_ARG);
+	if (UNEXPECTED(arg == NULL)) return false;
 	for (auto entry : zv::ArrRef(rawArgs)) {
 		zv::Ref value = entry.value().deref();
-		return value.instanceOf(placeholder);
+		if (!value.instanceOf(arg)) return true;
 	}
 	return false;
 }
@@ -196,7 +195,7 @@ inline void popStack(zval *stack)
 /*
  * The shape every port of a "reacts to one FuncCall by name" visitor has:
  * `$node instanceof FuncCall && $node->name instanceof Name &&
- * !$node->isFirstClassCallable()`, then the lowercased function name.
+ * !$node->isPartialFunctionApplication()`, then the lowercased function name.
  * Returns NULL when the node is not such a call.
  */
 struct FuncCallProps
@@ -214,8 +213,8 @@ struct FuncCallProps
 
 /*
  * The plain-function-call name of `node` ($node->name->toLowerString()) when
- * the node is a FuncCall with a Name callee that is not a first-class
- * callable, plus its $args slot; NULL otherwise.
+ * the node is a FuncCall with a Name callee that is not a partial function
+ * application, plus its $args slot; NULL otherwise.
  */
 inline zend_string *plainFuncCallName(zend_object *node, FuncCallProps &props, NodeProp &nameProp, zval **argsOut)
 {
@@ -223,7 +222,7 @@ inline zend_string *plainFuncCallName(zend_object *node, FuncCallProps &props, N
 	zend_object *callee = props.name.objectOf(node, PT_CLASS_NAME);
 	if (callee == NULL) return NULL;
 	zval *args = props.args.of(node);
-	if (isFirstClassCallable(args)) return NULL;
+	if (isPartialFunctionApplication(args)) return NULL;
 	*argsOut = args;
 	return nameString(callee, nameProp);
 }

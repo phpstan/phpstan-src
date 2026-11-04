@@ -28,6 +28,7 @@ use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Node\InstantiationCallableNode;
 use PHPStan\Node\IssetExpr;
 use PHPStan\Node\MethodCallableNode;
+use PHPStan\Node\PartialFunctionApplicationNode;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Type\VerbosityLevel;
 use function preg_match;
@@ -207,6 +208,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_InstantiationCallableNode(InstantiationCallableNode $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanInstantiationCallable(%s)', $this->p($expr->getOriginalNode()));
+	}
+
+	protected function pPHPStan_Node_PartialFunctionApplicationNode(PartialFunctionApplicationNode $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanPartialFunctionApplication(%s)', $this->p($expr->getOriginalNode()));
 	}
 
 }

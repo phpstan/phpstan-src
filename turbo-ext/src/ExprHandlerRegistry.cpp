@@ -5,7 +5,7 @@
  * The memo lives where the twin keeps it: the class's private static
  * $exprHandlersByClass array, keyed by spl_object_id($container), then by
  * the twin's cache-key string (the Expr class name; `|1` or `|` for a
- * CallLike's first-class-callable flag; `|<class of $expr->class>` for a
+ * CallLike's partial-function-application flag; `|<class of $expr->class>` for a
  * New_). The key is assembled in a stack buffer and looked up by its bytes,
  * so a hit allocates nothing; the string is created only for the insert.
  * A miss sweeps $container->getExtensionsCollection(ExprHandler::class)
@@ -77,7 +77,7 @@ struct CacheKey
 	}
 };
 
-/* $cacheKey = get_class($expr); CallLike: .= '|' . $expr->isFirstClassCallable();
+/* $cacheKey = get_class($expr); CallLike: .= '|' . $expr->isPartialFunctionApplication();
  * New_: .= '|' . get_class($expr->class). false = pending exception */
 [[nodiscard]] bool buildCacheKey(zend_object *expr, CacheKey &key)
 {
@@ -91,8 +91,8 @@ struct CacheKey
 		return true;
 	}
 
-	bool firstClassCallable;
-	if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, firstClassCallable))) return false;
+	bool partialFunctionApplication;
+	if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, partialFunctionApplication))) return false;
 	zend_string *newClassName = NULL;
 	zend_class_entry *newCe = pt_class(PT_CLASS_NEW);
 	if (UNEXPECTED(newCe == NULL)) return false;
@@ -112,7 +112,7 @@ struct CacheKey
 		newClassName = Z_OBJCE_P(value.raw())->name;
 	}
 
-	size_t len = ZSTR_LEN(className) + 1 + (firstClassCallable ? 1 : 0) + (newClassName != NULL ? 1 + ZSTR_LEN(newClassName) : 0);
+	size_t len = ZSTR_LEN(className) + 1 + (partialFunctionApplication ? 1 : 0) + (newClassName != NULL ? 1 + ZSTR_LEN(newClassName) : 0);
 	char *target;
 	if (len <= PT_EHR_KEY_BUFFER_LIMIT) {
 		target = key.buffer;
@@ -125,7 +125,7 @@ struct CacheKey
 	memcpy(target + at, ZSTR_VAL(className), ZSTR_LEN(className));
 	at += ZSTR_LEN(className);
 	target[at++] = '|';
-	if (firstClassCallable) {
+	if (partialFunctionApplication) {
 		target[at++] = '1';
 	}
 	if (newClassName != NULL) {

@@ -1400,9 +1400,9 @@ private:
 		if (UNEXPECTED(name == NULL)) return zv::Val();
 		bool error = false;
 		if (!ptsh::isInstanceOf(name, PT_CLASS_NAME, error)) return error ? zv::Val() : std::move(scope);
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return zv::Val();
-		if (firstClassCallable) return scope;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), partialFunctionApplication))) return zv::Val();
+		if (partialFunctionApplication) return scope;
 		zv::Val nameHold = zv::Val::copyOf(zv::Ref(name));
 		zv::Val lower = ptlh::nameToLowerString(nameHold.raw());
 		if (UNEXPECTED(lower.isUndef())) return zv::Val();

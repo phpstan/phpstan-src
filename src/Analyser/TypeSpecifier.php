@@ -68,7 +68,7 @@ final class TypeSpecifier
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
+		if ($expr instanceof Expr\CallLike && $expr->isPartialFunctionApplication()) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 

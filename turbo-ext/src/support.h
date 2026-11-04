@@ -293,6 +293,7 @@ enum {
 	PT_CLASS_STATIC_METHOD_CALLABLE_NODE,
 	PT_CLASS_FUNCTION_CALLABLE_NODE,
 	PT_CLASS_INSTANTIATION_CALLABLE_NODE,
+	PT_CLASS_PARTIAL_FUNCTION_APPLICATION_NODE,
 	PT_CLASS_SET_OFFSET_VALUE_TYPE_EXPR,
 	PT_CLASS_GATHERED_METHOD_CALL,
 	PT_CLASS_PROPERTY_READ,
@@ -1707,6 +1708,9 @@ zval *pt_call_like_raw_args(zend_object *call, zv::Val &hold);
 /* $call->isFirstClassCallable(): a single VariadicPlaceholder argument;
  * false = pending exception */
 [[nodiscard]] bool pt_call_like_is_first_class_callable(zend_object *call, bool &out);
+/* $call->isPartialFunctionApplication(): some argument is a `?` or a `...`
+ * placeholder, a first-class callable included; false = pending exception */
+[[nodiscard]] bool pt_call_like_is_partial_function_application(zend_object *call, bool &out);
 /* $call->getArgs(): the `args` slot of a call that is not a first-class
  * callable (borrowed, dereferenced); a first-class callable gets the method,
  * whose assert() throws under zend.assertions=1 and returns the raw

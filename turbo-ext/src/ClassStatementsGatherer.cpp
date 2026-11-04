@@ -73,6 +73,7 @@ static NodeProp pt_csg_identifier_name = PT_IDENTIFIER_PROP;
 static NodeProp pt_csg_name_name = PT_NAME_PROP;
 static NodeProp pt_csg_method_callable_original = PT_NODE_PROP(PT_CLASS_METHOD_CALLABLE_NODE, "originalNode");
 static NodeProp pt_csg_static_method_callable_original = PT_NODE_PROP(PT_CLASS_STATIC_METHOD_CALLABLE_NODE, "originalNode");
+static NodeProp pt_csg_partial_function_application_original = PT_NODE_PROP(PT_CLASS_PARTIAL_FUNCTION_APPLICATION_NODE, "originalNode");
 static NodeProp pt_csg_function_callable_original = PT_NODE_PROP(PT_CLASS_FUNCTION_CALLABLE_NODE, "originalNode");
 static NodeProp pt_csg_instantiation_callable_original = PT_NODE_PROP(PT_CLASS_INSTANTIATION_CALLABLE_NODE, "originalNode");
 static NodeProp pt_csg_return_statements_class_method = PT_NODE_PROP(PT_CLASS_METHOD_RETURN_STATEMENTS_NODE, "classMethod");
@@ -293,6 +294,14 @@ private:
 			callableOriginal = pt_csg_static_method_callable_original.of(node);
 		}
 		if (callableOriginal != NULL) return pushNodeScope(slots::methodCalls, PT_CLASS_GATHERED_METHOD_CALL, callableOriginal, scope);
+		if (isInstanceOf(node, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_NODE)) {
+			zval *original = pt_csg_partial_function_application_original.of(node);
+			if (original != NULL && Z_TYPE_P(original) == IS_OBJECT
+				&& (isInstanceOf(Z_OBJ_P(original), PT_CLASS_METHOD_CALL) || isInstanceOf(Z_OBJ_P(original), PT_CLASS_STATIC_CALL))) {
+				return pushNodeScope(slots::methodCalls, PT_CLASS_GATHERED_METHOD_CALL, original, scope);
+			}
+			return true;
+		}
 		if (isInstanceOf(node, PT_CLASS_METHOD_RETURN_STATEMENTS_NODE)) return addReturnStatementsNode(node, &nodeZv);
 		if (isInstanceOf(node, PT_CLASS_FUNC_CALL)) {
 			zend_object *callee = pt_csg_func_call_name.objectOf(node, PT_CLASS_NAME);

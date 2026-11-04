@@ -123,6 +123,11 @@ final class PhpVersion
 		return $this->versionId >= 80500;
 	}
 
+	public function supportsPartialFunctionApplication(): bool
+	{
+		return $this->versionId >= 80600;
+	}
+
 	public function deprecatesRequiredParameterAfterOptional(): bool
 	{
 		return $this->versionId >= 80000;

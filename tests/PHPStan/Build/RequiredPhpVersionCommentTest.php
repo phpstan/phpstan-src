@@ -151,6 +151,8 @@ final class RequiredPhpVersionCommentTest extends TestCase
 		yield 'property hook' => ['<?php class Foo { public int $x { get => 1; } }', 80400];
 		yield 'asymmetric visibility' => ['<?php class Foo { public private(set) int $x = 1; }', 80400];
 		yield 'pipe operator' => ['<?php $x = 1 |> strlen(...);', 80500];
+		yield 'partial function application' => ['<?php str_replace(" ", "-", ?);', 80600];
+		yield 'partial function application with a variadic placeholder' => ['<?php $foo->bar(1, ...);', 80600];
 	}
 
 	#[DataProvider('dataDetectedVersion')]

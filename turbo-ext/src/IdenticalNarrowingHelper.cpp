@@ -171,8 +171,8 @@ ConstantLiteral constFetchLiteral(zval *expr)
 	return LITERAL_NONE;
 }
 
-/* the raw `args` of a call that is not a first-class callable (what
- * getArgs() returns once isFirstClassCallable() said no); borrowed, NULL
+/* the raw `args` of a call that is not a partial function application (what
+ * getArgs() returns once isPartialFunctionApplication() said no); borrowed, NULL
  * when unset */
 HashTable *rawArgs(zval *call)
 {
@@ -180,8 +180,8 @@ HashTable *rawArgs(zval *call)
 	return Z_TYPE_P(args) == IS_ARRAY ? Z_ARRVAL_P(args) : NULL;
 }
 
-/* $call->getArgs()[0]->value, the call known not to be a first-class
- * callable and to have that argument (borrowed) */
+/* $call->getArgs()[0]->value, the call known not to be a partial function
+ * application and to have that argument (borrowed) */
 zval *firstArgValue(zval *call)
 {
 	HashTable *args = rawArgs(call);
@@ -192,13 +192,13 @@ zval *firstArgValue(zval *call)
 	return nodeProp(pt_inh_arg_value_site, arg, PT_LC("value"));
 }
 
-/* !$call->isFirstClassCallable() && isset($call->getArgs()[0]); false =
+/* !$call->isPartialFunctionApplication() && isset($call->getArgs()[0]); false =
  * pending exception */
 [[nodiscard]] bool hasFirstArg(zval *call, bool &out)
 {
-	bool firstClassCallable;
-	if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return false;
-	if (firstClassCallable) {
+	bool partialFunctionApplication;
+	if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), partialFunctionApplication))) return false;
+	if (partialFunctionApplication) {
 		out = false;
 		return true;
 	}
@@ -1234,7 +1234,7 @@ private:
 	}
 
 	/* $call->name instanceof Name && in_array($call->name->toLowerString(),
-	 * ['count', 'sizeof'], true) && !$call->isFirstClassCallable() &&
+	 * ['count', 'sizeof'], true) && !$call->isPartialFunctionApplication() &&
 	 * isset($call->getArgs()[0]); false = pending exception */
 	[[nodiscard]] static bool isNormalCountCall(zval *call, bool &out)
 	{

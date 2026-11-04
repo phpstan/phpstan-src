@@ -47,7 +47,7 @@ final class FunctionCallConstantConditionHelper
 			$expr instanceof FuncCall
 			|| $expr instanceof MethodCall
 			|| $expr instanceof StaticCall
-		) && !$expr->isFirstClassCallable();
+		) && !$expr->isPartialFunctionApplication();
 	}
 
 	/**

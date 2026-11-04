@@ -49,7 +49,7 @@ final class RegexExpressionHelper
 				// this allows us to turn string concatenations with preg_quote() into static analyzable strings.
 				if (
 					$expr instanceof Expr\FuncCall
-					&& !$expr->isFirstClassCallable()
+					&& !$expr->isPartialFunctionApplication()
 					&& $expr->name instanceof Name
 					&& $expr->name->toLowerString() === 'preg_quote'
 				) {

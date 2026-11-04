@@ -112,7 +112,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 
 		if (
 			$node->dim instanceof Node\Expr\FuncCall
-			&& !$node->dim->isFirstClassCallable()
+			&& !$node->dim->isPartialFunctionApplication()
 			&& $node->dim->name instanceof Node\Name
 			&& in_array($node->dim->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
 			&& count($node->dim->getArgs()) >= 1

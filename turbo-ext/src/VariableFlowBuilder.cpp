@@ -159,9 +159,9 @@ public:
 		 * the identity set of those arguments, keyed by object handle */
 		zv::ScratchTable callbackArguments(0);
 		if (instanceof_function(Z_OBJCE_P(expr), classes.callLike)) {
-			bool isFirstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), isFirstClassCallable))) return zv::Val();
-			if (!isFirstClassCallable) {
+			bool isPartialFunctionApplication;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), isPartialFunctionApplication))) return zv::Val();
+			if (!isPartialFunctionApplication) {
 				zv::Val argsHold;
 				zval *args = pt_call_like_args(Z_OBJ_P(expr), argsHold);
 				if (UNEXPECTED(args == NULL)) return zv::Val();

@@ -76,7 +76,7 @@ pt_property_site pt_mch_arg_value_site;
 
 zval *exprVar(zval *expr) { return nodeProperty(pt_mch_var_site, expr, PT_LC("var")); }
 zval *exprName(zval *expr) { return nodeProperty(pt_mch_name_site, expr, PT_LC("name")); }
-/* $expr->getArgs() of a MethodCall that is not a first-class callable (the
+/* $expr->getArgs() of a MethodCall that is not a partial function application (the
  * handler never sees one): its $args */
 zval *exprArgs(zval *expr) { return nodeProperty(pt_mch_args_site, expr, PT_LC("args")); }
 
@@ -163,9 +163,9 @@ public:
 			out = false;
 			return true;
 		}
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return false;
-		out = !firstClassCallable;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), partialFunctionApplication))) return false;
+		out = !partialFunctionApplication;
 		return true;
 	}
 

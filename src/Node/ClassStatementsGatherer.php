@@ -187,6 +187,13 @@ final class ClassStatementsGatherer
 			$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($node->getOriginalNode(), $scope);
 			return;
 		}
+		if ($node instanceof PartialFunctionApplicationNode) {
+			$originalNode = $node->getOriginalNode();
+			if ($originalNode instanceof MethodCall || $originalNode instanceof StaticCall) {
+				$this->methodCalls[] = new \PHPStan\Node\Method\MethodCall($originalNode, $scope);
+			}
+			return;
+		}
 		if ($node instanceof MethodReturnStatementsNode) {
 			$this->returnStatementNodes[strtolower($node->getMethodName())] = $node;
 			return;

@@ -342,7 +342,7 @@ final class AssignHandler implements ExprHandler
 		} elseif ($assignedExpr instanceof Expr\BinaryOp\Minus && $assignedExpr->left instanceof FuncCall) {
 			$call = $assignedExpr->left;
 		}
-		if ($call === null || $call->isFirstClassCallable()) {
+		if ($call === null || $call->isPartialFunctionApplication()) {
 			return [];
 		}
 
@@ -418,7 +418,7 @@ final class AssignHandler implements ExprHandler
 			if (
 				$expr->expr instanceof FuncCall
 				&& $expr->expr->name instanceof Name
-				&& !$expr->expr->isFirstClassCallable()
+				&& !$expr->expr->isPartialFunctionApplication()
 				&& in_array($expr->expr->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
 				&& count($expr->expr->getArgs()) >= 1
 			) {
@@ -456,7 +456,7 @@ final class AssignHandler implements ExprHandler
 			if (
 				$expr->expr instanceof FuncCall
 				&& $expr->expr->name instanceof Name
-				&& !$expr->expr->isFirstClassCallable()
+				&& !$expr->expr->isPartialFunctionApplication()
 				&& count($expr->expr->getArgs()) >= 2
 			) {
 				$funcName = $expr->expr->name->toLowerString();
@@ -518,7 +518,7 @@ final class AssignHandler implements ExprHandler
 				if (
 					$expr->expr instanceof FuncCall
 					&& $expr->expr->name instanceof Name
-					&& !$expr->expr->isFirstClassCallable()
+					&& !$expr->expr->isPartialFunctionApplication()
 					&& in_array($expr->expr->name->toLowerString(), ['array_rand'], true)
 					&& count($expr->expr->getArgs()) >= 1
 				) {
@@ -549,7 +549,7 @@ final class AssignHandler implements ExprHandler
 					$expr->expr instanceof Expr\BinaryOp\Minus
 					&& $expr->expr->left instanceof FuncCall
 					&& $expr->expr->left->name instanceof Name
-					&& !$expr->expr->left->isFirstClassCallable()
+					&& !$expr->expr->left->isPartialFunctionApplication()
 					&& $expr->expr->right instanceof Node\Scalar\Int_
 					&& $expr->expr->right->value === 1
 					&& in_array($expr->expr->left->name->toLowerString(), ['count', 'sizeof'], true)
@@ -2450,7 +2450,7 @@ final class AssignHandler implements ExprHandler
 		if (
 			!$assignedExpr->name instanceof Name
 			|| $assignedExpr->name->toLowerString() !== 'in_array'
-			|| $assignedExpr->isFirstClassCallable()
+			|| $assignedExpr->isPartialFunctionApplication()
 			|| !$assignedType->isTrue()->maybe()
 		) {
 			return $conditionalExpressions;

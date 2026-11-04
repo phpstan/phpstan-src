@@ -41,7 +41,7 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 
 		if ($funcCall instanceof Node\Expr\BinaryOp\Pipe) {
 			if ($funcCall->right instanceof Node\Expr\FuncCall) {
-				if (!$funcCall->right->isFirstClassCallable()) {
+				if (!$funcCall->right->isPartialFunctionApplication()) {
 					return [];
 				}
 
@@ -55,7 +55,7 @@ final class CallToFunctionStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
-		if ($funcCall->isFirstClassCallable()) {
+		if ($funcCall->isPartialFunctionApplication()) {
 			return [];
 		}
 

@@ -329,7 +329,7 @@ class Foo
 		assertType('float', $float + $float);
 		assertType('float', $float + $number);
 		assertType('(float|int)', 1 / $mixed);
-		assertType('float|int', 1 / $number);
+		assertType('-1|1|float', 1 / $number);
 		assertType('float', 1.0 / $mixed);
 		assertType('float', 1.0 / $number);
 		assertType('(float|int)', $mixed / 1);

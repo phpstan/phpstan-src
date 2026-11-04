@@ -115,26 +115,26 @@ class Foo
 	public function multiplyZero(int $i, float $f, $range): void
 	{
 		assertType('0', $i * false);
-		assertType('float', $f * false);
+		assertType('0.0|NAN', $f * false);
 		assertType('0', $range * false);
 
 		assertType('0', $i * '0');
-		assertType('float', $f * '0');
+		assertType('0.0|NAN', $f * '0');
 		assertType('0', $range * '0');
 
 		assertType('0', $i * 0);
-		assertType('float', $f * 0);
+		assertType('0.0|NAN', $f * 0);
 		assertType('0', $range * 0);
 
 		assertType('0', 0 * $i);
-		assertType('float', 0 * $f);
+		assertType('0.0|NAN', 0 * $f);
 		assertType('0', 0 * $range);
 
 		$i *= 0;
 		$f *= 0;
 		$range *= 0;
 		assertType('0', $i);
-		assertType('float', $f);
+		assertType('0.0|NAN', $f);
 		assertType('0', $range);
 
 	}

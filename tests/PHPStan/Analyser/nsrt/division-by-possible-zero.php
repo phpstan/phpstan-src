@@ -22,8 +22,8 @@ function doFoo(int $range1, int $range2, int $int, int $r1, int $i, int $rMin, i
 	assertType('float<0.0, 5.0>|int<1, 5>', 5 / $range1);
 	assertType('float<-5.0, 0.0>|int<-5, -1>', 5 / $range2);
 	assertType('float<min, 0.0>|int<min, 0>', $range1 / $range2);
-	assertType('(float<-5.0, 5.0>|int)', 5 / $int);
-	assertType('(float<-10.0, 10.0>|int)', $r1 / $i);
+	assertType('(float<-5.0, 5.0>|int<-5, -1>|int<1, 5>)', 5 / $int);
+	assertType('(float<-10.0, 10.0>|int<-10, -1>|int<1, 10>)', $r1 / $i);
 	assertType('float<-10.0, 0.0>|float<0.2, 10.0>|int<-10, -1>|int<1, 10>', $r1 / $rMin);
 	assertType('float<0.0, max>|int<0, max>', $a / $b);
 	assertType('-1|1|float<-1.0, -0.2>|float<0.0, 1.0>', -1 / $rMin);

@@ -29,7 +29,7 @@ function doWhileNarrowedOnFirstPass(int $x0, int $xn): void
 function forLoop(int $x0, int $xn): void
 {
 	for ($xi = $x0; $xi < $xn; $xi += 0.1) {
-		assertType('int<1, max>', $xn);
+		assertType('int<2, max>', $xn);
 	}
 	assertType('int<1, max>', $xn);
 }

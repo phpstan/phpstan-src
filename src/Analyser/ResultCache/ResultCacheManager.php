@@ -48,6 +48,7 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function class_exists;
+use function clearstatcache;
 use function count;
 use function error_get_last;
 use function explode;
@@ -120,8 +121,9 @@ final class ResultCacheManager
 	private const MISSING_FILE_HASH = '';
 
 	/**
-	 * Prefixes the recorded hash of an analysed file with a parse error, whose result is not cached.
-	 * The prefixed hash matches no real hash, so the file is re-analysed on every run.
+	 * Prefixes the recorded hash of an analysed file with a parse error, whose result is not cached,
+	 * or of one that changed during the analysis, or uses one that did. The prefixed hash matches no
+	 * real hash, so the file is re-analysed by the next run.
 	 */
 	private const REANALYSE_FILE_HASH_PREFIX = 'reanalyse:';
 
@@ -172,6 +174,22 @@ final class ResultCacheManager
 	 * @var array<string, string>
 	 */
 	private array $recordedFileStats = [];
+
+	/**
+	 * The stat of the analysed files when they were hashed, to tell at save time which of them
+	 * changed while they were analysed - see getFilesChangedSinceHashed(). Kept as a string rather
+	 * than what stat() returned: it lives through the whole analysis.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $hashedFileStats = [];
+
+	/**
+	 * The analysed files modified in the second they were hashed in or later.
+	 *
+	 * @var array<string, true>
+	 */
+	private array $racilyHashedFiles = [];
 
 	private ?ResultCachePathTransformer $pathTransformer = null;
 
@@ -1378,6 +1396,37 @@ final class ResultCacheManager
 				unset($errorsByFile[$file]);
 			}
 
+			// The files changed during the analysis may have been read in another version than the one
+			// their hash and exported nodes describe, and so may the files using them, which are analysed
+			// again too. A run that analysed nothing read nothing.
+			$filesChangedDuringAnalysis = [];
+			if ($resultCache->isFullAnalysis() || $resultCache->getFilesToAnalyse() !== []) {
+				$filesChangedDuringAnalysis = $this->getFilesChangedSinceHashed($currentFileHashes);
+			}
+			foreach (array_keys($filesChangedDuringAnalysis) as $file) {
+				if ($output->isVeryVerbose()) {
+					$output->writeLineFormatted(sprintf('Result cache will re-analyse %s and the files using it because it changed during the analysis.', $file));
+				}
+
+				$filesToReanalyse[$file] = true;
+			}
+			if ($filesChangedDuringAnalysis !== []) {
+				foreach ([$dependencies, $usedTraitDependencies] as $fileDependencies) {
+					foreach ($fileDependencies as $file => $filesDependedOn) {
+						if (!array_key_exists($file, $currentFileHashes)) {
+							continue;
+						}
+
+						foreach ($filesDependedOn as $fileDependedOn) {
+							if (array_key_exists($fileDependedOn, $filesChangedDuringAnalysis)) {
+								$filesToReanalyse[$file] = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+
 			// in the order save() writes them, which is the order they are restored in
 			$collectedDataRuleResults = $finalizerResult->getCollectedDataRuleResults();
 			ksort($collectedDataRuleResults);
@@ -1392,6 +1441,7 @@ final class ResultCacheManager
 			$stubFiles = $this->getStubFiles();
 			if (
 				!$resultCache->isFullAnalysis()
+				&& $filesChangedDuringAnalysis === []
 				&& array_diff($resultCache->getFilesToAnalyse(), array_keys($filesToReanalyse)) === []
 				&& $this->restoredCacheUnchanged
 				&& $errorsByFile === $resultCache->getErrors()
@@ -3143,6 +3193,17 @@ final class ResultCacheManager
 	 */
 	private function hashAnalysedFiles(array $analysedFileStats, ?array $cachedDependencies): array
 	{
+		$hashedAt = time();
+		$this->hashedFileStats = [];
+		$this->racilyHashedFiles = [];
+		foreach ($analysedFileStats as $file => $stat) {
+			$this->hashedFileStats[$file] = self::getStatKey($stat);
+			if ($stat['mtime'] < $hashedAt && $stat['ctime'] < $hashedAt) {
+				continue;
+			}
+
+			$this->racilyHashedFiles[$file] = true;
+		}
 		$signatures = $this->fileStatSignatures->begin();
 		$hashes = [];
 		foreach ($analysedFileStats as $file => $stat) {
@@ -3195,6 +3256,56 @@ final class ResultCacheManager
 		}
 
 		return false;
+	}
+
+	/**
+	 * The analysed files written to after they were hashed. The analysis may have read them before
+	 * or after the write, or the files depending on them may have read the other version, so neither
+	 * the hash recorded for them nor their exported nodes describe what was analysed. That includes
+	 * a file changed and changed back, whose hash is the recorded one again.
+	 *
+	 * A file still written to in the second it was hashed in can keep its stat, its hash tells
+	 * whether it is the same - unless it got its hashed contents back within that second as well.
+	 *
+	 * @param array<string, string> $currentFileHashes
+	 * @return array<string, true>
+	 */
+	private function getFilesChangedSinceHashed(array $currentFileHashes): array
+	{
+		clearstatcache();
+		$changedFiles = [];
+		foreach ($this->hashedFileStats as $file => $hashedStat) {
+			$stat = @stat($file);
+			if ($stat === false) {
+				// the next run finds it gone and analyses the files that depended on it
+				continue;
+			}
+
+			if (self::getStatKey($stat) !== $hashedStat) {
+				$changedFiles[$file] = true;
+				continue;
+			}
+
+			if (!array_key_exists($file, $this->racilyHashedFiles)) {
+				continue;
+			}
+
+			if (!array_key_exists($file, $currentFileHashes) || hash_file('sha256', $file) === $currentFileHashes[$file]) {
+				continue;
+			}
+
+			$changedFiles[$file] = true;
+		}
+
+		return $changedFiles;
+	}
+
+	/**
+	 * @param array<int|string, int> $stat what stat() returned for the file
+	 */
+	private static function getStatKey(array $stat): string
+	{
+		return sprintf('%d:%d:%d:%d:%d', $stat['size'], $stat['mtime'], $stat['ctime'], $stat['ino'], $stat['dev']);
 	}
 
 	private function getDependencyFileHash(string $path): string

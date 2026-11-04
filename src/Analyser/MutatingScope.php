@@ -149,6 +149,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
 	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
 
+	/** Names a remembered `count()` of an expression can be keyed under (Name and FullyQualified). */
+	private const COUNT_FUNCTION_KEY_NAMES = ['count', 'sizeof', '\\count', '\\sizeof'];
+
 	/**
 	 * Expression keys the constant-fetch nodes of a global constant lookup print
 	 * as, by the name class, name and namespace they are built from. The nodes
@@ -3682,12 +3685,41 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$exprString = $this->getNodeKey($expr);
 		$this->expressionTypes[$exprString] = new ExpressionTypeHolder($expr, $type, $certainty);
 		$this->nativeExpressionTypes[$exprString] = new ExpressionTypeHolder($expr, $nativeType, $certainty);
+		$this->narrowRememberedCountsInPlace($exprString, $type, $nativeType);
 
 		if (!($expr instanceof AlwaysRememberedExpr)) {
 			return;
 		}
 
 		$this->specifyExpressionTypeInPlace($expr->expr, $type, $nativeType, $certainty);
+	}
+
+	/**
+	 * A remembered `count($expr)` (e.g. int<0, max> left over from merging
+	 * branches) would otherwise shadow the size implied by the narrowed array.
+	 */
+	private function narrowRememberedCountsInPlace(string $exprString, Type $type, Type $nativeType): void
+	{
+		foreach (self::COUNT_FUNCTION_KEY_NAMES as $functionName) {
+			$countKey = $functionName . '(' . $exprString . ')';
+			if (isset($this->expressionTypes[$countKey]) && $type->isArray()->yes()) {
+				$holder = $this->expressionTypes[$countKey];
+				$narrowed = TypeCombinator::intersect($holder->getType(), $type->getArraySize());
+				if (!$narrowed instanceof NeverType) {
+					$this->expressionTypes[$countKey] = new ExpressionTypeHolder($holder->getExpr(), $narrowed, $holder->getCertainty());
+				}
+			}
+			if (!isset($this->nativeExpressionTypes[$countKey]) || !$nativeType->isArray()->yes()) {
+				continue;
+			}
+
+			$nativeHolder = $this->nativeExpressionTypes[$countKey];
+			$narrowedNative = TypeCombinator::intersect($nativeHolder->getType(), $nativeType->getArraySize());
+			if ($narrowedNative instanceof NeverType) {
+				continue;
+			}
+			$this->nativeExpressionTypes[$countKey] = new ExpressionTypeHolder($nativeHolder->getExpr(), $narrowedNative, $nativeHolder->getCertainty());
+		}
 	}
 
 	public function assignExpression(Expr $expr, Type $type, Type $nativeType): self

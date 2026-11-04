@@ -28,7 +28,6 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
-use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
@@ -61,7 +60,6 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-
 use function array_keys;
 use function array_last;
 use function array_map;

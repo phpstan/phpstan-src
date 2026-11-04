@@ -52,7 +52,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
-use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -85,7 +84,6 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use Throwable;
 use WeakReference;
-
 use function array_key_first;
 use function array_keys;
 use function array_map;

@@ -142,12 +142,10 @@ public:
 	/* [new ConstantBooleanType(true), new ConstantBooleanType(false)] */
 	static zv::Val getFiniteTypes() { return bothConstants(); }
 
-	/* ExponentiateHelper::exponentiate($this, $exponent) */
+	/* $this->toValueSet()->arithmeticPower($exponent->toValueSet(), $phpVersion) */
 	zv::Val arithmeticPower(zval *exponent, zval *phpVersion) const
 	{
-		(void) phpVersion;
-		zv::Args args{self, exponent};
-		return pt_type_call_static(PT_CLASS_EXPONENTIATE_HELPER, PT_LC("exponentiate"), 2, args);
+		return pt_value_set_power(self, exponent, phpVersion);
 	}
 
 	/* new IdentifierTypeNode('bool') */

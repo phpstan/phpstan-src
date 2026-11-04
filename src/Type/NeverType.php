@@ -677,7 +677,7 @@ class NeverType implements CompoundType
 
 	public function toValueSet(): ValueSet
 	{
-		return ValueSet::createEmpty();
+		return ValueSet::createNever($this);
 	}
 
 }

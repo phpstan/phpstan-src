@@ -1031,6 +1031,8 @@ PT_MINIT_REGISTRATION(pt_register_iterable_type)
 		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isiterableallowed"), PT_CLASS_IDENTIFIER, PT_LC("iterable")));
 	});
 
+	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createinvalid"));
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::IterableType::registerTraits(cls);

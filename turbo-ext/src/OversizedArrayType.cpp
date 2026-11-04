@@ -273,7 +273,7 @@ PT_MINIT_REGISTRATION(pt_register_oversized_array_type)
 	ptdecl::OversizedArrayType::declareClass(cls);
 	ptdecl::OversizedArrayType::declareProperties(cls);
 	/* mirrors toValueSet() */
-	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_ARRAYS(false, true));
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_ARRAYS);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

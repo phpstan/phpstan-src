@@ -57,7 +57,9 @@ inline constexpr char strings[] =
 	"cb\0" /* 436 */
 	"traverse\0" /* 439 */
 	"right\0" /* 448 */
-	"traverseSimultaneously"; /* 454 */
+	"traverseSimultaneously\0" /* 454 */
+	"PHPStan\\Type\\ValueSet\0" /* 477 */
+	"toValueSet"; /* 499 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -88,6 +90,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(448, 0, 45), /* traverseSimultaneously $right */
 	reg::packed(436, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(44, 0, 45), /* traverseSimultaneously return */
+	reg::packed(44, 0, 477), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -107,6 +110,7 @@ inline constexpr sigtab::Sig inferTemplateTypes = { { 383 /* inferTemplateTypes 
 inline constexpr sigtab::Sig inferTemplateTypesOn = { { 415 /* inferTemplateTypesOn */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverse = { { 439 /* traverse */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverseSimultaneously = { { 454 /* traverseSimultaneously */, 2, 26, 2, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 499 /* toValueSet */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BenevolentUnionType

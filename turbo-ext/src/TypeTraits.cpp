@@ -176,6 +176,16 @@ void pt_value_set_of_this(INTERNAL_FUNCTION_PARAMETERS, const char *lcFactory, s
 	PT_RETURN_VAL(pt_value_set_create(lcFactory, len, 1, ZEND_THIS));
 }
 
+zv::Val pt_value_set_power(zend_object *type, zval *exponent, zval *phpVersion)
+{
+	zv::Val baseValues = pt_type_call(type, PT_LC("tovalueset"), 0, NULL);
+	if (UNEXPECTED(baseValues.isUndef())) return zv::Val();
+	zv::Val exponentValues = pt_type_call(Z_OBJ_P(exponent), PT_LC("tovalueset"), 0, NULL);
+	if (UNEXPECTED(exponentValues.isUndef())) return zv::Val();
+	zv::Args argv{exponentValues.raw(), phpVersion};
+	return pt_type_call(Z_OBJ_P(baseValues.raw()), PT_LC("arithmeticpower"), 2, argv);
+}
+
 void pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
@@ -2309,14 +2319,8 @@ static void ZEND_FASTCALL arrayTraitChunkArray(INTERNAL_FUNCTION_PARAMETERS)
 void pt_type_trait_array(reg::Class &cls)
 {
 	namespace sigs = ptdecl::ArrayTypeTrait::sig;
-	/* ValueSet::createArrays(!$this->isIterableAtLeastOnce()->yes(), !...->no()) */
-	cls.traitMethod(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
-		ZEND_PARSE_PARAMETERS_NONE();
-		zend_long nonEmpty = pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isiterableatleastonce"), 0, NULL);
-		if (UNEXPECTED(nonEmpty < 0)) RETURN_THROWS();
-		zv::Args args{nonEmpty != PT_TRI_YES, nonEmpty != PT_TRI_NO};
-		PT_RETURN_VAL(pt_value_set_create(PT_LC("createarrays"), 2, args));
-	});
+	/* ValueSet::createArrays($this) */
+	cls.traitMethod(sigs::toValueSet, PT_VALUE_SET_OF_ARRAYS);
 	cls.traitMethod(sigs::isArray, trinaryYes0);
 	cls.traitOp(PT_OP_IS_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.traitMethod(sigs::toArray, this0);
@@ -5490,6 +5494,35 @@ static void ZEND_FASTCALL operatorBinary(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(pt_operator_type_helper_binary(Op, ZEND_THIS, right, phpVersion));
 }
 
+/* $this->toValueSet()-><operator>($right->toValueSet(), $phpVersion) */
+static void operatorValueSet(INTERNAL_FUNCTION_PARAMETERS, const char *lcOperator, size_t len)
+{
+	zval *right, *phpVersion;
+	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
+	zv::Val leftValues = pt_type_call(PT_THIS_OBJ, PT_LC("tovalueset"), 0, NULL);
+	if (UNEXPECTED(leftValues.isUndef())) RETURN_THROWS();
+	zv::Val rightValues = pt_type_call(Z_OBJ_P(right), PT_LC("tovalueset"), 0, NULL);
+	if (UNEXPECTED(rightValues.isUndef())) RETURN_THROWS();
+	zv::Args argv{rightValues.raw(), phpVersion};
+	PT_RETURN_VAL(pt_type_call(Z_OBJ_P(leftValues.raw()), lcOperator, len, 2, argv));
+}
+
+#define PT_OPERATOR_VALUE_SET(lcOperator) \
+	[](INTERNAL_FUNCTION_PARAMETERS) { operatorValueSet(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC(lcOperator)); }
+
+/* a bool method of a ValueSet, such as isEmpty(); -1 = pending exception */
+static int valueSetFlag(zval *valueSet, const char *lcMethod, size_t len)
+{
+	zv::Val flag = pt_type_call(Z_OBJ_P(valueSet), lcMethod, len, 0, NULL);
+	if (UNEXPECTED(flag.isUndef())) return -1;
+	return Z_TYPE_P(flag.raw()) == IS_TRUE ? 1 : 0;
+}
+
+static int valueSetIsEmpty(zval *valueSet)
+{
+	return valueSetFlag(valueSet, PT_LC("isempty"));
+}
+
 void pt_type_trait_operator(reg::Class &cls)
 {
 	namespace sigs = ptdecl::OperatorTypeTrait::sig;
@@ -5509,22 +5542,89 @@ void pt_type_trait_operator(reg::Class &cls)
 		RETURN_NULL();
 	});
 	cls.traitMethod(sigs::toValueSet, PT_VALUE_SET_CREATE("createunknown"));
-	cls.traitMethod(sigs::arithmeticAdd, operatorBinary<PT_OPERATOR_ADD>);
-	cls.traitMethod(sigs::arithmeticSubtract, operatorBinary<PT_OPERATOR_SUBTRACT>);
-	cls.traitMethod(sigs::arithmeticMultiply, operatorBinary<PT_OPERATOR_MULTIPLY>);
-	cls.traitMethod(sigs::arithmeticDivide, operatorBinary<PT_OPERATOR_DIVIDE>);
-	cls.traitMethod(sigs::arithmeticIntDivide, operatorBinary<PT_OPERATOR_INT_DIVIDE>);
-	cls.traitMethod(sigs::arithmeticModulo, operatorBinary<PT_OPERATOR_MODULO>);
+	/* the arrays of two array operands are unioned, the rest is up to their values */
+	cls.traitMethod(sigs::arithmeticAdd, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *right, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
+		zv::Val leftValues = pt_type_call(PT_THIS_OBJ, PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(leftValues.isUndef())) RETURN_THROWS();
+		zv::Val rightValues = pt_type_call(Z_OBJ_P(right), PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(rightValues.isUndef())) RETURN_THROWS();
+		int leftEmpty = valueSetIsEmpty(leftValues.raw());
+		if (UNEXPECTED(leftEmpty < 0)) RETURN_THROWS();
+		int rightEmpty = leftEmpty == 1 ? 1 : valueSetIsEmpty(rightValues.raw());
+		if (UNEXPECTED(rightEmpty < 0)) RETURN_THROWS();
+		zend_long leftIsArray = pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isarray"), 0, NULL);
+		if (UNEXPECTED(leftIsArray < 0)) RETURN_THROWS();
+		zend_long rightIsArray = pt_type_call_trinary(Z_OBJ_P(right), PT_LC("isarray"), 0, NULL);
+		if (UNEXPECTED(rightIsArray < 0)) RETURN_THROWS();
+		if (leftEmpty == 0 && rightEmpty == 0 && leftIsArray == PT_TRI_YES && rightIsArray == PT_TRI_YES) {
+			zv::Args argv{right, phpVersion};
+			PT_RETURN_VAL(pt_type_call(PT_THIS_OBJ, PT_LC("arrayunion"), 2, argv));
+		}
+		/* strings, numbers, booleans and arrays added to each other give each of them,
+		 * as the operand types themselves to keep what else they tell */
+		if (leftIsArray == PT_TRI_MAYBE && rightIsArray == PT_TRI_MAYBE) {
+			int leftIsPlusable = valueSetFlag(leftValues.raw(), PT_LC("isplusable"));
+			if (UNEXPECTED(leftIsPlusable < 0)) RETURN_THROWS();
+			int rightIsPlusable = valueSetFlag(rightValues.raw(), PT_LC("isplusable"));
+			if (UNEXPECTED(rightIsPlusable < 0)) RETURN_THROWS();
+			if (leftIsPlusable == 1 && rightIsPlusable == 1) {
+				zval operands[2];
+				ZVAL_OBJ(&operands[0], PT_THIS_OBJ);
+				ZVAL_COPY_VALUE(&operands[1], right);
+				PT_RETURN_VAL(pt_type_combinator_union(2, operands));
+			}
+			if (leftIsPlusable == 1) {
+				int rightIsUnknown = valueSetFlag(rightValues.raw(), PT_LC("isunknown"));
+				if (UNEXPECTED(rightIsUnknown < 0)) RETURN_THROWS();
+				if (rightIsUnknown == 1) {
+					RETURN_OBJ_COPY(PT_THIS_OBJ);
+				}
+			}
+			if (rightIsPlusable == 1) {
+				int leftIsUnknown = valueSetFlag(leftValues.raw(), PT_LC("isunknown"));
+				if (UNEXPECTED(leftIsUnknown < 0)) RETURN_THROWS();
+				if (leftIsUnknown == 1) {
+					RETURN_COPY(right);
+				}
+			}
+		}
+		zv::Args argv{rightValues.raw(), phpVersion};
+		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(leftValues.raw()), PT_LC("arithmeticadd"), 2, argv));
+	});
+	cls.traitMethod(sigs::arithmeticSubtract, PT_OPERATOR_VALUE_SET("arithmeticsubtract"));
+	cls.traitMethod(sigs::arithmeticMultiply, PT_OPERATOR_VALUE_SET("arithmeticmultiply"));
+	cls.traitMethod(sigs::arithmeticDivide, PT_OPERATOR_VALUE_SET("arithmeticdivide"));
+	/* intdiv() takes integers: the operands' integer values divide */
+	cls.traitMethod(sigs::arithmeticIntDivide, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *right, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
+		zv::Val leftInteger = pt_type_call(PT_THIS_OBJ, PT_LC("tointeger"), 0, NULL);
+		if (UNEXPECTED(leftInteger.isUndef())) RETURN_THROWS();
+		zv::Val leftValues = pt_type_call(Z_OBJ_P(leftInteger.raw()), PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(leftValues.isUndef())) RETURN_THROWS();
+		zv::Val rightInteger = pt_type_call(Z_OBJ_P(right), PT_LC("tointeger"), 0, NULL);
+		if (UNEXPECTED(rightInteger.isUndef())) RETURN_THROWS();
+		zv::Val rightValues = pt_type_call(Z_OBJ_P(rightInteger.raw()), PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(rightValues.isUndef())) RETURN_THROWS();
+		zv::Args argv{rightValues.raw(), phpVersion};
+		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(leftValues.raw()), PT_LC("arithmeticintdivide"), 2, argv));
+	});
+	cls.traitMethod(sigs::arithmeticModulo, PT_OPERATOR_VALUE_SET("arithmeticmodulo"));
+	/* $this->toValueSet()->arithmeticNegate($phpVersion) */
 	cls.traitMethod(sigs::arithmeticNegate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *phpVersion;
 		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
-		PT_RETURN_VAL(pt_operator_type_helper_negate(ZEND_THIS, phpVersion));
+		zv::Val valueSet = pt_type_call(PT_THIS_OBJ, PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(valueSet.isUndef())) RETURN_THROWS();
+		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(valueSet.raw()), PT_LC("arithmeticnegate"), 1, phpVersion));
 	});
-	cls.traitMethod(sigs::bitwiseAnd, operatorBinary<PT_OPERATOR_BITWISE_AND>);
-	cls.traitMethod(sigs::bitwiseOr, operatorBinary<PT_OPERATOR_BITWISE_OR>);
-	cls.traitMethod(sigs::bitwiseXor, operatorBinary<PT_OPERATOR_BITWISE_XOR>);
-	cls.traitMethod(sigs::bitwiseShiftLeft, operatorBinary<PT_OPERATOR_SHIFT_LEFT>);
-	cls.traitMethod(sigs::bitwiseShiftRight, operatorBinary<PT_OPERATOR_SHIFT_RIGHT>);
+	cls.traitMethod(sigs::bitwiseAnd, PT_OPERATOR_VALUE_SET("bitwiseand"));
+	cls.traitMethod(sigs::bitwiseOr, PT_OPERATOR_VALUE_SET("bitwiseor"));
+	cls.traitMethod(sigs::bitwiseXor, PT_OPERATOR_VALUE_SET("bitwisexor"));
+	cls.traitMethod(sigs::bitwiseShiftLeft, PT_OPERATOR_VALUE_SET("bitwiseshiftleft"));
+	cls.traitMethod(sigs::bitwiseShiftRight, PT_OPERATOR_VALUE_SET("bitwiseshiftright"));
 	cls.traitMethod(sigs::stringConcatenate, operatorBinary<PT_OPERATOR_CONCATENATE>);
 	cls.traitMethod(sigs::arrayUnion, operatorBinary<PT_OPERATOR_ARRAY_UNION>);
 	/* $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion) */

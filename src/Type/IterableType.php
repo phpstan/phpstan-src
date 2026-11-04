@@ -566,4 +566,9 @@ class IterableType implements CompoundType
 		return $this->keyType->hasTemplateOrLateResolvableType() || $this->itemType->hasTemplateOrLateResolvableType();
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createInvalid();
+	}
+
 }

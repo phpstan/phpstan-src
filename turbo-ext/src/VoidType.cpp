@@ -385,6 +385,8 @@ PT_MINIT_REGISTRATION(pt_register_void_type)
 		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isvoidallowed"), PT_CLASS_IDENTIFIER, PT_LC("void")));
 	});
 
+	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createinvalid"));
+
 	/* the traits, in the twin's `use` order; the class body above wins over
 	 * every name it declares */
 	ptdecl::VoidType::registerTraits(cls);

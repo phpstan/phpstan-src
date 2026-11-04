@@ -18,11 +18,8 @@
 
 namespace phpstanturbo::ietr {
 
-/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT and
- * OperatorTypeHelper's private IS_* codes */
+/* InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT */
 constexpr zend_long PT_IETR_CALCULATE_SCALARS_LIMIT = PT_INITIALIZER_EXPR_TYPE_RESOLVER_CALCULATE_SCALARS_LIMIT;
-constexpr zend_long PT_IETR_IS_SCALAR_TYPE = 1;
-constexpr zend_long PT_IETR_IS_UNKNOWN = 2;
 
 #define IETR_VAL(name, expr) \
 	zv::Val name = (expr); \

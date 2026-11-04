@@ -3,11 +3,14 @@
 namespace PHPStan\Type;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function abs;
@@ -20,7 +23,9 @@ use function is_float;
 use function is_infinite;
 use function is_int;
 use function is_nan;
+use function is_numeric;
 use function is_string;
+use function pow;
 use function sprintf;
 use const INF;
 use const NAN;
@@ -61,20 +66,50 @@ final class ValueSet
 		private ?Type $strings = null,
 		private bool $emptyArray = false,
 		private bool $nonEmptyArray = false,
+		private ?Type $arrays = null,
 		private ?Type $objects = null,
 		private bool $resources = false,
+		private bool $invalid = false,
+		private bool $benevolent = false,
+		private ?NeverType $never = null,
+		private ?Type $unknownType = null,
 	)
 	{
 	}
 
-	public static function createUnknown(): self
+	/** Any value; a mixed type can tell some values apart, such as mixed~array. */
+	public static function createUnknown(?MixedType $type = null): self
 	{
-		return new self(true);
+		return new self(true, unknownType: $type);
+	}
+
+	/** Whether the values are only strings, numbers, booleans and arrays, which + adds to each other. */
+	public function isPlusable(): bool
+	{
+		return !$this->unknown && !$this->null && $this->objects === null && !$this->resources && !$this->isEmpty();
+	}
+
+	/** Whether the values can be anything, as mixed does. */
+	public function isUnknown(): bool
+	{
+		return $this->unknown && !$this->invalid;
 	}
 
 	public static function createEmpty(): self
 	{
 		return new self(false);
+	}
+
+	/** The values of a type no operator accepts, such as void or strict mixed; it compares as an unknown value. */
+	public static function createInvalid(): self
+	{
+		return new self(true, invalid: true);
+	}
+
+	/** No values, the operators give the never type. */
+	public static function createNever(NeverType $never): self
+	{
+		return new self(false, never: $never);
 	}
 
 	public static function createNull(): self
@@ -103,9 +138,12 @@ final class ValueSet
 		return new self(false, strings: $strings);
 	}
 
-	public static function createArrays(bool $empty, bool $nonEmpty): self
+	/** Arrays of an array type: ArrayType, ConstantArrayType or an accessory such as NonEmptyArrayType. */
+	public static function createArrays(Type $arrays): self
 	{
-		return new self(false, emptyArray: $empty, nonEmptyArray: $nonEmpty);
+		$isIterableAtLeastOnce = $arrays->isIterableAtLeastOnce();
+
+		return new self(false, emptyArray: !$isIterableAtLeastOnce->yes(), nonEmptyArray: !$isIterableAtLeastOnce->no(), arrays: $arrays);
 	}
 
 	public static function createObjects(Type $objects): self
@@ -118,10 +156,41 @@ final class ValueSet
 		return new self(false, resources: true);
 	}
 
+	/** The same values; the results of the operators on them are benevolent. */
+	public function toBenevolent(): self
+	{
+		$valueSet = clone $this;
+		$valueSet->benevolent = true;
+
+		return $valueSet;
+	}
+
+	public function isEmpty(): bool
+	{
+		return !$this->unknown
+			&& !$this->null
+			&& !$this->false
+			&& !$this->true
+			&& ($this->numbers === null || $this->numbers->isEmpty())
+			&& $this->constantStrings === []
+			&& $this->strings === null
+			&& !$this->emptyArray
+			&& !$this->nonEmptyArray
+			&& $this->objects === null
+			&& !$this->resources;
+	}
+
 	public function union(self $other): self
 	{
 		if ($this->unknown || $other->unknown) {
-			return self::createUnknown();
+			return new self(
+				true,
+				invalid: $this->invalid || $other->invalid,
+				benevolent: $this->benevolent || $other->benevolent,
+				unknownType: $this->unknown && $other->unknown && $this->unknownType !== null && $other->unknownType !== null
+					? TypeCombinator::union($this->unknownType, $other->unknownType)
+					: null,
+			);
 		}
 
 		$constantStrings = $this->constantStrings;
@@ -143,8 +212,11 @@ final class ValueSet
 			self::unionTypes($this->strings, $other->strings),
 			$this->emptyArray || $other->emptyArray,
 			$this->nonEmptyArray || $other->nonEmptyArray,
+			self::unionTypes($this->arrays, $other->arrays),
 			self::unionTypes($this->objects, $other->objects),
 			$this->resources || $other->resources,
+			benevolent: $this->benevolent || $other->benevolent,
+			never: $this->never ?? $other->never,
 		);
 	}
 
@@ -184,8 +256,11 @@ final class ValueSet
 			$this->strings === null || $other->strings === null ? null : TypeCombinator::intersect($this->strings, $other->strings),
 			$this->emptyArray && $other->emptyArray,
 			$this->nonEmptyArray && $other->nonEmptyArray,
+			$this->arrays === null || $other->arrays === null ? null : TypeCombinator::intersect($this->arrays, $other->arrays),
 			$this->objects === null || $other->objects === null ? null : TypeCombinator::intersect($this->objects, $other->objects),
 			$this->resources && $other->resources,
+			benevolent: $this->benevolent || $other->benevolent,
+			never: $this->never ?? $other->never,
 		);
 	}
 
@@ -289,6 +364,1098 @@ final class ValueSet
 		}
 
 		return $alwaysEqualType ?? new NeverType();
+	}
+
+	/**
+	 * Models the + operator on all but two arrays, which OperatorTypeTrait::arithmeticAdd()
+	 * unions. An array and a value that is not one cannot be added.
+	 */
+	public function arithmeticAdd(self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->getResultOfOperands($right) ?? $this->fold('+', $right);
+		if ($result !== null) {
+			return $result;
+		}
+
+		[$left, $right] = $this->generalizeTooManyConstants($right);
+		if ($left !== $this) {
+			return $left->arithmeticAdd($right, $phpVersion);
+		}
+
+		$leftIsArray = $this->isArray();
+		$rightIsArray = $right->isArray();
+		if ($this->unknown && $right->unknown) {
+			if ($leftIsArray->no() && $rightIsArray->no()) {
+				return new BenevolentUnionType([new FloatType(), new IntegerType()]);
+			}
+
+			return new BenevolentUnionType([
+				new FloatType(),
+				new IntegerType(),
+				new ArrayType(new MixedType(), new MixedType()),
+			]);
+		}
+		if (($leftIsArray->yes() && $rightIsArray->no()) || ($leftIsArray->no() && $rightIsArray->yes())) {
+			return new ErrorType();
+		}
+		if (($leftIsArray->yes() && $rightIsArray->maybe()) || ($leftIsArray->maybe() && $rightIsArray->yes())) {
+			$resultType = new ArrayType(new MixedType(), new MixedType());
+			if ($this->isOnlyNonEmptyArrays() || $right->isOnlyNonEmptyArrays()) {
+				return TypeCombinator::intersect($resultType, new NonEmptyArrayType());
+			}
+
+			return $resultType;
+		}
+		return $this->calculateCommonMath('+', $right, $phpVersion);
+	}
+
+	/** Models the - operator. */
+	public function arithmeticSubtract(self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->invalidOrFold('-', $right);
+		if ($result !== null) {
+			return $result;
+		}
+
+		[$left, $right] = $this->generalizeTooManyConstants($right);
+
+		return $left->calculateCommonMath('-', $right, $phpVersion);
+	}
+
+	/** Models the * operator. */
+	public function arithmeticMultiply(self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->invalidOrFold('*', $right);
+		if ($result !== null) {
+			return $result;
+		}
+
+		[$left, $right] = $this->generalizeTooManyConstants($right);
+
+		return $left->calculateCommonMath('*', $right, $phpVersion);
+	}
+
+	/**
+	 * Models the / operator. A divisor that is zero as a constant is an error; the quotient of
+	 * integers that divide without a remainder is an integer.
+	 */
+	public function arithmeticDivide(self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->invalidOrFold('/', $right);
+		if ($result === null) {
+			[$left, $generalizedRight] = $this->generalizeTooManyConstants($right);
+			$result = $generalizedRight->getZeroDivisorError() ?? $left->calculateCommonMath('/', $generalizedRight, $phpVersion);
+		}
+		if (!$this->isOnlyIntegers() || !$right->isOnlyIntegers()) {
+			return $result;
+		}
+
+		$moduloType = $this->arithmeticModulo($right, $phpVersion);
+		if (!$moduloType->isInteger()->yes() || !(new ConstantIntegerType(0))->isSuperTypeOf($moduloType)->yes()) {
+			return $result;
+		}
+
+		// PHP_INT_MIN / -1 divides without a remainder but still overflows to a float
+		$withoutFloat = TypeCombinator::remove($result, new FloatType());
+
+		return $withoutFloat instanceof NeverType ? $result : $withoutFloat;
+	}
+
+	/** Models intdiv() of the sets of Type::toInteger() of the operands. */
+	public function arithmeticIntDivide(self $right, PhpVersion $phpVersion): Type
+	{
+		$leftNumbers = $this->getIntegerNumbers();
+		$rightNumbers = $right->getIntegerNumbers();
+		if ($leftNumbers === null || $rightNumbers === null) {
+			return new ErrorType();
+		}
+
+		return $leftNumbers->intDivide($rightNumbers, $phpVersion);
+	}
+
+	/** The numbers of a set of integers and nothing else, or null. */
+	private function getIntegerNumbers(): ?NumberSet
+	{
+		if (
+			$this->numbers === null
+			|| $this->numbers->getIntegerIntervals() === []
+			|| $this->numbers->getFloatIntervals() !== []
+			|| $this->numbers->hasNan()
+			|| $this->mayBeNonNumber()
+		) {
+			return null;
+		}
+
+		return $this->numbers;
+	}
+
+	/** Models the % operator: the operands are converted to integers, a zero divisor is an error. */
+	public function arithmeticModulo(self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->getResultOfOperands($right) ?? $this->fold('%', $right);
+		if ($result !== null) {
+			return $result;
+		}
+
+		[$left, $right] = $this->generalizeTooManyConstants($right);
+		if ($left !== $this) {
+			return $left->arithmeticModulo($right, $phpVersion);
+		}
+
+		$leftNumbers = $this->toOperandNumbers(false, true);
+		$rightNumbers = $right->toOperandNumbers(false, true);
+		if ($leftNumbers === null || $rightNumbers === null) {
+			return new ErrorType();
+		}
+
+		$zeroDivisorError = $right->getZeroDivisorError();
+		if ($zeroDivisorError !== null) {
+			return $zeroDivisorError;
+		}
+
+		return $this->toResult($right, $leftNumbers->modulo($rightNumbers, $phpVersion));
+	}
+
+	/**
+	 * Models the ** operator with a base of null, booleans, numbers and strings; the
+	 * other types raise to a power on their own. The members of the exponent are raised
+	 * to one at a time.
+	 */
+	public function arithmeticPower(self $exponent, PhpVersion $phpVersion): Type
+	{
+		if ($exponent->isEmpty()) {
+			return new NeverType();
+		}
+		if (
+			$exponent->unknown
+			|| $exponent->emptyArray
+			|| $exponent->nonEmptyArray
+			|| $exponent->objects !== null
+			|| $exponent->resources
+		) {
+			return new ErrorType();
+		}
+
+		$resultTypes = [];
+		foreach ($exponent->getMembers() as $member) {
+			$resultTypes[] = $this->powerMember($member, $phpVersion);
+		}
+
+		return TypeCombinator::union(...$resultTypes);
+	}
+
+	private function powerMember(self $exponent, PhpVersion $phpVersion): Type
+	{
+		foreach ($exponent->constantStrings as $constantString) {
+			if (!is_numeric($constantString)) {
+				return new ErrorType();
+			}
+		}
+
+		$baseTypes = $this->getFiniteScalarTypes(false);
+		if ($baseTypes !== null && count($baseTypes) === 1) {
+			$exponentTypes = $exponent->getFiniteScalarTypes(false);
+			if ($exponentTypes !== null && count($exponentTypes) === 1) {
+				return self::foldPower($baseTypes[0]->getValue(), $exponentTypes[0]->getValue()) ?? new ErrorType();
+			}
+
+			$baseValue = $baseTypes[0]->getValue();
+			if (is_string($baseValue) && !is_numeric($baseValue)) {
+				return new ErrorType();
+			}
+		}
+
+		$baseNumbers = $this->toNumberSetOfNumber();
+		$exponentNumbers = $exponent->toNumberSetOfNumber();
+		if ($baseNumbers !== null && $exponentNumbers !== null) {
+			$result = $baseNumbers->power($exponentNumbers, $phpVersion);
+			if ($result !== null) {
+				return $result;
+			}
+		}
+
+		// a float operand makes the result a float
+		$isFloatResult = $this->isOnlyFloats($this->numbers) || ($exponentNumbers !== null && self::isOnlyFloatNumbers($exponentNumbers));
+		if ($exponentNumbers !== null && self::isOnlyInteger($exponentNumbers, 0)) {
+			if ($isFloatResult) {
+				return new ConstantFloatType(1.0);
+			}
+			if ($baseNumbers !== null && $baseNumbers->getIntegerIntervals() !== [] && $baseNumbers->getFloatIntervals() === [] && !$baseNumbers->hasNan()) {
+				return new ConstantIntegerType(1);
+			}
+
+			return new UnionType([new ConstantIntegerType(1), new ConstantFloatType(1.0)]);
+		}
+
+		if ($isFloatResult) {
+			return new FloatType();
+		}
+
+		if ($exponentNumbers !== null && self::isOnlyInteger($exponentNumbers, 1) && $this->numbers !== null && !$this->mayBeNonNumber()) {
+			return self::createTypeOfNumbers($this->numbers);
+		}
+
+		return new BenevolentUnionType([
+			new FloatType(),
+			new IntegerType(),
+		]);
+	}
+
+	/**
+	 * The values one at a time, the way the members of a union type are: each kind of
+	 * value, each number interval, each constant string. The booleans and a float with
+	 * NAN stay together, as BooleanType and FloatType are one type.
+	 *
+	 * @return list<self>
+	 */
+	private function getMembers(): array
+	{
+		$members = [];
+		if ($this->null) {
+			$members[] = self::createNull();
+		}
+		if ($this->false || $this->true) {
+			$members[] = self::createBooleans($this->false, $this->true);
+		}
+		if ($this->numbers !== null) {
+			$nan = $this->numbers->hasNan();
+			foreach ($this->numbers->getIntegerIntervals() as $interval) {
+				$members[] = self::createNumbers(new NumberSet([$interval], [], false));
+			}
+			foreach ($this->numbers->getFloatIntervals() as $interval) {
+				$withNan = $nan && $interval === [-INF, INF];
+				$nan = $nan && !$withNan;
+				$members[] = self::createNumbers(new NumberSet([], [$interval], $withNan));
+			}
+			if ($nan) {
+				$members[] = self::createNumbers(new NumberSet([], [], true));
+			}
+		}
+		foreach ($this->constantStrings as $constantString) {
+			$members[] = self::createConstantString($constantString);
+		}
+		if ($this->strings !== null) {
+			$members[] = self::createStrings($this->strings);
+		}
+
+		return $members;
+	}
+
+	/** The numbers Type::toNumber() gives for the values, null when that is not only numbers. */
+	private function toNumberSetOfNumber(): ?NumberSet
+	{
+		$integerIntervals = [];
+		if ($this->null || $this->false) {
+			$integerIntervals[] = [0, 0];
+		}
+		if ($this->true) {
+			$integerIntervals[] = [1, 1];
+		}
+		$numbers = new NumberSet($integerIntervals, [], false);
+		if ($this->numbers !== null) {
+			$numbers = $numbers->union($this->numbers);
+		}
+		foreach ($this->constantStrings as $constantString) {
+			$stringNumbers = (new ConstantStringType($constantString))->toNumber()->toNumberSet();
+			if ($stringNumbers === null) {
+				return null;
+			}
+			$numbers = $numbers->union($stringNumbers);
+		}
+		if ($this->strings !== null) {
+			$stringNumbers = $this->strings->toNumber()->toNumberSet();
+			if ($stringNumbers === null) {
+				return null;
+			}
+			$numbers = $numbers->union($stringNumbers);
+		}
+
+		return $numbers;
+	}
+
+	private function isOnlyFloats(?NumberSet $numbers): bool
+	{
+		return $numbers !== null && !$this->mayBeNonNumber() && self::isOnlyFloatNumbers($numbers);
+	}
+
+	private static function isOnlyFloatNumbers(NumberSet $numbers): bool
+	{
+		return $numbers->getIntegerIntervals() === [] && ($numbers->getFloatIntervals() !== [] || $numbers->hasNan());
+	}
+
+	private static function isOnlyInteger(NumberSet $numbers, int $value): bool
+	{
+		return $numbers->getIntegerIntervals() === [[$value, $value]] && $numbers->getFloatIntervals() === [] && !$numbers->hasNan();
+	}
+
+	private static function createTypeOfNumbers(NumberSet $numbers): Type
+	{
+		$types = [];
+		foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
+			$types[] = IntegerRangeType::fromInterval($min, $max);
+		}
+		$nan = $numbers->hasNan();
+		foreach ($numbers->getFloatIntervals() as [$min, $max]) {
+			if ($nan && $min === -INF && $max === INF) {
+				$types[] = new FloatType();
+				$nan = false;
+				continue;
+			}
+
+			$types[] = $min === $max ? new ConstantFloatType($min) : FloatRangeType::fromInterval($min, $max);
+		}
+		if ($nan) {
+			$types[] = new ConstantFloatType(NAN);
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	/** Models the unary - operator. */
+	public function arithmeticNegate(PhpVersion $phpVersion): Type
+	{
+		if ($this->isEmpty()) {
+			return $this->never ?? new NeverType();
+		}
+
+		$numbers = $this->invalid ? null : $this->toOperandNumbers(false, false);
+		if ($numbers === null) {
+			return new ErrorType();
+		}
+
+		$negated = $numbers->negate($phpVersion);
+
+		return $this->benevolent ? TypeUtils::toBenevolentUnion($negated) : $negated;
+	}
+
+	/** Models the & operator: two strings give a string, anything else integers. */
+	public function bitwiseAnd(self $right, PhpVersion $phpVersion): Type
+	{
+		return $this->calculateBitwise('&', $right, $phpVersion);
+	}
+
+	/** Models the | operator: two strings give a string, anything else integers. */
+	public function bitwiseOr(self $right, PhpVersion $phpVersion): Type
+	{
+		return $this->calculateBitwise('|', $right, $phpVersion);
+	}
+
+	/** Models the ^ operator: two strings give a string, anything else integers. */
+	public function bitwiseXor(self $right, PhpVersion $phpVersion): Type
+	{
+		return $this->calculateBitwise('^', $right, $phpVersion);
+	}
+
+	/** Models the << operator; a negative shift is an error. */
+	public function bitwiseShiftLeft(self $right, PhpVersion $phpVersion): Type
+	{
+		return $this->calculateShift('<<', $right, $phpVersion);
+	}
+
+	/** Models the >> operator; a negative shift is an error. */
+	public function bitwiseShiftRight(self $right, PhpVersion $phpVersion): Type
+	{
+		return $this->calculateShift('>>', $right, $phpVersion);
+	}
+
+	/**
+	 * @param '<<'|'>>' $operator
+	 */
+	private function calculateShift(string $operator, self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->getResultOfOperands($right) ?? $this->fold($operator, $right);
+		if ($result !== null) {
+			return $result;
+		}
+
+		[$left, $right] = $this->generalizeTooManyConstants($right);
+		if ($left->toNumberType() === null || $right->toNumberType() === null) {
+			return new ErrorType();
+		}
+
+		return $left->calculateCommonMath($operator, $right, $phpVersion);
+	}
+
+	/**
+	 * Operands with more pairs of constants than are computed one by one become the
+	 * type all their constants are: int, float, string or null; anything else can
+	 * only be an error.
+	 *
+	 * @return array{self, self}
+	 */
+	private function generalizeTooManyConstants(self $right): array
+	{
+		$leftTypes = $this->getFiniteScalarTypes(false);
+		$rightTypes = $right->getFiniteScalarTypes(false);
+		if (
+			$leftTypes === null
+			|| $rightTypes === null
+			|| $leftTypes === []
+			|| $rightTypes === []
+			|| count($leftTypes) * count($rightTypes) <= InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
+		) {
+			return [$this, $right];
+		}
+
+		return [$this->generalize(), $right->generalize()];
+	}
+
+	private function generalize(): self
+	{
+		$hasBooleans = $this->false || $this->true;
+		$hasStrings = $this->constantStrings !== [];
+		$hasNumbers = $this->numbers !== null && !$this->numbers->isEmpty();
+		if (!$hasBooleans && !$hasStrings && !$this->null && $hasNumbers) {
+			if ($this->numbers->getFloatIntervals() === [] && !$this->numbers->hasNan()) {
+				return self::createNumbers(new NumberSet([[null, null]], [], false));
+			}
+			if ($this->numbers->getIntegerIntervals() === []) {
+				return self::createNumbers(new NumberSet([], [[-INF, INF]], true));
+			}
+		}
+		if (!$hasBooleans && !$hasNumbers && !$this->null && $hasStrings) {
+			return self::createStrings(new StringType());
+		}
+		if (!$hasBooleans && !$hasNumbers && !$hasStrings && $this->null) {
+			return self::createNull();
+		}
+
+		return self::createInvalid();
+	}
+
+	private function invalidOrFold(string $operator, self $right): ?Type
+	{
+		if ($this->invalid || $right->invalid) {
+			return new ErrorType();
+		}
+
+		return $this->fold($operator, $right);
+	}
+
+	/**
+	 * The arithmetic of + - * / << >> once the constants are folded: numbers are computed on
+	 * their NumberSet, an operand that can be anything gives what its number can be.
+	 *
+	 * @param '+'|'-'|'*'|'/'|'<<'|'>>' $operator
+	 */
+	private function calculateCommonMath(string $operator, self $right, PhpVersion $phpVersion): Type
+	{
+		$leftNumberType = $this->toNumberType();
+		$rightNumberType = $right->toNumberType();
+		$isBenevolent = $this->benevolent
+			|| $right->benevolent
+			|| $leftNumberType instanceof BenevolentUnionType
+			|| $rightNumberType instanceof BenevolentUnionType;
+
+		$leftNumbers = $this->unknown || $right->unknown ? null : $leftNumberType?->toNumberSet();
+		$rightNumbers = $this->unknown || $right->unknown ? null : $rightNumberType?->toNumberSet();
+		if ($leftNumbers !== null && $rightNumbers !== null) {
+			if ($operator === '+') {
+				$result = $leftNumbers->add($rightNumbers, $phpVersion);
+			} elseif ($operator === '-') {
+				$result = $leftNumbers->subtract($rightNumbers, $phpVersion);
+			} elseif ($operator === '*') {
+				$result = $leftNumbers->multiply($rightNumbers, $phpVersion);
+			} elseif ($operator === '/') {
+				$result = $leftNumbers->divide($rightNumbers, $phpVersion);
+			} elseif ($operator === '<<') {
+				$result = $leftNumbers->shiftLeft($rightNumbers, $phpVersion);
+			} else {
+				$result = $leftNumbers->shiftRight($rightNumbers, $phpVersion);
+			}
+
+			return $isBenevolent ? TypeUtils::toBenevolentUnion($result) : $result;
+		}
+
+		if ($this->isArray()->yes() || $right->isArray()->yes()) {
+			return new ErrorType();
+		}
+		if ($leftNumberType === null || $rightNumberType === null) {
+			return new ErrorType();
+		}
+		if ($leftNumberType instanceof NeverType || $rightNumberType instanceof NeverType) {
+			// keep an explicit never, it ends the execution
+			foreach ([$leftNumberType, $rightNumberType] as $numberType) {
+				if ($numberType instanceof NeverType && $numberType->isExplicit()) {
+					return $numberType;
+				}
+			}
+
+			return new NeverType();
+		}
+
+		if ($leftNumberType->isFloat()->yes() || $rightNumberType->isFloat()->yes()) {
+			if (in_array($operator, ['<<', '>>'], true)) {
+				return new IntegerType();
+			}
+
+			return new FloatType();
+		}
+
+		$resultType = TypeCombinator::union($leftNumberType, $rightNumberType);
+		$isUnknown = $this->unknown || $right->unknown;
+		if ($operator === '/') {
+			if ($isUnknown || $resultType->isInteger()->yes()) {
+				return new BenevolentUnionType([new IntegerType(), new FloatType()]);
+			}
+
+			return new UnionType([new IntegerType(), new FloatType()]);
+		}
+
+		if ($isUnknown || $this->benevolent || $right->benevolent) {
+			return TypeUtils::toBenevolentUnion($resultType);
+		}
+
+		return $resultType;
+	}
+
+	/**
+	 * The number Type::toNumber() gives for the values, null when that is an error. A
+	 * benevolent set leaves out the values that are not numbers, as long as any are left.
+	 */
+	private function toNumberType(): ?Type
+	{
+		if ($this->unknown) {
+			return TypeCombinator::union(new IntegerType(), new FloatType());
+		}
+		if ($this->isEmpty()) {
+			return $this->never ?? new NeverType();
+		}
+
+		$types = [];
+		if ($this->null || $this->false) {
+			$types[] = new ConstantIntegerType(0);
+		}
+		if ($this->true) {
+			$types[] = new ConstantIntegerType(1);
+		}
+		if ($this->numbers !== null && !$this->numbers->isEmpty()) {
+			$types[] = self::createTypeOfNumbers($this->numbers);
+		}
+
+		$otherTypes = [];
+		foreach ($this->constantStrings as $constantString) {
+			$otherTypes[] = new ConstantStringType($constantString);
+		}
+		foreach ([$this->strings, $this->arrays, $this->objects] as $type) {
+			if ($type === null) {
+				continue;
+			}
+
+			$otherTypes[] = $type;
+		}
+		if ($this->resources) {
+			$otherTypes[] = new ResourceType();
+		}
+		foreach ($otherTypes as $type) {
+			$numberType = $type->toNumber();
+			if ($numberType instanceof ErrorType) {
+				if ($this->benevolent) {
+					continue;
+				}
+
+				return null;
+			}
+
+			$types[] = $numberType;
+		}
+
+		if ($types === []) {
+			return null;
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	private function isArray(): TrinaryLogic
+	{
+		if ($this->unknown) {
+			return $this->unknownType?->isArray() ?? TrinaryLogic::createMaybe();
+		}
+		if ($this->mayBeArray() && $this->mayBeNonArray()) {
+			return TrinaryLogic::createMaybe();
+		}
+
+		return TrinaryLogic::createFromBoolean($this->mayBeArray());
+	}
+
+	private function isOnlyNonEmptyArrays(): bool
+	{
+		return $this->nonEmptyArray && !$this->emptyArray && !$this->mayBeNonArray();
+	}
+
+	/**
+	 * Strings are combined byte by byte, so two strings give a string. A value that can be
+	 * a string or something else, on both sides, can be either and is an error.
+	 *
+	 * @param '&'|'|'|'^' $operator
+	 */
+	private function calculateBitwise(string $operator, self $right, PhpVersion $phpVersion): Type
+	{
+		$result = $this->getResultOfOperands($right) ?? $this->fold($operator, $right);
+		if ($result !== null) {
+			return $result;
+		}
+
+		$leftOnlyStrings = $this->isOnlyStrings();
+		$rightOnlyStrings = $right->isOnlyStrings();
+		if (($leftOnlyStrings || $this->unknown) && ($rightOnlyStrings || $right->unknown)) {
+			if ($leftOnlyStrings && $rightOnlyStrings) {
+				return new StringType();
+			}
+
+			// with an unknown operand that is not a string, the string is a number
+			return new BenevolentUnionType([new IntegerType(), new StringType()]);
+		}
+		if ($this->mayBeString() && !$leftOnlyStrings && $right->mayBeString() && !$rightOnlyStrings) {
+			return new ErrorType();
+		}
+
+		$leftNumbers = $this->toOperandNumbers(false, false);
+		$rightNumbers = $right->toOperandNumbers(false, false);
+		if ($leftNumbers === null || $rightNumbers === null) {
+			return new ErrorType();
+		}
+
+		if ($operator === '&') {
+			$result = $leftNumbers->bitwiseAnd($rightNumbers, $phpVersion);
+		} elseif ($operator === '|') {
+			$result = $leftNumbers->bitwiseOr($rightNumbers, $phpVersion);
+		} else {
+			$result = $leftNumbers->bitwiseXor($rightNumbers, $phpVersion);
+		}
+
+		return $this->toResult($right, $result);
+	}
+
+	/** The result decided by the operands alone: never for no values, an error for invalid ones. */
+	private function getResultOfOperands(self $right): ?Type
+	{
+		if ($this->isEmpty() || $right->isEmpty()) {
+			// keep an explicit never, it ends the execution
+			foreach ([$this->never, $right->never] as $never) {
+				if ($never !== null && $never->isExplicit()) {
+					return $never;
+				}
+			}
+
+			return new NeverType();
+		}
+
+		if ($this->invalid || $right->invalid) {
+			return new ErrorType();
+		}
+
+		return null;
+	}
+
+	/** An error when the divisor is zero as a constant number, such as 0, '0', false or null. */
+	private function getZeroDivisorError(): ?Type
+	{
+		foreach ($this->getFiniteScalarTypes(false) ?? [] as $type) {
+			if (in_array(self::getConstantNumber($type->toNumber()), [0, 0.0], true)) {
+				return new ErrorType();
+			}
+		}
+
+		return null;
+	}
+
+	private function toResult(self $right, Type $result): Type
+	{
+		if ($this->benevolent || $this->unknown || $right->benevolent || $right->unknown) {
+			return TypeUtils::toBenevolentUnion($result);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Computes the operator for each pair of values when both operands hold few enough
+	 * constants. Null when they do not; an error when a pair is one.
+	 */
+	private function fold(string $operator, self $right): ?Type
+	{
+		// the bitwise operators list small integer ranges too
+		$expandIntegerIntervals = in_array($operator, ['&', '|', '^'], true);
+		$leftTypes = $this->getFiniteScalarTypes($expandIntegerIntervals);
+		$rightTypes = $right->getFiniteScalarTypes($expandIntegerIntervals);
+		if (
+			$leftTypes === null
+			|| $rightTypes === null
+			|| $leftTypes === []
+			|| $rightTypes === []
+			|| count($leftTypes) * count($rightTypes) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
+		) {
+			return null;
+		}
+
+		$resultTypes = [];
+		foreach ($leftTypes as $leftType) {
+			foreach ($rightTypes as $rightType) {
+				$resultType = self::foldValues($operator, $leftType, $rightType);
+				if ($resultType === null) {
+					return new ErrorType();
+				}
+
+				$resultTypes[] = $resultType;
+			}
+		}
+
+		return TypeCombinator::union(...$resultTypes);
+	}
+
+	/** Null for an error. */
+	private static function foldValues(string $operator, ConstantScalarType $left, ConstantScalarType $right): ?Type
+	{
+		if ($operator === '**') {
+			return self::foldPower($left->getValue(), $right->getValue());
+		}
+
+		if (in_array($operator, ['&', '|', '^'], true) && $left->isString()->yes() && $right->isString()->yes()) {
+			$leftString = (string) $left->getValue();
+			$rightString = (string) $right->getValue();
+			if ($operator === '&') {
+				return new ConstantStringType($leftString & $rightString);
+			}
+			if ($operator === '|') {
+				return new ConstantStringType($leftString | $rightString);
+			}
+
+			return new ConstantStringType($leftString ^ $rightString);
+		}
+
+		$leftNumber = self::getConstantNumber($left->toNumber());
+		$rightNumber = self::getConstantNumber($right->toNumber());
+		if ($leftNumber === null || $rightNumber === null) {
+			return null;
+		}
+
+		if ($operator === '+') {
+			return ConstantTypeHelper::getTypeFromValue($leftNumber + $rightNumber);
+		}
+		if ($operator === '-') {
+			return ConstantTypeHelper::getTypeFromValue($leftNumber - $rightNumber);
+		}
+		if ($operator === '*') {
+			return ConstantTypeHelper::getTypeFromValue($leftNumber * $rightNumber);
+		}
+		if ($operator === '/') {
+			if (in_array($rightNumber, [0, 0.0], true)) {
+				return null;
+			}
+
+			return ConstantTypeHelper::getTypeFromValue($leftNumber / $rightNumber);
+		}
+
+		// the integer operators read numeric strings out of the int range as the nearest
+		// integer, like an (int) cast, unlike the float toNumber() gives
+		$leftInteger = self::getConstantInteger($left->toInteger());
+		$rightInteger = self::getConstantInteger($right->toInteger());
+		if ($leftInteger === null || $rightInteger === null) {
+			return null;
+		}
+
+		if ($operator === '%') {
+			return $rightInteger === 0 ? null : new ConstantIntegerType($leftInteger % $rightInteger);
+		}
+		if ($operator === '<<') {
+			return $rightInteger < 0 ? null : new ConstantIntegerType($leftInteger << $rightInteger);
+		}
+		if ($operator === '>>') {
+			return $rightInteger < 0 ? null : new ConstantIntegerType($leftInteger >> $rightInteger);
+		}
+		if ($operator === '&') {
+			return new ConstantIntegerType($leftInteger & $rightInteger);
+		}
+		if ($operator === '|') {
+			return new ConstantIntegerType($leftInteger | $rightInteger);
+		}
+
+		return new ConstantIntegerType($leftInteger ^ $rightInteger);
+	}
+
+	/** Null for an error. */
+	private static function foldPower(bool|float|int|string|null $base, bool|float|int|string|null $exponent): ?Type
+	{
+		$result = self::pow($base, $exponent);
+		if ($result === null) {
+			return null;
+		}
+
+		$resultType = ConstantTypeHelper::getTypeFromValue($result);
+
+		// a zero float stands for both zeros (0.0 === -0.0), and a negative odd exponent tells them apart
+		if (is_float($base) && $base === 0.0) {
+			$otherZeroResult = self::pow(-$base, $exponent);
+			if (is_float($otherZeroResult) && $otherZeroResult !== $result) {
+				return TypeCombinator::union($resultType, new ConstantFloatType($otherZeroResult));
+			}
+		}
+
+		return $resultType;
+	}
+
+	private static function pow(mixed $base, mixed $exponent): float|int|null
+	{
+		if ((is_string($base) && !is_numeric($base)) || (is_string($exponent) && !is_numeric($exponent))) {
+			return null;
+		}
+
+		// PHP 8.4 deprecates 0 ** -1, which still gives INF
+		return @pow($base, $exponent);
+	}
+
+	private static function getConstantNumber(Type $numberType): int|float|null
+	{
+		$values = $numberType->getConstantScalarValues();
+		if (count($values) !== 1 || (!is_int($values[0]) && !is_float($values[0]))) {
+			return null;
+		}
+
+		return $values[0];
+	}
+
+	private static function getConstantInteger(Type $integerType): ?int
+	{
+		$values = $integerType->getConstantScalarValues();
+		if (count($values) !== 1 || !is_int($values[0])) {
+			return null;
+		}
+
+		return $values[0];
+	}
+
+	/**
+	 * The values of a set of constants, null for any other set. Bounded integer ranges
+	 * are listed too when asked for, up to the limit of the constants computed.
+	 *
+	 * @return list<ConstantScalarType>|null
+	 */
+	private function getFiniteScalarTypes(bool $expandIntegerIntervals): ?array
+	{
+		if (
+			$this->unknown
+			|| $this->strings !== null
+			|| $this->emptyArray
+			|| $this->nonEmptyArray
+			|| $this->objects !== null
+			|| $this->resources
+		) {
+			return null;
+		}
+
+		$types = [];
+		if ($this->null) {
+			$types[] = new NullType();
+		}
+		if ($this->false) {
+			$types[] = new ConstantBooleanType(false);
+		}
+		if ($this->true) {
+			$types[] = new ConstantBooleanType(true);
+		}
+		if ($this->numbers !== null) {
+			foreach ($this->numbers->getIntegerIntervals() as [$min, $max]) {
+				if ($min === null || $max === null) {
+					return null;
+				}
+				// only a range on its own is listed, as IntegerRangeType::getFiniteTypes() lists it
+				if (
+					$min !== $max
+					&& (
+						!$expandIntegerIntervals
+						|| $max - $min > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT
+						|| !$this->isOnlyOneIntegerInterval()
+					)
+				) {
+					return null;
+				}
+
+				// $min + $i stays within $max, unlike $i++ past PHP_INT_MAX, which would turn it into a float
+				for ($i = 0; $i <= $max - $min; $i++) {
+					$types[] = new ConstantIntegerType($min + $i);
+				}
+			}
+			foreach ($this->numbers->getFloatIntervals() as [$min, $max]) {
+				if ($min !== $max) {
+					return null;
+				}
+
+				$types[] = new ConstantFloatType($min);
+			}
+			if ($this->numbers->hasNan()) {
+				$types[] = new ConstantFloatType(NAN);
+			}
+		}
+		foreach ($this->constantStrings as $constantString) {
+			$types[] = new ConstantStringType($constantString);
+		}
+
+		return $types;
+	}
+
+	/**
+	 * The numbers an arithmetic operator reads from the values, null when one of them is
+	 * not a number operand; a benevolent set leaves those out as long as any are left.
+	 * Arrays are left out when asked for, the + operator adds them. The integer operators
+	 * read their operands as integers, numeric strings out of the int range as the nearest
+	 * one, like an (int) cast.
+	 */
+	private function toOperandNumbers(bool $withoutArrays, bool $integers): ?NumberSet
+	{
+		if ($this->unknown) {
+			return $integers ? new NumberSet([[null, null]], [], false) : new NumberSet([[null, null]], [[-INF, INF]], true);
+		}
+		if (((!$withoutArrays && ($this->emptyArray || $this->nonEmptyArray)) || $this->resources) && !$this->benevolent) {
+			return null;
+		}
+
+		$sets = [];
+		if ($this->null || $this->false) {
+			$sets[] = new NumberSet([[0, 0]], [], false);
+		}
+		if ($this->true) {
+			$sets[] = new NumberSet([[1, 1]], [], false);
+		}
+		if ($this->numbers !== null) {
+			$sets[] = $integers ? self::toIntegerNumbers($this->numbers) : $this->numbers;
+		}
+
+		$types = [];
+		foreach ($this->constantStrings as $constantString) {
+			$types[] = new ConstantStringType($constantString);
+		}
+		if ($this->strings !== null) {
+			$types[] = $this->strings;
+		}
+		if ($this->objects !== null) {
+			$types[] = $this->objects;
+		}
+		foreach ($types as $type) {
+			$numbers = $type->toNumber()->toNumberSet();
+			if ($numbers === null) {
+				if ($this->benevolent) {
+					continue;
+				}
+
+				return null;
+			}
+
+			$sets[] = $integers ? $type->toInteger()->toNumberSet() ?? new NumberSet([[null, null]], [], false) : $numbers;
+		}
+
+		if ($sets === []) {
+			return null;
+		}
+
+		// a value of two kinds that read as the same number is one member
+		$integerIntervals = [];
+		$floatIntervals = [];
+		$nan = false;
+		foreach ($sets as $set) {
+			foreach ($set->getIntegerIntervals() as $interval) {
+				if (in_array($interval, $integerIntervals, true)) {
+					continue;
+				}
+
+				$integerIntervals[] = $interval;
+			}
+			foreach ($set->getFloatIntervals() as $interval) {
+				if (in_array($interval, $floatIntervals, true)) {
+					continue;
+				}
+
+				$floatIntervals[] = $interval;
+			}
+			$nan = $nan || $set->hasNan();
+		}
+
+		return new NumberSet($integerIntervals, $floatIntervals, $nan);
+	}
+
+	/** The integers the numbers become, as an (int) cast converts them. */
+	private static function toIntegerNumbers(NumberSet $numbers): NumberSet
+	{
+		$integers = new NumberSet($numbers->getIntegerIntervals(), [], false);
+		$floatTypes = [];
+		foreach ($numbers->getFloatIntervals() as [$min, $max]) {
+			$floatTypes[] = $min === $max ? new ConstantFloatType($min) : FloatRangeType::fromInterval($min, $max);
+		}
+		if ($numbers->hasNan()) {
+			$floatTypes[] = new ConstantFloatType(NAN);
+		}
+		foreach ($floatTypes as $floatType) {
+			$integers = $integers->union($floatType->toInteger()->toNumberSet() ?? new NumberSet([[null, null]], [], false));
+		}
+
+		return $integers;
+	}
+
+	private function isOnlyOneIntegerInterval(): bool
+	{
+		return $this->numbers !== null
+			&& count($this->numbers->getIntegerIntervals()) === 1
+			&& $this->numbers->getFloatIntervals() === []
+			&& !$this->numbers->hasNan()
+			&& !$this->mayBeNonNumber();
+	}
+
+	private function isOnlyIntegers(): bool
+	{
+		return $this->numbers !== null
+			&& $this->numbers->getFloatIntervals() === []
+			&& !$this->numbers->hasNan()
+			&& !$this->mayBeNonNumber();
+	}
+
+	private function isOnlyStrings(): bool
+	{
+		return $this->mayBeString()
+			&& !$this->unknown
+			&& !$this->null
+			&& !$this->false
+			&& !$this->true
+			&& $this->numbers === null
+			&& !$this->mayBeArray()
+			&& $this->objects === null
+			&& !$this->resources;
+	}
+
+	private function mayBeString(): bool
+	{
+		return $this->unknown || $this->constantStrings !== [] || $this->strings !== null;
+	}
+
+	private function mayBeArray(): bool
+	{
+		return $this->unknown || $this->emptyArray || $this->nonEmptyArray;
+	}
+
+	private function mayBeNonArray(): bool
+	{
+		return $this->unknown
+			|| $this->null
+			|| $this->false
+			|| $this->true
+			|| $this->numbers !== null
+			|| $this->constantStrings !== []
+			|| $this->strings !== null
+			|| $this->objects !== null
+			|| $this->resources;
+	}
+
+	private function mayBeNonNumber(): bool
+	{
+		return $this->unknown
+			|| $this->null
+			|| $this->false
+			|| $this->true
+			|| $this->constantStrings !== []
+			|| $this->strings !== null
+			|| $this->mayBeArray()
+			|| $this->objects !== null
+			|| $this->resources;
 	}
 
 	private static function unionTypes(?Type $left, ?Type $right): ?Type

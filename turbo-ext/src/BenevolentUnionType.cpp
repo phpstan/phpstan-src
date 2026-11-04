@@ -552,6 +552,13 @@ PT_MINIT_REGISTRATION(pt_register_benevolent_union_type)
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously(right, &fci, &fcc));
 	});
 
+	/* parent::toValueSet()->toBenevolent() */
+	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zv::Val valueSet = pt_type_call_parent(pt_ce_benevolent_union_type, Z_OBJ_P(ZEND_THIS), PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(valueSet.isUndef())) RETURN_THROWS();
+		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(valueSet.raw()), PT_LC("tobenevolent"), 0, NULL));
+	});
 	cls.shadow(&pt_ce_benevolent_union_type);
 }
 

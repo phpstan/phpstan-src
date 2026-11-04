@@ -882,4 +882,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $this->getReturnType()->hasTemplateOrLateResolvableType();
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createInvalid();
+	}
+
 }

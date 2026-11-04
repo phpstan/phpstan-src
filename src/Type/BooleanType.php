@@ -184,7 +184,7 @@ class BooleanType implements Type
 
 	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type
 	{
-		return ExponentiateHelper::exponentiate($this, $exponent);
+		return $this->toValueSet()->arithmeticPower($exponent->toValueSet(), $phpVersion);
 	}
 
 	public function toPhpDocNode(): TypeNode

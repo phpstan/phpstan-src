@@ -287,4 +287,9 @@ class NonexistentParentClassType implements Type
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createInvalid();
+	}
+
 }

@@ -1360,6 +1360,8 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 	/* "min" and "max" must stay the first two declared properties
 	 * (slots::min, slots::max) */
 	ptdecl::IntegerRangeType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, pt_value_set_of_numbers);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long min, max;

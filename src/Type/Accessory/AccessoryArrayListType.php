@@ -31,6 +31,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
@@ -591,6 +592,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return false;
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createArrays(true, true);
 	}
 
 }

@@ -381,6 +381,8 @@ PT_MINIT_REGISTRATION(pt_register_accessory_numeric_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNumericStringType");
 	ptdecl::AccessoryNumericStringType::declareClass(cls);
 	ptdecl::AccessoryNumericStringType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

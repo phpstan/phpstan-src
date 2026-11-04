@@ -264,6 +264,15 @@ PT_MINIT_REGISTRATION(pt_register_constant_boolean_type)
 	ptdecl::ConstantBooleanType::declareClass(cls);
 	/* "value" must stay the first declared property (slots::value) */
 	ptdecl::ConstantBooleanType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zv::Val value = pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("getvalue"), 0, NULL);
+		if (UNEXPECTED(value.isUndef())) RETURN_THROWS();
+		bool isTrue = Z_TYPE_P(value.raw()) == IS_TRUE;
+		zv::Args args{!isTrue, isTrue};
+		PT_RETURN_VAL(pt_value_set_create(PT_LC("createbooleans"), 2, args));
+	});
 
 	cls.method<&ConstantBooleanType::construct, zp::Bool>(sigs::__construct);
 

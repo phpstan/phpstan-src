@@ -214,4 +214,9 @@ class BooleanType implements Type
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createBooleans(true, true);
+	}
+
 }

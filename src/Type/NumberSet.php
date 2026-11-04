@@ -77,6 +77,46 @@ final class NumberSet
 		return $this->nan;
 	}
 
+	public function union(self $other): self
+	{
+		return new self(
+			[...$this->integerIntervals, ...$other->integerIntervals],
+			[...$this->floatIntervals, ...$other->floatIntervals],
+			$this->nan || $other->nan,
+		);
+	}
+
+	public function intersect(self $other): self
+	{
+		$integerIntervals = [];
+		foreach ($this->integerIntervals as [$leftMin, $leftMax]) {
+			foreach ($other->integerIntervals as [$rightMin, $rightMax]) {
+				$min = $leftMin === null || $rightMin === null ? $leftMin ?? $rightMin : max($leftMin, $rightMin);
+				$max = $leftMax === null || $rightMax === null ? $leftMax ?? $rightMax : min($leftMax, $rightMax);
+				if ($min !== null && $max !== null && $min > $max) {
+					continue;
+				}
+
+				$integerIntervals[] = [$min, $max];
+			}
+		}
+
+		$floatIntervals = [];
+		foreach ($this->floatIntervals as [$leftMin, $leftMax]) {
+			foreach ($other->floatIntervals as [$rightMin, $rightMax]) {
+				$min = max($leftMin, $rightMin);
+				$max = min($leftMax, $rightMax);
+				if ($min > $max) {
+					continue;
+				}
+
+				$floatIntervals[] = [$min, $max];
+			}
+		}
+
+		return new self($integerIntervals, $floatIntervals, $this->nan && $other->nan);
+	}
+
 	/** Models the + operator. */
 	public function add(self $right, PhpVersion $phpVersion): Type
 	{

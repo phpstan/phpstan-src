@@ -275,7 +275,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\NativeTypePosition\0" /* 3807 */
 	"toNativePhpTypeNode\0" /* 3839 */
 	"notBenevolentPickFromTypes\0" /* 3859 */
-	"hasTemplateOrLateResolvableType"; /* 3886 */
+	"hasTemplateOrLateResolvableType\0" /* 3886 */
+	"PHPStan\\Type\\ValueSet\0" /* 3918 */
+	"toValueSet"; /* 3940 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -534,6 +536,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3713, MAY_BE_CALLABLE), /* notBenevolentPickFromTypes $getValues */
 	reg::packed(35, MAY_BE_ARRAY), /* notBenevolentPickFromTypes return */
 	reg::packed(35, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+	reg::packed(35, 0, 3918), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -693,6 +696,7 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 3785 /* toPhpDocNode */, 0, 252,
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3839 /* toNativePhpTypeNode */, 1, 253, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3859 /* notBenevolentPickFromTypes */, 1, 254, 1, 255, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3886 /* hasTemplateOrLateResolvableType */, 0, 256, 0, 256, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 3940 /* toValueSet */, 0, 257, 0, 257, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionType

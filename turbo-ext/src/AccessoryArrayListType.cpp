@@ -359,6 +359,8 @@ PT_MINIT_REGISTRATION(pt_register_accessory_array_list_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryArrayListType");
 	ptdecl::AccessoryArrayListType::declareClass(cls);
 	ptdecl::AccessoryArrayListType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_ARRAYS(true, true));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

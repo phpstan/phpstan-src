@@ -675,4 +675,9 @@ class NeverType implements CompoundType
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createEmpty();
+	}
+
 }

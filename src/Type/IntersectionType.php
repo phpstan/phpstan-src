@@ -2142,4 +2142,14 @@ class IntersectionType implements CompoundType
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		$valueSet = ValueSet::createUnknown();
+		foreach ($this->types as $type) {
+			$valueSet = $valueSet->intersect($type->toValueSet());
+		}
+
+		return $valueSet;
+	}
+
 }

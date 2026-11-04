@@ -950,4 +950,9 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->hasTemplateOrLateResolvableType();
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createObjects($this);
+	}
+
 }

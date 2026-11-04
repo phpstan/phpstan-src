@@ -408,6 +408,8 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 	reg::Class cls("PHPStan\\Type\\NullType");
 	ptdecl::NullType::declareClass(cls);
 	ptdecl::NullType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createnull"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

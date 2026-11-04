@@ -299,8 +299,8 @@ private:
 	{
 		NumberSetData hull;
 		if (!set.integerIntervals.empty()) {
-			NullableLong min = set.integerIntervals[0].min;
-			NullableLong max = set.integerIntervals[0].max;
+			phpstanturbo::NullableLong min = set.integerIntervals[0].min;
+			phpstanturbo::NullableLong max = set.integerIntervals[0].max;
 			for (const NumberSetData::IntegerInterval &interval : set.integerIntervals) {
 				min = min.isNull || interval.min.isNull ? NullableLong::null() : NullableLong::of(interval.min.value < min.value ? interval.min.value : min.value);
 				max = max.isNull || interval.max.isNull ? NullableLong::null() : NullableLong::of(interval.max.value > max.value ? interval.max.value : max.value);
@@ -768,6 +768,48 @@ bool pt_type_to_number_set(zval *type, NumberSetData &out, bool &has)
 
 #define PT_THIS NumberSet(Z_OBJ_P(ZEND_THIS))
 
+/* union() / intersect(): (self $other) — PHP's max()/min() keep the first of
+ * equal values, as `b > a ? b : a` does */
+template <bool Intersect>
+static void pt_ns_combine(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *other;
+	if (!zp::parse<zp::Obj>(execute_data, other)) RETURN_THROWS();
+	if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(other), pt_ce_number_set))) {
+		zend_type_error("%s::%s(): Argument #1 ($other) must be of type %s, %s given", ZSTR_VAL(pt_ce_number_set->name), get_active_function_name(), ZSTR_VAL(pt_ce_number_set->name), zend_zval_value_name(other));
+		RETURN_THROWS();
+	}
+	NumberSetData left, right;
+	if (UNEXPECTED(!PT_THIS.read(left) || !NumberSet(Z_OBJ_P(other)).read(right))) RETURN_THROWS();
+	NumberSetData result;
+	if (!Intersect) {
+		result.integerIntervals = left.integerIntervals;
+		result.integerIntervals.insert(result.integerIntervals.end(), right.integerIntervals.begin(), right.integerIntervals.end());
+		result.floatIntervals = left.floatIntervals;
+		result.floatIntervals.insert(result.floatIntervals.end(), right.floatIntervals.begin(), right.floatIntervals.end());
+		result.nan = left.nan || right.nan;
+		PT_RETURN_VAL(pt_number_set_new(result));
+	}
+	for (const auto &l : left.integerIntervals) {
+		for (const auto &r : right.integerIntervals) {
+			phpstanturbo::NullableLong min = l.min.isNull || r.min.isNull ? (l.min.isNull ? r.min : l.min) : phpstanturbo::NullableLong::of(r.min.value > l.min.value ? r.min.value : l.min.value);
+			phpstanturbo::NullableLong max = l.max.isNull || r.max.isNull ? (l.max.isNull ? r.max : l.max) : phpstanturbo::NullableLong::of(r.max.value < l.max.value ? r.max.value : l.max.value);
+			if (!min.isNull && !max.isNull && min.value > max.value) continue;
+			result.integerIntervals.push_back({min, max});
+		}
+	}
+	for (const auto &l : left.floatIntervals) {
+		for (const auto &r : right.floatIntervals) {
+			double min = r.min > l.min ? r.min : l.min;
+			double max = r.max < l.max ? r.max : l.max;
+			if (min > max) continue;
+			result.floatIntervals.push_back({min, max});
+		}
+	}
+	result.nan = left.nan && right.nan;
+	PT_RETURN_VAL(pt_number_set_new(result));
+}
+
 /* add() & co.: (self $right, PhpVersion $phpVersion) */
 template <phpstanturbo::ietr::IetrBinaryKind Kind>
 static void pt_ns_operator(INTERNAL_FUNCTION_PARAMETERS)
@@ -810,6 +852,8 @@ PT_MINIT_REGISTRATION(pt_register_number_set)
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(PT_THIS.get(slots::nan, "nan"));
 	});
+	cls.method(sigs::union_, pt_ns_combine<false>);
+	cls.method(sigs::intersect, pt_ns_combine<true>);
 	cls.method(sigs::add, pt_ns_operator<phpstanturbo::ietr::IETR_PLUS>);
 	cls.method(sigs::subtract, pt_ns_operator<phpstanturbo::ietr::IETR_MINUS>);
 	cls.method(sigs::multiply, pt_ns_operator<phpstanturbo::ietr::IETR_MUL>);

@@ -461,6 +461,12 @@ interface Type
 	 */
 	public function toNumberSet(): ?NumberSet;
 
+	/**
+	 * The values this type holds, by the kinds of values PHP's operators tell apart.
+	 * A union of types is the union of their sets, an intersection their intersection.
+	 */
+	public function toValueSet(): ValueSet;
+
 	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
 	public function toBitwiseNotType(): Type;
 

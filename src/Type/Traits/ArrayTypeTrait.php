@@ -12,6 +12,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\ValueSet;
 
 trait ArrayTypeTrait
 {
@@ -220,6 +221,11 @@ trait ArrayTypeTrait
 		return $this->isIterableAtLeastOnce()->yes()
 			? TypeCombinator::intersect($arrayType, new NonEmptyArrayType())
 			: $arrayType;
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createArrays(!$this->isIterableAtLeastOnce()->yes(), !$this->isIterableAtLeastOnce()->no());
 	}
 
 }

@@ -361,4 +361,9 @@ class FloatType implements Type
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createNumbers($this->toNumberSet());
+	}
+
 }

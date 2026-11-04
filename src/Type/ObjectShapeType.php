@@ -609,4 +609,9 @@ class ObjectShapeType implements Type
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createObjects($this);
+	}
+
 }

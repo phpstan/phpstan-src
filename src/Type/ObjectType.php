@@ -2155,4 +2155,9 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->subtractedType->hasTemplateOrLateResolvableType();
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createObjects($this);
+	}
+
 }

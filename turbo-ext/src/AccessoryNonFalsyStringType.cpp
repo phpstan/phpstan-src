@@ -329,6 +329,8 @@ PT_MINIT_REGISTRATION(pt_register_accessory_non_falsy_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNonFalsyStringType");
 	ptdecl::AccessoryNonFalsyStringType::declareClass(cls);
 	ptdecl::AccessoryNonFalsyStringType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

@@ -80,7 +80,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\NativeTypePosition\0" /* 546 */
 	"toNativePhpTypeNode\0" /* 578 */
 	"toTrinaryLogic\0" /* 598 */
-	"hasTemplateOrLateResolvableType"; /* 613 */
+	"hasTemplateOrLateResolvableType\0" /* 613 */
+	"PHPStan\\Type\\ValueSet\0" /* 645 */
+	"toValueSet"; /* 667 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getConstantStrings return */
 	reg::packed(12, MAY_BE_ARRAY), /* getConstantScalarTypes return */
@@ -116,6 +118,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(537, 0, 546), /* toNativePhpTypeNode $position */
 	reg::packed(12, 0, 263), /* toTrinaryLogic return */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+	reg::packed(12, 0, 645), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -150,6 +153,7 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 524 /* toPhpDocNode */, 0, 30, 0
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 578 /* toNativePhpTypeNode */, 1, 31, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toTrinaryLogic = { { 598 /* toTrinaryLogic */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 613 /* hasTemplateOrLateResolvableType */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 667 /* toValueSet */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BooleanType

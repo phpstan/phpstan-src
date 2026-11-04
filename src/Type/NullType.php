@@ -438,4 +438,9 @@ class NullType implements ConstantScalarType
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createNull();
+	}
+
 }

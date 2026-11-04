@@ -1811,4 +1811,14 @@ class UnionType implements CompoundType
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		$valueSet = ValueSet::createEmpty();
+		foreach ($this->types as $type) {
+			$valueSet = $valueSet->union($type->toValueSet());
+		}
+
+		return $valueSet;
+	}
+
 }

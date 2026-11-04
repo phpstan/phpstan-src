@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -40,6 +41,7 @@ class ClassConstantRuleTest extends RuleTestCase
 		return new ClassConstantRule(
 			$reflectionProvider,
 			$ruleLevelHelper,
+			self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true, checkImportedClassNameCase: $this->checkImportedClassNameCase),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),
@@ -632,6 +634,20 @@ class ClassConstantRuleTest extends RuleTestCase
 				'Access to constant FOO on an unknown class ClosureAttributeClassConstant\\Missing.',
 				29,
 				$tip,
+			],
+		]);
+	}
+
+	public function testBug15109(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15109.php'], [
+			[
+				'Access to undefined constant ReflectionProperty::FUTURE_CONSTANT.',
+				12,
+			],
+			[
+				'Access to undefined constant Bug15109ClassConstant\\Foo::DOES_NOT_EXIST.',
+				16,
 			],
 		]);
 	}

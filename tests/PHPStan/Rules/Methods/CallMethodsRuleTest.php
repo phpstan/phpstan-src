@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\NullsafeCheck;
@@ -48,6 +49,7 @@ class CallMethodsRuleTest extends RuleTestCase
 			new MethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				checkFunctionNameCase: true,
 				reportMagicMethods: true,
 			),
@@ -4646,6 +4648,27 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Call to an undefined method InvalidArgumentException::nonExistentMethod().',
 				26,
+			],
+		]);
+	}
+
+	public function testBug15109(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-15109.php'], [
+			[
+				'Call to an undefined method ReflectionMethod::futureMethod().',
+				26,
+			],
+			[
+				'Call to an undefined method Bug15109\\Foo::doesNotExist().',
+				34,
+			],
+			[
+				'Call to an undefined method Bug15109\\Foo::doesNotExist().',
+				41,
 			],
 		]);
 	}

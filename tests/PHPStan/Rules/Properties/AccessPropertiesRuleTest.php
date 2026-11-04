@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -41,6 +42,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 			new AccessPropertiesCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				new PhpVersion(PHP_VERSION_ID),
 				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 				reportMagicProperties: true,
@@ -1319,6 +1321,25 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
 		$this->analyse([__DIR__ . '/data/bug-15002.php'], []);
+	}
+
+	public function testBug15109(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkUnionTypes = true;
+		$this->checkDynamicProperties = false;
+		$this->analyse([__DIR__ . '/data/bug-15109.php'], [
+			[
+				'Access to an undefined property Exception::$futureProperty.',
+				12,
+				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
+			],
+			[
+				'Access to an undefined property Bug15109Properties\\Foo::$doesNotExist.',
+				18,
+				'Learn more: <fg=cyan>https://phpstan.org/blog/solving-phpstan-access-to-undefined-property</>',
+			],
+		]);
 	}
 
 }

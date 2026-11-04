@@ -16,6 +16,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Native\NativeMethodReflection;
 use PHPStan\Reflection\Php\PhpMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
@@ -43,6 +44,7 @@ final class StaticMethodCallCheck
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private BuiltinClassMemberAvailabilityHelper $builtinClassMemberAvailabilityHelper,
 		private ClassNameCheck $classCheck,
 		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
@@ -238,6 +240,10 @@ final class StaticMethodCallCheck
 						return [[], null];
 					}
 				}
+			}
+
+			if ($this->builtinClassMemberAvailabilityHelper->mightBeAvailableInScopePhpVersion($scope, $classType)) {
+				return [$errors, null];
 			}
 
 			return [

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -33,6 +34,7 @@ class AccessPropertiesInAssignRuleTest extends RuleTestCase
 			new AccessPropertiesCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				new PhpVersion(PHP_VERSION_ID),
 				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 				reportMagicProperties: true,

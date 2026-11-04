@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -32,6 +33,7 @@ class MethodCallableRuleTest extends RuleTestCase
 			new MethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				checkFunctionNameCase: true,
 				reportMagicMethods: true,
 			),

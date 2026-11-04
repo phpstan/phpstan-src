@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -38,6 +39,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 			new AccessStaticPropertiesCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 					new ClassForbiddenNameCheck(self::getContainer()->getExtensionsCollection(ForbiddenClassNameExtension::class)),
@@ -394,6 +396,20 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	public function testBug15002(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-15002.php'], []);
+	}
+
+	public function testBug15109(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15109.php'], [
+			[
+				'Access to an undefined static property Exception::$futureStaticProperty.',
+				13,
+			],
+			[
+				'Access to an undefined static property Bug15109Properties\\Foo::$doesNotExist.',
+				19,
+			],
+		]);
 	}
 
 }

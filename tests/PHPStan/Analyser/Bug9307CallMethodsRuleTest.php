@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser;
 
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Methods\CallMethodsRule;
 use PHPStan\Rules\Methods\MethodCallCheck;
@@ -37,6 +38,7 @@ class Bug9307CallMethodsRuleTest extends RuleTestCase
 			new MethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				checkFunctionNameCase: true,
 				reportMagicMethods: true,
 			),

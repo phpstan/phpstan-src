@@ -18,6 +18,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
@@ -47,6 +48,7 @@ final class AccessStaticPropertiesCheck
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private BuiltinClassMemberAvailabilityHelper $builtinClassMemberAvailabilityHelper,
 		private ClassNameCheck $classCheck,
 		private PhpVersion $phpVersion,
 		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
@@ -285,6 +287,10 @@ final class AccessStaticPropertiesCheck
 			]);
 			if ($scope->getType($propertyExistsCall)->isTrue()->yes()) {
 				return [];
+			}
+
+			if ($this->builtinClassMemberAvailabilityHelper->mightBeAvailableInScopePhpVersion($scope, $classType)) {
+				return $messages;
 			}
 
 			return array_merge($messages, [

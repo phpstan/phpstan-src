@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -38,6 +39,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 			new StaticMethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck(
 						$reflectionProvider,

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -38,6 +39,7 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 			new AccessStaticPropertiesCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck($reflectionProvider, true, true),
 					new ClassForbiddenNameCheck(self::getContainer()->getExtensionsCollection(ForbiddenClassNameExtension::class)),

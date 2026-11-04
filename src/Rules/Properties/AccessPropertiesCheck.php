@@ -17,6 +17,7 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\MissingPropertyFromReflectionException;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -39,6 +40,7 @@ final class AccessPropertiesCheck
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private BuiltinClassMemberAvailabilityHelper $builtinClassMemberAvailabilityHelper,
 		private PhpVersion $phpVersion,
 		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 		#[AutowiredParameter]
@@ -210,6 +212,10 @@ final class AccessPropertiesCheck
 						->identifier('staticProperty.nonStaticAccess')
 						->build(),
 				];
+			}
+
+			if ($this->builtinClassMemberAvailabilityHelper->mightBeAvailableInScopePhpVersion($scope, $type)) {
+				return [];
 			}
 
 			$ruleErrorBuilder = RuleErrorBuilder::message(sprintf(

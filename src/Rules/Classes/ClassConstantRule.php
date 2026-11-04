@@ -11,6 +11,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassNameCheck;
 use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
@@ -40,6 +41,7 @@ final class ClassConstantRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private BuiltinClassMemberAvailabilityHelper $builtinClassMemberAvailabilityHelper,
 		private ClassNameCheck $classCheck,
 		private NonStringableDynamicAccessCheck $nonStringableDynamicAccessCheck,
 	)
@@ -239,6 +241,10 @@ final class ClassConstantRule implements Rule
 		}
 
 		if (!$classType->hasConstant($constantName)->yes()) {
+			if ($this->builtinClassMemberAvailabilityHelper->mightBeAvailableInScopePhpVersion($scope, $classType)) {
+				return $messages;
+			}
+
 			return array_merge($messages, [
 				RuleErrorBuilder::message(sprintf(
 					'Access to undefined constant %s::%s.',

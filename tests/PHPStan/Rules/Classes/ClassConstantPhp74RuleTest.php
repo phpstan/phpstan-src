@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Classes;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -35,6 +36,7 @@ class ClassConstantPhp74RuleTest extends RuleTestCase
 		return new ClassConstantRule(
 			$reflectionProvider,
 			$ruleLevelHelper,
+			self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 			new ClassNameCheck(
 				new ClassCaseSensitivityCheck($reflectionProvider, checkInternalClassCaseSensitivity: true, checkImportedClassNameCase: true),
 				new ClassForbiddenNameCheck($container->getExtensionsCollection(ForbiddenClassNameExtension::class)),

@@ -13,6 +13,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -31,6 +32,7 @@ final class MethodCallCheck
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private BuiltinClassMemberAvailabilityHelper $builtinClassMemberAvailabilityHelper,
 		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
 		#[AutowiredParameter]
@@ -131,6 +133,10 @@ final class MethodCallCheck
 				if ($scope->getType($methodExistsExpr)->isTrue()->yes()) {
 					return [[], null];
 				}
+			}
+
+			if ($this->builtinClassMemberAvailabilityHelper->mightBeAvailableInScopePhpVersion($scope, $type)) {
+				return [[], null];
 			}
 
 			return [

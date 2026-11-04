@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Methods;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\Php\PhpClassReflectionExtension;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
 use PHPStan\Rules\NullsafeCheck;
@@ -33,7 +34,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 		// @phpstan-ignore argument.type
 		return new CompositeRule([
 			new CallMethodsRule(
-				new MethodCallCheck($reflectionProvider, $ruleLevelHelper, true, true),
+				new MethodCallCheck($reflectionProvider, $ruleLevelHelper, self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class), true, true),
 				new FunctionCallParametersCheck($ruleLevelHelper, new NullsafeCheck(), new UnresolvableTypeHelper(), new PropertyReflectionFinder(), $reflectionProvider, self::getContainer()->getByType(ParameterClosureTypeHelper::class), true, true, true, true),
 				new NonStringableDynamicAccessCheck($ruleLevelHelper, true),
 			),

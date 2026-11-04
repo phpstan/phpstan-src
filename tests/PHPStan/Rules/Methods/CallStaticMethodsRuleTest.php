@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\Classes\ForbiddenClassNameExtension;
+use PHPStan\Rules\BuiltinClassMemberAvailabilityHelper;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
@@ -53,6 +54,7 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			new StaticMethodCallCheck(
 				$reflectionProvider,
 				$ruleLevelHelper,
+				self::getContainer()->getByType(BuiltinClassMemberAvailabilityHelper::class),
 				new ClassNameCheck(
 					new ClassCaseSensitivityCheck(
 						$reflectionProvider,
@@ -1154,6 +1156,25 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $value of static method Bug11421\\WordEnum::tryFrom() expects string, int given.',
 				27,
+			],
+		]);
+	}
+
+	public function testBug15109(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-15109.php'], [
+			[
+				'Call to an undefined static method ReflectionMethod::futureStaticMethod().',
+				25,
+			],
+			[
+				'Call to an undefined static method Bug15109\\Foo::doesNotExist().',
+				33,
+			],
+			[
+				'Call to an undefined static method Bug15109\\Foo::doesNotExist().',
+				40,
 			],
 		]);
 	}

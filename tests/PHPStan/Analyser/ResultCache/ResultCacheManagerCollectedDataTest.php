@@ -234,9 +234,29 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		file_put_contents($a, $hashed);
 		$processed = $manager->process($this->analyserResult([], [], [$a]), $resultCache, $this->nullOutput(), false, true);
 		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
+		$this->assertSame([$a => true], $manager->getFilesChangedDuringAnalysis($resultCache));
 
 		$resultCache = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput());
 		$this->assertSame([$a], $resultCache->getFilesToAnalyse());
+	}
+
+	public function testNoFilesChangedDuringTheAnalysis(): void
+	{
+		$a = $this->files[0];
+		$this->saveFullAnalysis([]);
+		$this->waitUntilTheFilesAreInThePast();
+
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([], $resultCache->getFilesToAnalyse());
+		// a run that analysed nothing read nothing
+		file_put_contents($a, "<?php class Cachea { public function m(): string {} }\n");
+		$this->assertSame([], $manager->getFilesChangedDuringAnalysis($resultCache));
+
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$a], $resultCache->getFilesToAnalyse());
+		$this->assertSame([], $manager->getFilesChangedDuringAnalysis($resultCache));
 	}
 
 	/**

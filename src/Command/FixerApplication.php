@@ -75,6 +75,19 @@ final class FixerApplication
 	/** Files changed during the analysis in progress, another one starts once it ends. */
 	private bool $analysisRequested = false;
 
+	/**
+	 * The last analysis may have read files in another version than they have now. The file monitor
+	 * cannot tell when a file is back to the contents it last saw, like an edit undone between two polls.
+	 */
+	private bool $filesChangedWhileAnalysed = false;
+
+	/**
+	 * Nothing changed since the last analysis but the files it reported. Whatever writes to the
+	 * analysed files during every analysis, like a generator in a bootstrap file, would otherwise
+	 * keep the analyses going, so an analysis that was started for this cannot start another one.
+	 */
+	private bool $analysingOnlyFilesChangedWhileAnalysed = false;
+
 	private bool $fileMonitorActive = true;
 
 	/** @var string[] watched files besides the analysed ones and the config files */
@@ -431,7 +444,16 @@ final class FixerApplication
 			$changes = $fileMonitor->getChanges();
 			$now = microtime(true);
 
+			// not during an analysis, the one starting after it might already be for something else
+			if ($this->filesChangedWhileAnalysed && $this->processInProgress === null) {
+				$this->filesChangedWhileAnalysed = false;
+				$this->analysingOnlyFilesChangedWhileAnalysed = true;
+				$firstChangeAt ??= $now;
+				$lastChangeAt = $now;
+			}
+
 			if ($changes->hasAnyChanges()) {
+				$this->analysingOnlyFilesChangedWhileAnalysed = false;
 				$firstChangeAt ??= $now;
 				$lastChangeAt = $now;
 				$hasChangesCallback($changes);
@@ -464,6 +486,9 @@ final class FixerApplication
 		Encoder $phpstanFixerEncoder,
 	): void
 	{
+		// this analysis reads the files as they are now
+		$this->filesChangedWhileAnalysed = false;
+
 		// TCP server for fixer:worker (TCP client)
 		$server = new TcpServer('127.0.0.1:0', $loop);
 		/** @var string $serverAddress */
@@ -483,6 +508,11 @@ final class FixerApplication
 						throw new ShouldNotHappenException();
 					}
 					$this->fileMonitor->watchFiles(array_merge($this->watchedFilesWithoutConfig, $data['result']['files']));
+					return;
+				}
+
+				if ($data['action'] === 'filesChangedWhileAnalysed') {
+					$this->filesChangedWhileAnalysed = !$this->analysingOnlyFilesChangedWhileAnalysed;
 					return;
 				}
 

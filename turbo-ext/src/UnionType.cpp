@@ -2978,6 +2978,8 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\UnionType");
 	ptdecl::UnionType::declareClass(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, false); });
 	cls.classConstantValue("EQUAL_UNION_CLASSES", pt_ut_equal_union_classes);
 	/* the slots PT_UT_PROP_*: the six memo properties first, the promoted
 	 * $types and $normalized after them */

@@ -238,6 +238,12 @@ PT_MINIT_REGISTRATION(pt_register_boolean_type)
 	reg::Class cls("PHPStan\\Type\\BooleanType");
 	ptdecl::BooleanType::declareClass(cls);
 	ptdecl::BooleanType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zv::Args args{true, true};
+		PT_RETURN_VAL(pt_value_set_create(PT_LC("createbooleans"), 2, args));
+	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

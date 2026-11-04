@@ -48,6 +48,7 @@ use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 use function addcslashes;
 use function array_unique;
@@ -654,6 +655,11 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		}
 
 		return new ConstTypeNode(new ConstExprStringNode($this->value, ConstExprStringNode::SINGLE_QUOTED));
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createConstantString($this->getValue());
 	}
 
 }

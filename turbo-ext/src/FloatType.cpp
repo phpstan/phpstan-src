@@ -271,6 +271,8 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 	reg::Class cls("PHPStan\\Type\\FloatType");
 	ptdecl::FloatType::declareClass(cls);
 	ptdecl::FloatType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, pt_value_set_of_numbers);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

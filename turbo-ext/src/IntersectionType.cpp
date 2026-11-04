@@ -3213,6 +3213,8 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 {
 	reg::Class cls("PHPStan\\Type\\IntersectionType");
 	ptdecl::IntersectionType::declareClass(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, true); });
 	/* the slots PT_IT_PROP_*: the sixteen explicit properties first, the
 	 * promoted $types after them */
 	cls.privateTypedPropertyDefaultNull("sortedTypesCache", MAY_BE_ARRAY);

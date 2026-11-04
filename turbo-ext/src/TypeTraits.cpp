@@ -165,6 +165,44 @@ zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32
 	return pt_type_call_fn(fn, NULL, ce, argc, argv);
 }
 
+zv::Val pt_value_set_create(const char *lcFactory, size_t len, uint32_t argc, zval *argv)
+{
+	return pt_type_call_static(PT_CLASS_VALUE_SET, lcFactory, len, argc, argv);
+}
+
+void pt_value_set_of_this(INTERNAL_FUNCTION_PARAMETERS, const char *lcFactory, size_t len)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_VAL(pt_value_set_create(lcFactory, len, 1, ZEND_THIS));
+}
+
+void pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	zv::Val numbers = pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("tonumberset"), 0, NULL);
+	if (UNEXPECTED(numbers.isUndef())) RETURN_THROWS();
+	PT_RETURN_VAL(pt_value_set_create(PT_LC("createnumbers"), 1, numbers.raw()));
+}
+
+void pt_value_set_of_members(INTERNAL_FUNCTION_PARAMETERS, bool intersect)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	zv::Val types = pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("gettypes"), 0, NULL);
+	if (UNEXPECTED(types.isUndef())) RETURN_THROWS();
+	zv::Val valueSet = intersect ? pt_value_set_create(PT_LC("createunknown")) : pt_value_set_create(PT_LC("createempty"));
+	if (UNEXPECTED(valueSet.isUndef())) RETURN_THROWS();
+	zval *type;
+	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(types.raw()), type) {
+		zv::Val memberSet = pt_type_call(Z_OBJ_P(type), PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(memberSet.isUndef())) RETURN_THROWS();
+		valueSet = intersect
+			? pt_type_call(Z_OBJ_P(valueSet.raw()), PT_LC("intersect"), 1, memberSet.raw())
+			: pt_type_call(Z_OBJ_P(valueSet.raw()), PT_LC("union"), 1, memberSet.raw());
+		if (UNEXPECTED(valueSet.isUndef())) RETURN_THROWS();
+	} ZEND_HASH_FOREACH_END();
+	PT_RETURN_VAL(std::move(valueSet));
+}
+
 zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv)
 {
 	zend_class_entry *ce = pt_class(classIdx);
@@ -2271,6 +2309,14 @@ static void ZEND_FASTCALL arrayTraitChunkArray(INTERNAL_FUNCTION_PARAMETERS)
 void pt_type_trait_array(reg::Class &cls)
 {
 	namespace sigs = ptdecl::ArrayTypeTrait::sig;
+	/* ValueSet::createArrays(!$this->isIterableAtLeastOnce()->yes(), !...->no()) */
+	cls.traitMethod(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		zend_long nonEmpty = pt_type_call_trinary(PT_THIS_OBJ, PT_LC("isiterableatleastonce"), 0, NULL);
+		if (UNEXPECTED(nonEmpty < 0)) RETURN_THROWS();
+		zv::Args args{nonEmpty != PT_TRI_YES, nonEmpty != PT_TRI_NO};
+		PT_RETURN_VAL(pt_value_set_create(PT_LC("createarrays"), 2, args));
+	});
 	cls.traitMethod(sigs::isArray, trinaryYes0);
 	cls.traitOp(PT_OP_IS_ARRAY, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
 	cls.traitMethod(sigs::toArray, this0);
@@ -3729,6 +3775,7 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	 * own properties as PHP binds a trait's */
 	cls.privateTypedClassPropertyDefaultNull("result", ptcls::type);
 
+	cls.traitMethod(sigs::toValueSet, lrDelegate);
 	cls.traitMethod(sigs::getObjectClassNames, lrDelegate);
 	cls.traitMethod(sigs::getObjectClassReflections, lrDelegate);
 	cls.traitOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_OBJECT_CLASS_REFLECTIONS, argc, argv); });
@@ -5461,6 +5508,7 @@ void pt_type_trait_operator(reg::Class &cls)
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_NULL();
 	});
+	cls.traitMethod(sigs::toValueSet, PT_VALUE_SET_CREATE("createunknown"));
 	cls.traitMethod(sigs::arithmeticAdd, operatorBinary<PT_OPERATOR_ADD>);
 	cls.traitMethod(sigs::arithmeticSubtract, operatorBinary<PT_OPERATOR_SUBTRACT>);
 	cls.traitMethod(sigs::arithmeticMultiply, operatorBinary<PT_OPERATOR_MULTIPLY>);
@@ -5479,19 +5527,21 @@ void pt_type_trait_operator(reg::Class &cls)
 	cls.traitMethod(sigs::bitwiseShiftRight, operatorBinary<PT_OPERATOR_SHIFT_RIGHT>);
 	cls.traitMethod(sigs::stringConcatenate, operatorBinary<PT_OPERATOR_CONCATENATE>);
 	cls.traitMethod(sigs::arrayUnion, operatorBinary<PT_OPERATOR_ARRAY_UNION>);
-	/* LooseComparisonHelper::getPossiblyLooselyEqualType($this, $phpVersion) */
+	/* $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion) */
 	cls.traitMethod(sigs::getPossiblyLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *phpVersion;
 		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
-		zv::Args args{ZEND_THIS, phpVersion};
-		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getpossiblylooselyequaltype"), 2, args));
+		zv::Val valueSet = pt_type_call(PT_THIS_OBJ, PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(valueSet.isUndef())) RETURN_THROWS();
+		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(valueSet.raw()), PT_LC("getpossiblylooselyequaltype"), 1, phpVersion));
 	});
-	/* LooseComparisonHelper::getAlwaysLooselyEqualType($this, $phpVersion) */
+	/* $this->toValueSet()->getAlwaysLooselyEqualType($phpVersion) */
 	cls.traitMethod(sigs::getAlwaysLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *phpVersion;
 		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
-		zv::Args args{ZEND_THIS, phpVersion};
-		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getalwayslooselyequaltype"), 2, args));
+		zv::Val valueSet = pt_type_call(PT_THIS_OBJ, PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(valueSet.isUndef())) RETURN_THROWS();
+		PT_RETURN_VAL(pt_type_call(Z_OBJ_P(valueSet.raw()), PT_LC("getalwayslooselyequaltype"), 1, phpVersion));
 	});
 }
 

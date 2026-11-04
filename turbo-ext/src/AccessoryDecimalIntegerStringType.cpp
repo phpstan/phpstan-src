@@ -557,6 +557,8 @@ PT_MINIT_REGISTRATION(pt_register_accessory_decimal_integer_string_type)
 	ptdecl::AccessoryDecimalIntegerStringType::declareClass(cls);
 	/* "inverse" must stay the first declared property (slots::inverse) */
 	ptdecl::AccessoryDecimalIntegerStringType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool inverse = false;

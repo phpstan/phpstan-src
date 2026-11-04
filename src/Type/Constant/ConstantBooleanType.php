@@ -20,6 +20,7 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 
 /** @api */
@@ -165,6 +166,11 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		}
 
 		return $this->scalarLooseCompare($type, $phpVersion);
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createBooleans(!$this->getValue(), $this->getValue());
 	}
 
 }

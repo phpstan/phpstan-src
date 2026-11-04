@@ -283,6 +283,8 @@ PT_MINIT_REGISTRATION(pt_register_never_type)
 	/* "isExplicit" and "reason" must stay the first two declared properties
 	 * (slots::isExplicit, slots::reason) */
 	ptdecl::NeverType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createempty"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool isExplicit = false;

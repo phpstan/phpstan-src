@@ -368,6 +368,8 @@ PT_MINIT_REGISTRATION(pt_register_object_without_class_type)
 	ptdecl::ObjectWithoutClassType::declareClass(cls);
 	/* "subtractedType" must stay the first declared property (slots::subtractedType) */
 	ptdecl::ObjectWithoutClassType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *subtractedType = NULL;

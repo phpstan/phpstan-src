@@ -817,4 +817,9 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return parent::looseCompare($type, $phpVersion);
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createNumbers($this->toNumberSet());
+	}
+
 }

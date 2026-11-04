@@ -4,10 +4,10 @@ namespace PHPStan\Type\Traits;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\NumberSet;
 use PHPStan\Type\OperatorTypeHelper;
 use PHPStan\Type\Type;
+use PHPStan\Type\ValueSet;
 
 trait OperatorTypeTrait
 {
@@ -20,6 +20,11 @@ trait OperatorTypeTrait
 	public function toNumberSet(): ?NumberSet
 	{
 		return null;
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createUnknown();
 	}
 
 	public function arithmeticAdd(Type $right, PhpVersion $phpVersion): Type
@@ -84,12 +89,12 @@ trait OperatorTypeTrait
 
 	public function getPossiblyLooselyEqualType(PhpVersion $phpVersion): Type
 	{
-		return LooseComparisonHelper::getPossiblyLooselyEqualType($this, $phpVersion);
+		return $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion);
 	}
 
 	public function getAlwaysLooselyEqualType(PhpVersion $phpVersion): Type
 	{
-		return LooseComparisonHelper::getAlwaysLooselyEqualType($this, $phpVersion);
+		return $this->toValueSet()->getAlwaysLooselyEqualType($phpVersion);
 	}
 
 	public function stringConcatenate(Type $right, PhpVersion $phpVersion): Type

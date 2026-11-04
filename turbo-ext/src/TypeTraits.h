@@ -170,6 +170,40 @@ zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32
  * declares one; UNDEF = pending exception */
 zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv);
 
+/* {{{ Type::toValueSet() (ValueSet.php stays PHP) */
+
+/* ValueSet::<factory>(...$args); UNDEF = pending exception */
+zv::Val pt_value_set_create(const char *lcFactory, size_t len, uint32_t argc = 0, zval *argv = NULL);
+
+/* ValueSet::<factory>($this): the strings, objects or numbers of a type
+ * describing itself */
+void pt_value_set_of_this(INTERNAL_FUNCTION_PARAMETERS, const char *lcFactory, size_t len);
+
+/* ValueSet::createNumbers($this->toNumberSet()) */
+void pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS);
+
+/* the union (UnionType) or the intersection (IntersectionType) of the sets of
+ * $this->getTypes() */
+void pt_value_set_of_members(INTERNAL_FUNCTION_PARAMETERS, bool intersect);
+
+#define PT_VALUE_SET_OF_THIS(factory) \
+	[](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_this(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC(factory)); }
+
+#define PT_VALUE_SET_CREATE(factory) \
+	[](INTERNAL_FUNCTION_PARAMETERS) { \
+		ZEND_PARSE_PARAMETERS_NONE(); \
+		PT_RETURN_VAL(pt_value_set_create(PT_LC(factory))); \
+	}
+
+#define PT_VALUE_SET_OF_ARRAYS(empty, nonEmpty) \
+	[](INTERNAL_FUNCTION_PARAMETERS) { \
+		ZEND_PARSE_PARAMETERS_NONE(); \
+		zv::Args args_{(bool) (empty), (bool) (nonEmpty)}; \
+		PT_RETURN_VAL(pt_value_set_create(PT_LC("createarrays"), 2, args_)); \
+	}
+
+/* }}} */
+
 /* $position->allowed() ? new NodeClass($name) : null — the keyword and
  * class-name answers of Type::toNativePhpTypeNode(); allowedLc is the
  * lowercased NativeTypePosition check, nodeClassIdx a class-map PhpParser node

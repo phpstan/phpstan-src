@@ -365,4 +365,9 @@ class StringType implements Type
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createStrings($this);
+	}
+
 }

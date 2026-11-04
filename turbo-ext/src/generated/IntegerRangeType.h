@@ -106,7 +106,9 @@ inline constexpr char strings[] =
 	"getFiniteTypes\0" /* 938 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 953 */
 	"toPhpDocNode\0" /* 992 */
-	"looseCompare"; /* 1005 */
+	"looseCompare\0" /* 1005 */
+	"PHPStan\\Type\\ValueSet\0" /* 1018 */
+	"toValueSet"; /* 1040 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* __construct $min */
 	reg::packed(4, MAY_BE_NULL | MAY_BE_LONG), /* __construct $max */
@@ -191,6 +193,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(322, 0, 29), /* looseCompare $type */
 	reg::packed(581, 0, 592), /* looseCompare $phpVersion */
 	reg::packed(28, 0, 815), /* looseCompare return */
+	reg::packed(28, 0, 1018), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -236,6 +239,7 @@ inline constexpr sigtab::Sig tryRemove = { { 928 /* tryRemove */, 1, 76, 1, 77, 
 inline constexpr sigtab::Sig getFiniteTypes = { { 938 /* getFiniteTypes */, 0, 78, 0, 78, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 992 /* toPhpDocNode */, 0, 79, 0, 79, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig looseCompare = { { 1005 /* looseCompare */, 2, 80, 2, 82, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 1040 /* toValueSet */, 0, 83, 0, 83, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IntegerRangeType

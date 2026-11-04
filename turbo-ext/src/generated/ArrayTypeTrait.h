@@ -58,7 +58,9 @@ inline constexpr char strings[] =
 	"arithmeticPower\0" /* 664 */
 	"lengthType\0" /* 680 */
 	"preserveKeys\0" /* 691 */
-	"chunkArray"; /* 704 */
+	"chunkArray\0" /* 704 */
+	"PHPStan\\Type\\ValueSet\0" /* 715 */
+	"toValueSet"; /* 737 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* isArray return */
 	reg::packed(0, 0, 30), /* toArray return */
@@ -104,6 +106,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(680, 0, 30), /* chunkArray $lengthType */
 	reg::packed(691, 0, 1), /* chunkArray $preserveKeys */
 	reg::packed(0, 0, 30), /* chunkArray return */
+	reg::packed(0, 0, 715), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -149,6 +152,7 @@ inline constexpr sigtab::Sig isVoid = { { 605 /* isVoid */, 0, 36, 0, 36, ZEND_A
 inline constexpr sigtab::Sig isScalar = { { 612 /* isScalar */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig arithmeticPower = { { 664 /* arithmeticPower */, 2, 38, 2, 40, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig chunkArray = { { 704 /* chunkArray */, 2, 41, 2, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 737 /* toValueSet */, 0, 44, 0, 44, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayTypeTrait

@@ -1261,6 +1261,8 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 	/* "properties" and "optionalProperties" must stay the first two
 	 * declared properties (slots::properties, slots::optionalProperties) */
 	ptdecl::ObjectShapeType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 
 	cls.method<&ObjectShapeType::construct, zp::Arr, zp::Arr>(sigs::__construct);
 

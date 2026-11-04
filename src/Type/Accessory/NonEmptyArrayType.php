@@ -32,6 +32,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 
 #[InstanceofDeprecated(insteadUse: 'Type::isIterableAtLeastOnce()')]
@@ -570,6 +571,11 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return false;
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createArrays(false, true);
 	}
 
 }

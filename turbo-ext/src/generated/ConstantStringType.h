@@ -113,7 +113,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\ObjectType\0" /* 1153 */
 	"getObjectType\0" /* 1177 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1191 */
-	"toPhpDocNode"; /* 1230 */
+	"toPhpDocNode\0" /* 1230 */
+	"PHPStan\\Type\\ValueSet\0" /* 1243 */
+	"toValueSet"; /* 1265 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $value */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 20), /* __construct $isClassString */
@@ -180,6 +182,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(38, 0, 1098), /* getConstant return */
 	reg::packed(38, 0, 1153), /* getObjectType return */
 	reg::packed(38, 0, 1191), /* toPhpDocNode return */
+	reg::packed(38, 0, 1243), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -228,6 +231,7 @@ inline constexpr sigtab::Sig hasConstant = { { 1086 /* hasConstant */, 1, 59, 1,
 inline constexpr sigtab::Sig getConstant = { { 1141 /* getConstant */, 1, 61, 1, 62, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getObjectType = { { 1177 /* getObjectType */, 0, 63, 0, 63, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 1230 /* toPhpDocNode */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 1265 /* toValueSet */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantStringType

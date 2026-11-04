@@ -3625,6 +3625,8 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 
 	reg::Class cls("PHPStan\\Type\\ObjectType");
 	ptdecl::ObjectType::declareClass(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 	/* the twin's declaration order defines the PT_OT_PROP_* slots */
 	cls.privateClassConstantLong("DESCRIPTION_CACHE_LIMIT", PT_OT_DESCRIPTION_CACHE_LIMIT);
 	cls.privateClassConstantValue("EXTRA_OFFSET_CLASSES", pt_ot_extra_offset_classes_constant);

@@ -519,6 +519,8 @@ enum {
 	/* the class names of Type::toPhpDocNode() and how describe() prints them */
 	PT_CLASS_FULLY_QUALIFIED_NAME_NODE,
 	PT_CLASS_TYPE_NODE_DESCRIBER,
+	/* the values a type holds, Type::toValueSet() */
+	PT_CLASS_VALUE_SET,
 	PT_CLASS_COUNT
 };
 

@@ -54,6 +54,8 @@ PT_MINIT_REGISTRATION(pt_register_resource_type)
 	reg::Class cls("PHPStan\\Type\\ResourceType");
 	ptdecl::ResourceType::declareClass(cls);
 	ptdecl::ResourceType::declareProperties(cls);
+	/* mirrors toValueSet() */
+	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createresources"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

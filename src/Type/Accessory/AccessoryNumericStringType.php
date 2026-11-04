@@ -37,6 +37,7 @@ use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 
 #[InstanceofDeprecated(insteadUse: 'Type::isNumericString()')]
@@ -431,6 +432,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return false;
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createStrings($this);
 	}
 
 }

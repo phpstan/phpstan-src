@@ -22,6 +22,7 @@ use PHPStan\Type\LateResolvableType;
 use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
+use PHPStan\Type\ValueSet;
 
 /** @api */
 trait LateResolvableTypeTrait
@@ -719,6 +720,11 @@ trait LateResolvableTypeTrait
 	public function hasTemplateOrLateResolvableType(): bool
 	{
 		return true;
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return $this->resolve()->toValueSet();
 	}
 
 }

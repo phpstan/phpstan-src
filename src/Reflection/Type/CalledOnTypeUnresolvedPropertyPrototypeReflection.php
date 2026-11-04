@@ -8,7 +8,6 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ResolvedPropertyReflection;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\GenericStaticType;
-use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
@@ -78,44 +77,30 @@ final class CalledOnTypeUnresolvedPropertyPrototypeReflection implements Unresol
 	private function transformPropertyWithStaticType(ClassReflection $declaringClass, ExtendedPropertyReflection $property): ExtendedPropertyReflection
 	{
 		$readableType = $this->transformStaticType($property->getReadableType());
-		$writableType = $this->transformStaticType($property->getWritableType(), true);
+		$writableType = $this->transformStaticType($property->getWritableType());
 		$phpDocType = $this->transformStaticType($property->getPhpDocType());
 		$nativeType = $this->transformStaticType($property->getNativeType());
 
 		return new ChangedTypePropertyReflection($declaringClass, $property, $readableType, $writableType, $phpDocType, $nativeType);
 	}
 
-	/**
-	 * A writable type is compared against assigned types, whose template arguments never carry
-	 * the "exactly this class" flavour of `new Foo()` - so `static` resolved inside it must not either.
-	 */
-	private function transformStaticType(Type $type, bool $isWritableType = false): Type
+	private function transformStaticType(Type $type): Type
 	{
-		return TypeTraverser::map($type, function (Type $type, callable $traverse) use ($isWritableType): Type {
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
 			if ($type instanceof GenericStaticType) {
-				$fetchedOnType = $this->getFetchedOnType($isWritableType);
-				$fetchedOnTypeReflections = $fetchedOnType->getObjectClassReflections();
+				$fetchedOnTypeReflections = $this->fetchedOnType->getObjectClassReflections();
 				if (count($fetchedOnTypeReflections) === 1) {
 					return $traverse($type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType());
 				}
 
-				return $fetchedOnType;
+				return $this->fetchedOnType;
 			}
 			if ($type instanceof StaticType) {
-				return $this->getFetchedOnType($isWritableType);
+				return $this->fetchedOnType;
 			}
 
 			return $traverse($type);
 		});
-	}
-
-	private function getFetchedOnType(bool $isWritableType): Type
-	{
-		if ($isWritableType) {
-			return TemplateTypeHelper::removeFinalByKeywordOverrides($this->fetchedOnType);
-		}
-
-		return $this->fetchedOnType;
 	}
 
 }

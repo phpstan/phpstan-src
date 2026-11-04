@@ -88,7 +88,7 @@ public:
 		zval *propertyReflection = resolvedDeclaringClass != NULL ? slot(slots::propertyReflection, "propertyReflection") : NULL;
 		zval *resolveToBounds = propertyReflection != NULL ? slot(slots::resolveTemplateTypeMapToBounds, "resolveTemplateTypeMapToBounds") : NULL;
 		if (UNEXPECTED(resolveToBounds == NULL)) return zv::Val();
-		PrototypeTransformer transformer = { transformStaticType, transformStaticType, self };
+		PrototypeTransformer transformer = { transformStaticType, self };
 		zv::Val result = pt_prototype_resolved_property(PT_PROTOTYPE_CALLBACK, transformer, Z_OBJ_P(resolvedDeclaringClass), Z_OBJ_P(propertyReflection), zend_is_true(resolveToBounds));
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		write(slots::transformedProperty, zv::Val::copyOf(zv::Ref(result.raw())));

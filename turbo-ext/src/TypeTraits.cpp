@@ -5146,14 +5146,14 @@ zv::Val protoTransformNullable(const PrototypeTransformer &transformer, zval *ty
 /* the Callback twins' `$original->equals($type) ? $transformedOriginal :
  * $this->transformStaticType($type)`; the CalledOnType twins transform
  * every type */
-zv::Val protoTransformUnlessEqual(PrototypeKind kind, const PrototypeTransformer &transformer, zval *original, zval *transformedOriginal, zval *type, bool isInput = false)
+zv::Val protoTransformUnlessEqual(PrototypeKind kind, const PrototypeTransformer &transformer, zval *original, zval *transformedOriginal, zval *type)
 {
 	if (kind == phpstanturbo::PT_PROTOTYPE_CALLBACK) {
 		int equal = protoEquals(original, type);
 		if (UNEXPECTED(equal < 0)) return zv::Val();
 		if (equal == 1) return zv::Val::copyOf(zv::Ref(transformedOriginal));
 	}
-	return isInput ? transformer.transformInput(type) : transformer.transform(type);
+	return transformer.transform(type);
 }
 
 /* array_map($fn, $array) over an array of objects, the keys kept as
@@ -5190,7 +5190,7 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	if (UNEXPECTED(name.isUndef())) return zv::Val();
 	zv::Val originalType = protoParameterCall(parameter, PT_PR_GET_TYPE, "gettype", PROTO_OBJECT);
 	if (UNEXPECTED(originalType.isUndef())) return zv::Val();
-	zv::Val transformedType = transformer.transformInput(originalType.raw());
+	zv::Val transformedType = transformer.transform(originalType.raw());
 	if (UNEXPECTED(transformedType.isUndef())) return zv::Val();
 	zv::Val optional = protoParameterCall(parameter, PT_PR_IS_OPTIONAL, "isoptional", PROTO_ANY);
 	if (UNEXPECTED(optional.isUndef())) return zv::Val();
@@ -5204,7 +5204,7 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
 	zv::Val phpDocType = protoParameterCall(parameter, PT_PR_GET_PHPDOC_TYPE, "getphpdoctype", PROTO_OBJECT);
 	if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
-	zv::Val transformedPhpDocType = protoTransformUnlessEqual(kind, transformer, originalType.raw(), transformedType.raw(), phpDocType.raw(), true);
+	zv::Val transformedPhpDocType = protoTransformUnlessEqual(kind, transformer, originalType.raw(), transformedType.raw(), phpDocType.raw());
 	if (UNEXPECTED(transformedPhpDocType.isUndef())) return zv::Val();
 	zv::Val outType = protoParameterCall(parameter, PT_PR_GET_OUT_TYPE, "getouttype", PROTO_OBJECT_OR_NULL);
 	if (UNEXPECTED(outType.isUndef())) return zv::Val();
@@ -5356,9 +5356,8 @@ zv::Val protoTransformProperty(PrototypeKind kind, const PrototypeTransformer &t
 	if (UNEXPECTED(transformedReadableType.isUndef())) return zv::Val();
 	zv::Val writableType = protoPropertyCall(property, PT_PROP_GET_WRITABLE_TYPE, "getwritabletype", PROTO_OBJECT);
 	if (UNEXPECTED(writableType.isUndef())) return zv::Val();
-	/* the Callback twin: $readableType->equals($writableType) ? $transformedReadableType : transform($writableType);
-	 * the CalledOnType twin: transformStaticType($writableType, true) */
-	zv::Val transformedWritableType = protoTransformUnlessEqual(kind, transformer, readableType.raw(), transformedReadableType.raw(), writableType.raw(), true);
+	/* the Callback twin: $readableType->equals($writableType) ? $transformedReadableType : transform($writableType) */
+	zv::Val transformedWritableType = protoTransformUnlessEqual(kind, transformer, readableType.raw(), transformedReadableType.raw(), writableType.raw());
 	if (UNEXPECTED(transformedWritableType.isUndef())) return zv::Val();
 	zv::Val phpDocType = protoPropertyCall(property, PT_PROP_GET_PHP_DOC_TYPE, "getphpdoctype", PROTO_OBJECT);
 	if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();

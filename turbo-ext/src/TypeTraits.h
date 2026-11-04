@@ -1460,17 +1460,12 @@ zv::Val pt_accepts_result_extreme_identity_spread(HashTable *args);
 namespace phpstanturbo {
 
 /* a prototype's transformStaticType($type): fn over its context (the
- * prototype object, whose slots the body reads); inputFn transforms the
- * types values are checked against (parameter types, a property's writable
- * type) — the CalledOnType twins' transformStaticType($type, true), the
- * same fn for the Callback twins; UNDEF = pending exception */
+ * prototype object, whose slots the body reads); UNDEF = pending exception */
 struct PrototypeTransformer
 {
 	zv::Val (*fn)(void *context, zval *type);
-	zv::Val (*inputFn)(void *context, zval *type);
 	void *context;
 	zv::Val transform(zval *type) const { return fn(context, type); }
-	zv::Val transformInput(zval *type) const { return inputFn(context, type); }
 };
 
 /* whose body: the CalledOnType twins transform every type, the Callback

@@ -89,7 +89,7 @@ public:
 		zval *propertyReflection = resolvedDeclaringClass != NULL ? slot(slots::propertyReflection, "propertyReflection") : NULL;
 		zval *resolveToBounds = propertyReflection != NULL ? slot(slots::resolveTemplateTypeMapToBounds, "resolveTemplateTypeMapToBounds") : NULL;
 		if (UNEXPECTED(resolveToBounds == NULL)) return zv::Val();
-		PrototypeTransformer transformer = { transformStaticType, transformInputStaticType, self };
+		PrototypeTransformer transformer = { transformStaticType, self };
 		zv::Val result = pt_prototype_resolved_property(PT_PROTOTYPE_CALLED_ON_TYPE, transformer, Z_OBJ_P(resolvedDeclaringClass), Z_OBJ_P(propertyReflection), zend_is_true(resolveToBounds));
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		write(slots::transformedProperty, zv::Val::copyOf(zv::Ref(result.raw())));
@@ -132,48 +132,16 @@ private:
 		return value;
 	}
 
-	/* getFetchedOnType($flag): $this->fetchedOnType, or for the types values
-	 * are checked against TemplateTypeHelper::removeFinalByKeywordOverrides($this->fetchedOnType);
-	 * UNDEF = pending exception */
-	zv::Val fetchedOnTypeFor(zval *flag) const
-	{
-		zval *fetchedOnType = slot(slots::fetchedOnType, "fetchedOnType");
-		if (UNEXPECTED(fetchedOnType == NULL)) return zv::Val();
-		if (flag == NULL || Z_TYPE_P(flag) != IS_TRUE) return zv::Val::copyOf(zv::Ref(fetchedOnType));
-		zv::Val stripped = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("removefinalbykeywordoverrides"), 1, fetchedOnType);
-		if (UNEXPECTED(stripped.isUndef())) return zv::Val();
-		if (UNEXPECTED(!zv::Ref(stripped.raw()).isObject())) {
-			zend_type_error("phpstan_turbo: TemplateTypeHelper::removeFinalByKeywordOverrides() must return %s", ptcls::type);
-			return zv::Val();
-		}
-		return stripped;
-	}
-
 	/* transformStaticType($type): TypeTraverser::map($type, the closure
 	 * below over $this); UNDEF = pending exception */
 	static zv::Val transformStaticType(void *context, zval *type)
 	{
-		return transformStaticTypeOf(context, type, false);
-	}
-
-	/* transformStaticType($type, true) — for the writable type */
-	static zv::Val transformInputStaticType(void *context, zval *type)
-	{
-		return transformStaticTypeOf(context, type, true);
-	}
-
-	static zv::Val transformStaticTypeOf(void *context, zval *type, bool isWritableType)
-	{
 		zval thisZv;
 		ZVAL_OBJ(&thisZv, (zend_object *) context);
-		/* the closure's `use ($isWritableType)` */
-		zval flag;
-		ZVAL_BOOL(&flag, isWritableType);
-		zv::Val callback = pt_type_native_callback(traverse, &thisZv, &flag);
+		zv::Val callback = pt_type_native_callback(traverse, &thisZv, NULL);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
 		return pt_type_traverser_map_of(type, callback.raw());
 	}
-
 
 	/* the closure of transformStaticType(): `function (Type $type, callable
 	 * $traverse): Type` — a GenericStaticType becomes the static object
@@ -182,6 +150,7 @@ private:
 	 * the fetched-on type; everything else traverses */
 	static void traverse(zval *thisZv, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
+		(void) state1;
 		if (UNEXPECTED(argc < 2)) {
 			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_called_on_type_unresolved_property_prototype_reflection->name), argc);
 			return;
@@ -194,11 +163,9 @@ private:
 		bool isGenericStatic;
 		pt_type_instanceof_ce(type, pt_ce_generic_static_type, isGenericStatic);
 		if (isGenericStatic) {
-			/* $fetchedOnType = $this->getFetchedOnType($isWritableType); */
-			zv::Val fetchedOnTypeVal = CalledOnTypeUnresolvedPropertyPrototypeReflection(Z_OBJ_P(thisZv)).fetchedOnTypeFor(state1);
-			if (UNEXPECTED(fetchedOnTypeVal.isUndef())) return;
-			zval *fetchedOnType = fetchedOnTypeVal.raw();
-			/* $fetchedOnTypeReflections = $fetchedOnType->getObjectClassReflections(); */
+			zval *fetchedOnType = CalledOnTypeUnresolvedPropertyPrototypeReflection(Z_OBJ_P(thisZv)).slot(slots::fetchedOnType, "fetchedOnType");
+			if (UNEXPECTED(fetchedOnType == NULL)) return;
+			/* $fetchedOnTypeReflections = $this->fetchedOnType->getObjectClassReflections(); */
 			zv::Val reflections = pt_type_call(Z_OBJ_P(fetchedOnType), PT_LC("getobjectclassreflections"), 0, NULL);
 			if (UNEXPECTED(reflections.isUndef())) return;
 			if (UNEXPECTED(!zv::Ref(reflections.raw()).isArray())) {
@@ -232,9 +199,9 @@ private:
 		bool isStatic;
 		pt_type_instanceof_ce(type, pt_ce_static_type, isStatic);
 		if (isStatic) {
-			zv::Val fetchedOnType = CalledOnTypeUnresolvedPropertyPrototypeReflection(Z_OBJ_P(thisZv)).fetchedOnTypeFor(state1);
-			if (UNEXPECTED(fetchedOnType.isUndef())) return;
-			fetchedOnType.intoReturnValue(return_value);
+			zval *fetchedOnType = CalledOnTypeUnresolvedPropertyPrototypeReflection(Z_OBJ_P(thisZv)).slot(slots::fetchedOnType, "fetchedOnType");
+			if (UNEXPECTED(fetchedOnType == NULL)) return;
+			ZVAL_COPY(return_value, fetchedOnType);
 			return;
 		}
 		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);

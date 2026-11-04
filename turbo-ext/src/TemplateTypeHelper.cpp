@@ -558,6 +558,11 @@ zv::Val pt_type_template_type_helper_to_argument(zval *type)
 	return TemplateTypeHelper::toArgument(type);
 }
 
+zv::Val pt_type_template_type_helper_remove_final_by_keyword_overrides(zval *type)
+{
+	return TemplateTypeHelper::removeFinalByKeywordOverrides(type);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */

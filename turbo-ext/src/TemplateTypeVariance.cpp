@@ -436,9 +436,17 @@ zv::Val TemplateTypeVariance::isValidVariance(zval *templateType, zval *a, zval 
 		return pt_type_new_ce(pt_ce_is_super_type_of_result, 2, args);
 	}
 
-	if (thisValue == COVARIANT) return pt_type_op(Z_OBJ_P(a), PT_OP_IS_SUPER_TYPE_OF, 1, b);
-
-	if (thisValue == CONTRAVARIANT) return pt_type_op(Z_OBJ_P(b), PT_OP_IS_SUPER_TYPE_OF, 1, a);
+	if (thisValue == COVARIANT || thisValue == CONTRAVARIANT) {
+		/* the "exactly this class" flavour of a `new Foo()` value cannot be
+		 * written in a PHPDoc type argument - ignore it like equals() does
+		 * for invariance */
+		zv::Val strippedA = pt_type_template_type_helper_remove_final_by_keyword_overrides(a);
+		if (UNEXPECTED(strippedA.isUndef())) return zv::Val();
+		zv::Val strippedB = pt_type_template_type_helper_remove_final_by_keyword_overrides(b);
+		if (UNEXPECTED(strippedB.isUndef())) return zv::Val();
+		if (thisValue == COVARIANT) return pt_type_op(Z_OBJ_P(strippedA.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, strippedB.raw());
+		return pt_type_op(Z_OBJ_P(strippedB.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, strippedA.raw());
+	}
 
 	if (thisValue == BIVARIANT) return pt_type_is_super_type_of_result(PT_TRI_YES);
 

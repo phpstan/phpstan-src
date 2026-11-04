@@ -946,12 +946,13 @@ zv::Val pt_type_template_type_variance_map_new(zval *variances);
 zv::Val pt_type_template_type_map_empty();
 zv::Val pt_type_template_type_map_new(zval *types, zval *lowerBoundTypes = NULL);
 /* TemplateTypeHelper::resolveTemplateTypes() / resolveToDefaults() /
- * resolveToBounds() / toArgument() (the arguments borrowed); UNDEF =
- * pending exception */
+ * resolveToBounds() / toArgument() / removeFinalByKeywordOverrides() (the
+ * arguments borrowed); UNDEF = pending exception */
 zv::Val pt_type_template_type_helper_resolve_template_types(zval *type, zval *standins, zval *callSiteVariances, zval *positionVariance, bool keepErrorTypes);
 zv::Val pt_type_template_type_helper_resolve_to_defaults(zval *type);
 zv::Val pt_type_template_type_helper_resolve_to_bounds(zval *type);
 zv::Val pt_type_template_type_helper_to_argument(zval *type);
+zv::Val pt_type_template_type_helper_remove_final_by_keyword_overrides(zval *type);
 /* $reference->getType() / ->getPositionVariance() of a reference instance
  * (TemplateTypeReference.cpp): the slots of a native instance, the methods
  * of anything else (the PHP twin declared next to the native class in the

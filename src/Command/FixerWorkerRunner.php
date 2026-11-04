@@ -194,7 +194,7 @@ final class FixerWorkerRunner
 				function (array $errors, array $locallyIgnoredErrors, array $analysedFiles) use ($out, $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles): void {
 					$internalErrors = [];
 					foreach ($errors as $fileSpecificError) {
-						if (!$fileSpecificError->hasNonIgnorableException()) {
+						if (!$this->isInternalError($fileSpecificError)) {
 							continue;
 						}
 
@@ -243,8 +243,13 @@ final class FixerWorkerRunner
 					);
 				}
 
+				$hasParseErrors = false;
 				foreach ($finalizerResult->getAnalyserResult()->getUnorderedErrors() as $fileSpecificError) {
 					if (!$fileSpecificError->hasNonIgnorableException()) {
+						continue;
+					}
+					if (!$this->isInternalError($fileSpecificError)) {
+						$hasParseErrors = true;
 						continue;
 					}
 
@@ -252,6 +257,9 @@ final class FixerWorkerRunner
 				}
 
 				$hasInternalErrors = count($internalErrors) > 0 || $finalizerResult->getAnalyserResult()->hasReachedInternalErrorsCountLimit();
+				// what is in a file that cannot be parsed is not known, so the ignores that did not match
+				// anything there are not reported, like when the analysis is incomplete for other reasons
+				$isAnalysisIncomplete = $hasInternalErrors || $hasParseErrors;
 
 				if ($hasInternalErrors) {
 					$out->write(['action' => 'analysisCrash', 'data' => [
@@ -267,7 +275,7 @@ final class FixerWorkerRunner
 					]]);
 				}
 
-				[$collectorErrors, $ignoredCollectorErrors] = $this->filterErrors($finalizerResult->getCollectorErrors(), $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $hasInternalErrors);
+				[$collectorErrors, $ignoredCollectorErrors] = $this->filterErrors($finalizerResult->getCollectorErrors(), $ignoredErrorHelperResult, $isOnlyFiles, $inceptionFiles, $isAnalysisIncomplete);
 				foreach ($finalizerResult->getLocallyIgnoredCollectorErrors() as $locallyIgnoredCollectorError) {
 					$ignoredCollectorErrors[] = [$locallyIgnoredCollectorError, null];
 				}
@@ -284,7 +292,7 @@ final class FixerWorkerRunner
 					$finalizerResult->getErrors(),
 					$isOnlyFiles,
 					$inceptionFiles,
-					$hasInternalErrors,
+					$isAnalysisIncomplete,
 				);
 				$ignoreFileErrors = [];
 				foreach ($ignoredErrorHelperProcessedResult->getNotIgnoredErrors() as $error) {
@@ -333,6 +341,15 @@ final class FixerWorkerRunner
 		$loop->run();
 
 		return 0;
+	}
+
+	/**
+	 * An error with an exception that cannot be ignored, other than a parse error. A parse error
+	 * describes the analysed code, so it is shown with the other errors, on its line.
+	 */
+	private function isInternalError(Error $error): bool
+	{
+		return $error->hasNonIgnorableException() && $error->getIdentifier() !== 'phpstan.parse';
 	}
 
 	private function transformErrorIntoInternalError(Error $error): InternalError

@@ -24,7 +24,6 @@ use PHPStan\Internal\DirectoryCreator;
 use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Internal\HttpClientFactory;
 use PHPStan\PhpDoc\StubFilesProvider;
-use PHPStan\Process\ProcessCanceledException;
 use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\SpawnedProcessPromise;
@@ -72,6 +71,9 @@ final class FixerApplication
 
 	/** @var PromiseInterface<string>|null  */
 	private PromiseInterface|null $processInProgress = null;
+
+	/** Files changed during the analysis in progress, another one starts once it ends. */
+	private bool $analysisRequested = false;
 
 	private bool $fileMonitorActive = true;
 
@@ -188,9 +190,11 @@ final class FixerApplication
 					'paths' => $changes->getChangedFiles(),
 				]]);
 			}, function () use ($loop, $mainScript, $projectConfigFile, $input, $encoder): void {
+				// The analysis in progress is not stopped: what it saves to the result cache makes the next
+				// one cheaper, and that one starts once it ends, for everything that changed meanwhile.
 				if ($this->processInProgress !== null) {
-					$this->processInProgress->cancel();
-					$this->processInProgress = null;
+					$this->analysisRequested = true;
+					return;
 				}
 
 				$this->analyse(
@@ -424,10 +428,6 @@ final class FixerApplication
 				$loop->addTimer($interval, $callback);
 				return;
 			}
-			if ($this->processInProgress !== null) {
-				$loop->addTimer($interval, $callback);
-				return;
-			}
 			$changes = $fileMonitor->getChanges();
 			$now = microtime(true);
 
@@ -506,16 +506,10 @@ final class FixerApplication
 		));
 		$this->processInProgress = $process->run();
 
-		$this->processInProgress->then(function () use ($server): void {
-			$this->processInProgress = null;
+		$this->processInProgress->then(static function () use ($server): void {
 			$server->close();
-		}, function (Throwable $e) use ($server, $phpstanFixerEncoder): void {
-			$this->processInProgress = null;
+		}, static function (Throwable $e) use ($server, $phpstanFixerEncoder): void {
 			$server->close();
-
-			if ($e instanceof ProcessCanceledException) {
-				return;
-			}
 
 			if ($e instanceof ProcessCrashedException) {
 				$message = 'Analysis crashed';
@@ -535,6 +529,14 @@ final class FixerApplication
 					shouldReportBug: false,
 				)],
 			]]);
+		})->finally(function () use ($loop, $mainScript, $projectConfigFile, $input, $phpstanFixerEncoder): void {
+			$this->processInProgress = null;
+			if (!$this->analysisRequested) {
+				return;
+			}
+
+			$this->analysisRequested = false;
+			$this->analyse($loop, $mainScript, $projectConfigFile, $input, $phpstanFixerEncoder);
 		});
 	}
 

@@ -14,8 +14,7 @@ use function tmpfile;
 
 /**
  * A freshly spawned PHP process (react/child-process) as a promise that resolves
- * with its output on success and rejects with ProcessCrashedException or
- * ProcessCanceledException otherwise.
+ * with its output on success and rejects with ProcessCrashedException otherwise.
  */
 final class SpawnedProcessPromise
 {
@@ -23,15 +22,9 @@ final class SpawnedProcessPromise
 	/** @var Deferred<string> */
 	private Deferred $deferred;
 
-	private ?Process $process = null;
-
-	private bool $canceled = false;
-
 	public function __construct(private LoopInterface $loop, private string $command)
 	{
-		$this->deferred = new Deferred(function (): void {
-			$this->cancel();
-		});
+		$this->deferred = new Deferred();
 	}
 
 	/**
@@ -48,18 +41,13 @@ final class SpawnedProcessPromise
 			throw new ShouldNotHappenException('Failed creating temp file for stderr.');
 		}
 
-		$this->process = new Process($this->command, fds: [
+		$process = new Process($this->command, fds: [
 			1 => $tmpStdOutResource,
 			2 => $tmpStdErrResource,
 		]);
-		$this->process->start($this->loop);
+		$process->start($this->loop);
 
-		$this->process->on('exit', function ($exitCode) use ($tmpStdOutResource, $tmpStdErrResource): void {
-			if ($this->canceled) {
-				fclose($tmpStdOutResource);
-				fclose($tmpStdErrResource);
-				return;
-			}
+		$process->on('exit', function ($exitCode) use ($tmpStdOutResource, $tmpStdErrResource): void {
 			rewind($tmpStdOutResource);
 			$stdOut = stream_get_contents($tmpStdOutResource);
 			fclose($tmpStdOutResource);
@@ -82,16 +70,6 @@ final class SpawnedProcessPromise
 		});
 
 		return $this->deferred->promise();
-	}
-
-	private function cancel(): void
-	{
-		if ($this->process === null) {
-			throw new ShouldNotHappenException('Cancelling process before running');
-		}
-		$this->canceled = true;
-		$this->process->terminate();
-		$this->deferred->reject(new ProcessCanceledException());
 	}
 
 }

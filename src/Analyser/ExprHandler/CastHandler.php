@@ -26,8 +26,17 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements ExprHandler<Cast>
@@ -86,23 +95,42 @@ final class CastHandler implements ExprHandler
 				// a cast's truthiness is a loose comparison of the inner
 				// expression - composed from its result; the fabricated
 				// literal is only printed into entries, never walked
-				if (($expr instanceof Cast\Bool_ || $expr instanceof Cast\Int_ || $expr instanceof Cast\Double) && !$context->null()) {
-					if ($expr instanceof Cast\Bool_) {
-						$literal = new ConstFetch(new FullyQualified('true'));
-						$equalContext = $context;
-					} elseif ($expr instanceof Cast\Int_) {
-						$literal = new Int_(0);
-						$equalContext = $context->negate();
-					} else {
-						$literal = new Float_(0.0);
-						$equalContext = $context->negate();
-					}
-
+				if ($expr instanceof Cast\Bool_ && !$context->null()) {
 					// the literal side never reads its stand-in result
-					$types = $this->identicalNarrowingHelper->specifyEqual($nodeScopeResolver, $expr->expr, $literal, $exprResult, $exprResult, $equalContext, $evaluationScope, $subjectArgResult, null);
+					$types = $this->identicalNarrowingHelper->specifyEqual($nodeScopeResolver, $expr->expr, new ConstFetch(new FullyQualified('true')), $exprResult, $exprResult, $context, $evaluationScope, $subjectArgResult, null);
 					if ($types !== null) {
 						return $types->setRootExpr($expr);
 					}
+				}
+
+				// a number cast is zero for more values than those loosely equal
+				// to zero: (int) 'abc', (int) 0.5 and (int) INF are 0 too
+				if (($expr instanceof Cast\Int_ || $expr instanceof Cast\Double) && !$context->null()) {
+					$zeroContext = $context->negate();
+					if ($zeroContext->true()) {
+						$zeroType = TypeCombinator::union(
+							new NullType(),
+							new ConstantBooleanType(false),
+							new ConstantIntegerType(0),
+							$expr instanceof Cast\Int_ ? new FloatType() : new ConstantFloatType(0.0),
+							new StringType(),
+							new ConstantArrayType([], []),
+							// GMP casts to its number
+							new ObjectWithoutClassType(),
+						);
+					} else {
+						$zeroType = TypeCombinator::union(
+							new NullType(),
+							new ConstantBooleanType(false),
+							new ConstantIntegerType(0),
+							new ConstantFloatType(0.0),
+							new ConstantStringType(''),
+							new ConstantStringType('0'),
+							new ConstantArrayType([], []),
+						);
+					}
+
+					return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $expr->expr, $exprResult, $zeroType, $zeroContext)->setRootExpr($expr);
 				}
 
 				if ($expr instanceof Cast\Bool_) {

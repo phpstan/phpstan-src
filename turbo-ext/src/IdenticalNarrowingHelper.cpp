@@ -222,6 +222,7 @@ inline zv::Val adoptOr(bool ok, zval &value)
 
 inline zv::Val newNullType() { zval v; return adoptOr(pt_null_type_new(&v), v); }
 inline zv::Val newNeverType() { zval v; return adoptOr(pt_never_type_new(&v), v); }
+inline zv::Val newMixedType() { zval v; return adoptOr(pt_mixed_type_new(&v), v); }
 inline zv::Val newConstantBoolean(bool value) { zval v; return adoptOr(pt_constant_boolean_type_new(&v, value), v); }
 inline zv::Val newConstantInteger(zend_long value) { zval v; return adoptOr(pt_constant_integer_type_new(&v, value), v); }
 inline zv::Val newConstantFloat(double value) { zval v; return adoptOr(pt_constant_float_type_new(&v, value), v); }
@@ -533,11 +534,11 @@ public:
 		zv::Val rightScalarValues = pt_type_op(Z_OBJ_P(rightType.raw()), PT_OP_GET_CONSTANT_SCALAR_VALUES, 0, NULL);
 		if (UNEXPECTED(rightScalarValues.isUndef())) return zv::Val();
 		if (countOf(leftScalarValues.raw()) == 1 && !isA(unwrappedRight, PT_CLASS_CONST_FETCH)) {
-			zv::Val constantSideTypes = specifyEqualAgainstConstantSide(nodeScopeResolver, left, right, leftResult, rightResult, right, rightResult, firstOf(leftScalarValues.raw()), leftType.raw(), rightType.raw(), context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
+			zv::Val constantSideTypes = specifyEqualAgainstConstantSide(nodeScopeResolver, left, right, leftResult, rightResult, right, rightResult, firstOf(leftScalarValues.raw()), leftType.raw(), context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
 			if (UNEXPECTED(constantSideTypes.isUndef())) return zv::Val();
 			if (!isFalseOutcome(constantSideTypes)) return constantSideTypes;
 		} else if (countOf(rightScalarValues.raw()) == 1 && !isA(unwrappedLeft, PT_CLASS_CONST_FETCH)) {
-			zv::Val constantSideTypes = specifyEqualAgainstConstantSide(nodeScopeResolver, left, right, leftResult, rightResult, left, leftResult, firstOf(rightScalarValues.raw()), rightType.raw(), leftType.raw(), context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
+			zv::Val constantSideTypes = specifyEqualAgainstConstantSide(nodeScopeResolver, left, right, leftResult, rightResult, left, leftResult, firstOf(rightScalarValues.raw()), rightType.raw(), context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
 			if (UNEXPECTED(constantSideTypes.isUndef())) return zv::Val();
 			if (!isFalseOutcome(constantSideTypes)) return constantSideTypes;
 		}
@@ -600,7 +601,8 @@ public:
 				: createSubjectTypes(evaluationScope, left, leftResult, nonEmptyArray.raw(), negated.raw());
 		}
 
-		// same-type sides cannot coerce - loose equals strict
+		// same-type sides cannot coerce - loose equals strict, except for
+		// two numeric strings, which compare as numbers
 		bool sameKind;
 		if (UNEXPECTED(!bothAre(leftType.raw(), rightType.raw(), sameKind))) return zv::Val();
 		if (sameKind) return specifyIdentical(nodeScopeResolver, left, right, leftResult, rightResult, context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback.raw());
@@ -611,20 +613,61 @@ public:
 		if (UNEXPECTED(rightExprString.isNull())) return zv::Val();
 		if (zend_string_equals(leftExprString.get(), rightExprString.get())) {
 			if (!isA(left, PT_CLASS_VARIABLE) || !isA(right, PT_CLASS_VARIABLE)) return pt_specified_types_new();
+
+			// a variable equals itself unless it holds NAN
+			bool isFalse;
+			if (UNEXPECTED(!ctxFalse(context, isFalse))) return zv::Val();
+			if (isFalse) {
+				zend_long isFloat = trinaryOp(leftType.raw(), PT_OP_IS_FLOAT, "isFloat");
+				if (UNEXPECTED(isFloat < 0)) return zv::Val();
+				if (isFloat == PT_TRI_NO) {
+					zend_long isArray = trinaryOp(leftType.raw(), PT_OP_IS_ARRAY, "isArray");
+					if (UNEXPECTED(isArray < 0)) return zv::Val();
+					if (isArray == PT_TRI_NO) return createSubjectTypes(evaluationScope, left, leftResult, leftType.raw(), context);
+				}
+			}
 		}
 
-		zv::Val leftTypes = createSubjectTypes(evaluationScope, left, leftResult, leftType.raw(), context);
+		// each side is one of the values the other side can equal, and in
+		// the false branch none of the values the other side always equals
+		zv::Val scopePhpVersions = pt_type_call(Z_OBJ_P(evaluationScope), PT_LC("getphpversion"), 0, NULL);
+		if (UNEXPECTED(scopePhpVersions.isUndef())) return zv::Val();
+		zv::Val phpVersions = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getrepresentativephpversions"), 1, scopePhpVersions.raw());
+		if (UNEXPECTED(phpVersions.isUndef())) return zv::Val();
+		zv::Val leftTypes = createLooselyEqualTypes(evaluationScope, left, leftResult, leftType.raw(), rightType.raw(), phpVersions.raw(), context);
 		if (UNEXPECTED(leftTypes.isUndef())) return zv::Val();
-		zv::Val rightTypes = createSubjectTypes(evaluationScope, right, rightResult, rightType.raw(), context);
+		zv::Val rightTypes = createLooselyEqualTypes(evaluationScope, right, rightResult, rightType.raw(), leftType.raw(), phpVersions.raw(), context);
 		if (UNEXPECTED(rightTypes.isUndef())) return zv::Val();
+		return unionWith(std::move(leftTypes), std::move(rightTypes));
+	}
 
+	/* Mirrors createLooselyEqualTypes(). */
+	zv::Val createLooselyEqualTypes(zval *evaluationScope, zval *subject, zval *subjectResult, zval *subjectType, zval *otherType, zval *phpVersions, zval *context) const
+	{
 		bool isTrue;
 		if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-		if (isTrue) return unionWith(std::move(leftTypes), std::move(rightTypes));
-		zv::Val leftSure = toSureTypes(leftTypes.raw(), evaluationScope);
-		if (UNEXPECTED(leftSure.isUndef())) return zv::Val();
-		zv::Val rightSure = toSureTypes(rightTypes.raw(), evaluationScope);
-		return intersectWith(std::move(leftSure), std::move(rightSure));
+		zv::Args args{otherType, phpVersions};
+		zv::Val type = isTrue
+			? pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getpossiblylooselyequaltypeinversions"), 2, args)
+			: pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getalwayslooselyequaltypeinversions"), 2, args);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+
+		// nothing to intersect with, or nothing to remove
+		zv::Val mixed = newMixedType();
+		if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+		bool coversMixed;
+		if (UNEXPECTED(!isSuperTypeOfYes(type.raw(), mixed.raw(), coversMixed))) return zv::Val();
+		if (coversMixed) return pt_specified_types_new();
+		bool isFalse;
+		if (UNEXPECTED(!ctxFalse(context, isFalse))) return zv::Val();
+		if (isFalse && instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_never_type)) return pt_specified_types_new();
+		if (isTrue && Z_TYPE_P(subjectType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(subjectType), pt_ce_mixed_type)) {
+			zv::Val keepsMixed = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("keepsmixedunnarrowed"), 1, type.raw());
+			if (UNEXPECTED(keepsMixed.isUndef())) return zv::Val();
+			if (Z_TYPE_P(keepsMixed.raw()) == IS_TRUE) return pt_specified_types_new();
+		}
+
+		return createSubjectTypes(evaluationScope, subject, subjectResult, type.raw(), context);
 	}
 
 	/* Mirrors specifyIdenticalAgainstType(). */
@@ -794,8 +837,8 @@ private:
 		return pt_type_new(PT_CLASS_CONST_FETCH, 1, name.raw());
 	}
 
-	/* the four same-kind conjuncts of specifyEqual(): both strings, integers,
-	 * floats or enums; false = pending exception */
+	/* the four same-kind conjuncts of specifyEqual(): both strings (not both
+	 * possibly numeric), integers, floats or enums; false = pending exception */
 	[[nodiscard]] static bool bothAre(zval *leftType, zval *rightType, bool &out)
 	{
 		static const pt_type_op_id ops[] = { PT_OP_IS_STRING, PT_OP_IS_INTEGER, PT_OP_IS_FLOAT };
@@ -806,10 +849,19 @@ private:
 			if (leftValue != PT_TRI_YES) continue;
 			zend_long rightValue = trinaryOp(rightType, ops[i], names[i]);
 			if (UNEXPECTED(rightValue < 0)) return false;
-			if (rightValue == PT_TRI_YES) {
-				out = true;
-				return true;
+			if (rightValue != PT_TRI_YES) continue;
+			if (i == 0) {
+				// two numeric strings compare as numbers
+				zend_long leftNumeric = trinaryByName(leftType, "isNumericString", PT_LC("isnumericstring"));
+				if (UNEXPECTED(leftNumeric < 0)) return false;
+				if (leftNumeric != PT_TRI_NO) {
+					zend_long rightNumeric = trinaryByName(rightType, "isNumericString", PT_LC("isnumericstring"));
+					if (UNEXPECTED(rightNumeric < 0)) return false;
+					if (rightNumeric != PT_TRI_NO) continue;
+				}
 			}
+			out = true;
+			return true;
 		}
 		zend_long leftEnum = trinaryByName(leftType, "isEnum", PT_LC("isenum"));
 		if (UNEXPECTED(leftEnum < 0)) return false;
@@ -1252,7 +1304,7 @@ private:
 	}
 
 	/* Mirrors specifyEqualAgainstConstantSide(): a SpecifiedTypes, false or null */
-	zv::Val specifyEqualAgainstConstantSide(zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *subject, zval *subjectResult, zval *value, zval *constantType, zval *otherType, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult, zval *identicalTypeCallback) const
+	zv::Val specifyEqualAgainstConstantSide(zval *nodeScopeResolver, zval *left, zval *right, zval *leftResult, zval *rightResult, zval *subject, zval *subjectResult, zval *value, zval *constantType, zval *context, zval *evaluationScope, zval *leftArgResult, zval *rightArgResult, zval *identicalTypeCallback) const
 	{
 		zval *unwrappedSubject = unwrap(subject);
 
@@ -1278,57 +1330,6 @@ private:
 				if (UNEXPECTED(boolContext.isUndef())) return zv::Val();
 			}
 			return pt_expression_result_get_specified_types_for_scope(subjectResult, evaluationScope, boolContext.raw());
-		}
-
-		/* There is a difference between php 7.x and 8.x on the equality
-		 * behavior between zero and the empty string, so to be conservative
-		 * we leave it untouched regardless of the language version */
-		if (Z_TYPE_P(value) == IS_LONG && Z_LVAL_P(value) == 0) {
-			zend_long otherInteger = trinaryOp(otherType, PT_OP_IS_INTEGER, "isInteger");
-			if (UNEXPECTED(otherInteger < 0)) return zv::Val();
-			zend_long otherBoolean = otherInteger == PT_TRI_YES ? PT_TRI_YES : trinaryOp(otherType, PT_OP_IS_BOOLEAN, "isBoolean");
-			if (UNEXPECTED(otherBoolean < 0)) return zv::Val();
-			if (otherInteger != PT_TRI_YES && otherBoolean != PT_TRI_YES) {
-				bool isTrue;
-				if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-				zv::Arr members = zv::Arr::create(5);
-				if (UNEXPECTED(!pushFalsyScalars(members, true, false))) return zv::Val();
-				if (isTrue) {
-					zv::Val stringType = newStringType();
-					if (UNEXPECTED(stringType.isUndef())) return zv::Val();
-					members.push(std::move(stringType));
-				} else {
-					zend_string *zero = zend_string_init(PT_LC("0"), 0);
-					zv::Val zeroString = newConstantString(zero);
-					zend_string_release(zero);
-					if (UNEXPECTED(zeroString.isUndef())) return zv::Val();
-					members.push(std::move(zeroString));
-				}
-				zv::Val union_ = newUnion(members);
-				if (UNEXPECTED(union_.isUndef())) return zv::Val();
-				return createSubjectTypes(evaluationScope, subject, subjectResult, union_.raw(), context);
-			}
-		}
-		if (Z_TYPE_P(value) == IS_STRING && Z_STRLEN_P(value) == 0) {
-			bool isTrue;
-			if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-			zv::Arr members = zv::Arr::create(5);
-			if (isTrue) {
-				if (UNEXPECTED(!pushFalsyScalars(members, true, false))) return zv::Val();
-			} else {
-				zv::Val nullType = newNullType();
-				if (UNEXPECTED(nullType.isUndef())) return zv::Val();
-				members.push(std::move(nullType));
-				zv::Val falseType = newConstantBoolean(false);
-				if (UNEXPECTED(falseType.isUndef())) return zv::Val();
-				members.push(std::move(falseType));
-			}
-			zv::Val emptyString = newConstantString(ZSTR_EMPTY_ALLOC());
-			if (UNEXPECTED(emptyString.isUndef())) return zv::Val();
-			members.push(std::move(emptyString));
-			zv::Val union_ = newUnion(members);
-			if (UNEXPECTED(union_.isUndef())) return zv::Val();
-			return createSubjectTypes(evaluationScope, subject, subjectResult, union_.raw(), context);
 		}
 
 		// loose equals strict for these call results and class names

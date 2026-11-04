@@ -18,6 +18,8 @@
 #include "OperatorHandlers.h"
 #include "CallHandlerSupport.h"
 
+#include <initializer_list>
+
 namespace ptse {
 
 /* {{{ a processed child's result */
@@ -221,6 +223,48 @@ void nonAcceptingNeverTypeBody(zval *captures, uint32_t argc, zval *argv, zval *
 	(void) argv;
 	if (UNEXPECTED(!requireArgs(argc, 1, H::closureName))) return;
 	if (UNEXPECTED(!pt_non_accepting_never_type_new(return_value))) ZVAL_NULL(return_value);
+}
+
+/* }}} */
+
+/* {{{ the cast handlers' zero / falsy value sets */
+
+enum class CastValue { Null, False, ZeroInt, ZeroFloat, Float, String, EmptyString, ZeroString, EmptyArray, Object };
+
+/* TypeCombinator::union() of the listed types, in order; UNDEF = pending
+ * exception */
+inline zv::Val castValueUnion(std::initializer_list<CastValue> values)
+{
+	zv::Val members[10];
+	zval argv[10];
+	uint32_t count = 0;
+	for (CastValue value : values) {
+		zval out;
+		bool ok;
+		switch (value) {
+			case CastValue::Null: ok = pt_null_type_new(&out); break;
+			case CastValue::False: ok = pt_constant_boolean_type_new(&out, false); break;
+			case CastValue::ZeroInt: ok = pt_constant_integer_type_new(&out, 0); break;
+			case CastValue::ZeroFloat: ok = pt_constant_float_type_new(&out, 0.0); break;
+			case CastValue::Float: ok = pt_float_type_new(&out); break;
+			case CastValue::String: ok = pt_string_type_new(&out); break;
+			case CastValue::EmptyString: ok = pt_constant_string_type_new(&out, ZSTR_EMPTY_ALLOC()); break;
+			case CastValue::ZeroString: ok = pt_constant_string_type_new(&out, ZSTR_CHAR('0')); break;
+			case CastValue::EmptyArray: {
+				zval empty;
+				ZVAL_EMPTY_ARRAY(&empty);
+				ok = pt_constant_array_type_new(&out, &empty, &empty);
+				break;
+			}
+			default: ok = pt_object_without_class_type_new(&out); break;
+		}
+		if (UNEXPECTED(!ok)) return zv::Val();
+		members[count] = zv::Val::adopt(out);
+		ZVAL_COPY_VALUE(&argv[count], members[count].raw());
+		count++;
+	}
+
+	return pt_type_combinator_union(count, argv);
 }
 
 /* }}} */

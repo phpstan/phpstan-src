@@ -5475,6 +5475,20 @@ void pt_type_trait_operator(reg::Class &cls)
 	cls.traitMethod(sigs::bitwiseShiftRight, operatorBinary<PT_OPERATOR_SHIFT_RIGHT>);
 	cls.traitMethod(sigs::stringConcatenate, operatorBinary<PT_OPERATOR_CONCATENATE>);
 	cls.traitMethod(sigs::arrayUnion, operatorBinary<PT_OPERATOR_ARRAY_UNION>);
+	/* LooseComparisonHelper::getPossiblyLooselyEqualType($this, $phpVersion) */
+	cls.traitMethod(sigs::getPossiblyLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
+		zv::Args args{ZEND_THIS, phpVersion};
+		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getpossiblylooselyequaltype"), 2, args));
+	});
+	/* LooseComparisonHelper::getAlwaysLooselyEqualType($this, $phpVersion) */
+	cls.traitMethod(sigs::getAlwaysLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
+		zv::Args args{ZEND_THIS, phpVersion};
+		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getalwayslooselyequaltype"), 2, args));
+	});
 }
 
 /* }}} */

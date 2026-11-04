@@ -761,8 +761,8 @@ public:
 		return newTypeResult(newBooleanType());
 	}
 
-	/* Mirrors resolveEqualType(). */
-	zv::Val resolveEqualType(zval *leftType, zval *rightType) const
+	/* Mirrors resolveEqualType(); phpVersions NULL stands for null. */
+	zv::Val resolveEqualType(zval *leftType, zval *rightType, zval *phpVersions = NULL) const
 	{
 		if (isA(leftType, pt_ce_never_type) || isA(rightType, pt_ce_never_type)) {
 			return newTypeResult(newConstantBooleanType(false));
@@ -788,17 +788,73 @@ public:
 		}
 
 		if (isA(leftType, pt_ce_constant_array_type) && isA(rightType, pt_ce_constant_array_type)) {
-			return resolveConstantArrayTypeComparison(leftType, rightType, false);
+			return resolveConstantArrayTypeComparison(leftType, rightType, false, NULL, phpVersions);
 		}
 
-		zv::Args argv{rightType, prop(slots::phpVersion)};
-		return newTypeResult(callOn(leftType, mLooseCompare, 2, argv));
+		// LooseComparisonHelper::get*InVersions() over a single version is
+		// that version's Type method call
+		zval *version = prop(slots::phpVersion);
+		zv::Val versions;
+		if (phpVersions != NULL) {
+			IETR_VAL(representative, pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getrepresentativephpversions"), 1, phpVersions));
+			if (UNEXPECTED(!requireArray(representative.raw()))) return zv::Val();
+			if (zend_hash_num_elements(Z_ARRVAL_P(representative.raw())) == 1) {
+				version = arrayIndexForRead(representative.raw(), 0);
+				if (UNEXPECTED(version == NULL)) return zv::Val();
+			}
+			versions = std::move(representative);
+		}
+		bool singleVersion = versions.isUndef() || zend_hash_num_elements(Z_ARRVAL_P(versions.raw())) == 1;
+		auto possiblyEqual = [&](zval *type) -> zv::Val {
+			if (singleVersion) return callOn(type, mGetPossiblyLooselyEqualType, 1, version);
+			zv::Args args{type, versions.raw()};
+			return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getpossiblylooselyequaltypeinversions"), 2, args);
+		};
+		auto alwaysEqual = [&](zval *type) -> zv::Val {
+			if (singleVersion) return callOn(type, mGetAlwaysLooselyEqualType, 1, version);
+			zv::Args args{type, versions.raw()};
+			return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getalwayslooselyequaltypeinversions"), 2, args);
+		};
+
+		zv::Val compared;
+		if (singleVersion) {
+			zv::Args argv{rightType, version};
+			compared = callOn(leftType, mLooseCompare, 2, argv);
+		} else {
+			zv::Args argv{leftType, rightType, versions.raw()};
+			compared = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("loosecompareinversions"), 3, argv);
+		}
+		IETR_VAL(result, std::move(compared));
+		IETR_TRI(resultIsTrue, triOn(result.raw(), mIsTrue));
+		if (resultIsTrue == PT_TRI_YES) return newTypeResult(std::move(result));
+		IETR_TRI(resultIsFalse, triOn(result.raw(), mIsFalse));
+		if (resultIsFalse == PT_TRI_YES) return newTypeResult(std::move(result));
+
+		// either side's possibly loosely equal type rules the other side out
+		for (int side = 0; side < 2; side++) {
+			zval *type = side == 0 ? leftType : rightType;
+			zval *other = side == 0 ? rightType : leftType;
+			IETR_VAL(possible, possiblyEqual(type));
+			IETR_TRI(covers, triOn(possible.raw(), mIsSuperTypeOf, 1, other));
+			if (covers == PT_TRI_NO) return newTypeResult(newConstantBooleanType(false));
+		}
+
+		// either side's always loosely equal type holds the other side
+		for (int side = 0; side < 2; side++) {
+			zval *type = side == 0 ? leftType : rightType;
+			zval *other = side == 0 ? rightType : leftType;
+			IETR_VAL(always, alwaysEqual(type));
+			IETR_TRI(covers, triOn(always.raw(), mIsSuperTypeOf, 1, other));
+			if (covers == PT_TRI_YES) return newTypeResult(newConstantBooleanType(true));
+		}
+
+		return newTypeResult(std::move(result));
 	}
 
 	/* Mirrors resolveConstantArrayTypeComparison() with the twin's value
 	 * comparison callbacks: resolveIdenticalType() (identical) or
 	 * resolveEqualType() */
-	zv::Val resolveConstantArrayTypeComparison(zval *leftType, zval *rightType, bool identical, zval *valueComparisonCallback = NULL) const
+	zv::Val resolveConstantArrayTypeComparison(zval *leftType, zval *rightType, bool identical, zval *valueComparisonCallback = NULL, zval *phpVersions = NULL) const
 	{
 		IETR_VAL(leftKeyTypes, callOn(leftType, mGetKeyTypes));
 		IETR_VAL(rightKeyTypesHold, callOn(rightType, mGetKeyTypes));
@@ -890,7 +946,7 @@ public:
 				zv::Args argv{leftValue, rightValue};
 				leftIdenticalToRightResult = pt_type_call_callable(valueComparisonCallback, 2, argv);
 			} else {
-				leftIdenticalToRightResult = identical ? resolveIdenticalType(leftValue, rightValue) : resolveEqualType(leftValue, rightValue);
+				leftIdenticalToRightResult = identical ? resolveIdenticalType(leftValue, rightValue) : resolveEqualType(leftValue, rightValue, phpVersions);
 			}
 			if (UNEXPECTED(leftIdenticalToRightResult.isUndef())) return zv::Val();
 			IETR_VAL(leftIdenticalToRight, typeResultType(leftIdenticalToRightResult.raw()));
@@ -3168,12 +3224,14 @@ zv::Val pt_initializer_expr_type_resolver_resolve_identical_type(zval *resolver,
 	return callResolverMethod(site, resolver, PT_LC("resolveidenticaltype"), 2, argv);
 }
 
-zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zval *leftType, zval *rightType)
+zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zval *leftType, zval *rightType, zval *phpVersions)
 {
-	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver(Z_OBJ_P(resolver)).resolveEqualType(leftType, rightType);
+	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver(Z_OBJ_P(resolver)).resolveEqualType(leftType, rightType, phpVersions);
 	static pt_method_site site;
-	zv::Args argv{leftType, rightType};
-	return callResolverMethod(site, resolver, PT_LC("resolveequaltype"), 2, argv);
+	zval nullVersions;
+	ZVAL_NULL(&nullVersions);
+	zv::Args argv{leftType, rightType, phpVersions != NULL ? phpVersions : &nullVersions};
+	return callResolverMethod(site, resolver, PT_LC("resolveequaltype"), 3, argv);
 }
 
 zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback)
@@ -3468,10 +3526,10 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	});
 
 	cls.method(sigs::resolveEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *leftType, *rightType;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, leftType, rightType)) RETURN_THROWS();
+		zval *leftType, *rightType, *phpVersions = NULL;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Opt<zp::ObjOrNull>>(execute_data, leftType, rightType, phpVersions)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgType(leftType, 1) || !ietrArgType(rightType, 2))) RETURN_THROWS();
-		PT_RETURN_VAL(IETR_THIS.resolveEqualType(leftType, rightType));
+		PT_RETURN_VAL(IETR_THIS.resolveEqualType(leftType, rightType, phpVersions));
 	});
 
 	cls.method(sigs::resolveConstantArrayTypeComparison, [](INTERNAL_FUNCTION_PARAMETERS) {

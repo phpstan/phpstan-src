@@ -4076,7 +4076,7 @@ zv::Val pt_initializer_expr_type_resolver_get_enum_case_value_type(zval *resolve
 zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_ietr_binary_operator op, zval *left, zval *right, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_resolve_concat_type(zval *resolver, zval *left, zval *right);
 zv::Val pt_initializer_expr_type_resolver_resolve_identical_type(zval *resolver, zval *leftType, zval *rightType);
-zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zval *leftType, zval *rightType);
+zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zval *leftType, zval *rightType, zval *phpVersions = NULL);
 zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, zval *exprType);

@@ -124,24 +124,24 @@ function doZero($x, $y, $z): void
 {
 	// PHP 7.x/8.x compatibility: Keep zero in both cases
 	if ($x == 0) {
-		assertType("0|0.0|''|'0'|'x'|false|null", $x);
+		assertType("0|0.0|'0'|BcMath\Number|GMP|SimpleXMLElement|false|null", $x);
 	} else {
 		assertType("1|''|'x'|array{}|object|true", $x);
 	}
 	if (0 != $x) {
 		assertType("1|''|'x'|array{}|object|true", $x);
 	} else {
-		assertType("0|0.0|''|'0'|'x'|false|null", $x);
+		assertType("0|0.0|'0'|BcMath\Number|GMP|SimpleXMLElement|false|null", $x);
 	}
 
 	if ($y == 0) {
-		assertType("0|string|null", $y);
+		assertType("0|numeric-string|null", $y);
 	} else {
 		assertType("int<min, -1>|int<1, max>|string", $y);
 	}
 
 	if ($z == 0) {
-		assertType("0|0.0|string|false|null", $z);
+		assertType('mixed', $z);
 	} else {
 		assertType("mixed~(0|0.0|'0'|false|null)", $z);
 	}
@@ -156,24 +156,24 @@ function doEmptyString($x, $y, $z): void
 {
 	// PHP 7.x/8.x compatibility: Keep zero in both cases
 	if ($x == '') {
-		assertType("0|0.0|''|false|null", $x);
+		assertType("''|GMP|Stringable|false|null", $x);
 	} else {
 		assertType("0|0.0|1|'0'|'x'|array{}|object|true", $x);
 	}
 	if ('' != $x) {
 		assertType("0|0.0|1|'0'|'x'|array{}|object|true", $x);
 	} else {
-		assertType("0|0.0|''|false|null", $x);
+		assertType("''|GMP|Stringable|false|null", $x);
 	}
 
 	if ($y == '') {
-		assertType("0|''|null", $y);
+		assertType("''|null", $y);
 	} else {
 		assertType("int|non-empty-string", $y);
 	}
 
 	if ($z == '') {
-		assertType("0|0.0|''|false|null", $z);
+		assertType('mixed', $z);
 	} else {
 		assertType("mixed~(''|false|null)", $z);
 	}

@@ -534,7 +534,7 @@ function (int $i) {
 
 function (mixed $m) {
 	if ($m == 0) {
-		assertType('0|0.0|string|false|null', $m);
+		assertType('mixed', $m);
 	} else {
 		assertType("mixed~(0|0.0|'0'|false|null)", $m);
 	}
@@ -546,7 +546,7 @@ function (mixed $m) {
 	if ($m != 0) {
 		assertType("mixed~(0|0.0|'0'|false|null)", $m);
 	} else {
-		assertType('0|0.0|string|false|null', $m);
+		assertType('mixed', $m);
 	}
 
 	assertType('mixed', $m);
@@ -554,7 +554,7 @@ function (mixed $m) {
 
 function (mixed $m) {
 	if ($m == '') {
-		assertType("0|0.0|''|false|null", $m);
+		assertType('mixed', $m);
 	} else {
 		assertType("mixed~(''|false|null)", $m);
 	}

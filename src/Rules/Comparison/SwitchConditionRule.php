@@ -15,6 +15,7 @@ use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -34,7 +35,6 @@ final class SwitchConditionRule implements Rule
 		private ConstantConditionRuleHelper $constantConditionRuleHelper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
 		private ExprPrinter $exprPrinter,
-		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 	)
@@ -53,6 +53,7 @@ final class SwitchConditionRule implements Rule
 		$nextCaseIsDeadForType = false;
 		$nextCaseIsDeadForNativeType = false;
 		$seenCases = [];
+		$phpVersions = LooseComparisonHelper::getRepresentativePhpVersions($scope->getPhpVersion());
 
 		foreach ($node->getArms() as $arm) {
 			if (
@@ -71,7 +72,7 @@ final class SwitchConditionRule implements Rule
 				$caseValueType = $finiteTypes[0];
 				$firstSeen = null;
 				foreach ($seenCases as $seenCase) {
-					if ($this->isDuplicateCase($seenCase['type'], $caseValueType)) {
+					if ($this->isDuplicateCase($seenCase['type'], $caseValueType, $phpVersions)) {
 						$firstSeen = $seenCase;
 						break;
 					}
@@ -172,14 +173,16 @@ final class SwitchConditionRule implements Rule
 	 * same set of subject values. Besides identical values, `switch` compares
 	 * with loose `==`, so two numerically-equal constants (e.g. 1, '1' and 1.0)
 	 * are duplicates too - they cannot be told apart by a `switch`.
+	 *
+	 * @param non-empty-list<PhpVersion> $phpVersions
 	 */
-	private function isDuplicateCase(Type $seenType, Type $caseValueType): bool
+	private function isDuplicateCase(Type $seenType, Type $caseValueType, array $phpVersions): bool
 	{
 		if ($seenType->equals($caseValueType)) {
 			return true;
 		}
 
-		return $seenType->looseCompare($caseValueType, $this->phpVersion)->isTrue()->yes();
+		return LooseComparisonHelper::looseCompareInVersions($seenType, $caseValueType, $phpVersions)->isTrue()->yes();
 	}
 
 }

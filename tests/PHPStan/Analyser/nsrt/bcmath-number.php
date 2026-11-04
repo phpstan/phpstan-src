@@ -195,8 +195,8 @@ class Foo
 		assertType('true', $a > $b);
 		assertType('true', $a >= $b);
 		assertType('int<-1, 1>', $a <=> $b);
-		assertType('bool', $a == $b);
-		assertType('bool', $a != $b);
+		assertType('false', $a == $b);
+		assertType('true', $a != $b);
 		assertType('*ERROR*', $a & $b);
 		assertType('*ERROR*', $a ^ $b);
 		assertType('*ERROR*', $a | $b);
@@ -223,8 +223,8 @@ class Foo
 		assertType('bool', $a > $b);
 		assertType('bool', $a >= $b);
 		assertType('int<-1, 1>', $a <=> $b);
-		assertType('bool', $a == $b);
-		assertType('bool', $a != $b);
+		assertType('false', $a == $b);
+		assertType('true', $a != $b);
 		assertType('*ERROR*', $a & $b);
 		assertType('*ERROR*', $a ^ $b);
 		assertType('*ERROR*', $a | $b);

@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -94,9 +95,10 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 		/** @var array<string, array{Type, list<string>, bool}> $deadValueTypes */
 		$deadValueTypes = [];
 		$anyPossibleMatch = false;
+		$phpVersions = $scope->getPhpVersion();
 		foreach ($constantArrays as $constantArray) {
 			foreach ($constantArray->getValueTypes() as $valueType) {
-				$canNeverMatchReasons = $this->findCanNeverMatchReasons($needleType, $valueType, $isStrict);
+				$canNeverMatchReasons = $this->findCanNeverMatchReasons($needleType, $valueType, $isStrict, $phpVersions);
 				if ($canNeverMatchReasons === null) {
 					$anyPossibleMatch = true;
 					continue;
@@ -151,7 +153,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 	/**
 	 * @return list<string>|null Reasons for the impossibility when the value can never match, null when it can match.
 	 */
-	private function findCanNeverMatchReasons(Type $needleType, Type $valueType, TrinaryLogic $isStrict): ?array
+	private function findCanNeverMatchReasons(Type $needleType, Type $valueType, TrinaryLogic $isStrict, PhpVersions $phpVersions): ?array
 	{
 		if ($isStrict->yes()) {
 			$result = $this->initializerExprTypeResolver->resolveIdenticalType($needleType, $valueType);
@@ -160,7 +162,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 		}
 
 		if ($isStrict->no()) {
-			$result = $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType);
+			$result = $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType, $phpVersions);
 
 			return $result->type->isFalse()->yes() ? $result->reasons : null;
 		}
@@ -170,7 +172,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 			return null;
 		}
 
-		$equalResult = $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType);
+		$equalResult = $this->initializerExprTypeResolver->resolveEqualType($needleType, $valueType, $phpVersions);
 		if (!$equalResult->type->isFalse()->yes()) {
 			return null;
 		}

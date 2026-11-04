@@ -16,6 +16,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -35,6 +36,7 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -581,12 +583,12 @@ final class IdenticalNarrowingHelper
 		$leftScalarValues = $leftType->getConstantScalarValues();
 		$rightScalarValues = $rightType->getConstantScalarValues();
 		if (count($leftScalarValues) === 1 && !$unwrappedRight instanceof Expr\ConstFetch) {
-			$constantSideTypes = $this->specifyEqualAgainstConstantSide($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $right, $rightResult, $leftScalarValues[0], $leftType, $rightType, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
+			$constantSideTypes = $this->specifyEqualAgainstConstantSide($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $right, $rightResult, $leftScalarValues[0], $leftType, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			if ($constantSideTypes !== false) {
 				return $constantSideTypes;
 			}
 		} elseif (count($rightScalarValues) === 1 && !$unwrappedLeft instanceof Expr\ConstFetch) {
-			$constantSideTypes = $this->specifyEqualAgainstConstantSide($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $left, $leftResult, $rightScalarValues[0], $rightType, $leftType, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
+			$constantSideTypes = $this->specifyEqualAgainstConstantSide($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $left, $leftResult, $rightScalarValues[0], $rightType, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			if ($constantSideTypes !== false) {
 				return $constantSideTypes;
 			}
@@ -612,9 +614,10 @@ final class IdenticalNarrowingHelper
 			return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $left, $leftResult, new NonEmptyArrayType(), $context->negate());
 		}
 
-		// same-type sides cannot coerce - loose equals strict
+		// same-type sides cannot coerce - loose equals strict, except for
+		// two numeric strings, which compare as numbers
 		if (
-			($leftType->isString()->yes() && $rightType->isString()->yes())
+			($leftType->isString()->yes() && $rightType->isString()->yes() && ($leftType->isNumericString()->no() || $rightType->isNumericString()->no()))
 			|| ($leftType->isInteger()->yes() && $rightType->isInteger()->yes())
 			|| ($leftType->isFloat()->yes() && $rightType->isFloat()->yes())
 			|| ($leftType->isEnum()->yes() && $rightType->isEnum()->yes())
@@ -628,14 +631,38 @@ final class IdenticalNarrowingHelper
 			if (!$left instanceof Expr\Variable || !$right instanceof Expr\Variable) {
 				return new SpecifiedTypes([], []);
 			}
+
+			// a variable equals itself unless it holds NAN
+			if ($context->false() && $leftType->isFloat()->no() && $leftType->isArray()->no()) {
+				return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $left, $leftResult, $leftType, $context);
+			}
 		}
 
-		$leftTypes = $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $left, $leftResult, $leftType, $context);
-		$rightTypes = $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $right, $rightResult, $rightType, $context);
+		// each side is one of the values the other side can equal, and in
+		// the false branch none of the values the other side always equals
+		$phpVersions = LooseComparisonHelper::getRepresentativePhpVersions($evaluationScope->getPhpVersion());
 
-		return $context->true()
-			? $leftTypes->unionWith($rightTypes)
-			: $this->defaultNarrowingHelper->toSureTypes($leftTypes, $evaluationScope)->intersectWith($this->defaultNarrowingHelper->toSureTypes($rightTypes, $evaluationScope));
+		return $this->createLooselyEqualTypes($evaluationScope, $left, $leftResult, $leftType, $rightType, $phpVersions, $context)
+			->unionWith($this->createLooselyEqualTypes($evaluationScope, $right, $rightResult, $rightType, $leftType, $phpVersions, $context));
+	}
+
+	/**
+	 * @param non-empty-list<PhpVersion> $phpVersions
+	 */
+	private function createLooselyEqualTypes(MutatingScope $evaluationScope, Expr $subject, ExpressionResult $subjectResult, Type $subjectType, Type $otherType, array $phpVersions, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		$type = $context->true()
+			? LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions($otherType, $phpVersions)
+			: LooseComparisonHelper::getAlwaysLooselyEqualTypeInVersions($otherType, $phpVersions);
+		// nothing to intersect with, or nothing to remove
+		if ($type->isSuperTypeOf(new MixedType())->yes() || ($context->false() && $type instanceof NeverType)) {
+			return new SpecifiedTypes([], []);
+		}
+		if ($context->true() && $subjectType instanceof MixedType && LooseComparisonHelper::keepsMixedUnnarrowed($type)) {
+			return new SpecifiedTypes([], []);
+		}
+
+		return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $type, $context);
 	}
 
 	/**
@@ -738,7 +765,6 @@ final class IdenticalNarrowingHelper
 		ExpressionResult $subjectResult,
 		mixed $value,
 		Type $constantType,
-		Type $otherType,
 		TypeSpecifierContext $context,
 		MutatingScope $evaluationScope,
 		?ExpressionResult $leftArgResult,
@@ -771,24 +797,6 @@ final class IdenticalNarrowingHelper
 				$evaluationScope,
 				$context->true() ? TypeSpecifierContext::createTruthy() : TypeSpecifierContext::createTruthy()->negate(),
 			);
-		}
-
-		/* There is a difference between php 7.x and 8.x on the equality
-		 * behavior between zero and the empty string, so to be conservative
-		 * we leave it untouched regardless of the language version */
-		if ($value === 0 && !$otherType->isInteger()->yes() && !$otherType->isBoolean()->yes()) {
-			$trueTypes = $context->true()
-				? [new NullType(), new ConstantBooleanType(false), new ConstantIntegerType(0), new ConstantFloatType(0.0), new StringType()]
-				: [new NullType(), new ConstantBooleanType(false), new ConstantIntegerType(0), new ConstantFloatType(0.0), new ConstantStringType('0')];
-
-			return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, new UnionType($trueTypes), $context);
-		}
-		if ($value === '') {
-			$trueTypes = $context->true()
-				? [new NullType(), new ConstantBooleanType(false), new ConstantIntegerType(0), new ConstantFloatType(0.0), new ConstantStringType('')]
-				: [new NullType(), new ConstantBooleanType(false), new ConstantStringType('')];
-
-			return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, new UnionType($trueTypes), $context);
 		}
 
 		// loose equals strict for these call results and class names

@@ -4,6 +4,7 @@ namespace PHPStan\Type\Traits;
 
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\OperatorTypeHelper;
 use PHPStan\Type\Type;
 
@@ -73,6 +74,16 @@ trait OperatorTypeTrait
 	public function bitwiseShiftRight(Type $right, PhpVersion $phpVersion): Type
 	{
 		return OperatorTypeHelper::shiftRight($this, $right, $phpVersion);
+	}
+
+	public function getPossiblyLooselyEqualType(PhpVersion $phpVersion): Type
+	{
+		return LooseComparisonHelper::getPossiblyLooselyEqualType($this, $phpVersion);
+	}
+
+	public function getAlwaysLooselyEqualType(PhpVersion $phpVersion): Type
+	{
+		return LooseComparisonHelper::getAlwaysLooselyEqualType($this, $phpVersion);
 	}
 
 	public function stringConcatenate(Type $right, PhpVersion $phpVersion): Type

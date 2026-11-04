@@ -23,6 +23,7 @@
 #include "AcceptorValues.h"
 
 #include "zend_smart_str.h"
+#include "zend_weakrefs.h"
 
 namespace ptcall {
 
@@ -131,6 +132,34 @@ inline zv::Val assertionsGetAll(zval *assertions)
 	zval *all = pt_assertions_all(assertions, hold);
 	if (UNEXPECTED(all == NULL)) return zv::Val();
 	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(all)) : std::move(hold);
+}
+
+/* ImpossibleCheckTypeHelper::hasConditionalAsserts($assertions): whether any
+ * tag is @phpstan-assert-if-true/-if-false; false = pending exception */
+[[nodiscard]] inline bool hasConditionalAsserts(zval *assertions, bool &out)
+{
+	zv::Val all = assertionsGetAll(assertions);
+	if (UNEXPECTED(all.isUndef())) return false;
+	if (Z_TYPE_P(all.raw()) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(all.raw())) == 0) {
+		out = false;
+		return true;
+	}
+	zv::Val unconditional = pt_assertions_get_asserts(assertions, PT_ASSERTIONS_UNCONDITIONAL);
+	if (UNEXPECTED(unconditional.isUndef())) return false;
+	out = Z_TYPE_P(unconditional.raw()) == IS_ARRAY
+		&& zend_hash_num_elements(Z_ARRVAL_P(all.raw())) > zend_hash_num_elements(Z_ARRVAL_P(unconditional.raw()));
+	return true;
+}
+
+inline pt_method_site resolveConditionalAssertReturnTypeSite;
+
+/* $impossibleCheckTypeHelper->resolveConditionalAssertReturnType($scope, $node,
+ * $nodeResult, $argsResult, $returnType) — $nodeResult / $argsResult may be
+ * PHP null */
+inline zv::Val resolveConditionalAssertReturnType(zval *impossibleCheckTypeHelper, zval *scope, zval *node, zval *nodeResult, zval *argsResult, zval *returnType)
+{
+	zv::Args argv{scope, node, nodeResult, argsResult, returnType};
+	return pt_call_method_cached(resolveConditionalAssertReturnTypeSite, Z_OBJ_P(impossibleCheckTypeHelper), PT_LC("resolveconditionalassertreturntype"), 5, argv);
 }
 
 /* $assertions->mapTypes($callable) */
@@ -279,6 +308,50 @@ inline void resolveAssertType(zval *captures, uint32_t argc, zval *argv, zval *r
 	zv::Val type = resolveTemplateTypesAgainst(&argv[0], &captures[0], PT_TEMPLATE_TYPE_VARIANCE_INVARIANT);
 	if (UNEXPECTED(type.isUndef())) return;
 	type.intoReturnValue(return_value);
+}
+
+/* WeakReference::create($referent) / $weakReference->get() */
+inline zend_function *weakReferenceCreateFn = NULL;
+inline zend_function *weakReferenceGetFn = NULL;
+
+inline zv::Val weakReferenceCreate(zval *referent)
+{
+	if (UNEXPECTED(weakReferenceCreateFn == NULL)) {
+		weakReferenceCreateFn = pt_find_method(zend_ce_weakref, PT_LC("create"));
+		if (UNEXPECTED(weakReferenceCreateFn == NULL)) return zv::Val();
+	}
+	zval ret;
+	zend_call_known_function(weakReferenceCreateFn, NULL, zend_ce_weakref, &ret, 1, referent, NULL);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(&ret);
+		return zv::Val();
+	}
+	return zv::Val::adopt(ret);
+}
+
+inline zv::Val weakReferenceGet(zval *weakReference)
+{
+	if (UNEXPECTED(weakReferenceGetFn == NULL)) {
+		weakReferenceGetFn = pt_find_method(zend_ce_weakref, PT_LC("get"));
+		if (UNEXPECTED(weakReferenceGetFn == NULL)) return zv::Val();
+	}
+	zval ret;
+	zend_call_known_function(weakReferenceGetFn, Z_OBJ_P(weakReference), Z_OBJCE_P(weakReference), &ret, 0, NULL, NULL);
+	if (UNEXPECTED(EG(exception))) {
+		zval_ptr_dtor(&ret);
+		return zv::Val();
+	}
+	return zv::Val::adopt(ret);
+}
+
+/* $storageRef->get()?->findExpressionResult($expr) — PHP null when the storage
+ * is gone or holds no result for the call */
+inline zv::Val findCallResultThroughWeakStorage(zval *storageRef, zval *expr)
+{
+	zv::Val callStorage = weakReferenceGet(storageRef);
+	if (UNEXPECTED(callStorage.isUndef())) return zv::Val();
+	if (callStorage.isNull()) return zv::Val::null();
+	return pt_expression_result_storage_find(callStorage.raw(), expr);
 }
 
 /* the ArgumentCountError of a native closure body called with too few

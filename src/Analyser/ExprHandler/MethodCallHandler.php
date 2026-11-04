@@ -43,6 +43,7 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
@@ -55,6 +56,7 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use WeakReference;
 use function array_map;
 use function array_merge;
 use function count;
@@ -81,6 +83,7 @@ final class MethodCallHandler implements ExprHandler
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private ArgumentsHandler $argumentsHandler,
+		private ImpossibleCheckTypeHelper $impossibleCheckTypeHelper,
 	)
 	{
 	}
@@ -216,17 +219,37 @@ final class MethodCallHandler implements ExprHandler
 		// evolving scope (type-driven, generics resolved). When null
 		// (native-types-promoted, or on-demand / synthetic pricing) the acceptor is
 		// re-derived from the already-processed argument results on the asking scope.
+		$storageRef = WeakReference::create($storage);
+		$hasConditionalAsserts = $methodReflection !== null && ImpossibleCheckTypeHelper::hasConditionalAsserts($methodReflection->getAsserts());
 		$typeCallback = $isEarlyTerminating
 			? static fn (bool $nativeTypesPromoted): Type => new NeverType(true)
-			: fn (bool $nativeTypesPromoted): Type => $this->resolveReturnType(
-				$beforeScope,
-				$nativeTypesPromoted,
-				$expr,
-				$varResult,
-				$nameResult,
-				$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
-				$argsResult,
-			);
+			: function (bool $nativeTypesPromoted) use ($beforeScope, $expr, $varResult, $nameResult, $resolvedParametersAcceptor, $argsResult, $storageRef, $hasConditionalAsserts): Type {
+				$returnType = $this->resolveReturnType(
+					$beforeScope,
+					$nativeTypesPromoted,
+					$expr,
+					$varResult,
+					$nameResult,
+					$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
+					$argsResult,
+				);
+				if ($nativeTypesPromoted || !$hasConditionalAsserts) {
+					return $returnType;
+				}
+
+				// the call's own narrowing decides a conditional @phpstan-assert;
+				// its result is looked up through a weak storage reference, as
+				// this callback is owned by that very result
+				$callStorage = $storageRef->get();
+
+				return $this->impossibleCheckTypeHelper->resolveConditionalAssertReturnType(
+					$beforeScope,
+					$expr,
+					$callStorage === null ? null : $callStorage->findExpressionResult($expr),
+					$argsResult,
+					$returnType,
+				);
+			};
 		$walkMethodReflection = $methodReflection;
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(
 			$nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope,

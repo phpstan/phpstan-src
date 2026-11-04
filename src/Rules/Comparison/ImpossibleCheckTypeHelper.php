@@ -15,6 +15,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
@@ -91,6 +92,38 @@ final class ImpossibleCheckTypeHelper
 		}
 
 		return $specifiedValue;
+	}
+
+	public static function hasConditionalAsserts(Assertions $assertions): bool
+	{
+		$all = $assertions->getAll();
+
+		return $all !== [] && count($all) > count($assertions->getAsserts());
+	}
+
+	/**
+	 * Pins a boolean call with @phpstan-assert-if-true/-if-false to true/false when
+	 * the argument types already decide the assertion - the same verdict the
+	 * ImpossibleCheckType* rules report, read from the call's own narrowing.
+	 */
+	public function resolveConditionalAssertReturnType(
+		Scope $scope,
+		Expr $node,
+		?ExpressionResult $nodeResult,
+		?ArgsResult $argsResult,
+		Type $returnType,
+	): Type
+	{
+		if ($nodeResult === null || !$returnType->isBoolean()->yes() || $returnType->isConstantScalarValue()->yes()) {
+			return $returnType;
+		}
+
+		$isAlways = $this->findSpecifiedType($scope, $node, $nodeResult, $argsResult);
+		if ($isAlways === null) {
+			return $returnType;
+		}
+
+		return new ConstantBooleanType($isAlways);
 	}
 
 	/**

@@ -8,7 +8,8 @@
  * entry (Engine.h). The twin's closures are native closures capturing what
  * the PHP closures capture: the typeCallback ($this, $nodeScopeResolver,
  * $beforeScope, $expr, $nameResult, $resolvedParametersAcceptor, $argsResult,
- * $storageRef — a real WeakReference, as the twin holds), the early
+ * $storageRef — a real WeakReference, as the twin holds —,
+ * $hasConditionalAsserts), the early
  * terminating `static fn (bool) => new NeverType(true)`, the
  * specifyTypesCallback and createTypesCallback, array_walk()'s node gatherer
  * (its `&$arrayWalkValueTypes` a by-reference capture) and the mapTypes()
@@ -197,40 +198,6 @@ zv::Val callPoly(PolySite &site, zval *object, const char *lcname, size_t len, c
 	}
 	zval ret;
 	zend_call_known_function(fn, receiver, receiver->ce, &ret, argc, argv, NULL);
-	if (UNEXPECTED(EG(exception))) {
-		zval_ptr_dtor(&ret);
-		return zv::Val();
-	}
-	return zv::Val::adopt(ret);
-}
-
-/* WeakReference::create($referent) / $weakReference->get() */
-zend_function *pt_fch_weakref_create_fn = NULL;
-zend_function *pt_fch_weakref_get_fn = NULL;
-
-zv::Val weakReferenceCreate(zval *referent)
-{
-	if (UNEXPECTED(pt_fch_weakref_create_fn == NULL)) {
-		pt_fch_weakref_create_fn = pt_find_method(zend_ce_weakref, PT_LC("create"));
-		if (UNEXPECTED(pt_fch_weakref_create_fn == NULL)) return zv::Val();
-	}
-	zval ret;
-	zend_call_known_function(pt_fch_weakref_create_fn, NULL, zend_ce_weakref, &ret, 1, referent, NULL);
-	if (UNEXPECTED(EG(exception))) {
-		zval_ptr_dtor(&ret);
-		return zv::Val();
-	}
-	return zv::Val::adopt(ret);
-}
-
-zv::Val weakReferenceGet(zval *weakReference)
-{
-	if (UNEXPECTED(pt_fch_weakref_get_fn == NULL)) {
-		pt_fch_weakref_get_fn = pt_find_method(zend_ce_weakref, PT_LC("get"));
-		if (UNEXPECTED(pt_fch_weakref_get_fn == NULL)) return zv::Val();
-	}
-	zval ret;
-	zend_call_known_function(pt_fch_weakref_get_fn, Z_OBJ_P(weakReference), Z_OBJCE_P(weakReference), &ret, 0, NULL, NULL);
 	if (UNEXPECTED(EG(exception))) {
 		zval_ptr_dtor(&ret);
 		return zv::Val();
@@ -1105,11 +1072,18 @@ public:
 		// (native-types-promoted, on-demand / synthetic pricing, or special cases
 		// inside resolveReturnType), the acceptor is re-derived from the
 		// already-processed argument results on the asking scope.
-		zv::Val storageRef = weakReferenceCreate(storage);
+		zv::Val storageRef = ptcall::weakReferenceCreate(storage);
 		if (UNEXPECTED(storageRef.isUndef())) return zv::Val();
+		bool hasConditionalAsserts = false;
+		if (!functionReflection.isNull()) {
+			zv::Val assertsHold;
+			zval *assertions = pt_function_reflection_asserts(functionReflection.raw(), assertsHold);
+			if (UNEXPECTED(assertions == NULL)) return zv::Val();
+			if (UNEXPECTED(!ptcall::hasConditionalAsserts(assertions, hasConditionalAsserts))) return zv::Val();
+		}
 		zv::Val typeCallback = isEarlyTerminating
 			? pt_native_closure(&neverTypeCallbackBody)
-			: pt_native_closure(&typeCallbackBody, self, nodeScopeResolver, beforeScope, expr, nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw(), storageRef.raw());
+			: pt_native_closure(&typeCallbackBody, self, nodeScopeResolver, beforeScope, expr, nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw(), storageRef.raw(), hasConditionalAsserts);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, normalizedExpr.raw(), nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw());
 
 		// A type constraint on a (narrowable, i.e. non-side-effecting, non-first-class)
@@ -1963,7 +1937,8 @@ private:
 
 	/* function (bool $nativeTypesPromoted) use ($nodeScopeResolver,
 	 * $beforeScope, $expr, $nameResult, $resolvedParametersAcceptor,
-	 * $argsResult, $storageRef): Type — captures: $this, then those */
+	 * $argsResult, $storageRef, $hasConditionalAsserts): Type — captures: $this,
+	 * then those */
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 1)) {
@@ -1984,6 +1959,7 @@ private:
 		zval *resolvedParametersAcceptor = &captures[5];
 		zval *argsResult = &captures[6];
 		zval *storageRef = &captures[7];
+		bool hasConditionalAsserts = Z_TYPE(captures[8]) == IS_TRUE;
 
 		// for always-true/always-false type checks the call's own narrowing
 		// (already produced as this result's specifyTypesCallback) decides
@@ -2002,7 +1978,7 @@ private:
 					|| zend_string_equals_literal_ci(nameString, "key_exists")
 					|| zend_string_equals_literal_ci(nameString, "in_array")
 					|| zend_string_equals_literal_ci(nameString, "is_subclass_of")) {
-					zv::Val callStorage = weakReferenceGet(storageRef);
+					zv::Val callStorage = ptcall::weakReferenceGet(storageRef);
 					if (UNEXPECTED(callStorage.isUndef())) return zv::Val();
 					zv::Val callResult = zv::Val::null();
 					if (!callStorage.isNull()) {
@@ -2023,7 +1999,15 @@ private:
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 		}
 
-		return resolveReturnType(nodeScopeResolver, beforeScope, nativeTypesPromoted, expr, nameResult, nativeTypesPromoted || Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL ? NULL : resolvedParametersAcceptor, argsResult);
+		zv::Val returnType = resolveReturnType(nodeScopeResolver, beforeScope, nativeTypesPromoted, expr, nameResult, nativeTypesPromoted || Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL ? NULL : resolvedParametersAcceptor, argsResult);
+		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+		if (nativeTypesPromoted || !hasConditionalAsserts) {
+			return returnType;
+		}
+
+		zv::Val callResult = ptcall::findCallResultThroughWeakStorage(storageRef, expr);
+		if (UNEXPECTED(callResult.isUndef())) return zv::Val();
+		return ptcall::resolveConditionalAssertReturnType(slot(slots::impossibleCheckTypeHelper), beforeScope, expr, callResult.raw(), argsResult, returnType.raw());
 	}
 
 	/* the `$getType` closure of resolveReturnType() */

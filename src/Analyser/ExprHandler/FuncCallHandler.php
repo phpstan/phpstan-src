@@ -406,9 +406,10 @@ final class FuncCallHandler implements ExprHandler
 		// inside resolveReturnType), the acceptor is re-derived from the
 		// already-processed argument results on the asking scope.
 		$storageRef = WeakReference::create($storage);
+		$hasConditionalAsserts = $functionReflection !== null && ImpossibleCheckTypeHelper::hasConditionalAsserts($functionReflection->getAsserts());
 		$typeCallback = $isEarlyTerminating
 			? static fn (bool $nativeTypesPromoted): Type => new NeverType(true)
-			: function (bool $nativeTypesPromoted) use ($nodeScopeResolver, $beforeScope, $expr, $nameResult, $resolvedParametersAcceptor, $argsResult, $storageRef): Type {
+			: function (bool $nativeTypesPromoted) use ($nodeScopeResolver, $beforeScope, $expr, $nameResult, $resolvedParametersAcceptor, $argsResult, $storageRef, $hasConditionalAsserts): Type {
 				// for always-true/always-false type checks the call's own narrowing
 				// (already produced as this result's specifyTypesCallback) decides
 				// the return type - the verdict is a read of that narrowing, not a
@@ -430,7 +431,7 @@ final class FuncCallHandler implements ExprHandler
 					}
 				}
 
-				return $this->resolveReturnType(
+				$returnType = $this->resolveReturnType(
 					$nodeScopeResolver,
 					$beforeScope,
 					$nativeTypesPromoted,
@@ -438,6 +439,19 @@ final class FuncCallHandler implements ExprHandler
 					$nameResult,
 					$nativeTypesPromoted ? null : $resolvedParametersAcceptor,
 					$argsResult,
+				);
+				if ($nativeTypesPromoted || !$hasConditionalAsserts) {
+					return $returnType;
+				}
+
+				$callStorage = $storageRef->get();
+
+				return $this->impossibleCheckTypeHelper->resolveConditionalAssertReturnType(
+					$beforeScope,
+					$expr,
+					$callStorage === null ? null : $callStorage->findExpressionResult($expr),
+					$argsResult,
+					$returnType,
 				);
 			};
 		$specifyTypesCallback = fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes => $this->specifyTypes(

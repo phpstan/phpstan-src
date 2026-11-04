@@ -535,6 +535,52 @@ class MatchExpressionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11374(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11374.php'], [
+			[
+				'Call to function is_float() with float will always evaluate to true.',
+				13,
+			],
+			[
+				'Call to method Bug11374\\HelloWorld::isFloat() with float will always evaluate to true.',
+				21,
+			],
+			[
+				'Call to method Bug11374\\HelloWorld::isFloat() with float will always evaluate to true.',
+				29,
+			],
+			[
+				'Call to function is_float() with float will always evaluate to true.',
+				37,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11374Analogues(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-11374-2.php'], [
+			[
+				'Call to function isFloat() with float will always evaluate to true.',
+				13,
+			],
+			[
+				'Call to static method Bug11374Two\\HelloWorld::isFloatStatic() with float will always evaluate to true.',
+				21,
+			],
+			[
+				'Call to method Bug11374Two\\HelloWorld::isNotFloat() with float will always evaluate to false.',
+				29,
+			],
+			[
+				'Match expression does not handle remaining value: true',
+				35,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug11453(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11453.php'], []);

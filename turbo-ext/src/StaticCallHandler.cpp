@@ -8,7 +8,8 @@
  * what the PHP closures capture: the Closure::bind() scope factory handed to
  * processArgs() ($expr, $storage; its inner $readArgType closure, created and
  * called only inside it, is inlined), the typeCallback ($this, $beforeScope,
- * $expr, $classResult, $nameResult, $resolvedParametersAcceptor, $argsResult;
+ * $expr, $classResult, $nameResult, $resolvedParametersAcceptor, $argsResult,
+ * $storageRef — a real WeakReference, as the twin holds —, $hasConditionalAsserts;
  * none for the early-terminating `new NeverType(true)` one), the
  * specifyTypesCallback ($this, $beforeScope, $expr, $normalizedExpr,
  * $classResult, $resolvedParametersAcceptor, $argsResult), the
@@ -294,10 +295,10 @@ public:
 	/* the constructor body: the promoted properties */
 	void construct(zval **services, bool rememberPossiblyImpureFunctionValues) const
 	{
-		static const uint32_t serviceSlots[9] = {
+		static const uint32_t serviceSlots[10] = {
 			slots::methodCallReturnTypeHelper, slots::methodThrowPointHelper, slots::reflectionProvider,
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper, slots::storagePrimer,
-			slots::earlyTerminatingHelper, slots::argumentsHandler,
+			slots::earlyTerminatingHelper, slots::argumentsHandler, slots::impossibleCheckTypeHelper,
 		};
 		for (uint32_t i = 0; i < 3; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
@@ -305,7 +306,7 @@ public:
 		zval remember = {};
 		ZVAL_BOOL(&remember, rememberPossiblyImpureFunctionValues);
 		pt_write_slot(self, slots::rememberPossiblyImpureFunctionValues, &remember);
-		for (uint32_t i = 3; i < 9; i++) {
+		for (uint32_t i = 3; i < 10; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
 		}
 	}
@@ -637,9 +638,17 @@ public:
 		// evolving scope (type-driven, generics resolved). When null
 		// (native-types-promoted, or on-demand / synthetic pricing) the acceptor is
 		// re-derived from the already-processed argument results on the asking scope.
+		zv::Val storageRef = weakReferenceCreate(storage);
+		if (UNEXPECTED(storageRef.isUndef())) return zv::Val();
+		bool hasConditionalAsserts = false;
+		if (!methodReflection.isNull()) {
+			zv::Val assertions = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_ASSERTS);
+			if (UNEXPECTED(assertions.isUndef())) return zv::Val();
+			if (UNEXPECTED(!ptcall::hasConditionalAsserts(assertions.raw(), hasConditionalAsserts))) return zv::Val();
+		}
 		zv::Val typeCallback = isEarlyTerminating
 			? pt_native_closure(&earlyTerminatingTypeCallbackBody)
-			: pt_native_closure(&typeCallbackBody, self, beforeScope, expr, classResult.raw(), nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw());
+			: pt_native_closure(&typeCallbackBody, self, beforeScope, expr, classResult.raw(), nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw(), storageRef.raw(), hasConditionalAsserts);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, normalizedExpr.raw(), classResult.raw(), resolvedParametersAcceptor.raw(), methodReflection.raw(), argsResult.raw());
 		// A type constraint on a (narrowable, i.e. non-side-effecting) static call
 		// narrows the call itself - the inside-out equivalent of createForExpr's
@@ -1415,16 +1424,23 @@ private:
 		ZVAL_COPY_VALUE(return_value, &never);
 	}
 
-	/* fn (bool $nativeTypesPromoted): Type => $this->resolveReturnType($beforeScope,
-	 * $nativeTypesPromoted, $expr, $classResult, $nameResult, $nativeTypesPromoted ?
-	 * null : $resolvedParametersAcceptor, $argsResult) — captures: $this,
-	 * $beforeScope, $expr, $classResult, $nameResult, $resolvedParametersAcceptor,
-	 * $argsResult */
+	/* function (bool $nativeTypesPromoted) use ($beforeScope, $expr, $classResult,
+	 * $nameResult, $resolvedParametersAcceptor, $argsResult, $storageRef,
+	 * $hasConditionalAsserts): Type — captures: $this, then those */
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!requireArguments(argc, 1, "PHPStan\\Analyser\\ExprHandler\\StaticCallHandler::{closure}"))) return;
 		bool nativeTypesPromoted = zend_is_true(&argv[0]);
 		zv::Val type = StaticCallHandler(Z_OBJ(captures[0])).resolveReturnType(&captures[1], nativeTypesPromoted, &captures[2], &captures[3], &captures[4], nativeTypesPromoted ? NULL : &captures[5], &captures[6]);
+		if (UNEXPECTED(type.isUndef())) return;
+		if (!nativeTypesPromoted && Z_TYPE(captures[8]) == IS_TRUE) {
+			// the call's own narrowing decides a conditional @phpstan-assert;
+			// its result is looked up through a weak storage reference, as
+			// this callback is owned by that very result
+			zv::Val callResult = findCallResultThroughWeakStorage(&captures[7], &captures[2]);
+			if (UNEXPECTED(callResult.isUndef())) return;
+			type = resolveConditionalAssertReturnType(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::impossibleCheckTypeHelper), &captures[1], &captures[2], callResult.raw(), &captures[6], type.raw());
+		}
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);
 	}
@@ -1507,9 +1523,9 @@ PT_MINIT_REGISTRATION(pt_register_static_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler;
+		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *impossibleCheckTypeHelper;
 		bool rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(11, 11)
 			Z_PARAM_OBJECT(methodCallReturnTypeHelper)
 			Z_PARAM_OBJECT(methodThrowPointHelper)
 			Z_PARAM_OBJECT(reflectionProvider)
@@ -1520,8 +1536,9 @@ PT_MINIT_REGISTRATION(pt_register_static_call_handler)
 			Z_PARAM_OBJECT(storagePrimer)
 			Z_PARAM_OBJECT(earlyTerminatingHelper)
 			Z_PARAM_OBJECT(argumentsHandler)
+			Z_PARAM_OBJECT(impossibleCheckTypeHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		zval *services[9] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler};
+		zval *services[10] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, impossibleCheckTypeHelper};
 		StaticCallHandler(Z_OBJ_P(ZEND_THIS)).construct(services, rememberPossiblyImpureFunctionValues);
 	});
 

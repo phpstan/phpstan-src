@@ -5,6 +5,7 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
@@ -21,13 +22,9 @@ final class CurlSetOptArrayArgVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'curl_setopt_array') {
-				foreach ($node->getArgs() as $i => $arg) {
-					if ($arg->name === null ? $i !== 1 : $arg->name->toString() !== 'options') {
-						continue;
-					}
-
+				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 1, 'options');
+				if ($arg !== null) {
 					$arg->setAttribute(self::ATTRIBUTE_NAME, true);
-					break;
 				}
 			}
 		}

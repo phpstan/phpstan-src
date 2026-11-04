@@ -230,9 +230,9 @@ inline zend_string *plainFuncCallName(zend_object *node, FuncCallProps &props, N
 
 /*
  * The argument bound to the parameter at `position` named `name` — the
- * positional argument at that index or the one passed by that name — the
- * `$arg->name === null ? $i === $position : $arg->name->toString() === $name`
- * loop the twins spell out. NULL when no argument is bound to it.
+ * positional argument at that index or the one passed by that name. Mirrors
+ * ArgumentsNormalizer::getArgByPositionOrName(). NULL when no argument is
+ * bound to it.
  */
 inline zend_object *argForParameter(zval *args, zend_ulong position, const char *name, size_t nameLen)
 {

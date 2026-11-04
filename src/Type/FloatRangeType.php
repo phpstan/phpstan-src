@@ -8,10 +8,15 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
+use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function get_class;
+use function is_finite;
 use function is_float;
 use function is_int;
 use function is_nan;
@@ -314,6 +319,35 @@ class FloatRangeType extends FloatType
 		}
 
 		return new BooleanType();
+	}
+
+	public function toInteger(): Type
+	{
+		// casting a float outside of the int range is undefined
+		if ($this->min >= (float) PHP_INT_MIN && $this->max < (float) PHP_INT_MAX) {
+			return IntegerRangeType::fromInterval((int) $this->min, (int) $this->max);
+		}
+
+		return new IntegerType();
+	}
+
+	public function toString(): Type
+	{
+		$types = [new StringType(), new AccessoryUppercaseStringType()];
+
+		// only INF and -INF stringify as non-numeric strings
+		if (is_finite($this->min) && is_finite($this->max)) {
+			$types[] = new AccessoryNumericStringType();
+		} else {
+			$types[] = new AccessoryNonEmptyStringType();
+		}
+
+		// only 0.0 stringifies as '0', -0.0 is '-0'
+		if ($this->excludesZero()) {
+			$types[] = new AccessoryNonFalsyStringType();
+		}
+
+		return TypeCombinator::intersect(...$types);
 	}
 
 	public function toAbsoluteNumber(): Type

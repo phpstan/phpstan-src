@@ -999,6 +999,33 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 	$r['union full range and nan'] = $view(\PHPStan\Type\TypeCombinator::union($floatRangeClass::fromInterval(-INF, 0.0), new \PHPStan\Type\Constant\ConstantFloatType(NAN), $floatRangeClass::fromInterval(5e-324, INF)));
 	$r['remove range from float'] = $view(\PHPStan\Type\TypeCombinator::remove(new \PHPStan\Type\FloatType(), $floatRangeClass::fromInterval(-PHP_FLOAT_MAX, PHP_FLOAT_MAX)));
 	$r['remove from range'] = $view(\PHPStan\Type\TypeCombinator::remove($floatRangeClass::fromInterval(0.0, 10.0), new \PHPStan\Type\Constant\ConstantFloatType(5.5)));
+	// the interval arithmetic of OperatorTypeHelper::floatRangeMath() and its corners next to NAN
+	$arithmeticOperands = [
+		'range1-2' => $floatRangeClass::fromInterval(1.0, 2.0),
+		'range-3-4' => $floatRangeClass::fromInterval(-3.0, 4.0),
+		'rangeNonNegative' => $floatRangeClass::fromInterval(0.0, INF),
+		'rangePositive' => $floatRangeClass::fromInterval(5e-324, INF),
+		'rangeAll' => $floatRangeClass::fromInterval(-INF, INF),
+		'rangeAndInts' => new \PHPStan\Type\UnionType([$floatRangeClass::fromInterval(1.0, 2.0), \PHPStan\Type\IntegerRangeType::fromInterval(1, 2)]),
+		'int1-5' => \PHPStan\Type\IntegerRangeType::fromInterval(1, 5),
+		'int' => new \PHPStan\Type\IntegerType(),
+		'int0' => new \PHPStan\Type\Constant\ConstantIntegerType(0),
+		'float' => new \PHPStan\Type\FloatType(),
+		'float0' => new \PHPStan\Type\Constant\ConstantFloatType(0.0),
+		'floatInf' => new \PHPStan\Type\Constant\ConstantFloatType(INF),
+		'floatNan' => new \PHPStan\Type\Constant\ConstantFloatType(NAN),
+		'benevolent' => new \PHPStan\Type\BenevolentUnionType([$floatRangeClass::fromInterval(1.0, 2.0), new \PHPStan\Type\IntegerType()]),
+		'string' => new \PHPStan\Type\StringType(),
+	];
+	foreach ($arithmeticOperands as $leftName => $left) {
+		foreach ($arithmeticOperands as $rightName => $right) {
+			foreach (['arithmeticAdd', 'arithmeticSubtract', 'arithmeticMultiply', 'arithmeticDivide'] as $method) {
+				foreach ($floatPhpVersions as $vi => $phpVersion) {
+					$r["$leftName $method $rightName $vi"] = $view($left->$method($right, $phpVersion));
+				}
+			}
+		}
+	}
 
 	foreach ($r as $key => $value) {
 		$observations["float $key"] = $value;

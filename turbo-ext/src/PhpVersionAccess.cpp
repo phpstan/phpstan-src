@@ -41,6 +41,7 @@ const VersionQuery pt_pva_queries[PT_PHP_VERSION_QUERY_COUNT] = {
 	/* PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS */ {PT_LC("supportspropertyhooks"), "supportsPropertyHooks", 80400, false},
 	/* PT_PHP_VERSION_CASTS_NUMBERS_TO_STRINGS_ON_LOOSE_COMPARISON */ {PT_LC("castsnumberstostringsonloosecomparison"), "castsNumbersToStringsOnLooseComparison", 80000, false},
 	/* PT_PHP_VERSION_ALLOWS_TRAILING_WHITESPACE_IN_NUMERIC_STRINGS */ {PT_LC("allowstrailingwhitespaceinnumericstrings"), "allowsTrailingWhitespaceInNumericStrings", 80000, false},
+	/* PT_PHP_VERSION_THROWS_ON_DIVISION_BY_ZERO */ {PT_LC("throwsondivisionbyzero"), "throwsOnDivisionByZero", 80000, false},
 };
 
 pt_method_site pt_pva_query_sites[PT_PHP_VERSION_QUERY_COUNT];

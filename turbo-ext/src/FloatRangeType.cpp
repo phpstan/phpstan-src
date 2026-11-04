@@ -369,6 +369,46 @@ public:
 		return pt_val_of<pt_boolean_type_new>();
 	}
 
+	/* int<(int) min, (int) max> when both bounds cast inside the int range,
+	 * int otherwise: casting a float outside of it is undefined */
+	zv::Val toInteger() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		if (min >= static_cast<double>(ZEND_LONG_MIN) && max < static_cast<double>(ZEND_LONG_MAX)) {
+			return pt_integer_range_from_interval(NullableLong::of(static_cast<zend_long>(min)), NullableLong::of(static_cast<zend_long>(max)), 0);
+		}
+
+		return pt_val_of<pt_integer_type_new>();
+	}
+
+	/* TypeCombinator::intersect(string, uppercase-string, numeric-string for
+	 * finite bounds (only INF and -INF stringify as non-numeric) or
+	 * non-empty-string, non-falsy-string without the zeros (only 0.0 is
+	 * '0')); UNDEF = pending exception */
+	zv::Val toString() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		zv::Val string = pt_val_of<pt_string_type_new>();
+		if (UNEXPECTED(string.isUndef())) return zv::Val();
+		zv::Val uppercase = pt_type_new_shadowed(pt_accessory_uppercase_string_type_new);
+		if (UNEXPECTED(uppercase.isUndef())) return zv::Val();
+		zv::Val nonEmpty = std::isfinite(min) && std::isfinite(max)
+			? pt_type_new_shadowed(pt_accessory_numeric_string_type_new)
+			: pt_type_new_shadowed(pt_accessory_non_empty_string_type_new);
+		if (UNEXPECTED(nonEmpty.isUndef())) return zv::Val();
+		if (!excludesZero(min, max)) {
+			zv::Args args{string.raw(), uppercase.raw(), nonEmpty.raw()};
+			return pt_type_combinator_intersect(3, args);
+		}
+
+		zv::Val nonFalsy = pt_type_new_shadowed(pt_accessory_non_falsy_string_type_new);
+		if (UNEXPECTED(nonFalsy.isUndef())) return zv::Val();
+		zv::Args args{string.raw(), uppercase.raw(), nonEmpty.raw(), nonFalsy.raw()};
+		return pt_type_combinator_intersect(4, args);
+	}
+
 	/* $this for a non-negative range, the mirrored range for a
 	 * non-positive one, float<0, max(-min, max)> for one around the zeros */
 	zv::Val toAbsoluteNumber() const
@@ -765,6 +805,10 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 	});
 
 	cls.method<&FloatRangeType::toBoolean>(sigs::toBoolean);
+
+	cls.method<&FloatRangeType::toInteger>(sigs::toInteger);
+
+	cls.method<&FloatRangeType::toString>(sigs::toString);
 
 	cls.method<&FloatRangeType::toAbsoluteNumber>(sigs::toAbsoluteNumber);
 

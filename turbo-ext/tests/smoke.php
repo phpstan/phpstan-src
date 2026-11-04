@@ -1049,6 +1049,7 @@ $covered[\PHPStan\Type\Generic\GenericClassStringType::class] = true;
 $covered[\PHPStan\Type\FloatType::class] = true;
 $covered[\PHPStan\Type\Constant\ConstantFloatType::class] = true;
 $covered[\PHPStan\Type\FloatRangeType::class] = true;
+$covered[\PHPStan\Type\NumberSet::class] = true;
 $covered[\PHPStan\Type\NullType::class] = true;
 $covered[\PHPStan\Type\VoidType::class] = true;
 $covered[\PHPStan\Type\NeverType::class] = true;

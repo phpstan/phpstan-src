@@ -61,6 +61,11 @@ class IntegerType implements Type
 		return $this;
 	}
 
+	public function toNumberSet(): NumberSet
+	{
+		return new NumberSet([[null, null]], [], false);
+	}
+
 	public function toBitwiseNotType(): Type
 	{
 		return new IntegerType();

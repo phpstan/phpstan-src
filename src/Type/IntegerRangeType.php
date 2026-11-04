@@ -181,6 +181,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return self::fromInterval(is_nan($value) ? 0 : (int) ceil($value), null);
 	}
 
+	public function toNumberSet(): NumberSet
+	{
+		return new NumberSet([[$this->min, $this->max]], [], false);
+	}
+
 	public function getMin(): ?int
 	{
 		return $this->min;

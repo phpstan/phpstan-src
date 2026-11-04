@@ -12,6 +12,7 @@ use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NumberSet;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -34,6 +35,11 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 	public function __construct(private int $value)
 	{
 		parent::__construct();
+	}
+
+	public function toNumberSet(): NumberSet
+	{
+		return new NumberSet([[$this->value, $this->value]], [], false);
 	}
 
 	public function getValue(): int

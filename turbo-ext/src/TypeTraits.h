@@ -281,6 +281,39 @@ zv::Val pt_float_range_from_interval(double min, double max);
 /* FloatRangeType::createAll{Smaller,Greater}Than[OrEqualTo]($value) */
 zv::Val pt_float_range_create_all(double value, bool greater, bool orEqual);
 
+namespace phpstanturbo {
+
+/* the state of a PHPStan\Type\NumberSet (NumberSet.cpp): integer intervals
+ * with null for an unbounded side, closed float intervals, NAN */
+struct NumberSetData
+{
+	struct IntegerInterval
+	{
+		NullableLong min;
+		NullableLong max;
+	};
+	struct FloatInterval
+	{
+		double min;
+		double max;
+	};
+
+	std::vector<IntegerInterval> integerIntervals;
+	std::vector<FloatInterval> floatIntervals;
+	bool nan = false;
+};
+
+} // namespace phpstanturbo
+
+/* new NumberSet(...) from the data; UNDEF = pending exception */
+zv::Val pt_number_set_new(const phpstanturbo::NumberSetData &data);
+/* the state of a NumberSet instance appended to `out`; false = pending
+ * exception */
+[[nodiscard]] bool pt_number_set_read(zend_object *numberSet, phpstanturbo::NumberSetData &out);
+/* $type->toNumberSet() read into `out`, has = false for its null; false =
+ * pending exception */
+[[nodiscard]] bool pt_type_to_number_set(zval *type, phpstanturbo::NumberSetData &out, bool &has);
+
 /* the bodies of IntegerType::looseCompare() and IntegerType::arithmeticPower()
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending
  * exception */

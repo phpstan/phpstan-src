@@ -13,6 +13,7 @@ use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IsSuperTypeOfResult;
+use PHPStan\Type\NumberSet;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -120,6 +121,15 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	private function toIntegerValue(): int
 	{
 		return is_finite($this->value) ? (int) $this->value : 0;
+	}
+
+	public function toNumberSet(): NumberSet
+	{
+		if (is_nan($this->value)) {
+			return new NumberSet([], [], true);
+		}
+
+		return new NumberSet([], [[$this->value, $this->value]], false);
 	}
 
 	public function toInteger(): Type

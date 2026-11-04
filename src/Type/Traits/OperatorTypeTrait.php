@@ -5,6 +5,7 @@ namespace PHPStan\Type\Traits;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersionFactory;
 use PHPStan\Type\LooseComparisonHelper;
+use PHPStan\Type\NumberSet;
 use PHPStan\Type\OperatorTypeHelper;
 use PHPStan\Type\Type;
 
@@ -14,6 +15,11 @@ trait OperatorTypeTrait
 	public function exponentiate(Type $exponent): Type
 	{
 		return $this->arithmeticPower($exponent, new PhpVersion(PhpVersionFactory::MAX_PHP_VERSION));
+	}
+
+	public function toNumberSet(): ?NumberSet
+	{
+		return null;
 	}
 
 	public function arithmeticAdd(Type $right, PhpVersion $phpVersion): Type

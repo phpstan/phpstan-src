@@ -68,6 +68,17 @@ public:
 
 	bool getValue(zend_long &out) const { return value(out); }
 
+	/* new NumberSet([[$this->value, $this->value]], [], false); UNDEF =
+	 * pending exception */
+	zv::Val toNumberSet() const
+	{
+		zend_long v;
+		if (UNEXPECTED(!value(v))) return zv::Val();
+		NumberSetData data;
+		data.integerIntervals.push_back({NullableLong::of(v), NullableLong::of(v)});
+		return pt_number_set_new(data);
+	}
+
 	/* yes/no against another ConstantIntegerType's value, maybe/no against
 	 * an IntegerRangeType's bounds, maybe for any other IntegerType, the
 	 * CompoundType callback, no otherwise; UNDEF = pending exception */
@@ -280,6 +291,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_integer_type)
 	cls.method<&ConstantIntegerType::toAbsoluteNumber>(sigs::toAbsoluteNumber);
 
 	cls.method<&ConstantIntegerType::toString>(sigs::toString);
+	cls.method<&ConstantIntegerType::toNumberSet>(sigs::toNumberSet);
 
 	cls.method<&ConstantIntegerType::toArrayKey>(sigs::toArrayKey);
 	cls.op<PT_OP_TO_ARRAY_KEY, &ConstantIntegerType::toArrayKey>();

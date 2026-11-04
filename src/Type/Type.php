@@ -454,6 +454,13 @@ interface Type
 	/** Models numeric coercion for arithmetic operators. */
 	public function toNumber(): Type;
 
+	/**
+	 * The intervals of the numbers this type holds, or null when it can hold
+	 * anything but an int or a float. Unlike toNumber() it converts nothing:
+	 * call it on toNumber() for the numbers an operand stands for.
+	 */
+	public function toNumberSet(): ?NumberSet;
+
 	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
 	public function toBitwiseNotType(): Type;
 

@@ -709,6 +709,16 @@ public:
 	/* true when 0 is out of the range, bool when it may be in, false when
 	 * the range is 0 alone — which fromInterval() never builds, so the
 	 * maybe branch is the one a range takes; UNDEF = pending exception */
+	/* new NumberSet([[$this->min, $this->max]], [], false); UNDEF = pending
+	 * exception */
+	zv::Val toNumberSet() const
+	{
+		NumberSetData data;
+		data.integerIntervals.push_back({NullableLong::null(), NullableLong::null()});
+		if (UNEXPECTED(!bounds(data.integerIntervals[0].min, data.integerIntervals[0].max))) return zv::Val();
+		return pt_number_set_new(data);
+	}
+
 	zv::Val toBoolean() const
 	{
 		zend_long isZero;
@@ -1512,6 +1522,7 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 	cls.method<&IntegerRangeType::toFloat>(sigs::toFloat);
 
 	cls.method<&IntegerRangeType::toBoolean>(sigs::toBoolean);
+	cls.method<&IntegerRangeType::toNumberSet>(sigs::toNumberSet);
 
 	cls.method<&IntegerRangeType::toAbsoluteNumber>(sigs::toAbsoluteNumber);
 

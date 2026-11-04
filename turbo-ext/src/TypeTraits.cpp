@@ -5457,6 +5457,10 @@ void pt_type_trait_operator(reg::Class &cls)
 		zv::Args argv{exponent, phpVersion.raw()};
 		PT_RETURN_VAL(pt_type_call(PT_THIS_OBJ, PT_LC("arithmeticpower"), 2, argv));
 	});
+	cls.traitMethod(sigs::toNumberSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_NULL();
+	});
 	cls.traitMethod(sigs::arithmeticAdd, operatorBinary<PT_OPERATOR_ADD>);
 	cls.traitMethod(sigs::arithmeticSubtract, operatorBinary<PT_OPERATOR_SUBTRACT>);
 	cls.traitMethod(sigs::arithmeticMultiply, operatorBinary<PT_OPERATOR_MULTIPLY>);

@@ -142,6 +142,11 @@ class FloatType implements Type
 		return $this;
 	}
 
+	public function toNumberSet(): NumberSet
+	{
+		return new NumberSet([], [[-INF, INF]], true);
+	}
+
 	public function toBitwiseNotType(): Type
 	{
 		return new IntegerType();

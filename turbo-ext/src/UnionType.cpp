@@ -1601,6 +1601,21 @@ public:
 	}
 	zv::Val toNumber() const { return unionTypes(UnionMemberOp::call(PT_LC("tonumber"))); }
 	zv::Val toBitwiseNotType() const { return unionTypes(UnionMemberOp::call(PT_LC("tobitwisenottype"))); }
+
+	/* the members' sets one after the other, null when a member has none;
+	 * UNDEF = pending exception */
+	zv::Val toNumberSet() const
+	{
+		zval *types = this->types();
+		if (UNEXPECTED(types == NULL)) return zv::Val();
+		NumberSetData data;
+		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
+			bool has;
+			if (UNEXPECTED(!pt_type_to_number_set(entry.value().deref().raw(), data, has))) return zv::Val();
+			if (!has) return zv::Val::null();
+		}
+		return pt_number_set_new(data);
+	}
 	zv::Val toGetClassResultType() const { return unionTypes(UnionMemberOp::call(PT_LC("togetclassresulttype"))); }
 	zv::Val toClassConstantType(zval *reflectionProvider) const { return unionTypes(UnionMemberOp::call(PT_LC("toclassconstanttype"), 1, reflectionProvider)); }
 
@@ -3399,6 +3414,9 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	});
 	cls.method(sigs::toNumber, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::toNumber);
+	});
+	cls.method(sigs::toNumberSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::toNumberSet);
 	});
 	cls.method(sigs::toBitwiseNotType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_value0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::toBitwiseNotType);

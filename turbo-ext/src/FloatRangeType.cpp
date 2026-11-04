@@ -173,6 +173,17 @@ public:
 		return slot(slots::min, "min", min) && slot(slots::max, "max", max);
 	}
 
+	/* new NumberSet([], [[$this->min, $this->max]], false); UNDEF = pending
+	 * exception */
+	zv::Val toNumberSet() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		NumberSetData data;
+		data.floatIntervals.push_back({min, max});
+		return pt_number_set_new(data);
+	}
+
 	bool getMin(double &out) const { return slot(slots::min, "min", out); }
 	bool getMax(double &out) const { return slot(slots::max, "max", out); }
 
@@ -970,6 +981,7 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 		pt_frt_bound(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getMax);
 	});
 
+	cls.method<&FloatRangeType::toNumberSet>(sigs::toNumberSet);
 	cls.method<&FloatRangeType::describe, zp::Obj>(sigs::describe);
 	cls.op<PT_OP_DESCRIBE, &FloatRangeType::describe>();
 

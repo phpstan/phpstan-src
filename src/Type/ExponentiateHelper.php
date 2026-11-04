@@ -139,16 +139,19 @@ final class ExponentiateHelper
 	 */
 	private static function getIntegerBounds(Type $type): ?array
 	{
-		if ($type instanceof IntegerRangeType) {
-			return [$type->getMin(), $type->getMax()];
+		$numberSet = $type->toNumberSet();
+		if ($numberSet === null || $numberSet->getFloatIntervals() !== [] || $numberSet->hasNan()) {
+			return null;
 		}
 
-		$values = $type->getConstantScalarValues();
-		if (count($values) === 1 && is_int($values[0])) {
-			return [$values[0], $values[0]];
+		// plain int stays (float|int): the intervals read an open end as no bound
+		// at all, not as PHP_INT_MIN or PHP_INT_MAX, whose powers overflow
+		$intervals = $numberSet->getIntegerIntervals();
+		if ($intervals === [[null, null]] || count($intervals) !== 1) {
+			return null;
 		}
 
-		return null;
+		return $intervals[0];
 	}
 
 	/**

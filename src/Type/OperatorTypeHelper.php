@@ -671,12 +671,12 @@ final class OperatorTypeHelper
 
 	/**
 	 * @return array{int|null, int|null}|null Lowest and highest value the type can hold, with null
-	 * for an unbounded side. Null when the type is not built from integer ranges and constants.
+	 * for an unbounded side. Null when the type holds anything but integers.
 	 */
 	private static function getIntegerBounds(Type $type): ?array
 	{
-		$innerTypes = $type instanceof UnionType ? $type->getTypes() : [$type];
-		if ($innerTypes === []) {
+		$intervals = self::getIntegerIntervals($type);
+		if ($intervals === null) {
 			return null;
 		}
 
@@ -684,17 +684,7 @@ final class OperatorTypeHelper
 		$max = null;
 		$unboundedMin = false;
 		$unboundedMax = false;
-		foreach ($innerTypes as $innerType) {
-			if ($innerType instanceof IntegerRangeType) {
-				$innerMin = $innerType->getMin();
-				$innerMax = $innerType->getMax();
-			} elseif ($innerType instanceof ConstantIntegerType) {
-				$innerMin = $innerType->getValue();
-				$innerMax = $innerMin;
-			} else {
-				return null;
-			}
-
+		foreach ($intervals as [$innerMin, $innerMax]) {
 			if ($innerMin === null) {
 				$unboundedMin = true;
 			} elseif ($min === null || $innerMin < $min) {
@@ -712,6 +702,25 @@ final class OperatorTypeHelper
 			$unboundedMin ? null : $min,
 			$unboundedMax ? null : $max,
 		];
+	}
+
+	/**
+	 * @return non-empty-list<array{int|null, int|null}>|null the integer intervals of a type
+	 * that holds integers and nothing else
+	 */
+	private static function getIntegerIntervals(Type $type): ?array
+	{
+		$numberSet = $type->toNumberSet();
+		if ($numberSet === null || $numberSet->getFloatIntervals() !== [] || $numberSet->hasNan()) {
+			return null;
+		}
+
+		$intervals = $numberSet->getIntegerIntervals();
+		if ($intervals === []) {
+			return null;
+		}
+
+		return $intervals;
 	}
 
 	public static function add(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -1205,17 +1214,17 @@ final class OperatorTypeHelper
 	 */
 	private static function getNonNegativeIntegerBounds(Type $type): ?array
 	{
-		if ($type instanceof IntegerRangeType) {
-			$min = $type->getMin();
-			if ($min !== null && $min >= 0) {
-				return [$min, $type->getMax()];
-			}
+		$intervals = self::getIntegerIntervals($type);
+		if ($intervals === null || count($intervals) !== 1) {
 			return null;
 		}
-		if ($type instanceof ConstantIntegerType && $type->getValue() >= 0) {
-			return [$type->getValue(), $type->getValue()];
+
+		[$min, $max] = $intervals[0];
+		if ($min === null || $min < 0) {
+			return null;
 		}
-		return null;
+
+		return [$min, $max];
 	}
 
 	/**
@@ -1685,8 +1694,9 @@ final class OperatorTypeHelper
 
 		$hasFloatRange = false;
 		foreach ([$leftMembers, $rightMembers] as $members) {
-			foreach ($members as [$member]) {
-				if (!($member instanceof FloatRangeType)) {
+			foreach ($members as [$integerInterval, [$min, $max, $nan]]) {
+				// a float member that is neither a constant nor plain float
+				if ($integerInterval !== null || $min >= $max || $nan) {
 					continue;
 				}
 
@@ -1698,8 +1708,8 @@ final class OperatorTypeHelper
 		}
 
 		if ($operator === '/') {
-			foreach ($rightMembers as [$member]) {
-				if (in_array($member->getConstantScalarValues(), [[0], [0.0]], true)) {
+			foreach ($rightMembers as [, [$min, $max]]) {
+				if ($min === 0.0 && $max === 0.0) {
 					return null;
 				}
 			}
@@ -1714,9 +1724,11 @@ final class OperatorTypeHelper
 		}
 
 		$resultTypes = [];
-		foreach ($leftMembers as [$leftMember, $leftInterval]) {
-			foreach ($rightMembers as [$rightMember, $rightInterval]) {
-				if ($leftMember->isInteger()->yes() && $rightMember->isInteger()->yes()) {
+		foreach ($leftMembers as [$leftInteger, $leftInterval]) {
+			foreach ($rightMembers as [$rightInteger, $rightInterval]) {
+				if ($leftInteger !== null && $rightInteger !== null) {
+					$leftMember = IntegerRangeType::fromInterval($leftInteger[0], $leftInteger[1]);
+					$rightMember = IntegerRangeType::fromInterval($rightInteger[0], $rightInteger[1]);
 					if ($operator === '+') {
 						$resultTypes[] = self::add($leftMember, $rightMember, $phpVersion);
 					} elseif ($operator === '-') {
@@ -1729,7 +1741,7 @@ final class OperatorTypeHelper
 					continue;
 				}
 
-				foreach ($operator === '/' && $rightMember->isInteger()->yes() ? self::splitIntegerDivisor($rightInterval) : [$rightInterval] as $divisorInterval) {
+				foreach ($operator === '/' && $rightInteger !== null ? self::splitIntegerDivisor($rightInterval) : [$rightInterval] as $divisorInterval) {
 					$resultTypes[] = self::floatIntervalMath($operator, $leftInterval, $divisorInterval, $phpVersion);
 				}
 			}
@@ -1765,12 +1777,12 @@ final class OperatorTypeHelper
 	}
 
 	/**
-	 * The members of a number type with the floats each of them stands for:
-	 * [min, max, whether NAN, whether an infinite bound is a value]. An int
-	 * without a bound reaches the infinity on that side, which it never is,
-	 * and NAN alone is an empty interval.
+	 * The members of a number type, each with the integers it is (null for a
+	 * float member) and the floats it stands for: [min, max, whether NAN,
+	 * whether an infinite bound is a value]. An int without a bound reaches the
+	 * infinity on that side, which it never is, and NAN alone is an empty interval.
 	 *
-	 * @return list<array{Type, array{float, float, bool, bool}}>|null
+	 * @return list<array{array{int|null, int|null}|null, array{float, float, bool, bool}}>|null
 	 */
 	private static function getFloatIntervalMembers(Type $type): ?array
 	{
@@ -1778,34 +1790,35 @@ final class OperatorTypeHelper
 			return null;
 		}
 
-		$members = [];
-		foreach ($type instanceof UnionType ? $type->getTypes() : [$type] as $member) {
-			if ($member instanceof ConstantIntegerType) {
-				$interval = [(float) $member->getValue(), (float) $member->getValue(), false, false];
-			} elseif ($member instanceof IntegerRangeType) {
-				$interval = [
-					$member->getMin() === null ? -INF : (float) $member->getMin(),
-					$member->getMax() === null ? INF : (float) $member->getMax(),
-					false,
-					false,
-				];
-			} elseif ($member instanceof ConstantFloatType) {
-				$value = $member->getValue();
-				$interval = is_nan($value) ? [INF, -INF, true, true] : [$value, $value, false, true];
-			} elseif ($member instanceof FloatRangeType) {
-				$interval = [$member->getMin(), $member->getMax(), false, true];
-			} elseif (get_class($member) === IntegerType::class) {
-				$interval = [-INF, INF, false, false];
-			} elseif (get_class($member) === FloatType::class) {
-				$interval = [-INF, INF, true, true];
-			} else {
-				return null;
-			}
+		$numberSet = $type->toNumberSet();
+		if ($numberSet === null) {
+			return null;
+		}
 
-			$members[] = [$member, $interval];
+		$members = [];
+		foreach ($numberSet->getIntegerIntervals() as $integerInterval) {
+			[$min, $max] = $integerInterval;
+			$members[] = [$integerInterval, [$min === null ? -INF : (float) $min, $max === null ? INF : (float) $max, false, false]];
+		}
+		// plain float is one member: the full interval and NAN
+		$plainFloat = self::isPlainFloat($numberSet);
+		foreach ($numberSet->getFloatIntervals() as [$min, $max]) {
+			$members[] = [null, [$min, $max, $plainFloat, true]];
+		}
+		if ($numberSet->hasNan() && !$plainFloat) {
+			$members[] = [null, [INF, -INF, true, true]];
 		}
 
 		return $members;
+	}
+
+	/**
+	 * Whether the floats of the set are all of them, which a union holds as one
+	 * FloatType member.
+	 */
+	private static function isPlainFloat(NumberSet $numberSet): bool
+	{
+		return $numberSet->hasNan() && $numberSet->getFloatIntervals() === [[-INF, INF]];
 	}
 
 	/**
@@ -2021,17 +2034,14 @@ final class OperatorTypeHelper
 	 */
 	private static function getIntervals(Type $type): ?array
 	{
+		$integerIntervals = self::getIntegerIntervals($type);
+		if ($integerIntervals === null) {
+			return $type->isInteger()->yes() ? [[-INF, INF]] : null;
+		}
+
 		$intervals = [];
-		foreach ($type instanceof UnionType ? $type->getTypes() : [$type] as $innerType) {
-			if ($innerType instanceof ConstantIntegerType) {
-				$intervals[] = [$innerType->getValue(), $innerType->getValue()];
-			} elseif ($innerType instanceof IntegerRangeType) {
-				$intervals[] = [$innerType->getMin() ?? -INF, $innerType->getMax() ?? INF];
-			} elseif ($innerType->isInteger()->yes()) {
-				$intervals[] = [-INF, INF];
-			} else {
-				return null;
-			}
+		foreach ($integerIntervals as [$min, $max]) {
+			$intervals[] = [$min ?? -INF, $max ?? INF];
 		}
 
 		return $intervals;

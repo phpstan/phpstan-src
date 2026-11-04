@@ -5,6 +5,7 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
@@ -22,16 +23,19 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_map') {
-				$callbackArg = null;
+				$args = $node->getArgs();
 				$arrayArgs = [];
-				foreach ($node->getArgs() as $i => $arg) {
-					if ($arg->name === null ? $i === 0 : $arg->name->toString() === 'callback') {
-						$callbackArg = $arg;
+				foreach ($args as $i => $arg) {
+					if ($arg->name === null && $i === 0) {
+						continue;
+					}
+					if ($arg->name !== null && $arg->name->toString() === 'callback') {
 						continue;
 					}
 
 					$arrayArgs[] = $arg;
 				}
+				$callbackArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback');
 				if ($callbackArg !== null && count($arrayArgs) > 0) {
 					$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
 				}

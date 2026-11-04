@@ -45,28 +45,25 @@ public:
 		if (functionName == NULL) return !EG(exception);
 		if (!visitors::lowerEquals(functionName, "array_map")) return true;
 
-		/* the callback argument - the positional first one or the one named
-		 * "callback" - and every other argument */
-		zend_object *callbackArg = NULL;
+		/* every argument except the positional first one and the one named
+		 * "callback" */
 		zv::Arr arrayArgs = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(args)));
 		for (auto entry : zv::ArrRef(args)) {
 			zv::Ref arg = entry.value().deref();
 			if (!arg.isObject()) continue;
 			zval *argName = argNameProp.of(arg.asObject());
-			bool isCallback;
-			if (argName != NULL && Z_TYPE_P(argName) == IS_OBJECT) {
+			bool named = argName != NULL && Z_TYPE_P(argName) == IS_OBJECT;
+			bool firstPosition = entry.stringKeyOrNull() == NULL && entry.indexKey() == 0;
+			if (!named && firstPosition) continue;
+			if (named) {
 				zend_string *name = visitors::nameString(Z_OBJ_P(argName), identifierProp);
-				isCallback = name != NULL && zend_string_equals_literal(name, "callback");
-			} else {
-				isCallback = entry.stringKeyOrNull() == NULL && entry.indexKey() == 0;
-			}
-			if (isCallback) {
-				callbackArg = arg.asObject();
-				continue;
+				if (name != NULL && zend_string_equals_literal(name, "callback")) continue;
 			}
 			arrayArgs.push(arg);
 		}
 
+		/* ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback') */
+		zend_object *callbackArg = visitors::argForParameter(args, 0, "callback");
 		if (callbackArg == NULL || zend_hash_num_elements(arrayArgs.table()) == 0) return true;
 		zval *value = argValueProp.of(callbackArg);
 		if (value == NULL || Z_TYPE_P(value) != IS_OBJECT) return true;

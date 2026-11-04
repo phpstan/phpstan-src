@@ -120,6 +120,10 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 	public function testBug15320(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15320.php'], [
+			// Unlike `void` and `$this`, a `static` return type does not imply side effects,
+			// because the method may return a new instance (immutable wither).
+			// setStatic() has no impure points in its body and is called on an exact `new Model()`,
+			// so discarding its result really has no effect - phpstan/phpstan#15320 expects this error.
 			[
 				'Call to method Bug15320DeadCode\\Model::setStatic() on a separate line has no effect.',
 				28,

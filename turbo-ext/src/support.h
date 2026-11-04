@@ -644,6 +644,7 @@ extern zend_class_entry *pt_ce_generic_class_string_type;
 /* FloatType.cpp, ConstantFloatType.cpp, NullType.cpp, VoidType.cpp */
 extern zend_class_entry *pt_ce_float_type;
 extern zend_class_entry *pt_ce_constant_float_type;
+extern zend_class_entry *pt_ce_float_range_type;
 extern zend_class_entry *pt_ce_null_type;
 extern zend_class_entry *pt_ce_void_type;
 /* the never/mixed family (NeverType.cpp, MixedType.cpp, StrictMixedType.cpp) */

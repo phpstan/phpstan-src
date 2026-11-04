@@ -77,6 +77,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -126,6 +127,7 @@ use function count;
 use function explode;
 use function get_class;
 use function in_array;
+use function is_nan;
 use function max;
 use function min;
 use function preg_match;
@@ -135,6 +137,8 @@ use function str_replace;
 use function str_starts_with;
 use function strtolower;
 use function substr;
+use const INF;
+use const PHP_FLOAT_MAX;
 
 /**
  * @phpstan-import-type Level from ReportUnsafeArrayStringKeyCastingToggle as ReportUnsafeArrayStringKeyCastingLevel
@@ -253,6 +257,21 @@ final class TypeNodeResolver
 
 			case 'non-negative-int':
 				return IntegerRangeType::fromInterval(0, null);
+
+			case 'positive-float':
+				return FloatRangeType::fromInterval(5.0E-324, INF);
+
+			case 'negative-float':
+				return FloatRangeType::fromInterval(-INF, -5.0E-324);
+
+			case 'non-positive-float':
+				return FloatRangeType::fromInterval(-INF, 0.0);
+
+			case 'non-negative-float':
+				return FloatRangeType::fromInterval(0.0, INF);
+
+			case 'finite-float':
+				return FloatRangeType::fromInterval(-PHP_FLOAT_MAX, PHP_FLOAT_MAX);
 
 			case 'non-zero-int':
 				return new UnionType([
@@ -803,6 +822,16 @@ final class TypeNodeResolver
 				}
 
 				return IntegerRangeType::fromInterval($min, $max);
+			}
+		} elseif ($mainTypeName === 'float') {
+			if (count($genericTypes) === 2) { // float<min, max>, float<0, 1.5>
+				$min = $this->resolveFloatRangeBound($genericTypes[0], $typeNode->genericTypes[0], 'min', -INF);
+				$max = $this->resolveFloatRangeBound($genericTypes[1], $typeNode->genericTypes[1], 'max', INF);
+				if ($min === null || $max === null) {
+					return new ErrorType();
+				}
+
+				return FloatRangeType::fromInterval($min, $max);
 			}
 		} elseif ($mainTypeName === 'key-of') {
 			if (count($genericTypes) === 1) { // key-of<ValueType>
@@ -1457,6 +1486,23 @@ final class TypeNodeResolver
 		}
 
 		return new OffsetAccessType($type, $offset);
+	}
+
+	private function resolveFloatRangeBound(Type $type, TypeNode $typeNode, string $keyword, float $keywordValue): ?float
+	{
+		if ($typeNode instanceof IdentifierTypeNode && $typeNode->name === $keyword) {
+			return $keywordValue;
+		}
+
+		if ($type instanceof ConstantIntegerType) {
+			return (float) $type->getValue();
+		}
+
+		if ($type instanceof ConstantFloatType && !is_nan($type->getValue())) {
+			return $type->getValue();
+		}
+
+		return null;
 	}
 
 	private function expandIntMaskToType(Type $type): ?Type

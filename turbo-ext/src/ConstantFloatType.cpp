@@ -13,7 +13,7 @@
  * (ConstantScalarTypeTrait, ConstantScalarToBooleanTrait,
  * ConstantNumericComparisonTypeTrait) come from the shared registrars in
  * TypeTraits.cpp, run after the class's own methods so the class body's
- * equals() wins. Everything else is inherited from FloatType.
+ * isSuperTypeOf() and equals() win. Everything else is inherited from FloatType.
  *
  * Float conversions the twin leaves to PHP — the (string) cast under the
  * `precision` ini and under precision -1, the (int) cast with its
@@ -88,6 +88,47 @@ public:
 		if (UNEXPECTED(!value(v) || !ConstantFloatType(Z_OBJ_P(type)).value(typeValue))) return false;
 		out = v == typeValue || (std::isnan(v) && std::isnan(typeValue));
 		return true;
+	}
+
+	/* yes/no by equals() for a ConstantFloatType, no for a FloatRangeType
+	 * without the value and maybe with it, maybe for any other FloatType,
+	 * the CompoundType callback, no otherwise; UNDEF = pending exception */
+	zv::Val isSuperTypeOf(zval *type) const
+	{
+		zval selfZv;
+		ZVAL_OBJ(&selfZv, self);
+
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_constant_float_type)) {
+			/* $this->equals($type) — through the object's class, which a
+			 * PHP subclass may override */
+			bool equal;
+			if (EXPECTED(self->ce == pt_ce_constant_float_type)) {
+				if (UNEXPECTED(!equals(type, equal))) return zv::Val();
+			} else {
+				zv::Val result = pt_type_op(self, PT_OP_EQUALS, 1, type);
+				if (UNEXPECTED(result.isUndef())) return zv::Val();
+				equal = zend_is_true(result.raw());
+			}
+			return pt_type_is_super_type_of_result(equal ? PT_TRI_YES : PT_TRI_NO);
+		}
+
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_float_range_type)) {
+			/* $type->isSuperTypeOf($this)->no() */
+			zv::Val result = pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
+			if (UNEXPECTED(result.isUndef())) return zv::Val();
+			zend_long contains = pt_type_result_trinary(result.raw());
+			if (UNEXPECTED(contains == -1)) return zv::Val();
+			return pt_type_is_super_type_of_result(contains == PT_TRI_NO ? PT_TRI_NO : PT_TRI_MAYBE);
+		}
+
+		/* $type instanceof parent */
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_float_type)) return pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+
+		bool compound;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
+		if (compound) return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);
+
+		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
 
 	/* (string) $value under ini precision -1 ('NAN' for a NAN), with '.0'
@@ -227,6 +268,25 @@ bool pt_constant_float_type_new(zval *out, double value)
 	return pt_val_into(ConstantFloatType::create(value), out);
 }
 
+bool pt_constant_float_get_value(zend_object *object, double &out)
+{
+	if (EXPECTED(object->ce == pt_ce_constant_float_type)) return ConstantFloatType(object).value(out);
+	/* a subclass may override getValue() */
+	zv::Val result = pt_type_call(object, PT_LC("getvalue"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	if (UNEXPECTED(Z_TYPE_P(result.raw()) != IS_DOUBLE)) {
+		zend_type_error("phpstan_turbo: %s::getValue() must return float", ZSTR_VAL(object->ce->name));
+		return false;
+	}
+	out = Z_DVAL_P(result.raw());
+	return true;
+}
+
+zv::Val pt_constant_float_cast_to_string(double value)
+{
+	return ConstantFloatType::castFloatToString(value);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS ConstantFloatType(Z_OBJ_P(ZEND_THIS))
@@ -246,6 +306,9 @@ PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 		if (UNEXPECTED(!PT_THIS.getValue(value))) RETURN_THROWS();
 		RETURN_DOUBLE(value);
 	});
+
+	cls.method<&ConstantFloatType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
+	cls.op<PT_OP_IS_SUPER_TYPE_OF, &ConstantFloatType::isSuperTypeOf>();
 
 	cls.method<&ConstantFloatType::equals, zp::TypeObj>(sigs::equals);
 	cls.op<PT_OP_EQUALS, &ConstantFloatType::equals>();
@@ -275,7 +338,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 	cls.method<&ConstantFloatType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	/* the traits, in the twin's `use` order; the class body above wins over
-	 * every name it declares (equals, getFiniteTypes) */
+	 * every name it declares (isSuperTypeOf, equals, getFiniteTypes) */
 	ptdecl::ConstantFloatType::registerTraits(cls);
 
 	cls.shadow(&pt_ce_constant_float_type);

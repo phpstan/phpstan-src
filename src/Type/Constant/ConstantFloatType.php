@@ -6,9 +6,12 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Traits\ConstantNumericComparisonTypeTrait;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
@@ -39,6 +42,27 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 	public function getValue(): float
 	{
 		return $this->value;
+	}
+
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
+	{
+		if ($type instanceof self) {
+			return IsSuperTypeOfResult::createFromBoolean($this->equals($type));
+		}
+
+		if ($type instanceof FloatRangeType) {
+			return $type->isSuperTypeOf($this)->no() ? IsSuperTypeOfResult::createNo() : IsSuperTypeOfResult::createMaybe();
+		}
+
+		if ($type instanceof parent) {
+			return IsSuperTypeOfResult::createMaybe();
+		}
+
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
+		return IsSuperTypeOfResult::createNo();
 	}
 
 	public function equals(Type $type): bool

@@ -1,0 +1,326 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Type;
+
+use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
+use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use function get_class;
+use function is_float;
+use function is_int;
+use function is_nan;
+use function max;
+use function min;
+use function pack;
+use function sprintf;
+use function unpack;
+use const INF;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
+
+/**
+ * The floats from $min to $max, both included, in PHP's comparison order.
+ *
+ * The non-NAN floats are a finite ordered set, so every open interval of them
+ * is a closed one: $f > 1.5 keeps exactly float<1.5000000000000002, max>.
+ * PHP compares -0.0 and 0.0 as equal, so they are one point of that order:
+ * a range never holds one zero without the other, and its zero bound is
+ * stored as 0.0. NAN is in no range, so float<min, max> is float without NAN.
+ *
+ * The bounds are mapped to integers that keep this order (see toOrdinal()),
+ * which makes the next and the previous float the next and the previous
+ * integer, and every interval operation the integer one.
+ */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/FloatRangeType.cpp')]
+class FloatRangeType extends FloatType
+{
+
+	private function __construct(private float $min, private float $max)
+	{
+		parent::__construct();
+	}
+
+	public static function fromInterval(float $min, float $max): Type
+	{
+		if (is_nan($min) || is_nan($max)) {
+			throw new ShouldNotHappenException();
+		}
+
+		$minOrdinal = self::toOrdinal($min);
+		$maxOrdinal = self::toOrdinal($max);
+		if ($minOrdinal > $maxOrdinal) {
+			return new NeverType();
+		}
+
+		if ($minOrdinal === $maxOrdinal) {
+			return new ConstantFloatType(self::fromOrdinal($minOrdinal));
+		}
+
+		return new self(self::fromOrdinal($minOrdinal), self::fromOrdinal($maxOrdinal));
+	}
+
+	/**
+	 * Maps the non-NAN floats onto integers in their order, both zeros onto 0:
+	 * a float's bits read as an integer grow with the float's magnitude.
+	 */
+	private static function toOrdinal(float $value): int
+	{
+		if ($value === 0.0) {
+			return 0;
+		}
+
+		$unpacked = unpack('q', pack('d', $value));
+		if ($unpacked === false || !is_int($unpacked[1])) {
+			throw new ShouldNotHappenException();
+		}
+
+		$bits = $unpacked[1];
+		if ($bits >= 0) {
+			return $bits;
+		}
+
+		return -($bits & PHP_INT_MAX);
+	}
+
+	private static function fromOrdinal(int $ordinal): float
+	{
+		if ($ordinal === 0) {
+			return 0.0;
+		}
+
+		$unpacked = unpack('d', pack('q', $ordinal < 0 ? -$ordinal : $ordinal));
+		if ($unpacked === false || !is_float($unpacked[1])) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $ordinal < 0 ? -$unpacked[1] : $unpacked[1];
+	}
+
+	/**
+	 * The bounds of a range or of a non-NAN constant as ordinals.
+	 *
+	 * @return array{int, int}|null
+	 */
+	private static function getOrdinalBounds(Type $type): ?array
+	{
+		if ($type instanceof self) {
+			return [self::toOrdinal($type->min), self::toOrdinal($type->max)];
+		}
+
+		if ($type instanceof ConstantFloatType && !is_nan($type->getValue())) {
+			$ordinal = self::toOrdinal($type->getValue());
+			return [$ordinal, $ordinal];
+		}
+
+		return null;
+	}
+
+	public function getMin(): float
+	{
+		return $this->min;
+	}
+
+	public function getMax(): float
+	{
+		return $this->max;
+	}
+
+	public function describe(VerbosityLevel $level): string
+	{
+		return sprintf(
+			'float<%s, %s>',
+			$this->min === -INF ? 'min' : (new ConstantFloatType($this->min))->describe(VerbosityLevel::precise()),
+			$this->max === INF ? 'max' : (new ConstantFloatType($this->max))->describe(VerbosityLevel::precise()),
+		);
+	}
+
+	public function accepts(Type $type, bool $strictTypes): AcceptsResult
+	{
+		// an integer is coerced to the float closest to it, which keeps the order of the integers
+		if ($type instanceof ConstantIntegerType) {
+			return $this->isSuperTypeOf(new ConstantFloatType((float) $type->getValue()))->toAcceptsResult();
+		}
+		if ($type instanceof IntegerRangeType || get_class($type) === IntegerType::class) {
+			$min = $type instanceof IntegerRangeType ? $type->getMin() : null;
+			$max = $type instanceof IntegerRangeType ? $type->getMax() : null;
+
+			return $this->isSuperTypeOf(self::fromInterval((float) ($min ?? PHP_INT_MIN), (float) ($max ?? PHP_INT_MAX)))->toAcceptsResult();
+		}
+
+		if ($type instanceof parent) {
+			return $this->isSuperTypeOf($type)->toAcceptsResult();
+		}
+
+		if ($type instanceof CompoundType) {
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
+		return AcceptsResult::createNo();
+	}
+
+	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
+	{
+		$bounds = self::getOrdinalBounds($type);
+		if ($bounds !== null) {
+			[$typeMin, $typeMax] = $bounds;
+			$min = self::toOrdinal($this->min);
+			$max = self::toOrdinal($this->max);
+			if ($typeMax < $min || $max < $typeMin) {
+				return IsSuperTypeOfResult::createNo();
+			}
+
+			if ($min <= $typeMin && $typeMax <= $max) {
+				return IsSuperTypeOfResult::createYes();
+			}
+
+			return IsSuperTypeOfResult::createMaybe();
+		}
+
+		// NAN
+		if ($type instanceof ConstantFloatType) {
+			return IsSuperTypeOfResult::createNo();
+		}
+
+		if ($type instanceof parent) {
+			return IsSuperTypeOfResult::createMaybe();
+		}
+
+		if ($type instanceof CompoundType) {
+			return $type->isSubTypeOf($this);
+		}
+
+		return IsSuperTypeOfResult::createNo();
+	}
+
+	public function equals(Type $type): bool
+	{
+		return $type instanceof self && $this->min === $type->min && $this->max === $type->max;
+	}
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		return new FloatType();
+	}
+
+	public function toBoolean(): BooleanType
+	{
+		if (self::toOrdinal($this->min) > 0 || self::toOrdinal($this->max) < 0) {
+			return new ConstantBooleanType(true);
+		}
+
+		return new BooleanType();
+	}
+
+	public function toAbsoluteNumber(): Type
+	{
+		if (self::toOrdinal($this->min) >= 0) {
+			return $this;
+		}
+
+		if (self::toOrdinal($this->max) <= 0) {
+			return self::fromInterval(-$this->max, -$this->min);
+		}
+
+		return self::fromInterval(0.0, max(-$this->min, $this->max));
+	}
+
+	/**
+	 * Return the union with another type, but only if it can be expressed in a simpler way than using UnionType
+	 */
+	public function tryUnion(Type $otherType): ?Type
+	{
+		$bounds = self::getOrdinalBounds($otherType);
+		if ($bounds !== null) {
+			[$otherMin, $otherMax] = $bounds;
+			$min = self::toOrdinal($this->min);
+			$max = self::toOrdinal($this->max);
+			// touching ranges merge: nothing lies between $max and $max + 1
+			if ($otherMax < $min - 1 || $max + 1 < $otherMin) {
+				return null;
+			}
+
+			return self::fromInterval(self::fromOrdinal(min($min, $otherMin)), self::fromOrdinal(max($max, $otherMax)));
+		}
+
+		if (get_class($otherType) === parent::class) {
+			return $otherType;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Return the intersection with another type, but only if it can be expressed in a simpler way than using
+	 * IntersectionType
+	 */
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		$bounds = self::getOrdinalBounds($otherType);
+		if ($bounds !== null) {
+			[$otherMin, $otherMax] = $bounds;
+
+			return self::fromInterval(
+				self::fromOrdinal(max(self::toOrdinal($this->min), $otherMin)),
+				self::fromOrdinal(min(self::toOrdinal($this->max), $otherMax)),
+			);
+		}
+
+		// NAN
+		if ($otherType instanceof ConstantFloatType) {
+			return new NeverType();
+		}
+
+		if (get_class($otherType) === parent::class) {
+			return $this;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Return the different with another type, or null if it cannot be represented.
+	 */
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		if (get_class($typeToRemove) === parent::class) {
+			return new NeverType();
+		}
+
+		$bounds = self::getOrdinalBounds($typeToRemove);
+		if ($bounds === null) {
+			// NAN is in no range
+			return $typeToRemove instanceof ConstantFloatType ? $this : null;
+		}
+
+		[$removeMin, $removeMax] = $bounds;
+		$min = self::toOrdinal($this->min);
+		$max = self::toOrdinal($this->max);
+		if ($removeMax < $min || $max < $removeMin) {
+			return $this;
+		}
+
+		$parts = [];
+		if ($min < $removeMin) {
+			$parts[] = self::fromInterval($this->min, self::fromOrdinal($removeMin - 1));
+		}
+		if ($removeMax < $max) {
+			$parts[] = self::fromInterval(self::fromOrdinal($removeMax + 1), $this->max);
+		}
+
+		return TypeCombinator::union(...$parts);
+	}
+
+	public function toPhpDocNode(): TypeNode
+	{
+		return new GenericTypeNode(new IdentifierTypeNode('float'), [
+			$this->min === -INF ? new IdentifierTypeNode('min') : (new ConstantFloatType($this->min))->toPhpDocNode(),
+			$this->max === INF ? new IdentifierTypeNode('max') : (new ConstantFloatType($this->max))->toPhpDocNode(),
+		]);
+	}
+
+}

@@ -1616,6 +1616,9 @@ final class OperatorTypeHelper
 		if ($negated instanceof IntegerRangeType) {
 			return self::multiply($type, new ConstantIntegerType(-1), $phpVersion);
 		}
+		if ($negated instanceof FloatRangeType) {
+			return FloatRangeType::fromInterval(-$negated->getMax(), -$negated->getMin());
+		}
 
 		return $negated;
 	}

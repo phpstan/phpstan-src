@@ -56,7 +56,7 @@ $observations = [];
 // which implementation answered: smoke.php holds the php run to false and
 // the native run to true, so the two sets can never be one implementation
 // compared against itself
-foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\KeyOfType::class, \PHPStan\Type\ValueOfType::class, \PHPStan\Type\OffsetAccessType::class, \PHPStan\Type\ClassConstantAccessType::class, \PHPStan\Type\NewObjectType::class, \PHPStan\Type\ConditionalType::class, \PHPStan\Type\ConditionalTypeForParameter::class, \PHPStan\Type\LateResolvableArrayShapeType::class, \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::class, \PHPStan\Type\Generic\TemplateArrayType::class, \PHPStan\Type\Generic\TemplateBenevolentUnionType::class, \PHPStan\Type\Generic\TemplateBooleanType::class, \PHPStan\Type\Generic\TemplateConstantArrayType::class, \PHPStan\Type\Generic\TemplateConstantIntegerType::class, \PHPStan\Type\Generic\TemplateConstantStringType::class, \PHPStan\Type\Generic\TemplateFloatType::class, \PHPStan\Type\Generic\TemplateGenericObjectType::class, \PHPStan\Type\Generic\TemplateIntegerType::class, \PHPStan\Type\Generic\TemplateIntersectionType::class, \PHPStan\Type\Generic\TemplateIterableType::class, \PHPStan\Type\Generic\TemplateMixedType::class, \PHPStan\Type\Generic\TemplateNullType::class, \PHPStan\Type\Generic\TemplateObjectShapeType::class, \PHPStan\Type\Generic\TemplateObjectType::class, \PHPStan\Type\Generic\TemplateObjectWithoutClassType::class, \PHPStan\Type\Generic\TemplateStrictMixedType::class, \PHPStan\Type\Generic\TemplateStringType::class, \PHPStan\Type\Generic\TemplateUnionType::class, \PHPStan\Type\Generic\TemplateKeyOfType::class] as $typeClass) {
+foreach ([\PHPStan\Type\BooleanType::class, \PHPStan\Type\Constant\ConstantBooleanType::class, \PHPStan\Type\IntegerType::class, \PHPStan\Type\Constant\ConstantIntegerType::class, \PHPStan\Type\IntegerRangeType::class, \PHPStan\Type\StringType::class, \PHPStan\Type\Constant\ConstantStringType::class, \PHPStan\Type\ClassStringType::class, \PHPStan\Type\Generic\GenericClassStringType::class, \PHPStan\Type\FloatType::class, \PHPStan\Type\Constant\ConstantFloatType::class, \PHPStan\Type\FloatRangeType::class, \PHPStan\Type\NullType::class, \PHPStan\Type\VoidType::class, \PHPStan\Type\NeverType::class, \PHPStan\Type\MixedType::class, \PHPStan\Type\StrictMixedType::class, \PHPStan\Type\ObjectWithoutClassType::class, \PHPStan\Type\StaticType::class, \PHPStan\Type\ThisType::class, \PHPStan\Type\Generic\GenericStaticType::class, \PHPStan\Type\ObjectShapeType::class, \PHPStan\Type\NonexistentParentClassType::class, \PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class, \PHPStan\Type\Accessory\AccessoryNumericStringType::class, \PHPStan\Type\Accessory\AccessoryNonEmptyStringType::class, \PHPStan\Type\Accessory\AccessoryNonFalsyStringType::class, \PHPStan\Type\Accessory\AccessoryLiteralStringType::class, \PHPStan\Type\Accessory\AccessoryLowercaseStringType::class, \PHPStan\Type\Accessory\AccessoryUppercaseStringType::class, \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType::class, \PHPStan\Type\Accessory\HasMethodType::class, \PHPStan\Type\Accessory\HasPropertyType::class, \PHPStan\Type\ObjectType::class, \PHPStan\Type\Generic\GenericObjectType::class, \PHPStan\Type\Enum\EnumCaseObjectType::class, \PHPStan\Type\IterableType::class, \PHPStan\Type\CallableType::class, \PHPStan\Type\ClosureType::class, \PHPStan\Type\Constant\ConstantArrayType::class, \PHPStan\Type\UnionType::class, \PHPStan\Type\BenevolentUnionType::class, \PHPStan\Type\IntersectionType::class, \PHPStan\Type\ErrorType::class, \PHPStan\Type\CircularTypeAliasErrorType::class, \PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class, \PHPStan\Type\NonAcceptingNeverType::class, \PHPStan\Type\StringAlwaysAcceptingObjectWithToStringType::class, \PHPStan\Type\StringNeverAcceptingObjectWithToStringType::class, \PHPStan\Type\ResourceType::class, \PHPStan\Type\KeyOfType::class, \PHPStan\Type\ValueOfType::class, \PHPStan\Type\OffsetAccessType::class, \PHPStan\Type\ClassConstantAccessType::class, \PHPStan\Type\NewObjectType::class, \PHPStan\Type\ConditionalType::class, \PHPStan\Type\ConditionalTypeForParameter::class, \PHPStan\Type\LateResolvableArrayShapeType::class, \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::class, \PHPStan\Type\Generic\TemplateArrayType::class, \PHPStan\Type\Generic\TemplateBenevolentUnionType::class, \PHPStan\Type\Generic\TemplateBooleanType::class, \PHPStan\Type\Generic\TemplateConstantArrayType::class, \PHPStan\Type\Generic\TemplateConstantIntegerType::class, \PHPStan\Type\Generic\TemplateConstantStringType::class, \PHPStan\Type\Generic\TemplateFloatType::class, \PHPStan\Type\Generic\TemplateGenericObjectType::class, \PHPStan\Type\Generic\TemplateIntegerType::class, \PHPStan\Type\Generic\TemplateIntersectionType::class, \PHPStan\Type\Generic\TemplateIterableType::class, \PHPStan\Type\Generic\TemplateMixedType::class, \PHPStan\Type\Generic\TemplateNullType::class, \PHPStan\Type\Generic\TemplateObjectShapeType::class, \PHPStan\Type\Generic\TemplateObjectType::class, \PHPStan\Type\Generic\TemplateObjectWithoutClassType::class, \PHPStan\Type\Generic\TemplateStrictMixedType::class, \PHPStan\Type\Generic\TemplateStringType::class, \PHPStan\Type\Generic\TemplateUnionType::class, \PHPStan\Type\Generic\TemplateKeyOfType::class] as $typeClass) {
 	$observations["native $typeClass"] = (new ReflectionMethod($typeClass, 'describe'))->isInternal();
 }
 
@@ -684,6 +684,14 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 	'floatInf' => new $constFloat(INF),
 	'floatNegInf' => new $constFloat(-INF),
 	'floatIntMax' => new $constFloat((float) PHP_INT_MAX),
+	'floatRange0-10' => \PHPStan\Type\FloatRangeType::fromInterval(0.0, 10.0),
+	'floatRange-1.5-2.5' => \PHPStan\Type\FloatRangeType::fromInterval(-1.5, 2.5),
+	'floatRange10-20' => \PHPStan\Type\FloatRangeType::fromInterval(10.000000000000002, 20.0),
+	'floatRangeMin-0' => \PHPStan\Type\FloatRangeType::fromInterval(-INF, 0.0),
+	'floatRangePositive' => \PHPStan\Type\FloatRangeType::fromInterval(5e-324, INF),
+	'floatRangeFinite' => \PHPStan\Type\FloatRangeType::fromInterval(-PHP_FLOAT_MAX, PHP_FLOAT_MAX),
+	'floatRangeAll' => \PHPStan\Type\FloatRangeType::fromInterval(-INF, INF),
+	'unionFloatRanges' => new \PHPStan\Type\UnionType([\PHPStan\Type\FloatRangeType::fromInterval(0.0, 1.0), \PHPStan\Type\FloatRangeType::fromInterval(3.0, 4.0)]),
 	'null' => new $null(),
 	'void' => new $void(),
 	'int' => new \PHPStan\Type\IntegerType(),
@@ -745,6 +753,16 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 		'constTiny' => new $constFloatClass(5e-324),
 		'constFloatMax' => new $constFloatClass(PHP_FLOAT_MAX),
 		'constFromInt' => new $constFloatClass(3),
+		'range0-10' => \PHPStan\Type\FloatRangeType::fromInterval(0.0, 10.0),
+		'range-0-10' => \PHPStan\Type\FloatRangeType::fromInterval(-0.0, 10.0),
+		'range-1.5-2.5' => \PHPStan\Type\FloatRangeType::fromInterval(-1.5, 2.5),
+		'range-5--1' => \PHPStan\Type\FloatRangeType::fromInterval(-5.0, -1.0),
+		'rangeMin-0' => \PHPStan\Type\FloatRangeType::fromInterval(-INF, 0.0),
+		'rangeMin--tiny' => \PHPStan\Type\FloatRangeType::fromInterval(-INF, -5e-324),
+		'rangePositive' => \PHPStan\Type\FloatRangeType::fromInterval(5e-324, INF),
+		'rangeFinite' => \PHPStan\Type\FloatRangeType::fromInterval(-PHP_FLOAT_MAX, PHP_FLOAT_MAX),
+		'rangeAll' => \PHPStan\Type\FloatRangeType::fromInterval(-INF, INF),
+		'rangeIntMax' => \PHPStan\Type\FloatRangeType::fromInterval(0.0, (float) PHP_INT_MAX),
 		'null' => new $nullClass(),
 		'void' => new $voidClass(),
 	];
@@ -752,6 +770,15 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 	foreach ($subjects as $name => $subject) {
 		$r["$name class"] = $view($subject);
 		$r["$name instanceof"] = [$subject instanceof \PHPStan\Type\Type, $subject instanceof $floatClass, $subject instanceof $nullClass, $subject instanceof $voidClass, $subject instanceof \PHPStan\Type\ConstantScalarType, $subject instanceof \PHPStan\Type\CompoundType];
+		if ($subject instanceof \PHPStan\Type\FloatRangeType) {
+			$r["$name bounds"] = [$subject->getMin(), $subject->getMax()];
+			foreach ($others as $otherName => $other) {
+				$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+				$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
+				// the private ordinal helpers the interval operations run on
+				$r["$name getOrdinalBounds $otherName"] = (static fn () => self::getOrdinalBounds($other))->bindTo(null, \PHPStan\Type\FloatRangeType::class)();
+			}
+		}
 		foreach (['typeOnly' => \PHPStan\Type\VerbosityLevel::typeOnly(), 'value' => \PHPStan\Type\VerbosityLevel::value(), 'precise' => \PHPStan\Type\VerbosityLevel::precise(), 'cache' => \PHPStan\Type\VerbosityLevel::cache()] as $levelName => $level) {
 			$r["$name describe $levelName"] = $subject->describe($level);
 		}
@@ -941,6 +968,30 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 	$r['anonymousNull getConstantScalarValues'] = $view($anonymousNull->getConstantScalarValues());
 	$r['anonymousNull looseCompare emptyArray'] = $view($anonymousNull->looseCompare($others['emptyArray'], $floatPhpVersions[1]));
 	$r['null isSuperTypeOf anonymousNull'] = [$view($subjects['null']->isSuperTypeOf($anonymousNull)), $subjects['null']->equals($anonymousNull), $view($subjects['void']->accepts($anonymousNull, true))];
+	$floatRangeClass = \PHPStan\Type\FloatRangeType::class;
+	$ordinal = static fn (string $method, $value) => (static fn () => self::$method($value))->bindTo(null, $floatRangeClass)();
+	foreach ([0.0, -0.0, 5e-324, -5e-324, 1.0, -1.0, 1.5, 0.1, PHP_FLOAT_EPSILON, PHP_FLOAT_MAX, -PHP_FLOAT_MAX, INF, -INF, (float) PHP_INT_MAX, 2.2250738585072014E-308] as $value) {
+		$key = var_export($value, true);
+		$r["fromInterval toOrdinal $key"] = $ordinal('toOrdinal', $value);
+		$r["fromInterval fromOrdinal $key"] = var_export($ordinal('fromOrdinal', $ordinal('toOrdinal', $value)), true);
+	}
+	foreach ([[0.0, 10.0], [-0.0, 0.0], [0.0, -0.0], [5.0, 5.0], [5.0, 1.0], [-INF, INF], [-0.0, 5e-324], [1.0, 1.0000000000000002]] as [$min, $max]) {
+		$r['fromInterval ' . var_export($min, true) . ' ' . var_export($max, true)] = $view($floatRangeClass::fromInterval($min, $max));
+	}
+	try {
+		$floatRangeClass::fromInterval(NAN, 1.0);
+		$r['fromInterval NAN'] = 'no throw';
+	} catch (\PHPStan\ShouldNotHappenException $e) {
+		$r['fromInterval NAN'] = 'ShouldNotHappenException';
+	}
+	$r['union order'] = $view(\PHPStan\Type\TypeCombinator::union($floatRangeClass::fromInterval(5e-324, INF), $floatRangeClass::fromInterval(-INF, -5e-324), $floatRangeClass::fromInterval(-INF, -10.0)));
+	$r['union touching'] = $view(\PHPStan\Type\TypeCombinator::union($floatRangeClass::fromInterval(0.0, 1.0), new \PHPStan\Type\Constant\ConstantFloatType(1.0000000000000002), $floatRangeClass::fromInterval(3.0, 4.0)));
+	$r['intersect ranges'] = $view(\PHPStan\Type\TypeCombinator::intersect($floatRangeClass::fromInterval(0.0, 10.0), $floatRangeClass::fromInterval(5.0, 20.0)));
+	foreach (['range0-10' => $floatRangeClass::fromInterval(0.0, 10.0), 'range-1.5-2.5' => $floatRangeClass::fromInterval(-1.5, 2.5), 'rangeMin-0' => $floatRangeClass::fromInterval(-INF, 0.0), 'ranges' => new \PHPStan\Type\UnionType([$floatRangeClass::fromInterval(0.0, 1.0), $floatRangeClass::fromInterval(3.0, 4.0)]), 'rangeAndInts' => new \PHPStan\Type\UnionType([$floatRangeClass::fromInterval(0.0, 1.0), \PHPStan\Type\IntegerRangeType::fromInterval(3, 4)])] as $negatedName => $negatedType) {
+		$r["arithmeticNegate $negatedName"] = $view($negatedType->arithmeticNegate($floatPhpVersions[1]));
+	}
+	$r['remove from range'] = $view(\PHPStan\Type\TypeCombinator::remove($floatRangeClass::fromInterval(0.0, 10.0), new \PHPStan\Type\Constant\ConstantFloatType(5.5)));
+
 	foreach ($r as $key => $value) {
 		$observations["float $key"] = $value;
 	}

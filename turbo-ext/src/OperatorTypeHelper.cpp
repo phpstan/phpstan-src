@@ -1860,6 +1860,11 @@ public:
 			IETR_VAL(minusOne, newConstantIntegerType(-1));
 			return subtractOrMultiply(IETR_MUL, type, minusOne.raw());
 		}
+		if (isA(negated.raw(), pt_ce_float_range_type)) {
+			double min, max;
+			if (UNEXPECTED(!pt_float_range_bounds(Z_OBJ_P(negated.raw()), min, max))) return zv::Val();
+			return pt_float_range_from_interval(-max, -min);
+		}
 
 		return negated;
 	}

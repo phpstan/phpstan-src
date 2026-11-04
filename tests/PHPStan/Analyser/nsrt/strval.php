@@ -59,7 +59,7 @@ function floatvalTest(string $string): void
 	assertType('1.0', floatval(true));
 	assertType('0.0|1.0', floatval(rand(0, 1) === 0));
 	assertType('42.0', floatval(42));
-	assertType('float', floatval(rand()));
+	assertType('float<0.0, 9.223372036854776E+18>', floatval(rand()));
 	assertType('float', floatval(rand() * 0.1));
 	assertType('0.0', floatval([]));
 	assertType('1.0', floatval([null]));

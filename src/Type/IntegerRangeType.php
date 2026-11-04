@@ -14,6 +14,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use function array_filter;
@@ -24,11 +25,13 @@ use function count;
 use function floor;
 use function get_class;
 use function is_int;
+use function is_nan;
 use function is_numeric;
 use function is_string;
 use function max;
 use function min;
 use function sprintf;
+use const NAN;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -106,7 +109,8 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new NeverType();
 		}
 
-		return self::fromInterval(null, (int) ceil($value), -1);
+		// (int) NAN is 0, but PHP 8.5 warns when it casts NAN
+		return self::fromInterval(null, is_nan($value) ? 0 : (int) ceil($value), -1);
 	}
 
 	/**
@@ -128,7 +132,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new NeverType();
 		}
 
-		return self::fromInterval(null, (int) floor($value));
+		return self::fromInterval(null, is_nan($value) ? 0 : (int) floor($value));
 	}
 
 	/**
@@ -150,7 +154,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new NeverType();
 		}
 
-		return self::fromInterval((int) floor($value), null, 1);
+		return self::fromInterval(is_nan($value) ? 0 : (int) floor($value), null, 1);
 	}
 
 	/**
@@ -174,7 +178,7 @@ class IntegerRangeType extends IntegerType implements CompoundType
 			return new NeverType();
 		}
 
-		return self::fromInterval((int) ceil($value), null);
+		return self::fromInterval(is_nan($value) ? 0 : (int) ceil($value), null);
 	}
 
 	public function getMin(): ?int
@@ -487,10 +491,12 @@ class IntegerRangeType extends IntegerType implements CompoundType
 	{
 		$subtractedTypes = [
 			new ConstantBooleanType(true),
+			new ConstantFloatType(NAN),
 		];
 
 		if ($this->max !== null) {
 			$subtractedTypes[] = self::createAllGreaterThanOrEqualTo($this->max);
+			$subtractedTypes[] = FloatRangeType::createAllGreaterThanOrEqualTo($this->max);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
@@ -498,10 +504,13 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
 	{
-		$subtractedTypes = [];
+		$subtractedTypes = [
+			new ConstantFloatType(NAN),
+		];
 
 		if ($this->max !== null) {
 			$subtractedTypes[] = self::createAllGreaterThan($this->max);
+			$subtractedTypes[] = FloatRangeType::createAllGreaterThan($this->max);
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
@@ -512,10 +521,12 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		$subtractedTypes = [
 			new NullType(),
 			new ConstantBooleanType(false),
+			new ConstantFloatType(NAN),
 		];
 
 		if ($this->min !== null) {
 			$subtractedTypes[] = self::createAllSmallerThanOrEqualTo($this->min);
+			$subtractedTypes[] = FloatRangeType::createAllSmallerThanOrEqualTo($this->min);
 		}
 
 		if ($this->min !== null && $this->min > 0 || $this->max !== null && $this->max < 0) {
@@ -527,10 +538,13 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
 	{
-		$subtractedTypes = [];
+		$subtractedTypes = [
+			new ConstantFloatType(NAN),
+		];
 
 		if ($this->min !== null) {
 			$subtractedTypes[] = self::createAllSmallerThan($this->min);
+			$subtractedTypes[] = FloatRangeType::createAllSmallerThan($this->min);
 		}
 
 		if ($this->min !== null && $this->min > 0 || $this->max !== null && $this->max < 0) {
@@ -539,6 +553,12 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		}
 
 		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	/** An int converts to the float closest to it, which keeps the order of the ints. */
+	public function toFloat(): Type
+	{
+		return FloatRangeType::fromInterval((float) ($this->min ?? PHP_INT_MIN), (float) ($this->max ?? PHP_INT_MAX));
 	}
 
 	public function toBoolean(): BooleanType

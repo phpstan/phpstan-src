@@ -125,7 +125,7 @@ class FilterVar
 		assertType('17.1', filter_var(17.1, FILTER_VALIDATE_FLOAT));
 		assertType('1.0E-50', filter_var(1e-50, FILTER_VALIDATE_FLOAT));
 		assertType('float', filter_var($int, FILTER_VALIDATE_FLOAT));
-		assertType('float', filter_var($intRange, FILTER_VALIDATE_FLOAT));
+		assertType('float<0.0, 9.0>', filter_var($intRange, FILTER_VALIDATE_FLOAT));
 		assertType('17.0', filter_var(17, FILTER_VALIDATE_FLOAT));
 		assertType('float|false', filter_var($string, FILTER_VALIDATE_FLOAT));
 		assertType('float|false', filter_var($nonEmptyString, FILTER_VALIDATE_FLOAT));

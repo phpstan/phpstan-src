@@ -100,6 +100,32 @@ public:
 		return ordinal < 0 ? -value : value;
 	}
 
+	/* the floats smaller than / at most / greater than / at least $value,
+	 * NAN excluded: never for a NAN, and past either infinity */
+	static zv::Val createAllSmallerThan(double value)
+	{
+		if (std::isnan(value) || value == -HUGE_VAL) return pt_type_new_never_type();
+		return fromInterval(-HUGE_VAL, fromOrdinal(toOrdinal(value) - 1));
+	}
+
+	static zv::Val createAllSmallerThanOrEqualTo(double value)
+	{
+		if (std::isnan(value)) return pt_type_new_never_type();
+		return fromInterval(-HUGE_VAL, value);
+	}
+
+	static zv::Val createAllGreaterThan(double value)
+	{
+		if (std::isnan(value) || value == HUGE_VAL) return pt_type_new_never_type();
+		return fromInterval(fromOrdinal(toOrdinal(value) + 1), HUGE_VAL);
+	}
+
+	static zv::Val createAllGreaterThanOrEqualTo(double value)
+	{
+		if (std::isnan(value)) return pt_type_new_never_type();
+		return fromInterval(value, HUGE_VAL);
+	}
+
 	/* [min, max] of a range or [o, o] of a non-NAN constant in ordinals
 	 * (found = true), found = false for anything else; false = pending
 	 * exception */
@@ -156,12 +182,12 @@ public:
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
 		smart_str str = {NULL, 0};
 		smart_str_appendl(&str, "float<", 6);
-		if (UNEXPECTED(!appendBound(str, min, -INFINITY, "min"))) {
+		if (UNEXPECTED(!appendBound(str, min, -HUGE_VAL, "min"))) {
 			smart_str_free(&str);
 			return zv::Val();
 		}
 		smart_str_appendl(&str, ", ", 2);
-		if (UNEXPECTED(!appendBound(str, max, INFINITY, "max"))) {
+		if (UNEXPECTED(!appendBound(str, max, HUGE_VAL, "max"))) {
 			smart_str_free(&str);
 			return zv::Val();
 		}
@@ -263,6 +289,72 @@ public:
 		return pt_val_of<pt_float_type_new>();
 	}
 
+	/* the getSmallerType() family: mixed without what compares false
+	 * against every value of the range (NAN against all of them), the way
+	 * IntegerRangeType builds it; UNDEF = pending exception */
+	zv::Val getSmallerType() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		zv::Arr types = zv::Arr::create(4);
+		zval maxZv;
+		ZVAL_DOUBLE(&maxZv, max);
+		if (UNEXPECTED(!push(types, constantBoolean(true)) || !push(types, nan())
+			|| !push(types, pt_integer_range_create_all_greater_than_or_equal_to(&maxZv))
+			|| !push(types, createAllGreaterThanOrEqualTo(max)))) return zv::Val();
+		return pt_type_mixed_minus(types.table());
+	}
+
+	zv::Val getSmallerOrEqualType() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		zv::Arr types = zv::Arr::create(3);
+		zval maxZv;
+		ZVAL_DOUBLE(&maxZv, max);
+		if (UNEXPECTED(!push(types, nan())
+			|| !push(types, pt_integer_range_create_all_greater_than(&maxZv))
+			|| !push(types, createAllGreaterThan(max)))) return zv::Val();
+		return pt_type_mixed_minus(types.table());
+	}
+
+	zv::Val getGreaterType() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		zv::Arr types = zv::Arr::create(6);
+		zval minZv;
+		ZVAL_DOUBLE(&minZv, min);
+		if (UNEXPECTED(!push(types, nullType()) || !push(types, constantBoolean(false)) || !push(types, nan())
+			|| !push(types, pt_integer_range_create_all_smaller_than_or_equal_to(&minZv))
+			|| !push(types, createAllSmallerThanOrEqualTo(min)))) return zv::Val();
+		if (excludesZero(min, max) && UNEXPECTED(!push(types, constantBoolean(true)))) return zv::Val();
+		return pt_type_mixed_minus(types.table());
+	}
+
+	zv::Val getGreaterOrEqualType() const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		zv::Arr types = zv::Arr::create(5);
+		zval minZv;
+		ZVAL_DOUBLE(&minZv, min);
+		if (UNEXPECTED(!push(types, nan())
+			|| !push(types, pt_integer_range_create_all_smaller_than(&minZv))
+			|| !push(types, createAllSmallerThan(min)))) return zv::Val();
+		if (excludesZero(min, max) && UNEXPECTED(!push(types, nullType()) || !push(types, constantBoolean(false)))) return zv::Val();
+		return pt_type_mixed_minus(types.table());
+	}
+
+	/* private excludesZero(): the range lies on one side of the zeros */
+	bool excludesZeroValue(bool &out) const
+	{
+		double min = 0.0, max = 0.0;
+		if (UNEXPECTED(!bounds(min, max))) return false;
+		out = excludesZero(min, max);
+		return true;
+	}
+
 	/* true when the range lies on one side of the zeros, bool otherwise */
 	zv::Val toBoolean() const
 	{
@@ -309,6 +401,13 @@ public:
 
 		/* get_class($otherType) === parent::class */
 		if (Z_OBJCE_P(otherType) == pt_ce_float_type) return zv::Val::copyOf(zv::Ref(otherType));
+
+		/* float is float<min, max>|NAN */
+		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_constant_float_type)) {
+			double min = 0.0, max = 0.0;
+			if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+			if (min == -HUGE_VAL && max == HUGE_VAL) return pt_val_of<pt_float_type_new>();
+		}
 
 		return zv::Val::null();
 	}
@@ -381,9 +480,9 @@ public:
 	{
 		double min = 0.0, max = 0.0;
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
-		zv::Val minNode = boundNode(min, -INFINITY, "min");
+		zv::Val minNode = boundNode(min, -HUGE_VAL, "min");
 		if (UNEXPECTED(minNode.isUndef())) return zv::Val();
-		zv::Val maxNode = boundNode(max, INFINITY, "max");
+		zv::Val maxNode = boundNode(max, HUGE_VAL, "max");
 		if (UNEXPECTED(maxNode.isUndef())) return zv::Val();
 		zv::Val floatName = zv::Val::string("float", 5);
 		zv::Val floatNode = pt_type_new(PT_CLASS_IDENTIFIER_TYPE_NODE, 1, floatName.raw());
@@ -409,6 +508,34 @@ private:
 		}
 		zend_throw_error(NULL, "Typed property %s::$%s must not be accessed before initialization", ZSTR_VAL(pt_ce_float_range_type->name), name);
 		return false;
+	}
+
+	static bool excludesZero(double min, double max)
+	{
+		return toOrdinal(min) > 0 || toOrdinal(max) < 0;
+	}
+
+	static bool push(zv::Arr &types, zv::Val type)
+	{
+		if (UNEXPECTED(type.isUndef())) return false;
+		types.push(std::move(type));
+		return true;
+	}
+
+	static zv::Val nan() { return pt_type_new_constant_float(static_cast<double>(NAN)); }
+
+	static zv::Val constantBoolean(bool value)
+	{
+		zval result;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&result, value))) return zv::Val();
+		return zv::Val::adopt(result);
+	}
+
+	static zv::Val nullType()
+	{
+		zval result;
+		if (UNEXPECTED(!pt_null_type_new(&result))) return zv::Val();
+		return zv::Val::adopt(result);
 	}
 
 	bool ordinalBounds(zend_long &min, zend_long &max) const
@@ -485,6 +612,12 @@ zv::Val pt_float_range_from_interval(double min, double max)
 	return FloatRangeType::fromInterval(min, max);
 }
 
+zv::Val pt_float_range_create_all(double value, bool greater, bool orEqual)
+{
+	if (greater) return orEqual ? FloatRangeType::createAllGreaterThanOrEqualTo(value) : FloatRangeType::createAllGreaterThan(value);
+	return orEqual ? FloatRangeType::createAllSmallerThanOrEqualTo(value) : FloatRangeType::createAllSmallerThan(value);
+}
+
 bool pt_float_range_bounds(zend_object *range, double &min, double &max)
 {
 	if (EXPECTED(range->ce == pt_ce_float_range_type)) return FloatRangeType(range).bounds(min, max);
@@ -501,6 +634,22 @@ static void pt_frt_try(INTERNAL_FUNCTION_PARAMETERS, zv::Val (FloatRangeType::*m
 	zval *otherType;
 	if (!zp::parse<zp::Obj>(execute_data, otherType)) RETURN_THROWS();
 	PT_RETURN_VAL((PT_THIS.*method)(otherType));
+}
+
+/* the createAll*() family: one float $value */
+static void pt_frt_create_all(INTERNAL_FUNCTION_PARAMETERS, zv::Val (*factory)(double))
+{
+	double value;
+	if (!zp::parse<zp::Double>(execute_data, value)) RETURN_THROWS();
+	PT_RETURN_VAL(factory(value));
+}
+
+/* the getSmallerType() family: one PhpVersion argument, never read */
+static void pt_frt_comparison_type(INTERNAL_FUNCTION_PARAMETERS, zv::Val (FloatRangeType::*method)() const)
+{
+	zval *phpVersion;
+	if (!zp::parse<zp::Zval>(execute_data, phpVersion)) RETURN_THROWS();
+	PT_RETURN_VAL((PT_THIS.*method)());
 }
 
 /* getMin() / getMax() */
@@ -546,6 +695,22 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 		PT_RETURN_VAL(FloatRangeType::getOrdinalBoundsValue(type));
 	});
 
+	cls.method(sigs::createAllSmallerThan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_create_all(INTERNAL_FUNCTION_PARAM_PASSTHRU, FloatRangeType::createAllSmallerThan);
+	});
+
+	cls.method(sigs::createAllSmallerThanOrEqualTo, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_create_all(INTERNAL_FUNCTION_PARAM_PASSTHRU, FloatRangeType::createAllSmallerThanOrEqualTo);
+	});
+
+	cls.method(sigs::createAllGreaterThan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_create_all(INTERNAL_FUNCTION_PARAM_PASSTHRU, FloatRangeType::createAllGreaterThan);
+	});
+
+	cls.method(sigs::createAllGreaterThanOrEqualTo, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_create_all(INTERNAL_FUNCTION_PARAM_PASSTHRU, FloatRangeType::createAllGreaterThanOrEqualTo);
+	});
+
 	cls.method(sigs::getMin, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_frt_bound(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getMin);
 	});
@@ -574,6 +739,29 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 		zval *precision;
 		if (!zp::parse<zp::Obj>(execute_data, precision)) RETURN_THROWS();
 		PT_RETURN_VAL(FloatRangeType::generalize());
+	});
+
+	cls.method(sigs::getSmallerType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getSmallerType);
+	});
+
+	cls.method(sigs::getSmallerOrEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getSmallerOrEqualType);
+	});
+
+	cls.method(sigs::getGreaterType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getGreaterType);
+	});
+
+	cls.method(sigs::getGreaterOrEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		pt_frt_comparison_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::getGreaterOrEqualType);
+	});
+
+	cls.method(sigs::excludesZero, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		bool excludes = false;
+		if (UNEXPECTED(!PT_THIS.excludesZeroValue(excludes))) RETURN_THROWS();
+		RETURN_BOOL(excludes);
 	});
 
 	cls.method<&FloatRangeType::toBoolean>(sigs::toBoolean);

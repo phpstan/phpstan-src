@@ -91,19 +91,20 @@ inline constexpr char strings[] =
 	"getSmallerOrEqualType\0" /* 713 */
 	"getGreaterType\0" /* 735 */
 	"getGreaterOrEqualType\0" /* 750 */
-	"PHPStan\\Type\\BooleanType\0" /* 772 */
-	"toBoolean\0" /* 797 */
-	"toAbsoluteNumber\0" /* 807 */
-	"toBitwiseNotType\0" /* 824 */
-	"toString\0" /* 841 */
-	"tryUnion\0" /* 850 */
-	"tryIntersect\0" /* 859 */
-	"typeToRemove\0" /* 872 */
-	"tryRemove\0" /* 885 */
-	"getFiniteTypes\0" /* 895 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 910 */
-	"toPhpDocNode\0" /* 949 */
-	"looseCompare"; /* 962 */
+	"toFloat\0" /* 772 */
+	"PHPStan\\Type\\BooleanType\0" /* 780 */
+	"toBoolean\0" /* 805 */
+	"toAbsoluteNumber\0" /* 815 */
+	"toBitwiseNotType\0" /* 832 */
+	"toString\0" /* 849 */
+	"tryUnion\0" /* 858 */
+	"tryIntersect\0" /* 867 */
+	"typeToRemove\0" /* 880 */
+	"tryRemove\0" /* 893 */
+	"getFiniteTypes\0" /* 903 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 918 */
+	"toPhpDocNode\0" /* 957 */
+	"looseCompare"; /* 970 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* __construct $min */
 	reg::packed(4, MAY_BE_NULL | MAY_BE_LONG), /* __construct $max */
@@ -171,7 +172,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(28, 0, 29), /* getGreaterType return */
 	reg::packed(546, 0, 557), /* getGreaterOrEqualType $phpVersion */
 	reg::packed(28, 0, 29), /* getGreaterOrEqualType return */
-	reg::packed(28, 0, 772), /* toBoolean return */
+	reg::packed(28, 0, 29), /* toFloat return */
+	reg::packed(28, 0, 780), /* toBoolean return */
 	reg::packed(28, 0, 29), /* toAbsoluteNumber return */
 	reg::packed(28, 0, 29), /* toBitwiseNotType return */
 	reg::packed(28, 0, 29), /* toString return */
@@ -179,13 +181,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(28, MAY_BE_NULL, 29), /* tryUnion return */
 	reg::packed(386, 0, 29), /* tryIntersect $otherType */
 	reg::packed(28, MAY_BE_NULL, 29), /* tryIntersect return */
-	reg::packed(872, 0, 29), /* tryRemove $typeToRemove */
+	reg::packed(880, 0, 29), /* tryRemove $typeToRemove */
 	reg::packed(28, MAY_BE_NULL, 29), /* tryRemove return */
 	reg::packed(28, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(28, 0, 910), /* toPhpDocNode return */
+	reg::packed(28, 0, 918), /* toPhpDocNode return */
 	reg::packed(287, 0, 29), /* looseCompare $type */
 	reg::packed(546, 0, 557), /* looseCompare $phpVersion */
-	reg::packed(28, 0, 772), /* looseCompare return */
+	reg::packed(28, 0, 780), /* looseCompare return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -219,16 +221,17 @@ inline constexpr sigtab::Sig getSmallerType = { { 698 /* getSmallerType */, 1, 5
 inline constexpr sigtab::Sig getSmallerOrEqualType = { { 713 /* getSmallerOrEqualType */, 1, 60, 1, 61, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getGreaterType = { { 735 /* getGreaterType */, 1, 62, 1, 63, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getGreaterOrEqualType = { { 750 /* getGreaterOrEqualType */, 1, 64, 1, 65, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toBoolean = { { 797 /* toBoolean */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toAbsoluteNumber = { { 807 /* toAbsoluteNumber */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toBitwiseNotType = { { 824 /* toBitwiseNotType */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toString = { { 841 /* toString */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryUnion = { { 850 /* tryUnion */, 1, 70, 1, 71, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryIntersect = { { 859 /* tryIntersect */, 1, 72, 1, 73, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 885 /* tryRemove */, 1, 74, 1, 75, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 895 /* getFiniteTypes */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 949 /* toPhpDocNode */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig looseCompare = { { 962 /* looseCompare */, 2, 78, 2, 80, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toFloat = { { 772 /* toFloat */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBoolean = { { 805 /* toBoolean */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 815 /* toAbsoluteNumber */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 832 /* toBitwiseNotType */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 849 /* toString */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 858 /* tryUnion */, 1, 71, 1, 72, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 867 /* tryIntersect */, 1, 73, 1, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 893 /* tryRemove */, 1, 75, 1, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 903 /* getFiniteTypes */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 957 /* toPhpDocNode */, 0, 78, 0, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 970 /* looseCompare */, 2, 79, 2, 81, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IntegerRangeType

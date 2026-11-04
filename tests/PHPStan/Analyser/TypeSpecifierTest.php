@@ -826,10 +826,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(3),
 				),
 				[
-					'$n' => 'mixed~(int<3, max>|true)',
+					'$n' => 'mixed~(NAN|float<3.0, max>|int<3, max>|true)',
 				],
 				[
-					'$n' => 'mixed~(0.0|int<min, 2>|false|null)',
+					'$n' => 'mixed~(float<min, 2.9999999999999996>|int<min, 2>|false|null)',
 				],
 			],
 			[
@@ -838,10 +838,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MIN),
 				),
 				[
-					'$n' => 'mixed~(int<' . PHP_INT_MIN . ', max>|true)',
+					'$n' => 'mixed~(NAN|float<-9.223372036854776E+18, max>|int<' . PHP_INT_MIN . ', max>|true)',
 				],
 				[
-					'$n' => 'mixed~(0.0|false|null)',
+					'$n' => 'mixed~(float<min, -9.223372036854778E+18>|false|null)',
 				],
 			],
 			[
@@ -850,10 +850,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MAX),
 				),
 				[
-					'$n' => 'mixed~(0.0|bool|int<min, ' . PHP_INT_MAX . '>|null)',
+					'$n' => 'mixed~(NAN|bool|float<min, 9.223372036854776E+18>|int<min, ' . PHP_INT_MAX . '>|null)',
 				],
 				[
-					'$n' => 'mixed',
+					'$n' => 'mixed~float<9.223372036854778E+18, max>',
 				],
 			],
 			[
@@ -862,11 +862,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MIN),
 				),
 				[
-					'$n' => 'mixed~int<' . (PHP_INT_MIN + 1) . ', max>',
+					'$n' => 'mixed~(NAN|float<-9.223372036854775E+18, max>|int<' . (PHP_INT_MIN + 1) . ', max>)',
 				],
 				[
 					// int<min, PHP_INT_MIN> holds a single value
-					'$n' => 'mixed~(' . PHP_INT_MIN . '|0.0|bool|null)',
+					'$n' => 'mixed~(' . PHP_INT_MIN . '|bool|float<min, -9.223372036854776E+18>|null)',
 				],
 			],
 			[
@@ -875,11 +875,11 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new LNumber(PHP_INT_MAX),
 				),
 				[
-					'$n' => 'mixed~(0.0|int<min, ' . (PHP_INT_MAX - 1) . '>|false|null)',
+					'$n' => 'mixed~(NAN|float<min, 9.223372036854775E+18>|int<min, ' . (PHP_INT_MAX - 1) . '>|false|null)',
 				],
 				[
 					// int<PHP_INT_MAX, max> holds a single value
-					'$n' => 'mixed~(' . PHP_INT_MAX . '|true)',
+					'$n' => 'mixed~(' . PHP_INT_MAX . '|float<9.223372036854776E+18, max>|true)',
 				],
 			],
 			[
@@ -894,10 +894,10 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$n' => 'mixed~(0.0|int<min, 2>|int<6, max>|false|null)',
+					'$n' => 'mixed~(NAN|float<min, 2.9999999999999996>|float<5.000000000000001, max>|int<min, 2>|int<6, max>|false|null)',
 				],
 				[
-					'$n' => 'mixed~(int<3, 5>|true)',
+					'$n' => 'mixed~(float<3.0, 5.0>|int<3, 5>|true)',
 				],
 			],
 			[
@@ -912,7 +912,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$n' => 'mixed~int<6, max>',
+					'$n' => 'mixed~(NAN|float<5.000000000000001, max>|int<6, max>)',
 					'$foo' => self::SURE_NOT_FALSEY,
 				],
 				[],
@@ -1257,7 +1257,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$foo' => 'non-empty-array<mixed, mixed>',
-					'count($foo)' => 'mixed~(0.0|int<min, 1>|false|null)',
+					'count($foo)' => 'mixed~(NAN|float<min, 1.9999999999999998>|int<min, 1>|false|null)',
 				],
 				[],
 			],

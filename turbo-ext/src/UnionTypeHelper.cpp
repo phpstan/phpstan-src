@@ -22,6 +22,8 @@
 #include "TypeTraits.h"
 #include "generated/UnionTypeHelper.h"
 
+#include <cmath>
+
 namespace sigs = ptdecl::UnionTypeHelper::sig;
 
 zend_class_entry *pt_ce_union_type_helper = nullptr;
@@ -151,6 +153,13 @@ private:
 			if (UNEXPECTED(aValue.isUndef())) return false;
 			zv::Val bValue = pt_type_call(b, PT_LC("getvalue"), 0, NULL);
 			if (UNEXPECTED(bValue.isUndef())) return false;
+			/* NAN is unordered (<=> answers 1 both ways), so it goes after every number */
+			bool aIsNan = Z_TYPE_P(aValue.raw()) == IS_DOUBLE && std::isnan(Z_DVAL_P(aValue.raw()));
+			bool bIsNan = Z_TYPE_P(bValue.raw()) == IS_DOUBLE && std::isnan(Z_DVAL_P(bValue.raw()));
+			if (aIsNan || bIsNan) {
+				out = (int) aIsNan - (int) bIsNan;
+				return true;
+			}
 			int cmp = zend_compare(aValue.raw(), bValue.raw());
 			if (cmp != 0) {
 				out = cmp;

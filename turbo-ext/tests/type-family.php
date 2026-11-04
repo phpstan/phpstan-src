@@ -990,6 +990,14 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 	foreach (['range0-10' => $floatRangeClass::fromInterval(0.0, 10.0), 'range-1.5-2.5' => $floatRangeClass::fromInterval(-1.5, 2.5), 'rangeMin-0' => $floatRangeClass::fromInterval(-INF, 0.0), 'ranges' => new \PHPStan\Type\UnionType([$floatRangeClass::fromInterval(0.0, 1.0), $floatRangeClass::fromInterval(3.0, 4.0)]), 'rangeAndInts' => new \PHPStan\Type\UnionType([$floatRangeClass::fromInterval(0.0, 1.0), \PHPStan\Type\IntegerRangeType::fromInterval(3, 4)])] as $negatedName => $negatedType) {
 		$r["arithmeticNegate $negatedName"] = $view($negatedType->arithmeticNegate($floatPhpVersions[1]));
 	}
+	foreach (['createAllSmallerThan', 'createAllSmallerThanOrEqualTo', 'createAllGreaterThan', 'createAllGreaterThanOrEqualTo'] as $method) {
+		foreach ([0.0, -0.0, 5.0, -1.5, 5e-324, PHP_FLOAT_MAX, INF, -INF, NAN] as $value) {
+			$r["$method " . var_export($value, true)] = $view($floatRangeClass::$method($value));
+		}
+	}
+	$r['union nan order'] = $view(\PHPStan\Type\TypeCombinator::union(new \PHPStan\Type\Constant\ConstantFloatType(NAN), new \PHPStan\Type\Constant\ConstantFloatType(INF), new \PHPStan\Type\Constant\ConstantFloatType(-INF), new \PHPStan\Type\Constant\ConstantIntegerType(1)));
+	$r['union full range and nan'] = $view(\PHPStan\Type\TypeCombinator::union($floatRangeClass::fromInterval(-INF, 0.0), new \PHPStan\Type\Constant\ConstantFloatType(NAN), $floatRangeClass::fromInterval(5e-324, INF)));
+	$r['remove range from float'] = $view(\PHPStan\Type\TypeCombinator::remove(new \PHPStan\Type\FloatType(), $floatRangeClass::fromInterval(-PHP_FLOAT_MAX, PHP_FLOAT_MAX)));
 	$r['remove from range'] = $view(\PHPStan\Type\TypeCombinator::remove($floatRangeClass::fromInterval(0.0, 10.0), new \PHPStan\Type\Constant\ConstantFloatType(5.5)));
 
 	foreach ($r as $key => $value) {

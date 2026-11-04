@@ -1409,6 +1409,18 @@ private:
 		return pt_type_call(Z_OBJ_P(type), lcname, len, 1, OBJ_PROP_NUM(self, slots::phpVersion));
 	}
 
+	/* TypeCombinator::union($type, new ConstantFloatType(NAN)) — NAN is
+	 * neither smaller nor greater than anything, so the false branch of a
+	 * comparison keeps it */
+	static zv::Val withNan(zv::Val type)
+	{
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
+		if (UNEXPECTED(nan.isUndef())) return zv::Val();
+		zv::Args args{type.raw(), nan.raw()};
+		return pt_type_combinator_call(PT_LC("union"), 2, args);
+	}
+
 	/* $this->defaultNarrowingHelper->createForSubject($subject, $type,
 	 * $context, $scope)->setRootExpr($expr) */
 	zv::Val subjectTypes(zval *subject, zval *type, zval *context, zval *scope, zval *expr) const
@@ -1813,7 +1825,7 @@ private:
 			if (!leftIsScalar) {
 				zv::Val narrowed = contextTrue
 					? (orEqual ? comparisonType(rightType.raw(), PT_LC("getsmallerorequaltype")) : comparisonType(rightType.raw(), PT_LC("getsmallertype")))
-					: (orEqual ? comparisonType(rightType.raw(), PT_LC("getgreatertype")) : comparisonType(rightType.raw(), PT_LC("getgreaterorequaltype")));
+					: withNan(orEqual ? comparisonType(rightType.raw(), PT_LC("getgreatertype")) : comparisonType(rightType.raw(), PT_LC("getgreaterorequaltype")));
 				if (UNEXPECTED(narrowed.isUndef())) return zv::Val();
 				if (UNEXPECTED(!unionInto(result, subjectTypes(left, narrowed.raw(), &truthyContextZval, scope, expr)))) return zv::Val();
 			}
@@ -1824,7 +1836,7 @@ private:
 			if (!rightIsScalar) {
 				zv::Val narrowed = contextTrue
 					? (orEqual ? comparisonType(leftType.raw(), PT_LC("getgreaterorequaltype")) : comparisonType(leftType.raw(), PT_LC("getgreatertype")))
-					: (orEqual ? comparisonType(leftType.raw(), PT_LC("getsmallertype")) : comparisonType(leftType.raw(), PT_LC("getsmallerorequaltype")));
+					: withNan(orEqual ? comparisonType(leftType.raw(), PT_LC("getsmallertype")) : comparisonType(leftType.raw(), PT_LC("getsmallerorequaltype")));
 				if (UNEXPECTED(narrowed.isUndef())) return zv::Val();
 				if (UNEXPECTED(!unionInto(result, subjectTypes(right, narrowed.raw(), &truthyContextZval, scope, expr)))) return zv::Val();
 			}

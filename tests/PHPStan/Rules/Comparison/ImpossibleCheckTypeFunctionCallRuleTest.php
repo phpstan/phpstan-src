@@ -1311,6 +1311,22 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testFloatClassFunctions(): void
+	{
+		$this->analyse([__DIR__ . '/data/float-class-functions.php'], [
+			['Call to function is_nan() with int will always evaluate to false.', 17],
+			['Call to function is_finite() with int will always evaluate to true.', 18],
+			['Call to function is_infinite() with int will always evaluate to false.', 19],
+			['Call to function is_nan() with float<-1.7976931348623157E+308, 1.7976931348623157E+308> will always evaluate to false.', 21, 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.'],
+			['Call to function is_finite() with float<-1.7976931348623157E+308, 1.7976931348623157E+308> will always evaluate to true.', 22, 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.'],
+			['Call to function is_infinite() with float<-1.7976931348623157E+308, 1.7976931348623157E+308> will always evaluate to false.', 23, 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.'],
+			['Call to function is_nan() with 1.5 will always evaluate to false.', 25],
+			['Call to function is_infinite() with INF will always evaluate to true.', 26],
+			['Call to function is_finite() with NAN will always evaluate to false.', 29],
+			['Call to function is_nan() with float<min, max> will always evaluate to false.', 33],
+		]);
+	}
+
 	public function testBug15147(): void
 	{
 		$this->analyse([__DIR__ . '/../Arrays/data/bug-15147.php'], []);

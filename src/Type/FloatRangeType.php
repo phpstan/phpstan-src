@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
@@ -20,6 +21,7 @@ use function pack;
 use function sprintf;
 use function unpack;
 use const INF;
+use const NAN;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -120,6 +122,43 @@ class FloatRangeType extends FloatType
 		return null;
 	}
 
+	/** The floats smaller than $value, NAN excluded. */
+	public static function createAllSmallerThan(float $value): Type
+	{
+		if (is_nan($value) || $value === -INF) {
+			return new NeverType();
+		}
+
+		return self::fromInterval(-INF, self::fromOrdinal(self::toOrdinal($value) - 1));
+	}
+
+	public static function createAllSmallerThanOrEqualTo(float $value): Type
+	{
+		if (is_nan($value)) {
+			return new NeverType();
+		}
+
+		return self::fromInterval(-INF, $value);
+	}
+
+	public static function createAllGreaterThan(float $value): Type
+	{
+		if (is_nan($value) || $value === INF) {
+			return new NeverType();
+		}
+
+		return self::fromInterval(self::fromOrdinal(self::toOrdinal($value) + 1), INF);
+	}
+
+	public static function createAllGreaterThanOrEqualTo(float $value): Type
+	{
+		if (is_nan($value)) {
+			return new NeverType();
+		}
+
+		return self::fromInterval($value, INF);
+	}
+
 	public function getMin(): float
 	{
 		return $this->min;
@@ -207,9 +246,70 @@ class FloatRangeType extends FloatType
 		return new FloatType();
 	}
 
+	public function getSmallerType(PhpVersion $phpVersion): Type
+	{
+		$subtractedTypes = [
+			new ConstantBooleanType(true),
+			new ConstantFloatType(NAN),
+			IntegerRangeType::createAllGreaterThanOrEqualTo($this->max),
+			self::createAllGreaterThanOrEqualTo($this->max),
+		];
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getSmallerOrEqualType(PhpVersion $phpVersion): Type
+	{
+		$subtractedTypes = [
+			new ConstantFloatType(NAN),
+			IntegerRangeType::createAllGreaterThan($this->max),
+			self::createAllGreaterThan($this->max),
+		];
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getGreaterType(PhpVersion $phpVersion): Type
+	{
+		$subtractedTypes = [
+			new NullType(),
+			new ConstantBooleanType(false),
+			new ConstantFloatType(NAN),
+			IntegerRangeType::createAllSmallerThanOrEqualTo($this->min),
+			self::createAllSmallerThanOrEqualTo($this->min),
+		];
+
+		if ($this->excludesZero()) {
+			$subtractedTypes[] = new ConstantBooleanType(true);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	public function getGreaterOrEqualType(PhpVersion $phpVersion): Type
+	{
+		$subtractedTypes = [
+			new ConstantFloatType(NAN),
+			IntegerRangeType::createAllSmallerThan($this->min),
+			self::createAllSmallerThan($this->min),
+		];
+
+		if ($this->excludesZero()) {
+			$subtractedTypes[] = new NullType();
+			$subtractedTypes[] = new ConstantBooleanType(false);
+		}
+
+		return TypeCombinator::remove(new MixedType(), TypeCombinator::union(...$subtractedTypes));
+	}
+
+	private function excludesZero(): bool
+	{
+		return self::toOrdinal($this->min) > 0 || self::toOrdinal($this->max) < 0;
+	}
+
 	public function toBoolean(): BooleanType
 	{
-		if (self::toOrdinal($this->min) > 0 || self::toOrdinal($this->max) < 0) {
+		if ($this->excludesZero()) {
 			return new ConstantBooleanType(true);
 		}
 
@@ -249,6 +349,11 @@ class FloatRangeType extends FloatType
 
 		if (get_class($otherType) === parent::class) {
 			return $otherType;
+		}
+
+		// float is float<min, max>|NAN
+		if ($otherType instanceof ConstantFloatType && $this->min === -INF && $this->max === INF) {
+			return new FloatType();
 		}
 
 		return null;

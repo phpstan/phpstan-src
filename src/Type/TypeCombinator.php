@@ -488,7 +488,21 @@ final class TypeCombinator
 		);
 		// array_merge() hands the first array back as it is when the second one
 		// is empty, so the keys the bucketing above unset must be renumbered here
-		$types = array_merge(array_values($types), $integerRangeTypes, $floatRangeTypes);
+		// sorted by min, touching float ranges are neighbours: merging them now lets a
+		// constant meet the merged range (float<min, max> and NAN are float)
+		$mergedFloatRangeTypes = [];
+		foreach ($floatRangeTypes as $floatRangeType) {
+			$last = count($mergedFloatRangeTypes) - 1;
+			if ($last >= 0) {
+				$merged = $mergedFloatRangeTypes[$last]->tryUnion($floatRangeType);
+				if ($merged instanceof FloatRangeType) {
+					$mergedFloatRangeTypes[$last] = $merged;
+					continue;
+				}
+			}
+			$mergedFloatRangeTypes[] = $floatRangeType;
+		}
+		$types = array_merge(array_values($types), $integerRangeTypes, $mergedFloatRangeTypes);
 		$typesCount = count($types);
 
 		if (isset($scalarTypes[IntersectionType::class])) {

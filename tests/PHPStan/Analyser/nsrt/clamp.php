@@ -22,9 +22,9 @@ function impureInt(): int
 function doFoo(int $i, float $f, int|float $n, int $a, int $b, string $s, ?int $maybe, int $percent, int $delta, array $list): void
 {
 	assertType('int<1, 10>', clamp($i, 1, 10));
-	assertType('float', clamp($f, 1.0, 10.0));
+	assertType('NAN|float<1.0, 10.0>', clamp($f, 1.0, 10.0));
 	assertType('1.0|10.0|int<1, 10>', clamp($i, 1.0, 10.0));
-	assertType('float|int<0, 1>', clamp($n, 0, 1));
+	assertType('NAN|float<0.0, 1.0>|int<0, 1>', clamp($n, 0, 1));
 	assertType('int', clamp($i, $a, $b));
 	assertType('int<0, 100>', clamp($percent + $delta, 0, 100));
 	assertType('5', clamp(5, 1, 10));

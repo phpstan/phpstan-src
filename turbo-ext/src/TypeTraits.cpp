@@ -1279,12 +1279,12 @@ static bool cncPushBoolean(zv::Arr &types, bool value)
 	return true;
 }
 
-/* new ConstantFloatType(0.0) — "subtract range when we support float-ranges" */
-static bool cncPushFloatZero(zv::Arr &types)
+/* new ConstantFloatType(NAN) — it compares false against every number */
+static bool cncPushNan(zv::Arr &types)
 {
-	zv::Val zero = pt_type_new_constant_float(0.0);
-	if (UNEXPECTED(zero.isUndef())) return false;
-	types.push(std::move(zero));
+	zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
+	if (UNEXPECTED(nan.isUndef())) return false;
+	types.push(std::move(nan));
 	return true;
 }
 
@@ -1300,35 +1300,53 @@ static void constantNumericComparison(INTERNAL_FUNCTION_PARAMETERS, ConstantNume
 	PT_ARGS(1, 1);
 	zval *value = pt_type_constant_scalar_value(PT_THIS_OBJ, PT_SCOPE);
 	if (UNEXPECTED(value == NULL)) RETURN_THROWS();
-	bool truthy = zend_is_true(value); /* (bool) $this->value */
-	zv::Arr types = zv::Arr::create(5);
+	/* !$this->toBoolean()->isFalse()->yes() — (bool) $this->value without
+	 * the engine's NAN warning */
+	zv::Val boolean = pt_type_call(PT_THIS_OBJ, PT_LC("toboolean"), 0, NULL);
+	if (UNEXPECTED(boolean.isUndef())) RETURN_THROWS();
+	if (UNEXPECTED(Z_TYPE_P(boolean.raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function isFalse() on %s", zend_zval_value_name(boolean.raw()));
+		RETURN_THROWS();
+	}
+	zend_long isFalse = pt_type_call_trinary(Z_OBJ_P(boolean.raw()), PT_LC("isfalse"), 0, NULL);
+	if (UNEXPECTED(isFalse < 0)) RETURN_THROWS();
+	bool truthy = isFalse != PT_TRI_YES;
+	double floatValue = zval_get_double(value); /* the float parameter of FloatRangeType::createAll*() */
+	zv::Arr types = zv::Arr::create(6);
 	bool ok;
 	switch (which) {
 		case CNC_SMALLER:
-			/* [new ConstantBooleanType(true), IntegerRangeType::createAllGreaterThanOrEqualTo($this->value)]
-			 * + [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(0.0)] when falsy */
-			ok = cncPushBoolean(types, true)
+			/* [new ConstantBooleanType(true), new ConstantFloatType(NAN), IntegerRangeType::createAllGreaterThanOrEqualTo($this->value), FloatRangeType::createAllGreaterThanOrEqualTo($this->value)]
+			 * + [new NullType(), new ConstantBooleanType(false)] when falsy */
+			ok = cncPushBoolean(types, true) && cncPushNan(types)
 				&& cncPushRange(types, pt_integer_range_create_all_greater_than_or_equal_to(value))
-				&& (truthy || (cncPushNull(types) && cncPushBoolean(types, false) && cncPushFloatZero(types)));
+				&& cncPushRange(types, pt_float_range_create_all(floatValue, true, true))
+				&& (truthy || (cncPushNull(types) && cncPushBoolean(types, false)));
 			break;
 		case CNC_SMALLER_OR_EQUAL:
-			/* [IntegerRangeType::createAllGreaterThan($this->value)] + [new ConstantBooleanType(true)] when falsy */
-			ok = cncPushRange(types, pt_integer_range_create_all_greater_than(value))
+			/* [new ConstantFloatType(NAN), IntegerRangeType::createAllGreaterThan($this->value), FloatRangeType::createAllGreaterThan($this->value)]
+			 * + [new ConstantBooleanType(true)] when falsy */
+			ok = cncPushNan(types)
+				&& cncPushRange(types, pt_integer_range_create_all_greater_than(value))
+				&& cncPushRange(types, pt_float_range_create_all(floatValue, true, false))
 				&& (truthy || cncPushBoolean(types, true));
 			break;
 		case CNC_GREATER:
-			/* [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(0.0), IntegerRangeType::createAllSmallerThanOrEqualTo($this->value)]
+			/* [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(NAN), IntegerRangeType::createAllSmallerThanOrEqualTo($this->value), FloatRangeType::createAllSmallerThanOrEqualTo($this->value)]
 			 * + [new ConstantBooleanType(true)] when truthy */
-			ok = cncPushNull(types) && cncPushBoolean(types, false) && cncPushFloatZero(types)
+			ok = cncPushNull(types) && cncPushBoolean(types, false) && cncPushNan(types)
 				&& cncPushRange(types, pt_integer_range_create_all_smaller_than_or_equal_to(value))
+				&& cncPushRange(types, pt_float_range_create_all(floatValue, false, true))
 				&& (!truthy || cncPushBoolean(types, true));
 			break;
 		case CNC_GREATER_OR_EQUAL:
 		default:
-			/* [IntegerRangeType::createAllSmallerThan($this->value)]
-			 * + [new NullType(), new ConstantBooleanType(false), new ConstantFloatType(0.0)] when truthy */
-			ok = cncPushRange(types, pt_integer_range_create_all_smaller_than(value))
-				&& (!truthy || (cncPushNull(types) && cncPushBoolean(types, false) && cncPushFloatZero(types)));
+			/* [new ConstantFloatType(NAN), IntegerRangeType::createAllSmallerThan($this->value), FloatRangeType::createAllSmallerThan($this->value)]
+			 * + [new NullType(), new ConstantBooleanType(false)] when truthy */
+			ok = cncPushNan(types)
+				&& cncPushRange(types, pt_integer_range_create_all_smaller_than(value))
+				&& cncPushRange(types, pt_float_range_create_all(floatValue, false, false))
+				&& (!truthy || (cncPushNull(types) && cncPushBoolean(types, false)));
 			break;
 	}
 	if (UNEXPECTED(!ok)) RETURN_THROWS();

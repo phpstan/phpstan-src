@@ -631,12 +631,13 @@ public:
 	{
 		NullableLong min = NullableLong::null(), max = NullableLong::null();
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
-		zv::Arr subtractedTypes = zv::Arr::create(2);
-		if (UNEXPECTED(!pushConstantBoolean(subtractedTypes, true))) return zv::Val();
+		zv::Arr subtractedTypes = zv::Arr::create(4);
+		if (UNEXPECTED(!pushConstantBoolean(subtractedTypes, true) || !pushRange(subtractedTypes, nan()))) return zv::Val();
 		if (!max.isNull) {
 			zval value;
 			ZVAL_LONG(&value, max.value);
 			if (UNEXPECTED(!pushRange(subtractedTypes, createAllGreaterThanOrEqualTo(&value)))) return zv::Val();
+			if (UNEXPECTED(!pushRange(subtractedTypes, pt_float_range_create_all((double) max.value, true, true)))) return zv::Val();
 		}
 		return pt_type_mixed_minus(subtractedTypes.table());
 	}
@@ -646,11 +647,13 @@ public:
 	{
 		NullableLong min = NullableLong::null(), max = NullableLong::null();
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
-		zv::Arr subtractedTypes = zv::Arr::create(1);
+		zv::Arr subtractedTypes = zv::Arr::create(3);
+		if (UNEXPECTED(!pushRange(subtractedTypes, nan()))) return zv::Val();
 		if (!max.isNull) {
 			zval value;
 			ZVAL_LONG(&value, max.value);
 			if (UNEXPECTED(!pushRange(subtractedTypes, createAllGreaterThan(&value)))) return zv::Val();
+			if (UNEXPECTED(!pushRange(subtractedTypes, pt_float_range_create_all((double) max.value, true, false)))) return zv::Val();
 		}
 		return pt_type_mixed_minus(subtractedTypes.table());
 	}
@@ -661,12 +664,13 @@ public:
 	{
 		NullableLong min = NullableLong::null(), max = NullableLong::null();
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
-		zv::Arr subtractedTypes = zv::Arr::create(4);
-		if (UNEXPECTED(!pushNull(subtractedTypes) || !pushConstantBoolean(subtractedTypes, false))) return zv::Val();
+		zv::Arr subtractedTypes = zv::Arr::create(6);
+		if (UNEXPECTED(!pushNull(subtractedTypes) || !pushConstantBoolean(subtractedTypes, false) || !pushRange(subtractedTypes, nan()))) return zv::Val();
 		if (!min.isNull) {
 			zval value;
 			ZVAL_LONG(&value, min.value);
 			if (UNEXPECTED(!pushRange(subtractedTypes, createAllSmallerThanOrEqualTo(&value)))) return zv::Val();
+			if (UNEXPECTED(!pushRange(subtractedTypes, pt_float_range_create_all((double) min.value, false, true)))) return zv::Val();
 		}
 		if (excludesZero(min, max)) {
 			if (UNEXPECTED(!pushConstantBoolean(subtractedTypes, true))) return zv::Val();
@@ -680,16 +684,26 @@ public:
 	{
 		NullableLong min = NullableLong::null(), max = NullableLong::null();
 		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
-		zv::Arr subtractedTypes = zv::Arr::create(3);
+		zv::Arr subtractedTypes = zv::Arr::create(5);
+		if (UNEXPECTED(!pushRange(subtractedTypes, nan()))) return zv::Val();
 		if (!min.isNull) {
 			zval value;
 			ZVAL_LONG(&value, min.value);
 			if (UNEXPECTED(!pushRange(subtractedTypes, createAllSmallerThan(&value)))) return zv::Val();
+			if (UNEXPECTED(!pushRange(subtractedTypes, pt_float_range_create_all((double) min.value, false, false)))) return zv::Val();
 		}
 		if (excludesZero(min, max)) {
 			if (UNEXPECTED(!pushNull(subtractedTypes) || !pushConstantBoolean(subtractedTypes, false))) return zv::Val();
 		}
 		return pt_type_mixed_minus(subtractedTypes.table());
+	}
+
+	/* FloatRangeType::fromInterval((float) ($this->min ?? PHP_INT_MIN), (float) ($this->max ?? PHP_INT_MAX)) */
+	zv::Val toFloat() const
+	{
+		NullableLong min = NullableLong::null(), max = NullableLong::null();
+		if (UNEXPECTED(!bounds(min, max))) return zv::Val();
+		return pt_float_range_from_interval((double) (min.isNull ? ZEND_LONG_MIN : min.value), (double) (max.isNull ? ZEND_LONG_MAX : max.value));
 	}
 
 	/* true when 0 is out of the range, bool when it may be in, false when
@@ -1144,7 +1158,10 @@ private:
 			zend_type_error("%s(): Argument #1 ($num) must be of type int|float, %s given", useCeil ? "ceil" : "floor", zend_zval_value_name(value));
 			return false;
 		}
-		out = zend_dval_to_lval(useCeil ? ceil(Z_DVAL_P(value)) : floor(Z_DVAL_P(value)));
+		/* is_nan($value) ? 0 : (int) ceil($value) (or floor()): (int) NAN is 0,
+		 * without the engine's warning */
+		double rounded = useCeil ? ceil(Z_DVAL_P(value)) : floor(Z_DVAL_P(value));
+		out = std::isnan(rounded) ? 0 : zend_dval_to_lval(rounded);
 		return true;
 	}
 
@@ -1181,6 +1198,8 @@ private:
 	}
 
 	static zv::Val never() { return pt_type_new_never_type(); }
+
+	static zv::Val nan() { return pt_type_new_constant_float(static_cast<double>(NAN)); }
 
 	static zv::Val integer()
 	{
@@ -1489,6 +1508,8 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 	cls.method(sigs::getGreaterOrEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_irt_comparison_type(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntegerRangeType::getGreaterOrEqualType);
 	});
+
+	cls.method<&IntegerRangeType::toFloat>(sigs::toFloat);
 
 	cls.method<&IntegerRangeType::toBoolean>(sigs::toBoolean);
 

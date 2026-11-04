@@ -9,11 +9,11 @@
  * $value`, a declared typed property slot (IS_PROP_UNINIT until the
  * constructor writes it), so the std object handlers do GC/clone.
  *
- * The class body's methods live here; the three traits
- * (ConstantScalarTypeTrait, ConstantScalarToBooleanTrait,
- * ConstantNumericComparisonTypeTrait) come from the shared registrars in
- * TypeTraits.cpp, run after the class's own methods so the class body's
- * isSuperTypeOf() and equals() win. Everything else is inherited from FloatType.
+ * The class body's methods live here; the two traits
+ * (ConstantScalarTypeTrait, ConstantNumericComparisonTypeTrait) come from
+ * the shared registrars in TypeTraits.cpp, run after the class's own
+ * methods so the class body's isSuperTypeOf(), equals() and toBoolean()
+ * win. Everything else is inherited from FloatType.
  *
  * Float conversions the twin leaves to PHP — the (string) cast under the
  * `precision` ini and under precision -1, the (int) cast with its
@@ -185,7 +185,18 @@ public:
 		return result;
 	}
 
-	/* new ConstantIntegerType((int) $this->value) */
+	/* new ConstantBooleanType($this->value !== 0.0) — false for both zeros,
+	 * true for NAN */
+	zv::Val toBoolean() const
+	{
+		double v = 0.0;
+		if (UNEXPECTED(!value(v))) return zv::Val();
+		zval created;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&created, v != 0.0))) return zv::Val();
+		return zv::Val::adopt(created);
+	}
+
+	/* new ConstantIntegerType($this->toIntegerValue()) */
 	zv::Val toInteger() const
 	{
 		zend_long v;
@@ -193,7 +204,7 @@ public:
 		return pt_type_new_constant_integer(v);
 	}
 
-	/* new ConstantIntegerType(~ (int) $this->value) */
+	/* new ConstantIntegerType(~ $this->toIntegerValue()) */
 	zv::Val toBitwiseNotType() const
 	{
 		zend_long v;
@@ -209,7 +220,7 @@ public:
 		return create(std::fabs(v));
 	}
 
-	/* new ConstantIntegerType((int) $this->value) */
+	/* new ConstantIntegerType($this->toIntegerValue()) */
 	zv::Val toArrayKey() const { return toInteger(); }
 
 	/* [] for a NAN, [$this] otherwise */
@@ -248,10 +259,16 @@ private:
 	/* (int) $this->value — the engine's cast, with the diagnostics it
 	 * raises for a NAN, an infinity or an out-of-range value; false =
 	 * pending exception */
+	/* $this->toIntegerValue(): 0 for NAN and the infinities, the engine's
+	 * (int) cast with its out-of-range diagnostics for any other float */
 	bool integerValue(zend_long &out) const
 	{
 		double v = 0.0;
 		if (UNEXPECTED(!value(v))) return false;
+		if (!std::isfinite(v)) {
+			out = 0;
+			return true;
+		}
 		zval asDouble;
 		ZVAL_DOUBLE(&asDouble, v);
 		out = zval_get_long(&asDouble);
@@ -318,6 +335,8 @@ PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 
 	cls.method<&ConstantFloatType::toString>(sigs::toString);
 
+	cls.method<&ConstantFloatType::toBoolean>(sigs::toBoolean);
+
 	cls.method<&ConstantFloatType::toInteger>(sigs::toInteger);
 
 	cls.method<&ConstantFloatType::toBitwiseNotType>(sigs::toBitwiseNotType);
@@ -338,7 +357,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 	cls.method<&ConstantFloatType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	/* the traits, in the twin's `use` order; the class body above wins over
-	 * every name it declares (isSuperTypeOf, equals, getFiniteTypes) */
+	 * every name it declares (isSuperTypeOf, equals, toBoolean, getFiniteTypes) */
 	ptdecl::ConstantFloatType::registerTraits(cls);
 
 	cls.shadow(&pt_ce_constant_float_type);

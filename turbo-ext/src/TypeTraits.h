@@ -278,6 +278,8 @@ zv::Val pt_constant_float_cast_to_string(double value);
 [[nodiscard]] bool pt_float_range_bounds(zend_object *range, double &min, double &max);
 /* FloatRangeType::fromInterval($min, $max); UNDEF = pending exception */
 zv::Val pt_float_range_from_interval(double min, double max);
+/* FloatRangeType::createAll{Smaller,Greater}Than[OrEqualTo]($value) */
+zv::Val pt_float_range_create_all(double value, bool greater, bool orEqual);
 
 /* the bodies of IntegerType::looseCompare() and IntegerType::arithmeticPower()
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending

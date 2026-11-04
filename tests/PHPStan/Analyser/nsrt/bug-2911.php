@@ -70,7 +70,7 @@ final class ArrayItemRemoval
 		if (!is_numeric($settings['limit']) || $settings['limit'] < 1) {
 			throw $this->configException($settings, 'limit');
 		}
-		assertType("array{remove: 'all'|'first'|'last', limit: float|int<1, max>|numeric-string, ...<string, mixed>}", $settings);
+		assertType("array{remove: 'all'|'first'|'last', limit: NAN|float<1.0, max>|int<1, max>|numeric-string, ...<string, mixed>}", $settings);
 
 		$settings['limit'] = (int) $settings['limit'];
 

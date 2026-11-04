@@ -14,7 +14,7 @@ function greater(float $y): float {
 		assertType('1.0', $x);
 		return 5 / $x;
 	}
-	assertType('0.0|1.0', $x); // could be '0.0' when we support float-ranges
+	assertType('0.0', $x);
 
 	return 1.0;
 }
@@ -44,7 +44,7 @@ function smaller(float $y): float {
 		assertType('-1.0', $x);
 		return 5 / $x;
 	}
-	assertType('-1.0|0.0', $x); // could be '0.0' when we support float-ranges
+	assertType('0.0', $x);
 
 	return 1.0;
 }

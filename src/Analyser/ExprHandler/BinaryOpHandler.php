@@ -42,6 +42,7 @@ use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
@@ -57,6 +58,7 @@ use function is_string;
 use function spl_object_id;
 use function sprintf;
 use function strtolower;
+use const NAN;
 
 /**
  * @implements ExprHandler<BinaryOp>
@@ -664,11 +666,12 @@ final class BinaryOpHandler implements ExprHandler
 						);
 					}
 				} elseif ($context->false()) {
+					// NAN is neither smaller nor greater than anything: the false branch keeps it
 					if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
 								$expr->left,
-								$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
+								TypeCombinator::union($orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion), new ConstantFloatType(NAN)),
 								TypeSpecifierContext::createTruthy(),
 								$scope,
 							)->setRootExpr($expr),
@@ -678,7 +681,7 @@ final class BinaryOpHandler implements ExprHandler
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
 								$expr->right,
-								$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
+								TypeCombinator::union($orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion), new ConstantFloatType(NAN)),
 								TypeSpecifierContext::createTruthy(),
 								$scope,
 							)->setRootExpr($expr),

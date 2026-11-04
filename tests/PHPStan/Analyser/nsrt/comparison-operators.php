@@ -207,16 +207,16 @@ class ComparisonOperatorsInTypeSpecifier
 		}
 
 		if ($f > 10) {
-			assertType('float', $f);
+			assertType('float<10.000000000000002, max>', $f);
 		}
 		if ($f >= 10) {
-			assertType('float', $f);
+			assertType('float<10.0, max>', $f);
 		}
 		if ($f < 10) {
-			assertType('float|null', $f);
+			assertType('float<min, 9.999999999999998>|null', $f);
 		}
 		if ($f <= 10) {
-			assertType('float|null', $f);
+			assertType('float<min, 10.0>|null', $f);
 		}
 	}
 
@@ -236,16 +236,16 @@ class ComparisonOperatorsInTypeSpecifier
 		}
 
 		if ($f > -10) {
-			assertType('float', $f);
+			assertType('float<-9.999999999999998, max>', $f);
 		}
 		if ($f >= -10) {
-			assertType('float', $f);
+			assertType('float<-10.0, max>', $f);
 		}
 		if ($f < -10) {
-			assertType('float|null', $f);
+			assertType('float<min, -10.000000000000002>|null', $f);
 		}
 		if ($f <= -10) {
-			assertType('float|null', $f);
+			assertType('float<min, -10.0>|null', $f);
 		}
 	}
 
@@ -265,16 +265,16 @@ class ComparisonOperatorsInTypeSpecifier
 		}
 
 		if ($f > 0) {
-			assertType('float', $f);
+			assertType('float<5.0E-324, max>', $f);
 		}
 		if ($f >= 0) {
-			assertType('float|null', $f);
+			assertType('float<0.0, max>|null', $f);
 		}
 		if ($f < 0) {
-			assertType('float', $f);
+			assertType('float<min, -5.0E-324>', $f);
 		}
 		if ($f <= 0) {
-			assertType('float|null', $f);
+			assertType('float<min, 0.0>|null', $f);
 		}
 	}
 

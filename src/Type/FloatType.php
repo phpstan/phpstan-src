@@ -11,6 +11,7 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -19,11 +20,14 @@ use PHPStan\Type\Traits\NonGenericTypeTrait;
 use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
-use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
 use function get_class;
+use function is_finite;
+use function is_nan;
+use const INF;
+use const NAN;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isFloat()')]
@@ -39,7 +43,6 @@ class FloatType implements Type
 	use UndecidedComparisonTypeTrait;
 	use NonGenericTypeTrait;
 	use NonOffsetAccessibleTypeTrait;
-	use NonRemoveableTypeTrait;
 	use NonGeneralizableTypeTrait;
 	use OperatorTypeTrait;
 
@@ -92,6 +95,36 @@ class FloatType implements Type
 		}
 
 		return IsSuperTypeOfResult::createNo();
+	}
+
+	/**
+	 * float is float<min, max>|NAN: removing NAN leaves the range, removing a
+	 * range or an infinity leaves the rest of the range and NAN.
+	 */
+	public function tryRemove(Type $typeToRemove): ?Type
+	{
+		// a constant is a single value: removing it takes it or leaves it
+		if ($this->isConstantValue()->yes()) {
+			return null;
+		}
+
+		$notNan = FloatRangeType::fromInterval(-INF, INF);
+		if ($typeToRemove instanceof ConstantFloatType && is_nan($typeToRemove->getValue())) {
+			return $notNan;
+		}
+
+		// a finite constant would split the range: float !== 1.5 stays float
+		// rather than spelling out the two ranges around 1.5
+		if ($typeToRemove instanceof ConstantFloatType && is_finite($typeToRemove->getValue())) {
+			return null;
+		}
+
+		$removed = $notNan->tryRemove($typeToRemove);
+		if ($removed === null) {
+			return null;
+		}
+
+		return TypeCombinator::union($removed, new ConstantFloatType(NAN));
 	}
 
 	public function equals(Type $type): bool

@@ -1129,7 +1129,21 @@ public:
 		for (zv::Val &rangeType : integerRangeTypes) {
 			types.push_back(std::move(rangeType));
 		}
+		/* sorted by min, touching float ranges are neighbours: merging them now
+		 * lets a constant meet the merged range (float<min, max> and NAN are float) */
+		TypeList mergedFloatRangeTypes;
 		for (zv::Val &rangeType : floatRangeTypes) {
+			if (!mergedFloatRangeTypes.empty()) {
+				zv::Val merged = call(mergedFloatRangeTypes.back().raw(), PT_LC("tryunion"), 1, rangeType.raw());
+				if (UNEXPECTED(merged.isUndef())) return zv::Val();
+				if (isInstance(merged.raw(), pt_ce_float_range_type)) {
+					mergedFloatRangeTypes.back() = std::move(merged);
+					continue;
+				}
+			}
+			mergedFloatRangeTypes.push_back(std::move(rangeType));
+		}
+		for (zv::Val &rangeType : mergedFloatRangeTypes) {
 			types.push_back(std::move(rangeType));
 		}
 		typesCount = types.size();

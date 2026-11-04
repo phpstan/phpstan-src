@@ -10,6 +10,8 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use function count;
+use function is_float;
+use function is_nan;
 use function strcasecmp;
 use function usort;
 use const PHP_INT_MIN;
@@ -70,6 +72,12 @@ final class UnionTypeHelper
 					|| $b instanceof ConstantFloatType
 				)
 			) {
+				// NAN is unordered (<=> answers 1 both ways), so it goes after every number
+				$aIsNan = is_float($a->getValue()) && is_nan($a->getValue());
+				$bIsNan = is_float($b->getValue()) && is_nan($b->getValue());
+				if ($aIsNan || $bIsNan) {
+					return $aIsNan <=> $bIsNan;
+				}
 				$cmp = $a->getValue() <=> $b->getValue();
 				if ($cmp !== 0) {
 					return $cmp;

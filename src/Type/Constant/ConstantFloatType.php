@@ -6,6 +6,7 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprFloatNode;
 use PHPStan\PhpDocParser\Ast\Type\ConstTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\FloatRangeType;
@@ -30,7 +31,6 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 {
 
 	use ConstantScalarTypeTrait;
-	use ConstantScalarToBooleanTrait;
 	use ConstantNumericComparisonTypeTrait;
 
 	/** @api */
@@ -110,14 +110,26 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return new ConstantStringType((string) $this->value);
 	}
 
+	public function toBoolean(): BooleanType
+	{
+		// (bool) $this->value without the warning PHP 8.5 raises for NAN; -0.0 === 0.0
+		return new ConstantBooleanType($this->value !== 0.0);
+	}
+
+	/** (int) $this->value without the warning PHP 8.5 raises for NAN and the infinities, which cast to 0. */
+	private function toIntegerValue(): int
+	{
+		return is_finite($this->value) ? (int) $this->value : 0;
+	}
+
 	public function toInteger(): Type
 	{
-		return new ConstantIntegerType((int) $this->value);
+		return new ConstantIntegerType($this->toIntegerValue());
 	}
 
 	public function toBitwiseNotType(): Type
 	{
-		return new ConstantIntegerType(~ (int) $this->value);
+		return new ConstantIntegerType(~ $this->toIntegerValue());
 	}
 
 	public function toAbsoluteNumber(): Type
@@ -127,7 +139,7 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 
 	public function toArrayKey(): Type
 	{
-		return new ConstantIntegerType((int) $this->value);
+		return new ConstantIntegerType($this->toIntegerValue());
 	}
 
 	public function getFiniteTypes(): array

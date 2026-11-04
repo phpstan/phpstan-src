@@ -9,6 +9,8 @@
 #include "TypeTraits.h"
 #include "generated/FloatType.h"
 
+#include <cmath>
+
 namespace sigs = ptdecl::FloatType::sig;
 
 zend_class_entry *pt_ce_float_type = nullptr;
@@ -29,6 +31,36 @@ public:
 	static zv::Val getObjectClassNames() { return zv::Val(zv::Arr::empty()); }
 	static zv::Val getObjectClassReflections() { return zv::Val(zv::Arr::empty()); }
 	static zv::Val getConstantStrings() { return zv::Val(zv::Arr::empty()); }
+
+	/* float is float<min, max>|NAN: the range for NAN, the rest of the
+	 * range and NAN for a range or an infinity, null for a finite constant
+	 * (it would split the range), for anything else and on a constant
+	 * $this; UNDEF = pending exception */
+	zv::Val tryRemove(zval *typeToRemove) const
+	{
+		/* $this->isConstantValue()->yes() */
+		zend_long isConstant = pt_type_call_trinary(self, PT_LC("isconstantvalue"), 0, NULL);
+		if (UNEXPECTED(isConstant < 0)) return zv::Val();
+		if (isConstant == PT_TRI_YES) return zv::Val::null();
+
+		zv::Val notNan = pt_float_range_from_interval(-HUGE_VAL, HUGE_VAL);
+		if (UNEXPECTED(notNan.isUndef())) return zv::Val();
+		if (instanceof_function(Z_OBJCE_P(typeToRemove), pt_ce_constant_float_type)) {
+			double value = 0.0;
+			if (UNEXPECTED(!pt_constant_float_get_value(Z_OBJ_P(typeToRemove), value))) return zv::Val();
+			if (std::isnan(value)) return notNan;
+			if (std::isfinite(value)) return zv::Val::null();
+		}
+
+		zv::Val removed = pt_type_call(Z_OBJ_P(notNan.raw()), PT_LC("tryremove"), 1, typeToRemove);
+		if (UNEXPECTED(removed.isUndef())) return zv::Val();
+		if (Z_TYPE_P(removed.raw()) == IS_NULL) return removed;
+
+		zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
+		if (UNEXPECTED(nan.isUndef())) return zv::Val();
+		zv::Args args{removed.raw(), nan.raw()};
+		return pt_type_combinator_call(PT_LC("union"), 2, args);
+	}
 
 	/* yes for a FloatType or when $type->isInteger()->yes(), the
 	 * CompoundType callback, no otherwise; UNDEF = pending exception */
@@ -445,6 +477,12 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 		if (!zp::parse<zp::Obj>(execute_data, position)) RETURN_THROWS();
 		/* $position->isScalarAllowed() ? new Identifier('float') : null */
 		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("isscalarallowed"), PT_CLASS_IDENTIFIER, PT_LC("float")));
+	});
+
+	cls.method(sigs::tryRemove, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *typeToRemove;
+		if (!zp::parse<zp::Obj>(execute_data, typeToRemove)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.tryRemove(typeToRemove));
 	});
 
 	/* the traits, in the twin's `use` order; the class body above wins over

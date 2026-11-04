@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use function array_slice;
 use function count;
 
 #[AutowiredService]
@@ -23,23 +22,18 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_map') {
-				$args = $node->getArgs();
+				$callbackArg = null;
 				$arrayArgs = [];
-				foreach ($args as $i => $arg) {
-					if ($arg->name === null && $i === 0) {
-						continue;
-					}
-					if ($arg->name !== null && $arg->name->toString() === 'callback') {
+				foreach ($node->getArgs() as $i => $arg) {
+					if ($arg->name === null ? $i === 0 : $arg->name->toString() === 'callback') {
+						$callbackArg = $arg;
 						continue;
 					}
 
 					$arrayArgs[] = $arg;
 				}
-				if (isset($args[0])) {
-					$slicedArgs = array_slice($args, 1);
-					if (count($slicedArgs) > 0) {
-						$args[0]->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
-					}
+				if ($callbackArg !== null && count($arrayArgs) > 0) {
+					$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
 				}
 			}
 		}

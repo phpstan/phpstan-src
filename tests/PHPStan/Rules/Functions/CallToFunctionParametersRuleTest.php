@@ -3369,6 +3369,46 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15195(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15195.php'], [
+			[
+				'Parameter $callback of function array_filter expects (callable(int, string): bool)|null, Closure(string, int): bool given.',
+				29,
+			],
+			[
+				'Parameter $callback of function array_walk expects callable(int, string): mixed, Closure(string, int): void given.',
+				38,
+			],
+			[
+				'Parameter $callback of function array_walk expects callable(int, string, 1): mixed, Closure(int, string, string): void given.',
+				40,
+			],
+			[
+				'Parameter $callback of function array_find expects callable(int, string): bool, Closure(string, int): bool given.',
+				49,
+			],
+			[
+				'Parameter $callback of function array_map expects (callable(string): mixed)|null, Closure(int): int given.',
+				61,
+			],
+			[
+				'Parameter $value of function curl_setopt expects non-empty-string, 1 given.',
+				67,
+			],
+			[
+				'Parameter $value of function curl_setopt expects non-empty-string, 1 given.',
+				68,
+			],
+			[
+				'Parameter $options of function curl_setopt_array expects array{10002: non-empty-string}, array{10002: 1} given.',
+				70,
+				'Offset 10002 (non-empty-string) does not accept type 1.',
+			],
+		]);
+	}
+
 	public function testBug15487(): void
 	{
 		$this->checkExplicitMixed = true;

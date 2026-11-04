@@ -61,7 +61,7 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use function array_filter;
+
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -654,11 +654,17 @@ final class ArgumentsHandler
 							$deferredInvalidateExpressions[] = [$acceptors[0]->getInvalidateExpressions(), $acceptors[0]->getUsedVariables()];
 						}
 						if ($callCallbackImmediately) {
-							$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $arg->value), $acceptors[0]->getThrowPoints());
-							if (!$this->implicitThrows) {
-								$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
+							foreach ($acceptors[0]->getThrowPoints() as $throwPoint) {
+								$isExplicit = $throwPoint->isExplicit();
+								if (!$this->implicitThrows && !$isExplicit) {
+									continue;
+								}
+								if ($isExplicit) {
+									$throwPoints[] = InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $arg->value, $throwPoint->canContainAnyThrowable());
+								} else {
+									$throwPoints[] = InternalThrowPoint::createImplicit($scope, $arg->value);
+								}
 							}
-							$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 							$impurePoints = array_merge($impurePoints, array_map(static fn (SimpleImpurePoint $impurePoint) => new ImpurePoint($scope, $arg->value, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $acceptors[0]->getImpurePoints()));
 						}
 					}

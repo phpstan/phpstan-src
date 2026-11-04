@@ -2148,11 +2148,11 @@ private:
 		zv::Val simpleThrowPoints = callOn(throwPointsSite, acceptor, PT_LC("getthrowpoints"), "getThrowPoints", 0, NULL);
 		if (UNEXPECTED(simpleThrowPoints.isUndef() || !requireArray(simpleThrowPoints.raw(), "array_map(): Argument #2 ($array)"))) return false;
 		zval *scope = w.scope.raw();
-		zv::Arr callableThrowPoints = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(simpleThrowPoints.raw())));
 		for (zv::ArrayEntry entry : zv::ArrRef(simpleThrowPoints.raw())) {
 			zval *throwPoint = entry.value().deref().raw();
 			zv::Val isExplicit = callOn(pt_ah_simple_throw_point_is_explicit_site, throwPoint, PT_LC("isexplicit"), "isExplicit", 0, NULL);
 			if (UNEXPECTED(isExplicit.isUndef())) return false;
+			if (!zend_is_true(slot(slots::implicitThrows)) && !zend_is_true(isExplicit.raw())) continue;
 			zv::Val mapped;
 			if (zend_is_true(isExplicit.raw())) {
 				zv::Val type = callOn(pt_ah_simple_throw_point_get_type_site, throwPoint, PT_LC("gettype"), "getType", 0, NULL);
@@ -2164,20 +2164,8 @@ private:
 				mapped = pt_internal_throw_point_create_implicit(scope, value);
 			}
 			if (UNEXPECTED(mapped.isUndef())) return false;
-			setKey(callableThrowPoints, entry.stringKeyOrNull(), entry.indexKey(), mapped.raw());
+			w.throwPoints.push(std::move(mapped));
 		}
-		if (!zend_is_true(slot(slots::implicitThrows))) {
-			zv::Arr explicitOnly = zv::Arr::create(zend_hash_num_elements(callableThrowPoints.table()));
-			for (zv::ArrayEntry entry : zv::TableRef(callableThrowPoints.table())) {
-				bool isExplicit = false;
-				if (UNEXPECTED(!pt_internal_throw_point_is_explicit(entry.value().raw(), isExplicit))) return false;
-				if (isExplicit) {
-					explicitOnly.push(zv::Ref(entry.value().raw()));
-				}
-			}
-			callableThrowPoints = std::move(explicitOnly);
-		}
-		if (UNEXPECTED(!arrayMerge(w.throwPoints, callableThrowPoints.raw()))) return false;
 
 		zv::Val simpleImpurePoints = callOn(impurePointsSite, acceptor, PT_LC("getimpurepoints"), "getImpurePoints", 0, NULL);
 		if (UNEXPECTED(simpleImpurePoints.isUndef() || !requireArray(simpleImpurePoints.raw(), "array_map(): Argument #2 ($array)"))) return false;

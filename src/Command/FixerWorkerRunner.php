@@ -58,6 +58,8 @@ final class FixerWorkerRunner
 	public function __construct(
 		#[AutowiredParameter]
 		private array $allConfigFiles,
+		#[AutowiredParameter]
+		private string $usedLevel,
 		private IgnoredErrorHelper $ignoredErrorHelper,
 		private ResultCacheManagerFactory $resultCacheManagerFactory,
 		private AnalyserResultFinalizer $analyserResultFinalizer,
@@ -131,6 +133,8 @@ final class FixerWorkerRunner
 				'action' => 'analysisStart',
 				'result' => [
 					'analysedFiles' => $inceptionFiles,
+					// the level of the config read for this analysis, it may have changed since PHPStan Pro started
+					'ruleLevel' => $this->usedLevel,
 				],
 			]);
 

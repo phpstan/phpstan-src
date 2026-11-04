@@ -420,6 +420,11 @@ class FloatRangeType extends FloatType implements CompoundType
 		return new BooleanType();
 	}
 
+	public function toNumberSet(): NumberSet
+	{
+		return new NumberSet([], [[$this->min, $this->max]], false);
+	}
+
 	public function toInteger(): Type
 	{
 		// casting a float outside of the int range is undefined

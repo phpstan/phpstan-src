@@ -33,6 +33,14 @@ public:
 	/* $this */
 	zv::Val toNumber() const { return thisValue(); }
 
+	/* new NumberSet([[null, null]], [], false) */
+	static zv::Val toNumberSet()
+	{
+		NumberSetData data;
+		data.integerIntervals.push_back({NullableLong::null(), NullableLong::null()});
+		return pt_number_set_new(data);
+	}
+
 	/* new IntegerType() */
 	static zv::Val toBitwiseNotType() { return create(); }
 
@@ -257,6 +265,7 @@ PT_MINIT_REGISTRATION(pt_register_integer_type)
 	cls.method<&IntegerType::getConstantStrings>(sigs::getConstantStrings);
 
 	cls.method<&IntegerType::toNumber>(sigs::toNumber);
+	cls.method<&IntegerType::toNumberSet>(sigs::toNumberSet);
 
 	cls.method<&IntegerType::toBitwiseNotType>(sigs::toBitwiseNotType);
 

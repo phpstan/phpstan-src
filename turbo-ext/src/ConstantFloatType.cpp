@@ -75,6 +75,20 @@ public:
 
 	bool getValue(double &out) const { return value(out); }
 
+	/* NAN alone, or the point of the value; UNDEF = pending exception */
+	zv::Val toNumberSet() const
+	{
+		double v;
+		if (UNEXPECTED(!value(v))) return zv::Val();
+		NumberSetData data;
+		if (std::isnan(v)) {
+			data.nan = true;
+		} else {
+			data.floatIntervals.push_back({v, v});
+		}
+		return pt_number_set_new(data);
+	}
+
 	/* $type instanceof self && ($this->value === $type->value || both NAN)
 	 * — the private slot declared here, read directly on a subclass too;
 	 * false = pending exception */
@@ -338,6 +352,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 	cls.method<&ConstantFloatType::toBoolean>(sigs::toBoolean);
 
 	cls.method<&ConstantFloatType::toInteger>(sigs::toInteger);
+	cls.method<&ConstantFloatType::toNumberSet>(sigs::toNumberSet);
 
 	cls.method<&ConstantFloatType::toBitwiseNotType>(sigs::toBitwiseNotType);
 

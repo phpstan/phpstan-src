@@ -1269,6 +1269,25 @@ class UnionType implements CompoundType
 		return $type;
 	}
 
+	public function toNumberSet(): ?NumberSet
+	{
+		$integerIntervals = [];
+		$floatIntervals = [];
+		$nan = false;
+		foreach ($this->types as $type) {
+			$numberSet = $type->toNumberSet();
+			if ($numberSet === null) {
+				return null;
+			}
+
+			$integerIntervals = array_merge($integerIntervals, $numberSet->getIntegerIntervals());
+			$floatIntervals = array_merge($floatIntervals, $numberSet->getFloatIntervals());
+			$nan = $nan || $numberSet->hasNan();
+		}
+
+		return new NumberSet($integerIntervals, $floatIntervals, $nan);
+	}
+
 	public function toBitwiseNotType(): Type
 	{
 		return $this->unionTypes(static fn (Type $type): Type => $type->toBitwiseNotType());

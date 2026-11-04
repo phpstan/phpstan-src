@@ -52,16 +52,18 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\BooleanType\0" /* 175 */
 	"toBoolean\0" /* 200 */
 	"toIntegerValue\0" /* 210 */
-	"toInteger\0" /* 225 */
-	"toBitwiseNotType\0" /* 235 */
-	"toAbsoluteNumber\0" /* 252 */
-	"toArrayKey\0" /* 269 */
-	"getFiniteTypes\0" /* 280 */
-	"precision\0" /* 295 */
-	"PHPStan\\Type\\GeneralizePrecision\0" /* 305 */
-	"generalize\0" /* 338 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 349 */
-	"toPhpDocNode"; /* 388 */
+	"PHPStan\\Type\\NumberSet\0" /* 225 */
+	"toNumberSet\0" /* 248 */
+	"toInteger\0" /* 260 */
+	"toBitwiseNotType\0" /* 270 */
+	"toAbsoluteNumber\0" /* 287 */
+	"toArrayKey\0" /* 304 */
+	"getFiniteTypes\0" /* 315 */
+	"precision\0" /* 330 */
+	"PHPStan\\Type\\GeneralizePrecision\0" /* 340 */
+	"generalize\0" /* 373 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 384 */
+	"toPhpDocNode"; /* 423 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_DOUBLE), /* __construct $value */
 	reg::packed(18, MAY_BE_DOUBLE), /* getValue return */
@@ -76,14 +78,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(18, 0, 33), /* toString return */
 	reg::packed(18, 0, 175), /* toBoolean return */
 	reg::packed(18, MAY_BE_LONG), /* toIntegerValue return */
+	reg::packed(18, 0, 225), /* toNumberSet return */
 	reg::packed(18, 0, 33), /* toInteger return */
 	reg::packed(18, 0, 33), /* toBitwiseNotType return */
 	reg::packed(18, 0, 33), /* toAbsoluteNumber return */
 	reg::packed(18, 0, 33), /* toArrayKey return */
 	reg::packed(18, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(295, 0, 305), /* generalize $precision */
+	reg::packed(330, 0, 340), /* generalize $precision */
 	reg::packed(18, 0, 33), /* generalize return */
-	reg::packed(18, 0, 349), /* toPhpDocNode return */
+	reg::packed(18, 0, 384), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -99,13 +102,14 @@ inline constexpr sigtab::Sig describe = { { 157 /* describe */, 1, 8, 1, 9, ZEND
 inline constexpr sigtab::Sig toString = { { 166 /* toString */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toBoolean = { { 200 /* toBoolean */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toIntegerValue = { { 210 /* toIntegerValue */, 0, 12, 0, 12, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig toInteger = { { 225 /* toInteger */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toBitwiseNotType = { { 235 /* toBitwiseNotType */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toAbsoluteNumber = { { 252 /* toAbsoluteNumber */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toArrayKey = { { 269 /* toArrayKey */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 280 /* getFiniteTypes */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig generalize = { { 338 /* generalize */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 388 /* toPhpDocNode */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNumberSet = { { 248 /* toNumberSet */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toInteger = { { 260 /* toInteger */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 270 /* toBitwiseNotType */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 287 /* toAbsoluteNumber */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArrayKey = { { 304 /* toArrayKey */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 315 /* getFiniteTypes */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalize = { { 373 /* generalize */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 423 /* toPhpDocNode */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantFloatType

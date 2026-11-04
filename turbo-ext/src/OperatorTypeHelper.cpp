@@ -781,72 +781,81 @@ public:
 	}
 
 	/* private: the lowest and highest value the type can hold, null for an
-	 * unbounded side; `has` false when the type is not built from integer
-	 * ranges and constants. false = pending exception */
+	 * unbounded side; `has` false when the type holds anything but
+	 * integers. false = pending exception */
 	[[nodiscard]] static bool getIntegerBounds(zval *type, bool &has, NullableLong &outMin, NullableLong &outMax)
 	{
-		has = false;
-		zv::Val innerTypesHold;
-		zval single;
-		HashTable *innerTypes = NULL;
-		if (isA(type, pt_ce_union_type)) {
-			zv::Val types = callOn(type, mGetTypes);
-			if (UNEXPECTED(types.isUndef() || !requireArray(types.raw()))) return false;
-			innerTypesHold = std::move(types);
-			innerTypes = Z_ARRVAL_P(innerTypesHold.raw());
-			if (zend_hash_num_elements(innerTypes) == 0) return true;
-		}
+		std::vector<NumberSetData::IntegerInterval> intervals;
+		if (UNEXPECTED(!getIntegerIntervals(type, intervals, has))) return false;
+		if (!has) return true;
 
 		NullableLong min = NullableLong::null();
 		NullableLong max = NullableLong::null();
 		bool unboundedMin = false;
 		bool unboundedMax = false;
-		auto visit = [&](zval *innerType, bool &known) -> bool {
-			NullableLong innerMin, innerMax;
-			known = true;
-			if (isA(innerType, pt_ce_integer_range_type)) {
-				if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(innerType), innerMin, innerMax))) return false;
-			} else if (isA(innerType, pt_ce_constant_integer_type)) {
-				zend_long value;
-				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(innerType), value))) return false;
-				innerMin = NullableLong::of(value);
-				innerMax = innerMin;
-			} else {
-				known = false;
-				return true;
-			}
-
-			if (innerMin.isNull) {
+		for (const NumberSetData::IntegerInterval &interval : intervals) {
+			if (interval.min.isNull) {
 				unboundedMin = true;
-			} else if (min.isNull || innerMin.value < min.value) {
-				min = innerMin;
+			} else if (min.isNull || interval.min.value < min.value) {
+				min = interval.min;
 			}
 
-			if (innerMax.isNull) {
+			if (interval.max.isNull) {
 				unboundedMax = true;
-			} else if (max.isNull || innerMax.value > max.value) {
-				max = innerMax;
-			}
-			return true;
-		};
-
-		if (innerTypes == NULL) {
-			ZVAL_COPY_VALUE(&single, type);
-			bool known;
-			if (UNEXPECTED(!visit(&single, known))) return false;
-			if (!known) return true;
-		} else {
-			for (zv::ArrayEntry entry : zv::TableRef(innerTypes)) {
-				bool known;
-				if (UNEXPECTED(!visit(entry.value().deref().raw(), known))) return false;
-				if (!known) return true;
+			} else if (max.isNull || interval.max.value > max.value) {
+				max = interval.max;
 			}
 		}
 
-		has = true;
 		outMin = unboundedMin ? NullableLong::null() : min;
 		outMax = unboundedMax ? NullableLong::null() : max;
 		return true;
+	}
+
+	/* Mirrors getIntegerIntervals(): the integer intervals of a type that
+	 * holds integers and nothing else, has = false for its null; false =
+	 * pending exception */
+	[[nodiscard]] static bool getIntegerIntervals(zval *type, std::vector<NumberSetData::IntegerInterval> &intervals, bool &has)
+	{
+		NumberSetData numberSet;
+		if (UNEXPECTED(!pt_type_to_number_set(type, numberSet, has))) return false;
+		if (!has) return true;
+
+		if (!numberSet.floatIntervals.empty() || numberSet.nan || numberSet.integerIntervals.empty()) {
+			has = false;
+			return true;
+		}
+
+		intervals = std::move(numberSet.integerIntervals);
+		return true;
+	}
+
+	/* getIntegerIntervals() as the private method returns it: a list of
+	 * [min, max] pairs or null; UNDEF = pending exception */
+	static zv::Val getIntegerIntervalsValue(zval *type)
+	{
+		std::vector<NumberSetData::IntegerInterval> intervals;
+		bool has = false;
+		if (UNEXPECTED(!getIntegerIntervals(type, intervals, has))) return zv::Val();
+		if (!has) return zv::Val::null();
+		return integerIntervalsValue(intervals);
+	}
+
+	static zv::Val integerIntervalsValue(const std::vector<NumberSetData::IntegerInterval> &intervals)
+	{
+		zv::Arr list = zv::Arr::create((uint32_t) intervals.size());
+		for (const NumberSetData::IntegerInterval &interval : intervals) {
+			list.push(integerIntervalValue(interval));
+		}
+		return zv::Val(std::move(list));
+	}
+
+	static zv::Val integerIntervalValue(const NumberSetData::IntegerInterval &interval)
+	{
+		zv::Arr pair = zv::Arr::create(2);
+		pair.push(interval.min.toVal());
+		pair.push(interval.max.toVal());
+		return zv::Val(std::move(pair));
 	}
 
 	/* getIntegerBounds() as the private method returns it: the [min, max]
@@ -1322,26 +1331,17 @@ public:
 	 * for no finite upper bound), false = null; -1 = pending exception */
 	static int getNonNegativeIntegerBounds(zval *type, zend_long &min, NullableLong &max)
 	{
-		if (isA(type, pt_ce_integer_range_type)) {
-			NullableLong rangeMin, rangeMax;
-			if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(type), rangeMin, rangeMax))) return -1;
-			if (!rangeMin.isNull && rangeMin.value >= 0) {
-				min = rangeMin.value;
-				max = rangeMax;
-				return 1;
-			}
-			return 0;
-		}
-		if (isA(type, pt_ce_constant_integer_type)) {
-			zend_long value;
-			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(type), value))) return -1;
-			if (value >= 0) {
-				min = value;
-				max = NullableLong::of(value);
-				return 1;
-			}
-		}
-		return 0;
+		std::vector<NumberSetData::IntegerInterval> intervals;
+		bool has = false;
+		if (UNEXPECTED(!getIntegerIntervals(type, intervals, has))) return -1;
+		if (!has || intervals.size() != 1) return 0;
+
+		const NumberSetData::IntegerInterval &interval = intervals[0];
+		if (interval.min.isNull || interval.min.value < 0) return 0;
+
+		min = interval.min.value;
+		max = interval.max;
+		return 1;
 	}
 
 	/* Mirrors getNonNegativeIntegerBounds() as the PHP value it returns:
@@ -1901,9 +1901,12 @@ public:
 		bool infinities;
 	};
 
+	/* a member with the integers it is (none for a float member) and the
+	 * floats it stands for */
 	struct FloatIntervalMember
 	{
-		zv::Val type;
+		bool isInteger;
+		NumberSetData::IntegerInterval integers;
 		FloatInterval interval;
 	};
 
@@ -1923,20 +1926,16 @@ public:
 		bool hasFloatRange = false;
 		for (std::vector<FloatIntervalMember> *members : {&leftMembers, &rightMembers}) {
 			for (FloatIntervalMember &member : *members) {
-				if (isA(member.type.raw(), pt_ce_float_range_type)) {
-					hasFloatRange = true;
-				}
+				// a float member that is neither a constant nor plain float
+				if (member.isInteger || member.interval.min >= member.interval.max || member.interval.nan) continue;
+				hasFloatRange = true;
 			}
 		}
 		if (!hasFloatRange) return zv::Val::null();
 
 		if (kind == IETR_DIV) {
 			for (FloatIntervalMember &member : rightMembers) {
-				IETR_VAL(values, callOn(member.type.raw(), mGetConstantScalarValues));
-				if (UNEXPECTED(!requireArray(values.raw()))) return zv::Val();
-				if (zend_hash_num_elements(Z_ARRVAL_P(values.raw())) != 1) continue;
-				zval *value = zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0);
-				if (value != NULL && isZeroNumber(value)) return zv::Val::null();
+				if (member.interval.min == 0.0 && member.interval.max == 0.0) return zv::Val::null();
 			}
 		}
 
@@ -1952,29 +1951,23 @@ public:
 		zv::Arr resultTypes = zv::Arr::create((uint32_t) (leftMembers.size() * rightMembers.size()));
 		for (FloatIntervalMember &leftMember : leftMembers) {
 			for (FloatIntervalMember &rightMember : rightMembers) {
-				IETR_TRI(leftIsInteger, triOn(leftMember.type.raw(), mIsInteger));
-				if (leftIsInteger == PT_TRI_YES) {
-					IETR_TRI(rightIsInteger, triOn(rightMember.type.raw(), mIsInteger));
-					if (rightIsInteger == PT_TRI_YES) {
-						zv::Val pairResult;
-						if (kind == IETR_PLUS) {
-							pairResult = add(leftMember.type.raw(), rightMember.type.raw(), phpVersion);
-						} else if (kind == IETR_DIV) {
-							pairResult = divide(leftMember.type.raw(), rightMember.type.raw(), phpVersion);
-						} else {
-							pairResult = subtractOrMultiply(kind, leftMember.type.raw(), rightMember.type.raw(), phpVersion);
-						}
-						if (UNEXPECTED(pairResult.isUndef())) return zv::Val();
-						resultTypes.push(std::move(pairResult));
-						continue;
+				if (leftMember.isInteger && rightMember.isInteger) {
+					IETR_VAL(leftType_, pt_integer_range_from_interval(leftMember.integers.min, leftMember.integers.max, 0));
+					IETR_VAL(rightType_, pt_integer_range_from_interval(rightMember.integers.min, rightMember.integers.max, 0));
+					zv::Val pairResult;
+					if (kind == IETR_PLUS) {
+						pairResult = add(leftType_.raw(), rightType_.raw(), phpVersion);
+					} else if (kind == IETR_DIV) {
+						pairResult = divide(leftType_.raw(), rightType_.raw(), phpVersion);
+					} else {
+						pairResult = subtractOrMultiply(kind, leftType_.raw(), rightType_.raw(), phpVersion);
 					}
+					if (UNEXPECTED(pairResult.isUndef())) return zv::Val();
+					resultTypes.push(std::move(pairResult));
+					continue;
 				}
 
-				bool splitDivisor = false;
-				if (kind == IETR_DIV) {
-					IETR_TRI(rightIsInteger, triOn(rightMember.type.raw(), mIsInteger));
-					splitDivisor = rightIsInteger == PT_TRI_YES;
-				}
+				bool splitDivisor = kind == IETR_DIV && rightMember.isInteger;
 				FloatInterval divisorIntervals[3];
 				size_t divisorCount = splitDivisor ? splitIntegerDivisor(rightMember.interval, divisorIntervals) : 1;
 				if (!splitDivisor) divisorIntervals[0] = rightMember.interval;
@@ -1995,54 +1988,38 @@ public:
 		has = false;
 		if (isA(type, pt_ce_benevolent_union_type)) return true;
 
-		zv::Val innerTypes;
-		if (isA(type, pt_ce_union_type)) {
-			innerTypes = callOn(type, mGetTypes);
-			if (UNEXPECTED(innerTypes.isUndef() || !requireArray(innerTypes.raw()))) return false;
-		} else {
-			zv::Arr single = zv::Arr::create(1);
-			single.push(zv::Ref(type));
-			innerTypes = zv::Val(std::move(single));
+		NumberSetData numberSet;
+		if (UNEXPECTED(!pt_type_to_number_set(type, numberSet, has))) return false;
+		if (!has) return true;
+
+		for (const NumberSetData::IntegerInterval &integers : numberSet.integerIntervals) {
+			members.push_back({true, integers, {
+				integers.min.isNull ? -HUGE_VAL : static_cast<double>(integers.min.value),
+				integers.max.isNull ? HUGE_VAL : static_cast<double>(integers.max.value),
+				false,
+				false,
+			}});
+		}
+		// plain float is one member: the full interval and NAN
+		bool plainFloat = isPlainFloat(numberSet);
+		NumberSetData::IntegerInterval noIntegers = {NullableLong::null(), NullableLong::null()};
+		for (const NumberSetData::FloatInterval &floats : numberSet.floatIntervals) {
+			members.push_back({false, noIntegers, {floats.min, floats.max, plainFloat, true}});
+		}
+		if (numberSet.nan && !plainFloat) {
+			members.push_back({false, noIntegers, {HUGE_VAL, -HUGE_VAL, true, true}});
 		}
 
-		for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
-			zval *member = entry.value().raw();
-			FloatInterval interval;
-			if (isA(member, pt_ce_constant_integer_type)) {
-				zend_long value;
-				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(member), value))) return false;
-				interval = {static_cast<double>(value), static_cast<double>(value), false, false};
-			} else if (isA(member, pt_ce_integer_range_type)) {
-				NullableLong min, max;
-				if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(member), min, max))) return false;
-				interval = {
-					min.isNull ? -HUGE_VAL : static_cast<double>(min.value),
-					max.isNull ? HUGE_VAL : static_cast<double>(max.value),
-					false,
-					false,
-				};
-			} else if (isA(member, pt_ce_constant_float_type)) {
-				double value;
-				if (UNEXPECTED(!pt_constant_float_get_value(Z_OBJ_P(member), value))) return false;
-				interval = std::isnan(value) ? FloatInterval{HUGE_VAL, -HUGE_VAL, true, true} : FloatInterval{value, value, false, true};
-			} else if (isA(member, pt_ce_float_range_type)) {
-				double min, max;
-				if (UNEXPECTED(!pt_float_range_bounds(Z_OBJ_P(member), min, max))) return false;
-				interval = {min, max, false, true};
-			} else if (Z_TYPE_P(member) == IS_OBJECT && Z_OBJCE_P(member) == pt_ce_integer_type) {
-				interval = {-HUGE_VAL, HUGE_VAL, false, false};
-			} else if (Z_TYPE_P(member) == IS_OBJECT && Z_OBJCE_P(member) == pt_ce_float_type) {
-				interval = {-HUGE_VAL, HUGE_VAL, true, true};
-			} else {
-				members.clear();
-				return true;
-			}
-
-			members.push_back({zv::Val::copyOf(zv::Ref(member)), interval});
-		}
-
-		has = true;
 		return true;
+	}
+
+	/* Mirrors isPlainFloat(). */
+	static bool isPlainFloat(const NumberSetData &numberSet)
+	{
+		return numberSet.nan
+			&& numberSet.floatIntervals.size() == 1
+			&& numberSet.floatIntervals[0].min == -HUGE_VAL
+			&& numberSet.floatIntervals[0].max == HUGE_VAL;
 	}
 
 	/* getFloatIntervalMembers() for the private method's glue */
@@ -2056,7 +2033,7 @@ public:
 		zv::Arr list = zv::Arr::create((uint32_t) members.size());
 		for (FloatIntervalMember &member : members) {
 			zv::Arr pair = zv::Arr::create(2);
-			pair.push(std::move(member.type));
+			pair.push(member.isInteger ? integerIntervalValue(member.integers) : zv::Val::null());
 			pair.push(floatIntervalValue(member.interval));
 			list.push(zv::Val(std::move(pair)));
 		}
@@ -2445,52 +2422,23 @@ public:
 	[[nodiscard]] static bool getIntervals(zval *type, std::vector<Interval> &intervals, bool &known)
 	{
 		known = false;
-		zv::Val typesHold;
-		zval single;
-		HashTable *innerTypes;
-		if (isA(type, pt_ce_union_type)) {
-			typesHold = callOn(type, mGetTypes);
-			if (UNEXPECTED(typesHold.isUndef() || !requireArray(typesHold.raw()))) return false;
-			innerTypes = Z_ARRVAL_P(typesHold.raw());
-		} else {
-			innerTypes = NULL;
-			ZVAL_COPY_VALUE(&single, type);
+		std::vector<NumberSetData::IntegerInterval> integerIntervals;
+		bool has = false;
+		if (UNEXPECTED(!getIntegerIntervals(type, integerIntervals, has))) return false;
+		if (!has) {
+			zend_long isInteger = triOn(type, mIsInteger);
+			if (UNEXPECTED(isInteger < 0)) return false;
+			if (isInteger != PT_TRI_YES) return true;
+			intervals.push_back({ Bound::infinity(-1), Bound::infinity(1) });
+			known = true;
+			return true;
 		}
 
-		auto visit = [&](zval *innerType, bool &ok) -> bool {
-			ok = true;
-			if (isA(innerType, pt_ce_constant_integer_type)) {
-				zend_long value;
-				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(innerType), value))) return false;
-				intervals.push_back({ Bound::of(value), Bound::of(value) });
-				return true;
-			}
-			if (isA(innerType, pt_ce_integer_range_type)) {
-				NullableLong min, max;
-				if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(innerType), min, max))) return false;
-				intervals.push_back({ min.isNull ? Bound::infinity(-1) : Bound::of(min.value), max.isNull ? Bound::infinity(1) : Bound::of(max.value) });
-				return true;
-			}
-			zend_long isInteger = triOn(innerType, mIsInteger);
-			if (UNEXPECTED(isInteger < 0)) return false;
-			if (isInteger == PT_TRI_YES) {
-				intervals.push_back({ Bound::infinity(-1), Bound::infinity(1) });
-				return true;
-			}
-			ok = false;
-			return true;
-		};
-
-		if (innerTypes == NULL) {
-			bool ok;
-			if (UNEXPECTED(!visit(&single, ok))) return false;
-			if (!ok) return true;
-		} else {
-			for (zv::ArrayEntry entry : zv::TableRef(innerTypes)) {
-				bool ok;
-				if (UNEXPECTED(!visit(entry.value().deref().raw(), ok))) return false;
-				if (!ok) return true;
-			}
+		for (const NumberSetData::IntegerInterval &interval : integerIntervals) {
+			intervals.push_back({
+				interval.min.isNull ? Bound::infinity(-1) : Bound::of(interval.min.value),
+				interval.max.isNull ? Bound::infinity(1) : Bound::of(interval.max.value),
+			});
 		}
 
 		known = true;
@@ -2765,6 +2713,7 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	});
 
 	cls.method(sigs::getIntegerBounds, OT_TYPE_GLUE(OperatorTypeHelper::getIntegerBoundsValue(type)));
+	cls.method(sigs::getIntegerIntervals, OT_TYPE_GLUE(OperatorTypeHelper::getIntegerIntervalsValue(type)));
 	cls.method(sigs::add, OT_BINARY_GLUE(OperatorTypeHelper::add(leftType, rightType, phpVersion)));
 	cls.method(sigs::arrayUnion, OT_BINARY_GLUE(OperatorTypeHelper::arrayUnion(leftType, rightType)));
 	cls.method(sigs::tryArrayUnion, OT_TYPES_GLUE(OperatorTypeHelper::tryArrayUnion(leftType, rightType)));
@@ -2869,6 +2818,13 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	});
 
 	cls.method(sigs::getFloatIntervalMembers, OT_TYPE_GLUE(OperatorTypeHelper::getFloatIntervalMembersValue(type)));
+	cls.method(sigs::isPlainFloat, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *numberSet;
+		if (!zp::parse<zp::Obj>(execute_data, numberSet)) RETURN_THROWS();
+		phpstanturbo::NumberSetData data;
+		if (UNEXPECTED(!pt_number_set_read(Z_OBJ_P(numberSet), data))) RETURN_THROWS();
+		RETURN_BOOL(OperatorTypeHelper::isPlainFloat(data));
+	});
 
 	cls.method(sigs::splitIntegerDivisor, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *interval;

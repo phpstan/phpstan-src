@@ -118,6 +118,15 @@ public:
 	zv::Val toFloat() const { return thisValue(); }
 
 	/* new IntegerType() */
+	/* new NumberSet([], [[-INF, INF]], true) */
+	static zv::Val toNumberSet()
+	{
+		NumberSetData data;
+		data.floatIntervals.push_back({-HUGE_VAL, HUGE_VAL});
+		data.nan = true;
+		return pt_number_set_new(data);
+	}
+
 	static zv::Val toInteger() { return integerType(); }
 
 	/* new IntersectionType([new StringType(), new AccessoryNonEmptyStringType(),
@@ -307,6 +316,7 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 	cls.method<&FloatType::toFloat>(sigs::toFloat);
 
 	cls.method<&FloatType::toInteger>(sigs::toInteger);
+	cls.method<&FloatType::toNumberSet>(sigs::toNumberSet);
 
 	cls.method<&FloatType::toString>(sigs::toString);
 

@@ -1039,6 +1039,16 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 			$r["$name getAlwaysLooselyEqualType $vi"] = $view($operand->getAlwaysLooselyEqualType($phpVersion));
 		}
 	}
+	// the NumberSet each type describes its numbers with, and one built by hand
+	$numberSetOperands = $looseEqualityOperands + [
+		'intsAndNan' => new \PHPStan\Type\UnionType([\PHPStan\Type\IntegerRangeType::fromInterval(null, 2), new \PHPStan\Type\Constant\ConstantFloatType(NAN), new \PHPStan\Type\Constant\ConstantIntegerType(7)]),
+	];
+	foreach ($numberSetOperands as $name => $operand) {
+		$numberSet = $operand->toNumberSet();
+		$r["$name toNumberSet"] = $numberSet === null ? null : [$numberSet->getIntegerIntervals(), $numberSet->getFloatIntervals(), $numberSet->hasNan()];
+	}
+	$numberSet = new \PHPStan\Type\NumberSet([[null, -1], [3, 3]], [[-INF, -0.0], [1.5, 1.5]], true);
+	$r['new NumberSet'] = [$numberSet->getIntegerIntervals(), $numberSet->getFloatIntervals(), $numberSet->hasNan()];
 
 	foreach ($arithmeticOperands as $leftName => $left) {
 		foreach ($arithmeticOperands as $rightName => $right) {

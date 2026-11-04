@@ -233,12 +233,13 @@ final class TemplateTypeVariance
 			return new IsSuperTypeOfResult(TrinaryLogic::createFromBoolean($result), $reasons);
 		}
 
-		if ($this->covariant()) {
-			return $a->isSuperTypeOf($b);
-		}
+		if ($this->covariant() || $this->contravariant()) {
+			// The "exactly this class" flavour of a `new Foo()` value cannot be written
+			// in a PHPDoc type argument - ignore it like equals() does for invariance.
+			$a = TemplateTypeHelper::removeFinalByKeywordOverrides($a);
+			$b = TemplateTypeHelper::removeFinalByKeywordOverrides($b);
 
-		if ($this->contravariant()) {
-			return $b->isSuperTypeOf($a);
+			return $this->covariant() ? $a->isSuperTypeOf($b) : $b->isSuperTypeOf($a);
 		}
 
 		if ($this->bivariant()) {

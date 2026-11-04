@@ -1,4 +1,6 @@
-<?php // lint >= 8.0
+<?php // lint >= 8.1
+
+declare(strict_types = 1);
 
 namespace Bug15235Properties;
 
@@ -13,13 +15,31 @@ class A
 	public function __construct(public object $object) {}
 }
 
+/** @template-covariant T of object */
+class Covariant
+{
+	/** @param T $object */
+	public function __construct(public object $object) {}
+}
+
 class B
 {
 	/** @var A<covariant static>|null */
-	public $a = null;
+	public ?A $callSiteVariance = null;
+
+	/** @var Covariant<static>|null */
+	public ?Covariant $declaredVariance = null;
 }
 
-function (): void {
+function fromParameter(B $b): void
+{
+	$b->callSiteVariance = new A($b);
+	$b->declaredVariance = new Covariant($b);
+}
+
+function fromNew(): void
+{
 	$b = new B();
-	$b->a = new A($b);
-};
+	$b->callSiteVariance = new A($b);
+	$b->declaredVariance = new Covariant($b);
+}

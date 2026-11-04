@@ -730,6 +730,140 @@ private:
 	}
 
 public:
+	/* Mirrors power(): PHP null for its null */
+	static zv::Val power(const NumberSetData &base, const NumberSetData &exponent)
+	{
+		const NumberSetData::IntegerInterval *baseBounds = getBoundedIntegerInterval(base);
+		const NumberSetData::IntegerInterval *exponentBounds = getBoundedIntegerInterval(exponent);
+		if (baseBounds == nullptr || exponentBounds == nullptr) {
+			return zv::Val::null();
+		}
+
+		return powerIntegerIntervals(baseBounds->min, baseBounds->max, exponentBounds->min, exponentBounds->max);
+	}
+
+	/* Mirrors getBoundedIntegerInterval(): nullptr for its null */
+	static const NumberSetData::IntegerInterval *getBoundedIntegerInterval(const NumberSetData &set)
+	{
+		if (!set.floatIntervals.empty() || set.nan || set.integerIntervals.size() != 1) return nullptr;
+		const NumberSetData::IntegerInterval &interval = set.integerIntervals[0];
+		if (interval.min.isNull && interval.max.isNull) return nullptr;
+		return &interval;
+	}
+
+	/* Mirrors powerIntegerIntervals(): PHP null for its null */
+	static zv::Val powerIntegerIntervals(NullableLong baseMin, NullableLong baseMax, NullableLong exponentMin, NullableLong exponentMax)
+	{
+		if (exponentMin.isNull || exponentMin.value < 0) {
+			return zv::Val::null();
+		}
+
+		if (!exponentMax.isNull && exponentMax.value == 0) {
+			return newConstantIntegerType(1);
+		}
+
+		if (!baseMin.isNull && baseMin.value >= 0) {
+			// with a non-negative base and exponent the power grows with the base; it grows
+			// with the exponent too except for the base 0
+			NullableLong min = baseMin.value == 0 ? NullableLong::of(0) : integerPower(baseMin.value, exponentMin.value);
+			NullableLong max;
+			if (baseMax.isNull || (baseMax.value > 1 && exponentMax.isNull)) {
+				max = NullableLong::null();
+			} else if (baseMax.value == 0) {
+				max = NullableLong::of(exponentMin.value == 0 ? 1 : 0);
+			} else if (exponentMax.isNull) {
+				max = NullableLong::of(1);
+			} else {
+				max = integerPower(baseMax.value, exponentMax.value);
+				if (max.isNull) {
+					return zv::Val::null();
+				}
+			}
+
+			if (min.isNull) {
+				return zv::Val::null();
+			}
+
+			return fromInterval(min, max);
+		}
+
+		// a negative base alternates the sign with the parity of the exponent
+		if (exponentMax.isNull || exponentMax.value - exponentMin.value >= PT_IETR_CALCULATE_SCALARS_LIMIT) {
+			return zv::Val::null();
+		}
+
+		zv::Arr results = zv::Arr::create((uint32_t) (exponentMax.value - exponentMin.value + 1));
+		for (zend_long i = 0; i <= exponentMax.value - exponentMin.value; i++) {
+			bool overflow = false;
+			IETR_VAL(result, powerIntegerInterval(baseMin, baseMax, exponentMin.value + i, overflow));
+			if (overflow) {
+				return zv::Val::null();
+			}
+			results.push(std::move(result));
+		}
+
+		return unionOf(results);
+	}
+
+	/* Mirrors powerIntegerInterval(): `overflow` for its null */
+	static zv::Val powerIntegerInterval(NullableLong baseMin, NullableLong baseMax, zend_long exponent, bool &overflow)
+	{
+		if (exponent == 0) {
+			return newConstantIntegerType(1);
+		}
+
+		NullableLong minBase, maxBase;
+		if (exponent % 2 == 1) {
+			// an odd power keeps the order of the bases
+			minBase = baseMin;
+			maxBase = baseMax;
+		} else if (!baseMax.isNull && baseMax.value <= 0) {
+			// an even power of non-positive bases reverses their order
+			minBase = baseMax;
+			maxBase = baseMin;
+		} else if (!baseMin.isNull && baseMin.value >= 0) {
+			minBase = baseMin;
+			maxBase = baseMax;
+		} else {
+			// an even power of bases around 0 is the largest at the end further from 0
+			if (!baseMin.isNull && baseMin.value == ZEND_LONG_MIN) {
+				// -PHP_INT_MIN overflows into a float
+				overflow = true;
+				return zv::Val::null();
+			}
+			minBase = NullableLong::of(0);
+			maxBase = baseMin.isNull || baseMax.isNull ? NullableLong::null() : NullableLong::of(std::max(-baseMin.value, baseMax.value));
+		}
+
+		NullableLong min = minBase.isNull ? NullableLong::null() : integerPower(minBase.value, exponent);
+		NullableLong max = maxBase.isNull ? NullableLong::null() : integerPower(maxBase.value, exponent);
+		if ((!minBase.isNull && min.isNull) || (!maxBase.isNull && max.isNull)) {
+			overflow = true;
+			return zv::Val::null();
+		}
+
+		return fromInterval(min, max);
+	}
+
+	/* Mirrors integerPower(): $base ** $exponent of a non-negative exponent, null when
+	 * it overflows into a float; PHP gives an integer exactly when the power fits */
+	static NullableLong integerPower(zend_long base, zend_long exponent)
+	{
+		zend_long result = 1;
+		zend_long factor = base;
+		while (exponent > 0) {
+			if (exponent % 2 == 1) {
+				if (__builtin_mul_overflow(result, factor, &result)) return NullableLong::null();
+				exponent--;
+				continue;
+			}
+			exponent /= 2;
+			if (__builtin_mul_overflow(factor, factor, &factor)) return NullableLong::null();
+		}
+
+		return NullableLong::of(result);
+	}
+
 	/* Mirrors intDivide(). */
 	static zv::Val intDivide(const NumberSetData &left, const NumberSetData &right)
 	{
@@ -1153,6 +1287,23 @@ PT_MINIT_REGISTRATION(pt_register_number_set)
 		NumberSetData set;
 		if (UNEXPECTED(!PT_THIS.read(set))) RETURN_THROWS();
 		PT_RETURN_VAL(phpstanturbo::NumberSetMath::negate(set, phpVersion));
+	});
+	cls.method(sigs::isEmpty, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		NumberSetData set;
+		if (UNEXPECTED(!PT_THIS.read(set))) RETURN_THROWS();
+		RETURN_BOOL(set.integerIntervals.empty() && set.floatIntervals.empty() && !set.nan);
+	});
+	cls.method(sigs::power, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *exponent, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, exponent, phpVersion)) RETURN_THROWS();
+		if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(exponent), pt_ce_number_set))) {
+			zend_type_error("%s::power(): Argument #1 ($exponent) must be of type %s, %s given", ZSTR_VAL(pt_ce_number_set->name), ZSTR_VAL(pt_ce_number_set->name), zend_zval_value_name(exponent));
+			RETURN_THROWS();
+		}
+		NumberSetData base, exponentData;
+		if (UNEXPECTED(!PT_THIS.read(base) || !NumberSet(Z_OBJ_P(exponent)).read(exponentData))) RETURN_THROWS();
+		PT_RETURN_VAL(phpstanturbo::NumberSetMath::power(base, exponentData));
 	});
 	cls.method(sigs::shiftLeft, pt_ns_operator<phpstanturbo::ietr::IETR_SHIFT_LEFT>);
 	cls.method(sigs::shiftRight, pt_ns_operator<phpstanturbo::ietr::IETR_SHIFT_RIGHT>);

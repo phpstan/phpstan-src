@@ -596,7 +596,7 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 
 	public function toValueSet(): ValueSet
 	{
-		return ValueSet::createArrays(true, true);
+		return ValueSet::createArrays($this);
 	}
 
 }

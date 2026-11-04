@@ -436,6 +436,8 @@ PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 		PT_RETURN_VAL(pt_type_native_type_node(position, PT_LC("ismixedallowed"), PT_CLASS_IDENTIFIER, PT_LC("mixed")));
 	});
 
+	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createinvalid"));
+
 	/* the traits, in the twin's `use` order (UndecidedComparisonCompoundTypeTrait
 	 * brings UndecidedComparisonTypeTrait with it); the class body above wins
 	 * over every name it declares */

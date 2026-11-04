@@ -182,4 +182,9 @@ class BenevolentUnionType extends UnionType
 		return TypeUtils::toBenevolentUnion($newType);
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return parent::toValueSet()->toBenevolent();
+	}
+
 }

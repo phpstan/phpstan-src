@@ -692,14 +692,11 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 
 	cls.method<&NullType::getFiniteTypes>(sigs::getFiniteTypes);
 
-	/* ExponentiateHelper::exponentiate($this, $exponent) */
+	/* $this->toValueSet()->arithmeticPower($exponent->toValueSet(), $phpVersion) */
 	cls.method(sigs::arithmeticPower, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *exponent, *phpVersion;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, exponent, phpVersion)) RETURN_THROWS();
-		zval self;
-		ZVAL_OBJ(&self, Z_OBJ_P(ZEND_THIS));
-		zv::Args args{&self, exponent};
-		PT_RETURN_VAL(pt_type_call_static(PT_CLASS_EXPONENTIATE_HELPER, PT_LC("exponentiate"), 2, args));
+		PT_RETURN_VAL(pt_value_set_power(Z_OBJ_P(ZEND_THIS), exponent, phpVersion));
 	});
 
 	cls.method<&NullType::toPhpDocNode>(sigs::toPhpDocNode);

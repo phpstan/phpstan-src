@@ -284,7 +284,7 @@ PT_MINIT_REGISTRATION(pt_register_never_type)
 	 * (slots::isExplicit, slots::reason) */
 	ptdecl::NeverType::declareProperties(cls);
 	/* mirrors toValueSet() */
-	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createempty"));
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createnever"));
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool isExplicit = false;

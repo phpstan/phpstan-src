@@ -271,6 +271,23 @@ final class NumberSet
 		return TypeCombinator::union(...$types);
 	}
 
+	/**
+	 * Models the ** operator on integers: the integers $base ** $exponent gives for one
+	 * integer interval each, with a non-negative exponent. Null when that is not an integer
+	 * interval PHP computes without overflowing into a float, or for other numbers; plain
+	 * int counts as no bound at all, not PHP_INT_MIN or PHP_INT_MAX, whose powers overflow.
+	 */
+	public function power(self $exponent, PhpVersion $phpVersion): ?Type
+	{
+		$baseBounds = $this->getBoundedIntegerInterval();
+		$exponentBounds = $exponent->getBoundedIntegerInterval();
+		if ($baseBounds === null || $exponentBounds === null) {
+			return null;
+		}
+
+		return self::powerIntegerIntervals($baseBounds[0], $baseBounds[1], $exponentBounds[0], $exponentBounds[1]);
+	}
+
 	/** Models the << operator; a negative shift is an error. */
 	public function shiftLeft(self $right, PhpVersion $phpVersion): Type
 	{
@@ -386,7 +403,7 @@ final class NumberSet
 		return count($this->integerIntervals) + count($this->floatIntervals) + ($this->nan ? 1 : 0);
 	}
 
-	private function isEmpty(): bool
+	public function isEmpty(): bool
 	{
 		return $this->integerIntervals === [] && $this->floatIntervals === [] && !$this->nan;
 	}
@@ -544,6 +561,126 @@ final class NumberSet
 		}
 
 		return IntegerRangeType::fromInterval(is_int($min) ? $min : null, is_int($max) ? $max : null);
+	}
+
+	/**
+	 * The one integer interval of a set of integers, unless it is plain int.
+	 *
+	 * @return array{int|null, int|null}|null
+	 */
+	private function getBoundedIntegerInterval(): ?array
+	{
+		if ($this->floatIntervals !== [] || $this->nan || count($this->integerIntervals) !== 1 || $this->integerIntervals[0] === [null, null]) {
+			return null;
+		}
+
+		return $this->integerIntervals[0];
+	}
+
+	/**
+	 * The integers $base ** $exponent gives for an integer base and a non-negative integer
+	 * exponent from the intervals (null is unbounded), or null when that is not an integer
+	 * interval PHP computes without overflowing into a float.
+	 */
+	private static function powerIntegerIntervals(?int $baseMin, ?int $baseMax, ?int $exponentMin, ?int $exponentMax): ?Type
+	{
+		if ($exponentMin === null || $exponentMin < 0) {
+			return null;
+		}
+
+		if ($exponentMax === 0) {
+			return new ConstantIntegerType(1);
+		}
+
+		if ($baseMin !== null && $baseMin >= 0) {
+			// with a non-negative base and exponent the power grows with the base; it grows
+			// with the exponent too except for the base 0, which is 1 to the power of 0 and 0
+			// to any other power
+			$min = $baseMin === 0 ? 0 : self::integerPower($baseMin, $exponentMin);
+			if ($baseMax === null || ($baseMax > 1 && $exponentMax === null)) {
+				$max = null;
+			} elseif ($baseMax === 0) {
+				$max = $exponentMin === 0 ? 1 : 0;
+			} elseif ($exponentMax === null) {
+				$max = 1;
+			} else {
+				$max = self::integerPower($baseMax, $exponentMax);
+				if ($max === null) {
+					return null;
+				}
+			}
+
+			if ($min === null) {
+				return null;
+			}
+
+			return IntegerRangeType::fromInterval($min, $max);
+		}
+
+		// a negative base alternates the sign with the parity of the exponent, so each
+		// exponent is an interval of its own
+		if ($exponentMax === null || $exponentMax - $exponentMin >= InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return null;
+		}
+
+		$results = [];
+		for ($i = 0; $i <= $exponentMax - $exponentMin; $i++) {
+			// $exponentMin + $i stays within $exponentMax, unlike $exponent++ past
+			// PHP_INT_MAX, which would turn it into a float
+			$result = self::powerIntegerInterval($baseMin, $baseMax, $exponentMin + $i);
+			if ($result === null) {
+				return null;
+			}
+			$results[] = $result;
+		}
+
+		return TypeCombinator::union(...$results);
+	}
+
+	/**
+	 * The integers $base ** $exponent gives for an integer base from the interval (null
+	 * is unbounded) and a non-negative integer exponent, or null when one of them
+	 * overflows into a float.
+	 */
+	private static function powerIntegerInterval(?int $baseMin, ?int $baseMax, int $exponent): ?Type
+	{
+		if ($exponent === 0) {
+			return new ConstantIntegerType(1);
+		}
+
+		if ($exponent % 2 === 1) {
+			// an odd power keeps the order of the bases
+			[$minBase, $maxBase] = [$baseMin, $baseMax];
+		} elseif ($baseMax !== null && $baseMax <= 0) {
+			// an even power of non-positive bases reverses their order
+			[$minBase, $maxBase] = [$baseMax, $baseMin];
+		} elseif ($baseMin !== null && $baseMin >= 0) {
+			[$minBase, $maxBase] = [$baseMin, $baseMax];
+		} else {
+			// an even power of bases around 0 is the largest at the end further from 0
+			if ($baseMin === PHP_INT_MIN) {
+				// -PHP_INT_MIN overflows into a float
+				return null;
+			}
+			$minBase = 0;
+			$maxBase = $baseMin === null || $baseMax === null ? null : max(-$baseMin, $baseMax);
+		}
+
+		$min = $minBase === null ? null : self::integerPower($minBase, $exponent);
+		$max = $maxBase === null ? null : self::integerPower($maxBase, $exponent);
+		if (($minBase !== null && $min === null) || ($maxBase !== null && $max === null)) {
+			return null;
+		}
+
+		return IntegerRangeType::fromInterval($min, $max);
+	}
+
+	/** $base ** $exponent, or null when it overflows into a float. */
+	private static function integerPower(int $base, int $exponent): ?int
+	{
+		$result = $base ** $exponent;
+
+		return is_int($result) ? $result : null;
 	}
 
 	/**

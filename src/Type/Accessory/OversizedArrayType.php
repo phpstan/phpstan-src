@@ -545,7 +545,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function toValueSet(): ValueSet
 	{
-		return ValueSet::createArrays(false, true);
+		return ValueSet::createArrays($this);
 	}
 
 }

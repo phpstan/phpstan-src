@@ -225,7 +225,7 @@ trait ArrayTypeTrait
 
 	public function toValueSet(): ValueSet
 	{
-		return ValueSet::createArrays(!$this->isIterableAtLeastOnce()->yes(), !$this->isIterableAtLeastOnce()->no());
+		return ValueSet::createArrays($this);
 	}
 
 }

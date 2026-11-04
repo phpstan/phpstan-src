@@ -27,6 +27,7 @@ use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 use function spl_object_id;
 use function sprintf;
@@ -689,6 +690,11 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 	public function toNumber(): Type
 	{
 		return $this->getDelegate()->toNumber();
+	}
+
+	public function toValueSet(): ValueSet
+	{
+		return $this->getDelegate()->toValueSet();
 	}
 
 	public function toBitwiseNotType(): Type

@@ -1016,12 +1016,6 @@ parameters:
 			path: src/Type/Enum/EnumCaseObjectType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Type/ExponentiateHelper.php
-
-		-
 			rawMessage: Doing instanceof PHPStan\Type\Generic\GenericObjectType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
@@ -1460,51 +1454,9 @@ parameters:
 			path: src/Type/ObjectWithoutClassType.php
 
 		-
-			rawMessage: Binary operation "&" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
-			rawMessage: Binary operation "*" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
-			rawMessage: Binary operation "+" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
-			rawMessage: Binary operation "-" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
-			rawMessage: Binary operation "^" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
-			rawMessage: Binary operation "|" between bool|float|int|string|null and bool|float|int|string|null results in an error.
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ConstantScalarType is error-prone and deprecated. Use Type::isConstantScalarValue() or Type::getConstantScalarTypes() or Type::getConstantScalarValues() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 16
-			path: src/Type/OperatorTypeHelper.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 6
+			count: 4
 			path: src/Type/OperatorTypeHelper.php
 
 		-

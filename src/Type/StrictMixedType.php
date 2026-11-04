@@ -535,4 +535,9 @@ class StrictMixedType implements CompoundType
 		return false;
 	}
 
+	public function toValueSet(): ValueSet
+	{
+		return ValueSet::createInvalid();
+	}
+
 }

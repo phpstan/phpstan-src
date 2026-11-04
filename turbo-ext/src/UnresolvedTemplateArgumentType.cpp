@@ -683,6 +683,7 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method(sigs::getCallableParametersAcceptors, utaDelegate);
 	cls.method(sigs::isCloneable, utaDelegate);
 	cls.method(sigs::toBoolean, utaDelegate);
+	cls.method(sigs::toValueSet, utaDelegate);
 	cls.method(sigs::toNumber, utaDelegate);
 	cls.method(sigs::toBitwiseNotType, utaDelegate);
 	cls.method(sigs::toGetClassResultType, utaDelegate);

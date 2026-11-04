@@ -186,6 +186,10 @@ void pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS);
  * $this->getTypes() */
 void pt_value_set_of_members(INTERNAL_FUNCTION_PARAMETERS, bool intersect);
 
+/* $type->toValueSet()->arithmeticPower($exponent->toValueSet(), $phpVersion);
+ * UNDEF = pending exception */
+zv::Val pt_value_set_power(zend_object *type, zval *exponent, zval *phpVersion);
+
 #define PT_VALUE_SET_OF_THIS(factory) \
 	[](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_this(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC(factory)); }
 
@@ -195,12 +199,7 @@ void pt_value_set_of_members(INTERNAL_FUNCTION_PARAMETERS, bool intersect);
 		PT_RETURN_VAL(pt_value_set_create(PT_LC(factory))); \
 	}
 
-#define PT_VALUE_SET_OF_ARRAYS(empty, nonEmpty) \
-	[](INTERNAL_FUNCTION_PARAMETERS) { \
-		ZEND_PARSE_PARAMETERS_NONE(); \
-		zv::Args args_{(bool) (empty), (bool) (nonEmpty)}; \
-		PT_RETURN_VAL(pt_value_set_create(PT_LC("createarrays"), 2, args_)); \
-	}
+#define PT_VALUE_SET_OF_ARRAYS PT_VALUE_SET_OF_THIS("createarrays")
 
 /* }}} */
 

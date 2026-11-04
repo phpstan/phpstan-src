@@ -296,6 +296,18 @@ parameters:
 			path: src/DependencyInjection/NeonAdapter.php
 
 		-
+			rawMessage: 'Call to method getIndentationBefore() of internal class PhpParser\Internal\TokenStream from outside its root namespace PhpParser.'
+			identifier: method.internalClass
+			count: 1
+			path: src/Fixable/PhpPrinter.php
+
+		-
+			rawMessage: 'Call to method getTokenCode() of internal class PhpParser\Internal\TokenStream from outside its root namespace PhpParser.'
+			identifier: method.internalClass
+			count: 1
+			path: src/Fixable/PhpPrinter.php
+
+		-
 			rawMessage: 'Call to method getTokenCode() of internal class PhpParser\Internal\TokenStream from outside its root namespace PhpParser.'
 			identifier: method.internalClass
 			count: 1

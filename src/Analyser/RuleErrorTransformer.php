@@ -15,9 +15,11 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileReader;
 use PHPStan\Fixable\NewClassNamesVisitor;
+use PHPStan\Fixable\PathCloningVisitor;
 use PHPStan\Fixable\PhpPrinter;
 use PHPStan\Fixable\PhpPrinterIndentationDetectorVisitor;
 use PHPStan\Fixable\ReplacingNodeVisitor;
+use PHPStan\Fixable\SharedNodeCloningVisitor;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\Parser as AnalysisParser;
 use PHPStan\Parser\ParserErrorsException;
@@ -35,6 +37,7 @@ use PHPStan\ShouldNotHappenException;
 use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use function array_key_exists;
+use function array_map;
 use function array_shift;
 use function array_slice;
 use function count;
@@ -217,50 +220,66 @@ final class RuleErrorTransformer
 		$parsedFile = $this->getParsedFile($fixingFile);
 
 		$indentDetector = null;
+		$pathCloningVisitor = null;
 		$visitors = [];
+		$fixedNodes = array_map(static fn (NodeFix $fix): Node => $fix->node, $fixes);
 		if ($parsedFile['indent'] === null) {
 			$indentDetector = new PhpPrinterIndentationDetectorVisitor(new TokenStream($parsedFile['tokens'], PhpPrinter::TAB_WIDTH));
 			$visitors[] = $indentDetector;
+			$visitors[] = new CloningVisitor();
+		} elseif (PathCloningVisitor::canFind($fixedNodes)) {
+			$pathCloningVisitor = new PathCloningVisitor($fixedNodes);
+			$visitors[] = $pathCloningVisitor;
+		} else {
+			$visitors[] = new CloningVisitor();
 		}
-		$visitors[] = new CloningVisitor();
 		$replacingVisitor = new ReplacingNodeVisitor($fixes);
 		$visitors[] = $replacingVisitor;
 
-		/** @var Stmt[] $newStmts */
-		$newStmts = (new NodeTraverser(...$visitors))->traverse($fileNodes);
-
-		$indent = $parsedFile['indent'];
-		if ($indentDetector !== null) {
-			if (str_contains($indentDetector->indentCharacter, "\t")) {
-				$indent = "\t";
-			} else {
-				$indent = str_repeat($indentDetector->indentCharacter, $indentDetector->indentSize);
-			}
-
-			if ($indentDetector->found) {
-				$this->parsedFiles[$fixingFile]['indent'] = $indent;
-			}
-		}
-
-		if (!$replacingVisitor->isComplete()) {
-			return null;
-		}
-
-		if (NewClassNamesVisitor::hasNewNames($replacingVisitor->getNewNodes())) {
-			$nameResolver = new NameResolver(new Collecting(), ['replaceNodes' => false]);
+		try {
 			/** @var Stmt[] $newStmts */
-			$newStmts = (new NodeTraverser(
-				$nameResolver,
-				new NewClassNamesVisitor($nameResolver->getNameContext(), $this->importNames, $this->preferSelf),
-			))->traverse($newStmts);
-		}
+			$newStmts = (new NodeTraverser(...$visitors))->traverse($fileNodes);
 
-		$newCode = $this->getPrinter($indent)->printFormatPreserving($newStmts, $fileNodes, $parsedFile['tokens']);
-		if ($parsedFile['code'] === $newCode) {
-			return null;
-		}
+			$indent = $parsedFile['indent'];
+			if ($indentDetector !== null) {
+				if (str_contains($indentDetector->indentCharacter, "\t")) {
+					$indent = "\t";
+				} else {
+					$indent = str_repeat($indentDetector->indentCharacter, $indentDetector->indentSize);
+				}
 
-		return new FixedErrorDiff($fixingFile, $parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
+				if ($indentDetector->found) {
+					$this->parsedFiles[$fixingFile]['indent'] = $indent;
+				}
+			}
+
+			if (!$replacingVisitor->isComplete()) {
+				return null;
+			}
+
+			if (NewClassNamesVisitor::hasNewNames($replacingVisitor->getNewNodes())) {
+				if ($pathCloningVisitor !== null) {
+					// the visitors below change nodes in place, so the original nodes must not be shared
+					/** @var Stmt[] $newStmts */
+					$newStmts = (new NodeTraverser(new SharedNodeCloningVisitor()))->traverse($newStmts);
+				}
+				$nameResolver = new NameResolver(new Collecting(), ['replaceNodes' => false]);
+				/** @var Stmt[] $newStmts */
+				$newStmts = (new NodeTraverser(
+					$nameResolver,
+					new NewClassNamesVisitor($nameResolver->getNameContext(), $this->importNames, $this->preferSelf),
+				))->traverse($newStmts);
+			}
+
+			$newCode = $this->getPrinter($indent)->printFormatPreserving($newStmts, $fileNodes, $parsedFile['tokens']);
+			if ($parsedFile['code'] === $newCode) {
+				return null;
+			}
+
+			return new FixedErrorDiff($fixingFile, $parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
+		} finally {
+			$pathCloningVisitor?->restoreOriginalNodes();
+		}
 	}
 
 	/**

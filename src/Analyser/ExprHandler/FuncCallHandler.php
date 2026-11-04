@@ -52,7 +52,6 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
-use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
@@ -85,12 +84,10 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use Throwable;
 use WeakReference;
-use function array_filter;
 use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
-use function array_values;
 use function count;
 use function in_array;
 use function is_string;
@@ -194,11 +191,17 @@ final class FuncCallHandler implements ExprHandler
 			) {
 				// processed later
 			} elseif ($parametersAcceptor instanceof CallableParametersAcceptor) {
-				$callableThrowPoints = array_map(static fn (SimpleThrowPoint $throwPoint) => $throwPoint->isExplicit() ? InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable()) : InternalThrowPoint::createImplicit($scope, $expr), $parametersAcceptor->getThrowPoints());
-				if (!$this->implicitThrows) {
-					$callableThrowPoints = array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit()));
+				foreach ($parametersAcceptor->getThrowPoints() as $throwPoint) {
+					$isExplicit = $throwPoint->isExplicit();
+					if (!$this->implicitThrows && !$isExplicit) {
+						continue;
+					}
+					if ($isExplicit) {
+						$throwPoints[] = InternalThrowPoint::createExplicit($scope, $throwPoint->getType(), $expr, $throwPoint->canContainAnyThrowable());
+					} else {
+						$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
+					}
 				}
-				$throwPoints = array_merge($throwPoints, $callableThrowPoints);
 				// A callable value's impure points are resolved from its
 				// ParametersAcceptor alone, so a conditionally pure function reached
 				// through a first-class callable arrives here as an unconditional

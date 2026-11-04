@@ -1469,12 +1469,11 @@ private:
 			zend_type_error("array_map(): Argument #2 ($array) must be of type array, %s given", zend_zval_value_name(simpleThrowPoints.raw()));
 			return false;
 		}
-		/* array_map() keeps the keys of its one array */
-		zv::Arr callableThrowPoints = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(simpleThrowPoints.raw())));
 		for (zv::ArrayEntry entry : zv::ArrRef(simpleThrowPoints.raw())) {
 			zval *simpleThrowPoint = entry.value().deref().raw();
 			zv::Val explicitValue = callNoArgs(pt_fch_throw_point_explicit_site, simpleThrowPoint, PT_LC("isexplicit"), "isExplicit");
 			if (UNEXPECTED(explicitValue.isUndef())) return false;
+			if (!flag(slots::implicitThrows) && !zend_is_true(explicitValue.raw())) continue;
 			zv::Val throwPoint;
 			if (zend_is_true(explicitValue.raw())) {
 				zv::Val type = callNoArgs(pt_fch_throw_point_type_site, simpleThrowPoint, PT_LC("gettype"), "getType");
@@ -1486,27 +1485,8 @@ private:
 				throwPoint = pt_internal_throw_point_create_implicit(scope.raw(), expr);
 			}
 			if (UNEXPECTED(throwPoint.isUndef())) return false;
-			zend_string *key = entry.stringKeyOrNull();
-			if (key != NULL) {
-				callableThrowPoints.set(key, std::move(throwPoint));
-			} else {
-				callableThrowPoints.separate();
-				zval value = throwPoint.take();
-				zend_hash_index_update(callableThrowPoints.table(), entry.indexKey(), &value);
-			}
+			zv::ArrRef(throwPoints.raw()).push(zv::Ref(throwPoint.raw()));
 		}
-		zv::Val callableThrowPointsHold = zv::Val(std::move(callableThrowPoints));
-		if (!flag(slots::implicitThrows)) {
-			/* array_values(array_filter($callableThrowPoints, static fn (InternalThrowPoint $throwPoint) => $throwPoint->isExplicit())) */
-			zv::Arr explicitOnly = zv::Arr::create(countOf(callableThrowPointsHold.raw()));
-			for (zv::ArrayEntry entry : zv::ArrRef(callableThrowPointsHold.raw())) {
-				bool isExplicit;
-				if (UNEXPECTED(!pt_internal_throw_point_is_explicit(entry.value().raw(), isExplicit))) return false;
-				if (isExplicit) explicitOnly.push(entry.value());
-			}
-			callableThrowPointsHold = zv::Val(std::move(explicitOnly));
-		}
-		if (UNEXPECTED(!arrayMerge(throwPoints, callableThrowPointsHold.raw()))) return false;
 
 		zv::Val acceptorImpurePoints = pt_parameters_acceptor_call(parametersAcceptor, PT_PA_GET_IMPURE_POINTS);
 		if (UNEXPECTED(acceptorImpurePoints.isUndef())) return false;

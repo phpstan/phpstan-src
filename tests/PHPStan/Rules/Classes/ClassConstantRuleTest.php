@@ -184,6 +184,17 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindNamedArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-named-arguments.php'], [
+			[
+				'Access to protected constant C of class ClosureBindNamedArgumentsConstant\\Target.',
+				53,
+			],
+		]);
+	}
+
 	public function testClassExists(): void
 	{
 		$this->analyse([__DIR__ . '/data/class-exists.php'], [
@@ -632,6 +643,86 @@ class ClassConstantRuleTest extends RuleTestCase
 				'Access to constant FOO on an unknown class ClosureAttributeClassConstant\\Missing.',
 				29,
 				$tip,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testClosureBindScopeNamedArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-named-arguments.php'], []);
+	}
+
+	public function testClosureBindScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope.php'], [
+			[
+				'Access to undefined constant ClosureBindScopeClasses\\Bar::P.',
+				47,
+			],
+			[
+				'Access to parent::X but ClosureBindScopeClasses\\NoParent does not extend any class.',
+				50,
+			],
+			[
+				'Access to undefined constant ClosureBindScopeClasses\\Foo::NOPE.',
+				53,
+			],
+			[
+				'Access to undefined constant static(ClosureBindScopeClasses\\Foo)::NOPE.',
+				54,
+			],
+			[
+				'Using self outside of class scope.',
+				57,
+			],
+			[
+				'Using parent outside of class scope.',
+				57,
+			],
+			[
+				'Using static outside of class scope.',
+				57,
+			],
+			[
+				'Using self outside of class scope.',
+				58,
+			],
+			[
+				'Access to undefined constant ClosureBindScopeClasses\\Foo::OWN.',
+				70,
+			],
+			[
+				'Access to parent::X but ClosureBindScopeClasses\\NoParent does not extend any class.',
+				75,
+			],
+		]);
+	}
+
+	public function testClosureBindScopeNestedClass(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-nested-class.php'], [
+			[
+				'Using self outside of class scope.',
+				48,
+			],
+		]);
+	}
+
+	public function testClosureBindScopeAmbiguous(): void
+	{
+		$this->analyse([__DIR__ . '/data/closure-bind-scope-ambiguous.php'], [
+			[
+				'Using self outside of class scope.',
+				49,
+			],
+			[
+				'Using self outside of class scope.',
+				50,
+			],
+			[
+				'Using self outside of class scope.',
+				95,
 			],
 		]);
 	}

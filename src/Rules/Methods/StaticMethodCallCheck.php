@@ -22,10 +22,12 @@ use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\Rules\SelfClassResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -75,8 +77,12 @@ final class StaticMethodCallCheck
 
 			$className = (string) $class;
 			$lowercasedClassName = strtolower($className);
+			if (in_array($lowercasedClassName, ['self', 'static', 'parent'], true) && SelfClassResolver::isAmbiguous($scope)) {
+				return [[], null];
+			}
+			$selfClassReflection = SelfClassResolver::resolve($scope, $this->reflectionProvider);
 			if (in_array($lowercasedClassName, ['self', 'static'], true)) {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						[
 							RuleErrorBuilder::message(sprintf(
@@ -92,7 +98,7 @@ final class StaticMethodCallCheck
 				}
 				$classType = $scope->resolveTypeByName($class);
 			} elseif ($lowercasedClassName === 'parent') {
-				if (!$scope->isInClass()) {
+				if ($selfClassReflection === null) {
 					return [
 						[
 							RuleErrorBuilder::message(sprintf(
@@ -107,16 +113,21 @@ final class StaticMethodCallCheck
 						null,
 					];
 				}
-				$currentClassReflection = $scope->getClassReflection();
-				if ($currentClassReflection->getParentClass() === null) {
+				// a closure bound to another class has no method of that class to name
+				$isEnclosingClass = $scope->isInClass() && $scope->getClassReflection()->getName() === $selfClassReflection->getName();
+				if ($selfClassReflection->getParentClass() === null) {
 					return [
 						[
-							RuleErrorBuilder::message(sprintf(
+							RuleErrorBuilder::message($isEnclosingClass ? sprintf(
 								'%s::%s() calls parent::%s() but %s does not extend any class.',
-								$scope->getClassReflection()->getDisplayName(),
+								$selfClassReflection->getDisplayName(),
 								$scope->getFunctionName(),
 								$methodName,
-								$scope->getClassReflection()->getDisplayName(),
+								$selfClassReflection->getDisplayName(),
+							) : sprintf(
+								'Calling parent::%s() but %s does not extend any class.',
+								$methodName,
+								$selfClassReflection->getDisplayName(),
 							))
 								->line($astName->getStartLine())
 								->identifier('class.noParent')
@@ -126,7 +137,7 @@ final class StaticMethodCallCheck
 					];
 				}
 
-				if ($scope->getFunctionName() === null) {
+				if ($isEnclosingClass && $scope->getFunctionName() === null) {
 					throw new ShouldNotHappenException();
 				}
 
@@ -271,24 +282,28 @@ final class StaticMethodCallCheck
 				|| $function->isStatic()
 				|| $scopeIsInMethodClassOrSubClass->no()
 			) {
-				// per php-src docs, this method can be called statically, even if declared non-static
-				if (strtolower($method->getName()) === 'loadhtml' && $method->getDeclaringClass()->getName() === DOMDocument::class) {
-					return [[], null];
-				}
+				// a closure bound with a $this of the method's class calls its instance
+				// methods through self::/static:: as well
+				if (!self::isCalledOnBoundThis($scope, $classType)) {
+					// per php-src docs, this method can be called statically, even if declared non-static
+					if (strtolower($method->getName()) === 'loadhtml' && $method->getDeclaringClass()->getName() === DOMDocument::class) {
+						return [[], null];
+					}
 
-				return [
-					array_merge($errors, [
-						RuleErrorBuilder::message(sprintf(
-							'Static call to instance method %s::%s().',
-							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName(),
-						))
-							->line($astName->getStartLine())
-							->identifier('method.staticCall')
-							->build(),
-					]),
-					$method,
-				];
+					return [
+						array_merge($errors, [
+							RuleErrorBuilder::message(sprintf(
+								'Static call to instance method %s::%s().',
+								$method->getDeclaringClass()->getDisplayName(),
+								$method->getName(),
+							))
+								->line($astName->getStartLine())
+								->identifier('method.staticCall')
+								->build(),
+						]),
+						$method,
+					];
+				}
 			}
 		}
 
@@ -347,6 +362,28 @@ final class StaticMethodCallCheck
 		}
 
 		return [$errors, $method];
+	}
+
+	/**
+	 * Whether the scope is a closure bound with a `$this` that is certainly an instance of
+	 * the classes of the static call. An undefined `$this` reads as an error type and a
+	 * possibly defined one as mixed, neither of which is certainly such an instance.
+	 */
+	private static function isCalledOnBoundThis(Scope $scope, Type $classType): bool
+	{
+		$objectClassNames = $classType->getObjectClassNames();
+		if ($objectClassNames === [] || !$scope->isInClosureBind()) {
+			return false;
+		}
+
+		$boundThisType = $scope->getType(new Expr\Variable('this'));
+		foreach ($objectClassNames as $objectClassName) {
+			if (!(new ObjectType($objectClassName))->isSuperTypeOf($boundThisType)->yes()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

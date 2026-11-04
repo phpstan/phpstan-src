@@ -145,4 +145,18 @@ class ParameterOutAssignedTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15428.php'], []);
 	}
 
+	public function testBug15228(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], [
+			[
+				'Parameter &$p @param-out type of function Bug15228ParamOut\\coalesceInvalid() expects int|null, string given.',
+				10,
+			],
+			[
+				'Parameter &$p @param-out type of function Bug15228ParamOut\\coalesceValid() expects list<int>|null, list<string> given.',
+				20,
+			],
+		]);
+	}
+
 }

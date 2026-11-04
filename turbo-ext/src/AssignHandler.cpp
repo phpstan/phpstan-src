@@ -1476,7 +1476,7 @@ public:
 			// 1b. build the write chain (Set*OffsetValueTypeExpr nesting) after
 			// the root walk, so a property base's holder and current types are
 			// read from its stored result instead of pricing the unwalked fetch
-			zv::Val assignedPropertyExpr = zv::Val::copyOf(zv::Ref(assignedExpr));
+			zv::Val assignedPropertyExpr = zv::Val::copyOf(zv::Ref(getWrittenExpr(assignedExpr)));
 			zval *chainVar = originalVar;
 			while (ahIs(chainVar, PT_CLASS_ARRAY_DIM_FETCH)) {
 				zval *chainVarVar = AH_PROP(chainVar, var);
@@ -1803,7 +1803,7 @@ public:
 		if (ahIs(var, PT_CLASS_EXISTING_ARRAY_DIM_FETCH)) {
 			zval *originalVar = var;
 			zv::Val dimFetchStack = ahEmptyArray();
-			zv::Val assignedPropertyExpr = zv::Val::copyOf(zv::Ref(assignedExpr));
+			zv::Val assignedPropertyExpr = zv::Val::copyOf(zv::Ref(getWrittenExpr(assignedExpr)));
 			while (ahIs(var, PT_CLASS_EXISTING_ARRAY_DIM_FETCH)) {
 				zval *varVar = AH_PROP(var, var);
 				zval *varDim = AH_PROP(var, dim);
@@ -2137,7 +2137,7 @@ private:
 			}
 
 			{
-				AH_VALB(assignNode, newVariableAssignNode(var, assignedExpr.raw()));
+				AH_VALB(assignNode, newVariableAssignNode(var, getWrittenExpr(assignedExpr.raw())));
 				AH_OKB(nsrCallNodeCallback(nsr, nodeCallback, assignNode.raw(), scopeBeforeAssignEval.raw(), storage));
 			}
 
@@ -2387,6 +2387,16 @@ private:
 			AH_SET(scope, pt_mutating_scope_assign_variable(Z_OBJ_P(scope.raw()), name, type.raw(), nativeType.raw(), newCertainty));
 		}
 		return scope;
+	}
+
+	/* (twin 2058) `$lvalue ??= value` writes only `value` */
+	static zval *getWrittenExpr(zval *assignedExpr)
+	{
+		if (ahIs(assignedExpr, PT_CLASS_COALESCE_ASSIGN_OP_EXPR)) {
+			return AH_PROP(assignedExpr, expr);
+		}
+
+		return assignedExpr;
 	}
 
 	/* (twin 1980) */
@@ -3870,7 +3880,7 @@ private:
 			}
 		}
 		{
-			AH_VALB(assignNode, newPropertyAssignNode(var, assignedExpr, isAssignOp));
+			AH_VALB(assignNode, newPropertyAssignNode(var, getWrittenExpr(assignedExpr), isAssignOp));
 			AH_OKB(nsrCallNodeCallback(nsr, nodeCallback, assignNode.raw(), scopeBeforeAssignEval, storage));
 		}
 		if (propertyReflection == NULL) return true;
@@ -3929,7 +3939,7 @@ private:
 	{
 		AH_VALB(assignedExprType, readAssignedValueType(nsr, assignedValueResult, assignedExpr, scope.raw()));
 		{
-			AH_VALB(assignNode, newPropertyAssignNode(var, assignedExpr, isAssignOp));
+			AH_VALB(assignNode, newPropertyAssignNode(var, getWrittenExpr(assignedExpr), isAssignOp));
 			AH_OKB(nsrCallNodeCallback(nsr, nodeCallback, assignNode.raw(), scopeBeforeAssignEval, storage));
 		}
 		AH_VALB(nativeScope, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope.raw())));

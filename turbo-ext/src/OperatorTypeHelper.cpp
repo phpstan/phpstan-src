@@ -593,6 +593,12 @@ public:
 						}
 					}
 				}
+
+				// the float of an int division lies between the quotients of the bounds
+				IETR_VAL(floatType, getIntegerDivisionFloatType(leftType, rightType, phpVersion));
+				if (!floatType.isNull()) {
+					return replaceFloatType(result.raw(), floatType.raw());
+				}
 			}
 		}
 
@@ -1883,13 +1889,16 @@ public:
 
 	/* {{{ floatRangeMath() */
 
-	/* the floats a member stands for: [min, max, whether NAN]; NAN alone is
-	 * the empty interval [INF, -INF] */
+	/* the floats a member stands for: [min, max, whether NAN, whether an
+	 * infinite bound is a value] (an unbounded int reaches the infinity on
+	 * that side, which it never is); NAN alone is the empty interval
+	 * [INF, -INF] */
 	struct FloatInterval
 	{
 		double min;
 		double max;
 		bool nan;
+		bool infinities;
 	};
 
 	struct FloatIntervalMember
@@ -1961,8 +1970,18 @@ public:
 					}
 				}
 
-				IETR_VAL(pairResult, floatIntervalMath(kind, leftMember.interval, rightMember.interval, phpVersion));
-				resultTypes.push(std::move(pairResult));
+				bool splitDivisor = false;
+				if (kind == IETR_DIV) {
+					IETR_TRI(rightIsInteger, triOn(rightMember.type.raw(), mIsInteger));
+					splitDivisor = rightIsInteger == PT_TRI_YES;
+				}
+				FloatInterval divisorIntervals[3];
+				size_t divisorCount = splitDivisor ? splitIntegerDivisor(rightMember.interval, divisorIntervals) : 1;
+				if (!splitDivisor) divisorIntervals[0] = rightMember.interval;
+				for (size_t i = 0; i < divisorCount; i++) {
+					IETR_VAL(pairResult, floatIntervalMath(kind, leftMember.interval, divisorIntervals[i], phpVersion));
+					resultTypes.push(std::move(pairResult));
+				}
 			}
 		}
 
@@ -1992,7 +2011,7 @@ public:
 			if (isA(member, pt_ce_constant_integer_type)) {
 				zend_long value;
 				if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(member), value))) return false;
-				interval = {static_cast<double>(value), static_cast<double>(value), false};
+				interval = {static_cast<double>(value), static_cast<double>(value), false, false};
 			} else if (isA(member, pt_ce_integer_range_type)) {
 				NullableLong min, max;
 				if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(member), min, max))) return false;
@@ -2000,19 +2019,20 @@ public:
 					min.isNull ? -HUGE_VAL : static_cast<double>(min.value),
 					max.isNull ? HUGE_VAL : static_cast<double>(max.value),
 					false,
+					false,
 				};
 			} else if (isA(member, pt_ce_constant_float_type)) {
 				double value;
 				if (UNEXPECTED(!pt_constant_float_get_value(Z_OBJ_P(member), value))) return false;
-				interval = std::isnan(value) ? FloatInterval{HUGE_VAL, -HUGE_VAL, true} : FloatInterval{value, value, false};
+				interval = std::isnan(value) ? FloatInterval{HUGE_VAL, -HUGE_VAL, true, true} : FloatInterval{value, value, false, true};
 			} else if (isA(member, pt_ce_float_range_type)) {
 				double min, max;
 				if (UNEXPECTED(!pt_float_range_bounds(Z_OBJ_P(member), min, max))) return false;
-				interval = {min, max, false};
+				interval = {min, max, false, true};
 			} else if (Z_TYPE_P(member) == IS_OBJECT && Z_OBJCE_P(member) == pt_ce_integer_type) {
-				interval = {-HUGE_VAL, HUGE_VAL, false};
+				interval = {-HUGE_VAL, HUGE_VAL, false, false};
 			} else if (Z_TYPE_P(member) == IS_OBJECT && Z_OBJCE_P(member) == pt_ce_float_type) {
-				interval = {-HUGE_VAL, HUGE_VAL, true};
+				interval = {-HUGE_VAL, HUGE_VAL, true, true};
 			} else {
 				members.clear();
 				return true;
@@ -2035,16 +2055,9 @@ public:
 
 		zv::Arr list = zv::Arr::create((uint32_t) members.size());
 		for (FloatIntervalMember &member : members) {
-			zval min, max;
-			ZVAL_DOUBLE(&min, member.interval.min);
-			ZVAL_DOUBLE(&max, member.interval.max);
-			zv::Arr interval = zv::Arr::create(3);
-			interval.push(zv::Val::adopt(min));
-			interval.push(zv::Val::adopt(max));
-			interval.push(zv::Val::boolean(member.interval.nan));
 			zv::Arr pair = zv::Arr::create(2);
 			pair.push(std::move(member.type));
-			pair.push(zv::Val(std::move(interval)));
+			pair.push(floatIntervalValue(member.interval));
 			list.push(zv::Val(std::move(pair)));
 		}
 
@@ -2062,15 +2075,20 @@ public:
 		if (leftMin <= leftMax && rightMin <= rightMax) {
 			bool leftHasZero = leftMin <= 0.0 && leftMax >= 0.0;
 			bool rightHasZero = rightMin <= 0.0 && rightMax >= 0.0;
-			bool leftHasInfinity = leftMin == -HUGE_VAL || leftMax == HUGE_VAL;
-			bool rightHasInfinity = rightMin == -HUGE_VAL || rightMax == HUGE_VAL;
+			// the infinities that stand for an unbounded int are not values
+			bool leftHasNegativeInfinity = left.infinities && leftMin == -HUGE_VAL;
+			bool leftHasPositiveInfinity = left.infinities && leftMax == HUGE_VAL;
+			bool rightHasNegativeInfinity = right.infinities && rightMin == -HUGE_VAL;
+			bool rightHasPositiveInfinity = right.infinities && rightMax == HUGE_VAL;
+			bool leftHasInfinity = leftHasNegativeInfinity || leftHasPositiveInfinity;
+			bool rightHasInfinity = rightHasNegativeInfinity || rightHasPositiveInfinity;
 
 			double rightIntervals[2][2] = {{rightMin, rightMax}, {0.0, 0.0}};
 			size_t rightIntervalCount = 1;
 			if (kind == IETR_PLUS) {
-				nan = nan || (leftMax == HUGE_VAL && rightMin == -HUGE_VAL) || (leftMin == -HUGE_VAL && rightMax == HUGE_VAL);
+				nan = nan || (leftHasPositiveInfinity && rightHasNegativeInfinity) || (leftHasNegativeInfinity && rightHasPositiveInfinity);
 			} else if (kind == IETR_MINUS) {
-				nan = nan || (leftMax == HUGE_VAL && rightMax == HUGE_VAL) || (leftMin == -HUGE_VAL && rightMin == -HUGE_VAL);
+				nan = nan || (leftHasPositiveInfinity && rightHasPositiveInfinity) || (leftHasNegativeInfinity && rightHasNegativeInfinity);
 			} else if (kind == IETR_MUL) {
 				nan = nan || (leftHasZero && rightHasInfinity) || (rightHasZero && leftHasInfinity);
 			} else {
@@ -2161,6 +2179,104 @@ public:
 		if (kind == IETR_MUL) return left * right;
 
 		return left / right;
+	}
+
+	/* Mirrors splitIntegerDivisor(): an integer divisor next to zero is -1
+	 * or 1, not a denormal; the count of intervals written */
+	static size_t splitIntegerDivisor(FloatInterval interval, FloatInterval out[3])
+	{
+		if (interval.min > 0.0 || interval.max < 0.0) {
+			out[0] = interval;
+			return 1;
+		}
+
+		size_t count = 0;
+		if (interval.min < 0.0) out[count++] = {interval.min, -1.0, false, false};
+		out[count++] = {0.0, 0.0, false, false};
+		if (interval.max > 0.0) out[count++] = {1.0, interval.max, false, false};
+
+		return count;
+	}
+
+	/* splitIntegerDivisor() for the private method's glue */
+	static zv::Val splitIntegerDivisorValue(FloatInterval interval)
+	{
+		FloatInterval intervals[3];
+		size_t count = splitIntegerDivisor(interval, intervals);
+		zv::Arr list = zv::Arr::create((uint32_t) count);
+		for (size_t i = 0; i < count; i++) {
+			list.push(floatIntervalValue(intervals[i]));
+		}
+
+		return zv::Val(std::move(list));
+	}
+
+	/* the array{float, float, bool, bool} of an interval */
+	static zv::Val floatIntervalValue(const FloatInterval &interval)
+	{
+		zval min, max;
+		ZVAL_DOUBLE(&min, interval.min);
+		ZVAL_DOUBLE(&max, interval.max);
+		zv::Arr value = zv::Arr::create(4);
+		value.push(zv::Val::adopt(min));
+		value.push(zv::Val::adopt(max));
+		value.push(zv::Val::boolean(interval.nan));
+		value.push(zv::Val::boolean(interval.infinities));
+		return zv::Val(std::move(value));
+	}
+
+	/* Mirrors getIntegerDivisionFloatType(): null when an operand is not
+	 * made of numbers or every quotient but NAN is possible */
+	static zv::Val getIntegerDivisionFloatType(zval *leftType, zval *rightType, zval *phpVersion)
+	{
+		bool leftHas = false, rightHas = false;
+		std::vector<FloatIntervalMember> leftMembers, rightMembers;
+		if (UNEXPECTED(!getFloatIntervalMembers(leftType, leftHas, leftMembers))) return zv::Val();
+		if (UNEXPECTED(!getFloatIntervalMembers(rightType, rightHas, rightMembers))) return zv::Val();
+		if (!leftHas || !rightHas) return zv::Val::null();
+		if ((zend_long) leftMembers.size() * (zend_long) rightMembers.size() > PT_IETR_CALCULATE_SCALARS_LIMIT) return zv::Val::null();
+
+		zv::Arr floatTypes = zv::Arr::create((uint32_t) (leftMembers.size() * rightMembers.size() * 3));
+		for (FloatIntervalMember &leftMember : leftMembers) {
+			for (FloatIntervalMember &rightMember : rightMembers) {
+				FloatInterval divisorIntervals[3];
+				size_t divisorCount = splitIntegerDivisor(rightMember.interval, divisorIntervals);
+				for (size_t i = 0; i < divisorCount; i++) {
+					IETR_VAL(floatType, floatIntervalMath(IETR_DIV, leftMember.interval, divisorIntervals[i], phpVersion));
+					floatTypes.push(std::move(floatType));
+				}
+			}
+		}
+
+		// a quotient that can be any float but NAN reads better as float, like int + 1.5 does
+		IETR_VAL(floatType, unionOf(floatTypes));
+		IETR_VAL(fullRange, pt_float_range_from_interval(-HUGE_VAL, HUGE_VAL));
+		IETR_VAL(isFullRange, callOn(floatType.raw(), mEquals, 1, fullRange.raw()));
+		if (Z_TYPE_P(isFullRange.raw()) == IS_TRUE) return zv::Val::null();
+
+		return floatType;
+	}
+
+	/* Mirrors replaceFloatType(): a plain FloatType, alone or in a union,
+	 * replaced by floatType */
+	static zv::Val replaceFloatType(zval *type, zval *floatType)
+	{
+		if (Z_TYPE_P(type) == IS_OBJECT && Z_OBJCE_P(type) == pt_ce_float_type) return zv::Val::copyOf(zv::Ref(floatType));
+		if (!isA(type, pt_ce_union_type)) return zv::Val::copyOf(zv::Ref(type));
+
+		IETR_VAL(innerTypes, callOn(type, mGetTypes));
+		if (UNEXPECTED(!requireArray(innerTypes.raw()))) return zv::Val();
+		zv::Arr types = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(innerTypes.raw())));
+		for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
+			zval *innerType = entry.value().raw();
+			bool isFloat = Z_TYPE_P(innerType) == IS_OBJECT && Z_OBJCE_P(innerType) == pt_ce_float_type;
+			types.push(zv::Ref(isFloat ? floatType : innerType));
+		}
+
+		IETR_VAL(union_, unionOf(types));
+		if (isA(type, pt_ce_benevolent_union_type)) return toBenevolentUnion(union_.raw());
+
+		return union_;
 	}
 
 	/* Mirrors getFloatBoundWithInnerNeighbour(): the count of values written */
@@ -2524,21 +2640,26 @@ bool otArgPhpVersion(zval *value, uint32_t arg)
 	return false;
 }
 
-/* the array{float, float, bool} of floatIntervalMath()'s interval
- * parameters (PHPStan checks the shape, the engine does not); false =
- * thrown */
+/* the array{float, float, bool, bool} of the interval parameters
+ * (PHPStan checks the shape, the engine does not); false = thrown */
 bool otFloatInterval(zval *value, uint32_t arg, OperatorTypeHelper::FloatInterval &out)
 {
-	if (Z_TYPE_P(value) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(value)) == 3) {
+	if (Z_TYPE_P(value) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(value)) == 4) {
 		zval *min = zend_hash_index_find(Z_ARRVAL_P(value), 0);
 		zval *max = zend_hash_index_find(Z_ARRVAL_P(value), 1);
 		zval *nan = zend_hash_index_find(Z_ARRVAL_P(value), 2);
-		if (min != NULL && max != NULL && nan != NULL && Z_TYPE_P(min) == IS_DOUBLE && Z_TYPE_P(max) == IS_DOUBLE && (Z_TYPE_P(nan) == IS_TRUE || Z_TYPE_P(nan) == IS_FALSE)) {
-			out = {Z_DVAL_P(min), Z_DVAL_P(max), Z_TYPE_P(nan) == IS_TRUE};
+		zval *infinities = zend_hash_index_find(Z_ARRVAL_P(value), 3);
+		if (
+			min != NULL && max != NULL && nan != NULL && infinities != NULL
+			&& Z_TYPE_P(min) == IS_DOUBLE && Z_TYPE_P(max) == IS_DOUBLE
+			&& (Z_TYPE_P(nan) == IS_TRUE || Z_TYPE_P(nan) == IS_FALSE)
+			&& (Z_TYPE_P(infinities) == IS_TRUE || Z_TYPE_P(infinities) == IS_FALSE)
+		) {
+			out = {Z_DVAL_P(min), Z_DVAL_P(max), Z_TYPE_P(nan) == IS_TRUE, Z_TYPE_P(infinities) == IS_TRUE};
 			return true;
 		}
 	}
-	zend_argument_type_error(arg, "must be of type array{float, float, bool}, %s given", zend_zval_value_name(value));
+	zend_argument_type_error(arg, "must be of type array{float, float, bool, bool}, %s given", zend_zval_value_name(value));
 	return false;
 }
 
@@ -2748,6 +2869,22 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	});
 
 	cls.method(sigs::getFloatIntervalMembers, OT_TYPE_GLUE(OperatorTypeHelper::getFloatIntervalMembersValue(type)));
+
+	cls.method(sigs::splitIntegerDivisor, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *interval;
+		if (!zp::parse<zp::Zval>(execute_data, interval)) RETURN_THROWS();
+		OperatorTypeHelper::FloatInterval parsed;
+		if (UNEXPECTED(!otFloatInterval(interval, 1, parsed))) RETURN_THROWS();
+		PT_RETURN_VAL(OperatorTypeHelper::splitIntegerDivisorValue(parsed));
+	});
+
+	cls.method(sigs::getIntegerDivisionFloatType, OT_BINARY_GLUE(OperatorTypeHelper::getIntegerDivisionFloatType(leftType, rightType, phpVersion)));
+	cls.method(sigs::replaceFloatType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type, *floatType;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, type, floatType)) RETURN_THROWS();
+		if (UNEXPECTED(!otArgType(type, 1) || !otArgType(floatType, 2))) RETURN_THROWS();
+		PT_RETURN_VAL(OperatorTypeHelper::replaceFloatType(type, floatType));
+	});
 
 	cls.method(sigs::floatIntervalMath, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *operator_;

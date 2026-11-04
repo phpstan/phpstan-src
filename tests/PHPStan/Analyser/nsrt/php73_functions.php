@@ -74,8 +74,8 @@ class Foo
 		assertType('\'a\'|\'b\'|\'c\'', array_key_last($constantArrayOptionalKeys3));
 		assertType('array{int<1, max>, int<0, 999999999>}', $hrtime1);
 		assertType('array{int<1, max>, int<0, 999999999>}', $hrtime2);
-		assertType('(float|int<1, max>)', $hrtime3);
-		assertType('array{int<1, max>, int<0, 999999999>}|float|int<1, max>', $hrtime4);
+		assertType('(float<1.0, max>|int<1, max>)', $hrtime3);
+		assertType('array{int<1, max>, int<0, 999999999>}|float<1.0, max>|int<1, max>', $hrtime4);
 	}
 
 }

@@ -9,7 +9,9 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -18,9 +20,14 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function ceil;
 use function count;
+use function floor;
 use function in_array;
+use function is_nan;
+use const INF;
 
 #[AutowiredService]
 final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -90,7 +97,50 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return new ConstantBooleanType(false);
 		}
 
-		return new FloatType();
+		if (!(new UnionType([new IntegerType(), new FloatType()]))->isSuperTypeOf($firstArgType)->yes()) {
+			return new FloatType();
+		}
+
+		$functionName = $functionReflection->getName();
+		if ($functionName === 'round' && isset($functionCall->getArgs()[1])) {
+			$precisionType = $scope->getType($functionCall->getArgs()[1]->value);
+			if ($precisionType->getConstantScalarValues() !== [0]) {
+				// another precision keeps the sign, or rounds to zero
+				return $this->mapFloatBounds($firstArgType->toFloat(), static fn (float $value): float => $value < 0.0 ? -INF : 0.0, static fn (float $value): float => $value > 0.0 ? INF : 0.0);
+			}
+		}
+
+		if ($functionName === 'ceil') {
+			return $this->mapFloatBounds($firstArgType->toFloat(), static fn (float $value): float => ceil($value), static fn (float $value): float => ceil($value));
+		}
+		if ($functionName === 'floor') {
+			return $this->mapFloatBounds($firstArgType->toFloat(), static fn (float $value): float => floor($value), static fn (float $value): float => floor($value));
+		}
+
+		// round() differs between PHP versions and modes near .5, but always lands on floor() or ceil()
+		return $this->mapFloatBounds($firstArgType->toFloat(), static fn (float $value): float => floor($value), static fn (float $value): float => ceil($value));
+	}
+
+	/**
+	 * Maps each range and constant of a float type through monotonic functions of its bounds.
+	 *
+	 * @param callable(float): float $mapMin
+	 * @param callable(float): float $mapMax
+	 */
+	private function mapFloatBounds(Type $type, callable $mapMin, callable $mapMax): Type
+	{
+		$resultTypes = [];
+		foreach ($type instanceof UnionType ? $type->getTypes() : [$type] as $member) {
+			if ($member instanceof FloatRangeType) {
+				$resultTypes[] = FloatRangeType::fromInterval($mapMin($member->getMin()), $mapMax($member->getMax()));
+			} elseif ($member instanceof ConstantFloatType && !is_nan($member->getValue())) {
+				$resultTypes[] = FloatRangeType::fromInterval($mapMin($member->getValue()), $mapMax($member->getValue()));
+			} else {
+				return new FloatType();
+			}
+		}
+
+		return TypeCombinator::union(...$resultTypes);
 	}
 
 }

@@ -234,3 +234,17 @@ function doEmptyString($x, $y, $z): void
 		assertType("mixed~(''|false|null)", $z);
 	}
 }
+
+/**
+ * @param '1.5'|'1e3'|'1000'|'x' $s
+ */
+function doNumberStrings(string $s): void
+{
+	// a number equals its own string, and a numeric string the other strings of its number
+	if ($s != 1.5) {
+		assertType("'1000'|'1e3'|'x'", $s);
+	}
+	if ($s != '1e3') {
+		assertType("'1.5'|'x'", $s);
+	}
+}

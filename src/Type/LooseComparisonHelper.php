@@ -11,7 +11,6 @@ use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function abs;
@@ -20,7 +19,6 @@ use function ceil;
 use function count;
 use function floor;
 use function is_bool;
-use function is_finite;
 use function is_float;
 use function is_infinite;
 use function is_int;
@@ -28,9 +26,9 @@ use function is_nan;
 use function is_numeric;
 use function is_string;
 use function preg_match;
+use function sprintf;
 use function strcmp;
 use const INF;
-use const NAN;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -51,6 +49,10 @@ final class LooseComparisonHelper
 
 	// a float with a larger magnitude is not exact enough to tell its neighbouring integers apart
 	private const EXACT_FLOAT_INTEGER_LIMIT = 9007199254740992;
+
+	// the significant digits every double can be told apart by, and those that print it without noise
+	private const EXACT_FLOAT_DIGITS = 17;
+	private const SHORT_FLOAT_DIGITS = 15;
 
 	/**
 	 * The values $type can loosely equal: `$type == $x` is false for every $x outside of it.
@@ -76,33 +78,14 @@ final class LooseComparisonHelper
 			return TypeCombinator::union(StaticTypeFactory::falsey(), self::createNumberLikeObjectType($phpVersion));
 		}
 
-		if ($type->isInteger()->yes()) {
-			$integerType = $type instanceof IntegerRangeType || $type instanceof ConstantIntegerType ? $type : new IntegerType();
-			[$min, $max] = $type instanceof IntegerRangeType
-				? [$type->getMin() ?? PHP_INT_MIN, $type->getMax() ?? PHP_INT_MAX]
-				: ($type instanceof ConstantIntegerType ? [$type->getValue(), $type->getValue()] : [PHP_INT_MIN, PHP_INT_MAX]);
-
-			return TypeCombinator::union(
-				self::getNumberPartnerType($integerType, (float) $min, (float) $max, $phpVersion),
-				self::getBooleanAndNullPartnerType($min <= 0 && $max >= 0, $min !== 0 || $max !== 0),
-			);
-		}
-
-		if ($type->isFloat()->yes()) {
-			if ($type instanceof FloatRangeType) {
-				[$min, $max, $nan] = [$type->getMin(), $type->getMax(), false];
-			} elseif ($type instanceof ConstantFloatType) {
-				$value = $type->getValue();
-				$nan = is_nan($value);
-				[$min, $max] = $nan ? [INF, -INF] : [$value, $value];
-			} else {
-				[$min, $max, $nan] = [-INF, INF, true];
+		if ($type->isInteger()->yes() || $type->isFloat()->yes()) {
+			$numbers = $type->toNumberSet();
+			if ($numbers !== null) {
+				return TypeCombinator::union(
+					self::getNumberPartnerType($numbers, $phpVersion),
+					self::getBooleanAndNullPartnerType(self::canBeZero($numbers), self::canBeNonZero($numbers)),
+				);
 			}
-
-			return TypeCombinator::union(
-				self::getNumberPartnerType(self::getIntegerTypeInInterval($min, $max), $min, $max, $phpVersion),
-				self::getBooleanAndNullPartnerType($min <= 0.0 && $max >= 0.0, $nan || $min !== 0.0 || $max !== 0.0),
-			);
 		}
 
 		if ($type->isString()->yes()) {
@@ -194,43 +177,7 @@ final class LooseComparisonHelper
 
 		$values = $type->getConstantScalarValues();
 		if (count($values) === 1) {
-			$value = $values[0];
-			$candidates = [null, false, true, 0, 0.0, '', '0', $value];
-			if (is_int($value)) {
-				$candidates[] = (float) $value;
-				$candidates[] = (string) $value;
-			} elseif (is_float($value)) {
-				$candidates[] = 'NAN';
-				$candidates[] = 'INF';
-				$candidates[] = '-INF';
-				if (is_finite($value) && floor($value) === $value && abs($value) <= self::EXACT_FLOAT_INTEGER_LIMIT) {
-					$candidates[] = (int) $value;
-				}
-			} elseif (is_string($value)) {
-				$candidates[] = NAN;
-				$candidates[] = INF;
-				$candidates[] = -INF;
-				$number = self::parseNumericString($value, $phpVersion);
-				$number = $number !== null ? $number[0] : self::parseNumericPrefix($value) ?? 0;
-				$candidates[] = (float) $number;
-				if (is_int($number)) {
-					$candidates[] = $number;
-				} elseif (is_finite($number) && floor($number) === $number && abs($number) <= self::EXACT_FLOAT_INTEGER_LIMIT) {
-					$candidates[] = (int) $number;
-				}
-			}
-
-			// null compares with an array by its emptiness
-			$types = $value === null ? [new ConstantArrayType([], [])] : [];
-			foreach ($candidates as $candidate) {
-				if (self::compareValues($value, $candidate, $phpVersion) !== 0) {
-					continue;
-				}
-
-				$types[] = self::createValueType($candidate);
-			}
-
-			return TypeCombinator::union(...$types);
+			return self::getTypeLooselyEqualTo($values[0], $phpVersion);
 		}
 
 		if ($type->isEnum()->yes() && count($type->getEnumCases()) === 1) {
@@ -338,36 +285,189 @@ final class LooseComparisonHelper
 	}
 
 	/**
-	 * The numbers, numeric strings, objects and resources that can equal a number of the
-	 * float interval, whose integers are $integerType. Booleans and null are left out,
-	 * NAN equals none of them.
+	 * The values that loosely equal $value, of the kinds a type can describe: null and the
+	 * booleans by its truthiness, the numbers equal to its number, and its string forms.
 	 */
-	private static function getNumberPartnerType(Type $integerType, float $min, float $max, PhpVersion $phpVersion): Type
+	private static function getTypeLooselyEqualTo(bool|float|int|string|null $value, PhpVersion $phpVersion): Type
 	{
-		$types = [$integerType];
-		if ($min <= $max) {
-			$types[] = FloatRangeType::fromInterval($min, $max);
-			$types[] = self::createNumericStringType();
-			// an object compares as 1, unless it is number-like
-			$types[] = $min <= 1.0 && $max >= 1.0 ? new ObjectWithoutClassType() : self::createNumberLikeObjectType($phpVersion);
-			if ($max >= 1.0 && !$integerType->isInteger()->no()) {
-				// as its integer ID
-				$types[] = new ResourceType();
+		// null compares with a string as with '', with anything else by truthiness, like the booleans
+		$types = [new ConstantBooleanType((bool) $value)];
+		if (is_string($value) ? $value === '' : !(bool) $value) {
+			$types[] = new NullType();
+		}
+		if ($value === null) {
+			// and with an array by its emptiness
+			$types[] = new ConstantArrayType([], []);
+		}
+
+		$number = self::getLooselyEqualNumber($value, $phpVersion);
+		if ($number !== null) {
+			// both zeros
+			$types[] = FloatRangeType::fromInterval((float) $number, (float) $number);
+			if (is_int($number)) {
+				$types[] = new ConstantIntegerType($number);
+			} elseif (floor($number) === $number && abs($number) <= self::EXACT_FLOAT_INTEGER_LIMIT) {
+				$types[] = new ConstantIntegerType((int) $number);
 			}
-			if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
-				// as the number the string starts with
-				$types[] = new StringType();
-			} else {
-				if ($max === INF) {
-					$types[] = new ConstantStringType('INF');
-				}
-				if ($min === -INF) {
-					$types[] = new ConstantStringType('-INF');
-				}
+		}
+
+		// the string itself, the number's own string, and the strings that are falsy
+		$strings = ['', '0'];
+		if ($number !== null) {
+			$strings[] = self::getNumberString($number);
+		}
+		if (is_string($value)) {
+			$strings[] = $value;
+		}
+		foreach ($strings as $string) {
+			if (self::compareValues($value, $string, $phpVersion) !== 0) {
+				continue;
+			}
+
+			$types[] = new ConstantStringType($string);
+		}
+
+		return TypeCombinator::union(...$types);
+	}
+
+	/**
+	 * The number every number loosely equal to $value equals, or null when no number,
+	 * or more than one, equals it.
+	 */
+	private static function getLooselyEqualNumber(bool|float|int|string|null $value, PhpVersion $phpVersion): int|float|null
+	{
+		if ($value === null) {
+			return 0;
+		}
+		if (is_bool($value) || (is_float($value) && is_nan($value))) {
+			return null;
+		}
+		if (!is_string($value)) {
+			return $value;
+		}
+
+		$number = self::parseNumericString($value, $phpVersion);
+		if ($number !== null) {
+			return $number[0];
+		}
+		if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+			// the number the string starts with
+			return self::parseNumericPrefix($value) ?? 0;
+		}
+
+		// a number compares with a non-numeric string as its own string
+		foreach ([INF, -INF] as $infinity) {
+			if ((string) $infinity === $value) {
+				return $infinity;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * The shortest string that reads back as $number, independent of the precision ini settings.
+	 */
+	private static function getNumberString(int|float $number): string
+	{
+		if (is_int($number)) {
+			return (string) $number;
+		}
+		if (is_infinite($number)) {
+			return $number > 0 ? 'INF' : '-INF';
+		}
+
+		$string = sprintf('%.' . self::SHORT_FLOAT_DIGITS . 'G', $number);
+		if ((float) $string === $number) {
+			return $string;
+		}
+
+		return sprintf('%.' . self::EXACT_FLOAT_DIGITS . 'G', $number);
+	}
+
+	/**
+	 * The numbers, numeric strings, objects and resources that can equal a number of
+	 * $numbers. Booleans and null are left out, NAN equals none of them.
+	 */
+	private static function getNumberPartnerType(NumberSet $numbers, PhpVersion $phpVersion): Type
+	{
+		// an integer and a float are equal when the integer converted to float is the float
+		$integerTypes = [];
+		$floatIntervals = [];
+		foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
+			$integerTypes[] = IntegerRangeType::fromInterval($min, $max);
+			$floatIntervals[] = [(float) ($min ?? PHP_INT_MIN), (float) ($max ?? PHP_INT_MAX)];
+		}
+		foreach ($numbers->getFloatIntervals() as [$min, $max]) {
+			$integerTypes[] = self::getIntegerTypeInInterval($min, $max);
+			$floatIntervals[] = [$min, $max];
+		}
+		if ($floatIntervals === []) {
+			return new NeverType();
+		}
+
+		$integerType = TypeCombinator::union(...$integerTypes);
+		$types = [$integerType, self::createNumericStringType()];
+		$containsOne = false;
+		$containsInfinity = false;
+		$containsNegativeInfinity = false;
+		foreach ($floatIntervals as [$min, $max]) {
+			$types[] = FloatRangeType::fromInterval($min, $max);
+			$containsOne = $containsOne || ($min <= 1.0 && $max >= 1.0);
+			$containsInfinity = $containsInfinity || $max === INF;
+			$containsNegativeInfinity = $containsNegativeInfinity || $min === -INF;
+		}
+
+		// an object compares as 1, unless it is number-like
+		$types[] = $containsOne ? new ObjectWithoutClassType() : self::createNumberLikeObjectType($phpVersion);
+		if (!TypeCombinator::intersect($integerType, IntegerRangeType::fromInterval(1, null))->isInteger()->no()) {
+			// as its integer ID
+			$types[] = new ResourceType();
+		}
+		if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+			// as the number the string starts with
+			$types[] = new StringType();
+		} else {
+			// as its own string
+			if ($containsInfinity) {
+				$types[] = new ConstantStringType('INF');
+			}
+			if ($containsNegativeInfinity) {
+				$types[] = new ConstantStringType('-INF');
 			}
 		}
 
 		return TypeCombinator::union(...$types);
+	}
+
+	private static function canBeZero(NumberSet $numbers): bool
+	{
+		foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
+			if (($min ?? PHP_INT_MIN) <= 0 && ($max ?? PHP_INT_MAX) >= 0) {
+				return true;
+			}
+		}
+		foreach ($numbers->getFloatIntervals() as [$min, $max]) {
+			if ($min <= 0.0 && $max >= 0.0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static function canBeNonZero(NumberSet $numbers): bool
+	{
+		if ($numbers->hasNan()) {
+			return true;
+		}
+		foreach ([...$numbers->getIntegerIntervals(), ...$numbers->getFloatIntervals()] as [$min, $max]) {
+			if ($min === null || $min !== $max || (float) $min !== 0.0) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static function getBooleanAndNullPartnerType(bool $canBeZero, bool $canBeNonZero): Type
@@ -472,16 +572,6 @@ final class LooseComparisonHelper
 	private static function createNumericStringType(): Type
 	{
 		return new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
-	}
-
-	private static function createValueType(bool|float|int|string|null $value): Type
-	{
-		if (is_float($value) && !is_nan($value)) {
-			// both zeros
-			return FloatRangeType::fromInterval($value, $value);
-		}
-
-		return ConstantTypeHelper::getTypeFromValue($value);
 	}
 
 	public static function compareConstantScalars(ConstantScalarType $leftType, ConstantScalarType $rightType, PhpVersion $phpVersion): BooleanType

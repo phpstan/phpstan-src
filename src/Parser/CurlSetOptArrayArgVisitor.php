@@ -21,9 +21,13 @@ final class CurlSetOptArrayArgVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'curl_setopt_array') {
-				$args = $node->getArgs();
-				if (isset($args[1])) {
-					$args[1]->setAttribute(self::ATTRIBUTE_NAME, true);
+				foreach ($node->getArgs() as $i => $arg) {
+					if ($arg->name === null ? $i !== 1 : $arg->name->toString() !== 'options') {
+						continue;
+					}
+
+					$arg->setAttribute(self::ATTRIBUTE_NAME, true);
+					break;
 				}
 			}
 		}

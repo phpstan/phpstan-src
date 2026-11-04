@@ -3,6 +3,7 @@
 namespace PHPStan\Type\Php;
 
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
@@ -27,7 +28,7 @@ final class ArrayFindParameterClosureTypeExtension implements FunctionParameterC
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, ParameterReflection $parameter, Scope $scope): ?Type
 	{
-		$args = $functionCall->getArgs();
+		$args = ArgumentsNormalizer::reorderArgs($functionReflection->getNamedArgumentsVariants()[0] ?? $functionReflection->getVariants()[0], $functionCall->getArgs()) ?? [];
 		if (!isset($args[0])) {
 			return null;
 		}

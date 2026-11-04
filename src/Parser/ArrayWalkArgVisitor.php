@@ -21,9 +21,13 @@ final class ArrayWalkArgVisitor extends NodeVisitorAbstract
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_walk') {
-				$args = $node->getArgs();
-				if (isset($args[0])) {
-					$args[0]->setAttribute(self::ATTRIBUTE_NAME, true);
+				foreach ($node->getArgs() as $i => $arg) {
+					if ($arg->name === null ? $i !== 0 : $arg->name->toString() !== 'array') {
+						continue;
+					}
+
+					$arg->setAttribute(self::ATTRIBUTE_NAME, true);
+					break;
 				}
 			}
 		}

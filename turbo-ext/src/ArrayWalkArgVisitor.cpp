@@ -40,7 +40,7 @@ public:
 		zend_string *functionName = visitors::plainFuncCallName(node, call, nameProp, &args);
 		if (functionName == NULL) return !EG(exception);
 		if (!(visitors::lowerEquals(functionName, "array_walk"))) return true;
-		zend_object *arg = visitors::argAt(args, 0);
+		zend_object *arg = visitors::argForParameter(args, 0, "array");
 		if (arg != NULL) {
 			visitors::setAttributeTrue(arg, pt_array_walk_arg_attribute_str);
 		}

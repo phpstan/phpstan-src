@@ -1904,6 +1904,30 @@ private:
 	}
 
 public:
+	/* Mirrors reorderIntrinsicArgs(); UNDEF = pending exception */
+	static zv::Val reorderIntrinsicArgs(zval *argsZv, zval *parametersAcceptor)
+	{
+		for (zv::ArrayEntry entry : zv::ArrRef(argsZv)) {
+			zv::Val nameHold;
+			zval *name = readProperty(pt_pas_arg_name_site, entry.value().deref().raw(), PT_LC("name"), nameHold);
+			if (UNEXPECTED(name == NULL)) return zv::Val();
+			if (Z_TYPE_P(name) == IS_NULL) continue;
+
+			zv::Arr values = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(argsZv)));
+			for (zv::ArrayEntry valueEntry : zv::ArrRef(argsZv)) {
+				values.push(zv::Ref(valueEntry.value().deref().raw()));
+			}
+			zv::Val reorderedArgs = pt_arguments_normalizer_reorder_args(parametersAcceptor, values.raw());
+			if (UNEXPECTED(reorderedArgs.isUndef())) return zv::Val();
+			if (Z_TYPE_P(reorderedArgs.raw()) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(reorderedArgs.raw())) == 0) {
+				return zv::Val::copyOf(zv::Ref(argsZv));
+			}
+			return reorderedArgs;
+		}
+
+		return zv::Val::copyOf(zv::Ref(argsZv));
+	}
+
 	/* Mirrors applyIntrinsicArgOverrides() */
 	static zv::Val applyIntrinsicArgOverrides(zval *argsZv, zval *parametersAcceptorsZv, zval *namedArgumentsVariants, zval *scope, const Getters &getters)
 	{
@@ -1911,26 +1935,39 @@ public:
 		zv::Val parametersAcceptors = zv::Val::copyOf(zv::Ref(parametersAcceptorsZv));
 		if (zend_hash_num_elements(args) == 0 || zend_hash_num_elements(Z_ARRVAL_P(parametersAcceptorsZv)) == 0) return parametersAcceptors;
 
-		zval *firstArg = argAt(args, 0);
-		if (UNEXPECTED(firstArg == NULL)) return zv::Val();
+		/* $namedArgumentsVariants[0] ?? $parametersAcceptors[0] */
+		zval *reorderAcceptor = NULL;
+		if (namedArgumentsVariants != NULL && Z_TYPE_P(namedArgumentsVariants) == IS_ARRAY) {
+			reorderAcceptor = zend_hash_index_find(Z_ARRVAL_P(namedArgumentsVariants), 0);
+			if (reorderAcceptor != NULL && Z_TYPE_P(reorderAcceptor) == IS_NULL) reorderAcceptor = NULL;
+		}
+		if (reorderAcceptor == NULL) {
+			reorderAcceptor = readIndex(Z_ARRVAL_P(parametersAcceptorsZv), 0);
+			if (UNEXPECTED(reorderAcceptor == NULL)) return zv::Val();
+		}
+		zv::Val positionalArgsHold = reorderIntrinsicArgs(argsZv, reorderAcceptor);
+		if (UNEXPECTED(positionalArgsHold.isUndef())) return zv::Val();
+		HashTable *positionalArgs = Z_ARRVAL_P(positionalArgsHold.raw());
+		zval *firstPositionalArg = argAt(positionalArgs, 0);
+		if (UNEXPECTED(firstPositionalArg == NULL)) return zv::Val();
 
 		{
 			zv::Val valueHold;
-			zval *firstValue = argValueOf(firstArg, valueHold);
+			zval *firstValue = argValueOf(firstPositionalArg, valueHold);
 			if (UNEXPECTED(firstValue == NULL)) return zv::Val();
 			zval *arrayMapArgs = NULL;
 			if (UNEXPECTED(!getAttribute(firstValue, pt_pas_array_map_args, arrayMapArgs))) return zv::Val();
 			if (arrayMapArgs != NULL && UNEXPECTED(!applyArrayMap(parametersAcceptors, arrayMapArgs, getters))) return zv::Val();
 		}
 
-		if (zend_hash_num_elements(args) >= 3) {
+		if (zend_hash_num_elements(positionalArgs) >= 3) {
 			zval *isCurlSetOptArg = NULL;
-			if (UNEXPECTED(!getAttribute(firstArg, pt_pas_curl_set_opt_arg, isCurlSetOptArg))) return zv::Val();
-			if (isCurlSetOptArg != NULL && zend_is_true(isCurlSetOptArg) && UNEXPECTED(!applyCurlSetOpt(parametersAcceptors, args, getters))) return zv::Val();
+			if (UNEXPECTED(!getAttribute(firstPositionalArg, pt_pas_curl_set_opt_arg, isCurlSetOptArg))) return zv::Val();
+			if (isCurlSetOptArg != NULL && zend_is_true(isCurlSetOptArg) && UNEXPECTED(!applyCurlSetOpt(parametersAcceptors, positionalArgs, getters))) return zv::Val();
 		}
 
-		if (zend_hash_num_elements(args) >= 2) {
-			zval *secondArg = argAt(args, 1);
+		if (zend_hash_num_elements(positionalArgs) >= 2) {
+			zval *secondArg = argAt(positionalArgs, 1);
 			if (UNEXPECTED(secondArg == NULL)) return zv::Val();
 			zval *isCurlSetOptArrayArg = NULL;
 			if (UNEXPECTED(!getAttribute(secondArg, pt_pas_curl_set_opt_array_arg, isCurlSetOptArrayArg))) return zv::Val();
@@ -1939,9 +1976,12 @@ public:
 
 		{
 			zval *isArrayFilterArg = NULL;
-			if (UNEXPECTED(!getAttribute(firstArg, pt_pas_array_filter_arg, isArrayFilterArg))) return zv::Val();
-			if (isArrayFilterArg != NULL && zend_is_true(isArrayFilterArg) && UNEXPECTED(!applyArrayFilter(parametersAcceptors, args, firstArg, getters))) return zv::Val();
+			if (UNEXPECTED(!getAttribute(firstPositionalArg, pt_pas_array_filter_arg, isArrayFilterArg))) return zv::Val();
+			if (isArrayFilterArg != NULL && zend_is_true(isArrayFilterArg) && UNEXPECTED(!applyArrayFilter(parametersAcceptors, positionalArgs, firstPositionalArg, getters))) return zv::Val();
 		}
+
+		zval *firstArg = argAt(args, 0);
+		if (UNEXPECTED(firstArg == NULL)) return zv::Val();
 
 		if (zend_hash_num_elements(args) <= 2) {
 			zval *isImplodeArg = NULL;
@@ -1951,14 +1991,14 @@ public:
 
 		{
 			zval *isArrayWalkArg = NULL;
-			if (UNEXPECTED(!getAttribute(firstArg, pt_pas_array_walk_arg, isArrayWalkArg))) return zv::Val();
-			if (isArrayWalkArg != NULL && zend_is_true(isArrayWalkArg) && UNEXPECTED(!applyArrayWalk(parametersAcceptors, args, firstArg, getters))) return zv::Val();
+			if (UNEXPECTED(!getAttribute(firstPositionalArg, pt_pas_array_walk_arg, isArrayWalkArg))) return zv::Val();
+			if (isArrayWalkArg != NULL && zend_is_true(isArrayWalkArg) && UNEXPECTED(!applyArrayWalk(parametersAcceptors, positionalArgs, firstPositionalArg, getters))) return zv::Val();
 		}
 
 		{
 			zval *isArrayFindArg = NULL;
-			if (UNEXPECTED(!getAttribute(firstArg, pt_pas_array_find_arg, isArrayFindArg))) return zv::Val();
-			if (isArrayFindArg != NULL && zend_is_true(isArrayFindArg) && UNEXPECTED(!applyArrayFind(parametersAcceptors, firstArg, getters))) return zv::Val();
+			if (UNEXPECTED(!getAttribute(firstPositionalArg, pt_pas_array_find_arg, isArrayFindArg))) return zv::Val();
+			if (isArrayFindArg != NULL && zend_is_true(isArrayFindArg) && UNEXPECTED(!applyArrayFind(parametersAcceptors, firstPositionalArg, getters))) return zv::Val();
 		}
 
 		{

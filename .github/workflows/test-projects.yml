@@ -1,0 +1,42 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Test projects"
+
+on:
+  push:
+    branches:
+      - "2.3.x"
+    paths:
+      - 'src/**'
+      - 'conf/**'
+      - 'bin/**'
+      - 'stubs/**'
+      - 'composer.lock'
+      - '.github/workflows/test-projects.yml'
+
+permissions: {}
+
+jobs:
+  test-projects:
+    name: "Test projects"
+    runs-on: "ubuntu-latest"
+
+    strategy:
+      matrix:
+        include:
+          # visual tests of PHPStan Pro, run from this commit's source
+          - repository: "phpstan/phpstan-fixer"
+            event-type: "test_phpstan_src"
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4.0.1
+        with:
+          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          repository: "${{ matrix.repository }}"
+          event-type: "${{ matrix.event-type }}"
+          client-payload: '{"ref": "${{ github.sha }}"}'

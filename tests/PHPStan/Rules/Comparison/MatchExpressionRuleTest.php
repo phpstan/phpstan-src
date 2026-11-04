@@ -642,6 +642,14 @@ class MatchExpressionRuleTest extends RuleTestCase
 				'Match expression does not handle remaining value: true',
 				132,
 			],
+			[
+				'Call to static method Bug11374\\MoreAnalogous::isNotFloat() with float will always evaluate to false.',
+				181,
+			],
+			[
+				'Match expression does not handle remaining value: false',
+				195,
+			],
 		]);
 	}
 

@@ -168,3 +168,66 @@ function isIntFunction(mixed $value): bool
 {
 	return is_int($value);
 }
+
+final class MoreAnalogous
+{
+
+	private int|float $prop = 1;
+
+	public function matchFalse(float|int $value): string
+	{
+		return match (false) {
+			self::isNotInt($value) => 'int',
+			self::isNotFloat($value) => 'float',
+		};
+	}
+
+	public function assertOnProperty(): string
+	{
+		return match (true) {
+			$this->propIsInt() => 'int',
+			$this->propIsFloat() => 'float',
+		};
+	}
+
+	public function notExhaustiveMatchFalse(float|int|string $value): string
+	{
+		return match (false) {
+			self::isNotInt($value) => 'int',
+			self::isNotFloat($value) => 'float',
+		};
+	}
+
+	/**
+	 * @phpstan-assert-if-false int $value
+	 */
+	private static function isNotInt(mixed $value): bool
+	{
+		return !is_int($value);
+	}
+
+	/**
+	 * @phpstan-assert-if-false float $value
+	 */
+	private static function isNotFloat(mixed $value): bool
+	{
+		return !is_float($value);
+	}
+
+	/**
+	 * @phpstan-assert-if-true int $this->prop
+	 */
+	private function propIsInt(): bool
+	{
+		return is_int($this->prop);
+	}
+
+	/**
+	 * @phpstan-assert-if-true float $this->prop
+	 */
+	private function propIsFloat(): bool
+	{
+		return is_float($this->prop);
+	}
+
+}

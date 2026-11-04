@@ -728,6 +728,248 @@ private:
 
 		return 1;
 	}
+
+public:
+	/* Mirrors intDivide(). */
+	static zv::Val intDivide(const NumberSetData &left, const NumberSetData &right)
+	{
+		zv::Arr resultTypes = zv::Arr::create((uint32_t) (left.integerIntervals.size() * right.integerIntervals.size() * 2));
+		for (const NumberSetData::IntegerInterval &numerator : left.integerIntervals) {
+			Bound numeratorMin = numerator.min.isNull ? Bound::infinity(-1) : Bound::of(numerator.min.value);
+			Bound numeratorMax = numerator.max.isNull ? Bound::infinity(1) : Bound::of(numerator.max.value);
+			for (const NumberSetData::IntegerInterval &divisor : right.integerIntervals) {
+				Bound divisorMin = divisor.min.isNull ? Bound::infinity(-1) : Bound::of(divisor.min.value);
+				Bound divisorMax = divisor.max.isNull ? Bound::infinity(1) : Bound::of(divisor.max.value);
+				if (lessThanBound(divisorMin, Bound::of(0))) {
+					Bound minusOne = Bound::of(-1);
+					IETR_VAL(negative, intDivideIntervals(numeratorMin, numeratorMax, divisorMin, lessThanBound(minusOne, divisorMax) ? minusOne : divisorMax));
+					resultTypes.push(std::move(negative));
+				}
+				if (!lessThanBound(Bound::of(0), divisorMax)) {
+					continue;
+				}
+
+				Bound one = Bound::of(1);
+				IETR_VAL(positive, intDivideIntervals(numeratorMin, numeratorMax, lessThanBound(divisorMin, one) ? one : divisorMin, divisorMax));
+				resultTypes.push(std::move(positive));
+			}
+		}
+
+		if (zend_hash_num_elements(resultTypes.table()) == 0) {
+			return newErrorType();
+		}
+
+		return unionOf(resultTypes);
+	}
+
+	/* Mirrors intDivideIntervals(). */
+	static zv::Val intDivideIntervals(Bound numeratorMin, Bound numeratorMax, Bound divisorMin, Bound divisorMax)
+	{
+		Bound results[4] = {
+			intDivideBound(numeratorMin, divisorMin),
+			intDivideBound(numeratorMin, divisorMax),
+			intDivideBound(numeratorMax, divisorMin),
+			intDivideBound(numeratorMax, divisorMax),
+		};
+		Bound min = results[0];
+		Bound max = results[0];
+		for (const Bound &result : results) {
+			if (lessThanBound(result, min)) min = result;
+			if (lessThanBound(max, result)) max = result;
+		}
+
+		return fromInterval(
+			min.inf != 0 ? NullableLong::null() : NullableLong::of(min.value),
+			max.inf != 0 ? NullableLong::null() : NullableLong::of(max.value)
+		);
+	}
+
+	/* Mirrors intDivideBound(). */
+	static Bound intDivideBound(Bound numerator, Bound divisor)
+	{
+		if (numerator.inf != 0) {
+			if (divisor.inf != 0) {
+				// the interval already contains 0 through a neighbouring corner
+				return Bound::of(0);
+			}
+
+			return (numerator.inf > 0) == (divisor.value > 0) ? Bound::infinity(1) : Bound::infinity(-1);
+		}
+
+		if (divisor.inf != 0) {
+			return Bound::of(0);
+		}
+
+		if (numerator.value == ZEND_LONG_MIN && divisor.value == -1) {
+			// throws ArithmeticError, the closest valid result is intdiv(PHP_INT_MIN + 1, -1)
+			return Bound::of(ZEND_LONG_MAX);
+		}
+
+		return Bound::of(numerator.value / divisor.value);
+	}
+
+	/* Mirrors modulo(). */
+	static zv::Val modulo(const NumberSetData &left, const NumberSetData &right)
+	{
+		NullableLong leftMin, leftMax, divisorMin, divisorMax;
+		getIntegerHull(left, leftMin, leftMax);
+		getIntegerHull(right, divisorMin, divisorMax);
+		NullableLong maxMagnitude = getMaxModuloMagnitude(divisorMin, divisorMax);
+
+		NullableLong rangeMax;
+		if (!leftMax.isNull && leftMax.value <= 0) {
+			rangeMax = NullableLong::of(0);
+		} else if (maxMagnitude.isNull) {
+			rangeMax = leftMax;
+		} else if (leftMax.isNull) {
+			rangeMax = maxMagnitude;
+		} else {
+			rangeMax = NullableLong::of(std::min(leftMax.value, maxMagnitude.value));
+		}
+
+		NullableLong rangeMin;
+		if (!leftMin.isNull && leftMin.value >= 0) {
+			rangeMin = NullableLong::of(0);
+		} else if (maxMagnitude.isNull) {
+			rangeMin = leftMin;
+		} else if (leftMin.isNull) {
+			rangeMin = NullableLong::of(-maxMagnitude.value);
+		} else {
+			rangeMin = NullableLong::of(std::max(leftMin.value, -maxMagnitude.value));
+		}
+
+		return fromInterval(rangeMin, rangeMax);
+	}
+
+	/* Mirrors getIntegerHull(). */
+	static void getIntegerHull(const NumberSetData &set, NullableLong &outMin, NullableLong &outMax)
+	{
+		NullableLong min = NullableLong::null();
+		NullableLong max = NullableLong::null();
+		bool unboundedMin = set.integerIntervals.empty();
+		bool unboundedMax = set.integerIntervals.empty();
+		for (const NumberSetData::IntegerInterval &interval : set.integerIntervals) {
+			if (interval.min.isNull) {
+				unboundedMin = true;
+			} else if (min.isNull || interval.min.value < min.value) {
+				min = interval.min;
+			}
+
+			if (interval.max.isNull) {
+				unboundedMax = true;
+			} else if (max.isNull || interval.max.value > max.value) {
+				max = interval.max;
+			}
+		}
+
+		outMin = unboundedMin ? NullableLong::null() : min;
+		outMax = unboundedMax ? NullableLong::null() : max;
+	}
+
+	/* Mirrors getMaxModuloMagnitude(). */
+	static NullableLong getMaxModuloMagnitude(NullableLong divisorMin, NullableLong divisorMax)
+	{
+		if (divisorMin.isNull || divisorMax.isNull || divisorMin.value == ZEND_LONG_MIN) return NullableLong::null();
+		zend_long absMin = divisorMin.value < 0 ? -divisorMin.value : divisorMin.value;
+		zend_long absMax = divisorMax.value < 0 ? -divisorMax.value : divisorMax.value;
+		zend_long magnitude = std::max(absMin, absMax);
+		if (magnitude == 0) return NullableLong::null();
+		return NullableLong::of(magnitude - 1);
+	}
+
+	/* Mirrors bitwiseAnd(), bitwiseOr() and bitwiseXor(). */
+	static zv::Val bitwise(IetrBinaryKind kind, const NumberSetData &left, const NumberSetData &right)
+	{
+		zend_long leftMin = 0, rightMin = 0;
+		NullableLong leftMax = NullableLong::null(), rightMax = NullableLong::null();
+		bool leftBounds = getNonNegativeIntegerBounds(left, leftMin, leftMax);
+		bool rightBounds = getNonNegativeIntegerBounds(right, rightMin, rightMax);
+		if (kind == IETR_BITWISE_AND) {
+			if (!leftBounds && !rightBounds) {
+				return newIntegerType();
+			}
+
+			bool anyMax = false;
+			zend_long minOfMax = 0;
+			if (leftBounds && !leftMax.isNull) {
+				minOfMax = leftMax.value;
+				anyMax = true;
+			}
+			if (rightBounds && !rightMax.isNull) {
+				minOfMax = anyMax && minOfMax <= rightMax.value ? minOfMax : rightMax.value;
+				anyMax = true;
+			}
+
+			return fromInterval(NullableLong::of(0), anyMax ? NullableLong::of(minOfMax) : NullableLong::null());
+		}
+
+		/* Mirrors bitwiseOrXor(). */
+		if (!leftBounds || !rightBounds) {
+			return newIntegerType();
+		}
+		if (leftMax.isNull || rightMax.isNull) {
+			return fromInterval(NullableLong::of(0), NullableLong::null());
+		}
+
+		return fromInterval(NullableLong::of(0), NullableLong::of(allBitsMask(leftMax.value >= rightMax.value ? leftMax.value : rightMax.value)));
+	}
+
+	/* Mirrors getNonNegativeIntegerBounds(): false for its null */
+	static bool getNonNegativeIntegerBounds(const NumberSetData &set, zend_long &min, NullableLong &max)
+	{
+		if (!set.floatIntervals.empty() || set.nan || set.integerIntervals.size() != 1) return false;
+		const NumberSetData::IntegerInterval &interval = set.integerIntervals[0];
+		if (interval.min.isNull || interval.min.value < 0) return false;
+		min = interval.min.value;
+		max = interval.max;
+		return true;
+	}
+
+	/* Mirrors allBitsMask(). */
+	static zend_long allBitsMask(zend_long value)
+	{
+		value |= value >> 1;
+		value |= value >> 2;
+		value |= value >> 4;
+		value |= value >> 8;
+		value |= value >> 16;
+		value |= value >> 32;
+
+		return value;
+	}
+
+	/* Mirrors negate(). */
+	static zv::Val negate(const NumberSetData &set, zval *phpVersion)
+	{
+		// -PHP_INT_MIN overflows into a float, as the product with -1 does
+		zv::Arr types = zv::Arr::create((uint32_t) (set.floatIntervals.size() + 2));
+		if (!set.integerIntervals.empty()) {
+			NumberSetData integers;
+			integers.integerIntervals = set.integerIntervals;
+			NumberSetData minusOne;
+			minusOne.integerIntervals.push_back({NullableLong::of(-1), NullableLong::of(-1)});
+			IETR_VAL(product, calculate(IETR_MUL, integers, minusOne, phpVersion));
+			types.push(std::move(product));
+		}
+		for (const NumberSetData::FloatInterval &interval : set.floatIntervals) {
+			if (interval.min == -std::numeric_limits<double>::infinity() && interval.max == std::numeric_limits<double>::infinity() && set.nan) {
+				// the twin's union(new FloatType(), ...$types): the FloatType absorbs the floats so far
+				IETR_VAL(floatType, newFloatType());
+				types.push(std::move(floatType));
+				return unionOf(types);
+			}
+
+			// a constant keeps the sign of its zero
+			IETR_VAL(negated, interval.min == interval.max ? newConstantFloatType(-interval.min) : pt_float_range_from_interval(-interval.max, -interval.min));
+			types.push(std::move(negated));
+		}
+		if (set.nan) {
+			IETR_VAL(nan, newConstantFloatType(std::numeric_limits<double>::quiet_NaN()));
+			types.push(std::move(nan));
+		}
+
+		return unionOf(types);
+	}
 };
 
 /* }}} */
@@ -740,6 +982,26 @@ using phpstanturbo::NumberSetData;
 zv::Val pt_number_set_new(const NumberSetData &data)
 {
 	return NumberSet::create(data);
+}
+
+zv::Val pt_number_set_int_divide(const NumberSetData &left, const NumberSetData &right)
+{
+	return phpstanturbo::NumberSetMath::intDivide(left, right);
+}
+
+zv::Val pt_number_set_modulo(const NumberSetData &left, const NumberSetData &right)
+{
+	return phpstanturbo::NumberSetMath::modulo(left, right);
+}
+
+zv::Val pt_number_set_bitwise(phpstanturbo::ietr::IetrBinaryKind kind, const NumberSetData &left, const NumberSetData &right)
+{
+	return phpstanturbo::NumberSetMath::bitwise(kind, left, right);
+}
+
+zv::Val pt_number_set_negate(const NumberSetData &set, zval *phpVersion)
+{
+	return phpstanturbo::NumberSetMath::negate(set, phpVersion);
 }
 
 zv::Val pt_number_set_calculate(phpstanturbo::ietr::IetrBinaryKind kind, const NumberSetData &left, const NumberSetData &right, zval *phpVersion)
@@ -767,6 +1029,28 @@ bool pt_type_to_number_set(zval *type, NumberSetData &out, bool &has)
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS NumberSet(Z_OBJ_P(ZEND_THIS))
+
+/* intDivide() & co.: (self $right, PhpVersion $phpVersion) */
+template <int Op>
+static void pt_ns_integer_operator(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *right, *phpVersion;
+	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
+	if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(right), pt_ce_number_set))) {
+		zend_type_error("%s::%s(): Argument #1 ($right) must be of type %s, %s given", ZSTR_VAL(pt_ce_number_set->name), get_active_function_name(), ZSTR_VAL(pt_ce_number_set->name), zend_zval_value_name(right));
+		RETURN_THROWS();
+	}
+	NumberSetData left, rightData;
+	if (UNEXPECTED(!PT_THIS.read(left) || !NumberSet(Z_OBJ_P(right)).read(rightData))) RETURN_THROWS();
+	using phpstanturbo::NumberSetMath;
+	switch (Op) {
+		case 0: PT_RETURN_VAL(NumberSetMath::intDivide(left, rightData));
+		case 1: PT_RETURN_VAL(NumberSetMath::modulo(left, rightData));
+		case 2: PT_RETURN_VAL(NumberSetMath::bitwise(phpstanturbo::ietr::IETR_BITWISE_AND, left, rightData));
+		case 3: PT_RETURN_VAL(NumberSetMath::bitwise(phpstanturbo::ietr::IETR_BITWISE_OR, left, rightData));
+		default: PT_RETURN_VAL(NumberSetMath::bitwise(phpstanturbo::ietr::IETR_BITWISE_XOR, left, rightData));
+	}
+}
 
 /* union() / intersect(): (self $other) — PHP's max()/min() keep the first of
  * equal values, as `b > a ? b : a` does */
@@ -858,6 +1142,18 @@ PT_MINIT_REGISTRATION(pt_register_number_set)
 	cls.method(sigs::subtract, pt_ns_operator<phpstanturbo::ietr::IETR_MINUS>);
 	cls.method(sigs::multiply, pt_ns_operator<phpstanturbo::ietr::IETR_MUL>);
 	cls.method(sigs::divide, pt_ns_operator<phpstanturbo::ietr::IETR_DIV>);
+	cls.method(sigs::intDivide, pt_ns_integer_operator<0>);
+	cls.method(sigs::modulo, pt_ns_integer_operator<1>);
+	cls.method(sigs::bitwiseAnd, pt_ns_integer_operator<2>);
+	cls.method(sigs::bitwiseOr, pt_ns_integer_operator<3>);
+	cls.method(sigs::bitwiseXor, pt_ns_integer_operator<4>);
+	cls.method(sigs::negate, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
+		NumberSetData set;
+		if (UNEXPECTED(!PT_THIS.read(set))) RETURN_THROWS();
+		PT_RETURN_VAL(phpstanturbo::NumberSetMath::negate(set, phpVersion));
+	});
 	cls.method(sigs::shiftLeft, pt_ns_operator<phpstanturbo::ietr::IETR_SHIFT_LEFT>);
 	cls.method(sigs::shiftRight, pt_ns_operator<phpstanturbo::ietr::IETR_SHIFT_RIGHT>);
 

@@ -309,13 +309,14 @@ public:
 			if (isA(rightToNumber.raw(), pt_ce_error_type)) return newErrorType();
 		}
 
-		zv::Val range = kind == IETR_BITWISE_AND
-			? computeBitwiseAndRange(leftNumberType.raw(), rightNumberType.raw())
-			: computeBitwiseOrXorRange(leftNumberType.raw(), rightNumberType.raw());
-		if (UNEXPECTED(range.isUndef())) return zv::Val();
-		if (Z_TYPE_P(range.raw()) != IS_NULL) return range;
+		NumberSetData leftNumbers, rightNumbers;
+		bool leftHas = false, rightHas = false;
+		if (UNEXPECTED(!pt_type_to_number_set(leftNumberType.raw(), leftNumbers, leftHas))) return zv::Val();
+		if (UNEXPECTED(!pt_type_to_number_set(rightNumberType.raw(), rightNumbers, rightHas))) return zv::Val();
+		if (!leftHas) leftNumbers = anyInteger();
+		if (!rightHas) rightNumbers = anyInteger();
 
-		return newIntegerType();
+		return pt_number_set_bitwise(kind, leftNumbers, rightNumbers);
 	}
 
 	/* Mirrors getFiniteOrConstantScalarTypes() with the operation of `kind`:
@@ -679,111 +680,15 @@ public:
 			}
 		}
 
-		NullableLong maxMagnitude = NullableLong::null();
-		{
-			IETR_VAL(rightInteger, callOn(rightType, mToInteger));
-			bool hasDivisorBounds;
-			NullableLong divisorMin, divisorMax;
-			if (UNEXPECTED(!getIntegerBounds(rightInteger.raw(), hasDivisorBounds, divisorMin, divisorMax))) return zv::Val();
-			if (hasDivisorBounds) {
-				maxMagnitude = getMaxModuloMagnitude(divisorMin, divisorMax);
-			}
-		}
-
-		bool hasLeftBounds;
-		NullableLong leftMin, leftMax;
+		NumberSetData leftNumbers, rightNumbers;
 		{
 			IETR_VAL(leftInteger, callOn(leftType, mToInteger));
-			if (UNEXPECTED(!getIntegerBounds(leftInteger.raw(), hasLeftBounds, leftMin, leftMax))) return zv::Val();
-		}
-		if (!hasLeftBounds) {
-			leftMin = NullableLong::null();
-			leftMax = NullableLong::null();
-		}
-		if (leftMin.isNull) {
-			IETR_VAL(nonNegative, fromInterval(NullableLong::of(0), NullableLong::null()));
-			IETR_TRI(leftIsNonNegative, triOn(nonNegative.raw(), mIsSuperTypeOf, 1, leftType));
-			if (leftIsNonNegative == PT_TRI_YES) leftMin = NullableLong::of(0);
-		}
-		if (leftMax.isNull) {
-			IETR_VAL(nonPositive, fromInterval(NullableLong::null(), NullableLong::of(0)));
-			IETR_TRI(leftIsNonPositive, triOn(nonPositive.raw(), mIsSuperTypeOf, 1, leftType));
-			if (leftIsNonPositive == PT_TRI_YES) leftMax = NullableLong::of(0);
+			if (UNEXPECTED(!getIntegerNumberSetOrAny(leftInteger.raw(), leftNumbers))) return zv::Val();
+			IETR_VAL(rightInteger, callOn(rightType, mToInteger));
+			if (UNEXPECTED(!getIntegerNumberSetOrAny(rightInteger.raw(), rightNumbers))) return zv::Val();
 		}
 
-		// The result has the sign of the dividend and is never bigger in magnitude than either
-		// the dividend or the largest magnitude the divisor can have.
-		NullableLong rangeMax;
-		if (!leftMax.isNull && leftMax.value <= 0) {
-			rangeMax = NullableLong::of(0);
-		} else if (maxMagnitude.isNull) {
-			rangeMax = leftMax;
-		} else if (leftMax.isNull) {
-			rangeMax = maxMagnitude;
-		} else {
-			rangeMax = NullableLong::of(std::min(leftMax.value, maxMagnitude.value));
-		}
-
-		NullableLong rangeMin;
-		if (!leftMin.isNull && leftMin.value >= 0) {
-			rangeMin = NullableLong::of(0);
-		} else if (maxMagnitude.isNull) {
-			rangeMin = leftMin;
-		} else if (leftMin.isNull) {
-			rangeMin = NullableLong::of(-maxMagnitude.value);
-		} else {
-			rangeMin = NullableLong::of(std::max(leftMin.value, -maxMagnitude.value));
-		}
-
-		return fromInterval(rangeMin, rangeMax);
-	}
-
-	/* private static: the highest possible absolute value of `$x % $divisor`,
-	 * one less than the largest possible absolute value of the divisor; null
-	 * when there is no such bound. A divisor reaching PHP_INT_MIN is reported
-	 * as unbounded too: abs(PHP_INT_MIN) does not fit into an integer, and the
-	 * bound it stands for is PHP_INT_MAX, which is all an unbounded result can
-	 * hold anyway */
-	static NullableLong getMaxModuloMagnitude(NullableLong divisorMin, NullableLong divisorMax)
-	{
-		if (divisorMin.isNull || divisorMax.isNull || divisorMin.value == ZEND_LONG_MIN) return NullableLong::null();
-		zend_long absMin = divisorMin.value < 0 ? -divisorMin.value : divisorMin.value;
-		zend_long absMax = divisorMax.value < 0 ? -divisorMax.value : divisorMax.value;
-		zend_long magnitude = std::max(absMin, absMax);
-		if (magnitude == 0) return NullableLong::null();
-		return NullableLong::of(magnitude - 1);
-	}
-
-	/* private: the lowest and highest value the type can hold, null for an
-	 * unbounded side; `has` false when the type holds anything but
-	 * integers. false = pending exception */
-	[[nodiscard]] static bool getIntegerBounds(zval *type, bool &has, NullableLong &outMin, NullableLong &outMax)
-	{
-		std::vector<NumberSetData::IntegerInterval> intervals;
-		if (UNEXPECTED(!getIntegerIntervals(type, intervals, has))) return false;
-		if (!has) return true;
-
-		NullableLong min = NullableLong::null();
-		NullableLong max = NullableLong::null();
-		bool unboundedMin = false;
-		bool unboundedMax = false;
-		for (const NumberSetData::IntegerInterval &interval : intervals) {
-			if (interval.min.isNull) {
-				unboundedMin = true;
-			} else if (min.isNull || interval.min.value < min.value) {
-				min = interval.min;
-			}
-
-			if (interval.max.isNull) {
-				unboundedMax = true;
-			} else if (max.isNull || interval.max.value > max.value) {
-				max = interval.max;
-			}
-		}
-
-		outMin = unboundedMin ? NullableLong::null() : min;
-		outMax = unboundedMax ? NullableLong::null() : max;
-		return true;
+		return pt_number_set_modulo(leftNumbers, rightNumbers);
 	}
 
 	/* Mirrors getIntegerIntervals(): the integer intervals of a type that
@@ -829,21 +734,6 @@ public:
 		zv::Arr pair = zv::Arr::create(2);
 		pair.push(interval.min.toVal());
 		pair.push(interval.max.toVal());
-		return zv::Val(std::move(pair));
-	}
-
-	/* getIntegerBounds() as the private method returns it: the [min, max]
-	 * pair or null; UNDEF = pending exception */
-	static zv::Val getIntegerBoundsValue(zval *type)
-	{
-		bool has = false;
-		NullableLong min = NullableLong::null();
-		NullableLong max = NullableLong::null();
-		if (UNEXPECTED(!getIntegerBounds(type, has, min, max))) return zv::Val();
-		if (!has) return zv::Val::null();
-		zv::Arr pair = zv::Arr::create(2);
-		pair.push(min.toVal());
-		pair.push(max.toVal());
 		return zv::Val(std::move(pair));
 	}
 
@@ -1286,97 +1176,6 @@ public:
 		return newUnionType(types);
 	}
 
-	/* Mirrors getNonNegativeIntegerBounds(): true fills min/max (max null
-	 * for no finite upper bound), false = null; -1 = pending exception */
-	static int getNonNegativeIntegerBounds(zval *type, zend_long &min, NullableLong &max)
-	{
-		std::vector<NumberSetData::IntegerInterval> intervals;
-		bool has = false;
-		if (UNEXPECTED(!getIntegerIntervals(type, intervals, has))) return -1;
-		if (!has || intervals.size() != 1) return 0;
-
-		const NumberSetData::IntegerInterval &interval = intervals[0];
-		if (interval.min.isNull || interval.min.value < 0) return 0;
-
-		min = interval.min.value;
-		max = interval.max;
-		return 1;
-	}
-
-	/* Mirrors getNonNegativeIntegerBounds() as the PHP value it returns:
-	 * [min, max] or null */
-	static zv::Val getNonNegativeIntegerBoundsValue(zval *type)
-	{
-		zend_long min = 0;
-		NullableLong max = NullableLong::null();
-		int bounds = getNonNegativeIntegerBounds(type, min, max);
-		if (UNEXPECTED(bounds < 0)) return zv::Val();
-		if (bounds == 0) return zv::Val::null();
-		zv::Arr pair = zv::Arr::create(2);
-		pair.push(zv::Val::integer(min));
-		pair.push(max.toVal());
-		return zv::Val(std::move(pair));
-	}
-
-	/* Mirrors computeBitwiseAndRange(): a Type, or PHP null */
-	static zv::Val computeBitwiseAndRange(zval *leftNumberType, zval *rightNumberType)
-	{
-		zend_long leftMin = 0, rightMin = 0;
-		NullableLong leftMax = NullableLong::null(), rightMax = NullableLong::null();
-		int leftBounds = getNonNegativeIntegerBounds(leftNumberType, leftMin, leftMax);
-		if (UNEXPECTED(leftBounds < 0)) return zv::Val();
-		int rightBounds = getNonNegativeIntegerBounds(rightNumberType, rightMin, rightMax);
-		if (UNEXPECTED(rightBounds < 0)) return zv::Val();
-		if (leftBounds == 0 && rightBounds == 0) {
-			return zv::Val::null();
-		}
-
-		bool anyMax = false;
-		zend_long minOfMax = 0;
-		if (leftBounds == 1 && !leftMax.isNull) {
-			minOfMax = leftMax.value;
-			anyMax = true;
-		}
-		if (rightBounds == 1 && !rightMax.isNull) {
-			minOfMax = anyMax && minOfMax <= rightMax.value ? minOfMax : rightMax.value;
-			anyMax = true;
-		}
-
-		return fromInterval(NullableLong::of(0), anyMax ? NullableLong::of(minOfMax) : NullableLong::null());
-	}
-
-	/* Mirrors computeBitwiseOrXorRange(): a Type, or PHP null */
-	static zv::Val computeBitwiseOrXorRange(zval *leftNumberType, zval *rightNumberType)
-	{
-		zend_long leftMin = 0, rightMin = 0;
-		NullableLong leftMax = NullableLong::null(), rightMax = NullableLong::null();
-		int leftBounds = getNonNegativeIntegerBounds(leftNumberType, leftMin, leftMax);
-		if (UNEXPECTED(leftBounds < 0)) return zv::Val();
-		int rightBounds = getNonNegativeIntegerBounds(rightNumberType, rightMin, rightMax);
-		if (UNEXPECTED(rightBounds < 0)) return zv::Val();
-		if (leftBounds == 0 || rightBounds == 0) {
-			return zv::Val::null();
-		}
-		if (leftMax.isNull || rightMax.isNull) {
-			return fromInterval(NullableLong::of(0), NullableLong::null());
-		}
-
-		return fromInterval(NullableLong::of(0), NullableLong::of(allBitsMask(leftMax.value >= rightMax.value ? leftMax.value : rightMax.value)));
-	}
-
-	/* Mirrors allBitsMask(). */
-	static zend_long allBitsMask(zend_long value)
-	{
-		value |= value >> 1;
-		value |= value >> 2;
-		value |= value >> 4;
-		value |= value >> 8;
-		value |= value >> 16;
-		value |= value >> 32;
-
-		return value;
-	}
-
 	/* }}} */
 
 	/* {{{ resolveCommonMath() */
@@ -1464,76 +1263,19 @@ public:
 
 	/* {{{ negate() */
 
-	/* Mirrors negateNumber(). */
-	static zv::Val negateNumber(zval *typeIn)
-	{
-		IETR_VAL(type, callOn(typeIn, mToNumber));
-		IETR_VAL(scalarValues, callOn(type.raw(), mGetConstantScalarValues));
-		if (UNEXPECTED(!requireCountable(scalarValues.raw()))) return zv::Val();
-
-		uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(scalarValues.raw()));
-		if (count > 0) {
-			zv::Arr newTypes = zv::Arr::create(count);
-			for (zv::ArrayEntry entry : zv::ArrRef(scalarValues.raw())) {
-				zval *scalarValue = entry.value().raw();
-				ZVAL_DEREF(scalarValue);
-				if (Z_TYPE_P(scalarValue) == IS_LONG) {
-					zval minusOne, newValue;
-					ZVAL_LONG(&minusOne, -1);
-					if (UNEXPECTED(!scalarOp(mul_function, scalarValue, &minusOne, &newValue))) return zv::Val();
-					if (Z_TYPE(newValue) != IS_LONG) {
-						// Negating the smallest integer overflows into a float.
-						IETR_VAL(floatType, newConstantFloatType(zval_get_double(&newValue)));
-						newTypes.push(std::move(floatType));
-						continue;
-					}
-					IETR_VAL(integerType, newConstantIntegerType(Z_LVAL(newValue)));
-					newTypes.push(std::move(integerType));
-				} else if (Z_TYPE_P(scalarValue) == IS_DOUBLE) {
-					zval minusOne, newValue;
-					ZVAL_LONG(&minusOne, -1);
-					if (UNEXPECTED(!scalarOp(mul_function, scalarValue, &minusOne, &newValue))) return zv::Val();
-					IETR_VAL(floatType, newConstantFloatType(Z_DVAL(newValue)));
-					newTypes.push(std::move(floatType));
-				}
-			}
-
-			return unionOf(newTypes);
-		}
-
-		return type;
-	}
-
 	/* Mirrors negate(). */
 	static zv::Val negate(zval *type, zval *phpVersion)
 	{
-		// each member negates on its own: -(int<1, 5>|1.5) is int<-5, -1>|-1.5
 		IETR_VAL(number, callOn(type, mToNumber));
-		if (isA(number.raw(), pt_ce_union_type)) {
-			IETR_VAL(innerTypes, callOn(number.raw(), mGetTypes));
-			if (UNEXPECTED(!requireArray(innerTypes.raw()))) return zv::Val();
-			zv::Arr negatedTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(innerTypes.raw())));
-			for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
-				IETR_VAL(negatedType, negate(entry.value().raw(), phpVersion));
-				negatedTypes.push(std::move(negatedType));
-			}
-
-			IETR_VAL(negatedUnion, unionOf(negatedTypes));
-			if (isA(number.raw(), pt_ce_benevolent_union_type)) return toBenevolentUnion(negatedUnion.raw());
-
-			return negatedUnion;
+		NumberSetData numberSet;
+		bool has = false;
+		if (UNEXPECTED(!pt_type_to_number_set(number.raw(), numberSet, has))) return zv::Val();
+		if (!has) {
+			return number;
 		}
 
-		IETR_VAL(negated, negateNumber(type));
-		if (isA(negated.raw(), pt_ce_integer_range_type)) {
-			IETR_VAL(minusOne, newConstantIntegerType(-1));
-			return subtractOrMultiply(IETR_MUL, type, minusOne.raw(), phpVersion);
-		}
-		if (isA(negated.raw(), pt_ce_float_range_type)) {
-			double min, max;
-			if (UNEXPECTED(!pt_float_range_bounds(Z_OBJ_P(negated.raw()), min, max))) return zv::Val();
-			return pt_float_range_from_interval(-max, -min);
-		}
+		IETR_VAL(negated, pt_number_set_negate(numberSet, phpVersion));
+		if (isA(number.raw(), pt_ce_benevolent_union_type)) return toBenevolentUnion(negated.raw());
 
 		return negated;
 	}
@@ -1569,193 +1311,69 @@ public:
 
 	/* {{{ intDivide() */
 
-	/* an interval bound of intDivide(): an int, or the twin's -INF / INF
-	 * (inf -1 / 1) for an unbounded end */
-	struct Bound
-	{
-		int inf;
-		zend_long value;
-
-		static Bound of(zend_long value) { return { 0, value }; }
-		static Bound infinity(int sign) { return { sign, 0 }; }
-
-		bool lessThan(const Bound &other) const
-		{
-			if (inf != other.inf) return inf < other.inf;
-			return inf == 0 && value < other.value;
-		}
-
-		/* the int|float the twin's private methods trade */
-		void toZval(zval *out) const
-		{
-			if (inf != 0) {
-				ZVAL_DOUBLE(out, inf * std::numeric_limits<double>::infinity());
-			} else {
-				ZVAL_LONG(out, value);
-			}
-		}
-
-		/* an int|float parameter of the twin's private methods; false =
-		 * TypeError thrown */
-		[[nodiscard]] static bool fromZval(zval *value, uint32_t arg, Bound &out)
-		{
-			if (Z_TYPE_P(value) == IS_LONG) {
-				out = of(Z_LVAL_P(value));
-				return true;
-			}
-			if (Z_TYPE_P(value) == IS_DOUBLE && std::isinf(Z_DVAL_P(value))) {
-				out = infinity(Z_DVAL_P(value) > 0 ? 1 : -1);
-				return true;
-			}
-			if (Z_TYPE_P(value) == IS_DOUBLE && Z_DVAL_P(value) == std::trunc(Z_DVAL_P(value)) && Z_DVAL_P(value) >= (double) ZEND_LONG_MIN && Z_DVAL_P(value) < (double) ZEND_LONG_MAX) {
-				out = of((zend_long) Z_DVAL_P(value));
-				return true;
-			}
-			zend_argument_type_error(arg, "must be of type int|float, %s given", zend_zval_value_name(value));
-			return false;
-		}
-	};
-
-	struct Interval
-	{
-		Bound min;
-		Bound max;
-	};
-
 	/* Mirrors intDivide(). */
 	static zv::Val intDivide(zval *numeratorType, zval *divisorType)
 	{
-		std::vector<Interval> numeratorIntervals;
-		std::vector<Interval> divisorIntervals;
-		bool numeratorKnown, divisorKnown;
+		NumberSetData numerator, divisor;
+		bool numeratorHas = false, divisorHas = false;
 		{
 			IETR_VAL(numeratorInteger, callOn(numeratorType, mToInteger));
-			if (UNEXPECTED(!getIntervals(numeratorInteger.raw(), numeratorIntervals, numeratorKnown))) return zv::Val();
+			if (UNEXPECTED(!getIntegerNumberSet(numeratorInteger.raw(), numerator, numeratorHas))) return zv::Val();
 			IETR_VAL(divisorInteger, callOn(divisorType, mToInteger));
-			if (UNEXPECTED(!getIntervals(divisorInteger.raw(), divisorIntervals, divisorKnown))) return zv::Val();
+			if (UNEXPECTED(!getIntegerNumberSet(divisorInteger.raw(), divisor, divisorHas))) return zv::Val();
 		}
-		if (!numeratorKnown || !divisorKnown) {
+		if (!numeratorHas || !divisorHas) {
 			return newErrorType();
 		}
 
-		zv::Arr resultTypes = zv::Arr::create((uint32_t) (numeratorIntervals.size() * divisorIntervals.size() * 2));
-		for (const Interval &numerator : numeratorIntervals) {
-			for (const Interval &divisor : divisorIntervals) {
-				if (divisor.min.lessThan(Bound::of(0))) {
-					Bound minusOne = Bound::of(-1);
-					IETR_VAL(negative, divideIntervals(numerator.min, numerator.max, divisor.min, minusOne.lessThan(divisor.max) ? minusOne : divisor.max));
-					resultTypes.push(std::move(negative));
-				}
-				if (!Bound::of(0).lessThan(divisor.max)) {
-					continue;
-				}
-
-				Bound one = Bound::of(1);
-				IETR_VAL(positive, divideIntervals(numerator.min, numerator.max, divisor.min.lessThan(one) ? one : divisor.min, divisor.max));
-				resultTypes.push(std::move(positive));
-			}
-		}
-
-		if (zend_hash_num_elements(resultTypes.table()) == 0) {
-			return newErrorType();
-		}
-
-		return unionOf(resultTypes);
+		return pt_number_set_int_divide(numerator, divisor);
 	}
 
-	/* Mirrors getIntervals(): `known` false for the twin's null; false =
+	/* Mirrors getIntegerNumberSet(): `has` false for its null; false =
 	 * pending exception */
-	[[nodiscard]] static bool getIntervals(zval *type, std::vector<Interval> &intervals, bool &known)
+	[[nodiscard]] static bool getIntegerNumberSet(zval *type, NumberSetData &out, bool &has)
 	{
-		known = false;
-		std::vector<NumberSetData::IntegerInterval> integerIntervals;
-		bool has = false;
-		if (UNEXPECTED(!getIntegerIntervals(type, integerIntervals, has))) return false;
+		std::vector<NumberSetData::IntegerInterval> intervals;
+		if (UNEXPECTED(!getIntegerIntervals(type, intervals, has))) return false;
 		if (!has) {
 			zend_long isInteger = triOn(type, mIsInteger);
 			if (UNEXPECTED(isInteger < 0)) return false;
 			if (isInteger != PT_TRI_YES) return true;
-			intervals.push_back({ Bound::infinity(-1), Bound::infinity(1) });
-			known = true;
+			out = anyInteger();
+			has = true;
 			return true;
 		}
 
-		for (const NumberSetData::IntegerInterval &interval : integerIntervals) {
-			intervals.push_back({
-				interval.min.isNull ? Bound::infinity(-1) : Bound::of(interval.min.value),
-				interval.max.isNull ? Bound::infinity(1) : Bound::of(interval.max.value),
-			});
-		}
-
-		known = true;
+		out.integerIntervals = std::move(intervals);
 		return true;
 	}
 
-	/* getIntervals() as the private method returns it: a list of [min, max]
-	 * pairs or null; UNDEF = pending exception */
-	static zv::Val getIntervalsValue(zval *type)
+	/* getIntegerNumberSet() or any integer: the `?? $anyInteger` of the twin */
+	[[nodiscard]] static bool getIntegerNumberSetOrAny(zval *type, NumberSetData &out)
 	{
-		std::vector<Interval> intervals;
-		bool known;
-		if (UNEXPECTED(!getIntervals(type, intervals, known))) return zv::Val();
-		if (!known) return zv::Val::null();
-		zv::Arr list = zv::Arr::create((uint32_t) intervals.size());
-		for (const Interval &interval : intervals) {
-			zval min, max;
-			interval.min.toZval(&min);
-			interval.max.toZval(&max);
-			zv::Arr pair = zv::Arr::create(2);
-			pair.push(zv::Val::adopt(min));
-			pair.push(zv::Val::adopt(max));
-			list.push(zv::Val(std::move(pair)));
-		}
-		return zv::Val(std::move(list));
+		bool has = false;
+		if (UNEXPECTED(!getIntegerNumberSet(type, out, has))) return false;
+		if (!has) out = anyInteger();
+		return true;
 	}
 
-	/* Mirrors divideIntervals(). */
-	static zv::Val divideIntervals(Bound numeratorMin, Bound numeratorMax, Bound divisorMin, Bound divisorMax)
+	/* getIntegerNumberSet() as the private method returns it: a NumberSet or
+	 * null; UNDEF = pending exception */
+	static zv::Val getIntegerNumberSetValue(zval *type)
 	{
-		Bound results[4] = {
-			divideBounds(numeratorMin, divisorMin),
-			divideBounds(numeratorMin, divisorMax),
-			divideBounds(numeratorMax, divisorMin),
-			divideBounds(numeratorMax, divisorMax),
-		};
-		Bound min = results[0];
-		Bound max = results[0];
-		for (const Bound &result : results) {
-			if (result.lessThan(min)) min = result;
-			if (max.lessThan(result)) max = result;
-		}
-
-		return fromInterval(
-			min.inf != 0 ? NullableLong::null() : NullableLong::of(min.value),
-			max.inf != 0 ? NullableLong::null() : NullableLong::of(max.value)
-		);
+		NumberSetData set;
+		bool has = false;
+		if (UNEXPECTED(!getIntegerNumberSet(type, set, has))) return zv::Val();
+		if (!has) return zv::Val::null();
+		return pt_number_set_new(set);
 	}
 
-	/* Mirrors divideBounds(). */
-	static Bound divideBounds(Bound numerator, Bound divisor)
+	/* new NumberSet([[null, null]], [], false) */
+	static NumberSetData anyInteger()
 	{
-		if (numerator.inf != 0) {
-			if (divisor.inf != 0) {
-				// the range already contains 0 through a neighbouring corner
-				return Bound::of(0);
-			}
-
-			return (numerator.inf > 0) == (divisor.value > 0) ? Bound::infinity(1) : Bound::infinity(-1);
-		}
-
-		if (divisor.inf != 0) {
-			return Bound::of(0);
-		}
-
-		if (numerator.value == ZEND_LONG_MIN && divisor.value == -1) {
-			// throws ArithmeticError, the closest valid result is intdiv(PHP_INT_MIN + 1, -1)
-			return Bound::of(ZEND_LONG_MAX);
-		}
-
-		return Bound::of(numerator.value / divisor.value);
+		NumberSetData set;
+		set.integerIntervals.push_back({ NullableLong::null(), NullableLong::null() });
+		return set;
 	}
 
 	/* }}} */
@@ -1765,7 +1383,6 @@ public:
 } // namespace phpstanturbo
 
 using phpstanturbo::OperatorTypeHelper;
-using phpstanturbo::NullableLong;
 
 /* {{{ direct entries */
 
@@ -1921,20 +1538,7 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	cls.method(sigs::getDivTypeFromTypes, OT_BINARY_GLUE(OperatorTypeHelper::getDivTypeFromTypes(leftType, rightType, phpVersion)));
 	cls.method(sigs::modulo, OT_BINARY_GLUE(OperatorTypeHelper::modulo(leftType, rightType)));
 
-	cls.method(sigs::getMaxModuloMagnitude, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_long divisorMin, divisorMax;
-		bool divisorMinIsNull, divisorMaxIsNull;
-		ZEND_PARSE_PARAMETERS_START(2, 2)
-			Z_PARAM_LONG_OR_NULL(divisorMin, divisorMinIsNull)
-			Z_PARAM_LONG_OR_NULL(divisorMax, divisorMaxIsNull)
-		ZEND_PARSE_PARAMETERS_END();
-		NullableLong magnitude = OperatorTypeHelper::getMaxModuloMagnitude(
-			divisorMinIsNull ? NullableLong::null() : NullableLong::of(divisorMin),
-			divisorMaxIsNull ? NullableLong::null() : NullableLong::of(divisorMax));
-		PT_RETURN_VAL(magnitude.toVal());
-	});
-
-	cls.method(sigs::getIntegerBounds, OT_TYPE_GLUE(OperatorTypeHelper::getIntegerBoundsValue(type)));
+	cls.method(sigs::getIntegerNumberSet, OT_TYPE_GLUE(OperatorTypeHelper::getIntegerNumberSetValue(type)));
 	cls.method(sigs::getIntegerIntervals, OT_TYPE_GLUE(OperatorTypeHelper::getIntegerIntervalsValue(type)));
 	cls.method(sigs::add, OT_BINARY_GLUE(OperatorTypeHelper::add(leftType, rightType, phpVersion)));
 	cls.method(sigs::arrayUnion, OT_BINARY_GLUE(OperatorTypeHelper::arrayUnion(leftType, rightType)));
@@ -1952,15 +1556,6 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 		if (UNEXPECTED(result < 0)) RETURN_THROWS();
 		RETURN_BOOL(result == 1);
 	});
-	cls.method(sigs::getNonNegativeIntegerBounds, OT_TYPE_GLUE(OperatorTypeHelper::getNonNegativeIntegerBoundsValue(type)));
-	cls.method(sigs::computeBitwiseAndRange, OT_TYPES_GLUE(OperatorTypeHelper::computeBitwiseAndRange(leftType, rightType)));
-	cls.method(sigs::computeBitwiseOrXorRange, OT_TYPES_GLUE(OperatorTypeHelper::computeBitwiseOrXorRange(leftType, rightType)));
-
-	cls.method(sigs::allBitsMask, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_long value;
-		if (!zp::parse<zp::Long>(execute_data, value)) RETURN_THROWS();
-		RETURN_LONG(OperatorTypeHelper::allBitsMask(value));
-	});
 
 	cls.method(sigs::resolveCommonMath, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *operator_;
@@ -1971,8 +1566,6 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 		if (UNEXPECTED(!otOperatorKind(operator_, kind))) RETURN_THROWS();
 		PT_RETURN_VAL(OperatorTypeHelper::resolveCommonMath(kind, leftType, rightType, phpVersion));
 	});
-
-	cls.method(sigs::negateNumber, OT_TYPE_GLUE(OperatorTypeHelper::negateNumber(type)));
 
 	cls.method(sigs::getTypeFromValue, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *value;
@@ -2004,27 +1597,6 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	});
 
 	cls.method(sigs::intDivide, OT_BINARY_GLUE(OperatorTypeHelper::intDivide(leftType, rightType)));
-
-	cls.method(sigs::getIntervals, OT_TYPE_GLUE(OperatorTypeHelper::getIntervalsValue(type)));
-
-	cls.method(sigs::divideIntervals, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *numeratorMin, *numeratorMax, *divisorMin, *divisorMax;
-		if (!zp::parse<zp::Zval, zp::Zval, zp::Zval, zp::Zval>(execute_data, numeratorMin, numeratorMax, divisorMin, divisorMax)) RETURN_THROWS();
-		OperatorTypeHelper::Bound bounds[4];
-		zval *values[4] = { numeratorMin, numeratorMax, divisorMin, divisorMax };
-		for (uint32_t i = 0; i < 4; i++) {
-			if (UNEXPECTED(!OperatorTypeHelper::Bound::fromZval(values[i], i + 1, bounds[i]))) RETURN_THROWS();
-		}
-		PT_RETURN_VAL(OperatorTypeHelper::divideIntervals(bounds[0], bounds[1], bounds[2], bounds[3]));
-	});
-
-	cls.method(sigs::divideBounds, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *numerator, *divisor;
-		if (!zp::parse<zp::Zval, zp::Zval>(execute_data, numerator, divisor)) RETURN_THROWS();
-		OperatorTypeHelper::Bound numeratorBound, divisorBound;
-		if (UNEXPECTED(!OperatorTypeHelper::Bound::fromZval(numerator, 1, numeratorBound) || !OperatorTypeHelper::Bound::fromZval(divisor, 2, divisorBound))) RETURN_THROWS();
-		OperatorTypeHelper::divideBounds(numeratorBound, divisorBound).toZval(return_value);
-	});
 
 	cls.shadow(&pt_ce_operator_type_helper);
 }

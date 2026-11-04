@@ -672,5 +672,12 @@ inline void setNullableLong(zval *out, NullableLong value)
  * data: `kind` IETR_PLUS, _MINUS, _MUL, _DIV, _SHIFT_LEFT or _SHIFT_RIGHT;
  * UNDEF = pending exception */
 zv::Val pt_number_set_calculate(phpstanturbo::ietr::IetrBinaryKind kind, const phpstanturbo::NumberSetData &left, const phpstanturbo::NumberSetData &right, zval *phpVersion);
+/* NumberSet::intDivide() / modulo() / bitwiseAnd() & co. / negate() on the
+ * sets' data (NumberSet.cpp); `kind` IETR_BITWISE_AND, _OR or _XOR; UNDEF =
+ * pending exception */
+zv::Val pt_number_set_int_divide(const phpstanturbo::NumberSetData &left, const phpstanturbo::NumberSetData &right);
+zv::Val pt_number_set_modulo(const phpstanturbo::NumberSetData &left, const phpstanturbo::NumberSetData &right);
+zv::Val pt_number_set_bitwise(phpstanturbo::ietr::IetrBinaryKind kind, const phpstanturbo::NumberSetData &left, const phpstanturbo::NumberSetData &right);
+zv::Val pt_number_set_negate(const phpstanturbo::NumberSetData &set, zval *phpVersion);
 
 #endif

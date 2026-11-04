@@ -1176,6 +1176,22 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				'Property Bug15228\\OffsetCoalesceAssignDemo::$a (array<string, int>) does not accept array<string, int|string>.',
 				80,
 			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				98,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				103,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$r (int<0, 10>) does not accept int<5, 15>.',
+				108,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$r (int<0, 10>) does not accept int<5, 15>.',
+				113,
+			],
 		]);
 	}
 
@@ -1210,6 +1226,14 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Property Bug15228\\OffsetCoalesceAssignDemo::$a (array<string, int>) does not accept array<string, int|string>.',
 				80,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				98,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				103,
 			],
 		]);
 	}

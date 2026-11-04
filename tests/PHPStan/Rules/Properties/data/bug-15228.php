@@ -85,3 +85,31 @@ class OffsetCoalesceAssignDemo
 		$this->b['x'] ??= [1, 2];
 	}
 }
+
+class OtherAssignOpsDemo
+{
+	public ?int $a = null;
+
+	/** @var int<0, 10> */
+	public int $r = 0;
+
+	public function concat(): void
+	{
+		$this->a .= 'x';
+	}
+
+	public function concatExpanded(): void
+	{
+		$this->a = $this->a . 'x';
+	}
+
+	public function plus(): void
+	{
+		$this->r += 5;
+	}
+
+	public function plusExpanded(): void
+	{
+		$this->r = $this->r + 5;
+	}
+}

@@ -65,13 +65,17 @@ final class Assertions
 	 */
 	public function getAssertsIfTrue(): array
 	{
-		return array_merge(
-			array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_TRUE),
-			array_map(
-				static fn (AssertTag $assert) => $assert->negate(),
-				array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_FALSE && !$assert->isEquality()),
-			),
-		);
+		$asserts = [];
+		$negatedAsserts = [];
+		foreach ($this->asserts as $assert) {
+			if ($assert->getIf() === AssertTag::IF_TRUE) {
+				$asserts[] = $assert;
+			} elseif ($assert->getIf() === AssertTag::IF_FALSE && !$assert->isEquality()) {
+				$negatedAsserts[] = $assert->negate();
+			}
+		}
+
+		return array_merge($asserts, $negatedAsserts);
 	}
 
 	/**
@@ -81,13 +85,17 @@ final class Assertions
 	 */
 	public function getAssertsIfFalse(): array
 	{
-		return array_merge(
-			array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_FALSE),
-			array_map(
-				static fn (AssertTag $assert) => $assert->negate(),
-				array_filter($this->asserts, static fn (AssertTag $assert) => $assert->getIf() === AssertTag::IF_TRUE && !$assert->isEquality()),
-			),
-		);
+		$asserts = [];
+		$negatedAsserts = [];
+		foreach ($this->asserts as $assert) {
+			if ($assert->getIf() === AssertTag::IF_FALSE) {
+				$asserts[] = $assert;
+			} elseif ($assert->getIf() === AssertTag::IF_TRUE && !$assert->isEquality()) {
+				$negatedAsserts[] = $assert->negate();
+			}
+		}
+
+		return array_merge($asserts, $negatedAsserts);
 	}
 
 	/** @param callable(Type): Type $callable */

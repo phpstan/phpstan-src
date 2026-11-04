@@ -4,10 +4,8 @@
  *
  * The @phpstan-assert tags of a function or method: a final class over the
  * tag list with a private constructor, the empty instance held where the
- * twin keeps it (the private static $empty), the filters and mapTypes() over
- * the PHP AssertTag objects through one cached method site per tag method.
- * The twin's array_filter() / array_map() closures are native loops with the
- * closures' AssertTag parameter check. Native callers use the
+ * twin keeps it (the private static $empty), and loops over the PHP AssertTag
+ * objects through one cached method site per tag method. Native callers use the
  * pt_assertions_* entries (support.h) and the inline pt_assertions_all()
  * reader.
  */
@@ -144,20 +142,20 @@ public:
 		return filterByIf(asserts, "", 0, false, PT_AS_CLOSURE("getAsserts", "58"));
 	}
 
-	/* array_merge(the IF_TRUE tags, the negated IF_FALSE non-equality tags) */
+	/* foreach: collect IF_TRUE tags and negated IF_FALSE non-equality tags */
 	zv::Val getAssertsIfTrue() const
 	{
 		zval *asserts = slot();
 		if (UNEXPECTED(asserts == NULL)) return zv::Val();
-		return mergedWithNegated(asserts, PT_LC("true"), PT_AS_CLOSURE("getAssertsIfTrue", "69"), PT_LC("false"), PT_AS_CLOSURE("getAssertsIfTrue", "72"), PT_AS_CLOSURE("getAssertsIfTrue", "71"));
+		return assertsIf(asserts, PT_LC("true"), PT_LC("false"));
 	}
 
-	/* array_merge(the IF_FALSE tags, the negated IF_TRUE non-equality tags) */
+	/* foreach: collect IF_FALSE tags and negated IF_TRUE non-equality tags */
 	zv::Val getAssertsIfFalse() const
 	{
 		zval *asserts = slot();
 		if (UNEXPECTED(asserts == NULL)) return zv::Val();
-		return mergedWithNegated(asserts, PT_LC("false"), PT_AS_CLOSURE("getAssertsIfFalse", "85"), PT_LC("true"), PT_AS_CLOSURE("getAssertsIfFalse", "88"), PT_AS_CLOSURE("getAssertsIfFalse", "87"));
+		return assertsIf(asserts, PT_LC("false"), PT_LC("true"));
 	}
 
 	/* self::create(array_map(static fn (AssertTag $tag): AssertTag =>
@@ -170,7 +168,7 @@ public:
 		zv::Arr mapped = zv::Arr::create(zend_hash_num_elements(table));
 		for (zv::ArrayEntry entry : zv::TableRef(table)) {
 			zval *tag = entry.value().deref().raw();
-			if (UNEXPECTED(!requireAssertTag(tag, PT_AS_CLOSURE("mapTypes", "96"), "tag"))) return zv::Val();
+			if (UNEXPECTED(!requireAssertTag(tag, PT_AS_CLOSURE("mapTypes", "104"), "tag"))) return zv::Val();
 			zv::Val type = tagCall(pt_as_get_type_site, tag, PT_LC("gettype"));
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			zv::Val mappedType = pt_type_call_callable(callable, 1, type.raw());
@@ -353,24 +351,34 @@ private:
 		return zv::Val(std::move(filtered));
 	}
 
-	/* array_merge(array_filter($asserts, fn getIf() === $own),
-	 * array_map(static fn (AssertTag $assert) => $assert->negate(),
-	 * array_filter($asserts, fn getIf() === $opposite && !isEquality())) */
-	static zv::Val mergedWithNegated(zval *asserts, const char *own, size_t ownLen, const char *ownClosure, const char *opposite, size_t oppositeLen, const char *oppositeClosure, const char *negateClosure)
+	/* Mirrors the two-branch foreach in getAssertsIfTrue() / getAssertsIfFalse(). */
+	static zv::Val assertsIf(zval *asserts, const char *own, size_t ownLen, const char *opposite, size_t oppositeLen)
 	{
-		zv::Val ownTags = filterByIf(asserts, own, ownLen, false, ownClosure);
-		if (UNEXPECTED(ownTags.isUndef())) return zv::Val();
-		zv::Val oppositeTags = filterByIf(asserts, opposite, oppositeLen, true, oppositeClosure);
-		if (UNEXPECTED(oppositeTags.isUndef())) return zv::Val();
-		zv::Arr negated = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(oppositeTags.raw())));
-		for (zv::ArrayEntry entry : zv::ArrRef(oppositeTags.raw())) {
+		HashTable *table = Z_ARRVAL_P(asserts);
+		zv::Arr ownTags = zv::Arr::create(0);
+		zv::Arr negatedTags = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::TableRef(table)) {
 			zval *tag = entry.value().deref().raw();
-			if (UNEXPECTED(!requireAssertTag(tag, negateClosure, "assert"))) return zv::Val();
-			zv::Val negatedTag = tagCall(pt_as_negate_site, tag, PT_LC("negate"));
-			if (UNEXPECTED(negatedTag.isUndef())) return zv::Val();
-			setKeyed(negated, entry, std::move(negatedTag));
+			if (UNEXPECTED(Z_TYPE_P(tag) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getIf() on %s", zend_zval_value_name(tag));
+				return zv::Val();
+			}
+			bool matches;
+			if (UNEXPECTED(!tagIfIs(tag, own, ownLen, matches))) return zv::Val();
+			if (matches) {
+				ownTags.push(zv::Ref(entry.value().deref().raw()));
+			} else {
+				if (UNEXPECTED(!tagIfIs(tag, opposite, oppositeLen, matches))) return zv::Val();
+				if (!matches) continue;
+				bool equality;
+				if (UNEXPECTED(!tagBool(pt_as_is_equality_site, tag, PT_LC("isequality"), equality))) return zv::Val();
+				if (equality) continue;
+				zv::Val negatedTag = tagCall(pt_as_negate_site, tag, PT_LC("negate"));
+				if (UNEXPECTED(negatedTag.isUndef())) return zv::Val();
+				negatedTags.push(std::move(negatedTag));
+			}
 		}
-		zv::Val negatedValue(std::move(negated));
+		zv::Val negatedValue(std::move(negatedTags));
 		return ptcall::arrayMerge(ownTags.raw(), negatedValue.raw());
 	}
 };

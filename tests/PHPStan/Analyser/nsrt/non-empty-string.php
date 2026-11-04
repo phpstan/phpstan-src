@@ -431,7 +431,13 @@ class MoreNonEmptyStringFunctions
 			assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $m);
 			assertType('non-falsy-string', (string) $m);
 		}
-		if ($m != '') {
+		if (PHP_VERSION_ID < 80000) {
+			if ($m != '') {
+				// PHP 7 compares an empty string with a number as 0
+				assertType("mixed~(0|0.0|''|false|null)", $m);
+				assertType('non-empty-string', (string) $m);
+			}
+		} elseif ($m != '') {
 			assertType("mixed~(''|false|null)", $m);
 			assertType('non-empty-string', (string) $m);
 		}

@@ -4,6 +4,8 @@ namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function array_merge;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ImpossibleCheckTypeMethodCallRule>
@@ -28,7 +30,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 
 	public function testRule(): void
 	{
-		$this->analyse([__DIR__ . '/data/impossible-method-call.php'], [
+		$errors = [
 			[
 				'Call to method PHPStan\Tests\AssertionClass::assertString() with string will always evaluate to true.',
 				14,
@@ -97,10 +99,15 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 				'Call to method ImpossibleMethodCall\Foo::isNotSame() with array{1, 3} and array{1, 3} will always evaluate to false.',
 				122,
 			],
-			[
+		];
+		// PHP 7 has no Stringable to tell which objects can equal a string
+		if (PHP_VERSION_ID >= 80000) {
+			$errors[] = [
 				'Call to method ImpossibleMethodCall\Foo::isSame() with \'1\' and stdClass will always evaluate to false.',
 				133,
-			],
+			];
+		}
+		$errors = array_merge($errors, [
 			[
 				'Call to method ImpossibleMethodCall\Foo::isSame() with array{\'a\', \'b\'} and array{1, 2} will always evaluate to false.',
 				139,
@@ -131,6 +138,7 @@ class ImpossibleCheckTypeMethodCallRuleEqualsTest extends RuleTestCase
 				'Remove remaining cases below this one and this error will disappear too.',
 			],
 		]);
+		$this->analyse([__DIR__ . '/data/impossible-method-call.php'], $errors);
 	}
 
 	public static function getAdditionalConfigFiles(): array

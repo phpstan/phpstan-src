@@ -119,6 +119,22 @@ class Analogous
 	}
 
 	/** @param array<mixed> $arr */
+	public function partlyInformativeMergedCount(array $arr): void
+	{
+		if (count($arr) > 2) {
+			if (count($arr) < 5) {
+				return;
+			}
+		}
+		assertType('int<0, 2>|int<5, max>', count($arr));
+		if ($arr !== []) {
+			assertType('int<1, 2>|int<5, max>', count($arr));
+		} else {
+			assertType('0', count($arr));
+		}
+	}
+
+	/** @param array<mixed> $arr */
 	public function keepsNarrowerCount(array $arr): void
 	{
 		if (count($arr) > 2) {

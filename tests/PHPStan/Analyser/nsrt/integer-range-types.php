@@ -443,8 +443,14 @@ class X {
 }
 
 function subtract($m) {
-	if ($m != 0) {
-		assertType("mixed~(0|0.0|'0'|false|null)", $m); // could be "mixed~(0|0.0|''|'0'|false|null)"
+	if (PHP_VERSION_ID < 80000) {
+		if ($m != 0) {
+			// PHP 7 compares an empty string with a number as 0
+			assertType("mixed~(0|0.0|''|'0'|false|null)", $m);
+			assertType('int', (int) $m);
+		}
+	} elseif ($m != 0) {
+		assertType("mixed~(0|0.0|'0'|false|null)", $m);
 		assertType('int', (int) $m);
 	}
 	if ($m !== 0) {

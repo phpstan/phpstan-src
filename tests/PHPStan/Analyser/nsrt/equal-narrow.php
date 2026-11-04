@@ -122,7 +122,35 @@ function doTrue($x, $y, $z): void
  */
 function doZero($x, $y, $z): void
 {
-	// PHP 7.x/8.x compatibility: Keep zero in both cases
+	if (PHP_VERSION_ID < 80000) {
+		// PHP 7 compares a non-numeric string with a number as a number
+		if ($x == 0) {
+			assertType("0|0.0|''|'0'|'x'|GMP|SimpleXMLElement|false|null", $x);
+		} else {
+			assertType("1|'x'|array{}|object|true", $x);
+		}
+		if (0 != $x) {
+			assertType("1|'x'|array{}|object|true", $x);
+		} else {
+			assertType("0|0.0|''|'0'|'x'|GMP|SimpleXMLElement|false|null", $x);
+		}
+
+		if ($y == 0) {
+			assertType('0|string|null', $y);
+		} else {
+			assertType('int<min, -1>|int<1, max>|non-falsy-string', $y);
+		}
+
+		if ($z == 0) {
+			assertType('mixed', $z);
+		} else {
+			assertType("mixed~(0|0.0|''|'0'|false|null)", $z);
+		}
+
+		return;
+	}
+
+	// PHP 8.0 and later, BcMath\Number compares as its number since PHP 8.4
 	if ($x == 0) {
 		assertType("0|0.0|'0'|BcMath\Number|GMP|SimpleXMLElement|false|null", $x);
 	} else {
@@ -154,7 +182,35 @@ function doZero($x, $y, $z): void
  */
 function doEmptyString($x, $y, $z): void
 {
-	// PHP 7.x/8.x compatibility: Keep zero in both cases
+	if (PHP_VERSION_ID < 80000) {
+		// PHP 7 compares an empty string with a number as 0, and has no Stringable to describe objects with __toString()
+		if ($x == '') {
+			assertType("0|0.0|''|object|false|null", $x);
+		} else {
+			assertType("1|'0'|'x'|array{}|object|true", $x);
+		}
+		if ('' != $x) {
+			assertType("1|'0'|'x'|array{}|object|true", $x);
+		} else {
+			assertType("0|0.0|''|object|false|null", $x);
+		}
+
+		if ($y == '') {
+			assertType("0|''|null", $y);
+		} else {
+			assertType('int<min, -1>|int<1, max>|non-empty-string', $y);
+		}
+
+		if ($z == '') {
+			assertType('mixed', $z);
+		} else {
+			assertType("mixed~(0|0.0|''|false|null)", $z);
+		}
+
+		return;
+	}
+
+	// PHP 8.0 and later
 	if ($x == '') {
 		assertType("''|GMP|Stringable|false|null", $x);
 	} else {

@@ -156,7 +156,12 @@ class Baz
 		assertType('true', 1 == 1);
 		assertType('false', 1 == 0);
 
-		assertType('false', $c == 'a');
+		if (PHP_VERSION_ID < 80000) {
+			// PHP 7 compares a non-numeric string with a float as 0.0
+			assertType('bool', $c == 'a');
+		} else {
+			assertType('false', $c == 'a');
+		}
 		assertType('bool', $c == 1);
 		assertType('bool', $c == 1.2);
 		assertType('true', 1.2 == 1.2);

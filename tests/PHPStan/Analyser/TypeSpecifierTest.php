@@ -1321,7 +1321,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 				),
 				[
 					'$float' => 'float<-9.223372036854776E+18, 9.223372036854776E+18>|int|numeric-string',
-					'(int) $float' => '\'-INF\'|\'INF\'|bool|float<min, max>|int|object|resource|numeric-string|null',
+					// PHP 7 compares any string with a number as the number the string starts with
+					'(int) $float' => PHP_VERSION_ID < 80000 ? 'bool|float<min, max>|int|object|resource|string|null' : '\'-INF\'|\'INF\'|bool|float<min, max>|int|object|resource|numeric-string|null',
 				],
 				[],
 			],

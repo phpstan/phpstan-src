@@ -80,16 +80,22 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExpressionContext\0" /* 854 */
 	"PHPStan\\Analyser\\ExpressionResult\0" /* 889 */
 	"processExpr\0" /* 923 */
-	"PhpParser\\Node\\Expr\\BinaryOp\\Equal\0" /* 935 */
-	"leftResult\0" /* 970 */
-	"rightResult\0" /* 981 */
-	"PHPStan\\Type\\Type\0" /* 993 */
-	"resolveEqualType\0" /* 1011 */
-	"rootExpr\0" /* 1028 */
-	"type\0" /* 1037 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1042 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1080 */
-	"createRangeTypes"; /* 1112 */
+	"PhpParser\\Node\\Expr\\BinaryOp\0" /* 935 */
+	"getType\0" /* 964 */
+	"PHPStan\\Type\\Type\0" /* 972 */
+	"resolveRememberedComparisonType\0" /* 990 */
+	"specifiedTypes\0" /* 1022 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1037 */
+	"leftResult\0" /* 1069 */
+	"rightResult\0" /* 1080 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1092 */
+	"specifyRememberedComparisonForms\0" /* 1130 */
+	"getEquivalentComparisonForms\0" /* 1163 */
+	"PhpParser\\Node\\Expr\\BinaryOp\\Equal\0" /* 1192 */
+	"resolveEqualType\0" /* 1227 */
+	"rootExpr\0" /* 1244 */
+	"type\0" /* 1253 */
+	"createRangeTypes"; /* 1258 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 100), /* __construct $richerScopeGetTypeHelper */
@@ -110,16 +116,30 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(833, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
 	reg::packed(846, 0, 854), /* processExpr $context */
 	reg::packed(659, 0, 889), /* processExpr return */
+	reg::packed(747, 0, 753), /* resolveRememberedComparisonType $scope */
+	reg::packed(634, 0, 935), /* resolveRememberedComparisonType $expr */
+	reg::packed(964, MAY_BE_CALLABLE), /* resolveRememberedComparisonType $getType */
+	reg::packed(659, MAY_BE_NULL, 972), /* resolveRememberedComparisonType return */
+	reg::packed(1022, 0, 1037), /* specifyRememberedComparisonForms $specifiedTypes */
+	reg::packed(747, 0, 753), /* specifyRememberedComparisonForms $scope */
+	reg::packed(634, 0, 935), /* specifyRememberedComparisonForms $expr */
+	reg::packed(1069, 0, 889), /* specifyRememberedComparisonForms $leftResult */
+	reg::packed(1080, 0, 889), /* specifyRememberedComparisonForms $rightResult */
+	reg::packed(846, 0, 1092), /* specifyRememberedComparisonForms $context */
+	reg::packed(659, 0, 1037), /* specifyRememberedComparisonForms return */
+	reg::packed(634, 0, 935), /* getEquivalentComparisonForms $expr */
+	reg::packed(964, MAY_BE_CALLABLE), /* getEquivalentComparisonForms $getType */
+	reg::packed(659, MAY_BE_NULL | MAY_BE_ARRAY), /* getEquivalentComparisonForms return */
 	reg::packed(747, 0, 753), /* resolveEqualType $scope */
-	reg::packed(634, 0, 935), /* resolveEqualType $expr */
-	reg::packed(970, 0, 889), /* resolveEqualType $leftResult */
-	reg::packed(981, 0, 889), /* resolveEqualType $rightResult */
-	reg::packed(659, 0, 993), /* resolveEqualType return */
-	reg::packed(1028, MAY_BE_NULL, 639), /* createRangeTypes $rootExpr */
+	reg::packed(634, 0, 1192), /* resolveEqualType $expr */
+	reg::packed(1069, 0, 889), /* resolveEqualType $leftResult */
+	reg::packed(1080, 0, 889), /* resolveEqualType $rightResult */
+	reg::packed(659, 0, 972), /* resolveEqualType return */
+	reg::packed(1244, MAY_BE_NULL, 639), /* createRangeTypes $rootExpr */
 	reg::packed(634, 0, 639), /* createRangeTypes $expr */
-	reg::packed(1037, 0, 993), /* createRangeTypes $type */
-	reg::packed(846, 0, 1042), /* createRangeTypes $context */
-	reg::packed(659, 0, 1080), /* createRangeTypes return */
+	reg::packed(1253, 0, 972), /* createRangeTypes $type */
+	reg::packed(846, 0, 1092), /* createRangeTypes $context */
+	reg::packed(659, 0, 1037), /* createRangeTypes return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -129,8 +149,11 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 622 /* __construct */, 9, 0, 9, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 660 /* supports */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 923 /* processExpr */, 7, 11, 7, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveEqualType = { { 1011 /* resolveEqualType */, 4, 19, 4, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createRangeTypes = { { 1112 /* createRangeTypes */, 4, 24, 4, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveRememberedComparisonType = { { 990 /* resolveRememberedComparisonType */, 3, 19, 3, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyRememberedComparisonForms = { { 1130 /* specifyRememberedComparisonForms */, 6, 23, 6, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getEquivalentComparisonForms = { { 1163 /* getEquivalentComparisonForms */, 2, 30, 2, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveEqualType = { { 1227 /* resolveEqualType */, 4, 33, 4, 37, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createRangeTypes = { { 1258 /* createRangeTypes */, 4, 38, 4, 42, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::BinaryOpHandler

@@ -175,6 +175,11 @@ final class BinaryOpHandler implements ExprHandler
 				return $nodeScopeResolver->processSyntheticOnDemand($e, $flavouredScope)->getTypeOnScope($flavouredScope, $flavouredScope->nativeTypesPromoted);
 			};
 
+			$rememberedType = $this->resolveRememberedComparisonType($scope, $expr, $getType);
+			if ($rememberedType !== null) {
+				return $rememberedType;
+			}
+
 			if ($expr instanceof BinaryOp\Smaller) {
 				return $getType($expr->left)->isSmallerThan($getType($expr->right), $this->phpVersion)->toBooleanType();
 			}
@@ -288,6 +293,412 @@ final class BinaryOpHandler implements ExprHandler
 
 			throw new ShouldNotHappenException(sprintf('Unhandled %s', get_class($expr)));
 		};
+		$specifyTypesCallback = function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $leftResult, $rightResult, $nodeScopeResolver, $beforeScope, $specifySubResults, $leftArgResult, $rightArgResult, $typeCallback): SpecifiedTypes {
+			$scope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
+			if ($expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical) {
+				// `!==` narrowing is the `===` narrowing in the negated context -
+				// no synthetic Identical node. A null context never negates.
+				if ($context->null() && $expr instanceof BinaryOp\NotIdentical) {
+					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+				}
+
+				$newWorldTypes = $this->identicalNarrowingHelper->specifyIdentical(
+					$nodeScopeResolver,
+					$expr->left,
+					$expr->right,
+					$leftResult,
+					$rightResult,
+					$expr instanceof BinaryOp\NotIdentical ? $context->negate() : $context,
+					// the narrowing composes on the evaluation scope; only the
+					// asked flavour comes from the asking scope
+					$scope,
+					$leftArgResult,
+					$rightArgResult,
+					// the comparison's own verdict, in Identical semantics -
+					// computed from the captured operand results (the walk's
+					// evaluation point), only the flavour follows the ask
+					static function () use ($expr, $nativeTypesPromoted, $typeCallback): Type {
+						$ownType = $typeCallback($nativeTypesPromoted);
+						if ($expr instanceof BinaryOp\NotIdentical) {
+							if ($ownType->isTrue()->yes()) {
+								return new ConstantBooleanType(false);
+							}
+							if ($ownType->isFalse()->yes()) {
+								return new ConstantBooleanType(true);
+							}
+						}
+
+						return $ownType;
+					},
+				);
+
+				// null = no shape-specific narrowing (unknown-class ::class,
+				// null-context asks) - the default is all that remains
+				return ($newWorldTypes ?? $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))->setRootExpr($expr);
+			}
+
+			if ($expr instanceof BinaryOp\Equal || $expr instanceof BinaryOp\NotEqual) {
+				// `!=` narrowing is the `==` narrowing in the negated context
+				if ($context->null() && $expr instanceof BinaryOp\NotEqual) {
+					return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+				}
+
+				$newWorldTypes = $this->identicalNarrowingHelper->specifyEqual(
+					$nodeScopeResolver,
+					$expr->left,
+					$expr->right,
+					$leftResult,
+					$rightResult,
+					$expr instanceof BinaryOp\NotEqual ? $context->negate() : $context,
+					$scope,
+					$leftArgResult,
+					$rightArgResult,
+				);
+
+				return ($newWorldTypes ?? $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))->setRootExpr($expr);
+			}
+
+			if ($expr instanceof BinaryOp\Smaller || $expr instanceof BinaryOp\SmallerOrEqual) {
+				if (
+					$expr->left instanceof Expr\FuncCall
+					&& $expr->left->name instanceof Name
+					&& !$expr->left->isFirstClassCallable()
+					&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
+					&& count($expr->left->getArgs()) >= 1
+					&& (
+						!$expr->right instanceof Expr\FuncCall
+						|| !$expr->right->name instanceof Name
+						|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
+					)
+				) {
+					$inverseOperator = $expr instanceof BinaryOp\Smaller
+						? new BinaryOp\SmallerOrEqual($expr->right, $expr->left)
+						: new BinaryOp\Smaller($expr->right, $expr->left);
+
+					// negating the context is exactly what a BooleanNot around the
+					// inverse operator would do - direct computation avoids
+					// synthesizing a BooleanNot node. A null context never negates
+					// (BooleanNot defaults on it too).
+					if ($context->null()) {
+						return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+					}
+
+					return $this->defaultNarrowingHelper->specifyTypesForNode(
+						$scope,
+						$inverseOperator,
+						$context->negate(),
+					)->setRootExpr($expr);
+				}
+
+				$orEqual = $expr instanceof BinaryOp\SmallerOrEqual;
+				$offset = $orEqual ? 0 : 1;
+				// the operands were processed during processExpr; read their
+				// already computed results instead of re-walking via
+				// Scope::getType(). Their subexpressions (e.g. count() arguments)
+				// were also processed and are read from the stored result.
+				$getType = static function (Expr $e) use ($expr, $leftResult, $rightResult, $scope, $specifySubResults, $nativeTypesPromoted): Type {
+					if ($e === $expr->left) {
+						return $nativeTypesPromoted ? $leftResult->getNativeType() : $leftResult->getType();
+					}
+					if ($e === $expr->right) {
+						return $nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType();
+					}
+
+					// the remaining asks are operand subexpressions whose walk
+					// results were captured at creation
+					$result = $specifySubResults[spl_object_id($e)] ?? null;
+					if ($result === null) {
+						throw new ShouldNotHappenException();
+					}
+
+					return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
+				};
+				$leftType = $getType($expr->left);
+				$result = (new SpecifiedTypes([], []))->setRootExpr($expr);
+
+				if (
+					!$context->null()
+					&& $expr->right instanceof Expr\FuncCall
+					&& $expr->right->name instanceof Name
+					&& !$expr->right->isFirstClassCallable()
+					&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
+					&& count($expr->right->getArgs()) >= 1
+					&& $leftType->isInteger()->yes()
+				) {
+					$argType = $getType($expr->right->getArgs()[0]->value);
+
+					$sizeType = null;
+					if ($leftType instanceof ConstantIntegerType) {
+						if ($orEqual) {
+							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
+						} else {
+							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
+						}
+					} elseif ($leftType instanceof IntegerRangeType) {
+						if ($context->falsey() && $leftType->getMax() !== null) {
+							if ($orEqual) {
+								$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax());
+							} else {
+								$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
+							}
+						} elseif ($context->truthy() && $leftType->getMin() !== null) {
+							if ($orEqual) {
+								$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
+							} else {
+								$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
+							}
+						}
+					} else {
+						$sizeType = $leftType;
+					}
+
+					if ($sizeType !== null) {
+						$specifiedTypes = $this->countNarrowingHelper->specifyCountSize($expr->right, $argType, $sizeType, $context, $scope, $expr);
+						if ($specifiedTypes !== null) {
+							$result = $result->unionWith($specifiedTypes);
+						}
+					}
+
+					if (
+						$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
+						|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
+					) {
+						if ($context->truthy() && $argType->isArray()->maybe()) {
+							$countables = [];
+							if ($argType instanceof UnionType) {
+								$countableInterface = new ObjectType(Countable::class);
+								foreach ($argType->getTypes() as $innerType) {
+									if ($innerType->isArray()->yes()) {
+										$innerType = TypeCombinator::intersect(new NonEmptyArrayType(), $innerType);
+										$countables[] = $innerType;
+									}
+
+									if (!$countableInterface->isSuperTypeOf($innerType)->yes()) {
+										continue;
+									}
+
+									$countables[] = $innerType;
+								}
+							}
+
+							if (count($countables) > 0) {
+								$countableType = TypeCombinator::union(...$countables);
+
+								return $this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $countableType, $context, $scope)->setRootExpr($expr);
+							}
+						}
+
+						if ($argType->isArray()->yes()) {
+							$newType = new NonEmptyArrayType();
+							if ($context->true() && $argType->isList()->yes()) {
+								$newType = TypeCombinator::intersect($newType, new AccessoryArrayListType());
+							}
+
+							$result = $result->unionWith(
+								$this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $newType, $context, $scope)->setRootExpr($expr),
+							);
+						}
+					}
+
+					// infer $list[$index] after $index < count($list)
+					if (
+						$context->true()
+						&& !$orEqual
+						// constant offsets are handled via HasOffsetType/HasOffsetValueType
+						&& !$leftType instanceof ConstantIntegerType
+						&& $argType->isList()->yes()
+						&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+					) {
+						$arrayArg = $expr->right->getArgs()[0]->value;
+						$dimFetch = new Expr\ArrayDimFetch($arrayArg, $expr->left);
+						$result = $result->unionWith(
+							$this->defaultNarrowingHelper->createForSubject($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
+						);
+					}
+				}
+
+				// infer $list[$index] after $zeroOrMore < count($list) - N
+				// infer $list[$index] after $zeroOrMore <= count($list) - N
+				if (
+					$context->true()
+					&& $expr->right instanceof BinaryOp\Minus
+					&& $expr->right->left instanceof Expr\FuncCall
+					&& $expr->right->left->name instanceof Name
+					&& !$expr->right->left->isFirstClassCallable()
+					&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
+					&& count($expr->right->left->getArgs()) >= 1
+					// constant offsets are handled via HasOffsetType/HasOffsetValueType
+					&& !$leftType instanceof ConstantIntegerType
+					&& $leftType->isInteger()->yes()
+					&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
+				) {
+					$countArgType = $getType($expr->right->left->getArgs()[0]->value);
+					$subtractedType = $getType($expr->right->right);
+					if (
+						$countArgType->isList()->yes()
+						&& $this->countNarrowingHelper->isNormalCountCall($expr->right->left, $countArgType, $scope)->yes()
+						&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($subtractedType)->yes()
+					) {
+						$arrayArg = $expr->right->left->getArgs()[0]->value;
+						$dimFetch = new Expr\ArrayDimFetch($arrayArg, $expr->left);
+						$result = $result->unionWith(
+							$this->defaultNarrowingHelper->createForSubject($dimFetch, $countArgType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
+						);
+					}
+				}
+
+				if (
+					!$context->null()
+					&& $expr->right instanceof Expr\FuncCall
+					&& $expr->right->name instanceof Name
+					&& !$expr->right->isFirstClassCallable()
+					&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
+					&& count($expr->right->getArgs()) >= 3
+					&& (
+						IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($leftType)->yes()
+						|| ($expr instanceof BinaryOp\Smaller && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes())
+					)
+				) {
+					// 0 < preg_match or 1 <= preg_match becomes 1 === preg_match
+					$newExpr = new BinaryOp\Identical($expr->right, new Scalar\Int_(1));
+
+					return $this->defaultNarrowingHelper->specifyTypesForNode($scope, $newExpr, $context)->setRootExpr($expr);
+				}
+
+				if (
+					!$context->null()
+					&& $expr->right instanceof Expr\FuncCall
+					&& $expr->right->name instanceof Name
+					&& !$expr->right->isFirstClassCallable()
+					&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
+					&& count($expr->right->getArgs()) === 1
+					&& $leftType->isInteger()->yes()
+				) {
+					if (
+						$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
+						|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
+					) {
+						$argType = $getType($expr->right->getArgs()[0]->value);
+						if ($argType->isString()->yes()) {
+							$accessory = new AccessoryNonEmptyStringType();
+
+							if (IntegerRangeType::createAllGreaterThanOrEqualTo(2 - $offset)->isSuperTypeOf($leftType)->yes()) {
+								$accessory = new AccessoryNonFalsyStringType();
+							}
+
+							$result = $result->unionWith($this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr));
+						}
+					}
+				}
+
+				if ($leftType instanceof ConstantIntegerType) {
+					if ($expr->right instanceof Expr\PostInc) {
+						$result = $result->unionWith($this->createRangeTypes(
+							$expr,
+							$expr->right->var,
+							IntegerRangeType::fromInterval($leftType->getValue(), null, $offset + 1),
+							$context,
+						));
+					} elseif ($expr->right instanceof Expr\PostDec) {
+						$result = $result->unionWith($this->createRangeTypes(
+							$expr,
+							$expr->right->var,
+							IntegerRangeType::fromInterval($leftType->getValue(), null, $offset - 1),
+							$context,
+						));
+					} elseif ($expr->right instanceof Expr\PreInc || $expr->right instanceof Expr\PreDec) {
+						$result = $result->unionWith($this->createRangeTypes(
+							$expr,
+							$expr->right->var,
+							IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
+							$context,
+						));
+					}
+				}
+
+				$rightType = $getType($expr->right);
+				if ($rightType instanceof ConstantIntegerType) {
+					if ($expr->left instanceof Expr\PostInc) {
+						$result = $result->unionWith($this->createRangeTypes(
+							$expr,
+							$expr->left->var,
+							IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset + 1),
+							$context,
+						));
+					} elseif ($expr->left instanceof Expr\PostDec) {
+						$result = $result->unionWith($this->createRangeTypes(
+							$expr,
+							$expr->left->var,
+							IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset - 1),
+							$context,
+						));
+					} elseif ($expr->left instanceof Expr\PreInc || $expr->left instanceof Expr\PreDec) {
+						$result = $result->unionWith($this->createRangeTypes(
+							$expr,
+							$expr->left->var,
+							IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
+							$context,
+						));
+					}
+				}
+
+				if ($context->true()) {
+					if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
+						$result = $result->unionWith(
+							$this->defaultNarrowingHelper->createForSubject(
+								$expr->left,
+								$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
+					if (!$expr->right instanceof Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)) {
+						$result = $result->unionWith(
+							$this->defaultNarrowingHelper->createForSubject(
+								$expr->right,
+								$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
+				} elseif ($context->false()) {
+					if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
+						$result = $result->unionWith(
+							$this->defaultNarrowingHelper->createForSubject(
+								$expr->left,
+								$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
+					if (!$expr->right instanceof Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)) {
+						$result = $result->unionWith(
+							$this->defaultNarrowingHelper->createForSubject(
+								$expr->right,
+								$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
+								TypeSpecifierContext::createTruthy(),
+								$scope,
+							)->setRootExpr($expr),
+						);
+					}
+				}
+
+				return $result;
+			}
+
+			if ($expr instanceof BinaryOp\Greater) {
+				return $this->defaultNarrowingHelper->specifyTypesForNode($scope, new BinaryOp\Smaller($expr->right, $expr->left), $context)->setRootExpr($expr);
+			}
+
+			if ($expr instanceof BinaryOp\GreaterOrEqual) {
+				return $this->defaultNarrowingHelper->specifyTypesForNode($scope, new BinaryOp\SmallerOrEqual($expr->right, $expr->left), $context)->setRootExpr($expr);
+			}
+
+			return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+		};
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -299,414 +710,162 @@ final class BinaryOpHandler implements ExprHandler
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			typeCallback: $typeCallback,
-			specifyTypesCallback: function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $leftResult, $rightResult, $nodeScopeResolver, $beforeScope, $specifySubResults, $leftArgResult, $rightArgResult, $typeCallback): SpecifiedTypes {
+			specifyTypesCallback: function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($specifyTypesCallback, $expr, $leftResult, $rightResult, $beforeScope): SpecifiedTypes {
+				$specifiedTypes = $specifyTypesCallback($context, $nativeTypesPromoted);
 				$scope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-				if ($expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical) {
-					// `!==` narrowing is the `===` narrowing in the negated context -
-					// no synthetic Identical node. A null context never negates.
-					if ($context->null() && $expr instanceof BinaryOp\NotIdentical) {
-						return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
-					}
 
-					$newWorldTypes = $this->identicalNarrowingHelper->specifyIdentical(
-						$nodeScopeResolver,
-						$expr->left,
-						$expr->right,
-						$leftResult,
-						$rightResult,
-						$expr instanceof BinaryOp\NotIdentical ? $context->negate() : $context,
-						// the narrowing composes on the evaluation scope; only the
-						// asked flavour comes from the asking scope
-						$scope,
-						$leftArgResult,
-						$rightArgResult,
-						// the comparison's own verdict, in Identical semantics -
-						// computed from the captured operand results (the walk's
-						// evaluation point), only the flavour follows the ask
-						static function () use ($expr, $nativeTypesPromoted, $typeCallback): Type {
-							$ownType = $typeCallback($nativeTypesPromoted);
-							if ($expr instanceof BinaryOp\NotIdentical) {
-								if ($ownType->isTrue()->yes()) {
-									return new ConstantBooleanType(false);
-								}
-								if ($ownType->isFalse()->yes()) {
-									return new ConstantBooleanType(true);
-								}
-							}
-
-							return $ownType;
-						},
-					);
-
-					// null = no shape-specific narrowing (unknown-class ::class,
-					// null-context asks) - the default is all that remains
-					return ($newWorldTypes ?? $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))->setRootExpr($expr);
-				}
-
-				if ($expr instanceof BinaryOp\Equal || $expr instanceof BinaryOp\NotEqual) {
-					// `!=` narrowing is the `==` narrowing in the negated context
-					if ($context->null() && $expr instanceof BinaryOp\NotEqual) {
-						return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
-					}
-
-					$newWorldTypes = $this->identicalNarrowingHelper->specifyEqual(
-						$nodeScopeResolver,
-						$expr->left,
-						$expr->right,
-						$leftResult,
-						$rightResult,
-						$expr instanceof BinaryOp\NotEqual ? $context->negate() : $context,
-						$scope,
-						$leftArgResult,
-						$rightArgResult,
-					);
-
-					return ($newWorldTypes ?? $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))->setRootExpr($expr);
-				}
-
-				if ($expr instanceof BinaryOp\Smaller || $expr instanceof BinaryOp\SmallerOrEqual) {
-					if (
-						$expr->left instanceof Expr\FuncCall
-						&& $expr->left->name instanceof Name
-						&& !$expr->left->isFirstClassCallable()
-						&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
-						&& count($expr->left->getArgs()) >= 1
-						&& (
-							!$expr->right instanceof Expr\FuncCall
-							|| !$expr->right->name instanceof Name
-							|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
-						)
-					) {
-						$inverseOperator = $expr instanceof BinaryOp\Smaller
-							? new BinaryOp\SmallerOrEqual($expr->right, $expr->left)
-							: new BinaryOp\Smaller($expr->right, $expr->left);
-
-						// negating the context is exactly what a BooleanNot around the
-						// inverse operator would do - direct computation avoids
-						// synthesizing a BooleanNot node. A null context never negates
-						// (BooleanNot defaults on it too).
-						if ($context->null()) {
-							return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
-						}
-
-						return $this->defaultNarrowingHelper->specifyTypesForNode(
-							$scope,
-							$inverseOperator,
-							$context->negate(),
-						)->setRootExpr($expr);
-					}
-
-					$orEqual = $expr instanceof BinaryOp\SmallerOrEqual;
-					$offset = $orEqual ? 0 : 1;
-					// the operands were processed during processExpr; read their
-					// already computed results instead of re-walking via
-					// Scope::getType(). Their subexpressions (e.g. count() arguments)
-					// were also processed and are read from the stored result.
-					$getType = static function (Expr $e) use ($expr, $leftResult, $rightResult, $scope, $specifySubResults, $nativeTypesPromoted): Type {
-						if ($e === $expr->left) {
-							return $nativeTypesPromoted ? $leftResult->getNativeType() : $leftResult->getType();
-						}
-						if ($e === $expr->right) {
-							return $nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType();
-						}
-
-						// the remaining asks are operand subexpressions whose walk
-						// results were captured at creation
-						$result = $specifySubResults[spl_object_id($e)] ?? null;
-						if ($result === null) {
-							throw new ShouldNotHappenException();
-						}
-
-						return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
-					};
-					$leftType = $getType($expr->left);
-					$result = (new SpecifiedTypes([], []))->setRootExpr($expr);
-
-					if (
-						!$context->null()
-						&& $expr->right instanceof Expr\FuncCall
-						&& $expr->right->name instanceof Name
-						&& !$expr->right->isFirstClassCallable()
-						&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
-						&& count($expr->right->getArgs()) >= 1
-						&& $leftType->isInteger()->yes()
-					) {
-						$argType = $getType($expr->right->getArgs()[0]->value);
-
-						$sizeType = null;
-						if ($leftType instanceof ConstantIntegerType) {
-							if ($orEqual) {
-								$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-							} else {
-								$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
-							}
-						} elseif ($leftType instanceof IntegerRangeType) {
-							if ($context->falsey() && $leftType->getMax() !== null) {
-								if ($orEqual) {
-									$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax());
-								} else {
-									$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
-								}
-							} elseif ($context->truthy() && $leftType->getMin() !== null) {
-								if ($orEqual) {
-									$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
-								} else {
-									$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
-								}
-							}
-						} else {
-							$sizeType = $leftType;
-						}
-
-						if ($sizeType !== null) {
-							$specifiedTypes = $this->countNarrowingHelper->specifyCountSize($expr->right, $argType, $sizeType, $context, $scope, $expr);
-							if ($specifiedTypes !== null) {
-								$result = $result->unionWith($specifiedTypes);
-							}
-						}
-
-						if (
-							$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-							|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
-						) {
-							if ($context->truthy() && $argType->isArray()->maybe()) {
-								$countables = [];
-								if ($argType instanceof UnionType) {
-									$countableInterface = new ObjectType(Countable::class);
-									foreach ($argType->getTypes() as $innerType) {
-										if ($innerType->isArray()->yes()) {
-											$innerType = TypeCombinator::intersect(new NonEmptyArrayType(), $innerType);
-											$countables[] = $innerType;
-										}
-
-										if (!$countableInterface->isSuperTypeOf($innerType)->yes()) {
-											continue;
-										}
-
-										$countables[] = $innerType;
-									}
-								}
-
-								if (count($countables) > 0) {
-									$countableType = TypeCombinator::union(...$countables);
-
-									return $this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $countableType, $context, $scope)->setRootExpr($expr);
-								}
-							}
-
-							if ($argType->isArray()->yes()) {
-								$newType = new NonEmptyArrayType();
-								if ($context->true() && $argType->isList()->yes()) {
-									$newType = TypeCombinator::intersect($newType, new AccessoryArrayListType());
-								}
-
-								$result = $result->unionWith(
-									$this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $newType, $context, $scope)->setRootExpr($expr),
-								);
-							}
-						}
-
-						// infer $list[$index] after $index < count($list)
-						if (
-							$context->true()
-							&& !$orEqual
-							// constant offsets are handled via HasOffsetType/HasOffsetValueType
-							&& !$leftType instanceof ConstantIntegerType
-							&& $argType->isList()->yes()
-							&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
-						) {
-							$arrayArg = $expr->right->getArgs()[0]->value;
-							$dimFetch = new Expr\ArrayDimFetch($arrayArg, $expr->left);
-							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject($dimFetch, $argType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
-							);
-						}
-					}
-
-					// infer $list[$index] after $zeroOrMore < count($list) - N
-					// infer $list[$index] after $zeroOrMore <= count($list) - N
-					if (
-						$context->true()
-						&& $expr->right instanceof BinaryOp\Minus
-						&& $expr->right->left instanceof Expr\FuncCall
-						&& $expr->right->left->name instanceof Name
-						&& !$expr->right->left->isFirstClassCallable()
-						&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
-						&& count($expr->right->left->getArgs()) >= 1
-						// constant offsets are handled via HasOffsetType/HasOffsetValueType
-						&& !$leftType instanceof ConstantIntegerType
-						&& $leftType->isInteger()->yes()
-						&& IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()
-					) {
-						$countArgType = $getType($expr->right->left->getArgs()[0]->value);
-						$subtractedType = $getType($expr->right->right);
-						if (
-							$countArgType->isList()->yes()
-							&& $this->countNarrowingHelper->isNormalCountCall($expr->right->left, $countArgType, $scope)->yes()
-							&& IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($subtractedType)->yes()
-						) {
-							$arrayArg = $expr->right->left->getArgs()[0]->value;
-							$dimFetch = new Expr\ArrayDimFetch($arrayArg, $expr->left);
-							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject($dimFetch, $countArgType->getIterableValueType(), TypeSpecifierContext::createTrue(), $scope)->setRootExpr($expr),
-							);
-						}
-					}
-
-					if (
-						!$context->null()
-						&& $expr->right instanceof Expr\FuncCall
-						&& $expr->right->name instanceof Name
-						&& !$expr->right->isFirstClassCallable()
-						&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
-						&& count($expr->right->getArgs()) >= 3
-						&& (
-							IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($leftType)->yes()
-							|| ($expr instanceof BinaryOp\Smaller && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes())
-						)
-					) {
-						// 0 < preg_match or 1 <= preg_match becomes 1 === preg_match
-						$newExpr = new BinaryOp\Identical($expr->right, new Scalar\Int_(1));
-
-						return $this->defaultNarrowingHelper->specifyTypesForNode($scope, $newExpr, $context)->setRootExpr($expr);
-					}
-
-					if (
-						!$context->null()
-						&& $expr->right instanceof Expr\FuncCall
-						&& $expr->right->name instanceof Name
-						&& !$expr->right->isFirstClassCallable()
-						&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
-						&& count($expr->right->getArgs()) === 1
-						&& $leftType->isInteger()->yes()
-					) {
-						if (
-							$context->true() && (IntegerRangeType::createAllGreaterThanOrEqualTo(1 - $offset)->isSuperTypeOf($leftType)->yes())
-							|| ($context->false() && (new ConstantIntegerType(1 - $offset))->isSuperTypeOf($leftType)->yes())
-						) {
-							$argType = $getType($expr->right->getArgs()[0]->value);
-							if ($argType->isString()->yes()) {
-								$accessory = new AccessoryNonEmptyStringType();
-
-								if (IntegerRangeType::createAllGreaterThanOrEqualTo(2 - $offset)->isSuperTypeOf($leftType)->yes()) {
-									$accessory = new AccessoryNonFalsyStringType();
-								}
-
-								$result = $result->unionWith($this->defaultNarrowingHelper->createForSubject($expr->right->getArgs()[0]->value, $accessory, $context, $scope)->setRootExpr($expr));
-							}
-						}
-					}
-
-					if ($leftType instanceof ConstantIntegerType) {
-						if ($expr->right instanceof Expr\PostInc) {
-							$result = $result->unionWith($this->createRangeTypes(
-								$expr,
-								$expr->right->var,
-								IntegerRangeType::fromInterval($leftType->getValue(), null, $offset + 1),
-								$context,
-							));
-						} elseif ($expr->right instanceof Expr\PostDec) {
-							$result = $result->unionWith($this->createRangeTypes(
-								$expr,
-								$expr->right->var,
-								IntegerRangeType::fromInterval($leftType->getValue(), null, $offset - 1),
-								$context,
-							));
-						} elseif ($expr->right instanceof Expr\PreInc || $expr->right instanceof Expr\PreDec) {
-							$result = $result->unionWith($this->createRangeTypes(
-								$expr,
-								$expr->right->var,
-								IntegerRangeType::fromInterval($leftType->getValue(), null, $offset),
-								$context,
-							));
-						}
-					}
-
-					$rightType = $getType($expr->right);
-					if ($rightType instanceof ConstantIntegerType) {
-						if ($expr->left instanceof Expr\PostInc) {
-							$result = $result->unionWith($this->createRangeTypes(
-								$expr,
-								$expr->left->var,
-								IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset + 1),
-								$context,
-							));
-						} elseif ($expr->left instanceof Expr\PostDec) {
-							$result = $result->unionWith($this->createRangeTypes(
-								$expr,
-								$expr->left->var,
-								IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset - 1),
-								$context,
-							));
-						} elseif ($expr->left instanceof Expr\PreInc || $expr->left instanceof Expr\PreDec) {
-							$result = $result->unionWith($this->createRangeTypes(
-								$expr,
-								$expr->left->var,
-								IntegerRangeType::fromInterval(null, $rightType->getValue(), -$offset),
-								$context,
-							));
-						}
-					}
-
-					if ($context->true()) {
-						if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
-							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject(
-									$expr->left,
-									$orEqual ? $rightType->getSmallerOrEqualType($this->phpVersion) : $rightType->getSmallerType($this->phpVersion),
-									TypeSpecifierContext::createTruthy(),
-									$scope,
-								)->setRootExpr($expr),
-							);
-						}
-						if (!$expr->right instanceof Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)) {
-							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject(
-									$expr->right,
-									$orEqual ? $leftType->getGreaterOrEqualType($this->phpVersion) : $leftType->getGreaterType($this->phpVersion),
-									TypeSpecifierContext::createTruthy(),
-									$scope,
-								)->setRootExpr($expr),
-							);
-						}
-					} elseif ($context->false()) {
-						if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
-							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject(
-									$expr->left,
-									$orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion),
-									TypeSpecifierContext::createTruthy(),
-									$scope,
-								)->setRootExpr($expr),
-							);
-						}
-						if (!$expr->right instanceof Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)) {
-							$result = $result->unionWith(
-								$this->defaultNarrowingHelper->createForSubject(
-									$expr->right,
-									$orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion),
-									TypeSpecifierContext::createTruthy(),
-									$scope,
-								)->setRootExpr($expr),
-							);
-						}
-					}
-
-					return $result;
-				}
-
-				if ($expr instanceof BinaryOp\Greater) {
-					return $this->defaultNarrowingHelper->specifyTypesForNode($scope, new BinaryOp\Smaller($expr->right, $expr->left), $context)->setRootExpr($expr);
-				}
-
-				if ($expr instanceof BinaryOp\GreaterOrEqual) {
-					return $this->defaultNarrowingHelper->specifyTypesForNode($scope, new BinaryOp\SmallerOrEqual($expr->right, $expr->left), $context)->setRootExpr($expr);
-				}
-
-				return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+				return $this->specifyRememberedComparisonForms($specifiedTypes, $scope, $expr, $leftResult, $rightResult, $context);
 			},
 			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
 		);
+	}
+
+	/**
+	 * A scope can remember the verdict of an equivalent or complementary form
+	 * of a comparison (a falsey `match (true)` arm stores `$a !== $b` as
+	 * false) - `$a === $b` must read it back as true.
+	 *
+	 * @param callable(Expr): Type $getType
+	 */
+	private function resolveRememberedComparisonType(MutatingScope $scope, BinaryOp $expr, callable $getType): ?Type
+	{
+		$forms = $this->getEquivalentComparisonForms($expr, $getType);
+		if ($forms === null) {
+			return null;
+		}
+
+		foreach ($forms as [$form, $isComplement]) {
+			if (!$scope->hasExpressionType($form)->yes()) {
+				continue;
+			}
+
+			$formType = $scope->getTrackedExpressionType($form)->toBoolean();
+			if ($formType->isTrue()->yes()) {
+				return new ConstantBooleanType(!$isComplement);
+			}
+			if ($formType->isFalse()->yes()) {
+				return new ConstantBooleanType($isComplement);
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Narrowing a comparison to true or false also pins the equivalent and
+	 * complementary forms the scope already tracks - otherwise a remembered
+	 * `$a !== $b` (bool) would keep answering for itself after `$a === $b`
+	 * was narrowed to false.
+	 */
+	private function specifyRememberedComparisonForms(SpecifiedTypes $specifiedTypes, MutatingScope $scope, BinaryOp $expr, ExpressionResult $leftResult, ExpressionResult $rightResult, TypeSpecifierContext $context): SpecifiedTypes
+	{
+		if ($context->true() === $context->false()) {
+			return $specifiedTypes;
+		}
+
+		$forms = $this->getEquivalentComparisonForms(
+			$expr,
+			static fn (Expr $e): Type => ($e === $expr->left ? $leftResult : $rightResult)->getTypeOnScope($scope, $scope->nativeTypesPromoted),
+		);
+		if ($forms === null) {
+			return $specifiedTypes;
+		}
+
+		$exprKey = $this->exprPrinter->printExpr($expr);
+		$sureTypes = [];
+		foreach ($forms as [$form, $isComplement]) {
+			$formKey = $this->exprPrinter->printExpr($form);
+			if ($formKey === $exprKey || !$scope->hasExpressionType($form)->yes()) {
+				continue;
+			}
+
+			$sureTypes[$formKey] = [$form, new ConstantBooleanType($context->true() !== $isComplement)];
+		}
+
+		if ($sureTypes === []) {
+			return $specifiedTypes;
+		}
+
+		return $specifiedTypes->unionWith(new SpecifiedTypes($sureTypes, []));
+	}
+
+	/**
+	 * The forms of a comparison that always evaluate to the same value, each
+	 * paired with whether it is the complement (always the opposite value).
+	 *
+	 * @param callable(Expr): Type $getType
+	 * @return list<array{BinaryOp, bool}>|null
+	 */
+	private function getEquivalentComparisonForms(BinaryOp $expr, callable $getType): ?array
+	{
+		$left = $expr->left;
+		$right = $expr->right;
+		if ($expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical) {
+			$isNegated = $expr instanceof BinaryOp\NotIdentical;
+
+			return [
+				[new BinaryOp\Identical($left, $right), $isNegated],
+				[new BinaryOp\Identical($right, $left), $isNegated],
+				[new BinaryOp\NotIdentical($left, $right), !$isNegated],
+				[new BinaryOp\NotIdentical($right, $left), !$isNegated],
+			];
+		}
+
+		if ($expr instanceof BinaryOp\Equal || $expr instanceof BinaryOp\NotEqual) {
+			$isNegated = $expr instanceof BinaryOp\NotEqual;
+
+			return [
+				[new BinaryOp\Equal($left, $right), $isNegated],
+				[new BinaryOp\Equal($right, $left), $isNegated],
+				[new BinaryOp\NotEqual($left, $right), !$isNegated],
+				[new BinaryOp\NotEqual($right, $left), !$isNegated],
+			];
+		}
+
+		if (
+			!$expr instanceof BinaryOp\Smaller
+			&& !$expr instanceof BinaryOp\SmallerOrEqual
+			&& !$expr instanceof BinaryOp\Greater
+			&& !$expr instanceof BinaryOp\GreaterOrEqual
+		) {
+			return null;
+		}
+
+		// normalized to `$smaller < $larger` / `$smaller <= $larger`
+		if ($expr instanceof BinaryOp\Smaller || $expr instanceof BinaryOp\SmallerOrEqual) {
+			$smaller = $left;
+			$larger = $right;
+		} else {
+			$smaller = $right;
+			$larger = $left;
+		}
+		$orEqual = $expr instanceof BinaryOp\SmallerOrEqual || $expr instanceof BinaryOp\GreaterOrEqual;
+		$forms = $orEqual
+			? [
+				[new BinaryOp\SmallerOrEqual($smaller, $larger), false],
+				[new BinaryOp\GreaterOrEqual($larger, $smaller), false],
+			]
+			: [
+				[new BinaryOp\Smaller($smaller, $larger), false],
+				[new BinaryOp\Greater($larger, $smaller), false],
+			];
+
+		// `<` and `>=` only complement each other for comparable operands
+		// (NAN and uncomparable arrays/objects are neither smaller nor
+		// larger-or-equal)
+		if (!$getType($left)->isInteger()->yes() || !$getType($right)->isInteger()->yes()) {
+			return $forms;
+		}
+
+		if ($orEqual) {
+			$forms[] = [new BinaryOp\Smaller($larger, $smaller), true];
+			$forms[] = [new BinaryOp\Greater($smaller, $larger), true];
+		} else {
+			$forms[] = [new BinaryOp\SmallerOrEqual($larger, $smaller), true];
+			$forms[] = [new BinaryOp\GreaterOrEqual($smaller, $larger), true];
+		}
+
+		return $forms;
 	}
 
 	/**

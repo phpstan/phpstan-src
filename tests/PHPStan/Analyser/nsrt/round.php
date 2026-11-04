@@ -10,8 +10,8 @@ if (rand(0, 1)) {
 }
 
 // Round
-assertType('float', round(123));
-assertType('float', round(123.456));
+assertType('123.0', round(123));
+assertType('float<123.0, 124.0>', round(123.456));
 assertType('float', round($_GET['foo'] / 60));
 assertType('float', round('123'));
 assertType('float', round('123.456'));
@@ -27,8 +27,8 @@ assertType('null', round());
 assertType('(float|false)', round($_GET['foo']));
 
 // Ceil
-assertType('float', ceil(123));
-assertType('float', ceil(123.456));
+assertType('123.0', ceil(123));
+assertType('124.0', ceil(123.456));
 assertType('float', ceil($_GET['foo'] / 60));
 assertType('float', ceil('123'));
 assertType('float', ceil('123.456'));
@@ -44,8 +44,8 @@ assertType('null', ceil());
 assertType('(float|false)', ceil($_GET['foo']));
 
 // Floor
-assertType('float', floor(123));
-assertType('float', floor(123.456));
+assertType('123.0', floor(123));
+assertType('123.0', floor(123.456));
 assertType('float', floor($_GET['foo'] / 60));
 assertType('float', floor('123'));
 assertType('float', floor('123.456'));

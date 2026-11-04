@@ -11,11 +11,12 @@ use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\FloatType;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
+use const INF;
 
 #[AutowiredService]
 final class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -34,7 +35,7 @@ final class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			[2],
 			isList: TrinaryLogic::createYes(),
 		);
-		$numberType = new BenevolentUnionType([IntegerRangeType::fromInterval(1, null), new FloatType()]);
+		$numberType = new BenevolentUnionType([IntegerRangeType::fromInterval(1, null), FloatRangeType::fromInterval(1.0, INF)]);
 
 		if (count($functionCall->getArgs()) < 1) {
 			return $arrayType;

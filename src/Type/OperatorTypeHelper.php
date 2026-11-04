@@ -438,9 +438,66 @@ final class OperatorTypeHelper
 					return $withoutFloat;
 				}
 			}
+
+			// the float of an int division lies between the quotients of the bounds
+			$floatType = self::getIntegerDivisionFloatType($leftType, $rightType, $phpVersion);
+			if ($floatType !== null) {
+				return self::replaceFloatType($result, $floatType);
+			}
 		}
 
 		return $result;
+	}
+
+	private static function getIntegerDivisionFloatType(Type $leftType, Type $rightType, PhpVersion $phpVersion): ?Type
+	{
+		$leftMembers = self::getFloatIntervalMembers($leftType);
+		$rightMembers = self::getFloatIntervalMembers($rightType);
+		if ($leftMembers === null || $rightMembers === null) {
+			return null;
+		}
+		if (count($leftMembers) * count($rightMembers) > InitializerExprTypeResolver::CALCULATE_SCALARS_LIMIT) {
+			return null;
+		}
+
+		$floatTypes = [];
+		foreach ($leftMembers as [, $leftInterval]) {
+			foreach ($rightMembers as [, $rightInterval]) {
+				foreach (self::splitIntegerDivisor($rightInterval) as $divisorInterval) {
+					$floatTypes[] = self::floatIntervalMath('/', $leftInterval, $divisorInterval, $phpVersion);
+				}
+			}
+		}
+
+		// a quotient that can be any float but NAN reads better as float, like int + 1.5 does
+		$floatType = TypeCombinator::union(...$floatTypes);
+		if ($floatType->equals(FloatRangeType::fromInterval(-INF, INF))) {
+			return null;
+		}
+
+		return $floatType;
+	}
+
+	private static function replaceFloatType(Type $type, Type $floatType): Type
+	{
+		if (get_class($type) === FloatType::class) {
+			return $floatType;
+		}
+		if (!$type instanceof UnionType) {
+			return $type;
+		}
+
+		$types = [];
+		foreach ($type->getTypes() as $innerType) {
+			$types[] = get_class($innerType) === FloatType::class ? $floatType : $innerType;
+		}
+
+		$union = TypeCombinator::union(...$types);
+		if ($type instanceof BenevolentUnionType) {
+			return TypeUtils::toBenevolentUnion($union);
+		}
+
+		return $union;
 	}
 
 	private static function getDivTypeFromTypes(Type $leftType, Type $rightType): Type
@@ -1672,7 +1729,9 @@ final class OperatorTypeHelper
 					continue;
 				}
 
-				$resultTypes[] = self::floatIntervalMath($operator, $leftInterval, $rightInterval, $phpVersion);
+				foreach ($operator === '/' && $rightMember->isInteger()->yes() ? self::splitIntegerDivisor($rightInterval) : [$rightInterval] as $divisorInterval) {
+					$resultTypes[] = self::floatIntervalMath($operator, $leftInterval, $divisorInterval, $phpVersion);
+				}
 			}
 		}
 
@@ -1680,11 +1739,38 @@ final class OperatorTypeHelper
 	}
 
 	/**
-	 * The members of a number type with the floats each of them stands for:
-	 * [min, max, whether NAN], an int without a bound reaching the infinity
-	 * on that side, and NAN alone being an empty interval.
+	 * An integer divisor next to zero is -1 or 1, not a denormal: the
+	 * negative part, zero on its own and the positive part.
 	 *
-	 * @return list<array{Type, array{float, float, bool}}>|null
+	 * @param array{float, float, bool, bool} $interval
+	 * @return list<array{float, float, bool, bool}>
+	 */
+	private static function splitIntegerDivisor(array $interval): array
+	{
+		[$min, $max] = $interval;
+		if ($min > 0.0 || $max < 0.0) {
+			return [$interval];
+		}
+
+		$intervals = [];
+		if ($min < 0.0) {
+			$intervals[] = [$min, -1.0, false, false];
+		}
+		$intervals[] = [0.0, 0.0, false, false];
+		if ($max > 0.0) {
+			$intervals[] = [1.0, $max, false, false];
+		}
+
+		return $intervals;
+	}
+
+	/**
+	 * The members of a number type with the floats each of them stands for:
+	 * [min, max, whether NAN, whether an infinite bound is a value]. An int
+	 * without a bound reaches the infinity on that side, which it never is,
+	 * and NAN alone is an empty interval.
+	 *
+	 * @return list<array{Type, array{float, float, bool, bool}}>|null
 	 */
 	private static function getFloatIntervalMembers(Type $type): ?array
 	{
@@ -1695,22 +1781,23 @@ final class OperatorTypeHelper
 		$members = [];
 		foreach ($type instanceof UnionType ? $type->getTypes() : [$type] as $member) {
 			if ($member instanceof ConstantIntegerType) {
-				$interval = [(float) $member->getValue(), (float) $member->getValue(), false];
+				$interval = [(float) $member->getValue(), (float) $member->getValue(), false, false];
 			} elseif ($member instanceof IntegerRangeType) {
 				$interval = [
 					$member->getMin() === null ? -INF : (float) $member->getMin(),
 					$member->getMax() === null ? INF : (float) $member->getMax(),
 					false,
+					false,
 				];
 			} elseif ($member instanceof ConstantFloatType) {
 				$value = $member->getValue();
-				$interval = is_nan($value) ? [INF, -INF, true] : [$value, $value, false];
+				$interval = is_nan($value) ? [INF, -INF, true, true] : [$value, $value, false, true];
 			} elseif ($member instanceof FloatRangeType) {
-				$interval = [$member->getMin(), $member->getMax(), false];
+				$interval = [$member->getMin(), $member->getMax(), false, true];
 			} elseif (get_class($member) === IntegerType::class) {
-				$interval = [-INF, INF, false];
+				$interval = [-INF, INF, false, false];
 			} elseif (get_class($member) === FloatType::class) {
-				$interval = [-INF, INF, true];
+				$interval = [-INF, INF, true, true];
 			} else {
 				return null;
 			}
@@ -1723,27 +1810,32 @@ final class OperatorTypeHelper
 
 	/**
 	 * @param '+'|'-'|'*'|'/' $operator
-	 * @param array{float, float, bool} $left
-	 * @param array{float, float, bool} $right
+	 * @param array{float, float, bool, bool} $left
+	 * @param array{float, float, bool, bool} $right
 	 */
 	private static function floatIntervalMath(string $operator, array $left, array $right, PhpVersion $phpVersion): Type
 	{
-		[$leftMin, $leftMax, $nan] = $left;
-		[$rightMin, $rightMax, $rightNan] = $right;
+		[$leftMin, $leftMax, $nan, $leftInfinities] = $left;
+		[$rightMin, $rightMax, $rightNan, $rightInfinities] = $right;
 		$nan = $nan || $rightNan;
 		$resultTypes = [];
 
 		if ($leftMin <= $leftMax && $rightMin <= $rightMax) {
 			$leftHasZero = $leftMin <= 0.0 && $leftMax >= 0.0;
 			$rightHasZero = $rightMin <= 0.0 && $rightMax >= 0.0;
-			$leftHasInfinity = $leftMin === -INF || $leftMax === INF;
-			$rightHasInfinity = $rightMin === -INF || $rightMax === INF;
+			// the infinities that stand for an unbounded int are not values
+			$leftHasNegativeInfinity = $leftInfinities && $leftMin === -INF;
+			$leftHasPositiveInfinity = $leftInfinities && $leftMax === INF;
+			$rightHasNegativeInfinity = $rightInfinities && $rightMin === -INF;
+			$rightHasPositiveInfinity = $rightInfinities && $rightMax === INF;
+			$leftHasInfinity = $leftHasNegativeInfinity || $leftHasPositiveInfinity;
+			$rightHasInfinity = $rightHasNegativeInfinity || $rightHasPositiveInfinity;
 
 			$rightIntervals = [[$rightMin, $rightMax]];
 			if ($operator === '+') {
-				$nan = $nan || ($leftMax === INF && $rightMin === -INF) || ($leftMin === -INF && $rightMax === INF);
+				$nan = $nan || ($leftHasPositiveInfinity && $rightHasNegativeInfinity) || ($leftHasNegativeInfinity && $rightHasPositiveInfinity);
 			} elseif ($operator === '-') {
-				$nan = $nan || ($leftMax === INF && $rightMax === INF) || ($leftMin === -INF && $rightMin === -INF);
+				$nan = $nan || ($leftHasPositiveInfinity && $rightHasPositiveInfinity) || ($leftHasNegativeInfinity && $rightHasNegativeInfinity);
 			} elseif ($operator === '*') {
 				$nan = $nan || ($leftHasZero && $rightHasInfinity) || ($rightHasZero && $leftHasInfinity);
 			} else {

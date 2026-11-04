@@ -81,9 +81,9 @@ class Foo
 		$min = min(30, $newLevel);
 		assertType('int<min, 30>', $min);
 		$minDivFive = $min / 5;
-		assertType('float|int<min, 6>', $minDivFive);
+		assertType('float<min, 6.0>|int<min, 6>', $minDivFive);
 		$volume = 0x10000000 * $minDivFive;
-		assertType('float|int<min, 1610612736>', $volume);
+		assertType('float<min, 1610612736.0>|int<min, 1610612736>', $volume);
 	}
 
 	public function doDolor(int $i): void
@@ -91,8 +91,8 @@ class Foo
 		$chunks = min(200, $i);
 		assertType('int<min, 200>', $chunks);
 		$divThirty = $chunks / 30;
-		assertType('float|int<min, 6>', $divThirty);
-		assertType('float|int<min, 9>', $divThirty + 3);
+		assertType('float<min, 6.666666666666667>|int<min, 6>', $divThirty);
+		assertType('float<min, 9.666666666666668>|int<min, 9>', $divThirty + 3);
 	}
 
 	public function doSit(int $i, int $j): void

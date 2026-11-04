@@ -5273,7 +5273,7 @@ return [
 'layerObj::setWKTProjection' => ['int', 'proj_params'=>'string'],
 'layerObj::updateFromString' => ['int', 'snippet'=>'string'],
 'lcfirst' => ['string', 'str'=>'string'],
-'lcg_value' => ['float'],
+'lcg_value' => ['float<0, 1>'],
 'lchgrp' => ['bool', 'filename'=>'string', 'group'=>'string|int'],
 'lchown' => ['bool', 'filename'=>'string', 'user'=>'string|int'],
 'ldap_8859_to_t61' => ['string|false', 'value'=>'string'],

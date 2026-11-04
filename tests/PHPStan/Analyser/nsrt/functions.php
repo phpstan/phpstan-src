@@ -104,9 +104,9 @@ $strWordCountStrTypeIndeterminant = str_word_count('string', $integer);
 
 assertType('non-falsy-string', $microtimeStringWithoutArg);
 assertType('non-falsy-string', $microtimeString);
-assertType('float', $microtimeFloat);
-assertType('float|non-falsy-string', $microtimeDefault);
-assertType('(float|non-falsy-string)', $microtimeBenevolent);
+assertType('float<0.0, max>', $microtimeFloat);
+assertType('float<0.0, max>|non-falsy-string', $microtimeDefault);
+assertType('(float<0.0, max>|non-falsy-string)', $microtimeBenevolent);
 assertType('-1', $versionCompare1);
 assertType('-1|1', $versionCompare2);
 assertType('-1|0|1', $versionCompare3);

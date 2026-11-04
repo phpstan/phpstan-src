@@ -29,7 +29,7 @@ class HelloWorld
 	{
 		if ($limit) {
 			assertType('(float|int)', $offset / $limit);
-			assertType('float|int<-2, 2>', $offsetRange / $limit);
+			assertType('float<-2.0, 2.0>|int<-2, 2>', $offsetRange / $limit);
 		}
 	}
 }

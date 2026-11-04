@@ -96,7 +96,7 @@ public:
 		ZVAL_OBJ(&thisZv, self);
 		zv::Val assertsCallback = pt_type_native_callback(transformStaticTypeCallback, &thisZv, NULL);
 		if (UNEXPECTED(assertsCallback.isUndef())) return zv::Val();
-		PrototypeTransformer transformer = { transformStaticType, self };
+		PrototypeTransformer transformer = { transformStaticType, transformInputStaticType, self };
 		zv::Val result = pt_prototype_resolved_method(PT_PROTOTYPE_CALLED_ON_TYPE, transformer, Z_OBJ_P(resolvedDeclaringClass), Z_OBJ_P(methodReflection), zend_is_true(resolveToBounds), assertsCallback.raw());
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		write(slots::transformedMethod, zv::Val::copyOf(zv::Ref(result.raw())));
@@ -143,9 +143,37 @@ private:
 		return value;
 	}
 
+	/* getCalledOnType($flag): $this->calledOnType, or for the types values
+	 * are checked against TemplateTypeHelper::removeFinalByKeywordOverrides($this->calledOnType);
+	 * UNDEF = pending exception */
+	zv::Val calledOnTypeFor(zval *flag) const
+	{
+		zval *calledOnType = slot(slots::calledOnType, "calledOnType");
+		if (UNEXPECTED(calledOnType == NULL)) return zv::Val();
+		if (flag == NULL || Z_TYPE_P(flag) != IS_TRUE) return zv::Val::copyOf(zv::Ref(calledOnType));
+		zv::Val stripped = pt_type_call_static_ce(pt_ce_template_type_helper, PT_LC("removefinalbykeywordoverrides"), 1, calledOnType);
+		if (UNEXPECTED(stripped.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(stripped.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: TemplateTypeHelper::removeFinalByKeywordOverrides() must return %s", ptcls::type);
+			return zv::Val();
+		}
+		return stripped;
+	}
+
 	/* transformStaticType($type): TypeTraverser::mapMemoized($type, the
 	 * closure below over $this); UNDEF = pending exception */
 	static zv::Val transformStaticType(void *context, zval *type)
+	{
+		return transformStaticTypeOf(context, type, false);
+	}
+
+	/* transformStaticType($type, true) — for parameter types */
+	static zv::Val transformInputStaticType(void *context, zval *type)
+	{
+		return transformStaticTypeOf(context, type, true);
+	}
+
+	static zv::Val transformStaticTypeOf(void *context, zval *type, bool isParameterType)
 	{
 		/* the callback changes StaticTypes only: a type without one maps to
 		 * itself */
@@ -154,7 +182,10 @@ private:
 		if (!containsStatic) return zv::Val::copyOf(zv::Ref(type));
 		zval thisZv;
 		ZVAL_OBJ(&thisZv, (zend_object *) context);
-		zv::Val callback = pt_type_native_callback(traverse, &thisZv, NULL);
+		/* the closure's `use ($isParameterType)` */
+		zval flag;
+		ZVAL_BOOL(&flag, isParameterType);
+		zv::Val callback = pt_type_native_callback(traverse, &thisZv, &flag);
 		if (UNEXPECTED(callback.isUndef())) return zv::Val();
 		return pt_type_traverser_map_memoized_of(type, callback.raw());
 	}
@@ -183,7 +214,6 @@ private:
 	 * the called-on type; everything else traverses */
 	static void traverse(zval *thisZv, zval *state1, uint32_t argc, zval *argv, zval *return_value)
 	{
-		(void) state1;
 		if (UNEXPECTED(argc < 2)) {
 			zend_argument_count_error("Too few arguments to function %s::{closure}(), %u passed and exactly 2 expected", ZSTR_VAL(pt_ce_called_on_type_unresolved_method_prototype_reflection->name), argc);
 			return;
@@ -197,9 +227,11 @@ private:
 		bool isGenericStatic;
 		pt_type_instanceof_ce(type, pt_ce_generic_static_type, isGenericStatic);
 		if (isGenericStatic) {
-			zval *calledOnType = self.slot(slots::calledOnType, "calledOnType");
-			if (UNEXPECTED(calledOnType == NULL)) return;
-			/* $calledOnTypeReflections = $this->calledOnType->getObjectClassReflections(); */
+			/* $calledOnType = $this->getCalledOnType($isParameterType); */
+			zv::Val calledOnTypeVal = self.calledOnTypeFor(state1);
+			if (UNEXPECTED(calledOnTypeVal.isUndef())) return;
+			zval *calledOnType = calledOnTypeVal.raw();
+			/* $calledOnTypeReflections = $calledOnType->getObjectClassReflections(); */
 			zv::Val reflections = pt_type_call(Z_OBJ_P(calledOnType), PT_LC("getobjectclassreflections"), 0, NULL);
 			if (UNEXPECTED(reflections.isUndef())) return;
 			if (UNEXPECTED(!zv::Ref(reflections.raw()).isArray())) {
@@ -233,9 +265,9 @@ private:
 		bool isStatic;
 		pt_type_instanceof_ce(type, pt_ce_static_type, isStatic);
 		if (isStatic) {
-			zval *calledOnType = self.slot(slots::calledOnType, "calledOnType");
-			if (UNEXPECTED(calledOnType == NULL)) return;
-			ZVAL_COPY(return_value, calledOnType);
+			zv::Val calledOnType = self.calledOnTypeFor(state1);
+			if (UNEXPECTED(calledOnType.isUndef())) return;
+			calledOnType.intoReturnValue(return_value);
 			return;
 		}
 		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);

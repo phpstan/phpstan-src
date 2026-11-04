@@ -91,7 +91,7 @@ public:
 		zval *resolveToBounds = methodReflection != NULL ? slot(slots::resolveTemplateTypeMapToBounds, "resolveTemplateTypeMapToBounds") : NULL;
 		if (UNEXPECTED(resolveToBounds == NULL)) return zv::Val();
 		/* $method->getAsserts()->mapTypes($this->transformStaticTypeCallback) */
-		PrototypeTransformer transformer = { transformStaticType, self };
+		PrototypeTransformer transformer = { transformStaticType, transformStaticType, self };
 		zv::Val result = pt_prototype_resolved_method(PT_PROTOTYPE_CALLBACK, transformer, Z_OBJ_P(resolvedDeclaringClass), Z_OBJ_P(methodReflection), zend_is_true(resolveToBounds), OBJ_PROP_NUM(self, slots::transformStaticTypeCallback));
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		write(slots::transformedMethod, zv::Val::copyOf(zv::Ref(result.raw())));

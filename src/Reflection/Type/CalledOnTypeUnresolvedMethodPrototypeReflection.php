@@ -12,6 +12,7 @@ use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ResolvedMethodReflection;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\GenericStaticType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -96,13 +97,13 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 				array_map(
 					fn (ExtendedParameterReflection $parameter): ExtendedParameterReflection => new ExtendedDummyParameter(
 						$parameter->getName(),
-						$this->transformStaticType($parameter->getType()),
+						$this->transformStaticType($parameter->getType(), true),
 						$parameter->isOptional(),
 						$parameter->passedByReference(),
 						$parameter->isVariadic(),
 						$parameter->getDefaultValue(),
 						$parameter->getNativeType(),
-						$this->transformStaticType($parameter->getPhpDocType()),
+						$this->transformStaticType($parameter->getPhpDocType(), true),
 						$parameter->getOutType() !== null ? $this->transformStaticType($parameter->getOutType()) : null,
 						$parameter->isImmediatelyInvokedCallable(),
 						$parameter->getClosureThisType() !== null ? $this->transformStaticType($parameter->getClosureThisType()) : null,
@@ -141,25 +142,39 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 		);
 	}
 
-	private function transformStaticType(Type $type): Type
+	/**
+	 * A parameter type is compared against argument types, whose template arguments never carry
+	 * the "exactly this class" flavour of `new Foo()` - so `static` resolved inside it must not either.
+	 */
+	private function transformStaticType(Type $type, bool $isParameterType = false): Type
 	{
-		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse): Type {
+		return TypeTraverser::mapMemoized($type, function (Type $type, callable $traverse) use ($isParameterType): Type {
 			if ($type instanceof GenericStaticType) {
-				$calledOnTypeReflections = $this->calledOnType->getObjectClassReflections();
+				$calledOnType = $this->getCalledOnType($isParameterType);
+				$calledOnTypeReflections = $calledOnType->getObjectClassReflections();
 				if (count($calledOnTypeReflections) === 1) {
 					$calledOnTypeReflection = $calledOnTypeReflections[0];
 
 					return $traverse($type->changeBaseClass($calledOnTypeReflection)->getStaticObjectType());
 				}
 
-				return $this->calledOnType;
+				return $calledOnType;
 			}
 			if ($type instanceof StaticType) {
-				return $this->calledOnType;
+				return $this->getCalledOnType($isParameterType);
 			}
 
 			return $traverse($type);
 		});
+	}
+
+	private function getCalledOnType(bool $isParameterType): Type
+	{
+		if ($isParameterType) {
+			return TemplateTypeHelper::removeFinalByKeywordOverrides($this->calledOnType);
+		}
+
+		return $this->calledOnType;
 	}
 
 }

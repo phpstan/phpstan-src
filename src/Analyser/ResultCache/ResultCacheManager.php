@@ -1398,11 +1398,8 @@ final class ResultCacheManager
 
 			// The files changed during the analysis may have been read in another version than the one
 			// their hash and exported nodes describe, and so may the files using them, which are analysed
-			// again too. A run that analysed nothing read nothing.
-			$filesChangedDuringAnalysis = [];
-			if ($resultCache->isFullAnalysis() || $resultCache->getFilesToAnalyse() !== []) {
-				$filesChangedDuringAnalysis = $this->getFilesChangedSinceHashed($currentFileHashes);
-			}
+			// again too.
+			$filesChangedDuringAnalysis = $this->getFilesChangedDuringAnalysis($resultCache);
 			foreach (array_keys($filesChangedDuringAnalysis) as $file) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted(sprintf('Result cache will re-analyse %s and the files using it because it changed during the analysis.', $file));
@@ -3256,6 +3253,21 @@ final class ResultCacheManager
 		}
 
 		return false;
+	}
+
+	/**
+	 * The analysed files written to since restore() hashed them, for a result that may not describe
+	 * what they contain now. A run that analysed nothing read nothing.
+	 *
+	 * @return array<string, true>
+	 */
+	public function getFilesChangedDuringAnalysis(ResultCache $resultCache): array
+	{
+		if (!$resultCache->isFullAnalysis() && $resultCache->getFilesToAnalyse() === []) {
+			return [];
+		}
+
+		return $this->getFilesChangedSinceHashed($resultCache->getCurrentFileHashes());
 	}
 
 	/**

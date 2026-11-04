@@ -232,6 +232,11 @@ final class FixerWorkerRunner
 				$finalizerResult = $this->analyserResultFinalizer->finalize($resultCacheResult->getAnalyserResult(), $isOnlyFiles, false, null, null, $resultCache->getCollectedDataRuleResults());
 				$resultCacheResult->save($finalizerResult);
 
+				// FixerApplication's file monitor misses a file changed and changed back between two polls
+				if ($resultCacheManager->getFilesChangedDuringAnalysis($resultCache) !== []) {
+					$out->write(['action' => 'filesChangedWhileAnalysed', 'result' => []]);
+				}
+
 				$internalErrors = [];
 				foreach ($finalizerResult->getAnalyserResult()->getInternalErrors() as $internalError) {
 					$internalErrors[] = new InternalError(

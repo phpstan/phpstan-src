@@ -30,8 +30,10 @@ inline constexpr char strings[] =
 	"bitwiseXor\0" /* 225 */
 	"bitwiseShiftLeft\0" /* 236 */
 	"bitwiseShiftRight\0" /* 253 */
-	"stringConcatenate\0" /* 271 */
-	"arrayUnion"; /* 289 */
+	"getPossiblyLooselyEqualType\0" /* 271 */
+	"getAlwaysLooselyEqualType\0" /* 299 */
+	"stringConcatenate\0" /* 325 */
+	"arrayUnion"; /* 343 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 9), /* exponentiate $exponent */
 	reg::packed(27, 0, 9), /* exponentiate return */
@@ -70,6 +72,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(41, 0, 9), /* bitwiseShiftRight $right */
 	reg::packed(47, 0, 58), /* bitwiseShiftRight $phpVersion */
 	reg::packed(27, 0, 9), /* bitwiseShiftRight return */
+	reg::packed(47, 0, 58), /* getPossiblyLooselyEqualType $phpVersion */
+	reg::packed(27, 0, 9), /* getPossiblyLooselyEqualType return */
+	reg::packed(47, 0, 58), /* getAlwaysLooselyEqualType $phpVersion */
+	reg::packed(27, 0, 9), /* getAlwaysLooselyEqualType return */
 	reg::packed(41, 0, 9), /* stringConcatenate $right */
 	reg::packed(47, 0, 58), /* stringConcatenate $phpVersion */
 	reg::packed(27, 0, 9), /* stringConcatenate return */
@@ -95,8 +101,10 @@ inline constexpr sigtab::Sig bitwiseOr = { { 215 /* bitwiseOr */, 2, 25, 2, 27, 
 inline constexpr sigtab::Sig bitwiseXor = { { 225 /* bitwiseXor */, 2, 28, 2, 30, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig bitwiseShiftLeft = { { 236 /* bitwiseShiftLeft */, 2, 31, 2, 33, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig bitwiseShiftRight = { { 253 /* bitwiseShiftRight */, 2, 34, 2, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig stringConcatenate = { { 271 /* stringConcatenate */, 2, 37, 2, 39, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arrayUnion = { { 289 /* arrayUnion */, 2, 40, 2, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 271 /* getPossiblyLooselyEqualType */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 299 /* getAlwaysLooselyEqualType */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig stringConcatenate = { { 325 /* stringConcatenate */, 2, 41, 2, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arrayUnion = { { 343 /* arrayUnion */, 2, 44, 2, 46, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::OperatorTypeTrait

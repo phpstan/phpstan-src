@@ -32,7 +32,7 @@ function doEnum(array $suite, array $arr) {
 
 
 	if (in_array(Suit::Hearts, $arr) === false) {
-		assertType('array<mixed~Bug9662Enums\Suit::Hearts>', $arr);
+		assertType('array', $arr);
 	} else {
 		assertType("non-empty-array", $arr);
 	}
@@ -97,7 +97,7 @@ function doBackedEnum(array $suite, array $arr, string $s, int $i, $mixed) {
 
 
 	if (in_array(StringBackedSuit::Hearts, $arr) === false) {
-		assertType('array<mixed~Bug9662Enums\StringBackedSuit::Hearts>', $arr);
+		assertType('array', $arr);
 	} else {
 		assertType("non-empty-array", $arr);
 	}

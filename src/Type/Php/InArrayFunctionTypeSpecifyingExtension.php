@@ -18,6 +18,7 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
+use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -62,10 +63,12 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		$arrayType = $scope->getType($arrayExpr);
 		$arrayValueType = $arrayType->getIterableValueType();
 
+		// loose comparison is strict for these: an enum case loosely equals only
+		// itself and true, a string pair compares as numbers when both are numeric
 		$isStrictComparison = $isStrictComparison
-			|| $needleType->isEnum()->yes()
-			|| $arrayValueType->isEnum()->yes()
-			|| ($needleType->isString()->yes() && $arrayValueType->isString()->yes())
+			|| ($needleType->isEnum()->yes() && $arrayValueType->isTrue()->no())
+			|| ($arrayValueType->isEnum()->yes() && $needleType->isTrue()->no())
+			|| ($needleType->isString()->yes() && $arrayValueType->isString()->yes() && ($needleType->isNumericString()->no() || $arrayValueType->isNumericString()->no()))
 			|| ($needleType->isInteger()->yes() && $arrayValueType->isInteger()->yes())
 			|| ($needleType->isFloat()->yes() && $arrayValueType->isFloat()->yes())
 			|| ($needleType->isBoolean()->yes() && $arrayValueType->isBoolean()->yes());
@@ -110,20 +113,31 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 		}
 
 		if (!$isStrictComparison) {
-			if (
-				$context->true()
-				&& $arrayType->isArray()->yes()
-				&& $arrayType->getIterableValueType()->isSuperTypeOf($needleType)->yes()
-			) {
-				return $this->typeSpecifier->create(
-					$args[1]->value,
-					TypeCombinator::intersect($arrayType, new NonEmptyArrayType()),
-					$context,
-					$scope,
+			$specifiedTypes = new SpecifiedTypes();
+			if ($context->true()) {
+				// the needle is one of the values an item can loosely equal
+				$possiblyEqualType = LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions(
+					$arrayValueType,
+					LooseComparisonHelper::getRepresentativePhpVersions($scope->getPhpVersion()),
 				);
+				if (
+					!$possiblyEqualType->isSuperTypeOf(new MixedType())->yes()
+					&& (!$needleType instanceof MixedType || !LooseComparisonHelper::keepsMixedUnnarrowed($possiblyEqualType))
+				) {
+					$specifiedTypes = $this->typeSpecifier->create($needleExpr, $possiblyEqualType, $context, $scope);
+				}
+
+				if ($arrayType->isArray()->yes()) {
+					$specifiedTypes = $specifiedTypes->unionWith($this->typeSpecifier->create(
+						$args[1]->value,
+						new NonEmptyArrayType(),
+						$context,
+						$scope,
+					));
+				}
 			}
 
-			return new SpecifiedTypes();
+			return $specifiedTypes;
 		}
 
 		$specifiedTypes = new SpecifiedTypes();

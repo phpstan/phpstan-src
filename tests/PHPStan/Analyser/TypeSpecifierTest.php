@@ -1320,8 +1320,8 @@ class TypeSpecifierTest extends PHPStanTestCase
 					),
 				),
 				[
-					'$float' => 'float',
-					'(int) $float' => 'int',
+					'$float' => 'float<-9.223372036854776E+18, 9.223372036854776E+18>|int|numeric-string',
+					'(int) $float' => '\'-INF\'|\'INF\'|bool|float<min, max>|int|object|resource|numeric-string|null',
 				],
 				[],
 			],

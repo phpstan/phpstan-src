@@ -14,7 +14,7 @@ function test_strings(string $a, string $b): void
 
 	if ($a !== '' && strtolower($a) == $b) {
 		assertType('non-empty-string', $a);
-		assertType('lowercase-string&non-empty-string', $b);
+		assertType('(lowercase-string&non-empty-string)|numeric-string', $b);
 	}
 
 	if ($a !== '' && strtolower($a) === $b) {
@@ -24,7 +24,7 @@ function test_strings(string $a, string $b): void
 
 	if ($a !== '' && strtolower($a) == $b && $b !== '0') {
 		assertType('non-empty-string', $a);
-		assertType('lowercase-string&non-falsy-string', $b);
+		assertType('(lowercase-string&non-falsy-string)|(non-falsy-string&numeric-string)', $b);
 	}
 
 	if ($a !== '' && strtolower($a) === $a) {

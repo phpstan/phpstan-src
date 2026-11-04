@@ -254,29 +254,42 @@ private:
 		// a cast's truthiness is a loose comparison of the inner
 		// expression - composed from its result; the fabricated
 		// literal is only printed into entries, never walked
-		if (kind == CAST_BOOL || kind == CAST_INT || kind == CAST_DOUBLE) {
+		if (kind == CAST_BOOL) {
 			bool contextNull;
 			if (UNEXPECTED(!pt_type_specifier_context_null(Z_OBJ_P(context), contextNull))) return zv::Val();
 			if (!contextNull) {
-				zv::Val literal;
-				zv::Val equalContext;
-				if (kind == CAST_BOOL) {
-					literal = trueConstFetch();
-					if (UNEXPECTED(literal.isUndef())) return zv::Val();
-					equalContext = zv::Val::copyOf(zv::Ref(context));
-				} else {
-					literal = kind == CAST_INT ? zeroInt() : zeroFloat();
-					if (UNEXPECTED(literal.isUndef())) return zv::Val();
-					equalContext = pt_type_specifier_context_negate(Z_OBJ_P(context));
-					if (UNEXPECTED(equalContext.isUndef())) return zv::Val();
-				}
+				zv::Val literal = trueConstFetch();
+				if (UNEXPECTED(literal.isUndef())) return zv::Val();
 
 				// the literal side never reads its stand-in result
 				zval *inner = ptoh::operand(pt_ch_cast_expr, expr);
 				if (UNEXPECTED(inner == NULL)) return zv::Val();
-				zv::Val types = pt_identical_narrowing_helper_specify_equal(OBJ_PROP_NUM(handler, slots::identicalNarrowingHelper), nodeScopeResolver, inner, literal.raw(), exprResult, exprResult, equalContext.raw(), evaluationScope.raw(), subjectArgResult, NULL);
+				zv::Val types = pt_identical_narrowing_helper_specify_equal(OBJ_PROP_NUM(handler, slots::identicalNarrowingHelper), nodeScopeResolver, inner, literal.raw(), exprResult, exprResult, context, evaluationScope.raw(), subjectArgResult, NULL);
 				if (UNEXPECTED(types.isUndef())) return zv::Val();
 				if (!types.isNull()) return setRootExpr(types, expr);
+			}
+		}
+
+		// a number cast is zero for more values than those loosely equal
+		// to zero: (int) 'abc', (int) 0.5 and (int) INF are 0 too
+		if (kind == CAST_INT || kind == CAST_DOUBLE) {
+			bool contextNull;
+			if (UNEXPECTED(!pt_type_specifier_context_null(Z_OBJ_P(context), contextNull))) return zv::Val();
+			if (!contextNull) {
+				zv::Val zeroContext = pt_type_specifier_context_negate(Z_OBJ_P(context));
+				if (UNEXPECTED(zeroContext.isUndef())) return zv::Val();
+				bool zeroContextTrue;
+				if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(zeroContext.raw()), zeroContextTrue))) return zv::Val();
+				using ptse::CastValue;
+				zv::Val zeroType = zeroContextTrue
+					? ptse::castValueUnion({ CastValue::Null, CastValue::False, CastValue::ZeroInt, kind == CAST_INT ? CastValue::Float : CastValue::ZeroFloat, CastValue::String, CastValue::EmptyArray, CastValue::Object })
+					: ptse::castValueUnion({ CastValue::Null, CastValue::False, CastValue::ZeroInt, CastValue::ZeroFloat, CastValue::EmptyString, CastValue::ZeroString, CastValue::EmptyArray });
+				if (UNEXPECTED(zeroType.isUndef())) return zv::Val();
+				zval *inner = ptoh::operand(pt_ch_cast_expr, expr);
+				if (UNEXPECTED(inner == NULL)) return zv::Val();
+				zv::Val types = pt_default_narrowing_helper_create_subject_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), evaluationScope.raw(), inner, exprResult, zeroType.raw(), zeroContext.raw());
+				if (UNEXPECTED(types.isUndef())) return zv::Val();
+				return setRootExpr(types, expr);
 			}
 		}
 

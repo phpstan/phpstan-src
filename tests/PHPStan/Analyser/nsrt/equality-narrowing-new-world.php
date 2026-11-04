@@ -402,12 +402,12 @@ class Basics
 			assertType('false|null', $nb);
 		}
 		if ($is == 0) {
-			assertType('0|string', $is);
+			assertType('0|numeric-string', $is);
 		} else {
 			assertType('int<min, -1>|int<1, max>|string', $is);
 		}
 		if ($is == '') {
-			assertType("0|''", $is);
+			assertType("''", $is);
 		} else {
 			assertType('int|non-empty-string', $is);
 		}

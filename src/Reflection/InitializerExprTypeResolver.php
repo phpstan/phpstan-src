@@ -33,6 +33,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
@@ -1164,7 +1165,7 @@ final class InitializerExprTypeResolver
 	/**
 	 * @return TypeResult<BooleanType>
 	 */
-	public function resolveEqualType(Type $leftType, Type $rightType): TypeResult
+	public function resolveEqualType(Type $leftType, Type $rightType, ?PhpVersions $phpVersions = null): TypeResult
 	{
 		if ($leftType instanceof NeverType || $rightType instanceof NeverType) {
 			return new TypeResult(new ConstantBooleanType(false), []);
@@ -1178,10 +1179,30 @@ final class InitializerExprTypeResolver
 		}
 
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
-			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): TypeResult => $this->resolveEqualType($leftValueType, $rightValueType));
+			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): TypeResult => $this->resolveEqualType($leftValueType, $rightValueType, $phpVersions));
 		}
 
-		return new TypeResult($leftType->looseCompare($rightType, $this->phpVersion), []);
+		$versions = $phpVersions !== null ? LooseComparisonHelper::getRepresentativePhpVersions($phpVersions) : [$this->phpVersion];
+		$result = LooseComparisonHelper::looseCompareInVersions($leftType, $rightType, $versions);
+		if ($result->isTrue()->yes() || $result->isFalse()->yes()) {
+			return new TypeResult($result, []);
+		}
+
+		if (
+			LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions($leftType, $versions)->isSuperTypeOf($rightType)->no()
+			|| LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions($rightType, $versions)->isSuperTypeOf($leftType)->no()
+		) {
+			return new TypeResult(new ConstantBooleanType(false), []);
+		}
+
+		if (
+			LooseComparisonHelper::getAlwaysLooselyEqualTypeInVersions($leftType, $versions)->isSuperTypeOf($rightType)->yes()
+			|| LooseComparisonHelper::getAlwaysLooselyEqualTypeInVersions($rightType, $versions)->isSuperTypeOf($leftType)->yes()
+		) {
+			return new TypeResult(new ConstantBooleanType(true), []);
+		}
+
+		return new TypeResult($result, []);
 	}
 
 	/**

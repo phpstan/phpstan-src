@@ -1019,6 +1019,27 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 		'benevolent' => new \PHPStan\Type\BenevolentUnionType([$floatRangeClass::fromInterval(1.0, 2.0), new \PHPStan\Type\IntegerType()]),
 		'string' => new \PHPStan\Type\StringType(),
 	];
+	// the loose equality sets of LooseComparisonHelper, reached through OperatorTypeTrait
+	$looseEqualityOperands = $arithmeticOperands + [
+		'null' => new \PHPStan\Type\NullType(),
+		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
+		'false' => new \PHPStan\Type\Constant\ConstantBooleanType(false),
+		'emptyString' => new \PHPStan\Type\Constant\ConstantStringType(''),
+		'abc' => new \PHPStan\Type\Constant\ConstantStringType('abc'),
+		'numeric1e3' => new \PHPStan\Type\Constant\ConstantStringType('1e3'),
+		'INF string' => new \PHPStan\Type\Constant\ConstantStringType('INF'),
+		'numericString' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]),
+		'emptyArray' => new \PHPStan\Type\Constant\ConstantArrayType([], []),
+		'array' => new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
+		'mixed' => new \PHPStan\Type\MixedType(),
+	];
+	foreach ($looseEqualityOperands as $name => $operand) {
+		foreach ($floatPhpVersions as $vi => $phpVersion) {
+			$r["$name getPossiblyLooselyEqualType $vi"] = $view($operand->getPossiblyLooselyEqualType($phpVersion));
+			$r["$name getAlwaysLooselyEqualType $vi"] = $view($operand->getAlwaysLooselyEqualType($phpVersion));
+		}
+	}
+
 	foreach ($arithmeticOperands as $leftName => $left) {
 		foreach ($arithmeticOperands as $rightName => $right) {
 			foreach (['arithmeticAdd', 'arithmeticSubtract', 'arithmeticMultiply', 'arithmeticDivide'] as $method) {

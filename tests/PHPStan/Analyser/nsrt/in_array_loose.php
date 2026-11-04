@@ -15,16 +15,16 @@ class Foo
 		string|null $stringOrNull,
 	): void {
 		if (in_array($string, ['1', 'a'])) {
-			assertType("'1'|'a'", $string);
+			assertType("'a'|numeric-string", $string);
 		}
 		if (in_array($string, [1, 'a'])) {
-			assertType("string", $string); // could be '1'|'a'
+			assertType("'a'|numeric-string", $string);
 		}
 		if (in_array($int, [1, 2])) {
 			assertType('1|2', $int);
 		}
 		if (in_array($int, ['1', 2])) {
-			assertType('int', $int); // could be 1|2
+			assertType('1|2', $int);
 		}
 		if (in_array($bool, [true])) {
 			assertType('true', $bool);
@@ -36,13 +36,13 @@ class Foo
 			assertType('1.0|2.0', $float);
 		}
 		if (in_array($float, ['1', 2.0])) {
-			assertType('float', $float); // could be 1.0|2.0
+			assertType('1.0|2.0', $float);
 		}
 		if (in_array($stringOrInt, ['1', '2'])) {
-			assertType('int|string', $stringOrInt); // could be '1'|'2'|1|2
+			assertType('1|2|numeric-string', $stringOrInt);
 		}
 		if (in_array($stringOrNull, ['1', 'a'])) {
-			assertType('string|null', $stringOrNull); // could be '1'|'a'
+			assertType("'a'|numeric-string", $stringOrNull);
 		}
 	}
 }

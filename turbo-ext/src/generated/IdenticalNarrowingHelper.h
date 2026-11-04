@@ -74,24 +74,27 @@ inline constexpr char strings[] =
 	"getTypeFromGettypeStringValue\0" /* 794 */
 	"specifyGeneral\0" /* 824 */
 	"specifyEqual\0" /* 839 */
-	"constantExpr\0" /* 852 */
-	"constantType\0" /* 865 */
-	"subjectArgResult\0" /* 878 */
-	"specifyIdenticalAgainstType\0" /* 895 */
-	"otherType\0" /* 923 */
-	"specifyEqualAgainstConstantSide\0" /* 933 */
-	"call\0" /* 965 */
-	"PhpParser\\Node\\Expr\\FuncCall\0" /* 970 */
-	"argResult\0" /* 999 */
-	"specifyFuncCallFamilies\0" /* 1009 */
-	"side\0" /* 1033 */
-	"storage\0" /* 1038 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1046 */
-	"captureFirstArgResult\0" /* 1087 */
-	"expr\0" /* 1109 */
-	"literalType\0" /* 1114 */
-	"isScalarLiteral\0" /* 1126 */
-	"isSubjectCoveredAgainstConstant"; /* 1142 */
+	"subjectType\0" /* 852 */
+	"otherType\0" /* 864 */
+	"phpVersions\0" /* 874 */
+	"createLooselyEqualTypes\0" /* 886 */
+	"constantExpr\0" /* 910 */
+	"constantType\0" /* 923 */
+	"subjectArgResult\0" /* 936 */
+	"specifyIdenticalAgainstType\0" /* 953 */
+	"specifyEqualAgainstConstantSide\0" /* 981 */
+	"call\0" /* 1013 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 1018 */
+	"argResult\0" /* 1047 */
+	"specifyFuncCallFamilies\0" /* 1057 */
+	"side\0" /* 1081 */
+	"storage\0" /* 1086 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1094 */
+	"captureFirstArgResult\0" /* 1135 */
+	"expr\0" /* 1157 */
+	"literalType\0" /* 1162 */
+	"isScalarLiteral\0" /* 1174 */
+	"isSubjectCoveredAgainstConstant"; /* 1190 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 23), /* __construct $defaultNarrowingHelper */
 	reg::packed(82, 0, 101), /* __construct $reflectionProvider */
@@ -155,13 +158,21 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(575, MAY_BE_NULL, 436), /* specifyEqual $leftArgResult */
 	reg::packed(589, MAY_BE_NULL, 436), /* specifyEqual $rightArgResult */
 	reg::packed(626, MAY_BE_NULL, 627), /* specifyEqual return */
+	reg::packed(528, 0, 544), /* createLooselyEqualTypes $evaluationScope */
+	reg::packed(676, 0, 399), /* createLooselyEqualTypes $subject */
+	reg::packed(684, 0, 436), /* createLooselyEqualTypes $subjectResult */
+	reg::packed(852, 0, 776), /* createLooselyEqualTypes $subjectType */
+	reg::packed(864, 0, 776), /* createLooselyEqualTypes $otherType */
+	reg::packed(874, MAY_BE_ARRAY), /* createLooselyEqualTypes $phpVersions */
+	reg::packed(482, 0, 490), /* createLooselyEqualTypes $context */
+	reg::packed(626, 0, 627), /* createLooselyEqualTypes return */
 	reg::packed(676, 0, 399), /* specifyIdenticalAgainstType $subject */
 	reg::packed(684, 0, 436), /* specifyIdenticalAgainstType $subjectResult */
-	reg::packed(852, 0, 399), /* specifyIdenticalAgainstType $constantExpr */
-	reg::packed(865, 0, 776), /* specifyIdenticalAgainstType $constantType */
+	reg::packed(910, 0, 399), /* specifyIdenticalAgainstType $constantExpr */
+	reg::packed(923, 0, 776), /* specifyIdenticalAgainstType $constantType */
 	reg::packed(482, 0, 490), /* specifyIdenticalAgainstType $context */
 	reg::packed(528, 0, 544), /* specifyIdenticalAgainstType $evaluationScope */
-	reg::packed(878, MAY_BE_NULL, 436), /* specifyIdenticalAgainstType $subjectArgResult */
+	reg::packed(936, MAY_BE_NULL, 436), /* specifyIdenticalAgainstType $subjectArgResult */
 	reg::packed(604, MAY_BE_CALLABLE), /* specifyIdenticalAgainstType $identicalTypeCallback */
 	reg::packed(626, MAY_BE_NULL, 627), /* specifyIdenticalAgainstType return */
 	reg::packed(341, 0, 359), /* specifyEqualAgainstConstantSide $nodeScopeResolver */
@@ -172,8 +183,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(676, 0, 399), /* specifyEqualAgainstConstantSide $subject */
 	reg::packed(684, 0, 436), /* specifyEqualAgainstConstantSide $subjectResult */
 	reg::packed(698, MAY_BE_ANY), /* specifyEqualAgainstConstantSide $value */
-	reg::packed(865, 0, 776), /* specifyEqualAgainstConstantSide $constantType */
-	reg::packed(923, 0, 776), /* specifyEqualAgainstConstantSide $otherType */
+	reg::packed(923, 0, 776), /* specifyEqualAgainstConstantSide $constantType */
 	reg::packed(482, 0, 490), /* specifyEqualAgainstConstantSide $context */
 	reg::packed(528, 0, 544), /* specifyEqualAgainstConstantSide $evaluationScope */
 	reg::packed(575, MAY_BE_NULL, 436), /* specifyEqualAgainstConstantSide $leftArgResult */
@@ -182,19 +192,19 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(626, MAY_BE_NULL | MAY_BE_FALSE, 627), /* specifyEqualAgainstConstantSide return */
 	reg::packed(676, 0, 399), /* specifyFuncCallFamilies $subject */
 	reg::packed(684, 0, 436), /* specifyFuncCallFamilies $subjectResult */
-	reg::packed(965, 0, 970), /* specifyFuncCallFamilies $call */
-	reg::packed(852, 0, 399), /* specifyFuncCallFamilies $constantExpr */
-	reg::packed(865, 0, 776), /* specifyFuncCallFamilies $constantType */
+	reg::packed(1013, 0, 1018), /* specifyFuncCallFamilies $call */
+	reg::packed(910, 0, 399), /* specifyFuncCallFamilies $constantExpr */
+	reg::packed(923, 0, 776), /* specifyFuncCallFamilies $constantType */
 	reg::packed(482, 0, 490), /* specifyFuncCallFamilies $context */
 	reg::packed(528, 0, 544), /* specifyFuncCallFamilies $evaluationScope */
-	reg::packed(999, MAY_BE_NULL, 436), /* specifyFuncCallFamilies $argResult */
+	reg::packed(1047, MAY_BE_NULL, 436), /* specifyFuncCallFamilies $argResult */
 	reg::packed(626, MAY_BE_NULL | MAY_BE_FALSE, 627), /* specifyFuncCallFamilies return */
-	reg::packed(1033, 0, 399), /* captureFirstArgResult $side */
-	reg::packed(1038, 0, 1046), /* captureFirstArgResult $storage */
+	reg::packed(1081, 0, 399), /* captureFirstArgResult $side */
+	reg::packed(1086, 0, 1094), /* captureFirstArgResult $storage */
 	reg::packed(626, MAY_BE_NULL, 436), /* captureFirstArgResult return */
-	reg::packed(1109, 0, 399), /* literalType $expr */
+	reg::packed(1157, 0, 399), /* literalType $expr */
 	reg::packed(626, MAY_BE_NULL, 776), /* literalType return */
-	reg::packed(1109, 0, 399), /* isScalarLiteral $expr */
+	reg::packed(1157, 0, 399), /* isScalarLiteral $expr */
 	reg::packed(626, MAY_BE_BOOL), /* isScalarLiteral return */
 	reg::packed(676, 0, 399), /* isSubjectCoveredAgainstConstant $subject */
 	reg::packed(626, MAY_BE_BOOL), /* isSubjectCoveredAgainstConstant return */
@@ -212,13 +222,14 @@ inline constexpr sigtab::Sig specifyDecidedComparison = { { 751 /* specifyDecide
 inline constexpr sigtab::Sig getTypeFromGettypeStringValue = { { 794 /* getTypeFromGettypeStringValue */, 1, 40, 1, 41, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig specifyGeneral = { { 824 /* specifyGeneral */, 9, 42, 9, 51, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig specifyEqual = { { 839 /* specifyEqual */, 9, 52, 9, 61, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyIdenticalAgainstType = { { 895 /* specifyIdenticalAgainstType */, 8, 62, 8, 70, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyEqualAgainstConstantSide = { { 933 /* specifyEqualAgainstConstantSide */, 15, 71, 15, 86, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyFuncCallFamilies = { { 1009 /* specifyFuncCallFamilies */, 8, 87, 8, 95, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig captureFirstArgResult = { { 1087 /* captureFirstArgResult */, 2, 96, 2, 98, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig literalType = { { 1114 /* literalType */, 1, 99, 1, 100, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isScalarLiteral = { { 1126 /* isScalarLiteral */, 1, 101, 1, 102, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isSubjectCoveredAgainstConstant = { { 1142 /* isSubjectCoveredAgainstConstant */, 1, 103, 1, 104, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createLooselyEqualTypes = { { 886 /* createLooselyEqualTypes */, 7, 62, 7, 69, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyIdenticalAgainstType = { { 953 /* specifyIdenticalAgainstType */, 8, 70, 8, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyEqualAgainstConstantSide = { { 981 /* specifyEqualAgainstConstantSide */, 14, 79, 14, 93, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyFuncCallFamilies = { { 1057 /* specifyFuncCallFamilies */, 8, 94, 8, 102, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig captureFirstArgResult = { { 1135 /* captureFirstArgResult */, 2, 103, 2, 105, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig literalType = { { 1162 /* literalType */, 1, 106, 1, 107, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isScalarLiteral = { { 1174 /* isScalarLiteral */, 1, 108, 1, 109, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSubjectCoveredAgainstConstant = { { 1190 /* isSubjectCoveredAgainstConstant */, 1, 110, 1, 111, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::IdenticalNarrowingHelper

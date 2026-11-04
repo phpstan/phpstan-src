@@ -156,7 +156,7 @@ class Baz
 		assertType('true', 1 == 1);
 		assertType('false', 1 == 0);
 
-		assertType('bool', $c == 'a');
+		assertType('false', $c == 'a');
 		assertType('bool', $c == 1);
 		assertType('bool', $c == 1.2);
 		assertType('true', 1.2 == 1.2);

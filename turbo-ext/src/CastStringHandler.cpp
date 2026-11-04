@@ -8,11 +8,12 @@
  * what the PHP closures capture: the typeCallback ($this, $expr, $exprResult
  * — InitializerExprTypeResolver::getCastType() of a string cast is its
  * operand's toString(), spelled out, so its $getTypeCallback is the operand
- * read in place) and the specifyTypesCallback ($beforeScope, $expr).
+ * read in place) and the specifyTypesCallback ($this, $beforeScope, $expr,
+ * $exprResult).
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
- * ImplicitToStringCallHelper, VariableFlow(Builder), SpecifiedTypes and the
- * Type kernel are called through their direct entries.
+ * ImplicitToStringCallHelper, DefaultNarrowingHelper, VariableFlow(Builder),
+ * SpecifiedTypes and the Type kernel are called through their direct entries.
  */
 
 #include "support.h"
@@ -44,11 +45,12 @@ public:
 	explicit CastStringHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *initializerExprTypeResolver, zval *implicitToStringCallHelper, zval *expressionResultFactory) const
+	void construct(zval *initializerExprTypeResolver, zval *implicitToStringCallHelper, zval *expressionResultFactory, zval *defaultNarrowingHelper) const
 	{
 		pt_write_slot(self, slots::initializerExprTypeResolver, initializerExprTypeResolver);
 		pt_write_slot(self, slots::implicitToStringCallHelper, implicitToStringCallHelper);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
+		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -107,7 +109,7 @@ public:
 		if (UNEXPECTED(!pt_expression_result_is_always_terminating(exprResult.raw(), isAlwaysTerminating))) return zv::Val();
 
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, exprResult.raw());
-		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, beforeScope, expr);
+		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, exprResult.raw());
 		zv::Val dependenciesHold;
 		zval *dependencies = pt_expression_result_dependencies(exprResult.raw(), dependenciesHold);
 		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
@@ -147,12 +149,11 @@ private:
 		type.intoReturnValue(return_value);
 	}
 
-	/* static fn (TypeSpecifierContext $context, bool $nativeTypesPromoted):
-	 * SpecifiedTypes => ($nativeTypesPromoted ?
-	 * $beforeScope->doNotTreatPhpDocTypesAsCertain() :
-	 * $beforeScope)->obtainResultForNode(new NotEqual($expr->expr, new
-	 * String_('')))->getSpecifiedTypes($context,
-	 * $nativeTypesPromoted)->setRootExpr($expr) — captures: $beforeScope, $expr */
+	/* function (TypeSpecifierContext $context, bool $nativeTypesPromoted):
+	 * SpecifiedTypes — the cast is falsy when it is '' or '0': the subject is
+	 * narrowed by the values whose cast can be (true context) or always is
+	 * (false context) falsy — captures: $this, $beforeScope, $expr,
+	 * $exprResult */
 	static void specifyTypesCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!ptse::requireArgs(argc, 2, closureName))) return;
@@ -160,26 +161,32 @@ private:
 		bool nativeTypesPromoted = zend_is_true(&argv[1]);
 		zv::Val types;
 		pt_engine_with_stack([&]() {
-			zval *beforeScope = &captures[0];
-			zval *expr = &captures[1];
+			zend_object *handler = Z_OBJ(captures[0]);
+			zval *beforeScope = &captures[1];
+			zval *expr = &captures[2];
+			zval *exprResult = &captures[3];
+			bool contextNull;
+			if (UNEXPECTED(!pt_type_specifier_context_null(Z_OBJ_P(context), contextNull))) return;
+			if (contextNull) {
+				types = pt_specified_types_new();
+				return;
+			}
+
+			zv::Val falsyContext = pt_type_specifier_context_negate(Z_OBJ_P(context));
+			if (UNEXPECTED(falsyContext.isUndef())) return;
+			bool falsyContextTrue;
+			if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(falsyContext.raw()), falsyContextTrue))) return;
+			using ptse::CastValue;
+			zv::Val falsyType = falsyContextTrue
+				? ptse::castValueUnion({ CastValue::Null, CastValue::False, CastValue::ZeroInt, CastValue::ZeroFloat, CastValue::EmptyString, CastValue::ZeroString, CastValue::Object })
+				: ptse::castValueUnion({ CastValue::Null, CastValue::False, CastValue::ZeroInt, CastValue::EmptyString, CastValue::ZeroString });
+			if (UNEXPECTED(falsyType.isUndef())) return;
+
 			zv::Val evaluationScope = nativeTypesPromoted ? pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(beforeScope)) : zv::Val::copyOf(zv::Ref(beforeScope));
 			if (UNEXPECTED(evaluationScope.isUndef())) return;
 			zval *inner = ptoh::operand(pt_csh_cast_expr, expr);
 			if (UNEXPECTED(inner == NULL)) return;
-			zval empty;
-			ZVAL_EMPTY_STRING(&empty);
-			zv::Val emptyString = pt_type_new(PT_CLASS_SCALAR_STRING, 1, &empty);
-			if (UNEXPECTED(emptyString.isUndef())) return;
-			zv::Args comparisonArgs{inner, emptyString.raw()};
-			zv::Val comparison = pt_type_new(PT_CLASS_NOT_EQUAL_EXPR, 2, comparisonArgs);
-			if (UNEXPECTED(comparison.isUndef())) return;
-			zv::Val result = pt_mutating_scope_obtain_result_for_node(Z_OBJ_P(evaluationScope.raw()), Z_OBJ_P(comparison.raw()));
-			if (UNEXPECTED(result.isUndef())) return;
-			if (UNEXPECTED(Z_TYPE_P(result.raw()) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function getSpecifiedTypes() on %s", zend_zval_value_name(result.raw()));
-				return;
-			}
-			zv::Val specified = pt_expression_result_get_specified_types(result.raw(), context, nativeTypesPromoted);
+			zv::Val specified = pt_default_narrowing_helper_create_subject_types(OBJ_PROP_NUM(handler, slots::defaultNarrowingHelper), evaluationScope.raw(), inner, exprResult, falsyType.raw(), falsyContext.raw());
 			if (UNEXPECTED(specified.isUndef())) return;
 			if (UNEXPECTED(Z_TYPE_P(specified.raw()) != IS_OBJECT)) {
 				zend_throw_error(NULL, "Call to a member function setRootExpr() on %s", zend_zval_value_name(specified.raw()));
@@ -209,9 +216,9 @@ PT_MINIT_REGISTRATION(pt_register_cast_string_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *initializerExprTypeResolver, *implicitToStringCallHelper, *expressionResultFactory;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, implicitToStringCallHelper, expressionResultFactory)) RETURN_THROWS();
-		CastStringHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, implicitToStringCallHelper, expressionResultFactory);
+		zval *initializerExprTypeResolver, *implicitToStringCallHelper, *expressionResultFactory, *defaultNarrowingHelper;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, implicitToStringCallHelper, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
+		CastStringHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, implicitToStringCallHelper, expressionResultFactory, defaultNarrowingHelper);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

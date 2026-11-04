@@ -606,6 +606,18 @@ interface Type
 	public function looseCompare(Type $type, PhpVersion $phpVersion): BooleanType;
 
 	/**
+	 * The values this type can be loosely equal to: `$this == $x` is false for any $x outside of it.
+	 * The true branch of a `==` narrows the other side by intersecting with it.
+	 */
+	public function getPossiblyLooselyEqualType(PhpVersion $phpVersion): Type;
+
+	/**
+	 * The values this type is always loosely equal to: `$this == $x` is true for any $x of it.
+	 * The false branch of a `==` narrows the other side by removing it.
+	 */
+	public function getAlwaysLooselyEqualType(PhpVersion $phpVersion): Type;
+
+	/**
 	 * Type narrowing methods for comparison operators.
 	 * For example, for ConstantIntegerType(5), getSmallerType() returns int<min, 4>.
 	 */

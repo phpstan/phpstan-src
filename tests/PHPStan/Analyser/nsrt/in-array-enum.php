@@ -37,10 +37,10 @@ class Foo
 	public function looseCheckEnumSpecifyNeedle(mixed $v): void
 	{
 		if (in_array($v, FooUnitEnum::cases())) {
-			assertType('InArrayEnum\FooUnitEnum::A|InArrayEnum\FooUnitEnum::B', $v);
+			assertType('InArrayEnum\FooUnitEnum::A|InArrayEnum\FooUnitEnum::B|true', $v);
 
 			if (in_array($v, ['A', null, FooUnitEnum::B])) {
-				assertType('InArrayEnum\FooUnitEnum::B', $v);
+				assertType('InArrayEnum\FooUnitEnum::B|true', $v);
 			}
 		}
 

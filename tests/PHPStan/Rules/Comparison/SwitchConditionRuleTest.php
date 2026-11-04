@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
@@ -30,7 +29,6 @@ class SwitchConditionRuleTest extends RuleTestCase
 				),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
 				self::getContainer()->getByType(ExprPrinter::class),
-				self::getContainer()->getByType(PhpVersion::class),
 				$this->treatPhpDocTypesAsCertain,
 			),
 			new ConstantConditionInTraitRule(),

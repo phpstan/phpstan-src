@@ -11,6 +11,7 @@ class ScopePhpVersionRangeReturnTypeExtensionsTest extends TypeInferenceTestCase
 	public static function dataFileAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/scope-php-version-range-return-type-extensions.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/loose-equality-php-version-range.php');
 	}
 
 	/**

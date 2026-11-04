@@ -144,7 +144,7 @@ parameters:
 			path: ../src/Diagnose/PHPStanDiagnoseExtension.php
 		- identifier: ternary.shortNotAllowed
 		-
-			# operators take the configured PHP version, like InitializerExprTypeResolver does;
+			# operators and loose comparisons take the configured PHP version, like InitializerExprTypeResolver does;
 			# not ignored inline because PHP 7.4 reads the class attribute as a comment,
 			# so the error is on a different line there
 			identifier: phpstan.phpVersionInjection

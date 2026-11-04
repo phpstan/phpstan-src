@@ -88,14 +88,14 @@ function doFoo(string $s, $a, $strings, $mixed) {
 	assertType('array<string>', $strings);
 
 	if (in_array($mixed, $strings, false)) {
-		assertType('array<string>', $strings);
+		assertType('non-empty-array<string>', $strings);
 	} else {
 		assertType("array<string>", $strings);
 	}
 	assertType('array<string>', $strings);
 
 	if (in_array($mixed, $strings)) {
-		assertType('array<string>', $strings);
+		assertType('non-empty-array<string>', $strings);
 	} else {
 		assertType("array<string>", $strings);
 	}

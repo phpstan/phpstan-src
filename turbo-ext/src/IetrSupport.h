@@ -122,6 +122,8 @@ inline constexpr Method mHasOffsetValueType{"hasOffsetValueType", PT_OP_HAS_OFFS
 inline constexpr Method mGetOffsetValueType{"getOffsetValueType", PT_OP_GET_OFFSET_VALUE_TYPE};
 inline constexpr Method mAppend{"append"};
 inline constexpr Method mLooseCompare{"looseCompare"};
+inline constexpr Method mGetPossiblyLooselyEqualType{"getPossiblyLooselyEqualType"};
+inline constexpr Method mGetAlwaysLooselyEqualType{"getAlwaysLooselyEqualType"};
 inline constexpr Method mGetReasons{"getReasons"};
 inline constexpr Method mIsSmallerThan{"isSmallerThan"};
 inline constexpr Method mIsSmallerThanOrEqual{"isSmallerThanOrEqual"};

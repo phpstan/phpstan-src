@@ -3,15 +3,14 @@
 namespace PHPStan\Analyser\ExprHandler;
 
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\Cast;
-use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
@@ -23,7 +22,14 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantFloatType;
+use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\NullType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 use function array_merge;
 
 /**
@@ -38,6 +44,7 @@ final class CastStringHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExpressionResultFactory $expressionResultFactory,
+		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -76,9 +83,39 @@ final class CastStringHandler implements ExprHandler
 
 					throw new ShouldNotHappenException();
 			}),
-			specifyTypesCallback: static fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => ($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope)->obtainResultForNode(
-				new NotEqual($expr->expr, new String_('')),
-			)->getSpecifiedTypes($context, $nativeTypesPromoted)->setRootExpr($expr),
+			specifyTypesCallback: function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $exprResult, $beforeScope): SpecifiedTypes {
+				if ($context->null()) {
+					return new SpecifiedTypes([], []);
+				}
+
+				// the cast is falsy when it is '' or '0', not only for the values loosely equal to ''
+				$falsyContext = $context->negate();
+				if ($falsyContext->true()) {
+					$falsyType = TypeCombinator::union(
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantIntegerType(0),
+						// -0.0 casts to '-0'
+						new ConstantFloatType(0.0),
+						new ConstantStringType(''),
+						new ConstantStringType('0'),
+						// a Stringable object casts to its string
+						new ObjectWithoutClassType(),
+					);
+				} else {
+					$falsyType = TypeCombinator::union(
+						new NullType(),
+						new ConstantBooleanType(false),
+						new ConstantIntegerType(0),
+						new ConstantStringType(''),
+						new ConstantStringType('0'),
+					);
+				}
+
+				$evaluationScope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
+
+				return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $expr->expr, $exprResult, $falsyType, $falsyContext)->setRootExpr($expr);
+			},
 			dependencies: $exprResult->getDependencies(),
 		);
 	}

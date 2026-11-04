@@ -891,7 +891,7 @@ final class BinaryOpHandler implements ExprHandler
 		$leftType = $leftResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 		$rightType = $rightResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 
-		return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType)->type;
+		return $this->initializerExprTypeResolver->resolveEqualType($leftType, $rightType, $scope->getPhpVersion())->type;
 	}
 
 	private function createRangeTypes(?Expr $rootExpr, Expr $expr, Type $type, TypeSpecifierContext $context): SpecifiedTypes

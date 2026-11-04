@@ -157,10 +157,10 @@ zv::Val resolveConcatType(zval *resolver, zval *left, zval *right)
 	return pt_initializer_expr_type_resolver_resolve_concat_type(resolver, left, right);
 }
 
-/* $initializerExprTypeResolver->resolveEqualType($leftType, $rightType) */
-zv::Val resolverEqualType(zval *resolver, zval *leftType, zval *rightType)
+/* $initializerExprTypeResolver->resolveEqualType($leftType, $rightType, $phpVersions) */
+zv::Val resolverEqualType(zval *resolver, zval *leftType, zval *rightType, zval *phpVersions)
 {
-	return pt_initializer_expr_type_resolver_resolve_equal_type(resolver, leftType, rightType);
+	return pt_initializer_expr_type_resolver_resolve_equal_type(resolver, leftType, rightType, phpVersions);
 }
 
 /* $initializerExprTypeResolver->get<Operator>Type($left, $right, $getType) of
@@ -648,7 +648,9 @@ public:
 		zv::Val rightType = pt_expression_result_get_type_on_scope(rightResult, scope, nativeTypesPromoted);
 		if (UNEXPECTED(rightType.isUndef())) return zv::Val();
 
-		zv::Val typeResult = resolverEqualType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), leftType.raw(), rightType.raw());
+		zv::Val phpVersions = pt_type_call(Z_OBJ_P(scope), PT_LC("getphpversion"), 0, NULL);
+		if (UNEXPECTED(phpVersions.isUndef())) return zv::Val();
+		zv::Val typeResult = resolverEqualType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), leftType.raw(), rightType.raw(), phpVersions.raw());
 		if (UNEXPECTED(typeResult.isUndef())) return zv::Val();
 		return typeResultType(typeResult.raw());
 	}

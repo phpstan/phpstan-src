@@ -14,6 +14,7 @@ inline constexpr uint32_t capturedResults = 0;
 inline constexpr uint32_t expressionResultFactory = 1;
 inline constexpr uint32_t defaultNarrowingHelper = 2;
 inline constexpr uint32_t booleanNarrowingHelper = 3;
+inline constexpr uint32_t treatPhpDocTypesAsCertain = 4;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -29,6 +30,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
 	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 	cls.property("booleanNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\BooleanNarrowingHelper");
+	cls.property("treatPhpDocTypesAsCertain", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -42,57 +44,59 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 112 */
 	"booleanNarrowingHelper\0" /* 171 */
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\BooleanNarrowingHelper\0" /* 194 */
-	"__construct\0" /* 253 */
-	"expr\0" /* 265 */
-	"PhpParser\\Node\\Expr\0" /* 270 */
-	"supports\0" /* 290 */
-	"PhpParser\\Node\\Expr\\Ternary\0" /* 299 */
-	"getCapturedResults\0" /* 327 */
-	"nodeScopeResolver\0" /* 346 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 364 */
-	"stmt\0" /* 399 */
-	"PhpParser\\Node\\Stmt\0" /* 404 */
-	"scope\0" /* 424 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 430 */
-	"storage\0" /* 461 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 469 */
-	"nodeCallback\0" /* 510 */
-	"context\0" /* 523 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 531 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 566 */
-	"processExpr\0" /* 600 */
-	"isDisjunction\0" /* 612 */
-	"armExpr\0" /* 626 */
-	"armResult\0" /* 634 */
-	"processingScope\0" /* 644 */
-	"evaluatedScope\0" /* 660 */
-	"armContext\0" /* 675 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 686 */
-	"createArmOperand"; /* 724 */
+	"treatPhpDocTypesAsCertain\0" /* 253 */
+	"__construct\0" /* 279 */
+	"expr\0" /* 291 */
+	"PhpParser\\Node\\Expr\0" /* 296 */
+	"supports\0" /* 316 */
+	"PhpParser\\Node\\Expr\\Ternary\0" /* 325 */
+	"getCapturedResults\0" /* 353 */
+	"nodeScopeResolver\0" /* 372 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 390 */
+	"stmt\0" /* 425 */
+	"PhpParser\\Node\\Stmt\0" /* 430 */
+	"scope\0" /* 450 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 456 */
+	"storage\0" /* 487 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 495 */
+	"nodeCallback\0" /* 536 */
+	"context\0" /* 549 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 557 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 592 */
+	"processExpr\0" /* 626 */
+	"isDisjunction\0" /* 638 */
+	"armExpr\0" /* 652 */
+	"armResult\0" /* 660 */
+	"processingScope\0" /* 670 */
+	"evaluatedScope\0" /* 686 */
+	"armContext\0" /* 701 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 712 */
+	"createArmOperand"; /* 750 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_VOID), /* resetFileAnalysisState return */
 	reg::packed(24, 0, 48), /* __construct $expressionResultFactory */
 	reg::packed(89, 0, 112), /* __construct $defaultNarrowingHelper */
 	reg::packed(171, 0, 194), /* __construct $booleanNarrowingHelper */
-	reg::packed(265, 0, 270), /* supports $expr */
+	reg::packed(253, MAY_BE_BOOL), /* __construct $treatPhpDocTypesAsCertain */
+	reg::packed(291, 0, 296), /* supports $expr */
 	reg::packed(0, MAY_BE_BOOL), /* supports return */
-	reg::packed(265, 0, 299), /* getCapturedResults $expr */
+	reg::packed(291, 0, 325), /* getCapturedResults $expr */
 	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY), /* getCapturedResults return */
-	reg::packed(346, 0, 364), /* processExpr $nodeScopeResolver */
-	reg::packed(399, 0, 404), /* processExpr $stmt */
-	reg::packed(265, 0, 270), /* processExpr $expr */
-	reg::packed(424, 0, 430), /* processExpr $scope */
-	reg::packed(461, 0, 469), /* processExpr $storage */
-	reg::packed(510, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(523, 0, 531), /* processExpr $context */
-	reg::packed(0, 0, 566), /* processExpr return */
-	reg::packed(265, 0, 270), /* isDisjunction $expr */
+	reg::packed(372, 0, 390), /* processExpr $nodeScopeResolver */
+	reg::packed(425, 0, 430), /* processExpr $stmt */
+	reg::packed(291, 0, 296), /* processExpr $expr */
+	reg::packed(450, 0, 456), /* processExpr $scope */
+	reg::packed(487, 0, 495), /* processExpr $storage */
+	reg::packed(536, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(549, 0, 557), /* processExpr $context */
+	reg::packed(0, 0, 592), /* processExpr return */
+	reg::packed(291, 0, 296), /* isDisjunction $expr */
 	reg::packed(0, MAY_BE_BOOL), /* isDisjunction return */
-	reg::packed(626, 0, 270), /* createArmOperand $armExpr */
-	reg::packed(634, 0, 566), /* createArmOperand $armResult */
-	reg::packed(644, 0, 430), /* createArmOperand $processingScope */
-	reg::packed(660, 0, 430), /* createArmOperand $evaluatedScope */
-	reg::packed(675, MAY_BE_NULL, 686), /* createArmOperand $armContext */
+	reg::packed(652, 0, 296), /* createArmOperand $armExpr */
+	reg::packed(660, 0, 592), /* createArmOperand $armResult */
+	reg::packed(670, 0, 456), /* createArmOperand $processingScope */
+	reg::packed(686, 0, 456), /* createArmOperand $evaluatedScope */
+	reg::packed(701, MAY_BE_NULL, 712), /* createArmOperand $armContext */
 	reg::packed(0, MAY_BE_ARRAY), /* createArmOperand return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -101,12 +105,12 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig resetFileAnalysisState = { { 1 /* resetFileAnalysisState */, 0, 0, 0, 0, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig __construct = { { 253 /* __construct */, 3, 1, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 290 /* supports */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCapturedResults = { { 327 /* getCapturedResults */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 600 /* processExpr */, 7, 8, 7, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isDisjunction = { { 612 /* isDisjunction */, 1, 16, 1, 17, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig createArmOperand = { { 724 /* createArmOperand */, 5, 18, 5, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 279 /* __construct */, 4, 1, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 316 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCapturedResults = { { 353 /* getCapturedResults */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 626 /* processExpr */, 7, 9, 7, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDisjunction = { { 638 /* isDisjunction */, 1, 17, 1, 18, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createArmOperand = { { 750 /* createArmOperand */, 5, 19, 5, 24, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TernaryHandler

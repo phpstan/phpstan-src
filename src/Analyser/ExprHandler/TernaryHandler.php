@@ -21,6 +21,7 @@ use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
@@ -59,6 +60,8 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 		private ExpressionResultFactory $expressionResultFactory,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private BooleanNarrowingHelper $booleanNarrowingHelper,
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
@@ -122,7 +125,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 			$this->capturedResults[spl_object_id($expr)] = [$expr, $ternaryCondResult, $ifResult, $elseResult];
 		}
 
-		$condType = $ternaryCondResult->getType();
+		$condType = $this->treatPhpDocTypesAsCertain ? $ternaryCondResult->getType() : $ternaryCondResult->getNativeType();
 		if ($condType->isTrue()->yes()) {
 			$finalScope = $ifTrueScope;
 		} elseif ($condType->isFalse()->yes()) {

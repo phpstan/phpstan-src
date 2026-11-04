@@ -42,7 +42,7 @@ use const DIRECTORY_SEPARATOR;
  * walk between the two - both happen before the analysis starts, on a file set that is snapshotted
  * for the whole run anyway.
  *
- * FileMonitor detects changes by re-running the finder and must see the filesystem as it is now,
+ * HashingFileMonitor detects changes by re-running the finder and must see the filesystem as it is now,
  * so it walks uncached and clears the shared walks before each check.
  *
  * Reading the directories is what a walk costs - on a tree the size of Drupal core (28k directories)

@@ -37,6 +37,10 @@ if (PHP_VERSION_ID >= 80400) {
 	$includes[] = __DIR__ . '/deprecated-8.4.neon';
 }
 
+if (PHP_VERSION_ID < 80000 || PHP_VERSION_ID >= 80400) {
+	$includes[] = __DIR__ . '/ffi-new-not-nullable.neon';
+}
+
 if (PHP_VERSION_ID < 80200) {
 	$includes[] = __DIR__ . '/old-phpunit.neon';
 } else {

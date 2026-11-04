@@ -267,6 +267,17 @@ zv::Val pt_integer_range_create_all_greater_than_or_equal_to(zval *value);
 /* $type->getValue() of a ConstantIntegerType instance, the same way
  * (ConstantIntegerType.cpp); false = pending exception */
 [[nodiscard]] bool pt_constant_integer_get_value(zend_object *object, zend_long &out);
+/* $type->getValue() of a ConstantFloatType instance, the same way, and its
+ * castFloatToString() — the precise description of the value
+ * (ConstantFloatType.cpp); false / UNDEF = pending exception */
+[[nodiscard]] bool pt_constant_float_get_value(zend_object *object, double &out);
+zv::Val pt_constant_float_cast_to_string(double value);
+/* $range->getMin() / $range->getMax() of a FloatRangeType instance, the
+ * same way as pt_integer_range_bounds() (FloatRangeType.cpp); false =
+ * pending exception */
+[[nodiscard]] bool pt_float_range_bounds(zend_object *range, double &min, double &max);
+/* FloatRangeType::fromInterval($min, $max); UNDEF = pending exception */
+zv::Val pt_float_range_from_interval(double min, double max);
 
 /* the bodies of IntegerType::looseCompare() and IntegerType::arithmeticPower()
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending

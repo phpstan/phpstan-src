@@ -95,6 +95,10 @@ final class UnionTypeHelper
 				return -1;
 			}
 
+			if ($a instanceof FloatRangeType && $b instanceof FloatRangeType) {
+				return $a->getMin() <=> $b->getMin();
+			}
+
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {
 				return self::compareStrings($a->getValue(), $b->getValue());
 			}

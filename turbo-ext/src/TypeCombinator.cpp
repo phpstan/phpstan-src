@@ -1040,6 +1040,7 @@ public:
 		bool hasGenericString = false;
 		zv::Arr enumCaseTypesMap = zv::Arr::create(0);
 		TypeList integerRangeTypes;
+		TypeList floatRangeTypes;
 		TypeList remaining;
 		Level cacheLevel(PT_LC("cache"));
 		for (size_t i = 0; i < typesCount; i++) {
@@ -1105,6 +1106,11 @@ public:
 				continue;
 			}
 
+			if (isInstance(type, pt_ce_float_range_type)) {
+				floatRangeTypes.push_back(copy(type));
+				continue;
+			}
+
 			zend_long isArray = callTrinary(type, PT_LC("isarray"));
 			PT_FAIL_IF_NEG(isArray);
 			if (isArray != PT_TRI_YES) {
@@ -1118,8 +1124,12 @@ public:
 		TypeList enumCaseTypes;
 		listFrom(enumCaseTypesMap.raw(), enumCaseTypes);
 		if (UNEXPECTED(!usortList(integerRangeTypes, compareIntegerRanges))) return zv::Val();
+		if (UNEXPECTED(!usortList(floatRangeTypes, compareFloatRanges))) return zv::Val();
 		types = std::move(remaining);
 		for (zv::Val &rangeType : integerRangeTypes) {
+			types.push_back(std::move(rangeType));
+		}
+		for (zv::Val &rangeType : floatRangeTypes) {
 			types.push_back(std::move(rangeType));
 		}
 		typesCount = types.size();
@@ -1401,6 +1411,20 @@ public:
 		return 0;
 	}
 
+	/* the float range comparator of doUnion(): $a->getMin() <=> $b->getMin()
+	 * ?: $a->getMax() <=> $b->getMax() — a range holds no NAN bound */
+	static int compareFloatRanges(zval *a, zval *b)
+	{
+		double aMin, aMax, bMin, bMax;
+		if (UNEXPECTED(!pt_float_range_bounds(Z_OBJ_P(a), aMin, aMax) || !pt_float_range_bounds(Z_OBJ_P(b), bMin, bMax))) {
+			sortFailed = true;
+			return 0;
+		}
+		if (aMin != bMin) return aMin < bMin ? -1 : 1;
+		if (aMax != bMax) return aMax < bMax ? -1 : 1;
+		return 0;
+	}
+
 	/* private static isAlreadyNormalized(array $alreadyNormalized, Type $a, Type $b): bool */
 	static bool isAlreadyNormalized(std::vector<zv::Val> &alreadyNormalized, zval *a, zval *b)
 	{
@@ -1440,6 +1464,23 @@ public:
 			}
 		}
 		if (isInstance(a, pt_ce_integer_range_type) && isInstance(b, pt_ce_integer_range_type)) return 0;
+		if (isInstance(a, pt_ce_float_range_type)) {
+			zv::Val type = call(a, PT_LC("tryunion"), 1, b);
+			if (UNEXPECTED(type.isUndef())) return -1;
+			if (!isNull(type)) {
+				merged = std::move(type);
+				return 1;
+			}
+		}
+		if (isInstance(b, pt_ce_float_range_type)) {
+			zv::Val type = call(b, PT_LC("tryunion"), 1, a);
+			if (UNEXPECTED(type.isUndef())) return -1;
+			if (!isNull(type)) {
+				merged = std::move(type);
+				return 2;
+			}
+		}
+		if (isInstance(a, pt_ce_float_range_type) && isInstance(b, pt_ce_float_range_type)) return 0;
 		if (isInstance(a, pt_ce_has_offset_value_type) && isInstance(b, pt_ce_has_offset_value_type)) {
 			zv::Val aOffset = pt_has_offset_value_type_get_offset_type(Z_OBJ_P(a));
 			zv::Val bOffset = pt_has_offset_value_type_get_offset_type(Z_OBJ_P(b));
@@ -3617,7 +3658,7 @@ public:
 					}
 				}
 
-				if (isInstance(types[i].raw(), pt_ce_integer_range_type)) {
+				if (isInstance(types[i].raw(), pt_ce_integer_range_type) || isInstance(types[i].raw(), pt_ce_float_range_type)) {
 					zv::Val intersectionType = call(types[i].raw(), PT_LC("tryintersect"), 1, types[j].raw());
 					PT_FAIL_IF_UNDEF(intersectionType);
 					if (!isNull(intersectionType)) {

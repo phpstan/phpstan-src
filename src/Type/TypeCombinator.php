@@ -419,6 +419,7 @@ final class TypeCombinator
 		$hasGenericScalarTypes = [];
 		$enumCaseTypes = [];
 		$integerRangeTypes = [];
+		$floatRangeTypes = [];
 		for ($i = 0; $i < $typesCount; $i++) {
 			if ($types[$i]->isConstantScalarValue()->yes()) {
 				$type = $types[$i];
@@ -460,6 +461,13 @@ final class TypeCombinator
 				continue;
 			}
 
+			if ($types[$i] instanceof FloatRangeType) {
+				$floatRangeTypes[] = $types[$i];
+				unset($types[$i]);
+
+				continue;
+			}
+
 			if (!$types[$i]->isArray()->yes()) {
 				continue;
 			}
@@ -474,9 +482,13 @@ final class TypeCombinator
 			static fn (IntegerRangeType $a, IntegerRangeType $b): int => ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN)
 				?: ($a->getMax() ?? PHP_INT_MAX) <=> ($b->getMax() ?? PHP_INT_MAX),
 		);
+		usort(
+			$floatRangeTypes,
+			static fn (FloatRangeType $a, FloatRangeType $b): int => $a->getMin() <=> $b->getMin() ?: $a->getMax() <=> $b->getMax(),
+		);
 		// array_merge() hands the first array back as it is when the second one
 		// is empty, so the keys the bucketing above unset must be renumbered here
-		$types = array_merge(array_values($types), $integerRangeTypes);
+		$types = array_merge(array_values($types), $integerRangeTypes, $floatRangeTypes);
 		$typesCount = count($types);
 
 		if (isset($scalarTypes[IntersectionType::class])) {
@@ -780,6 +792,21 @@ final class TypeCombinator
 			}
 		}
 		if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
+			return null;
+		}
+		if ($a instanceof FloatRangeType) {
+			$type = $a->tryUnion($b);
+			if ($type !== null) {
+				return [$type, null];
+			}
+		}
+		if ($b instanceof FloatRangeType) {
+			$type = $b->tryUnion($a);
+			if ($type !== null) {
+				return [null, $type];
+			}
+		}
+		if ($a instanceof FloatRangeType && $b instanceof FloatRangeType) {
 			return null;
 		}
 		if ($a instanceof HasOffsetValueType && $b instanceof HasOffsetValueType) {
@@ -2198,7 +2225,7 @@ final class TypeCombinator
 					}
 				}
 
-				if ($types[$i] instanceof IntegerRangeType) {
+				if ($types[$i] instanceof IntegerRangeType || $types[$i] instanceof FloatRangeType) {
 					$intersectionType = $types[$i]->tryIntersect($types[$j]);
 					if ($intersectionType !== null) {
 						$types[$j] = $intersectionType;

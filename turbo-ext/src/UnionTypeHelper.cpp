@@ -13,6 +13,7 @@
  *
  * The shadowed classes the comparator tests (NullType, ConstantBooleanType,
  * ConstantIntegerType, ConstantFloatType, IntegerRangeType, IntegerType,
+ * FloatRangeType,
  * ConstantStringType, EnumCaseObjectType, CallableType, ClosureType) are
  * tested through the class entries the native code holds; the PHP
  * interfaces (AccessoryType, ConstantScalarType) through the class map.
@@ -186,6 +187,14 @@ private:
 
 		if (bRange && instanceof_function(a->ce, pt_ce_integer_type)) {
 			out = -1;
+			return true;
+		}
+
+		if (instanceof_function(a->ce, pt_ce_float_range_type) && instanceof_function(b->ce, pt_ce_float_range_type)) {
+			/* $a->getMin() <=> $b->getMin() */
+			double aMin, aMax, bMin, bMax;
+			if (UNEXPECTED(!pt_float_range_bounds(a, aMin, aMax) || !pt_float_range_bounds(b, bMin, bMax))) return false;
+			out = ZEND_THREEWAY_COMPARE(aMin, bMin);
 			return true;
 		}
 

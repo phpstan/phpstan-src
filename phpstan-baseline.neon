@@ -1037,6 +1037,12 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\FloatType is error-prone and deprecated. Use Type::isFloat() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
+			path: src/Type/FloatRangeType.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\FloatType is error-prone and deprecated. Use Type::isFloat() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 2
 			path: src/Type/FloatType.php
 
 		-

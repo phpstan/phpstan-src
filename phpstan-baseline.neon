@@ -1508,12 +1508,6 @@ parameters:
 			path: src/Type/OperatorTypeHelper.php
 
 		-
-			rawMessage: PHPDoc tag @var with type float|int is not subtype of native type int.
-			identifier: varTag.nativeType
-			count: 1
-			path: src/Type/OperatorTypeHelper.php
-
-		-
 			rawMessage: Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.
 			identifier: phpstanApi.runtimeReflection
 			count: 1

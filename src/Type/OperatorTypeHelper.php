@@ -17,23 +17,13 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
-use function abs;
 use function array_merge;
 use function count;
 use function in_array;
-use function intdiv;
-use function is_float;
-use function is_infinite;
 use function is_int;
 use function is_numeric;
-use function max;
-use function min;
-use const INF;
-use const PHP_INT_MAX;
-use const PHP_INT_MIN;
 
 /**
  * The operators of Type::arithmetic*(), Type::bitwise*(), Type::stringConcatenate() and
@@ -236,12 +226,9 @@ final class OperatorTypeHelper
 			return new ErrorType();
 		}
 
-		$bitwiseAndRange = self::computeBitwiseAndRange($leftNumberType, $rightNumberType);
-		if ($bitwiseAndRange !== null) {
-			return $bitwiseAndRange;
-		}
+		$anyInteger = new NumberSet([[null, null]], [], false);
 
-		return new IntegerType();
+		return ($leftNumberType->toNumberSet() ?? $anyInteger)->bitwiseAnd($rightNumberType->toNumberSet() ?? $anyInteger, $phpVersion);
 	}
 
 	public static function bitwiseOr(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -289,12 +276,9 @@ final class OperatorTypeHelper
 			return new ErrorType();
 		}
 
-		$bitwiseOrRange = self::computeBitwiseOrXorRange($leftNumberType, $rightNumberType);
-		if ($bitwiseOrRange !== null) {
-			return $bitwiseOrRange;
-		}
+		$anyInteger = new NumberSet([[null, null]], [], false);
 
-		return new IntegerType();
+		return ($leftNumberType->toNumberSet() ?? $anyInteger)->bitwiseOr($rightNumberType->toNumberSet() ?? $anyInteger, $phpVersion);
 	}
 
 	public static function bitwiseXor(Type $leftType, Type $rightType, PhpVersion $phpVersion): Type
@@ -342,12 +326,9 @@ final class OperatorTypeHelper
 			return new ErrorType();
 		}
 
-		$bitwiseXorRange = self::computeBitwiseOrXorRange($leftNumberType, $rightNumberType);
-		if ($bitwiseXorRange !== null) {
-			return $bitwiseXorRange;
-		}
+		$anyInteger = new NumberSet([[null, null]], [], false);
 
-		return new IntegerType();
+		return ($leftNumberType->toNumberSet() ?? $anyInteger)->bitwiseXor($rightNumberType->toNumberSet() ?? $anyInteger, $phpVersion);
 	}
 
 	/**
@@ -535,100 +516,11 @@ final class OperatorTypeHelper
 			}
 		}
 
-		$maxMagnitude = null;
-		$divisorBounds = self::getIntegerBounds($rightType->toInteger());
-		if ($divisorBounds !== null) {
-			$maxMagnitude = self::getMaxModuloMagnitude($divisorBounds[0], $divisorBounds[1]);
-		}
+		$anyInteger = new NumberSet([[null, null]], [], false);
+		$leftNumbers = self::getIntegerNumberSet($leftType->toInteger()) ?? $anyInteger;
+		$rightNumbers = self::getIntegerNumberSet($rightType->toInteger()) ?? $anyInteger;
 
-		[$leftMin, $leftMax] = self::getIntegerBounds($leftType->toInteger()) ?? [null, null];
-		if ($leftMin === null && IntegerRangeType::fromInterval(0, null)->isSuperTypeOf($leftType)->yes()) {
-			$leftMin = 0;
-		}
-		if ($leftMax === null && IntegerRangeType::fromInterval(null, 0)->isSuperTypeOf($leftType)->yes()) {
-			$leftMax = 0;
-		}
-
-		// The result has the sign of the dividend and is never bigger in magnitude than either
-		// the dividend or the largest magnitude the divisor can have.
-		if ($leftMax !== null && $leftMax <= 0) {
-			$rangeMax = 0;
-		} elseif ($maxMagnitude === null) {
-			$rangeMax = $leftMax;
-		} elseif ($leftMax === null) {
-			$rangeMax = $maxMagnitude;
-		} else {
-			$rangeMax = min($leftMax, $maxMagnitude);
-		}
-
-		if ($leftMin !== null && $leftMin >= 0) {
-			$rangeMin = 0;
-		} elseif ($maxMagnitude === null) {
-			$rangeMin = $leftMin;
-		} elseif ($leftMin === null) {
-			$rangeMin = -$maxMagnitude;
-		} else {
-			$rangeMin = max($leftMin, -$maxMagnitude);
-		}
-
-		return IntegerRangeType::fromInterval($rangeMin, $rangeMax);
-	}
-
-	/**
-	 * Highest possible absolute value of `$x % $divisor`, which is one less than the largest
-	 * possible absolute value of the divisor. Null when there is no such bound.
-	 *
-	 * A divisor reaching PHP_INT_MIN is reported as unbounded too: `abs(PHP_INT_MIN)` does not
-	 * fit into an integer, and the bound it stands for is PHP_INT_MAX, which is all an unbounded
-	 * result can hold anyway.
-	 */
-	private static function getMaxModuloMagnitude(?int $divisorMin, ?int $divisorMax): ?int
-	{
-		if ($divisorMin === null || $divisorMax === null || $divisorMin === PHP_INT_MIN) {
-			return null;
-		}
-
-		$magnitude = max(abs($divisorMin), abs($divisorMax));
-		if ($magnitude === 0) {
-			return null;
-		}
-
-		return $magnitude - 1;
-	}
-
-	/**
-	 * @return array{int|null, int|null}|null Lowest and highest value the type can hold, with null
-	 * for an unbounded side. Null when the type holds anything but integers.
-	 */
-	private static function getIntegerBounds(Type $type): ?array
-	{
-		$intervals = self::getIntegerIntervals($type);
-		if ($intervals === null) {
-			return null;
-		}
-
-		$min = null;
-		$max = null;
-		$unboundedMin = false;
-		$unboundedMax = false;
-		foreach ($intervals as [$innerMin, $innerMax]) {
-			if ($innerMin === null) {
-				$unboundedMin = true;
-			} elseif ($min === null || $innerMin < $min) {
-				$min = $innerMin;
-			}
-
-			if ($innerMax === null) {
-				$unboundedMax = true;
-			} elseif ($max === null || $innerMax > $max) {
-				$max = $innerMax;
-			}
-		}
-
-		return [
-			$unboundedMin ? null : $min,
-			$unboundedMax ? null : $max,
-		];
+		return $leftNumbers->modulo($rightNumbers, $phpVersion);
 	}
 
 	/**
@@ -1120,88 +1012,6 @@ final class OperatorTypeHelper
 	}
 
 	/**
-	 * @return array{int, int|null}|null [min, max] of a type known to be a non-negative integer,
-	 * with a null max when it has no finite upper bound. Null when the type is not known
-	 * to be a non-negative integer.
-	 */
-	private static function getNonNegativeIntegerBounds(Type $type): ?array
-	{
-		$intervals = self::getIntegerIntervals($type);
-		if ($intervals === null || count($intervals) !== 1) {
-			return null;
-		}
-
-		[$min, $max] = $intervals[0];
-		if ($min === null || $min < 0) {
-			return null;
-		}
-
-		return [$min, $max];
-	}
-
-	/**
-	 * Expects the operands already converted with toNumber().
-	 *
-	 * A single non-negative operand is enough to bound the result: the result's bits
-	 * are a subset of that operand's bits, so it stays within int<0, thatMax>.
-	 * With no finite max on any non-negative side the result is still int<0, max>.
-	 */
-	private static function computeBitwiseAndRange(Type $leftNumberType, Type $rightNumberType): ?Type
-	{
-		$leftBounds = self::getNonNegativeIntegerBounds($leftNumberType);
-		$rightBounds = self::getNonNegativeIntegerBounds($rightNumberType);
-		if ($leftBounds === null && $rightBounds === null) {
-			return null;
-		}
-
-		$maxValues = [];
-		if ($leftBounds !== null && $leftBounds[1] !== null) {
-			$maxValues[] = $leftBounds[1];
-		}
-		if ($rightBounds !== null && $rightBounds[1] !== null) {
-			$maxValues[] = $rightBounds[1];
-		}
-
-		return IntegerRangeType::fromInterval(0, $maxValues === [] ? null : min($maxValues));
-	}
-
-	/**
-	 * Expects the operands already converted with toNumber().
-	 *
-	 * Both operands have to be non-negative: they keep the sign bit of the result clear.
-	 * Without a finite max on either side the result is still int<0, max>.
-	 */
-	private static function computeBitwiseOrXorRange(Type $leftNumberType, Type $rightNumberType): ?Type
-	{
-		$leftBounds = self::getNonNegativeIntegerBounds($leftNumberType);
-		$rightBounds = self::getNonNegativeIntegerBounds($rightNumberType);
-		if ($leftBounds === null || $rightBounds === null) {
-			return null;
-		}
-		if ($leftBounds[1] === null || $rightBounds[1] === null) {
-			return IntegerRangeType::fromInterval(0, null);
-		}
-
-		return IntegerRangeType::fromInterval(0, self::allBitsMask(max($leftBounds[1], $rightBounds[1])));
-	}
-
-	/**
-	 * Propagates the highest set bit of a non-negative value into all lower bits:
-	 * 200 becomes 255, 10 becomes 15.
-	 */
-	private static function allBitsMask(int $value): int
-	{
-		$value |= $value >> 1;
-		$value |= $value >> 2;
-		$value |= $value >> 4;
-		$value |= $value >> 8;
-		$value |= $value >> 16;
-		$value |= $value >> 32;
-
-		return $value;
-	}
-
-	/**
 	 * @param '+'|'-'|'*'|'/'|'<<'|'>>' $operator
 	 */
 	/**
@@ -1288,34 +1098,6 @@ final class OperatorTypeHelper
 		return $resultType;
 	}
 
-	private static function negateNumber(Type $type): Type
-	{
-		$type = $type->toNumber();
-		$scalarValues = $type->getConstantScalarValues();
-
-		if (count($scalarValues) > 0) {
-			$newTypes = [];
-			foreach ($scalarValues as $scalarValue) {
-				if (is_int($scalarValue)) {
-					/** @var int|float $newValue */
-					$newValue = -$scalarValue;
-					if (!is_int($newValue)) {
-						// Negating the smallest integer overflows into a float.
-						$newTypes[] = new ConstantFloatType($newValue);
-						continue;
-					}
-					$newTypes[] = new ConstantIntegerType($newValue);
-				} elseif (is_float($scalarValue)) {
-					$newTypes[] = new ConstantFloatType(-$scalarValue);
-				}
-			}
-
-			return TypeCombinator::union(...$newTypes);
-		}
-
-		return $type;
-	}
-
 	/**
 	 * The integer a constant operand of %, <<, >>, &, | and ^ becomes: numeric
 	 * strings out of the int range saturate like an (int) cast instead of
@@ -1353,126 +1135,40 @@ final class OperatorTypeHelper
 
 	public static function negate(Type $type, PhpVersion $phpVersion): Type
 	{
-		// each member negates on its own: -(int<1, 5>|1.5) is int<-5, -1>|-1.5
 		$number = $type->toNumber();
-		if ($number instanceof UnionType) {
-			$negatedTypes = [];
-			foreach ($number->getTypes() as $innerType) {
-				$negatedTypes[] = self::negate($innerType, $phpVersion);
-			}
-
-			$negated = TypeCombinator::union(...$negatedTypes);
-			if ($number instanceof BenevolentUnionType) {
-				return TypeUtils::toBenevolentUnion($negated);
-			}
-
-			return $negated;
+		$numberSet = $number->toNumberSet();
+		if ($numberSet === null) {
+			return $number;
 		}
 
-		$negated = self::negateNumber($type);
-		if ($negated instanceof IntegerRangeType) {
-			return self::multiply($type, new ConstantIntegerType(-1), $phpVersion);
-		}
-		if ($negated instanceof FloatRangeType) {
-			return FloatRangeType::fromInterval(-$negated->getMax(), -$negated->getMin());
+		$negated = $numberSet->negate($phpVersion);
+		if ($number instanceof BenevolentUnionType) {
+			return TypeUtils::toBenevolentUnion($negated);
 		}
 
 		return $negated;
 	}
 
-	/**
-	 * The divisor's negative and positive parts are divided separately (dividing by zero throws),
-	 * each at the corners of the operand ranges: truncated division is monotonic in both operands
-	 * as long as the divisor keeps its sign.
-	 */
 	public static function intDivide(Type $numeratorType, Type $divisorType, PhpVersion $phpVersion): Type
 	{
-		$numeratorIntervals = self::getIntervals($numeratorType->toInteger());
-		$divisorIntervals = self::getIntervals($divisorType->toInteger());
-		if ($numeratorIntervals === null || $divisorIntervals === null) {
+		$numerator = self::getIntegerNumberSet($numeratorType->toInteger());
+		$divisor = self::getIntegerNumberSet($divisorType->toInteger());
+		if ($numerator === null || $divisor === null) {
 			return new ErrorType();
 		}
 
-		$resultTypes = [];
-		foreach ($numeratorIntervals as [$numeratorMin, $numeratorMax]) {
-			foreach ($divisorIntervals as [$divisorMin, $divisorMax]) {
-				if ($divisorMin < 0) {
-					$resultTypes[] = self::divideIntervals($numeratorMin, $numeratorMax, $divisorMin, min($divisorMax, -1));
-				}
-				if ($divisorMax <= 0) {
-					continue;
-				}
-
-				$resultTypes[] = self::divideIntervals($numeratorMin, $numeratorMax, max($divisorMin, 1), $divisorMax);
-			}
-		}
-
-		if (count($resultTypes) === 0) {
-			return new ErrorType();
-		}
-
-		return TypeCombinator::union(...$resultTypes);
+		return $numerator->intDivide($divisor, $phpVersion);
 	}
 
-	/**
-	 * Unbounded ends are represented by -INF and INF.
-	 *
-	 * @return list<array{int|float, int|float}>|null
-	 */
-	private static function getIntervals(Type $type): ?array
+	/** The numbers of a type that holds integers and nothing else, or null. */
+	private static function getIntegerNumberSet(Type $type): ?NumberSet
 	{
-		$integerIntervals = self::getIntegerIntervals($type);
-		if ($integerIntervals === null) {
-			return $type->isInteger()->yes() ? [[-INF, INF]] : null;
+		$intervals = self::getIntegerIntervals($type);
+		if ($intervals === null) {
+			return $type->isInteger()->yes() ? new NumberSet([[null, null]], [], false) : null;
 		}
 
-		$intervals = [];
-		foreach ($integerIntervals as [$min, $max]) {
-			$intervals[] = [$min ?? -INF, $max ?? INF];
-		}
-
-		return $intervals;
-	}
-
-	private static function divideIntervals(int|float $numeratorMin, int|float $numeratorMax, int|float $divisorMin, int|float $divisorMax): Type
-	{
-		$results = [];
-		foreach ([$numeratorMin, $numeratorMax] as $numerator) {
-			foreach ([$divisorMin, $divisorMax] as $divisor) {
-				$results[] = self::divideBounds($numerator, $divisor);
-			}
-		}
-
-		$min = min($results);
-		$max = max($results);
-
-		return IntegerRangeType::fromInterval(
-			is_infinite($min) ? null : (int) $min,
-			is_infinite($max) ? null : (int) $max,
-		);
-	}
-
-	private static function divideBounds(int|float $numerator, int|float $divisor): int|float
-	{
-		if (is_infinite($numerator)) {
-			if (is_infinite($divisor)) {
-				// the range already contains 0 through a neighbouring corner
-				return 0;
-			}
-
-			return ($numerator > 0) === ($divisor > 0) ? INF : -INF;
-		}
-
-		if (is_infinite($divisor)) {
-			return 0;
-		}
-
-		if ($numerator === PHP_INT_MIN && $divisor === -1) {
-			// throws ArithmeticError, the closest valid result is intdiv(PHP_INT_MIN + 1, -1)
-			return PHP_INT_MAX;
-		}
-
-		return intdiv((int) $numerator, (int) $divisor);
+		return new NumberSet($intervals, [], false);
 	}
 
 }

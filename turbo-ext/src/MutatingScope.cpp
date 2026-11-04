@@ -7713,20 +7713,104 @@ public:
 					zend_throw_error(NULL, "phpstan_turbo: IssetExpr::getExpr() did not answer with an object");
 					return zv::Val();
 				}
+				zv::Val innerKey = otherPrivate(scopeObject, PT_LC("getnodekey"), 1, inner.raw(), [&](MutatingScope &other) {
+					return other.getNodeKey(Z_OBJ_P(inner.raw()));
+				});
+				if (UNEXPECTED(innerKey.isUndef())) return zv::Val();
+				zend_string *innerExprString = keyString(innerKey);
+				if (UNEXPECTED(innerExprString == NULL)) return zv::Val();
 				zv::Val next;
 				if (specification.sure) {
 					zv::Args args{inner.raw(), pt_trinary_singleton(PT_TRI_MAYBE)};
 					next = otherPrivate(scopeObject, PT_LC("setexpressioncertaintykeepingtype"), 2, args, [&](MutatingScope &other) {
 						return other.setExpressionCertaintyKeepingType(Z_OBJ_P(inner.raw()), &args[1]);
 					});
+					if (UNEXPECTED(next.isUndef())) return zv::Val();
+					zend_object *nextObject = requireObject(next, "applySpecifiedTypes");
+					if (UNEXPECTED(nextObject == NULL)) return zv::Val();
+					HashTable *table = otherTable(nextObject, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+					if (UNEXPECTED(table == NULL)) return zv::Val();
+					zval *innerHolder = zend_symtable_find(table, innerExprString);
+					if (UNEXPECTED(innerHolder == NULL)) {
+						zend_throw_error(NULL, "Call to a member function getType() on null");
+						return zv::Val();
+					}
+					zv::Val innerType = holderType(zv::Ref(innerHolder));
+					if (UNEXPECTED(innerType.isUndef())) return zv::Val();
+					zval holder;
+					pt_holder_create(&holder, inner.raw(), innerType.raw(), PT_TRI_MAYBE);
+					specifiedExpressions.set(innerExprString, zv::Val::adopt(holder));
 				} else {
+					/* Holders conditioned on this expression being undefined (a
+					 * certainty-No condition) wait for exactly the specification
+					 * applied here, but unsetExpression()'s invalidation would
+					 * drop them before the conditional-expressions matcher below
+					 * could fire them - carve them out and re-add them afterwards. */
+					HashTable *conditionalTable = otherTable(scopeObject, PT_MS_PROP_CONDITIONAL_EXPRESSIONS, PT_LC("conditionalExpressions"));
+					if (UNEXPECTED(conditionalTable == NULL)) return zv::Val();
+					zv::Arr rescuedHolders = zv::Arr::create(0);
+					for (auto targetEntry : zv::TableRef(conditionalTable)) {
+						zval *targetHolders = targetEntry.value().deref().raw();
+						if (UNEXPECTED(Z_TYPE_P(targetHolders) != IS_ARRAY)) continue;
+						zv::Arr rescuedForTarget = zv::Arr::create(0);
+						for (auto holderEntry : zv::TableRef(Z_ARRVAL_P(targetHolders))) {
+							zval *conditionalHolder = holderEntry.value().deref().raw();
+							zv::Val conditions;
+							if (EXPECTED(Z_TYPE_P(conditionalHolder) == IS_OBJECT && Z_OBJCE_P(conditionalHolder) == pt_ce_cond_expr_holder)) {
+								conditions = zv::Val::copyOf(zv::ObjRef(Z_OBJ_P(conditionalHolder)).propAt(PT_CEH_PROP_CONDS));
+							} else {
+								if (UNEXPECTED(Z_TYPE_P(conditionalHolder) != IS_OBJECT)) {
+									zend_throw_error(NULL, "Call to a member function getConditionExpressionTypeHolders() on %s", zend_zval_value_name(conditionalHolder));
+									return zv::Val();
+								}
+								conditions = pt_type_call(Z_OBJ_P(conditionalHolder), PT_LC("getconditionexpressiontypeholders"), 0, NULL);
+								if (UNEXPECTED(conditions.isUndef())) return zv::Val();
+							}
+							zval *conditionsZv = conditions.raw();
+							ZVAL_DEREF(conditionsZv);
+							if (UNEXPECTED(Z_TYPE_P(conditionsZv) != IS_ARRAY)) continue;
+							zval *conditionHolder = zend_symtable_find(Z_ARRVAL_P(conditionsZv), innerExprString);
+							if (conditionHolder == NULL) continue;
+							zend_long certainty = holderCertainty(zv::Ref(conditionHolder));
+							if (UNEXPECTED(certainty < 0)) return zv::Val();
+							if (certainty != PT_TRI_NO) continue;
+							Z_TRY_ADDREF_P(conditionalHolder);
+							if (holderEntry.stringKeyOrNull() != NULL) {
+								zend_hash_update(rescuedForTarget.table(), holderEntry.stringKey(), conditionalHolder);
+							} else {
+								zend_hash_index_update(rescuedForTarget.table(), holderEntry.indexKey(), conditionalHolder);
+							}
+						}
+						if (zend_hash_num_elements(rescuedForTarget.table()) == 0) continue;
+						zval rescuedZv = rescuedForTarget.take();
+						if (targetEntry.stringKeyOrNull() != NULL) {
+							zend_hash_update(rescuedHolders.table(), targetEntry.stringKey(), &rescuedZv);
+						} else {
+							zend_hash_index_update(rescuedHolders.table(), targetEntry.indexKey(), &rescuedZv);
+						}
+					}
+
 					zval arg;
 					ZVAL_COPY_VALUE(&arg, inner.raw());
 					next = otherPrivate(scopeObject, PT_LC("unsetexpression"), 1, &arg, [&](MutatingScope &other) {
 						return other.unsetExpression(Z_OBJ_P(inner.raw()));
 					});
+					if (UNEXPECTED(next.isUndef())) return zv::Val();
+					for (auto rescuedEntry : zv::TableRef(rescuedHolders.table())) {
+						zend_object *nextObject = requireObject(next, "applySpecifiedTypes");
+						if (UNEXPECTED(nextObject == NULL)) return zv::Val();
+						zv::Str targetExprString = rescuedEntry.stringKeyOrNull() != NULL ? zv::Str::copyOf(rescuedEntry.stringKey()) : zv::Str::adopt(zend_long_to_str((zend_long) rescuedEntry.indexKey()));
+						zv::Val added = pt_mutating_scope_add_conditional_expressions(nextObject, targetExprString.get(), Z_ARRVAL_P(rescuedEntry.value().deref().raw()));
+						if (UNEXPECTED(added.isUndef())) return zv::Val();
+						next = std::move(added);
+					}
+					zval errorType;
+					if (UNEXPECTED(!pt_error_type_new(&errorType))) return zv::Val();
+					zv::Val errorTypeHold = zv::Val::adopt(errorType);
+					zval holder;
+					pt_holder_create(&holder, inner.raw(), errorTypeHold.raw(), PT_TRI_NO);
+					specifiedExpressions.set(innerExprString, zv::Val::adopt(holder));
 				}
-				if (UNEXPECTED(next.isUndef())) return zv::Val();
 				zend_object *nextObject = requireObject(next, "applySpecifiedTypes");
 				if (UNEXPECTED(nextObject == NULL)) return zv::Val();
 				scope = std::move(next);

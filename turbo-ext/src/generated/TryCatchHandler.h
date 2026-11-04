@@ -45,7 +45,12 @@ inline constexpr char strings[] =
 	"context\0" /* 252 */
 	"PHPStan\\Analyser\\StatementContext\0" /* 260 */
 	"PHPStan\\Analyser\\InternalStatementResult\0" /* 294 */
-	"processStmt"; /* 335 */
+	"processStmt\0" /* 335 */
+	"mergedScope\0" /* 347 */
+	"nonCatchScope\0" /* 359 */
+	"catchEndScope\0" /* 373 */
+	"variableName\0" /* 387 */
+	"addCatchVariableDefinednessConditionals"; /* 400 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $statementsHandler */
 	reg::packed(65, 0, 70), /* supports $stmt */
@@ -57,6 +62,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(239, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
 	reg::packed(252, 0, 260), /* processStmt $context */
 	reg::packed(90, 0, 294), /* processStmt return */
+	reg::packed(347, 0, 159), /* addCatchVariableDefinednessConditionals $mergedScope */
+	reg::packed(359, 0, 159), /* addCatchVariableDefinednessConditionals $nonCatchScope */
+	reg::packed(373, 0, 159), /* addCatchVariableDefinednessConditionals $catchEndScope */
+	reg::packed(387, MAY_BE_STRING), /* addCatchVariableDefinednessConditionals $variableName */
+	reg::packed(90, 0, 159), /* addCatchVariableDefinednessConditionals return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -66,6 +76,7 @@ namespace sig {
 inline constexpr sigtab::Sig __construct = { { 53 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig supports = { { 91 /* supports */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processStmt = { { 335 /* processStmt */, 6, 3, 6, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig addCatchVariableDefinednessConditionals = { { 400 /* addCatchVariableDefinednessConditionals */, 4, 10, 4, 14, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TryCatchHandler

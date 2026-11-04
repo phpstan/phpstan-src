@@ -116,6 +116,17 @@ class CallToMethodStatementWithoutImpurePointsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12379.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15320(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15320.php'], [
+			[
+				'Call to method Bug15320DeadCode\\Model::setStatic() on a separate line has no effect.',
+				28,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{

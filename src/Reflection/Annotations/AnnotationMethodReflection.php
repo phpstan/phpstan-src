@@ -133,7 +133,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 			return TrinaryLogic::createYes();
 		}
 
-		if ((new ThisType($this->declaringClass))->isSuperTypeOf($this->returnType)->yes()) {
+		if ((new ThisType($this->declaringClass->withoutFinalByKeywordOverride()))->isSuperTypeOf($this->returnType)->yes()) {
 			return TrinaryLogic::createYes();
 		}
 

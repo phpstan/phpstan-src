@@ -90,4 +90,18 @@ class OffsetAccessValueAssignmentRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Variables/data/bug-10783.php'], []);
 	}
 
+	public function testCoalesceAssign(): void
+	{
+		$this->analyse([__DIR__ . '/data/offset-access-value-assignment-coalesce.php'], [
+			[
+				'OffsetAccessValueAssignmentCoalesce\\Foo does not accept string.',
+				40,
+			],
+			[
+				'OffsetAccessValueAssignmentCoalesce\\Foo does not accept string.',
+				53,
+			],
+		]);
+	}
+
 }

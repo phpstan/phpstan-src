@@ -7,6 +7,7 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use function count;
+use function is_float;
 use function is_int;
 use function is_numeric;
 use function is_string;
@@ -114,15 +115,23 @@ final class ExponentiateHelper
 			return null;
 		}
 
-		$result = self::pow($base->getValue(), $exponent->getValue());
+		$baseValue = $base->getValue();
+		$result = self::pow($baseValue, $exponent->getValue());
 		if ($result === null) {
 			return new ErrorType();
 		}
 
-		if (is_int($result)) {
-			return new ConstantIntegerType($result);
+		$resultType = is_int($result) ? new ConstantIntegerType($result) : new ConstantFloatType($result);
+
+		// a zero float stands for both zeros (0.0 === -0.0), and a negative odd exponent tells them apart
+		if (is_float($baseValue) && $baseValue === 0.0) {
+			$otherZeroResult = self::pow(-$baseValue, $exponent->getValue());
+			if (is_float($otherZeroResult) && $otherZeroResult !== $result) {
+				return TypeCombinator::union($resultType, new ConstantFloatType($otherZeroResult));
+			}
 		}
-		return new ConstantFloatType($result);
+
+		return $resultType;
 	}
 
 	/**
@@ -258,7 +267,8 @@ final class ExponentiateHelper
 		if (is_string($exp) && !is_numeric($exp)) {
 			return null;
 		}
-		return pow($base, $exp);
+		// PHP 8.4 deprecates 0 ** -1, which still gives INF
+		return @pow($base, $exp);
 	}
 
 }

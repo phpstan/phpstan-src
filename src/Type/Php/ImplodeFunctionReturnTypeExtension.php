@@ -135,6 +135,14 @@ final class ImplodeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 			if (count($constScalars) === 0) {
 				return null;
 			}
+			foreach ($constScalars as $constScalar) {
+				if ($constScalar !== 0.0) {
+					continue;
+				}
+
+				// a zero float is either zero (0.0 === -0.0), and (string) -0.0 is '-0'
+				$constScalars[] = -$constScalar;
+			}
 
 			$isOptional = $arrayType->isOptionalKey($i);
 			$newPartials = [];

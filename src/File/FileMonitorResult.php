@@ -23,9 +23,25 @@ final class FileMonitorResult
 	/**
 	 * @return string[]
 	 */
+	public function getNewFiles(): array
+	{
+		return $this->newFiles;
+	}
+
+	/**
+	 * @return string[]
+	 */
 	public function getChangedFiles(): array
 	{
 		return $this->changedFiles;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function getDeletedFiles(): array
+	{
+		return $this->deletedFiles;
 	}
 
 	public function hasAnyChanges(): bool

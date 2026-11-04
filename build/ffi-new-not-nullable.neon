@@ -1,0 +1,8 @@
+parameters:
+	ignoreErrors:
+		-
+			# FFI::new() is typed nullable only in the PHP 8.0-8.3 stubs
+			message: '#^Strict comparison using \=\=\= between FFI\\CData and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: ../src/File/FsEventsFileMonitor.php

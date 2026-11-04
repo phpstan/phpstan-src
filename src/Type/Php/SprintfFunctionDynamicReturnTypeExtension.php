@@ -318,6 +318,14 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			if (count($constantScalarValues) === 0) {
 				return null;
 			}
+			foreach ($constantScalarValues as $constantScalarValue) {
+				if ($constantScalarValue !== 0.0) {
+					continue;
+				}
+
+				// a zero float is either zero (0.0 === -0.0), and sprintf('%s', -0.0) is '-0'
+				$constantScalarValues[] = -$constantScalarValue;
+			}
 
 			$values[] = $constantScalarValues;
 			$combinationsCount *= count($constantScalarValues);

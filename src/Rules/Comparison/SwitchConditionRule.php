@@ -15,7 +15,6 @@ use PHPStan\Node\SwitchConditionNode;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function count;
@@ -53,7 +52,7 @@ final class SwitchConditionRule implements Rule
 		$nextCaseIsDeadForType = false;
 		$nextCaseIsDeadForNativeType = false;
 		$seenCases = [];
-		$phpVersions = LooseComparisonHelper::getRepresentativePhpVersions($scope->getPhpVersion());
+		$phpVersions = $scope->getPhpVersion()->getLooseComparisonVersions();
 
 		foreach ($node->getArms() as $arm) {
 			if (
@@ -182,7 +181,13 @@ final class SwitchConditionRule implements Rule
 			return true;
 		}
 
-		return LooseComparisonHelper::looseCompareInVersions($seenType, $caseValueType, $phpVersions)->isTrue()->yes();
+		foreach ($phpVersions as $phpVersion) {
+			if (!$seenType->looseCompare($caseValueType, $phpVersion)->isTrue()->yes()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

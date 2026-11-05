@@ -2,10 +2,13 @@
 
 namespace PHPStan\Php;
 
+use PHPStan\Analyser\ConstantResolver;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\Type;
+use function count;
+use function is_int;
 
 /**
  * Range-aware PHP version check that handles version uncertainty.
@@ -22,6 +25,9 @@ use PHPStan\Type\Type;
 final class PhpVersions
 {
 
+	// PHP 8.0 compares a number with a non-numeric string as strings, PHP 8.4 adds BcMath\Number
+	private const LOOSE_COMPARISON_PHP_VERSION_BOUNDARIES = [80000, 80400];
+
 	public function __construct(
 		private Type $phpVersions,
 	)
@@ -31,6 +37,36 @@ final class PhpVersions
 	public function getType(): Type
 	{
 		return $this->phpVersions;
+	}
+
+	/**
+	 * One PHP version for each range of the versions that loosely compares (`==`) the same way.
+	 *
+	 * @return non-empty-list<PhpVersion>
+	 */
+	public function getLooseComparisonVersions(): array
+	{
+		$versionIds = $this->phpVersions->getConstantScalarValues();
+		if (count($versionIds) === 1 && is_int($versionIds[0])) {
+			return [new PhpVersion($versionIds[0])];
+		}
+
+		$mins = [ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID, ...self::LOOSE_COMPARISON_PHP_VERSION_BOUNDARIES];
+		$versions = [];
+		foreach ($mins as $i => $min) {
+			$segment = IntegerRangeType::fromInterval($min, isset($mins[$i + 1]) ? $mins[$i + 1] - 1 : null);
+			if ($segment->isSuperTypeOf($this->phpVersions)->no()) {
+				continue;
+			}
+
+			$versions[] = new PhpVersion($min);
+		}
+		if ($versions === []) {
+			// no PHP version reaches this code, any of them will do
+			return [new PhpVersion($mins[0])];
+		}
+
+		return $versions;
 	}
 
 	public function supportsNoncapturingCatches(): TrinaryLogic

@@ -36,7 +36,6 @@ use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
@@ -640,7 +639,7 @@ final class IdenticalNarrowingHelper
 
 		// each side is one of the values the other side can equal, and in
 		// the false branch none of the values the other side always equals
-		$phpVersions = LooseComparisonHelper::getRepresentativePhpVersions($evaluationScope->getPhpVersion());
+		$phpVersions = $evaluationScope->getPhpVersion()->getLooseComparisonVersions();
 
 		return $this->createLooselyEqualTypes($evaluationScope, $left, $leftResult, $leftType, $rightType, $phpVersions, $context)
 			->unionWith($this->createLooselyEqualTypes($evaluationScope, $right, $rightResult, $rightType, $leftType, $phpVersions, $context));
@@ -651,14 +650,24 @@ final class IdenticalNarrowingHelper
 	 */
 	private function createLooselyEqualTypes(MutatingScope $evaluationScope, Expr $subject, ExpressionResult $subjectResult, Type $subjectType, Type $otherType, array $phpVersions, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$type = $context->true()
-			? LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions($otherType, $phpVersions)
-			: LooseComparisonHelper::getAlwaysLooselyEqualTypeInVersions($otherType, $phpVersions);
+		// in the true branch any of the versions' values, in the false branch those of every version
+		$types = [];
+		foreach ($phpVersions as $phpVersion) {
+			$types[] = $context->true() ? $otherType->getPossiblyLooselyEqualType($phpVersion) : $otherType->getAlwaysLooselyEqualType($phpVersion);
+		}
+		$type = $context->true() ? TypeCombinator::union(...$types) : TypeCombinator::intersect(...$types);
 		// nothing to intersect with, or nothing to remove
 		if ($type->isSuperTypeOf(new MixedType())->yes() || ($context->false() && $type instanceof NeverType)) {
 			return new SpecifiedTypes([], []);
 		}
-		if ($context->true() && $subjectType instanceof MixedType && LooseComparisonHelper::keepsMixedUnnarrowed($type)) {
+		// a mixed subject stays mixed rather than gain objects of classes like Stringable or GMP,
+		// which say nothing about the value; enum cases are precise enough to narrow to
+		if (
+			$context->true()
+			&& $subjectType instanceof MixedType
+			&& !$type->isObject()->no()
+			&& !TypeCombinator::intersect($type, new ObjectWithoutClassType())->isEnum()->yes()
+		) {
 			return new SpecifiedTypes([], []);
 		}
 

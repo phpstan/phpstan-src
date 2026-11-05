@@ -229,8 +229,8 @@ public:
 	static zend_long isVoid() { return PT_TRI_NO; }
 	static zend_long isScalar() { return PT_TRI_NO; }
 
-	/* LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion)
-	 * for a ConstantScalarType, new ConstantBooleanType($this->getValue() == [])
+	/* new ConstantBooleanType(ValueSet::compareScalarValues($this->getValue(),
+	 * $type->getValue(), $phpVersion) === 0) for a ConstantScalarType, new ConstantBooleanType($this->getValue() == [])
 	 * for an empty constant array, the CompoundType callback, new
 	 * BooleanType() otherwise; UNDEF = pending exception */
 	zv::Val looseCompare(zval *type, zval *phpVersion) const
@@ -238,8 +238,16 @@ public:
 		bool isConstantScalar;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_CONSTANT_SCALAR_TYPE, isConstantScalar))) return zv::Val();
 		if (isConstantScalar) {
-			zv::Args args{self, type, phpVersion};
-			return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("compareconstantscalars"), 3, args);
+			zval selfValue;
+			ZVAL_NULL(&selfValue);
+			zv::Val otherValue = pt_type_call(Z_OBJ_P(type), PT_LC("getvalue"), 0, NULL);
+			if (UNEXPECTED(otherValue.isUndef())) return zv::Val();
+			zend_long comparison;
+			int compared = pt_value_set_compare_scalar_values(&selfValue, otherValue.raw(), phpVersion, comparison);
+			if (UNEXPECTED(compared < 0)) return zv::Val();
+			zval result;
+			if (UNEXPECTED(!pt_constant_boolean_type_new(&result, compared == 1 && comparison == 0))) return zv::Val();
+			return zv::Val::adopt(result);
 		}
 
 		zend_long isConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);

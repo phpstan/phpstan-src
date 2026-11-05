@@ -27,6 +27,7 @@ use function is_numeric;
 use function is_string;
 use function pow;
 use function sprintf;
+use function strcmp;
 use const INF;
 use const NAN;
 use const PHP_INT_MAX;
@@ -334,6 +335,107 @@ final class ValueSet
 		}
 
 		return $alwaysEqualType ?? new NeverType();
+	}
+
+	/**
+	 * Mirrors zend_compare() of two scalar values, the way the PHP version compares them
+	 * independently of the PHP version PHPStan runs on: -1, 0 or 1, or null when they are
+	 * uncomparable because one of them is NAN. Such a pair is never equal, smaller or
+	 * greater, and `<=>` returns 1 for it.
+	 */
+	public static function compareScalarValues(bool|float|int|string|null $left, bool|float|int|string|null $right, PhpVersion $phpVersion): ?int
+	{
+		if (!is_string($left)) {
+			if (!is_string($right)) {
+				return self::compareNonStrings($left, $right);
+			}
+
+			$result = self::compareScalarValues($right, $left, $phpVersion);
+			return $result === null ? null : -$result;
+		}
+
+		if (is_string($right)) {
+			return self::compareStrings($left, $right, $phpVersion);
+		}
+
+		if ($right === null || is_bool($right)) {
+			// null and booleans compare with strings the same way in every PHP version
+			return $left <=> $right;
+		}
+
+		if (self::isNan($right)) {
+			return null;
+		}
+
+		if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
+			// the string's leading number, or 0 when there is none
+			return self::compareNonStrings(StringSet::parseNumericPrefix($left) ?? 0, $right);
+		}
+
+		$number = StringSet::parseNumericString($left, $phpVersion);
+		if ($number !== null) {
+			return self::compareNonStrings($number[0], $right);
+		}
+
+		return self::compareBytes($left, (string) $right);
+	}
+
+	private static function compareNonStrings(bool|float|int|null $left, bool|float|int|null $right): ?int
+	{
+		if (self::isNan($left) || self::isNan($right)) {
+			if ($left === null || is_bool($left) || $right === null || is_bool($right)) {
+				// null and booleans compare with NAN as with true
+				return $left <=> $right;
+			}
+
+			return null;
+		}
+
+		return $left <=> $right;
+	}
+
+	/** Mirrors zendi_smart_strcmp(): numeric strings compare as numbers, any other pair byte by byte. */
+	private static function compareStrings(string $left, string $right, PhpVersion $phpVersion): int
+	{
+		$leftNumber = StringSet::parseNumericString($left, $phpVersion);
+		$rightNumber = StringSet::parseNumericString($right, $phpVersion);
+		if ($leftNumber === null || $rightNumber === null) {
+			return self::compareBytes($left, $right);
+		}
+
+		[$leftValue, $leftOverflow] = $leftNumber;
+		[$rightValue, $rightOverflow] = $rightNumber;
+
+		if ($leftOverflow !== 0 && $leftOverflow === $rightOverflow && $leftValue === $rightValue) {
+			// integers that overflowed to the same side lose the precision needed to compare them
+			return self::compareBytes($left, $right);
+		}
+
+		if (is_float($leftValue) || is_float($rightValue)) {
+			if (!is_float($leftValue)) {
+				if ($rightOverflow !== 0) {
+					return -$rightOverflow;
+				}
+			} elseif (!is_float($rightValue)) {
+				if ($leftOverflow !== 0) {
+					return $leftOverflow;
+				}
+			} elseif ($leftValue === $rightValue && is_infinite($leftValue)) {
+				return self::compareBytes($left, $right);
+			}
+		}
+
+		return $leftValue <=> $rightValue;
+	}
+
+	private static function isNan(bool|float|int|null $value): bool
+	{
+		return is_float($value) && is_nan($value);
+	}
+
+	private static function compareBytes(string $left, string $right): int
+	{
+		return strcmp($left, $right) <=> 0;
 	}
 
 	/**
@@ -1577,7 +1679,7 @@ final class ValueSet
 			$strings[] = $value;
 		}
 		foreach ($strings as $string) {
-			if (LooseComparisonHelper::compareValues($value, $string, $phpVersion) !== 0) {
+			if (self::compareScalarValues($value, $string, $phpVersion) !== 0) {
 				continue;
 			}
 
@@ -1603,13 +1705,13 @@ final class ValueSet
 			return $value;
 		}
 
-		$number = LooseComparisonHelper::parseNumericString($value, $phpVersion);
+		$number = StringSet::parseNumericString($value, $phpVersion);
 		if ($number !== null) {
 			return $number[0];
 		}
 		if (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
 			// the number the string starts with
-			return LooseComparisonHelper::parseNumericPrefix($value) ?? 0;
+			return StringSet::parseNumericPrefix($value) ?? 0;
 		}
 
 		// a number compares with a non-numeric string as its own string
@@ -1750,7 +1852,7 @@ final class ValueSet
 			self::getTypeLooselyEqualTo($value, $phpVersion),
 		];
 
-		$number = LooseComparisonHelper::parseNumericString($value, $phpVersion);
+		$number = StringSet::parseNumericString($value, $phpVersion);
 		if ($number !== null) {
 			$number = $number[0];
 			$types[] = self::createNumericStringType();
@@ -1759,7 +1861,7 @@ final class ValueSet
 				$types[] = new ResourceType();
 			}
 		} elseif (!$phpVersion->castsNumbersToStringsOnLooseComparison()) {
-			$number = LooseComparisonHelper::parseNumericPrefix($value) ?? 0;
+			$number = StringSet::parseNumericPrefix($value) ?? 0;
 			$types[] = self::createNumberType($number);
 			if ($number >= 1 && floor($number) === (float) $number) {
 				$types[] = new ResourceType();

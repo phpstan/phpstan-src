@@ -2208,11 +2208,21 @@ jobs:
       - name: "Trust the checkout despite the container/host uid mismatch"
         run: docker exec alpine-test git config --global --add safe.directory /work
 
+      # Each of the 20 legs downloads every package from GitHub, and one
+      # failed download fails the leg. So the install runs up to three
+      # times. A new attempt takes the packages that the last one
+      # downloaded from the Composer cache in COMPOSER_HOME.
       - name: "Install Composer dependencies (verified composer)"
         run: |
           docker exec -i alpine-test sh -e <<'EOF'
           sh .github/scripts/download-composer.sh
-          COMPOSER_HOME="$(mktemp -d)" php composer.phar install --no-interaction --no-progress
+          export COMPOSER_HOME="$(mktemp -d)"
+          for attempt in 1 2 3; do
+            php composer.phar install --no-interaction --no-progress && break
+            [ "$attempt" = 3 ] && exit 1
+            echo "composer install failed, attempt $attempt of 3"
+            sleep 30
+          done
           rm composer.phar
           EOF
 

@@ -881,7 +881,7 @@ PT_MINIT_REGISTRATION(pt_register_arguments_normalizer)
 			Z_PARAM_LONG(position)
 			Z_PARAM_STR(name)
 		ZEND_PARSE_PARAMETERS_END();
-		zend_object *arg = position < 0 ? NULL : phpstanturbo::visitors::argForParameter(args, (zend_ulong) position, ZSTR_VAL(name), ZSTR_LEN(name));
+		zend_object *arg = phpstanturbo::visitors::argForParameter(args, (zend_ulong) position, ZSTR_VAL(name), ZSTR_LEN(name));
 		if (arg == NULL) RETURN_NULL();
 		RETURN_OBJ_COPY(arg);
 	});

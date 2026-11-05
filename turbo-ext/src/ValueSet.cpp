@@ -1927,7 +1927,8 @@ public:
 	{
 		// null compares with a string as with '', with anything else by truthiness, like the booleans
 		zv::Arr types = zv::Arr::create(8);
-		bool truthy = zend_is_true(value);
+		// not zend_is_true(): PHP 8.5 warns when casting NAN, which is truthy
+		bool truthy = Z_TYPE_P(value) == IS_DOUBLE ? Z_DVAL_P(value) != 0.0 : zend_is_true(value);
 		IETR_VAL(booleanType, newConstantBooleanType(truthy));
 		types.push(std::move(booleanType));
 		if (Z_TYPE_P(value) == IS_STRING ? Z_STRLEN_P(value) == 0 : !truthy) {

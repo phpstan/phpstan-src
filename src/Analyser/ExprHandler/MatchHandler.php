@@ -613,9 +613,6 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 	private function hasExpressionNarrowedToNever(MutatingScope $scopeBeforeArms, MutatingScope $matchScope): bool
 	{
 		foreach ($matchScope->expressionTypes as $exprString => $holder) {
-			if (!$holder->getCertainty()->yes()) {
-				continue;
-			}
 			if (!$holder->getType() instanceof NeverType) {
 				continue;
 			}

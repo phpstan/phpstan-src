@@ -1302,17 +1302,7 @@ private:
 		if (UNEXPECTED(expressionTypesBeforeArms == NULL)) return false;
 		for (zv::ArrayEntry entry : zv::TableRef(expressionTypes)) {
 			zval *holder = entry.value().deref().raw();
-			if (UNEXPECTED(Z_TYPE_P(holder) != IS_OBJECT)) return !callOnNonObject("getCertainty", holder).isUndef();
-			zend_long certainty;
-			if (EXPECTED(Z_OBJCE_P(holder) == pt_ce_expr_type_holder)) {
-				certainty = pt_holder_certainty_value(Z_OBJ_P(holder));
-			} else {
-				zv::Val certaintyObject = pt_type_call(Z_OBJ_P(holder), PT_LC("getcertainty"), 0, NULL);
-				if (UNEXPECTED(certaintyObject.isUndef())) return false;
-				certainty = pt_type_trinary_value(certaintyObject.raw());
-				if (UNEXPECTED(certainty < 0)) return false;
-			}
-			if (certainty != PT_TRI_YES) continue;
+			if (UNEXPECTED(Z_TYPE_P(holder) != IS_OBJECT)) return !callOnNonObject("getType", holder).isUndef();
 			zv::Val type = holderType(holder);
 			if (UNEXPECTED(type.isUndef())) return false;
 			if (!type.ref().instanceOf(pt_ce_never_type)) continue;

@@ -1,6 +1,6 @@
 /*
- * The Type helpers shared by InitializerExprTypeResolver.cpp and
- * OperatorTypeHelper.cpp: calling Type methods, constructing the native
+ * The Type helpers shared by InitializerExprTypeResolver.cpp, the value
+ * sets and OperatorTypeTrait.cpp: calling Type methods, constructing the native
  * types, and the PHP value arithmetic of the twins' operators on the
  * engine's own operator functions.
  */

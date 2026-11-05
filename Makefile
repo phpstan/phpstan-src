@@ -163,22 +163,22 @@ cs-fix: cs-install
 	XDEBUG_MODE=off php build-cs/vendor/bin/phpcbf
 
 phpstan:
-	php bin/phpstan clear-result-cache -q && php -d memory_limit=450M bin/phpstan -v
+	php bin/phpstan clear-result-cache -q && php -d memory_limit=512M bin/phpstan -v
 
 phpstan-result-cache:
-	php -d memory_limit=450M bin/phpstan
+	php -d memory_limit=512M bin/phpstan
 
 phpstan-fix:
-	php -d memory_limit=450M bin/phpstan --fix
+	php -d memory_limit=512M bin/phpstan --fix
 
 phpstan-generate-baseline:
-	php -d memory_limit=450M bin/phpstan --generate-baseline
+	php -d memory_limit=512M bin/phpstan --generate-baseline
 
 phpstan-generate-baseline-php:
-	php -d memory_limit=450M bin/phpstan analyse --generate-baseline phpstan-baseline.php
+	php -d memory_limit=512M bin/phpstan analyse --generate-baseline phpstan-baseline.php
 
 phpstan-pro:
-	php -d memory_limit=450M bin/phpstan --pro
+	php -d memory_limit=512M bin/phpstan --pro
 
 # Regenerates src/Type/Regex/Parser/RegexParser.php from
 # build/regex-parser/RegexGrammar.pp3 with the phplrt compiler. The compiler

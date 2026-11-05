@@ -42,6 +42,11 @@ final class FunctionReturnStatementsNode extends NodeAbstract implements ReturnS
 		parent::__construct($function->getAttributes());
 	}
 
+	public function getFunction(): Function_
+	{
+		return $this->function;
+	}
+
 	public function getReturnStatements(): array
 	{
 		return $this->returnStatements;

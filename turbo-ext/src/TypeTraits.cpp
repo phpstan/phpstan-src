@@ -181,7 +181,7 @@ zv::Val pt_value_set_power(zend_object *type, zval *exponent, zval *phpVersion)
 	return pt_type_call(Z_OBJ_P(baseValues.raw()), PT_LC("arithmeticpower"), 2, argv);
 }
 
-void pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS)
+void ZEND_FASTCALL pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
 	zv::Val numbers = pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("tonumberset"), 0, NULL);

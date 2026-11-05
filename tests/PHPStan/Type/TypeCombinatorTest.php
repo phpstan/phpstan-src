@@ -3389,6 +3389,38 @@ class TypeCombinatorTest extends PHPStanTestCase
 			FloatType::class,
 			'float',
 		];
+		yield [
+			[
+				'non-empty-string',
+				'numeric-string',
+			],
+			IntersectionType::class,
+			'non-empty-string',
+		];
+		yield [
+			[
+				'non-empty-string',
+				'decimal-int-string',
+			],
+			IntersectionType::class,
+			'non-empty-string',
+		];
+		yield [
+			[
+				'non-empty-uppercase-string',
+				'numeric-string&uppercase-string',
+			],
+			IntersectionType::class,
+			'non-empty-string&uppercase-string',
+		];
+		yield [
+			[
+				'non-empty-lowercase-string',
+				'decimal-int-string',
+			],
+			IntersectionType::class,
+			'lowercase-string&non-empty-string',
+		];
 	}
 
 	/**
@@ -5601,6 +5633,23 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			IntersectionType::class,
 			'lowercase-string&non-decimal-int-string',
+		];
+
+		yield [
+			[
+				'non-empty-string',
+				'numeric-string',
+			],
+			IntersectionType::class,
+			'numeric-string',
+		];
+		yield [
+			[
+				'non-empty-string',
+				'decimal-int-string',
+			],
+			IntersectionType::class,
+			'decimal-int-string',
 		];
 
 		yield [

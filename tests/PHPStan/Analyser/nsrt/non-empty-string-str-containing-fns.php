@@ -54,14 +54,14 @@ class Foo {
 			assertType('non-empty-string', $s);
 		}
 		if (str_contains($numS, $nonEAndNumericS)) {
-			assertType('non-empty-string&numeric-string', $numS);
+			assertType('numeric-string', $numS);
 		}
 
 		if (str_contains($nonES, $s)) {
 			assertType('non-empty-string', $nonES);
 		}
 		if (str_contains($nonEAndNumericS, $s)) {
-			assertType('non-empty-string&numeric-string', $nonEAndNumericS);
+			assertType('numeric-string', $nonEAndNumericS);
 		}
 
 		if (str_contains($i, $s2)) {

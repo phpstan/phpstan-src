@@ -25,7 +25,7 @@ class Foo
 		assertType('non-falsy-string', $nonFalsyString);
 
 		if (dir($numericString)) {
-			assertType('non-empty-string&numeric-string', $numericString);
+			assertType('numeric-string', $numericString);
 		}
 		assertType('numeric-string', $numericString);
 	}

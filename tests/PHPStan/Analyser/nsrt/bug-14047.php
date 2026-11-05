@@ -46,20 +46,20 @@ function test_strings(string $a, string $b): void
 	}
 
 	if ($b !== '' && is_numeric($b)) {
-		assertType('non-empty-string&numeric-string', $b);
+		assertType('numeric-string', $b);
 	}
 
 	if (strtolower($b) === $b && $b !== '' && is_numeric($b)) {
-		assertType('lowercase-string&non-empty-string&numeric-string', $b);
+		assertType('lowercase-string&numeric-string', $b);
 	}
 
 	assertType('string', $b);
 	if (is_numeric($b)) {
 		assertType('numeric-string', $b);
 		if (strtolower($b) === $b) {
-			assertType('lowercase-string&non-empty-string&numeric-string', $b);
+			assertType('lowercase-string&numeric-string', $b);
 			if ($b !== '') {
-				assertType('lowercase-string&non-empty-string&numeric-string', $b);
+				assertType('lowercase-string&numeric-string', $b);
 			}
 		}
 		if ($b !== '') {

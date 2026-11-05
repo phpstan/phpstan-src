@@ -36,7 +36,7 @@ class HelloWorld
 		if ($s != '0') {
 			assertType('lowercase-string&non-falsy-string', $s);
 		}
-		assertType('(lowercase-string&non-empty-string&numeric-string)|(lowercase-string&non-falsy-string)', $s);
+		assertType('(lowercase-string&non-falsy-string)|(lowercase-string&numeric-string)', $s);
 	}
 
 	/**
@@ -47,7 +47,7 @@ class HelloWorld
 		if ('0' != $s) {
 			assertType('lowercase-string&non-falsy-string', $s);
 		}
-		assertType('(lowercase-string&non-empty-string&numeric-string)|(lowercase-string&non-falsy-string)', $s);
+		assertType('(lowercase-string&non-falsy-string)|(lowercase-string&numeric-string)', $s);
 	}
 
 	/**
@@ -80,7 +80,7 @@ class HelloWorld
 		if ($s != '0') {
 			assertType('non-falsy-string&uppercase-string', $s);
 		}
-		assertType('(non-empty-string&numeric-string&uppercase-string)|(non-falsy-string&uppercase-string)', $s);
+		assertType('(non-falsy-string&uppercase-string)|(numeric-string&uppercase-string)', $s);
 	}
 
 	/**
@@ -91,7 +91,7 @@ class HelloWorld
 		if ('0' != $s) {
 			assertType('non-falsy-string&uppercase-string', $s);
 		}
-		assertType('(non-empty-string&numeric-string&uppercase-string)|(non-falsy-string&uppercase-string)', $s);
+		assertType('(non-falsy-string&uppercase-string)|(numeric-string&uppercase-string)', $s);
 	}
 
 	/**
@@ -124,7 +124,7 @@ class HelloWorld
 		if ($s != '0') {
 			assertType('lowercase-string&non-falsy-string&uppercase-string', $s);
 		}
-		assertType('(lowercase-string&non-empty-string&numeric-string&uppercase-string)|(lowercase-string&non-falsy-string&uppercase-string)', $s);
+		assertType('(lowercase-string&non-falsy-string&uppercase-string)|(lowercase-string&numeric-string&uppercase-string)', $s);
 	}
 
 	/**
@@ -135,6 +135,6 @@ class HelloWorld
 		if ('0' != $s) {
 			assertType('lowercase-string&non-falsy-string&uppercase-string', $s);
 		}
-		assertType('(lowercase-string&non-empty-string&numeric-string&uppercase-string)|(lowercase-string&non-falsy-string&uppercase-string)', $s);
+		assertType('(lowercase-string&non-falsy-string&uppercase-string)|(lowercase-string&numeric-string&uppercase-string)', $s);
 	}
 }

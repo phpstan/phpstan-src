@@ -17,7 +17,7 @@ function foo(int $a, float $b, $numeric, $numeric2, $number, $positive, $negativ
 	assertType('non-empty-string&uppercase-string', (string)$b);
 	assertType('(non-empty-string&uppercase-string)|numeric-string', (string)$numeric);
 	assertType('(non-empty-string&uppercase-string)|numeric-string', (string)$numeric2);
-	assertType('decimal-int-string|(non-empty-string&uppercase-string)', (string)$number);
+	assertType('non-empty-string&uppercase-string', (string)$number);
 	assertType('decimal-int-string&non-falsy-string', (string)$positive);
 	assertType('decimal-int-string&non-falsy-string', (string)$negative);
 	assertType("'1'", (string)$constantInt);
@@ -36,7 +36,7 @@ function concatEmptyString(int $a, float $b, $numeric, $numeric2, $number, $posi
 	assertType('non-empty-string&uppercase-string', '' . $b);
 	assertType('(non-empty-string&uppercase-string)|numeric-string', '' . $numeric);
 	assertType('(non-empty-string&uppercase-string)|numeric-string', '' . $numeric2);
-	assertType('decimal-int-string|(non-empty-string&uppercase-string)', '' . $number);
+	assertType('non-empty-string&uppercase-string', '' . $number);
 	assertType('decimal-int-string&non-falsy-string', '' . $positive);
 	assertType('decimal-int-string&non-falsy-string', '' . $negative);
 	assertType("'1'", '' . $constantInt);
@@ -45,7 +45,7 @@ function concatEmptyString(int $a, float $b, $numeric, $numeric2, $number, $posi
 	assertType('non-empty-string&uppercase-string', $b . '');
 	assertType('(non-empty-string&uppercase-string)|numeric-string', $numeric . '');
 	assertType('(non-empty-string&uppercase-string)|numeric-string', $numeric2 . '');
-	assertType('decimal-int-string|(non-empty-string&uppercase-string)', $number . '');
+	assertType('non-empty-string&uppercase-string', $number . '');
 	assertType('decimal-int-string&non-falsy-string', $positive . '');
 	assertType('decimal-int-string&non-falsy-string', $negative . '');
 	assertType("'1'", $constantInt . '');

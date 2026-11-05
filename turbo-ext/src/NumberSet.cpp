@@ -1143,6 +1143,11 @@ zv::Val pt_number_set_calculate(phpstanturbo::ietr::IetrBinaryKind kind, const N
 	return phpstanturbo::NumberSetMath::calculate(kind, left, right, phpVersion);
 }
 
+zend_class_entry *pt_number_set_class()
+{
+	return pt_ce_number_set;
+}
+
 bool pt_number_set_read(zend_object *numberSet, NumberSetData &out)
 {
 	return NumberSet(numberSet).read(out);

@@ -165,11 +165,6 @@ zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32
 	return pt_type_call_fn(fn, NULL, ce, argc, argv);
 }
 
-zv::Val pt_value_set_create(const char *lcFactory, size_t len, uint32_t argc, zval *argv)
-{
-	return pt_type_call_static(PT_CLASS_VALUE_SET, lcFactory, len, argc, argv);
-}
-
 void pt_value_set_of_this(INTERNAL_FUNCTION_PARAMETERS, const char *lcFactory, size_t len)
 {
 	ZEND_PARSE_PARAMETERS_NONE();

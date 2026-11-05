@@ -7792,6 +7792,7 @@ if (PHP_VERSION_ID >= 80300) {
 }
 $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new ReflectionMethod(\PHPStan\Reflection\InitializerExprTypeResolver::class, 'getType'))->isInternal();
 $observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(\PHPStan\Type\OperatorTypeHelper::class, 'concat'))->isInternal();
+$observations['native PHPStan\Type\ValueSet'] = (new ReflectionMethod(\PHPStan\Type\ValueSet::class, 'union'))->isInternal();
 {
 	$resolver = $stringContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
 	$r = [];
@@ -7919,6 +7920,22 @@ $observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(
 					$r["$operatorMethod $operatorVersionId $leftName $rightName"] = $catching(static fn () => $left->$operatorMethod($right, $operatorVersion));
 				}
 			}
+		}
+	}
+	// the ValueSet of every operand: its loose equality, and its union and intersection with the others
+	foreach ([70400, 80000, 80500] as $looseVersionId) {
+		$looseVersion = new \PHPStan\Php\PhpVersion($looseVersionId);
+		foreach ($operands + $integerOperands + $numericStringOperands as $name => $operand) {
+			$r["valueSet possiblyLooselyEqual $looseVersionId $name"] = $catching(static fn () => $operand->toValueSet()->getPossiblyLooselyEqualType($looseVersion));
+			$r["valueSet alwaysLooselyEqual $looseVersionId $name"] = $catching(static fn () => $operand->toValueSet()->getAlwaysLooselyEqualType($looseVersion));
+		}
+	}
+	foreach ($operands as $leftName => $left) {
+		$leftSet = $left->toValueSet();
+		$r["valueSet flags $leftName"] = [$leftSet->isEmpty(), $leftSet->isUnknown(), $leftSet->isPlusable(), $leftSet->toBenevolent()->isEmpty()];
+		foreach ($operands as $rightName => $right) {
+			$r["valueSet union $leftName $rightName"] = $catching(static fn () => $leftSet->union($right->toValueSet())->getPossiblyLooselyEqualType(new \PHPStan\Php\PhpVersion(80500)));
+			$r["valueSet intersect $leftName $rightName"] = $catching(static fn () => $leftSet->intersect($right->toValueSet())->getPossiblyLooselyEqualType(new \PHPStan\Php\PhpVersion(80500)));
 		}
 	}
 	foreach ($operands as $name => $operand) {

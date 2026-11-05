@@ -170,7 +170,7 @@ zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32
  * declares one; UNDEF = pending exception */
 zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv);
 
-/* {{{ Type::toValueSet() (ValueSet.php stays PHP) */
+/* {{{ Type::toValueSet() (ValueSet.cpp) */
 
 /* ValueSet::<factory>(...$args); UNDEF = pending exception */
 zv::Val pt_value_set_create(const char *lcFactory, size_t len, uint32_t argc = 0, zval *argv = NULL);
@@ -338,6 +338,8 @@ struct NumberSetData
 
 } // namespace phpstanturbo
 
+/* the NumberSet class entry (NumberSet.cpp) */
+zend_class_entry *pt_number_set_class();
 /* new NumberSet(...) from the data; UNDEF = pending exception */
 zv::Val pt_number_set_new(const phpstanturbo::NumberSetData &data);
 /* the state of a NumberSet instance appended to `out`; false = pending

@@ -100,8 +100,8 @@ public:
 		return pt_type_is_super_type_of_result(pt_trinary_and(isString, inverse ? trinaryNegate(isDecimalIntegerString) : isDecimalIntegerString));
 	}
 
-	/* the union/intersection callback; yes for a numeric, lowercase or
-	 * uppercase accessory when not inverted; else the other type's
+	/* the union/intersection callback; yes for a numeric, non-empty,
+	 * lowercase or uppercase accessory when not inverted; else the other type's
 	 * string-and-(negated-)decimal-int verdict, and'ed with maybe unless it
 	 * equals $this; UNDEF = pending exception */
 	zv::Val isSubTypeOf(zval *otherType) const
@@ -115,6 +115,7 @@ public:
 		}
 		zend_class_entry *otherCe = Z_OBJCE_P(otherType);
 		if (instanceof_function(otherCe, pt_ce_accessory_numeric_string_type)
+			|| instanceof_function(otherCe, pt_ce_accessory_non_empty_string_type)
 			|| instanceof_function(otherCe, pt_ce_accessory_lowercase_string_type)
 			|| instanceof_function(otherCe, pt_ce_accessory_uppercase_string_type)
 		) {

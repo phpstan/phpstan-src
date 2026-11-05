@@ -59,9 +59,9 @@ public:
 		return pt_type_is_super_type_of_result(isNumericString);
 	}
 
-	/* the union/intersection callback; else the other type's numeric-string
-	 * verdict, and'ed with maybe unless it is an AccessoryNumericStringType;
-	 * UNDEF = pending exception */
+	/* the union/intersection callback; yes for a non-empty-string accessory;
+	 * else the other type's numeric-string verdict, and'ed with maybe unless it
+	 * is an AccessoryNumericStringType; UNDEF = pending exception */
 	zv::Val isSubTypeOf(zval *otherType) const
 	{
 		bool unionOrIntersection;
@@ -71,6 +71,7 @@ public:
 			ZVAL_OBJ(&selfZv, self);
 			return pt_type_op(Z_OBJ_P(otherType), PT_OP_IS_SUPER_TYPE_OF, 1, &selfZv);
 		}
+		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_accessory_non_empty_string_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 		zend_long value = pt_type_call_trinary(Z_OBJ_P(otherType), PT_LC("isnumericstring"), 0, NULL);
 		if (UNEXPECTED(value < 0)) return zv::Val();
 		if (!instanceof_function(Z_OBJCE_P(otherType), pt_ce_accessory_numeric_string_type)) {

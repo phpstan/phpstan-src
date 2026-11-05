@@ -133,6 +133,7 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		if (
 			(
 				$otherType instanceof AccessoryNumericStringType
+				|| $otherType instanceof AccessoryNonEmptyStringType
 				|| $otherType instanceof AccessoryLowercaseStringType
 				|| $otherType instanceof AccessoryUppercaseStringType
 			)

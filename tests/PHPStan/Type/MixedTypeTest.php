@@ -374,7 +374,7 @@ class MixedTypeTest extends PHPStanTestCase
 					new StringType(),
 					new AccessoryNonEmptyStringType(),
 				),
-				TrinaryLogic::createMaybe(),
+				TrinaryLogic::createNo(),
 			],
 			[
 				new MixedType(),

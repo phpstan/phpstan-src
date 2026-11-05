@@ -13,7 +13,7 @@ function doFoo(float $float, $number): void
 	assertType('non-empty-string&uppercase-string', (string) $float);
 	assertType('non-empty-string&uppercase-string', '' . $float);
 	assertType('non-falsy-string&uppercase-string', $float . '1');
-	assertType('decimal-int-string|(non-empty-string&uppercase-string)', (string) $number);
+	assertType('non-empty-string&uppercase-string', (string) $number);
 
 	// constant floats stay exact
 	assertType("'1.5'", (string) 1.5);

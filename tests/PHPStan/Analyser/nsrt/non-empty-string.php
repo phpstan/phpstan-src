@@ -140,7 +140,7 @@ class Foo
 			return;
 		}
 
-		assertType('non-empty-string&numeric-string', $s);
+		assertType('numeric-string', $s);
 	}
 
 	public function doEmpty(string $s): void

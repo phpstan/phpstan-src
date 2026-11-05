@@ -113,6 +113,10 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 			return $otherType->isSuperTypeOf($this);
 		}
 
+		if ($otherType instanceof AccessoryNonEmptyStringType) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
 		return IsSuperTypeOfResult::createFromTrinaryLogic(
 			$otherType->isNumericString()->and($otherType instanceof self ? TrinaryLogic::createYes() : TrinaryLogic::createMaybe()),
 		);

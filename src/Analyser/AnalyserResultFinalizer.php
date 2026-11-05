@@ -7,6 +7,7 @@ use PHPStan\AnalysedCodeException;
 use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
+use PHPStan\Analyser\ResultCache\UnreadableCollectedDataException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
@@ -26,9 +27,6 @@ use function count;
 use function get_class;
 use function hash_file;
 use function is_file;
-use function ksort;
-use function md5;
-use function serialize;
 use function sprintf;
 
 #[AutowiredService]
@@ -85,33 +83,16 @@ final class AnalyserResultFinalizer
 			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
 
-		try {
-			$collectedData = $analyserResult->getCollectedData();
-		} catch (Throwable $t) {
-			if ($debug) {
-				throw $t;
-			}
-
-			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $t)), [], []);
-		}
-
+		// Not decoded here: each rule reads the collectors it asks for, one file at a time if it iterates.
+		$collectedData = $analyserResult->getLazyCollectedData();
 		$nodeType = CollectedDataNode::class;
 		$node = new CollectedDataNode($collectedData, $onlyFiles);
 
-		// Hashed once per collector type and run, in the same order however the files were merged.
+		// Hashed once per collector type and run, file by file, so that no collector's data is held as one string.
 		$collectorHashes = [];
 		$hashCollector = static function (string $collectorType) use ($collectedData, &$collectorHashes): string {
 			if (!array_key_exists($collectorType, $collectorHashes)) {
-				$data = [];
-				foreach ($collectedData as $filePath => $collectedDataPerCollector) {
-					if (!isset($collectedDataPerCollector[$collectorType])) {
-						continue;
-					}
-
-					$data[$filePath] = $collectedDataPerCollector[$collectorType];
-				}
-				ksort($data);
-				$collectorHashes[$collectorType] = md5(serialize($data));
+				$collectorHashes[$collectorType] = $collectedData->hashCollector($collectorType);
 			}
 
 			return $collectorHashes[$collectorType];
@@ -125,85 +106,95 @@ final class AnalyserResultFinalizer
 		$reusedRulesCount = 0;
 		$ruleCountsByClass = [];
 		$currentValues = [];
-		foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
-			$ruleClass = get_class($rule);
-			$ruleCountsByClass[$ruleClass] = ($ruleCountsByClass[$ruleClass] ?? 0) + 1;
-			$ruleKey = sprintf('%s#%d', $ruleClass, $ruleCountsByClass[$ruleClass]);
+		try {
+			foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
+				$ruleClass = get_class($rule);
+				$ruleCountsByClass[$ruleClass] = ($ruleCountsByClass[$ruleClass] ?? 0) + 1;
+				$ruleKey = sprintf('%s#%d', $ruleClass, $ruleCountsByClass[$ruleClass]);
 
-			$previousResult = $this->reuseCollectedDataRuleErrors ? $previousCollectedDataRuleResults[$ruleKey] ?? null : null;
-			if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector, $currentValues)) {
-				$collectedDataRuleResults[$ruleKey] = $previousResult;
-				$reusedRulesCount++;
-				$this->addRuleErrors($previousResult->getErrors(), $node, $scope, $tempCollectorErrors);
-				continue;
-			}
-
-			$reads = new CollectedDataNodeReads();
-			$ruleNode = new CollectedDataNode($collectedData, $onlyFiles, $reads);
-			if ($this->reuseCollectedDataRuleErrors) {
-				$this->valueDependencyCollector->startCollectedDataRule();
-			}
-			if ($preRuleCallback !== null) {
-				$preRuleCallback($ruleClass);
-			}
-			try {
-				$ruleErrors = $rule->processNode($ruleNode, $scope);
-				$ruleValueDependencies = $this->valueDependencyCollector->getCollectedDataRuleValues();
-			} catch (AnalysedCodeException $e) {
-				$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, tip: $e->getTip()))
-					->withIdentifier('phpstan.internal')
-					->withMetadata([
-						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
-						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
-				continue;
-			} catch (IdentifierNotFound $e) {
-				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, tip: 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))
-					->withIdentifier('phpstan.reflection')
-					->withMetadata([
-						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
-						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
-				continue;
-			} catch (UnableToCompileNode | CircularReference $e) {
-				$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))
-					->withIdentifier('phpstan.reflection')
-					->withMetadata([
-						InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
-						InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
-					]);
-				continue;
-			} catch (Throwable $t) {
-				if ($debug) {
-					throw $t;
+				$previousResult = $this->reuseCollectedDataRuleErrors ? $previousCollectedDataRuleResults[$ruleKey] ?? null : null;
+				if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector, $currentValues)) {
+					$collectedDataRuleResults[$ruleKey] = $previousResult;
+					$reusedRulesCount++;
+					$this->addRuleErrors($previousResult->getErrors(), $node, $scope, $tempCollectorErrors);
+					continue;
 				}
 
-				$internalErrors[] = new InternalError(
-					$t->getMessage(),
-					sprintf('running CollectedDataNode rule %s', get_class($rule)),
-					InternalError::prepareTrace($t),
-					$t->getTraceAsString(),
-					shouldReportBug: true,
-				);
-				continue;
-			} finally {
-				$this->valueDependencyCollector->finishCollectedDataRule();
-				if ($postRuleCallback !== null) {
-					$postRuleCallback();
+				$reads = new CollectedDataNodeReads();
+				$ruleNode = new CollectedDataNode($collectedData, $onlyFiles, $reads);
+				if ($this->reuseCollectedDataRuleErrors) {
+					$this->valueDependencyCollector->startCollectedDataRule();
 				}
+				if ($preRuleCallback !== null) {
+					$preRuleCallback($ruleClass);
+				}
+				try {
+					$ruleErrors = $rule->processNode($ruleNode, $scope);
+					$ruleValueDependencies = $this->valueDependencyCollector->getCollectedDataRuleValues();
+				} catch (AnalysedCodeException $e) {
+					$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, tip: $e->getTip()))
+						->withIdentifier('phpstan.internal')
+						->withMetadata([
+							InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+							InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
+						]);
+					continue;
+				} catch (IdentifierNotFound $e) {
+					$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s not found.', $e->getIdentifier()->getName()), $file, $node->getStartLine(), $e, tip: 'Learn more at https://phpstan.org/user-guide/discovering-symbols'))
+						->withIdentifier('phpstan.reflection')
+						->withMetadata([
+							InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+							InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
+						]);
+					continue;
+				} catch (UnableToCompileNode | CircularReference $e) {
+					$tempCollectorErrors[] = (new Error(sprintf('Reflection error: %s', $e->getMessage()), $file, $node->getStartLine(), $e))
+						->withIdentifier('phpstan.reflection')
+						->withMetadata([
+							InternalError::STACK_TRACE_METADATA_KEY => InternalError::prepareTrace($e),
+							InternalError::STACK_TRACE_AS_STRING_METADATA_KEY => $e->getTraceAsString(),
+						]);
+					continue;
+				} catch (UnreadableCollectedDataException $e) {
+					throw $e;
+				} catch (Throwable $t) {
+					if ($debug) {
+						throw $t;
+					}
+
+					$internalErrors[] = new InternalError(
+						$t->getMessage(),
+						sprintf('running CollectedDataNode rule %s', get_class($rule)),
+						InternalError::prepareTrace($t),
+						$t->getTraceAsString(),
+						shouldReportBug: true,
+					);
+					continue;
+				} finally {
+					$this->valueDependencyCollector->finishCollectedDataRule();
+					if ($postRuleCallback !== null) {
+						$postRuleCallback();
+					}
+				}
+
+				$errors = [];
+				foreach ($ruleErrors as $ruleError) {
+					$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $ruleNode);
+				}
+
+				// a rule that never asked for collected data works with something else, so it runs every time
+				if ($this->reuseCollectedDataRuleErrors && $reads->getCollectorTypes() !== []) {
+					$collectedDataRuleResults[$ruleKey] = $this->createRuleResult($reads, $onlyFiles, $hashCollector, $errors, $ruleValueDependencies);
+				}
+
+				$this->addRuleErrors($errors, $node, $scope, $tempCollectorErrors);
+			}
+		} catch (UnreadableCollectedDataException $e) {
+			if ($debug) {
+				throw $e;
 			}
 
-			$errors = [];
-			foreach ($ruleErrors as $ruleError) {
-				$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $ruleNode);
-			}
-
-			// a rule that never asked for collected data works with something else, so it runs every time
-			if ($this->reuseCollectedDataRuleErrors && $reads->getCollectorTypes() !== []) {
-				$collectedDataRuleResults[$ruleKey] = $this->createRuleResult($reads, $onlyFiles, $hashCollector, $errors, $ruleValueDependencies);
-			}
-
-			$this->addRuleErrors($errors, $node, $scope, $tempCollectorErrors);
+			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $e)), [], []);
 		}
 
 		$errors = $analyserResult->getUnorderedErrors();

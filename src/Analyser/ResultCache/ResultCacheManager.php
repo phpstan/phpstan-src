@@ -2,8 +2,9 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
-use Closure;
+use Generator;
 use Nette\Neon\Neon;
+use PhpParser\Node;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\CollectedDataRuleResult;
 use PHPStan\Analyser\Error;
@@ -11,6 +12,7 @@ use PHPStan\Analyser\FileAnalyserResult;
 use PHPStan\Analyser\FinalizerResult;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Collectors\CollectedData;
+use PHPStan\Collectors\Collector;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNode\ExportedTraitNode;
 use PHPStan\Dependency\ExportedNodeFetcher;
@@ -41,6 +43,7 @@ use function array_diff;
 use function array_fill_keys;
 use function array_filter;
 use function array_intersect;
+use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -71,6 +74,7 @@ use function is_file;
 use function is_int;
 use function is_string;
 use function ksort;
+use function md5;
 use function microtime;
 use function min;
 use function rename;
@@ -98,7 +102,7 @@ use const SEEK_CUR;
  * @phpstan-import-type CollectorData from CollectedData
  */
 #[GenerateFactory(interface: ResultCacheManagerFactory::class)]
-final class ResultCacheManager
+final class ResultCacheManager implements CollectedDataReader
 {
 
 	/**
@@ -111,7 +115,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v25-lazyCollectedData';
+	private const CACHE_VERSION = 'v26-collectedDataPerCollector';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
@@ -2201,7 +2205,7 @@ final class ResultCacheManager
 				$collectedDataPerFile = $fresh[$analysedFile];
 				ksort($collectedDataPerFile);
 				foreach ($transformer->relativizeCollectedData([$analysedFile => $collectedDataPerFile]) as $relativeFile => $data) {
-					$this->writeEntryFrame($handle, $file, $relativeFile, $data);
+					$this->writeCollectedDataEntry($handle, $file, $relativeFile, $data);
 				}
 
 				continue;
@@ -2230,6 +2234,31 @@ final class ResultCacheManager
 		}
 
 		return $savedIndex;
+	}
+
+	/**
+	 * An entry frame whose value is not one serialized blob: a header line with each collector type
+	 * and the length of its data, then the data of each collector, serialized separately. A rule that
+	 * asks for one collector reads only that collector's bytes.
+	 *
+	 * @param resource $handle
+	 * @param array<string, list<mixed>> $dataPerCollector
+	 */
+	private function writeCollectedDataEntry($handle, string $file, string $relativeFile, array $dataPerCollector): void
+	{
+		$header = [];
+		$blobs = [];
+		foreach ($dataPerCollector as $collectorType => $values) {
+			$blob = serialize($values);
+			$header[] = $collectorType . ' ' . strlen($blob);
+			$blobs[] = $blob;
+		}
+
+		$keyBlob = serialize($relativeFile);
+		$value = implode(' ', $header) . "\n" . implode('', $blobs);
+		$this->writeToHandle($handle, $file, strlen($keyBlob) . ' ' . strlen($value) . "\n");
+		$this->writeToHandle($handle, $file, $keyBlob);
+		$this->writeToHandle($handle, $file, $value);
 	}
 
 	/**
@@ -2697,12 +2726,9 @@ final class ResultCacheManager
 		return [$key, $valueLength];
 	}
 
-	/**
-	 * @return Closure(array<string, array{int, int}>): CollectorData
-	 */
-	private function createCollectedDataReader(): Closure
+	private function createCollectedDataReader(): CollectedDataReader
 	{
-		return fn (array $index): array => $this->readCollectedData($index);
+		return $this;
 	}
 
 	/**
@@ -2713,39 +2739,251 @@ final class ResultCacheManager
 	 * @param array<string, array{int, int}> $index
 	 * @return CollectorData
 	 */
-	private function readCollectedData(array $index): array
+	public function read(array $index): array
 	{
 		// Read front to back: the entries are stored in the order of their paths and the index
 		// usually is too, but a seek backwards on a file this size is what makes reading it slow.
 		uasort($index, static fn (array $a, array $b): int => $a[0] <=> $b[0]);
 
-		$transformer = $this->getPathTransformer();
-		$handle = $this->openCacheFile();
+		$handle = $this->openCacheFileForCollectedData();
 		$data = [];
 		try {
 			foreach ($index as $file => [$offset]) {
 				[$key, $valueLength] = $this->seekToEntry($handle, $offset, $file);
-				$value = $this->readFrame($handle, $valueLength);
-				if (!is_array($value)) {
-					throw new RuntimeException(sprintf('The collected data of %s is not an array.', $file));
-				}
+				$data[$key] = [];
+				foreach ($this->readCollectorHeader($handle, $valueLength, $file) as $collectorType => $length) {
+					$values = $this->readFrame($handle, $length);
+					if (!is_array($values) || !array_is_list($values)) {
+						throw new RuntimeException(sprintf('The collected data of %s is not a list.', $file));
+					}
 
-				$data[$key] = $value;
+					$data[$key][$collectorType] = $values;
+				}
 			}
 		} catch (Throwable $e) {
-			// The walk in readCacheFile() validated the framing, not the values, so this is the first
-			// point where a damaged value shows, and save() has already carried it over into the new
-			// file. Left in place it would fail every run from now on; restore() discards a cache it
-			// cannot read back the same way.
-			fclose($handle);
-			@unlink($this->cacheFilePath);
-
-			throw new RuntimeException(sprintf('The result cache file %s could not be read back and was discarded, so the next run analyses everything: %s', $this->cacheFilePath, $e->getMessage()), previous: $e);
+			throw $this->discardUnreadableCollectedData($handle, $e);
 		}
 
 		fclose($handle);
 
-		return $transformer->absolutizeCollectedData($data);
+		return $this->getPathTransformer()->absolutizeCollectedData($data);
+	}
+
+	/**
+	 * @param array<string, array{int, int}> $index
+	 */
+	public function locateCollectors(array $index): CollectorLocations
+	{
+		uasort($index, static fn (array $a, array $b): int => $a[0] <=> $b[0]);
+
+		$handle = $this->openCacheFileForCollectedData();
+		$positions = [];
+		try {
+			$signature = $this->getCacheFileSignature($handle);
+			foreach ($index as $file => [$offset]) {
+				[, $valueLength] = $this->seekToEntry($handle, $offset, $file);
+				$collectors = $this->readCollectorHeader($handle, $valueLength, $file);
+				$position = ftell($handle);
+				if ($position === false) {
+					throw new RuntimeException(sprintf('Cannot tell the position of the collected data of %s.', $file));
+				}
+
+				foreach ($collectors as $collectorType => $length) {
+					$positions[$collectorType][$file] = [$position, $length];
+					$position += $length;
+				}
+			}
+		} catch (Throwable $e) {
+			throw $this->discardUnreadableCollectedData($handle, $e);
+		}
+
+		fclose($handle);
+
+		return new CollectorLocations($signature, $positions);
+	}
+
+	/**
+	 * @param array<string, array{int, int}> $positions
+	 * @return Generator<string, list<mixed>>
+	 */
+	public function readCollector(string $collectorType, array $positions, string $signature): Generator
+	{
+		$transformer = $this->getPathTransformer();
+		$handle = $this->openCacheFileForCollectedData();
+		$discarded = false;
+		try {
+			$this->checkCacheFileSignature($handle, $signature);
+			foreach ($positions as $file => [$offset, $length]) {
+				$values = $this->readCollectorValues($handle, $file, $offset, $length);
+				yield $file => $transformer->absolutizeCollectorValues($collectorType, $values);
+			}
+		} catch (Throwable $e) {
+			$discarded = true;
+
+			throw $this->discardUnreadableCollectedData($handle, $e);
+		} finally {
+			// also when the caller stops iterating early
+			if (!$discarded) {
+				fclose($handle);
+			}
+		}
+	}
+
+	/**
+	 * @param array<string, array{int, int}> $positions
+	 * @return array<string, string>
+	 */
+	public function hashCollector(string $collectorType, array $positions, string $signature): array
+	{
+		$transformer = $this->getPathTransformer();
+		// the stored bytes are what serialize() makes of the values, unless the collector rewrote paths in them
+		$hashStoredBytes = !$transformer->hasPathsInCollectedData($collectorType);
+		$handle = $this->openCacheFileForCollectedData();
+		$hashes = [];
+		try {
+			$this->checkCacheFileSignature($handle, $signature);
+			foreach ($positions as $file => [$offset, $length]) {
+				if ($hashStoredBytes) {
+					$this->seekToCollectorValues($handle, $file, $offset);
+					$hashes[$file] = md5($this->readBlob($handle, $length));
+					continue;
+				}
+
+				$values = $this->readCollectorValues($handle, $file, $offset, $length);
+				$hashes[$file] = md5(serialize($transformer->absolutizeCollectorValues($collectorType, $values)));
+			}
+		} catch (Throwable $e) {
+			throw $this->discardUnreadableCollectedData($handle, $e);
+		}
+
+		fclose($handle);
+
+		return $hashes;
+	}
+
+	/**
+	 * The header line of a collected data entry: each collector type and the length of its data.
+	 * Leaves the handle at the data of the first collector.
+	 *
+	 * @param resource $handle
+	 * @return array<class-string<Collector<Node, mixed>>, int> collector type => length of its data
+	 */
+	private function readCollectorHeader($handle, int $valueLength, string $file): array
+	{
+		$line = fgets($handle);
+		if ($line === false || !str_ends_with($line, "\n")) {
+			throw new RuntimeException(sprintf('The collected data of %s has no header.', $file));
+		}
+
+		$collectors = [];
+		$total = strlen($line);
+		$parts = explode(' ', rtrim($line, "\n"));
+		if ($parts !== ['']) {
+			$count = count($parts);
+			if ($count % 2 !== 0) {
+				throw new RuntimeException(sprintf('The collected data of %s has a malformed header.', $file));
+			}
+
+			for ($i = 0; $i < $count; $i += 2) {
+				$length = (int) $parts[$i + 1];
+				if ($length <= 0) {
+					throw new RuntimeException(sprintf('The collected data of %s has a malformed header.', $file));
+				}
+
+				/** @var class-string<Collector<Node, mixed>> $collectorType */
+				$collectorType = $parts[$i];
+				$collectors[$collectorType] = $length;
+				$total += $length;
+			}
+		}
+
+		if ($total !== $valueLength) {
+			throw new RuntimeException(sprintf('The collected data of %s does not match its header.', $file));
+		}
+
+		return $collectors;
+	}
+
+	/**
+	 * @param resource $handle
+	 * @return list<mixed>
+	 */
+	private function readCollectorValues($handle, string $file, int $offset, int $length): array
+	{
+		$this->seekToCollectorValues($handle, $file, $offset);
+		$values = $this->readFrame($handle, $length);
+		if (!is_array($values) || !array_is_list($values)) {
+			throw new RuntimeException(sprintf('The collected data of %s is not a list.', $file));
+		}
+
+		return $values;
+	}
+
+	/**
+	 * @param resource $handle
+	 */
+	private function seekToCollectorValues($handle, string $file, int $offset): void
+	{
+		if (fseek($handle, $offset) !== 0) {
+			throw new RuntimeException(sprintf('Cannot seek to the collected data of %s.', $file));
+		}
+	}
+
+	/**
+	 * Identifies the cache file the collector positions were read from. Another run sharing the
+	 * tmpDir may rename a different cache over it; the positions are not valid in that one.
+	 *
+	 * @param resource $handle
+	 */
+	private function getCacheFileSignature($handle): string
+	{
+		$stat = fstat($handle);
+		if ($stat === false) {
+			throw new RuntimeException(sprintf('Cannot stat the result cache file %s.', $this->cacheFilePath));
+		}
+
+		return $stat['ino'] . '-' . $stat['size'] . '-' . $stat['mtime'];
+	}
+
+	/**
+	 * @param resource $handle
+	 */
+	private function checkCacheFileSignature($handle, string $signature): void
+	{
+		if ($this->getCacheFileSignature($handle) !== $signature) {
+			throw new RuntimeException(sprintf('The result cache file %s changed while it was being read.', $this->cacheFilePath));
+		}
+	}
+
+	/**
+	 * @return resource
+	 */
+	private function openCacheFileForCollectedData()
+	{
+		try {
+			return $this->openCacheFile();
+		} catch (Throwable $e) {
+			throw $this->discardUnreadableCollectedData(null, $e);
+		}
+	}
+
+	/**
+	 * The walk in readCacheFile() validated the framing, not the values, so reading them is the first
+	 * point where a damaged value shows, and save() has already carried it over into the new file.
+	 * Left in place it would fail every run from now on; restore() discards a cache it cannot read
+	 * back the same way.
+	 *
+	 * @param resource|null $handle
+	 */
+	private function discardUnreadableCollectedData($handle, Throwable $e): UnreadableCollectedDataException
+	{
+		if ($handle !== null) {
+			fclose($handle);
+		}
+
+		@unlink($this->cacheFilePath);
+
+		return new UnreadableCollectedDataException(sprintf('The result cache file %s could not be read back and was discarded, so the next run analyses everything: %s', $this->cacheFilePath, $e->getMessage()), previous: $e);
 	}
 
 	/**
@@ -2827,6 +3065,20 @@ final class ResultCacheManager
 	 */
 	private function readFrame($handle, int $length): mixed
 	{
+		$blob = $this->readBlob($handle, $length);
+		$value = @unserialize($blob);
+		if ($value === false) {
+			throw new RuntimeException(sprintf('A %d byte frame could not be unserialized.', $length));
+		}
+
+		return $value;
+	}
+
+	/**
+	 * @param resource $handle
+	 */
+	private function readBlob($handle, int $length): string
+	{
 		if ($length <= 0) {
 			throw new RuntimeException(sprintf('Frame length %d is not positive.', $length));
 		}
@@ -2840,12 +3092,7 @@ final class ResultCacheManager
 			));
 		}
 
-		$value = @unserialize($blob);
-		if ($value === false) {
-			throw new RuntimeException(sprintf('A %d byte frame could not be unserialized.', $length));
-		}
-
-		return $value;
+		return $blob;
 	}
 
 	/**

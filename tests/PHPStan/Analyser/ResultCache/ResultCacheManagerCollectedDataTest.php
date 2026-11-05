@@ -8,6 +8,7 @@ use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\FinalizerResult;
 use PHPStan\Analyser\ValueDependencyCollector;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\Output;
 use PHPStan\Command\Symfony\SymfonyOutput;
 use PHPStan\Command\Symfony\SymfonyStyle;
@@ -15,11 +16,15 @@ use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\Dependency\PackageDependencyResolver;
 use PHPStan\File\FileHelper;
 use PHPStan\File\FileStatSignatures;
+use PHPStan\Node\CollectedDataNode;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitCollector;
 use PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector;
+use PHPStan\Rules\DeadCode\PossiblyPureFuncCallCollector;
+use PHPStan\Rules\DeadCode\PossiblyPureNewCollector;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
 use Symfony\Component\Console\Input\StringInput;
@@ -32,6 +37,7 @@ use function count;
 use function file_get_contents;
 use function file_put_contents;
 use function is_file;
+use function iterator_to_array;
 use function max;
 use function md5_file;
 use function mkdir;
@@ -47,6 +53,9 @@ use function uniqid;
 use function unlink;
 use function usleep;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 {
 
@@ -156,6 +165,79 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			$resultCache->getCollectedData()->toArray();
 			$this->fail('The damaged value should not decode.');
 		} catch (RuntimeException $e) {
+			$this->assertStringContainsString('could not be read back and was discarded', $e->getMessage());
+		}
+
+		$this->assertFalse(is_file($this->cacheFilePath()));
+	}
+
+	public function testEachCollectorIsReadOnItsOwn(): void
+	{
+		[$a, $b, $c] = $this->files;
+		$data = [
+			$a => [MethodWithoutImpurePointsCollector::class => ['method a'], PossiblyPureFuncCallCollector::class => [['callA', 3]]],
+			$b => [MethodWithoutImpurePointsCollector::class => ['method b']],
+			$c => [PossiblyPureFuncCallCollector::class => [['callC', 4], ['callC2', 5]]],
+		];
+		$this->saveFullAnalysis($data);
+
+		$lazy = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput())->getCollectedData();
+		$this->assertSame([$a => ['method a'], $b => ['method b']], iterator_to_array($lazy->iterate(MethodWithoutImpurePointsCollector::class)));
+		$this->assertSame([$a => [['callA', 3]], $c => [['callC', 4], ['callC2', 5]]], iterator_to_array($lazy->iterate(PossiblyPureFuncCallCollector::class)));
+		$this->assertSame([], iterator_to_array($lazy->iterate(PossiblyPureNewCollector::class)));
+		$this->assertSame($data, $lazy->toArray());
+
+		$node = new CollectedDataNode($lazy, false);
+		$this->assertSame([$a => [['callA', 3]], $c => [['callC', 4], ['callC2', 5]]], $node->get(PossiblyPureFuncCallCollector::class));
+		$this->assertSame([$a => [['callA', 3]], $c => [['callC', 4], ['callC2', 5]]], iterator_to_array($node->iterate(PossiblyPureFuncCallCollector::class)));
+	}
+
+	public function testCachedAndFreshDataHashTheSame(): void
+	{
+		[$a, $b, $c] = $this->files;
+		$conditionInTrait = [['SomeRule', 'SomeTrait', 'key', true, new Error('An error.', $a, 3)]];
+		$data = [
+			$a => [
+				MethodWithoutImpurePointsCollector::class => ['method a'],
+				ConstantConditionInTraitCollector::class => $conditionInTrait,
+			],
+			$b => [MethodWithoutImpurePointsCollector::class => ['method b']],
+			$c => [MethodWithoutImpurePointsCollector::class => ['method c']],
+		];
+		$this->waitUntilTheFilesAreInThePast();
+		$this->saveFullAnalysis($data);
+
+		$cached = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput())->getCollectedData();
+		$fresh = LazyCollectedData::fromArray($data);
+		foreach ([MethodWithoutImpurePointsCollector::class, ConstantConditionInTraitCollector::class] as $collectorType) {
+			$this->assertSame($fresh->hashCollector($collectorType), $cached->hashCollector($collectorType), $collectorType);
+		}
+
+		// paths inside the values are stored relative, iterate() makes them absolute again
+		$this->assertEquals([$a => $conditionInTrait], iterator_to_array($cached->iterate(ConstantConditionInTraitCollector::class)));
+
+		file_put_contents($b, "<?php class Cacheb { public function m(): void {} }\n");
+		$this->waitUntilTheFilesAreInThePast();
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$b], $resultCache->getFilesToAnalyse());
+		$partial = $manager->process($this->analyserResult([$b => $data[$b]]), $resultCache, $this->nullOutput(), false, true)
+			->getAnalyserResult()
+			->getLazyCollectedData();
+		$this->assertSame([$b], array_keys($partial->getFresh()));
+		$this->assertSame($fresh->hashCollector(MethodWithoutImpurePointsCollector::class), $partial->hashCollector(MethodWithoutImpurePointsCollector::class));
+	}
+
+	public function testDamagedValueDiscardsTheCacheWhenIterated(): void
+	{
+		$this->saveFullAnalysis($this->collectedData(['a', 'b', 'c']));
+		$this->breakFirstCollectedDataValue();
+
+		$lazy = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput())->getCollectedData();
+		try {
+			iterator_to_array($lazy->iterate(MethodWithoutImpurePointsCollector::class));
+			$this->fail('The damaged value should not decode.');
+		} catch (UnreadableCollectedDataException $e) {
 			$this->assertStringContainsString('could not be read back and was discarded', $e->getMessage());
 		}
 
@@ -293,7 +375,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param array<string, array<class-string<MethodWithoutImpurePointsCollector>, list<string>>> $collectedData
+	 * @param CollectorData $collectedData
 	 */
 	private function saveFullAnalysis(array $collectedData): void
 	{
@@ -308,7 +390,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param array<string, array<class-string<MethodWithoutImpurePointsCollector>, list<string>>> $collectedData
+	 * @param CollectorData $collectedData
 	 * @param array<string, list<string>> $dependencies of the files that depend on others
 	 * @param list<string> $filesWithExportedNodes analysed files whose exported nodes are read now
 	 * @param list<string> $filesWithErrors

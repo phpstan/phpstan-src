@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PhpParser\Node;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\CollectedDataRuleResult;
 use PHPStan\Analyser\Error;
@@ -178,20 +179,51 @@ final class ResultCachePathTransformer
 		foreach ($collectedData as $file => $dataPerCollector) {
 			$newFile = $relativize ? $this->relativizePath($file) : $this->absolutizePath($file);
 			foreach ($dataPerCollector as $collectorType => $collectedValues) {
-				if (!is_a($collectorType, CollectorWithPaths::class, true)) {
-					$result[$newFile][$collectorType] = $collectedValues;
-					continue;
-				}
-
-				$transformed = [];
-				foreach ($collectedValues as $collectedValue) {
-					$transformed[] = $collectorType::transformCollectedDataPaths($collectedValue, $transformPath);
-				}
-				$result[$newFile][$collectorType] = $transformed;
+				$result[$newFile][$collectorType] = $this->transformCollectorValues($collectorType, $collectedValues, $transformPath);
 			}
 		}
 
 		return $result;
+	}
+
+	/**
+	 * The values one collector collected in one file, with the paths in them made absolute again.
+	 *
+	 * @param list<mixed> $collectedValues
+	 * @return list<mixed>
+	 */
+	public function absolutizeCollectorValues(string $collectorType, array $collectedValues): array
+	{
+		return $this->transformCollectorValues($collectorType, $collectedValues, fn (string $path): string => $this->absolutizeCompoundKey($path));
+	}
+
+	/**
+	 * Whether the values of the collector carry paths that the result cache stores relative.
+	 *
+	 * @phpstan-assert-if-true class-string<CollectorWithPaths<Node, mixed>> $collectorType
+	 */
+	public function hasPathsInCollectedData(string $collectorType): bool
+	{
+		return is_a($collectorType, CollectorWithPaths::class, true);
+	}
+
+	/**
+	 * @param list<mixed> $collectedValues
+	 * @param callable(string): string $transformPath
+	 * @return list<mixed>
+	 */
+	private function transformCollectorValues(string $collectorType, array $collectedValues, callable $transformPath): array
+	{
+		if (!$this->hasPathsInCollectedData($collectorType)) {
+			return $collectedValues;
+		}
+
+		$transformed = [];
+		foreach ($collectedValues as $collectedValue) {
+			$transformed[] = $collectorType::transformCollectedDataPaths($collectedValue, $transformPath);
+		}
+
+		return $transformed;
 	}
 
 	/**

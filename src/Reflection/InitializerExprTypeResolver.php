@@ -71,7 +71,6 @@ use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NonexistentParentClassType;
@@ -92,12 +91,14 @@ use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeWithClassName;
 use PHPStan\Type\UnaryOperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\ValueSet;
 use stdClass;
 use Throwable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_slice;
 use function array_values;
 use function count;
 use function dirname;
@@ -997,7 +998,7 @@ final class InitializerExprTypeResolver
 			$resultTypes = [];
 			foreach ($leftValues as $leftValue) {
 				foreach ($rightValues as $rightValue) {
-					$resultType = new ConstantIntegerType(LooseComparisonHelper::compareValues($leftValue, $rightValue, $this->phpVersion) ?? 1);
+					$resultType = new ConstantIntegerType(ValueSet::compareScalarValues($leftValue, $rightValue, $this->phpVersion) ?? 1);
 					$resultTypes[] = $resultType;
 				}
 			}
@@ -1182,24 +1183,39 @@ final class InitializerExprTypeResolver
 			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): TypeResult => $this->resolveEqualType($leftValueType, $rightValueType, $phpVersions));
 		}
 
-		$versions = $phpVersions !== null ? LooseComparisonHelper::getRepresentativePhpVersions($phpVersions) : [$this->phpVersion];
-		$result = LooseComparisonHelper::looseCompareInVersions($leftType, $rightType, $versions);
+		// constant only when every PHP version agrees
+		$versions = $phpVersions !== null ? $phpVersions->getLooseComparisonVersions() : [$this->phpVersion];
+		$result = $leftType->looseCompare($rightType, $versions[0]);
+		foreach (array_slice($versions, 1) as $version) {
+			if (!$result->equals($leftType->looseCompare($rightType, $version))) {
+				$result = new BooleanType();
+				break;
+			}
+		}
 		if ($result->isTrue()->yes() || $result->isFalse()->yes()) {
 			return new TypeResult($result, []);
 		}
 
-		if (
-			LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions($leftType, $versions)->isSuperTypeOf($rightType)->no()
-			|| LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions($rightType, $versions)->isSuperTypeOf($leftType)->no()
-		) {
-			return new TypeResult(new ConstantBooleanType(false), []);
+		// either side's possibly loosely equal type in any version rules the other side out
+		foreach ([[$leftType, $rightType], [$rightType, $leftType]] as [$type, $otherType]) {
+			$possiblyEqualTypes = [];
+			foreach ($versions as $version) {
+				$possiblyEqualTypes[] = $type->getPossiblyLooselyEqualType($version);
+			}
+			if (TypeCombinator::union(...$possiblyEqualTypes)->isSuperTypeOf($otherType)->no()) {
+				return new TypeResult(new ConstantBooleanType(false), []);
+			}
 		}
 
-		if (
-			LooseComparisonHelper::getAlwaysLooselyEqualTypeInVersions($leftType, $versions)->isSuperTypeOf($rightType)->yes()
-			|| LooseComparisonHelper::getAlwaysLooselyEqualTypeInVersions($rightType, $versions)->isSuperTypeOf($leftType)->yes()
-		) {
-			return new TypeResult(new ConstantBooleanType(true), []);
+		// either side's always loosely equal type in every version holds the other side
+		foreach ([[$leftType, $rightType], [$rightType, $leftType]] as [$type, $otherType]) {
+			$alwaysEqualTypes = [];
+			foreach ($versions as $version) {
+				$alwaysEqualTypes[] = $type->getAlwaysLooselyEqualType($version);
+			}
+			if (TypeCombinator::intersect(...$alwaysEqualTypes)->isSuperTypeOf($otherType)->yes()) {
+				return new TypeResult(new ConstantBooleanType(true), []);
+			}
 		}
 
 		return new TypeResult($result, []);

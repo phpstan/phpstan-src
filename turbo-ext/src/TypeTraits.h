@@ -189,6 +189,9 @@ void pt_value_set_of_members(INTERNAL_FUNCTION_PARAMETERS, bool intersect);
 /* $type->toValueSet()->arithmeticPower($exponent->toValueSet(), $phpVersion);
  * UNDEF = pending exception */
 zv::Val pt_value_set_power(zend_object *type, zval *exponent, zval *phpVersion);
+/* ValueSet::compareScalarValues($left, $right, $phpVersion): 1 with the
+ * -1 / 0 / 1 in `out`, 0 for its null (a NAN), -1 = pending exception */
+int pt_value_set_compare_scalar_values(zval *left, zval *right, zval *phpVersion, zend_long &out);
 
 #define PT_VALUE_SET_OF_THIS(factory) \
 	[](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_this(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC(factory)); }
@@ -363,6 +366,11 @@ zv::Val pt_string_set_concatenate(zval *left, zval *right, zval *phpVersion);
 HashTable *pt_string_set_constants(zval *set);
 zval *pt_string_set_type(zval *set);
 bool pt_string_set_is_empty(zval *set);
+/* StringSet::parseNumericString() / parseNumericPrefix(): 1 with the number
+ * written to `number` (and the overflow direction), 0 for their null, -1 =
+ * pending exception */
+int pt_string_set_parse_numeric_string(zend_string *value, zval *phpVersion, zval *number, int &overflow);
+int pt_string_set_parse_numeric_prefix(zend_string *value, zval *number);
 
 /* the bodies of IntegerType::looseCompare() and IntegerType::arithmeticPower()
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending

@@ -8,8 +8,7 @@
  * only, natively; an uninitialized slot reads as the twin's default.
  *
  * The twin's private methods live only here, in ValueSetOps, method for
- * method. LooseComparisonHelper stays PHP: compareValues() and the
- * numeric-string parsers are called there.
+ * method. The numeric-string parsers are StringSet's (StringSet.cpp).
  */
 
 #include "TypeTraits.h"
@@ -1752,10 +1751,120 @@ public:
 
 	/* {{{ loose equality */
 
-	static zv::Val looseComparisonHelper(const char *lcMethod, size_t len, uint32_t argc, zval *argv)
+	/* {{{ compareScalarValues(): 1 with the -1 / 0 / 1 in `out`, 0 for its
+	 * null, -1 = pending exception */
+
+	static bool isNan(zval *value)
 	{
-		return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, lcMethod, len, argc, argv);
+		return Z_TYPE_P(value) == IS_DOUBLE && std::isnan(Z_DVAL_P(value));
 	}
+
+	static bool isNullOrBool(zval *value)
+	{
+		return Z_TYPE_P(value) == IS_NULL || Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE;
+	}
+
+	static int compareScalarValues(zval *left, zval *right, zval *phpVersion, zend_long &out)
+	{
+		if (Z_TYPE_P(left) != IS_STRING) {
+			if (Z_TYPE_P(right) != IS_STRING) return compareNonStrings(left, right, out);
+
+			int result = compareScalarValues(right, left, phpVersion, out);
+			if (result == 1) out = -out;
+			return result;
+		}
+
+		if (Z_TYPE_P(right) == IS_STRING) return compareStrings(Z_STR_P(left), Z_STR_P(right), phpVersion, out);
+
+		if (isNullOrBool(right)) {
+			// null and booleans compare with strings the same way in every PHP version
+			out = zend_compare(left, right);
+			return 1;
+		}
+
+		if (isNan(right)) return 0;
+
+		bool casts;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_CASTS_NUMBERS_TO_STRINGS_ON_LOOSE_COMPARISON, casts))) return -1;
+		if (!casts) {
+			// the string's leading number, or 0 when there is none
+			zval prefix;
+			int parsed = pt_string_set_parse_numeric_prefix(Z_STR_P(left), &prefix);
+			if (UNEXPECTED(parsed < 0)) return -1;
+			if (parsed == 0) ZVAL_LONG(&prefix, 0);
+			return compareNonStrings(&prefix, right, out);
+		}
+
+		zval number;
+		int overflow;
+		int parsed = pt_string_set_parse_numeric_string(Z_STR_P(left), phpVersion, &number, overflow);
+		if (UNEXPECTED(parsed < 0)) return -1;
+		if (parsed == 1) return compareNonStrings(&number, right, out);
+
+		zend_string *rightString = zval_get_string(right);
+		out = compareBytes(Z_STR_P(left), rightString);
+		zend_string_release(rightString);
+		return 1;
+	}
+
+	static int compareNonStrings(zval *left, zval *right, zend_long &out)
+	{
+		if ((isNan(left) || isNan(right)) && !isNullOrBool(left) && !isNullOrBool(right)) return 0;
+
+		// null and booleans compare with NAN as with true
+		out = zend_compare(left, right);
+		return 1;
+	}
+
+	/* Mirrors compareStrings(): zendi_smart_strcmp() */
+	static int compareStrings(zend_string *left, zend_string *right, zval *phpVersion, zend_long &out)
+	{
+		zval leftValue, rightValue;
+		int leftOverflow = 0, rightOverflow = 0;
+		int leftParsed = pt_string_set_parse_numeric_string(left, phpVersion, &leftValue, leftOverflow);
+		if (UNEXPECTED(leftParsed < 0)) return -1;
+		int rightParsed = pt_string_set_parse_numeric_string(right, phpVersion, &rightValue, rightOverflow);
+		if (UNEXPECTED(rightParsed < 0)) return -1;
+		if (leftParsed == 0 || rightParsed == 0) {
+			out = compareBytes(left, right);
+			return 1;
+		}
+
+		bool leftFloat = Z_TYPE(leftValue) == IS_DOUBLE;
+		bool rightFloat = Z_TYPE(rightValue) == IS_DOUBLE;
+		if (leftOverflow != 0 && leftOverflow == rightOverflow && leftFloat && rightFloat && Z_DVAL(leftValue) == Z_DVAL(rightValue)) {
+			// integers that overflowed to the same side lose the precision needed to compare them
+			out = compareBytes(left, right);
+			return 1;
+		}
+
+		if (leftFloat || rightFloat) {
+			if (!leftFloat) {
+				if (rightOverflow != 0) {
+					out = -rightOverflow;
+					return 1;
+				}
+			} else if (!rightFloat) {
+				if (leftOverflow != 0) {
+					out = leftOverflow;
+					return 1;
+				}
+			} else if (Z_DVAL(leftValue) == Z_DVAL(rightValue) && std::isinf(Z_DVAL(leftValue))) {
+				out = compareBytes(left, right);
+				return 1;
+			}
+		}
+
+		out = zend_compare(&leftValue, &rightValue);
+		return 1;
+	}
+
+	static zend_long compareBytes(zend_string *left, zend_string *right)
+	{
+		return ZEND_NORMALIZE_BOOL(zend_binary_strcmp(ZSTR_VAL(left), ZSTR_LEN(left), ZSTR_VAL(right), ZSTR_LEN(right)));
+	}
+
+	/* }}} */
 
 	/* getNumberString() */
 	static zv::Val getNumberString(zval *number)
@@ -1785,19 +1894,20 @@ public:
 		if (Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE || (Z_TYPE_P(value) == IS_DOUBLE && std::isnan(Z_DVAL_P(value)))) return zv::Val::null();
 		if (Z_TYPE_P(value) != IS_STRING) return zv::Val::copyOf(zv::Ref(value));
 
-		zv::Args parseArgs{value, phpVersion};
-		IETR_VAL(number, looseComparisonHelper(PT_LC("parsenumericstring"), 2, parseArgs));
-		if (Z_TYPE_P(number.raw()) == IS_ARRAY) {
-			zval *parsed = zend_hash_index_find(Z_ARRVAL_P(number.raw()), 0);
-			return zv::Val::copyOf(zv::Ref(parsed));
-		}
+		zval number;
+		int overflow;
+		int parsed = pt_string_set_parse_numeric_string(Z_STR_P(value), phpVersion, &number, overflow);
+		if (UNEXPECTED(parsed < 0)) return zv::Val();
+		if (parsed == 1) return zv::Val::adopt(number);
 		bool casts;
 		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_CASTS_NUMBERS_TO_STRINGS_ON_LOOSE_COMPARISON, casts))) return zv::Val();
 		if (!casts) {
 			// the number the string starts with
-			IETR_VAL(prefix, looseComparisonHelper(PT_LC("parsenumericprefix"), 1, value));
-			if (Z_TYPE_P(prefix.raw()) == IS_NULL) return zv::Val::integer(0);
-			return prefix;
+			zval prefix;
+			int prefixParsed = pt_string_set_parse_numeric_prefix(Z_STR_P(value), &prefix);
+			if (UNEXPECTED(prefixParsed < 0)) return zv::Val();
+			if (prefixParsed == 0) return zv::Val::integer(0);
+			return zv::Val::adopt(prefix);
 		}
 
 		// a number compares with a non-numeric string as its own string
@@ -1855,9 +1965,10 @@ public:
 		}
 		if (Z_TYPE_P(value) == IS_STRING) strings.push_back(zv::Val::copyOf(zv::Ref(value)));
 		for (zv::Val &string : strings) {
-			zv::Args compareArgs{value, string.raw(), phpVersion};
-			IETR_VAL(comparison, looseComparisonHelper(PT_LC("comparevalues"), 3, compareArgs));
-			if (Z_TYPE_P(comparison.raw()) != IS_LONG || Z_LVAL_P(comparison.raw()) != 0) continue;
+			zend_long comparison;
+			int compared = compareScalarValues(value, string.raw(), phpVersion, comparison);
+			if (UNEXPECTED(compared < 0)) return zv::Val();
+			if (compared == 0 || comparison != 0) continue;
 
 			IETR_VAL(stringType, newConstantStringType(Z_STR_P(string.raw())));
 			types.push(std::move(stringType));
@@ -2037,20 +2148,23 @@ public:
 		IETR_VAL(looselyEqual, getTypeLooselyEqualTo(value, phpVersion));
 		types.push(std::move(looselyEqual));
 
-		zv::Args parseArgs{value, phpVersion};
-		IETR_VAL(parsed, looseComparisonHelper(PT_LC("parsenumericstring"), 2, parseArgs));
+		zval parsedNumber;
+		int overflow;
+		int parsed = pt_string_set_parse_numeric_string(string, phpVersion, &parsedNumber, overflow);
+		if (UNEXPECTED(parsed < 0)) return zv::Val();
 		zv::Val number;
-		if (Z_TYPE_P(parsed.raw()) == IS_ARRAY) {
-			number = zv::Val::copyOf(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(parsed.raw()), 0)));
+		if (parsed == 1) {
+			number = zv::Val::adopt(parsedNumber);
 			IETR_VAL(numericString, createNumericStringType());
 			types.push(std::move(numericString));
 		} else {
 			bool casts;
 			if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_CASTS_NUMBERS_TO_STRINGS_ON_LOOSE_COMPARISON, casts))) return zv::Val();
 			if (!casts) {
-				number = looseComparisonHelper(PT_LC("parsenumericprefix"), 1, value);
-				if (UNEXPECTED(number.isUndef())) return zv::Val();
-				if (Z_TYPE_P(number.raw()) == IS_NULL) number = zv::Val::integer(0);
+				zval prefix;
+				int prefixParsed = pt_string_set_parse_numeric_prefix(string, &prefix);
+				if (UNEXPECTED(prefixParsed < 0)) return zv::Val();
+				number = prefixParsed == 0 ? zv::Val::integer(0) : zv::Val::adopt(prefix);
 			}
 		}
 		if (!number.isNull()) {
@@ -2316,6 +2430,11 @@ private:
 using phpstanturbo::ValueSetOps;
 using phpstanturbo::ValueSetView;
 
+int pt_value_set_compare_scalar_values(zval *left, zval *right, zval *phpVersion, zend_long &out)
+{
+	return ValueSetOps::compareScalarValues(left, right, phpVersion, out);
+}
+
 zv::Val pt_value_set_create(const char *lcFactory, size_t len, uint32_t argc, zval *argv)
 {
 	return pt_type_call_static_ce(pt_ce_value_set, lcFactory, len, argc, argv);
@@ -2505,6 +2624,22 @@ PT_MINIT_REGISTRATION(pt_register_value_set)
 	cls.method(sigs::bitwiseShiftLeft, pt_vs_operator<vsShift<ValueSetOps::OP_SHIFT_LEFT>>);
 	cls.method(sigs::bitwiseShiftRight, pt_vs_operator<vsShift<ValueSetOps::OP_SHIFT_RIGHT>>);
 	cls.method(sigs::stringConcatenate, pt_vs_operator<ValueSetOps::stringConcatenate>);
+	cls.method(sigs::compareScalarValues, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *left, *right, *phpVersion;
+		if (!zp::parse<zp::Zval, zp::Zval, zp::Obj>(execute_data, left, right, phpVersion)) RETURN_THROWS();
+		for (uint32_t i = 0; i < 2; i++) {
+			zval *value = i == 0 ? left : right;
+			if (UNEXPECTED(Z_TYPE_P(value) > IS_STRING)) {
+				zend_argument_type_error(i + 1, "must be of type string|int|float|bool|null, %s given", zend_zval_value_name(value));
+				RETURN_THROWS();
+			}
+		}
+		zend_long comparison;
+		int compared = ValueSetOps::compareScalarValues(left, right, phpVersion, comparison);
+		if (UNEXPECTED(compared < 0)) RETURN_THROWS();
+		if (compared == 0) RETURN_NULL();
+		RETURN_LONG(comparison);
+	});
 
 	cls.shadow(&pt_ce_value_set);
 }

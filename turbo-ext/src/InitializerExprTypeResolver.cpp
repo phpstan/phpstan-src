@@ -685,12 +685,12 @@ public:
 			zv::Arr resultTypes = zv::Arr::create((uint32_t) (leftValuesCount * rightValuesCount));
 			for (zv::ArrayEntry leftEntry : zv::ArrRef(leftValues.raw())) {
 				for (zv::ArrayEntry rightEntry : zv::ArrRef(rightValues.raw())) {
-					/* LooseComparisonHelper::compareValues($leftValue, $rightValue, $this->phpVersion) ?? 1 */
-					zv::Args args{leftEntry.value().raw(), rightEntry.value().raw(), prop(slots::phpVersion)};
-					zv::Val compared = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("comparevalues"), 3, args);
-					if (UNEXPECTED(compared.isUndef())) return zv::Val();
+					/* ValueSet::compareScalarValues($leftValue, $rightValue, $this->phpVersion) ?? 1 */
+					zend_long comparisonValue;
+					int compared = pt_value_set_compare_scalar_values(leftEntry.value().raw(), rightEntry.value().raw(), prop(slots::phpVersion), comparisonValue);
+					if (UNEXPECTED(compared < 0)) return zv::Val();
 					zval comparison;
-					ZVAL_LONG(&comparison, Z_TYPE_P(compared.raw()) == IS_LONG ? Z_LVAL_P(compared.raw()) : 1);
+					ZVAL_LONG(&comparison, compared == 1 ? comparisonValue : 1);
 					IETR_VAL(resultType, typeFromValue(&comparison));
 					resultTypes.push(std::move(resultType));
 				}
@@ -791,12 +791,12 @@ public:
 			return resolveConstantArrayTypeComparison(leftType, rightType, false, NULL, phpVersions);
 		}
 
-		// LooseComparisonHelper::get*InVersions() over a single version is
-		// that version's Type method call
+		// $phpVersions->getLooseComparisonVersions(), or the resolver's own
+		// version; the Type methods over a single version need no union
 		zval *version = prop(slots::phpVersion);
 		zv::Val versions;
 		if (phpVersions != NULL) {
-			IETR_VAL(representative, pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getrepresentativephpversions"), 1, phpVersions));
+			IETR_VAL(representative, pt_type_call(Z_OBJ_P(phpVersions), PT_LC("getloosecomparisonversions"), 0, NULL));
 			if (UNEXPECTED(!requireArray(representative.raw()))) return zv::Val();
 			if (zend_hash_num_elements(Z_ARRVAL_P(representative.raw())) == 1) {
 				version = arrayIndexForRead(representative.raw(), 0);
@@ -805,24 +805,42 @@ public:
 			versions = std::move(representative);
 		}
 		bool singleVersion = versions.isUndef() || zend_hash_num_elements(Z_ARRVAL_P(versions.raw())) == 1;
-		auto possiblyEqual = [&](zval *type) -> zv::Val {
-			if (singleVersion) return callOn(type, mGetPossiblyLooselyEqualType, 1, version);
-			zv::Args args{type, versions.raw()};
-			return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getpossiblylooselyequaltypeinversions"), 2, args);
+		/* TypeCombinator::union() / intersect() of $type-><method>($version) over the versions */
+		auto overVersions = [&](zval *type, const Method &method, bool intersect) -> zv::Val {
+			if (singleVersion) return callOn(type, method, 1, version);
+			uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(versions.raw()));
+			zv::Arr types = zv::Arr::create(count);
+			for (zv::ArrayEntry entry : zv::ArrRef(versions.raw())) {
+				IETR_VAL(versionType, callOn(type, method, 1, entry.value().raw()));
+				types.push(std::move(versionType));
+			}
+			if (intersect) return pt_type_combinator_intersect(count, types.table()->arPacked);
+			return unionOf(types);
 		};
-		auto alwaysEqual = [&](zval *type) -> zv::Val {
-			if (singleVersion) return callOn(type, mGetAlwaysLooselyEqualType, 1, version);
-			zv::Args args{type, versions.raw()};
-			return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getalwayslooselyequaltypeinversions"), 2, args);
-		};
+		auto possiblyEqual = [&](zval *type) -> zv::Val { return overVersions(type, mGetPossiblyLooselyEqualType, false); };
+		auto alwaysEqual = [&](zval *type) -> zv::Val { return overVersions(type, mGetAlwaysLooselyEqualType, true); };
 
+		// constant only when every PHP version agrees
 		zv::Val compared;
 		if (singleVersion) {
 			zv::Args argv{rightType, version};
 			compared = callOn(leftType, mLooseCompare, 2, argv);
 		} else {
-			zv::Args argv{leftType, rightType, versions.raw()};
-			compared = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("loosecompareinversions"), 3, argv);
+			bool first = true;
+			for (zv::ArrayEntry entry : zv::ArrRef(versions.raw())) {
+				zv::Args argv{rightType, entry.value().raw()};
+				IETR_VAL(versionResult, callOn(leftType, mLooseCompare, 2, argv));
+				if (first) {
+					compared = std::move(versionResult);
+					first = false;
+					continue;
+				}
+				IETR_VAL(equals, callOn(compared.raw(), mEquals, 1, versionResult.raw()));
+				if (!zend_is_true(equals.raw())) {
+					compared = newBooleanType();
+					break;
+				}
+			}
 		}
 		IETR_VAL(result, std::move(compared));
 		IETR_TRI(resultIsTrue, triOn(result.raw(), mIsTrue));

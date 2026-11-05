@@ -51,7 +51,6 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE */ {"type", "PHPStan\\Type\\Type"},
 	/* PT_CLASS_CLASS_NAME_TO_OBJECT_TYPE_RESULT */ {"classNameToObjectTypeResult", "PHPStan\\Type\\ClassNameToObjectTypeResult"},
 	/* PT_CLASS_IDENTIFIER_TYPE_NODE */ {"identifierTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode"},
-	/* PT_CLASS_LOOSE_COMPARISON_HELPER */ {"looseComparisonHelper", "PHPStan\\Type\\LooseComparisonHelper"},
 	/* PT_CLASS_COMPOUND_TYPE */ {"compoundType", "PHPStan\\Type\\CompoundType"},
 	/* PT_CLASS_CONSTANT_SCALAR_TYPE */ {"constantScalarType", "PHPStan\\Type\\ConstantScalarType"},
 	/* PT_CLASS_GENERIC_TYPE_NODE */ {"genericTypeNode", "PHPStan\\PhpDocParser\\Ast\\Type\\GenericTypeNode"},

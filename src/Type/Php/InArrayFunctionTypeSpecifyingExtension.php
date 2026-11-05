@@ -18,8 +18,8 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\FunctionTypeSpecifyingExtension;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -116,13 +116,20 @@ final class InArrayFunctionTypeSpecifyingExtension implements FunctionTypeSpecif
 			$specifiedTypes = new SpecifiedTypes();
 			if ($context->true()) {
 				// the needle is one of the values an item can loosely equal
-				$possiblyEqualType = LooseComparisonHelper::getPossiblyLooselyEqualTypeInVersions(
-					$arrayValueType,
-					LooseComparisonHelper::getRepresentativePhpVersions($scope->getPhpVersion()),
-				);
+				$possiblyEqualTypes = [];
+				foreach ($scope->getPhpVersion()->getLooseComparisonVersions() as $phpVersion) {
+					$possiblyEqualTypes[] = $arrayValueType->getPossiblyLooselyEqualType($phpVersion);
+				}
+				$possiblyEqualType = TypeCombinator::union(...$possiblyEqualTypes);
 				if (
 					!$possiblyEqualType->isSuperTypeOf(new MixedType())->yes()
-					&& (!$needleType instanceof MixedType || !LooseComparisonHelper::keepsMixedUnnarrowed($possiblyEqualType))
+					// a mixed needle stays mixed rather than gain objects of classes like Stringable or GMP,
+					// which say nothing about the value; enum cases are precise enough to narrow to
+					&& (
+						!$needleType instanceof MixedType
+						|| $possiblyEqualType->isObject()->no()
+						|| TypeCombinator::intersect($possiblyEqualType, new ObjectWithoutClassType())->isEnum()->yes()
+					)
 				) {
 					$specifiedTypes = $this->typeSpecifier->create($needleExpr, $possiblyEqualType, $context, $scope);
 				}

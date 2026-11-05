@@ -53,7 +53,8 @@ private:
 class StringSetOps
 {
 public:
-	static constexpr const char *WHITESPACE = " \t\n\v\f\r";
+	static constexpr const char *WHITESPACE = " \t\n\r\v\f";
+	static constexpr const char *NUMBER = "([+-]?(?:\\d+\\.\\d*|\\.\\d+|(\\d+))([eE][+-]?\\d+)?)";
 
 	/* new self($constants, $type, $digits, $whitespaceFree); type UNDEF or null for none */
 	static zv::Val newStringSet(zv::Arr &constants, zv::Val type, bool digits, bool whitespaceFree)
@@ -434,15 +435,118 @@ public:
 		return length;
 	}
 
+	static bool isWhitespace(char c)
+	{
+		return c != '\0' && strchr(WHITESPACE, c) != NULL;
+	}
+
+	static bool isDigit(char c)
+	{
+		return c >= '0' && c <= '9';
+	}
+
+	/* the match of '/^[WHITESPACE]*' . NUMBER (. '[WHITESPACE]*$/D' when
+	 * anchored, without the whitespace for PHP 7): the span of the number
+	 * and whether it is an integer, without a fraction or an exponent */
+	static bool matchNumber(zend_string *value, bool anchored, bool trailingWhitespace, size_t &start, size_t &length, bool &integerSyntax)
+	{
+		const char *s = ZSTR_VAL(value);
+		size_t n = ZSTR_LEN(value);
+		size_t i = 0;
+		while (i < n && isWhitespace(s[i])) i++;
+		start = i;
+		if (i < n && (s[i] == '+' || s[i] == '-')) i++;
+		size_t integerDigits = 0;
+		while (i < n && isDigit(s[i])) {
+			i++;
+			integerDigits++;
+		}
+		bool fraction = false;
+		if (integerDigits > 0) {
+			if (i < n && s[i] == '.') {
+				i++;
+				while (i < n && isDigit(s[i])) i++;
+				fraction = true;
+			}
+		} else {
+			if (!(i + 1 < n && s[i] == '.' && isDigit(s[i + 1]))) return false;
+			i++;
+			while (i < n && isDigit(s[i])) i++;
+			fraction = true;
+		}
+		bool exponent = false;
+		if (i < n && (s[i] == 'e' || s[i] == 'E')) {
+			size_t j = i + 1;
+			if (j < n && (s[j] == '+' || s[j] == '-')) j++;
+			size_t exponentDigits = 0;
+			while (j < n && isDigit(s[j])) {
+				j++;
+				exponentDigits++;
+			}
+			if (exponentDigits > 0) {
+				i = j;
+				exponent = true;
+			}
+		}
+		length = i - start;
+		integerSyntax = integerDigits > 0 && !fraction && !exponent;
+		if (anchored) {
+			if (trailingWhitespace) {
+				while (i < n && isWhitespace(s[i])) i++;
+			}
+			if (i != n) return false;
+		}
+		return true;
+	}
+
+	/* toNumber(): +$numericString into `number`, the overflow direction */
+	static int toNumber(zend_string *value, size_t start, size_t length, bool integerSyntax, zval *number)
+	{
+		zend_long lval = 0;
+		double dval = 0.0;
+		zend_uchar type = is_numeric_string(ZSTR_VAL(value) + start, length, &lval, &dval, false);
+		if (UNEXPECTED(type == 0)) {
+			pt_throw_should_not_happen();
+			return -2;
+		}
+		if (type == IS_LONG) {
+			ZVAL_LONG(number, lval);
+			return 0;
+		}
+		ZVAL_DOUBLE(number, dval);
+		if (integerSyntax) return dval < 0 ? -1 : 1;
+		return 0;
+	}
+
+	/* parseNumericString(): 1 with the number and the overflow direction, 0
+	 * for null, -1 = pending exception */
+	static int parseNumericString(zend_string *value, zval *phpVersion, zval *number, int &overflow)
+	{
+		bool trailingWhitespace;
+		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_ALLOWS_TRAILING_WHITESPACE_IN_NUMERIC_STRINGS, trailingWhitespace))) return -1;
+		size_t start, length;
+		bool integerSyntax;
+		if (!matchNumber(value, true, trailingWhitespace, start, length, integerSyntax)) return 0;
+		int direction = toNumber(value, start, length, integerSyntax, number);
+		if (UNEXPECTED(direction == -2)) return -1;
+		overflow = direction;
+		return 1;
+	}
+
+	/* parseNumericPrefix(): 1 with the number, 0 for null, -1 = pending exception */
+	static int parseNumericPrefix(zend_string *value, zval *number)
+	{
+		size_t start, length;
+		bool integerSyntax;
+		if (!matchNumber(value, false, false, start, length, integerSyntax)) return 0;
+		return toNumber(value, start, length, integerSyntax, number) == -2 ? -1 : 1;
+	}
+
 	static int isNumeric(zend_string *value, zval *phpVersion)
 	{
-		size_t length = trimmedLength(value);
-		if (length != ZSTR_LEN(value)) {
-			bool allows;
-			if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_ALLOWS_TRAILING_WHITESPACE_IN_NUMERIC_STRINGS, allows))) return -1;
-			if (!allows) return 0;
-		}
-		return is_numeric_string(ZSTR_VAL(value), length, NULL, NULL, false) != 0 ? 1 : 0;
+		zval number;
+		int overflow;
+		return parseNumericString(value, phpVersion, &number, overflow);
 	}
 
 	static int contains(HashTable *constants, zend_string *value)
@@ -527,6 +631,16 @@ bool pt_string_set_is_empty(zval *set)
 	return StringSetView(Z_OBJ_P(set)).isEmpty();
 }
 
+int pt_string_set_parse_numeric_string(zend_string *value, zval *phpVersion, zval *number, int &overflow)
+{
+	return StringSetOps::parseNumericString(value, phpVersion, number, overflow);
+}
+
+int pt_string_set_parse_numeric_prefix(zend_string *value, zval *number)
+{
+	return StringSetOps::parseNumericPrefix(value, number);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -556,6 +670,7 @@ PT_MINIT_REGISTRATION(pt_register_string_set)
 	reg::Class cls("PHPStan\\Type\\StringSet");
 	ptdecl::StringSet::declareClass(cls);
 	cls.privateClassConstantString("WHITESPACE", StringSetOps::WHITESPACE);
+	cls.privateClassConstantString("NUMBER", StringSetOps::NUMBER);
 	/* "constants", "type", "digits" and "whitespaceFree" must stay the
 	 * declared properties in this order (slots::*) */
 	ptdecl::StringSet::declareProperties(cls);
@@ -599,6 +714,26 @@ PT_MINIT_REGISTRATION(pt_register_string_set)
 	cls.method(sigs::toType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(StringSetOps::toType(PT_SELF));
+	});
+	cls.method(sigs::parseNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *value;
+		zval *phpVersion;
+		if (!zp::parse<zp::Str, zp::Obj>(execute_data, value, phpVersion)) RETURN_THROWS();
+		zval number;
+		int overflow;
+		int parsed = StringSetOps::parseNumericString(value, phpVersion, &number, overflow);
+		if (UNEXPECTED(parsed < 0)) RETURN_THROWS();
+		if (parsed == 0) RETURN_NULL();
+		array_init_size(return_value, 2);
+		add_next_index_zval(return_value, &number);
+		add_next_index_long(return_value, overflow);
+	});
+	cls.method(sigs::parseNumericPrefix, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *value;
+		if (!zp::parse<zp::Str>(execute_data, value)) RETURN_THROWS();
+		int parsed = StringSetOps::parseNumericPrefix(value, return_value);
+		if (UNEXPECTED(parsed < 0)) RETURN_THROWS();
+		if (parsed == 0) RETURN_NULL();
 	});
 	cls.method(sigs::concatenate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *right, *phpVersion;

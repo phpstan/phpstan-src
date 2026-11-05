@@ -1075,8 +1075,17 @@ zv::Val pt_type_constant_scalar_loose_compare(zend_object *self, zend_class_entr
 
 	if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_CONSTANT_SCALAR_TYPE, isConstantScalar))) return zv::Val();
 	if (isConstantScalar) {
-		zv::Args args{&selfZv, type, phpVersion};
-		return pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("compareconstantscalars"), 3, args);
+		/* new ConstantBooleanType(ValueSet::compareScalarValues($this->getValue(), $type->getValue(), $phpVersion) === 0) */
+		zv::Val selfValue = constantScalarGetValue(self);
+		if (UNEXPECTED(selfValue.isUndef())) return zv::Val();
+		zv::Val otherValue = constantScalarGetValue(Z_OBJ_P(type));
+		if (UNEXPECTED(otherValue.isUndef())) return zv::Val();
+		zend_long comparison;
+		int compared = pt_value_set_compare_scalar_values(selfValue.raw(), otherValue.raw(), phpVersion, comparison);
+		if (UNEXPECTED(compared < 0)) return zv::Val();
+		zval result;
+		if (UNEXPECTED(!pt_constant_boolean_type_new(&result, compared == 1 && comparison == 0))) return zv::Val();
+		return zv::Val::adopt(result);
 	}
 
 	zend_long isConstantArray = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
@@ -1131,12 +1140,12 @@ static void constantScalarSmaller(INTERNAL_FUNCTION_PARAMETERS, bool orEqual)
 		if (UNEXPECTED(selfValue == NULL)) RETURN_THROWS();
 		zv::Val otherValue = constantScalarGetValue(Z_OBJ_P(otherType));
 		if (UNEXPECTED(otherValue.isUndef())) RETURN_THROWS();
-		/* LooseComparisonHelper::compareValues($this->value, $otherType->getValue(), $phpVersion):
+		/* ValueSet::compareScalarValues($this->value, $otherType->getValue(), $phpVersion):
 		 * the configured PHP version's comparison, not the runtime's zend_compare() */
-		zv::Args args{selfValue, otherValue.raw(), phpVersion};
-		zv::Val comparison = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("comparevalues"), 3, args);
-		if (UNEXPECTED(comparison.isUndef())) RETURN_THROWS();
-		bool holds = Z_TYPE_P(comparison.raw()) == IS_LONG && (orEqual ? Z_LVAL_P(comparison.raw()) <= 0 : Z_LVAL_P(comparison.raw()) < 0);
+		zend_long comparison;
+		int compared = pt_value_set_compare_scalar_values(selfValue, otherValue.raw(), phpVersion, comparison);
+		if (UNEXPECTED(compared < 0)) RETURN_THROWS();
+		bool holds = compared == 1 && (orEqual ? comparison <= 0 : comparison < 0);
 		PT_RETURN_TRINARY(holds ? PT_TRI_YES : PT_TRI_NO);
 	}
 

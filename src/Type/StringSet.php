@@ -5,6 +5,7 @@ namespace PHPStan\Type;
 use Nette\Utils\Strings;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
@@ -15,7 +16,9 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantStringType;
 use function count;
 use function in_array;
+use function is_float;
 use function is_numeric;
+use function preg_match;
 use function rtrim;
 use function strtolower;
 use function strtoupper;
@@ -29,8 +32,11 @@ use function strtoupper;
 final class StringSet
 {
 
-	// the characters PCRE's \s matches, which PHP 8 allows after a numeric string
-	private const WHITESPACE = " \t\n\v\f\r";
+	// the whitespace PHP allows before a numeric string, and since PHP 8.0 after it, the characters PCRE's \s matches
+	private const WHITESPACE = " \t\n\r\v\f";
+
+	// the integer digits are captured only for a number without a fraction, the exponent separately
+	private const NUMBER = '([+-]?(?:\d+\.\d*|\.\d+|(\d+))([eE][+-]?\d+)?)';
 
 	/**
 	 * @param list<ConstantStringType> $constants
@@ -337,15 +343,57 @@ final class StringSet
 		return $this->type === null || $this->digits;
 	}
 
-	/** is_numeric() of the PHP version, which PHP 8 extends to trailing whitespace. */
-	private static function isNumeric(string $value, PhpVersion $phpVersion): bool
+	/**
+	 * The value of a numeric string and the direction an integer overflowed in (1, -1, or 0).
+	 * Leading whitespace is allowed in every PHP version, trailing whitespace since PHP 8.0.
+	 *
+	 * @return array{int|float, int}|null
+	 */
+	public static function parseNumericString(string $value, PhpVersion $phpVersion): ?array
 	{
-		$trimmed = rtrim($value, self::WHITESPACE);
-		if ($trimmed !== $value && !$phpVersion->allowsTrailingWhitespaceInNumericStrings()) {
-			return false;
+		$pattern = $phpVersion->allowsTrailingWhitespaceInNumericStrings()
+			? '/^[' . self::WHITESPACE . ']*' . self::NUMBER . '[' . self::WHITESPACE . ']*$/D'
+			: '/^[' . self::WHITESPACE . ']*' . self::NUMBER . '$/D';
+		if (preg_match($pattern, $value, $matches) !== 1) {
+			return null;
 		}
 
-		return is_numeric($trimmed);
+		return self::toNumber($matches);
+	}
+
+	/** The number a string starts with, as PHP 7 compares a string with a number. */
+	public static function parseNumericPrefix(string $value): int|float|null
+	{
+		if (preg_match('/^[' . self::WHITESPACE . ']*' . self::NUMBER . '/', $value, $matches) !== 1) {
+			return null;
+		}
+
+		return self::toNumber($matches)[0];
+	}
+
+	/**
+	 * @param array<int, string> $matches
+	 * @return array{int|float, int}
+	 */
+	private static function toNumber(array $matches): array
+	{
+		$numericString = $matches[1];
+		if (!is_numeric($numericString)) {
+			throw new ShouldNotHappenException();
+		}
+
+		$number = +$numericString;
+		$isIntegerSyntax = ($matches[2] ?? '') !== '' && ($matches[3] ?? '') === '';
+		if ($isIntegerSyntax && is_float($number)) {
+			return [$number, $number < 0 ? -1 : 1];
+		}
+
+		return [$number, 0];
+	}
+
+	private static function isNumeric(string $value, PhpVersion $phpVersion): bool
+	{
+		return self::parseNumericString($value, $phpVersion) !== null;
 	}
 
 	/** @param list<ConstantStringType> $constants */

@@ -632,7 +632,7 @@ public:
 		// the false branch none of the values the other side always equals
 		zv::Val scopePhpVersions = pt_type_call(Z_OBJ_P(evaluationScope), PT_LC("getphpversion"), 0, NULL);
 		if (UNEXPECTED(scopePhpVersions.isUndef())) return zv::Val();
-		zv::Val phpVersions = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getrepresentativephpversions"), 1, scopePhpVersions.raw());
+		zv::Val phpVersions = pt_type_call(Z_OBJ_P(scopePhpVersions.raw()), PT_LC("getloosecomparisonversions"), 0, NULL);
 		if (UNEXPECTED(phpVersions.isUndef())) return zv::Val();
 		zv::Val leftTypes = createLooselyEqualTypes(evaluationScope, left, leftResult, leftType.raw(), rightType.raw(), phpVersions.raw(), context);
 		if (UNEXPECTED(leftTypes.isUndef())) return zv::Val();
@@ -646,10 +646,23 @@ public:
 	{
 		bool isTrue;
 		if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-		zv::Args args{otherType, phpVersions};
+		// in the true branch any of the versions' values, in the false branch those of every version
+		if (UNEXPECTED(Z_TYPE_P(phpVersions) != IS_ARRAY)) {
+			pt_throw_should_not_happen();
+			return zv::Val();
+		}
+		uint32_t versionCount = zend_hash_num_elements(Z_ARRVAL_P(phpVersions));
+		zv::Arr types = zv::Arr::create(versionCount);
+		for (zv::ArrayEntry entry : zv::ArrRef(phpVersions)) {
+			zv::Val versionType = isTrue
+				? pt_type_call(Z_OBJ_P(otherType), PT_LC("getpossiblylooselyequaltype"), 1, entry.value().raw())
+				: pt_type_call(Z_OBJ_P(otherType), PT_LC("getalwayslooselyequaltype"), 1, entry.value().raw());
+			if (UNEXPECTED(versionType.isUndef())) return zv::Val();
+			types.push(std::move(versionType));
+		}
 		zv::Val type = isTrue
-			? pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getpossiblylooselyequaltypeinversions"), 2, args)
-			: pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("getalwayslooselyequaltypeinversions"), 2, args);
+			? pt_type_combinator_union(versionCount, types.table()->arPacked)
+			: pt_type_combinator_intersect(versionCount, types.table()->arPacked);
 		if (UNEXPECTED(type.isUndef())) return zv::Val();
 
 		// nothing to intersect with, or nothing to remove
@@ -661,10 +674,24 @@ public:
 		bool isFalse;
 		if (UNEXPECTED(!ctxFalse(context, isFalse))) return zv::Val();
 		if (isFalse && instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_never_type)) return pt_specified_types_new();
+		// a mixed subject stays mixed rather than gain objects of classes like Stringable or GMP,
+		// which say nothing about the value; enum cases are precise enough to narrow to
 		if (isTrue && Z_TYPE_P(subjectType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(subjectType), pt_ce_mixed_type)) {
-			zv::Val keepsMixed = pt_type_call_static(PT_CLASS_LOOSE_COMPARISON_HELPER, PT_LC("keepsmixedunnarrowed"), 1, type.raw());
-			if (UNEXPECTED(keepsMixed.isUndef())) return zv::Val();
-			if (Z_TYPE_P(keepsMixed.raw()) == IS_TRUE) return pt_specified_types_new();
+			zend_long isObject = trinaryByName(type.raw(), "isObject", PT_LC("isobject"));
+			if (UNEXPECTED(isObject < 0)) return zv::Val();
+			if (isObject != PT_TRI_NO) {
+				zval object;
+				if (UNEXPECTED(!pt_object_without_class_type_new(&object))) return zv::Val();
+				zval operands[2];
+				ZVAL_COPY_VALUE(&operands[0], type.raw());
+				ZVAL_COPY_VALUE(&operands[1], &object);
+				zv::Val objects = pt_type_combinator_intersect(2, operands);
+				zval_ptr_dtor(&object);
+				if (UNEXPECTED(objects.isUndef())) return zv::Val();
+				zend_long isEnum = trinaryByName(objects.raw(), "isEnum", PT_LC("isenum"));
+				if (UNEXPECTED(isEnum < 0)) return zv::Val();
+				if (isEnum != PT_TRI_YES) return pt_specified_types_new();
+			}
 		}
 
 		return createSubjectTypes(evaluationScope, subject, subjectResult, type.raw(), context);

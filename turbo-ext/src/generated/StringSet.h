@@ -71,8 +71,12 @@ inline constexpr char strings[] =
 	"afterInteger\0" /* 440 */
 	"isNumberSuffix\0" /* 453 */
 	"value\0" /* 468 */
-	"isNumeric\0" /* 474 */
-	"contains"; /* 484 */
+	"parseNumericString\0" /* 474 */
+	"parseNumericPrefix\0" /* 493 */
+	"matches\0" /* 512 */
+	"toNumber\0" /* 520 */
+	"isNumeric\0" /* 529 */
+	"contains"; /* 539 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $constants */
 	reg::packed(10, MAY_BE_NULL, 15), /* __construct $type */
@@ -110,6 +114,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(440, MAY_BE_BOOL), /* isNumberSuffix $afterInteger */
 	reg::packed(271, 0, 282), /* isNumberSuffix $phpVersion */
 	reg::packed(67, MAY_BE_BOOL), /* isNumberSuffix return */
+	reg::packed(468, MAY_BE_STRING), /* parseNumericString $value */
+	reg::packed(271, 0, 282), /* parseNumericString $phpVersion */
+	reg::packed(67, MAY_BE_NULL | MAY_BE_ARRAY), /* parseNumericString return */
+	reg::packed(468, MAY_BE_STRING), /* parseNumericPrefix $value */
+	reg::packed(67, MAY_BE_NULL | MAY_BE_LONG | MAY_BE_DOUBLE), /* parseNumericPrefix return */
+	reg::packed(512, MAY_BE_ARRAY), /* toNumber $matches */
+	reg::packed(67, MAY_BE_ARRAY), /* toNumber return */
 	reg::packed(468, MAY_BE_STRING), /* isNumeric $value */
 	reg::packed(271, 0, 282), /* isNumeric $phpVersion */
 	reg::packed(67, MAY_BE_BOOL), /* isNumeric return */
@@ -144,8 +155,11 @@ inline constexpr sigtab::Sig isDecimalInteger = { { 387 /* isDecimalInteger */, 
 inline constexpr sigtab::Sig isNumericOrEmpty = { { 404 /* isNumericOrEmpty */, 1, 29, 1, 30, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig canEndInWhitespace = { { 421 /* canEndInWhitespace */, 1, 31, 1, 32, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig isNumberSuffix = { { 453 /* isNumberSuffix */, 2, 33, 2, 35, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isNumeric = { { 474 /* isNumeric */, 2, 36, 2, 38, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig contains = { { 484 /* contains */, 2, 39, 2, 41, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig parseNumericString = { { 474 /* parseNumericString */, 2, 36, 2, 38, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig parseNumericPrefix = { { 493 /* parseNumericPrefix */, 1, 39, 1, 40, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toNumber = { { 520 /* toNumber */, 1, 41, 1, 42, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isNumeric = { { 529 /* isNumeric */, 2, 43, 2, 45, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig contains = { { 539 /* contains */, 2, 46, 2, 48, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::StringSet

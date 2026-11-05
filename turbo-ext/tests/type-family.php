@@ -670,7 +670,7 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 // ---- FloatType / ConstantFloatType / NullType / VoidType ----
 // the string family's reflection provider and PhpVersion accessors stay
 // registered from the section above (looseCompare() against objects with
-// __toString() and LooseComparisonHelper consult them)
+// __toString() and ValueSet consult them)
 $floatPhpVersions = [new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80400)];
 $floatOthers = static fn (string $float, string $constFloat, string $null, string $void): array => [
 	'float' => new $float(),
@@ -1019,7 +1019,7 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 		'benevolent' => new \PHPStan\Type\BenevolentUnionType([$floatRangeClass::fromInterval(1.0, 2.0), new \PHPStan\Type\IntegerType()]),
 		'string' => new \PHPStan\Type\StringType(),
 	];
-	// the loose equality sets of LooseComparisonHelper, reached through OperatorTypeTrait
+	// the loose equality sets of ValueSet, reached through OperatorTypeTrait
 	$looseEqualityOperands = $arithmeticOperands + [
 		'null' => new \PHPStan\Type\NullType(),
 		'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
@@ -7965,6 +7965,23 @@ $observations['native PHPStan\Type\ValueSet'] = (new ReflectionMethod(\PHPStan\T
 				$r["stringSet concatenate union $concatenateVersionId $leftName $rightName"] = $catching(static fn () => $leftStrings->union($stringSets["'5'"])->concatenate($rightStrings->union($stringSets['digits']), new \PHPStan\Php\PhpVersion($concatenateVersionId)));
 			}
 		}
+	}
+	// the numeric-string parsers of StringSet and ValueSet's scalar comparison, at each PHP version's rules
+	$comparedStrings = ['', ' ', '0', '00', '1', '-1', '+1', '1 ', ' 1', "1\n", "\t\n\r\v\f12\t", '1.', '.5', '+.5', '-.5e3', '1.0', '1e', '1e5', '1E-5', '1.e5', 'abc', '1abc', '.', '-', '0x1A', '1_000', 'INF', '-INF', 'NAN', '9223372036854775807', '9223372036854775808', '-9223372036854775809', '99999999999999999999', '1e1000', '-1e1000'];
+	$comparedValues = [...$comparedStrings, null, true, false, 0, 1, -1, 0.0, -0.0, 1.5, NAN, INF, -INF, PHP_INT_MAX, PHP_INT_MIN, 9.2233720368547758E18, 1e1000];
+	foreach ([70400, 80000, 80500] as $compareVersionId) {
+		$compareVersion = new \PHPStan\Php\PhpVersion($compareVersionId);
+		foreach ($comparedStrings as $string) {
+			$r['parseNumericString ' . $compareVersionId . ' ' . json_encode($string)] = $catching(static fn () => \PHPStan\Type\StringSet::parseNumericString($string, $compareVersion));
+		}
+		foreach ($comparedValues as $leftIndex => $left) {
+			foreach ($comparedValues as $rightIndex => $right) {
+				$r["compareScalarValues $compareVersionId $leftIndex $rightIndex"] = \PHPStan\Type\ValueSet::compareScalarValues($left, $right, $compareVersion);
+			}
+		}
+	}
+	foreach ($comparedStrings as $string) {
+		$r['parseNumericPrefix ' . json_encode($string)] = $catching(static fn () => \PHPStan\Type\StringSet::parseNumericPrefix($string));
 	}
 	foreach ($operands as $name => $operand) {
 		$r["exponentiate $name int7"] = $catching(static fn () => $operand->exponentiate($int(7)));

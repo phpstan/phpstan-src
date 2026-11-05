@@ -11,8 +11,8 @@ use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IsSuperTypeOfResult;
-use PHPStan\Type\LooseComparisonHelper;
 use PHPStan\Type\Type;
+use PHPStan\Type\ValueSet;
 
 trait ConstantScalarTypeTrait
 {
@@ -54,7 +54,7 @@ trait ConstantScalarTypeTrait
 		}
 
 		if ($type instanceof ConstantScalarType) {
-			return LooseComparisonHelper::compareConstantScalars($this, $type, $phpVersion);
+			return new ConstantBooleanType(ValueSet::compareScalarValues($this->getValue(), $type->getValue(), $phpVersion) === 0);
 		}
 
 		if ($type->isConstantArray()->yes() && $type->isIterableAtLeastOnce()->no()) {
@@ -77,7 +77,7 @@ trait ConstantScalarTypeTrait
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
-			$comparison = LooseComparisonHelper::compareValues($this->value, $otherType->getValue(), $phpVersion);
+			$comparison = ValueSet::compareScalarValues($this->value, $otherType->getValue(), $phpVersion);
 			return TrinaryLogic::createFromBoolean($comparison !== null && $comparison < 0);
 		}
 
@@ -91,7 +91,7 @@ trait ConstantScalarTypeTrait
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		if ($otherType instanceof ConstantScalarType) {
-			$comparison = LooseComparisonHelper::compareValues($this->value, $otherType->getValue(), $phpVersion);
+			$comparison = ValueSet::compareScalarValues($this->value, $otherType->getValue(), $phpVersion);
 			return TrinaryLogic::createFromBoolean($comparison !== null && $comparison <= 0);
 		}
 

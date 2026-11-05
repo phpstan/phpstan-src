@@ -1172,13 +1172,13 @@ public:
 		bool hasNumbers = !numbersEmpty(s.numbers());
 		if (!hasBooleans && !hasStrings && !s.null_() && hasNumbers) {
 			NumbersView n(s.numbers());
-			if (n.floatCount() == 0 && !n.nan()) return createNumbersOf(anyInteger());
-			if (n.integerCount() == 0) {
-				NumberSetData anyFloat;
-				anyFloat.floatIntervals.push_back({-HUGE_VAL, HUGE_VAL});
-				anyFloat.nan = true;
-				return createNumbersOf(anyFloat);
+			bool hasFloats = n.floatCount() != 0 || n.nan();
+			NumberSetData generalized = n.integerCount() != 0 ? anyInteger() : NumberSetData();
+			if (hasFloats) {
+				generalized.floatIntervals.push_back({-HUGE_VAL, HUGE_VAL});
+				generalized.nan = true;
 			}
+			return createNumbersOf(generalized);
 		}
 		if (!hasBooleans && !hasNumbers && !s.null_() && hasStrings) {
 			IETR_VAL(stringType, newStringType());

@@ -2,9 +2,15 @@
 
 namespace ArrayRand;
 
-function doFoo(int $i) {
+function doFoo() {
 	$arr = [];
 	$x = array_rand($arr);
+}
+
+// array_rand() on an empty array never returns, so this needs its own function
+// to stay reachable.
+function doFooWithNum(int $i) {
+	$arr = [];
 	$y = array_rand($arr, $i);
 }
 

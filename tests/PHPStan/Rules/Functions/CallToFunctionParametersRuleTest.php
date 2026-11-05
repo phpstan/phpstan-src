@@ -2610,20 +2610,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			],
 			[
 				'Parameter #1 $input of function array_rand expects non-empty-array, array{} given.',
-				8,
+				14,
 				'array{} is empty.',
 			],
 			[
 				'Parameter #2 $num_req of function array_rand expects int<1, max>, int given.',
-				8,
+				14,
 			],
 			[
 				'Parameter #2 $num_req of function array_rand expects int<1, max>, -5 given.',
-				13,
+				19,
 			],
 			[
 				'Parameter #2 $num_req of function array_rand expects int<1, max>, 0 given.',
-				14,
+				20,
 			],
 		]);
 	}
@@ -3340,6 +3340,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #2 $classConfig of function Bug11510\\foo expects \'test\', \'hello\' given.',
 				20,
+			],
+		]);
+	}
+
+	public function testBug15073(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15073.php'], [
+			[
+				'Parameter #1 $s of function Bug15073Rule\\wantsString expects string, int|string given.',
+				16,
 			],
 		]);
 	}

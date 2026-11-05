@@ -262,7 +262,7 @@ final class ValueSet
 		foreach ($this->getConstantStrings() as $constantString) {
 			$types[] = self::getConstantStringPartnerType($constantString->getValue(), $phpVersion);
 		}
-		$stringType = $this->strings?->getType();
+		$stringType = $this->strings !== null ? $this->strings->getType() : null;
 		if ($stringType !== null) {
 			$types[] = self::getStringPartnerType($stringType, $phpVersion);
 		}
@@ -288,7 +288,7 @@ final class ValueSet
 	 */
 	public function getAlwaysLooselyEqualType(PhpVersion $phpVersion): Type
 	{
-		if ($this->unknown || $this->strings?->getType() !== null || $this->nonEmptyArray || $this->resources) {
+		if ($this->unknown || ($this->strings !== null && $this->strings->getType() !== null) || $this->nonEmptyArray || $this->resources) {
 			return new NeverType();
 		}
 
@@ -750,7 +750,7 @@ final class ValueSet
 	/** @return list<ConstantStringType> */
 	private function getConstantStrings(): array
 	{
-		return $this->strings?->getConstantStrings() ?? [];
+		return $this->strings !== null ? $this->strings->getConstantStrings() : [];
 	}
 
 	/**
@@ -786,7 +786,7 @@ final class ValueSet
 		foreach ($this->getConstantStrings() as $constantString) {
 			$members[] = self::createConstantString($constantString);
 		}
-		$stringType = $this->strings?->getType();
+		$stringType = $this->strings !== null ? $this->strings->getType() : null;
 		if ($stringType !== null) {
 			$members[] = self::createStrings($stringType);
 		}
@@ -815,7 +815,7 @@ final class ValueSet
 			}
 			$numbers = $numbers->union($stringNumbers);
 		}
-		$stringType = $this->strings?->getType();
+		$stringType = $this->strings !== null ? $this->strings->getType() : null;
 		if ($stringType !== null) {
 			$stringNumbers = $stringType->toNumber()->toNumberSet();
 			if ($stringNumbers === null) {
@@ -1001,8 +1001,8 @@ final class ValueSet
 			|| $leftNumberType instanceof BenevolentUnionType
 			|| $rightNumberType instanceof BenevolentUnionType;
 
-		$leftNumbers = $this->unknown || $right->unknown ? null : $leftNumberType?->toNumberSet();
-		$rightNumbers = $this->unknown || $right->unknown ? null : $rightNumberType?->toNumberSet();
+		$leftNumbers = $this->unknown || $right->unknown ? null : ($leftNumberType !== null ? $leftNumberType->toNumberSet() : null);
+		$rightNumbers = $this->unknown || $right->unknown ? null : ($rightNumberType !== null ? $rightNumberType->toNumberSet() : null);
 		if ($leftNumbers !== null && $rightNumbers !== null) {
 			if ($operator === '+') {
 				$result = $leftNumbers->add($rightNumbers, $phpVersion);
@@ -1088,7 +1088,7 @@ final class ValueSet
 		}
 
 		$otherTypes = $this->getConstantStrings();
-		foreach ([$this->strings?->getType(), $this->arrays, $this->objects] as $type) {
+		foreach ([$this->strings !== null ? $this->strings->getType() : null, $this->arrays, $this->objects] as $type) {
 			if ($type === null) {
 				continue;
 			}
@@ -1121,7 +1121,7 @@ final class ValueSet
 	private function isArray(): TrinaryLogic
 	{
 		if ($this->unknown) {
-			return $this->unknownType?->isArray() ?? TrinaryLogic::createMaybe();
+			return $this->unknownType !== null ? $this->unknownType->isArray() : TrinaryLogic::createMaybe();
 		}
 		if ($this->mayBeArray() && $this->mayBeNonArray()) {
 			return TrinaryLogic::createMaybe();
@@ -1387,7 +1387,7 @@ final class ValueSet
 	{
 		if (
 			$this->unknown
-			|| $this->strings?->getType() !== null
+			|| ($this->strings !== null && $this->strings->getType() !== null)
 			|| $this->emptyArray
 			|| $this->nonEmptyArray
 			|| $this->objects !== null
@@ -1474,7 +1474,7 @@ final class ValueSet
 		}
 
 		$types = $this->getConstantStrings();
-		$stringType = $this->strings?->getType();
+		$stringType = $this->strings !== null ? $this->strings->getType() : null;
 		if ($stringType !== null) {
 			$types[] = $stringType;
 		}
@@ -1650,8 +1650,10 @@ final class ValueSet
 	private static function getTypeLooselyEqualTo(bool|float|int|string|null $value, PhpVersion $phpVersion): Type
 	{
 		// null compares with a string as with '', with anything else by truthiness, like the booleans
-		$types = [new ConstantBooleanType((bool) $value)];
-		if (is_string($value) ? $value === '' : !(bool) $value) {
+		// not (bool) $value: PHP 8.5 warns when casting NAN, which is truthy
+		$truthy = !in_array($value, [null, false, 0, 0.0, '', '0'], true);
+		$types = [new ConstantBooleanType($truthy)];
+		if (is_string($value) ? $value === '' : !$truthy) {
 			$types[] = new NullType();
 		}
 		if ($value === null) {

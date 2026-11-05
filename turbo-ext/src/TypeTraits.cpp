@@ -5480,15 +5480,6 @@ zv::Val pt_prototype_resolved_property(PrototypeKind kind, const PrototypeTransf
 
 /* {{{ OperatorTypeTrait */
 
-/* $this-><operator>($right, $phpVersion): OperatorTypeHelper::<operator>($this, $right, $phpVersion) */
-template <pt_operator_type_op Op>
-static void ZEND_FASTCALL operatorBinary(INTERNAL_FUNCTION_PARAMETERS)
-{
-	zval *right, *phpVersion;
-	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
-	PT_RETURN_VAL(pt_operator_type_helper_binary(Op, ZEND_THIS, right, phpVersion));
-}
-
 /* $this->toValueSet()-><operator>($right->toValueSet(), $phpVersion) */
 static void operatorValueSet(INTERNAL_FUNCTION_PARAMETERS, const char *lcOperator, size_t len)
 {
@@ -5621,7 +5612,12 @@ void pt_type_trait_operator(reg::Class &cls)
 	cls.traitMethod(sigs::bitwiseShiftLeft, PT_OPERATOR_VALUE_SET("bitwiseshiftleft"));
 	cls.traitMethod(sigs::bitwiseShiftRight, PT_OPERATOR_VALUE_SET("bitwiseshiftright"));
 	cls.traitMethod(sigs::stringConcatenate, PT_OPERATOR_VALUE_SET("stringconcatenate"));
-	cls.traitMethod(sigs::arrayUnion, operatorBinary<PT_OPERATOR_ARRAY_UNION>);
+	/* the array + operator, its body is in OperatorTypeTrait.cpp */
+	cls.traitMethod(sigs::arrayUnion, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *right, *phpVersion;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(pt_operator_type_trait_array_union(ZEND_THIS, right));
+	});
 	/* $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion) */
 	cls.traitMethod(sigs::getPossiblyLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *phpVersion;

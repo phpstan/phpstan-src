@@ -7791,7 +7791,6 @@ if (PHP_VERSION_ID >= 80300) {
 	require_once $initializerFixture;
 }
 $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new ReflectionMethod(\PHPStan\Reflection\InitializerExprTypeResolver::class, 'getType'))->isInternal();
-$observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(\PHPStan\Type\OperatorTypeHelper::class, 'arrayUnion'))->isInternal();
 $observations['native PHPStan\Type\StringSet'] = (new ReflectionMethod(\PHPStan\Type\StringSet::class, 'concatenate'))->isInternal();
 $observations['native PHPStan\Type\ValueSet'] = (new ReflectionMethod(\PHPStan\Type\ValueSet::class, 'union'))->isInternal();
 {

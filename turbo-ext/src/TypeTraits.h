@@ -1119,9 +1119,9 @@ inline constexpr reg::Arg templateTypeVariance = reg::obj("", ptcls::templateTyp
 } // namespace ptret
 
 /* src/Type/Traits/OperatorTypeTrait.php — the operator methods, each
- * handing $this to OperatorTypeHelper (OperatorTypeHelper.cpp), and the
- * deprecated exponentiate() calling $this->arithmeticPower() with the
- * newest PhpVersion. */
+ * handing the operands' ValueSets over (ValueSet.cpp), arrayUnion()
+ * (OperatorTypeTrait.cpp), and the deprecated exponentiate() calling
+ * $this->arithmeticPower() with the newest PhpVersion. */
 void pt_type_trait_operator(reg::Class &cls);
 
 /* src/Type/Generic/TemplateTypeTrait.php — besides the trait's methods the

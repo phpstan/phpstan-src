@@ -4089,22 +4089,15 @@ zv::Val pt_initializer_expr_type_resolver_get_bitwise_not_type(zval *resolver, z
 
 /* }}} */
 
-/* {{{ OperatorTypeHelper.cpp — the shadowing PHPStan\Type\OperatorTypeHelper
- * (a final class of static methods) */
+/* {{{ OperatorTypeTrait.cpp — the native body of OperatorTypeTrait::arrayUnion() */
 
-extern zend_class_entry *pt_ce_operator_type_helper;
 /* PhpVersionFactory::MAX_PHP_VERSION — the PhpVersion OperatorTypeTrait's
  * deprecated exponentiate() hands arithmeticPower() (smoke.php holds it
  * against the class constant) */
 #define PT_PHP_VERSION_FACTORY_MAX_PHP_VERSION 80699
-/* the operators OperatorTypeTrait still hands to OperatorTypeHelper */
-enum pt_operator_type_op : uint8_t
-{
-	PT_OPERATOR_ARRAY_UNION,
-};
-/* OperatorTypeHelper::arrayUnion($left, $right, $phpVersion)
- * (all borrowed); UNDEF = pending exception */
-zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval *right, zval *phpVersion);
+/* $left->arrayUnion($right, $phpVersion) of OperatorTypeTrait (both
+ * borrowed); UNDEF = pending exception */
+zv::Val pt_operator_type_trait_array_union(zval *left, zval *right);
 
 /* }}} */
 

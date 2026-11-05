@@ -508,7 +508,8 @@ class UnionType implements CompoundType
 		if (isset($this->cachedDescriptions[$level->getLevelValue()])) {
 			return $this->cachedDescriptions[$level->getLevelValue()];
 		}
-		$joinTypes = static function (array $types) use ($level): string {
+		$benevolent = $this instanceof BenevolentUnionType;
+		$joinTypes = static function (array $types) use ($level, $benevolent): string {
 			$typeNames = [];
 			foreach ($types as $i => $type) {
 				if ($type instanceof ClosureType || $type instanceof CallableType || $type instanceof TemplateUnionType) {
@@ -554,10 +555,17 @@ class UnionType implements CompoundType
 			}
 
 			if (count($typeNames) > 1024) {
-				return implode('|', array_slice($typeNames, 0, 1024)) . "|\u{2026}";
+				$description = implode('|', array_slice($typeNames, 0, 1024)) . "|\u{2026}";
+			} else {
+				$description = implode('|', $typeNames);
 			}
 
-			return implode('|', $typeNames);
+			// the members of a benevolent union can describe the same, like decimal-int-string and non-empty-string as string
+			if ($benevolent && count($typeNames) > 1) {
+				return '(' . $description . ')';
+			}
+
+			return $description;
 		};
 
 		return $this->cachedDescriptions[$level->getLevelValue()] = $level->handle(

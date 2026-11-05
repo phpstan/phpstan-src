@@ -3450,4 +3450,19 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBenevolentUnionDescription(): void
+	{
+		$this->analyse([__DIR__ . '/data/benevolent-union-description.php'], [
+			[
+				'Parameter #1 $num of function BenevolentUnionDescription\\takesNumber expects float|int, string given.',
+				18,
+			],
+			[
+				'Parameter #1 $s of function BenevolentUnionDescription\\takesString expects string, (float|int) given.',
+				19,
+			],
+		]);
+	}
+
 }

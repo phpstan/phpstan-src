@@ -8,8 +8,8 @@
  * the constructor forwarding to the parent's, and the overrides that make
  * the union benevolent: unionResults() answering yes as soon as one member
  * does, unionTypes()/getOffsetValueType()/traverse()/traverseSimultaneously()/
- * tryRemove()/filterTypes() keeping the result benevolent, describe()
- * parenthesizing the parent's, pickFromTypes() consulting the criteria,
+ * tryRemove()/filterTypes() keeping the result benevolent,
+ * pickFromTypes() consulting the criteria,
  * isAcceptedBy() or'ing the members, the template maps combined with
  * benevolentUnion(). Everything else is inherited from the parent's
  * class entry, as the PHP class inherits it.
@@ -106,19 +106,6 @@ public:
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		if (zv::Ref(result.raw()).isNull()) return result;
 		return toBenevolent(result.raw());
-	}
-
-	/* '(' . parent::describe($level) . ')' */
-	zv::Val describe(zval *level) const
-	{
-		zv::Val inner = pt_union_type_describe(self, level);
-		if (UNEXPECTED(inner.isUndef())) return zv::Val();
-		smart_str description = {NULL, 0};
-		smart_str_appendc(&description, '(');
-		smart_str_append(&description, zv::Ref(inner.raw()).asString());
-		smart_str_appendc(&description, ')');
-		smart_str_0(&description);
-		return zv::Val::adoptString(description.s);
 	}
 
 	/* the members' results with the ErrorTypes dropped: $this when nothing
@@ -513,9 +500,6 @@ PT_MINIT_REGISTRATION(pt_register_benevolent_union_type)
 	});
 
 	cls.method<&BenevolentUnionType::tryRemove, zp::Obj>(sigs::tryRemove);
-
-	cls.method<&BenevolentUnionType::describe, zp::Obj>(sigs::describe);
-	cls.op<PT_OP_DESCRIBE, &BenevolentUnionType::describe>();
 
 	cls.method(sigs::unionTypes, buUnionTypes);
 	cls.method(sigs::pickFromTypes, buPickFromTypes);

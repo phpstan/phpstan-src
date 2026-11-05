@@ -3645,6 +3645,10 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 		'benevolentArrays' => new $benevolentClass([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()), $compoundConstShape(['a' => new \PHPStan\Type\IntegerType()])]),
 		'benevolentConsts' => new $benevolentClass([new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantStringType('a')]),
 		'benevolentObjects' => new $benevolentClass([new \PHPStan\Type\ObjectType(\stdClass::class), new \PHPStan\Type\StringType()]),
+		// both members describe as array<int|string> at the value and type-only levels
+		'benevolentSameArrays' => new $benevolentClass([new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new $unionClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()])), new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), new $unionClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]))]),
+		// both members describe as string at the type-only level
+		'benevolentStrings' => new $benevolentClass([new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType()]), new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType(), new \PHPStan\Type\Accessory\AccessoryUppercaseStringType()])]),
 		'templateUnion' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'U', new $unionClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
 		'templateBenevolentUnion' => \PHPStan\Type\Generic\TemplateTypeFactory::create($compoundScope, 'B', new $benevolentClass([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()]), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()),
 		'nonEmptyString' => new $intersectionClass([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNonEmptyStringType()]),

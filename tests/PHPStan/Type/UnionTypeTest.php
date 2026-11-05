@@ -961,6 +961,30 @@ class UnionTypeTest extends PHPStanTestCase
 				'Foo',
 				'Foo',
 			],
+			[
+				new BenevolentUnionType([new IntegerType(), new StringType()]),
+				'(int|string)',
+				'(int|string)',
+				'(int|string)',
+				'(int|string)',
+			],
+			[
+				new BenevolentUnionType([new ObjectType('Foo'), new ObjectType('Foo')]),
+				'(Foo-PHPStan\Type\ObjectType-#1|Foo-PHPStan\Type\ObjectType-#2)',
+				'(Foo#1|Foo#2)',
+				'Foo',
+				'Foo',
+			],
+			[
+				new BenevolentUnionType([
+					new GenericObjectType('Foo', [new UnionType([new IntegerType(), new StringType()])]),
+					new GenericObjectType('Foo', [new UnionType([new IntegerType(), new StringType()])]),
+				]),
+				'(Foo-PHPStan\Type\Generic\GenericObjectType-<int|string>#1|Foo-PHPStan\Type\Generic\GenericObjectType-<int|string>#2)',
+				'(Foo<int|string>#1|Foo<int|string>#2)',
+				'Foo<int|string>',
+				'Foo<int|string>',
+			],
 		];
 	}
 

@@ -41,11 +41,6 @@ class BenevolentUnionType extends UnionType
 		return TypeUtils::toBenevolentUnion($result);
 	}
 
-	public function describe(VerbosityLevel $level): string
-	{
-		return '(' . parent::describe($level) . ')';
-	}
-
 	protected function unionTypes(callable $getType): Type
 	{
 		$changed = false;

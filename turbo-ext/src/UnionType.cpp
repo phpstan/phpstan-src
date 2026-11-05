@@ -966,6 +966,7 @@ public:
 
 		pt_verbosity_case which;
 		if (UNEXPECTED(!pt_type_verbosity_case(level, which))) return zv::Val();
+		bool benevolent = instanceof_function(self->ce, pt_ce_benevolent_union_type);
 		zv::Val description;
 		if (which == PT_VERBOSITY_TYPE_ONLY) {
 			zv::Val sorted = thisGetSortedTypes();
@@ -999,16 +1000,16 @@ public:
 			if (zv::Ref(types.raw()).instanceOf(pt_ce_union_type)) {
 				zv::Val innerSorted = sortedTypesOf(Z_OBJ_P(types.raw()));
 				if (UNEXPECTED(innerSorted.isUndef())) return zv::Val();
-				description = joinTypes(zv::ArrRef(innerSorted.raw()), level, which);
+				description = joinTypes(zv::ArrRef(innerSorted.raw()), level, which, benevolent);
 			} else {
 				zv::Arr single = zv::Arr::create(1);
 				single.push(std::move(types));
-				description = joinTypes(single.arrRef(), level, which);
+				description = joinTypes(single.arrRef(), level, which, benevolent);
 			}
 		} else {
 			zv::Val sorted = thisGetSortedTypes();
 			if (UNEXPECTED(sorted.isUndef())) return zv::Val();
-			description = joinTypes(zv::ArrRef(sorted.raw()), level, which);
+			description = joinTypes(zv::ArrRef(sorted.raw()), level, which, benevolent);
 		}
 		if (UNEXPECTED(description.isUndef())) return zv::Val();
 
@@ -1040,8 +1041,9 @@ public:
 	 * for a closure/callable/template union, for a template with a bound
 	 * that must be shown, and for an intersection containing '&'; the
 	 * duplicates numbered (#n) at the precise and cache levels and dropped
-	 * elsewhere; at most PT_UT_DESCRIBE_TYPES_LIMIT joined with '|' */
-	static zv::Val joinTypes(zv::ArrRef types, zval *level, pt_verbosity_case which)
+	 * elsewhere; at most PT_UT_DESCRIBE_TYPES_LIMIT joined with '|',
+	 * parenthesized for a benevolent union of more than one name */
+	static zv::Val joinTypes(zv::ArrRef types, zval *level, pt_verbosity_case which, bool benevolent)
 	{
 		uint32_t count = types.size();
 		zv::Arr typeNames = zv::Arr::create(count);
@@ -1155,6 +1157,10 @@ public:
 		smart_str result = {NULL, 0};
 		uint32_t n = 0;
 		bool truncated = zend_hash_num_elements(joined.table()) > PT_UT_DESCRIBE_TYPES_LIMIT;
+		bool wrap = benevolent && zend_hash_num_elements(joined.table()) > 1;
+		if (wrap) {
+			smart_str_appendc(&result, '(');
+		}
 		for (zv::ArrayEntry entry : joined.arrRef()) {
 			if (truncated && n == PT_UT_DESCRIBE_TYPES_LIMIT) break;
 			if (n > 0) {
@@ -1165,6 +1171,9 @@ public:
 		}
 		if (truncated) {
 			smart_str_appendl(&result, "|\xE2\x80\xA6", 4);
+		}
+		if (wrap) {
+			smart_str_appendc(&result, ')');
 		}
 		smart_str_0(&result);
 		if (result.s == NULL) return zv::Val::string("", 0);

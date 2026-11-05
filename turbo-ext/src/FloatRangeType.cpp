@@ -385,10 +385,16 @@ public:
 				zv::Args args{&selfZv, &strict};
 				return pt_type_op(Z_OBJ_P(innerType), PT_OP_ACCEPTS, 2, args);
 			}))) return zv::Val();
-			zv::Val no = pt_type_accepts_result(PT_TRI_NO);
-			if (UNEXPECTED(no.isUndef())) return zv::Val();
+			// AcceptsResult::or() takes a single operand, unlike IsSuperTypeOfResult::or()
+			zv::Val result = pt_type_accepts_result(PT_TRI_NO);
+			if (UNEXPECTED(result.isUndef())) return zv::Val();
 			HashTable *table = results.table();
-			return pt_type_call(Z_OBJ_P(no.raw()), PT_LC("or"), zend_hash_num_elements(table), table->arPacked);
+			for (uint32_t i = 0; i < zend_hash_num_elements(table); i++) {
+				result = pt_type_call(Z_OBJ_P(result.raw()), PT_LC("or"), 1, &table->arPacked[i]);
+				if (UNEXPECTED(result.isUndef())) return zv::Val();
+			}
+
+			return result;
 		}
 
 		// the other type cannot tell floats apart

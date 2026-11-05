@@ -284,7 +284,13 @@ class FloatRangeType extends FloatType implements CompoundType
 		}
 
 		if ($acceptingType instanceof UnionType) {
-			return AcceptsResult::createNo()->or(...array_map(fn (Type $innerType): AcceptsResult => $innerType->accepts($this, $strictTypes), $acceptingType->getTypes()));
+			// AcceptsResult::or() takes a single operand, unlike IsSuperTypeOfResult::or()
+			$result = AcceptsResult::createNo();
+			foreach ($acceptingType->getTypes() as $innerType) {
+				$result = $result->or($innerType->accepts($this, $strictTypes));
+			}
+
+			return $result;
 		}
 
 		// the other type cannot tell floats apart

@@ -117,14 +117,14 @@ final class LazyCollectedData
 
 	/**
 	 * A hash of the values of one collector. It does not depend on which files are cached and which
-	 * are fresh, or on their order, so the same data hashes the same on every run.
+	 * are fresh, or on their order, so the same data hashes the same on every run. The hashes of the
+	 * cached files are stored in the cache file, so nothing is read but the entry headers.
 	 */
 	public function hashCollector(string $collectorType): string
 	{
 		$hashes = [];
-		$positions = $this->getCachedPositions($collectorType);
-		if ($positions !== [] && $this->cachedReader !== null) {
-			$hashes = $this->cachedReader->hashCollector($collectorType, $positions, $this->getCollectorLocations()->getSignature());
+		if ($this->cachedIndex !== []) {
+			$hashes = array_diff_key($this->getCollectorLocations()->getHashes($collectorType), $this->fresh);
 		}
 
 		foreach ($this->fresh as $file => $data) {

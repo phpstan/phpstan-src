@@ -21,7 +21,8 @@ interface CollectedDataReader
 	public function read(array $index): array;
 
 	/**
-	 * Reads the header of every entry in $index, not the collected data.
+	 * Reads the header of every entry in $index, not the collected data. The headers also hold the
+	 * hash of each collector's values.
 	 *
 	 * @param array<string, array{int, int}> $index analysed file => [offset, length] of its entry
 	 */
@@ -32,15 +33,5 @@ interface CollectedDataReader
 	 * @return iterable<string, list<mixed>> analysed file => the collected values, one file at a time
 	 */
 	public function readCollector(string $collectorType, array $positions, string $signature): iterable;
-
-	/**
-	 * md5 of serialize() of each file's collected values, with absolute paths in them. That is the
-	 * hash of the values as they are in memory after an analysis, so a cached file and a re-analysed
-	 * one with the same data hash the same.
-	 *
-	 * @param array<string, array{int, int}> $positions analysed file => [offset, length] of the data of $collectorType
-	 * @return array<string, string> analysed file => hash
-	 */
-	public function hashCollector(string $collectorType, array $positions, string $signature): array;
 
 }

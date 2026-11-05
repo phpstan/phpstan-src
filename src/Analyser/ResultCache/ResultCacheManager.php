@@ -2205,7 +2205,7 @@ final class ResultCacheManager implements CollectedDataReader
 				$collectedDataPerFile = $fresh[$analysedFile];
 				ksort($collectedDataPerFile);
 				foreach ($transformer->relativizeCollectedData([$analysedFile => $collectedDataPerFile]) as $relativeFile => $data) {
-					$this->writeCollectedDataEntry($handle, $file, $relativeFile, $data);
+					$this->writeCollectedDataEntry($handle, $file, $relativeFile, $data, $collectedDataPerFile);
 				}
 
 				continue;
@@ -2237,20 +2237,27 @@ final class ResultCacheManager implements CollectedDataReader
 	}
 
 	/**
-	 * An entry frame whose value is not one serialized blob: a header line with each collector type
-	 * and the length of its data, then the data of each collector, serialized separately. A rule that
-	 * asks for one collector reads only that collector's bytes.
+	 * An entry frame whose value is not one serialized blob: a header line with each collector type,
+	 * the length of its data and the hash of its values, then the data of each collector, serialized
+	 * separately. A rule that asks for one collector reads only that collector's bytes, and the reuse
+	 * of rule errors reads only the header line.
+	 *
+	 * The hash is of the values as they are in memory, with absolute paths, so that a cached file and
+	 * a re-analysed one with the same data hash the same.
 	 *
 	 * @param resource $handle
-	 * @param array<string, list<mixed>> $dataPerCollector
+	 * @param array<string, list<mixed>> $dataPerCollector with paths relative, as stored
+	 * @param array<string, list<mixed>> $dataInMemory with paths absolute
 	 */
-	private function writeCollectedDataEntry($handle, string $file, string $relativeFile, array $dataPerCollector): void
+	private function writeCollectedDataEntry($handle, string $file, string $relativeFile, array $dataPerCollector, array $dataInMemory): void
 	{
+		$transformer = $this->getPathTransformer();
 		$header = [];
 		$blobs = [];
 		foreach ($dataPerCollector as $collectorType => $values) {
 			$blob = serialize($values);
-			$header[] = $collectorType . ' ' . strlen($blob);
+			$hash = $transformer->hasPathsInCollectedData($collectorType) ? md5(serialize($dataInMemory[$collectorType])) : md5($blob);
+			$header[] = $collectorType . ' ' . strlen($blob) . ' ' . $hash;
 			$blobs[] = $blob;
 		}
 
@@ -2751,7 +2758,7 @@ final class ResultCacheManager implements CollectedDataReader
 			foreach ($index as $file => [$offset]) {
 				[$key, $valueLength] = $this->seekToEntry($handle, $offset, $file);
 				$data[$key] = [];
-				foreach ($this->readCollectorHeader($handle, $valueLength, $file) as $collectorType => $length) {
+				foreach ($this->readCollectorHeader($handle, $valueLength, $file) as $collectorType => [$length]) {
 					$values = $this->readFrame($handle, $length);
 					if (!is_array($values) || !array_is_list($values)) {
 						throw new RuntimeException(sprintf('The collected data of %s is not a list.', $file));
@@ -2778,6 +2785,7 @@ final class ResultCacheManager implements CollectedDataReader
 
 		$handle = $this->openCacheFileForCollectedData();
 		$positions = [];
+		$hashes = [];
 		try {
 			$signature = $this->getCacheFileSignature($handle);
 			foreach ($index as $file => [$offset]) {
@@ -2788,8 +2796,9 @@ final class ResultCacheManager implements CollectedDataReader
 					throw new RuntimeException(sprintf('Cannot tell the position of the collected data of %s.', $file));
 				}
 
-				foreach ($collectors as $collectorType => $length) {
+				foreach ($collectors as $collectorType => [$length, $hash]) {
 					$positions[$collectorType][$file] = [$position, $length];
+					$hashes[$collectorType][$file] = $hash;
 					$position += $length;
 				}
 			}
@@ -2799,7 +2808,7 @@ final class ResultCacheManager implements CollectedDataReader
 
 		fclose($handle);
 
-		return new CollectorLocations($signature, $positions);
+		return new CollectorLocations($signature, $positions, $hashes);
 	}
 
 	/**
@@ -2830,43 +2839,11 @@ final class ResultCacheManager implements CollectedDataReader
 	}
 
 	/**
-	 * @param array<string, array{int, int}> $positions
-	 * @return array<string, string>
-	 */
-	public function hashCollector(string $collectorType, array $positions, string $signature): array
-	{
-		$transformer = $this->getPathTransformer();
-		// the stored bytes are what serialize() makes of the values, unless the collector rewrote paths in them
-		$hashStoredBytes = !$transformer->hasPathsInCollectedData($collectorType);
-		$handle = $this->openCacheFileForCollectedData();
-		$hashes = [];
-		try {
-			$this->checkCacheFileSignature($handle, $signature);
-			foreach ($positions as $file => [$offset, $length]) {
-				if ($hashStoredBytes) {
-					$this->seekToCollectorValues($handle, $file, $offset);
-					$hashes[$file] = md5($this->readBlob($handle, $length));
-					continue;
-				}
-
-				$values = $this->readCollectorValues($handle, $file, $offset, $length);
-				$hashes[$file] = md5(serialize($transformer->absolutizeCollectorValues($collectorType, $values)));
-			}
-		} catch (Throwable $e) {
-			throw $this->discardUnreadableCollectedData($handle, $e);
-		}
-
-		fclose($handle);
-
-		return $hashes;
-	}
-
-	/**
-	 * The header line of a collected data entry: each collector type and the length of its data.
-	 * Leaves the handle at the data of the first collector.
+	 * The header line of a collected data entry: each collector type, the length of its data and the
+	 * hash of its values. Leaves the handle at the data of the first collector.
 	 *
 	 * @param resource $handle
-	 * @return array<class-string<Collector<Node, mixed>>, int> collector type => length of its data
+	 * @return array<class-string<Collector<Node, mixed>>, array{int, string}> collector type => [length of its data, hash]
 	 */
 	private function readCollectorHeader($handle, int $valueLength, string $file): array
 	{
@@ -2880,19 +2857,20 @@ final class ResultCacheManager implements CollectedDataReader
 		$parts = explode(' ', rtrim($line, "\n"));
 		if ($parts !== ['']) {
 			$count = count($parts);
-			if ($count % 2 !== 0) {
+			if ($count % 3 !== 0) {
 				throw new RuntimeException(sprintf('The collected data of %s has a malformed header.', $file));
 			}
 
-			for ($i = 0; $i < $count; $i += 2) {
+			for ($i = 0; $i < $count; $i += 3) {
 				$length = (int) $parts[$i + 1];
-				if ($length <= 0) {
+				$hash = $parts[$i + 2];
+				if ($length <= 0 || strlen($hash) !== 32) {
 					throw new RuntimeException(sprintf('The collected data of %s has a malformed header.', $file));
 				}
 
 				/** @var class-string<Collector<Node, mixed>> $collectorType */
 				$collectorType = $parts[$i];
-				$collectors[$collectorType] = $length;
+				$collectors[$collectorType] = [$length, $hash];
 				$total += $length;
 			}
 		}

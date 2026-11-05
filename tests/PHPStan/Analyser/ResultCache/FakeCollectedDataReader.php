@@ -40,13 +40,15 @@ final class FakeCollectedDataReader implements CollectedDataReader
 	{
 		$this->locates++;
 		$positions = [];
+		$hashes = [];
 		foreach (array_keys($index) as $file) {
-			foreach (array_keys($this->data[$file] ?? []) as $collectorType) {
+			foreach ($this->data[$file] ?? [] as $collectorType => $values) {
 				$positions[$collectorType][$file] = $index[$file];
+				$hashes[$collectorType][$file] = md5(serialize($values));
 			}
 		}
 
-		return new CollectorLocations('signature', $positions);
+		return new CollectorLocations('signature', $positions, $hashes);
 	}
 
 	/**
@@ -58,16 +60,6 @@ final class FakeCollectedDataReader implements CollectedDataReader
 			$this->readCollectors[$collectorType][] = $file;
 			yield $file => $this->data[$file][$collectorType];
 		}
-	}
-
-	public function hashCollector(string $collectorType, array $positions, string $signature): array
-	{
-		$hashes = [];
-		foreach (array_keys($positions) as $file) {
-			$hashes[$file] = md5(serialize($this->data[$file][$collectorType]));
-		}
-
-		return $hashes;
 	}
 
 }

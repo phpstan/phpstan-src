@@ -627,7 +627,8 @@ public:
 				if (UNEXPECTED(isConstant < 0)) return zv::Val();
 				if (isConstant == PT_TRI_YES) {
 					bool impossible;
-					if (UNEXPECTED(!isScopeConditionallyImpossible(matchScope.raw(), impossible))) return zv::Val();
+					if (UNEXPECTED(!hasExpressionNarrowedToNever(scope.raw(), matchScope.raw(), impossible))) return zv::Val();
+					if (!impossible && UNEXPECTED(!isScopeConditionallyImpossible(matchScope.raw(), impossible))) return zv::Val();
 					if (impossible) {
 						hasAlwaysTrueCond = true;
 						zval never;
@@ -1263,6 +1264,65 @@ private:
 		zv::Val callArgsValue(std::move(callArgs));
 		zv::Args callArgv{inArrayName.raw(), callArgsValue.raw()};
 		return pt_type_new(PT_CLASS_FUNC_CALL, 2, callArgv);
+	}
+
+	/* $scope->expressionTypes - a public property read by name: rare path,
+	 * and the twin's slot layout need not be assumed; NULL with an Error
+	 * pending when it is missing */
+	static HashTable *scopeExpressionTypes(zval *scope)
+	{
+		if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Attempt to read property \"expressionTypes\" on %s", zend_zval_value_name(scope));
+			return NULL;
+		}
+		zv::Ref value = zv::ObjRef(Z_OBJ_P(scope)).prop(PT_LC("expressionTypes"));
+		if (UNEXPECTED(value.raw() == NULL || !value.deref().isArray())) {
+			zend_throw_error(NULL, "phpstan_turbo: %s has no array property $expressionTypes", ZSTR_VAL(Z_OBJCE_P(scope)->name));
+			return NULL;
+		}
+		return Z_ARRVAL_P(value.deref().raw());
+	}
+
+	/* $holder->getType() of an ExpressionTypeHolder: the native holder's
+	 * slot, the method of anything else */
+	static zv::Val holderType(zval *holder)
+	{
+		if (EXPECTED(Z_OBJCE_P(holder) == pt_ce_expr_type_holder)) return zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(Z_OBJ_P(holder), PT_ETH_PROP_TYPE)));
+		return pt_type_call(Z_OBJ_P(holder), PT_LC("gettype"), 0, NULL);
+	}
+
+	/* Mirrors the private hasExpressionNarrowedToNever(); false = pending
+	 * exception */
+	[[nodiscard]] static bool hasExpressionNarrowedToNever(zval *scopeBeforeArms, zval *matchScope, bool &out)
+	{
+		out = false;
+		HashTable *expressionTypes = scopeExpressionTypes(matchScope);
+		if (UNEXPECTED(expressionTypes == NULL)) return false;
+		HashTable *expressionTypesBeforeArms = scopeExpressionTypes(scopeBeforeArms);
+		if (UNEXPECTED(expressionTypesBeforeArms == NULL)) return false;
+		for (zv::ArrayEntry entry : zv::TableRef(expressionTypes)) {
+			zval *holder = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(holder) != IS_OBJECT)) return !callOnNonObject("getType", holder).isUndef();
+			zv::Val type = holderType(holder);
+			if (UNEXPECTED(type.isUndef())) return false;
+			if (!type.ref().instanceOf(pt_ce_never_type)) continue;
+
+			zval *holderBeforeArms = entry.hasStringKey()
+				? zend_symtable_find(expressionTypesBeforeArms, entry.stringKey())
+				: zend_hash_index_find(expressionTypesBeforeArms, entry.indexKey());
+			if (holderBeforeArms != NULL) {
+				ZVAL_DEREF(holderBeforeArms);
+				if (UNEXPECTED(Z_TYPE_P(holderBeforeArms) != IS_OBJECT)) return !callOnNonObject("getType", holderBeforeArms).isUndef();
+				zv::Val typeBeforeArms = holderType(holderBeforeArms);
+				if (UNEXPECTED(typeBeforeArms.isUndef())) return false;
+				if (typeBeforeArms.ref().instanceOf(pt_ce_never_type)) continue;
+			}
+
+			out = true;
+			return true;
+		}
+
+		return true;
 	}
 
 	/* Mirrors the private isScopeConditionallyImpossible(); false = pending

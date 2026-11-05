@@ -468,7 +468,7 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 		}
 
 		if (!$hasDefaultCond && !$hasAlwaysTrueCond && $condType->isBoolean()->yes() && $condType->isConstantScalarValue()->yes()) {
-			if ($this->isScopeConditionallyImpossible($matchScope)) {
+			if ($this->hasExpressionNarrowedToNever($scope, $matchScope) || $this->isScopeConditionallyImpossible($matchScope)) {
 				$hasAlwaysTrueCond = true;
 				$matchScope = $matchScope->addTypeToExpression($expr->cond, new NeverType());
 			}
@@ -603,6 +603,28 @@ final class MatchHandler implements ExprHandler, PerFileAnalysisResettable
 				new Arg(new ConstFetch(new Name\FullyQualified('true'))),
 			],
 		);
+	}
+
+	/**
+	 * Whether the arms' falsey narrowing left an expression (a variable, a
+	 * property fetch, ...) without any possible value - then no arm being
+	 * matched is impossible.
+	 */
+	private function hasExpressionNarrowedToNever(MutatingScope $scopeBeforeArms, MutatingScope $matchScope): bool
+	{
+		foreach ($matchScope->expressionTypes as $exprString => $holder) {
+			if (!$holder->getType() instanceof NeverType) {
+				continue;
+			}
+			$holderBeforeArms = $scopeBeforeArms->expressionTypes[$exprString] ?? null;
+			if ($holderBeforeArms !== null && $holderBeforeArms->getType() instanceof NeverType) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private function isScopeConditionallyImpossible(MutatingScope $scope): bool

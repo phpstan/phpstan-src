@@ -601,4 +601,56 @@ class MatchExpressionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug11374(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-11374.php'], [
+			[
+				'Call to function is_float() with float will always evaluate to true.',
+				13,
+			],
+			[
+				'Call to method Bug11374\\HelloWorld::isFloat() with float will always evaluate to true.',
+				21,
+			],
+			[
+				'Call to method Bug11374\\HelloWorld::isFloat() with float will always evaluate to true.',
+				29,
+			],
+			[
+				'Call to function is_float() with float will always evaluate to true.',
+				37,
+			],
+			[
+				'Call to static method Bug11374\\Analogous::isFloatStatic() with float will always evaluate to true.',
+				75,
+			],
+			[
+				'Call to function isFloatFunction() with float will always evaluate to true.',
+				83,
+			],
+			[
+				'Call to static method Bug11374\\Analogous::isFloatStatic() with float will always evaluate to true.',
+				110,
+			],
+			[
+				'Match expression does not handle remaining value: true',
+				124,
+			],
+			[
+				'Match expression does not handle remaining value: true',
+				132,
+			],
+			[
+				'Call to static method Bug11374\\MoreAnalogous::isNotFloat() with float will always evaluate to false.',
+				181,
+			],
+			[
+				'Match expression does not handle remaining value: false',
+				195,
+			],
+		]);
+	}
+
 }

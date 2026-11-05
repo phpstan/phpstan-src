@@ -186,7 +186,7 @@ class Foo
 		assertType('*ERROR*', $a * $b);
 		assertType('*ERROR*', $a / $b);
 		assertType('*ERROR*', $a % $b);
-		assertType('non-empty-string&numeric-string', $a . $b);
+		assertType('numeric-string', $a . $b);
 		assertType('*ERROR*', $a ** $b);
 		assertType('*ERROR*', $a << $b);
 		assertType('*ERROR*', $a >> $b);

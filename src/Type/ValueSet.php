@@ -5,7 +5,7 @@ namespace PHPStan\Type;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -42,7 +42,7 @@ use const PHP_INT_MIN;
  * the other strings, objects are kept as a type, because their class decides how
  * they compare. A set of unknown values stands for a type that can hold anything.
  */
-#[ReferencedByTurboExtension(key: 'valueSet')]
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ValueSet.cpp')]
 final class ValueSet
 {
 

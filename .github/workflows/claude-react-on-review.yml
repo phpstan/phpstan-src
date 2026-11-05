@@ -11,6 +11,7 @@ jobs:
       github.event.pull_request.user.login == 'phpstan-bot'
       && github.event.pull_request.state == 'open'
       && github.event.review.user.login != 'phpstan-bot'
+      && contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.review.author_association)
       && github.event.review.state != 'approved'
     steps:
       - name: Harden the runner (Audit all outbound calls)

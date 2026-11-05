@@ -4456,10 +4456,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		);
 
 		$afterExtractCall = $this->afterExtractCall && $otherScope->afterExtractCall;
-		$merged = ScopeOps::scopeWith(
+
+		// Remembered calls whose type differs between the branches may merge into
+		// exactly what the call resolves to on its own - e.g. count($a) of
+		// int<3, max> and int<0, 2> merges into int<0, max>. Such an entry adds
+		// nothing and would shadow what later narrowing of $a implies for the call,
+		// so it is not written into the merged scope at all.
+		$callCandidates = self::findMergedCallCandidates($differingExpressionKeys, $mergedExpressionTypes);
+		$scope = ScopeOps::scopeWith(
 			$this,
-			$mergedExpressionTypes,
-			$mergedNativeTypes,
+			$callCandidates === [] ? $mergedExpressionTypes : array_diff_key($mergedExpressionTypes, $callCandidates),
+			$callCandidates === [] ? $mergedNativeTypes : array_diff_key($mergedNativeTypes, $callCandidates),
 			$conditionalExpressions,
 			[],
 			[],
@@ -4467,11 +4474,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->inFirstLevelStatement,
 			$afterExtractCall,
 		);
-
-		$uninformativeKeys = $merged->findUninformativeRememberedCalls($differingExpressionKeys, $afterExtractCall);
-		if ($uninformativeKeys === []) {
+		if ($callCandidates === []) {
 			/** @var static */
-			return $merged;
+			return $scope;
+		}
+
+		$uninformativeKeys = $scope->findUninformativeMergedCalls($callCandidates, $mergedNativeTypes);
+		if (count($uninformativeKeys) === count($callCandidates)) {
+			/** @var static */
+			return $scope;
 		}
 
 		/** @var static */
@@ -4489,19 +4500,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	}
 
 	/**
-	 * Keys of call expressions whose merged type is exactly what the call
-	 * resolves to without the entry. Merging `count($a)` of int<3, max> and
-	 * int<0, 2> gives int<0, max> - remembering that adds nothing, and the
-	 * stale entry would shadow what later narrowing of `$a` implies for the call.
+	 * Certain merged call expressions whose type differs between the merged branches.
 	 *
 	 * @param array<string, true> $differingExpressionKeys
-	 * @return array<string, true>
+	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
+	 * @return array<string, ExpressionTypeHolder>
 	 */
-	private function findUninformativeRememberedCalls(array $differingExpressionKeys, bool $afterExtractCall): array
+	private static function findMergedCallCandidates(array $differingExpressionKeys, array $mergedExpressionTypes): array
 	{
 		$candidates = [];
 		foreach (array_keys($differingExpressionKeys) as $exprString) {
-			$holder = $this->expressionTypes[$exprString] ?? null;
+			$holder = $mergedExpressionTypes[$exprString] ?? null;
 			if ($holder === null || !$holder->getCertainty()->yes()) {
 				continue;
 			}
@@ -4511,30 +4520,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			}
 			$candidates[$exprString] = $holder;
 		}
-		if ($candidates === []) {
-			return [];
-		}
 
-		$withoutCandidates = ScopeOps::scopeWith(
-			$this,
-			array_diff_key($this->expressionTypes, $candidates),
-			array_diff_key($this->nativeExpressionTypes, $candidates),
-			$this->conditionalExpressions,
-			[],
-			[],
-			[],
-			$this->inFirstLevelStatement,
-			$afterExtractCall,
-		);
+		return $candidates;
+	}
 
+	/**
+	 * Called on the merged scope without the candidates: keys of candidates whose
+	 * merged type (and native type) is exactly what the call resolves to here.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $candidates
+	 * @param array<string, ExpressionTypeHolder> $mergedNativeTypes
+	 * @return array<string, true>
+	 */
+	private function findUninformativeMergedCalls(array $candidates, array $mergedNativeTypes): array
+	{
 		$uninformativeKeys = [];
 		foreach ($candidates as $exprString => $holder) {
 			$expr = $holder->getExpr();
-			if (!$holder->getType()->equals($withoutCandidates->getType($expr))) {
+			if (!$holder->getType()->equals($this->getType($expr))) {
 				continue;
 			}
-			$nativeHolder = $this->nativeExpressionTypes[$exprString] ?? null;
-			if ($nativeHolder !== null && !$nativeHolder->getType()->equals($withoutCandidates->getNativeType($expr))) {
+			$nativeHolder = $mergedNativeTypes[$exprString] ?? null;
+			if ($nativeHolder !== null && !$nativeHolder->getType()->equals($this->getNativeType($expr))) {
 				continue;
 			}
 			$uninformativeKeys[$exprString] = true;

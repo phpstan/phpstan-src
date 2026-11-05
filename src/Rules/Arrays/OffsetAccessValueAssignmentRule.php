@@ -58,7 +58,8 @@ final class OffsetAccessValueAssignmentRule implements MultipleNodeTypesRule
 			return [];
 		}
 
-		if ($node instanceof Assign || $node instanceof Expr\AssignRef) {
+		if ($node instanceof Assign || $node instanceof Expr\AssignRef || $node instanceof AssignOp\Coalesce) {
+			// `$lvalue ??= value` writes only `value`
 			$assignedValueType = $scope->getType($node->expr);
 		} else {
 			$assignedValueType = $scope->getType($node);

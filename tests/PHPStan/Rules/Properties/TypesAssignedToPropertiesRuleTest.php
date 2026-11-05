@@ -15,6 +15,8 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 
 	private bool $checkNullables = true;
 
+	private bool $checkUnionTypes = true;
+
 	private bool $checkExplicitMixed = false;
 
 	private bool $checkImplicitMixed = false;
@@ -26,7 +28,7 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				self::createReflectionProvider(),
 				checkNullables: $this->checkNullables,
 				checkThisOnly: false,
-				checkUnionTypes: true,
+				checkUnionTypes: $this->checkUnionTypes,
 				checkExplicitMixed: $this->checkExplicitMixed,
 				checkImplicitMixed: $this->checkImplicitMixed,
 				checkBenevolentUnionTypes: false,
@@ -1139,6 +1141,99 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 			[
 				'Static property IntersectionTemplateMixedProperty\\Foo::$staticProp (int) does not accept string.',
 				21,
+			],
+		]);
+	}
+
+	public function testBug15228(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], [
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$a (int|null) does not accept string.',
+				20,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$a (int|null) does not accept string.',
+				26,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				32,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				38,
+			],
+			[
+				'Static property Bug15228\\StaticCoalesceAssignDemo::$a (int|null) does not accept string.',
+				60,
+			],
+			[
+				'Static property Bug15228\\StaticCoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				65,
+			],
+			[
+				'Property Bug15228\\OffsetCoalesceAssignDemo::$a (array<string, int>) does not accept array<string, int|string>.',
+				80,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				98,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				103,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$r (int<0, 10>) does not accept int<5, 15>.',
+				108,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$r (int<0, 10>) does not accept int<5, 15>.',
+				113,
+			],
+		]);
+	}
+
+	public function testBug15228WithoutCheckUnionTypes(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-15228.php'], [
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$a (int|null) does not accept string.',
+				20,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$a (int|null) does not accept string.',
+				26,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				32,
+			],
+			[
+				'Property Bug15228\\CoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				38,
+			],
+			[
+				'Static property Bug15228\\StaticCoalesceAssignDemo::$a (int|null) does not accept string.',
+				60,
+			],
+			[
+				'Static property Bug15228\\StaticCoalesceAssignDemo::$b (list<int>|null) does not accept list<string>.',
+				65,
+			],
+			[
+				'Property Bug15228\\OffsetCoalesceAssignDemo::$a (array<string, int>) does not accept array<string, int|string>.',
+				80,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				98,
+			],
+			[
+				'Property Bug15228\\OtherAssignOpsDemo::$a (int|null) does not accept string.',
+				103,
 			],
 		]);
 	}

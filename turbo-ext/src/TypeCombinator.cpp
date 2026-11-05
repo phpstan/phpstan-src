@@ -1289,10 +1289,23 @@ public:
 				zv::Val description = describe(type.raw(), valueLevel);
 				zend_string *key = describedKey(description);
 				if (UNEXPECTED(key == NULL)) return zv::Val();
-				if (zend_symtable_find(benevolentTypes.table(), key) == NULL) {
-					allBenevolent = false;
-					break;
+				if (zend_symtable_find(benevolentTypes.table(), key) != NULL) continue;
+
+				/* a member that absorbed a benevolent member stays benevolent,
+				 * like int absorbing int<1, max> from (int<1, max>|string) and 0 */
+				bool absorbed = false;
+				for (zv::ArrayEntry entry : zv::ArrRef(benevolentTypes.raw())) {
+					int superType = isSuperTypeYes(type.raw(), entry.value().raw());
+					if (UNEXPECTED(superType < 0)) return zv::Val();
+					if (superType == 1) {
+						absorbed = true;
+						break;
+					}
 				}
+				if (absorbed) continue;
+
+				allBenevolent = false;
+				break;
 			}
 
 			if (allBenevolent) return benevolentUnionType(listOf(types), true);

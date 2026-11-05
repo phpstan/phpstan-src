@@ -15,6 +15,7 @@ class LooseConstComparisonPhp7Test extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/loose-const-comparison-php7.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-11732-php7.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/loose-equality-narrowing-php7.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15667-php7.php');
 	}
 
 	/**

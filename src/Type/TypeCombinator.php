@@ -636,16 +636,25 @@ final class TypeCombinator
 		}
 
 		if ($benevolentTypes !== []) {
-			$tempTypes = $types;
-			foreach ($tempTypes as $i => $type) {
-				if (!isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
-					break;
+			$allBenevolent = true;
+			foreach ($types as $type) {
+				if (isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
+					continue;
 				}
 
-				unset($tempTypes[$i]);
+				// a member that absorbed a benevolent member stays benevolent,
+				// like int absorbing int<1, max> from (int<1, max>|string) and 0
+				foreach ($benevolentTypes as $benevolentType) {
+					if ($type->isSuperTypeOf($benevolentType)->yes()) {
+						continue 2;
+					}
+				}
+
+				$allBenevolent = false;
+				break;
 			}
 
-			if ($tempTypes === []) {
+			if ($allBenevolent) {
 				return new BenevolentUnionType(array_values($types), true);
 			}
 		}

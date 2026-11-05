@@ -403,15 +403,6 @@ static const pt_superglobal_name pt_ms_custom_serialization_methods[] = {
 	{ PT_LC("__unserialize") },
 };
 
-/* the twin's private COUNT_FUNCTION_KEY_NAMES (narrowRememberedCountsInPlace()
- * walks the same names), a persistent list built once at module startup */
-static const pt_superglobal_name pt_ms_count_function_key_names[] = {
-	{ PT_LC("count") },
-	{ PT_LC("sizeof") },
-	{ PT_LC("\\count") },
-	{ PT_LC("\\sizeof") },
-};
-
 /* PHPStan\Analyser\ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID and
  * PHPStan\Php\PhpVersionFactory::MAX_PHP_VERSION — the one place the native
  * code reads them from (getPhpVersion()) */
@@ -6746,7 +6737,6 @@ public:
 			|| !writeScopeTable(self, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"), key.get(), ownedNativeHolder.raw()))) {
 			return false;
 		}
-		if (UNEXPECTED(!narrowRememberedCountsInPlace(key.get(), type, nativeType))) return false;
 
 		bool isAlwaysRemembered;
 		if (UNEXPECTED(!isInstance(zv::Ref(&exprZv), PT_CLASS_ALWAYS_REMEMBERED_EXPR, isAlwaysRemembered))) return false;
@@ -6758,55 +6748,6 @@ public:
 			return false;
 		}
 		return specifyExpressionTypeInPlace(inner.deref().asObject(), type, nativeType, certainty);
-	}
-
-	/* private narrowRememberedCountsInPlace() — intersects a remembered
-	 * count($expr) / sizeof($expr) with the narrowed array's size; false =
-	 * pending exception */
-	[[nodiscard]] bool narrowRememberedCountsInPlace(zend_string *exprString, zval *type, zval *nativeType)
-	{
-		for (const pt_superglobal_name &functionName : pt_ms_count_function_key_names) {
-			zv::Str countKey = zv::Str::adopt(zend_strpprintf(0, "%s(%s)", functionName.name, ZSTR_VAL(exprString)));
-			if (UNEXPECTED(!narrowRememberedCountInTable(PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"), countKey.get(), type))
-				|| UNEXPECTED(!narrowRememberedCountInTable(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"), countKey.get(), nativeType))) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	/* one table's arm of narrowRememberedCountsInPlace(); false = pending exception */
-	[[nodiscard]] bool narrowRememberedCountInTable(uint32_t tableSlot, const char *name, size_t len, zend_string *countKey, zval *arrayType)
-	{
-		if (UNEXPECTED(!requireSlot(tableSlot, name))) return false;
-		zval *holder = zend_symtable_find(Z_ARRVAL_P(slot(tableSlot).raw()), countKey);
-		if (holder == NULL) return true;
-		if (UNEXPECTED(Z_TYPE_P(arrayType) != IS_OBJECT)) {
-			zend_throw_error(NULL, "Call to a member function isArray() on %s", zend_zval_value_name(arrayType));
-			return false;
-		}
-		zend_long isArray = pt_type_op_trinary(Z_OBJ_P(arrayType), PT_OP_IS_ARRAY, 0, NULL);
-		if (UNEXPECTED(isArray < 0)) return false;
-		if (isArray != PT_TRI_YES) return true;
-
-		zv::Val holderZv = zv::Val::copyOf(zv::Ref(holder));
-		zv::Val countType = holderType(holderZv.ref());
-		if (UNEXPECTED(countType.isUndef())) return false;
-		zv::Val arraySize = pt_type_call(Z_OBJ_P(arrayType), PT_LC("getarraysize"), 0, NULL);
-		if (UNEXPECTED(arraySize.isUndef())) return false;
-		zv::Args args{countType.raw(), arraySize.raw()};
-		zv::Val narrowed = pt_type_combinator_intersect(2, args);
-		if (UNEXPECTED(narrowed.isUndef())) return false;
-		if (Z_TYPE_P(narrowed.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(narrowed.raw()), pt_ce_never_type)) return true;
-
-		zv::Val countExpr = holderRead(holderZv.ref(), PT_ETH_PROP_EXPR, PT_LC("getexpr"));
-		if (UNEXPECTED(countExpr.isUndef())) return false;
-		zend_long certainty = holderCertainty(holderZv.ref());
-		if (UNEXPECTED(certainty < 0)) return false;
-		zval newHolder;
-		pt_holder_create(&newHolder, countExpr.raw(), narrowed.raw(), certainty);
-		zv::Val ownedHolder = zv::Val::adopt(newHolder);
-		return writeScopeTable(self, tableSlot, name, len, countKey, ownedHolder.raw());
 	}
 
 	/* the ArrayDimFetch arm of specifyExpressionTypeInPlace(): the var's
@@ -12456,13 +12397,6 @@ static void pt_ms_custom_serialization_methods_constant(zval *out)
 	pt_persistent_list_into(out, pt_ms_custom_serialization_methods_list);
 }
 
-static HashTable *pt_ms_count_function_key_names_list = nullptr;
-
-static void pt_ms_count_function_key_names_constant(zval *out)
-{
-	pt_persistent_list_into(out, pt_ms_count_function_key_names_list);
-}
-
 PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 {
 	using namespace pt_ms;
@@ -12511,8 +12445,6 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.privateClassConstantLong("GLOBAL_CONSTANT_FETCH_KEYS_LIMIT", PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT);
 	pt_ms_custom_serialization_methods_list = pt_persistent_string_list(pt_ms_custom_serialization_methods, sizeof(pt_ms_custom_serialization_methods) / sizeof(pt_ms_custom_serialization_methods[0]));
 	cls.privateClassConstantValue("CUSTOM_SERIALIZATION_METHODS", pt_ms_custom_serialization_methods_constant);
-	pt_ms_count_function_key_names_list = pt_persistent_string_list(pt_ms_count_function_key_names, sizeof(pt_ms_count_function_key_names) / sizeof(pt_ms_count_function_key_names[0]));
-	cls.privateClassConstantValue("COUNT_FUNCTION_KEY_NAMES", pt_ms_count_function_key_names_constant);
 	/* }}} */
 
 	cls.method("__construct", reg::Public, 3, {

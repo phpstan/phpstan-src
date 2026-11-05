@@ -688,11 +688,21 @@ final class ValueSet
 		return $leftStrings->concatenate($rightStrings, $phpVersion);
 	}
 
-	/** The strings a (string) cast gives for the values, null when it is an error for one of them. */
+	/**
+	 * The strings a (string) cast gives for the values, null when it is an error for one of them;
+	 * a benevolent set leaves those out as long as any are left.
+	 */
 	private function toStringSet(): ?StringSet
 	{
-		if ($this->invalid || $this->emptyArray || $this->nonEmptyArray) {
+		if ($this->invalid) {
 			return null;
+		}
+		$leftOut = false;
+		if ($this->emptyArray || $this->nonEmptyArray) {
+			if (!$this->benevolent) {
+				return null;
+			}
+			$leftOut = true;
 		}
 		if ($this->unknown) {
 			return self::toStringSetOfType(($this->unknownType ?? new MixedType())->toString());
@@ -714,13 +724,19 @@ final class ValueSet
 		}
 		if ($this->objects !== null) {
 			$objectStrings = self::toStringSetOfType($this->objects->toString());
-			if ($objectStrings === null) {
+			if ($objectStrings !== null) {
+				$strings = $strings->union($objectStrings);
+			} elseif ($this->benevolent) {
+				$leftOut = true;
+			} else {
 				return null;
 			}
-			$strings = $strings->union($objectStrings);
 		}
 		if ($this->resources) {
 			$strings = $strings->union(StringSet::createType(new StringType()));
+		}
+		if ($leftOut && $strings->isEmpty()) {
+			return null;
 		}
 
 		return $strings;

@@ -1617,7 +1617,13 @@ public:
 	/* Mirrors toStringSet(): a StringSet, or PHP null */
 	static zv::Val toStringSet(ValueSetView s)
 	{
-		if (s.invalid() || s.emptyArray() || s.nonEmptyArray()) return zv::Val::null();
+		if (s.invalid()) return zv::Val::null();
+		// a benevolent set leaves out what cannot be cast, as long as any strings are left
+		bool leftOut = false;
+		if (s.emptyArray() || s.nonEmptyArray()) {
+			if (!s.benevolent()) return zv::Val::null();
+			leftOut = true;
+		}
 		if (s.unknown()) {
 			zv::Val mixed;
 			zval *unknownType = s.unknownType();
@@ -1659,13 +1665,19 @@ public:
 		if (s.objects() != nullptr) {
 			IETR_VAL(objectStringType, callOn(s.objects(), mToString));
 			IETR_VAL(objectStrings, toStringSetOfType(objectStringType.raw()));
-			if (Z_TYPE_P(objectStrings.raw()) == IS_NULL) return objectStrings;
-			if (UNEXPECTED(!unionWith(std::move(objectStrings)))) return zv::Val();
+			if (Z_TYPE_P(objectStrings.raw()) != IS_NULL) {
+				if (UNEXPECTED(!unionWith(std::move(objectStrings)))) return zv::Val();
+			} else if (s.benevolent()) {
+				leftOut = true;
+			} else {
+				return objectStrings;
+			}
 		}
 		if (s.resources()) {
 			IETR_VAL(stringType, newStringType());
 			if (UNEXPECTED(!unionWith(pt_string_set_create_type(stringType.raw())))) return zv::Val();
 		}
+		if (leftOut && pt_string_set_is_empty(strings.raw())) return zv::Val::null();
 
 		return strings;
 	}

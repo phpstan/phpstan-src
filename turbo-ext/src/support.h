@@ -4100,10 +4100,9 @@ extern zend_class_entry *pt_ce_operator_type_helper;
 /* the operators OperatorTypeTrait still hands to OperatorTypeHelper */
 enum pt_operator_type_op : uint8_t
 {
-	PT_OPERATOR_CONCATENATE,
 	PT_OPERATOR_ARRAY_UNION,
 };
-/* OperatorTypeHelper::concat() / arrayUnion()($left, $right, $phpVersion)
+/* OperatorTypeHelper::arrayUnion($left, $right, $phpVersion)
  * (all borrowed); UNDEF = pending exception */
 zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval *right, zval *phpVersion);
 

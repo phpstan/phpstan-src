@@ -384,7 +384,7 @@ class Foo
 			assertType('*ERROR*', $a * $b);
 			assertType('*ERROR*', $a / $b);
 			assertType('*NEVER*', $a % $b);
-			assertType('non-empty-string', $a . $b);
+			assertType('*NEVER*', $a . $b);
 			assertType('*ERROR*', $a ** $b);
 			assertType('*NEVER*', $a << $b);
 			assertType('*NEVER*', $a >> $b);

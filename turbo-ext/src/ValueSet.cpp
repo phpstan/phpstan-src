@@ -2,7 +2,7 @@
  * PHPStanTurbo\ValueSet — native implementation of PHPStan\Type\ValueSet.
  *
  * Declared as PHPStan\Type\ValueSet itself at activation: final, no parent,
- * no interfaces. State is the twin's sixteen private typed properties, as
+ * no interfaces. State is the twin's fifteen private typed properties, as
  * declared slots, so the std object handlers do GC/clone. The twin's
  * private constructor is not declared: the sets are made by the factories
  * only, natively; an uninitialized slot reads as the twin's default.
@@ -45,7 +45,6 @@ struct ValueSetFields
 	bool false_ = false;
 	bool true_ = false;
 	zv::Val numbers;
-	zv::Val constantStrings;
 	zv::Val strings;
 	bool emptyArray = false;
 	bool nonEmptyArray = false;
@@ -93,13 +92,20 @@ public:
 	bool false_() const { return flag(slots::false_); }
 	bool true_() const { return flag(slots::true_); }
 	zval *numbers() const { return objectOrNull(slots::numbers); }
+	/* the StringSet, or nullptr */
+	zval *strings() const { return objectOrNull(slots::strings); }
+	/* $this->strings?->getConstantStrings() ?? [], borrowed ConstantStringType objects */
 	HashTable *constantStrings() const
 	{
-		zval *value = OBJ_PROP_NUM(o, slots::constantStrings);
-		return Z_TYPE_P(value) == IS_ARRAY ? Z_ARRVAL_P(value) : (HashTable *) &zend_empty_array;
+		zval *set = strings();
+		return set == nullptr ? (HashTable *) &zend_empty_array : pt_string_set_constants(set);
 	}
-	bool hasConstantStrings() const { return zend_hash_num_elements(constantStrings()) > 0; }
-	zval *strings() const { return objectOrNull(slots::strings); }
+	/* $this->strings?->getType() */
+	zval *stringType() const
+	{
+		zval *set = strings();
+		return set == nullptr ? nullptr : pt_string_set_type(set);
+	}
 	bool emptyArray() const { return flag(slots::emptyArray); }
 	bool nonEmptyArray() const { return flag(slots::nonEmptyArray); }
 	zval *arrays() const { return objectOrNull(slots::arrays); }
@@ -157,7 +163,6 @@ static zv::Val newValueSet(ValueSetFields &fields)
 	writeFlag(o, slots::false_, fields.false_);
 	writeFlag(o, slots::true_, fields.true_);
 	writeValue(o, slots::numbers, fields.numbers, false);
-	writeValue(o, slots::constantStrings, fields.constantStrings, true);
 	writeValue(o, slots::strings, fields.strings, false);
 	writeFlag(o, slots::emptyArray, fields.emptyArray);
 	writeFlag(o, slots::nonEmptyArray, fields.nonEmptyArray);
@@ -267,19 +272,19 @@ public:
 		return createNumbers(std::move(numbers));
 	}
 
-	static zv::Val createConstantString(zend_string *value)
+	static zv::Val createConstantString(zval *string)
 	{
 		ValueSetFields f;
-		zv::Arr constantStrings = zv::Arr::create(1);
-		constantStrings.push(zv::Val::string(value));
-		f.constantStrings = std::move(constantStrings);
+		f.strings = pt_string_set_create_constant(string);
+		if (UNEXPECTED(f.strings.isUndef())) return zv::Val();
 		return newValueSet(f);
 	}
 
 	static zv::Val createStrings(zval *strings)
 	{
 		ValueSetFields f;
-		f.strings = zv::Val::copyOf(zv::Ref(strings));
+		f.strings = pt_string_set_create_type(strings);
+		if (UNEXPECTED(f.strings.isUndef())) return zv::Val();
 		return newValueSet(f);
 	}
 
@@ -337,7 +342,6 @@ public:
 			&& !s.false_()
 			&& !s.true_()
 			&& numbersEmpty(s.numbers())
-			&& !s.hasConstantStrings()
 			&& s.strings() == nullptr
 			&& !s.emptyArray()
 			&& !s.nonEmptyArray()
@@ -357,7 +361,7 @@ public:
 
 	static bool mayBeString(ValueSetView s)
 	{
-		return s.unknown() || s.hasConstantStrings() || s.strings() != nullptr;
+		return s.unknown() || s.strings() != nullptr;
 	}
 
 	static bool mayBeArray(ValueSetView s)
@@ -372,7 +376,6 @@ public:
 			|| s.false_()
 			|| s.true_()
 			|| s.numbers() != nullptr
-			|| s.hasConstantStrings()
 			|| s.strings() != nullptr
 			|| s.objects() != nullptr
 			|| s.resources();
@@ -384,7 +387,6 @@ public:
 			|| s.null_()
 			|| s.false_()
 			|| s.true_()
-			|| s.hasConstantStrings()
 			|| s.strings() != nullptr
 			|| mayBeArray(s)
 			|| s.objects() != nullptr
@@ -444,15 +446,6 @@ public:
 		return union2(left, right);
 	}
 
-	static bool containsString(HashTable *strings, zend_string *value)
-	{
-		zval *entry;
-		ZEND_HASH_FOREACH_VAL(strings, entry) {
-			if (Z_TYPE_P(entry) == IS_STRING && zend_string_equals(Z_STR_P(entry), value)) return true;
-		} ZEND_HASH_FOREACH_END();
-		return false;
-	}
-
 	static zv::Val union_(ValueSetView a, ValueSetView b)
 	{
 		if (a.unknown() || b.unknown()) {
@@ -467,13 +460,6 @@ public:
 			return newValueSet(f);
 		}
 
-		zv::Arr constantStrings = zv::Arr::copyOfTable(a.constantStrings());
-		zval *entry;
-		ZEND_HASH_FOREACH_VAL(b.constantStrings(), entry) {
-			if (containsString(constantStrings.table(), Z_STR_P(entry))) continue;
-			constantStrings.push(zv::Ref(entry));
-		} ZEND_HASH_FOREACH_END();
-
 		ValueSetFields f;
 		f.null_ = a.null_() || b.null_();
 		f.false_ = a.false_() || b.false_();
@@ -484,9 +470,12 @@ public:
 			f.numbers = callOn(a.numbers(), mUnion, 1, b.numbers());
 			if (UNEXPECTED(f.numbers.isUndef())) return zv::Val();
 		}
-		f.constantStrings = std::move(constantStrings);
-		f.strings = unionTypes(a.strings(), b.strings());
-		if (UNEXPECTED(f.strings.isUndef())) return zv::Val();
+		if (a.strings() == nullptr || b.strings() == nullptr) {
+			f.strings = copyOrNull(a.strings() != nullptr ? a.strings() : b.strings());
+		} else {
+			f.strings = pt_string_set_union(a.strings(), b.strings());
+			if (UNEXPECTED(f.strings.isUndef())) return zv::Val();
+		}
 		f.emptyArray = a.emptyArray() || b.emptyArray();
 		f.nonEmptyArray = a.nonEmptyArray() || b.nonEmptyArray();
 		f.arrays = unionTypes(a.arrays(), b.arrays());
@@ -511,26 +500,6 @@ public:
 		if (a.unknown()) return objectValue(b);
 		if (b.unknown()) return objectValue(a);
 
-		zv::Arr constantStrings = zv::Arr::create(0);
-		ValueSetView pairs[2][2] = {{a, b}, {b, a}};
-		for (auto &pair : pairs) {
-			ValueSetView set = pair[0];
-			ValueSetView otherSet = pair[1];
-			zval *entry;
-			ZEND_HASH_FOREACH_VAL(set.constantStrings(), entry) {
-				zend_string *constantString = Z_STR_P(entry);
-				if (containsString(constantStrings.table(), constantString)) continue;
-				if (!containsString(otherSet.constantStrings(), constantString)) {
-					if (otherSet.strings() == nullptr) continue;
-					IETR_VAL(constantType, newConstantStringType(constantString));
-					zend_long isSuperType = triOn(otherSet.strings(), mIsSuperTypeOf, 1, constantType.raw());
-					if (UNEXPECTED(isSuperType < 0)) return zv::Val();
-					if (isSuperType == PT_TRI_NO) continue;
-				}
-				constantStrings.push(zv::Ref(entry));
-			} ZEND_HASH_FOREACH_END();
-		}
-
 		ValueSetFields f;
 		f.null_ = a.null_() && b.null_();
 		f.false_ = a.false_() && b.false_();
@@ -539,9 +508,10 @@ public:
 			f.numbers = callOn(a.numbers(), mIntersect, 1, b.numbers());
 			if (UNEXPECTED(f.numbers.isUndef())) return zv::Val();
 		}
-		f.constantStrings = std::move(constantStrings);
-		f.strings = intersectTypes(a.strings(), b.strings());
-		if (UNEXPECTED(f.strings.isUndef())) return zv::Val();
+		if (a.strings() != nullptr && b.strings() != nullptr) {
+			IETR_VAL(strings, pt_string_set_intersect(a.strings(), b.strings()));
+			if (!pt_string_set_is_empty(strings.raw())) f.strings = std::move(strings);
+		}
 		f.emptyArray = a.emptyArray() && b.emptyArray();
 		f.nonEmptyArray = a.nonEmptyArray() && b.nonEmptyArray();
 		f.arrays = intersectTypes(a.arrays(), b.arrays());
@@ -752,15 +722,13 @@ public:
 		if (s.numbers() != nullptr && UNEXPECTED(!readNumbers(s.numbers(), out))) return false;
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			zv::Val constantType = newConstantStringType(Z_STR_P(entry));
-			if (UNEXPECTED(constantType.isUndef())) return false;
 			bool hasNumbers;
-			if (UNEXPECTED(!convertedNumbers(constantType.raw(), mToNumber, out, hasNumbers))) return false;
+			if (UNEXPECTED(!convertedNumbers(entry, mToNumber, out, hasNumbers))) return false;
 			if (!hasNumbers) return true;
 		} ZEND_HASH_FOREACH_END();
-		if (s.strings() != nullptr) {
+		if (s.stringType() != nullptr) {
 			bool hasNumbers;
-			if (UNEXPECTED(!convertedNumbers(s.strings(), mToNumber, out, hasNumbers))) return false;
+			if (UNEXPECTED(!convertedNumbers(s.stringType(), mToNumber, out, hasNumbers))) return false;
 			if (!hasNumbers) return true;
 		}
 		has = true;
@@ -835,11 +803,9 @@ public:
 		std::vector<zv::Val> types;
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			zv::Val constantType = newConstantStringType(Z_STR_P(entry));
-			if (UNEXPECTED(constantType.isUndef())) return false;
-			types.push_back(std::move(constantType));
+			types.push_back(zv::Val::copyOf(zv::Ref(entry)));
 		} ZEND_HASH_FOREACH_END();
-		if (s.strings() != nullptr) types.push_back(zv::Val::copyOf(zv::Ref(s.strings())));
+		if (s.stringType() != nullptr) types.push_back(zv::Val::copyOf(zv::Ref(s.stringType())));
 		if (s.objects() != nullptr) types.push_back(zv::Val::copyOf(zv::Ref(s.objects())));
 		for (zv::Val &type : types) {
 			NumberSetData numbers;
@@ -934,7 +900,7 @@ public:
 	static bool getFiniteScalarTypes(ValueSetView s, bool expandIntegerIntervals, std::vector<zv::Val> &types, bool &finite)
 	{
 		finite = false;
-		if (s.unknown() || s.strings() != nullptr || s.emptyArray() || s.nonEmptyArray() || s.objects() != nullptr || s.resources()) return true;
+		if (s.unknown() || s.stringType() != nullptr || s.emptyArray() || s.nonEmptyArray() || s.objects() != nullptr || s.resources()) return true;
 
 		if (s.null_()) {
 			zv::Val nullType = newNullType();
@@ -984,9 +950,7 @@ public:
 		}
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			zv::Val constantType = newConstantStringType(Z_STR_P(entry));
-			if (UNEXPECTED(constantType.isUndef())) return false;
-			types.push_back(std::move(constantType));
+			types.push_back(zv::Val::copyOf(zv::Ref(entry)));
 		} ZEND_HASH_FOREACH_END();
 
 		finite = true;
@@ -1204,7 +1168,7 @@ public:
 	static zv::Val generalize(ValueSetView s)
 	{
 		bool hasBooleans = s.false_() || s.true_();
-		bool hasStrings = s.hasConstantStrings();
+		bool hasStrings = s.strings() != nullptr;
 		bool hasNumbers = !numbersEmpty(s.numbers());
 		if (!hasBooleans && !hasStrings && !s.null_() && hasNumbers) {
 			NumbersView n(s.numbers());
@@ -1285,10 +1249,9 @@ public:
 		std::vector<zv::Val> otherTypes;
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			IETR_VAL(constantType, newConstantStringType(Z_STR_P(entry)));
-			otherTypes.push_back(std::move(constantType));
+			otherTypes.push_back(zv::Val::copyOf(zv::Ref(entry)));
 		} ZEND_HASH_FOREACH_END();
-		for (zval *type : {s.strings(), s.arrays(), s.objects()}) {
+		for (zval *type : {s.stringType(), s.arrays(), s.objects()}) {
 			if (type == nullptr) continue;
 			otherTypes.push_back(zv::Val::copyOf(zv::Ref(type)));
 		}
@@ -1537,12 +1500,12 @@ public:
 		}
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			zv::Val member = createConstantString(Z_STR_P(entry));
+			zv::Val member = createConstantString(entry);
 			if (UNEXPECTED(member.isUndef())) return false;
 			members.push_back(std::move(member));
 		} ZEND_HASH_FOREACH_END();
-		if (s.strings() != nullptr) {
-			zv::Val member = createStrings(s.strings());
+		if (s.stringType() != nullptr) {
+			zv::Val member = createStrings(s.stringType());
 			if (UNEXPECTED(member.isUndef())) return false;
 			members.push_back(std::move(member));
 		}
@@ -1553,7 +1516,8 @@ public:
 	{
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(exponent.constantStrings(), entry) {
-			if (!isNumeric(Z_STR_P(entry))) return newErrorType();
+			IETR_VAL(value, constantStringValue(entry));
+			if (!isNumeric(Z_STR_P(value.raw()))) return newErrorType();
 		} ZEND_HASH_FOREACH_END();
 
 		std::vector<zv::Val> baseTypes;
@@ -1632,6 +1596,99 @@ public:
 
 		return unionOf(resultTypes);
 	}
+
+	/* {{{ stringConcatenate() */
+
+	/* Mirrors stringConcatenate(). */
+	static zv::Val stringConcatenate(ValueSetView left, ValueSetView right, zval *phpVersion)
+	{
+		IETR_VAL(leftStrings, toStringSet(left));
+		IETR_VAL(rightStrings, toStringSet(right));
+		if (Z_TYPE_P(leftStrings.raw()) == IS_NULL || Z_TYPE_P(rightStrings.raw()) == IS_NULL) return newErrorType();
+		if (isEmpty(left) || isEmpty(right)) {
+			zval *never = left.never() != nullptr ? left.never() : right.never();
+			if (never != nullptr) return zv::Val::copyOf(zv::Ref(never));
+			return newNeverType();
+		}
+
+		return pt_string_set_concatenate(leftStrings.raw(), rightStrings.raw(), phpVersion);
+	}
+
+	/* Mirrors toStringSet(): a StringSet, or PHP null */
+	static zv::Val toStringSet(ValueSetView s)
+	{
+		if (s.invalid() || s.emptyArray() || s.nonEmptyArray()) return zv::Val::null();
+		if (s.unknown()) {
+			zv::Val mixed;
+			zval *unknownType = s.unknownType();
+			if (unknownType == nullptr) {
+				mixed = newMixedType();
+				if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+				unknownType = mixed.raw();
+			}
+			IETR_VAL(strings, callOn(unknownType, mToString));
+			return toStringSetOfType(strings.raw());
+		}
+
+		zv::Val strings = s.strings() != nullptr ? zv::Val::copyOf(zv::Ref(s.strings())) : pt_string_set_create_empty();
+		if (UNEXPECTED(strings.isUndef())) return zv::Val();
+		auto unionWith = [&strings](zv::Val other) -> bool {
+			if (UNEXPECTED(other.isUndef())) return false;
+			zv::Val united = pt_string_set_union(strings.raw(), other.raw());
+			if (UNEXPECTED(united.isUndef())) return false;
+			strings = std::move(united);
+			return true;
+		};
+		if (s.null_() || s.false_()) {
+			IETR_VAL(empty, constantStringLiteral("", 0));
+			if (UNEXPECTED(!unionWith(pt_string_set_create_constant(empty.raw())))) return zv::Val();
+		}
+		if (s.true_()) {
+			IETR_VAL(one, constantStringLiteral("1", 1));
+			if (UNEXPECTED(!unionWith(pt_string_set_create_constant(one.raw())))) return zv::Val();
+		}
+		if (!numbersEmpty(s.numbers())) {
+			NumberSetData numbers;
+			if (UNEXPECTED(!readNumbers(s.numbers(), numbers))) return zv::Val();
+			IETR_VAL(numbersType, createTypeOfNumbers(numbers));
+			IETR_VAL(numberStringType, callOn(numbersType.raw(), mToString));
+			IETR_VAL(numberStrings, toStringSetOfType(numberStringType.raw()));
+			if (Z_TYPE_P(numberStrings.raw()) == IS_NULL) return numberStrings;
+			if (UNEXPECTED(!unionWith(pt_string_set_to_number_strings(numberStrings.raw(), isOnlyNonNegativeIntegers(numbers))))) return zv::Val();
+		}
+		if (s.objects() != nullptr) {
+			IETR_VAL(objectStringType, callOn(s.objects(), mToString));
+			IETR_VAL(objectStrings, toStringSetOfType(objectStringType.raw()));
+			if (Z_TYPE_P(objectStrings.raw()) == IS_NULL) return objectStrings;
+			if (UNEXPECTED(!unionWith(std::move(objectStrings)))) return zv::Val();
+		}
+		if (s.resources()) {
+			IETR_VAL(stringType, newStringType());
+			if (UNEXPECTED(!unionWith(pt_string_set_create_type(stringType.raw())))) return zv::Val();
+		}
+
+		return strings;
+	}
+
+	/* Mirrors toStringSetOfType(): a StringSet, or PHP null */
+	static zv::Val toStringSetOfType(zval *strings)
+	{
+		if (isA(strings, pt_ce_error_type)) return zv::Val::null();
+		IETR_VAL(valueSet, pt_type_call(Z_OBJ_P(strings), PT_LC("tovalueset"), 0, NULL));
+		zval *set = ValueSetView(Z_OBJ_P(valueSet.raw())).strings();
+		if (set == nullptr) return pt_string_set_create_empty();
+		return zv::Val::copyOf(zv::Ref(set));
+	}
+
+	static bool isOnlyNonNegativeIntegers(const NumberSetData &numbers)
+	{
+		for (const NumberSetData::IntegerInterval &interval : numbers.integerIntervals) {
+			if (interval.min.isNull || interval.min.value < 0) return false;
+		}
+		return numbers.floatIntervals.empty() && !numbers.nan;
+	}
+
+	/* }}} */
 
 	static zv::Val arithmeticNegate(ValueSetView s, zval *phpVersion)
 	{
@@ -2126,11 +2183,12 @@ public:
 		}
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			IETR_VAL(partner, getConstantStringPartnerType(entry, phpVersion));
+			IETR_VAL(value, constantStringValue(entry));
+			IETR_VAL(partner, getConstantStringPartnerType(value.raw(), phpVersion));
 			types.push(std::move(partner));
 		} ZEND_HASH_FOREACH_END();
-		if (s.strings() != nullptr) {
-			IETR_VAL(partner, getStringPartnerType(s.strings(), phpVersion));
+		if (s.stringType() != nullptr) {
+			IETR_VAL(partner, getStringPartnerType(s.stringType(), phpVersion));
 			types.push(std::move(partner));
 		}
 		if (s.emptyArray() || s.nonEmptyArray()) {
@@ -2153,7 +2211,7 @@ public:
 
 	static zv::Val getAlwaysLooselyEqualType(ValueSetView s, zval *phpVersion)
 	{
-		if (s.unknown() || s.strings() != nullptr || s.nonEmptyArray() || s.resources()) return newNeverType();
+		if (s.unknown() || s.stringType() != nullptr || s.nonEmptyArray() || s.resources()) return newNeverType();
 
 		std::vector<zv::Val> types;
 		if (s.null_()) {
@@ -2204,7 +2262,8 @@ public:
 		}
 		zval *entry;
 		ZEND_HASH_FOREACH_VAL(s.constantStrings(), entry) {
-			IETR_VAL(type, getTypeLooselyEqualTo(entry, phpVersion));
+			IETR_VAL(value, constantStringValue(entry));
+			IETR_VAL(type, getTypeLooselyEqualTo(value.raw(), phpVersion));
 			types.push_back(std::move(type));
 		} ZEND_HASH_FOREACH_END();
 		if (s.emptyArray()) {
@@ -2319,7 +2378,7 @@ PT_MINIT_REGISTRATION(pt_register_value_set)
 	cls.privateClassConstantLong("EXACT_FLOAT_INTEGER_LIMIT", ValueSetOps::EXACT_FLOAT_INTEGER_LIMIT);
 	cls.privateClassConstantLong("EXACT_FLOAT_DIGITS", ValueSetOps::EXACT_FLOAT_DIGITS);
 	cls.privateClassConstantLong("SHORT_FLOAT_DIGITS", ValueSetOps::SHORT_FLOAT_DIGITS);
-	/* the sixteen properties must stay the declared ones in this order (slots::*) */
+	/* the fifteen properties must stay the declared ones in this order (slots::*) */
 	ptdecl::ValueSet::declareProperties(cls);
 
 	cls.method(sigs::createUnknown, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -2369,9 +2428,10 @@ PT_MINIT_REGISTRATION(pt_register_value_set)
 		PT_RETURN_VAL(ValueSetOps::createNumbers(zv::Val::copyOf(zv::Ref(numbers))));
 	});
 	cls.method(sigs::createConstantString, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zend_string *value;
-		if (!zp::parse<zp::Str>(execute_data, value)) RETURN_THROWS();
-		PT_RETURN_VAL(ValueSetOps::createConstantString(value));
+		zval *string;
+		if (!zp::parse<zp::Obj>(execute_data, string)) RETURN_THROWS();
+		if (UNEXPECTED(!requireInstance(string, pt_ce_constant_string_type, 1, "string"))) RETURN_THROWS();
+		PT_RETURN_VAL(ValueSetOps::createConstantString(string));
 	});
 	cls.method(sigs::createStrings, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *strings;
@@ -2444,6 +2504,7 @@ PT_MINIT_REGISTRATION(pt_register_value_set)
 	cls.method(sigs::bitwiseXor, pt_vs_operator<vsBitwise<ValueSetOps::OP_XOR>>);
 	cls.method(sigs::bitwiseShiftLeft, pt_vs_operator<vsShift<ValueSetOps::OP_SHIFT_LEFT>>);
 	cls.method(sigs::bitwiseShiftRight, pt_vs_operator<vsShift<ValueSetOps::OP_SHIFT_RIGHT>>);
+	cls.method(sigs::stringConcatenate, pt_vs_operator<ValueSetOps::stringConcatenate>);
 
 	cls.shadow(&pt_ce_value_set);
 }

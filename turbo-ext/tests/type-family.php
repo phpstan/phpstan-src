@@ -7791,7 +7791,8 @@ if (PHP_VERSION_ID >= 80300) {
 	require_once $initializerFixture;
 }
 $observations['native PHPStan\Reflection\InitializerExprTypeResolver'] = (new ReflectionMethod(\PHPStan\Reflection\InitializerExprTypeResolver::class, 'getType'))->isInternal();
-$observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(\PHPStan\Type\OperatorTypeHelper::class, 'concat'))->isInternal();
+$observations['native PHPStan\Type\OperatorTypeHelper'] = (new ReflectionMethod(\PHPStan\Type\OperatorTypeHelper::class, 'arrayUnion'))->isInternal();
+$observations['native PHPStan\Type\StringSet'] = (new ReflectionMethod(\PHPStan\Type\StringSet::class, 'concatenate'))->isInternal();
 $observations['native PHPStan\Type\ValueSet'] = (new ReflectionMethod(\PHPStan\Type\ValueSet::class, 'union'))->isInternal();
 {
 	$resolver = $stringContainer->getByType(\PHPStan\Reflection\InitializerExprTypeResolver::class);
@@ -7936,6 +7937,34 @@ $observations['native PHPStan\Type\ValueSet'] = (new ReflectionMethod(\PHPStan\T
 		foreach ($operands as $rightName => $right) {
 			$r["valueSet union $leftName $rightName"] = $catching(static fn () => $leftSet->union($right->toValueSet())->getPossiblyLooselyEqualType(new \PHPStan\Php\PhpVersion(80500)));
 			$r["valueSet intersect $leftName $rightName"] = $catching(static fn () => $leftSet->intersect($right->toValueSet())->getPossiblyLooselyEqualType(new \PHPStan\Php\PhpVersion(80500)));
+		}
+	}
+	// StringSet on its own: the factories, union and intersection, and . on the sets
+	$numericString = new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryNumericStringType()]);
+	$decimalString = new \PHPStan\Type\IntersectionType([new \PHPStan\Type\StringType(), new \PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType()]);
+	$stringSets = [
+		'empty' => \PHPStan\Type\StringSet::createEmpty(),
+		"''" => \PHPStan\Type\StringSet::createConstant($str('')),
+		"'0'" => \PHPStan\Type\StringSet::createConstant($str('0')),
+		"'5'" => \PHPStan\Type\StringSet::createConstant($str('5')),
+		"'1.5e3'" => \PHPStan\Type\StringSet::createConstant($str('1.5e3')),
+		"'1 '" => \PHPStan\Type\StringSet::createConstant($str('1 ')),
+		"'Abc'" => \PHPStan\Type\StringSet::createConstant($str('Abc')),
+		'string' => \PHPStan\Type\StringSet::createType(new \PHPStan\Type\StringType()),
+		'numeric' => \PHPStan\Type\StringSet::createType($numericString),
+		'decimal' => \PHPStan\Type\StringSet::createType($decimalString),
+		'numeric numbers' => \PHPStan\Type\StringSet::createType($numericString)->toNumberStrings(false),
+		'digits' => \PHPStan\Type\StringSet::createType($decimalString)->toNumberStrings(true),
+	];
+	foreach ($stringSets as $leftName => $leftStrings) {
+		$r["stringSet $leftName"] = [$leftStrings->isEmpty(), count($leftStrings->getConstantStrings()), $catching(static fn () => $leftStrings->getType()), $catching(static fn () => $leftStrings->toType())];
+		foreach ($stringSets as $rightName => $rightStrings) {
+			$r["stringSet union $leftName $rightName"] = $catching(static fn () => $leftStrings->union($rightStrings)->toType());
+			$r["stringSet intersect $leftName $rightName"] = $catching(static fn () => $leftStrings->intersect($rightStrings)->toType());
+			foreach ([70400, 80500] as $concatenateVersionId) {
+				$r["stringSet concatenate $concatenateVersionId $leftName $rightName"] = $catching(static fn () => $leftStrings->concatenate($rightStrings, new \PHPStan\Php\PhpVersion($concatenateVersionId)));
+				$r["stringSet concatenate union $concatenateVersionId $leftName $rightName"] = $catching(static fn () => $leftStrings->union($stringSets["'5'"])->concatenate($rightStrings->union($stringSets['digits']), new \PHPStan\Php\PhpVersion($concatenateVersionId)));
+			}
 		}
 	}
 	foreach ($operands as $name => $operand) {

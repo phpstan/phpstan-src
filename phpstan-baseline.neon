@@ -1454,12 +1454,6 @@ parameters:
 			path: src/Type/ObjectWithoutClassType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 4
-			path: src/Type/OperatorTypeHelper.php
-
-		-
 			rawMessage: Creating new ReflectionClass is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.
 			identifier: phpstanApi.runtimeReflection
 			count: 1

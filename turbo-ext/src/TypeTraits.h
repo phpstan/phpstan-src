@@ -349,6 +349,21 @@ zv::Val pt_number_set_new(const phpstanturbo::NumberSetData &data);
  * pending exception */
 [[nodiscard]] bool pt_type_to_number_set(zval *type, phpstanturbo::NumberSetData &out, bool &has);
 
+/* the StringSet class entry and its twin's methods (StringSet.cpp); the
+ * zvals are borrowed StringSet instances, UNDEF = pending exception */
+zend_class_entry *pt_string_set_class();
+zv::Val pt_string_set_create_empty();
+zv::Val pt_string_set_create_constant(zval *string);
+zv::Val pt_string_set_create_type(zval *strings);
+zv::Val pt_string_set_to_number_strings(zval *set, bool digits);
+zv::Val pt_string_set_union(zval *a, zval *b);
+zv::Val pt_string_set_intersect(zval *a, zval *b);
+zv::Val pt_string_set_concatenate(zval *left, zval *right, zval *phpVersion);
+/* the set's slots, borrowed: its ConstantStringType list, its type or nullptr */
+HashTable *pt_string_set_constants(zval *set);
+zval *pt_string_set_type(zval *set);
+bool pt_string_set_is_empty(zval *set);
+
 /* the bodies of IntegerType::looseCompare() and IntegerType::arithmeticPower()
  * (IntegerType.cpp), for the children's parent:: calls; UNDEF = pending
  * exception */

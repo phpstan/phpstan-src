@@ -22,45 +22,30 @@ inline void declareProperties(reg::Class &cls)
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"left\0" /* 0 */
-	"PHPStan\\Type\\Type\0" /* 5 */
-	"right\0" /* 23 */
-	"phpVersion\0" /* 29 */
-	"PHPStan\\Php\\PhpVersion\0" /* 40 */
-	"\0" /* 63 */
-	"concat\0" /* 64 */
-	"leftStringType\0" /* 71 */
-	"canEndInWhitespace\0" /* 86 */
-	"leftType\0" /* 105 */
-	"rightType\0" /* 114 */
-	"arrayUnion\0" /* 124 */
-	"tryArrayUnion"; /* 135 */
+	"leftType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 9 */
+	"rightType\0" /* 27 */
+	"phpVersion\0" /* 37 */
+	"PHPStan\\Php\\PhpVersion\0" /* 48 */
+	"\0" /* 71 */
+	"arrayUnion\0" /* 72 */
+	"tryArrayUnion"; /* 83 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0, 5), /* concat $left */
-	reg::packed(23, 0, 5), /* concat $right */
-	reg::packed(29, 0, 40), /* concat $phpVersion */
-	reg::packed(63, 0, 5), /* concat return */
-	reg::packed(0, 0, 5), /* canEndInWhitespace $left */
-	reg::packed(71, 0, 5), /* canEndInWhitespace $leftStringType */
-	reg::packed(29, 0, 40), /* canEndInWhitespace $phpVersion */
-	reg::packed(63, MAY_BE_BOOL), /* canEndInWhitespace return */
-	reg::packed(105, 0, 5), /* arrayUnion $leftType */
-	reg::packed(114, 0, 5), /* arrayUnion $rightType */
-	reg::packed(29, 0, 40), /* arrayUnion $phpVersion */
-	reg::packed(63, 0, 5), /* arrayUnion return */
-	reg::packed(105, 0, 5), /* tryArrayUnion $leftType */
-	reg::packed(114, 0, 5), /* tryArrayUnion $rightType */
-	reg::packed(63, MAY_BE_NULL, 5), /* tryArrayUnion return */
+	reg::packed(0, 0, 9), /* arrayUnion $leftType */
+	reg::packed(27, 0, 9), /* arrayUnion $rightType */
+	reg::packed(37, 0, 48), /* arrayUnion $phpVersion */
+	reg::packed(71, 0, 9), /* arrayUnion return */
+	reg::packed(0, 0, 9), /* tryArrayUnion $leftType */
+	reg::packed(27, 0, 9), /* tryArrayUnion $rightType */
+	reg::packed(71, MAY_BE_NULL, 9), /* tryArrayUnion return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig concat = { { 64 /* concat */, 3, 0, 3, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig canEndInWhitespace = { { 86 /* canEndInWhitespace */, 3, 4, 3, 7, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig arrayUnion = { { 124 /* arrayUnion */, 3, 8, 3, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig tryArrayUnion = { { 135 /* tryArrayUnion */, 2, 12, 2, 14, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig arrayUnion = { { 72 /* arrayUnion */, 3, 0, 3, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig tryArrayUnion = { { 83 /* tryArrayUnion */, 2, 4, 2, 6, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::OperatorTypeHelper

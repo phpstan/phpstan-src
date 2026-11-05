@@ -122,7 +122,7 @@ trait OperatorTypeTrait
 
 	public function stringConcatenate(Type $right, PhpVersion $phpVersion): Type
 	{
-		return OperatorTypeHelper::concat($this, $right, $phpVersion);
+		return $this->toValueSet()->stringConcatenate($right->toValueSet(), $phpVersion);
 	}
 
 	public function arrayUnion(Type $right, PhpVersion $phpVersion): Type

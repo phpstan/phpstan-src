@@ -948,7 +948,7 @@ final class ValueSet
 
 	/**
 	 * Operands with more pairs of constants than are computed one by one become the
-	 * type all their constants are: int, float, string or null; anything else can
+	 * type all their constants are: int, float, int|float, string or null; anything else can
 	 * only be an error.
 	 *
 	 * @return array{self, self}
@@ -976,12 +976,13 @@ final class ValueSet
 		$hasStrings = $this->strings !== null;
 		$hasNumbers = $this->numbers !== null && !$this->numbers->isEmpty();
 		if (!$hasBooleans && !$hasStrings && !$this->null && $hasNumbers) {
-			if ($this->numbers->getFloatIntervals() === [] && !$this->numbers->hasNan()) {
-				return self::createNumbers(new NumberSet([[null, null]], [], false));
-			}
-			if ($this->numbers->getIntegerIntervals() === []) {
-				return self::createNumbers(new NumberSet([], [[-INF, INF]], true));
-			}
+			$hasFloats = $this->numbers->getFloatIntervals() !== [] || $this->numbers->hasNan();
+
+			return self::createNumbers(new NumberSet(
+				$this->numbers->getIntegerIntervals() !== [] ? [[null, null]] : [],
+				$hasFloats ? [[-INF, INF]] : [],
+				$hasFloats,
+			));
 		}
 		if (!$hasBooleans && !$hasNumbers && !$this->null && $hasStrings) {
 			return self::createStrings(new StringType());

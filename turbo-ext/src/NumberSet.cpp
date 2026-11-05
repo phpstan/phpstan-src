@@ -25,6 +25,21 @@ namespace sigs = ptdecl::NumberSet::sig;
 
 static zend_class_entry *pt_ce_number_set = nullptr;
 
+/* $a * $b of two ints: true when PHP would overflow it into a float, like
+ * StatementContext::multiplyOverflows() (MSVC has no __builtin_mul_overflow) */
+static bool pt_ns_multiply_overflows(zend_long a, zend_long b, zend_long &product)
+{
+#if defined(__GNUC__)
+	return __builtin_mul_overflow(a, b, &product);
+#else
+	double productDouble = 0;
+	zend_long overflowed = 0;
+	ZEND_SIGNED_MULTIPLY_LONG(a, b, product, productDouble, overflowed);
+	(void) productDouble;
+	return overflowed != 0;
+#endif
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\NumberSet. */
@@ -853,12 +868,12 @@ public:
 		zend_long factor = base;
 		while (exponent > 0) {
 			if (exponent % 2 == 1) {
-				if (__builtin_mul_overflow(result, factor, &result)) return NullableLong::null();
+				if (pt_ns_multiply_overflows(result, factor, result)) return NullableLong::null();
 				exponent--;
 				continue;
 			}
 			exponent /= 2;
-			if (__builtin_mul_overflow(factor, factor, &factor)) return NullableLong::null();
+			if (pt_ns_multiply_overflows(factor, factor, factor)) return NullableLong::null();
 		}
 
 		return NullableLong::of(result);
@@ -1171,7 +1186,7 @@ bool pt_type_to_number_set(zval *type, NumberSetData &out, bool &has)
 
 /* intDivide() & co.: (self $right, PhpVersion $phpVersion) */
 template <int Op>
-static void pt_ns_integer_operator(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL pt_ns_integer_operator(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *right, *phpVersion;
 	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();
@@ -1194,7 +1209,7 @@ static void pt_ns_integer_operator(INTERNAL_FUNCTION_PARAMETERS)
 /* union() / intersect(): (self $other) — PHP's max()/min() keep the first of
  * equal values, as `b > a ? b : a` does */
 template <bool Intersect>
-static void pt_ns_combine(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL pt_ns_combine(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *other;
 	if (!zp::parse<zp::Obj>(execute_data, other)) RETURN_THROWS();
@@ -1235,7 +1250,7 @@ static void pt_ns_combine(INTERNAL_FUNCTION_PARAMETERS)
 
 /* add() & co.: (self $right, PhpVersion $phpVersion) */
 template <phpstanturbo::ietr::IetrBinaryKind Kind>
-static void pt_ns_operator(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL pt_ns_operator(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *right, *phpVersion;
 	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();

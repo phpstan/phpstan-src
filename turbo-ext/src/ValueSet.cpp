@@ -924,8 +924,9 @@ public:
 				zend_long min = interval.min.value;
 				zend_long max = interval.max.value;
 				if (min != max) {
-					zend_long width;
-					bool overflows = __builtin_sub_overflow(max, min, &width);
+					// max - min overflows exactly when it exceeds ZEND_LONG_MAX (min < max here)
+					bool overflows = min < 0 && max > ZEND_LONG_MAX + min;
+					zend_long width = overflows ? 0 : max - min;
 					// only a range on its own is listed, as IntegerRangeType::getFiniteTypes() lists it
 					if (!expandIntegerIntervals || overflows || width > PT_IETR_CALCULATE_SCALARS_LIMIT || !isOnlyOneIntegerInterval(s)) return true;
 				}
@@ -2455,7 +2456,7 @@ static bool requireInstance(zval *value, zend_class_entry *ce, uint32_t position
 
 /* (self $right, PhpVersion $phpVersion) operators */
 template <zv::Val (*Operator)(ValueSetView, ValueSetView, zval *)>
-static void pt_vs_operator(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL pt_vs_operator(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *right, *phpVersion;
 	if (!zp::parse<zp::Obj, zp::Obj>(execute_data, right, phpVersion)) RETURN_THROWS();

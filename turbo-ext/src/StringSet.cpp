@@ -657,7 +657,7 @@ static bool requireInstance(zval *value, zend_class_entry *ce, uint32_t position
 }
 
 template <zv::Val (*Combine)(StringSetView, StringSetView)>
-static void pt_ss_combine(INTERNAL_FUNCTION_PARAMETERS)
+static void ZEND_FASTCALL pt_ss_combine(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *other;
 	if (!zp::parse<zp::Obj>(execute_data, other)) RETURN_THROWS();

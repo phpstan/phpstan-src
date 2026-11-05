@@ -180,7 +180,7 @@ zv::Val pt_value_set_create(const char *lcFactory, size_t len, uint32_t argc = 0
 void pt_value_set_of_this(INTERNAL_FUNCTION_PARAMETERS, const char *lcFactory, size_t len);
 
 /* ValueSet::createNumbers($this->toNumberSet()) */
-void pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_value_set_of_numbers(INTERNAL_FUNCTION_PARAMETERS);
 
 /* the union (UnionType) or the intersection (IntersectionType) of the sets of
  * $this->getTypes() */

@@ -659,7 +659,7 @@ class ConstantStringType extends StringType implements ConstantScalarType
 
 	public function toValueSet(): ValueSet
 	{
-		return ValueSet::createConstantString($this->getValue());
+		return ValueSet::createConstantString($this);
 	}
 
 }

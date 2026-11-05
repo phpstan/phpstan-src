@@ -1337,12 +1337,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_string_type)
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantStringType");
 	ptdecl::ConstantStringType::declareClass(cls);
 	/* mirrors toValueSet() */
-	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
-		ZEND_PARSE_PARAMETERS_NONE();
-		zv::Val value = pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("getvalue"), 0, NULL);
-		if (UNEXPECTED(value.isUndef())) RETURN_THROWS();
-		PT_RETURN_VAL(pt_value_set_create(PT_LC("createconstantstring"), 1, value.raw()));
-	});
+	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createconstantstring"));
 	cls.privateClassConstantLong("DESCRIBE_LIMIT", PT_CST_DESCRIBE_LIMIT);
 	/* the declaration order defines the PT_CST_PROP_* slots */
 	cls.privateTypedClassPropertyDefaultNull("objectType", "PHPStan\\Type\\ObjectType");

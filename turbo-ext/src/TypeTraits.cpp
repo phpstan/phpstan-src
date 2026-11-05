@@ -5620,7 +5620,7 @@ void pt_type_trait_operator(reg::Class &cls)
 	cls.traitMethod(sigs::bitwiseXor, PT_OPERATOR_VALUE_SET("bitwisexor"));
 	cls.traitMethod(sigs::bitwiseShiftLeft, PT_OPERATOR_VALUE_SET("bitwiseshiftleft"));
 	cls.traitMethod(sigs::bitwiseShiftRight, PT_OPERATOR_VALUE_SET("bitwiseshiftright"));
-	cls.traitMethod(sigs::stringConcatenate, operatorBinary<PT_OPERATOR_CONCATENATE>);
+	cls.traitMethod(sigs::stringConcatenate, PT_OPERATOR_VALUE_SET("stringconcatenate"));
 	cls.traitMethod(sigs::arrayUnion, operatorBinary<PT_OPERATOR_ARRAY_UNION>);
 	/* $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion) */
 	cls.traitMethod(sigs::getPossiblyLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {

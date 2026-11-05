@@ -1,14 +1,12 @@
 /*
  * PHPStanTurbo\OperatorTypeHelper — native implementation of
- * PHPStan\Type\OperatorTypeHelper: the . operator (Type::stringConcatenate())
- * and the array + operator (Type::arrayUnion()) OperatorTypeTrait delegates
- * to (pt_type_trait_operator() in TypeTraits.cpp calls
- * pt_operator_type_helper_binary() directly). The arithmetic and bitwise
- * operators are computed on ValueSet and NumberSet.
+ * PHPStan\Type\OperatorTypeHelper: the array + operator (Type::arrayUnion())
+ * OperatorTypeTrait delegates to (pt_type_trait_operator() in TypeTraits.cpp
+ * calls pt_operator_type_helper_binary() directly). The other operators are
+ * computed on ValueSet, NumberSet and StringSet.
  *
  * A final class of static methods: every method mirrors its twin, the
- * private ones are registered too so the method sets stay identical. Only
- * concat() reads the PhpVersion (trailing whitespace in numeric strings).
+ * private ones are registered too so the method sets stay identical.
  */
 
 #include "support.h"
@@ -34,241 +32,6 @@ namespace phpstanturbo {
 class OperatorTypeHelper
 {
 public:
-
-	/* {{{ concat() */
-
-	/* Mirrors concat(). */
-	static zv::Val concat(zval *left, zval *right, zval *phpVersion)
-	{
-		IETR_VAL(leftStringType, callOn(left, mToString));
-		IETR_VAL(rightStringType, callOn(right, mToString));
-		{
-			IETR_VAL(union_, union2(leftStringType.raw(), rightStringType.raw()));
-			if (isA(union_.raw(), pt_ce_error_type)) return newErrorType();
-		}
-
-		int leftEmpty = isEmptyConstantString(leftStringType.raw());
-		if (UNEXPECTED(leftEmpty < 0)) return zv::Val();
-		if (leftEmpty) return rightStringType;
-
-		int rightEmpty = isEmptyConstantString(rightStringType.raw());
-		if (UNEXPECTED(rightEmpty < 0)) return zv::Val();
-		if (rightEmpty) return leftStringType;
-
-		if (isA(leftStringType.raw(), pt_ce_constant_string_type) && isA(rightStringType.raw(), pt_ce_constant_string_type)) {
-			return callOn(leftStringType.raw(), mAppend, 1, rightStringType.raw());
-		}
-
-		IETR_VAL(leftConstantStrings, callOn(leftStringType.raw(), mGetConstantStrings));
-		IETR_VAL(rightConstantStrings, callOn(rightStringType.raw(), mGetConstantStrings));
-		if (UNEXPECTED(!requireArray(leftConstantStrings.raw()) || !requireArray(rightConstantStrings.raw()))) return zv::Val();
-		zend_long combinedConstantStringsCount = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(leftConstantStrings.raw())) * (zend_long) zend_hash_num_elements(Z_ARRVAL_P(rightConstantStrings.raw()));
-
-		// we limit the number of union-types for performance reasons
-		if (combinedConstantStringsCount > 0 && combinedConstantStringsCount <= PT_IETR_CALCULATE_SCALARS_LIMIT) {
-			zv::Arr strings = zv::Arr::create((uint32_t) combinedConstantStringsCount);
-			for (zv::ArrayEntry leftEntry : zv::ArrRef(leftConstantStrings.raw())) {
-				zval *leftConstantString = leftEntry.value().raw();
-				int leftStringEmpty = constantStringValueIsEmpty(leftConstantString);
-				if (UNEXPECTED(leftStringEmpty < 0)) return zv::Val();
-				if (leftStringEmpty) {
-					// $strings = array_merge($strings, $rightConstantStrings)
-					for (zv::ArrayEntry rightEntry : zv::ArrRef(rightConstantStrings.raw())) {
-						if (rightEntry.hasStringKey()) {
-							strings.set(rightEntry.stringKey(), zv::Val::copyOf(rightEntry.value()));
-						} else {
-							strings.push(rightEntry.value());
-						}
-					}
-					continue;
-				}
-
-				for (zv::ArrayEntry rightEntry : zv::ArrRef(rightConstantStrings.raw())) {
-					zval *rightConstantString = rightEntry.value().raw();
-					int rightStringEmpty = constantStringValueIsEmpty(rightConstantString);
-					if (UNEXPECTED(rightStringEmpty < 0)) return zv::Val();
-					if (rightStringEmpty) {
-						strings.push(zv::Ref(leftConstantString));
-						continue;
-					}
-
-					IETR_VAL(appended, callOn(leftConstantString, mAppend, 1, rightConstantString));
-					strings.push(std::move(appended));
-				}
-			}
-
-			if (zend_hash_num_elements(strings.table()) > 0) {
-				return unionOf(strings);
-			}
-		}
-
-		zv::Arr accessoryTypes = zv::Arr::create(6);
-		{
-			IETR_TRI(leftNonEmpty, triOn(leftStringType.raw(), mIsNonEmptyString));
-			IETR_TRI(rightNonEmpty, triOn(rightStringType.raw(), mIsNonEmptyString));
-			if (pt_trinary_and(leftNonEmpty, rightNonEmpty) == PT_TRI_YES) {
-				zval accessory;
-				if (UNEXPECTED(!pt_accessory_non_falsy_string_type_new(&accessory))) return zv::Val();
-				accessoryTypes.push(zv::Val::adopt(accessory));
-			} else {
-				IETR_TRI(leftNonFalsy, triOn(leftStringType.raw(), mIsNonFalsyString));
-				IETR_TRI(rightNonFalsy, triOn(rightStringType.raw(), mIsNonFalsyString));
-				if (pt_trinary_or(leftNonFalsy, rightNonFalsy) == PT_TRI_YES) {
-					zval accessory;
-					if (UNEXPECTED(!pt_accessory_non_falsy_string_type_new(&accessory))) return zv::Val();
-					accessoryTypes.push(zv::Val::adopt(accessory));
-				} else {
-					IETR_TRI(leftNonEmpty2, triOn(leftStringType.raw(), mIsNonEmptyString));
-					IETR_TRI(rightNonEmpty2, triOn(rightStringType.raw(), mIsNonEmptyString));
-					if (pt_trinary_or(leftNonEmpty2, rightNonEmpty2) == PT_TRI_YES) {
-						zval accessory;
-						if (UNEXPECTED(!pt_accessory_non_empty_string_type_new(&accessory))) return zv::Val();
-						accessoryTypes.push(zv::Val::adopt(accessory));
-					}
-				}
-			}
-		}
-
-		{
-			IETR_TRI(leftLiteral, triOn(leftStringType.raw(), mIsLiteralString));
-			IETR_TRI(rightLiteral, triOn(rightStringType.raw(), mIsLiteralString));
-			if (pt_trinary_and(leftLiteral, rightLiteral) == PT_TRI_YES) {
-				zval accessory;
-				if (UNEXPECTED(!pt_accessory_literal_string_type_new(&accessory))) return zv::Val();
-				accessoryTypes.push(zv::Val::adopt(accessory));
-			}
-		}
-
-		{
-			IETR_TRI(leftLowercase, triOn(leftStringType.raw(), mIsLowercaseString));
-			IETR_TRI(rightLowercase, triOn(rightStringType.raw(), mIsLowercaseString));
-			if (pt_trinary_and(leftLowercase, rightLowercase) == PT_TRI_YES) {
-				zval accessory;
-				if (UNEXPECTED(!pt_accessory_lowercase_string_type_new(&accessory))) return zv::Val();
-				accessoryTypes.push(zv::Val::adopt(accessory));
-			}
-		}
-
-		{
-			IETR_TRI(leftUppercase, triOn(leftStringType.raw(), mIsUppercaseString));
-			IETR_TRI(rightUppercase, triOn(rightStringType.raw(), mIsUppercaseString));
-			if (pt_trinary_and(leftUppercase, rightUppercase) == PT_TRI_YES) {
-				zval accessory;
-				if (UNEXPECTED(!pt_accessory_uppercase_string_type_new(&accessory))) return zv::Val();
-				accessoryTypes.push(zv::Val::adopt(accessory));
-			}
-		}
-
-		{
-			zval emptyString;
-			ZVAL_EMPTY_STRING(&emptyString);
-			IETR_VAL(emptyStringType, newConstantStringType(Z_STR(emptyString)));
-			IETR_VAL(leftNumericStringNonEmpty, pt_type_combinator_remove(leftStringType.raw(), emptyStringType.raw()));
-			IETR_TRI(leftNumeric, triOn(leftNumericStringNonEmpty.raw(), mIsNumericString));
-			bool numericResult = leftNumeric == PT_TRI_YES;
-			if (numericResult) {
-				/* '' . '' is not numeric */
-				IETR_TRI(leftNonEmpty, triOn(leftStringType.raw(), mIsNonEmptyString));
-				IETR_TRI(rightNonEmpty, triOn(rightStringType.raw(), mIsNonEmptyString));
-				numericResult = pt_trinary_or(leftNonEmpty, rightNonEmpty) == PT_TRI_YES;
-			}
-			if (numericResult) {
-				/* '1 ' is numeric on PHP 8, '1 5' is not */
-				int endsInWhitespace = canEndInWhitespace(left, leftStringType.raw(), phpVersion);
-				if (UNEXPECTED(endsInWhitespace < 0)) return zv::Val();
-				numericResult = endsInWhitespace == 0;
-			}
-			if (numericResult) {
-				IETR_TRI(leftIsInteger, triOn(left, mIsInteger));
-				bool integerValidation = leftIsInteger == PT_TRI_YES;
-
-				bool allRightConstantsZeroOrMore = false;
-				for (zv::ArrayEntry rightEntry : zv::ArrRef(rightConstantStrings.raw())) {
-					zval *rightConstantString = rightEntry.value().raw();
-					IETR_VAL(value, constantStringValue(rightConstantString));
-					if (UNEXPECTED(Z_TYPE_P(value.raw()) != IS_STRING)) {
-						// ConstantStringType::getValue(): string
-						pt_throw_should_not_happen();
-						return zv::Val();
-					}
-					zend_string *string = Z_STR_P(value.raw());
-					if (ZSTR_LEN(string) == 0) {
-						continue;
-					}
-
-					if (
-						is_numeric_string(ZSTR_VAL(string), ZSTR_LEN(string), NULL, NULL, false) == 0
-						|| !(integerValidation ? isNumberAfterInteger(string) : isDecimalDigits(string))
-					) {
-						allRightConstantsZeroOrMore = false;
-						break;
-					}
-
-					allRightConstantsZeroOrMore = true;
-				}
-
-				bool nonNegativeRight = allRightConstantsZeroOrMore;
-				if (!nonNegativeRight) {
-					IETR_VAL(zeroOrMoreInteger, fromInterval(NullableLong::of(0), NullableLong::null()));
-					IETR_TRI(zeroOrMoreRight, triOn(zeroOrMoreInteger.raw(), mIsSuperTypeOf, 1, right));
-					nonNegativeRight = zeroOrMoreRight == PT_TRI_YES;
-				}
-				if (nonNegativeRight) {
-					zval accessory;
-					if (UNEXPECTED(!pt_accessory_numeric_string_type_new(&accessory))) return zv::Val();
-					accessoryTypes.push(zv::Val::adopt(accessory));
-				}
-			}
-		}
-
-		if (zend_hash_num_elements(accessoryTypes.table()) > 0) {
-			IETR_VAL(stringType, newStringType());
-			accessoryTypes.push(std::move(stringType));
-			return newIntersectionType(accessoryTypes);
-		}
-
-		return newStringType();
-	}
-
-	/* Mirrors canEndInWhitespace(): 1 / 0, -1 = pending exception */
-	static int canEndInWhitespace(zval *left, zval *leftStringType, zval *phpVersion)
-	{
-		zend_long leftIsInteger = triOn(left, mIsInteger);
-		if (UNEXPECTED(leftIsInteger < 0)) return -1;
-		if (leftIsInteger == PT_TRI_YES) return 0;
-		zend_long leftIsFloat = triOn(left, mIsFloat);
-		if (UNEXPECTED(leftIsFloat < 0)) return -1;
-		if (leftIsFloat == PT_TRI_YES) return 0;
-		zend_long leftIsDecimal = triOn(leftStringType, mIsDecimalIntegerString);
-		if (UNEXPECTED(leftIsDecimal < 0)) return -1;
-		if (leftIsDecimal == PT_TRI_YES) return 0;
-
-		zv::Val constantStrings = callOn(leftStringType, mGetConstantStrings);
-		if (UNEXPECTED(constantStrings.isUndef()) || UNEXPECTED(!requireArray(constantStrings.raw()))) return -1;
-		if (zend_hash_num_elements(Z_ARRVAL_P(constantStrings.raw())) > 0) {
-			for (zv::ArrayEntry entry : zv::ArrRef(constantStrings.raw())) {
-				zv::Val value = constantStringValue(entry.value().raw());
-				if (UNEXPECTED(value.isUndef())) return -1;
-				if (UNEXPECTED(Z_TYPE_P(value.raw()) != IS_STRING)) {
-					pt_throw_should_not_happen();
-					return -1;
-				}
-				/* Strings::match($value, '#\s\z#'): PCRE's \s */
-				size_t length = Z_STRLEN_P(value.raw());
-				if (length > 0) {
-					char last = Z_STRVAL_P(value.raw())[length - 1];
-					if (last == ' ' || last == '\t' || last == '\n' || last == '\v' || last == '\f' || last == '\r') return 1;
-				}
-			}
-			return 0;
-		}
-
-		bool allows;
-		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_ALLOWS_TRAILING_WHITESPACE_IN_NUMERIC_STRINGS, allows))) return -1;
-		return allows ? 1 : 0;
-	}
-
-	/* }}} */
 
 	/* {{{ arrayUnion() */
 
@@ -488,8 +251,6 @@ using phpstanturbo::OperatorTypeHelper;
 zv::Val pt_operator_type_helper_binary(pt_operator_type_op op, zval *left, zval *right, zval *phpVersion)
 {
 	switch (op) {
-		case PT_OPERATOR_CONCATENATE:
-			return OperatorTypeHelper::concat(left, right, phpVersion);
 		case PT_OPERATOR_ARRAY_UNION:
 			return OperatorTypeHelper::arrayUnion(left, right);
 	}
@@ -560,17 +321,8 @@ PT_MINIT_REGISTRATION(pt_register_operator_type_helper)
 	ptdecl::OperatorTypeHelper::declareClass(cls);
 	ptdecl::OperatorTypeHelper::declareProperties(cls);
 
-	cls.method(sigs::concat, OT_BINARY_GLUE(OperatorTypeHelper::concat(leftType, rightType, phpVersion)));
 	cls.method(sigs::arrayUnion, OT_BINARY_GLUE(OperatorTypeHelper::arrayUnion(leftType, rightType)));
 	cls.method(sigs::tryArrayUnion, OT_TYPES_GLUE(OperatorTypeHelper::tryArrayUnion(leftType, rightType)));
-	cls.method(sigs::canEndInWhitespace, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *left, *leftStringType, *phpVersion;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, left, leftStringType, phpVersion)) RETURN_THROWS();
-		if (UNEXPECTED(!otArgType(left, 1) || !otArgType(leftStringType, 2) || !otArgPhpVersion(phpVersion, 3))) RETURN_THROWS();
-		int result = OperatorTypeHelper::canEndInWhitespace(left, leftStringType, phpVersion);
-		if (UNEXPECTED(result < 0)) RETURN_THROWS();
-		RETURN_BOOL(result == 1);
-	});
 
 	cls.shadow(&pt_ce_operator_type_helper);
 }

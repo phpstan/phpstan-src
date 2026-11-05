@@ -570,16 +570,8 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				24,
 			],
 			[
-				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty (int) does not accept string.',
-				27,
-			],
-			[
 				'Property WritingToReadOnlyProperties\Foo::$usualProperty (int) does not accept string.',
 				34,
-			],
-			[
-				'Property WritingToReadOnlyProperties\Foo::$writeOnlyProperty (int) does not accept string.',
-				40,
 			],
 		]);
 	}

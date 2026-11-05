@@ -38,9 +38,9 @@ use const PHP_INT_MIN;
  * describes itself with Type::toValueSet(); unions and intersections of types are
  * unions and intersections of their sets.
  *
- * Numbers are a NumberSet. Strings are a list of constant strings plus the type of
- * the other strings, objects are kept as a type, because their class decides how
- * they compare. A set of unknown values stands for a type that can hold anything.
+ * Numbers are a NumberSet, strings a StringSet. Objects are kept as a type, because
+ * their class decides how they compare. A set of unknown values stands for a type
+ * that can hold anything.
  */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ValueSet.cpp')]
 final class ValueSet
@@ -53,17 +53,13 @@ final class ValueSet
 	private const EXACT_FLOAT_DIGITS = 17;
 	private const SHORT_FLOAT_DIGITS = 15;
 
-	/**
-	 * @param list<string> $constantStrings
-	 */
 	private function __construct(
 		private bool $unknown,
 		private bool $null = false,
 		private bool $false = false,
 		private bool $true = false,
 		private ?NumberSet $numbers = null,
-		private array $constantStrings = [],
-		private ?Type $strings = null,
+		private ?StringSet $strings = null,
 		private bool $emptyArray = false,
 		private bool $nonEmptyArray = false,
 		private ?Type $arrays = null,
@@ -127,15 +123,15 @@ final class ValueSet
 		return new self(false, numbers: $numbers);
 	}
 
-	public static function createConstantString(string $value): self
+	public static function createConstantString(ConstantStringType $string): self
 	{
-		return new self(false, constantStrings: [$value]);
+		return new self(false, strings: StringSet::createConstant($string));
 	}
 
 	/** Strings of a string type: StringType, or an accessory such as AccessoryNumericStringType. */
 	public static function createStrings(Type $strings): self
 	{
-		return new self(false, strings: $strings);
+		return new self(false, strings: StringSet::createType($strings));
 	}
 
 	/** Arrays of an array type: ArrayType, ConstantArrayType or an accessory such as NonEmptyArrayType. */
@@ -172,7 +168,6 @@ final class ValueSet
 			&& !$this->false
 			&& !$this->true
 			&& ($this->numbers === null || $this->numbers->isEmpty())
-			&& $this->constantStrings === []
 			&& $this->strings === null
 			&& !$this->emptyArray
 			&& !$this->nonEmptyArray
@@ -193,23 +188,13 @@ final class ValueSet
 			);
 		}
 
-		$constantStrings = $this->constantStrings;
-		foreach ($other->constantStrings as $constantString) {
-			if (in_array($constantString, $constantStrings, true)) {
-				continue;
-			}
-
-			$constantStrings[] = $constantString;
-		}
-
 		return new self(
 			false,
 			$this->null || $other->null,
 			$this->false || $other->false,
 			$this->true || $other->true,
 			$this->numbers === null || $other->numbers === null ? $this->numbers ?? $other->numbers : $this->numbers->union($other->numbers),
-			$constantStrings,
-			self::unionTypes($this->strings, $other->strings),
+			$this->strings === null || $other->strings === null ? $this->strings ?? $other->strings : $this->strings->union($other->strings),
 			$this->emptyArray || $other->emptyArray,
 			$this->nonEmptyArray || $other->nonEmptyArray,
 			self::unionTypes($this->arrays, $other->arrays),
@@ -229,22 +214,7 @@ final class ValueSet
 			return $this;
 		}
 
-		$constantStrings = [];
-		foreach ([[$this, $other], [$other, $this]] as [$set, $otherSet]) {
-			foreach ($set->constantStrings as $constantString) {
-				if (
-					in_array($constantString, $constantStrings, true)
-					|| (
-						!in_array($constantString, $otherSet->constantStrings, true)
-						&& ($otherSet->strings === null || $otherSet->strings->isSuperTypeOf(new ConstantStringType($constantString))->no())
-					)
-				) {
-					continue;
-				}
-
-				$constantStrings[] = $constantString;
-			}
-		}
+		$strings = $this->strings === null || $other->strings === null ? null : $this->strings->intersect($other->strings);
 
 		return new self(
 			false,
@@ -252,8 +222,7 @@ final class ValueSet
 			$this->false && $other->false,
 			$this->true && $other->true,
 			$this->numbers === null || $other->numbers === null ? null : $this->numbers->intersect($other->numbers),
-			$constantStrings,
-			$this->strings === null || $other->strings === null ? null : TypeCombinator::intersect($this->strings, $other->strings),
+			$strings === null || $strings->isEmpty() ? null : $strings,
 			$this->emptyArray && $other->emptyArray,
 			$this->nonEmptyArray && $other->nonEmptyArray,
 			$this->arrays === null || $other->arrays === null ? null : TypeCombinator::intersect($this->arrays, $other->arrays),
@@ -289,11 +258,12 @@ final class ValueSet
 			$types[] = self::getNumberPartnerType($this->numbers, $phpVersion);
 			$types[] = self::getBooleanAndNullPartnerType(self::canBeZero($this->numbers), self::canBeNonZero($this->numbers));
 		}
-		foreach ($this->constantStrings as $constantString) {
-			$types[] = self::getConstantStringPartnerType($constantString, $phpVersion);
+		foreach ($this->getConstantStrings() as $constantString) {
+			$types[] = self::getConstantStringPartnerType($constantString->getValue(), $phpVersion);
 		}
-		if ($this->strings !== null) {
-			$types[] = self::getStringPartnerType($this->strings, $phpVersion);
+		$stringType = $this->strings?->getType();
+		if ($stringType !== null) {
+			$types[] = self::getStringPartnerType($stringType, $phpVersion);
 		}
 		if ($this->emptyArray || $this->nonEmptyArray) {
 			$types[] = self::getArrayPartnerType($this->emptyArray, $this->nonEmptyArray);
@@ -317,7 +287,7 @@ final class ValueSet
 	 */
 	public function getAlwaysLooselyEqualType(PhpVersion $phpVersion): Type
 	{
-		if ($this->unknown || $this->strings !== null || $this->nonEmptyArray || $this->resources) {
+		if ($this->unknown || $this->strings?->getType() !== null || $this->nonEmptyArray || $this->resources) {
 			return new NeverType();
 		}
 
@@ -339,8 +309,8 @@ final class ValueSet
 				return new NeverType();
 			}
 		}
-		foreach ($this->constantStrings as $constantString) {
-			$types[] = self::getTypeLooselyEqualTo($constantString, $phpVersion);
+		foreach ($this->getConstantStrings() as $constantString) {
+			$types[] = self::getTypeLooselyEqualTo($constantString->getValue(), $phpVersion);
 		}
 		if ($this->emptyArray) {
 			$types[] = TypeCombinator::union(new NullType(), new ConstantBooleanType(false), new ConstantArrayType([], []));
@@ -546,8 +516,8 @@ final class ValueSet
 
 	private function powerMember(self $exponent, PhpVersion $phpVersion): Type
 	{
-		foreach ($exponent->constantStrings as $constantString) {
-			if (!is_numeric($constantString)) {
+		foreach ($exponent->getConstantStrings() as $constantString) {
+			if (!is_numeric($constantString->getValue())) {
 				return new ErrorType();
 			}
 		}
@@ -601,6 +571,86 @@ final class ValueSet
 		]);
 	}
 
+	/** Models the . operator: on the strings the values cast to. */
+	public function stringConcatenate(self $right, PhpVersion $phpVersion): Type
+	{
+		$leftStrings = $this->toStringSet();
+		$rightStrings = $right->toStringSet();
+		if ($leftStrings === null || $rightStrings === null) {
+			return new ErrorType();
+		}
+		if ($this->isEmpty() || $right->isEmpty()) {
+			return $this->never ?? $right->never ?? new NeverType();
+		}
+
+		return $leftStrings->concatenate($rightStrings, $phpVersion);
+	}
+
+	/** The strings a (string) cast gives for the values, null when it is an error for one of them. */
+	private function toStringSet(): ?StringSet
+	{
+		if ($this->invalid || $this->emptyArray || $this->nonEmptyArray) {
+			return null;
+		}
+		if ($this->unknown) {
+			return self::toStringSetOfType(($this->unknownType ?? new MixedType())->toString());
+		}
+
+		$strings = $this->strings ?? StringSet::createEmpty();
+		if ($this->null || $this->false) {
+			$strings = $strings->union(StringSet::createConstant(new ConstantStringType('')));
+		}
+		if ($this->true) {
+			$strings = $strings->union(StringSet::createConstant(new ConstantStringType('1')));
+		}
+		if ($this->numbers !== null && !$this->numbers->isEmpty()) {
+			$numberStrings = self::toStringSetOfType(self::createTypeOfNumbers($this->numbers)->toString());
+			if ($numberStrings === null) {
+				return null;
+			}
+			$strings = $strings->union($numberStrings->toNumberStrings(self::isOnlyNonNegativeIntegers($this->numbers)));
+		}
+		if ($this->objects !== null) {
+			$objectStrings = self::toStringSetOfType($this->objects->toString());
+			if ($objectStrings === null) {
+				return null;
+			}
+			$strings = $strings->union($objectStrings);
+		}
+		if ($this->resources) {
+			$strings = $strings->union(StringSet::createType(new StringType()));
+		}
+
+		return $strings;
+	}
+
+	/** The strings of the type Type::toString() gives, null when it is an error. */
+	private static function toStringSetOfType(Type $strings): ?StringSet
+	{
+		if ($strings instanceof ErrorType) {
+			return null;
+		}
+
+		return $strings->toValueSet()->strings ?? StringSet::createEmpty();
+	}
+
+	private static function isOnlyNonNegativeIntegers(NumberSet $numbers): bool
+	{
+		foreach ($numbers->getIntegerIntervals() as [$min]) {
+			if ($min === null || $min < 0) {
+				return false;
+			}
+		}
+
+		return $numbers->getFloatIntervals() === [] && !$numbers->hasNan();
+	}
+
+	/** @return list<ConstantStringType> */
+	private function getConstantStrings(): array
+	{
+		return $this->strings?->getConstantStrings() ?? [];
+	}
+
 	/**
 	 * The values one at a time, the way the members of a union type are: each kind of
 	 * value, each number interval, each constant string. The booleans and a float with
@@ -631,11 +681,12 @@ final class ValueSet
 				$members[] = self::createNumbers(new NumberSet([], [], true));
 			}
 		}
-		foreach ($this->constantStrings as $constantString) {
+		foreach ($this->getConstantStrings() as $constantString) {
 			$members[] = self::createConstantString($constantString);
 		}
-		if ($this->strings !== null) {
-			$members[] = self::createStrings($this->strings);
+		$stringType = $this->strings?->getType();
+		if ($stringType !== null) {
+			$members[] = self::createStrings($stringType);
 		}
 
 		return $members;
@@ -655,15 +706,16 @@ final class ValueSet
 		if ($this->numbers !== null) {
 			$numbers = $numbers->union($this->numbers);
 		}
-		foreach ($this->constantStrings as $constantString) {
-			$stringNumbers = (new ConstantStringType($constantString))->toNumber()->toNumberSet();
+		foreach ($this->getConstantStrings() as $constantString) {
+			$stringNumbers = $constantString->toNumber()->toNumberSet();
 			if ($stringNumbers === null) {
 				return null;
 			}
 			$numbers = $numbers->union($stringNumbers);
 		}
-		if ($this->strings !== null) {
-			$stringNumbers = $this->strings->toNumber()->toNumberSet();
+		$stringType = $this->strings?->getType();
+		if ($stringType !== null) {
+			$stringNumbers = $stringType->toNumber()->toNumberSet();
 			if ($stringNumbers === null) {
 				return null;
 			}
@@ -803,7 +855,7 @@ final class ValueSet
 	private function generalize(): self
 	{
 		$hasBooleans = $this->false || $this->true;
-		$hasStrings = $this->constantStrings !== [];
+		$hasStrings = $this->strings !== null;
 		$hasNumbers = $this->numbers !== null && !$this->numbers->isEmpty();
 		if (!$hasBooleans && !$hasStrings && !$this->null && $hasNumbers) {
 			if ($this->numbers->getFloatIntervals() === [] && !$this->numbers->hasNan()) {
@@ -933,11 +985,8 @@ final class ValueSet
 			$types[] = self::createTypeOfNumbers($this->numbers);
 		}
 
-		$otherTypes = [];
-		foreach ($this->constantStrings as $constantString) {
-			$otherTypes[] = new ConstantStringType($constantString);
-		}
-		foreach ([$this->strings, $this->arrays, $this->objects] as $type) {
+		$otherTypes = $this->getConstantStrings();
+		foreach ([$this->strings?->getType(), $this->arrays, $this->objects] as $type) {
 			if ($type === null) {
 				continue;
 			}
@@ -1236,7 +1285,7 @@ final class ValueSet
 	{
 		if (
 			$this->unknown
-			|| $this->strings !== null
+			|| $this->strings?->getType() !== null
 			|| $this->emptyArray
 			|| $this->nonEmptyArray
 			|| $this->objects !== null
@@ -1288,8 +1337,8 @@ final class ValueSet
 				$types[] = new ConstantFloatType(NAN);
 			}
 		}
-		foreach ($this->constantStrings as $constantString) {
-			$types[] = new ConstantStringType($constantString);
+		foreach ($this->getConstantStrings() as $constantString) {
+			$types[] = $constantString;
 		}
 
 		return $types;
@@ -1322,12 +1371,10 @@ final class ValueSet
 			$sets[] = $integers ? self::toIntegerNumbers($this->numbers) : $this->numbers;
 		}
 
-		$types = [];
-		foreach ($this->constantStrings as $constantString) {
-			$types[] = new ConstantStringType($constantString);
-		}
-		if ($this->strings !== null) {
-			$types[] = $this->strings;
+		$types = $this->getConstantStrings();
+		$stringType = $this->strings?->getType();
+		if ($stringType !== null) {
+			$types[] = $stringType;
 		}
 		if ($this->objects !== null) {
 			$types[] = $this->objects;
@@ -1424,7 +1471,7 @@ final class ValueSet
 
 	private function mayBeString(): bool
 	{
-		return $this->unknown || $this->constantStrings !== [] || $this->strings !== null;
+		return $this->unknown || $this->strings !== null;
 	}
 
 	private function mayBeArray(): bool
@@ -1439,7 +1486,6 @@ final class ValueSet
 			|| $this->false
 			|| $this->true
 			|| $this->numbers !== null
-			|| $this->constantStrings !== []
 			|| $this->strings !== null
 			|| $this->objects !== null
 			|| $this->resources;
@@ -1451,7 +1497,6 @@ final class ValueSet
 			|| $this->null
 			|| $this->false
 			|| $this->true
-			|| $this->constantStrings !== []
 			|| $this->strings !== null
 			|| $this->mayBeArray()
 			|| $this->objects !== null

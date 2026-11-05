@@ -847,6 +847,22 @@ class TypeCombinatorTest extends PHPStanTestCase
 			],
 			[
 				[
+					new BenevolentUnionType([IntegerRangeType::fromInterval(null, -1), IntegerRangeType::fromInterval(1, null), new StringType()]),
+					new ConstantIntegerType(0),
+				],
+				BenevolentUnionType::class,
+				'(int|string)',
+			],
+			[
+				[
+					new BenevolentUnionType([IntegerRangeType::fromInterval(1, null), new StringType()]),
+					new FloatType(),
+				],
+				UnionType::class,
+				'float|int<1, max>|string',
+			],
+			[
+				[
 					new UnionType([new IntegerType(), new StringType(), new FloatType()]),
 					new BenevolentUnionType([new IntegerType(), new StringType()]),
 				],

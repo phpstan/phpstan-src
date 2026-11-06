@@ -41,7 +41,7 @@ interface ResultCacheValueExtension
 	 * The current value for the key - compared with the one recorded by the last analysis.
 	 * A long value is better hashed.
 	 *
-	 * `getValue` is invoked before bootstrap-files are included.
+	 * `getValue` is invoked before [`bootstrapFiles`](https://phpstan.org/config-reference#bootstrap) are included.
 	 */
 	public function getValue(string $key): string;
 

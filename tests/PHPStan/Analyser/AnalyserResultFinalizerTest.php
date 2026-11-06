@@ -19,6 +19,7 @@ use PHPStan\Rules\Traits\TraitDeclarationCollector;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
 use Throwable;
+use function array_map;
 use function count;
 use function get_class;
 use function md5;
@@ -111,6 +112,18 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 		$this->assertCount(1, $result->getInternalErrors());
 		$this->assertSame('The cache file is damaged.', $result->getInternalErrors()[0]->getMessage());
 		$this->assertFalse($result->getInternalErrors()[0]->shouldReportBug());
+	}
+
+	public function testUnreadableCollectedDataKeepsCrashesOfEarlierRules(): void
+	{
+		$result = $this->createFinalizer([$this->createThrowingRule(), $this->createIteratingRule(false)])->finalize(
+			$this->createAnalyserResultWithUnreadableCache(),
+			false,
+			false,
+		)->getAnalyserResult();
+
+		$this->assertSame([], $result->getErrors());
+		$this->assertSame(['Failed.', 'The cache file is damaged.'], array_map(static fn (InternalError $error): string => $error->getMessage(), $result->getInternalErrors()));
 	}
 
 	public function testUnreadableCollectedDataIsRethrownInDebugMode(): void

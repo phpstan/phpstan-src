@@ -1315,7 +1315,7 @@ final class ResultCacheManager
 		}
 		// Returns the collected data as it can be read back from the saved file, or null when nothing
 		// was saved.
-		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, LazyCollectedData $collectedData, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, array $exportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles, FinalizerResult $finalizerResult) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): ?LazyCollectedData {
+		$doSave = function (array $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, LazyCollectedData $collectedData, ?array $dependencies, ?array $usedTraitDependencies, ?array $valueDependencies, ?array $packageDependencies, callable $getExportedNodes, CachedExportedNodes $cachedExportedNodes, array $projectExtensionFiles, FinalizerResult $finalizerResult) use ($internalErrors, $resultCache, $output, $onlyFiles, $meta): ?LazyCollectedData {
 			if ($onlyFiles) {
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted('Result cache was not saved because only files were passed as analysed paths.');
@@ -1360,6 +1360,10 @@ final class ResultCacheManager
 				}
 				return null;
 			}
+
+			// fetching the nodes of the non-analysed files costs a parse of each of them, so it waits
+			// until the cache is known to be saved - a run on a few files or in editor mode never is
+			$exportedNodes = $getExportedNodes();
 
 			// A parse error describes the analysed code, so the result cache is still saved. The file's
 			// own result is not cached: its errors carry the exception, and it is re-analysed on every
@@ -1506,7 +1510,7 @@ final class ResultCacheManager
 					$projectExtensionFiles = $this->getProjectExtensionFiles($projectConfigArray, $analyserResult->getDependencies());
 				}
 
-				return $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedData, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles, $finalizerResult);
+				return $doSave($freshErrorsByFile, $freshLocallyIgnoredErrorsByFile, $analyserResult->getLinesToIgnore(), $analyserResult->getUnmatchedLineIgnores(), $freshCollectedData, $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), $analyserResult->getValueDependencies(), $analyserResult->getPackageDependencies(), fn (): array => $this->addNonAnalysedExportedNodes($analyserResult->getExportedNodes(), $analyserResult->getDependencies(), $analyserResult->getUsedTraitDependencies(), CachedExportedNodes::createEmpty()), CachedExportedNodes::createEmpty(), $projectExtensionFiles, $finalizerResult);
 			});
 		}
 
@@ -1548,7 +1552,7 @@ final class ResultCacheManager
 					$projectExtensionFiles[$file] = [$hash, true, $className];
 				}
 			}
-			return $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $finalizerResult);
+			return $doSave($errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, static fn (): array => $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $finalizerResult);
 		};
 
 		$flatErrors = [];

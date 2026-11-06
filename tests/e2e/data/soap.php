@@ -29,7 +29,7 @@ class MySoapClient3 extends \SoapClient
 	 * @param string|null $wsdl
 	 * @param mixed[]|null $options
 	 */
-	public function __construct($wsdl, array $options = null)
+	public function __construct($wsdl, ?array $options = null)
 	{
 		parent::SoapClient($wsdl, $options);
 	}

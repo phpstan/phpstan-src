@@ -36,6 +36,7 @@ namespace sigs = ptdecl::TypeCombinator::sig;
 #include <algorithm>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 zend_class_entry *pt_ce_type_combinator = nullptr;
@@ -1256,11 +1257,26 @@ public:
 		listFrom(processedArrayTypes.raw(), types);
 		typesCount = types.size();
 
+		/* alreadyNormalized keeps the members alive, so their objects stay
+		 * unique while this lookup refers to them */
+		NormalizedGroupsByType normalizedGroupsByType;
+		if (typesCount > 1) {
+			for (size_t group = 0; group < alreadyNormalized.size(); group++) {
+				for (zv::ArrayEntry entry : zv::ArrRef(alreadyNormalized[group].raw())) {
+					zval *normalizedType = entry.value().raw();
+					if (Z_TYPE_P(normalizedType) != IS_OBJECT) continue;
+					normalizedGroupsByType.emplace_back(Z_OBJ_P(normalizedType), group);
+				}
+			}
+			std::sort(normalizedGroupsByType.begin(), normalizedGroupsByType.end());
+		}
+
 		/* transform A | A to A
 		 * transform A | never to A */
 		for (size_t i = 0; i < typesCount; i++) {
+			NormalizedGroups iGroups = normalizedGroupsOf(normalizedGroupsByType, types[i].raw());
 			for (size_t j = i + 1; j < typesCount; j++) {
-				if (isAlreadyNormalized(alreadyNormalized, types[i].raw(), types[j].raw())) continue;
+				if (iGroups.first != iGroups.second && isAlreadyNormalized(iGroups, normalizedGroupsByType, types[i].raw(), types[j].raw())) continue;
 				zv::Val merged;
 				int compareResult = compareTypesInUnion(types[i].raw(), types[j].raw(), merged);
 				PT_FAIL_IF_NEG(compareResult);
@@ -1268,6 +1284,7 @@ public:
 
 				if (compareResult == 1) {
 					types[i] = std::move(merged);
+					iGroups = normalizedGroupsOf(normalizedGroupsByType, types[i].raw());
 					types.erase(types.begin() + (ptrdiff_t) j);
 					j--;
 					typesCount--;
@@ -1489,17 +1506,51 @@ public:
 		return 0;
 	}
 
-	/* private static isAlreadyNormalized(array $alreadyNormalized, Type $a, Type $b): bool */
-	static bool isAlreadyNormalized(std::vector<zv::Val> &alreadyNormalized, zval *a, zval *b)
-	{
-		for (zv::Val &normalizedTypes : alreadyNormalized) {
-			for (zv::ArrayEntry entry : zv::ArrRef(normalizedTypes.raw())) {
-				if (!sameObject(entry.value().raw(), a)) continue;
+	/* the $normalizedGroupsByType lookup of doUnion(): (member object,
+	 * flattened union index) pairs, sorted - a member a union holds twice is
+	 * there twice */
+	typedef std::vector<std::pair<const zend_object *, size_t>> NormalizedGroupsByType;
+	typedef std::pair<NormalizedGroupsByType::const_iterator, NormalizedGroupsByType::const_iterator> NormalizedGroups;
 
-				for (zv::ArrayEntry another : zv::ArrRef(normalizedTypes.raw())) {
-					if (another.stringKeyOrNull() == entry.stringKeyOrNull() && another.indexKey() == entry.indexKey()) continue;
-					if (sameObject(another.value().raw(), b)) return true;
-				}
+	static NormalizedGroups normalizedGroupsOf(const NormalizedGroupsByType &normalizedGroupsByType, zval *type)
+	{
+		if (normalizedGroupsByType.empty() || Z_TYPE_P(type) != IS_OBJECT) {
+			return NormalizedGroups(normalizedGroupsByType.end(), normalizedGroupsByType.end());
+		}
+		const zend_object *object = Z_OBJ_P(type);
+		NormalizedGroupsByType::const_iterator first = std::lower_bound(
+			normalizedGroupsByType.begin(),
+			normalizedGroupsByType.end(),
+			object,
+			[](const std::pair<const zend_object *, size_t> &entry, const zend_object *key) { return entry.first < key; }
+		);
+		NormalizedGroupsByType::const_iterator last = first;
+		while (last != normalizedGroupsByType.end() && last->first == object) last++;
+		return NormalizedGroups(first, last);
+	}
+
+	/* private static isAlreadyNormalized(array $aGroups, array $normalizedGroupsByType, Type $a, Type $b): bool */
+	static bool isAlreadyNormalized(const NormalizedGroups &aGroups, const NormalizedGroupsByType &normalizedGroupsByType, zval *a, zval *b)
+	{
+		if (sameObject(a, b)) {
+			/* sorted, so a union holding the member twice lists it twice in a row */
+			for (NormalizedGroupsByType::const_iterator it = aGroups.first; it != aGroups.second; it++) {
+				NormalizedGroupsByType::const_iterator next = it + 1;
+				if (next != aGroups.second && next->second == it->second) return true;
+			}
+
+			return false;
+		}
+
+		NormalizedGroups bGroups = normalizedGroupsOf(normalizedGroupsByType, b);
+		NormalizedGroupsByType::const_iterator ai = aGroups.first;
+		NormalizedGroupsByType::const_iterator bi = bGroups.first;
+		while (ai != aGroups.second && bi != bGroups.second) {
+			if (ai->second == bi->second) return true;
+			if (ai->second < bi->second) {
+				ai++;
+			} else {
+				bi++;
 			}
 		}
 

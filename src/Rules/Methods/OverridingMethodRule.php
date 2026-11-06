@@ -274,7 +274,11 @@ final class OverridingMethodRule implements Rule
 			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection
 				|| $realPrototype->getTentativeReturnType() === null
 				|| (is_bool($prototype->isBuiltin()) ? !$prototype->isBuiltin() : $prototype->isBuiltin()->no());
-		} elseif ($realPrototype instanceof MethodPrototypeReflection && $realPrototype->getTentativeReturnType() !== null) {
+		} elseif (
+			$realPrototype instanceof MethodPrototypeReflection
+			&& $realPrototype->getTentativeReturnType() !== null
+			&& $prototypeDeclaringClass->isBuiltin()
+		) {
 			// return types that are only tentative are not checked before PHP 8.1
 			$reportReturnType = false;
 		} else {

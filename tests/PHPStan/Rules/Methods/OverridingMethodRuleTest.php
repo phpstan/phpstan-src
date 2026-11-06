@@ -654,9 +654,19 @@ class OverridingMethodRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testBug10101(): void
+	public static function dataBug10101(): array
 	{
-		$this->phpVersionId = PHP_VERSION_ID;
+		return [
+			[70400],
+			[80000],
+			[PHP_VERSION_ID],
+		];
+	}
+
+	#[DataProvider('dataBug10101')]
+	public function testBug10101(int $phpVersionId): void
+	{
+		$this->phpVersionId = $phpVersionId;
 		$this->analyse([__DIR__ . '/data/bug-10101.php'], [
 			[
 				'Return type mixed of method Bug10101\B::next() is not covariant with return type void of method Bug10101\A::next().',

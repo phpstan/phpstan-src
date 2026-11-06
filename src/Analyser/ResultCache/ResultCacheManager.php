@@ -102,7 +102,7 @@ use const SEEK_CUR;
  * @phpstan-import-type CollectorData from CollectedData
  */
 #[GenerateFactory(interface: ResultCacheManagerFactory::class)]
-final class ResultCacheManager implements CollectedDataReader
+final class ResultCacheManager
 {
 
 	/**
@@ -2735,7 +2735,11 @@ final class ResultCacheManager implements CollectedDataReader
 
 	private function createCollectedDataReader(): CollectedDataReader
 	{
-		return $this;
+		return new ResultCacheCollectedDataReader(
+			fn (array $index): array => $this->readCollectedData($index),
+			fn (array $index): CollectorLocations => $this->locateCollectedDataCollectors($index),
+			fn (string $collectorType, array $positions, string $signature): Generator => $this->readCollectedDataCollector($collectorType, $positions, $signature),
+		);
 	}
 
 	/**
@@ -2746,7 +2750,7 @@ final class ResultCacheManager implements CollectedDataReader
 	 * @param array<string, array{int, int}> $index
 	 * @return CollectorData
 	 */
-	public function read(array $index): array
+	private function readCollectedData(array $index): array
 	{
 		// Read front to back: the entries are stored in the order of their paths and the index
 		// usually is too, but a seek backwards on a file this size is what makes reading it slow.
@@ -2779,7 +2783,7 @@ final class ResultCacheManager implements CollectedDataReader
 	/**
 	 * @param array<string, array{int, int}> $index
 	 */
-	public function locateCollectors(array $index): CollectorLocations
+	private function locateCollectedDataCollectors(array $index): CollectorLocations
 	{
 		uasort($index, static fn (array $a, array $b): int => $a[0] <=> $b[0]);
 
@@ -2815,7 +2819,7 @@ final class ResultCacheManager implements CollectedDataReader
 	 * @param array<string, array{int, int}> $positions
 	 * @return Generator<string, list<mixed>>
 	 */
-	public function readCollector(string $collectorType, array $positions, string $signature): Generator
+	private function readCollectedDataCollector(string $collectorType, array $positions, string $signature): Generator
 	{
 		$transformer = $this->getPathTransformer();
 		$handle = $this->openCacheFileForCollectedData();

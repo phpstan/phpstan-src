@@ -38,6 +38,7 @@ use function count;
 use function defined;
 use function escapeshellarg;
 use function getenv;
+use function getmypid;
 use function ini_get;
 use function max;
 use function parse_url;
@@ -57,6 +58,8 @@ final class ParallelAnalyser
 	private float $processTimeout;
 
 	private ProcessPool $processPool;
+
+	private static int $spoolCount = 0;
 
 	public function __construct(
 		#[AutowiredParameter]
@@ -132,7 +135,11 @@ final class ParallelAnalyser
 		$collectedData = [];
 		// Editor mode renames the temporary file in the collected data later, and it analyses few
 		// files, so it keeps them in memory.
-		$spool = $tmpFile === null ? new CollectedDataSpool(sprintf('%s/collectedData.%s.spool', $this->tmpDir, Random::generate())) : null;
+		// Named after the process like the temporary file of the result cache, so that the file of a run
+		// that was killed is reused rather than left behind with the others. The counter keeps apart the
+		// analyses of a process that runs more than one.
+		$pid = getmypid();
+		$spool = $tmpFile === null ? new CollectedDataSpool(sprintf('%s/collectedData.%s-%d.spool', $this->tmpDir, $pid === false ? Random::generate() : $pid, self::$spoolCount++)) : null;
 		$dependencies = [];
 		$usedTraitDependencies = [];
 		$valueDependencies = ['values' => [], 'dependents' => []];

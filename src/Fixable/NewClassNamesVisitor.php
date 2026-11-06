@@ -95,6 +95,33 @@ final class NewClassNamesVisitor extends NodeVisitorAbstract
 		$this->phpDocParser = new PhpDocParser($config, new TypeParser($config, $constExprParser), $constExprParser);
 	}
 
+	/**
+	 * Whether there is something to write in $newNodes, the nodes returned by fixes.
+	 * The rest of the file is cloned unchanged, so the visitor would not change it.
+	 * Traversing the whole file is skipped when this returns false,
+	 * which matters in files with many fixable errors.
+	 *
+	 * @param Node[] $newNodes
+	 */
+	public static function hasNewNames(array $newNodes): bool
+	{
+		return (new NodeFinder())->findFirst($newNodes, static function (Node $node): bool {
+			if ($node instanceof FullyQualified && $node->getAttribute('origNode') === null) {
+				return true;
+			}
+
+			$doc = $node->getDocComment();
+			if ($doc === null) {
+				return false;
+			}
+
+			$originalNode = $node->getAttribute('origNode');
+			$originalDoc = $originalNode instanceof Node ? $originalNode->getDocComment() : null;
+
+			return $originalDoc === null || $originalDoc->getText() !== $doc->getText();
+		}) !== null;
+	}
+
 	#[Override]
 	public function beforeTraverse(array $nodes): ?array
 	{

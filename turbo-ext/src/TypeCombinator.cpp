@@ -1474,6 +1474,18 @@ public:
 	 * pending exception */
 	static int compareTypesInUnion(zval *a, zval *b, zv::Val &merged)
 	{
+		int aClosure = isClosureOrNonCommonCallableType(a);
+		if (UNEXPECTED(aClosure < 0)) return -1;
+		if (aClosure) {
+			int bClosure = isClosureOrNonCommonCallableType(b);
+			if (UNEXPECTED(bClosure < 0)) return -1;
+			if (bClosure) {
+				int equal = typeEquals(a, b);
+				if (UNEXPECTED(equal < 0)) return -1;
+				if (!equal) return 0;
+			}
+		}
+
 		if (isInstance(a, pt_ce_integer_range_type)) {
 			zv::Val type = call(a, PT_LC("tryunion"), 1, b);
 			if (UNEXPECTED(type.isUndef())) return -1;
@@ -1620,6 +1632,21 @@ public:
 		}
 
 		return 0;
+	}
+
+	/* private static isClosureOrNonCommonCallableType(Type $type): bool
+	 * — -1 = pending exception */
+	static int isClosureOrNonCommonCallableType(zval *type)
+	{
+		if (isInstance(type, pt_ce_closure_type)) return 1;
+		/* get_class($type) === CallableType::class && !$type->equals(new CallableType()) */
+		if (Z_TYPE_P(type) != IS_OBJECT || Z_OBJCE_P(type) != pt_ce_callable_type) return 0;
+		zval raw;
+		zv::Val commonCallable = adopted(pt_callable_type_new(&raw), raw);
+		if (UNEXPECTED(commonCallable.isUndef())) return -1;
+		int equal = typeEquals(type, commonCallable.raw());
+		if (UNEXPECTED(equal < 0)) return -1;
+		return !equal;
 	}
 
 	/* the SubtractableType arm of compareTypesInUnion(): whether

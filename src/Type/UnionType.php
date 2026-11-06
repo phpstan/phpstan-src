@@ -94,6 +94,8 @@ class UnionType implements CompoundType
 
 	private ?TrinaryLogic $isCallable = null;
 
+	private ?bool $hasTemplateOrLateResolvableType = null;
+
 	/** @var array<int, Type> */
 	private array $possiblyLooselyEqualTypes = [];
 
@@ -1814,15 +1816,19 @@ class UnionType implements CompoundType
 
 	public function hasTemplateOrLateResolvableType(): bool
 	{
+		if ($this->hasTemplateOrLateResolvableType !== null) {
+			return $this->hasTemplateOrLateResolvableType;
+		}
+
 		foreach ($this->types as $type) {
 			if (!$type->hasTemplateOrLateResolvableType()) {
 				continue;
 			}
 
-			return true;
+			return $this->hasTemplateOrLateResolvableType = true;
 		}
 
-		return false;
+		return $this->hasTemplateOrLateResolvableType = false;
 	}
 
 	public function getPossiblyLooselyEqualType(PhpVersion $phpVersion): Type

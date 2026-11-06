@@ -175,29 +175,6 @@ zv::Val popNode(zv::Arr &stack)
 	return value;
 }
 
-/* infersInvocationReturnType()'s traversal: whether the type holds an
- * UnresolvedTemplateArgumentType */
-void containsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
-{
-	(void) state1;
-	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
-		zend_type_error("ClosureSignatureInference::infersInvocationReturnType() traversal: expected (Type $type, callable $traverse)");
-		return;
-	}
-	zval *type = &argv[0];
-	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
-		zval_ptr_dtor(contains);
-		ZVAL_TRUE(contains);
-	}
-	if (Z_TYPE_P(contains) == IS_TRUE) {
-		ZVAL_COPY(return_value, type);
-		return;
-	}
-	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
-	if (UNEXPECTED(traversed.isUndef())) return;
-	traversed.intoReturnValue(return_value);
-}
-
 /* one node of getAssignedClosures(): a closure or an arrow function assigned
  * to a named variable is added under the name; false = pending exception */
 [[nodiscard]] bool collectAssignedClosure(zval *node, zv::Arr &assigned)
@@ -1776,13 +1753,9 @@ public:
 		if (UNEXPECTED(frame.isUndef())) return false;
 		if (frame.isNull()) return true;
 
-		zval contains;
-		ZVAL_FALSE(&contains);
-		zv::Val callback = pt_type_native_callback(containsMarkerBody, &contains, NULL);
-		if (UNEXPECTED(callback.isUndef())) return false;
-		zv::Val mapped = pt_type_traverser_map_of(closureType, callback.raw());
-		if (UNEXPECTED(mapped.isUndef())) return false;
-		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) != IS_TRUE;
+		bool contains;
+		if (UNEXPECTED(!pt_closure_type_contains_unresolved_template_argument(closureType, contains))) return false;
+		out = !contains;
 		return true;
 	}
 

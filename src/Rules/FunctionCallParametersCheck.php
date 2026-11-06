@@ -447,10 +447,11 @@ final class FunctionCallParametersCheck
 					}
 				}
 
-				$unresolvableParameterType = $this->unresolvableTypeHelper->getUnresolvableType($parameterType);
+				// only the parameter of a resolved generic acceptor has an original
+				// type to tell an unresolvable type this call made from a declared one
+				$unresolvableParameterType = $originalParameter !== null ? $this->unresolvableTypeHelper->getUnresolvableType($parameterType) : null;
 				if (
 					$unresolvableParameterType !== null
-					&& $originalParameter !== null
 					&& $this->unresolvableTypeHelper->getUnresolvableType($originalParameter->getType()) === null
 				) {
 					$errorBuilder = RuleErrorBuilder::message(sprintf(

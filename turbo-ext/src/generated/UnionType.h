@@ -16,10 +16,11 @@ inline constexpr uint32_t finiteTypeSet = 2;
 inline constexpr uint32_t finiteTypes = 3;
 inline constexpr uint32_t isNull = 4;
 inline constexpr uint32_t isCallable = 5;
-inline constexpr uint32_t possiblyLooselyEqualTypes = 6;
-inline constexpr uint32_t alwaysLooselyEqualTypes = 7;
-inline constexpr uint32_t types = 8;
-inline constexpr uint32_t normalized = 9;
+inline constexpr uint32_t hasTemplateOrLateResolvableType = 6;
+inline constexpr uint32_t possiblyLooselyEqualTypes = 7;
+inline constexpr uint32_t alwaysLooselyEqualTypes = 8;
+inline constexpr uint32_t types = 9;
+inline constexpr uint32_t normalized = 10;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -36,6 +37,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("finiteTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
 	cls.property("isNull", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\TrinaryLogic");
 	cls.property("isCallable", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\TrinaryLogic");
+	cls.property("hasTemplateOrLateResolvableType", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_BOOL);
 	cls.property("possiblyLooselyEqualTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("alwaysLooselyEqualTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("types", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);

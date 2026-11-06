@@ -44,6 +44,29 @@ static void ZEND_FASTCALL cltGetImpurePoints(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL cltDescribe(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL cltGetClassStringType(INTERNAL_FUNCTION_PARAMETERS);
 
+/* containsUnresolvedTemplateArgument()'s traversal: whether the type holds
+ * an UnresolvedTemplateArgumentType */
+static void cltContainsMarkerBody(zval *contains, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) state1;
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("ClosureType::containsUnresolvedTemplateArgument() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	if (Z_OBJCE_P(type) == pt_ce_unresolved_template_argument_type) {
+		zval_ptr_dtor(contains);
+		ZVAL_TRUE(contains);
+	}
+	if (Z_TYPE_P(contains) == IS_TRUE) {
+		ZVAL_COPY(return_value, type);
+		return;
+	}
+	zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
+	if (UNEXPECTED(traversed.isUndef())) return;
+	traversed.intoReturnValue(return_value);
+}
+
 namespace phpstanturbo {
 
 /* the constructor's arguments, every zval borrowed, NULL for null (a NULL
@@ -772,6 +795,30 @@ public:
 	static zv::Val getParametersOf(zend_object *object) { return ClosureType(object).thisParameters(); }
 	static zv::Val getReturnTypeOf(zend_object *object) { return ClosureType(object).thisReturnType(); }
 
+	/* $this->containsUnresolvedTemplateArgument ??= whether
+	 * TypeTraverser::map($this) reaches an UnresolvedTemplateArgumentType;
+	 * false = pending exception */
+	[[nodiscard]] bool containsUnresolvedTemplateArgument(bool &out) const
+	{
+		zval *memo = OBJ_PROP_NUM(self, slots::containsUnresolvedTemplateArgument);
+		if (Z_TYPE_P(memo) == IS_TRUE || Z_TYPE_P(memo) == IS_FALSE) {
+			out = Z_TYPE_P(memo) == IS_TRUE;
+			return true;
+		}
+		zval contains;
+		ZVAL_FALSE(&contains);
+		zv::Val callback = pt_type_native_callback(cltContainsMarkerBody, &contains, NULL);
+		if (UNEXPECTED(callback.isUndef())) return false;
+		zval thisType;
+		ZVAL_OBJ(&thisType, self);
+		zv::Val mapped = pt_type_traverser_map_of(&thisType, callback.raw());
+		if (UNEXPECTED(mapped.isUndef())) return false;
+		out = Z_TYPE_P(pt_type_native_callback_state(callback.raw(), 0)) == IS_TRUE;
+		memo = OBJ_PROP_NUM(self, slots::containsUnresolvedTemplateArgument);
+		zv::Ref(memo).assign(zv::Val::boolean(out));
+		return true;
+	}
+
 private:
 	zend_object *self;
 
@@ -838,6 +885,17 @@ zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType)
 		return zv::Val::copyOf(zv::Ref(byRefUseTypes));
 	}
 	return pt_type_call(Z_OBJ_P(closureType), PT_LC("getbyrefusetypes"), 0, NULL);
+}
+
+bool pt_closure_type_contains_unresolved_template_argument(zval *closureType, bool &out)
+{
+	if (EXPECTED(Z_OBJCE_P(closureType) == pt_ce_closure_type)) {
+		return ClosureType(Z_OBJ_P(closureType)).containsUnresolvedTemplateArgument(out);
+	}
+	int contains = pt_type_call_is_true(Z_OBJ_P(closureType), PT_LC("containsunresolvedtemplateargument"), 0, NULL);
+	if (UNEXPECTED(contains < 0)) return false;
+	out = contains == 1;
+	return true;
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -998,6 +1056,12 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 	cls.method(sigs::getByRefUseTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		cltReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.byRefUseTypes());
+	});
+	cls.method(sigs::containsUnresolvedTemplateArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		bool contains;
+		if (UNEXPECTED(!PT_THIS.containsUnresolvedTemplateArgument(contains))) RETURN_THROWS();
+		RETURN_BOOL(contains);
 	});
 	cls.method(sigs::getTemplateTags, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

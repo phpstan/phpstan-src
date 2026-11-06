@@ -33,6 +33,7 @@
 
 namespace sigs = ptdecl::TypeCombinator::sig;
 
+#include <algorithm>
 #include <vector>
 
 zend_class_entry *pt_ce_type_combinator = nullptr;
@@ -2496,6 +2497,135 @@ public:
 		traversed.intoReturnValue(return_value);
 	}
 
+	/* whether the union of $valueType with others like it is a plain
+	 * concatenation of their members, deduplicated: constant scalars only, or
+	 * a plain union of them; -1 = pending exception */
+	static int holdsOnlyConstantScalars(zval *valueType)
+	{
+		int isTemplate = isInstanceMap(valueType, PT_CLASS_TEMPLATE_TYPE);
+		if (UNEXPECTED(isTemplate < 0)) return -1;
+		if (isInstance(valueType, pt_ce_union_type) && !isInstance(valueType, pt_ce_benevolent_union_type) && !isTemplate) {
+			zv::Val members = getTypes(valueType);
+			if (UNEXPECTED(members.isUndef())) return -1;
+			for (zv::ArrayEntry member : zv::ArrRef(members.raw())) {
+				int holds = holdsOnlyConstantScalar(member.value().raw());
+				if (holds <= 0) return holds;
+			}
+			return 1;
+		}
+		return holdsOnlyConstantScalar(valueType);
+	}
+
+	/* $member instanceof ConstantScalarType && !$member instanceof TemplateType */
+	static int holdsOnlyConstantScalar(zval *member)
+	{
+		int isConstantScalar = isInstanceMap(member, PT_CLASS_CONSTANT_SCALAR_TYPE);
+		if (isConstantScalar <= 0) return isConstantScalar;
+		int isTemplate = isInstanceMap(member, PT_CLASS_TEMPLATE_TYPE);
+		if (UNEXPECTED(isTemplate < 0)) return -1;
+		return isTemplate ? 0 : 1;
+	}
+
+	/* new ConstantArrayType($array's keys, $valueTypes, and the rest of
+	 * $array's shape) */
+	static zv::Val withValueTypes(zval *array, zval *valueTypes)
+	{
+		zv::Val keyTypes = call(array, PT_LC("getkeytypes"));
+		PT_FAIL_IF_UNDEF(keyTypes);
+		zv::Val nextAutoIndexes = call(array, PT_LC("getnextautoindexes"));
+		PT_FAIL_IF_UNDEF(nextAutoIndexes);
+		zv::Val optionalKeys = call(array, PT_LC("getoptionalkeys"));
+		PT_FAIL_IF_UNDEF(optionalKeys);
+		zv::Val isList = call(array, PT_LC("islist"));
+		PT_FAIL_IF_UNDEF(isList);
+		zv::Val unsealed = call(array, PT_LC("getunsealedtypes"));
+		PT_FAIL_IF_UNDEF(unsealed);
+		zval out;
+		if (UNEXPECTED(!pt_constant_array_type_new(&out, keyTypes.raw(), valueTypes, nextAutoIndexes.raw(), optionalKeys.raw(), isList.raw(), unsealed.raw()))) {
+			return zv::Val();
+		}
+		return zv::Val::adopt(out);
+	}
+
+	/* private static mergeConstantArraysWithSameKeys(non-empty-list<ConstantArrayType> $arrays): ConstantArrayType
+	 * — a chain of mergeWith() calls; at a key where every array holds only
+	 * constant scalars, one union of all the values stands for the chain of
+	 * unions, and the chain merges the rest of the shape with a placeholder
+	 * there */
+	static zv::Val mergeConstantArraysWithSameKeys(zval *arrays)
+	{
+		uint32_t arraysCount = countOf(arrays);
+		zval *first = indexOf(arrays, 0);
+		zv::Val firstValueTypes = call(first, PT_LC("getvaluetypes"));
+		PT_FAIL_IF_UNDEF(firstValueTypes);
+		int firstIsTemplate = isInstanceMap(first, PT_CLASS_TEMPLATE_TYPE);
+		PT_FAIL_IF_NEG(firstIsTemplate);
+		size_t valuesCount = countOf(firstValueTypes.raw());
+		std::vector<char> constantScalar(valuesCount, firstIsTemplate ? 0 : 1);
+		std::vector<TypeList> constantScalarValueTypes(valuesCount);
+		for (uint32_t a = 0; a < arraysCount; a++) {
+			zv::Val valueTypes = call(indexOf(arrays, a), PT_LC("getvaluetypes"));
+			PT_FAIL_IF_UNDEF(valueTypes);
+			for (zv::ArrayEntry entry : zv::ArrRef(valueTypes.raw())) {
+				zend_ulong i = entry.indexKey();
+				if (i >= valuesCount || !constantScalar[i]) continue;
+				int holds = holdsOnlyConstantScalars(entry.value().raw());
+				PT_FAIL_IF_NEG(holds);
+				if (!holds) {
+					constantScalar[i] = 0;
+					constantScalarValueTypes[i].clear();
+					continue;
+				}
+				constantScalarValueTypes[i].push_back(copy(entry.value().raw()));
+			}
+		}
+		bool anyConstantScalar = std::find(constantScalar.begin(), constantScalar.end(), 1) != constantScalar.end();
+
+		zv::Val placeholder = neverType(true);
+		PT_FAIL_IF_UNDEF(placeholder);
+		zv::Val merged;
+		for (uint32_t a = 0; a < arraysCount; a++) {
+			zval *array = indexOf(arrays, a);
+			zv::Val current = copy(array);
+			if (anyConstantScalar) {
+				zv::Val arrayValueTypes = call(array, PT_LC("getvaluetypes"));
+				PT_FAIL_IF_UNDEF(arrayValueTypes);
+				zv::Arr valueTypes = zv::Arr::adoptVal(std::move(arrayValueTypes));
+				valueTypes.separate();
+				for (size_t i = 0; i < valuesCount; i++) {
+					if (!constantScalar[i]) continue;
+					Z_ADDREF_P(placeholder.raw());
+					zend_hash_index_update(valueTypes.table(), i, placeholder.raw());
+				}
+				current = withValueTypes(array, valueTypes.raw());
+				PT_FAIL_IF_UNDEF(current);
+			}
+			if (a == 0) {
+				merged = std::move(current);
+				continue;
+			}
+			zv::Val next = call(merged.raw(), PT_LC("mergewith"), 1, current.raw());
+			PT_FAIL_IF_UNDEF(next);
+			merged = std::move(next);
+		}
+
+		if (!anyConstantScalar) return merged;
+
+		zv::Val mergedValueTypes = call(merged.raw(), PT_LC("getvaluetypes"));
+		PT_FAIL_IF_UNDEF(mergedValueTypes);
+		zv::Arr valueTypes = zv::Arr::adoptVal(std::move(mergedValueTypes));
+		valueTypes.separate();
+		for (size_t i = 0; i < valuesCount; i++) {
+			if (!constantScalar[i]) continue;
+			zv::Val unioned = unionOf(constantScalarValueTypes[i]);
+			PT_FAIL_IF_UNDEF(unioned);
+			zval v = unioned.take();
+			zend_hash_index_update(valueTypes.table(), i, &v);
+		}
+
+		return withValueTypes(merged.raw(), valueTypes.raw());
+	}
+
 	/* private static optimizeConstantArrays(Type[] $types): Type[] */
 	static zv::Val optimizeConstantArrays(zval *typesArray)
 	{
@@ -2537,12 +2667,8 @@ public:
 					collapsed.push(zv::Ref(indexOf(group, 0)));
 					continue;
 				}
-				zv::Val merged = copy(indexOf(group, 0));
-				for (uint32_t i = 1; i < count; i++) {
-					zv::Val next = call(merged.raw(), PT_LC("mergewith"), 1, indexOf(group, i));
-					PT_FAIL_IF_UNDEF(next);
-					merged = std::move(next);
-				}
+				zv::Val merged = mergeConstantArraysWithSameKeys(group);
+				PT_FAIL_IF_UNDEF(merged);
 				collapsed.push(std::move(merged));
 				anyMerged = true;
 			}

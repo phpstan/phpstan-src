@@ -1498,6 +1498,18 @@ public:
 
 	zv::Val afterExtractCall()
 	{
+		/* extract() may (re)define any variable, including the foreach
+		 * value/key/iteratee - drop the value aliases first */
+		zv::Val invalidated = pt_mutating_scope_invalidate_foreach_value_aliases(self);
+		if (UNEXPECTED(invalidated.isUndef())) return zv::Val();
+		zend_object *invalidatedObject = requireObject(invalidated, "afterExtractCall");
+		if (UNEXPECTED(invalidatedObject == NULL)) return zv::Val();
+		if (invalidatedObject != self) return MutatingScope(invalidatedObject).afterExtractCallWithoutAliases();
+		return afterExtractCallWithoutAliases();
+	}
+
+	zv::Val afterExtractCallWithoutAliases()
+	{
 		CreateArgs a;
 		if (UNEXPECTED(!fillFromSlots(a))) return zv::Val();
 		if (UNEXPECTED(!fillDispatched(a, true, true))) return zv::Val();
@@ -1546,6 +1558,33 @@ public:
 		a.setOwned(CreateArgs::EXPRESSION_TYPES, zv::Val(std::move(tables.expressionTypes)));
 		a.setOwned(CreateArgs::NATIVE_EXPRESSION_TYPES, zv::Val(std::move(tables.nativeExpressionTypes)));
 		return scopeFactoryCreate(a);
+	}
+
+	/* (twin invalidateForeachValueAliases) */
+	zv::Val invalidateForeachValueAliases()
+	{
+		TablePair tables(*this);
+		dropForeachValueAliases(tables.expressionTypes, tables.nativeExpressionTypes, slot(PT_MS_PROP_EXPRESSION_TYPES).raw(), tables.changed);
+		dropForeachValueAliases(tables.expressionTypes, tables.nativeExpressionTypes, slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw(), tables.changed);
+		if (!tables.changed) return self_();
+		return createWithTables(tables);
+	}
+
+	/* unset every ForeachValueAliasExpr key of `keys` from both tables */
+	static void dropForeachValueAliases(zv::Arr &expressionTypes, zv::Arr &nativeExpressionTypes, zval *keys, bool &changed)
+	{
+		static const char prefix[] = "__phpstanForeachValueAlias(";
+		const size_t prefixLen = sizeof(prefix) - 1;
+		for (auto entry : zv::ArrRef(keys)) {
+			zend_string *exprString = entry.stringKeyOrNull();
+			if (exprString == NULL) continue;
+			if (ZSTR_LEN(exprString) < prefixLen || memcmp(ZSTR_VAL(exprString), prefix, prefixLen) != 0) continue;
+			expressionTypes.separate();
+			zend_symtable_del(expressionTypes.table(), exprString);
+			nativeExpressionTypes.separate();
+			zend_symtable_del(nativeExpressionTypes.table(), exprString);
+			changed = true;
+		}
 	}
 
 	zv::Val afterClearstatcacheCall()
@@ -5834,7 +5873,7 @@ public:
 	}
 
 	/* (twin 3013) */
-	zv::Val enterForeach(zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef)
+	zv::Val enterForeach(zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef, bool recordValueAlias)
 	{
 		zv::Val valueType = iterableType(originalScope, iterateeType, false);
 		if (UNEXPECTED(valueType.isUndef())) return zv::Val();
@@ -5888,6 +5927,25 @@ public:
 			zv::Args keyArgs{originalScope, iteratee, iterateeType, nativeIterateeType, keyName};
 			scope = pt_type_call(scopeObject, PT_LC("enterforeachkey"), 5, keyArgs);
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+
+			if (recordValueAlias) {
+				/* the value variable and $iteratee[$key] alias one runtime value
+				 * for the current iteration - see applySpecifiedTypes() */
+				zend_long isArray = pt_type_op_trinary(Z_OBJ_P(iterateeType), PT_OP_IS_ARRAY, 0, NULL);
+				if (UNEXPECTED(isArray < 0)) return zv::Val();
+				if (isArray == PT_TRI_YES) {
+					zv::Val keyVariable = newVariable(ZSTR_VAL(keyName), ZSTR_LEN(keyName));
+					if (UNEXPECTED(keyVariable.isUndef())) return zv::Val();
+					zv::Args dimArgs{iteratee, keyVariable.raw()};
+					zv::Val dimFetch = pt_type_new(PT_CLASS_ARRAY_DIM_FETCH, 2, dimArgs);
+					if (UNEXPECTED(dimFetch.isUndef())) return zv::Val();
+					zv::Args aliasArgs{valueName, dimFetch.raw()};
+					zv::Val alias = pt_type_new(PT_CLASS_FOREACH_VALUE_ALIAS_EXPR, 2, aliasArgs);
+					if (UNEXPECTED(alias.isUndef())) return zv::Val();
+					scope = otherAssignExpression(scope, alias.raw(), valueType.raw(), nativeValueType.raw());
+					if (UNEXPECTED(scope.isUndef())) return zv::Val();
+				}
+			}
 
 			if (writeThrough) {
 				zv::Val keyVariable = newVariable(ZSTR_VAL(keyName), ZSTR_LEN(keyName));
@@ -7610,6 +7668,120 @@ public:
 		return true;
 	}
 
+	/* the Yes-certainty holder at $key of $scope's (native) expression types,
+	 * NULL when absent or not Yes; false = pending exception */
+	[[nodiscard]] static bool yesHolder(zend_object *scopeObject, bool native, zend_string *key, zval *&out)
+	{
+		out = NULL;
+		HashTable *table = native
+			? otherTable(scopeObject, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"))
+			: otherTable(scopeObject, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+		if (UNEXPECTED(table == NULL)) return false;
+		zval *holder = zend_symtable_find(table, key);
+		if (holder == NULL) return true;
+		zend_long certainty = holderCertainty(zv::Ref(holder));
+		if (UNEXPECTED(certainty < 0)) return false;
+		if (certainty == PT_TRI_YES) out = holder;
+		return true;
+	}
+
+	/*
+	 * applySpecifiedTypes()' foreach value-alias projection: while a foreach
+	 * value variable still aliases the iteratee dim fetch (its
+	 * ForeachValueAliasExpr holder intact), a narrowing landed on the value
+	 * variable also narrows the tracked dim fetch. false = pending exception
+	 */
+	[[nodiscard]] static bool projectForeachValueAliases(zv::Arr &specifiedExpressions, zv::Val &scope, zend_object *&scopeObject, bool &scopeIsWorkingCopy)
+	{
+		for (auto entry : zv::ArrRef(specifiedExpressions.raw())) {
+			zv::Val specifiedExpr = holderExpr(entry.value());
+			if (UNEXPECTED(specifiedExpr.isUndef())) return false;
+			bool isVariable;
+			if (UNEXPECTED(!isInstance(specifiedExpr.ref(), PT_CLASS_VARIABLE, isVariable))) return false;
+			if (!isVariable) continue;
+			zv::Ref nameProp = nodeProp(specifiedExpr.ref().asObject(), PT_LC("name"));
+			if (UNEXPECTED(nameProp.raw() == NULL)) return false;
+			zv::Ref name = nameProp.deref();
+			if (!name.isString()) continue;
+			zend_string *variableName = name.asString();
+
+			zend_string *aliasKey = zend_string_concat3(PT_LC("__phpstanForeachValueAlias("), ZSTR_VAL(variableName), ZSTR_LEN(variableName), PT_LC(")"));
+			zval *aliasHolder;
+			bool ok = yesHolder(scopeObject, false, aliasKey, aliasHolder);
+			zend_string_release(aliasKey);
+			if (UNEXPECTED(!ok)) return false;
+			if (aliasHolder == NULL) continue;
+			zv::Val aliasExpr = holderExpr(zv::Ref(aliasHolder));
+			if (UNEXPECTED(aliasExpr.isUndef())) return false;
+			bool isAlias;
+			if (UNEXPECTED(!isInstance(aliasExpr.ref(), PT_CLASS_FOREACH_VALUE_ALIAS_EXPR, isAlias))) return false;
+			if (!isAlias) continue;
+
+			zend_string *valueKey = zend_string_concat2(PT_LC("$"), ZSTR_VAL(variableName), ZSTR_LEN(variableName));
+			zval *valueHolder, *valueNativeHolder;
+			ok = yesHolder(scopeObject, false, valueKey, valueHolder) && yesHolder(scopeObject, true, valueKey, valueNativeHolder);
+			zend_string_release(valueKey);
+			if (UNEXPECTED(!ok)) return false;
+			if (valueHolder == NULL || valueNativeHolder == NULL) continue;
+
+			zv::Ref dimFetchProp = nodeProp(aliasExpr.ref().asObject(), PT_LC("dimFetch"));
+			if (UNEXPECTED(dimFetchProp.raw() == NULL)) return false;
+			zv::Val dimFetchExpr = zv::Val::copyOf(dimFetchProp.deref());
+			if (UNEXPECTED(!dimFetchExpr.ref().isObject())) {
+				zend_throw_error(NULL, "phpstan_turbo: ForeachValueAliasExpr::$dimFetch is not an object");
+				return false;
+			}
+			zv::Val dimFetchKey = MutatingScope(scopeObject).thisGetNodeKey(dimFetchExpr.raw());
+			if (UNEXPECTED(dimFetchKey.isUndef())) return false;
+			zend_string *dimFetchString = keyString(dimFetchKey);
+			if (UNEXPECTED(dimFetchString == NULL)) return false;
+			zval *dimFetchHolder, *dimFetchNativeHolder;
+			if (UNEXPECTED(!yesHolder(scopeObject, false, dimFetchString, dimFetchHolder))) return false;
+			if (UNEXPECTED(!yesHolder(scopeObject, true, dimFetchString, dimFetchNativeHolder))) return false;
+			if (dimFetchHolder == NULL || dimFetchNativeHolder == NULL) continue;
+
+			zv::Val dimFetchType = holderType(zv::Ref(dimFetchHolder));
+			if (UNEXPECTED(dimFetchType.isUndef())) return false;
+			zv::Val dimFetchNativeType = holderType(zv::Ref(dimFetchNativeHolder));
+			if (UNEXPECTED(dimFetchNativeType.isUndef())) return false;
+			zv::Val valueType = holderType(zv::Ref(valueHolder));
+			if (UNEXPECTED(valueType.isUndef())) return false;
+			zv::Val valueNativeType = holderType(zv::Ref(valueNativeHolder));
+			if (UNEXPECTED(valueNativeType.isUndef())) return false;
+
+			bool complexUnion;
+			if (UNEXPECTED(!otherIsComplexUnionType(scopeObject, dimFetchType.raw(), complexUnion))) return false;
+			if (complexUnion) continue;
+
+			zv::Val newType = intersectTypes(dimFetchType.raw(), valueType.raw());
+			if (UNEXPECTED(newType.isUndef())) return false;
+			zv::Val newNativeType = intersectTypes(dimFetchNativeType.raw(), valueNativeType.raw());
+			if (UNEXPECTED(newNativeType.isUndef())) return false;
+			if (UNEXPECTED(!newType.ref().isObject() || !newNativeType.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function equals() on %s", zend_zval_value_name(newType.ref().isObject() ? newNativeType.raw() : newType.raw()));
+				return false;
+			}
+			zv::Val equals = pt_type_op(newType.ref().asObject(), PT_OP_EQUALS, 1, dimFetchType.raw());
+			if (UNEXPECTED(equals.isUndef())) return false;
+			if (zend_is_true(equals.raw())) {
+				zv::Val nativeEquals = pt_type_op(newNativeType.ref().asObject(), PT_OP_EQUALS, 1, dimFetchNativeType.raw());
+				if (UNEXPECTED(nativeEquals.isUndef())) return false;
+				if (zend_is_true(nativeEquals.raw())) continue;
+			}
+			if (!scopeIsWorkingCopy) {
+				zv::Val opened = otherPrivate(scopeObject, PT_LC("openspecificationscope"), 0, NULL, [&](MutatingScope &other) { return other.openSpecificationScope(); });
+				if (UNEXPECTED(opened.isUndef())) return false;
+				zend_object *openedObject = requireObject(opened, "specifyExpressionTypeInPlace");
+				if (UNEXPECTED(openedObject == NULL)) return false;
+				scope = std::move(opened);
+				scopeObject = openedObject;
+				scopeIsWorkingCopy = true;
+			}
+			if (UNEXPECTED(!otherSpecifyInPlace(scopeObject, dimFetchExpr.ref().asObject(), newType.raw(), newNativeType.raw(), pt_trinary_singleton(PT_TRI_YES)))) return false;
+		}
+		return true;
+	}
+
 	/* (twin 4020) */
 	zv::Val applySpecifiedTypes(zval *specifiedTypesArg)
 	{
@@ -7895,6 +8067,8 @@ public:
 
 			if (UNEXPECTED(!recordSpecifiedExpression(specifiedExpressions, scopeObject, exprString, expr, type))) return zv::Val();
 		}
+
+		if (UNEXPECTED(!projectForeachValueAliases(specifiedExpressions, scope, scopeObject, scopeIsWorkingCopy))) return zv::Val();
 
 		{
 			zval specifiedExpressionsZv;
@@ -8929,6 +9103,16 @@ public:
 			zv::Val holder = zv::Val::adopt(holderZv);
 			expressionTypes.set(variableExprString.get(), zv::Val::copyOf(holder.ref()));
 			nativeExpressionTypes.set(variableExprString.get(), std::move(holder));
+		}
+
+		/* the by-ref uses above bypass the assignment-time containment
+		 * invalidation - drop the foreach value aliases they may desync */
+		{
+			zv::Arr expressionKeys = zv::Arr::copyOfTable(expressionTypes.table());
+			zv::Arr nativeKeys = zv::Arr::copyOfTable(nativeExpressionTypes.table());
+			bool changed = false;
+			dropForeachValueAliases(expressionTypes, nativeExpressionTypes, expressionKeys.raw(), changed);
+			dropForeachValueAliases(expressionTypes, nativeExpressionTypes, nativeKeys.raw(), changed);
 		}
 
 		CreateArgs a;
@@ -12236,6 +12420,12 @@ zv::Val pt_mutating_scope_after_extract_call(zend_object *scope)
 	return pt_type_call(scope, PT_LC("afterextractcall"), 0, NULL);
 }
 
+zv::Val pt_mutating_scope_invalidate_foreach_value_aliases(zend_object *scope)
+{
+	if (PT_MS_INHERITS(scope, "invalidateforeachvaluealiases")) return MutatingScope(scope).invalidateForeachValueAliases();
+	return pt_type_call(scope, PT_LC("invalidateforeachvaluealiases"), 0, NULL);
+}
+
 zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope)
 {
 	if (PT_MS_INHERITS(scope, "afterclearstatcachecall")) return MutatingScope(scope).afterClearstatcacheCall();
@@ -12410,6 +12600,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.method<&MutatingScope::afterExtractCall>(sigs::afterExtractCall);
 
 	cls.method<&MutatingScope::afterClearstatcacheCall>(sigs::afterClearstatcacheCall);
+	cls.method<&MutatingScope::invalidateForeachValueAliases>(sigs::invalidateForeachValueAliases);
 
 	cls.method<&MutatingScope::afterOpenSslCall, zp::Str>(sigs::afterOpenSslCall);
 
@@ -12922,13 +13113,15 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		reg::stringArg("valueName"),
 		reg::stringArg("keyName", true),
 		reg::boolArg("valueByRef"),
+		reg::withDefault(reg::boolArg("recordValueAlias"), "true"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *originalScope, *iteratee, *iterateeType, *nativeIterateeType;
 		zend_string *valueName, *keyName = NULL;
 		bool valueByRef;
+		bool recordValueAlias = true;
 		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(7, 8)
 			Z_PARAM_OBJECT_OF_CLASS(originalScope, pt_ce_mutating_scope)
 			Z_PARAM_OBJECT_OF_CLASS(iteratee, exprCe)
 			Z_PARAM_OBJECT(iterateeType)
@@ -12936,8 +13129,10 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 			Z_PARAM_STR(valueName)
 			Z_PARAM_STR_OR_NULL(keyName)
 			Z_PARAM_BOOL(valueByRef)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_BOOL(recordValueAlias)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_THIS.enterForeach(Z_OBJ_P(originalScope), iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef));
+		PT_RETURN_VAL(PT_THIS.enterForeach(Z_OBJ_P(originalScope), iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef, recordValueAlias));
 	}, &returnsSelf);
 
 	cls.method("enterForeachKey", reg::Public, 5, {
@@ -13466,10 +13661,10 @@ zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object 
 	return pt_type_call(scope, PT_LC("generalizewith"), 2, argv);
 }
 
-zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef)
+zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef, bool recordValueAlias)
 {
-	if (PT_MS_INHERITS(scope, "enterforeach") && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeach(originalScope, iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef);
-	zval argv[7];
+	if (PT_MS_INHERITS(scope, "enterforeach") && EXPECTED(instanceof_function(originalScope->ce, pt_ce_mutating_scope))) return MutatingScope(scope).enterForeach(originalScope, iteratee, iterateeType, nativeIterateeType, valueName, keyName, valueByRef, recordValueAlias);
+	zval argv[8];
 	ZVAL_OBJ(&argv[0], originalScope);
 	ZVAL_COPY_VALUE(&argv[1], iteratee);
 	ZVAL_COPY_VALUE(&argv[2], iterateeType);
@@ -13481,7 +13676,8 @@ zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *origina
 		ZVAL_NULL(&argv[5]);
 	}
 	ZVAL_BOOL(&argv[6], valueByRef);
-	return pt_type_call(scope, PT_LC("enterforeach"), 7, argv);
+	ZVAL_BOOL(&argv[7], recordValueAlias);
+	return pt_type_call(scope, PT_LC("enterforeach"), 8, argv);
 }
 
 zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName)

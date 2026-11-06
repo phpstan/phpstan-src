@@ -45,6 +45,8 @@ zend_class_entry *pt_ce_foreach_handler = nullptr;
 /* ForeachHandler::FOREACH_UNROLL_LIMIT / ::FOREACH_UNROLL_NESTED_LIMIT */
 #define PT_FEH_FOREACH_UNROLL_LIMIT 16
 #define PT_FEH_FOREACH_UNROLL_NESTED_LIMIT 8
+/* ForeachHandler::RECORD_VALUE_ALIAS_ATTRIBUTE */
+#define PT_FEH_RECORD_VALUE_ALIAS_ATTRIBUTE "foreachValueAliasRecordable"
 
 namespace {
 
@@ -275,6 +277,212 @@ zv::Val unionOfList(zv::Arr &list)
 	if (HT_IS_PACKED(table) && table->nNumUsed == count) return pt_type_combinator_union(count, table->arPacked);
 	return pt_type_combinator_call_spread(PT_LC("union"), table);
 }
+
+/* {{{ ForeachHandler::shouldRecordForeachValueAlias() */
+
+/* $obj->$name (declared public node properties), dereferenced; NULL when
+ * absent */
+zval *aliasNodeProp(zend_object *obj, const char *name, size_t len)
+{
+	zval rv;
+	zval *value = zend_read_property(obj->ce, obj, name, len, 1, &rv);
+	if (value == NULL || value == &EG(uninitialized_zval)) return NULL;
+	ZVAL_DEREF(value);
+	return value;
+}
+
+bool aliasIsA(zval *value, int classIdx)
+{
+	if (value == NULL || Z_TYPE_P(value) != IS_OBJECT) return false;
+	zend_class_entry *ce = pt_class(classIdx);
+	return ce != NULL && instanceof_function(Z_OBJCE_P(value), ce);
+}
+
+/* the string name of a Variable node, NULL for anything else; `isVariable`
+ * tells a dynamic-name Variable apart */
+zend_string *aliasVariableName(zval *value, bool *isVariable)
+{
+	if (isVariable != NULL) *isVariable = false;
+	if (!aliasIsA(value, PT_CLASS_VARIABLE)) return NULL;
+	if (isVariable != NULL) *isVariable = true;
+	zval *name = aliasNodeProp(Z_OBJ_P(value), PT_LC("name"));
+	if (name == NULL || Z_TYPE_P(name) != IS_STRING) return NULL;
+	return Z_STR_P(name);
+}
+
+struct AliasFindCtx
+{
+	pt_find_ctx base;
+	zend_string *iterateeName;
+	zend_string *keyName;
+};
+
+/* Mirrors foreachAliasDesyncingTarget(). */
+bool aliasDesyncingTarget(zval *target, zend_string *iterateeName, zend_string *keyName)
+{
+	if (aliasIsA(target, PT_CLASS_LIST_EXPR) || aliasIsA(target, PT_CLASS_ARRAY_EXPR)) {
+		zval *items = aliasNodeProp(Z_OBJ_P(target), PT_LC("items"));
+		if (items == NULL || Z_TYPE_P(items) != IS_ARRAY) return false;
+		zval *item;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(items), item) {
+			zval *itemDeref = item;
+			ZVAL_DEREF(itemDeref);
+			if (Z_TYPE_P(itemDeref) != IS_OBJECT) continue;
+			if (aliasDesyncingTarget(aliasNodeProp(Z_OBJ_P(itemDeref), PT_LC("value")), iterateeName, keyName)) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	bool isVariable;
+	zend_string *name = aliasVariableName(target, &isVariable);
+	if (isVariable) {
+		if (name == NULL) return true;
+		return zend_string_equals(name, iterateeName);
+	}
+
+	zval *node = target;
+	while (aliasIsA(node, PT_CLASS_ARRAY_DIM_FETCH)) {
+		zval *inner = aliasNodeProp(Z_OBJ_P(node), PT_LC("var"));
+		zend_string *innerName = aliasVariableName(inner, &isVariable);
+		if (isVariable) {
+			if (innerName == NULL) return true;
+			if (zend_string_equals(innerName, iterateeName)) {
+				zend_string *dimName = aliasVariableName(aliasNodeProp(Z_OBJ_P(node), PT_LC("dim")), NULL);
+				return !(dimName != NULL && zend_string_equals(dimName, keyName));
+			}
+			return false;
+		}
+		node = inner;
+	}
+
+	return false;
+}
+
+/* Mirrors foreachAliasDesyncingNode(). */
+bool aliasDesyncingNode(zend_object *node, void *ctxArg)
+{
+	AliasFindCtx *ctx = (AliasFindCtx *) ctxArg;
+	zend_string *iterateeName = ctx->iterateeName;
+	zend_string *keyName = ctx->keyName;
+	zval nodeZv;
+	ZVAL_OBJ(&nodeZv, node);
+
+	if (aliasIsA(&nodeZv, PT_CLASS_ASSIGN_EXPR) || aliasIsA(&nodeZv, PT_CLASS_ASSIGN_REF_EXPR) || aliasIsA(&nodeZv, PT_CLASS_ASSIGN_OP_EXPR)
+		|| aliasIsA(&nodeZv, PT_CLASS_PRE_INC) || aliasIsA(&nodeZv, PT_CLASS_PRE_DEC)
+		|| aliasIsA(&nodeZv, PT_CLASS_POST_INC) || aliasIsA(&nodeZv, PT_CLASS_POST_DEC)) {
+		return aliasDesyncingTarget(aliasNodeProp(node, PT_LC("var")), iterateeName, keyName);
+	}
+
+	if (aliasIsA(&nodeZv, PT_CLASS_UNSET_STMT)) {
+		zval *vars = aliasNodeProp(node, PT_LC("vars"));
+		if (vars == NULL || Z_TYPE_P(vars) != IS_ARRAY) return false;
+		zval *var;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(vars), var) {
+			zval *varDeref = var;
+			ZVAL_DEREF(varDeref);
+			if (aliasDesyncingTarget(varDeref, iterateeName, keyName)) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	if (aliasIsA(&nodeZv, PT_CLASS_CLOSURE_EXPR)) {
+		zval *uses = aliasNodeProp(node, PT_LC("uses"));
+		if (uses == NULL || Z_TYPE_P(uses) != IS_ARRAY) return false;
+		zval *use;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(uses), use) {
+			zval *useDeref = use;
+			ZVAL_DEREF(useDeref);
+			if (Z_TYPE_P(useDeref) != IS_OBJECT) continue;
+			zval *byRef = aliasNodeProp(Z_OBJ_P(useDeref), PT_LC("byRef"));
+			if (byRef == NULL || !zend_is_true(byRef)) continue;
+			zend_string *name = aliasVariableName(aliasNodeProp(Z_OBJ_P(useDeref), PT_LC("var")), NULL);
+			if (name != NULL && (zend_string_equals(name, iterateeName) || zend_string_equals(name, keyName))) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	if (aliasIsA(&nodeZv, PT_CLASS_GLOBAL_STMT)) {
+		zval *vars = aliasNodeProp(node, PT_LC("vars"));
+		if (vars == NULL || Z_TYPE_P(vars) != IS_ARRAY) return false;
+		zval *var;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(vars), var) {
+			zval *varDeref = var;
+			ZVAL_DEREF(varDeref);
+			bool isVariable;
+			zend_string *name = aliasVariableName(varDeref, &isVariable);
+			if (!isVariable) continue;
+			if (name == NULL || zend_string_equals(name, iterateeName)) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	if (aliasIsA(&nodeZv, PT_CLASS_STATIC_STMT)) {
+		zval *vars = aliasNodeProp(node, PT_LC("vars"));
+		if (vars == NULL || Z_TYPE_P(vars) != IS_ARRAY) return false;
+		zval *staticVar;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(vars), staticVar) {
+			zval *staticVarDeref = staticVar;
+			ZVAL_DEREF(staticVarDeref);
+			if (Z_TYPE_P(staticVarDeref) != IS_OBJECT) continue;
+			zend_string *name = aliasVariableName(aliasNodeProp(Z_OBJ_P(staticVarDeref), PT_LC("var")), NULL);
+			if (name != NULL && zend_string_equals(name, iterateeName)) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	if (aliasIsA(&nodeZv, PT_CLASS_FOREACH_STMT)) {
+		zval *byRef = aliasNodeProp(node, PT_LC("byRef"));
+		if (byRef != NULL && zend_is_true(byRef)) {
+			zend_string *name = aliasVariableName(aliasNodeProp(node, PT_LC("expr")), NULL);
+			return name != NULL && zend_string_equals(name, iterateeName);
+		}
+	}
+
+	if (aliasIsA(&nodeZv, PT_CLASS_FUNC_CALL) || aliasIsA(&nodeZv, PT_CLASS_METHOD_CALL)
+		|| aliasIsA(&nodeZv, PT_CLASS_NULLSAFE_METHOD_CALL) || aliasIsA(&nodeZv, PT_CLASS_STATIC_CALL)
+		|| aliasIsA(&nodeZv, PT_CLASS_NEW)) {
+		zval *args = aliasNodeProp(node, PT_LC("args"));
+		if (args == NULL || Z_TYPE_P(args) != IS_ARRAY) return false;
+		zval *arg;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(args), arg) {
+			zval *argDeref = arg;
+			ZVAL_DEREF(argDeref);
+			if (!aliasIsA(argDeref, PT_CLASS_ARG)) continue;
+			zend_string *name = aliasVariableName(aliasNodeProp(Z_OBJ_P(argDeref), PT_LC("value")), NULL);
+			if (name != NULL && (zend_string_equals(name, iterateeName) || zend_string_equals(name, keyName))) return true;
+		} ZEND_HASH_FOREACH_END();
+		return false;
+	}
+
+	return false;
+}
+
+/* Mirrors computeShouldRecordForeachValueAlias(); false = pending exception */
+[[nodiscard]] bool computeShouldRecordForeachValueAlias(zend_string *iterateeName, zend_string *keyName, zend_string *valueName, zval *stmts, bool &out)
+{
+	out = false;
+	if (iterateeName == NULL || keyName == NULL || valueName == NULL) return true;
+	AliasFindCtx ctx = {};
+	ctx.iterateeName = iterateeName;
+	ctx.keyName = keyName;
+	zend_class_entry *nodeIface = pt_class(PT_CLASS_NODE);
+	if (UNEXPECTED(nodeIface == NULL)) return false;
+	if (stmts != NULL && Z_TYPE_P(stmts) == IS_ARRAY) {
+		zval *stmt;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(stmts), stmt) {
+			zval *stmtDeref = stmt;
+			ZVAL_DEREF(stmtDeref);
+			if (Z_TYPE_P(stmtDeref) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(stmtDeref), nodeIface)) continue;
+			zend_object *found = pt_find_first_recursive(Z_OBJ_P(stmtDeref), aliasDesyncingNode, &ctx);
+			if (UNEXPECTED(ctx.base.failed || EG(exception) != NULL)) return false;
+			if (found != NULL) return true;
+		} ZEND_HASH_FOREACH_END();
+	}
+	out = true;
+	return true;
+}
+
+/* }}} */
 
 } // namespace
 
@@ -1234,6 +1442,27 @@ private:
 		return pt_type_call(Z_OBJ_P(helper.raw()), PT_LC("narrowtoemptyorobject"), 5, argv);
 	}
 
+	/* Mirrors shouldRecordForeachValueAlias(): the static verdict, cached on
+	 * the loop node across convergence passes. false = pending exception */
+	[[nodiscard]] static bool shouldRecordForeachValueAlias(zval *stmt, StmtParts &parts, bool &out)
+	{
+		zend_string *attribute = zend_string_init(PT_LC(PT_FEH_RECORD_VALUE_ALIAS_ATTRIBUTE), 0);
+		zval *cached = pt_node_attribute(Z_OBJ_P(stmt), attribute);
+		if (cached != NULL && Z_TYPE_P(cached) != IS_NULL) {
+			out = zend_is_true(cached);
+			zend_string_release(attribute);
+			return true;
+		}
+		bool ok = computeShouldRecordForeachValueAlias(parts.exprName, parts.keyVarIsVariable ? parts.keyVarName : NULL, parts.valueVarIsVariable ? parts.valueVarName : NULL, parts.stmts.raw(), out);
+		if (EXPECTED(ok)) {
+			zval result;
+			ZVAL_BOOL(&result, out);
+			pt_node_set_attribute(Z_OBJ_P(stmt), attribute, &result);
+		}
+		zend_string_release(attribute);
+		return ok;
+	}
+
 	/* Mirrors the private enterForeach(). */
 	zv::Val enterForeach(zval *nodeScopeResolver, zval *scopeArg, zval *storage, zval *originalScope, zval *stmt, StmtParts &parts, zval *iterateeType, zval *nativeIterateeType, zval *nodeCallback) const
 	{
@@ -1246,7 +1475,9 @@ private:
 
 		zv::Arr vars = zv::Arr::empty();
 		if (parts.valueVarName != NULL && (parts.keyVar.isNull() || parts.keyVarName != NULL)) {
-			scope = pt_mutating_scope_enter_foreach(Z_OBJ_P(scope.raw()), Z_OBJ_P(originalScope), iteratee, iterateeType, nativeIterateeType, parts.valueVarName, parts.keyVarIsVariable ? parts.keyVarName : NULL, parts.byRef);
+			bool recordValueAlias;
+			if (UNEXPECTED(!shouldRecordForeachValueAlias(stmt, parts, recordValueAlias))) return zv::Val();
+			scope = pt_mutating_scope_enter_foreach(Z_OBJ_P(scope.raw()), Z_OBJ_P(originalScope), iteratee, iterateeType, nativeIterateeType, parts.valueVarName, parts.keyVarIsVariable ? parts.keyVarName : NULL, parts.byRef, recordValueAlias);
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			vars = zv::Arr::create(2);
 			vars.push(zv::Val::string(parts.valueVarName));
@@ -2001,6 +2232,7 @@ PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 	ptdecl::ForeachHandler::declareProperties(cls);
 	cls.privateClassConstantLong("FOREACH_UNROLL_LIMIT", PT_FEH_FOREACH_UNROLL_LIMIT);
 	cls.privateClassConstantLong("FOREACH_UNROLL_NESTED_LIMIT", PT_FEH_FOREACH_UNROLL_NESTED_LIMIT);
+	cls.privateClassConstantString("RECORD_VALUE_ALIAS_ATTRIBUTE", PT_FEH_RECORD_VALUE_ALIAS_ATTRIBUTE);
 
 	/* the real parameter class names and #[AutowiredParameter] names: the DI
 	 * container autowires the service by reflecting the constructor */

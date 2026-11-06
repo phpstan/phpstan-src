@@ -20,7 +20,7 @@ final class ConditionalExpressionsRecordingScope extends MutatingScope
 	/** @var list<array{string, int}> */
 	public array $added = [];
 
-	public function enterForeach(MutatingScope $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef): MutatingScope
+	public function enterForeach(MutatingScope $originalScope, Expr $iteratee, Type $iterateeType, Type $nativeIterateeType, string $valueName, ?string $keyName, bool $valueByRef, bool $recordValueAlias = true): MutatingScope
 	{
 		return $this;
 	}

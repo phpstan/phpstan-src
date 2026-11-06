@@ -413,6 +413,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_NATIVE_PHP_TYPE_NODE_HELPER */ {"nativePhpTypeNodeHelper", "PHPStan\\Type\\NativePhpTypeNodeHelper"},
 	/* PT_CLASS_FULLY_QUALIFIED_NAME_NODE */ {"fullyQualifiedNameNode", "PHPStan\\PhpDocParser\\Ast\\Type\\FullyQualifiedNameNode"},
 	/* PT_CLASS_TYPE_NODE_DESCRIBER */ {"typeNodeDescriber", "PHPStan\\Type\\TypeNodeDescriber"},
+	/* PT_CLASS_FOREACH_VALUE_ALIAS_EXPR */ {"foreachValueAliasExpr", "PHPStan\\Node\\Expr\\ForeachValueAliasExpr"},
 };
 
 zend_class_entry *pt_class(int idx)

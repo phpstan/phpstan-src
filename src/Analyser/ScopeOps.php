@@ -617,10 +617,6 @@ final class ScopeOps
 	 */
 	private static function createGuardType(Type $ourType, Type $theirType): Type
 	{
-		if ($ourType->isConstantArray()->no()) {
-			return TypeCombinator::remove($ourType, $theirType);
-		}
-
 		$ourMembers = $ourType instanceof UnionType && !$ourType instanceof TemplateType ? $ourType->getTypes() : [$ourType];
 		$guardMembers = [];
 		$otherMembers = [];
@@ -635,6 +631,9 @@ final class ScopeOps
 			$guardMembers[] = $ourMember;
 		}
 
+		if (count($otherMembers) === count($ourMembers)) {
+			return TypeCombinator::remove($ourType, $theirType);
+		}
 		if ($otherMembers !== []) {
 			$otherRemainder = TypeCombinator::remove(count($otherMembers) === 1 ? $otherMembers[0] : new UnionType($otherMembers), $theirType);
 			if ($otherRemainder instanceof UnionType && !$otherRemainder instanceof TemplateType) {
@@ -644,11 +643,10 @@ final class ScopeOps
 			} elseif (!$otherRemainder instanceof NeverType) {
 				$guardMembers[] = $otherRemainder;
 			}
-		}
-
-		if (count($guardMembers) === count($ourMembers) && $otherMembers === []) {
+		} elseif (count($guardMembers) === count($ourMembers)) {
 			return $ourType;
 		}
+
 		if ($guardMembers === []) {
 			return new NeverType();
 		}

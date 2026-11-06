@@ -775,10 +775,6 @@ public:
 	 */
 	static zv::Val createGuardType(zval *ourType, zval *theirType)
 	{
-		zend_long ourIsConstantArray;
-		if (UNEXPECTED(!isConstantArrayValue(ourType, &ourIsConstantArray))) return zv::Val();
-		if (ourIsConstantArray == PT_TRI_NO) return typeCombinatorRemove(ourType, theirType);
-
 		/* $ourType instanceof UnionType && !$ourType instanceof TemplateType */
 		bool ourIsUnion;
 		if (UNEXPECTED(!isNonTemplateUnion(ourType, &ourIsUnion))) return zv::Val();
@@ -813,6 +809,7 @@ public:
 			return zv::Val();
 		}
 
+		if (otherMembers.arrRef().size() == ourMemberCount) return typeCombinatorRemove(ourType, theirType);
 		if (otherMembers.arrRef().size() > 0) {
 			zv::Val otherType;
 			if (otherMembers.arrRef().size() == 1) {
@@ -835,11 +832,10 @@ public:
 			} else if (!otherRemainder.ref().instanceOf(pt_ce_never_type)) {
 				guardMembers.push(otherRemainder.ref());
 			}
-		}
-
-		if (guardMembers.arrRef().size() == ourMemberCount && otherMembers.arrRef().size() == 0) {
+		} else if (guardMembers.arrRef().size() == ourMemberCount) {
 			return zv::Val::copyOf(zv::Ref(ourType));
 		}
+
 		if (guardMembers.arrRef().size() == 0) {
 			zval never;
 			if (UNEXPECTED(!pt_never_type_new(&never))) return zv::Val();
@@ -1474,19 +1470,6 @@ private:
 			return false;
 		}
 		*out = pt_trinary_value(resultProp.asObject());
-		return true;
-	}
-
-	/* $type->isConstantArray() as a PT_TRI_* value */
-	static bool isConstantArrayValue(zval *type, zend_long *out)
-	{
-		zv::Val result = pt_type_op(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
-		if (UNEXPECTED(result.isUndef())) return false;
-		if (UNEXPECTED(!result.ref().instanceOf(pt_ce_trinary))) {
-			zend_throw_error(NULL, "phpstan_turbo: isConstantArray did not return a TrinaryLogic");
-			return false;
-		}
-		*out = pt_trinary_value(result.ref().asObject());
 		return true;
 	}
 

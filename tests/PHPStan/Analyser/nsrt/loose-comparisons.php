@@ -962,4 +962,16 @@ class HelloWorld
 		}
 	}
 
+	/**
+	 * @param 'abc'|true $stringOrTrue
+	 * @param int<1, 5> $oneToFive
+	 * @param int<10, 20>|true $tenToTwentyOrTrue
+	 */
+	public function sameTypeOnOneSideOnly($stringOrTrue, $oneToFive, $tenToTwentyOrTrue): void
+	{
+		assertType('true', 'abc' == $stringOrTrue);
+		assertType('true', $stringOrTrue == 'abc');
+		assertType('bool', $oneToFive == $tenToTwentyOrTrue);
+	}
+
 }

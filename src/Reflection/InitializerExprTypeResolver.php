@@ -81,6 +81,7 @@ use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\OperatorTypeSpecifyingExtensionRegistry;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
 use PHPStan\Type\StaticType;
+use PHPStan\Type\StringSet;
 use PHPStan\Type\StringType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
@@ -1185,10 +1186,12 @@ final class InitializerExprTypeResolver
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
+		$versions = $phpVersions !== null ? $phpVersions->getLooseComparisonVersions() : [$this->phpVersion];
+
 		// same-type sides cannot coerce - loose equals strict, except for
 		// two numeric strings, which compare as numbers
 		if (
-			($leftType->isString()->yes() && $rightType->isString()->yes() && ($leftType->isNumericString()->no() || $rightType->isNumericString()->no()))
+			($leftType->isString()->yes() && $rightType->isString()->yes() && (self::isNonNumericString($leftType, $versions) || self::isNonNumericString($rightType, $versions)))
 			|| ($leftType->isInteger()->yes() && $rightType->isInteger()->yes())
 		) {
 			return $this->resolveIdenticalType($leftType, $rightType);
@@ -1199,7 +1202,6 @@ final class InitializerExprTypeResolver
 		}
 
 		// constant only when every PHP version agrees
-		$versions = $phpVersions !== null ? $phpVersions->getLooseComparisonVersions() : [$this->phpVersion];
 		$result = $leftType->looseCompare($rightType, $versions[0]);
 		foreach (array_slice($versions, 1) as $version) {
 			if (!$result->equals($leftType->looseCompare($rightType, $version))) {
@@ -1234,6 +1236,30 @@ final class InitializerExprTypeResolver
 		}
 
 		return new TypeResult($result, []);
+	}
+
+	/**
+	 * Whether the strings are numeric in none of the PHP versions. A constant
+	 * string's isNumericString() follows the PHP version running PHPStan,
+	 * while '1 ' is numeric since PHP 8.0 only.
+	 *
+	 * @param non-empty-list<PhpVersion> $phpVersions
+	 */
+	private static function isNonNumericString(Type $type, array $phpVersions): bool
+	{
+		if (!$type->isNumericString()->no()) {
+			return false;
+		}
+
+		foreach ($type->getConstantStrings() as $constantString) {
+			foreach ($phpVersions as $phpVersion) {
+				if (StringSet::parseNumericString($constantString->getValue(), $phpVersion) !== null) {
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 
 	/**

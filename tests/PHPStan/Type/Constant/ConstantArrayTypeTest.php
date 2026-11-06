@@ -934,6 +934,30 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 				]),
 				TrinaryLogic::createYes(),
 			],
+			// the same with the other shape sealed: its extra required key does not decide anything
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				], unsealed: [new NeverType(true), new NeverType(true)]),
+				TrinaryLogic::createYes(),
+			],
+			// a sealed shape against one with unknown sealedness and an extra required key
+			[
+				new ConstantArrayType([new ConstantStringType('a')], [new StringType()], unsealed: [new NeverType(true), new NeverType(true)]),
+				new ConstantArrayType([
+					new ConstantStringType('a'),
+					new ConstantStringType('b'),
+				], [
+					new StringType(),
+					new IntegerType(),
+				]),
+				TrinaryLogic::createYes(),
+			],
 		]);
 	}
 

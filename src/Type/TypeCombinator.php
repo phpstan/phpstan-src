@@ -1685,13 +1685,28 @@ final class TypeCombinator
 	public static function countConstantArrayValueTypes(array $types): int
 	{
 		$constantArrayValuesCount = 0;
+		// A type shared by several positions (array shape keys written
+		// through a union offset all hold the same value type) is counted
+		// once per position, but traversed only once. The entries keep the
+		// visited types alive so that their object ids are not reused.
+		$countsByType = [];
 		foreach ($types as $type) {
-			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount): Type {
+			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount, &$countsByType): Type {
+				$id = spl_object_id($type);
+				if (array_key_exists($id, $countsByType)) {
+					$constantArrayValuesCount += $countsByType[$id][1];
+					return $type;
+				}
+
+				$countBefore = $constantArrayValuesCount;
 				if ($type instanceof ConstantArrayType) {
 					$constantArrayValuesCount += count($type->getValueTypes());
 				}
 
-				return $traverse($type);
+				$result = $traverse($type);
+				$countsByType[$id] = [$type, $constantArrayValuesCount - $countBefore];
+
+				return $result;
 			});
 		}
 		return $constantArrayValuesCount;
@@ -1713,15 +1728,23 @@ final class TypeCombinator
 
 		$values = [];
 		$valueTypes = $array->getValueTypes();
+		// keys written through a union offset share one value type - inspect it once
+		$singleValues = [];
 		foreach ($array->getKeyTypes() as $i => $keyType) {
-			if (!$valueTypes[$i]->isConstantScalarValue()->yes()) {
+			$id = spl_object_id($valueTypes[$i]);
+			if (!array_key_exists($id, $singleValues)) {
+				$singleValues[$id] = null;
+				if ($valueTypes[$i]->isConstantScalarValue()->yes()) {
+					$constantScalarValues = $valueTypes[$i]->getConstantScalarValues();
+					if (count($constantScalarValues) === 1) {
+						$singleValues[$id] = [$constantScalarValues[0]];
+					}
+				}
+			}
+			if ($singleValues[$id] === null) {
 				continue;
 			}
-			$constantScalarValues = $valueTypes[$i]->getConstantScalarValues();
-			if (count($constantScalarValues) !== 1) {
-				continue;
-			}
-			$values[$keyType->getValue()] = $constantScalarValues[0];
+			$values[$keyType->getValue()] = $singleValues[$id][0];
 		}
 
 		return $values;

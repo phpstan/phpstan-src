@@ -32,6 +32,8 @@
 #include "TypeTraits.h"
 #include "generated/ConstantArrayType.h"
 
+#include <unordered_map>
+
 namespace slots = ptdecl::ConstantArrayType::slot;
 namespace sigs = ptdecl::ConstantArrayType::sig;
 
@@ -369,6 +371,13 @@ static bool calculateScalarsLimit(zend_long &out)
 		return NULL;
 	}
 	return found;
+}
+
+/* spl_object_id($a) . ':' . spl_object_id($b) — the key under which the
+ * twin memoizes work on a pair of value types */
+static uint64_t valuePairKey(zval *a, zval *b)
+{
+	return ((uint64_t) Z_OBJ_HANDLE_P(a) << 32) | (uint64_t) Z_OBJ_HANDLE_P(b);
 }
 
 /* count($array) */
@@ -1799,6 +1808,8 @@ public:
 			}
 
 			zv::Arr results = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(k)) + 4);
+			/* value-type pair → position of its comparison in $results */
+			std::unordered_map<uint64_t, uint32_t> valueResults;
 			for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 				zend_long i = (zend_long) entry.indexKey();
 				zval *keyType = entry.value().deref().raw();
@@ -1834,6 +1845,29 @@ public:
 					}
 				}
 
+				zval *valueType = arrayIndexObject(v, i, "valueTypes");
+				if (UNEXPECTED(valueType == NULL)) return zv::Val();
+
+				/* The offset value at one of $type's explicit keys depends only on
+				 * the value type stored there, so keys sharing their value types on
+				 * both sides (keys written through a union offset) compare them once. */
+				NullableLong otherIndex;
+				if (UNEXPECTED(!ConstantArrayType(Z_OBJ_P(type)).getKeyIndex(keyType, otherIndex))) return zv::Val();
+				uint64_t pairKey = 0;
+				if (!otherIndex.isNull) {
+					zval *typeV = slotOf(Z_OBJ_P(type), slots::valueTypes, "valueTypes");
+					zval *otherValueAtKey = typeV != NULL ? arrayIndexObject(typeV, otherIndex.value, "valueTypes") : NULL;
+					if (UNEXPECTED(otherValueAtKey == NULL)) return zv::Val();
+					pairKey = valuePairKey(valueType, otherValueAtKey);
+					auto memo = valueResults.find(pairKey);
+					if (memo != valueResults.end()) {
+						/* copied out first: the push may grow the table it points into */
+						zv::Val memoized = zv::Val::copyOf(results.arrRef().findIndex(memo->second));
+						results.push(std::move(memoized));
+						continue;
+					}
+				}
+
 				zv::Val otherValueType = callType(Z_OBJ_P(type), PT_LC("getoffsetvaluetype"), 1, keyType);
 				if (UNEXPECTED(otherValueType.isUndef())) return zv::Val();
 				bool isError;
@@ -1843,13 +1877,14 @@ public:
 					if (UNEXPECTED(!unsealedPair(typeUnsealed, typeUnsealedKey, typeUnsealedValue))) return zv::Val();
 					otherValueType = zv::Val::copyOf(zv::Ref(typeUnsealedValue));
 				}
-				zval *valueType = arrayIndexObject(v, i, "valueTypes");
-				if (UNEXPECTED(valueType == NULL)) return zv::Val();
 				zv::Val isValueSuperType = pt_type_op(Z_OBJ_P(valueType), PT_OP_IS_SUPER_TYPE_OF, 1, otherValueType.raw());
 				if (UNEXPECTED(isValueSuperType.isUndef())) return zv::Val();
 				zend_long valueSuper = pt_type_result_trinary(isValueSuperType.raw());
 				if (UNEXPECTED(valueSuper < 0)) return zv::Val();
 				if (valueSuper == PT_TRI_NO) return decorateReasons(isValueSuperType.raw(), offsetPrefixReasonCallback, keyType, NULL);
+				if (!otherIndex.isNull) {
+					valueResults.emplace(pairKey, results.arrRef().size());
+				}
 				results.push(std::move(isValueSuperType));
 			}
 
@@ -4238,6 +4273,18 @@ public:
 		zv::Arr optionalKeysList = zv::Arr::create((uint32_t) count);
 		zend_long maxIndex = 0;
 
+		/* Position $i of the result can hold any source value from $i up to
+		 * $maxIndex. Both ends of that window only move forward, so the
+		 * window unions are kept as a two-stack queue: $suffixUnions[$j] is
+		 * the union of $types[$j..$suffixEnd] and $tailUnion (UNDEF = null)
+		 * the union of the values added after $suffixEnd. Each value enters
+		 * the suffix unions once, which keeps this linear in the number of
+		 * keys instead of unioning every window from scratch. */
+		zv::Arr suffixUnions = zv::Arr::empty();
+		zend_long suffixEnd = -1;
+		zv::Val tailUnion;
+		zend_long tailEnd = -1;
+
 		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
 			zend_long i = (zend_long) entry.indexKey();
 			zv::Val keyType = pt_type_new_constant_integer(i);
@@ -4258,11 +4305,50 @@ public:
 			if (i == maxIndex) {
 				valueTypesList.push(entry.value());
 			} else {
-				/* TypeCombinator::union(...array_slice($types, $i, $maxIndex - $i + 1)) */
-				zv::Arr slice = arraySlice(types, i, maxIndex - i + 1);
-				zv::Val unionType = combinatorSpread(PT_LC("union"), slice.table());
-				if (UNEXPECTED(unionType.isUndef())) return zv::Val();
-				valueTypesList.push(std::move(unionType));
+				zend_long windowEnd = maxIndex < count - 1 ? maxIndex : count - 1;
+				if (i == windowEnd) {
+					zv::Args single{entry.value().deref().raw()};
+					zv::Val unionType = pt_type_combinator_call(PT_LC("union"), 1, single);
+					if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+					valueTypesList.push(std::move(unionType));
+				} else {
+					if (i > suffixEnd) {
+						suffixEnd = windowEnd;
+						suffixUnions = zv::Arr::create((uint32_t) (suffixEnd - i + 1));
+						zval *last = arrayIndexObject(types, suffixEnd, "types");
+						if (UNEXPECTED(last == NULL)) return zv::Val();
+						suffixUnions.arrRef().setIndex((zend_ulong) suffixEnd, zv::Ref(last));
+						for (zend_long j = suffixEnd - 1; j >= i; j--) {
+							zval *typeJ = arrayIndexObject(types, j, "types");
+							if (UNEXPECTED(typeJ == NULL)) return zv::Val();
+							zv::Val suffixUnion = combinator2(PT_LC("union"), typeJ, suffixUnions.arrRef().findIndex((zend_ulong) (j + 1)).raw());
+							if (UNEXPECTED(suffixUnion.isUndef())) return zv::Val();
+							suffixUnions.arrRef().setIndex((zend_ulong) j, zv::Ref(suffixUnion.raw()));
+						}
+						tailUnion = zv::Val();
+						tailEnd = suffixEnd;
+					}
+					for (zend_long j = tailEnd + 1; j <= windowEnd; j++) {
+						zval *typeJ = arrayIndexObject(types, j, "types");
+						if (UNEXPECTED(typeJ == NULL)) return zv::Val();
+						if (tailUnion.isUndef()) {
+							tailUnion = zv::Val::copyOf(zv::Ref(typeJ));
+						} else {
+							tailUnion = combinator2(PT_LC("union"), tailUnion.raw(), typeJ);
+							if (UNEXPECTED(tailUnion.isUndef())) return zv::Val();
+						}
+					}
+					tailEnd = windowEnd;
+
+					zval *suffixUnion = suffixUnions.arrRef().findIndex((zend_ulong) i).raw();
+					if (tailUnion.isUndef()) {
+						valueTypesList.push(zv::Ref(suffixUnion));
+					} else {
+						zv::Val unionType = combinator2(PT_LC("union"), suffixUnion, tailUnion.raw());
+						if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+						valueTypesList.push(std::move(unionType));
+					}
+				}
 				if (maxIndex >= count) {
 					optionalKeysList.push(zv::Val::integer(i));
 				}
@@ -4968,6 +5054,11 @@ public:
 		zv::Val otherKeyIndexMap = ConstantArrayType(other).getKeyIndexMap();
 		if (UNEXPECTED(otherKeyIndexMap.isUndef())) return zv::Val();
 		zv::Arr processed = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(k)));
+		/* Keys written through a union offset share their value type: union
+		 * each pair of value types once, which also keeps the merged keys
+		 * sharing the result. Maps the pair to the position of its union in
+		 * $valueTypes. */
+		std::unordered_map<uint64_t, uint32_t> mergedValues;
 
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 			zend_long i = (zend_long) entry.indexKey();
@@ -4985,8 +5076,16 @@ public:
 				zend_long j = Z_TYPE_P(jZv) == IS_LONG ? Z_LVAL_P(jZv) : -1;
 				zval *otherValueType = arrayIndexObject(otherV, j, "valueTypes");
 				if (UNEXPECTED(otherValueType == NULL)) return zv::Val();
-				zv::Val mergedValue = combinator2(PT_LC("union"), valueType, otherValueType);
-				if (UNEXPECTED(mergedValue.isUndef())) return zv::Val();
+				uint64_t pairKey = valuePairKey(valueType, otherValueType);
+				auto memo = mergedValues.find(pairKey);
+				zv::Val mergedValue;
+				if (memo != mergedValues.end()) {
+					mergedValue = zv::Val::copyOf(valueTypesNew.arrRef().findIndex(memo->second));
+				} else {
+					mergedValue = combinator2(PT_LC("union"), valueType, otherValueType);
+					if (UNEXPECTED(mergedValue.isUndef())) return zv::Val();
+					mergedValues.emplace(pairKey, valueTypesNew.arrRef().size());
+				}
 				bool optional, otherOptional = false;
 				if (UNEXPECTED(!thisIsOptionalKey(i, optional))) return zv::Val();
 				if (!optional && UNEXPECTED(!otherIsOptionalKey(otherArray, j, otherOptional))) return zv::Val();
@@ -5079,6 +5178,9 @@ public:
 		if (UNEXPECTED(otherL == NULL)) return zv::Val();
 		zv::Arr valueTypesNew = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(v)));
 		zv::Arr optionalKeysNew = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(o)));
+		/* union each pair of value types once, see mergeWith(); maps the pair
+		 * to the key whose value holds its union */
+		std::unordered_map<uint64_t, zend_long> mergedValues;
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 			zend_long i = (zend_long) entry.indexKey();
 			NullableLong otherIndex;
@@ -5095,8 +5197,16 @@ public:
 			zval *otherValueType = arrayIndexObject(otherV, otherIndex.value, "valueTypes");
 			zval *valueType = otherValueType != NULL ? arrayIndex(valueTypesNew.raw(), i, "valueTypes") : NULL;
 			if (UNEXPECTED(valueType == NULL)) return zv::Val();
-			zv::Val merged = combinator2(PT_LC("union"), valueType, otherValueType);
-			if (UNEXPECTED(merged.isUndef())) return zv::Val();
+			uint64_t pairKey = valuePairKey(valueType, otherValueType);
+			auto memo = mergedValues.find(pairKey);
+			zv::Val merged;
+			if (memo != mergedValues.end()) {
+				merged = zv::Val::copyOf(valueTypesNew.arrRef().findIndex((zend_ulong) memo->second));
+			} else {
+				merged = combinator2(PT_LC("union"), valueType, otherValueType);
+				if (UNEXPECTED(merged.isUndef())) return zv::Val();
+				mergedValues.emplace(pairKey, i);
+			}
 			valueTypesNew.separate();
 			zv::ArrRef(valueTypesNew.raw()).setIndex((zend_ulong) i, zv::Ref(merged.raw()));
 		}

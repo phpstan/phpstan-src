@@ -15,7 +15,7 @@ lint:
 	XDEBUG_MODE=off php vendor/bin/parallel-lint --colors -e php,php3,php4,php5,phtml,phpt,fixed \
 		--exclude tests/PHPStan/Analyser/data \
 		--exclude tests/bench/data \
-		--exclude tests/bench/RegressionBench.php \
+		--exclude tests/bench/Warmup.php \
 		--exclude tests/PHPStan/Analyser/nsrt \
 		--exclude tests/PHPStan/Rules/Methods/data \
 		--exclude tests/PHPStan/Rules/Functions/data \
@@ -211,15 +211,6 @@ infection:
 		--skip-initial-tests \
 		--ignore-msi-with-no-mutations \
 		--logger-text=php://stdout
-
-.PHONY: phpbench
-phpbench:
-	@find tests/bench/storage/local-baseline.xml -mtime -60m | grep . || (echo "PHPBench baseline file does not exist or is too old. Regenerate it using 'make phpbench-baseline'." && exit 1)
-	XDEBUG_MODE=off tests/vendor/bin/phpbench run --file=tests/bench/storage/local-baseline.xml --report=my-report
-
-.PHONY: phpbench-baseline
-phpbench-baseline:
-	XDEBUG_MODE=off tests/vendor/bin/phpbench run --dump-file=tests/bench/storage/local-baseline.xml
 
 download-coverage:
 	rm -rf tmp/coverage-download

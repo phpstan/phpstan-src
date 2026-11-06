@@ -1,0 +1,8 @@
+parameters:
+	ignoreErrors:
+		-
+			# tests/bench/measure.php runs only on the PHP 8.5 of the Benchmarks workflow
+			message: '#^(Used function|Function) memory_reset_peak_usage not found\.$#'
+			identifier: function.notFound
+			count: 2
+			path: ../tests/bench/measure.php

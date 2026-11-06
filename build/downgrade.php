@@ -6,6 +6,7 @@ return [
 		__DIR__ . '/../build/PHPStan',
 		__DIR__ . '/../src',
 		__DIR__ . '/../tests/PHPStan',
+		__DIR__ . '/../tests/bench',
 		__DIR__ . '/../tests/e2e',
 	],
 	'excludePaths' => [

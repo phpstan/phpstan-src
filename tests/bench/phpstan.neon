@@ -1,0 +1,9 @@
+# Configuration the benchmarks in data/ are analysed with by run.php.
+# data/ is excluded from the analysis of PHPStan itself.
+includes:
+	- ../../conf/bleedingEdge.neon
+
+parameters:
+	level: 8
+	inferPrivatePropertyTypeFromConstructor: true
+	tmpDir: ../../tmp/bench

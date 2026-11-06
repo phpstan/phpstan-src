@@ -1400,14 +1400,21 @@ final class InitializerExprTypeResolver
 				if ($reflectionConstant->getType() !== null) {
 					$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $constantClassReflection);
 				}
+				$phpDocType = $constantClassReflection->getConstantPhpDocType($constantName);
 				$resolvedType = $this->transformStaticType($this->constantResolver->resolveClassConstantType(
 					$constantClassReflection->getName(),
 					$constantName,
 					$constantType,
 					$nativeType,
-					$nativeTypesPromoted ? null : $constantClassReflection->getConstantPhpDocType($constantName),
+					$nativeTypesPromoted ? null : $phpDocType,
 				), $fetchedOnType);
-				$this->classConstantValueTypeCache[$cacheKey] = $resolvedType;
+				if ($phpDocType === null) {
+					// the PHPDoc type is the only input that differs, so both variants share the resolved type
+					$this->classConstantValueTypeCache[$resolvingName] = $resolvedType;
+					$this->classConstantValueTypeCache[$resolvingName . '#native'] = $resolvedType;
+				} else {
+					$this->classConstantValueTypeCache[$cacheKey] = $resolvedType;
+				}
 				$types[] = $resolvedType;
 				unset($this->currentlyResolvingClassConstant[$resolvingName]);
 				continue;

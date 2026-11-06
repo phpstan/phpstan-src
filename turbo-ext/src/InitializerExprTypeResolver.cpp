@@ -2623,11 +2623,20 @@ public:
 					}
 				}
 				IETR_VAL(className, classReflectionName(constantClassReflection.raw()));
-				zv::Val phpDocType = nativeTypesPromoted ? zv::Val::null() : callOn(constantClassReflection.raw(), mGetConstantPhpDocType, 1, constantName);
-				if (UNEXPECTED(phpDocType.isUndef())) return zv::Val();
-				IETR_VAL(resolvedClassConstantType, resolveClassConstantType(prop(slots::constantResolver), className.raw(), constantName, constantType.raw(), nativeType.raw(), phpDocType.raw()));
+				IETR_VAL(phpDocType, callOn(constantClassReflection.raw(), mGetConstantPhpDocType, 1, constantName));
+				zval nullPhpDocType;
+				ZVAL_NULL(&nullPhpDocType);
+				IETR_VAL(resolvedClassConstantType, resolveClassConstantType(prop(slots::constantResolver), className.raw(), constantName, constantType.raw(), nativeType.raw(), nativeTypesPromoted ? &nullPhpDocType : phpDocType.raw()));
 				IETR_VAL(resolvedType, transformStaticType(resolvedClassConstantType.raw(), fetchedOnType.raw()));
-				writeArrayProperty(slots::classConstantValueTypeCache, cacheKey, resolvedType.raw());
+				if (Z_TYPE_P(phpDocType.raw()) == IS_NULL) {
+					/* the PHPDoc type is the only input that differs, so both variants share the resolved type */
+					zend_string *nativeCacheKey = zend_string_concat2(ZSTR_VAL(resolvingName), ZSTR_LEN(resolvingName), "#native", 7);
+					zv::Val nativeCacheKeyHold = zv::Val::adoptString(nativeCacheKey);
+					writeArrayProperty(slots::classConstantValueTypeCache, resolvingName, resolvedType.raw());
+					writeArrayProperty(slots::classConstantValueTypeCache, nativeCacheKey, resolvedType.raw());
+				} else {
+					writeArrayProperty(slots::classConstantValueTypeCache, cacheKey, resolvedType.raw());
+				}
 				types.push(zv::Ref(resolvedType.raw()));
 				unsetArrayProperty(slots::currentlyResolvingClassConstant, resolvingName);
 				continue;

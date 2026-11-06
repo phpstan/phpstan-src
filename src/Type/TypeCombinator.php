@@ -1350,7 +1350,10 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		$reducedArrayTypes = self::reduceArrays($arrayTypes, true);
+		if (!self::isReducedToNoLargerShape($reducedArrayTypes, $arrayTypes)) {
+			$reducedArrayTypes = self::optimizeConstantArrays($reducedArrayTypes);
+		}
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$applied = $accessoryTypes;
 			if ($reducedArray->isIterableAtLeastOnce()->no()) {
@@ -1366,6 +1369,38 @@ final class TypeCombinator
 			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$applied);
 		}
 		return $reducedArrayTypes;
+	}
+
+	/**
+	 * Whether the union reduced to a single array shape that holds no more
+	 * values than the largest shape that went into it, as when two branches
+	 * that narrowed one key of the same shape are merged again.
+	 *
+	 * Such a shape grew nothing, so generalizing it would only lose precision.
+	 * A shape that grows on every merge, like an array built up in a loop,
+	 * is larger than each of its inputs and is still generalized.
+	 *
+	 * @param Type[] $reducedArrayTypes
+	 * @param Type[] $arrayTypes
+	 */
+	private static function isReducedToNoLargerShape(array $reducedArrayTypes, array $arrayTypes): bool
+	{
+		if (count($reducedArrayTypes) !== 1 || !$reducedArrayTypes[array_key_first($reducedArrayTypes)]->isConstantArray()->yes()) {
+			return false;
+		}
+
+		$reducedCount = self::countConstantArrayValueTypes($reducedArrayTypes);
+		if ($reducedCount <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			return false;
+		}
+
+		foreach ($arrayTypes as $arrayType) {
+			if (self::countConstantArrayValueTypes([$arrayType]) >= $reducedCount) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

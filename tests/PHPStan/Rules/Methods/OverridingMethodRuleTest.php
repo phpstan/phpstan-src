@@ -143,11 +143,14 @@ class OverridingMethodRuleTest extends RuleTestCase
 
 		if (PHP_VERSION_ID >= 80100) {
 			$tip = 'Make it covariant, or use the #[\ReturnTypeWillChange] attribute to temporarily suppress the error.';
-			$errors[] = [
-				'Return type bool of method OverridingFinalMethod\FixedArray::setSize() is not covariant with tentative return type true of method SplFixedArray<mixed>::setSize().',
-				125,
-				$tip,
-			];
+			if (PHP_VERSION_ID >= 80400) {
+				// SplFixedArray::setSize() has the tentative return type true since PHP 8.4, bool before
+				$errors[] = [
+					'Return type bool of method OverridingFinalMethod\FixedArray::setSize() is not covariant with tentative return type true of method SplFixedArray<mixed>::setSize().',
+					125,
+					$tip,
+				];
+			}
 			$errors[] = [
 				'Return type mixed of method OverridingFinalMethod\SomeIterator::getIterator() is not covariant with tentative return type Traversable of method IteratorAggregate<int,OverridingFinalMethod\Foo>::getIterator().',
 				250,

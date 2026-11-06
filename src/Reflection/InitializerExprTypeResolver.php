@@ -1185,6 +1185,15 @@ final class InitializerExprTypeResolver
 			return $this->resolveIdenticalType($leftType, $rightType);
 		}
 
+		// same-type sides cannot coerce - loose equals strict, except for
+		// two numeric strings, which compare as numbers
+		if (
+			($leftType->isString()->yes() && $rightType->isString()->yes() && ($leftType->isNumericString()->no() || $rightType->isNumericString()->no()))
+			|| ($leftType->isInteger()->yes() && $rightType->isInteger()->yes())
+		) {
+			return $this->resolveIdenticalType($leftType, $rightType);
+		}
+
 		if ($leftType instanceof ConstantArrayType && $rightType instanceof ConstantArrayType) {
 			return $this->resolveConstantArrayTypeComparison($leftType, $rightType, fn ($leftValueType, $rightValueType): TypeResult => $this->resolveEqualType($leftValueType, $rightValueType, $phpVersions));
 		}

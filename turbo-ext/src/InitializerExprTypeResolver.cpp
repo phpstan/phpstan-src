@@ -787,6 +787,34 @@ public:
 			}
 		}
 
+		// same-type sides cannot coerce - loose equals strict, except for
+		// two numeric strings, which compare as numbers
+		{
+			bool identicalComparison = false;
+			IETR_TRI(leftIsString, triOn(leftType, mIsString));
+			if (leftIsString == PT_TRI_YES) {
+				IETR_TRI(rightIsString, triOn(rightType, mIsString));
+				if (rightIsString == PT_TRI_YES) {
+					IETR_TRI(leftIsNumericString, triOn(leftType, mIsNumericString));
+					identicalComparison = leftIsNumericString == PT_TRI_NO;
+					if (!identicalComparison) {
+						IETR_TRI(rightIsNumericString, triOn(rightType, mIsNumericString));
+						identicalComparison = rightIsNumericString == PT_TRI_NO;
+					}
+				}
+			}
+			if (!identicalComparison) {
+				IETR_TRI(leftIsInteger, triOn(leftType, mIsInteger));
+				if (leftIsInteger == PT_TRI_YES) {
+					IETR_TRI(rightIsInteger, triOn(rightType, mIsInteger));
+					identicalComparison = rightIsInteger == PT_TRI_YES;
+				}
+			}
+			if (identicalComparison) {
+				return resolveIdenticalType(leftType, rightType);
+			}
+		}
+
 		if (isA(leftType, pt_ce_constant_array_type) && isA(rightType, pt_ce_constant_array_type)) {
 			return resolveConstantArrayTypeComparison(leftType, rightType, false, NULL, phpVersions);
 		}

@@ -9,7 +9,8 @@
  * original positions that PHP 8 usort() applies), so the members come out
  * in exactly the order the twin produces, comparator calls included — the
  * comparator describes members through their own describe() and the
- * shadowed VerbosityLevel's singletons.
+ * shadowed VerbosityLevel's singletons, an array shape once per sort, as
+ * the twin's $arrayDescriptions memo does.
  *
  * The shadowed classes the comparator tests (NullType, ConstantBooleanType,
  * ConstantIntegerType, ConstantFloatType, IntegerRangeType, IntegerType,
@@ -46,7 +47,14 @@ public:
 		if (zend_hash_num_elements(source) > PT_UTH_SORT_LIMIT) return zv::Val::copyOf(zv::Ref(types));
 		/* usort() separates its by-reference argument: a private copy */
 		zv::Arr sorted = zv::Arr::adoptTable(zend_array_dup(source));
+		/* the twin's $arrayDescriptions: each array shape described once;
+		 * a describe() inside the sort can sort a nested union, which
+		 * brings its own */
+		zv::Arr descriptions = zv::Arr::create(0);
+		HashTable *outerDescriptions = currentDescriptions;
+		currentDescriptions = descriptions.table();
 		zend_hash_sort(sorted.table(), compare, 1);
+		currentDescriptions = outerDescriptions;
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 		return zv::Val(std::move(sorted));
 	}
@@ -63,6 +71,10 @@ public:
 	}
 
 private:
+	/* the twin's $arrayDescriptions of the sort in progress, keyed by object
+	 * handle and level — zend_hash_sort() passes the comparator no context */
+	static inline thread_local HashTable *currentDescriptions = nullptr;
+
 	/* the bucket comparator usort() runs: the closure's answer normalized
 	 * to -1/0/1 (ZEND_THREEWAY_COMPARE), ties broken by the original
 	 * positions zend_hash_sort() stored in Z_EXTRA (PHP 8's stable sort);
@@ -113,7 +125,7 @@ private:
 			return false;
 		}
 		if (aAccessory) {
-			if (bAccessory) return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, out);
+			if (bAccessory) return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, false, out);
 			out = 1;
 			return true;
 		}
@@ -227,7 +239,7 @@ private:
 
 		if ((instanceof_function(a->ce, pt_ce_callable_type) || instanceof_function(a->ce, pt_ce_closure_type))
 			&& (instanceof_function(b->ce, pt_ce_callable_type) || instanceof_function(b->ce, pt_ce_closure_type))) {
-			return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, out);
+			return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, false, out);
 		}
 
 		zend_long aConstantArray = pt_type_op_trinary(a, PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
@@ -254,7 +266,7 @@ private:
 					out = 1;
 					return true;
 				}
-				return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, out);
+				return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_VALUE, true, out);
 			}
 		}
 
@@ -263,25 +275,46 @@ private:
 		if (aString == PT_TRI_YES) {
 			zend_long bString = pt_type_op_trinary(b, PT_OP_IS_STRING, 0, NULL);
 			if (UNEXPECTED(bString < 0)) return false;
-			if (bString == PT_TRI_YES) return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_PRECISE, out);
+			if (bString == PT_TRI_YES) return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_PRECISE, false, out);
 		}
 
-		return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_TYPE_ONLY, out);
+		return compareDescriptions(a, b, PT_VERBOSITY_LEVEL_TYPE_ONLY, false, out);
 	}
 
 	/* self::compareStrings($a->describe($level), $b->describe($level)) for
-	 * one of the shadowed VerbosityLevel's singletons; false = pending
-	 * exception */
-	[[nodiscard]] static bool compareDescriptions(zend_object *a, zend_object *b, zend_long level, zend_long &out)
+	 * one of the shadowed VerbosityLevel's singletons, through the twin's
+	 * $arrayDescriptions memo when memoized; false = pending exception */
+	[[nodiscard]] static bool compareDescriptions(zend_object *a, zend_object *b, zend_long level, bool memoized, zend_long &out)
 	{
 		zval *levelZv = pt_verbosity_level_singleton(level);
 		if (UNEXPECTED(levelZv == NULL)) return false;
-		zv::Val aDescription = describe(a, levelZv);
-		if (UNEXPECTED(aDescription.isUndef())) return false;
-		zv::Val bDescription = describe(b, levelZv);
-		if (UNEXPECTED(bDescription.isUndef())) return false;
-		out = compareStrings(Z_STR_P(aDescription.raw()), Z_STR_P(bDescription.raw()));
+		if (!memoized) {
+			zv::Val aDescription = describe(a, levelZv);
+			if (UNEXPECTED(aDescription.isUndef())) return false;
+			zv::Val bDescription = describe(b, levelZv);
+			if (UNEXPECTED(bDescription.isUndef())) return false;
+			out = compareStrings(Z_STR_P(aDescription.raw()), Z_STR_P(bDescription.raw()));
+			return true;
+		}
+		zend_string *aDescription = memoizedDescription(a, level, levelZv);
+		if (UNEXPECTED(aDescription == NULL)) return false;
+		zend_string *bDescription = memoizedDescription(b, level, levelZv);
+		if (UNEXPECTED(bDescription == NULL)) return false;
+		out = compareStrings(aDescription, bDescription);
 		return true;
+	}
+
+	/* $arrayDescriptions[spl_object_id($type)] ??= $type->describe($level),
+	 * borrowed from the sort's table; NULL = pending exception */
+	static zend_string *memoizedDescription(zend_object *type, zend_long level, zval *levelZv)
+	{
+		zend_ulong key = ((zend_ulong) type->handle << 3) | (zend_ulong) level;
+		zval *found = zend_hash_index_find(currentDescriptions, key);
+		if (found != NULL) return Z_STR_P(found);
+		zv::Val description = describe(type, levelZv);
+		if (UNEXPECTED(description.isUndef())) return NULL;
+		zval owned = description.take();
+		return Z_STR_P(zend_hash_index_add_new(currentDescriptions, key, &owned));
 	}
 
 	/* $type->describe($level), a string; UNDEF = pending exception */

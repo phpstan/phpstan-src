@@ -598,11 +598,29 @@ final class TypeCombinator
 		);
 		$typesCount = count($types);
 
+		// $alreadyNormalized keeps the members alive, so their object ids stay
+		// unique while this lookup refers to them
+		$normalizedGroupsByType = [];
+		$normalizedTwice = [];
+		if ($typesCount > 1) {
+			foreach ($alreadyNormalized as $group => $normalizedTypes) {
+				foreach ($normalizedTypes as $normalizedType) {
+					$normalizedTypeId = spl_object_id($normalizedType);
+					if (isset($normalizedGroupsByType[$normalizedTypeId][$group])) {
+						$normalizedTwice[$normalizedTypeId] = true;
+						continue;
+					}
+					$normalizedGroupsByType[$normalizedTypeId][$group] = $group;
+				}
+			}
+		}
+
 		// transform A | A to A
 		// transform A | never to A
 		for ($i = 0; $i < $typesCount; $i++) {
+			$iGroups = $normalizedGroupsByType[spl_object_id($types[$i])] ?? null;
 			for ($j = $i + 1; $j < $typesCount; $j++) {
-				if (self::isAlreadyNormalized($alreadyNormalized, $types[$i], $types[$j])) {
+				if ($iGroups !== null && self::isAlreadyNormalized($iGroups, $normalizedGroupsByType, $normalizedTwice, $types[$i], $types[$j])) {
 					continue;
 				}
 				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
@@ -613,6 +631,7 @@ final class TypeCombinator
 				[$a, $b] = $compareResult;
 				if ($a !== null) {
 					$types[$i] = $a;
+					$iGroups = $normalizedGroupsByType[spl_object_id($a)] ?? null;
 					array_splice($types, $j--, 1);
 					$typesCount--;
 					continue 1;
@@ -757,24 +776,27 @@ final class TypeCombinator
 	}
 
 	/**
-	 * @param array<int, Type[]> $alreadyNormalized
+	 * Whether $a and $b are members of one union that was flattened into this
+	 * one - such members were already compared against each other.
+	 *
+	 * @param array<int, int> $aGroups the groups of $a in $normalizedGroupsByType
+	 * @param array<int, array<int, int>> $normalizedGroupsByType member object id => (index of a flattened union holding it => the same index)
+	 * @param array<int, true> $normalizedTwice member object ids a flattened union held twice
 	 */
-	private static function isAlreadyNormalized(array $alreadyNormalized, Type $a, Type $b): bool
+	private static function isAlreadyNormalized(array $aGroups, array $normalizedGroupsByType, array $normalizedTwice, Type $a, Type $b): bool
 	{
-		foreach ($alreadyNormalized as $normalizedTypes) {
-			foreach ($normalizedTypes as $i => $normalizedType) {
-				if ($normalizedType !== $a) {
-					continue;
-				}
+		if ($a === $b) {
+			return isset($normalizedTwice[spl_object_id($a)]);
+		}
 
-				foreach ($normalizedTypes as $j => $anotherNormalizedType) {
-					if ($i === $j) {
-						continue;
-					}
-					if ($anotherNormalizedType === $b) {
-						return true;
-					}
-				}
+		$bGroups = $normalizedGroupsByType[spl_object_id($b)] ?? null;
+		if ($bGroups === null) {
+			return false;
+		}
+
+		foreach ($aGroups as $group) {
+			if (isset($bGroups[$group])) {
+				return true;
 			}
 		}
 

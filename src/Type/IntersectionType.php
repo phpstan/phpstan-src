@@ -1771,7 +1771,23 @@ class IntersectionType implements CompoundType
 
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
-		return $this->intersectTypes(static fn (Type $type): Type => TypeCombinator::remove($type, $typeToRemove));
+		$removedTypes = [];
+		$changed = false;
+		foreach ($this->types as $type) {
+			$removed = TypeCombinator::remove($type, $typeToRemove);
+			if (!$removed->equals($type)) {
+				$changed = true;
+			}
+			$removedTypes[] = $removed;
+		}
+
+		// no member changed, so neither does the intersection - intersecting
+		// the same members again would only re-reduce every pair of them
+		if (!$changed) {
+			return $this;
+		}
+
+		return self::intersectOperands($removedTypes);
 	}
 
 	public function arithmeticPower(Type $exponent, PhpVersion $phpVersion): Type

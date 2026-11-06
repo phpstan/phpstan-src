@@ -646,6 +646,24 @@ public:
 				if (isInstance(fromType, pt_ce_union_type)) return copy(fromType);
 			}
 
+			/* a value none of the union's keyed members stands for overlaps
+			 * none of them - one lookup instead of a removal per member */
+			zv::Val fromTypeKey = pt_type_finite_type_set_key(fromType);
+			PT_FAIL_IF_UNDEF(fromTypeKey);
+			if (!isNull(fromTypeKey)) {
+				zv::Val finiteTypeSet = call(typeToRemove, PT_LC("getfinitetypeset"));
+				PT_FAIL_IF_UNDEF(finiteTypeSet);
+				if (!isNull(finiteTypeSet)) {
+					int complete = callBool(finiteTypeSet.raw(), PT_LC("iscomplete"));
+					PT_FAIL_IF_NEG(complete);
+					if (complete) {
+						int has = callBool(finiteTypeSet.raw(), PT_LC("has"), 1, fromTypeKey.raw());
+						PT_FAIL_IF_NEG(has);
+						if (!has) return copy(fromType);
+					}
+				}
+			}
+
 			zv::Val types = getTypes(typeToRemove);
 			PT_FAIL_IF_UNDEF(types);
 

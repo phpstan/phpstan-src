@@ -3019,27 +3019,32 @@ public:
 			}
 			zend_ulong id = (zend_ulong) Z_OBJ_HANDLE_P(valueType);
 			zval *single = zend_hash_index_find(singleValues.table(), id);
-			if (single == NULL) {
-				zv::Val singleValue = zv::Val::null();
-				zend_long isConstantScalar = callTrinary(valueType, PT_LC("isconstantscalarvalue"));
-				PT_FAIL_IF_NEG(isConstantScalar);
-				if (isConstantScalar == PT_TRI_YES) {
-					zv::Val constantScalarValues = call(valueType, PT_LC("getconstantscalarvalues"));
-					PT_FAIL_IF_UNDEF(constantScalarValues);
-					if (countOf(constantScalarValues.raw()) == 1) {
-						zv::Arr wrapped = zv::Arr::create(1);
-						wrapped.push(zv::Ref(indexOf(constantScalarValues.raw(), 0)));
-						singleValue = zv::Val(std::move(wrapped));
-					}
+			if (single != NULL) {
+				if (Z_TYPE_P(single) != IS_NULL) {
+					zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
+					PT_FAIL_IF_UNDEF(keyValue);
+					zval value;
+					ZVAL_COPY(&value, indexOf(single, 0));
+					if (UNEXPECTED(!symtableSet(values.table(), keyValue.raw(), &value))) return zv::Val();
 				}
-				singleValues.arrRef().setIndex(id, zv::Ref(singleValue.raw()));
-				single = zend_hash_index_find(singleValues.table(), id);
+				continue;
 			}
-			if (Z_TYPE_P(single) == IS_NULL) continue;
+			zval nullZv;
+			ZVAL_NULL(&nullZv);
+			singleValues.arrRef().setIndex(id, zv::Ref(&nullZv));
+			zend_long isConstantScalar = callTrinary(valueType, PT_LC("isconstantscalarvalue"));
+			PT_FAIL_IF_NEG(isConstantScalar);
+			if (isConstantScalar != PT_TRI_YES) continue;
+			zv::Val constantScalarValues = call(valueType, PT_LC("getconstantscalarvalues"));
+			PT_FAIL_IF_UNDEF(constantScalarValues);
+			if (countOf(constantScalarValues.raw()) != 1) continue;
+			zv::Arr wrapped = zv::Arr::create(1);
+			wrapped.push(zv::Ref(indexOf(constantScalarValues.raw(), 0)));
+			singleValues.arrRef().setIndex(id, zv::Ref(wrapped.raw()));
 			zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
 			PT_FAIL_IF_UNDEF(keyValue);
 			zval value;
-			ZVAL_COPY(&value, indexOf(single, 0));
+			ZVAL_COPY(&value, indexOf(constantScalarValues.raw(), 0));
 			if (UNEXPECTED(!symtableSet(values.table(), keyValue.raw(), &value))) return zv::Val();
 		}
 		return zv::Val(std::move(values));

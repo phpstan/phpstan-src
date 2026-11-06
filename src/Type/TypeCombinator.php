@@ -1732,19 +1732,22 @@ final class TypeCombinator
 		$singleValues = [];
 		foreach ($array->getKeyTypes() as $i => $keyType) {
 			$id = spl_object_id($valueTypes[$i]);
-			if (!array_key_exists($id, $singleValues)) {
-				$singleValues[$id] = null;
-				if ($valueTypes[$i]->isConstantScalarValue()->yes()) {
-					$constantScalarValues = $valueTypes[$i]->getConstantScalarValues();
-					if (count($constantScalarValues) === 1) {
-						$singleValues[$id] = [$constantScalarValues[0]];
-					}
+			if (array_key_exists($id, $singleValues)) {
+				if ($singleValues[$id] !== null) {
+					$values[$keyType->getValue()] = $singleValues[$id][0];
 				}
-			}
-			if ($singleValues[$id] === null) {
 				continue;
 			}
-			$values[$keyType->getValue()] = $singleValues[$id][0];
+			$singleValues[$id] = null;
+			if (!$valueTypes[$i]->isConstantScalarValue()->yes()) {
+				continue;
+			}
+			$constantScalarValues = $valueTypes[$i]->getConstantScalarValues();
+			if (count($constantScalarValues) !== 1) {
+				continue;
+			}
+			$singleValues[$id] = [$constantScalarValues[0]];
+			$values[$keyType->getValue()] = $constantScalarValues[0];
 		}
 
 		return $values;

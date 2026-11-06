@@ -829,20 +829,21 @@ class ConstantArrayType implements Type
 					? spl_object_id($this->valueTypes[$i]) . ':' . spl_object_id($type->valueTypes[$otherIndex])
 					: null;
 				if ($valuePairKey !== null && array_key_exists($valuePairKey, $valueResults)) {
-					$isValueSuperType = $valueResults[$valuePairKey];
-				} else {
-					$otherValueType = $type->getOffsetValueType($keyType);
-					if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
-						[, $typeUnsealedValue] = $type->unsealed;
-						$otherValueType = $typeUnsealedValue;
-					}
-					$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
-					if ($valuePairKey !== null) {
-						$valueResults[$valuePairKey] = $isValueSuperType;
-					}
+					$results[] = $valueResults[$valuePairKey];
+					continue;
 				}
+
+				$otherValueType = $type->getOffsetValueType($keyType);
+				if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
+					[, $typeUnsealedValue] = $type->unsealed;
+					$otherValueType = $typeUnsealedValue;
+				}
+				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
 				if ($isValueSuperType->no()) {
 					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
+				}
+				if ($valuePairKey !== null) {
+					$valueResults[$valuePairKey] = $isValueSuperType;
 				}
 				$results[] = $isValueSuperType;
 			}

@@ -158,6 +158,8 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	{
 		$data = $this->collectedData(['b', 'a', 'c']);
 		$data[$this->files[0]][PossiblyPureFuncCallCollector::class] = ['call in a'];
+		// a collector with paths in its values is stored with them relative
+		$data[$this->files[2]][ConstantConditionInTraitCollector::class] = [['SomeRule', 'SomeTrait', 'key', true, new Error('An error.', $this->files[2], 3)]];
 		$this->saveFullAnalysis($data);
 		$fromArrays = $this->cacheContentsWithoutTime();
 
@@ -170,7 +172,8 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
 
 		$this->assertSame($fromArrays, $this->cacheContentsWithoutTime());
-		$this->assertSame($data, $this->savedCollectedData($processed));
+		$this->assertStringNotContainsString($this->directory, $fromArrays);
+		$this->assertEquals($data, $this->savedCollectedData($processed));
 	}
 
 	public function testSpooledPartialSaveEqualsFreshSave(): void

@@ -213,6 +213,18 @@ final class CollectedDataSpool
 	 */
 	public function read($handle, string $file, int $offset, int $length): array
 	{
+		return $this->unserializeValues($this->readBlob($handle, $file, $offset, $length), $file);
+	}
+
+	/**
+	 * The serialized value list, as append() wrote it.
+	 *
+	 * @param resource $handle from openForReading()
+	 * @param int<0, max> $offset
+	 * @param int<1, max> $length
+	 */
+	public function readBlob($handle, string $file, int $offset, int $length): string
+	{
 		if (fseek($handle, $offset) !== 0) {
 			throw new RuntimeException(sprintf('Cannot seek to the collected data of %s in %s.', $file, $this->path));
 		}
@@ -222,6 +234,14 @@ final class CollectedDataSpool
 			throw new RuntimeException(sprintf('Expected %d bytes of the collected data of %s in %s.', $length, $file, $this->path));
 		}
 
+		return $blob;
+	}
+
+	/**
+	 * @return list<mixed>
+	 */
+	public function unserializeValues(string $blob, string $file): array
+	{
 		$values = @unserialize($blob);
 		if (!is_array($values) || !array_is_list($values)) {
 			throw new RuntimeException(sprintf('The collected data of %s in %s is not a list.', $file, $this->path));

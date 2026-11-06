@@ -120,6 +120,35 @@ final class SpooledCollectedData
 	}
 
 	/**
+	 * The serialized value lists of one file with their hashes, without unserializing them.
+	 *
+	 * @param resource $handle from openForReading()
+	 * @return array<class-string<Collector<Node, mixed>>, array{string, string}> collector type => [serialized values, hash]
+	 */
+	public function readBlobs(string $file, $handle): array
+	{
+		$blobs = [];
+		foreach ($this->entries as $collectorType => $entriesPerFile) {
+			if (!array_key_exists($file, $entriesPerFile)) {
+				continue;
+			}
+
+			[$offset, $length, $hash] = $entriesPerFile[$file];
+			$blobs[$collectorType] = [$this->spool->readBlob($handle, $file, $offset, $length), $hash];
+		}
+
+		return $blobs;
+	}
+
+	/**
+	 * @return list<mixed>
+	 */
+	public function unserializeValues(string $blob, string $file): array
+	{
+		return $this->spool->unserializeValues($blob, $file);
+	}
+
+	/**
 	 * @param resource|null $handle from openForReading(), to read many files without opening the spool for each
 	 * @return array<class-string<Collector<Node, mixed>>, list<mixed>> collector type => values
 	 */

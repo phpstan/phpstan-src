@@ -2205,15 +2205,15 @@ final class ResultCacheManager
 		$spoolHandle = null;
 		$savedIndex = [];
 		foreach ($files as $analysedFile) {
-			$collectedDataPerFile = null;
-			if (array_key_exists($analysedFile, $fresh)) {
-				$collectedDataPerFile = $fresh[$analysedFile];
-			} elseif ($spooled !== null && array_key_exists($analysedFile, $spooled->getFiles())) {
+			if (!array_key_exists($analysedFile, $fresh) && $spooled !== null && array_key_exists($analysedFile, $spooled->getFiles())) {
 				$spoolHandle ??= $spooled->openForReading();
-				$collectedDataPerFile = $spooled->read($analysedFile, $spoolHandle);
+				$this->writeSpooledCollectedDataEntry($handle, $file, $analysedFile, $spooled, $spoolHandle);
+
+				continue;
 			}
 
-			if ($collectedDataPerFile !== null) {
+			if (array_key_exists($analysedFile, $fresh)) {
+				$collectedDataPerFile = $fresh[$analysedFile];
 				ksort($collectedDataPerFile);
 				foreach ($transformer->relativizeCollectedData([$analysedFile => $collectedDataPerFile]) as $relativeFile => $data) {
 					$this->writeCollectedDataEntry($handle, $file, $relativeFile, $data, $collectedDataPerFile);
@@ -2267,11 +2267,49 @@ final class ResultCacheManager
 	private function writeCollectedDataEntry($handle, string $file, string $relativeFile, array $dataPerCollector, array $dataInMemory): void
 	{
 		$transformer = $this->getPathTransformer();
-		$header = [];
-		$blobs = [];
+		$blobsAndHashes = [];
 		foreach ($dataPerCollector as $collectorType => $values) {
 			$blob = serialize($values);
 			$hash = $transformer->hasPathsInCollectedData($collectorType) ? md5(serialize($dataInMemory[$collectorType])) : md5($blob);
+			$blobsAndHashes[$collectorType] = [$blob, $hash];
+		}
+
+		$this->writeCollectedDataEntryFrame($handle, $file, $relativeFile, $blobsAndHashes);
+	}
+
+	/**
+	 * The same entry as writeCollectedDataEntry() writes. The spool holds each value list serialized
+	 * with absolute paths and hashed, so only the values of a collector with paths are serialized again.
+	 *
+	 * @param resource $handle
+	 * @param resource $spoolHandle
+	 */
+	private function writeSpooledCollectedDataEntry($handle, string $file, string $analysedFile, SpooledCollectedData $spooled, $spoolHandle): void
+	{
+		$transformer = $this->getPathTransformer();
+		$blobsAndHashes = $spooled->readBlobs($analysedFile, $spoolHandle);
+		ksort($blobsAndHashes);
+		foreach ($blobsAndHashes as $collectorType => [$blob, $hash]) {
+			if (!$transformer->hasPathsInCollectedData($collectorType)) {
+				continue;
+			}
+
+			$values = $transformer->relativizeCollectorValues($collectorType, $spooled->unserializeValues($blob, $analysedFile));
+			$blobsAndHashes[$collectorType] = [serialize($values), $hash];
+		}
+
+		$this->writeCollectedDataEntryFrame($handle, $file, $transformer->relativizePath($analysedFile), $blobsAndHashes);
+	}
+
+	/**
+	 * @param resource $handle
+	 * @param array<string, array{string, string}> $blobsAndHashes collector type => [serialized values, hash]
+	 */
+	private function writeCollectedDataEntryFrame($handle, string $file, string $relativeFile, array $blobsAndHashes): void
+	{
+		$header = [];
+		$blobs = [];
+		foreach ($blobsAndHashes as $collectorType => [$blob, $hash]) {
 			$header[] = $collectorType . ' ' . strlen($blob) . ' ' . $hash;
 			$blobs[] = $blob;
 		}

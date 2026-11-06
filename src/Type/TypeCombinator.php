@@ -176,6 +176,16 @@ final class TypeCombinator
 				return $fromType->subtract(count($remainingTypes) === 1 ? $remainingTypes[0] : new UnionType($remainingTypes));
 			}
 
+			// a value none of the union's keyed members stands for overlaps none
+			// of them - one lookup instead of a removal per member
+			$fromTypeKey = FiniteTypeSet::key($fromType);
+			if ($fromTypeKey !== null) {
+				$finiteTypeSet = $typeToRemove->getFiniteTypeSet();
+				if ($finiteTypeSet !== null && $finiteTypeSet->isComplete() && !$finiteTypeSet->has($fromTypeKey)) {
+					return $fromType;
+				}
+			}
+
 			foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
 				$fromType = self::remove($fromType, $unionTypeToRemove);
 				if ($fromType instanceof NeverType) {

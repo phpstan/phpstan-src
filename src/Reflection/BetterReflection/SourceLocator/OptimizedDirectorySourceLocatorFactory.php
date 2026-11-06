@@ -47,15 +47,6 @@ final class OptimizedDirectorySourceLocatorFactory
 
 	private const SCAN_LOCK_POLL_INTERVAL_MICROSECONDS = 50_000;
 
-	/**
-	 * The files this process already checked or scanned, as the caches keep them: [content hash,
-	 * stat signature, classes, functions, constants]. The directories a process builds locators for
-	 * can overlap, and a file reachable from two of them is then looked at once.
-	 *
-	 * @var array<string, array{string, string|null, string[], string[], string[]}>
-	 */
-	private array $checkedFiles = [];
-
 	public function __construct(
 		private FileNodesFetcher $fileNodesFetcher,
 		#[AutowiredParameter(ref: '@fileFinderScan')]
@@ -120,6 +111,11 @@ final class OptimizedDirectorySourceLocatorFactory
 	 * Fills in the symbol maps of the locators, each for its files, from their caches and by
 	 * scanning the files that changed since.
 	 *
+	 * Nothing is kept once the scan is done, and a locator none of whose files has to be scanned
+	 * is filled in right away, so that the cache entries are not all in memory at once - on a warm
+	 * run that is every locator. A file reachable from two locators is checked against the cache
+	 * of each, but hashed and scanned at most once.
+	 *
 	 * @param list<array{non-empty-string, string[], OptimizedDirectorySourceLocator}> $requests
 	 */
 	private function scan(array $requests): void
@@ -129,8 +125,12 @@ final class OptimizedDirectorySourceLocatorFactory
 		$scanLocks = [];
 
 		try {
-			$cachedEntries = [];
-			foreach ($requests as $i => [$cacheKey]) {
+			// the files whose cache entry could not vouch for them: hashed, and scanned when the
+			// hash did not match either
+			$checkedFiles = [];
+			$filesToScan = [];
+			$waitingForScan = [];
+			foreach ($requests as [$cacheKey, $files, $locator]) {
 				$cached = $this->loadCachedSymbols($cacheKey, $variableCacheKey);
 				// On a cold cache every parallel worker that is not forked from a process that did
 				// the scan already builds the same locators at once, and would scan the same files.
@@ -150,21 +150,23 @@ final class OptimizedDirectorySourceLocatorFactory
 					}
 				}
 
-				$cachedEntries[$i] = $cached;
-			}
-
-			$filesToScan = [];
-			foreach ($requests as $i => [, $files]) {
-				$cached = $cachedEntries[$i] ?? [];
+				// the entries of the files not waiting for the scan
+				$checked = [];
+				$waitsForScan = false;
 				foreach ($files as $file) {
-					if (array_key_exists($file, $this->checkedFiles) || array_key_exists($file, $filesToScan)) {
+					if (array_key_exists($file, $checkedFiles)) {
+						$checked[$file] = $checkedFiles[$file];
+						continue;
+					}
+					if (array_key_exists($file, $filesToScan)) {
+						$waitsForScan = true;
 						continue;
 					}
 
 					$signature = $signatures->get($file);
 					$cachedFile = $cached[$file] ?? null;
 					if ($cachedFile !== null && $signature !== null && $cachedFile[1] === $signature) {
-						$this->checkedFiles[$file] = $cachedFile;
+						$checked[$file] = $cachedFile;
 						continue;
 					}
 
@@ -174,40 +176,49 @@ final class OptimizedDirectorySourceLocatorFactory
 					}
 
 					if ($cachedFile !== null && $cachedFile[0] === $hash) {
-						$this->checkedFiles[$file] = [$hash, $signature, $cachedFile[2], $cachedFile[3], $cachedFile[4]];
+						$checked[$file] = $checkedFiles[$file] = [$hash, $signature, $cachedFile[2], $cachedFile[3], $cachedFile[4]];
 						continue;
 					}
 
 					$filesToScan[$file] = [$hash, $signature];
+					$waitsForScan = true;
 				}
+
+				if ($waitsForScan) {
+					$waitingForScan[] = [$cacheKey, $files, $locator, $cached, $checked];
+				} else {
+					$this->fill($cacheKey, $variableCacheKey, $locator, $cached, $checked);
+				}
+
+				// before the next entry is loaded
+				unset($cached, $checked);
 			}
 
-			if ($filesToScan !== []) {
-				$foundSymbols = $this->symbolFinderInFiles->findSymbols(array_keys($filesToScan), $this->phpVersion->supportsEnums());
-				foreach ($filesToScan as $file => [$hash, $signature]) {
-					[$classes, $functions, $constants] = $foundSymbols[$file] ?? [[], [], []];
-					$this->checkedFiles[$file] = [$hash, $signature, $classes, $functions, $constants];
-				}
+			if ($filesToScan === []) {
+				return;
 			}
 
-			foreach ($requests as $i => [$cacheKey, $files, $locator]) {
+			$foundSymbols = $this->symbolFinderInFiles->findSymbols(array_keys($filesToScan), $this->phpVersion->supportsEnums());
+			foreach ($filesToScan as $file => [$hash, $signature]) {
+				[$classes, $functions, $constants] = $foundSymbols[$file] ?? [[], [], []];
+				$checkedFiles[$file] = [$hash, $signature, $classes, $functions, $constants];
+			}
+			unset($foundSymbols, $filesToScan);
+
+			foreach (array_keys($waitingForScan) as $i) {
+				[$cacheKey, $files, $locator, $cached, $checked] = $waitingForScan[$i];
+				unset($waitingForScan[$i]);
 				$entry = [];
 				foreach ($files as $file) {
-					if (!array_key_exists($file, $this->checkedFiles)) {
+					$checkedFile = $checked[$file] ?? $checkedFiles[$file] ?? null;
+					if ($checkedFile === null) {
 						continue;
 					}
 
-					$entry[$file] = $this->checkedFiles[$file];
+					$entry[$file] = $checkedFile;
 				}
 
-				// A warm run finds every file unchanged and does not write anything. A cold miss is
-				// written even when empty, so that the workers waiting for the lock read it back.
-				if ($entry !== $cachedEntries[$i]) {
-					$this->cache->save($cacheKey, $variableCacheKey, $entry);
-				}
-
-				[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($entry);
-				$locator->fillScanned($classToFile, $functionToFiles, $constantToFile);
+				$this->fill($cacheKey, $variableCacheKey, $locator, $cached, $entry);
 			}
 		} finally {
 			// Release even if scanning or saving throws, so a failing worker cannot leave other
@@ -216,6 +227,23 @@ final class OptimizedDirectorySourceLocatorFactory
 				$this->releaseDirectoryScanLock($scanLock);
 			}
 		}
+	}
+
+	/**
+	 * @param non-empty-string $cacheKey
+	 * @param array<string, array{string, string|null, string[], string[], string[]}>|null $cached
+	 * @param array<string, array{string, string|null, string[], string[], string[]}> $entry
+	 */
+	private function fill(string $cacheKey, string $variableCacheKey, OptimizedDirectorySourceLocator $locator, ?array $cached, array $entry): void
+	{
+		// A warm run finds every file unchanged and does not write anything. A cold miss is
+		// written even when empty, so that the workers waiting for the lock read it back.
+		if ($entry !== $cached) {
+			$this->cache->save($cacheKey, $variableCacheKey, $entry);
+		}
+
+		[$classToFile, $functionToFiles, $constantToFile] = $this->changeStructure($entry);
+		$locator->fillScanned($classToFile, $functionToFiles, $constantToFile);
 	}
 
 	/**

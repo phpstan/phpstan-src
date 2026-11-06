@@ -761,6 +761,42 @@ public:
 		return newTypeResult(newBooleanType());
 	}
 
+	/* Mirrors isNonNumericString(): 1 when the strings are numeric in none of
+	 * the PHP versions, 0 when they may be, -1 = pending exception. The
+	 * versions are the list phpVersions, or the single phpVersion when it is
+	 * NULL. */
+	static int isNonNumericString(zval *type, zval *phpVersions, zval *phpVersion)
+	{
+		zend_long isNumeric = triOn(type, mIsNumericString);
+		if (UNEXPECTED(isNumeric < 0)) return -1;
+		if (isNumeric != PT_TRI_NO) return 0;
+
+		zv::Val constantStrings = callOn(type, mGetConstantStrings);
+		if (UNEXPECTED(constantStrings.isUndef() || !requireArray(constantStrings.raw()))) return -1;
+		for (zv::ArrayEntry constantString : zv::ArrRef(constantStrings.raw())) {
+			zv::Val value = pt_constant_string_get_value(Z_OBJ_P(constantString.value().raw()));
+			if (UNEXPECTED(value.isUndef())) return -1;
+			auto isNumericIn = [&](zval *version) -> int {
+				zval number;
+				int overflow;
+				return pt_string_set_parse_numeric_string(Z_STR_P(value.raw()), version, &number, overflow);
+			};
+			if (phpVersions == NULL) {
+				int parsed = isNumericIn(phpVersion);
+				if (UNEXPECTED(parsed < 0)) return -1;
+				if (parsed == 1) return 0;
+				continue;
+			}
+			for (zv::ArrayEntry entry : zv::ArrRef(phpVersions)) {
+				int parsed = isNumericIn(entry.value().raw());
+				if (UNEXPECTED(parsed < 0)) return -1;
+				if (parsed == 1) return 0;
+			}
+		}
+
+		return 1;
+	}
+
 	/* Mirrors resolveEqualType(); phpVersions NULL stands for null. */
 	zv::Val resolveEqualType(zval *leftType, zval *rightType, zval *phpVersions = NULL) const
 	{
@@ -787,6 +823,20 @@ public:
 			}
 		}
 
+		// $phpVersions->getLooseComparisonVersions(), or the resolver's own
+		// version; the Type methods over a single version need no union
+		zval *version = prop(slots::phpVersion);
+		zv::Val versions;
+		if (phpVersions != NULL) {
+			IETR_VAL(representative, pt_type_call(Z_OBJ_P(phpVersions), PT_LC("getloosecomparisonversions"), 0, NULL));
+			if (UNEXPECTED(!requireArray(representative.raw()))) return zv::Val();
+			if (zend_hash_num_elements(Z_ARRVAL_P(representative.raw())) == 1) {
+				version = arrayIndexForRead(representative.raw(), 0);
+				if (UNEXPECTED(version == NULL)) return zv::Val();
+			}
+			versions = std::move(representative);
+		}
+
 		// same-type sides cannot coerce - loose equals strict, except for
 		// two numeric strings, which compare as numbers
 		{
@@ -795,11 +845,13 @@ public:
 			if (leftIsString == PT_TRI_YES) {
 				IETR_TRI(rightIsString, triOn(rightType, mIsString));
 				if (rightIsString == PT_TRI_YES) {
-					IETR_TRI(leftIsNumericString, triOn(leftType, mIsNumericString));
-					identicalComparison = leftIsNumericString == PT_TRI_NO;
+					int leftNonNumeric = isNonNumericString(leftType, versions.isUndef() ? NULL : versions.raw(), version);
+					if (UNEXPECTED(leftNonNumeric < 0)) return zv::Val();
+					identicalComparison = leftNonNumeric == 1;
 					if (!identicalComparison) {
-						IETR_TRI(rightIsNumericString, triOn(rightType, mIsNumericString));
-						identicalComparison = rightIsNumericString == PT_TRI_NO;
+						int rightNonNumeric = isNonNumericString(rightType, versions.isUndef() ? NULL : versions.raw(), version);
+						if (UNEXPECTED(rightNonNumeric < 0)) return zv::Val();
+						identicalComparison = rightNonNumeric == 1;
 					}
 				}
 			}
@@ -819,19 +871,6 @@ public:
 			return resolveConstantArrayTypeComparison(leftType, rightType, false, NULL, phpVersions);
 		}
 
-		// $phpVersions->getLooseComparisonVersions(), or the resolver's own
-		// version; the Type methods over a single version need no union
-		zval *version = prop(slots::phpVersion);
-		zv::Val versions;
-		if (phpVersions != NULL) {
-			IETR_VAL(representative, pt_type_call(Z_OBJ_P(phpVersions), PT_LC("getloosecomparisonversions"), 0, NULL));
-			if (UNEXPECTED(!requireArray(representative.raw()))) return zv::Val();
-			if (zend_hash_num_elements(Z_ARRVAL_P(representative.raw())) == 1) {
-				version = arrayIndexForRead(representative.raw(), 0);
-				if (UNEXPECTED(version == NULL)) return zv::Val();
-			}
-			versions = std::move(representative);
-		}
 		bool singleVersion = versions.isUndef() || zend_hash_num_elements(Z_ARRVAL_P(versions.raw())) == 1;
 		/* TypeCombinator::union() / intersect() of $type-><method>($version) over the versions */
 		auto overVersions = [&](zval *type, const Method &method, bool intersect) -> zv::Val {
@@ -3704,6 +3743,15 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, type, fetchedOnType)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgType(type, 1) || !ietrArgType(fetchedOnType, 2))) RETURN_THROWS();
 		PT_RETURN_VAL(InitializerExprTypeResolver::transformStaticType(type, fetchedOnType));
+	});
+
+	cls.method(sigs::isNonNumericString, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type, *phpVersions;
+		if (!zp::parse<zp::Obj, zp::Arr>(execute_data, type, phpVersions)) RETURN_THROWS();
+		if (UNEXPECTED(!ietrArgType(type, 1))) RETURN_THROWS();
+		int nonNumeric = InitializerExprTypeResolver::isNonNumericString(type, phpVersions, NULL);
+		if (UNEXPECTED(nonNumeric < 0)) RETURN_THROWS();
+		RETURN_BOOL(nonNumeric == 1);
 	});
 
 	cls.method(sigs::getNeverType, [](INTERNAL_FUNCTION_PARAMETERS) {

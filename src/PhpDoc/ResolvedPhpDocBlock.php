@@ -162,6 +162,8 @@ final class ResolvedPhpDocBlock
 
 	private ?bool $acceptsNamedArguments = null;
 
+	private ?bool $areVarTagsIgnored = null;
+
 	private function __construct()
 	{
 	}
@@ -255,6 +257,7 @@ final class ResolvedPhpDocBlock
 		$self->isAllowedPrivateMutation = false;
 		$self->hasConsistentConstructor = false;
 		$self->acceptsNamedArguments = true;
+		$self->areVarTagsIgnored = false;
 
 		return $self;
 	}
@@ -313,6 +316,7 @@ final class ResolvedPhpDocBlock
 		$result->isAllowedPrivateMutation = $this->isAllowedPrivateMutation();
 		$result->hasConsistentConstructor = $this->hasConsistentConstructor();
 		$result->acceptsNamedArguments = $acceptsNamedArguments;
+		$result->areVarTagsIgnored = $this->areVarTagsIgnored();
 
 		return $result;
 	}
@@ -481,6 +485,17 @@ final class ResolvedPhpDocBlock
 			);
 		}
 		return $this->varTags;
+	}
+
+	/**
+	 * Whether the PHPDoc has @phpstan-ignore-var. Its inline @var tags are then still
+	 * returned by getVarTags() and checked by rules, but do not change any inferred type.
+	 */
+	public function areVarTagsIgnored(): bool
+	{
+		return $this->areVarTagsIgnored ??= $this->phpDocNodeResolver->resolveAreVarTagsIgnored(
+			$this->phpDocNode,
+		);
 	}
 
 	/**

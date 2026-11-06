@@ -12,4 +12,11 @@ class Foo
 		}
 	}
 
+	public int $j {
+		/** @phpstan-ignore-var */
+		get {
+
+		}
+	}
+
 }

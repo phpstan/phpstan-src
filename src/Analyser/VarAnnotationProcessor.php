@@ -41,6 +41,9 @@ final class VarAnnotationProcessor
 				$function !== null ? $function->getName() : null,
 				$comment->getText(),
 			);
+			if ($resolvedPhpDoc->areVarTagsIgnored()) {
+				continue;
+			}
 			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
 				$varTags[$key] = $varTag;
 			}

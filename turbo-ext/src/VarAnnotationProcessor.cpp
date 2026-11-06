@@ -170,6 +170,9 @@ public:
 				ZVAL_COPY_VALUE(&getResolvedPhpDocArgs[4], text.raw());
 				zv::Val resolvedPhpDoc = callOn(pt_vap_get_resolved_php_doc_site, fileTypeMapper, PT_LC("getresolvedphpdoc"), "getResolvedPhpDoc", 5, getResolvedPhpDocArgs);
 				if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
+				bool areVarTagsIgnored;
+				if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.raw(), PT_RPD_ARE_VAR_TAGS_IGNORED, areVarTagsIgnored))) return zv::Val();
+				if (areVarTagsIgnored) continue;
 				zv::Val docVarTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_VAR_TAGS);
 				if (UNEXPECTED(docVarTags.isUndef())) return zv::Val();
 				if (Z_TYPE_P(docVarTags.raw()) != IS_ARRAY) continue;

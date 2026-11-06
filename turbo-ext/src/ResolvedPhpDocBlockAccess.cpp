@@ -80,6 +80,7 @@ const MemberInfo pt_rpd_members[PT_RPD_MEMBER_COUNT] = {
 	/* PT_RPD_IS_READ_ONLY */ {"isReadOnly", PT_LC("isreadonly"), "isReadOnly", PT_RPD_BOOL_NULL},
 	/* PT_RPD_IS_IMMUTABLE */ {"isImmutable", PT_LC("isimmutable"), "isImmutable", PT_RPD_BOOL_NULL},
 	/* PT_RPD_IS_ALLOWED_PRIVATE_MUTATION */ {"isAllowedPrivateMutation", PT_LC("isallowedprivatemutation"), "isAllowedPrivateMutation", PT_RPD_BOOL_NULL},
+	/* PT_RPD_ARE_VAR_TAGS_IGNORED */ {"areVarTagsIgnored", PT_LC("arevartagsignored"), "areVarTagsIgnored", PT_RPD_BOOL_NULL},
 	/* PT_RPD_HAS_PHP_DOC_STRING */ {"phpDocString", PT_LC("hasphpdocstring"), "hasPhpDocString", PT_RPD_HAS_PHP_DOC_STRING},
 	/* PT_RPD_GET_PHP_DOC_STRING */ {"phpDocString", PT_LC("getphpdocstring"), "getPhpDocString", PT_RPD_PLAIN},
 	/* PT_RPD_GET_FILENAME */ {"filename", PT_LC("getfilename"), "getFilename", PT_RPD_PLAIN},

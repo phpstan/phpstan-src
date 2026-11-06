@@ -1071,6 +1071,7 @@ public:
 		if (EXPECTED(!comments.ref().isArray() || zend_hash_num_elements(Z_ARRVAL_P(comments.raw())) == 0)) return scope;
 
 		zv::Arr variableLessTags = zv::Arr::empty();
+		bool isVariableLessTagIgnored = false;
 		for (auto entry : zv::ArrRef(comments.raw())) {
 			zval *comment = entry.value().deref().raw();
 			bool isDoc;
@@ -1083,6 +1084,8 @@ public:
 			zend_string *assignedVariable = NULL;
 			if (UNEXPECTED(!assignedVariableOf(stmt, assignedVariable))) return zv::Val();
 
+			bool areVarTagsIgnored;
+			if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.raw(), PT_RPD_ARE_VAR_TAGS_IGNORED, areVarTagsIgnored))) return zv::Val();
 			zv::Val varTags = resolvedPhpDocGetVarTags(resolvedPhpDoc.raw());
 			if (UNEXPECTED(varTags.isUndef())) return zv::Val();
 			if (UNEXPECTED(!varTags.ref().isArray())) {
@@ -1094,8 +1097,12 @@ public:
 				zval *varTag = tagEntry.value().deref().raw();
 				if (!tagEntry.hasStringKey()) {
 					variableLessTags.push(zv::Ref(varTag));
+					isVariableLessTagIgnored = areVarTagsIgnored;
 					continue;
 				}
+				// WrongVariableNameInVarTagRule checks these: with their type not assigned, the
+				// second run of this method for an assignment would report them again
+				if (areVarTagsIgnored) continue;
 				zend_string *name = tagEntry.stringKey();
 				if (assignedVariable != NULL && zend_string_equals(name, assignedVariable)) continue;
 
@@ -1169,7 +1176,7 @@ public:
 			}
 		}
 
-		if (zend_hash_num_elements(variableLessTags.table()) == 1 && defaultExpr != NULL && Z_TYPE_P(defaultExpr) != IS_NULL) {
+		if (zend_hash_num_elements(variableLessTags.table()) == 1 && !isVariableLessTagIgnored && defaultExpr != NULL && Z_TYPE_P(defaultExpr) != IS_NULL) {
 			zval *tag = zend_hash_index_find(variableLessTags.table(), 0);
 			zv::Val type = tagGetType(tag);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
@@ -1184,7 +1191,8 @@ public:
 	/* Mirrors emitVarTagChangedNode(). */
 	zv::Val emitVarTagChangedNode(zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *defaultExpr, zval *nodeCallback)
 	{
-		zv::Val varTag = findSingleVariableLessVarTag(scope, stmt);
+		bool isIgnored = false;
+		zv::Val varTag = findSingleVariableLessVarTag(scope, stmt, isIgnored);
 		if (UNEXPECTED(varTag.isUndef())) return zv::Val();
 		if (varTag.isNull()) return templateArgumentConstraintsCreateEmpty();
 
@@ -1192,6 +1200,7 @@ public:
 		zv::Val changedNode = pt_type_new(PT_CLASS_VAR_TAG_CHANGED_EXPRESSION_TYPE_NODE, 2, nodeArgv);
 		if (UNEXPECTED(changedNode.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, changedNode.raw(), scope, storage))) return zv::Val();
+		if (isIgnored) return templateArgumentConstraintsCreateEmpty();
 		zv::Val defaultExprResult = pt_expression_result_storage_find(storage, defaultExpr);
 		if (UNEXPECTED(defaultExprResult.isUndef())) return zv::Val();
 		if (defaultExprResult.isNull()) return templateArgumentConstraintsCreateEmpty();
@@ -3428,7 +3437,7 @@ private:
 	}
 
 	/* the private findSingleVariableLessVarTag() */
-	zv::Val findSingleVariableLessVarTag(zval *scope, zval *stmt)
+	zv::Val findSingleVariableLessVarTag(zval *scope, zval *stmt, bool &isIgnored)
 	{
 		zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
 		if (UNEXPECTED(function.isUndef())) return zv::Val();
@@ -3449,6 +3458,7 @@ private:
 				for (auto tagEntry : zv::ArrRef(varTags.raw())) {
 					if (tagEntry.hasStringKey()) continue;
 					variableLessTags.push(tagEntry.value().deref());
+					if (UNEXPECTED(!pt_resolved_php_doc_block_bool(resolvedPhpDoc.raw(), PT_RPD_ARE_VAR_TAGS_IGNORED, isIgnored))) return zv::Val();
 				}
 			}
 		}

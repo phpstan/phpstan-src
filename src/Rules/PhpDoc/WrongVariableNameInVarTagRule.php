@@ -12,6 +12,8 @@ use PHPStan\Node\InClassMethodNode;
 use PHPStan\Node\InClassNode;
 use PHPStan\Node\InFunctionNode;
 use PHPStan\Node\VirtualNode;
+use PHPStan\PhpDoc\PhpDocNodeResolver;
+use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\PhpDoc\Tag\VarTag;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -73,7 +75,17 @@ final class WrongVariableNameInVarTagRule implements Rule
 		}
 
 		$varTags = [];
+		$ignoredVarTags = [];
+		$errors = [];
 		$function = $scope->getFunction();
+		// inline @var tags apply to statements in functions and outside classes; elsewhere (above
+		// declarations, enum cases, trait uses, elseif, else and catch, at the end of a class body)
+		// InvalidPHPStanDocTagRule reports the @phpstan-ignore-var tag as misplaced
+		$canIgnoreVarTags = !$node instanceof VirtualNode
+			&& !$node instanceof Node\Stmt\ElseIf_
+			&& !$node instanceof Node\Stmt\Else_
+			&& !$node instanceof Node\Stmt\Catch_
+			&& !($scope->isInClass() && $function === null);
 		foreach ($node->getComments() as $comment) {
 			if (!$comment instanceof Doc) {
 				continue;
@@ -85,15 +97,102 @@ final class WrongVariableNameInVarTagRule implements Rule
 				$function !== null ? $function->getName() : null,
 				$comment->getText(),
 			);
-			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {
+			$docVarTags = $resolvedPhpDoc->getVarTags();
+			if ($canIgnoreVarTags && $resolvedPhpDoc->areVarTagsIgnored()) {
+				if (!self::hasVarTag($resolvedPhpDoc)) {
+					$errors[] = RuleErrorBuilder::message('PHPDoc tag @phpstan-ignore-var without a @var tag has no effect.')
+						->identifier('varTag.misplaced')
+						->build();
+				}
+				foreach ($docVarTags as $key => $varTag) {
+					if (!is_string($key)) {
+						continue;
+					}
+					$ignoredVarTags[$key] = $varTag;
+				}
+			}
+			foreach ($docVarTags as $key => $varTag) {
 				$varTags[$key] = $varTag;
 			}
 		}
 
+		foreach ($this->processIgnoredVarTags($node, $scope, $ignoredVarTags) as $error) {
+			$errors[] = $error;
+		}
+
 		if (count($varTags) === 0) {
+			return $errors;
+		}
+
+		return array_merge($errors, $this->processVarTags($node, $scope, $varTags));
+	}
+
+	/**
+	 * Whether the PHPDoc has a @var tag of any prefix, including one with an invalid value.
+	 */
+	private static function hasVarTag(ResolvedPhpDocBlock $resolvedPhpDoc): bool
+	{
+		foreach ($resolvedPhpDoc->getPhpDocNodes() as $phpDocNode) {
+			foreach (PhpDocNodeResolver::VAR_TAG_NAMES as $tagName) {
+				if (count($phpDocNode->getTagsByName($tagName)) > 0) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * StatementsHandler::processStmtVarAnnotation() reports @var tags naming an existing variable
+	 * through VarTagChangedExpressionTypeNode, but skips them in a PHPDoc with @phpstan-ignore-var:
+	 * it runs twice for an assignment and, with their type not assigned, would report them twice.
+	 * The same check runs here instead, once per statement.
+	 *
+	 * @param array<string, VarTag> $varTags
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processIgnoredVarTags(Node\Stmt $node, Scope $scope, array $varTags): array
+	{
+		// mirrored from NodeScopeResolver::processStmtNode(), which does not call
+		// StatementsHandler::processStmtVarAnnotation() for these
+		if ($node instanceof Node\Stmt\Foreach_ || $node instanceof Node\Stmt\Static_ || $node instanceof Node\Stmt\Global_) {
 			return [];
 		}
 
+		$assignedVariable = null;
+		if (
+			$node instanceof Node\Stmt\Expression
+			&& ($node->expr instanceof Expr\Assign || $node->expr instanceof Expr\AssignRef)
+			&& $node->expr->var instanceof Expr\Variable
+			&& is_string($node->expr->var->name)
+		) {
+			$assignedVariable = $node->expr->var->name;
+		}
+
+		$errors = [];
+		foreach ($varTags as $name => $varTag) {
+			if ($name === $assignedVariable || $scope->hasVariableType($name)->no()) {
+				continue;
+			}
+			if ($scope->getVariableType($name)->equals($varTag->getType())) {
+				continue;
+			}
+
+			foreach ($this->varTagTypeRuleHelper->checkExprType($scope, new Expr\Variable($name), $varTag->getType()) as $error) {
+				$errors[] = $error;
+			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * @param VarTag[] $varTags
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processVarTags(Node\Stmt $node, Scope $scope, array $varTags): array
+	{
 		if ($node instanceof Node\Stmt\Foreach_) {
 			return $this->processForeach($scope, $node->expr, $node->keyVar, $node->valueVar, $varTags);
 		}

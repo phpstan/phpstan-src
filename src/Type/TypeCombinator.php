@@ -1369,6 +1369,69 @@ final class TypeCombinator
 	}
 
 	/**
+	 * Merges the arrays like a chain of mergeWith() calls. They have the same
+	 * keys in the same order, so the chain unions the values at each key. At a
+	 * key where every array holds only constant scalars, one union of all the
+	 * values is the same as the chain of unions, which was quadratic in the size
+	 * of its growing result - the chain only merges the rest of the shape, with a
+	 * placeholder at that key.
+	 *
+	 * @param non-empty-list<ConstantArrayType> $arrays
+	 */
+	private static function mergeConstantArraysWithSameKeys(array $arrays): ConstantArrayType
+	{
+		$constantScalarValueTypes = [];
+		if (!$arrays[0] instanceof TemplateType) {
+			foreach (array_keys($arrays[0]->getValueTypes()) as $i) {
+				$constantScalarValueTypes[$i] = [];
+			}
+		}
+		foreach ($arrays as $array) {
+			foreach ($array->getValueTypes() as $i => $valueType) {
+				if (!array_key_exists($i, $constantScalarValueTypes)) {
+					continue;
+				}
+				// the classes whose union is a plain concatenation of their
+				// members, deduplicated - not ones merely holding a constant scalar
+				$members = $valueType instanceof UnionType && !$valueType instanceof BenevolentUnionType && !$valueType instanceof TemplateType
+					? $valueType->getTypes()
+					: [$valueType];
+				foreach ($members as $member) {
+					if (!$member instanceof ConstantScalarType || $member instanceof TemplateType) { // @phpstan-ignore phpstanApi.instanceofType
+						unset($constantScalarValueTypes[$i]);
+						continue 2;
+					}
+				}
+				$constantScalarValueTypes[$i][] = $valueType;
+			}
+		}
+
+		$placeholder = new NeverType(true);
+		$merged = null;
+		foreach ($arrays as $array) {
+			if ($constantScalarValueTypes !== []) {
+				$valueTypes = $array->getValueTypes();
+				foreach (array_keys($constantScalarValueTypes) as $i) {
+					$valueTypes[$i] = $placeholder;
+				}
+				$array = new ConstantArrayType($array->getKeyTypes(), $valueTypes, $array->getNextAutoIndexes(), $array->getOptionalKeys(), $array->isList(), $array->getUnsealedTypes());
+			}
+			$merged = $merged === null ? $array : $merged->mergeWith($array);
+		}
+
+		if ($constantScalarValueTypes === []) {
+			return $merged;
+		}
+
+		$valueTypes = $merged->getValueTypes();
+		foreach ($constantScalarValueTypes as $i => $types) {
+			$valueTypes[$i] = self::union(...$types);
+		}
+
+		return new ConstantArrayType($merged->getKeyTypes(), $valueTypes, $merged->getNextAutoIndexes(), $merged->getOptionalKeys(), $merged->isList(), $merged->getUnsealedTypes());
+	}
+
+	/**
 	 * @param Type[] $types
 	 * @return Type[]
 	 */
@@ -1411,11 +1474,7 @@ final class TypeCombinator
 					$collapsed[] = $group[0];
 					continue;
 				}
-				$merged = $group[0];
-				for ($i = 1, $count = count($group); $i < $count; $i++) {
-					$merged = $merged->mergeWith($group[$i]);
-				}
-				$collapsed[] = $merged;
+				$collapsed[] = self::mergeConstantArraysWithSameKeys($group);
 				$anyMerged = true;
 			}
 			if ($anyMerged) {

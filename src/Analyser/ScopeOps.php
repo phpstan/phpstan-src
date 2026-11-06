@@ -22,9 +22,11 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
@@ -498,10 +500,10 @@ final class ScopeOps
 			// branch was taken, even when the full branch types overlap - so a
 			// representable remainder makes a sound guard where the full type
 			// would not (the full our-branch type may even equal the merged
-			// type). When the subtraction is not representable, remove() keeps
-			// our full type and the merged-type comparison below restores the
-			// long-standing behavior for such guards.
-			$remainder = TypeCombinator::remove($holder->getType(), $theirHolder->getType());
+			// type). When the subtraction is not representable, createGuardType()
+			// keeps our full type and the merged-type comparison below restores
+			// the long-standing behavior for such guards.
+			$remainder = self::createGuardType($holder->getType(), $theirHolder->getType());
 			if ($remainder instanceof NeverType) {
 				continue;
 			}
@@ -600,6 +602,61 @@ final class ScopeOps
 		}
 
 		return $conditionalExpressions;
+	}
+
+	/**
+	 * The part of our branch type the other branch cannot produce.
+	 *
+	 * Constant-array members are subtracted whole: one the other branch can
+	 * produce some values of is left out instead of being subtracted, because
+	 * TypeCombinator::remove() can express what remains of it only by
+	 * enumerating its finite values - up to CALCULATE_SCALARS_LIMIT concrete
+	 * arrays per member, which every later merge then compares, keys and
+	 * carries. Leaving it out keeps the guard sound: it stays a subset of the
+	 * set difference.
+	 */
+	private static function createGuardType(Type $ourType, Type $theirType): Type
+	{
+		if ($ourType->isConstantArray()->no()) {
+			return TypeCombinator::remove($ourType, $theirType);
+		}
+
+		$ourMembers = $ourType instanceof UnionType && !$ourType instanceof TemplateType ? $ourType->getTypes() : [$ourType];
+		$guardMembers = [];
+		$otherMembers = [];
+		foreach ($ourMembers as $ourMember) {
+			if (!$ourMember->isConstantArray()->yes()) {
+				$otherMembers[] = $ourMember;
+				continue;
+			}
+			if (!$theirType->isSuperTypeOf($ourMember)->no()) {
+				continue;
+			}
+			$guardMembers[] = $ourMember;
+		}
+
+		if ($otherMembers !== []) {
+			$otherRemainder = TypeCombinator::remove(count($otherMembers) === 1 ? $otherMembers[0] : new UnionType($otherMembers), $theirType);
+			if ($otherRemainder instanceof UnionType && !$otherRemainder instanceof TemplateType) {
+				foreach ($otherRemainder->getTypes() as $otherRemainderMember) {
+					$guardMembers[] = $otherRemainderMember;
+				}
+			} elseif (!$otherRemainder instanceof NeverType) {
+				$guardMembers[] = $otherRemainder;
+			}
+		}
+
+		if (count($guardMembers) === count($ourMembers) && $otherMembers === []) {
+			return $ourType;
+		}
+		if ($guardMembers === []) {
+			return new NeverType();
+		}
+		if (count($guardMembers) === 1) {
+			return $guardMembers[0];
+		}
+
+		return new UnionType($guardMembers);
 	}
 
 	/**

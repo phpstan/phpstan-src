@@ -705,8 +705,9 @@ public:
 		return cacheHold;
 	}
 
-	/* Mirrors createComparisonForms(): [forms, complementForms], each entry
-	 * [node, isComplement, nodeKey]; UNDEF = pending exception */
+	/* Mirrors createComparisonForms(): [forms, forms with the complement
+	 * forms appended or null], each entry [node, isComplement, nodeKey];
+	 * UNDEF = pending exception */
 	zv::Val createComparisonForms(zval *expr, int kind, zval *left, zval *right) const
 	{
 		zval *exprPrinter = OBJ_PROP_NUM(self, slots::exprPrinter);
@@ -756,9 +757,17 @@ public:
 		}
 		if (UNEXPECTED(!built)) return zv::Val();
 
+		zv::Val formsHold = zv::Val(std::move(forms));
 		zv::Arr result = zv::Arr::create(2);
-		result.push(zv::Val(std::move(forms)));
-		result.push(zv::Val(std::move(complementForms)));
+		result.push(zv::Ref(formsHold.raw()));
+		if (zend_hash_num_elements(Z_ARRVAL_P(complementForms.raw())) == 0) {
+			result.push(zv::Val::null());
+		} else {
+			zv::Arr withComplements = zv::Arr::create(6);
+			for (zv::ArrayEntry entry : zv::ArrRef(formsHold.raw())) withComplements.push(entry.value());
+			for (zv::ArrayEntry entry : zv::ArrRef(complementForms.raw())) withComplements.push(entry.value());
+			result.push(zv::Val(std::move(withComplements)));
+		}
 		return zv::Val(std::move(result));
 	}
 
@@ -788,23 +797,30 @@ public:
 				count++;
 			}
 		};
-		read(zend_hash_index_find(Z_ARRVAL_P(hold.raw()), 3));
-		zval *complementForms = zend_hash_index_find(Z_ARRVAL_P(hold.raw()), 4);
-		if (zend_hash_num_elements(Z_ARRVAL_P(complementForms)) == 0) return true;
+		zval *plainForms = zend_hash_index_find(Z_ARRVAL_P(hold.raw()), 3);
+		zval *withComplements = zend_hash_index_find(Z_ARRVAL_P(hold.raw()), 4);
+		if (Z_TYPE_P(withComplements) == IS_NULL) {
+			read(plainForms);
+			return true;
+		}
 
 		// `<` and `>=` only complement each other for comparable operands
 		zv::Val leftType = getType(left);
 		if (UNEXPECTED(leftType.isUndef())) return false;
 		int leftIsInteger = trinaryYes(leftType.raw(), PT_OP_IS_INTEGER);
 		if (UNEXPECTED(leftIsInteger < 0)) return false;
-		if (!leftIsInteger) return true;
-		zv::Val rightType = getType(right);
-		if (UNEXPECTED(rightType.isUndef())) return false;
-		int rightIsInteger = trinaryYes(rightType.raw(), PT_OP_IS_INTEGER);
-		if (UNEXPECTED(rightIsInteger < 0)) return false;
-		if (!rightIsInteger) return true;
+		if (leftIsInteger) {
+			zv::Val rightType = getType(right);
+			if (UNEXPECTED(rightType.isUndef())) return false;
+			int rightIsInteger = trinaryYes(rightType.raw(), PT_OP_IS_INTEGER);
+			if (UNEXPECTED(rightIsInteger < 0)) return false;
+			if (rightIsInteger) {
+				read(withComplements);
+				return true;
+			}
+		}
 
-		read(complementForms);
+		read(plainForms);
 		return true;
 	}
 

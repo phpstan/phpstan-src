@@ -834,25 +834,23 @@ final class BinaryOpHandler implements ExprHandler
 			$expr->setAttribute(self::COMPARISON_FORMS_ATTRIBUTE, $cached);
 		}
 
-		$forms = $cached[3];
-		$complementForms = $cached[4];
-
 		// `<` and `>=` only complement each other for comparable operands
 		// (NAN and uncomparable arrays/objects are neither smaller nor
 		// larger-or-equal)
-		if ($complementForms === [] || !$getType($left)->isInteger()->yes() || !$getType($right)->isInteger()->yes()) {
-			return $forms;
+		if ($cached[4] === null || !$getType($left)->isInteger()->yes() || !$getType($right)->isInteger()->yes()) {
+			return $cached[3];
 		}
 
-		return array_merge($forms, $complementForms);
+		return $cached[4];
 	}
 
 	/**
-	 * The equivalent forms, and the complement forms that hold only for
-	 * comparable operands, each with its node key (a comparison's node key
-	 * is its printed form).
+	 * The equivalent forms, and for `<`, `<=`, `>` and `>=` also the
+	 * equivalent forms followed by the complement forms that hold only for
+	 * comparable operands - each form with its node key (a comparison's node
+	 * key is its printed form).
 	 *
-	 * @return array{list<array{BinaryOp, bool, string}>, list<array{BinaryOp, bool, string}>}
+	 * @return array{list<array{BinaryOp, bool, string}>, list<array{BinaryOp, bool, string}>|null}
 	 */
 	private function createComparisonForms(BinaryOp $expr): array
 	{
@@ -906,14 +904,20 @@ final class BinaryOpHandler implements ExprHandler
 			}
 		}
 
-		$keyed = [[], []];
-		foreach ([$forms, $complementForms] as $i => $list) {
-			foreach ($list as [$form, $isComplement]) {
-				$keyed[$i][] = [$form, $isComplement, $this->exprPrinter->printExpr($form)];
-			}
+		$keyedForms = [];
+		foreach ($forms as [$form, $isComplement]) {
+			$keyedForms[] = [$form, $isComplement, $this->exprPrinter->printExpr($form)];
+		}
+		if ($complementForms === []) {
+			return [$keyedForms, null];
 		}
 
-		return $keyed;
+		$keyedWithComplements = $keyedForms;
+		foreach ($complementForms as [$form, $isComplement]) {
+			$keyedWithComplements[] = [$form, $isComplement, $this->exprPrinter->printExpr($form)];
+		}
+
+		return [$keyedForms, $keyedWithComplements];
 	}
 
 	/**

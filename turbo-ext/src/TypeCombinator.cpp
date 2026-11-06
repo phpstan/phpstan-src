@@ -638,6 +638,8 @@ public:
 				zv::Val removed = call(fromType, PT_LC("tryremove"), 1, typeToRemove);
 				PT_FAIL_IF_UNDEF(removed);
 				if (!isNull(removed)) return removed;
+				/* no member of the union changed - peeling cannot change one */
+				if (isInstance(fromType, pt_ce_union_type)) return copy(fromType);
 			}
 
 			zv::Val types = getTypes(typeToRemove);

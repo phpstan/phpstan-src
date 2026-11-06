@@ -52,6 +52,12 @@ final class CollectedDataSpool
 	/** @var array<string, int> file => when its first value list came, to keep the order of the files the same as in memory */
 	private array $fileOrder = [];
 
+	/** @var array<string, int> collector type => order of the last file it got */
+	private array $lastFileOrder = [];
+
+	/** @var array<string, true> collector types that got a file out of order, because the file came in an earlier job too */
+	private array $unordered = [];
+
 	public function __construct(private string $path)
 	{
 		$this->creatorPid = getmypid();
@@ -88,7 +94,14 @@ final class CollectedDataSpool
 		}
 
 		foreach ($segments as [$collectorType, $file, [$offset, $length], $hash]) {
-			$this->fileOrder[$file] ??= count($this->fileOrder);
+			$order = $this->fileOrder[$file] ??= count($this->fileOrder);
+			if (!isset($this->segments[$collectorType][$file])) {
+				if (($this->lastFileOrder[$collectorType] ?? -1) > $order) {
+					$this->unordered[$collectorType] = true;
+				} else {
+					$this->lastFileOrder[$collectorType] = $order;
+				}
+			}
 			$this->segments[$collectorType][$file][] = [$offset, $length, $hash];
 		}
 	}
@@ -139,7 +152,9 @@ final class CollectedDataSpool
 		$fileOrder = $this->fileOrder;
 		try {
 			foreach ($this->segments as $collectorType => $segmentsPerFile) {
-				uksort($segmentsPerFile, static fn (string $a, string $b): int => $fileOrder[$a] <=> $fileOrder[$b]);
+				if (isset($this->unordered[$collectorType])) {
+					uksort($segmentsPerFile, static fn (string $a, string $b): int => $fileOrder[$a] <=> $fileOrder[$b]);
+				}
 				foreach ($segmentsPerFile as $file => $segments) {
 					if (count($segments) === 1) {
 						$entries[$collectorType][$file] = $segments[0];
@@ -176,6 +191,8 @@ final class CollectedDataSpool
 
 		$this->segments = [];
 		$this->fileOrder = [];
+		$this->lastFileOrder = [];
+		$this->unordered = [];
 
 		return new SpooledCollectedData($this, $entries, $files);
 	}

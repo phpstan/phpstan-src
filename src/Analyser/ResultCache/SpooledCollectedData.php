@@ -112,25 +112,36 @@ final class SpooledCollectedData
 	}
 
 	/**
+	 * @return resource
+	 */
+	public function openForReading()
+	{
+		return $this->spool->openForReading();
+	}
+
+	/**
+	 * @param resource|null $handle from openForReading(), to read many files without opening the spool for each
 	 * @return array<class-string<Collector<Node, mixed>>, list<mixed>> collector type => values
 	 */
-	public function read(string $file): array
+	public function read(string $file, $handle = null): array
 	{
 		$data = [];
-		$handle = null;
+		$ownHandle = null;
 		try {
 			foreach ($this->entries as $collectorType => $entriesPerFile) {
 				if (!array_key_exists($file, $entriesPerFile)) {
 					continue;
 				}
 
-				$handle ??= $this->spool->openForReading();
+				if ($handle === null) {
+					$handle = $ownHandle = $this->spool->openForReading();
+				}
 				[$offset, $length] = $entriesPerFile[$file];
 				$data[$collectorType] = $this->spool->read($handle, $file, $offset, $length);
 			}
 		} finally {
-			if ($handle !== null) {
-				fclose($handle);
+			if ($ownHandle !== null) {
+				fclose($ownHandle);
 			}
 		}
 

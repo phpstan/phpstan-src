@@ -2202,13 +2202,15 @@ final class ResultCacheManager
 		$this->writeToHandle($handle, $file, 'collectedData* ' . count($files) . "\n");
 
 		$sourceHandle = null;
+		$spoolHandle = null;
 		$savedIndex = [];
 		foreach ($files as $analysedFile) {
 			$collectedDataPerFile = null;
 			if (array_key_exists($analysedFile, $fresh)) {
 				$collectedDataPerFile = $fresh[$analysedFile];
 			} elseif ($spooled !== null && array_key_exists($analysedFile, $spooled->getFiles())) {
-				$collectedDataPerFile = $spooled->read($analysedFile);
+				$spoolHandle ??= $spooled->openForReading();
+				$collectedDataPerFile = $spooled->read($analysedFile, $spoolHandle);
 			}
 
 			if ($collectedDataPerFile !== null) {
@@ -2240,6 +2242,10 @@ final class ResultCacheManager
 
 		if ($sourceHandle !== null) {
 			fclose($sourceHandle);
+		}
+
+		if ($spoolHandle !== null) {
+			fclose($spoolHandle);
 		}
 
 		return $savedIndex;

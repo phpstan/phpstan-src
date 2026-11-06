@@ -9,8 +9,10 @@ use Nette\Neon\Lexer as NeonLexer;
 use Nette\Neon\Node as NeonNode;
 use Nette\Neon\Node\ArrayItemNode as NeonArrayItemNode;
 use Nette\Neon\Node\ArrayNode as NeonArrayNode;
+use Nette\Neon\Node\BlockArrayNode as NeonBlockArrayNode;
 use Nette\Neon\Node\LiteralNode as NeonLiteralNode;
 use Nette\Neon\Parser as NeonParser;
+use Nette\Neon\Token as NeonToken;
 use Nette\Neon\TokenStream as NeonTokenStream;
 use Nette\Utils\Strings;
 use PhpParser\ConstExprEvaluationException;
@@ -36,12 +38,14 @@ use function array_map;
 use function array_pop;
 use function array_search;
 use function array_slice;
+use function array_unique;
 use function array_values;
 use function count;
 use function dirname;
 use function hash;
 use function implode;
 use function in_array;
+use function intdiv;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -93,6 +97,7 @@ use const PREG_SPLIT_NO_EMPTY;
  *     items: array<string, NeonArrayItemNode>,
  *     path: non-empty-list<NeonNode>,
  *     entryValue: NeonNode,
+ *     previousItem: NeonArrayItemNode|null,
  *     line: int,
  * }
  * @phpstan-type ConfigEntry = PhpConfigEntry|NeonConfigEntry
@@ -113,13 +118,26 @@ final class IgnoreErrorsConfigFixer
 		'identifier' => 'identifiers',
 	];
 
-	/** @var array<string, list<ConfigEntry>>|null entries by normalized path, or by self::NO_PATH */
+	/** key of the entries with none of the MATCHED_FIELDS in getEntriesByPath() */
+	private const NO_MATCHED_FIELD = "\0";
+
+	/**
+	 * Entries by normalized path, or by self::NO_PATH, and by getMatchKeys(). A baseline can have
+	 * thousands of entries with the same path, scanning all of them for each unmatched error would be quadratic.
+	 *
+	 * @var array<string, array<string, list<ConfigEntry>>>|null
+	 */
 	private ?array $entriesByPath = null;
 
 	/** @var array<string, array{code: string, hash: string}> contents of the config files the entries were found in */
 	private array $files = [];
 
-	/** @var array<string, array{tokens: NeonTokenStream, root: NeonNode, codeWithoutCr: string, crlf: bool, mixedLineBreaks: bool}> parsed NEON config files */
+	/**
+	 * Parsed NEON config files. The offsets of the tokens in the code without \r, and the offsets of its line breaks,
+	 * let an edit of one entry be made without printing the whole ignoreErrors list again.
+	 *
+	 * @var array<string, array{tokens: NeonTokenStream, root: NeonNode, codeWithoutCr: string, crlf: bool, mixedLineBreaks: bool, tokenList: list<NeonToken>, offsets: list<int>, lineBreaks: list<int>}>
+	 */
 	private array $neonFiles = [];
 
 	/**
@@ -167,10 +185,12 @@ final class IgnoreErrorsConfigFixer
 	{
 		$editsByFile = [];
 		$neonChangesByFile = [];
+		$neonRemovedEntriesByFile = [];
 		foreach ($this->findEntries($ignoreError) as [$entry, $listField, $position]) {
 			if ($entry['format'] === 'neon') {
 				if ($listField === null || $position === null) {
 					$neonChangesByFile[$entry['file']][] = [$entry['path'], null];
+					$neonRemovedEntriesByFile[$entry['file']][] = $entry;
 					continue;
 				}
 
@@ -215,7 +235,10 @@ final class IgnoreErrorsConfigFixer
 		}
 
 		foreach ($neonChangesByFile as $file => $changes) {
-			$edit = $this->createNeonEdit($file, $changes);
+			// more changes of one file are printed together, they could remove all entries of the list
+			$edit = count($changes) === 1 && count($neonRemovedEntriesByFile[$file] ?? []) === 1
+				? $this->createNeonRemovalEdit($neonRemovedEntriesByFile[$file][0]) ?? $this->createNeonEdit($file, $changes)
+				: $this->createNeonEdit($file, $changes);
 			if ($edit === null) {
 				return [];
 			}
@@ -252,7 +275,7 @@ final class IgnoreErrorsConfigFixer
 				return [];
 			}
 
-			$edit = $this->createNeonEdit($entry['file'], [
+			$edit = $this->createNeonCountEdit($entry['file'], $countItem->value, $count) ?? $this->createNeonEdit($entry['file'], [
 				[[...$entry['path'], $entry['entryValue'], $countItem, $countItem->value], new NeonLiteralNode($count)],
 			]);
 
@@ -398,8 +421,16 @@ final class IgnoreErrorsConfigFixer
 			return [];
 		}
 
+		$matchKey = self::NO_MATCHED_FIELD;
+		foreach (array_keys(self::MATCHED_FIELDS) as $field) {
+			if (isset($ignoreError[$field])) {
+				$matchKey = $field . "\0" . $ignoreError[$field];
+				break;
+			}
+		}
+
 		$found = [];
-		foreach ($this->getEntriesByPath()[$path !== null ? $this->normalizePath($path) : self::NO_PATH] ?? [] as $entry) {
+		foreach ($this->getEntriesByPath()[$path !== null ? $this->normalizePath($path) : self::NO_PATH][$matchKey] ?? [] as $entry) {
 			$listField = null;
 			$position = null;
 			foreach (self::MATCHED_FIELDS as $field => $matchedListField) {
@@ -443,7 +474,7 @@ final class IgnoreErrorsConfigFixer
 	}
 
 	/**
-	 * @return array<string, list<ConfigEntry>>
+	 * @return array<string, array<string, list<ConfigEntry>>>
 	 */
 	private function getEntriesByPath(): array
 	{
@@ -462,7 +493,9 @@ final class IgnoreErrorsConfigFixer
 				$path = $entry['values']['path'] ?? null;
 				if ($path === null) {
 					if (!isset($entry['values']['paths'])) {
-						$this->entriesByPath[self::NO_PATH][] = $entry;
+						foreach (self::getMatchKeys($entry['values']) as $matchKey) {
+							$this->entriesByPath[self::NO_PATH][$matchKey][] = $entry;
+						}
 					}
 					continue;
 				}
@@ -470,11 +503,46 @@ final class IgnoreErrorsConfigFixer
 					continue;
 				}
 
-				$this->entriesByPath[$this->normalizePath($path)][] = $entry;
+				$normalizedPath = $this->normalizePath($path);
+				foreach (self::getMatchKeys($entry['values']) as $matchKey) {
+					$this->entriesByPath[$normalizedPath][$matchKey][] = $entry;
+				}
 			}
 		}
 
 		return $this->entriesByPath;
+	}
+
+	/**
+	 * findEntries() matches an error only with an entry that has the first of the MATCHED_FIELDS the error has,
+	 * and none of the fields before it. The entry is found by that field and each value it can match.
+	 *
+	 * @param array<string, mixed> $values
+	 * @return list<string>
+	 */
+	private static function getMatchKeys(array $values): array
+	{
+		foreach (self::MATCHED_FIELDS as $field => $listField) {
+			if (!array_key_exists($field, $values) && !array_key_exists($listField, $values)) {
+				continue;
+			}
+
+			$matched = [];
+			if (is_string($values[$field] ?? null)) {
+				$matched[] = $values[$field];
+			}
+			foreach (is_array($values[$listField] ?? null) ? $values[$listField] : [] as $listValue) {
+				if (!is_string($listValue)) {
+					continue;
+				}
+
+				$matched[] = $listValue;
+			}
+
+			return array_values(array_unique(array_map(static fn (string $value): string => $field . "\0" . $value, $matched)));
+		}
+
+		return [self::NO_MATCHED_FIELD];
 	}
 
 	/**
@@ -626,6 +694,20 @@ final class IgnoreErrorsConfigFixer
 
 		$this->files[$file] = ['code' => $code, 'hash' => hash('sha256', $code)];
 		$codeWithoutCr = str_replace("\r", '', $code);
+		$tokenList = array_values($tokens->getTokens());
+		$offsets = [];
+		$offset = 0;
+		foreach ($tokenList as $token) {
+			$offsets[] = $offset;
+			$offset += strlen($token->value);
+		}
+		$offsets[] = $offset;
+		$lineBreaks = [];
+		$lineBreak = strpos($codeWithoutCr, "\n");
+		while ($lineBreak !== false) {
+			$lineBreaks[] = $lineBreak;
+			$lineBreak = strpos($codeWithoutCr, "\n", $lineBreak + 1);
+		}
 		$this->neonFiles[$file] = [
 			'tokens' => $tokens,
 			'root' => $root,
@@ -633,13 +715,19 @@ final class IgnoreErrorsConfigFixer
 			// nette/neon removes \r, it is put back when every line break had it
 			'crlf' => $codeWithoutCr !== $code,
 			'mixedLineBreaks' => $codeWithoutCr !== $code && str_replace("\n", "\r\n", $codeWithoutCr) !== $code,
+			'tokenList' => $tokenList,
+			'offsets' => $offsets,
+			'lineBreaks' => $lineBreaks,
 		];
 
 		$parameters = $this->getParameters();
 		// relative paths are resolved like when the config file is loaded
 		$adapter = new NeonAdapter(['[parameters][ignoreErrors][][path]', '[parameters][ignoreErrors][][paths][]'], $parameters);
 		$entries = [];
+		$previousItem = null;
 		foreach ($ignoreErrorsItem->value->items as $entryItem) {
+			$entryPreviousItem = $previousItem;
+			$previousItem = $entryItem;
 			$items = [];
 			// a plain string pattern has no items
 			foreach ($entryItem->value instanceof NeonArrayNode ? $entryItem->value->items : [] as $item) {
@@ -673,6 +761,7 @@ final class IgnoreErrorsConfigFixer
 				'items' => $items,
 				'path' => [$root, $parametersItem, $parametersItem->value, $ignoreErrorsItem, $ignoreErrorsItem->value, $entryItem],
 				'entryValue' => $entryItem->value,
+				'previousItem' => $ignoreErrorsItem->value instanceof NeonBlockArrayNode ? $entryPreviousItem : null,
 				'line' => $entryItem->startLine ?? 1,
 			];
 		}
@@ -704,7 +793,7 @@ final class IgnoreErrorsConfigFixer
 	 */
 	private function createNeonEdit(string $file, array $changes): ?array
 	{
-		['tokens' => $tokens, 'root' => $root, 'codeWithoutCr' => $codeWithoutCr, 'crlf' => $crlf, 'mixedLineBreaks' => $mixedLineBreaks] = $this->neonFiles[$file];
+		['tokens' => $tokens, 'root' => $root, 'codeWithoutCr' => $codeWithoutCr, 'mixedLineBreaks' => $mixedLineBreaks] = $this->neonFiles[$file];
 		if ($mixedLineBreaks) {
 			return null;
 		}
@@ -726,10 +815,100 @@ final class IgnoreErrorsConfigFixer
 			$replacement .= substr($codeWithoutCr, $offset, $printedChange['start'] - $offset) . $printedChange['replacement'];
 			$offset = $printedChange['end'];
 		}
-		$end = $offset;
-		if ($crlf) {
-			$start += substr_count($codeWithoutCr, "\n", length: $start);
-			$end += substr_count($codeWithoutCr, "\n", length: $end);
+
+		return $this->createEditOfCodeWithoutCr($file, $start, $offset, $replacement);
+	}
+
+	/**
+	 * Removes a whole entry of a block list with its lines, and with the lines between it and the previous entry,
+	 * like comments, the same as printing the list without it. Unlike printing the list, the time does not grow
+	 * with its length, and the edit covers only the lines of the entry, so that the next entry can be removed
+	 * in the same round. The first entry is left to the printer, it removes the empty lines after it as well.
+	 *
+	 * @param NeonConfigEntry $entry
+	 * @return Edit|null
+	 */
+	private function createNeonRemovalEdit(array $entry): ?array
+	{
+		$previousItem = $entry['previousItem'];
+		$entryItem = $entry['path'][count($entry['path']) - 1];
+		if (
+			$previousItem === null
+			|| $previousItem->endTokenPos === null
+			|| $entryItem->startTokenPos === null
+			|| $entryItem->endTokenPos === null
+			|| $this->neonFiles[$entry['file']]['mixedLineBreaks']
+		) {
+			return null;
+		}
+
+		['tokenList' => $tokens, 'offsets' => $offsets, 'codeWithoutCr' => $codeWithoutCr] = $this->neonFiles[$entry['file']];
+		$previousLineBreak = self::findNeonLineBreak($tokens, $previousItem->endTokenPos + 1);
+		for ($i = $previousLineBreak; $i < $entryItem->startTokenPos; $i++) {
+			// only empty lines, comments and indentation are between the entries of a block list
+			if (!in_array($tokens[$i]->type, [NeonToken::Newline, NeonToken::Whitespace, NeonToken::Comment], true)) {
+				return null;
+			}
+		}
+		if (!isset($tokens[$previousLineBreak]) || $previousLineBreak >= $entryItem->startTokenPos) {
+			return null;
+		}
+
+		$lineBreak = self::findNeonLineBreak($tokens, $entryItem->endTokenPos + 1);
+
+		return $this->createEditOfCodeWithoutCr(
+			$entry['file'],
+			$offsets[$previousLineBreak] + 1,
+			isset($tokens[$lineBreak]) ? $offsets[$lineBreak] + 1 : strlen($codeWithoutCr),
+			'',
+		);
+	}
+
+	/**
+	 * Replaces the count with a new literal, the same as the printer prints it.
+	 *
+	 * @return Edit|null
+	 */
+	private function createNeonCountEdit(string $file, NeonNode $countNode, int $count): ?array
+	{
+		['tokenList' => $tokens, 'offsets' => $offsets, 'mixedLineBreaks' => $mixedLineBreaks] = $this->neonFiles[$file];
+		$pos = $countNode->startTokenPos;
+		if (
+			$mixedLineBreaks
+			|| !$countNode instanceof NeonLiteralNode
+			|| $pos === null
+			|| $countNode->endTokenPos !== $pos
+			|| ($tokens[$pos]->type ?? null) !== NeonToken::Literal
+		) {
+			return null;
+		}
+
+		return $this->createEditOfCodeWithoutCr($file, $offsets[$pos], $offsets[$pos + 1], (string) $count);
+	}
+
+	/**
+	 * Position of the first line break token from $pos, or the count of the tokens.
+	 *
+	 * @param list<NeonToken> $tokens
+	 */
+	private static function findNeonLineBreak(array $tokens, int $pos): int
+	{
+		while (isset($tokens[$pos]) && $tokens[$pos]->type !== NeonToken::Newline) {
+			$pos++;
+		}
+
+		return $pos;
+	}
+
+	/**
+	 * @return Edit
+	 */
+	private function createEditOfCodeWithoutCr(string $file, int $start, int $end, string $replacement): array
+	{
+		$lineBreaksBeforeStart = $this->countNeonLineBreaksBefore($file, $start);
+		if ($this->neonFiles[$file]['crlf']) {
+			$end += $this->countNeonLineBreaksBefore($file, $end);
+			$start += $lineBreaksBeforeStart;
 			$replacement = str_replace("\n", "\r\n", $replacement);
 		}
 
@@ -737,8 +916,28 @@ final class IgnoreErrorsConfigFixer
 			'start' => $start,
 			'end' => $end,
 			'replacement' => $replacement,
-			'line' => substr_count($this->files[$file]['code'], "\n", length: $start) + 1,
+			'line' => $lineBreaksBeforeStart + 1,
 		];
+	}
+
+	/**
+	 * The number of line breaks before the offset in the code without \r.
+	 */
+	private function countNeonLineBreaksBefore(string $file, int $offset): int
+	{
+		$lineBreaks = $this->neonFiles[$file]['lineBreaks'];
+		$low = 0;
+		$high = count($lineBreaks);
+		while ($low < $high) {
+			$mid = intdiv($low + $high, 2);
+			if ($lineBreaks[$mid] < $offset) {
+				$low = $mid + 1;
+			} else {
+				$high = $mid;
+			}
+		}
+
+		return $low;
 	}
 
 	/**

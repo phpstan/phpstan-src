@@ -96,8 +96,9 @@ final class LazyCollectedData
 	}
 
 	/**
-	 * The values of one collector, one analysed file at a time: the cached files first, then the
-	 * fresh ones, in the order toArray() has them. Holds only the file being yielded in memory.
+	 * The values of one collector, one analysed file at a time: the cached files in the order of the
+	 * cache file, then the fresh ones. A fresh file replaces its cached entry and comes with the fresh
+	 * ones. Holds only the file being yielded in memory.
 	 *
 	 * @return Generator<string, list<mixed>>
 	 */

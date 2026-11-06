@@ -24,7 +24,13 @@ use const DIRECTORY_SEPARATOR;
 final class FileHelper
 {
 
-	/** @var array<string, array<string, string>> */
+	/**
+	 * Directory separator => original path => normalized path. A path that normalizes to itself,
+	 * which most do, is kept once - as the key and the value - so an entry costs little more than
+	 * its hash bucket.
+	 *
+	 * @var array<string, array<string, string>>
+	 */
 	private static array $normalizedPathsCache = [];
 
 	private string $workingDirectory;
@@ -63,7 +69,7 @@ final class FileHelper
 	/** @api */
 	public function normalizePath(string $originalPath, string $directorySeparator = DIRECTORY_SEPARATOR): string
 	{
-		$cached = self::$normalizedPathsCache[$originalPath][$directorySeparator] ?? null;
+		$cached = self::$normalizedPathsCache[$directorySeparator][$originalPath] ?? null;
 		if ($cached !== null) {
 			return $cached;
 		}
@@ -109,7 +115,12 @@ final class FileHelper
 			}
 		}
 
-		return self::$normalizedPathsCache[$originalPath][$directorySeparator] = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
+		$normalizedPath = ($scheme !== null ? $scheme . '://' : '') . $pathRoot . implode($directorySeparator, $normalizedPathParts);
+		if ($normalizedPath === $originalPath) {
+			$normalizedPath = $originalPath;
+		}
+
+		return self::$normalizedPathsCache[$directorySeparator][$originalPath] = $normalizedPath;
 	}
 
 	public function normalizeSeparator(string $path): string

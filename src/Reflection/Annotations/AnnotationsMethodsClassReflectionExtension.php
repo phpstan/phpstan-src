@@ -7,12 +7,14 @@ use PHPStan\PhpDoc\Tag\TemplateTag;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodsClassReflectionExtension;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeScope;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Type;
+use function array_key_exists;
 use function array_map;
 use function count;
 
@@ -21,25 +23,36 @@ use function count;
 final class AnnotationsMethodsClassReflectionExtension implements MethodsClassReflectionExtension
 {
 
-	/** @var ExtendedMethodReflection[][] */
+	/** @var array<string, array<string, ExtendedMethodReflection|null>> */
 	private array $methods = [];
 
 	public function hasMethod(ClassReflection $classReflection, string $methodName): bool
 	{
-		if (!isset($this->methods[$classReflection->getCacheKey()][$methodName])) {
-			$method = $this->findClassReflectionWithMethod($classReflection, $classReflection, $methodName);
-			if ($method === null) {
-				return false;
-			}
-			$this->methods[$classReflection->getCacheKey()][$methodName] = $method;
-		}
-
-		return true;
+		return $this->findMethod($classReflection, $methodName) !== null;
 	}
 
 	public function getMethod(ClassReflection $classReflection, string $methodName): ExtendedMethodReflection
 	{
-		return $this->methods[$classReflection->getCacheKey()][$methodName];
+		$method = $this->findMethod($classReflection, $methodName);
+		if ($method === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $method;
+	}
+
+	/**
+	 * Remembers misses too: the lookup recurses into the parent and every
+	 * interface, which reach the same ancestors many times over.
+	 */
+	private function findMethod(ClassReflection $classReflection, string $methodName): ?ExtendedMethodReflection
+	{
+		$cacheKey = $classReflection->getCacheKey();
+		if (!array_key_exists($methodName, $this->methods[$cacheKey] ?? [])) {
+			$this->methods[$cacheKey][$methodName] = $this->findClassReflectionWithMethod($classReflection, $classReflection, $methodName);
+		}
+
+		return $this->methods[$cacheKey][$methodName];
 	}
 
 	private function findClassReflectionWithMethod(
@@ -102,14 +115,14 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 
 		$parentClass = $classReflection->getParentClass();
 		if ($parentClass !== null) {
-			$methodWithDeclaringClass = $this->findClassReflectionWithMethod($parentClass, $parentClass, $methodName);
+			$methodWithDeclaringClass = $this->findMethod($parentClass, $methodName);
 			if ($methodWithDeclaringClass !== null) {
 				return $methodWithDeclaringClass;
 			}
 		}
 
 		foreach ($classReflection->getInterfaces() as $interfaceClass) {
-			$methodWithDeclaringClass = $this->findClassReflectionWithMethod($interfaceClass, $interfaceClass, $methodName);
+			$methodWithDeclaringClass = $this->findMethod($interfaceClass, $methodName);
 			if ($methodWithDeclaringClass === null) {
 				continue;
 			}

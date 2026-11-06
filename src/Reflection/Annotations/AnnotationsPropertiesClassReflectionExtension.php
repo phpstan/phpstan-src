@@ -6,34 +6,47 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\PropertiesClassReflectionExtension;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\NeverType;
+use function array_key_exists;
 
 // autoTag: false - wired explicitly in ClassReflectionExtensionRegistry, must not be tagged
 #[AutowiredService(autoTag: false)]
 final class AnnotationsPropertiesClassReflectionExtension implements PropertiesClassReflectionExtension
 {
 
-	/** @var ExtendedPropertyReflection[][] */
+	/** @var array<string, array<string, ExtendedPropertyReflection|null>> */
 	private array $properties = [];
 
 	public function hasProperty(ClassReflection $classReflection, string $propertyName): bool
 	{
-		if (!isset($this->properties[$classReflection->getCacheKey()][$propertyName])) {
-			$property = $this->findClassReflectionWithProperty($classReflection, $classReflection, $propertyName);
-			if ($property === null) {
-				return false;
-			}
-			$this->properties[$classReflection->getCacheKey()][$propertyName] = $property;
-		}
-
-		return true;
+		return $this->findProperty($classReflection, $propertyName) !== null;
 	}
 
 	public function getProperty(ClassReflection $classReflection, string $propertyName): ExtendedPropertyReflection
 	{
-		return $this->properties[$classReflection->getCacheKey()][$propertyName];
+		$property = $this->findProperty($classReflection, $propertyName);
+		if ($property === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		return $property;
+	}
+
+	/**
+	 * Remembers misses too: the lookup recurses into the parent and every
+	 * interface, which reach the same ancestors many times over.
+	 */
+	private function findProperty(ClassReflection $classReflection, string $propertyName): ?ExtendedPropertyReflection
+	{
+		$cacheKey = $classReflection->getCacheKey();
+		if (!array_key_exists($propertyName, $this->properties[$cacheKey] ?? [])) {
+			$this->properties[$cacheKey][$propertyName] = $this->findClassReflectionWithProperty($classReflection, $classReflection, $propertyName);
+		}
+
+		return $this->properties[$cacheKey][$propertyName];
 	}
 
 	private function findClassReflectionWithProperty(
@@ -87,14 +100,14 @@ final class AnnotationsPropertiesClassReflectionExtension implements PropertiesC
 
 		$parentClass = $classReflection->getParentClass();
 		if ($parentClass !== null) {
-			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($parentClass, $parentClass, $propertyName);
+			$methodWithDeclaringClass = $this->findProperty($parentClass, $propertyName);
 			if ($methodWithDeclaringClass !== null) {
 				return $methodWithDeclaringClass;
 			}
 		}
 
 		foreach ($classReflection->getInterfaces() as $interfaceClass) {
-			$methodWithDeclaringClass = $this->findClassReflectionWithProperty($interfaceClass, $interfaceClass, $propertyName);
+			$methodWithDeclaringClass = $this->findProperty($interfaceClass, $propertyName);
 			if ($methodWithDeclaringClass === null) {
 				continue;
 			}

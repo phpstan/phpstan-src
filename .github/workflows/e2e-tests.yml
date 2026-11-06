@@ -1013,10 +1013,9 @@ jobs:
               ../bashunit assert contains 'Errors cannot be fixed when generating the baseline.' "$OUTPUT"
               OUTPUT=$(../bashunit assert exit_code "0" "../../bin/phpstan analyse --fix")
               echo "$OUTPUT"
-              # removing the last two messages of the PHP list conflicts, and so does removing the NEON entry
-              # and the first message of the entry after it, and so does removing the two neighbouring entries without a path,
-              # the second one goes in the next round
-              ../bashunit assert contains 'Round 2: fixed 3 errors in 2 files' "$OUTPUT"
+              # removing the last two messages of the PHP list conflicts, the second one goes in the next round;
+              # a NEON entry after the first one is removed with only its own lines, it does not conflict with its neighbours
+              ../bashunit assert contains 'Round 2: fixed 1 error in 1 file' "$OUTPUT"
               ../bashunit assert contains '[OK] 9 errors fixed in 2 files' "$OUTPUT"
               diff -u baseline-expected.php baseline.php
               diff -u baseline-expected.neon baseline.neon

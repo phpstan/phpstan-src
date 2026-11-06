@@ -13,6 +13,7 @@ use PHPStan\Neon\Printer as NeonPrinter;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function file_put_contents;
+use function sprintf;
 use function sys_get_temp_dir;
 use function uniqid;
 use function unlink;
@@ -352,6 +353,35 @@ class IgnoreErrorsConfigFixerTest extends PHPStanTestCase
 			"parameters:\n\tignoreErrors: []\n",
 		];
 
+		yield 'last entry' => [
+			"parameters:\n\tignoreErrors:\n\t\t- '#^A$#'\n\n\t\t# B\n\t\t-\n\t\t\tmessage: '#^B$#' # b\n\t\t\tpath: Foo.php\n\tlevel: 8\n",
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^B$#', 'path' => $path, 'realPath' => $path]),
+			"parameters:\n\tignoreErrors:\n\t\t- '#^A$#'\n\tlevel: 8\n",
+		];
+
+		yield 'entry of a generated baseline' => [
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tidentifier: a.b\n\t\t\tcount: 1\n\t\t\tpath: Foo.php\n\n"
+			. "\t\t-\n\t\t\tmessage: '#^B$#'\n\t\t\tidentifier: a.b\n\t\t\tcount: 2\n\t\t\tpath: Foo.php\n\n"
+			. "\t\t-\n\t\t\tmessage: '#^C$#'\n\t\t\tidentifier: a.b\n\t\t\tcount: 1\n\t\t\tpath: Foo.php\n",
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^B$#', 'identifier' => 'a.b', 'count' => 2, 'path' => $path, 'realPath' => $path]),
+			"parameters:\n\tignoreErrors:\n"
+			. "\t\t-\n\t\t\tmessage: '#^A$#'\n\t\t\tidentifier: a.b\n\t\t\tcount: 1\n\t\t\tpath: Foo.php\n\n"
+			. "\t\t-\n\t\t\tmessage: '#^C$#'\n\t\t\tidentifier: a.b\n\t\t\tcount: 1\n\t\t\tpath: Foo.php\n",
+		];
+
+		yield 'CRLF line breaks, second entry' => [
+			"parameters:\r\n\tignoreErrors:\r\n\t\t-\r\n\t\t\tmessage: '#^A$#'\r\n\t\t\tcount: 3\r\n\t\t\tpath: Foo.php\r\n\t\t-\r\n\t\t\tmessage: '#^B$#'\r\n\t\t\tpath: Foo.php\r\n\tlevel: 8\r\n",
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^B$#', 'path' => $path, 'realPath' => $path]),
+			"parameters:\r\n\tignoreErrors:\r\n\t\t-\r\n\t\t\tmessage: '#^A$#'\r\n\t\t\tcount: 3\r\n\t\t\tpath: Foo.php\r\n\tlevel: 8\r\n",
+		];
+
+		yield 'CRLF line breaks, lower count' => [
+			"parameters:\r\n\tignoreErrors:\r\n\t\t-\r\n\t\t\tmessage: '#^A$#'\r\n\t\t\tcount: 3\r\n\t\t\tpath: Foo.php\r\n",
+			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->lowerCount(['message' => '#^A$#', 'count' => 3, 'path' => $path, 'realPath' => $path], 1),
+			"parameters:\r\n\tignoreErrors:\r\n\t\t-\r\n\t\t\tmessage: '#^A$#'\r\n\t\t\tcount: 1\r\n\t\t\tpath: Foo.php\r\n",
+		];
+
 		yield 'CRLF line breaks' => [
 			"parameters:\r\n\tignoreErrors:\r\n\t\t-\r\n\t\t\tmessage: '#^A$#'\r\n\t\t\tpath: Foo.php\r\n\tlevel: 8\r\n",
 			static fn (IgnoreErrorsConfigFixer $fixer, string $path) => $fixer->removeUnmatched(['message' => '#^A$#', 'path' => $path, 'realPath' => $path]),
@@ -393,9 +423,32 @@ class IgnoreErrorsConfigFixerTest extends PHPStanTestCase
 			$fixer->removeUnmatched(['message' => '#^C$#', 'path' => $path, 'realPath' => $path]),
 			$fixer->removeUnmatched(['message' => '#^D$#', 'path' => $path, 'realPath' => $path]),
 		]);
-		$this->assertSame(2, $result['appliedCount']);
+		// the entries after the first one are removed with only their own lines, the next one too
+		$this->assertSame(3, $result['appliedCount']);
 		$this->assertSame(
-			"parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^B$#'\n\t\t\tpath: Foo.php\n\t\t-\n\t\t\tmessage: '#^D$#'\n\t\t\tpath: Foo.php\n",
+			"parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessages:\n\t\t\t\t- '#^B$#'\n\t\t\tpath: Foo.php\n",
+			$result['contents'][$file],
+		);
+	}
+
+	public function testNeonRemovingAllEntriesInOneRoundKeepsAList(): void
+	{
+		$code = "parameters:\n\tignoreErrors:\n";
+		for ($i = 0; $i < 4; $i++) {
+			$code .= sprintf("\t\t-\n\t\t\tmessage: '#^E%d$#'\n\t\t\tcount: 1\n\t\t\tpath: Foo.php\n\n", $i);
+		}
+		$code .= "\tlevel: 8\n";
+		[$fixer, $file] = $this->createFixer($code, 'neon');
+		$path = __DIR__ . '/Foo.php';
+
+		$diffGroups = [];
+		for ($i = 0; $i < 4; $i++) {
+			$diffGroups[] = $fixer->removeUnmatched(['message' => sprintf('#^E%d$#', $i), 'count' => 1, 'path' => $path, 'realPath' => $path]);
+		}
+		$result = self::getContainer()->getByType(Patcher::class)->apply([$file => $code], $diffGroups);
+		$this->assertSame(3, $result['appliedCount']);
+		$this->assertSame(
+			"parameters:\n\tignoreErrors:\n\t\t-\n\t\t\tmessage: '#^E1$#'\n\t\t\tcount: 1\n\t\t\tpath: Foo.php\n\n\tlevel: 8\n",
 			$result['contents'][$file],
 		);
 	}

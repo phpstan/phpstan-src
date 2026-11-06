@@ -218,7 +218,7 @@ final class IssetHandler implements ExprHandler
 					}
 
 					$accExpr = new Isset_([$expr->vars[0]], $subjectAttributes);
-					$accTypes = $makeSubjectTypes($expr->vars[0], $varResults[0]);
+					$accTypes = self::memoizeSubjectTypes($makeSubjectTypes($expr->vars[0], $varResults[0]));
 					$accTruthyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createTruthy()));
 					$accFalseyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createFalsey()));
 
@@ -228,10 +228,10 @@ final class IssetHandler implements ExprHandler
 						$rightFalseyScope = $accTruthyScope->applySpecifiedTypes($rightTypes($accTruthyScope, TypeSpecifierContext::createFalsey()));
 
 						$leftExprNode = $accExpr;
-						$leftTypes = self::memoizeSubjectTypes($accTypes);
+						$leftTypes = $accTypes;
 						$leftTruthyScope = $accTruthyScope;
 						$leftFalseyScope = $accFalseyScope;
-						$accTypes = fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
+						$accTypes = self::memoizeSubjectTypes(fn (MutatingScope $scope, TypeSpecifierContext $ctx): SpecifiedTypes => $this->booleanNarrowingHelper->specifyConjunction(
 							$nodeScopeResolver,
 							$scope,
 							$ctx,
@@ -243,7 +243,7 @@ final class IssetHandler implements ExprHandler
 							$rightExprNode,
 							$rightTypes,
 							static fn (): MutatingScope => $rightFalseyScope,
-						);
+						));
 						$accExpr = new BooleanAnd($leftExprNode, $rightExprNode);
 						$accTruthyScope = $accTruthyScope->applySpecifiedTypes($rightTypes($accTruthyScope, TypeSpecifierContext::createTruthy()));
 						$accFalseyScope = $afterScope->applySpecifiedTypes($accTypes($afterScope, TypeSpecifierContext::createFalsey()));
@@ -267,10 +267,10 @@ final class IssetHandler implements ExprHandler
 	}
 
 	/**
-	 * The narrowing of the conjunction folded so far: every later conjunction
-	 * asks it again as its left operand, with the scopes and contexts it was
-	 * already asked with - answered once per pair instead of re-folding every
-	 * subject before it on each ask.
+	 * The narrowing of the conjunction folded so far: the fold asks it for its
+	 * falsey scope and the next conjunction asks it again as its left operand,
+	 * with the scopes and contexts it was already asked with - answered once
+	 * per pair instead of re-folding the subjects before it on each ask.
 	 *
 	 * @param Closure(MutatingScope, TypeSpecifierContext): SpecifiedTypes $types
 	 * @return Closure(MutatingScope, TypeSpecifierContext): SpecifiedTypes

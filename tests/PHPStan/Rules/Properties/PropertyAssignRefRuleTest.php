@@ -2,11 +2,9 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<PropertyAssignRefRule>
@@ -16,7 +14,7 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new PropertyAssignRefRule(new PhpVersion(PHP_VERSION_ID), new PropertyReflectionFinder());
+		return new PropertyAssignRefRule(new PropertyReflectionFinder());
 	}
 
 	#[RequiresPhp('>= 8.4.0')]

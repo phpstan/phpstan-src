@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\Methods;
 
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\MethodPrototypeReflection;
@@ -18,7 +18,6 @@ final class MethodPrototypeFinder
 {
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private PhpClassReflectionExtension $phpClassReflectionExtension,
 	)
 	{
@@ -33,7 +32,7 @@ final class MethodPrototypeFinder
 	 *
 	 * @return array{ExtendedMethodReflection, ClassReflection, bool, ExtendedMethodReflection, ClassReflection}|null
 	 */
-	public function findPrototype(ClassReflection $classReflection, string $methodName): ?array
+	public function findPrototype(ClassReflection $classReflection, string $methodName, PhpVersions $phpVersions): ?array
 	{
 		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
 			if ($immediateInterface->hasNativeMethod($methodName)) {
@@ -42,7 +41,7 @@ final class MethodPrototypeFinder
 			}
 		}
 
-		if ($this->phpVersion->supportsAbstractTraitMethods()) {
+		if (!$phpVersions->supportsAbstractTraitMethods()->no()) {
 			foreach ($classReflection->getTraits(true) as $trait) {
 				$nativeTraitReflection = $trait->getNativeReflection();
 				if (!$nativeTraitReflection->hasMethod($methodName)) {

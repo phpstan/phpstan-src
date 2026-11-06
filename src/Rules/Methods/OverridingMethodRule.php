@@ -56,7 +56,7 @@ final class OverridingMethodRule implements Rule
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyTracker $scope): array
 	{
 		$method = $node->getMethodReflection();
-		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName());
+		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName(), $scope->getPhpVersion());
 		if ($prototypeData === null) {
 			if (strtolower($method->getName()) === '__construct') {
 				$parent = $method->getDeclaringClass()->getParentClass();
@@ -237,10 +237,11 @@ final class OverridingMethodRule implements Rule
 		$methodReturnType = $method->getNativeReturnType();
 
 		$realPrototype = $method->getPrototype();
+		$hasTentativeReturnTypes = !$scope->getPhpVersion()->hasTentativeReturnTypes()->no();
 
 		if (
 			$realPrototype instanceof MethodPrototypeReflection
-			&& $this->phpVersion->hasTentativeReturnTypes()
+			&& $hasTentativeReturnTypes
 			&& $realPrototype->getTentativeReturnType() !== null
 			&& !$this->hasReturnTypeWillChangeAttribute($node->getOriginalNode())
 			&& count($prototypeDeclaringClass->getNativeReflection()->getMethod($prototype->getName())->getAttributes('ReturnTypeWillChange')) === 0
@@ -270,7 +271,7 @@ final class OverridingMethodRule implements Rule
 
 		$prototypeReturnType = $prototypeVariant->getNativeReturnType();
 		$reportReturnType = true;
-		if ($this->phpVersion->hasTentativeReturnTypes()) {
+		if ($hasTentativeReturnTypes) {
 			$reportReturnType = !$realPrototype instanceof MethodPrototypeReflection
 				|| $realPrototype->getTentativeReturnType() === null
 				|| (is_bool($prototype->isBuiltin()) ? !$prototype->isBuiltin() : $prototype->isBuiltin()->no());

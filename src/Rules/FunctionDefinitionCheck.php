@@ -20,6 +20,7 @@ use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Printer\NodeTypePrinter;
 use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParameterReflection;
@@ -141,6 +142,7 @@ final class FunctionDefinitionCheck
 			}
 
 			$implicitlyNullableTypeError = $this->checkImplicitlyNullableType(
+				$scope->getPhpVersion(),
 				$param->type,
 				$param->default,
 				$i + 1,
@@ -202,8 +204,8 @@ final class FunctionDefinitionCheck
 			);
 		}
 
-		if ($this->phpVersion->deprecatesRequiredParameterAfterOptional()) {
-			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($parameters));
+		if (!$scope->getPhpVersion()->deprecatesRequiredParameterAfterOptional()->no()) {
+			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($scope->getPhpVersion(), $parameters));
 		}
 
 		if ($returnTypeNode === null) {
@@ -402,7 +404,7 @@ final class FunctionDefinitionCheck
 			if (!$parameterNode->var instanceof Variable || !is_string($parameterNode->var->name)) {
 				throw new ShouldNotHappenException();
 			}
-			$implicitlyNullableTypeError = $this->checkImplicitlyNullableType($parameterNode->type, $parameterNode->default, $i + 1, $parameterNode->getStartLine(), $parameterNode->var->name);
+			$implicitlyNullableTypeError = $this->checkImplicitlyNullableType($scope->getPhpVersion(), $parameterNode->type, $parameterNode->default, $i + 1, $parameterNode->getStartLine(), $parameterNode->var->name);
 			if ($implicitlyNullableTypeError === null) {
 				continue;
 			}
@@ -410,8 +412,8 @@ final class FunctionDefinitionCheck
 			$errors[] = $implicitlyNullableTypeError;
 		}
 
-		if ($this->phpVersion->deprecatesRequiredParameterAfterOptional()) {
-			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($parameterNodes));
+		if (!$scope->getPhpVersion()->deprecatesRequiredParameterAfterOptional()->no()) {
+			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($scope->getPhpVersion(), $parameterNodes));
 		}
 
 		$returnTypeNode = $functionNode->getReturnType() ?? $functionNode;
@@ -628,7 +630,7 @@ final class FunctionDefinitionCheck
 	 * @param Param[] $parameterNodes
 	 * @return list<IdentifierRuleError>
 	 */
-	private function checkRequiredParameterAfterOptional(array $parameterNodes): array
+	private function checkRequiredParameterAfterOptional(PhpVersions $phpVersions, array $parameterNodes): array
 	{
 		/** @var string|null $optionalParameter */
 		$optionalParameter = null;
@@ -672,7 +674,7 @@ final class FunctionDefinitionCheck
 
 			$constantName = $defaultValue->name->toLowerString();
 			if ($constantName === 'null') {
-				if (!$this->phpVersion->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull()) {
+				if ($phpVersions->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull()->no()) {
 					continue;
 				}
 
@@ -682,7 +684,7 @@ final class FunctionDefinitionCheck
 					$targetPhpVersion = '8.1';
 				}
 
-				if ($this->phpVersion->deprecatesRequiredParameterAfterOptionalUnionOrMixed()) {
+				if (!$phpVersions->deprecatesRequiredParameterAfterOptionalUnionOrMixed()->no()) {
 					$types = [];
 
 					if ($parameterNodeType instanceof UnionType) {
@@ -782,6 +784,7 @@ final class FunctionDefinitionCheck
 	}
 
 	private function checkImplicitlyNullableType(
+		PhpVersions $phpVersions,
 		Identifier|Name|ComplexType|null $type,
 		?Node\Expr $default,
 		int $order,
@@ -805,7 +808,7 @@ final class FunctionDefinitionCheck
 			return null;
 		}
 
-		if (!$this->phpVersion->deprecatesImplicitlyNullableParameterTypes()) {
+		if ($phpVersions->deprecatesImplicitlyNullableParameterTypes()->no()) {
 			return null;
 		}
 

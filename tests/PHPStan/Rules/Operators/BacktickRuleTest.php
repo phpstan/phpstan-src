@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Operators;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -16,7 +15,7 @@ class BacktickRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new BacktickRule(new PhpVersion(PHP_VERSION_ID));
+		return new BacktickRule();
 	}
 
 	public function testRule(): void

@@ -68,7 +68,6 @@ use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\Node\VirtualNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -142,7 +141,6 @@ final class AssignHandler implements ExprHandler
 	public function __construct(
 		private TemplateArgumentObserver $templateArgumentObserver,
 		private VarAnnotationProcessor $varAnnotationProcessor,
-		private PhpVersion $phpVersion,
 		private ExprPrinter $exprPrinter,
 		private MatchHandler $matchHandler,
 		private TernaryHandler $ternaryHandler,
@@ -1584,7 +1582,7 @@ final class AssignHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 
-			if ($var->name instanceof Expr && $this->phpVersion->supportsPropertyHooks()) {
+			if ($var->name instanceof Expr && !$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
 				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $var);
 			}
 
@@ -1647,7 +1645,7 @@ final class AssignHandler implements ExprHandler
 					) {
 						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}
-					if ($this->phpVersion->supportsPropertyHooks()) {
+					if (!$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
 						$throwPoints = array_merge($throwPoints, $this->propertyHookThrowPointsResolver->getThrowPointsFromPropertyHook($scope, $var, $nativeProperty, 'set'));
 					}
 					if ($enterExpressionAssign) {

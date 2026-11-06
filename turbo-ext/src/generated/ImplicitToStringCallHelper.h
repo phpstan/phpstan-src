@@ -10,10 +10,9 @@ namespace ptdecl::ImplicitToStringCallHelper {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t phpVersion = 0;
-inline constexpr uint32_t methodThrowPointHelper = 1;
-inline constexpr uint32_t methodCallReturnTypeHelper = 2;
-inline constexpr uint32_t expressionResultFactory = 3;
+inline constexpr uint32_t methodThrowPointHelper = 0;
+inline constexpr uint32_t methodCallReturnTypeHelper = 1;
+inline constexpr uint32_t expressionResultFactory = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -24,7 +23,6 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
-	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Php\\PhpVersion");
 	cls.property("methodThrowPointHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper");
 	cls.property("methodCallReturnTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper");
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
@@ -33,40 +31,37 @@ inline void declareProperties(reg::Class &cls)
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"phpVersion\0" /* 0 */
-	"PHPStan\\Php\\PhpVersion\0" /* 11 */
-	"methodThrowPointHelper\0" /* 34 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 57 */
-	"methodCallReturnTypeHelper\0" /* 116 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper\0" /* 143 */
-	"expressionResultFactory\0" /* 206 */
-	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 230 */
-	"__construct\0" /* 271 */
-	"expr\0" /* 283 */
-	"PhpParser\\Node\\Expr\0" /* 288 */
-	"scope\0" /* 308 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 314 */
-	"exprResult\0" /* 345 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 356 */
-	"\0" /* 390 */
-	"processImplicitToStringCall"; /* 391 */
+	"methodThrowPointHelper\0" /* 0 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 23 */
+	"methodCallReturnTypeHelper\0" /* 82 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper\0" /* 109 */
+	"expressionResultFactory\0" /* 172 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 196 */
+	"__construct\0" /* 237 */
+	"expr\0" /* 249 */
+	"PhpParser\\Node\\Expr\0" /* 254 */
+	"scope\0" /* 274 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 280 */
+	"exprResult\0" /* 311 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 322 */
+	"\0" /* 356 */
+	"processImplicitToStringCall"; /* 357 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0, 11), /* __construct $phpVersion */
-	reg::packed(34, 0, 57), /* __construct $methodThrowPointHelper */
-	reg::packed(116, 0, 143), /* __construct $methodCallReturnTypeHelper */
-	reg::packed(206, 0, 230), /* __construct $expressionResultFactory */
-	reg::packed(283, 0, 288), /* processImplicitToStringCall $expr */
-	reg::packed(308, 0, 314), /* processImplicitToStringCall $scope */
-	reg::packed(345, 0, 356), /* processImplicitToStringCall $exprResult */
-	reg::packed(390, 0, 356), /* processImplicitToStringCall return */
+	reg::packed(0, 0, 23), /* __construct $methodThrowPointHelper */
+	reg::packed(82, 0, 109), /* __construct $methodCallReturnTypeHelper */
+	reg::packed(172, 0, 196), /* __construct $expressionResultFactory */
+	reg::packed(249, 0, 254), /* processImplicitToStringCall $expr */
+	reg::packed(274, 0, 280), /* processImplicitToStringCall $scope */
+	reg::packed(311, 0, 322), /* processImplicitToStringCall $exprResult */
+	reg::packed(356, 0, 322), /* processImplicitToStringCall return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 271 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processImplicitToStringCall = { { 391 /* processImplicitToStringCall */, 3, 4, 3, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 237 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processImplicitToStringCall = { { 357 /* processImplicitToStringCall */, 3, 3, 3, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ImplicitToStringCallHelper

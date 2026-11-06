@@ -2096,6 +2096,10 @@ zv::Val pt_mutating_scope_get_template_argument_constraints(zend_object *scope);
 zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, zval *constraints);
 zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals = false);
 
+/* MutatingScope.cpp — $scope->getPhpVersion()-><lcMethod>() as PT_TRI_*;
+ * negative = pending exception */
+[[nodiscard]] zend_long pt_mutating_scope_php_versions_trinary(zend_object *scope, const char *lcMethod, size_t lcMethodLength);
+
 /* }}} */
 
 /* {{{ TemplateArgumentFrame.cpp, AssignTargetWalkMode.cpp,
@@ -3121,14 +3125,12 @@ zv::Val pt_static_property_fetch_handler_compose_result(zval *handler, zval *exp
  * ResolvedPropertyReflection / ChangedTypePropertyReflection /
  * PhpPropertyReflection read in place where the getter only returns (or
  * forwards to) one, a filled memo included; the method through a cached site
- * otherwise. $phpVersion->supportsPropertyHooks(): the versionId slot of
- * PhpVersion, the method otherwise. UNDEF / false = pending exception */
+ * otherwise. UNDEF / false = pending exception */
 zv::Val pt_property_reflection_get_declaring_class(zval *reflection);
 [[nodiscard]] bool pt_property_reflection_has_native_type(zval *reflection, bool &out);
 zv::Val pt_property_reflection_get_native_type(zval *reflection);
 zv::Val pt_property_reflection_get_readable_type(zval *reflection);
 zv::Val pt_property_reflection_get_writable_type(zval *reflection);
-[[nodiscard]] bool pt_php_version_supports_property_hooks(zval *phpVersion, bool &out);
 
 /* MutatingScope.cpp — $scope->getInstancePropertyReflection($type, $name) /
  * ->isInWriteExpressionAssign($expr): the native body for exactly a
@@ -4075,7 +4077,7 @@ zv::Val pt_initializer_expr_type_resolver_get_binary_op_type(zval *resolver, pt_
 zv::Val pt_initializer_expr_type_resolver_resolve_concat_type(zval *resolver, zval *left, zval *right);
 zv::Val pt_initializer_expr_type_resolver_resolve_identical_type(zval *resolver, zval *leftType, zval *rightType);
 zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zval *leftType, zval *rightType, zval *phpVersions = NULL);
-zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
+zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback, zval *phpVersions = NULL);
 zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, zval *exprType);
 zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval *type, bool isNullable, bool isVariadic, zval *context);
@@ -4467,13 +4469,8 @@ enum pt_php_version_query
 	PT_PHP_VERSION_SUPPORTS_LEGACY_CONSTRUCTOR = 0,
 	PT_PHP_VERSION_DEPRECATES_DYNAMIC_PROPERTIES,
 	PT_PHP_VERSION_SUPPORTS_CALLABLE_INSTANCE_METHODS,
-	PT_PHP_VERSION_THROWS_ON_STRING_CAST,
 	PT_PHP_VERSION_NON_NUMERIC_STRING_AND_INTEGER_IS_FALSE_ON_LOOSE_COMPARISON,
-	PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES,
-	PT_PHP_VERSION_SUPPORTS_READONLY_PROPERTY_REINITIALIZATION_ON_CLONE,
-	PT_PHP_VERSION_SUPPORTS_ASYMMETRIC_VISIBILITY,
 	PT_PHP_VERSION_SUPPORTS_ENUMS,
-	PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS,
 	PT_PHP_VERSION_CASTS_NUMBERS_TO_STRINGS_ON_LOOSE_COMPARISON,
 	PT_PHP_VERSION_ALLOWS_TRAILING_WHITESPACE_IN_NUMERIC_STRINGS,
 	PT_PHP_VERSION_THROWS_ON_DIVISION_BY_ZERO,

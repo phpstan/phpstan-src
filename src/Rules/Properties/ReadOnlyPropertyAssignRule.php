@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\PropertyAssignNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Rules\Rule;
@@ -28,7 +27,6 @@ final class ReadOnlyPropertyAssignRule implements Rule
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ConstructorsHelper $constructorsHelper,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -76,7 +74,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 
 			$scopeClassReflection = $scope->getClassReflection();
 			if ($scopeClassReflection->getName() !== $declaringClass->getName()) {
-				$allowedInSubclass = $this->phpVersion->supportsAsymmetricVisibility()
+				$allowedInSubclass = $scope->getPhpVersion()->supportsAsymmetricVisibility()->yes()
 					&& !$propertyReflection->isPrivateSet()
 					&& $scopeClassReflection->isSubclassOfClass($propertyReflection->getDeclaringClass());
 				if (!$allowedInSubclass) {
@@ -94,7 +92,7 @@ final class ReadOnlyPropertyAssignRule implements Rule
 			}
 
 			$methodName = $scopeMethod->getName();
-			$inClone = $this->phpVersion->supportsReadonlyPropertyReinitializationOnClone() && strtolower($methodName) === '__clone';
+			$inClone = $scope->getPhpVersion()->supportsReadonlyPropertyReinitializationOnClone()->yes() && strtolower($methodName) === '__clone';
 			if (
 				in_array($methodName, $this->constructorsHelper->getConstructors($scopeClassReflection), true)
 				|| strtolower($methodName) === '__unserialize'

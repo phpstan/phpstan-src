@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Variables;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -21,7 +20,6 @@ class UnsetRuleTest extends RuleTestCase
 		$container = self::getContainer();
 		return new UnsetRule(
 			$container->getByType(PropertyReflectionFinder::class),
-			$container->getByType(PhpVersion::class),
 		);
 	}
 

@@ -97,17 +97,19 @@ final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 			];
 		}
 
+		$phpVersions = $scope->getPhpVersion();
+		$deprecatesDecOnNonNumericString = !$phpVersions->deprecatesDecOnNonNumericString()->no();
 		$string = new StringType();
 		$deprecatedString = false;
 		if (
 			(
-				$this->phpVersion->deprecatesDecOnNonNumericString()
+				$deprecatesDecOnNonNumericString
 				&& (
 					$node instanceof Node\Expr\PreDec
 					|| $node instanceof Node\Expr\PostDec
 				)
 			) || (
-				$this->phpVersion->deprecatesIncOnNonNumericString()
+				!$phpVersions->deprecatesIncOnNonNumericString()->no()
 				&& (
 					$node instanceof Node\Expr\PreInc
 					|| $node instanceof Node\Expr\PostInc
@@ -121,7 +123,7 @@ final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 		$allowedTypes = [new FloatType(), new IntegerType(), $string, new ObjectType('SimpleXMLElement'), new ObjectType('GMP')];
 		$deprecatedNull = false;
 		if (
-			!$this->phpVersion->deprecatesDecOnNonNumericString()
+			!$deprecatesDecOnNonNumericString
 			|| $node instanceof Node\Expr\PreInc
 			|| $node instanceof Node\Expr\PostInc
 		) {
@@ -131,7 +133,7 @@ final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 		}
 
 		$deprecatedBool = false;
-		if (!$this->phpVersion->deprecatesDecOnNonNumericString()) {
+		if (!$deprecatesDecOnNonNumericString) {
 			$allowedTypes[] = new BooleanType();
 		} else {
 			$deprecatedBool = true;

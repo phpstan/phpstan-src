@@ -346,21 +346,6 @@ zv::Val pt_property_reflection_get_writable_type(zval *reflection)
 
 /* }}} */
 
-/* {{{ $phpVersion->supportsPropertyHooks(): `$this->versionId >= 80400` of
- * exactly the final PhpVersion, the method otherwise */
-
-namespace {
-
-
-} // namespace
-
-bool pt_php_version_supports_property_hooks(zval *phpVersion, bool &out)
-{
-	return pt_php_version_answer(phpVersion, PT_PHP_VERSION_SUPPORTS_PROPERTY_HOOKS, out);
-}
-
-/* }}} */
-
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #include "reg.h"

@@ -720,6 +720,21 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testPropertyHooksUnderPhpVersionGuard(): void
+	{
+		$this->analyse([__DIR__ . '/data/unthrown-exception-property-hooks-version-guard.php'], [
+			[
+				'Dead catch - UnthrownExceptionPropertyHooksVersionGuard\\MyCustomException is never thrown in the try block.',
+				54,
+			],
+			[
+				'Dead catch - UnthrownExceptionPropertyHooksVersionGuard\\MyCustomException is never thrown in the try block.',
+				60,
+			],
+		]);
+	}
+
 	public function testBug9146(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-9146.php'], [

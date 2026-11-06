@@ -1610,9 +1610,21 @@ public:
 
 	/* {{{ getArrayType() / getCastType() / getCastObjectType() */
 
-	/* Mirrors getArrayType(). */
-	zv::Val getArrayType(zval *expr, const pt_ietr_get_type &getTypeCallback) const
+	/* Mirrors getArrayType(); phpVersions NULL (or IS_NULL) stands for null. */
+	zv::Val getArrayType(zval *expr, const pt_ietr_get_type &getTypeCallback, zval *phpVersions = NULL) const
 	{
+		if (phpVersions != NULL && Z_TYPE_P(phpVersions) == IS_NULL) phpVersions = NULL;
+		// unpacking an array with string keys is an Error below PHP 8.1, so the
+		// string keys are kept whenever any analysed version supports it
+		int keepStringKeys;
+		if (phpVersions != NULL) {
+			zend_long supports = pt_type_call_trinary(Z_OBJ_P(phpVersions), PT_LC("supportsarrayunpackingwithstringkeys"), 0, NULL);
+			if (UNEXPECTED(supports < 0)) return zv::Val();
+			keepStringKeys = supports != PT_TRI_NO;
+		} else {
+			keepStringKeys = phpVersionAtLeast(prop(slots::phpVersion), 80100, PT_LC("supportsarrayunpackingwithstringkeys"));
+			if (UNEXPECTED(keepStringKeys < 0)) return zv::Val();
+		}
 		zval *items = nodeProp(pt_ietr_array_items, expr);
 		if (UNEXPECTED(items == NULL)) return zv::Val();
 		if (UNEXPECTED(!requireArray(items))) return zv::Val();
@@ -1652,12 +1664,10 @@ public:
 				if (UNEXPECTED(!requireArray(constantArrays.raw()))) return zv::Val();
 				uint32_t totalArrays = zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw()));
 				if (totalArrays > 0) {
-					if (UNEXPECTED(!unpackConstantArrays(arrayBuilder.raw(), constantArrays.raw(), totalArrays, hasOffsetValueTypes))) return zv::Val();
+					if (UNEXPECTED(!unpackConstantArrays(arrayBuilder.raw(), constantArrays.raw(), totalArrays, keepStringKeys, hasOffsetValueTypes))) return zv::Val();
 				} else {
 					if (UNEXPECTED(!pt_constant_array_type_builder_degrade_to_general_array(arrayBuilder.raw()))) return zv::Val();
 
-					int keepStringKeys = phpVersionAtLeast(prop(slots::phpVersion), 80100, PT_LC("supportsarrayunpackingwithstringkeys"));
-					if (UNEXPECTED(keepStringKeys < 0)) return zv::Val();
 					bool stringKeys = false;
 					if (keepStringKeys) {
 						IETR_VAL(iterableKeyType, callOn(valueType.raw(), mGetIterableKeyType));
@@ -1741,10 +1751,8 @@ public:
 	/* the unpack arm of getArrayType() over the item's constant arrays:
 	 * the slots merged by string key / integer position, set on the builder
 	 * and remembered as HasOffsetValueTypes; false = pending exception */
-	bool unpackConstantArrays(zval *arrayBuilder, zval *constantArrays, uint32_t totalArrays, zv::Arr &hasOffsetValueTypes) const
+	bool unpackConstantArrays(zval *arrayBuilder, zval *constantArrays, uint32_t totalArrays, bool keepStringKeys, zv::Arr &hasOffsetValueTypes) const
 	{
-		int keepStringKeys = phpVersionAtLeast(prop(slots::phpVersion), 80100, PT_LC("supportsarrayunpackingwithstringkeys"));
-		if (UNEXPECTED(keepStringKeys < 0)) return false;
 
 		// Unpacking merges string keys by name, while integer keys are always
 		// renumbered, so they're merged by their position among integer keys.
@@ -3261,11 +3269,15 @@ zv::Val pt_initializer_expr_type_resolver_resolve_equal_type(zval *resolver, zva
 	return callResolverMethod(site, resolver, PT_LC("resolveequaltype"), 3, argv);
 }
 
-zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback)
+zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback, zval *phpVersions)
 {
-	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getArrayType(expr, getTypeCallback);
+	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getArrayType(expr, getTypeCallback, phpVersions);
 	static pt_method_site site;
-	return callResolverUnaryMethod(site, resolver, PT_LC("getarraytype"), expr, getTypeCallback);
+	IETR_VAL(callable, callbackCallable(getTypeCallback));
+	zval nullVersions;
+	ZVAL_NULL(&nullVersions);
+	zv::Args argv{expr, callable.raw(), phpVersions != NULL ? phpVersions : &nullVersions};
+	return callResolverMethod(site, resolver, PT_LC("getarraytype"), 3, argv);
 }
 
 zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback)
@@ -3475,7 +3487,13 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		PT_RETURN_VAL(IETR_THIS.resolveConcatType(left, right));
 	});
 
-	cls.method(sigs::getArrayType, IETR_UNARY_GLUE(PT_CLASS_ARRAY_EXPR, "PhpParser\\Node\\Expr\\Array_", self.getArrayType(expr, getTypeCallback)));
+	cls.method(sigs::getArrayType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr, *callable, *phpVersions = NULL;
+		if (!zp::parse<zp::Obj, zp::Zval, zp::Opt<zp::ObjOrNull>>(execute_data, expr, callable, phpVersions)) RETURN_THROWS();
+		if (UNEXPECTED(!ietrArgClass(expr, 1, PT_CLASS_ARRAY_EXPR, "PhpParser\\Node\\Expr\\Array_") || !ietrArgCallable(callable, 2))) RETURN_THROWS();
+		pt_ietr_get_type getTypeCallback = callableCallback(callable);
+		PT_RETURN_VAL(IETR_THIS.getArrayType(expr, getTypeCallback, phpVersions));
+	});
 	cls.method(sigs::getCastType, IETR_UNARY_GLUE(PT_CLASS_CAST_EXPR, "PhpParser\\Node\\Expr\\Cast", self.getCastType(expr, getTypeCallback)));
 
 	cls.method(sigs::getCastObjectType, [](INTERNAL_FUNCTION_PARAMETERS) {

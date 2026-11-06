@@ -23,7 +23,6 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
@@ -45,7 +44,6 @@ final class PropertyFetchHandler implements ExprHandler
 {
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 		private ExpressionResultFactory $expressionResultFactory,
 		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
@@ -87,7 +85,7 @@ final class PropertyFetchHandler implements ExprHandler
 		$scope = $varResult->getScope();
 		$mayShortCircuit = false;
 		if ($expr->name instanceof Identifier) {
-			if ($this->phpVersion->supportsPropertyHooks()) {
+			if (!$scopeBeforeVar->getPhpVersion()->supportsPropertyHooks()->no()) {
 				$propertyName = $expr->name->toString();
 				$propertyHolderType = $varResult->getType();
 				$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
@@ -115,7 +113,7 @@ final class PropertyFetchHandler implements ExprHandler
 				// short-circuited world
 				$scope = $scope->mergeWith($varResult->getScope());
 			}
-			if ($this->phpVersion->supportsPropertyHooks()) {
+			if (!$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
 				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}
 		}

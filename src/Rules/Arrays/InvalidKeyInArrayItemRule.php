@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -24,7 +23,6 @@ final class InvalidKeyInArrayItemRule implements Rule
 
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
-		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
 		private bool $reportNonIntStringArrayKey,
 	)
@@ -42,7 +40,7 @@ final class InvalidKeyInArrayItemRule implements Rule
 			return [];
 		}
 
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType($this->phpVersion, $this->reportNonIntStringArrayKey);
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType($scope->getPhpVersion(), $this->reportNonIntStringArrayKey);
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->key,

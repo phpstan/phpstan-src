@@ -1362,18 +1362,6 @@ public:
 	/** @internal called by ScopeOps; false = pending exception */
 	[[nodiscard]] bool isReadonlyPropertyFetch(zend_object *exprObject, bool allowOnlyOnThis, bool &out)
 	{
-		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
-		if (UNEXPECTED(!phpVersion.isObject())) {
-			(void) uninitializedProperty("phpVersion");
-			return false;
-		}
-		bool supports;
-		if (UNEXPECTED(!pt_php_version_answer(phpVersion.raw(), PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES, supports))) return false;
-		if (!supports) {
-			out = false;
-			return true;
-		}
-
 		zend_class_entry *propertyFetchCe = pt_class(PT_CLASS_PROPERTY_FETCH);
 		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
 		zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
@@ -1441,7 +1429,10 @@ public:
 			expr = zv::Val::copyOf(var);
 		}
 
-		out = true;
+		/* return !$this->getPhpVersion()->supportsReadOnlyProperties()->no(); */
+		zend_long supports = phpVersionsTrinary(PT_LC("supportsreadonlyproperties"));
+		if (UNEXPECTED(supports < 0)) return false;
+		out = supports != PT_TRI_NO;
 		return true;
 	}
 
@@ -3806,6 +3797,18 @@ public:
 		return true;
 	}
 
+	/* $this->getPhpVersion()-><lcMethod>() as PT_TRI_*; negative = pending exception */
+	[[nodiscard]] zend_long phpVersionsTrinary(const char *lcMethod, size_t lcMethodLength)
+	{
+		zv::Val phpVersions = thisGetPhpVersion();
+		if (UNEXPECTED(phpVersions.isUndef())) return -1;
+		if (UNEXPECTED(Z_TYPE_P(phpVersions.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function %s() on %s", lcMethod, zend_zval_value_name(phpVersions.raw()));
+			return -1;
+		}
+		return pt_type_call_trinary(Z_OBJ_P(phpVersions.raw()), lcMethod, lcMethodLength, 0, NULL);
+	}
+
 	/* IntegerRangeType::createAllGreaterThanOrEqualTo(0) */
 	static zv::Val allGreaterThanOrEqualToZero()
 	{
@@ -4897,17 +4900,6 @@ public:
 		}
 	}
 
-	/* $this->phpVersion-><query>() (PhpVersionAccess.cpp); false = pending exception */
-	[[nodiscard]] bool phpVersionQuery(pt_php_version_query query, bool &out)
-	{
-		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
-		if (UNEXPECTED(!phpVersion.isObject())) {
-			(void) uninitializedProperty("phpVersion");
-			return false;
-		}
-		return pt_php_version_answer(phpVersion.raw(), query, out);
-	}
-
 	zv::Val thisGetCurrentExpressionResultStorage()
 	{
 		return thisCall(PT_LC("getcurrentexpressionresultstorage"), msGetCurrentExpressionResultStorage, 0, NULL, [&]() { return getCurrentExpressionResultStorage(); });
@@ -5375,22 +5367,18 @@ public:
 			setHolder(expressionTypes, thisKey.get(), node.raw(), type.raw(), PT_TRI_YES);
 			setHolder(nativeTypes, thisKey.get(), node.raw(), nativeType.raw(), PT_TRI_YES);
 
-			bool supportsReadOnlyProperties;
-			if (UNEXPECTED(!phpVersionQuery(PT_PHP_VERSION_SUPPORTS_READ_ONLY_PROPERTIES, supportsReadOnlyProperties))) return zv::Val();
-			if (supportsReadOnlyProperties) {
-				for (auto entry : zv::ArrRef(nonStaticExpressions.raw())) {
-					zend_string *exprString = entry.stringKeyOrNull();
-					if (exprString == NULL) continue;
-					zv::Val expr = holderExpr(entry.value());
-					if (UNEXPECTED(expr.isUndef())) return zv::Val();
-					bool isPropertyFetch;
-					if (UNEXPECTED(!isInstance(expr.ref(), PT_CLASS_PROPERTY_FETCH, isPropertyFetch))) return zv::Val();
-					if (!isPropertyFetch) continue;
-					bool readonly;
-					if (UNEXPECTED(!thisIsReadonlyPropertyFetch(expr.raw(), true, readonly))) return zv::Val();
-					if (!readonly) continue;
-					expressionTypes.set(exprString, zv::Val::copyOf(entry.value().deref()));
-				}
+			for (auto entry : zv::ArrRef(nonStaticExpressions.raw())) {
+				zend_string *exprString = entry.stringKeyOrNull();
+				if (exprString == NULL) continue;
+				zv::Val expr = holderExpr(entry.value());
+				if (UNEXPECTED(expr.isUndef())) return zv::Val();
+				bool isPropertyFetch;
+				if (UNEXPECTED(!isInstance(expr.ref(), PT_CLASS_PROPERTY_FETCH, isPropertyFetch))) return zv::Val();
+				if (!isPropertyFetch) continue;
+				bool readonly;
+				if (UNEXPECTED(!thisIsReadonlyPropertyFetch(expr.raw(), true, readonly))) return zv::Val();
+				if (!readonly) continue;
+				expressionTypes.set(exprString, zv::Val::copyOf(entry.value().deref()));
 			}
 		}
 
@@ -6976,16 +6964,10 @@ public:
 		bool isClone = zend_string_equals_literal(lowered, "__clone");
 		zend_string_release(lowered);
 		if (!isClone) return scope;
-		zval *phpVersion = otherService(scopeObject, PT_MSS_PHP_VERSION);
-		if (UNEXPECTED(phpVersion == NULL)) return zv::Val();
-		ZVAL_DEREF(phpVersion);
-		if (UNEXPECTED(Z_TYPE_P(phpVersion) != IS_OBJECT)) {
-			zend_throw_error(NULL, "Call to a member function supportsReadonlyPropertyReinitializationOnClone() on %s", zend_zval_value_name(phpVersion));
-			return zv::Val();
-		}
-		bool supports;
-		if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_SUPPORTS_READONLY_PROPERTY_REINITIALIZATION_ON_CLONE, supports))) return zv::Val();
-		if (!supports) return scope;
+		/* $scope->getPhpVersion()->supportsReadonlyPropertyReinitializationOnClone()->yes() */
+		zend_long supports = pt_mutating_scope_php_versions_trinary(scopeObject, PT_LC("supportsreadonlypropertyreinitializationonclone"));
+		if (UNEXPECTED(supports < 0)) return zv::Val();
+		if (supports != PT_TRI_YES) return scope;
 		zv::Val reinitializationExpr = pt_type_new(PT_CLASS_CLONE_REINITIALIZATION_EXPR, 1, &propertyNameZv);
 		if (UNEXPECTED(reinitializationExpr.isUndef())) return zv::Val();
 		zval cloneMixedZv, cloneNativeMixedZv;
@@ -10066,14 +10048,10 @@ public:
 			if (!isProtectedSet) return canAccessClassMember(propertyReflection, out);
 		}
 
-		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
-		if (UNEXPECTED(!phpVersion.isObject())) {
-			(void) uninitializedProperty("phpVersion");
-			return false;
-		}
-		bool supportsAsymmetricVisibility;
-		if (UNEXPECTED(!pt_php_version_answer(phpVersion.raw(), PT_PHP_VERSION_SUPPORTS_ASYMMETRIC_VISIBILITY, supportsAsymmetricVisibility))) return false;
-		if (!supportsAsymmetricVisibility) return canAccessClassMember(propertyReflection, out);
+		/* $this->getPhpVersion()->supportsAsymmetricVisibility()->no() */
+		zend_long supportsAsymmetricVisibility = phpVersionsTrinary(PT_LC("supportsasymmetricvisibility"));
+		if (UNEXPECTED(supportsAsymmetricVisibility < 0)) return false;
+		if (supportsAsymmetricVisibility == PT_TRI_NO) return canAccessClassMember(propertyReflection, out);
 
 		return memberAccessibleFromScope(propertyReflection, PT_LC("isprivateset"), out);
 	}
@@ -11821,6 +11799,18 @@ zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, 
 zv::Val pt_mutating_scope_get_current_template_argument_frame(zend_object *scope)
 {
 	return pt_this_call(scope, scope->ce == pt_ce_mutating_scope, PT_LC("getcurrenttemplateargumentframe"), &reg::detail::Bound<&MutatingScope::getCurrentTemplateArgumentFrame>::handle, 0, NULL, [&]() { return MutatingScope(scope).getCurrentTemplateArgumentFrame(); });
+}
+
+zend_long pt_mutating_scope_php_versions_trinary(zend_object *scope, const char *lcMethod, size_t lcMethodLength)
+{
+	if (EXPECTED(scope->ce == pt_ce_mutating_scope)) return MutatingScope(scope).phpVersionsTrinary(lcMethod, lcMethodLength);
+	zv::Val phpVersions = pt_type_call(scope, PT_LC("getphpversion"), 0, NULL);
+	if (UNEXPECTED(phpVersions.isUndef())) return -1;
+	if (UNEXPECTED(Z_TYPE_P(phpVersions.raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", lcMethod, zend_zval_value_name(phpVersions.raw()));
+		return -1;
+	}
+	return pt_type_call_trinary(Z_OBJ_P(phpVersions.raw()), lcMethod, lcMethodLength, 0, NULL);
 }
 
 bool pt_mutating_scope_native_types_promoted(zend_object *scope, bool &out)

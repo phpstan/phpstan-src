@@ -2,7 +2,7 @@
 
 namespace PHPStan\Rules\Arrays;
 
-use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -24,7 +24,7 @@ use PHPStan\Type\UnionType;
 final class AllowedArrayKeysTypes
 {
 
-	public static function getType(?PhpVersion $phpVersion = null, bool $reportNonIntStringArrayKey = false): Type
+	public static function getType(?PhpVersions $phpVersions = null, bool $reportNonIntStringArrayKey = false): Type
 	{
 		$types = [
 			new IntegerType(),
@@ -34,10 +34,10 @@ final class AllowedArrayKeysTypes
 		if (!$reportNonIntStringArrayKey) {
 			$types[] = new BooleanType();
 
-			if ($phpVersion === null || !$phpVersion->deprecatesImplicitlyFloatConversionToInt()) {
+			if ($phpVersions === null || $phpVersions->deprecatesImplicitlyFloatConversionToInt()->no()) {
 				$types[] = new FloatType();
 			}
-			if ($phpVersion === null || !$phpVersion->deprecatesNullArrayOffset()) {
+			if ($phpVersions === null || $phpVersions->deprecatesNullArrayOffset()->no()) {
 				$types[] = new NullType();
 			}
 		}

@@ -80,9 +80,8 @@ public:
 	explicit PropertyFetchHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *phpVersion, zval *propertyReflectionFinder, zval *expressionResultFactory, zval *propertyHookThrowPointsResolver, zval *defaultNarrowingHelper) const
+	void construct(zval *propertyReflectionFinder, zval *expressionResultFactory, zval *propertyHookThrowPointsResolver, zval *defaultNarrowingHelper) const
 	{
-		pt_write_slot(self, slots::phpVersion, phpVersion);
 		pt_write_slot(self, slots::propertyReflectionFinder, propertyReflectionFinder);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::propertyHookThrowPointsResolver, propertyHookThrowPointsResolver);
@@ -153,9 +152,10 @@ public:
 		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
 		bool mayShortCircuit = false;
 		if (nameIsIdentifier) {
-			bool supportsPropertyHooks;
-			if (UNEXPECTED(!pt_php_version_supports_property_hooks(OBJ_PROP_NUM(self, slots::phpVersion), supportsPropertyHooks))) return zv::Val();
-			if (supportsPropertyHooks && UNEXPECTED(!addGetHookPoints(nodeScopeResolver, expr, name, varResult, scopeBeforeVar, throwPoints, impurePoints))) return zv::Val();
+			/* $scopeBeforeVar->getPhpVersion()->supportsPropertyHooks()->no() negated */
+			zend_long supportsPropertyHooks = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scopeBeforeVar), PT_LC("supportspropertyhooks"));
+			if (UNEXPECTED(supportsPropertyHooks < 0)) return zv::Val();
+			if (supportsPropertyHooks != PT_TRI_NO && UNEXPECTED(!addGetHookPoints(nodeScopeResolver, expr, name, varResult, scopeBeforeVar, throwPoints, impurePoints))) return zv::Val();
 		} else if (nameResult != NULL) {
 			// a fetch that is a link in a nullsafe chain may never run - see
 			// MethodCallHandler::processExpr(). Only the dynamic name is skipped
@@ -180,9 +180,10 @@ public:
 				scope = pt_mutating_scope_merge_with(Z_OBJ_P(scope.raw()), borrowed);
 				if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			}
-			bool supportsPropertyHooks;
-			if (UNEXPECTED(!pt_php_version_supports_property_hooks(OBJ_PROP_NUM(self, slots::phpVersion), supportsPropertyHooks))) return zv::Val();
-			if (supportsPropertyHooks) {
+			/* $scope->getPhpVersion()->supportsPropertyHooks()->no() negated */
+			zend_long supportsPropertyHooks = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scope.raw()), PT_LC("supportspropertyhooks"));
+			if (UNEXPECTED(supportsPropertyHooks < 0)) return zv::Val();
+			if (supportsPropertyHooks != PT_TRI_NO) {
 				zv::Val throwPoint = pt_internal_throw_point_create_implicit(scope.raw(), expr);
 				if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
 				appendTo(throwPoints, std::move(throwPoint));
@@ -511,15 +512,14 @@ PT_MINIT_REGISTRATION(pt_register_property_fetch_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *phpVersion, *propertyReflectionFinder, *expressionResultFactory, *propertyHookThrowPointsResolver, *defaultNarrowingHelper;
-		ZEND_PARSE_PARAMETERS_START(5, 5)
-			Z_PARAM_OBJECT(phpVersion)
+		zval *propertyReflectionFinder, *expressionResultFactory, *propertyHookThrowPointsResolver, *defaultNarrowingHelper;
+		ZEND_PARSE_PARAMETERS_START(4, 4)
 			Z_PARAM_OBJECT(propertyReflectionFinder)
 			Z_PARAM_OBJECT(expressionResultFactory)
 			Z_PARAM_OBJECT(propertyHookThrowPointsResolver)
 			Z_PARAM_OBJECT(defaultNarrowingHelper)
 		ZEND_PARSE_PARAMETERS_END();
-		PropertyFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(phpVersion, propertyReflectionFinder, expressionResultFactory, propertyHookThrowPointsResolver, defaultNarrowingHelper);
+		PropertyFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(propertyReflectionFinder, expressionResultFactory, propertyHookThrowPointsResolver, defaultNarrowingHelper);
 	});
 
 	cls.method<&PropertyFetchHandler::supports, zp::Obj>(sigs::supports);

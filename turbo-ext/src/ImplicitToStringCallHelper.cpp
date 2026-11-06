@@ -12,9 +12,9 @@
  * MutatingScope, ExpressionResult, ExpressionContext, ImpurePoint, the
  * method reflections, ClassReflection, ParametersAcceptorSelector,
  * MethodCallReturnTypeHelper, MethodThrowPointHelper, SpecifiedTypes and the
- * Type kernel are called through their direct entries; PhpVersion's
- * throwsOnStringCast() reads the final class's versionId slot (the method
- * otherwise), and the combined acceptor's getNativeReturnType() goes through
+ * Type kernel are called through their direct entries; the scope's
+ * PhpVersions answers throwsOnStringCast() through its method, and the
+ * combined acceptor's getNativeReturnType() goes through
  * the cached site of CallHandlerSupport.h.
  */
 
@@ -34,13 +34,6 @@ zend_string *pt_itsch_to_string = nullptr;
 zend_string *pt_itsch_method_call = nullptr;
 zend_string *pt_itsch_synthetic_site_attribute = nullptr;
 
-
-/* $phpVersion->throwsOnStringCast(): `$this->versionId >= 70400` of exactly
- * the final PhpVersion, the method otherwise; false = pending exception */
-[[nodiscard]] bool throwsOnStringCast(zval *phpVersion, bool &out)
-{
-	return pt_php_version_answer(phpVersion, PT_PHP_VERSION_THROWS_ON_STRING_CAST, out);
-}
 
 /* sprintf('call to method %s::%s()', $declaringClassDisplayName, $methodName) */
 zend_string *callToMethodDescription(zval *displayName, zval *methodName)
@@ -70,9 +63,8 @@ public:
 	explicit ImplicitToStringCallHelper(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *phpVersion, zval *methodThrowPointHelper, zval *methodCallReturnTypeHelper, zval *expressionResultFactory) const
+	void construct(zval *methodThrowPointHelper, zval *methodCallReturnTypeHelper, zval *expressionResultFactory) const
 	{
-		pt_write_slot(self, slots::phpVersion, phpVersion);
 		pt_write_slot(self, slots::methodThrowPointHelper, methodThrowPointHelper);
 		pt_write_slot(self, slots::methodCallReturnTypeHelper, methodCallReturnTypeHelper);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
@@ -134,9 +126,10 @@ public:
 			impurePoints.push(std::move(impurePoint));
 		}
 
-		bool throws;
-		if (UNEXPECTED(!throwsOnStringCast(OBJ_PROP_NUM(self, slots::phpVersion), throws))) return zv::Val();
-		if (throws) {
+		/* $scope->getPhpVersion()->throwsOnStringCast()->no() negated */
+		zend_long throws = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scope), PT_LC("throwsonstringcast"));
+		if (UNEXPECTED(throws < 0)) return zv::Val();
+		if (throws != PT_TRI_NO) {
 			// the __toString() call's return type resolves directly (the receiver
 			// type is already in hand); the fabricated node is only the payload
 			// dynamic extensions receive - nothing walks it
@@ -245,9 +238,9 @@ PT_MINIT_REGISTRATION(pt_register_implicit_to_string_call_helper)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *phpVersion, *methodThrowPointHelper, *methodCallReturnTypeHelper, *expressionResultFactory;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, phpVersion, methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory)) RETURN_THROWS();
-		ImplicitToStringCallHelper(Z_OBJ_P(ZEND_THIS)).construct(phpVersion, methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory);
+		zval *methodThrowPointHelper, *methodCallReturnTypeHelper, *expressionResultFactory;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory)) RETURN_THROWS();
+		ImplicitToStringCallHelper(Z_OBJ_P(ZEND_THIS)).construct(methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory);
 	});
 
 	cls.method(sigs::processImplicitToStringCall, [](INTERNAL_FUNCTION_PARAMETERS) {

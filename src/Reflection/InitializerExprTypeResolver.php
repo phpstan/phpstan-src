@@ -531,9 +531,16 @@ final class InitializerExprTypeResolver
 
 	/**
 	 * @param callable(Expr): Type $getTypeCallback
+	 * @param PhpVersions|null $phpVersions the analysed scope's versions, the configured version when null
 	 */
-	public function getArrayType(Expr\Array_ $expr, callable $getTypeCallback): Type
+	public function getArrayType(Expr\Array_ $expr, callable $getTypeCallback, ?PhpVersions $phpVersions = null): Type
 	{
+		// unpacking an array with string keys is an Error below PHP 8.1, so the
+		// string keys are kept whenever any analysed version supports it
+		$keepStringKeys = $phpVersions !== null
+			? !$phpVersions->supportsArrayUnpackingWithStringKeys()->no()
+			: $this->phpVersion->supportsArrayUnpackingWithStringKeys();
+
 		if (count($expr->items) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 			return $this->oversizedArrayBuilder->build($expr, $getTypeCallback);
 		}
@@ -546,7 +553,6 @@ final class InitializerExprTypeResolver
 			if ($arrayItem->unpack) {
 				$constantArrays = $valueType->getConstantArrays();
 				if (count($constantArrays) > 0) {
-					$keepStringKeys = $this->phpVersion->supportsArrayUnpackingWithStringKeys();
 					$totalArrays = count($constantArrays);
 
 					// Unpacking merges string keys by name, while integer keys are always
@@ -615,7 +621,7 @@ final class InitializerExprTypeResolver
 				} else {
 					$arrayBuilder->degradeToGeneralArray();
 
-					if ($this->phpVersion->supportsArrayUnpackingWithStringKeys() && !$valueType->getIterableKeyType()->isString()->no()) {
+					if ($keepStringKeys && !$valueType->getIterableKeyType()->isString()->no()) {
 						$isList = false;
 						$offsetType = $valueType->getIterableKeyType();
 

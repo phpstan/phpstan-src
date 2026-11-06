@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Properties;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\AdditionalConstructorsExtension;
 use PHPStan\Reflection\ConstructorsHelper;
 use PHPStan\Rules\Rule;
@@ -27,7 +26,6 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 					'ReadonlyPropertyAssign\\TestCase::setUp',
 				],
 			),
-			new PhpVersion(PHP_VERSION_ID),
 		);
 	}
 

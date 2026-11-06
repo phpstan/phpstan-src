@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Arrays;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -31,7 +30,6 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 		);
 		return new InvalidKeyInArrayDimFetchRule(
 			$ruleLevelHelper,
-			self::getContainer()->getByType(PhpVersion::class),
 			true,
 			$this->reportNonIntStringArrayKey,
 		);

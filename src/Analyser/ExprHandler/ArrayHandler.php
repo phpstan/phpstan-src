@@ -299,7 +299,7 @@ final class ArrayHandler implements ExprHandler
 			}
 
 			if ($inner instanceof Array_) {
-				return $this->initializerExprTypeResolver->getArrayType($inner, $getType);
+				return $this->initializerExprTypeResolver->getArrayType($inner, $getType, $scope->getPhpVersion());
 			}
 
 			if ($inner instanceof Scalar\String_ || $inner instanceof Scalar\Int_ || $inner instanceof Scalar\Float_) {
@@ -309,7 +309,7 @@ final class ArrayHandler implements ExprHandler
 			return new MixedType();
 		};
 
-		return $this->initializerExprTypeResolver->getArrayType($walk['expr'], $getType);
+		return $this->initializerExprTypeResolver->getArrayType($walk['expr'], $getType, $scope->getPhpVersion());
 	}
 
 	/**
@@ -394,7 +394,7 @@ final class ArrayHandler implements ExprHandler
 					}
 
 					throw new ShouldNotHappenException();
-				});
+				}, $beforeScope->getPhpVersion());
 
 				if (
 					count($expr->items) === 2
@@ -594,7 +594,7 @@ final class ArrayHandler implements ExprHandler
 			return $scope;
 		}
 
-		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType());
+		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType(), $scope->getPhpVersion());
 
 		return $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInto($itemTypes, $arrayType));
 	}

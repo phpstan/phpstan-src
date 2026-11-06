@@ -44,6 +44,7 @@ use function mkdir;
 use function ord;
 use function rmdir;
 use function stat;
+use function str_replace;
 use function strlen;
 use function strpos;
 use function substr;
@@ -239,6 +240,34 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			$this->fail('The damaged value should not decode.');
 		} catch (UnreadableCollectedDataException $e) {
 			$this->assertStringContainsString('could not be read back and was discarded', $e->getMessage());
+		}
+
+		$this->assertFalse(is_file($this->cacheFilePath()));
+	}
+
+	public function testDuplicateCollectorInHeaderDiscardsTheCache(): void
+	{
+		$data = [$this->files[0] => [
+			MethodWithoutImpurePointsCollector::class => ['method a'],
+			PossiblyPureFuncCallCollector::class => [['callA', 3]],
+		]];
+		$this->saveFullAnalysis($data);
+		$contents = file_get_contents($this->cacheFilePath());
+		$this->assertNotFalse($contents);
+		// both blobs are under the same collector type, the lengths still add up
+		$contents = str_replace(PossiblyPureFuncCallCollector::class . ' ', MethodWithoutImpurePointsCollector::class . ' ', $contents, $count);
+		$this->assertSame(1, $count);
+		// the type names differ in length, so the entry header must still match the entry
+		$entryLength = strlen(PossiblyPureFuncCallCollector::class) - strlen(MethodWithoutImpurePointsCollector::class);
+		$contents = Strings::replace($contents, '~^(\d+) (\d+)\n(s:\d+:"src/a\.php";)~m', static fn (array $m): string => $m[1] . ' ' . ((int) $m[2] - $entryLength) . "\n" . $m[3]);
+		file_put_contents($this->cacheFilePath(), $contents);
+
+		$lazy = $this->createManager()->restore($this->files, false, false, null, $this->nullOutput())->getCollectedData();
+		try {
+			iterator_to_array($lazy->iterate(MethodWithoutImpurePointsCollector::class));
+			$this->fail('The duplicate collector should be refused.');
+		} catch (UnreadableCollectedDataException $e) {
+			$this->assertStringContainsString('has a malformed header', $e->getMessage());
 		}
 
 		$this->assertFalse(is_file($this->cacheFilePath()));

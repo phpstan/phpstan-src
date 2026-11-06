@@ -2874,6 +2874,10 @@ final class ResultCacheManager
 
 				/** @var class-string<Collector<Node, mixed>> $collectorType */
 				$collectorType = $parts[$i];
+				if (array_key_exists($collectorType, $collectors)) {
+					throw new RuntimeException(sprintf('The collected data of %s has a malformed header.', $file));
+				}
+
 				$collectors[$collectorType] = [$length, $hash];
 				$total += $length;
 			}

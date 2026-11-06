@@ -11,10 +11,8 @@
 /tests/tmp
 /tests/.phpunit.result.cache
 /tests/PHPStan/Reflection/data/golden/
-/tests/bench/storage/local-baseline.xml
 tmp/.memory_limit
 e2e/bashunit
-/.phpbench
 /.amp/portals/
 /e2e/turbo-arena/tmp
 /e2e/fork-unsafe-extension/tmp

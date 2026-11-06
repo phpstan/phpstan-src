@@ -1,0 +1,468 @@
+# Expected metrics of the benchmarks in data/, compared by compare.php with the tolerances in BenchmarkComparator.
+# To update it, replace it with the benchmark-measured artifact of the Benchmarks workflow.
+
+and-chain-resolve-type-blowup.php:
+	instructions: 3118737800
+	estimatedCycles: 3396057190
+	peakMemory: 46580928
+
+and-chain-truthy-blowup.php:
+	instructions: 260817814
+	estimatedCycles: 338603194
+	peakMemory: 41321776
+
+array-values-literal-keyed-map.php:
+	instructions: 3362949832
+	estimatedCycles: 3505853792
+	peakMemory: 42747512
+
+big-constant-int-union.php:
+	instructions: 398891207
+	estimatedCycles: 464751137
+	peakMemory: 42336512
+
+big-constant-string-union.php:
+	instructions: 1710326116
+	estimatedCycles: 1931192206
+	peakMemory: 42922088
+
+bug-10147.php:
+	instructions: 11290386
+	estimatedCycles: 18120896
+	peakMemory: 37501872
+
+bug-10538.php:
+	instructions: 18121402938
+	estimatedCycles: 21830691058
+	peakMemory: 55908888
+
+bug-10772.php:
+	instructions: 4339252871
+	estimatedCycles: 5682093521
+	peakMemory: 98737480
+
+bug-10979.php:
+	instructions: 4077060639
+	estimatedCycles: 5525781109
+	peakMemory: 44319104
+
+bug-11263.php:
+	instructions: 1927527402
+	estimatedCycles: 2270006532
+	peakMemory: 44125752
+
+bug-11283.php:
+	instructions: 1236834912
+	estimatedCycles: 1626637602
+	peakMemory: 42002416
+
+bug-11297.php:
+	instructions: 9220268282
+	estimatedCycles: 10151353832
+	peakMemory: 68972408
+
+bug-11913.php:
+	instructions: 998145804
+	estimatedCycles: 1278606784
+	peakMemory: 55738544
+
+bug-12159.php:
+	instructions: 1841218978
+	estimatedCycles: 2281466968
+	peakMemory: 60920784
+
+bug-12671.php:
+	instructions: 4594854456
+	estimatedCycles: 5549796096
+	peakMemory: 69275720
+
+bug-12787.php:
+	instructions: 44474610
+	estimatedCycles: 65742240
+	peakMemory: 38185112
+
+bug-12800.php:
+	instructions: 672274779
+	estimatedCycles: 805487759
+	peakMemory: 41384888
+
+bug-13218.php:
+	instructions: 351063825
+	estimatedCycles: 436627115
+	peakMemory: 41070880
+
+bug-13310.php:
+	instructions: 60495534
+	estimatedCycles: 85843194
+	peakMemory: 38107016
+
+bug-13352.php:
+	instructions: 13076427844
+	estimatedCycles: 17917315214
+	peakMemory: 182733352
+
+bug-13685.php:
+	instructions: 143099972
+	estimatedCycles: 194935342
+	peakMemory: 39006744
+
+bug-1388.php:
+	instructions: 355936318
+	estimatedCycles: 458614618
+	peakMemory: 40047608
+
+bug-13933.php:
+	instructions: 1038298881
+	estimatedCycles: 1320234791
+	peakMemory: 51901808
+
+bug-14207-and.php:
+	instructions: 279494690
+	estimatedCycles: 356959470
+	peakMemory: 41369736
+
+bug-14207.php:
+	instructions: 447091805
+	estimatedCycles: 570791625
+	peakMemory: 43156888
+
+bug-14319.php:
+	instructions: 340674847
+	estimatedCycles: 434737977
+	peakMemory: 39199648
+
+bug-14452.php:
+	instructions: 153974253
+	estimatedCycles: 206422453
+	peakMemory: 40142632
+
+bug-14462.php:
+	instructions: 1192503989
+	estimatedCycles: 1488009519
+	peakMemory: 40067736
+
+bug-1447.php:
+	instructions: 104050647
+	estimatedCycles: 143388637
+	peakMemory: 38950920
+
+bug-14475.php:
+	instructions: 158065427
+	estimatedCycles: 206349897
+	peakMemory: 38957256
+
+bug-14590.php:
+	instructions: 974467037
+	estimatedCycles: 1261327667
+	peakMemory: 38418920
+
+bug-14624.php:
+	instructions: 11014859209
+	estimatedCycles: 13476004149
+	peakMemory: 51272776
+
+bug-14674.php:
+	instructions: 7327393991
+	estimatedCycles: 9337273351
+	peakMemory: 45847744
+
+bug-14869-enum.php:
+	instructions: 1622188111
+	estimatedCycles: 1943130031
+	peakMemory: 54782960
+
+bug-14869.php:
+	instructions: 2009133975
+	estimatedCycles: 2383528125
+	peakMemory: 49150464
+
+bug-14972-concat.php:
+	instructions: 7856536418
+	estimatedCycles: 10942624748
+	peakMemory: 184134120
+
+bug-14972.php:
+	instructions: 9443587818
+	estimatedCycles: 11145824458
+	peakMemory: 141880680
+
+bug-14996.php:
+	instructions: 9715463268
+	estimatedCycles: 11967965898
+	peakMemory: 46647912
+
+bug-15061.php:
+	instructions: 3208835402
+	estimatedCycles: 3641897892
+	peakMemory: 41463688
+
+bug-15305.php:
+	instructions: 3258352078
+	estimatedCycles: 4060295938
+	peakMemory: 39323216
+
+bug-15348.php:
+	instructions: 8120161324
+	estimatedCycles: 8838441104
+	peakMemory: 46906440
+
+bug-15452.php:
+	instructions: 1776848094
+	estimatedCycles: 2375240804
+	peakMemory: 69539152
+
+bug-15498.php:
+	instructions: 395716533
+	estimatedCycles: 501405533
+	peakMemory: 39072416
+
+bug-15591.php:
+	instructions: 41795437
+	estimatedCycles: 62239297
+	peakMemory: 37742320
+
+bug-3686.php:
+	instructions: 61008866
+	estimatedCycles: 87076096
+	peakMemory: 38205816
+
+bug-4300.php:
+	instructions: 26966115
+	estimatedCycles: 41356215
+	peakMemory: 37708896
+
+bug-4308.php:
+	instructions: 27527885
+	estimatedCycles: 40028715
+	peakMemory: 37579584
+
+bug-5081.php:
+	instructions: 4255601191
+	estimatedCycles: 4962251191
+	peakMemory: 117158552
+
+bug-5231.php:
+	instructions: 402207359
+	estimatedCycles: 505251819
+	peakMemory: 41067192
+
+bug-5231_2.php:
+	instructions: 139149226
+	estimatedCycles: 191385216
+	peakMemory: 39247592
+
+bug-5390.php:
+	instructions: 20107966
+	estimatedCycles: 31941626
+	peakMemory: 38016120
+
+bug-6265.php:
+	instructions: 631694840
+	estimatedCycles: 831423710
+	peakMemory: 41240040
+
+bug-6442.php:
+	instructions: 35405752
+	estimatedCycles: 52214732
+	peakMemory: 38603360
+
+bug-6936.php:
+	instructions: 230391547
+	estimatedCycles: 304471867
+	peakMemory: 40311304
+
+bug-6948.php:
+	instructions: 246653259
+	estimatedCycles: 313870599
+	peakMemory: 38744808
+
+bug-7140.php:
+	instructions: 153996491
+	estimatedCycles: 209139071
+	peakMemory: 38867968
+
+bug-7214.php:
+	instructions: 52221045
+	estimatedCycles: 73361875
+	peakMemory: 38781464
+
+bug-7581.php:
+	instructions: 3174182540
+	estimatedCycles: 3762296570
+	peakMemory: 46453880
+
+bug-7637.php:
+	instructions: 189252511
+	estimatedCycles: 239162981
+	peakMemory: 39713864
+
+bug-7901.php:
+	instructions: 5140910531
+	estimatedCycles: 6698549141
+	peakMemory: 93494056
+
+bug-7903.php:
+	instructions: 7792909233
+	estimatedCycles: 9795796913
+	peakMemory: 50539856
+
+bug-8146a.php:
+	instructions: 882474698
+	estimatedCycles: 1123302618
+	peakMemory: 41358904
+
+bug-8146b.php:
+	instructions: 7072474770
+	estimatedCycles: 9339299610
+	peakMemory: 105031048
+
+bug-8147.php:
+	instructions: 2989403361
+	estimatedCycles: 3950497151
+	peakMemory: 71138992
+
+bug-8215.php:
+	instructions: 5745263279
+	estimatedCycles: 7626562969
+	peakMemory: 136631192
+
+bug-8503.php:
+	instructions: 973796790
+	estimatedCycles: 1258568170
+	peakMemory: 45359688
+
+bug-9690.php:
+	instructions: 396880979
+	estimatedCycles: 523618309
+	peakMemory: 41030152
+
+callable-union-describe.php:
+	instructions: 19980240224
+	estimatedCycles: 24734732134
+	peakMemory: 64387232
+
+closure-variable-invocations.php:
+	instructions: 3280559424
+	estimatedCycles: 4470267984
+	peakMemory: 76077024
+
+conditional-expression-infinite-loop.php:
+	instructions: 53507832
+	estimatedCycles: 76010282
+	peakMemory: 37799152
+
+enum-case-union-removal.php:
+	instructions: 1923127781
+	estimatedCycles: 2338744131
+	peakMemory: 44180760
+
+enum-value-keyed-map.php:
+	instructions: 702961621
+	estimatedCycles: 884545891
+	peakMemory: 55992320
+
+finite-types-optional-keys-blowup.php:
+	instructions: 38584310
+	estimatedCycles: 50647870
+	peakMemory: 37663192
+
+finite-types-optional-keys-count.php:
+	instructions: 4903672367
+	estimatedCycles: 6034352347
+	peakMemory: 80668528
+
+flatten-types-optional-keys-blowup.php:
+	instructions: 33827718
+	estimatedCycles: 46106158
+	peakMemory: 37732112
+
+hash-key-lookup.php:
+	instructions: 3543036508
+	estimatedCycles: 4668882598
+	peakMemory: 70125440
+
+implode-optional-keys-blowup.php:
+	instructions: 36455809
+	estimatedCycles: 50241199
+	peakMemory: 37768632
+
+impure-call-columns.php:
+	instructions: 3250463482
+	estimatedCycles: 4485812952
+	peakMemory: 109521432
+
+in-array-intersect-blowup.php:
+	instructions: 168142186
+	estimatedCycles: 202690526
+	peakMemory: 38427984
+
+literal-key-union-offset-write.php:
+	instructions: 10711284461
+	estimatedCycles: 14697676331
+	peakMemory: 224807280
+
+long-statement-list.php:
+	instructions: 4213145447
+	estimatedCycles: 5758908777
+	peakMemory: 73321848
+
+loop-widening-optional-keys.php:
+	instructions: 1126314976
+	estimatedCycles: 1453386996
+	peakMemory: 43146400
+
+loose-string-comparison.php:
+	instructions: 10230458586
+	estimatedCycles: 12287958386
+	peakMemory: 89695768
+
+nullsafe-chain-walk.php:
+	instructions: 18582353612
+	estimatedCycles: 23382482282
+	peakMemory: 103604264
+
+or-chain-falsey-blowup.php:
+	instructions: 247621514
+	estimatedCycles: 314218854
+	peakMemory: 41512976
+
+or-chain-resolve-type-blowup.php:
+	instructions: 3083688735
+	estimatedCycles: 3347462195
+	peakMemory: 45856224
+
+phpdoc-inheritance-speedup.php:
+	instructions: 8914065482
+	estimatedCycles: 9944220742
+	peakMemory: 50479896
+
+phpdoc-intersection-blowup.php:
+	instructions: 49418634
+	estimatedCycles: 65565794
+	peakMemory: 37757136
+
+process-called-method-infinite-loop.php:
+	instructions: 367000513
+	estimatedCycles: 460612113
+	peakMemory: 41311848
+
+sealed-shape-if-chain.php:
+	instructions: 1635665620
+	estimatedCycles: 1991942830
+	peakMemory: 61502480
+
+union-fast-path.php:
+	instructions: 818818636
+	estimatedCycles: 1049785036
+	peakMemory: 41353752
+
+unrolled-foreach-list-guards.php:
+	instructions: 1749734463
+	estimatedCycles: 2089656253
+	peakMemory: 40596720
+
+wordpress-user.php:
+	instructions: 2804177998
+	estimatedCycles: 3555429078
+	peakMemory: 47112096
+

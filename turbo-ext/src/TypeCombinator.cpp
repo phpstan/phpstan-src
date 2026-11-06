@@ -37,6 +37,8 @@ namespace sigs = ptdecl::TypeCombinator::sig;
 
 zend_class_entry *pt_ce_type_combinator = nullptr;
 
+#define PT_TC_KEEP_SEPARATE_ARRAYS_LIMIT 4
+
 /* an UNDEF zv::Val / a negative int = pending exception */
 #define PT_FAIL_IF_UNDEF(v) \
 	do { \
@@ -1927,8 +1929,10 @@ public:
 
 	/* {{{ the array arm of doUnion() */
 
-	/* private static processArrayAccessoryTypes(array $arrayTypes): list<Type> */
-	static zv::Val processArrayAccessoryTypes(TypeList &arrayTypes)
+	/* private static processArrayAccessoryTypes(array $arrayTypes):
+	 * array{list<Type>, list<Type>} - the common accessory types are returned,
+	 * the arrays with accessory wrappers stripped go to strippedArrays */
+	static zv::Val processArrayAccessoryTypes(TypeList &arrayTypes, TypeList &strippedArrays)
 	{
 		bool allIterableAtLeastOnce = true;
 		zv::Arr accessoryTypes = zv::Arr::create(0);
@@ -1944,14 +1948,24 @@ public:
 			if (isInstance(arrayType, pt_ce_intersection_type)) {
 				zv::Val innerTypes = getTypes(arrayType);
 				PT_FAIL_IF_UNDEF(innerTypes);
+				zval *nonAccessoryInner = NULL;
+				uint32_t nonAccessoryInnerCount = 0;
+				bool skipStrip = false;
 				for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
 					zv::Val innerType = copy(entry.value().raw());
 					int isTemplate = isInstanceMap(innerType.raw(), PT_CLASS_TEMPLATE_TYPE);
 					PT_FAIL_IF_NEG(isTemplate);
-					if (isTemplate) break;
+					if (isTemplate) {
+						skipStrip = true;
+						break;
+					}
 					int isAccessory = isInstanceMap(innerType.raw(), PT_CLASS_ACCESSORY_TYPE);
 					PT_FAIL_IF_NEG(isAccessory);
-					if (!isAccessory && !isInstance(innerType.raw(), pt_ce_callable_type)) continue;
+					if (!isAccessory && !isInstance(innerType.raw(), pt_ce_callable_type)) {
+						nonAccessoryInner = entry.value().raw();
+						nonAccessoryInnerCount++;
+						continue;
+					}
 					if (isInstance(innerType.raw(), pt_ce_has_offset_type)) {
 						zv::Val offsetType = pt_has_offset_type_get_offset_type(Z_OBJ_P(innerType.raw()));
 						PT_FAIL_IF_UNDEF(offsetType);
@@ -1977,6 +1991,9 @@ public:
 					if (UNEXPECTED(key == NULL)) return zv::Val();
 					nestedIndexSet(accessoryTypes, key, (zend_ulong) i, std::move(innerType));
 				}
+				strippedArrays.push_back(copy(skipStrip || nonAccessoryInnerCount != 1 ? arrayType : nonAccessoryInner));
+			} else {
+				strippedArrays.push_back(copy(arrayType));
 			}
 
 			zend_long isConstantArray = callTrinary(arrayType, PT_LC("isconstantarray"));
@@ -2116,7 +2133,8 @@ public:
 			}
 		}
 
-		zv::Val accessoryTypesArray = processArrayAccessoryTypes(arrayTypes);
+		TypeList strippedArrays;
+		zv::Val accessoryTypesArray = processArrayAccessoryTypes(arrayTypes, strippedArrays);
 		PT_FAIL_IF_UNDEF(accessoryTypesArray);
 		TypeList accessoryTypes;
 		listFrom(accessoryTypesArray.raw(), accessoryTypes);
@@ -2197,6 +2215,65 @@ public:
 				zv::Arr result = zv::Arr::create(1);
 				result.push(std::move(intersected));
 				return zv::Val(std::move(result));
+			}
+
+			bool hasEmptyConstantArray = false;
+			for (zv::Val &arrayType : arrayTypes) {
+				int empty = isEmptyConstantArray(arrayType.raw());
+				PT_FAIL_IF_NEG(empty);
+				if (empty == 1) {
+					hasEmptyConstantArray = true;
+					break;
+				}
+			}
+
+			// TMP WIP: run for everyone, not just bleedingEdge, so CI exercises the new path
+			// Keep distinct array shapes (e.g. `list<int>|list<string>` rather than
+			// `list<int|string>`), but reduce the result before returning so analysis-
+			// emergent intermediate state does not blow up. `array{} | non-empty-array<X>`
+			// -> `array<X>` still goes to the old collapse path.
+			if (!hasEmptyConstantArray) {
+				// Dedupe using the stripped (accessory-free) describe as the key, but
+				// keep the original (with accessories) as the value when only one
+				// original has the shape. Two originals of one shape that differ in
+				// their accessories collapse to the stripped shape: keeping either of
+				// them would drop values of the other, and the accessories they share
+				// are added back below.
+				Level cacheLevel(PT_LC("cache"));
+				zv::Arr deduped = zv::Arr::create((uint32_t) arrayTypes.size());
+				for (size_t i = 0; i < strippedArrays.size(); i++) {
+					zv::Val description = describe(strippedArrays[i].raw(), cacheLevel);
+					zend_string *key = describedKey(description);
+					if (UNEXPECTED(key == NULL)) return zv::Val();
+					zval *kept = zend_symtable_find(deduped.table(), key);
+					if (kept == NULL) {
+						deduped.set(key, zv::Val::copyOf(arrayTypes[i].ref()));
+						continue;
+					}
+					zv::Val equal = call(kept, PT_LC("equals"), 1, arrayTypes[i].raw());
+					PT_FAIL_IF_UNDEF(equal);
+					if (zend_is_true(equal.raw())) continue;
+
+					deduped.set(key, zv::Val::copyOf(strippedArrays[i].ref()));
+				}
+
+				// Budget: when more distinct shapes remain than a small union would have,
+				// they are almost certainly analysis-emergent rather than user-written;
+				// fall through to the old collapse path to keep downstream tractable.
+				if (countOf(deduped.raw()) <= PT_TC_KEEP_SEPARATE_ARRAYS_LIMIT) {
+					zv::Arr results = zv::Arr::create(countOf(deduped.raw()));
+					for (zv::ArrayEntry entry : zv::ArrRef(deduped.raw())) {
+						zval *arrayType = entry.value().raw();
+						if (accessoryTypes.empty()) {
+							results.push(zv::Ref(arrayType));
+							continue;
+						}
+						zv::Val intersected = intersectWith(arrayType, accessoryTypes);
+						PT_FAIL_IF_UNDEF(intersected);
+						results.push(std::move(intersected));
+					}
+					return zv::Val(std::move(results));
+				}
 			}
 
 			zval *templateArrayType = NULL;
@@ -4488,6 +4565,7 @@ PT_MINIT_REGISTRATION(pt_register_type_combinator)
 
 	reg::Class cls("PHPStan\\Type\\TypeCombinator");
 	ptdecl::TypeCombinator::declareClass(cls);
+	cls.privateClassConstantLong("KEEP_SEPARATE_ARRAYS_LIMIT", PT_TC_KEEP_SEPARATE_ARRAYS_LIMIT);
 	cls.privateStaticTypedPropertyDefaultNull("cacheEnabled", MAY_BE_BOOL);
 
 	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {

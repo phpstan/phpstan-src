@@ -29,7 +29,7 @@ abstract class ConnectionProfiler
 					$connectionGroupedQueries[$key]['index'] = $i; // "Explain query" relies on query index in 'queries'.
 				}
 
-				assertType("non-empty-array<string, array{sql: string, executionMS: 0, types: array<int|string, int|Shopware\Core\Profiling\Doctrine\ParameterType>, count: 0, index: int}|array{sql: string, executionMS: float, types: array<int|string, int|Shopware\Core\Profiling\Doctrine\ParameterType>, count: int<1, max>, index: int}>", $connectionGroupedQueries);
+				assertType('non-empty-array<string, array{sql: string, executionMS: float, types: array<int|string, int|Shopware\Core\Profiling\Doctrine\ParameterType>, count: int<1, max>, index: int}>|non-empty-array<string, array{sql: string, executionMS: 0, types: array<int|string, int|Shopware\Core\Profiling\Doctrine\ParameterType>, count: 0, index: int}>', $connectionGroupedQueries);
 				$connectionGroupedQueries[$key]['executionMS'] += $query['executionMS'];
 				assertType("non-empty-array<string, array{sql: string, executionMS: float, types: array<int|string, int|Shopware\Core\Profiling\Doctrine\ParameterType>, count: int<0, max>, index: int}>", $connectionGroupedQueries);
 				++$connectionGroupedQueries[$key]['count'];

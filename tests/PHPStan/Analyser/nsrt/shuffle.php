@@ -106,10 +106,10 @@ class Foo
 	{
 		/** @var array{foo?: 1, bar: 2, }|array{baz: 3, foobar?: 4} $arr */
 		shuffle($arr);
-		assertType('non-empty-list<1|2|3|4>', $arr);
+		assertType('non-empty-list<1|2>|non-empty-list<3|4>', $arr);
 		assertNativeType('list', $arr);
 		assertType('non-empty-list<0|1>', array_keys($arr));
-		assertType('non-empty-list<1|2|3|4>', array_values($arr));
+		assertType('non-empty-list<1|2>|non-empty-list<3|4>', array_values($arr));
 	}
 
 	public function mixed($arr): void

@@ -31,7 +31,7 @@ function getItemsWithForLoopInvertLastCond(array $items): array
 		$items[$i] = 'hello';
 	}
 
-	assertType('list<string>', $items);
+	assertType("non-empty-list<string>&hasOffsetValue(0, 'hello')", $items);
 	return $items;
 }
 
@@ -47,6 +47,6 @@ function getItemsArray(array $items): array
 		$items[$i] = 'hello';
 	}
 
-	assertType('array<string>', $items);
+	assertType("non-empty-array<string>&hasOffsetValue(0, 'hello')", $items);
 	return $items;
 }

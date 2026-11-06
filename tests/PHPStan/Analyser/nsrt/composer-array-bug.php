@@ -57,7 +57,7 @@ class Foo
 				assertType("non-empty-array<mixed>&hasOffsetValue('authors', mixed~(0|0.0|''|'0'|array{}|false|null))", $this->config);
 			}
 
-			assertType("array<mixed>", $this->config);
+			assertType("array<mixed~'authors', mixed>", $this->config);
 		}
 	}
 

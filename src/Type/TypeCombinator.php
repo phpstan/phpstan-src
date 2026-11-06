@@ -57,6 +57,8 @@ use const PHP_INT_MIN;
 final class TypeCombinator
 {
 
+	private const KEEP_SEPARATE_ARRAYS_LIMIT = 4;
+
 	/**
 	 * Turned on by TurboExtensionEnabler when the native extension is active, so that
 	 * union(), intersect() and remove() route through the memoizing TypeCombinatorCache.
@@ -1144,22 +1146,27 @@ final class TypeCombinator
 	}
 
 	/**
-	 * @param Type[] $arrayTypes
-	 * @return list<Type>
+	 * @param list<Type> $arrayTypes
+	 * @return array{list<Type>, list<Type>} tuple of [arrays with accessory wrappers stripped, common accessory types]
 	 */
 	private static function processArrayAccessoryTypes(array $arrayTypes): array
 	{
 		$isIterableAtLeastOnce = [];
 		$accessoryTypes = [];
+		$strippedArrays = [];
 		foreach ($arrayTypes as $i => $arrayType) {
 			$isIterableAtLeastOnce[] = $arrayType->isIterableAtLeastOnce();
 
 			if ($arrayType instanceof IntersectionType) {
+				$nonAccessoryInner = [];
+				$skipStrip = false;
 				foreach ($arrayType->getTypes() as $innerType) {
 					if ($innerType instanceof TemplateType) {
+						$skipStrip = true;
 						break;
 					}
 					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
+						$nonAccessoryInner[] = $innerType;
 						continue;
 					}
 					if ($innerType instanceof HasOffsetType) {
@@ -1172,6 +1179,9 @@ final class TypeCombinator
 
 					$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
 				}
+				$strippedArrays[] = $skipStrip || count($nonAccessoryInner) !== 1 ? $arrayType : $nonAccessoryInner[0];
+			} else {
+				$strippedArrays[] = $arrayType;
 			}
 
 			if (!$arrayType->isConstantArray()->yes()) {
@@ -1217,7 +1227,7 @@ final class TypeCombinator
 			$commonAccessoryTypes[] = new NonEmptyArrayType();
 		}
 
-		return $commonAccessoryTypes;
+		return [$strippedArrays, $commonAccessoryTypes];
 	}
 
 	/**
@@ -1268,7 +1278,7 @@ final class TypeCombinator
 			return [$emptyArray, ...self::processArrayTypes($otherArrayTypes)];
 		}
 
-		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
+		[$strippedArrays, $accessoryTypes] = self::processArrayAccessoryTypes($arrayTypes);
 
 		if (count($arrayTypes) === 1) {
 			return [
@@ -1313,6 +1323,63 @@ final class TypeCombinator
 			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);
 			if (count($reducedArrayTypes) === 1) {
 				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];
+			}
+
+			$hasEmptyConstantArray = false;
+			foreach ($arrayTypes as $arrayType) {
+				if ($arrayType->isIterableAtLeastOnce()->no() && $arrayType->isConstantArray()->yes()) {
+					$hasEmptyConstantArray = true;
+					break;
+				}
+			}
+
+			// TMP WIP: run for everyone, not just bleedingEdge, so CI exercises the new path
+			// Keep distinct array shapes (e.g. `list<int>|list<string>` rather than
+			// `list<int|string>`), but reduce the result before returning so analysis-
+			// emergent intermediate state (foreach over mixed[], deeply nested
+			// ArrayDimFetch writes, sequential `if ($x !== null) $arr['x'] = $x;`) does
+			// not blow up. `array{} | non-empty-array<X>` -> `array<X>` still goes to
+			// the old collapse path.
+			if (!$hasEmptyConstantArray) {
+				// Dedupe using the stripped (accessory-free) describe as the key, but
+				// keep the original (with accessories) as the value. This collapses
+				// members that share an underlying shape but differ only in stacked
+				// per-element accessories like hasOffsetValue (cf. the optional-
+				// properties repro: 4 same-shape members differing only in stacked
+				// hasOffsetValue accessories), while preserving per-member accessories
+				// like list / non-empty when only one original has the shape. Two
+				// originals of one shape that differ in their accessories collapse to
+				// the stripped shape: keeping either of them would drop values of the
+				// other, and the accessories they share are added back below.
+				$deduped = [];
+				foreach ($strippedArrays as $i => $stripped) {
+					$key = $stripped->describe(VerbosityLevel::cache());
+					if (!array_key_exists($key, $deduped)) {
+						$deduped[$key] = $arrayTypes[$i];
+						continue;
+					}
+					if ($deduped[$key]->equals($arrayTypes[$i])) {
+						continue;
+					}
+
+					$deduped[$key] = $stripped;
+				}
+				$deduped = array_values($deduped);
+
+				// Budget: when more distinct shapes remain than a small union would have,
+				// they are almost certainly analysis-emergent rather than user-written;
+				// fall through to the old collapse path to keep downstream tractable.
+				// Mirrors optimizeConstantArrays() which generalizes once a similar
+				// budget (256 constant value types) is exceeded.
+				if (count($deduped) <= self::KEEP_SEPARATE_ARRAYS_LIMIT) {
+					$results = [];
+					foreach ($deduped as $arrayType) {
+						$results[] = $accessoryTypes === []
+							? $arrayType
+							: self::intersect($arrayType, ...$accessoryTypes);
+					}
+					return $results;
+				}
 			}
 
 			$templateArrayType = null;

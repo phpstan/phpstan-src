@@ -23,6 +23,9 @@ namespace sigs = ptdecl::TypeUtils::sig;
 
 zend_class_entry *pt_ce_type_utils = nullptr;
 
+/* the twin's private constant */
+#define PT_TU_FLATTEN_CONSTANT_ARRAYS_LIMIT 16384
+
 namespace phpstanturbo {
 
 struct ConstantArrayCombinationContext
@@ -215,7 +218,7 @@ public:
 			 * expanding: each ConstantArrayType with N optional keys produces
 			 * 2^N variants from getAllArrays(), multiplied across the
 			 * constant arrays; bail out above the limit rather than allocate
-			 * O(2^N). The twin's `16384 / max($arrayCount, 1)` is a float
+			 * O(2^N). The twin's `FLATTEN_CONSTANT_ARRAYS_LIMIT / max($arrayCount, 1)` is a float
 			 * division — compared as one here. */
 			zend_long estimatedCount = 1;
 			bool bail = false;
@@ -233,7 +236,7 @@ public:
 				}
 				zend_long optionalCount = (zend_long) zv::ArrRef(optionalKeys.raw()).size();
 				zend_long arrayCount = optionalCount <= 20 ? ((zend_long) 1 << optionalCount) : ZEND_LONG_MAX;
-				if (arrayCount > 16384 || (double) estimatedCount > 16384.0 / (double) (arrayCount > 1 ? arrayCount : 1)) {
+				if (arrayCount > PT_TU_FLATTEN_CONSTANT_ARRAYS_LIMIT || (double) estimatedCount > (double) PT_TU_FLATTEN_CONSTANT_ARRAYS_LIMIT / (double) (arrayCount > 1 ? arrayCount : 1)) {
 					bail = true;
 					break;
 				}
@@ -481,6 +484,7 @@ PT_MINIT_REGISTRATION(pt_register_type_utils)
 {
 	reg::Class cls("PHPStan\\Type\\TypeUtils");
 	ptdecl::TypeUtils::declareClass(cls);
+	cls.privateClassConstantLong("FLATTEN_CONSTANT_ARRAYS_LIMIT", PT_TU_FLATTEN_CONSTANT_ARRAYS_LIMIT);
 	ptdecl::TypeUtils::declareProperties(cls);
 
 	static const reg::Arg nullableThisType = reg::obj("", "PHPStan\\Type\\ThisType", true);

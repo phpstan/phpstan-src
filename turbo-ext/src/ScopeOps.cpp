@@ -18,6 +18,7 @@
 namespace sigs = ptdecl::ScopeOps::sig;
 #include "zv.h"
 #include "TypeOps.h"
+#include "TypeTraits.h"
 
 #include <cstring>
 
@@ -600,7 +601,7 @@ public:
 
 			/* the branch set difference — see the twin for why an unchanged
 			 * remainder falls back to the merged-type comparison */
-			zv::Val remainder = typeCombinatorRemove(holderType(holder), holderType(theirHolder));
+			zv::Val remainder = createGuardType(holderType(holder), holderType(theirHolder));
 			if (UNEXPECTED(remainder.isUndef())) return zv::Val();
 			if (remainder.ref().instanceOf(neverTypeCe)) continue;
 			{
@@ -764,6 +765,93 @@ public:
 
 		if (!result.isUndef()) return zv::Val(std::move(result));
 		return zv::Arr::copyOfTable(conditional.table());
+	}
+
+	/*
+	 * Mirrors ScopeOps::createGuardType(): the part of our branch type the
+	 * other branch cannot produce, with constant-array members subtracted
+	 * whole - see the twin for why one the other branch can partly produce is
+	 * left out instead of being enumerated by TypeCombinator::remove().
+	 */
+	static zv::Val createGuardType(zval *ourType, zval *theirType)
+	{
+		zend_long ourIsConstantArray;
+		if (UNEXPECTED(!isConstantArrayValue(ourType, &ourIsConstantArray))) return zv::Val();
+		if (ourIsConstantArray == PT_TRI_NO) return typeCombinatorRemove(ourType, theirType);
+
+		/* $ourType instanceof UnionType && !$ourType instanceof TemplateType */
+		bool ourIsUnion;
+		if (UNEXPECTED(!isNonTemplateUnion(ourType, &ourIsUnion))) return zv::Val();
+		zv::Val ourMembersHolder;
+		if (ourIsUnion) {
+			ourMembersHolder = pt_union_type_get_types(Z_OBJ_P(ourType));
+			if (UNEXPECTED(ourMembersHolder.isUndef())) return zv::Val();
+		}
+
+		zv::Arr guardMembers = zv::Arr::create(4);
+		zv::Arr otherMembers = zv::Arr::create(4);
+		uint32_t ourMemberCount = 0;
+		auto visitMember = [&](zval *ourMember) -> bool {
+			ourMemberCount++;
+			bool memberIsConstantArray;
+			if (UNEXPECTED(!isConstantArrayYes(ourMember, &memberIsConstantArray))) return false;
+			if (!memberIsConstantArray) {
+				otherMembers.push(zv::Ref(ourMember));
+				return true;
+			}
+			zend_long theirIsSuperTypeOfMember;
+			if (UNEXPECTED(!isSuperTypeOfValue(theirType, ourMember, &theirIsSuperTypeOfMember))) return false;
+			if (theirIsSuperTypeOfMember != PT_TRI_NO) return true;
+			guardMembers.push(zv::Ref(ourMember));
+			return true;
+		};
+		if (ourIsUnion) {
+			for (auto entry : zv::ArrRef(ourMembersHolder.raw())) {
+				if (UNEXPECTED(!visitMember(entry.value().deref().raw()))) return zv::Val();
+			}
+		} else if (UNEXPECTED(!visitMember(ourType))) {
+			return zv::Val();
+		}
+
+		if (otherMembers.arrRef().size() > 0) {
+			zv::Val otherType;
+			if (otherMembers.arrRef().size() == 1) {
+				otherType = zv::Val::copyOf(zv::Ref(zend_hash_index_find(otherMembers.table(), 0)));
+			} else {
+				zval otherUnion;
+				if (UNEXPECTED(!pt_union_type_new(&otherUnion, otherMembers.raw()))) return zv::Val();
+				otherType = zv::Val::adopt(otherUnion);
+			}
+			zv::Val otherRemainder = typeCombinatorRemove(otherType.raw(), theirType);
+			if (UNEXPECTED(otherRemainder.isUndef())) return zv::Val();
+			bool remainderIsUnion;
+			if (UNEXPECTED(!isNonTemplateUnion(otherRemainder.raw(), &remainderIsUnion))) return zv::Val();
+			if (remainderIsUnion) {
+				zv::Val remainderMembers = pt_union_type_get_types(Z_OBJ_P(otherRemainder.raw()));
+				if (UNEXPECTED(remainderMembers.isUndef())) return zv::Val();
+				for (auto entry : zv::ArrRef(remainderMembers.raw())) {
+					guardMembers.push(entry.value().deref());
+				}
+			} else if (!otherRemainder.ref().instanceOf(pt_ce_never_type)) {
+				guardMembers.push(otherRemainder.ref());
+			}
+		}
+
+		if (guardMembers.arrRef().size() == ourMemberCount && otherMembers.arrRef().size() == 0) {
+			return zv::Val::copyOf(zv::Ref(ourType));
+		}
+		if (guardMembers.arrRef().size() == 0) {
+			zval never;
+			if (UNEXPECTED(!pt_never_type_new(&never))) return zv::Val();
+			return zv::Val::adopt(never);
+		}
+		if (guardMembers.arrRef().size() == 1) {
+			return zv::Val::copyOf(zv::Ref(zend_hash_index_find(guardMembers.table(), 0)));
+		}
+
+		zval guardUnion;
+		if (UNEXPECTED(!pt_union_type_new(&guardUnion, guardMembers.raw()))) return zv::Val();
+		return zv::Val::adopt(guardUnion);
 	}
 
 	/*
@@ -1386,6 +1474,30 @@ private:
 			return false;
 		}
 		*out = pt_trinary_value(resultProp.asObject());
+		return true;
+	}
+
+	/* $type->isConstantArray() as a PT_TRI_* value */
+	static bool isConstantArrayValue(zval *type, zend_long *out)
+	{
+		zv::Val result = pt_type_op(Z_OBJ_P(type), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
+		if (UNEXPECTED(result.isUndef())) return false;
+		if (UNEXPECTED(!result.ref().instanceOf(pt_ce_trinary))) {
+			zend_throw_error(NULL, "phpstan_turbo: isConstantArray did not return a TrinaryLogic");
+			return false;
+		}
+		*out = pt_trinary_value(result.ref().asObject());
+		return true;
+	}
+
+	/* $type instanceof UnionType && !$type instanceof TemplateType */
+	static bool isNonTemplateUnion(zval *type, bool *out)
+	{
+		*out = false;
+		if (Z_TYPE_P(type) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type), pt_ce_union_type)) return true;
+		zend_class_entry *templateTypeCe = pt_class(PT_CLASS_TEMPLATE_TYPE);
+		if (UNEXPECTED(templateTypeCe == NULL && EG(exception))) return false;
+		*out = templateTypeCe == NULL || !instanceof_function(Z_OBJCE_P(type), templateTypeCe);
 		return true;
 	}
 

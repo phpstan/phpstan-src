@@ -1976,6 +1976,8 @@ public:
 			if (isInstance(arrayType, pt_ce_intersection_type)) {
 				zv::Val innerTypes = getTypes(arrayType);
 				PT_FAIL_IF_UNDEF(innerTypes);
+				/* the same for every hasOffset() member, asked once */
+				zv::Val valueType;
 				for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
 					zv::Val innerType = copy(entry.value().raw());
 					int isTemplate = isInstanceMap(innerType.raw(), PT_CLASS_TEMPLATE_TYPE);
@@ -1987,8 +1989,10 @@ public:
 					if (isInstance(innerType.raw(), pt_ce_has_offset_type)) {
 						zv::Val offsetType = pt_has_offset_type_get_offset_type(Z_OBJ_P(innerType.raw()));
 						PT_FAIL_IF_UNDEF(offsetType);
-						zv::Val valueType = call(arrayType, PT_LC("getiterablevaluetype"));
-						PT_FAIL_IF_UNDEF(valueType);
+						if (valueType.isUndef()) {
+							valueType = call(arrayType, PT_LC("getiterablevaluetype"));
+							PT_FAIL_IF_UNDEF(valueType);
+						}
 						innerType = hasOffsetValueType(offsetType.raw(), valueType.raw());
 						PT_FAIL_IF_UNDEF(innerType);
 					}

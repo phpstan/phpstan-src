@@ -454,6 +454,44 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testParamClosureScope(): void
+	{
+		$this->analyse([__DIR__ . '/data/param-closure-scope.php'], [
+			[
+				'PHPDoc tag @param-closure-scope references unknown parameter: $b',
+				20,
+			],
+			[
+				'PHPDoc tag @param-closure-scope for parameter $i contains unresolvable type.',
+				27,
+			],
+			[
+				'PHPDoc tag @param-closure-scope for parameter $i contains unresolvable type.',
+				34,
+			],
+			[
+				'PHPDoc tag @param-closure-scope is for parameter $i with non-Closure type string.',
+				41,
+			],
+			[
+				'PHPDoc tag @param-closure-scope for parameter $i contains generic type Exception<int, float> but class Exception is not generic.',
+				48,
+			],
+			[
+				'Generic type ParamClosureScopePhpDocRule\FooBar<mixed> in PHPDoc tag @param-closure-scope for parameter $i does not specify all template types of class ParamClosureScopePhpDocRule\FooBar: T, TT',
+				55,
+			],
+			[
+				'Type mixed in generic type ParamClosureScopePhpDocRule\FooBar<mixed> in PHPDoc tag @param-closure-scope for parameter $i is not subtype of template type T of int of class ParamClosureScopePhpDocRule\FooBar.',
+				55,
+			],
+			[
+				'Generic type ParamClosureScopePhpDocRule\FooBar<int> in PHPDoc tag @param-closure-scope for parameter $i does not specify all template types of class ParamClosureScopePhpDocRule\FooBar: T, TT',
+				62,
+			],
+		]);
+	}
+
 	public function testGenericStatic(): void
 	{
 		$this->analyse([__DIR__ . '/data/incompatible-phpdoc-generic-static.php'], [

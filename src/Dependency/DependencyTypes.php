@@ -51,6 +51,7 @@ final class DependencyTypes
 
 			$types[] = $parameter->getOutType();
 			$types[] = $parameter->getClosureThisType();
+			$types[] = $parameter->getClosureScopeType();
 		}
 
 		return $types;
@@ -141,6 +142,7 @@ final class DependencyTypes
 			$types[] = $parameter->getPhpDocType();
 			$types[] = $parameter->getOutType();
 			$types[] = $parameter->getClosureThisType();
+			$types[] = $parameter->getClosureScopeType();
 		}
 		$types[] = $reflection->getNativeReturnType();
 		$types[] = $reflection->getPhpDocReturnType();

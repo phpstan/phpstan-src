@@ -636,4 +636,14 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15197(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15197.php'], [
+			[
+				'Access to undefined constant Bug15197\BoundScope::MISSING.',
+				61,
+			],
+		]);
+	}
+
 }

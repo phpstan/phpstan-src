@@ -137,6 +137,7 @@ final class NativeFunctionReflectionProvider
 						$phpDocType = null;
 						$immediatelyInvokedCallable = TrinaryLogic::createMaybe();
 						$closureThisType = null;
+						$closureScopeType = null;
 						$pureUnlessCallableIsImpureParameter = TrinaryLogic::createFromBoolean($pureUnlessCallableIsImpureParameters[$name] ?? false);
 						$pureUnlessParameterPassedParameter = TrinaryLogic::createFromBoolean($pureUnlessParameterPassedParameters[$name] ?? false);
 						if ($phpDoc !== null) {
@@ -148,6 +149,9 @@ final class NativeFunctionReflectionProvider
 							}
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamClosureThisTags())) {
 								$closureThisType = $phpDoc->getParamClosureThisTags()[$parameterSignature->getName()]->getType();
+							}
+							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamClosureScopeTags())) {
+								$closureScopeType = $phpDoc->getParamClosureScopeTags()[$parameterSignature->getName()]->getType();
 							}
 							if (($phpDoc->getParamsPureUnlessCallableIsImpure()[$parameterSignature->getName()] ?? false) === true) {
 								$pureUnlessCallableIsImpureParameter = TrinaryLogic::createYes();
@@ -173,6 +177,7 @@ final class NativeFunctionReflectionProvider
 							$allowedConstantsMapProvider->getForFunctionParameter($lowerCasedFunctionName, $parameterSignature->getName()),
 							$pureUnlessCallableIsImpureParameter,
 							$pureUnlessParameterPassedParameter,
+							$closureScopeType,
 						);
 					}, $functionSignature->getParameters()),
 					$functionSignature->isVariadic(),

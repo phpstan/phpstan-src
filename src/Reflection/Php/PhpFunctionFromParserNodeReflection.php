@@ -53,6 +53,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 * @param array<string, bool> $pureUnlessParameterPassedParameters
+	 * @param array<string, Type> $phpDocClosureScopeTypeParameters
 	 */
 	public function __construct(
 		FunctionLike $functionLike,
@@ -78,6 +79,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 		private array $attributes,
 		private array $pureUnlessCallableIsImpureParameters,
 		private array $pureUnlessParameterPassedParameters,
+		private array $phpDocClosureScopeTypeParameters = [],
 	)
 	{
 		$this->functionLike = $functionLike;
@@ -184,6 +186,12 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 				$closureThisType = null;
 			}
 
+			if (isset($this->phpDocClosureScopeTypeParameters[$parameter->var->name])) {
+				$closureScopeType = $this->phpDocClosureScopeTypeParameters[$parameter->var->name];
+			} else {
+				$closureScopeType = null;
+			}
+
 			$pureUnlessCallableIsImpureParameter = TrinaryLogic::createFromBoolean($this->pureUnlessCallableIsImpureParameters[$parameter->var->name] ?? false);
 			$pureUnlessParameterPassedParameter = TrinaryLogic::createFromBoolean($this->pureUnlessParameterPassedParameters[$parameter->var->name] ?? false);
 
@@ -203,6 +211,7 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 				$this->parameterAttributes[$parameter->var->name] ?? [],
 				$pureUnlessCallableIsImpureParameter,
 				$pureUnlessParameterPassedParameter,
+				$closureScopeType,
 			);
 		}
 

@@ -198,9 +198,10 @@ public:
 		zv::Val attributeDependencies = ptsh::processAttributeGroups(OBJ_PROP_NUM(self, slots::attributesHandler), nodeScopeResolver, stmt, attrGroups, scope, storage, nodeCallback);
 		if (UNEXPECTED(attributeDependencies.isUndef())) return zv::Val();
 		collect(dependencies, attributeDependencies.raw());
-		/* [$templateTypeMap, ..., $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters] */
+		/* [$templateTypeMap, ..., $phpDocParameterOutTypes, , , , $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters,
+		 * $phpDocClosureScopeTypeParameters] */
 		pt_php_docs phpDocs;
-		if (UNEXPECTED(!ptsh::getPhpDocs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, stmt, 0x1FFFFu | (1u << 20) | (1u << 21), phpDocs))) return zv::Val();
+		if (UNEXPECTED(!ptsh::getPhpDocs(OBJ_PROP_NUM(self, slots::phpDocsResolver), scope, stmt, 0x1FFFFu | (1u << 20) | (1u << 21) | (1u << 22), phpDocs))) return zv::Val();
 		zval *docs[PT_PHP_DOCS_COUNT];
 		for (uint32_t index = 0; index < PT_PHP_DOCS_COUNT; index++) docs[index] = &phpDocs.items[index];
 		zval *templateTypeMap = docs[0];
@@ -222,6 +223,7 @@ public:
 		zval *phpDocParameterOutTypes = docs[16];
 		zval *pureUnlessCallableIsImpureParameters = docs[20];
 		zval *pureUnlessParameterPassedParameters = docs[21];
+		zval *phpDocClosureScopeTypeParameters = docs[22];
 
 		zval *params = ptsh::readNodeProperty(pt_cmh_params_site, stmt, PT_LC("params"));
 		if (UNEXPECTED(params == NULL)) return zv::Val();
@@ -261,7 +263,7 @@ public:
 			isConstructor = Z_TYPE_P(identifier) == IS_STRING && zend_string_equals_literal_ci(Z_STR_P(identifier), "__construct");
 		}
 
-		zval enterArgv[21];
+		zval enterArgv[22];
 		ZVAL_COPY_VALUE(&enterArgv[0], stmt);
 		ZVAL_COPY_VALUE(&enterArgv[1], templateTypeMap);
 		ZVAL_COPY_VALUE(&enterArgv[2], phpDocParameterTypes);
@@ -283,6 +285,7 @@ public:
 		ZVAL_NULL(&enterArgv[18]);
 		ZVAL_COPY_VALUE(&enterArgv[19], pureUnlessCallableIsImpureParameters);
 		ZVAL_COPY_VALUE(&enterArgv[20], pureUnlessParameterPassedParameters);
+		ZVAL_COPY_VALUE(&enterArgv[21], phpDocClosureScopeTypeParameters);
 		zv::Val methodScope = pt_mutating_scope_enter_class_method(Z_OBJ_P(scope), enterArgv);
 		if (UNEXPECTED(methodScope.isUndef())) return zv::Val();
 

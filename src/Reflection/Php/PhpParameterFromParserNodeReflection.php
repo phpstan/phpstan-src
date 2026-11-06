@@ -35,6 +35,7 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 		private array $attributes,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
 		private TrinaryLogic $pureUnlessParameterPassedParameter,
+		private ?Type $closureScopeType = null,
 	)
 	{
 	}
@@ -110,6 +111,11 @@ final class PhpParameterFromParserNodeReflection implements ExtendedParameterRef
 	public function getClosureThisType(): ?Type
 	{
 		return $this->closureThisType;
+	}
+
+	public function getClosureScopeType(): ?Type
+	{
+		return $this->closureScopeType;
 	}
 
 	public function getAttributes(): array

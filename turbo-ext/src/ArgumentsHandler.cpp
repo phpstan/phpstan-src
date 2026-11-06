@@ -1286,8 +1286,8 @@ private:
 		return zv::Val::null();
 	}
 
-	/* Mirrors resolveClosureThisType() (the type or null) */
-	zv::Val resolveClosureThisType(zval *call, zval *calleeReflection, zval *parameter, zval *scope) const
+	/* Mirrors resolveClosureThisTypeFromExtensions() (the type or null) */
+	zv::Val resolveClosureThisTypeFromExtensions(zval *call, zval *calleeReflection, zval *parameter, zval *scope) const
 	{
 		bool found = false;
 		zv::Val type;
@@ -1311,10 +1311,6 @@ private:
 		}
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 		if (found) return type;
-
-		bool isExtended = false;
-		if (UNEXPECTED(!isA(parameter, PT_CLASS_EXTENDED_PARAMETER_REFLECTION, isExtended))) return zv::Val();
-		if (isExtended) return parameterGetClosureThisType(parameter);
 		return zv::Val::null();
 	}
 
@@ -1830,9 +1826,10 @@ private:
 		return stored;
 	}
 
-	/* the closure $this binding and the parameter-type extensions ahead of a
-	 * closure / arrow function body walk; restoreThisScope receives the scope
-	 * before the binding (UNDEF when none); false = pending exception */
+	/* the closure $this / scope binding (applyClosureThisAndScope()) and the
+	 * parameter-type extensions ahead of a closure / arrow function body walk;
+	 * restoreThisScope receives the scope before the binding (UNDEF when
+	 * none); false = pending exception */
 	zend_never_inline bool prepareClosureArgScope(Walk &w, zval *value, ArgLocals &a, zv::Val *restoreThisScope) const
 	{
 		bool isExtended = false;
@@ -1841,13 +1838,27 @@ private:
 			zv::Val staticHold;
 			zval *isStatic = readProperty(pt_ah_closure_static_site, value, PT_LC("static"), staticHold);
 			if (UNEXPECTED(isStatic == NULL)) return false;
+			zv::Val closureThisType = zv::Val::null();
+			zv::Val closureScopeType = pt_parameter_reflection_call(a.parameter, PT_PR_GET_CLOSURE_SCOPE_TYPE);
+			if (UNEXPECTED(closureScopeType.isUndef())) return false;
 			if (!zend_is_true(isStatic)) {
-				zv::Val closureThisType = resolveClosureThisType(w.callLike, w.calleeReflection, a.parameter, a.scopeToPass.raw());
+				closureThisType = resolveClosureThisTypeFromExtensions(w.callLike, w.calleeReflection, a.parameter, a.scopeToPass.raw());
 				if (UNEXPECTED(closureThisType.isUndef())) return false;
 				if (!closureThisType.isNull()) {
-					if (restoreThisScope != NULL) {
-						*restoreThisScope = zv::Val::copyOf(zv::Ref(a.scopeToPass.raw()));
+					// an extension's $this also binds the scope (??=)
+					if (closureScopeType.isNull()) {
+						closureScopeType = zv::Val::copyOf(zv::Ref(closureThisType.raw()));
 					}
+				} else {
+					closureThisType = parameterGetClosureThisType(a.parameter);
+					if (UNEXPECTED(closureThisType.isUndef())) return false;
+				}
+			}
+			if (!closureThisType.isNull() || !closureScopeType.isNull()) {
+				if (restoreThisScope != NULL) {
+					*restoreThisScope = zv::Val::copyOf(zv::Ref(a.scopeToPass.raw()));
+				}
+				if (!closureThisType.isNull()) {
 					if (UNEXPECTED(Z_TYPE_P(a.scopeToPass.raw()) != IS_OBJECT)) {
 						zend_throw_error(NULL, "Call to a member function assignVariable() on %s", zend_zval_value_name(a.scopeToPass.raw()));
 						return false;
@@ -1856,9 +1867,20 @@ private:
 					if (UNEXPECTED(objectWithoutClassType.isUndef())) return false;
 					zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(a.scopeToPass.raw()), pt_ah_this, closureThisType.raw(), objectWithoutClassType.raw(), pt_trinary_singleton(PT_TRI_YES));
 					if (UNEXPECTED(assigned.isUndef())) return false;
-					zv::Val classNames = pt_type_op(Z_OBJ_P(closureThisType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
+					a.scopeToPass = std::move(assigned);
+				}
+				if (!closureScopeType.isNull()) {
+					if (UNEXPECTED(Z_TYPE_P(a.scopeToPass.raw()) != IS_OBJECT)) {
+						zend_throw_error(NULL, "Call to a member function withClosureBindScopeClasses() on %s", zend_zval_value_name(a.scopeToPass.raw()));
+						return false;
+					}
+					if (UNEXPECTED(Z_TYPE_P(closureScopeType.raw()) != IS_OBJECT)) {
+						zend_throw_error(NULL, "Call to a member function getObjectClassNames() on %s", zend_zval_value_name(closureScopeType.raw()));
+						return false;
+					}
+					zv::Val classNames = pt_type_op(Z_OBJ_P(closureScopeType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
 					if (UNEXPECTED(classNames.isUndef())) return false;
-					zv::Val bound = pt_mutating_scope_with_closure_bind_scope_classes(Z_OBJ_P(assigned.raw()), classNames.raw());
+					zv::Val bound = pt_mutating_scope_with_closure_bind_scope_classes(Z_OBJ_P(a.scopeToPass.raw()), classNames.raw());
 					if (UNEXPECTED(bound.isUndef())) return false;
 					a.scopeToPass = std::move(bound);
 				}

@@ -3052,7 +3052,7 @@ static int pt_callable_type_has_template(zval *type)
 	return pt_callable_call_bool(object, PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
 }
 
-/* $parameter->getOutType() / getClosureThisType() !== null && ->hasTemplateOrLateResolvableType() */
+/* $parameter->getOutType() / getClosureThisType() / getClosureScopeType() !== null && ->hasTemplateOrLateResolvableType() */
 static int pt_callable_nullable_type_has_template(zend_object *parameter, const char *lcname, size_t len)
 {
 	zv::Val type = pt_type_call(parameter, lcname, len, 0, NULL);
@@ -3088,6 +3088,12 @@ bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *ass
 			return true;
 		}
 		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getclosurethistype"));
+		if (UNEXPECTED(has < 0)) return false;
+		if (has == 1) {
+			out = true;
+			return true;
+		}
+		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getclosurescopetype"));
 		if (UNEXPECTED(has < 0)) return false;
 		if (has == 1) {
 			out = true;
@@ -5255,8 +5261,9 @@ zv::Val protoMap(zval *array, const char *what, F fn)
 
 /* the parameter callback of the twins' array_map(): new
  * ExtendedDummyParameter($parameter->getName(), transform($parameter->getType()),
- * ...) — each getter called once (the twins call getOutType() and
- * getClosureThisType() twice; pure getters); UNDEF = pending exception */
+ * ...) — each getter called once (the twins call getOutType(),
+ * getClosureThisType() and getClosureScopeType() twice; pure getters);
+ * UNDEF = pending exception */
 zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transformer, zend_object *parameter)
 {
 	zv::Val name = protoParameterCall(parameter, PT_PR_GET_NAME, "getname", PROTO_ANY);
@@ -5297,7 +5304,11 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	if (UNEXPECTED(pureUnlessCallableIsImpure.isUndef())) return zv::Val();
 	zv::Val pureUnlessParameterPassed = protoParameterCall(parameter, PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER, "ispureunlessparameterpassedparameter", PROTO_ANY);
 	if (UNEXPECTED(pureUnlessParameterPassed.isUndef())) return zv::Val();
-	zval args[15];
+	zv::Val closureScopeType = protoParameterCall(parameter, PT_PR_GET_CLOSURE_SCOPE_TYPE, "getclosurescopetype", PROTO_OBJECT_OR_NULL);
+	if (UNEXPECTED(closureScopeType.isUndef())) return zv::Val();
+	zv::Val transformedClosureScopeType = protoTransformNullable(transformer, closureScopeType.raw());
+	if (UNEXPECTED(transformedClosureScopeType.isUndef())) return zv::Val();
+	zval args[16];
 	ZVAL_COPY_VALUE(&args[0], name.raw());
 	ZVAL_COPY_VALUE(&args[1], transformedType.raw());
 	ZVAL_COPY_VALUE(&args[2], optional.raw());
@@ -5313,7 +5324,8 @@ zv::Val protoParameter(PrototypeKind kind, const PrototypeTransformer &transform
 	ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
 	ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
 	ZVAL_COPY_VALUE(&args[14], pureUnlessParameterPassed.raw());
-	return pt_extended_dummy_parameter_new(15, args);
+	ZVAL_COPY_VALUE(&args[15], transformedClosureScopeType.raw());
+	return pt_extended_dummy_parameter_new(16, args);
 }
 
 /* the twins' $variantFn: new ExtendedFunctionVariant(...) over $acceptor;

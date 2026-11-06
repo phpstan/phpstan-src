@@ -41,6 +41,7 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 		private ?ParameterAllowedConstants $allowedConstants,
 		private TrinaryLogic $pureUnlessCallableIsImpureParameter,
 		private TrinaryLogic $pureUnlessParameterPassedParameter,
+		private ?Type $closureScopeType = null,
 	)
 	{
 	}
@@ -143,6 +144,11 @@ final class PhpParameterReflection implements ExtendedParameterReflection
 	public function getClosureThisType(): ?Type
 	{
 		return $this->closureThisType;
+	}
+
+	public function getClosureScopeType(): ?Type
+	{
+		return $this->closureScopeType;
 	}
 
 	public function getAttributes(): array

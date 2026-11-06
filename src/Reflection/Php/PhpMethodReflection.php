@@ -69,6 +69,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 * @param array<string, bool> $pureUnlessParameterPassedParameters
+	 * @param array<string, Type> $phpDocClosureScopeTypeParameters
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -98,6 +99,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private array $attributes,
 		private array $pureUnlessCallableIsImpureParameters,
 		private array $pureUnlessParameterPassedParameters,
+		private array $phpDocClosureScopeTypeParameters = [],
 	)
 	{
 	}
@@ -243,6 +245,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->allowedConstantsMapProvider->getForMethodParameter($this->declaringClass->getName(), $this->reflection->getName(), $reflection->getName()),
 			TrinaryLogic::createFromBoolean($this->pureUnlessCallableIsImpureParameters[$reflection->getName()] ?? false),
 			TrinaryLogic::createFromBoolean($this->pureUnlessParameterPassedParameters[$reflection->getName()] ?? false),
+			$this->phpDocClosureScopeTypeParameters[$reflection->getName()] ?? null,
 		), $this->reflection->getParameters());
 	}
 
@@ -465,6 +468,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributes,
 			$this->pureUnlessCallableIsImpureParameters,
 			$this->pureUnlessParameterPassedParameters,
+			$this->phpDocClosureScopeTypeParameters,
 		);
 	}
 
@@ -501,6 +505,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributes,
 			$this->pureUnlessCallableIsImpureParameters,
 			$this->pureUnlessParameterPassedParameters,
+			$this->phpDocClosureScopeTypeParameters,
 		);
 	}
 

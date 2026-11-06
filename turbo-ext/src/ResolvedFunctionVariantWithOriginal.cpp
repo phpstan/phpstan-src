@@ -566,6 +566,13 @@ private:
 			if (UNEXPECTED(closureThisType.isUndef())) return zv::Val();
 		}
 
+		zv::Val closureScopeType = pt_parameter_reflection_call(param, PT_PR_GET_CLOSURE_SCOPE_TYPE);
+		if (UNEXPECTED(closureScopeType.isUndef())) return zv::Val();
+		if (!closureScopeType.isNull()) {
+			closureScopeType = resolveParameterType(closureScopeType.raw(), PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
+			if (UNEXPECTED(closureScopeType.isUndef())) return zv::Val();
+		}
+
 		/* new ExtendedDummyParameter($param->getName(), $paramType, ...) — the
 		 * getters in argument order */
 		static constexpr pt_parameter_reflection_member getters[12] = {
@@ -579,7 +586,7 @@ private:
 			values[i] = pt_parameter_reflection_call(param, getters[i]);
 			if (UNEXPECTED(values[i].isUndef())) return zv::Val();
 		}
-		zval args[15];
+		zval args[16];
 		ZVAL_COPY_VALUE(&args[0], values[0].raw());
 		ZVAL_COPY_VALUE(&args[1], paramType.raw());
 		ZVAL_COPY_VALUE(&args[2], values[1].raw());
@@ -595,7 +602,8 @@ private:
 		ZVAL_COPY_VALUE(&args[12], values[9].raw());
 		ZVAL_COPY_VALUE(&args[13], values[10].raw());
 		ZVAL_COPY_VALUE(&args[14], values[11].raw());
-		return pt_extended_dummy_parameter_new(15, args);
+		ZVAL_COPY_VALUE(&args[15], closureScopeType.raw());
+		return pt_extended_dummy_parameter_new(16, args);
 	}
 
 	/* TypeUtils::resolveLateResolvableTypes(TemplateTypeHelper::resolveTemplateTypes(

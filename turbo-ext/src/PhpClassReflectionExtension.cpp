@@ -1664,6 +1664,7 @@ public:
 				zv::Arr phpDocParameterOutTypes = zv::Arr::create(0);
 				zv::Val immediatelyInvokedCallableParameters = zv::Val(zv::Arr::empty());
 				zv::Val closureThisParameters = zv::Val(zv::Arr::empty());
+				zv::Val closureScopeParameters = zv::Val(zv::Arr::empty());
 				zv::Val currentResolvedPhpDoc = zv::Val::null();
 				zv::Val phpDocDeclaringClass = zv::Val::copyOf(zv::Ref(declaringClass));
 				bool phpDocFromStubs = false;
@@ -1741,6 +1742,10 @@ public:
 					if (UNEXPECTED(closureThisTags.isUndef())) return zv::Val();
 					closureThisParameters = tagTypeMapOf(closureThisTags.raw());
 					if (UNEXPECTED(closureThisParameters.isUndef())) return zv::Val();
+					zv::Val closureScopeTags = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PARAM_CLOSURE_SCOPE_TAGS);
+					if (UNEXPECTED(closureScopeTags.isUndef())) return zv::Val();
+					closureScopeParameters = tagTypeMapOf(closureScopeTags.raw());
+					if (UNEXPECTED(closureScopeParameters.isUndef())) return zv::Val();
 
 					zv::Val paramTags = pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_PARAM_TAGS);
 					if (UNEXPECTED(paramTags.isUndef())) return zv::Val();
@@ -1825,7 +1830,7 @@ public:
 					}
 				}
 
-				zv::Val variant = createNativeMethodVariant(declaringClassNameArg, methodNameArg, methodSignature, phpDocParameterTypes.raw(), phpDocReturnType.raw(), phpDocParameterNameMapping.raw(), phpDocParameterOutTypes.raw(), immediatelyInvokedCallableParameters.raw(), closureThisParameters.raw(), phpDocFromStubs, !isNamed);
+				zv::Val variant = createNativeMethodVariant(declaringClassNameArg, methodNameArg, methodSignature, phpDocParameterTypes.raw(), phpDocReturnType.raw(), phpDocParameterNameMapping.raw(), phpDocParameterOutTypes.raw(), immediatelyInvokedCallableParameters.raw(), closureThisParameters.raw(), phpDocFromStubs, !isNamed, closureScopeParameters.raw());
 				if (UNEXPECTED(variant.isUndef())) return zv::Val();
 				variants.push(std::move(variant));
 				lastResolvedPhpDoc = std::move(currentResolvedPhpDoc);
@@ -1934,7 +1939,7 @@ public:
 	}
 
 	/* Mirrors createNativeMethodVariant(). */
-	zv::Val createNativeMethodVariant(zval *declaringClassName, zval *methodName, zval *methodSignature, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *phpDocParameterNameMapping, zval *phpDocParameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *closureThisParameters, bool phpDocFromStubs, bool usePhpDocParameterNames)
+	zv::Val createNativeMethodVariant(zval *declaringClassName, zval *methodName, zval *methodSignature, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *phpDocParameterNameMapping, zval *phpDocParameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *closureThisParameters, bool phpDocFromStubs, bool usePhpDocParameterNames, zval *closureScopeParameters)
 	{
 		bool ok;
 		zv::Val signatureParameters = call(methodSignature, PT_LC("getparameters"));
@@ -1986,6 +1991,12 @@ public:
 				closureThisType = zv::Val::copyOf(zv::Ref(storedClosureThis));
 			}
 
+			zv::Val closureScopeType = zv::Val::null();
+			zval *storedClosureScope = issetIn(closureScopeParameters, phpDocParameterName.get());
+			if (storedClosureScope != NULL) {
+				closureScopeType = zv::Val::copyOf(zv::Ref(storedClosureScope));
+			}
+
 			bool isOptional = callBool(parameterSignature, PT_LC("isoptional"), 0, NULL, ok);
 			if (UNEXPECTED(!ok)) return zv::Val();
 			zv::Val nativeType = call(parameterSignature, PT_LC("getnativetype"));
@@ -2011,7 +2022,7 @@ public:
 				if (UNEXPECTED(mixedPhpDocType.isUndef())) return zv::Val();
 			}
 
-			zval args[15];
+			zval args[16];
 			if (usePhpDocParameterNames) {
 				ZVAL_STR(&args[0], phpDocParameterName.get());
 			} else {
@@ -2031,7 +2042,8 @@ public:
 			ZVAL_COPY_VALUE(&args[12], allowedConstants.raw());
 			ZVAL_COPY_VALUE(&args[13], pureUnlessCallableIsImpure.raw());
 			ZVAL_COPY_VALUE(&args[14], pureUnlessParameterPassed.raw());
-			zv::Val parameter = pt_extended_native_parameter_reflection_new(15, args);
+			ZVAL_COPY_VALUE(&args[15], closureScopeType.raw());
+			zv::Val parameter = pt_extended_native_parameter_reflection_new(16, args);
 			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
 			parameters.push(std::move(parameter));
 		}
@@ -2295,6 +2307,7 @@ public:
 		if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
 		zv::Val immediatelyInvokedCallableParameters = zv::Val(zv::Arr::empty());
 		zv::Val closureThisParameters = zv::Val(zv::Arr::empty());
+		zv::Val closureScopeParameters = zv::Val(zv::Arr::empty());
 		zv::Val phpDocThrowType = zv::Val::null();
 		bool isInternal = false;
 		bool isFinal = false;
@@ -2315,6 +2328,10 @@ public:
 			if (UNEXPECTED(closureThisTags.isUndef())) return zv::Val();
 			closureThisParameters = tagTypeMapOf(closureThisTags.raw());
 			if (UNEXPECTED(closureThisParameters.isUndef())) return zv::Val();
+			zv::Val closureScopeTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAM_CLOSURE_SCOPE_TAGS);
+			if (UNEXPECTED(closureScopeTags.isUndef())) return zv::Val();
+			closureScopeParameters = tagTypeMapOf(closureScopeTags.raw());
+			if (UNEXPECTED(closureScopeParameters.isUndef())) return zv::Val();
 			zv::Val pureUnless = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_PARAMS_PURE_UNLESS_CALLABLE_IS_IMPURE);
 			if (UNEXPECTED(pureUnless.isUndef())) return zv::Val();
 			if (Z_TYPE_P(pureUnless.raw()) == IS_ARRAY) {
@@ -2485,7 +2502,7 @@ public:
 		zv::Val attributes = attributesOf(methodReflection, context.raw());
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 
-		zval args[23];
+		zval args[24];
 		ZVAL_COPY_VALUE(&args[0], actualDeclaringClass);
 		ZVAL_COPY_VALUE(&args[1], declaringTrait.raw());
 		ZVAL_COPY_VALUE(&args[2], methodReflection);
@@ -2513,7 +2530,8 @@ public:
 		ZVAL_COPY_VALUE(&args[20], attributes.raw());
 		ZVAL_COPY_VALUE(&args[21], pureUnlessCallableIsImpureParameters.raw());
 		ZVAL_COPY_VALUE(&args[22], pureUnlessParameterPassedParameters.raw());
-		return call(slot(slots::methodReflectionFactory), PT_LC("create"), 23, args);
+		ZVAL_COPY_VALUE(&args[23], closureScopeParameters.raw());
+		return call(slot(slots::methodReflectionFactory), PT_LC("create"), 24, args);
 	}
 
 	/* Mirrors getPhpDocReturnType(). */
@@ -2689,13 +2707,13 @@ public:
 
 		/* [$templateTypeMap, ..., $acceptsNamedArguments, , $phpDocComment, ...,
 		 * $phpDocParameterOutTypes, , , , $phpDocPureUnlessCallableIsImpureParameters,
-		 * $phpDocPureUnlessParameterPassedParameters] */
+		 * $phpDocPureUnlessParameterPassedParameters, $phpDocClosureScopeTypeParameters] */
 		pt_php_docs phpDocs;
-		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(slots::phpDocsResolver), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20) | (1u << 21), phpDocs))) return zv::Val();
+		if (UNEXPECTED(!pt_php_docs_resolver_get_php_docs(slot(slots::phpDocsResolver), classScope.raw(), methodNode.raw(), 0x1EFFFu | (1u << 20) | (1u << 21) | (1u << 22), phpDocs))) return zv::Val();
 		zval *docs[PT_PHP_DOCS_COUNT];
 		for (uint32_t i = 0; i < PT_PHP_DOCS_COUNT; i++) docs[i] = &phpDocs.items[i];
 
-		zval enterArgs[21];
+		zval enterArgs[22];
 		ZVAL_COPY_VALUE(&enterArgs[0], methodNode.raw());
 		ZVAL_COPY_VALUE(&enterArgs[1], docs[0]);  /* templateTypeMap */
 		ZVAL_COPY_VALUE(&enterArgs[2], docs[1]);  /* phpDocParameterTypes */
@@ -2717,7 +2735,8 @@ public:
 		ZVAL_NULL(&enterArgs[18]);
 		ZVAL_COPY_VALUE(&enterArgs[19], docs[20]); /* pureUnlessCallableIsImpureParameters */
 		ZVAL_COPY_VALUE(&enterArgs[20], docs[21]); /* pureUnlessParameterPassedParameters */
-		zv::Val methodScope = call(classScope.raw(), PT_LC("enterclassmethod"), 21, enterArgs);
+		ZVAL_COPY_VALUE(&enterArgs[21], docs[22]); /* phpDocClosureScopeTypeParameters */
+		zv::Val methodScope = call(classScope.raw(), PT_LC("enterclassmethod"), 22, enterArgs);
 		if (UNEXPECTED(methodScope.isUndef())) return zv::Val();
 
 		zend_class_entry *expressionStmtCe = pt_class(PT_CLASS_EXPRESSION_STMT);

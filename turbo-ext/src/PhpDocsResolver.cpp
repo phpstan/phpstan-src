@@ -6,7 +6,7 @@
  * arginfo so Nette autowires it. getPhpDocs() — asked by ClassMethodHandler,
  * FunctionHandler, PropertyHandler, PropertyHooksProcessor and
  * PhpClassReflectionExtension for every declaration — is exported as
- * pt_php_docs_resolver_get_php_docs(), which hands the 22 values over
+ * pt_php_docs_resolver_get_php_docs(), which hands the 23 values over
  * without building the twin's array; the PHP method builds it.
  *
  * FileTypeMapper, PhpDocInheritanceResolver, ResolvedPhpDocBlock, the PHPDoc
@@ -42,6 +42,7 @@ pt_method_site pt_pdr_resolve_php_doc_for_method_site;
 pt_method_site pt_pdr_var_tag_get_type_site;
 pt_method_site pt_pdr_param_tag_get_type_site;
 pt_method_site pt_pdr_param_closure_this_tag_get_type_site;
+pt_method_site pt_pdr_param_closure_scope_tag_get_type_site;
 pt_method_site pt_pdr_param_out_tag_get_type_site;
 pt_method_site pt_pdr_return_tag_get_type_site;
 pt_method_site pt_pdr_return_tag_is_explicit_site;
@@ -270,6 +271,7 @@ public:
 		zv::Arr phpDocParameterTypes = zv::Arr::empty();
 		zv::Arr phpDocImmediatelyInvokedCallableParameters = zv::Arr::empty();
 		zv::Arr phpDocClosureThisTypeParameters = zv::Arr::empty();
+		zv::Arr phpDocClosureScopeTypeParameters = zv::Arr::empty();
 		zv::Val phpDocReturnType = zv::Val::null();
 		zv::Val phpDocThrowType = zv::Val::null();
 		zv::Val deprecatedDescription = zv::Val::null();
@@ -419,6 +421,7 @@ public:
 			}
 			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_TAGS), pt_pdr_param_tag_get_type_site, true, scope, classReflection, phpDocParameterTypes))) return false;
 			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_CLOSURE_THIS_TAGS), pt_pdr_param_closure_this_tag_get_type_site, true, scope, classReflection, phpDocClosureThisTypeParameters))) return false;
+			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_CLOSURE_SCOPE_TAGS), pt_pdr_param_closure_scope_tag_get_type_site, true, scope, classReflection, phpDocClosureScopeTypeParameters))) return false;
 			if (UNEXPECTED(!collectTagTypes(pt_resolved_php_doc_block_call(doc, PT_RPD_GET_PARAM_OUT_TAGS), pt_pdr_param_out_tag_get_type_site, false, scope, classReflection, phpDocParameterOutTypes))) return false;
 			if (isFunctionLike) {
 				zv::Val returnTypeNode = nodeReturnType(node);
@@ -517,6 +520,7 @@ public:
 		moveInto(items[PT_PHP_DOCS_RESOLVED_PHP_DOC], resolvedPhpDoc);
 		moveInto(items[PT_PHP_DOCS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS], phpDocPureUnlessCallableIsImpureParameters);
 		moveInto(items[PT_PHP_DOCS_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS], phpDocPureUnlessParameterPassedParameters);
+		moveInto(items[PT_PHP_DOCS_CLOSURE_SCOPE_TYPE_PARAMETERS], phpDocClosureScopeTypeParameters);
 		return true;
 	}
 
@@ -728,7 +732,8 @@ private:
 	}
 
 	/* foreach ($tags as $paramName => $tag) — $types[$paramName] =
-	 * $tag->getType(); for the @param / @param-closure-this tags (`paramTypes`)
+	 * $tag->getType(); for the @param / @param-closure-this /
+	 * @param-closure-scope tags (`paramTypes`)
 	 * an existing key is kept and a static type transformed in a class */
 	[[nodiscard]] bool collectTagTypes(zv::Val tags, pt_method_site &getTypeSite, bool paramTypes, zval *scope, zv::Val &classReflection, zv::Arr &types) const
 	{

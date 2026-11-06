@@ -374,10 +374,35 @@ public:
 		return true;
 	}
 
-	/* 'callable' at the type-only level; the printed PHPDoc node of a copy
-	 * whose parameters lost their names (unless an assertion refers to
-	 * them) otherwise; UNDEF = pending exception */
+	/* the description memoized per level; UNDEF = pending exception */
 	zv::Val describe(zval *level) const
+	{
+		/* $this->cachedDescriptions[$level->getLevelValue()] ??= ... */
+		zend_long levelValue;
+		if (UNEXPECTED(!pt_verbosity_level_value_of(level, levelValue))) return zv::Val();
+		zval *cache = OBJ_PROP_NUM(self, slots::cachedDescriptions);
+		if (EXPECTED(Z_TYPE_P(cache) == IS_ARRAY)) {
+			zval *cached = zend_hash_index_find(Z_ARRVAL_P(cache), levelValue);
+			if (cached != NULL && Z_TYPE_P(cached) != IS_NULL) return zv::Val::copyOf(zv::Ref(cached));
+		}
+		zv::Val description = describeUncached(level);
+		if (UNEXPECTED(description.isUndef())) return zv::Val();
+		cache = OBJ_PROP_NUM(self, slots::cachedDescriptions);
+		if (Z_TYPE_P(cache) != IS_ARRAY) {
+			zv::Ref(cache).assign(zv::Val(zv::Arr::create(4)));
+		}
+		SEPARATE_ARRAY(cache);
+		zval copy;
+		ZVAL_COPY(&copy, description.raw());
+		zend_hash_index_update(Z_ARRVAL_P(cache), levelValue, &copy);
+		return description;
+	}
+
+	/* the description describe() memoizes: 'callable' at the type-only
+	 * level; the printed PHPDoc node of a copy whose parameters lost their
+	 * names (unless an assertion refers to them) otherwise; UNDEF = pending
+	 * exception */
+	zv::Val describeUncached(zval *level) const
 	{
 		pt_verbosity_case which;
 		if (UNEXPECTED(!pt_type_verbosity_case(level, which))) return zv::Val();

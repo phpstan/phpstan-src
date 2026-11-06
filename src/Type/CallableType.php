@@ -79,6 +79,9 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	private Assertions $assertions;
 
+	/** @var array<int, string> */
+	private array $cachedDescriptions = [];
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -335,7 +338,7 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return $level->handle(
+		return $this->cachedDescriptions[$level->getLevelValue()] ??= $level->handle(
 			static fn (): string => 'callable',
 			function (): string {
 				$assertedParameterNames = [];

@@ -16,8 +16,10 @@ inline constexpr uint32_t finiteTypeSet = 2;
 inline constexpr uint32_t finiteTypes = 3;
 inline constexpr uint32_t isNull = 4;
 inline constexpr uint32_t isCallable = 5;
-inline constexpr uint32_t types = 6;
-inline constexpr uint32_t normalized = 7;
+inline constexpr uint32_t possiblyLooselyEqualTypes = 6;
+inline constexpr uint32_t alwaysLooselyEqualTypes = 7;
+inline constexpr uint32_t types = 8;
+inline constexpr uint32_t normalized = 9;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -34,6 +36,8 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("finiteTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
 	cls.property("isNull", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\TrinaryLogic");
 	cls.property("isCallable", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\TrinaryLogic");
+	cls.property("possiblyLooselyEqualTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("alwaysLooselyEqualTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("types", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("normalized", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
@@ -276,8 +280,10 @@ inline constexpr char strings[] =
 	"toNativePhpTypeNode\0" /* 3839 */
 	"notBenevolentPickFromTypes\0" /* 3859 */
 	"hasTemplateOrLateResolvableType\0" /* 3886 */
-	"PHPStan\\Type\\ValueSet\0" /* 3918 */
-	"toValueSet"; /* 3940 */
+	"getPossiblyLooselyEqualType\0" /* 3918 */
+	"getAlwaysLooselyEqualType\0" /* 3946 */
+	"PHPStan\\Type\\ValueSet\0" /* 3972 */
+	"toValueSet"; /* 3994 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -536,7 +542,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3713, MAY_BE_CALLABLE), /* notBenevolentPickFromTypes $getValues */
 	reg::packed(35, MAY_BE_ARRAY), /* notBenevolentPickFromTypes return */
 	reg::packed(35, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
-	reg::packed(35, 0, 3918), /* toValueSet return */
+	reg::packed(1803, 0, 1814), /* getPossiblyLooselyEqualType $phpVersion */
+	reg::packed(35, 0, 54), /* getPossiblyLooselyEqualType return */
+	reg::packed(1803, 0, 1814), /* getAlwaysLooselyEqualType $phpVersion */
+	reg::packed(35, 0, 54), /* getAlwaysLooselyEqualType return */
+	reg::packed(35, 0, 3972), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -696,7 +706,9 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 3785 /* toPhpDocNode */, 0, 252,
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3839 /* toNativePhpTypeNode */, 1, 253, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3859 /* notBenevolentPickFromTypes */, 1, 254, 1, 255, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3886 /* hasTemplateOrLateResolvableType */, 0, 256, 0, 256, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 3940 /* toValueSet */, 0, 257, 0, 257, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 3918 /* getPossiblyLooselyEqualType */, 1, 257, 1, 258, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 3946 /* getAlwaysLooselyEqualType */, 1, 259, 1, 260, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 3994 /* toValueSet */, 0, 261, 0, 261, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionType

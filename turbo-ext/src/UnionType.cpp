@@ -5,9 +5,10 @@
  * native BenevolentUnionType and the PHP TemplateUnionType extend it — their
  * constructors call parent::__construct(), so the constructor is a proper
  * method), implementing PHPStan\Type\CompoundType. State is the twin's
- * eight private properties, declared typed property slots in the twin's
- * declaration order — the six memos ($sortedTypesCache, $cachedDescriptions,
- * $finiteTypeSet, $finiteTypes, $isNull, $isCallable) first, the promoted
+ * ten private properties, declared typed property slots in the twin's
+ * declaration order — the eight memos ($sortedTypesCache, $cachedDescriptions,
+ * $finiteTypeSet, $finiteTypes, $isNull, $isCallable,
+ * $possiblyLooselyEqualTypes, $alwaysLooselyEqualTypes) first, the promoted
  * $types and $normalized after them — so the std object handlers do
  * GC/clone and a PHP subclass's own properties follow them. The one trait
  * the twin uses (NonGeneralizableTypeTrait) comes from the shared registrar
@@ -952,6 +953,35 @@ public:
 	 * union of the members with their constant values generalized, every
 	 * other level the sorted members joined with '|'; an owned string, UNDEF
 	 * = pending exception */
+	/* $this->{memo}[$phpVersion->getVersionId()] ??= $this->toValueSet()->{method}($phpVersion)
+	 * — getPossiblyLooselyEqualType() / getAlwaysLooselyEqualType();
+	 * UNDEF = pending exception */
+	zv::Val memoizedLooselyEqualType(uint32_t slotIndex, zval *phpVersion, const char *method, size_t methodLength) const
+	{
+		zv::Val versionId = pt_php_version_get_version_id(phpVersion);
+		if (UNEXPECTED(versionId.isUndef())) return zv::Val();
+		zend_long key = zval_get_long(versionId.raw());
+		zval *cache = OBJ_PROP_NUM(self, slotIndex);
+		if (EXPECTED(Z_TYPE_P(cache) == IS_ARRAY)) {
+			zval *cached = zend_hash_index_find(Z_ARRVAL_P(cache), key);
+			if (cached != NULL && Z_TYPE_P(cached) != IS_NULL) return zv::Val::copyOf(zv::Ref(cached));
+		}
+		zv::Val valueSet = pt_type_call(self, PT_LC("tovalueset"), 0, NULL);
+		if (UNEXPECTED(valueSet.isUndef())) return zv::Val();
+		zv::Val type = pt_type_call(Z_OBJ_P(valueSet.raw()), method, methodLength, 1, phpVersion);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+
+		cache = OBJ_PROP_NUM(self, slotIndex);
+		if (Z_TYPE_P(cache) != IS_ARRAY) {
+			zv::Ref(cache).assign(zv::Val(zv::Arr::create(1)));
+		}
+		SEPARATE_ARRAY(cache);
+		zval copy;
+		ZVAL_COPY(&copy, type.raw());
+		zend_hash_index_update(Z_ARRVAL_P(cache), key, &copy);
+		return type;
+	}
+
 	zv::Val describe(zval *level) const
 	{
 		/* $level->getLevelValue() — the shadowing VerbosityLevel's slot, or
@@ -2989,8 +3019,19 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	ptdecl::UnionType::declareClass(cls);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, false); });
+	/* mirror getPossiblyLooselyEqualType() and getAlwaysLooselyEqualType(), memoized per PHP version */
+	cls.method(sigs::getPossiblyLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.memoizedLooselyEqualType(slots::possiblyLooselyEqualTypes, phpVersion, PT_LC("getpossiblylooselyequaltype")));
+	});
+	cls.method(sigs::getAlwaysLooselyEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		if (!zp::parse<zp::Obj>(execute_data, phpVersion)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.memoizedLooselyEqualType(slots::alwaysLooselyEqualTypes, phpVersion, PT_LC("getalwayslooselyequaltype")));
+	});
 	cls.classConstantValue("EQUAL_UNION_CLASSES", pt_ut_equal_union_classes);
-	/* the slots PT_UT_PROP_*: the six memo properties first, the promoted
+	/* the slots PT_UT_PROP_*: the eight memo properties first, the promoted
 	 * $types and $normalized after them */
 	cls.privateTypedPropertyDefaultNull("sortedTypesCache", MAY_BE_ARRAY);
 	cls.privateTypedArrayPropertyDefaultEmpty("cachedDescriptions");
@@ -2998,6 +3039,8 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	cls.privateTypedPropertyDefaultNull("finiteTypes", MAY_BE_ARRAY);
 	cls.privateTypedClassPropertyDefaultNull("isNull", ptcls::trinaryLogic);
 	cls.privateTypedClassPropertyDefaultNull("isCallable", ptcls::trinaryLogic);
+	cls.privateTypedArrayPropertyDefaultEmpty("possiblyLooselyEqualTypes");
+	cls.privateTypedArrayPropertyDefaultEmpty("alwaysLooselyEqualTypes");
 	cls.privateTypedProperty("types", MAY_BE_ARRAY);
 	cls.privateTypedProperty("normalized", MAY_BE_BOOL);
 

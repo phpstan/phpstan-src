@@ -10,12 +10,12 @@ namespace ptdecl::TemplateUnionType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t name = 8;
-inline constexpr uint32_t scope = 9;
-inline constexpr uint32_t strategy = 10;
-inline constexpr uint32_t variance = 11;
-inline constexpr uint32_t bound = 12;
-inline constexpr uint32_t default_ = 13;
+inline constexpr uint32_t name = 10;
+inline constexpr uint32_t scope = 11;
+inline constexpr uint32_t strategy = 12;
+inline constexpr uint32_t variance = 13;
+inline constexpr uint32_t bound = 14;
+inline constexpr uint32_t default_ = 15;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

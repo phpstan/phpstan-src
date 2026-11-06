@@ -2131,12 +2131,30 @@ public:
 		traversed.intoReturnValue(return_value);
 	}
 
-	/* TypeCombinator::remove($type, $typeToRemove) per member, intersected */
+	/* TypeCombinator::remove($type, $typeToRemove) per member, intersected
+	 * by intersectOperands() - $this when no member changed */
 	zv::Val tryRemove(zval *typeToRemove) const
 	{
-		return intersectTypes([&](zval *type) -> zv::Val {
-			return combinator2(PT_LC("remove"), type, typeToRemove);
-		});
+		zval *types = this->types();
+		if (UNEXPECTED(types == NULL)) return zv::Val();
+		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
+		zv::Arr removedTypes = zv::Arr::create(zv::ArrRef(typesCopy.raw()).size());
+		bool changed = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
+			zval *type = entry.value().deref().raw();
+			zv::Val removed = combinator2(PT_LC("remove"), type, typeToRemove);
+			if (UNEXPECTED(removed.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(removed.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: TypeCombinator::remove() must return %s", ptcls::type);
+				return zv::Val();
+			}
+			int equal = pt_type_call_is_true(Z_OBJ_P(removed.raw()), PT_LC("equals"), 1, type);
+			if (UNEXPECTED(equal < 0)) return zv::Val();
+			if (equal == 0) changed = true;
+			removedTypes.push(std::move(removed));
+		}
+		if (!changed) return thisValue();
+		return intersectOperands(removedTypes.arrRef());
 	}
 
 	/* every member's power intersected, unless a member's is an ErrorType,

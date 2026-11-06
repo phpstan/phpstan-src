@@ -11,6 +11,7 @@ use PHPStan\File\FileContentHasher;
 use PHPStan\File\FileStatSignatures;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
+use function array_keys;
 use function clearstatcache;
 use function file_put_contents;
 use function max;
@@ -96,6 +97,28 @@ final class OptimizedDirectorySourceLocatorFactoryTest extends PHPStanTestCase
 		$this->assertCount(2, $all->locateIdentifiersByType(new DefaultReflector($all), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
 		$this->assertCount(1, $sub->locateIdentifiersByType(new DefaultReflector($sub), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
 		$this->assertCount(1, $sameKey->locateIdentifiersByType(new DefaultReflector($sameKey), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
+	}
+
+	public function testBatchFillsCachedLocatorsAndLocatorsWaitingForTheScan(): void
+	{
+		file_put_contents($this->directory . '/a.php', '<?php namespace OdslFactoryTest; class First {}');
+		file_put_contents($this->directory . '/b.php', '<?php namespace OdslFactoryTest; class Second {}');
+		$this->createFactory()->createByFiles([$this->directory . '/a.php', $this->directory . '/b.php'], 'odsl-factory-test-cached');
+
+		file_put_contents($this->directory . '/c.php', '<?php namespace OdslFactoryTest; class Third {}');
+		$batch = $this->createFactory()->createBatch();
+		$waiting = $batch->createByFiles([$this->directory . '/a.php', $this->directory . '/c.php', $this->directory . '/b.php'], 'odsl-factory-test-waiting');
+		$cached = $batch->createByFiles([$this->directory . '/a.php', $this->directory . '/b.php'], 'odsl-factory-test-cached');
+		$alsoWaiting = $batch->createByFiles([$this->directory . '/c.php', $this->directory . '/a.php'], 'odsl-factory-test-also-waiting');
+		$batch->scan();
+
+		$this->assertCount(3, $waiting->locateIdentifiersByType(new DefaultReflector($waiting), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
+		$this->assertCount(2, $cached->locateIdentifiersByType(new DefaultReflector($cached), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
+		$this->assertCount(2, $alsoWaiting->locateIdentifiersByType(new DefaultReflector($alsoWaiting), new IdentifierType(IdentifierType::IDENTIFIER_CLASS)));
+		$this->assertSame(
+			[$this->directory . '/a.php', $this->directory . '/c.php', $this->directory . '/b.php'],
+			array_keys($this->cache->load('odsl-factory-test-waiting', $this->getVariableCacheKey()) ?? []),
+		);
 	}
 
 	private function hasClass(string $className): bool

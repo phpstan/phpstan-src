@@ -632,6 +632,15 @@ public:
 	static zv::Val doRemove(zval *fromType, zval *typeToRemove)
 	{
 		if (isInstance(typeToRemove, pt_ce_union_type)) {
+			// Plain mixed minus a union is mixed with that union subtracted -
+			// peeling the members would rebuild the subtracted union once per
+			// member and end with the same one.
+			if (Z_OBJCE_P(fromType) == pt_ce_mixed_type && Z_OBJCE_P(typeToRemove) == pt_ce_union_type) {
+				zv::Val subtractedType = call(fromType, PT_LC("getsubtractedtype"));
+				PT_FAIL_IF_UNDEF(subtractedType);
+				if (isNull(subtractedType)) return call(fromType, PT_LC("subtract"), 1, typeToRemove);
+			}
+
 			int atOnce = canRemoveUnionAtOnce(fromType);
 			PT_FAIL_IF_NEG(atOnce);
 			if (atOnce) {

@@ -128,6 +128,17 @@ final class TypeCombinator
 	public static function doRemove(Type $fromType, Type $typeToRemove): Type
 	{
 		if ($typeToRemove instanceof UnionType) {
+			// Plain mixed minus a union is mixed with that union subtracted -
+			// peeling the members would rebuild the subtracted union once per
+			// member and end with the same one.
+			if (
+				get_class($fromType) === MixedType::class
+				&& $fromType->getSubtractedType() === null
+				&& get_class($typeToRemove) === UnionType::class
+			) {
+				return $fromType->subtract($typeToRemove);
+			}
+
 			// Removing the members one at a time is what keeps the result precise:
 			// removing one can narrow the type so that removing the next achieves
 			// more. A sealed hierarchy is the exception - there the subtraction is

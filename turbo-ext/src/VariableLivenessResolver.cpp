@@ -548,7 +548,7 @@ private:
 	zv::Val literalItems = emptyArray();
 	zv::Val coveredIds = emptyArray();
 	zv::Val overwriteMarkers = emptyArray();
-	zv::Val overwriteKeys = emptyArray();
+	zv::Val markersBySlot = emptyArray(); /* name => slot => marker => writer id */
 	zv::Val overwrittenIds = emptyArray();
 	zv::Val allReadKeys = emptyArray();
 	zv::Val loopStatements = emptyArray();
@@ -816,14 +816,14 @@ private:
 			zend_long id = view.id;
 			if (kind != PT_VLR_DISCARD) {
 				observeWrite(id, next);
-				observeOverwrite(id, next);
+				observeOverwrite(view, next);
 				HashTable *items = innerTable(literalItems, id);
 				if (items != NULL) {
 					for (auto entry : zv::TableRef(items)) {
-						zend_long itemId;
-						if (UNEXPECTED(!writeId(entry.value().deref().raw(), itemId))) return zv::Val();
-						observeWrite(itemId, next);
-						observeOverwrite(itemId, next);
+						WriteView item;
+						if (UNEXPECTED(!item.load(entry.value().deref().raw()))) return zv::Val();
+						observeWrite(item.id, next);
+						observeOverwrite(item, next);
 					}
 				}
 			}
@@ -836,6 +836,7 @@ private:
 					}
 				}
 			}
+			killOverwriteMarkers(view, next);
 			zval *marker = zend_hash_index_find(tableOf(overwriteMarkers), (zend_ulong) id);
 			if (marker != NULL) {
 				setTrue(next, Z_STR_P(marker));
@@ -1415,7 +1416,7 @@ private:
 	/* Mirrors compileOverwrites(); false = pending exception. */
 	[[nodiscard]] bool compileOverwrites(zend_string *name, HashTable *accessTable)
 	{
-		zv::Val markersBySlot = emptyArray();
+		zv::Val slotMarkers = emptyArray();
 		for (auto entry : zv::TableRef(accessTable)) {
 			zend_object *access = Z_OBJ_P(entry.value().deref().raw());
 			zval *write = slot(access, slots.accessWrite, "write");
@@ -1438,7 +1439,7 @@ private:
 			smart_str_append_long(&key, view.id);
 			smart_str_0(&key);
 			zv::Str marker = zv::Str::adopt(key.s);
-			zval *bySlot = innerSlotByKey(markersBySlot, slotName.get());
+			zval *bySlot = innerSlotByKey(slotMarkers, slotName.get());
 			zval idValue;
 			ZVAL_LONG(&idValue, view.id);
 			zend_hash_update(Z_ARRVAL_P(bySlot), marker.get(), &idValue);
@@ -1446,60 +1447,12 @@ private:
 			ZVAL_STR(&markerValue, marker.get());
 			setIndex(overwriteMarkers, view.id, &markerValue);
 		}
-		if (countOf(markersBySlot) == 0) return true;
-		for (auto entry : zv::TableRef(accessTable)) {
-			zend_object *access = Z_OBJ_P(entry.value().deref().raw());
-			zval *write = slot(access, slots.accessWrite, "write");
-			if (UNEXPECTED(write == NULL)) return false;
-			if (Z_TYPE_P(write) != IS_OBJECT) continue;
-			WriteView view;
-			if (UNEXPECTED(!view.load(write))) return false;
-			zend_long id = view.id;
-			observeOverwrites(view, innerTableByKey(markersBySlot, ZSTR_EMPTY_ALLOC()));
-			if (view.offsetWrite && !view.offsetIsNull) {
-				zv::Str offsetSlot = offsetKey(view.offset.raw());
-				observeOverwrites(view, innerTableByKey(markersBySlot, offsetSlot.get()));
-			}
-			zv::Str slotName;
-			if (!replacedSlot(view, slotName)) continue;
-			bool whole = ZSTR_LEN(slotName.get()) == 0;
-			for (auto slotEntry : zv::TableRef(tableOf(markersBySlot))) {
-				zend_string *markerSlot = slotEntry.stringKeyOrNull();
-				if (markerSlot == NULL) continue;
-				if (!whole && !zend_string_equals(markerSlot, slotName.get())) continue;
-				zv::Ref markers = slotEntry.value().deref();
-				if (!markers.isArray()) continue;
-				for (auto markerEntry : zv::TableRef(markers.asArrayTable())) {
-					zend_string *marker = markerEntry.stringKeyOrNull();
-					if (marker == NULL) continue;
-					zval *killed = innerSlot(killedKeys, id);
-					zval trueValue;
-					ZVAL_TRUE(&trueValue);
-					zend_hash_update(Z_ARRVAL_P(killed), marker, &trueValue);
-				}
-			}
-		}
-		return true;
-	}
+		if (countOf(slotMarkers) == 0) return true;
 
-	/* The markers of $markers written by another write than $write and the
-	 * array literal it is an item of. */
-	void observeOverwrites(const WriteView &write, HashTable *markers)
-	{
-		if (markers == NULL) return;
-		zend_long id = write.id;
-		for (auto entry : zv::TableRef(markers)) {
-			zend_string *marker = entry.stringKeyOrNull();
-			if (marker == NULL) continue;
-			// a loop running the same write again replaces nothing it
-			// wrote - nor the items of the array literal it assigns
-			zend_long writerId = entry.value().deref().toLong();
-			if (writerId == id || (!write.parentIdIsNull && writerId == write.parentId)) continue;
-			zval *observed = innerSlot(overwriteKeys, id);
-			zval trueValue;
-			ZVAL_TRUE(&trueValue);
-			zend_hash_update(Z_ARRVAL_P(observed), marker, &trueValue);
-		}
+		zval *stored = innerSlotByKey(markersBySlot, name);
+		zval_ptr_dtor(stored);
+		ZVAL_COPY(stored, slotMarkers.raw());
+		return true;
 	}
 
 	/* Mirrors replacedSlot(); false for null. */
@@ -1515,15 +1468,82 @@ private:
 	}
 
 	/* Mirrors observeOverwrite(). */
-	void observeOverwrite(zend_long id, const zv::Val &next)
+	void observeOverwrite(WriteView &write, const zv::Val &next)
 	{
-		HashTable *overwrites = innerTable(overwriteKeys, id);
-		if (overwrites == NULL) return;
-		for (auto entry : zv::TableRef(overwrites)) {
-			zend_string *key = entry.stringKeyOrNull();
-			if (key == NULL || !isTrueAt(next, key)) continue;
-			setTrueIndex(overwrittenIds, id);
+		HashTable *bySlot = innerTableByKey(markersBySlot, write.nameStr);
+		if (bySlot == NULL) return;
+		if (observesOverwriteMarker(write, zend_hash_find(bySlot, ZSTR_EMPTY_ALLOC()), next)) {
+			setTrueIndex(overwrittenIds, write.id);
 			return;
+		}
+		if (write.offsetWrite && !write.offsetIsNull) {
+			zv::Str offsetSlot = offsetKey(write.offset.raw());
+			if (observesOverwriteMarker(write, zend_hash_find(bySlot, offsetSlot.get()), next)) {
+				setTrueIndex(overwrittenIds, write.id);
+			}
+		}
+	}
+
+	/* whether $next holds one of $markers left by another write than $write
+	 * and the array literal it is an item of - walking the smaller of the two */
+	static bool observesOverwriteMarker(const WriteView &write, zval *markersValue, const zv::Val &next)
+	{
+		if (markersValue == NULL) return false;
+		ZVAL_DEREF(markersValue);
+		if (Z_TYPE_P(markersValue) != IS_ARRAY) return false;
+		HashTable *markers = Z_ARRVAL_P(markersValue);
+		bool walkMarkers = zend_hash_num_elements(markers) <= countOf(next);
+		for (auto entry : zv::TableRef(walkMarkers ? markers : tableOf(next))) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key == NULL) continue;
+			zval *writer;
+			if (walkMarkers) {
+				if (!isTrueAt(next, key)) continue;
+				writer = entry.value().deref().raw();
+			} else {
+				writer = zend_hash_find(markers, key);
+				if (writer == NULL) continue;
+				ZVAL_DEREF(writer);
+			}
+			// a loop running the same write again replaces nothing it
+			// wrote - nor the items of the array literal it assigns
+			zend_long writerId = zval_get_long(writer);
+			if (writerId == write.id || (!write.parentIdIsNull && writerId == write.parentId)) continue;
+			return true;
+		}
+		return false;
+	}
+
+	/* Mirrors killOverwriteMarkers(). */
+	void killOverwriteMarkers(WriteView &write, zv::Val &next)
+	{
+		HashTable *bySlot = innerTableByKey(markersBySlot, write.nameStr);
+		if (bySlot == NULL) return;
+		zv::Str slotName;
+		if (!replacedSlot(write, slotName)) return;
+		bool whole = ZSTR_LEN(slotName.get()) == 0;
+		for (auto slotEntry : zv::TableRef(bySlot)) {
+			zend_string *markerSlot = slotEntry.stringKeyOrNull();
+			if (markerSlot == NULL) continue;
+			if (!whole && !zend_string_equals(markerSlot, slotName.get())) continue;
+			zv::Ref markersRef = slotEntry.value().deref();
+			if (!markersRef.isArray()) continue;
+			HashTable *markers = markersRef.asArrayTable();
+			if (zend_hash_num_elements(markers) <= countOf(next)) {
+				for (auto markerEntry : zv::TableRef(markers)) {
+					zend_string *marker = markerEntry.stringKeyOrNull();
+					if (marker == NULL) continue;
+					unsetKey(next, marker);
+				}
+				continue;
+			}
+			/* a snapshot to walk while the live set loses keys */
+			zv::Val live = shareArray(next);
+			for (auto entry : zv::TableRef(tableOf(live))) {
+				zend_string *key = entry.stringKeyOrNull();
+				if (key == NULL || !zend_hash_exists(markers, key)) continue;
+				unsetKey(next, key);
+			}
 		}
 	}
 

@@ -35,6 +35,9 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 
 	private bool $failed = false;
 
+	/** @var list<Node> */
+	private array $fixedNodes = [];
+
 	/**
 	 * @param non-empty-list<NodeFix> $fixes
 	 */
@@ -115,7 +118,19 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 			}
 		}
 
+		$this->fixedNodes[] = $newNode;
+
 		return $newNode;
+	}
+
+	/**
+	 * Nodes returned by the fixes. A fix changes only these nodes and their children.
+	 *
+	 * @return list<Node>
+	 */
+	public function getFixedNodes(): array
+	{
+		return $this->fixedNodes;
 	}
 
 	/**

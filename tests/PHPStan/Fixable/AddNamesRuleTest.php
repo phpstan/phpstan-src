@@ -37,4 +37,9 @@ class AddNamesRuleTest extends RuleTestCase
 		$this->fix(__DIR__ . '/data/add-names-sorted-uses.php', __DIR__ . '/data/add-names-sorted-uses.php.fixed');
 	}
 
+	public function testFixPhpDocOnly(): void
+	{
+		$this->fix(__DIR__ . '/data/add-names-phpdoc-only.php', __DIR__ . '/data/add-names-phpdoc-only.php.fixed');
+	}
+
 }

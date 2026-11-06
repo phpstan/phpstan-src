@@ -1,0 +1,19 @@
+<?php
+
+namespace AddNamesPhpDocOnly;
+
+use AddNamesImported\Foo;
+use AddNamesOther\AddNamesUnique;
+
+class Bar
+{
+
+	/**
+	 * @param Foo $p1
+	 * @param AddNamesUnique $p2
+	 */
+	public function doFoo($p1, $p2): void
+	{
+	}
+
+}

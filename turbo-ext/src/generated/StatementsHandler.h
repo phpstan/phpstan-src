@@ -151,24 +151,28 @@ inline constexpr char strings[] =
 	"recordedExit\0" /* 2283 */
 	"withRecordedConstraints\0" /* 2296 */
 	"containsLabels\0" /* 2320 */
-	"from\0" /* 2335 */
-	"to\0" /* 2340 */
-	"appendRecordedStatementResults\0" /* 2343 */
-	"PHPStan\\Analyser\\VariableFlow\0" /* 2374 */
-	"getVariableMentionFlow\0" /* 2404 */
-	"statementMentionsAnyVariable\0" /* 2427 */
-	"node\0" /* 2456 */
-	"mentionsEverything\0" /* 2461 */
-	"collectMentionedVariables\0" /* 2480 */
-	"getVarTagDependencies\0" /* 2506 */
-	"statement\0" /* 2528 */
-	"getOverridingThrowPoints\0" /* 2538 */
-	"defaultExpr\0" /* 2563 */
-	"PhpParser\\Node\\Expr\0" /* 2575 */
-	"processStmtVarAnnotation\0" /* 2595 */
-	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 2620 */
-	"findSingleVariableLessVarTag\0" /* 2646 */
-	"emitVarTagChangedNode"; /* 2675 */
+	"snapshotWalkState\0" /* 2335 */
+	"entry\0" /* 2353 */
+	"resumeWalkState\0" /* 2359 */
+	"getWalkStateListCounts\0" /* 2375 */
+	"from\0" /* 2398 */
+	"to\0" /* 2403 */
+	"appendRecordedStatementResults\0" /* 2406 */
+	"PHPStan\\Analyser\\VariableFlow\0" /* 2437 */
+	"getVariableMentionFlow\0" /* 2467 */
+	"statementMentionsAnyVariable\0" /* 2490 */
+	"node\0" /* 2519 */
+	"mentionsEverything\0" /* 2524 */
+	"collectMentionedVariables\0" /* 2543 */
+	"getVarTagDependencies\0" /* 2569 */
+	"statement\0" /* 2591 */
+	"getOverridingThrowPoints\0" /* 2601 */
+	"defaultExpr\0" /* 2626 */
+	"PhpParser\\Node\\Expr\0" /* 2638 */
+	"processStmtVarAnnotation\0" /* 2658 */
+	"PHPStan\\PhpDoc\\Tag\\VarTag\0" /* 2683 */
+	"findSingleVariableLessVarTag\0" /* 2709 */
+	"emitVarTagChangedNode"; /* 2738 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 15), /* __construct $fileTypeMapper */
 	reg::packed(43, 0, 68), /* __construct $templateArgumentObserver */
@@ -358,40 +362,46 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(531, 0, 422), /* withRecordedConstraints return */
 	reg::packed(897, MAY_BE_ARRAY), /* containsLabels $stmts */
 	reg::packed(531, MAY_BE_BOOL), /* containsLabels return */
+	reg::packed(1124, 0, 1130), /* snapshotWalkState $state */
+	reg::packed(531, 0, 1130), /* snapshotWalkState return */
+	reg::packed(2353, 0, 1130), /* resumeWalkState $entry */
+	reg::packed(531, 0, 1130), /* resumeWalkState return */
+	reg::packed(1124, 0, 1130), /* getWalkStateListCounts $state */
+	reg::packed(531, MAY_BE_ARRAY), /* getWalkStateListCounts return */
 	reg::packed(1124, 0, 1130), /* appendRecordedStatementResults $state */
-	reg::packed(2335, 0, 1130), /* appendRecordedStatementResults $from */
-	reg::packed(2340, 0, 1130), /* appendRecordedStatementResults $to */
+	reg::packed(2398, 0, 1130), /* appendRecordedStatementResults $from */
+	reg::packed(2403, 0, 1130), /* appendRecordedStatementResults $to */
 	reg::packed(531, MAY_BE_VOID), /* appendRecordedStatementResults return */
 	reg::packed(1238, 0, 1243), /* getVariableMentionFlow $stmt */
-	reg::packed(531, MAY_BE_NULL, 2374), /* getVariableMentionFlow return */
+	reg::packed(531, MAY_BE_NULL, 2437), /* getVariableMentionFlow return */
 	reg::packed(1238, 0, 1243), /* statementMentionsAnyVariable $stmt */
 	reg::packed(1086, MAY_BE_ARRAY), /* statementMentionsAnyVariable $variableNames */
 	reg::packed(531, MAY_BE_BOOL), /* statementMentionsAnyVariable return */
-	reg::packed(2456, 0, 599), /* collectMentionedVariables $node */
+	reg::packed(2519, 0, 599), /* collectMentionedVariables $node */
 	reg::packed(1780, MAY_BE_ARRAY, reg::NoString, true, false), /* collectMentionedVariables $names */
-	reg::packed(2461, MAY_BE_BOOL, reg::NoString, true, false), /* collectMentionedVariables $mentionsEverything */
+	reg::packed(2524, MAY_BE_BOOL, reg::NoString, true, false), /* collectMentionedVariables $mentionsEverything */
 	reg::packed(531, MAY_BE_VOID), /* collectMentionedVariables return */
 	reg::packed(1238, 0, 1243), /* getVarTagDependencies $stmt */
 	reg::packed(416, 0, 422), /* getVarTagDependencies $scope */
 	reg::packed(531, MAY_BE_NULL, 532), /* getVarTagDependencies return */
-	reg::packed(2528, 0, 1243), /* getOverridingThrowPoints $statement */
+	reg::packed(2591, 0, 1243), /* getOverridingThrowPoints $statement */
 	reg::packed(416, 0, 422), /* getOverridingThrowPoints $scope */
 	reg::packed(531, MAY_BE_NULL | MAY_BE_ARRAY), /* getOverridingThrowPoints return */
 	reg::packed(357, 0, 375), /* processStmtVarAnnotation $nodeScopeResolver */
 	reg::packed(416, 0, 422), /* processStmtVarAnnotation $scope */
 	reg::packed(624, 0, 477), /* processStmtVarAnnotation $storage */
 	reg::packed(1238, 0, 1243), /* processStmtVarAnnotation $stmt */
-	reg::packed(2563, MAY_BE_NULL, 2575), /* processStmtVarAnnotation $defaultExpr */
+	reg::packed(2626, MAY_BE_NULL, 2638), /* processStmtVarAnnotation $defaultExpr */
 	reg::packed(518, MAY_BE_CALLABLE), /* processStmtVarAnnotation $nodeCallback */
 	reg::packed(531, 0, 422), /* processStmtVarAnnotation return */
 	reg::packed(416, 0, 422), /* findSingleVariableLessVarTag $scope */
 	reg::packed(1238, 0, 1243), /* findSingleVariableLessVarTag $stmt */
-	reg::packed(531, MAY_BE_NULL, 2620), /* findSingleVariableLessVarTag return */
+	reg::packed(531, MAY_BE_NULL, 2683), /* findSingleVariableLessVarTag return */
 	reg::packed(357, 0, 375), /* emitVarTagChangedNode $nodeScopeResolver */
 	reg::packed(416, 0, 422), /* emitVarTagChangedNode $scope */
 	reg::packed(624, 0, 477), /* emitVarTagChangedNode $storage */
 	reg::packed(1238, 0, 1243), /* emitVarTagChangedNode $stmt */
-	reg::packed(2563, 0, 2575), /* emitVarTagChangedNode $defaultExpr */
+	reg::packed(2626, 0, 2638), /* emitVarTagChangedNode $defaultExpr */
 	reg::packed(518, MAY_BE_CALLABLE), /* emitVarTagChangedNode $nodeCallback */
 	reg::packed(531, 0, 1610), /* emitVarTagChangedNode return */
 };
@@ -431,15 +441,18 @@ inline constexpr sigtab::Sig processDeferredByRefClosureBodies = { { 2195 /* pro
 inline constexpr sigtab::Sig observeClosureSignatures = { { 2258 /* observeClosureSignatures */, 8, 173, 8, 181, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig withRecordedConstraints = { { 2296 /* withRecordedConstraints */, 3, 182, 3, 185, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig containsLabels = { { 2320 /* containsLabels */, 1, 186, 1, 187, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig appendRecordedStatementResults = { { 2343 /* appendRecordedStatementResults */, 3, 188, 3, 191, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getVariableMentionFlow = { { 2404 /* getVariableMentionFlow */, 1, 192, 1, 193, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig statementMentionsAnyVariable = { { 2427 /* statementMentionsAnyVariable */, 2, 194, 2, 196, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig collectMentionedVariables = { { 2480 /* collectMentionedVariables */, 3, 197, 3, 200, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getVarTagDependencies = { { 2506 /* getVarTagDependencies */, 2, 201, 2, 203, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOverridingThrowPoints = { { 2538 /* getOverridingThrowPoints */, 2, 204, 2, 206, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmtVarAnnotation = { { 2595 /* processStmtVarAnnotation */, 6, 207, 6, 213, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 2646 /* findSingleVariableLessVarTag */, 2, 214, 2, 216, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig emitVarTagChangedNode = { { 2675 /* emitVarTagChangedNode */, 6, 217, 6, 223, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig snapshotWalkState = { { 2335 /* snapshotWalkState */, 1, 188, 1, 189, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resumeWalkState = { { 2359 /* resumeWalkState */, 1, 190, 1, 191, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getWalkStateListCounts = { { 2375 /* getWalkStateListCounts */, 1, 192, 1, 193, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig appendRecordedStatementResults = { { 2406 /* appendRecordedStatementResults */, 3, 194, 3, 197, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getVariableMentionFlow = { { 2467 /* getVariableMentionFlow */, 1, 198, 1, 199, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig statementMentionsAnyVariable = { { 2490 /* statementMentionsAnyVariable */, 2, 200, 2, 202, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig collectMentionedVariables = { { 2543 /* collectMentionedVariables */, 3, 203, 3, 206, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getVarTagDependencies = { { 2569 /* getVarTagDependencies */, 2, 207, 2, 209, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOverridingThrowPoints = { { 2601 /* getOverridingThrowPoints */, 2, 210, 2, 212, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmtVarAnnotation = { { 2658 /* processStmtVarAnnotation */, 6, 213, 6, 219, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findSingleVariableLessVarTag = { { 2709 /* findSingleVariableLessVarTag */, 2, 220, 2, 222, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig emitVarTagChangedNode = { { 2738 /* emitVarTagChangedNode */, 6, 223, 6, 229, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StatementsHandler

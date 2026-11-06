@@ -2,11 +2,9 @@
 
 namespace PHPStan\Rules\Methods;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<MissingMagicSerializationMethodsRule>
@@ -16,7 +14,7 @@ class MissingMagicSerializationMethodsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingMagicSerializationMethodsRule(new PhpVersion(PHP_VERSION_ID));
+		return new MissingMagicSerializationMethodsRule();
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

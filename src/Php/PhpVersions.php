@@ -119,6 +119,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsAsymmetricVisibility(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsAsymmetricVisibilityForStaticProperties(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
@@ -184,9 +189,19 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function throwsOnStringCast(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(70400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsReadOnlyProperties(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsReadonlyPropertyReinitializationOnClone(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
 	public function supportsFirstClassCallables(): TrinaryLogic
@@ -222,6 +237,71 @@ final class PhpVersions
 	public function deprecatesNonStandardCasts(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesBacktickOperator(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesDecOnNonNumericString(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesIncOnNonNumericString(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesImplicitlyFloatConversionToInt(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesNullArrayOffset(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesRequiredParameterAfterOptional(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesRequiredParameterAfterOptionalUnionOrMixed(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesImplicitlyNullableParameterTypes(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function hasTentativeReturnTypes(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function serializableRequiresMagicMethods(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsAbstractTraitMethods(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80000, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function supportsCaseInsensitiveConstantNames(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(null, 79999)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
 	public function supportsDeprecatedTraits(): TrinaryLogic

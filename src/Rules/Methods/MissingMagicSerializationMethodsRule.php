@@ -7,7 +7,6 @@ use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use Serializable;
@@ -21,10 +20,6 @@ use function strtolower;
 final class MissingMagicSerializationMethodsRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpversion)
-	{
-	}
-
 	public function getNodeType(): string
 	{
 		return InClassNode::class;
@@ -33,7 +28,7 @@ final class MissingMagicSerializationMethodsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$classReflection = $node->getClassReflection();
-		if (!$this->phpversion->serializableRequiresMagicMethods()) {
+		if ($scope->getPhpVersion()->serializableRequiresMagicMethods()->no()) {
 			return [];
 		}
 		if (!$classReflection->implementsInterface(Serializable::class)) {

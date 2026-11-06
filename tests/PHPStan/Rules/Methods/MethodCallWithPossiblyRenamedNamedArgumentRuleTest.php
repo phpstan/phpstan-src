@@ -43,7 +43,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 				false,
 				new MethodParameterComparisonHelper($phpVersion),
 				new MethodVisibilityComparisonHelper(),
-				new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
+				new MethodPrototypeFinder($phpClassReflectionExtension),
 				false,
 			),
 			new MethodCallWithPossiblyRenamedNamedArgumentRule(),

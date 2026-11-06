@@ -403,10 +403,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** @internal called by ScopeOps */
 	public function isReadonlyPropertyFetch(PropertyFetch $expr, bool $allowOnlyOnThis): bool
 	{
-		if (!$this->services->phpVersion->supportsReadOnlyProperties()) {
-			return false;
-		}
-
 		while ($expr instanceof PropertyFetch) {
 			if ($expr->var instanceof Variable) {
 				if (
@@ -436,7 +432,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$expr = $expr->var;
 		}
 
-		return true;
+		return !$this->getPhpVersion()->supportsReadOnlyProperties()->no();
 	}
 
 	/** @api */
@@ -2576,20 +2572,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$expressionTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getType($node));
 			$nativeTypes['$this'] = ExpressionTypeHolder::createYes($node, $this->getNativeType($node));
 
-			if ($this->services->phpVersion->supportsReadOnlyProperties()) {
-				foreach ($nonStaticExpressions as $exprString => $typeHolder) {
-					$expr = $typeHolder->getExpr();
+			foreach ($nonStaticExpressions as $exprString => $typeHolder) {
+				$expr = $typeHolder->getExpr();
 
-					if (!$expr instanceof PropertyFetch) {
-						continue;
-					}
-
-					if (!$this->isReadonlyPropertyFetch($expr, true)) {
-						continue;
-					}
-
-					$expressionTypes[$exprString] = $typeHolder;
+				if (!$expr instanceof PropertyFetch) {
+					continue;
 				}
+
+				if (!$this->isReadonlyPropertyFetch($expr, true)) {
+					continue;
+				}
+
+				$expressionTypes[$exprString] = $typeHolder;
 			}
 		}
 
@@ -3734,7 +3728,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		if (
 			$function instanceof MethodReflection
 			&& strtolower($function->getName()) === '__clone'
-			&& $scope->services->phpVersion->supportsReadonlyPropertyReinitializationOnClone()
+			&& $scope->getPhpVersion()->supportsReadonlyPropertyReinitializationOnClone()->yes()
 		) {
 			$scope = $scope->assignExpression(new CloneReinitializationExpr($propertyName), new MixedType(), new MixedType());
 		}
@@ -5598,7 +5592,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return $this->canAccessClassMember($propertyReflection);
 		}
 
-		if (!$this->services->phpVersion->supportsAsymmetricVisibility()) {
+		if ($this->getPhpVersion()->supportsAsymmetricVisibility()->no()) {
 			return $this->canAccessClassMember($propertyReflection);
 		}
 

@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Properties;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function sprintf;
@@ -18,7 +17,6 @@ final class PropertyAssignRefRule implements Rule
 {
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private PropertyReflectionFinder $propertyReflectionFinder,
 	)
 	{
@@ -31,7 +29,7 @@ final class PropertyAssignRefRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$this->phpVersion->supportsAsymmetricVisibility()) {
+		if ($scope->getPhpVersion()->supportsAsymmetricVisibility()->no()) {
 			return [];
 		}
 

@@ -12,24 +12,23 @@ namespace ptdecl::AssignHandler {
 namespace slot {
 inline constexpr uint32_t templateArgumentObserver = 0;
 inline constexpr uint32_t varAnnotationProcessor = 1;
-inline constexpr uint32_t phpVersion = 2;
-inline constexpr uint32_t exprPrinter = 3;
-inline constexpr uint32_t matchHandler = 4;
-inline constexpr uint32_t ternaryHandler = 5;
-inline constexpr uint32_t expressionResultFactory = 6;
-inline constexpr uint32_t defaultNarrowingHelper = 7;
-inline constexpr uint32_t identicalNarrowingHelper = 8;
-inline constexpr uint32_t propertyReflectionFinder = 9;
-inline constexpr uint32_t virtualExprResultHelper = 10;
-inline constexpr uint32_t nonNullabilityHelper = 11;
-inline constexpr uint32_t variableHandler = 12;
-inline constexpr uint32_t arrayDimFetchHandler = 13;
-inline constexpr uint32_t propertyFetchHandler = 14;
-inline constexpr uint32_t staticPropertyFetchHandler = 15;
-inline constexpr uint32_t methodThrowPointHelper = 16;
-inline constexpr uint32_t propertyHookThrowPointsResolver = 17;
-inline constexpr uint32_t statementsHandler = 18;
-inline constexpr uint32_t arrayUnpackingHelper = 19;
+inline constexpr uint32_t exprPrinter = 2;
+inline constexpr uint32_t matchHandler = 3;
+inline constexpr uint32_t ternaryHandler = 4;
+inline constexpr uint32_t expressionResultFactory = 5;
+inline constexpr uint32_t defaultNarrowingHelper = 6;
+inline constexpr uint32_t identicalNarrowingHelper = 7;
+inline constexpr uint32_t propertyReflectionFinder = 8;
+inline constexpr uint32_t virtualExprResultHelper = 9;
+inline constexpr uint32_t nonNullabilityHelper = 10;
+inline constexpr uint32_t variableHandler = 11;
+inline constexpr uint32_t arrayDimFetchHandler = 12;
+inline constexpr uint32_t propertyFetchHandler = 13;
+inline constexpr uint32_t staticPropertyFetchHandler = 14;
+inline constexpr uint32_t methodThrowPointHelper = 15;
+inline constexpr uint32_t propertyHookThrowPointsResolver = 16;
+inline constexpr uint32_t statementsHandler = 17;
+inline constexpr uint32_t arrayUnpackingHelper = 18;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -43,7 +42,6 @@ inline void declareProperties(reg::Class &cls)
 {
 	cls.property("templateArgumentObserver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\Generics\\TemplateArgumentObserver");
 	cls.property("varAnnotationProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\VarAnnotationProcessor");
-	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Php\\PhpVersion");
 	cls.property("exprPrinter", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Node\\Printer\\ExprPrinter");
 	cls.property("matchHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\MatchHandler");
 	cls.property("ternaryHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\TernaryHandler");
@@ -70,459 +68,456 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\Generics\\TemplateArgumentObserver\0" /* 25 */
 	"varAnnotationProcessor\0" /* 76 */
 	"PHPStan\\Analyser\\VarAnnotationProcessor\0" /* 99 */
-	"phpVersion\0" /* 139 */
-	"PHPStan\\Php\\PhpVersion\0" /* 150 */
-	"exprPrinter\0" /* 173 */
-	"PHPStan\\Node\\Printer\\ExprPrinter\0" /* 185 */
-	"matchHandler\0" /* 218 */
-	"PHPStan\\Analyser\\ExprHandler\\MatchHandler\0" /* 231 */
-	"ternaryHandler\0" /* 273 */
-	"PHPStan\\Analyser\\ExprHandler\\TernaryHandler\0" /* 288 */
-	"expressionResultFactory\0" /* 332 */
-	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 356 */
-	"defaultNarrowingHelper\0" /* 397 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 420 */
-	"identicalNarrowingHelper\0" /* 479 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper\0" /* 504 */
-	"propertyReflectionFinder\0" /* 565 */
-	"PHPStan\\Rules\\Properties\\PropertyReflectionFinder\0" /* 590 */
-	"virtualExprResultHelper\0" /* 640 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\VirtualExprResultHelper\0" /* 664 */
-	"nonNullabilityHelper\0" /* 724 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\NonNullabilityHelper\0" /* 745 */
-	"variableHandler\0" /* 802 */
-	"PHPStan\\Analyser\\ExprHandler\\VariableHandler\0" /* 818 */
-	"arrayDimFetchHandler\0" /* 863 */
-	"PHPStan\\Analyser\\ExprHandler\\ArrayDimFetchHandler\0" /* 884 */
-	"propertyFetchHandler\0" /* 934 */
-	"PHPStan\\Analyser\\ExprHandler\\PropertyFetchHandler\0" /* 955 */
-	"staticPropertyFetchHandler\0" /* 1005 */
-	"PHPStan\\Analyser\\ExprHandler\\StaticPropertyFetchHandler\0" /* 1032 */
-	"methodThrowPointHelper\0" /* 1088 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 1111 */
-	"propertyHookThrowPointsResolver\0" /* 1170 */
-	"PHPStan\\Analyser\\PropertyHookThrowPointsResolver\0" /* 1202 */
-	"statementsHandler\0" /* 1251 */
-	"PHPStan\\Analyser\\StatementsHandler\0" /* 1269 */
-	"arrayUnpackingHelper\0" /* 1304 */
-	"PHPStan\\Type\\ArrayUnpackingHelper\0" /* 1325 */
-	"__construct\0" /* 1359 */
-	"expr\0" /* 1371 */
-	"PhpParser\\Node\\Expr\0" /* 1376 */
-	"\0" /* 1396 */
-	"supports\0" /* 1397 */
-	"nodeScopeResolver\0" /* 1406 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 1424 */
-	"stmt\0" /* 1459 */
-	"PhpParser\\Node\\Stmt\0" /* 1464 */
-	"scope\0" /* 1484 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 1490 */
-	"storage\0" /* 1521 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1529 */
-	"nodeCallback\0" /* 1570 */
-	"context\0" /* 1583 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 1591 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 1626 */
-	"processExpr\0" /* 1660 */
-	"assignedExpr\0" /* 1672 */
-	"captureAssignedCallArgResults\0" /* 1685 */
-	"PhpParser\\Node\\Expr\\Assign\0" /* 1715 */
-	"assignedExprResult\0" /* 1742 */
-	"beforeScope\0" /* 1761 */
-	"Closure\0" /* 1773 */
-	"createCreateTypesCallback\0" /* 1781 */
-	"createSpecifyTypesCallback\0" /* 1807 */
-	"var\0" /* 1834 */
-	"null\0" /* 1838 */
-	"processVirtualAssign\0" /* 1843 */
-	"mode\0" /* 1864 */
-	"PHPStan\\Analyser\\AssignTargetWalkMode\0" /* 1869 */
-	"PHPStan\\Analyser\\PreparedAssignTarget\0" /* 1907 */
-	"prepareTarget\0" /* 1945 */
-	"doPrepareTarget\0" /* 1959 */
-	"target\0" /* 1975 */
-	"valueResult\0" /* 1982 */
-	"assignedValueResult\0" /* 1994 */
-	"applyWrite\0" /* 2014 */
-	"receiverType\0" /* 2025 */
-	"PHPStan\\Type\\Type\0" /* 2038 */
-	"keyType\0" /* 2056 */
-	"valueType\0" /* 2064 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 2074 */
-	"collectOffsetSetUsage\0" /* 2128 */
-	"keyVar\0" /* 2150 */
-	"PhpParser\\Node\\Expr\\Variable\0" /* 2157 */
-	"arrayArg\0" /* 2186 */
-	"narrowedKeyType\0" /* 2195 */
-	"dimFetchType\0" /* 2211 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 2224 */
-	"createArrayDimFetchConditionalExpressionHolder\0" /* 2256 */
-	"readAssignedValueType\0" /* 2303 */
-	"varResult\0" /* 2325 */
-	"postEvalScope\0" /* 2335 */
-	"preEvalScope\0" /* 2349 */
-	"resolveContainerTypesAfterAssignedExprEval\0" /* 2362 */
-	"nameResult\0" /* 2405 */
-	"nativeValueType\0" /* 2416 */
-	"assignDynamicVariable\0" /* 2432 */
-	"getWrittenExpr\0" /* 2454 */
-	"unwrapAssign\0" /* 2469 */
-	"variableName\0" /* 2482 */
-	"conditionalExpressions\0" /* 2495 */
-	"specifiedTypes\0" /* 2518 */
-	"variableType\0" /* 2533 */
-	"rhsImpurePoints\0" /* 2546 */
-	"processSureTypesForConditionalExpressionsAfterAssign\0" /* 2562 */
-	"processSureNotTypesForConditionalExpressionsAfterAssign\0" /* 2615 */
-	"currentTypeForConditionalHolder\0" /* 2671 */
-	"armScope\0" /* 2703 */
-	"armExpr\0" /* 2712 */
-	"remainderType\0" /* 2720 */
-	"otherArmType\0" /* 2734 */
-	"processTernaryArmValueImpliedTypesAfterAssign\0" /* 2747 */
-	"holderExpr\0" /* 2793 */
-	"holderExprString\0" /* 2804 */
-	"holderType\0" /* 2821 */
-	"holderCertainty\0" /* 2832 */
-	"PHPStan\\TrinaryLogic\0" /* 2848 */
-	"addConditionalExpressionHolder\0" /* 2869 */
-	"newConditionalExpressions\0" /* 2900 */
-	"mergeConditionalExpressions\0" /* 2926 */
-	"PhpParser\\Node\\Expr\\Match_\0" /* 2954 */
-	"processMatchForConditionalExpressionsAfterAssign\0" /* 2981 */
-	"assignedType\0" /* 3030 */
-	"processDerivedConditionalExpressionsAfterAssign\0" /* 3043 */
-	"PhpParser\\Node\\Expr\\FuncCall\0" /* 3091 */
-	"processInArrayForConditionalExpressionsAfterAssign\0" /* 3120 */
-	"isExprSafeToProjectThroughVariable\0" /* 3171 */
-	"dimFetchStack\0" /* 3206 */
-	"PHPStan\\Analyser\\Scope\0" /* 3220 */
-	"isImplicitArrayCreation\0" /* 3243 */
-	"rootVarName\0" /* 3267 */
-	"arrayExpr\0" /* 3279 */
-	"PhpParser\\Node\\Expr\\Array_\0" /* 3289 */
-	"parentExpr\0" /* 3316 */
-	"processArrayByRefItems\0" /* 3327 */
-	"implicitIndex\0" /* 3350 */
-	"processArrayByRefItemsWithImplicitIndex\0" /* 3364 */
-	"isFlattenableUnpackedArray\0" /* 3404 */
-	"index\0" /* 3431 */
-	"advanceImplicitIndex\0" /* 3437 */
-	"offsetTypes\0" /* 3458 */
-	"offsetValueType\0" /* 3470 */
-	"valueToWrite\0" /* 3486 */
-	"produceArrayDimFetchAssignValueToWrite\0" /* 3499 */
-	"arrayDimFetch\0" /* 3538 */
-	"PhpParser\\Node\\Expr\\ArrayDimFetch\0" /* 3552 */
-	"shouldKeepList\0" /* 3586 */
-	"offsetType\0" /* 3601 */
-	"trackedLinkImpliesOffset\0" /* 3612 */
-	"a\0" /* 3637 */
-	"b\0" /* 3639 */
-	"isSameVariable\0" /* 3641 */
-	"isSameOffset\0" /* 3656 */
-	"getLiteralArrayKeyType\0" /* 3669 */
-	"propertyFetch\0" /* 3692 */
-	"PhpParser\\Node\\Expr\\PropertyFetch|PhpParser\\Node\\Expr\\StaticPropertyFetch\0" /* 3706 */
-	"getOriginalPropertyType\0" /* 3780 */
-	"array\0" /* 3804 */
-	"hasArrayReference\0" /* 3810 */
-	"rhs\0" /* 3828 */
-	"redundant"; /* 3832 */
+	"exprPrinter\0" /* 139 */
+	"PHPStan\\Node\\Printer\\ExprPrinter\0" /* 151 */
+	"matchHandler\0" /* 184 */
+	"PHPStan\\Analyser\\ExprHandler\\MatchHandler\0" /* 197 */
+	"ternaryHandler\0" /* 239 */
+	"PHPStan\\Analyser\\ExprHandler\\TernaryHandler\0" /* 254 */
+	"expressionResultFactory\0" /* 298 */
+	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 322 */
+	"defaultNarrowingHelper\0" /* 363 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 386 */
+	"identicalNarrowingHelper\0" /* 445 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\IdenticalNarrowingHelper\0" /* 470 */
+	"propertyReflectionFinder\0" /* 531 */
+	"PHPStan\\Rules\\Properties\\PropertyReflectionFinder\0" /* 556 */
+	"virtualExprResultHelper\0" /* 606 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\VirtualExprResultHelper\0" /* 630 */
+	"nonNullabilityHelper\0" /* 690 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\NonNullabilityHelper\0" /* 711 */
+	"variableHandler\0" /* 768 */
+	"PHPStan\\Analyser\\ExprHandler\\VariableHandler\0" /* 784 */
+	"arrayDimFetchHandler\0" /* 829 */
+	"PHPStan\\Analyser\\ExprHandler\\ArrayDimFetchHandler\0" /* 850 */
+	"propertyFetchHandler\0" /* 900 */
+	"PHPStan\\Analyser\\ExprHandler\\PropertyFetchHandler\0" /* 921 */
+	"staticPropertyFetchHandler\0" /* 971 */
+	"PHPStan\\Analyser\\ExprHandler\\StaticPropertyFetchHandler\0" /* 998 */
+	"methodThrowPointHelper\0" /* 1054 */
+	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper\0" /* 1077 */
+	"propertyHookThrowPointsResolver\0" /* 1136 */
+	"PHPStan\\Analyser\\PropertyHookThrowPointsResolver\0" /* 1168 */
+	"statementsHandler\0" /* 1217 */
+	"PHPStan\\Analyser\\StatementsHandler\0" /* 1235 */
+	"arrayUnpackingHelper\0" /* 1270 */
+	"PHPStan\\Type\\ArrayUnpackingHelper\0" /* 1291 */
+	"__construct\0" /* 1325 */
+	"expr\0" /* 1337 */
+	"PhpParser\\Node\\Expr\0" /* 1342 */
+	"\0" /* 1362 */
+	"supports\0" /* 1363 */
+	"nodeScopeResolver\0" /* 1372 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 1390 */
+	"stmt\0" /* 1425 */
+	"PhpParser\\Node\\Stmt\0" /* 1430 */
+	"scope\0" /* 1450 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 1456 */
+	"storage\0" /* 1487 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1495 */
+	"nodeCallback\0" /* 1536 */
+	"context\0" /* 1549 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 1557 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 1592 */
+	"processExpr\0" /* 1626 */
+	"assignedExpr\0" /* 1638 */
+	"captureAssignedCallArgResults\0" /* 1651 */
+	"PhpParser\\Node\\Expr\\Assign\0" /* 1681 */
+	"assignedExprResult\0" /* 1708 */
+	"beforeScope\0" /* 1727 */
+	"Closure\0" /* 1739 */
+	"createCreateTypesCallback\0" /* 1747 */
+	"createSpecifyTypesCallback\0" /* 1773 */
+	"var\0" /* 1800 */
+	"null\0" /* 1804 */
+	"processVirtualAssign\0" /* 1809 */
+	"mode\0" /* 1830 */
+	"PHPStan\\Analyser\\AssignTargetWalkMode\0" /* 1835 */
+	"PHPStan\\Analyser\\PreparedAssignTarget\0" /* 1873 */
+	"prepareTarget\0" /* 1911 */
+	"doPrepareTarget\0" /* 1925 */
+	"target\0" /* 1941 */
+	"valueResult\0" /* 1948 */
+	"assignedValueResult\0" /* 1960 */
+	"applyWrite\0" /* 1980 */
+	"receiverType\0" /* 1991 */
+	"PHPStan\\Type\\Type\0" /* 2004 */
+	"keyType\0" /* 2022 */
+	"valueType\0" /* 2030 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentConstraints\0" /* 2040 */
+	"collectOffsetSetUsage\0" /* 2094 */
+	"keyVar\0" /* 2116 */
+	"PhpParser\\Node\\Expr\\Variable\0" /* 2123 */
+	"arrayArg\0" /* 2152 */
+	"narrowedKeyType\0" /* 2161 */
+	"dimFetchType\0" /* 2177 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 2190 */
+	"createArrayDimFetchConditionalExpressionHolder\0" /* 2222 */
+	"readAssignedValueType\0" /* 2269 */
+	"varResult\0" /* 2291 */
+	"postEvalScope\0" /* 2301 */
+	"preEvalScope\0" /* 2315 */
+	"resolveContainerTypesAfterAssignedExprEval\0" /* 2328 */
+	"nameResult\0" /* 2371 */
+	"nativeValueType\0" /* 2382 */
+	"assignDynamicVariable\0" /* 2398 */
+	"getWrittenExpr\0" /* 2420 */
+	"unwrapAssign\0" /* 2435 */
+	"variableName\0" /* 2448 */
+	"conditionalExpressions\0" /* 2461 */
+	"specifiedTypes\0" /* 2484 */
+	"variableType\0" /* 2499 */
+	"rhsImpurePoints\0" /* 2512 */
+	"processSureTypesForConditionalExpressionsAfterAssign\0" /* 2528 */
+	"processSureNotTypesForConditionalExpressionsAfterAssign\0" /* 2581 */
+	"currentTypeForConditionalHolder\0" /* 2637 */
+	"armScope\0" /* 2669 */
+	"armExpr\0" /* 2678 */
+	"remainderType\0" /* 2686 */
+	"otherArmType\0" /* 2700 */
+	"processTernaryArmValueImpliedTypesAfterAssign\0" /* 2713 */
+	"holderExpr\0" /* 2759 */
+	"holderExprString\0" /* 2770 */
+	"holderType\0" /* 2787 */
+	"holderCertainty\0" /* 2798 */
+	"PHPStan\\TrinaryLogic\0" /* 2814 */
+	"addConditionalExpressionHolder\0" /* 2835 */
+	"newConditionalExpressions\0" /* 2866 */
+	"mergeConditionalExpressions\0" /* 2892 */
+	"PhpParser\\Node\\Expr\\Match_\0" /* 2920 */
+	"processMatchForConditionalExpressionsAfterAssign\0" /* 2947 */
+	"assignedType\0" /* 2996 */
+	"processDerivedConditionalExpressionsAfterAssign\0" /* 3009 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 3057 */
+	"processInArrayForConditionalExpressionsAfterAssign\0" /* 3086 */
+	"isExprSafeToProjectThroughVariable\0" /* 3137 */
+	"dimFetchStack\0" /* 3172 */
+	"PHPStan\\Analyser\\Scope\0" /* 3186 */
+	"isImplicitArrayCreation\0" /* 3209 */
+	"rootVarName\0" /* 3233 */
+	"arrayExpr\0" /* 3245 */
+	"PhpParser\\Node\\Expr\\Array_\0" /* 3255 */
+	"parentExpr\0" /* 3282 */
+	"processArrayByRefItems\0" /* 3293 */
+	"implicitIndex\0" /* 3316 */
+	"processArrayByRefItemsWithImplicitIndex\0" /* 3330 */
+	"isFlattenableUnpackedArray\0" /* 3370 */
+	"index\0" /* 3397 */
+	"advanceImplicitIndex\0" /* 3403 */
+	"offsetTypes\0" /* 3424 */
+	"offsetValueType\0" /* 3436 */
+	"valueToWrite\0" /* 3452 */
+	"produceArrayDimFetchAssignValueToWrite\0" /* 3465 */
+	"arrayDimFetch\0" /* 3504 */
+	"PhpParser\\Node\\Expr\\ArrayDimFetch\0" /* 3518 */
+	"shouldKeepList\0" /* 3552 */
+	"offsetType\0" /* 3567 */
+	"trackedLinkImpliesOffset\0" /* 3578 */
+	"a\0" /* 3603 */
+	"b\0" /* 3605 */
+	"isSameVariable\0" /* 3607 */
+	"isSameOffset\0" /* 3622 */
+	"getLiteralArrayKeyType\0" /* 3635 */
+	"propertyFetch\0" /* 3658 */
+	"PhpParser\\Node\\Expr\\PropertyFetch|PhpParser\\Node\\Expr\\StaticPropertyFetch\0" /* 3672 */
+	"getOriginalPropertyType\0" /* 3746 */
+	"array\0" /* 3770 */
+	"hasArrayReference\0" /* 3776 */
+	"rhs\0" /* 3794 */
+	"redundant"; /* 3798 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 25), /* __construct $templateArgumentObserver */
 	reg::packed(76, 0, 99), /* __construct $varAnnotationProcessor */
-	reg::packed(139, 0, 150), /* __construct $phpVersion */
-	reg::packed(173, 0, 185), /* __construct $exprPrinter */
-	reg::packed(218, 0, 231), /* __construct $matchHandler */
-	reg::packed(273, 0, 288), /* __construct $ternaryHandler */
-	reg::packed(332, 0, 356), /* __construct $expressionResultFactory */
-	reg::packed(397, 0, 420), /* __construct $defaultNarrowingHelper */
-	reg::packed(479, 0, 504), /* __construct $identicalNarrowingHelper */
-	reg::packed(565, 0, 590), /* __construct $propertyReflectionFinder */
-	reg::packed(640, 0, 664), /* __construct $virtualExprResultHelper */
-	reg::packed(724, 0, 745), /* __construct $nonNullabilityHelper */
-	reg::packed(802, 0, 818), /* __construct $variableHandler */
-	reg::packed(863, 0, 884), /* __construct $arrayDimFetchHandler */
-	reg::packed(934, 0, 955), /* __construct $propertyFetchHandler */
-	reg::packed(1005, 0, 1032), /* __construct $staticPropertyFetchHandler */
-	reg::packed(1088, 0, 1111), /* __construct $methodThrowPointHelper */
-	reg::packed(1170, 0, 1202), /* __construct $propertyHookThrowPointsResolver */
-	reg::packed(1251, 0, 1269), /* __construct $statementsHandler */
-	reg::packed(1304, 0, 1325), /* __construct $arrayUnpackingHelper */
-	reg::packed(1371, 0, 1376), /* supports $expr */
-	reg::packed(1396, MAY_BE_BOOL), /* supports return */
-	reg::packed(1406, 0, 1424), /* processExpr $nodeScopeResolver */
-	reg::packed(1459, 0, 1464), /* processExpr $stmt */
-	reg::packed(1371, 0, 1376), /* processExpr $expr */
-	reg::packed(1484, 0, 1490), /* processExpr $scope */
-	reg::packed(1521, 0, 1529), /* processExpr $storage */
-	reg::packed(1570, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(1583, 0, 1591), /* processExpr $context */
-	reg::packed(1396, 0, 1626), /* processExpr return */
-	reg::packed(1672, 0, 1376), /* captureAssignedCallArgResults $assignedExpr */
-	reg::packed(1521, 0, 1529), /* captureAssignedCallArgResults $storage */
-	reg::packed(1396, MAY_BE_ARRAY), /* captureAssignedCallArgResults return */
-	reg::packed(1371, 0, 1715), /* createCreateTypesCallback $expr */
-	reg::packed(1742, 0, 1626), /* createCreateTypesCallback $assignedExprResult */
-	reg::packed(1761, 0, 1490), /* createCreateTypesCallback $beforeScope */
-	reg::packed(1396, 0, 1773), /* createCreateTypesCallback return */
-	reg::packed(1371, 0, 1715), /* createSpecifyTypesCallback $expr */
-	reg::packed(1742, 0, 1626), /* createSpecifyTypesCallback $assignedExprResult */
-	reg::packed(1761, 0, 1490), /* createSpecifyTypesCallback $beforeScope */
-	reg::packed(1521, 0, 1529), /* createSpecifyTypesCallback $storage */
-	reg::packed(1396, 0, 1773), /* createSpecifyTypesCallback return */
-	reg::packed(1406, 0, 1424), /* processVirtualAssign $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processVirtualAssign $scope */
-	reg::packed(1521, 0, 1529), /* processVirtualAssign $storage */
-	reg::packed(1459, 0, 1464), /* processVirtualAssign $stmt */
-	reg::packed(1834, 0, 1376), /* processVirtualAssign $var */
-	reg::packed(1672, 0, 1376), /* processVirtualAssign $assignedExpr */
-	reg::packed(1570, MAY_BE_CALLABLE), /* processVirtualAssign $nodeCallback */
-	reg::packed(1742, MAY_BE_NULL, 1626, false, false, 1838), /* processVirtualAssign $assignedExprResult */
-	reg::packed(1396, 0, 1626), /* processVirtualAssign return */
-	reg::packed(1406, 0, 1424), /* prepareTarget $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* prepareTarget $scope */
-	reg::packed(1521, 0, 1529), /* prepareTarget $storage */
-	reg::packed(1459, 0, 1464), /* prepareTarget $stmt */
-	reg::packed(1834, 0, 1376), /* prepareTarget $var */
-	reg::packed(1672, 0, 1376), /* prepareTarget $assignedExpr */
-	reg::packed(1570, MAY_BE_CALLABLE), /* prepareTarget $nodeCallback */
-	reg::packed(1583, 0, 1591), /* prepareTarget $context */
-	reg::packed(1864, 0, 1869), /* prepareTarget $mode */
-	reg::packed(1396, 0, 1907), /* prepareTarget return */
-	reg::packed(1406, 0, 1424), /* doPrepareTarget $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* doPrepareTarget $scope */
-	reg::packed(1521, 0, 1529), /* doPrepareTarget $storage */
-	reg::packed(1459, 0, 1464), /* doPrepareTarget $stmt */
-	reg::packed(1834, 0, 1376), /* doPrepareTarget $var */
-	reg::packed(1672, 0, 1376), /* doPrepareTarget $assignedExpr */
-	reg::packed(1570, MAY_BE_CALLABLE), /* doPrepareTarget $nodeCallback */
-	reg::packed(1583, 0, 1591), /* doPrepareTarget $context */
-	reg::packed(1864, 0, 1869), /* doPrepareTarget $mode */
-	reg::packed(1396, 0, 1907), /* doPrepareTarget return */
-	reg::packed(1406, 0, 1424), /* applyWrite $nodeScopeResolver */
-	reg::packed(1975, 0, 1907), /* applyWrite $target */
-	reg::packed(1982, 0, 1626), /* applyWrite $valueResult */
-	reg::packed(1994, MAY_BE_NULL, 1626), /* applyWrite $assignedValueResult */
-	reg::packed(1459, 0, 1464), /* applyWrite $stmt */
-	reg::packed(1521, 0, 1529), /* applyWrite $storage */
-	reg::packed(1570, MAY_BE_CALLABLE), /* applyWrite $nodeCallback */
-	reg::packed(1583, 0, 1591), /* applyWrite $context */
-	reg::packed(1396, 0, 1626), /* applyWrite return */
-	reg::packed(1406, 0, 1424), /* collectOffsetSetUsage $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* collectOffsetSetUsage $scope */
-	reg::packed(2025, 0, 2038), /* collectOffsetSetUsage $receiverType */
-	reg::packed(2056, MAY_BE_NULL, 2038), /* collectOffsetSetUsage $keyType */
-	reg::packed(2064, 0, 2038), /* collectOffsetSetUsage $valueType */
-	reg::packed(1396, 0, 2074), /* collectOffsetSetUsage return */
-	reg::packed(2150, 0, 2157), /* createArrayDimFetchConditionalExpressionHolder $keyVar */
-	reg::packed(2186, 0, 1376), /* createArrayDimFetchConditionalExpressionHolder $arrayArg */
-	reg::packed(2195, 0, 2038), /* createArrayDimFetchConditionalExpressionHolder $narrowedKeyType */
-	reg::packed(2211, 0, 2038), /* createArrayDimFetchConditionalExpressionHolder $dimFetchType */
-	reg::packed(1396, 0, 2224), /* createArrayDimFetchConditionalExpressionHolder return */
-	reg::packed(1406, 0, 1424), /* readAssignedValueType $nodeScopeResolver */
-	reg::packed(1994, MAY_BE_NULL, 1626), /* readAssignedValueType $assignedValueResult */
-	reg::packed(1672, 0, 1376), /* readAssignedValueType $assignedExpr */
-	reg::packed(1484, 0, 1490), /* readAssignedValueType $scope */
-	reg::packed(1396, 0, 2038), /* readAssignedValueType return */
-	reg::packed(1406, 0, 1424), /* resolveContainerTypesAfterAssignedExprEval $nodeScopeResolver */
-	reg::packed(1834, 0, 1376), /* resolveContainerTypesAfterAssignedExprEval $var */
-	reg::packed(2325, 0, 1626), /* resolveContainerTypesAfterAssignedExprEval $varResult */
-	reg::packed(2335, 0, 1490), /* resolveContainerTypesAfterAssignedExprEval $postEvalScope */
-	reg::packed(2349, MAY_BE_NULL, 1490), /* resolveContainerTypesAfterAssignedExprEval $preEvalScope */
-	reg::packed(1521, 0, 1529), /* resolveContainerTypesAfterAssignedExprEval $storage */
-	reg::packed(1396, MAY_BE_ARRAY), /* resolveContainerTypesAfterAssignedExprEval return */
-	reg::packed(1484, 0, 1490), /* assignDynamicVariable $scope */
-	reg::packed(2405, 0, 1626), /* assignDynamicVariable $nameResult */
-	reg::packed(2064, 0, 2038), /* assignDynamicVariable $valueType */
-	reg::packed(2416, 0, 2038), /* assignDynamicVariable $nativeValueType */
-	reg::packed(1396, 0, 1490), /* assignDynamicVariable return */
-	reg::packed(1672, 0, 1376), /* getWrittenExpr $assignedExpr */
-	reg::packed(1396, 0, 1376), /* getWrittenExpr return */
-	reg::packed(1371, 0, 1376), /* unwrapAssign $expr */
-	reg::packed(1396, 0, 1376), /* unwrapAssign return */
-	reg::packed(1406, 0, 1424), /* processSureTypesForConditionalExpressionsAfterAssign $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processSureTypesForConditionalExpressionsAfterAssign $scope */
-	reg::packed(1521, 0, 1529), /* processSureTypesForConditionalExpressionsAfterAssign $storage */
-	reg::packed(2482, MAY_BE_STRING), /* processSureTypesForConditionalExpressionsAfterAssign $variableName */
-	reg::packed(2495, MAY_BE_ARRAY), /* processSureTypesForConditionalExpressionsAfterAssign $conditionalExpressions */
-	reg::packed(2518, 0, 2224), /* processSureTypesForConditionalExpressionsAfterAssign $specifiedTypes */
-	reg::packed(2533, 0, 2038), /* processSureTypesForConditionalExpressionsAfterAssign $variableType */
-	reg::packed(2546, MAY_BE_ARRAY), /* processSureTypesForConditionalExpressionsAfterAssign $rhsImpurePoints */
-	reg::packed(1672, 0, 1376), /* processSureTypesForConditionalExpressionsAfterAssign $assignedExpr */
-	reg::packed(1994, MAY_BE_NULL, 1626), /* processSureTypesForConditionalExpressionsAfterAssign $assignedValueResult */
-	reg::packed(1396, MAY_BE_ARRAY), /* processSureTypesForConditionalExpressionsAfterAssign return */
-	reg::packed(1406, 0, 1424), /* processSureNotTypesForConditionalExpressionsAfterAssign $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processSureNotTypesForConditionalExpressionsAfterAssign $scope */
-	reg::packed(1521, 0, 1529), /* processSureNotTypesForConditionalExpressionsAfterAssign $storage */
-	reg::packed(2482, MAY_BE_STRING), /* processSureNotTypesForConditionalExpressionsAfterAssign $variableName */
-	reg::packed(2495, MAY_BE_ARRAY), /* processSureNotTypesForConditionalExpressionsAfterAssign $conditionalExpressions */
-	reg::packed(2518, 0, 2224), /* processSureNotTypesForConditionalExpressionsAfterAssign $specifiedTypes */
-	reg::packed(2533, 0, 2038), /* processSureNotTypesForConditionalExpressionsAfterAssign $variableType */
-	reg::packed(2546, MAY_BE_ARRAY), /* processSureNotTypesForConditionalExpressionsAfterAssign $rhsImpurePoints */
-	reg::packed(1672, 0, 1376), /* processSureNotTypesForConditionalExpressionsAfterAssign $assignedExpr */
-	reg::packed(1994, MAY_BE_NULL, 1626), /* processSureNotTypesForConditionalExpressionsAfterAssign $assignedValueResult */
-	reg::packed(1396, MAY_BE_ARRAY), /* processSureNotTypesForConditionalExpressionsAfterAssign return */
-	reg::packed(1406, 0, 1424), /* currentTypeForConditionalHolder $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* currentTypeForConditionalHolder $scope */
-	reg::packed(1521, 0, 1529), /* currentTypeForConditionalHolder $storage */
-	reg::packed(1371, 0, 1376), /* currentTypeForConditionalHolder $expr */
-	reg::packed(1672, 0, 1376), /* currentTypeForConditionalHolder $assignedExpr */
-	reg::packed(1994, MAY_BE_NULL, 1626), /* currentTypeForConditionalHolder $assignedValueResult */
-	reg::packed(1396, 0, 2038), /* currentTypeForConditionalHolder return */
-	reg::packed(1406, 0, 1424), /* processTernaryArmValueImpliedTypesAfterAssign $nodeScopeResolver */
-	reg::packed(2703, 0, 1490), /* processTernaryArmValueImpliedTypesAfterAssign $armScope */
-	reg::packed(1521, 0, 1529), /* processTernaryArmValueImpliedTypesAfterAssign $storage */
-	reg::packed(2482, MAY_BE_STRING), /* processTernaryArmValueImpliedTypesAfterAssign $variableName */
-	reg::packed(2495, MAY_BE_ARRAY), /* processTernaryArmValueImpliedTypesAfterAssign $conditionalExpressions */
-	reg::packed(2712, 0, 1376), /* processTernaryArmValueImpliedTypesAfterAssign $armExpr */
-	reg::packed(2720, 0, 2038), /* processTernaryArmValueImpliedTypesAfterAssign $remainderType */
-	reg::packed(2734, 0, 2038), /* processTernaryArmValueImpliedTypesAfterAssign $otherArmType */
-	reg::packed(2546, MAY_BE_ARRAY), /* processTernaryArmValueImpliedTypesAfterAssign $rhsImpurePoints */
-	reg::packed(1672, 0, 1376), /* processTernaryArmValueImpliedTypesAfterAssign $assignedExpr */
-	reg::packed(1994, MAY_BE_NULL, 1626), /* processTernaryArmValueImpliedTypesAfterAssign $assignedValueResult */
-	reg::packed(1396, MAY_BE_ARRAY), /* processTernaryArmValueImpliedTypesAfterAssign return */
-	reg::packed(2495, MAY_BE_ARRAY), /* addConditionalExpressionHolder $conditionalExpressions */
-	reg::packed(2482, MAY_BE_STRING), /* addConditionalExpressionHolder $variableName */
-	reg::packed(2533, 0, 2038), /* addConditionalExpressionHolder $variableType */
-	reg::packed(2793, 0, 1376), /* addConditionalExpressionHolder $holderExpr */
-	reg::packed(2804, MAY_BE_STRING), /* addConditionalExpressionHolder $holderExprString */
-	reg::packed(2821, 0, 2038), /* addConditionalExpressionHolder $holderType */
-	reg::packed(2832, 0, 2848), /* addConditionalExpressionHolder $holderCertainty */
-	reg::packed(1396, MAY_BE_ARRAY), /* addConditionalExpressionHolder return */
-	reg::packed(2495, MAY_BE_ARRAY), /* mergeConditionalExpressions $conditionalExpressions */
-	reg::packed(2900, MAY_BE_ARRAY), /* mergeConditionalExpressions $newConditionalExpressions */
-	reg::packed(1396, MAY_BE_ARRAY), /* mergeConditionalExpressions return */
-	reg::packed(1484, 0, 1490), /* processMatchForConditionalExpressionsAfterAssign $scope */
-	reg::packed(2482, MAY_BE_STRING), /* processMatchForConditionalExpressionsAfterAssign $variableName */
-	reg::packed(1371, 0, 2954), /* processMatchForConditionalExpressionsAfterAssign $expr */
-	reg::packed(1396, MAY_BE_ARRAY), /* processMatchForConditionalExpressionsAfterAssign return */
-	reg::packed(1406, 0, 1424), /* processDerivedConditionalExpressionsAfterAssign $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processDerivedConditionalExpressionsAfterAssign $scope */
-	reg::packed(2482, MAY_BE_STRING), /* processDerivedConditionalExpressionsAfterAssign $variableName */
-	reg::packed(2495, MAY_BE_ARRAY), /* processDerivedConditionalExpressionsAfterAssign $conditionalExpressions */
-	reg::packed(1672, 0, 1376), /* processDerivedConditionalExpressionsAfterAssign $assignedExpr */
-	reg::packed(3030, 0, 2038), /* processDerivedConditionalExpressionsAfterAssign $assignedType */
-	reg::packed(2546, MAY_BE_ARRAY), /* processDerivedConditionalExpressionsAfterAssign $rhsImpurePoints */
-	reg::packed(1396, MAY_BE_ARRAY), /* processDerivedConditionalExpressionsAfterAssign return */
-	reg::packed(1406, 0, 1424), /* processInArrayForConditionalExpressionsAfterAssign $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processInArrayForConditionalExpressionsAfterAssign $scope */
-	reg::packed(2482, MAY_BE_STRING), /* processInArrayForConditionalExpressionsAfterAssign $variableName */
-	reg::packed(2495, MAY_BE_ARRAY), /* processInArrayForConditionalExpressionsAfterAssign $conditionalExpressions */
-	reg::packed(1672, 0, 3091), /* processInArrayForConditionalExpressionsAfterAssign $assignedExpr */
-	reg::packed(3030, 0, 2038), /* processInArrayForConditionalExpressionsAfterAssign $assignedType */
-	reg::packed(2546, MAY_BE_ARRAY), /* processInArrayForConditionalExpressionsAfterAssign $rhsImpurePoints */
-	reg::packed(1396, MAY_BE_ARRAY), /* processInArrayForConditionalExpressionsAfterAssign return */
-	reg::packed(1371, 0, 1376), /* isExprSafeToProjectThroughVariable $expr */
-	reg::packed(2482, MAY_BE_STRING), /* isExprSafeToProjectThroughVariable $variableName */
-	reg::packed(2546, MAY_BE_ARRAY), /* isExprSafeToProjectThroughVariable $rhsImpurePoints */
-	reg::packed(1672, 0, 1376), /* isExprSafeToProjectThroughVariable $assignedExpr */
-	reg::packed(1396, MAY_BE_BOOL), /* isExprSafeToProjectThroughVariable return */
-	reg::packed(3206, MAY_BE_ARRAY), /* isImplicitArrayCreation $dimFetchStack */
-	reg::packed(1484, 0, 3220), /* isImplicitArrayCreation $scope */
-	reg::packed(1396, 0, 2848), /* isImplicitArrayCreation return */
-	reg::packed(1406, 0, 1424), /* processArrayByRefItems $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processArrayByRefItems $scope */
-	reg::packed(1521, 0, 1529), /* processArrayByRefItems $storage */
-	reg::packed(3267, MAY_BE_STRING), /* processArrayByRefItems $rootVarName */
-	reg::packed(3279, 0, 3289), /* processArrayByRefItems $arrayExpr */
-	reg::packed(3316, 0, 1376), /* processArrayByRefItems $parentExpr */
-	reg::packed(1396, 0, 1490), /* processArrayByRefItems return */
-	reg::packed(1406, 0, 1424), /* processArrayByRefItemsWithImplicitIndex $nodeScopeResolver */
-	reg::packed(1484, 0, 1490), /* processArrayByRefItemsWithImplicitIndex $scope */
-	reg::packed(1521, 0, 1529), /* processArrayByRefItemsWithImplicitIndex $storage */
-	reg::packed(3267, MAY_BE_STRING), /* processArrayByRefItemsWithImplicitIndex $rootVarName */
-	reg::packed(3279, 0, 3289), /* processArrayByRefItemsWithImplicitIndex $arrayExpr */
-	reg::packed(3316, 0, 1376), /* processArrayByRefItemsWithImplicitIndex $parentExpr */
-	reg::packed(3350, MAY_BE_NULL | MAY_BE_LONG), /* processArrayByRefItemsWithImplicitIndex $implicitIndex */
-	reg::packed(1396, MAY_BE_ARRAY), /* processArrayByRefItemsWithImplicitIndex return */
-	reg::packed(3279, 0, 3289), /* isFlattenableUnpackedArray $arrayExpr */
-	reg::packed(1396, MAY_BE_BOOL), /* isFlattenableUnpackedArray return */
-	reg::packed(3431, MAY_BE_LONG), /* advanceImplicitIndex $index */
-	reg::packed(1396, MAY_BE_NULL | MAY_BE_LONG), /* advanceImplicitIndex return */
-	reg::packed(1406, 0, 1424), /* produceArrayDimFetchAssignValueToWrite $nodeScopeResolver */
-	reg::packed(3206, MAY_BE_ARRAY), /* produceArrayDimFetchAssignValueToWrite $dimFetchStack */
-	reg::packed(3458, MAY_BE_ARRAY), /* produceArrayDimFetchAssignValueToWrite $offsetTypes */
-	reg::packed(3470, 0, 2038), /* produceArrayDimFetchAssignValueToWrite $offsetValueType */
-	reg::packed(3486, 0, 2038), /* produceArrayDimFetchAssignValueToWrite $valueToWrite */
-	reg::packed(1484, 0, 1490), /* produceArrayDimFetchAssignValueToWrite $scope */
-	reg::packed(1521, 0, 1529), /* produceArrayDimFetchAssignValueToWrite $storage */
-	reg::packed(1396, MAY_BE_ARRAY), /* produceArrayDimFetchAssignValueToWrite return */
-	reg::packed(1406, 0, 1424), /* shouldKeepList $nodeScopeResolver */
-	reg::packed(3538, 0, 3552), /* shouldKeepList $arrayDimFetch */
-	reg::packed(1484, 0, 1490), /* shouldKeepList $scope */
-	reg::packed(1521, 0, 1529), /* shouldKeepList $storage */
-	reg::packed(3470, 0, 2038), /* shouldKeepList $offsetValueType */
-	reg::packed(1396, MAY_BE_BOOL), /* shouldKeepList return */
-	reg::packed(3470, 0, 2038), /* trackedLinkImpliesOffset $offsetValueType */
-	reg::packed(3601, 0, 2038), /* trackedLinkImpliesOffset $offsetType */
-	reg::packed(1396, MAY_BE_BOOL), /* trackedLinkImpliesOffset return */
-	reg::packed(3637, 0, 1376), /* isSameVariable $a */
-	reg::packed(3639, 0, 1376), /* isSameVariable $b */
-	reg::packed(1396, MAY_BE_BOOL), /* isSameVariable return */
-	reg::packed(3637, 0, 1376), /* isSameOffset $a */
-	reg::packed(3639, 0, 1376), /* isSameOffset $b */
-	reg::packed(1396, MAY_BE_BOOL), /* isSameOffset return */
-	reg::packed(1371, 0, 1376), /* getLiteralArrayKeyType $expr */
-	reg::packed(1396, MAY_BE_NULL, 2038), /* getLiteralArrayKeyType return */
-	reg::packed(1406, 0, 1424), /* getOriginalPropertyType $nodeScopeResolver */
-	reg::packed(3692, 0, 3706), /* getOriginalPropertyType $propertyFetch */
-	reg::packed(1484, 0, 1490), /* getOriginalPropertyType $scope */
-	reg::packed(1396, 0, 2038), /* getOriginalPropertyType return */
-	reg::packed(3804, 0, 3289), /* hasArrayReference $array */
-	reg::packed(1396, MAY_BE_BOOL), /* hasArrayReference return */
-	reg::packed(3828, 0, 1626), /* redundant $rhs */
-	reg::packed(1975, 0, 1376), /* redundant $target */
-	reg::packed(1521, 0, 1529), /* redundant $storage */
-	reg::packed(1396, MAY_BE_NULL, 2038), /* redundant return */
+	reg::packed(139, 0, 151), /* __construct $exprPrinter */
+	reg::packed(184, 0, 197), /* __construct $matchHandler */
+	reg::packed(239, 0, 254), /* __construct $ternaryHandler */
+	reg::packed(298, 0, 322), /* __construct $expressionResultFactory */
+	reg::packed(363, 0, 386), /* __construct $defaultNarrowingHelper */
+	reg::packed(445, 0, 470), /* __construct $identicalNarrowingHelper */
+	reg::packed(531, 0, 556), /* __construct $propertyReflectionFinder */
+	reg::packed(606, 0, 630), /* __construct $virtualExprResultHelper */
+	reg::packed(690, 0, 711), /* __construct $nonNullabilityHelper */
+	reg::packed(768, 0, 784), /* __construct $variableHandler */
+	reg::packed(829, 0, 850), /* __construct $arrayDimFetchHandler */
+	reg::packed(900, 0, 921), /* __construct $propertyFetchHandler */
+	reg::packed(971, 0, 998), /* __construct $staticPropertyFetchHandler */
+	reg::packed(1054, 0, 1077), /* __construct $methodThrowPointHelper */
+	reg::packed(1136, 0, 1168), /* __construct $propertyHookThrowPointsResolver */
+	reg::packed(1217, 0, 1235), /* __construct $statementsHandler */
+	reg::packed(1270, 0, 1291), /* __construct $arrayUnpackingHelper */
+	reg::packed(1337, 0, 1342), /* supports $expr */
+	reg::packed(1362, MAY_BE_BOOL), /* supports return */
+	reg::packed(1372, 0, 1390), /* processExpr $nodeScopeResolver */
+	reg::packed(1425, 0, 1430), /* processExpr $stmt */
+	reg::packed(1337, 0, 1342), /* processExpr $expr */
+	reg::packed(1450, 0, 1456), /* processExpr $scope */
+	reg::packed(1487, 0, 1495), /* processExpr $storage */
+	reg::packed(1536, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(1549, 0, 1557), /* processExpr $context */
+	reg::packed(1362, 0, 1592), /* processExpr return */
+	reg::packed(1638, 0, 1342), /* captureAssignedCallArgResults $assignedExpr */
+	reg::packed(1487, 0, 1495), /* captureAssignedCallArgResults $storage */
+	reg::packed(1362, MAY_BE_ARRAY), /* captureAssignedCallArgResults return */
+	reg::packed(1337, 0, 1681), /* createCreateTypesCallback $expr */
+	reg::packed(1708, 0, 1592), /* createCreateTypesCallback $assignedExprResult */
+	reg::packed(1727, 0, 1456), /* createCreateTypesCallback $beforeScope */
+	reg::packed(1362, 0, 1739), /* createCreateTypesCallback return */
+	reg::packed(1337, 0, 1681), /* createSpecifyTypesCallback $expr */
+	reg::packed(1708, 0, 1592), /* createSpecifyTypesCallback $assignedExprResult */
+	reg::packed(1727, 0, 1456), /* createSpecifyTypesCallback $beforeScope */
+	reg::packed(1487, 0, 1495), /* createSpecifyTypesCallback $storage */
+	reg::packed(1362, 0, 1739), /* createSpecifyTypesCallback return */
+	reg::packed(1372, 0, 1390), /* processVirtualAssign $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processVirtualAssign $scope */
+	reg::packed(1487, 0, 1495), /* processVirtualAssign $storage */
+	reg::packed(1425, 0, 1430), /* processVirtualAssign $stmt */
+	reg::packed(1800, 0, 1342), /* processVirtualAssign $var */
+	reg::packed(1638, 0, 1342), /* processVirtualAssign $assignedExpr */
+	reg::packed(1536, MAY_BE_CALLABLE), /* processVirtualAssign $nodeCallback */
+	reg::packed(1708, MAY_BE_NULL, 1592, false, false, 1804), /* processVirtualAssign $assignedExprResult */
+	reg::packed(1362, 0, 1592), /* processVirtualAssign return */
+	reg::packed(1372, 0, 1390), /* prepareTarget $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* prepareTarget $scope */
+	reg::packed(1487, 0, 1495), /* prepareTarget $storage */
+	reg::packed(1425, 0, 1430), /* prepareTarget $stmt */
+	reg::packed(1800, 0, 1342), /* prepareTarget $var */
+	reg::packed(1638, 0, 1342), /* prepareTarget $assignedExpr */
+	reg::packed(1536, MAY_BE_CALLABLE), /* prepareTarget $nodeCallback */
+	reg::packed(1549, 0, 1557), /* prepareTarget $context */
+	reg::packed(1830, 0, 1835), /* prepareTarget $mode */
+	reg::packed(1362, 0, 1873), /* prepareTarget return */
+	reg::packed(1372, 0, 1390), /* doPrepareTarget $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* doPrepareTarget $scope */
+	reg::packed(1487, 0, 1495), /* doPrepareTarget $storage */
+	reg::packed(1425, 0, 1430), /* doPrepareTarget $stmt */
+	reg::packed(1800, 0, 1342), /* doPrepareTarget $var */
+	reg::packed(1638, 0, 1342), /* doPrepareTarget $assignedExpr */
+	reg::packed(1536, MAY_BE_CALLABLE), /* doPrepareTarget $nodeCallback */
+	reg::packed(1549, 0, 1557), /* doPrepareTarget $context */
+	reg::packed(1830, 0, 1835), /* doPrepareTarget $mode */
+	reg::packed(1362, 0, 1873), /* doPrepareTarget return */
+	reg::packed(1372, 0, 1390), /* applyWrite $nodeScopeResolver */
+	reg::packed(1941, 0, 1873), /* applyWrite $target */
+	reg::packed(1948, 0, 1592), /* applyWrite $valueResult */
+	reg::packed(1960, MAY_BE_NULL, 1592), /* applyWrite $assignedValueResult */
+	reg::packed(1425, 0, 1430), /* applyWrite $stmt */
+	reg::packed(1487, 0, 1495), /* applyWrite $storage */
+	reg::packed(1536, MAY_BE_CALLABLE), /* applyWrite $nodeCallback */
+	reg::packed(1549, 0, 1557), /* applyWrite $context */
+	reg::packed(1362, 0, 1592), /* applyWrite return */
+	reg::packed(1372, 0, 1390), /* collectOffsetSetUsage $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* collectOffsetSetUsage $scope */
+	reg::packed(1991, 0, 2004), /* collectOffsetSetUsage $receiverType */
+	reg::packed(2022, MAY_BE_NULL, 2004), /* collectOffsetSetUsage $keyType */
+	reg::packed(2030, 0, 2004), /* collectOffsetSetUsage $valueType */
+	reg::packed(1362, 0, 2040), /* collectOffsetSetUsage return */
+	reg::packed(2116, 0, 2123), /* createArrayDimFetchConditionalExpressionHolder $keyVar */
+	reg::packed(2152, 0, 1342), /* createArrayDimFetchConditionalExpressionHolder $arrayArg */
+	reg::packed(2161, 0, 2004), /* createArrayDimFetchConditionalExpressionHolder $narrowedKeyType */
+	reg::packed(2177, 0, 2004), /* createArrayDimFetchConditionalExpressionHolder $dimFetchType */
+	reg::packed(1362, 0, 2190), /* createArrayDimFetchConditionalExpressionHolder return */
+	reg::packed(1372, 0, 1390), /* readAssignedValueType $nodeScopeResolver */
+	reg::packed(1960, MAY_BE_NULL, 1592), /* readAssignedValueType $assignedValueResult */
+	reg::packed(1638, 0, 1342), /* readAssignedValueType $assignedExpr */
+	reg::packed(1450, 0, 1456), /* readAssignedValueType $scope */
+	reg::packed(1362, 0, 2004), /* readAssignedValueType return */
+	reg::packed(1372, 0, 1390), /* resolveContainerTypesAfterAssignedExprEval $nodeScopeResolver */
+	reg::packed(1800, 0, 1342), /* resolveContainerTypesAfterAssignedExprEval $var */
+	reg::packed(2291, 0, 1592), /* resolveContainerTypesAfterAssignedExprEval $varResult */
+	reg::packed(2301, 0, 1456), /* resolveContainerTypesAfterAssignedExprEval $postEvalScope */
+	reg::packed(2315, MAY_BE_NULL, 1456), /* resolveContainerTypesAfterAssignedExprEval $preEvalScope */
+	reg::packed(1487, 0, 1495), /* resolveContainerTypesAfterAssignedExprEval $storage */
+	reg::packed(1362, MAY_BE_ARRAY), /* resolveContainerTypesAfterAssignedExprEval return */
+	reg::packed(1450, 0, 1456), /* assignDynamicVariable $scope */
+	reg::packed(2371, 0, 1592), /* assignDynamicVariable $nameResult */
+	reg::packed(2030, 0, 2004), /* assignDynamicVariable $valueType */
+	reg::packed(2382, 0, 2004), /* assignDynamicVariable $nativeValueType */
+	reg::packed(1362, 0, 1456), /* assignDynamicVariable return */
+	reg::packed(1638, 0, 1342), /* getWrittenExpr $assignedExpr */
+	reg::packed(1362, 0, 1342), /* getWrittenExpr return */
+	reg::packed(1337, 0, 1342), /* unwrapAssign $expr */
+	reg::packed(1362, 0, 1342), /* unwrapAssign return */
+	reg::packed(1372, 0, 1390), /* processSureTypesForConditionalExpressionsAfterAssign $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processSureTypesForConditionalExpressionsAfterAssign $scope */
+	reg::packed(1487, 0, 1495), /* processSureTypesForConditionalExpressionsAfterAssign $storage */
+	reg::packed(2448, MAY_BE_STRING), /* processSureTypesForConditionalExpressionsAfterAssign $variableName */
+	reg::packed(2461, MAY_BE_ARRAY), /* processSureTypesForConditionalExpressionsAfterAssign $conditionalExpressions */
+	reg::packed(2484, 0, 2190), /* processSureTypesForConditionalExpressionsAfterAssign $specifiedTypes */
+	reg::packed(2499, 0, 2004), /* processSureTypesForConditionalExpressionsAfterAssign $variableType */
+	reg::packed(2512, MAY_BE_ARRAY), /* processSureTypesForConditionalExpressionsAfterAssign $rhsImpurePoints */
+	reg::packed(1638, 0, 1342), /* processSureTypesForConditionalExpressionsAfterAssign $assignedExpr */
+	reg::packed(1960, MAY_BE_NULL, 1592), /* processSureTypesForConditionalExpressionsAfterAssign $assignedValueResult */
+	reg::packed(1362, MAY_BE_ARRAY), /* processSureTypesForConditionalExpressionsAfterAssign return */
+	reg::packed(1372, 0, 1390), /* processSureNotTypesForConditionalExpressionsAfterAssign $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processSureNotTypesForConditionalExpressionsAfterAssign $scope */
+	reg::packed(1487, 0, 1495), /* processSureNotTypesForConditionalExpressionsAfterAssign $storage */
+	reg::packed(2448, MAY_BE_STRING), /* processSureNotTypesForConditionalExpressionsAfterAssign $variableName */
+	reg::packed(2461, MAY_BE_ARRAY), /* processSureNotTypesForConditionalExpressionsAfterAssign $conditionalExpressions */
+	reg::packed(2484, 0, 2190), /* processSureNotTypesForConditionalExpressionsAfterAssign $specifiedTypes */
+	reg::packed(2499, 0, 2004), /* processSureNotTypesForConditionalExpressionsAfterAssign $variableType */
+	reg::packed(2512, MAY_BE_ARRAY), /* processSureNotTypesForConditionalExpressionsAfterAssign $rhsImpurePoints */
+	reg::packed(1638, 0, 1342), /* processSureNotTypesForConditionalExpressionsAfterAssign $assignedExpr */
+	reg::packed(1960, MAY_BE_NULL, 1592), /* processSureNotTypesForConditionalExpressionsAfterAssign $assignedValueResult */
+	reg::packed(1362, MAY_BE_ARRAY), /* processSureNotTypesForConditionalExpressionsAfterAssign return */
+	reg::packed(1372, 0, 1390), /* currentTypeForConditionalHolder $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* currentTypeForConditionalHolder $scope */
+	reg::packed(1487, 0, 1495), /* currentTypeForConditionalHolder $storage */
+	reg::packed(1337, 0, 1342), /* currentTypeForConditionalHolder $expr */
+	reg::packed(1638, 0, 1342), /* currentTypeForConditionalHolder $assignedExpr */
+	reg::packed(1960, MAY_BE_NULL, 1592), /* currentTypeForConditionalHolder $assignedValueResult */
+	reg::packed(1362, 0, 2004), /* currentTypeForConditionalHolder return */
+	reg::packed(1372, 0, 1390), /* processTernaryArmValueImpliedTypesAfterAssign $nodeScopeResolver */
+	reg::packed(2669, 0, 1456), /* processTernaryArmValueImpliedTypesAfterAssign $armScope */
+	reg::packed(1487, 0, 1495), /* processTernaryArmValueImpliedTypesAfterAssign $storage */
+	reg::packed(2448, MAY_BE_STRING), /* processTernaryArmValueImpliedTypesAfterAssign $variableName */
+	reg::packed(2461, MAY_BE_ARRAY), /* processTernaryArmValueImpliedTypesAfterAssign $conditionalExpressions */
+	reg::packed(2678, 0, 1342), /* processTernaryArmValueImpliedTypesAfterAssign $armExpr */
+	reg::packed(2686, 0, 2004), /* processTernaryArmValueImpliedTypesAfterAssign $remainderType */
+	reg::packed(2700, 0, 2004), /* processTernaryArmValueImpliedTypesAfterAssign $otherArmType */
+	reg::packed(2512, MAY_BE_ARRAY), /* processTernaryArmValueImpliedTypesAfterAssign $rhsImpurePoints */
+	reg::packed(1638, 0, 1342), /* processTernaryArmValueImpliedTypesAfterAssign $assignedExpr */
+	reg::packed(1960, MAY_BE_NULL, 1592), /* processTernaryArmValueImpliedTypesAfterAssign $assignedValueResult */
+	reg::packed(1362, MAY_BE_ARRAY), /* processTernaryArmValueImpliedTypesAfterAssign return */
+	reg::packed(2461, MAY_BE_ARRAY), /* addConditionalExpressionHolder $conditionalExpressions */
+	reg::packed(2448, MAY_BE_STRING), /* addConditionalExpressionHolder $variableName */
+	reg::packed(2499, 0, 2004), /* addConditionalExpressionHolder $variableType */
+	reg::packed(2759, 0, 1342), /* addConditionalExpressionHolder $holderExpr */
+	reg::packed(2770, MAY_BE_STRING), /* addConditionalExpressionHolder $holderExprString */
+	reg::packed(2787, 0, 2004), /* addConditionalExpressionHolder $holderType */
+	reg::packed(2798, 0, 2814), /* addConditionalExpressionHolder $holderCertainty */
+	reg::packed(1362, MAY_BE_ARRAY), /* addConditionalExpressionHolder return */
+	reg::packed(2461, MAY_BE_ARRAY), /* mergeConditionalExpressions $conditionalExpressions */
+	reg::packed(2866, MAY_BE_ARRAY), /* mergeConditionalExpressions $newConditionalExpressions */
+	reg::packed(1362, MAY_BE_ARRAY), /* mergeConditionalExpressions return */
+	reg::packed(1450, 0, 1456), /* processMatchForConditionalExpressionsAfterAssign $scope */
+	reg::packed(2448, MAY_BE_STRING), /* processMatchForConditionalExpressionsAfterAssign $variableName */
+	reg::packed(1337, 0, 2920), /* processMatchForConditionalExpressionsAfterAssign $expr */
+	reg::packed(1362, MAY_BE_ARRAY), /* processMatchForConditionalExpressionsAfterAssign return */
+	reg::packed(1372, 0, 1390), /* processDerivedConditionalExpressionsAfterAssign $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processDerivedConditionalExpressionsAfterAssign $scope */
+	reg::packed(2448, MAY_BE_STRING), /* processDerivedConditionalExpressionsAfterAssign $variableName */
+	reg::packed(2461, MAY_BE_ARRAY), /* processDerivedConditionalExpressionsAfterAssign $conditionalExpressions */
+	reg::packed(1638, 0, 1342), /* processDerivedConditionalExpressionsAfterAssign $assignedExpr */
+	reg::packed(2996, 0, 2004), /* processDerivedConditionalExpressionsAfterAssign $assignedType */
+	reg::packed(2512, MAY_BE_ARRAY), /* processDerivedConditionalExpressionsAfterAssign $rhsImpurePoints */
+	reg::packed(1362, MAY_BE_ARRAY), /* processDerivedConditionalExpressionsAfterAssign return */
+	reg::packed(1372, 0, 1390), /* processInArrayForConditionalExpressionsAfterAssign $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processInArrayForConditionalExpressionsAfterAssign $scope */
+	reg::packed(2448, MAY_BE_STRING), /* processInArrayForConditionalExpressionsAfterAssign $variableName */
+	reg::packed(2461, MAY_BE_ARRAY), /* processInArrayForConditionalExpressionsAfterAssign $conditionalExpressions */
+	reg::packed(1638, 0, 3057), /* processInArrayForConditionalExpressionsAfterAssign $assignedExpr */
+	reg::packed(2996, 0, 2004), /* processInArrayForConditionalExpressionsAfterAssign $assignedType */
+	reg::packed(2512, MAY_BE_ARRAY), /* processInArrayForConditionalExpressionsAfterAssign $rhsImpurePoints */
+	reg::packed(1362, MAY_BE_ARRAY), /* processInArrayForConditionalExpressionsAfterAssign return */
+	reg::packed(1337, 0, 1342), /* isExprSafeToProjectThroughVariable $expr */
+	reg::packed(2448, MAY_BE_STRING), /* isExprSafeToProjectThroughVariable $variableName */
+	reg::packed(2512, MAY_BE_ARRAY), /* isExprSafeToProjectThroughVariable $rhsImpurePoints */
+	reg::packed(1638, 0, 1342), /* isExprSafeToProjectThroughVariable $assignedExpr */
+	reg::packed(1362, MAY_BE_BOOL), /* isExprSafeToProjectThroughVariable return */
+	reg::packed(3172, MAY_BE_ARRAY), /* isImplicitArrayCreation $dimFetchStack */
+	reg::packed(1450, 0, 3186), /* isImplicitArrayCreation $scope */
+	reg::packed(1362, 0, 2814), /* isImplicitArrayCreation return */
+	reg::packed(1372, 0, 1390), /* processArrayByRefItems $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processArrayByRefItems $scope */
+	reg::packed(1487, 0, 1495), /* processArrayByRefItems $storage */
+	reg::packed(3233, MAY_BE_STRING), /* processArrayByRefItems $rootVarName */
+	reg::packed(3245, 0, 3255), /* processArrayByRefItems $arrayExpr */
+	reg::packed(3282, 0, 1342), /* processArrayByRefItems $parentExpr */
+	reg::packed(1362, 0, 1456), /* processArrayByRefItems return */
+	reg::packed(1372, 0, 1390), /* processArrayByRefItemsWithImplicitIndex $nodeScopeResolver */
+	reg::packed(1450, 0, 1456), /* processArrayByRefItemsWithImplicitIndex $scope */
+	reg::packed(1487, 0, 1495), /* processArrayByRefItemsWithImplicitIndex $storage */
+	reg::packed(3233, MAY_BE_STRING), /* processArrayByRefItemsWithImplicitIndex $rootVarName */
+	reg::packed(3245, 0, 3255), /* processArrayByRefItemsWithImplicitIndex $arrayExpr */
+	reg::packed(3282, 0, 1342), /* processArrayByRefItemsWithImplicitIndex $parentExpr */
+	reg::packed(3316, MAY_BE_NULL | MAY_BE_LONG), /* processArrayByRefItemsWithImplicitIndex $implicitIndex */
+	reg::packed(1362, MAY_BE_ARRAY), /* processArrayByRefItemsWithImplicitIndex return */
+	reg::packed(3245, 0, 3255), /* isFlattenableUnpackedArray $arrayExpr */
+	reg::packed(1362, MAY_BE_BOOL), /* isFlattenableUnpackedArray return */
+	reg::packed(3397, MAY_BE_LONG), /* advanceImplicitIndex $index */
+	reg::packed(1362, MAY_BE_NULL | MAY_BE_LONG), /* advanceImplicitIndex return */
+	reg::packed(1372, 0, 1390), /* produceArrayDimFetchAssignValueToWrite $nodeScopeResolver */
+	reg::packed(3172, MAY_BE_ARRAY), /* produceArrayDimFetchAssignValueToWrite $dimFetchStack */
+	reg::packed(3424, MAY_BE_ARRAY), /* produceArrayDimFetchAssignValueToWrite $offsetTypes */
+	reg::packed(3436, 0, 2004), /* produceArrayDimFetchAssignValueToWrite $offsetValueType */
+	reg::packed(3452, 0, 2004), /* produceArrayDimFetchAssignValueToWrite $valueToWrite */
+	reg::packed(1450, 0, 1456), /* produceArrayDimFetchAssignValueToWrite $scope */
+	reg::packed(1487, 0, 1495), /* produceArrayDimFetchAssignValueToWrite $storage */
+	reg::packed(1362, MAY_BE_ARRAY), /* produceArrayDimFetchAssignValueToWrite return */
+	reg::packed(1372, 0, 1390), /* shouldKeepList $nodeScopeResolver */
+	reg::packed(3504, 0, 3518), /* shouldKeepList $arrayDimFetch */
+	reg::packed(1450, 0, 1456), /* shouldKeepList $scope */
+	reg::packed(1487, 0, 1495), /* shouldKeepList $storage */
+	reg::packed(3436, 0, 2004), /* shouldKeepList $offsetValueType */
+	reg::packed(1362, MAY_BE_BOOL), /* shouldKeepList return */
+	reg::packed(3436, 0, 2004), /* trackedLinkImpliesOffset $offsetValueType */
+	reg::packed(3567, 0, 2004), /* trackedLinkImpliesOffset $offsetType */
+	reg::packed(1362, MAY_BE_BOOL), /* trackedLinkImpliesOffset return */
+	reg::packed(3603, 0, 1342), /* isSameVariable $a */
+	reg::packed(3605, 0, 1342), /* isSameVariable $b */
+	reg::packed(1362, MAY_BE_BOOL), /* isSameVariable return */
+	reg::packed(3603, 0, 1342), /* isSameOffset $a */
+	reg::packed(3605, 0, 1342), /* isSameOffset $b */
+	reg::packed(1362, MAY_BE_BOOL), /* isSameOffset return */
+	reg::packed(1337, 0, 1342), /* getLiteralArrayKeyType $expr */
+	reg::packed(1362, MAY_BE_NULL, 2004), /* getLiteralArrayKeyType return */
+	reg::packed(1372, 0, 1390), /* getOriginalPropertyType $nodeScopeResolver */
+	reg::packed(3658, 0, 3672), /* getOriginalPropertyType $propertyFetch */
+	reg::packed(1450, 0, 1456), /* getOriginalPropertyType $scope */
+	reg::packed(1362, 0, 2004), /* getOriginalPropertyType return */
+	reg::packed(3770, 0, 3255), /* hasArrayReference $array */
+	reg::packed(1362, MAY_BE_BOOL), /* hasArrayReference return */
+	reg::packed(3794, 0, 1592), /* redundant $rhs */
+	reg::packed(1941, 0, 1342), /* redundant $target */
+	reg::packed(1487, 0, 1495), /* redundant $storage */
+	reg::packed(1362, MAY_BE_NULL, 2004), /* redundant return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 1359 /* __construct */, 20, 0, 20, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 1397 /* supports */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 1660 /* processExpr */, 7, 22, 7, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig captureAssignedCallArgResults = { { 1685 /* captureAssignedCallArgResults */, 2, 30, 2, 32, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createCreateTypesCallback = { { 1781 /* createCreateTypesCallback */, 3, 33, 3, 36, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createSpecifyTypesCallback = { { 1807 /* createSpecifyTypesCallback */, 4, 37, 4, 41, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processVirtualAssign = { { 1843 /* processVirtualAssign */, 7, 42, 8, 50, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig prepareTarget = { { 1945 /* prepareTarget */, 9, 51, 9, 60, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig doPrepareTarget = { { 1959 /* doPrepareTarget */, 9, 61, 9, 70, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig applyWrite = { { 2014 /* applyWrite */, 8, 71, 8, 79, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig collectOffsetSetUsage = { { 2128 /* collectOffsetSetUsage */, 5, 80, 5, 85, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createArrayDimFetchConditionalExpressionHolder = { { 2256 /* createArrayDimFetchConditionalExpressionHolder */, 4, 86, 4, 90, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig readAssignedValueType = { { 2303 /* readAssignedValueType */, 4, 91, 4, 95, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveContainerTypesAfterAssignedExprEval = { { 2362 /* resolveContainerTypesAfterAssignedExprEval */, 6, 96, 6, 102, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig assignDynamicVariable = { { 2432 /* assignDynamicVariable */, 4, 103, 4, 107, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getWrittenExpr = { { 2454 /* getWrittenExpr */, 1, 108, 1, 109, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig unwrapAssign = { { 2469 /* unwrapAssign */, 1, 110, 1, 111, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processSureTypesForConditionalExpressionsAfterAssign = { { 2562 /* processSureTypesForConditionalExpressionsAfterAssign */, 10, 112, 10, 122, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processSureNotTypesForConditionalExpressionsAfterAssign = { { 2615 /* processSureNotTypesForConditionalExpressionsAfterAssign */, 10, 123, 10, 133, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig currentTypeForConditionalHolder = { { 2671 /* currentTypeForConditionalHolder */, 6, 134, 6, 140, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processTernaryArmValueImpliedTypesAfterAssign = { { 2747 /* processTernaryArmValueImpliedTypesAfterAssign */, 11, 141, 11, 152, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig addConditionalExpressionHolder = { { 2869 /* addConditionalExpressionHolder */, 7, 153, 7, 160, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig mergeConditionalExpressions = { { 2926 /* mergeConditionalExpressions */, 2, 161, 2, 163, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processMatchForConditionalExpressionsAfterAssign = { { 2981 /* processMatchForConditionalExpressionsAfterAssign */, 3, 164, 3, 167, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processDerivedConditionalExpressionsAfterAssign = { { 3043 /* processDerivedConditionalExpressionsAfterAssign */, 7, 168, 7, 175, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processInArrayForConditionalExpressionsAfterAssign = { { 3120 /* processInArrayForConditionalExpressionsAfterAssign */, 7, 176, 7, 183, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isExprSafeToProjectThroughVariable = { { 3171 /* isExprSafeToProjectThroughVariable */, 4, 184, 4, 188, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isImplicitArrayCreation = { { 3243 /* isImplicitArrayCreation */, 2, 189, 2, 191, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processArrayByRefItems = { { 3327 /* processArrayByRefItems */, 6, 192, 6, 198, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processArrayByRefItemsWithImplicitIndex = { { 3364 /* processArrayByRefItemsWithImplicitIndex */, 7, 199, 7, 206, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isFlattenableUnpackedArray = { { 3404 /* isFlattenableUnpackedArray */, 1, 207, 1, 208, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig advanceImplicitIndex = { { 3437 /* advanceImplicitIndex */, 1, 209, 1, 210, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig produceArrayDimFetchAssignValueToWrite = { { 3499 /* produceArrayDimFetchAssignValueToWrite */, 7, 211, 7, 218, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig shouldKeepList = { { 3586 /* shouldKeepList */, 5, 219, 5, 224, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig trackedLinkImpliesOffset = { { 3612 /* trackedLinkImpliesOffset */, 2, 225, 2, 227, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isSameVariable = { { 3641 /* isSameVariable */, 2, 228, 2, 230, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isSameOffset = { { 3656 /* isSameOffset */, 2, 231, 2, 233, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getLiteralArrayKeyType = { { 3669 /* getLiteralArrayKeyType */, 1, 234, 1, 235, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getOriginalPropertyType = { { 3780 /* getOriginalPropertyType */, 3, 236, 3, 239, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasArrayReference = { { 3810 /* hasArrayReference */, 1, 240, 1, 241, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig redundant = { { 3832 /* redundant */, 3, 242, 3, 245, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig __construct = { { 1325 /* __construct */, 19, 0, 19, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 1363 /* supports */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 1626 /* processExpr */, 7, 21, 7, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig captureAssignedCallArgResults = { { 1651 /* captureAssignedCallArgResults */, 2, 29, 2, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createCreateTypesCallback = { { 1747 /* createCreateTypesCallback */, 3, 32, 3, 35, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createSpecifyTypesCallback = { { 1773 /* createSpecifyTypesCallback */, 4, 36, 4, 40, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processVirtualAssign = { { 1809 /* processVirtualAssign */, 7, 41, 8, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig prepareTarget = { { 1911 /* prepareTarget */, 9, 50, 9, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig doPrepareTarget = { { 1925 /* doPrepareTarget */, 9, 60, 9, 69, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig applyWrite = { { 1980 /* applyWrite */, 8, 70, 8, 78, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig collectOffsetSetUsage = { { 2094 /* collectOffsetSetUsage */, 5, 79, 5, 84, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createArrayDimFetchConditionalExpressionHolder = { { 2222 /* createArrayDimFetchConditionalExpressionHolder */, 4, 85, 4, 89, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readAssignedValueType = { { 2269 /* readAssignedValueType */, 4, 90, 4, 94, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveContainerTypesAfterAssignedExprEval = { { 2328 /* resolveContainerTypesAfterAssignedExprEval */, 6, 95, 6, 101, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig assignDynamicVariable = { { 2398 /* assignDynamicVariable */, 4, 102, 4, 106, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getWrittenExpr = { { 2420 /* getWrittenExpr */, 1, 107, 1, 108, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unwrapAssign = { { 2435 /* unwrapAssign */, 1, 109, 1, 110, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processSureTypesForConditionalExpressionsAfterAssign = { { 2528 /* processSureTypesForConditionalExpressionsAfterAssign */, 10, 111, 10, 121, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processSureNotTypesForConditionalExpressionsAfterAssign = { { 2581 /* processSureNotTypesForConditionalExpressionsAfterAssign */, 10, 122, 10, 132, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig currentTypeForConditionalHolder = { { 2637 /* currentTypeForConditionalHolder */, 6, 133, 6, 139, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processTernaryArmValueImpliedTypesAfterAssign = { { 2713 /* processTernaryArmValueImpliedTypesAfterAssign */, 11, 140, 11, 151, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig addConditionalExpressionHolder = { { 2835 /* addConditionalExpressionHolder */, 7, 152, 7, 159, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mergeConditionalExpressions = { { 2892 /* mergeConditionalExpressions */, 2, 160, 2, 162, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processMatchForConditionalExpressionsAfterAssign = { { 2947 /* processMatchForConditionalExpressionsAfterAssign */, 3, 163, 3, 166, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processDerivedConditionalExpressionsAfterAssign = { { 3009 /* processDerivedConditionalExpressionsAfterAssign */, 7, 167, 7, 174, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processInArrayForConditionalExpressionsAfterAssign = { { 3086 /* processInArrayForConditionalExpressionsAfterAssign */, 7, 175, 7, 182, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isExprSafeToProjectThroughVariable = { { 3137 /* isExprSafeToProjectThroughVariable */, 4, 183, 4, 187, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isImplicitArrayCreation = { { 3209 /* isImplicitArrayCreation */, 2, 188, 2, 190, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processArrayByRefItems = { { 3293 /* processArrayByRefItems */, 6, 191, 6, 197, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processArrayByRefItemsWithImplicitIndex = { { 3330 /* processArrayByRefItemsWithImplicitIndex */, 7, 198, 7, 205, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isFlattenableUnpackedArray = { { 3370 /* isFlattenableUnpackedArray */, 1, 206, 1, 207, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig advanceImplicitIndex = { { 3403 /* advanceImplicitIndex */, 1, 208, 1, 209, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig produceArrayDimFetchAssignValueToWrite = { { 3465 /* produceArrayDimFetchAssignValueToWrite */, 7, 210, 7, 217, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig shouldKeepList = { { 3552 /* shouldKeepList */, 5, 218, 5, 223, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig trackedLinkImpliesOffset = { { 3578 /* trackedLinkImpliesOffset */, 2, 224, 2, 226, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSameVariable = { { 3607 /* isSameVariable */, 2, 227, 2, 229, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSameOffset = { { 3622 /* isSameOffset */, 2, 230, 2, 232, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getLiteralArrayKeyType = { { 3635 /* getLiteralArrayKeyType */, 1, 233, 1, 234, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getOriginalPropertyType = { { 3746 /* getOriginalPropertyType */, 3, 235, 3, 238, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasArrayReference = { { 3776 /* hasArrayReference */, 1, 239, 1, 240, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig redundant = { { 3798 /* redundant */, 3, 241, 3, 244, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::AssignHandler

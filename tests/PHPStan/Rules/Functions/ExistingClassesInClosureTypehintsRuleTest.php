@@ -143,151 +143,70 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/native-union-types.php'], $errors);
 	}
 
-	public static function dataRequiredParameterAfterOptional(): array
+	#[RequiresPhp('>= 8.0.0')]
+	public function testRequiredParameterAfterOptional(): void
 	{
-		return [
+		$errors = [
 			[
-				70400,
-				[],
+				'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+				5,
 			],
 			[
-				80000,
-				[
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						5,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						13,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						17,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						21,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						29,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						37,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
-						45,
-					],
-				],
+				'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+				13,
 			],
 			[
-				80100,
-				[
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						5,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						13,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						17,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						21,
-					],
-					[
-						'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
-						25,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						29,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						37,
-					],
-					[
-						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
-						45,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
-						45,
-					],
-				],
+				'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+				17,
 			],
 			[
-				80300,
-				[
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						5,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						13,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						17,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						21,
-					],
-					[
-						'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
-						25,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						29,
-					],
-					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
-						33,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
-						37,
-					],
-					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
-						41,
-					],
-					[
-						'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
-						45,
-					],
-					[
-						'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
-						45,
-					],
-					[
-						'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
-						45,
-					],
-				],
+				'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+				21,
+			],
+			[
+				'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+				29,
+			],
+			[
+				'Deprecated in PHP 8.0: Required parameter $bar follows optional parameter $foo.',
+				37,
+			],
+			[
+				'Deprecated in PHP 8.0: Required parameter $quuz follows optional parameter $quux.',
+				45,
 			],
 		];
-	}
+		if (PHP_VERSION_ID >= 80100) {
+			$errors[] = [
+				'Deprecated in PHP 8.1: Required parameter $bar follows optional parameter $foo.',
+				25,
+			];
+			$errors[] = [
+				'Deprecated in PHP 8.1: Required parameter $qux follows optional parameter $baz.',
+				45,
+			];
+		}
+		if (PHP_VERSION_ID >= 80300) {
+			$errors[] = [
+				'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+				33,
+			];
+			$errors[] = [
+				'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+				41,
+			];
+			$errors[] = [
+				'Deprecated in PHP 8.3: Required parameter $bar follows optional parameter $foo.',
+				45,
+			];
+		}
 
-	/**
-	 * @param list<array{0: string, 1: int, 2?: string}> $errors
-	 */
-	#[RequiresPhp('>= 8.0.0')]
-	#[DataProvider('dataRequiredParameterAfterOptional')]
-	public function testRequiredParameterAfterOptional(int $phpVersionId, array $errors): void
-	{
-		$this->phpVersionId = $phpVersionId;
+		if (PHP_VERSION_ID >= 80400) {
+			$errors[] = [
+				'Deprecated in PHP 8.4: Parameter #1 $foo (int) is implicitly nullable via default value null.',
+				9,
+			];
+		}
 		$this->analyse([__DIR__ . '/data/required-parameter-after-optional-closures.php'], $errors);
 	}
 

@@ -57,10 +57,12 @@ constexpr zend_long PT_ARH_KIND_ARRAY_LITERAL_ITEM = 14;
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-/* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback) */
-zv::Val getArrayType(zval *initializerExprTypeResolver, zval *expr, const pt_ietr_get_type &getTypeCallback)
+/* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback, $scope->getPhpVersion()) */
+zv::Val getArrayType(zval *initializerExprTypeResolver, zval *expr, const pt_ietr_get_type &getTypeCallback, zval *scope)
 {
-	return pt_initializer_expr_type_resolver_get_array_type(initializerExprTypeResolver, expr, getTypeCallback);
+	zv::Val phpVersions = pt_type_call(Z_OBJ_P(scope), PT_LC("getphpversion"), 0, NULL);
+	if (UNEXPECTED(phpVersions.isUndef())) return zv::Val();
+	return pt_initializer_expr_type_resolver_get_array_type(initializerExprTypeResolver, expr, getTypeCallback, phpVersions.raw());
 }
 
 /* }}} */
@@ -280,7 +282,7 @@ public:
 		{
 			ItemTypeFrame frame{itemResults, false};
 			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
-			arrayType = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
+			arrayType = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback, scope.raw());
 			if (UNEXPECTED(arrayType.isUndef())) return zv::Val();
 		}
 		zv::Val itemTypesHold(std::move(itemTypes));
@@ -618,7 +620,7 @@ private:
 		if (UNEXPECTED(isArray < 0)) return zv::Val();
 		if (isArray == 1) {
 			pt_ietr_get_type getTypeCallback{&walkedType, frame, &walkedTypeCallable};
-			return getArrayType(OBJ_PROP_NUM(handler.self, slots::initializerExprTypeResolver), inner, getTypeCallback);
+			return getArrayType(OBJ_PROP_NUM(handler.self, slots::initializerExprTypeResolver), inner, getTypeCallback, frame->scope);
 		}
 
 		for (int scalarClass : {PT_CLASS_SCALAR_STRING, PT_CLASS_SCALAR_INT, PT_CLASS_SCALAR_FLOAT}) {
@@ -712,7 +714,7 @@ private:
 		zv::Val typesValue(std::move(types));
 		WalkedTypeFrame frame{self, typesValue.raw(), nodeScopeResolver, view.walk->scope.raw()};
 		pt_ietr_get_type getTypeCallback{&walkedType, &frame, &walkedTypeCallable};
-		return getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), view.walk->expr, getTypeCallback);
+		return getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), view.walk->expr, getTypeCallback, view.walk->scope.raw());
 	}
 
 	/* Mirrors createResult() */
@@ -1204,7 +1206,7 @@ private:
 		{
 			ItemTypeFrame frame{itemResults, nativeTypesPromoted};
 			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
-			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback);
+			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback, beforeScope);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 		}
 

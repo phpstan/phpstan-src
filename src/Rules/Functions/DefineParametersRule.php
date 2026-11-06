@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
@@ -19,10 +18,6 @@ use function strtolower;
 final class DefineParametersRule implements Rule
 {
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	public function getNodeType(): string
 	{
 		return FuncCall::class;
@@ -33,7 +28,7 @@ final class DefineParametersRule implements Rule
 		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
-		if ($this->phpVersion->supportsCaseInsensitiveConstantNames()) {
+		if ($scope->getPhpVersion()->supportsCaseInsensitiveConstantNames()->yes()) {
 			return [];
 		}
 		$name = strtolower((string) $node->name);

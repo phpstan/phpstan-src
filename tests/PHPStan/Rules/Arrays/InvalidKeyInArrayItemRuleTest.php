@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Arrays;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -36,7 +35,6 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 
 		return new InvalidKeyInArrayItemRule(
 			$ruleLevelHelper,
-			self::getContainer()->getByType(PhpVersion::class),
 			$this->reportNonIntStringArrayKey,
 		);
 	}

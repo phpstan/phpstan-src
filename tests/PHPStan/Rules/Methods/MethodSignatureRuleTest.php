@@ -33,7 +33,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			true,
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
-			new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
+			new MethodPrototypeFinder($phpClassReflectionExtension),
 			false,
 		);
 	}

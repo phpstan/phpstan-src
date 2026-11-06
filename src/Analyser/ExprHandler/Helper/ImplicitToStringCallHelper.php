@@ -12,7 +12,6 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
@@ -25,7 +24,6 @@ final class ImplicitToStringCallHelper
 {
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private ExpressionResultFactory $expressionResultFactory,
@@ -73,7 +71,7 @@ final class ImplicitToStringCallHelper
 			);
 		}
 
-		if ($this->phpVersion->throwsOnStringCast()) {
+		if (!$scope->getPhpVersion()->throwsOnStringCast()->no()) {
 			// the __toString() call's return type resolves directly (the receiver
 			// type is already in hand); the fabricated node is only the payload
 			// dynamic extensions receive - nothing walks it

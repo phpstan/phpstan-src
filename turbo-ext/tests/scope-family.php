@@ -674,7 +674,9 @@ foreach ([80399, 80599] as $sfGuardedMax) {
 }
 foreach ([80500, 70400] as $sfVersionId) {
 	$sfVersionScope = $sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile)->enterClass($sfReflectionProvider->getClass(\ScopeFamilyFixture\Holder::class)))
-		->assignExpression(new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID')), new \PHPStan\Type\Constant\ConstantIntegerType($sfVersionId), new \PHPStan\Type\IntegerType());
+		->assignExpression(new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID')), new \PHPStan\Type\Constant\ConstantIntegerType($sfVersionId), new \PHPStan\Type\IntegerType())
+		// $this for isReadonlyPropertyFetch() over the readonly Holder::$name
+		->assignVariable('this', new \PHPStan\Type\ObjectType(\ScopeFamilyFixture\Holder::class), new \PHPStan\Type\ObjectType(\ScopeFamilyFixture\Holder::class), \PHPStan\TrinaryLogic::createYes());
 	$sfScopes[spl_object_id($sfVersionScope)] = [$sfVersionScope, [new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID'))], null];
 }
 // a scope whose tables carry types built on each side's own classes: under
@@ -1402,10 +1404,6 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				if ($scope->hasExpressionType($expr)->yes()) {
 					$observe("getTrackedExpressionType#$i $key", static fn () => $scope->getTrackedExpressionType($expr));
 				}
-				if ($expr instanceof \PhpParser\Node\Expr\PropertyFetch) {
-					$observe("isReadonlyPropertyFetch(this)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, true));
-					$observe("isReadonlyPropertyFetch(any)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, false));
-				}
 				$observe("getType#$i $key", static fn () => $scope->getType($expr));
 				$observe("getType again#$i $key", static fn () => $scope->getType($expr));
 				$observe("getScopeType#$i $key", static fn () => $scope->getScopeType($expr));
@@ -1491,6 +1489,18 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			$sfPhpVersionIdFetch = new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('PHP_VERSION_ID'));
 			$sfTracksPhpVersionId = $scope->hasExpressionType($sfPhpVersionIdFetch)->yes()
 				&& $scope->getPhpVersion()->getType() === $scope->getType($sfPhpVersionIdFetch);
+			// isReadonlyPropertyFetch() answers with getPhpVersion() too: only where
+			// both sides' PhpVersions wrap the walk's own (PHP) type
+			if ($sfTracksPhpVersionId) {
+				foreach ($exprs as $i => $expr) {
+					if (!$expr instanceof \PhpParser\Node\Expr\PropertyFetch) {
+						continue;
+					}
+					$key = $sfHarness->key($expr);
+					$observe("isReadonlyPropertyFetch(this)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, true));
+					$observe("isReadonlyPropertyFetch(any)#$i $key", static fn () => $scope->isReadonlyPropertyFetch($expr, false));
+				}
+			}
 			foreach ($sfProbeTypeNodes as $i => $typeNode) {
 				foreach ([[false, false], [true, false], [false, true], [true, true]] as $j => [$nullable, $variadic]) {
 					if ($variadic && !$sfTracksPhpVersionId) {
@@ -1655,6 +1665,10 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			if ($sfTracksPhpVersionId) {
 				// the variadic parameter shapes (see getFunctionType above)
 				$producers['enterClassMethod(variadic)'] = static fn () => $scope->enterClassMethod($sfProbeVariadicClassMethod, $sfEmptyTemplateTypeMap, [], null, null, null, false, false, false);
+			}
+			if (!$sfTracksPhpVersionId) {
+				// asks getPhpVersion() whether readonly properties are supported
+				unset($producers['rememberConstructorScope']);
 			}
 			foreach ($producers as $label => $fn) {
 				$before = count($factory->calls);
@@ -2210,6 +2224,18 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			// exitFirstLevelStatements() memoizes on it
 			$sfRestoredScopeProps = array_merge($sfMutableProps, ['scopeOutOfFirstLevelStatement']);
 			try {
+				if (!$sfTracksPhpVersionId) {
+					// these ask getPhpVersion() about readonly properties or
+					// asymmetric visibility (see $sfTracksPhpVersionId)
+					foreach ($chainingRuns as $label => $fn) {
+						if (
+							str_starts_with($label, 'enterAnonymousFunctionWithoutReflection')
+							|| str_starts_with($label, 'invalidateExpression(')
+						) {
+							unset($chainingRuns[$label]);
+						}
+					}
+				}
 				foreach ($chainingRuns as $label => $fn) {
 					$state = $sfSnapshot($dummy);
 					$observe($label, static fn () => $sfScopeDigest($fn(), $scope, $dummy));
@@ -2221,6 +2247,10 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 					$observe($label, static fn () => $sfScopeDigest($fn(), $scope, $dummy));
 					$sfRestore($dummy, $state);
 					$sfRestore($scope, $scopeState);
+				}
+				if (!$sfTracksPhpVersionId) {
+					// asks getPhpVersion() about asymmetric visibility
+					unset($closureLoopRuns['canWriteProperty(public)'], $closureLoopRuns['canWriteProperty(private set)']);
 				}
 				foreach ($closureLoopRuns as $label => $fn) {
 					$state = $sfSnapshot($dummy);

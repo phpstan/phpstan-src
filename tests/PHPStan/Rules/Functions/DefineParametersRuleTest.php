@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
@@ -15,7 +14,7 @@ class DefineParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DefineParametersRule(new PhpVersion(PHP_VERSION_ID));
+		return new DefineParametersRule();
 	}
 
 	public function testFile(): void

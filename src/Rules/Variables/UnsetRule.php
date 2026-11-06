@@ -5,7 +5,6 @@ namespace PHPStan\Rules\Variables;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\Rules\Rule;
@@ -23,7 +22,6 @@ final class UnsetRule implements Rule
 
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
-		private PhpVersion $phpVersion,
 	)
 	{
 	}
@@ -80,7 +78,7 @@ final class UnsetRule implements Rule
 						->identifier('unset.hookedProperty')
 						->build();
 					continue;
-				} elseif ($this->phpVersion->supportsPropertyHooks()) {
+				} elseif (!$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
 					if (
 						!$propertyReflection->isPrivate()
 						&& !$propertyReflection->isFinal()->yes()

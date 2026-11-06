@@ -17,8 +17,9 @@ inline constexpr uint32_t templateTypeMap = 3;
 inline constexpr uint32_t resolvedTemplateTypeMap = 4;
 inline constexpr uint32_t isPure = 5;
 inline constexpr uint32_t assertions = 6;
-inline constexpr uint32_t variadic = 7;
-inline constexpr uint32_t templateTags = 8;
+inline constexpr uint32_t cachedDescriptions = 7;
+inline constexpr uint32_t variadic = 8;
+inline constexpr uint32_t templateTags = 9;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -36,6 +37,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("resolvedTemplateTypeMap", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
 	cls.property("isPure", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 	cls.property("assertions", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\Assertions");
+	cls.property("cachedDescriptions", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("variadic", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("templateTags", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 }

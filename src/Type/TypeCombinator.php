@@ -1176,6 +1176,9 @@ final class TypeCombinator
 			$isIterableAtLeastOnce[] = $arrayType->isIterableAtLeastOnce();
 
 			if ($arrayType instanceof IntersectionType) {
+				// asked once: the same for every hasOffset() member, and an
+				// intersection computes it from all of its members
+				$iterableValueType = null;
 				foreach ($arrayType->getTypes() as $innerType) {
 					if ($innerType instanceof TemplateType) {
 						break;
@@ -1184,7 +1187,8 @@ final class TypeCombinator
 						continue;
 					}
 					if ($innerType instanceof HasOffsetType) {
-						$innerType = new HasOffsetValueType($innerType->getOffsetType(), $arrayType->getIterableValueType());
+						$iterableValueType ??= $arrayType->getIterableValueType();
+						$innerType = new HasOffsetValueType($innerType->getOffsetType(), $iterableValueType);
 					}
 					if ($innerType instanceof HasOffsetValueType) {
 						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;

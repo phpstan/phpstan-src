@@ -40,6 +40,8 @@ interface ResultCacheValueExtension
 	/**
 	 * The current value for the key - compared with the one recorded by the last analysis.
 	 * A long value is better hashed.
+	 *
+	 * `getValue` is invoked before bootstrap-files are included.
 	 */
 	public function getValue(string $key): string;
 

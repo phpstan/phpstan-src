@@ -190,7 +190,11 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 
 		$node = new CollectedDataNode($lazy, false);
 		$this->assertSame([$a => [['callA', 3]], $c => [['callC', 4], ['callC2', 5]]], $node->get(PossiblyPureFuncCallCollector::class));
-		$this->assertSame([$a => [['callA', 3]], $c => [['callC', 4], ['callC2', 5]]], iterator_to_array($node->iterate(PossiblyPureFuncCallCollector::class)));
+		$iterated = [];
+		foreach ($node->iterate(PossiblyPureFuncCallCollector::class) as $file => $values) {
+			$iterated[$file] = $values;
+		}
+		$this->assertSame([$a => [['callA', 3]], $c => [['callC', 4], ['callC2', 5]]], $iterated);
 	}
 
 	public function testCachedAndFreshDataHashTheSame(): void

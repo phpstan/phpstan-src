@@ -358,6 +358,58 @@ zv::Val unionOf(const zv::Val &a, const zv::Val &b)
 	return unionOf(a, tableOf(b));
 }
 
+/* Mirrors withoutKeys(): unset($next[$key]) for every key of $keys,
+ * walking the smaller of the two sets */
+void withoutKeys(zv::Val &next, HashTable *keys)
+{
+	if (keys == NULL || zend_hash_num_elements(keys) == 0) return;
+	if (zend_hash_num_elements(keys) <= countOf(next)) {
+		for (auto entry : zv::TableRef(keys)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				unsetKey(next, key);
+			}
+		}
+		return;
+	}
+	/* a snapshot to walk while the live set loses keys */
+	zv::Val live = shareArray(next);
+	for (auto entry : zv::TableRef(tableOf(live))) {
+		zend_string *key = entry.stringKeyOrNull();
+		if (key == NULL || !zend_hash_exists(keys, key)) continue;
+		unsetKey(next, key);
+	}
+}
+
+/* $array[$index] = isset($array[$index]) ? $array[$index] + $keys : $keys
+ * ($keys shared, not copied, when the entry is new) */
+void addKeysAt(zv::Val &array, zend_long index, const zv::Val &keys)
+{
+	SEPARATE_ARRAY(array.raw());
+	zval *slot = zend_hash_index_find(Z_ARRVAL_P(array.raw()), (zend_ulong) index);
+	if (slot == NULL) {
+		zval shared;
+		ZVAL_COPY(&shared, const_cast<zv::Val &>(keys).raw());
+		zend_hash_index_add_new(Z_ARRVAL_P(array.raw()), (zend_ulong) index, &shared);
+		return;
+	}
+	SEPARATE_ARRAY(slot);
+	zend_hash_merge(Z_ARRVAL_P(slot), tableOf(keys), zval_add_ref, 0);
+}
+
+/* array_fill_keys(array_keys($keys), true) */
+zv::Val trueForKeys(const zv::Val &keys)
+{
+	zv::Val result = emptyArray();
+	for (auto entry : zv::TableRef(tableOf(keys))) {
+		zend_string *key = entry.stringKeyOrNull();
+		if (key != NULL) {
+			setTrue(result, key);
+		}
+	}
+	return result;
+}
+
 bool isTrueAt(const zv::Val &array, zend_string *key)
 {
 	return zend_hash_exists(tableOf(array), key);
@@ -549,6 +601,7 @@ private:
 	zv::Val coveredIds = emptyArray();
 	zv::Val overwriteMarkers = emptyArray();
 	zv::Val markersBySlot = emptyArray(); /* name => slot => marker => writer id */
+	zv::Val markersByName = emptyArray(); /* name => marker => writer id */
 	zv::Val overwrittenIds = emptyArray();
 	zv::Val allReadKeys = emptyArray();
 	zv::Val loopStatements = emptyArray();
@@ -827,15 +880,7 @@ private:
 					}
 				}
 			}
-			HashTable *killed = innerTable(killedKeys, id);
-			if (killed != NULL) {
-				for (auto entry : zv::TableRef(killed)) {
-					zend_string *key = entry.stringKeyOrNull();
-					if (key != NULL) {
-						unsetKey(next, key);
-					}
-				}
-			}
+			withoutKeys(next, innerTable(killedKeys, id));
 			killOverwriteMarkers(view, next);
 			zval *marker = zend_hash_index_find(tableOf(overwriteMarkers), (zend_ulong) id);
 			if (marker != NULL) {
@@ -1366,6 +1411,26 @@ private:
 					zend_hash_update(Z_ARRVAL_P(byName), key.get(), &trueValue);
 				}
 			}
+			/* the keys of every slot, shared by all writes of the whole
+			 * variable instead of copied into each of them */
+			zv::Val allKeys = emptyArray();
+			for (auto slotEntry : zv::TableRef(tableOf(keysBySlot))) {
+				zv::Ref keys = slotEntry.value().deref();
+				if (!keys.isArray()) continue;
+				SEPARATE_ARRAY(allKeys.raw());
+				zend_hash_merge(Z_ARRVAL_P(allKeys.raw()), keys.asArrayTable(), zval_add_ref, 0);
+			}
+			zv::Val offsetKeys = shareArray(allKeys);
+			HashTable *containerKeys = innerTableByKey(keysBySlot, containerSlot);
+			if (containerKeys != NULL) {
+				for (auto keyEntry : zv::TableRef(containerKeys)) {
+					zend_string *key = keyEntry.stringKeyOrNull();
+					if (key != NULL) {
+						unsetKey(offsetKeys, key);
+					}
+				}
+			}
+			zv::Val allKills = trueForKeys(allKeys);
 			for (auto entry : zv::TableRef(accessTable)) {
 				zend_object *access = Z_OBJ_P(entry.value().deref().raw());
 				zval *write = slot(access, slots.accessWrite, "write");
@@ -1374,38 +1439,28 @@ private:
 				WriteView view;
 				if (UNEXPECTED(!view.load(write))) return false;
 				zend_long id = view.id;
-				bool offsetIsNull = view.offsetIsNull;
-				zv::Val selectedKeys;
-				if (view.offsetWrite && !offsetIsNull) {
+				zv::Val keys;
+				bool kills;
+				bool whole = false;
+				if (view.offsetWrite && !view.offsetIsNull) {
 					zv::Str slotName = offsetKey(view.offset.raw());
-					selectedKeys = emptyArray();
-					HashTable *keys = innerTableByKey(keysBySlot, slotName.get());
-					zval keysValue = (keys != NULL ? zv::Arr::copyOfTable(keys) : zv::Arr::empty()).take();
-					SEPARATE_ARRAY(selectedKeys.raw());
-					zend_hash_update(Z_ARRVAL_P(selectedKeys.raw()), slotName.get(), &keysValue);
+					HashTable *slotKeys = innerTableByKey(keysBySlot, slotName.get());
+					zval keysValue = (slotKeys != NULL ? zv::Arr::copyOfTable(slotKeys) : zv::Arr::empty()).take();
+					keys = zv::Val::adopt(keysValue);
+					kills = view.replacesOffset;
 				} else {
-					selectedKeys = shareArray(keysBySlot);
-					if (view.offsetWrite) {
-						unsetKey(selectedKeys, containerSlot);
-					}
+					whole = !view.offsetWrite;
+					keys = shareArray(whole ? allKeys : offsetKeys);
+					kills = whole;
 				}
-				bool kills = !view.offsetWrite || (!offsetIsNull && view.replacesOffset);
-				for (auto slotEntry : zv::TableRef(tableOf(selectedKeys))) {
-					zv::Ref keys = slotEntry.value().deref();
-					if (!keys.isArray()) continue;
-					for (auto keyEntry : zv::TableRef(keys.asArrayTable())) {
-						zend_string *key = keyEntry.stringKeyOrNull();
-						if (key == NULL) continue;
-						zval *observed = innerSlot(observedKeys, id);
-						Z_TRY_ADDREF_P(keyEntry.value().raw());
-						zend_hash_update(Z_ARRVAL_P(observed), key, keyEntry.value().raw());
-						if (!kills) continue;
+				if (countOf(keys) == 0) continue;
+				addKeysAt(observedKeys, id, keys);
+				if (!kills) continue;
 
-						zval *killed = innerSlot(killedKeys, id);
-						zval trueValue;
-						ZVAL_TRUE(&trueValue);
-						zend_hash_update(Z_ARRVAL_P(killed), key, &trueValue);
-					}
+				if (whole) {
+					addKeysAt(killedKeys, id, allKills);
+				} else {
+					addKeysAt(killedKeys, id, trueForKeys(keys));
 				}
 			}
 			if (UNEXPECTED(!compileOverwrites(name, accessTable))) return false;
@@ -1452,6 +1507,16 @@ private:
 		zval *stored = innerSlotByKey(markersBySlot, name);
 		zval_ptr_dtor(stored);
 		ZVAL_COPY(stored, slotMarkers.raw());
+		zv::Val markersOfName = emptyArray();
+		for (auto slotEntry : zv::TableRef(tableOf(slotMarkers))) {
+			zv::Ref markers = slotEntry.value().deref();
+			if (!markers.isArray()) continue;
+			SEPARATE_ARRAY(markersOfName.raw());
+			zend_hash_merge(Z_ARRVAL_P(markersOfName.raw()), markers.asArrayTable(), zval_add_ref, 0);
+		}
+		zval *storedOfName = innerSlotByKey(markersByName, name);
+		zval_ptr_dtor(storedOfName);
+		ZVAL_COPY(storedOfName, markersOfName.raw());
 		return true;
 	}
 
@@ -1521,30 +1586,15 @@ private:
 		if (bySlot == NULL) return;
 		zv::Str slotName;
 		if (!replacedSlot(write, slotName)) return;
-		bool whole = ZSTR_LEN(slotName.get()) == 0;
-		for (auto slotEntry : zv::TableRef(bySlot)) {
-			zend_string *markerSlot = slotEntry.stringKeyOrNull();
-			if (markerSlot == NULL) continue;
-			if (!whole && !zend_string_equals(markerSlot, slotName.get())) continue;
-			zv::Ref markersRef = slotEntry.value().deref();
-			if (!markersRef.isArray()) continue;
-			HashTable *markers = markersRef.asArrayTable();
-			if (zend_hash_num_elements(markers) <= countOf(next)) {
-				for (auto markerEntry : zv::TableRef(markers)) {
-					zend_string *marker = markerEntry.stringKeyOrNull();
-					if (marker == NULL) continue;
-					unsetKey(next, marker);
-				}
-				continue;
-			}
-			/* a snapshot to walk while the live set loses keys */
-			zv::Val live = shareArray(next);
-			for (auto entry : zv::TableRef(tableOf(live))) {
-				zend_string *key = entry.stringKeyOrNull();
-				if (key == NULL || !zend_hash_exists(markers, key)) continue;
-				unsetKey(next, key);
-			}
+		if (ZSTR_LEN(slotName.get()) == 0) {
+			withoutKeys(next, innerTableByKey(markersByName, write.nameStr));
+			return;
 		}
+		zval *markers = zend_hash_find(bySlot, slotName.get());
+		if (markers == NULL) return;
+		ZVAL_DEREF(markers);
+		if (Z_TYPE_P(markers) != IS_ARRAY) return;
+		withoutKeys(next, Z_ARRVAL_P(markers));
 	}
 
 	/* Mirrors observeWrite(). */
@@ -1552,6 +1602,21 @@ private:
 	{
 		HashTable *observed = innerTable(observedKeys, id);
 		if (observed == NULL) return;
+		/* walk the smaller of the two sets */
+		zv::Val live;
+		if (zend_hash_num_elements(observed) > countOf(next)) {
+			live = emptyArray();
+			for (auto entry : zv::TableRef(tableOf(next))) {
+				zend_string *key = entry.stringKeyOrNull();
+				if (key == NULL) continue;
+				zval *targetId = zend_hash_find(observed, key);
+				if (targetId == NULL) continue;
+				SEPARATE_ARRAY(live.raw());
+				Z_TRY_ADDREF_P(targetId);
+				zend_hash_update(Z_ARRVAL_P(live.raw()), key, targetId);
+			}
+			observed = tableOf(live);
+		}
 		for (auto entry : zv::TableRef(observed)) {
 			zend_string *key = entry.stringKeyOrNull();
 			if (key == NULL || !isTrueAt(next, key)) continue;

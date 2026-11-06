@@ -29,15 +29,16 @@ inline constexpr uint32_t literalItems = 15;
 inline constexpr uint32_t coveredIds = 16;
 inline constexpr uint32_t overwriteMarkers = 17;
 inline constexpr uint32_t markersBySlot = 18;
-inline constexpr uint32_t overwrittenIds = 19;
-inline constexpr uint32_t allReadKeys = 20;
-inline constexpr uint32_t loopStatements = 21;
-inline constexpr uint32_t ownWriteIds = 22;
-inline constexpr uint32_t variableOverwritingLoops = 23;
-inline constexpr uint32_t opaque = 24;
-inline constexpr uint32_t readsAllVariables = 25;
-inline constexpr uint32_t allNamesMentioned = 26;
-inline constexpr uint32_t returnsByReference = 27;
+inline constexpr uint32_t markersByName = 19;
+inline constexpr uint32_t overwrittenIds = 20;
+inline constexpr uint32_t allReadKeys = 21;
+inline constexpr uint32_t loopStatements = 22;
+inline constexpr uint32_t ownWriteIds = 23;
+inline constexpr uint32_t variableOverwritingLoops = 24;
+inline constexpr uint32_t opaque = 25;
+inline constexpr uint32_t readsAllVariables = 26;
+inline constexpr uint32_t allNamesMentioned = 27;
+inline constexpr uint32_t returnsByReference = 28;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -67,6 +68,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("coveredIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("overwriteMarkers", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("markersBySlot", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("markersByName", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("overwrittenIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("allReadKeys", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("loopStatements", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
@@ -113,8 +115,10 @@ inline constexpr char strings[] =
 	"observeWrite\0" /* 376 */
 	"observeOverwrite\0" /* 389 */
 	"killOverwriteMarkers\0" /* 406 */
-	"resolveDependencies\0" /* 427 */
-	"resolveCoverage"; /* 447 */
+	"keys\0" /* 427 */
+	"withoutKeys\0" /* 432 */
+	"resolveDependencies\0" /* 444 */
+	"resolveCoverage"; /* 464 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
@@ -150,6 +154,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(262, 0, 202), /* killOverwriteMarkers $write */
 	reg::packed(133, MAY_BE_ARRAY), /* killOverwriteMarkers $next */
 	reg::packed(84, MAY_BE_ARRAY), /* killOverwriteMarkers return */
+	reg::packed(133, MAY_BE_ARRAY), /* withoutKeys $next */
+	reg::packed(427, MAY_BE_ARRAY), /* withoutKeys $keys */
+	reg::packed(84, MAY_BE_ARRAY), /* withoutKeys return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
 	reg::packed(84, MAY_BE_VOID), /* resolveCoverage return */
 };
@@ -171,8 +178,9 @@ inline constexpr sigtab::Sig replacedSlot = { { 360 /* replacedSlot */, 1, 23, 1
 inline constexpr sigtab::Sig observeWrite = { { 376 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig observeOverwrite = { { 389 /* observeOverwrite */, 2, 28, 2, 30, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig killOverwriteMarkers = { { 406 /* killOverwriteMarkers */, 2, 31, 2, 33, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveDependencies = { { 427 /* resolveDependencies */, 0, 34, 0, 34, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 447 /* resolveCoverage */, 0, 35, 0, 35, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig withoutKeys = { { 432 /* withoutKeys */, 2, 34, 2, 36, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveDependencies = { { 444 /* resolveDependencies */, 0, 37, 0, 37, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 464 /* resolveCoverage */, 0, 38, 0, 38, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

@@ -34,6 +34,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private ConstantResolver $constantResolver,
+		private SuperglobalTypeResolver $superglobalTypeResolver,
 	)
 	{
 	}
@@ -57,6 +58,7 @@ final class DirectInternalScopeFactoryFactory implements InternalScopeFactoryFac
 			$this->configuredPhpVersionRangeHelper,
 			$nodeCallback,
 			$this->constantResolver,
+			$this->superglobalTypeResolver,
 		);
 	}
 

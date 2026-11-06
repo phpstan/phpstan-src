@@ -339,6 +339,7 @@ enum : uint32_t
 	PT_MSS_PHP_VERSION,
 	PT_MSS_ATTRIBUTE_REFLECTION_FACTORY,
 	PT_MSS_CONFIGURED_PHP_VERSION_RANGE_HELPER,
+	PT_MSS_SUPERGLOBAL_TYPE_RESOLVER,
 	PT_MSS_NODE_CALLBACK,
 	PT_MSS_COUNT,
 };
@@ -357,6 +358,7 @@ static const char *const pt_mss_names[PT_MSS_COUNT] = {
 	"phpVersion",
 	"attributeReflectionFactory",
 	"configuredPhpVersionRangeHelper",
+	"superglobalTypeResolver",
 	"nodeCallback",
 };
 
@@ -1709,22 +1711,11 @@ public:
 		zval *holder = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()), varExprString.get());
 		if (holder == NULL) {
 			if (isGlobalVariable(variableName)) {
-				/* new ArrayType(new BenevolentUnionType([new IntegerType(), new StringType()]), new MixedType(true)) */
-				zval integer, string, mixed, benevolent, array;
-				if (UNEXPECTED(!pt_integer_type_new(&integer))) return zv::Val();
-				if (UNEXPECTED(!pt_string_type_new(&string))) {
-					zval_ptr_dtor(&integer);
-					return zv::Val();
-				}
-				zv::Arr members = zv::Arr::create(2);
-				members.push(zv::Val::adopt(integer));
-				members.push(zv::Val::adopt(string));
-				if (UNEXPECTED(!pt_benevolent_union_type_new(&benevolent, members.raw()))) return zv::Val();
-				zv::Val benevolentVal = zv::Val::adopt(benevolent);
-				if (UNEXPECTED(!pt_mixed_type_new(&mixed, true))) return zv::Val();
-				zv::Val mixedVal = zv::Val::adopt(mixed);
-				if (UNEXPECTED(!pt_array_type_new(&array, benevolentVal.raw(), mixedVal.raw()))) return zv::Val();
-				return zv::Val::adopt(array);
+				/* $this->services->superglobalTypeResolver->getType($variableName, $this->nativeTypesPromoted) */
+				zv::Ref superglobalTypeResolver = service(PT_MSS_SUPERGLOBAL_TYPE_RESOLVER);
+				if (UNEXPECTED(!superglobalTypeResolver.isObject())) return uninitializedProperty("superglobalTypeResolver");
+				zv::Args args{variableName, slot(PT_MS_PROP_NATIVE_TYPES_PROMOTED).raw()};
+				return pt_type_call(superglobalTypeResolver.asObject(), PT_LC("gettype"), 2, args);
 			}
 			return newMixedType(false);
 		}

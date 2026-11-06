@@ -1,0 +1,3 @@
+parameters:
+	superglobalTypes:
+		_GTE: 'array<string>'

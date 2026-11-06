@@ -7,6 +7,7 @@ use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\DirectInternalScopeFactoryFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\Analyser\SuperglobalTypeResolver;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
@@ -130,6 +131,7 @@ abstract class PHPStanTestCase extends TestCase
 				$container->getByType(AttributeReflectionFactory::class),
 				$container->getByType(ConfiguredPhpVersionRangeHelper::class),
 				$constantResolver,
+				$container->getByType(SuperglobalTypeResolver::class),
 			),
 		);
 	}

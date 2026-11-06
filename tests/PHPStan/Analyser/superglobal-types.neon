@@ -1,0 +1,4 @@
+parameters:
+	superglobalTypes:
+		_GET: 'array<string|array<string|array<mixed>>>'
+		_COOKIE: 'array<string, string>'

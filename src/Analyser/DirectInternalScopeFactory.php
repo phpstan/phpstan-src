@@ -45,6 +45,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 		private ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
 		private $nodeCallback,
 		private ConstantResolver $constantResolver,
+		private SuperglobalTypeResolver $superglobalTypeResolver,
 		private bool $createsNodeCallbackScopes = false,
 		?ExpressionResultStorageStack $expressionResultStorageStack = null,
 	)
@@ -92,6 +93,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
 			$this->configuredPhpVersionRangeHelper,
+			$this->superglobalTypeResolver,
 			$this->nodeCallback,
 		);
 
@@ -145,6 +147,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->configuredPhpVersionRangeHelper,
 			$this->nodeCallback,
 			$this->constantResolver,
+			$this->superglobalTypeResolver,
 			$createsNodeCallbackScopes,
 			$this->expressionResultStorageStack,
 		);

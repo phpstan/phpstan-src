@@ -86,8 +86,8 @@ final class VariableLivenessResolver
 	/** @var array<int, string> */
 	private array $overwriteMarkers = [];
 
-	/** @var array<int, array<string, true>> */
-	private array $overwriteKeys = [];
+	/** @var array<string, array<string, array<string, int>>> variable name => replaced slot => marker => id of the write leaving it */
+	private array $markersBySlot = [];
 
 	/** @var array<int, true> */
 	private array $overwrittenIds = [];
@@ -258,15 +258,16 @@ final class VariableLivenessResolver
 			$id = $flow->write->getId();
 			if ($flow->kind !== VariableFlow::DISCARD) {
 				$this->observeWrite($id, $next);
-				$this->observeOverwrite($id, $next);
+				$this->observeOverwrite($flow->write, $next);
 				foreach ($this->literalItems[$id] ?? [] as $item) {
 					$this->observeWrite($item->getId(), $next);
-					$this->observeOverwrite($item->getId(), $next);
+					$this->observeOverwrite($item, $next);
 				}
 			}
 			foreach (array_keys($this->killedKeys[$id] ?? []) as $key) {
 				unset($next[$key]);
 			}
+			$next = $this->killOverwriteMarkers($flow->write, $next);
 			if (isset($this->overwriteMarkers[$id])) {
 				$next[$this->overwriteMarkers[$id]] = true;
 			}
@@ -569,6 +570,10 @@ final class VariableLivenessResolver
 	 * write finding another write's marker after it reaches that replacement
 	 * on some path, with no replacement in between.
 	 *
+	 * Only the markers are compiled, by slot: which of them a write observes
+	 * or kills is answered against the live set when the write is reached, so
+	 * the work stays linear in the variable's writes.
+	 *
 	 * @param list<VariableAccessFlow> $accesses
 	 */
 	private function compileOverwrites(string $name, array $accesses): void
@@ -590,38 +595,8 @@ final class VariableLivenessResolver
 		if ($markersBySlot === []) {
 			return;
 		}
-		foreach ($accesses as $access) {
-			$write = $access->write;
-			if ($write === null) {
-				continue;
-			}
-			$id = $write->getId();
-			$offset = $write->getOffset();
-			$observed = $markersBySlot[''] ?? [];
-			if ($write->isOffsetWrite() && $offset !== null) {
-				$observed += $markersBySlot[self::offsetKey($offset)] ?? [];
-			}
-			foreach ($observed as $marker => $writerId) {
-				// a loop running the same write again replaces nothing it
-				// wrote - nor the items of the array literal it assigns
-				if ($writerId === $id || $writerId === $write->getParentId()) {
-					continue;
-				}
-				$this->overwriteKeys[$id][$marker] = true;
-			}
-			$slot = self::replacedSlot($write);
-			if ($slot === null) {
-				continue;
-			}
-			foreach ($markersBySlot as $markerSlot => $markers) {
-				if ($slot !== '' && $markerSlot !== $slot) {
-					continue;
-				}
-				foreach (array_keys($markers) as $marker) {
-					$this->killedKeys[$id][$marker] = true;
-				}
-			}
-		}
+
+		$this->markersBySlot[$name] = $markersBySlot;
 	}
 
 	/** The slot a write replaces: '' for the whole variable, null when it keeps the old value. */
@@ -655,15 +630,85 @@ final class VariableLivenessResolver
 	}
 
 	/** @param array<string, true> $next */
-	private function observeOverwrite(int $id, array $next): void
+	private function observeOverwrite(VariableWrite $write, array $next): void
 	{
-		foreach (array_keys($this->overwriteKeys[$id] ?? []) as $key) {
-			if (!isset($next[$key])) {
-				continue;
-			}
-			$this->overwrittenIds[$id] = true;
+		$markersBySlot = $this->markersBySlot[$write->getVariableName()] ?? null;
+		if ($markersBySlot === null) {
 			return;
 		}
+		$id = $write->getId();
+		$parentId = $write->getParentId();
+		$observedSlots = [''];
+		$offset = $write->getOffset();
+		if ($write->isOffsetWrite() && $offset !== null) {
+			$observedSlots[] = self::offsetKey($offset);
+		}
+		foreach ($observedSlots as $slot) {
+			$markers = $markersBySlot[$slot] ?? [];
+			// walk the smaller of the two sets
+			if (count($markers) <= count($next)) {
+				foreach ($markers as $marker => $writerId) {
+					if (!isset($next[$marker])) {
+						continue;
+					}
+					// a loop running the same write again replaces nothing it
+					// wrote - nor the items of the array literal it assigns
+					if ($writerId === $id || $writerId === $parentId) {
+						continue;
+					}
+					$this->overwrittenIds[$id] = true;
+					return;
+				}
+				continue;
+			}
+			foreach (array_keys($next) as $key) {
+				$writerId = $markers[$key] ?? null;
+				if ($writerId === null || $writerId === $id || $writerId === $parentId) {
+					continue;
+				}
+				$this->overwrittenIds[$id] = true;
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Drops the markers of the slots $write replaces - all of the variable's
+	 * when it replaces the whole variable.
+	 *
+	 * @param array<string, true> $next
+	 * @return array<string, true>
+	 */
+	private function killOverwriteMarkers(VariableWrite $write, array $next): array
+	{
+		$markersBySlot = $this->markersBySlot[$write->getVariableName()] ?? null;
+		if ($markersBySlot === null) {
+			return $next;
+		}
+		$slot = self::replacedSlot($write);
+		if ($slot === null) {
+			return $next;
+		}
+		foreach ($markersBySlot as $markerSlot => $markers) {
+			if ($slot !== '' && $markerSlot !== $slot) {
+				continue;
+			}
+			// walk the smaller of the two sets
+			if (count($markers) <= count($next)) {
+				foreach (array_keys($markers) as $marker) {
+					unset($next[$marker]);
+				}
+				continue;
+			}
+			foreach (array_keys($next) as $key) {
+				if (!isset($markers[$key])) {
+					continue;
+				}
+				unset($next[$key]);
+			}
+		}
+
+		return $next;
 	}
 
 	private function resolveDependencies(): void

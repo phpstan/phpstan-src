@@ -28,7 +28,7 @@ inline constexpr uint32_t inputSinks = 14;
 inline constexpr uint32_t literalItems = 15;
 inline constexpr uint32_t coveredIds = 16;
 inline constexpr uint32_t overwriteMarkers = 17;
-inline constexpr uint32_t overwriteKeys = 18;
+inline constexpr uint32_t markersBySlot = 18;
 inline constexpr uint32_t overwrittenIds = 19;
 inline constexpr uint32_t allReadKeys = 20;
 inline constexpr uint32_t loopStatements = 21;
@@ -66,7 +66,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("literalItems", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("coveredIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("overwriteMarkers", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
-	cls.property("overwriteKeys", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("markersBySlot", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("overwrittenIds", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("allReadKeys", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("loopStatements", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
@@ -112,8 +112,9 @@ inline constexpr char strings[] =
 	"id\0" /* 373 */
 	"observeWrite\0" /* 376 */
 	"observeOverwrite\0" /* 389 */
-	"resolveDependencies\0" /* 406 */
-	"resolveCoverage"; /* 426 */
+	"killOverwriteMarkers\0" /* 406 */
+	"resolveDependencies\0" /* 427 */
+	"resolveCoverage"; /* 447 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
@@ -143,9 +144,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(373, MAY_BE_LONG), /* observeWrite $id */
 	reg::packed(133, MAY_BE_ARRAY), /* observeWrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeWrite return */
-	reg::packed(373, MAY_BE_LONG), /* observeOverwrite $id */
+	reg::packed(262, 0, 202), /* observeOverwrite $write */
 	reg::packed(133, MAY_BE_ARRAY), /* observeOverwrite $next */
 	reg::packed(84, MAY_BE_VOID), /* observeOverwrite return */
+	reg::packed(262, 0, 202), /* killOverwriteMarkers $write */
+	reg::packed(133, MAY_BE_ARRAY), /* killOverwriteMarkers $next */
+	reg::packed(84, MAY_BE_ARRAY), /* killOverwriteMarkers return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
 	reg::packed(84, MAY_BE_VOID), /* resolveCoverage return */
 };
@@ -166,8 +170,9 @@ inline constexpr sigtab::Sig compileOverwrites = { { 342 /* compileOverwrites */
 inline constexpr sigtab::Sig replacedSlot = { { 360 /* replacedSlot */, 1, 23, 1, 24, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig observeWrite = { { 376 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig observeOverwrite = { { 389 /* observeOverwrite */, 2, 28, 2, 30, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveDependencies = { { 406 /* resolveDependencies */, 0, 31, 0, 31, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 426 /* resolveCoverage */, 0, 32, 0, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig killOverwriteMarkers = { { 406 /* killOverwriteMarkers */, 2, 31, 2, 33, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveDependencies = { { 427 /* resolveDependencies */, 0, 34, 0, 34, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 447 /* resolveCoverage */, 0, 35, 0, 35, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

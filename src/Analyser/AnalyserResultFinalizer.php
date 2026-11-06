@@ -131,6 +131,11 @@ final class AnalyserResultFinalizer
 				try {
 					$ruleErrors = $rule->processNode($ruleNode, $scope);
 					$ruleValueDependencies = $this->valueDependencyCollector->getCollectedDataRuleValues();
+					// the rule may have caught the read error and reported errors from partial data
+					$unreadableException = $collectedData->getUnreadableException();
+					if ($unreadableException !== null) {
+						throw $unreadableException;
+					}
 				} catch (AnalysedCodeException $e) {
 					$tempCollectorErrors[] = (new Error($e->getMessage(), $file, $node->getStartLine(), $e, tip: $e->getTip()))
 						->withIdentifier('phpstan.internal')

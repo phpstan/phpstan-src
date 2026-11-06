@@ -29,6 +29,8 @@ final class LazyCollectedData
 
 	private ?CollectorLocations $collectorLocations = null;
 
+	private ?UnreadableCollectedDataException $unreadableException = null;
+
 	/**
 	 * @param array<string, array{int, int}> $cachedIndex analysed file => [offset, length] of its entry in the cache file
 	 * @param CollectorData $fresh
@@ -103,7 +105,13 @@ final class LazyCollectedData
 	{
 		$positions = $this->getCachedPositions($collectorType);
 		if ($positions !== [] && $this->cachedReader !== null) {
-			yield from $this->cachedReader->readCollector($collectorType, $positions, $this->getCollectorLocations()->getSignature());
+			try {
+				yield from $this->cachedReader->readCollector($collectorType, $positions, $this->getCollectorLocations()->getSignature());
+			} catch (UnreadableCollectedDataException $e) {
+				$this->unreadableException = $e;
+
+				throw $e;
+			}
 		}
 
 		foreach ($this->fresh as $file => $data) {
@@ -141,6 +149,15 @@ final class LazyCollectedData
 	}
 
 	/**
+	 * The read error of the cache file, if a read failed. A rule may catch the exception and go on with
+	 * partial data, so the caller checks this after the rule, not only for the exception.
+	 */
+	public function getUnreadableException(): ?UnreadableCollectedDataException
+	{
+		return $this->unreadableException;
+	}
+
+	/**
 	 * Cached entries first, then the fresh ones; a fresh entry replaces a cached one for the same
 	 * file. Reads the cache file every time: nothing is kept, so the caller decides how long the
 	 * decoded data lives.
@@ -153,7 +170,14 @@ final class LazyCollectedData
 			return $this->fresh;
 		}
 
-		$result = $this->cachedReader->read($this->cachedIndex);
+		try {
+			$result = $this->cachedReader->read($this->cachedIndex);
+		} catch (UnreadableCollectedDataException $e) {
+			$this->unreadableException = $e;
+
+			throw $e;
+		}
+
 		foreach ($this->fresh as $file => $data) {
 			$result[$file] = $data;
 		}
@@ -187,7 +211,13 @@ final class LazyCollectedData
 			throw new ShouldNotHappenException();
 		}
 
-		return $this->collectorLocations = $this->cachedReader->locateCollectors($this->cachedIndex);
+		try {
+			return $this->collectorLocations = $this->cachedReader->locateCollectors($this->cachedIndex);
+		} catch (UnreadableCollectedDataException $e) {
+			$this->unreadableException = $e;
+
+			throw $e;
+		}
 	}
 
 }

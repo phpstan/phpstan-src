@@ -2,10 +2,14 @@
 
 namespace PHPStan\Analyser;
 
+use Generator;
 use PhpParser\Node;
 use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
+use PHPStan\Analyser\ResultCache\CollectedDataReader;
+use PHPStan\Analyser\ResultCache\CollectorLocations;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
+use PHPStan\Analyser\ResultCache\UnreadableCollectedDataException;
 use PHPStan\DependencyInjection\DirectExtensionsCollection;
 use PHPStan\Node\CollectedDataNode;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
@@ -14,7 +18,11 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\Traits\TraitDeclarationCollector;
 use PHPStan\Testing\PHPStanTestCase;
 use RuntimeException;
+use Throwable;
+use function count;
 use function get_class;
+use function md5;
+use function sprintf;
 
 class AnalyserResultFinalizerTest extends PHPStanTestCase
 {
@@ -77,6 +85,44 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 		], $events);
 	}
 
+	public function testUnreadableCollectedDataIsAnInternalErrorThatIsNotABug(): void
+	{
+		$result = $this->createFinalizer([$this->createReportingRule(), $this->createIteratingRule(false)])->finalize(
+			$this->createAnalyserResultWithUnreadableCache(),
+			false,
+			false,
+		)->getAnalyserResult();
+
+		$this->assertSame([], $result->getErrors(), 'no rule reports from partial data');
+		$this->assertCount(1, $result->getInternalErrors());
+		$this->assertSame('The cache file is damaged.', $result->getInternalErrors()[0]->getMessage());
+		$this->assertFalse($result->getInternalErrors()[0]->shouldReportBug());
+	}
+
+	public function testUnreadableCollectedDataIsReportedWhenTheRuleCatchesTheError(): void
+	{
+		$result = $this->createFinalizer([$this->createIteratingRule(true)])->finalize(
+			$this->createAnalyserResultWithUnreadableCache(),
+			false,
+			false,
+		)->getAnalyserResult();
+
+		$this->assertSame([], $result->getErrors());
+		$this->assertCount(1, $result->getInternalErrors());
+		$this->assertSame('The cache file is damaged.', $result->getInternalErrors()[0]->getMessage());
+		$this->assertFalse($result->getInternalErrors()[0]->shouldReportBug());
+	}
+
+	public function testUnreadableCollectedDataIsRethrownInDebugMode(): void
+	{
+		$this->expectException(UnreadableCollectedDataException::class);
+		$this->createFinalizer([$this->createIteratingRule(true)])->finalize(
+			$this->createAnalyserResultWithUnreadableCache(),
+			false,
+			true,
+		);
+	}
+
 	/**
 	 * @param list<Rule<CollectedDataNode>> $rules
 	 */
@@ -119,6 +165,97 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 			peakMemoryUsageBytes: 0,
 			processedFiles: [],
 		);
+	}
+
+	/**
+	 * The cache holds two files; reading the second one fails.
+	 */
+	private function createAnalyserResultWithUnreadableCache(): AnalyserResult
+	{
+		$reader = new class implements CollectedDataReader {
+
+			public function read(array $index): array
+			{
+				throw new UnreadableCollectedDataException('The cache file is damaged.');
+			}
+
+			public function locateCollectors(array $index): CollectorLocations
+			{
+				$positions = [];
+				$hashes = [];
+				foreach ($index as $file => $position) {
+					$positions[TraitDeclarationCollector::class][$file] = $position;
+					$hashes[TraitDeclarationCollector::class][$file] = md5($file);
+				}
+
+				return new CollectorLocations('signature', $positions, $hashes);
+			}
+
+			/**
+			 * @return Generator<string, list<mixed>>
+			 */
+			public function readCollector(string $collectorType, array $positions, string $signature): Generator
+			{
+				yield 'a.php' => [['Trait', 1]];
+
+				throw new UnreadableCollectedDataException('The cache file is damaged.');
+			}
+
+		};
+
+		return new AnalyserResult(
+			unorderedErrors: [],
+			filteredPhpErrors: [],
+			allPhpErrors: [],
+			locallyIgnoredErrors: [],
+			linesToIgnore: [],
+			unmatchedLineIgnores: [],
+			internalErrors: [],
+			collectedData: new LazyCollectedData(['a.php' => [0, 1], 'b.php' => [1, 1]], $reader, []),
+			dependencies: null,
+			usedTraitDependencies: null,
+			valueDependencies: null,
+			packageDependencies: null,
+			exportedNodes: [],
+			reachedInternalErrorsCountLimit: false,
+			peakMemoryUsageBytes: 0,
+			processedFiles: [],
+		);
+	}
+
+	/**
+	 * @return Rule<CollectedDataNode>
+	 */
+	private function createIteratingRule(bool $catchesErrors): Rule
+	{
+		return new /** @implements Rule<CollectedDataNode> */class ($catchesErrors) implements Rule {
+
+			public function __construct(private bool $catchesErrors)
+			{
+			}
+
+			public function getNodeType(): string
+			{
+				return CollectedDataNode::class;
+			}
+
+			public function processNode(Node $node, Scope $scope): array
+			{
+				$files = [];
+				try {
+					foreach ($node->iterate(TraitDeclarationCollector::class) as $file => $values) {
+						$files[$file] = count($values);
+					}
+				} catch (Throwable $e) {
+					if (!$this->catchesErrors) {
+						throw $e;
+					}
+				}
+
+				return [RuleErrorBuilder::message(sprintf('Saw %d files.', count($files)))->identifier('tests.saw')->file(__FILE__)->line(1)->build()];
+			}
+
+		};
 	}
 
 	/**

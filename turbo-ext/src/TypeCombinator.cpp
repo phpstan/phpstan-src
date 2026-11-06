@@ -34,6 +34,8 @@
 namespace sigs = ptdecl::TypeCombinator::sig;
 
 #include <algorithm>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 zend_class_entry *pt_ce_type_combinator = nullptr;
@@ -2959,6 +2961,91 @@ public:
 		zend_hash_index_update(constantScalarValues.table(), index, &null);
 	}
 
+	/* $nullified[$index] = true, for the pairs visited from now on */
+	static void nullify(std::vector<char> &nullified, std::vector<zend_ulong> &nullifiedList, zend_ulong index)
+	{
+		if (nullified[index]) return;
+		nullified[index] = 1;
+		nullifiedList.push_back(index);
+	}
+
+	/* the number of keys two arrays share, from their sorted key ranks */
+	static size_t sharedKeysCount(const std::vector<zend_ulong> &a, const std::vector<zend_ulong> &b)
+	{
+		size_t count = 0;
+		auto ai = a.begin();
+		auto bi = b.begin();
+		while (ai != a.end() && bi != b.end()) {
+			if (*ai < *bi) {
+				ai++;
+			} else if (*bi < *ai) {
+				bi++;
+			} else {
+				count++;
+				ai++;
+				bi++;
+			}
+		}
+		return count;
+	}
+
+	/* appends an encoding of a single constant scalar value - equal for
+	 * identical (===) values - to a bucket key */
+	static void encodeConstantScalarValue(std::string &out, zval *value)
+	{
+		switch (Z_TYPE_P(value)) {
+			case IS_NULL:
+				out += 'n';
+				break;
+			case IS_FALSE:
+				out += 'f';
+				break;
+			case IS_TRUE:
+				out += 't';
+				break;
+			case IS_LONG: {
+				zend_long l = Z_LVAL_P(value);
+				out += 'l';
+				out.append(reinterpret_cast<const char *>(&l), sizeof(l));
+				break;
+			}
+			case IS_DOUBLE: {
+				/* -0.0 === 0.0 */
+				double d = Z_DVAL_P(value) == 0.0 ? 0.0 : Z_DVAL_P(value);
+				out += 'd';
+				out.append(reinterpret_cast<const char *>(&d), sizeof(d));
+				break;
+			}
+			case IS_STRING: {
+				size_t length = Z_STRLEN_P(value);
+				out += 's';
+				out.append(reinterpret_cast<const char *>(&length), sizeof(length));
+				out.append(Z_STRVAL_P(value), length);
+				break;
+			}
+			default:
+				out += '?';
+				break;
+		}
+	}
+
+	/* private static getReduceArraysPartners(int $i, ...): list<int> — the
+	 * arrays after $i sharing a key with it, by the first key they share,
+	 * then by their indexes */
+	static std::vector<zend_ulong> getReduceArraysPartners(zend_ulong i, const std::vector<std::vector<zend_ulong>> &keysByRank, const std::vector<std::vector<zend_ulong>> &arraysToProcessPerKey)
+	{
+		std::vector<zend_ulong> partners;
+		std::vector<char> seen(keysByRank.size(), 0);
+		for (zend_ulong keyRank : keysByRank[i]) {
+			for (zend_ulong j : arraysToProcessPerKey[keyRank]) {
+				if (j <= i || seen[j]) continue;
+				seen[j] = 1;
+				partners.push_back(j);
+			}
+		}
+		return partners;
+	}
+
 	/* private static reduceArrays(list<Type> $constantArrays, bool $preserveTaggedUnions): list<Type> */
 	static zv::Val reduceArrays(zval *constantArrays, bool preserveTaggedUnions)
 	{
@@ -3001,25 +3088,35 @@ public:
 			}
 		}
 
-		zv::Arr arraysToProcessPerKey = zv::Arr::create(0);
+		/* the keys in $arraysToProcessPerKey's order (their rank), the arrays
+		 * having each key, and each array's keys by rank */
+		zv::Arr keyRanks = zv::Arr::create(0);
+		std::vector<std::vector<zend_ulong>> arraysToProcessPerKey;
+		std::vector<std::vector<zend_ulong>> keysByRank;
 		for (zv::ArrayEntry entry : zv::ArrRef(arraysToProcess.raw())) {
+			zend_ulong i = entry.indexKey();
+			if (keysByRank.size() <= i) keysByRank.resize(i + 1);
 			zv::Val keyTypes = call(entry.value().raw(), PT_LC("getkeytypes"));
 			PT_FAIL_IF_UNDEF(keyTypes);
 			for (zv::ArrayEntry keyEntry : zv::ArrRef(keyTypes.raw())) {
 				zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
 				PT_FAIL_IF_UNDEF(keyValue);
-				zval *perKey = symtableFind(arraysToProcessPerKey.table(), keyValue.raw());
-				if (perKey == NULL) {
+				zval *rank = symtableFind(keyRanks.table(), keyValue.raw());
+				zend_ulong keyRank;
+				if (rank == NULL) {
 					if (UNEXPECTED(EG(exception))) return zv::Val();
+					keyRank = arraysToProcessPerKey.size();
 					zval fresh;
-					array_init(&fresh);
-					if (UNEXPECTED(!symtableSet(arraysToProcessPerKey.table(), keyValue.raw(), &fresh))) return zv::Val();
-					perKey = symtableFind(arraysToProcessPerKey.table(), keyValue.raw());
+					ZVAL_LONG(&fresh, (zend_long) keyRank);
+					if (UNEXPECTED(!symtableSet(keyRanks.table(), keyValue.raw(), &fresh))) return zv::Val();
+					arraysToProcessPerKey.emplace_back();
+				} else {
+					keyRank = (zend_ulong) Z_LVAL_P(rank);
 				}
-				zval index;
-				ZVAL_LONG(&index, (zend_long) entry.indexKey());
-				zend_hash_next_index_insert(Z_ARRVAL_P(perKey), &index);
+				arraysToProcessPerKey[keyRank].push_back(i);
+				keysByRank[i].push_back(keyRank);
 			}
+			std::sort(keysByRank[i].begin(), keysByRank[i].end());
 		}
 
 		/* the single constant scalar value at each key of the arrays without
@@ -3035,39 +3132,130 @@ public:
 			}
 		}
 
-		zv::Arr eligibleCombinations = zv::Arr::create(0);
-		for (zv::ArrayEntry entry : zv::ArrRef(arraysToProcessPerKey.raw())) {
-			HashTable *arrays = Z_ARRVAL_P(entry.value().raw());
-			zend_long arraysCount = (zend_long) zend_hash_num_elements(arrays);
-			for (zend_long i = 0; i < arraysCount - 1; i++) {
-				zend_ulong first = (zend_ulong) Z_LVAL_P(zend_hash_index_find(arrays, (zend_ulong) i));
-				for (zend_long j = i + 1; j < arraysCount; j++) {
-					zend_ulong second = (zend_ulong) Z_LVAL_P(zend_hash_index_find(arrays, (zend_ulong) j));
-					zval *other = zend_hash_index_find(eligibleCombinations.table(), first);
-					if (other == NULL) {
-						zval fresh;
-						array_init(&fresh);
-						other = zend_hash_index_update(eligibleCombinations.table(), first, &fresh);
+		/* The loop below visits the pairs of arrays sharing a key: by the
+		 * first key they share in $arraysToProcessPerKey's order, then by
+		 * their indexes. It skips the pairs whose single constant scalar
+		 * values rule out a keys-superset; for arrays with the same number of
+		 * keys (two or more) and the same keys holding a single constant
+		 * scalar, those are the pairs differing in two or more of them, so
+		 * only the pairs sharing a bucket of the values with one key left out
+		 * are visited (see the twin) */
+		size_t arraysCount = keysByRank.size();
+		std::vector<int> bucketGroups(arraysCount, -1);
+		std::vector<std::vector<zend_ulong>> bucketPartners(arraysCount);
+		std::vector<std::unordered_map<int, std::vector<zend_ulong>>> arraysPerKeyAndGroup(arraysToProcessPerKey.size());
+		if (preserveTaggedUnions) {
+			std::unordered_map<std::string, int> groupIds;
+			std::unordered_map<std::string, std::vector<zend_ulong>> buckets;
+			for (zv::ArrayEntry entry : zv::ArrRef(arraysToProcess.raw())) {
+				zend_ulong i = entry.indexKey();
+				zval *values = zend_hash_index_find(constantScalarValues.table(), i);
+				if (values == NULL || Z_TYPE_P(values) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(values)) == 0 || keysByRank[i].size() < 2) {
+					continue;
+				}
+
+				std::vector<std::pair<zend_ulong, zval *>> sortedValues;
+				for (zv::ArrayEntry valueEntry : zv::ArrRef(values)) {
+					zend_string *key = valueEntry.stringKeyOrNull();
+					zval *rank = key != NULL ? zend_hash_find(keyRanks.table(), key) : zend_hash_index_find(keyRanks.table(), valueEntry.indexKey());
+					sortedValues.emplace_back((zend_ulong) Z_LVAL_P(rank), valueEntry.value().raw());
+				}
+				std::sort(sortedValues.begin(), sortedValues.end(), [](const std::pair<zend_ulong, zval *> &a, const std::pair<zend_ulong, zval *> &b) {
+					return a.first < b.first;
+				});
+				std::string group = std::to_string(keysByRank[i].size()) + ":";
+				for (auto &sortedValue : sortedValues) {
+					group += std::to_string(sortedValue.first) + ",";
+				}
+				auto groupId = groupIds.emplace(group, (int) groupIds.size()).first->second;
+				bucketGroups[i] = groupId;
+				for (size_t leftOut = 0; leftOut < sortedValues.size(); leftOut++) {
+					std::string bucket = std::to_string(groupId) + ":" + std::to_string(leftOut) + ":";
+					for (size_t position = 0; position < sortedValues.size(); position++) {
+						if (position != leftOut) encodeConstantScalarValue(bucket, sortedValues[position].second);
 					}
-					zval *count = zend_hash_index_find(Z_ARRVAL_P(other), second);
-					if (count == NULL) {
-						zval zero;
-						ZVAL_LONG(&zero, 0);
-						count = zend_hash_index_update(Z_ARRVAL_P(other), second, &zero);
+					buckets[bucket].push_back(i);
+				}
+			}
+			for (auto &bucket : buckets) {
+				std::vector<zend_ulong> &members = bucket.second;
+				for (size_t a = 0; a + 1 < members.size(); a++) {
+					for (size_t b = a + 1; b < members.size(); b++) {
+						bucketPartners[members[a]].push_back(members[b]);
 					}
-					Z_LVAL_P(count)++;
+				}
+			}
+			for (size_t i = 0; i < arraysCount; i++) {
+				for (zend_ulong keyRank : keysByRank[i]) {
+					arraysPerKeyAndGroup[keyRank][bucketGroups[i]].push_back(i);
 				}
 			}
 		}
 
-		for (zv::ArrayEntry entry : zv::ArrRef(eligibleCombinations.raw())) {
-			zend_ulong i = entry.indexKey();
+		std::vector<std::pair<zend_ulong, zend_ulong>> visitOrder;
+		for (size_t i = 0; i < arraysCount; i++) {
+			for (zend_ulong keyRank : keysByRank[i]) {
+				if (arraysToProcessPerKey[keyRank].back() != i) {
+					visitOrder.emplace_back(keyRank, i);
+					break;
+				}
+			}
+		}
+		std::sort(visitOrder.begin(), visitOrder.end());
+
+		std::vector<char> nullified(arraysCount, 0);
+		std::vector<zend_ulong> nullifiedList;
+		for (auto &visit : visitOrder) {
+			zend_ulong i = visit.second;
 			if (arrayAt(arraysToProcess, i) == NULL) continue;
 
-			for (zv::ArrayEntry otherEntry : zv::ArrRef(entry.value().raw())) {
-				zend_ulong j = otherEntry.indexKey();
-				zend_long overlappingKeysCount = Z_LVAL_P(otherEntry.value().raw());
+			zval *iValues = zend_hash_index_find(constantScalarValues.table(), i);
+			bool allPartnersVisited = bucketGroups[i] < 0 || iValues == NULL || Z_TYPE_P(iValues) != IS_ARRAY;
+			std::vector<zend_ulong> partners;
+			if (allPartnersVisited) {
+				partners = getReduceArraysPartners(i, keysByRank, arraysToProcessPerKey);
+			} else {
+				/* the bucket partners, the arrays not in $i's group and the
+				 * arrays that lost their single constant scalar values */
+				std::vector<char> seen(arraysCount, 0);
+				std::vector<zend_ulong> candidates;
+				auto add = [&](zend_ulong j) {
+					if (j <= i || seen[j]) return;
+					seen[j] = 1;
+					candidates.push_back(j);
+				};
+				for (zend_ulong j : bucketPartners[i]) add(j);
+				for (zend_ulong keyRank : keysByRank[i]) {
+					for (auto &groupArrays : arraysPerKeyAndGroup[keyRank]) {
+						if (groupArrays.first == bucketGroups[i]) continue;
+						for (zend_ulong j : groupArrays.second) add(j);
+					}
+				}
+				for (zend_ulong j : nullifiedList) {
+					if (sharedKeysCount(keysByRank[i], keysByRank[j]) == 0) continue;
+					add(j);
+				}
+
+				std::vector<std::pair<zend_ulong, zend_ulong>> partnersByRank;
+				for (zend_ulong j : candidates) {
+					for (zend_ulong keyRank : keysByRank[i]) {
+						if (std::binary_search(keysByRank[j].begin(), keysByRank[j].end(), keyRank)) {
+							partnersByRank.emplace_back(keyRank, j);
+							break;
+						}
+					}
+				}
+				std::sort(partnersByRank.begin(), partnersByRank.end());
+				for (auto &partner : partnersByRank) {
+					partners.push_back(partner.second);
+				}
+			}
+
+			for (size_t p = 0; p < partners.size(); p++) {
+				zend_ulong j = partners[p];
 				if (arrayAt(arraysToProcess, j) == NULL) continue;
+
+				zend_long overlappingKeysCount = (zend_long) sharedKeysCount(keysByRank[i], keysByRank[j]);
 
 				zend_long iKeysCount = keyTypesCount(arrayAt(arraysToProcess, i));
 				PT_FAIL_IF_NEG(iKeysCount);
@@ -3095,6 +3283,7 @@ public:
 						if (!isInstance(unionValueType.raw(), pt_ce_union_type)) {
 							if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) return zv::Val();
 							forgetConstantScalarValues(constantScalarValues, j);
+							nullify(nullified, nullifiedList, j);
 							break;
 						}
 					}
@@ -3117,6 +3306,7 @@ public:
 					if (superset) {
 						if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) return zv::Val();
 						forgetConstantScalarValues(constantScalarValues, j);
+						nullify(nullified, nullifiedList, j);
 						break;
 					}
 				}
@@ -3127,6 +3317,15 @@ public:
 					if (superset) {
 						if (UNEXPECTED(!mergeInto(arraysToProcess, i, j))) return zv::Val();
 						forgetConstantScalarValues(constantScalarValues, i);
+						nullify(nullified, nullifiedList, i);
+						if (!allPartnersVisited) {
+							/* from now on visited with every array after $j */
+							std::vector<zend_ulong> allPartners = getReduceArraysPartners(i, keysByRank, arraysToProcessPerKey);
+							auto after = std::find(allPartners.begin(), allPartners.end(), j);
+							partners.assign(after == allPartners.end() ? allPartners.begin() : after + 1, allPartners.end());
+							p = (size_t) -1;
+							allPartnersVisited = true;
+						}
 						continue;
 					}
 				}

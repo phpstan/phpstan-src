@@ -37,6 +37,7 @@ use function interface_exists;
 use function is_array;
 use function is_file;
 use function is_string;
+use function opcache_get_status;
 use function opcache_invalidate;
 use function realpath;
 use function restore_error_handler;
@@ -73,6 +74,14 @@ final class AutoloadSourceLocator implements SourceLocator
 
 	/** How many get_included_files() entries invalidateIncludedFiles() has handled. */
 	private static int $invalidatedIncludedFilesCount = 0;
+
+	/**
+	 * OPcache's hits and misses when invalidateIncludedFiles() last made sure that nothing included
+	 * is cached, see getOpcacheCompileCounters().
+	 *
+	 * @var array{int, int}|null
+	 */
+	private static ?array $invalidatedOpcacheCompileCounters = null;
 
 	public function __construct(private FileNodesFetcher $fileNodesFetcher, private bool $executeAutoloadersInFileReadTrap)
 	{
@@ -408,6 +417,8 @@ final class AutoloadSourceLocator implements SourceLocator
 				opcache_invalidate($file, true);
 			}
 
+			self::forgetTrapCompiles();
+
 			return $result;
 		} finally {
 			restore_error_handler();
@@ -465,6 +476,13 @@ final class AutoloadSourceLocator implements SourceLocator
 			return;
 		}
 
+		// get_included_files() copies every included path, and a project bootstrap includes thousands of them.
+		// Nothing can need invalidating before something got compiled, so skip it while the counters stand still.
+		$compileCounters = self::getOpcacheCompileCounters();
+		if ($compileCounters !== null && $compileCounters === self::$invalidatedOpcacheCompileCounters) {
+			return;
+		}
+
 		$includedFiles = get_included_files();
 		$includedFilesCount = count($includedFiles);
 		for ($i = self::$invalidatedIncludedFilesCount; $i < $includedFilesCount; $i++) {
@@ -472,6 +490,51 @@ final class AutoloadSourceLocator implements SourceLocator
 		}
 
 		self::$invalidatedIncludedFilesCount = $includedFilesCount;
+		self::$invalidatedOpcacheCompileCounters = $compileCounters;
+	}
+
+	/**
+	 * Called after the trap and the opcache_invalidate() loop after it. Every miss in between compiled
+	 * a script the trap served, because OPcache caches only file:// and phar:// paths and the trap
+	 * overrides both, and that loop has invalidated those scripts. They need no get_included_files()
+	 * scan before the next autoloader runs, or every class a trapped autoloader finds would cause one.
+	 * A hit in between ran a cached script for real, so it keeps the counters stale.
+	 */
+	private static function forgetTrapCompiles(): void
+	{
+		$invalidatedCounters = self::$invalidatedOpcacheCompileCounters;
+		if ($invalidatedCounters === null) {
+			return;
+		}
+
+		$compileCounters = self::getOpcacheCompileCounters();
+		if ($compileCounters === null || $compileCounters[0] !== $invalidatedCounters[0]) {
+			return;
+		}
+
+		self::$invalidatedOpcacheCompileCounters = $compileCounters;
+	}
+
+	/**
+	 * OPcache's hits and misses. A script gets into the shared memory, or runs from it, only through a
+	 * miss or a hit. They cannot tell when a script comes from opcache.file_cache, so this returns null
+	 * with one configured, as it does when the statistics are not available (opcache.restrict_api,
+	 * opcache.file_cache_only).
+	 *
+	 * @return array{int, int}|null
+	 */
+	private static function getOpcacheCompileCounters(): ?array
+	{
+		if (!function_exists('opcache_get_status') || (string) ini_get('opcache.file_cache') !== '') {
+			return null;
+		}
+
+		$status = opcache_get_status(false);
+		if (!is_array($status) || !isset($status['opcache_statistics']['hits'], $status['opcache_statistics']['misses'])) {
+			return null;
+		}
+
+		return [(int) $status['opcache_statistics']['hits'], (int) $status['opcache_statistics']['misses']];
 	}
 
 	private function silenceErrors(): void

@@ -246,12 +246,14 @@ final class RuleErrorTransformer
 			return null;
 		}
 
-		$nameResolver = new NameResolver(new Collecting(), ['replaceNodes' => false]);
-		/** @var Stmt[] $newStmts */
-		$newStmts = (new NodeTraverser(
-			$nameResolver,
-			new NewClassNamesVisitor($nameResolver->getNameContext(), $this->importNames, $this->preferSelf),
-		))->traverse($newStmts);
+		if (NewClassNamesVisitor::hasNewNames($replacingVisitor->getNewNodes())) {
+			$nameResolver = new NameResolver(new Collecting(), ['replaceNodes' => false]);
+			/** @var Stmt[] $newStmts */
+			$newStmts = (new NodeTraverser(
+				$nameResolver,
+				new NewClassNamesVisitor($nameResolver->getNameContext(), $this->importNames, $this->preferSelf),
+			))->traverse($newStmts);
+		}
 
 		$newCode = $this->getPrinter($indent)->printFormatPreserving($newStmts, $fileNodes, $parsedFile['tokens']);
 		if ($parsedFile['code'] === $newCode) {

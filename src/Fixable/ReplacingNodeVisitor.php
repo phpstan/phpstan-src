@@ -33,6 +33,9 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 
 	private int $appliedCount = 0;
 
+	/** @var list<Node> */
+	private array $newNodes = [];
+
 	private bool $failed = false;
 
 	/**
@@ -115,7 +118,19 @@ final class ReplacingNodeVisitor extends NodeVisitorAbstract
 			}
 		}
 
+		$this->newNodes[] = $newNode;
+
 		return $newNode;
+	}
+
+	/**
+	 * The nodes returned by the fixes, the rest of the file is cloned unchanged.
+	 *
+	 * @return list<Node>
+	 */
+	public function getNewNodes(): array
+	{
+		return $this->newNodes;
 	}
 
 	/**

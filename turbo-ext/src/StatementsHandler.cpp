@@ -70,6 +70,9 @@ pt_method_site pt_sh_var_tag_get_type_site;
 pt_method_site pt_sh_comment_get_text_site;
 pt_method_site pt_sh_function_get_name_site;
 pt_method_site pt_sh_stats_increment_site;
+pt_method_site pt_sh_record_variable_site;
+pt_method_site pt_sh_record_expression_site;
+pt_method_site pt_sh_emit_nodes_site;
 pt_property_site pt_sh_name_site;
 pt_property_site pt_sh_expr_site;
 pt_property_site pt_sh_var_site;
@@ -482,7 +485,7 @@ public:
 	explicit StatementsHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties, then the twin's body */
-	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, zval *staticVariableInference, bool unresolvedTemplateArguments)
+	void construct(zval *fileTypeMapper, zval *templateArgumentObserver, zval *templateArgumentResolver, zval *container, zval *staticVariableInference, zval *redundantVarTagDetector, bool unresolvedTemplateArguments, bool reportRedundantVarTag)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::fileTypeMapper, zv::Val::copyOf(zv::Ref(fileTypeMapper)));
@@ -490,7 +493,9 @@ public:
 		object.propAtWrite(slots::templateArgumentResolver, zv::Val::copyOf(zv::Ref(templateArgumentResolver)));
 		object.propAtWrite(slots::container, zv::Val::copyOf(zv::Ref(container)));
 		object.propAtWrite(slots::staticVariableInference, zv::Val::copyOf(zv::Ref(staticVariableInference)));
+		object.propAtWrite(slots::redundantVarTagDetector, zv::Val::copyOf(zv::Ref(redundantVarTagDetector)));
 		object.propAtWrite(slots::unresolvedTemplateArguments, zv::Val::boolean(unresolvedTemplateArguments));
+		object.propAtWrite(slots::reportRedundantVarTag, zv::Val::boolean(reportRedundantVarTag));
 		const char *debug = getenv("PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG");
 		object.propAtWrite(slots::debugTemplateArguments, zv::Val::boolean(debug != NULL && strcmp(debug, "1") == 0));
 	}
@@ -1154,6 +1159,16 @@ public:
 					if (UNEXPECTED(scope.isUndef())) return zv::Val();
 				}
 
+				if (reportsRedundantVarTags()) {
+					zend_long certaintyYes = pt_type_trinary_value(certainty.raw());
+					if (UNEXPECTED(certaintyYes < 0)) return zv::Val();
+					zval defines;
+					ZVAL_BOOL(&defines, certaintyYes == PT_TRI_YES);
+					zv::Args recordArgv{stmt, &nameZv, varTag, scope.raw(), &nameZv, &defines};
+					zv::Val recorded = callRedundantVarTagDetector(pt_sh_record_variable_site, PT_LC("recordvariable"), 6, recordArgv);
+					if (UNEXPECTED(recorded.isUndef())) return zv::Val();
+				}
+
 				zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope.raw()));
 				if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
 				zv::Val assignedType = tagGetType(varTag);
@@ -1192,6 +1207,11 @@ public:
 		zv::Val changedNode = pt_type_new(PT_CLASS_VAR_TAG_CHANGED_EXPRESSION_TYPE_NODE, 2, nodeArgv);
 		if (UNEXPECTED(changedNode.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, changedNode.raw(), scope, storage))) return zv::Val();
+		if (reportsRedundantVarTags()) {
+			zv::Args recordArgv{nodeScopeResolver, stmt, varTag.raw(), defaultExpr, scope};
+			zv::Val recorded = callRedundantVarTagDetector(pt_sh_record_expression_site, PT_LC("recordexpression"), 5, recordArgv);
+			if (UNEXPECTED(recorded.isUndef())) return zv::Val();
+		}
 		zv::Val defaultExprResult = pt_expression_result_storage_find(storage, defaultExpr);
 		if (UNEXPECTED(defaultExprResult.isUndef())) return zv::Val();
 		if (defaultExprResult.isNull()) return templateArgumentConstraintsCreateEmpty();
@@ -1208,8 +1228,35 @@ public:
 		return templateArgumentObserverCollectSend(OBJ_PROP_NUM(self, slots::templateArgumentObserver), declared.raw(), actual.raw());
 	}
 
+	/* Mirrors emitRedundantVarTagNodes(); the detector stays PHP - it runs
+	 * only with the opt-in parameter. false = pending exception */
+	[[nodiscard]] bool emitRedundantVarTagNodes(zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *nodeCallback) const
+	{
+		if (!reportsRedundantVarTags()) return true;
+		zv::Args argv{nodeScopeResolver, scope, storage, stmt, nodeCallback};
+		return !callRedundantVarTagDetector(pt_sh_emit_nodes_site, PT_LC("emitnodes"), 5, argv).isUndef();
+	}
+
 private:
 	zend_object *self;
+
+	/* $this->reportRedundantVarTag */
+	bool reportsRedundantVarTags() const
+	{
+		return Z_TYPE_P(OBJ_PROP_NUM(self, slots::reportRedundantVarTag)) == IS_TRUE;
+	}
+
+	/* $this->redundantVarTagDetector->$method(...$argv); UNDEF = pending
+	 * exception */
+	zv::Val callRedundantVarTagDetector(pt_method_site &site, const char *lcname, size_t len, uint32_t argc, zval *argv) const
+	{
+		zval *detector = OBJ_PROP_NUM(self, slots::redundantVarTagDetector);
+		if (UNEXPECTED(Z_TYPE_P(detector) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Typed property %s::$redundantVarTagDetector must not be accessed before initialization", ZSTR_VAL(self->ce->name));
+			return zv::Val();
+		}
+		return pt_call_method_cached(site, Z_OBJ_P(detector), lcname, len, argc, argv);
+	}
 
 	/* {{{ statement lists */
 
@@ -3541,6 +3588,13 @@ zv::Val pt_statements_handler_emit_var_tag_changed_node(zval *handler, zval *nod
 	return pt_type_call(Z_OBJ_P(handler), PT_LC("emitvartagchangednode"), 6, argv);
 }
 
+bool pt_statements_handler_emit_redundant_var_tag_nodes(zval *handler, zval *nodeScopeResolver, zval *scope, zval *storage, zval *stmt, zval *nodeCallback)
+{
+	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).emitRedundantVarTagNodes(nodeScopeResolver, scope, storage, stmt, nodeCallback);
+	zv::Args argv{nodeScopeResolver, scope, storage, stmt, nodeCallback};
+	return !pt_type_call(Z_OBJ_P(handler), PT_LC("emitredundantvartagnodes"), 5, argv).isUndef();
+}
+
 zv::Val pt_statements_handler_get_variable_mention_flow(zval *handler, zval *stmt)
 {
 	if (isNativeHandler(handler)) return StatementsHandler(Z_OBJ_P(handler)).getVariableMentionFlow(stmt);
@@ -3566,17 +3620,19 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container, *staticVariableInference;
-		bool unresolvedTemplateArguments;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		zval *fileTypeMapper, *templateArgumentObserver, *templateArgumentResolver, *container, *staticVariableInference, *redundantVarTagDetector;
+		bool unresolvedTemplateArguments, reportRedundantVarTag;
+		ZEND_PARSE_PARAMETERS_START(8, 8)
 			Z_PARAM_OBJECT(fileTypeMapper)
 			Z_PARAM_OBJECT(templateArgumentObserver)
 			Z_PARAM_OBJECT(templateArgumentResolver)
 			Z_PARAM_OBJECT(container)
 			Z_PARAM_OBJECT(staticVariableInference)
+			Z_PARAM_OBJECT(redundantVarTagDetector)
 			Z_PARAM_BOOL(unresolvedTemplateArguments)
+			Z_PARAM_BOOL(reportRedundantVarTag)
 		ZEND_PARSE_PARAMETERS_END();
-		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, staticVariableInference, unresolvedTemplateArguments);
+		StatementsHandler(Z_OBJ_P(ZEND_THIS)).construct(fileTypeMapper, templateArgumentObserver, templateArgumentResolver, container, staticVariableInference, redundantVarTagDetector, unresolvedTemplateArguments, reportRedundantVarTag);
 	});
 
 	cls.method(sigs::processNodesWithStorage, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -3687,6 +3743,18 @@ PT_MINIT_REGISTRATION(pt_register_statements_handler)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(StatementsHandler(Z_OBJ_P(ZEND_THIS)).emitVarTagChangedNode(nodeScopeResolver, scope, storage, stmt, defaultExpr, nodeCallback));
+	});
+
+	cls.method(sigs::emitRedundantVarTagNodes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *nodeScopeResolver, *scope, *storage, *stmt, *nodeCallback;
+		ZEND_PARSE_PARAMETERS_START(5, 5)
+			Z_PARAM_OBJECT(nodeScopeResolver)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(storage)
+			Z_PARAM_OBJECT(stmt)
+			Z_PARAM_ZVAL(nodeCallback)
+		ZEND_PARSE_PARAMETERS_END();
+		if (!StatementsHandler(Z_OBJ_P(ZEND_THIS)).emitRedundantVarTagNodes(nodeScopeResolver, scope, storage, stmt, nodeCallback)) RETURN_THROWS();
 	});
 
 	cls.shadow(&pt_ce_statements_handler);

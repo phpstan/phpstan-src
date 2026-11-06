@@ -89,8 +89,11 @@ final class StatementsHandler
 		private TemplateArgumentResolver $templateArgumentResolver,
 		private Container $container,
 		private StaticVariableInference $staticVariableInference,
+		private RedundantVarTagDetector $redundantVarTagDetector,
 		#[AutowiredParameter(ref: '%featureToggles.unresolvedTemplateArguments%')]
 		private bool $unresolvedTemplateArguments,
+		#[AutowiredParameter(ref: '%reportRedundantVarTag%')]
+		private bool $reportRedundantVarTag,
 	)
 	{
 		$this->debugTemplateArguments = getenv('PHPSTAN_TEMPLATE_ARGUMENTS_DEBUG') === '1';
@@ -1977,6 +1980,10 @@ final class StatementsHandler
 					$scope = $scope->addTemplateArgumentConstraints($this->templateArgumentObserver->collectSend($varTag->getType(), $originalType));
 				}
 
+				if ($this->reportRedundantVarTag) {
+					$this->redundantVarTagDetector->recordVariable($stmt, $name, $varTag, $scope, $name, $certainty->yes());
+				}
+
 				$nativeScope = $scope->doNotTreatPhpDocTypesAsCertain();
 				$scope = $scope->assignVariable(
 					$name,
@@ -2047,11 +2054,30 @@ final class StatementsHandler
 		}
 
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new VarTagChangedExpressionTypeNode($varTag, $defaultExpr), $scope, $storage);
+		if ($this->reportRedundantVarTag) {
+			$this->redundantVarTagDetector->recordExpression($nodeScopeResolver, $stmt, $varTag, $defaultExpr, $scope);
+		}
 		$defaultExprResult = $storage->findExpressionResult($defaultExpr);
 		if ($defaultExprResult === null || $nodeScopeResolver->observingTemplateArgumentFrame($defaultExprResult->getScope()) === null) {
 			return TemplateArgumentConstraints::createEmpty();
 		}
 		return $this->templateArgumentObserver->collectSend($varTag->getType(), $defaultExprResult->getType());
+	}
+
+	/**
+	 * Emits the nodes the redundant @var tag rule listens to, for the tags above
+	 * $stmt that changed nothing in any application so far - called once the
+	 * statement has been processed (see RedundantVarTagDetector).
+	 *
+	 * @param callable(Node $node, Scope $scope): void $nodeCallback
+	 */
+	public function emitRedundantVarTagNodes(NodeScopeResolver $nodeScopeResolver, MutatingScope $scope, ExpressionResultStorage $storage, Node\Stmt $stmt, callable $nodeCallback): void
+	{
+		if (!$this->reportRedundantVarTag) {
+			return;
+		}
+
+		$this->redundantVarTagDetector->emitNodes($nodeScopeResolver, $scope, $storage, $stmt, $nodeCallback);
 	}
 
 }

@@ -35,6 +35,7 @@ pt_method_site pt_vap_function_get_name_site;
 pt_method_site pt_vap_get_text_site;
 pt_method_site pt_vap_get_resolved_php_doc_site;
 pt_method_site pt_vap_var_tag_get_type_site;
+pt_method_site pt_vap_record_variable_site;
 
 /* $object->method(...$argv) of a value the twin calls a method on: the
  * engine's Error for a non-object; UNDEF = pending exception */
@@ -89,16 +90,40 @@ class VarAnnotationProcessor
 public:
 	explicit VarAnnotationProcessor(zend_object *self) : self(self) {}
 
-	/* Mirrors __construct(): the promoted property */
-	static void construct(zend_object *object, zval *fileTypeMapper)
+	/* Mirrors __construct(): the promoted properties */
+	static void construct(zend_object *object, zval *fileTypeMapper, zval *redundantVarTagDetector, bool reportRedundantVarTag)
 	{
 		pt_write_slot(object, slots::fileTypeMapper, fileTypeMapper);
+		pt_write_slot(object, slots::redundantVarTagDetector, redundantVarTagDetector);
+		zval report;
+		ZVAL_BOOL(&report, reportRedundantVarTag);
+		pt_write_slot(object, slots::reportRedundantVarTag, &report);
 	}
 
-	/* Mirrors processVarAnnotation(); the by-reference $changed as the
+	/* Mirrors processVarAnnotation(): the private applyVarTags() for a
+	 * statement's variables */
+	zv::Val processVarAnnotation(zval *scope, HashTable *variableNames, zval *node, zval *changedRef, bool *changedFlag) const
+	{
+		return applyVarTags(scope, variableNames, node, changedRef, changedFlag, false);
+	}
+
+	/* Mirrors processForeachIterateeVarAnnotation(): the private
+	 * applyVarTags() for the variable a foreach iterates, on entering the
+	 * loop body */
+	zv::Val processForeachIterateeVarAnnotation(zval *scope, zend_string *variableName, zval *node) const
+	{
+		zv::Arr names = zv::Arr::create(1);
+		names.push(zv::Val::string(variableName));
+		return applyVarTags(scope, names.table(), node, NULL, NULL, true);
+	}
+
+private:
+	zend_object *self;
+
+	/* Mirrors the private applyVarTags(); the by-reference $changed as the
 	 * caller's reference (NULL when not passed) and/or a native flag (NULL
 	 * when not wanted). The resulting scope, UNDEF = pending exception */
-	zv::Val processVarAnnotation(zval *scope, HashTable *variableNames, zval *node, zval *changedRef, bool *changedFlag) const
+	zv::Val applyVarTags(zval *scope, HashTable *variableNames, zval *node, zval *changedRef, bool *changedFlag, bool narrowedByForeach) const
 	{
 		zv::Val function = pt_mutating_scope_get_function(Z_OBJ_P(scope));
 		if (UNEXPECTED(function.isUndef())) return zv::Val();
@@ -196,7 +221,7 @@ public:
 			zval *variableName = entry.value().deref().raw();
 			zval *varTag = findKey(tags, variableName);
 			if (varTag == NULL) continue;
-			if (UNEXPECTED(!assign(result, variableName, varTag, changedRef, changedFlag))) return zv::Val();
+			if (UNEXPECTED(!assign(result, node, variableName, variableName, varTag, changedRef, changedFlag, narrowedByForeach))) return zv::Val();
 		}
 
 		if (zend_hash_num_elements(variableNames) == 1 && zend_hash_num_elements(tags) == 1) {
@@ -213,15 +238,31 @@ public:
 				} else {
 					ZVAL_DEREF(variableName);
 				}
-				if (UNEXPECTED(!assign(result, variableName, varTag, changedRef, changedFlag))) return zv::Val();
+				zval key;
+				ZVAL_LONG(&key, 0);
+				if (UNEXPECTED(!assign(result, node, &key, variableName, varTag, changedRef, changedFlag, narrowedByForeach))) return zv::Val();
 			}
 		}
 
 		return result;
 	}
 
-private:
-	zend_object *self;
+	/* if ($this->reportRedundantVarTag) {
+	 *     $this->redundantVarTagDetector->recordVariable($node, $key, $varTag,
+	 *         $scope, $variableName, true, $narrowedByForeach);
+	 * } - the detector stays PHP: it runs only with the opt-in parameter.
+	 * false = pending exception */
+	[[nodiscard]] bool recordVariable(zval *node, zval *key, zval *varTag, zv::Val &scope, zval *variableName, bool narrowedByForeach) const
+	{
+		if (Z_TYPE_P(OBJ_PROP_NUM(self, slots::reportRedundantVarTag)) != IS_TRUE) return true;
+		zval *detector = OBJ_PROP_NUM(self, slots::redundantVarTagDetector);
+		zval defines, narrowed;
+		ZVAL_TRUE(&defines);
+		ZVAL_BOOL(&narrowed, narrowedByForeach);
+		zv::Args args{node, key, varTag, scope.raw(), variableName, &defines, &narrowed};
+		zv::Val recorded = callOn(pt_vap_record_variable_site, detector, PT_LC("recordvariable"), "recordVariable", 7, args);
+		return !recorded.isUndef();
+	}
 
 	/* $reflection->getName() of a class or trait reflection */
 	static zv::Val reflectionName(zval *reflection)
@@ -233,10 +274,11 @@ private:
 		return pt_class_reflection_get_name(Z_OBJ_P(reflection));
 	}
 
-	/* $variableType = $varTag->getType(); $changed = true;
-	 * $scope = $scope->assignVariable($variableName, $variableType, new
-	 * MixedType(), TrinaryLogic::createYes()); false = pending exception */
-	[[nodiscard]] static bool assign(zv::Val &scope, zval *variableName, zval *varTag, zval *changedRef, bool *changedFlag)
+	/* $variableType = $varTag->getType(); $changed = true; the tag's
+	 * recordVariable() under $key; $scope = $scope->assignVariable(
+	 * $variableName, $variableType, new MixedType(),
+	 * TrinaryLogic::createYes()); false = pending exception */
+	[[nodiscard]] bool assign(zv::Val &scope, zval *node, zval *key, zval *variableName, zval *varTag, zval *changedRef, bool *changedFlag, bool narrowedByForeach) const
 	{
 		zv::Val variableType = callOn(pt_vap_var_tag_get_type_site, varTag, PT_LC("gettype"), "getType");
 		if (UNEXPECTED(variableType.isUndef())) return false;
@@ -247,6 +289,7 @@ private:
 			ZEND_TRY_ASSIGN_REF_TRUE(changedRef);
 			if (UNEXPECTED(EG(exception))) return false;
 		}
+		if (UNEXPECTED(!recordVariable(node, key, varTag, scope, variableName, narrowedByForeach))) return false;
 		zv::Val mixed = pt_type_new_mixed_type();
 		if (UNEXPECTED(mixed.isUndef())) return false;
 		zv::Val next;
@@ -292,6 +335,15 @@ zv::Val pt_var_annotation_processor_process_var_annotation(zval *processor, zval
 	return result;
 }
 
+zv::Val pt_var_annotation_processor_process_foreach_iteratee_var_annotation(zval *processor, zval *scope, zend_string *variableName, zval *node)
+{
+	if (EXPECTED(Z_OBJCE_P(processor) == pt_ce_var_annotation_processor)) {
+		return VarAnnotationProcessor(Z_OBJ_P(processor)).processForeachIterateeVarAnnotation(scope, variableName, node);
+	}
+	zv::Args args{scope, variableName, node};
+	return pt_type_call(Z_OBJ_P(processor), PT_LC("processforeachiterateevarannotation"), 3, args);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -307,9 +359,10 @@ PT_MINIT_REGISTRATION(pt_register_var_annotation_processor)
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter class exactly */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *fileTypeMapper;
-		if (!zp::parse<zp::Obj>(execute_data, fileTypeMapper)) RETURN_THROWS();
-		VarAnnotationProcessor::construct(Z_OBJ_P(ZEND_THIS), fileTypeMapper);
+		zval *fileTypeMapper, *redundantVarTagDetector;
+		bool reportRedundantVarTag;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Bool>(execute_data, fileTypeMapper, redundantVarTagDetector, reportRedundantVarTag)) RETURN_THROWS();
+		VarAnnotationProcessor::construct(Z_OBJ_P(ZEND_THIS), fileTypeMapper, redundantVarTagDetector, reportRedundantVarTag);
 	});
 
 	cls.method(sigs::processVarAnnotation, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -323,6 +376,17 @@ PT_MINIT_REGISTRATION(pt_register_var_annotation_processor)
 			Z_PARAM_ZVAL(changed)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(VarAnnotationProcessor(Z_OBJ_P(ZEND_THIS)).processVarAnnotation(scope, variableNames, node, changed != NULL && Z_ISREF_P(changed) ? changed : NULL, NULL));
+	});
+
+	cls.method(sigs::processForeachIterateeVarAnnotation, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *node;
+		zend_string *variableName;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_STR(variableName)
+			Z_PARAM_OBJECT(node)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(VarAnnotationProcessor(Z_OBJ_P(ZEND_THIS)).processForeachIterateeVarAnnotation(scope, variableName, node));
 	});
 
 	cls.shadow(&pt_ce_var_annotation_processor);

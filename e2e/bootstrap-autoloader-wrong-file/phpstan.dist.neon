@@ -5,6 +5,13 @@ parameters:
 	paths:
 		- test.php
 	ignoreErrors:
+		# No file exists for this name. Its lookup runs first, so the OPcache entries are already
+		# invalidated when the autoloader includes src/Widget.php for real, outside the trap.
+		-
+			message: '#^Parameter \$gadget of method BootstrapAutoloaderWrongFile\\Consumer\:\:doBar\(\) has invalid type BootstrapAutoloaderWrongFile\\Gadget\.$#'
+			identifier: class.notFound
+			count: 1
+			path: test.php
 		# The autoloader includes src/Widget.php for this name, and the file declares Widgets.
 		# The analysis must report the unknown class, not die re-including that file.
 		-

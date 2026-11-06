@@ -1910,6 +1910,7 @@ public:
 	{
 		zend_long arrayAccess = thisIsInstanceOfLiteral(PT_LC("ArrayAccess"));
 		if (UNEXPECTED(arrayAccess < 0)) return -1;
+		if (arrayAccess == PT_TRI_YES) return arrayAccess;
 		zend_long extra = isExtraOffsetAccessibleClass();
 		if (UNEXPECTED(extra < 0)) return -1;
 		return arrayAccess > extra ? arrayAccess : extra;

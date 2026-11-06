@@ -400,6 +400,32 @@ zv::Val arrayMerge(zval *a, zval *b)
 	return zv::Val(std::move(result));
 }
 
+/* array_slice($array, $offset, $length, $preserveKeys) for a non-negative
+ * $offset and $length */
+zv::Val arraySliceRange(zval *array, zend_long offset, zend_long length, bool preserveKeys)
+{
+	HashTable *source = Z_ARRVAL_P(array);
+	zend_long count = zend_hash_num_elements(source);
+	if (offset > count) offset = count;
+	if (length > count - offset) length = count - offset;
+	zv::Arr result = zv::Arr::create((uint32_t) length);
+	zend_long position = 0;
+	for (auto entry : zv::TableRef(source)) {
+		if (position >= offset + length) break;
+		if (position++ < offset) continue;
+		zval value;
+		copyArrayValue(&value, entry.value().raw());
+		if (entry.hasStringKey()) {
+			zend_hash_update(result.table(), entry.stringKey(), &value);
+		} else if (preserveKeys) {
+			zend_hash_index_update(result.table(), entry.indexKey(), &value);
+		} else {
+			zend_hash_next_index_insert_new(result.table(), &value);
+		}
+	}
+	return zv::Val(std::move(result));
+}
+
 /* $a = array_merge($a, $b) into a property slot, the untouched slot kept
  * when $b is empty and $a already is the list array_merge() would build */
 void arrayMergeInto(zval *slot, zval *b)
@@ -718,7 +744,7 @@ public:
 		for (zend_long i = 0; i < stmtCount; i++) {
 			zend_long entryCount = 0;
 			if (!finalWalk) {
-				zv::Val entry = snapshotPassEntry(state.raw(), recording);
+				zv::Val entry = snapshotPassEntry(state.raw(), recording, false);
 				if (UNEXPECTED(entry.isUndef())) return zv::Val();
 				entryCount = zval_get_long(entryOffset(entry.raw()));
 				entries.push(std::move(entry));
@@ -807,7 +833,7 @@ public:
 			if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state.raw(), storage, nodeCallback, context, false))) return zv::Val();
 		}
 		if (!finalWalk) {
-			zv::Val last = snapshotPassEntry(state.raw(), recording);
+			zv::Val last = snapshotPassEntry(state.raw(), recording, true);
 			if (UNEXPECTED(last.isUndef())) return zv::Val();
 			entries.push(std::move(last));
 			*record = passRecord(zv::Val(std::move(entries)), recording);
@@ -815,11 +841,12 @@ public:
 		return pt_statement_list_walk_state_to_result(state.raw());
 	}
 
-	/* [clone $state, $recording !== null ? $recording->count() : 0] */
-	static zv::Val snapshotPassEntry(zval *state, zval *recording)
+	/* [clone $state (full) or $this->snapshotWalkState($state),
+	 * $recording !== null ? $recording->count() : 0] */
+	static zv::Val snapshotPassEntry(zval *state, zval *recording, bool full)
 	{
-		if (recording != NULL) return snapshotEntry(state, recording);
-		zv::Val cloned = cloneObject(state);
+		if (recording != NULL) return snapshotEntry(state, recording, full);
+		zv::Val cloned = full ? cloneObject(state) : snapshotWalkState(state);
 		if (UNEXPECTED(cloned.isUndef())) return zv::Val();
 		zv::Arr pair = zv::Arr::create(2);
 		pair.push(std::move(cloned));
@@ -1714,18 +1741,26 @@ private:
 				break;
 			}
 			zend_long i = (zend_long) entry.indexKey();
-			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw());
+			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw(), false);
 			if (UNEXPECTED(snapshot.isUndef())) break;
 			entries.separate();
 			zend_hash_index_update(entries.table(), (zend_ulong) i, snapshot.raw());
 			ZVAL_UNDEF(snapshot.raw());
+			bool isLabel;
+			if (UNEXPECTED(!isInstance(entry.value().deref().raw(), PT_CLASS_LABEL_STMT, isLabel))) break;
+			if (isLabel) {
+				// the label drops the gotos landing on it from the exit
+				// points: the snapshots so far keep the lists as they were
+				state = cloneObject(state.raw());
+				if (UNEXPECTED(state.isUndef())) break;
+			}
 			if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, entry.value().deref().raw(), state.raw(), storage, recording.raw(), observationContext.raw(), true))) break;
 		}
 		pt_finally([&]() { (void) pt_node_scope_resolver_restore_node_gatherers(nodeScopeResolver, suspendedGatherers.raw()); });
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 
 		{
-			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw());
+			zv::Val snapshot = snapshotEntry(state.raw(), recording.raw(), true);
 			if (UNEXPECTED(snapshot.isUndef())) return zv::Val();
 			entries.separate();
 			zend_hash_index_update(entries.table(), (zend_ulong) stmtCount, snapshot.raw());
@@ -1812,7 +1847,7 @@ private:
 		if (UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, recording.raw(), 0, zval_get_long(entryOffset(firstEntry)), nodeCallback, storage, scope.raw()))) return zv::Val();
 		bool hasLabels;
 		if (UNEXPECTED(!containsLabels(stmtsHeld.raw(), hasLabels))) return zv::Val();
-		state = cloneObject(entryState(firstEntry));
+		state = resumeWalkState(entryState(firstEntry));
 		if (UNEXPECTED(state.isUndef())) return zv::Val();
 		{
 			zval *clonedScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
@@ -2016,7 +2051,7 @@ private:
 
 			zval *startEntry = entryAt(entries, start);
 			if (UNEXPECTED(startEntry == NULL)) return zv::Val();
-			zv::Val state = cloneObject(entryState(startEntry));
+			zv::Val state = resumeWalkState(entryState(startEntry));
 			if (UNEXPECTED(state.isUndef())) return zv::Val();
 			{
 				zval *clonedScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
@@ -2931,7 +2966,7 @@ private:
 		zend_long start = firstSiteStatementIndex.isNull() ? 0 : zval_get_long(firstSiteStatementIndex.raw());
 		zval *startEntry = entryAt(entries, start);
 		if (UNEXPECTED(startEntry == NULL)) return zv::Val();
-		zv::Val state = cloneObject(entryState(startEntry));
+		zv::Val state = resumeWalkState(entryState(startEntry));
 		if (UNEXPECTED(state.isUndef())) return zv::Val();
 		{
 			zval *clonedScope = OBJ_PROP_NUM(Z_OBJ_P(state.raw()), stateSlots::scope);
@@ -3077,10 +3112,10 @@ private:
 		return true;
 	}
 
-	/* [clone $state, $recording->count()] */
-	static zv::Val snapshotEntry(zval *state, zval *recording)
+	/* [clone $state (full) or $this->snapshotWalkState($state), $recording->count()] */
+	static zv::Val snapshotEntry(zval *state, zval *recording, bool full)
 	{
-		zv::Val cloned = cloneObject(state);
+		zv::Val cloned = full ? cloneObject(state) : snapshotWalkState(state);
 		if (UNEXPECTED(cloned.isUndef())) return zv::Val();
 		zend_long count;
 		if (UNEXPECTED(!recordingNodeCallbackCount(recording, count))) return zv::Val();
@@ -3134,21 +3169,91 @@ private:
 		return true;
 	}
 
+	/* the variable flow, exit point, throw point, impure point and
+	 * dependency lists, and the slots a snapshot counts them in */
+	static constexpr uint32_t walkStateListSlots[5] = { stateSlots::variableFlows, stateSlots::exitPoints, stateSlots::throwPoints, stateSlots::impurePoints, stateSlots::dependencies };
+	static constexpr uint32_t walkStateCountSlots[5] = { stateSlots::variableFlowCount, stateSlots::exitPointCount, stateSlots::throwPointCount, stateSlots::impurePointCount, stateSlots::dependencyCount };
+
+	/* the private snapshotWalkState(); UNDEF = pending exception */
+	static zv::Val snapshotWalkState(zval *state)
+	{
+		zend_object *stateObject = Z_OBJ_P(state);
+		zv::Val snapshot = pt_statement_list_walk_state_new(OBJ_PROP_NUM(stateObject, stateSlots::scope));
+		if (UNEXPECTED(snapshot.isUndef())) return zv::Val();
+		zend_object *snapshotObject = Z_OBJ_P(snapshot.raw());
+		ZVAL_BOOL(OBJ_PROP_NUM(snapshotObject, stateSlots::alreadyTerminated), Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE);
+		ZVAL_BOOL(OBJ_PROP_NUM(snapshotObject, stateSlots::hasYield), Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::hasYield)) == IS_TRUE);
+		zv::Ref(OBJ_PROP_NUM(snapshotObject, stateSlots::listsOf)).assign(zv::Val::copyOf(zv::Ref(state)));
+		for (int k = 0; k < 5; k++) {
+			ZVAL_LONG(OBJ_PROP_NUM(snapshotObject, walkStateCountSlots[k]), (zend_long) zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, walkStateListSlots[k]))));
+		}
+		return snapshot;
+	}
+
+	/* the private resumeWalkState(); UNDEF = pending exception */
+	static zv::Val resumeWalkState(zval *entry)
+	{
+		zend_object *entryObject = Z_OBJ_P(entry);
+		zval *lists = OBJ_PROP_NUM(entryObject, stateSlots::listsOf);
+		if (Z_TYPE_P(lists) != IS_OBJECT) return cloneObject(entry);
+
+		zv::Val held = zv::Val::copyOf(zv::Ref(lists));
+		zend_object *listsObject = Z_OBJ_P(held.raw());
+		zv::Val state = pt_statement_list_walk_state_new(OBJ_PROP_NUM(entryObject, stateSlots::scope));
+		if (UNEXPECTED(state.isUndef())) return zv::Val();
+		zend_object *stateObject = Z_OBJ_P(state.raw());
+		ZVAL_BOOL(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated), Z_TYPE_P(OBJ_PROP_NUM(entryObject, stateSlots::alreadyTerminated)) == IS_TRUE);
+		ZVAL_BOOL(OBJ_PROP_NUM(stateObject, stateSlots::hasYield), Z_TYPE_P(OBJ_PROP_NUM(entryObject, stateSlots::hasYield)) == IS_TRUE);
+		for (int k = 0; k < 5; k++) {
+			zv::Val slice = arraySliceRange(OBJ_PROP_NUM(listsObject, walkStateListSlots[k]), 0, Z_LVAL_P(OBJ_PROP_NUM(entryObject, walkStateCountSlots[k])), k == 0);
+			zv::Ref(OBJ_PROP_NUM(stateObject, walkStateListSlots[k])).assign(std::move(slice));
+		}
+		return state;
+	}
+
+	/* the private getWalkStateListCounts() */
+	static void getWalkStateListCounts(zend_object *state, zend_long counts[5])
+	{
+		bool isSnapshot = Z_TYPE_P(OBJ_PROP_NUM(state, stateSlots::listsOf)) == IS_OBJECT;
+		for (int k = 0; k < 5; k++) {
+			counts[k] = isSnapshot
+				? Z_LVAL_P(OBJ_PROP_NUM(state, walkStateCountSlots[k]))
+				: (zend_long) zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(state, walkStateListSlots[k])));
+		}
+	}
+
 	/* the private appendRecordedStatementResults() */
 	[[nodiscard]] static bool appendRecordedStatementResults(zval *state, zval *from, zval *to)
 	{
 		zend_object *stateObject = Z_OBJ_P(state);
 		zend_object *fromObject = Z_OBJ_P(from);
 		zend_object *toObject = Z_OBJ_P(to);
-		zval *toFlows = OBJ_PROP_NUM(toObject, stateSlots::variableFlows);
-		zval *fromFlows = OBJ_PROP_NUM(fromObject, stateSlots::variableFlows);
+		zend_long fromCounts[5];
+		zend_long toCounts[5];
+		getWalkStateListCounts(fromObject, fromCounts);
+		getWalkStateListCounts(toObject, toCounts);
+		zval *stateHasYield = OBJ_PROP_NUM(stateObject, stateSlots::hasYield);
+		ZVAL_BOOL(stateHasYield, Z_TYPE_P(stateHasYield) == IS_TRUE || (Z_TYPE_P(OBJ_PROP_NUM(toObject, stateSlots::hasYield)) == IS_TRUE && Z_TYPE_P(OBJ_PROP_NUM(fromObject, stateSlots::hasYield)) != IS_TRUE));
+		zval *stateTerminated = OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated);
+		ZVAL_BOOL(stateTerminated, Z_TYPE_P(stateTerminated) == IS_TRUE || (Z_TYPE_P(OBJ_PROP_NUM(toObject, stateSlots::alreadyTerminated)) == IS_TRUE && Z_TYPE_P(OBJ_PROP_NUM(fromObject, stateSlots::alreadyTerminated)) != IS_TRUE));
+		zend_long added[5];
+		for (int k = 0; k < 5; k++) {
+			added[k] = toCounts[k] > fromCounts[k] ? toCounts[k] - fromCounts[k] : 0;
+		}
+		if (Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::listsOf)) == IS_OBJECT) {
+			for (int k = 0; k < 5; k++) {
+				zval *count = OBJ_PROP_NUM(stateObject, walkStateCountSlots[k]);
+				ZVAL_LONG(count, Z_LVAL_P(count) + added[k]);
+			}
+			return true;
+		}
+
+		zval *toLists = OBJ_PROP_NUM(toObject, stateSlots::listsOf);
+		zv::Val listsHeld = zv::Val::copyOf(zv::Ref(Z_TYPE_P(toLists) == IS_OBJECT ? toLists : to));
+		zend_object *listsObject = Z_OBJ_P(listsHeld.raw());
+		zv::Val flows = arraySliceRange(OBJ_PROP_NUM(listsObject, stateSlots::variableFlows), fromCounts[0], added[0], true);
 		zval *stateFlows = OBJ_PROP_NUM(stateObject, stateSlots::variableFlows);
-		zv::Val toFlowsHeld = zv::Val::copyOf(zv::Ref(toFlows));
-		for (auto entry : zv::ArrRef(toFlowsHeld.raw())) {
-			bool exists = entry.hasStringKey()
-				? zend_hash_exists(Z_ARRVAL_P(fromFlows), entry.stringKey())
-				: zend_hash_index_exists(Z_ARRVAL_P(fromFlows), entry.indexKey());
-			if (exists) continue;
+		for (auto entry : zv::ArrRef(flows.raw())) {
 			SEPARATE_ARRAY(stateFlows);
 			Z_TRY_ADDREF_P(entry.value().raw());
 			if (entry.hasStringKey()) {
@@ -3157,15 +3262,9 @@ private:
 				zend_hash_index_update(Z_ARRVAL_P(stateFlows), entry.indexKey(), entry.value().raw());
 			}
 		}
-		zval *stateHasYield = OBJ_PROP_NUM(stateObject, stateSlots::hasYield);
-		ZVAL_BOOL(stateHasYield, Z_TYPE_P(stateHasYield) == IS_TRUE || (Z_TYPE_P(OBJ_PROP_NUM(toObject, stateSlots::hasYield)) == IS_TRUE && Z_TYPE_P(OBJ_PROP_NUM(fromObject, stateSlots::hasYield)) != IS_TRUE));
-		zval *stateTerminated = OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated);
-		ZVAL_BOOL(stateTerminated, Z_TYPE_P(stateTerminated) == IS_TRUE || (Z_TYPE_P(OBJ_PROP_NUM(toObject, stateSlots::alreadyTerminated)) == IS_TRUE && Z_TYPE_P(OBJ_PROP_NUM(fromObject, stateSlots::alreadyTerminated)) != IS_TRUE));
-		for (uint32_t pointsSlot : { stateSlots::exitPoints, stateSlots::throwPoints, stateSlots::impurePoints, stateSlots::dependencies }) {
-			zval *fromPoints = OBJ_PROP_NUM(fromObject, pointsSlot);
-			zval *toPoints = OBJ_PROP_NUM(toObject, pointsSlot);
-			zv::Val slice = arraySlice(toPoints, (zend_long) zend_hash_num_elements(Z_ARRVAL_P(fromPoints)));
-			arrayMergeInto(OBJ_PROP_NUM(stateObject, pointsSlot), slice.raw());
+		for (int k = 1; k < 5; k++) {
+			zv::Val slice = arraySliceRange(OBJ_PROP_NUM(listsObject, walkStateListSlots[k]), fromCounts[k], added[k], false);
+			arrayMergeInto(OBJ_PROP_NUM(stateObject, walkStateListSlots[k]), slice.raw());
 		}
 		return true;
 	}

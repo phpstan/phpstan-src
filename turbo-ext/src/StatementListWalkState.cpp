@@ -2,9 +2,10 @@
  * PHPStanTurbo\StatementListWalkState — native implementation of
  * PHPStan\Analyser\StatementListWalkState.
  *
- * The state StatementsHandler threads through a statement list: eight
- * public properties in the twin's declaration slots (generated
- * declarations), cloned with the standard object handlers like the twin.
+ * The state StatementsHandler threads through a statement list, or a
+ * snapshot of it: the public properties in the twin's declaration slots
+ * (generated declarations), cloned with the standard object handlers like
+ * the twin.
  * The native StatementsHandler creates it and builds its result through
  * pt_statement_list_walk_state_new() / _to_result() (support.h) and reads
  * and writes the generated slots directly; toResult() builds the native

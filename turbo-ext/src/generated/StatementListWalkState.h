@@ -17,7 +17,13 @@ inline constexpr uint32_t exitPoints = 3;
 inline constexpr uint32_t throwPoints = 4;
 inline constexpr uint32_t impurePoints = 5;
 inline constexpr uint32_t dependencies = 6;
-inline constexpr uint32_t scope = 7;
+inline constexpr uint32_t listsOf = 7;
+inline constexpr uint32_t variableFlowCount = 8;
+inline constexpr uint32_t exitPointCount = 9;
+inline constexpr uint32_t throwPointCount = 10;
+inline constexpr uint32_t impurePointCount = 11;
+inline constexpr uint32_t dependencyCount = 12;
+inline constexpr uint32_t scope = 13;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -35,6 +41,12 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("throwPoints", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("impurePoints", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("dependencies", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("listsOf", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\StatementListWalkState");
+	cls.property("variableFlowCount", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedLong, 0);
+	cls.property("exitPointCount", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedLong, 0);
+	cls.property("throwPointCount", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedLong, 0);
+	cls.property("impurePointCount", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedLong, 0);
+	cls.property("dependencyCount", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedLong, 0);
 	cls.property("scope", ZEND_ACC_PUBLIC, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\MutatingScope");
 }
 

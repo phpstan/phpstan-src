@@ -43,7 +43,6 @@ use PHPStan\Type\UnionType;
 use function array_column;
 use function array_fill_keys;
 use function array_flip;
-use function array_key_exists;
 use function array_keys;
 use function array_merge;
 use function array_slice;
@@ -54,6 +53,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function max;
 use function min;
 use function spl_object_id;
 use function sprintf;
@@ -509,7 +509,7 @@ final class StatementsHandler
 		$entries = [];
 		for ($i = 0; $i < $stmtCount; $i++) {
 			if (!$finalWalk) {
-				$entries[$i] = [clone $state, $recording !== null ? $recording->count() : 0];
+				$entries[$i] = [$this->snapshotWalkState($state), $recording !== null ? $recording->count() : 0];
 			}
 			if ($canReplay && ($i > $lastWalked || !$nodeScopeResolver->isContextSensitiveStatement($stmts[$i]))) {
 				[$recordedEntry, $offset] = $previous[0][$i];
@@ -812,7 +812,12 @@ final class StatementsHandler
 		$suspendedGatherers = $nodeScopeResolver->suspendNodeGatherers();
 		try {
 			foreach ($stmts as $i => $stmt) {
-				$entries[$i] = [clone $state, $recording->count()];
+				$entries[$i] = [$this->snapshotWalkState($state), $recording->count()];
+				if ($stmt instanceof Node\Stmt\Label) {
+					// the label drops the gotos landing on it from the exit
+					// points: the snapshots so far keep the lists as they were
+					$state = clone $state;
+				}
 				$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $observationContext, true);
 			}
 		} finally {
@@ -866,7 +871,7 @@ final class StatementsHandler
 		// their recorded effect onto the re-walked scope
 		$nodeScopeResolver->replayRecordingRange($recording, 0, $entries[$firstSiteStatementIndex][1], $nodeCallback, $storage, $scope);
 		$hasLabels = $this->containsLabels($stmts);
-		$state = clone $entries[$firstSiteStatementIndex][0];
+		$state = $this->resumeWalkState($entries[$firstSiteStatementIndex][0]);
 		$state->scope = $state->scope->withTemplateArgumentFrame($frame)->withTemplateArgumentConstraints(null);
 		for ($i = $firstSiteStatementIndex; $i < $stmtCount; $i++) {
 			[$recordedEntry, $offset] = $entries[$i];
@@ -987,7 +992,7 @@ final class StatementsHandler
 			}
 			$frame = (new TemplateArgumentFrame($parentFrame, closureSignatureBody: $parentNode, closureSignatureStmts: $stmts))->withStaticVariableTypes($siteTypes, $staticStatementIndexes, $conditionalExpressions);
 
-			$state = clone $entries[$start][0];
+			$state = $this->resumeWalkState($entries[$start][0]);
 			$state->scope = $state->scope->withTemplateArgumentFrame($frame);
 			$walkStorage = $storage->duplicate();
 			$walkRecording = new RecordingNodeCallback();
@@ -1630,7 +1635,7 @@ final class StatementsHandler
 	): TemplateArgumentFrame
 	{
 		$start = $frame->firstSiteStatementIndex() ?? 0;
-		$state = clone $entries[$start][0];
+		$state = $this->resumeWalkState($entries[$start][0]);
 		$state->scope = $state->scope->withTemplateArgumentFrame($frame);
 		// the second pass replays the observation pass's recording against the storage
 		$storage = $storage->duplicate();
@@ -1715,22 +1720,98 @@ final class StatementsHandler
 		return false;
 	}
 
-	/** Carries what the recorded walk from $from to $to added onto $state. */
+	/**
+	 * The state before the statement $state walks next. Its lists stay in
+	 * $state, which the walk only appends to afterwards: a copy of them in
+	 * every snapshot would make the snapshots of a body take space quadratic
+	 * in its length. A label rewrites the exit points - the body walk goes on
+	 * with a clone from there, and a loop pass never replays a body with
+	 * labels.
+	 */
+	private function snapshotWalkState(StatementListWalkState $state): StatementListWalkState
+	{
+		$snapshot = new StatementListWalkState($state->scope);
+		$snapshot->alreadyTerminated = $state->alreadyTerminated;
+		$snapshot->hasYield = $state->hasYield;
+		$snapshot->listsOf = $state;
+		$snapshot->variableFlowCount = count($state->variableFlows);
+		$snapshot->exitPointCount = count($state->exitPoints);
+		$snapshot->throwPointCount = count($state->throwPoints);
+		$snapshot->impurePointCount = count($state->impurePoints);
+		$snapshot->dependencyCount = count($state->dependencies);
+
+		return $snapshot;
+	}
+
+	/** A state with lists of its own to walk on from $entry. */
+	private function resumeWalkState(StatementListWalkState $entry): StatementListWalkState
+	{
+		$lists = $entry->listsOf;
+		if ($lists === null) {
+			return clone $entry;
+		}
+
+		$state = new StatementListWalkState($entry->scope);
+		$state->alreadyTerminated = $entry->alreadyTerminated;
+		$state->hasYield = $entry->hasYield;
+		$state->variableFlows = array_slice($lists->variableFlows, 0, $entry->variableFlowCount, true);
+		$state->exitPoints = array_slice($lists->exitPoints, 0, $entry->exitPointCount);
+		$state->throwPoints = array_slice($lists->throwPoints, 0, $entry->throwPointCount);
+		$state->impurePoints = array_slice($lists->impurePoints, 0, $entry->impurePointCount);
+		$state->dependencies = array_slice($lists->dependencies, 0, $entry->dependencyCount);
+
+		return $state;
+	}
+
+	/**
+	 * The lengths of the variable flow, exit point, throw point, impure point
+	 * and dependency lists of $state.
+	 *
+	 * @return array{int, int, int, int, int}
+	 */
+	private function getWalkStateListCounts(StatementListWalkState $state): array
+	{
+		if ($state->listsOf !== null) {
+			return [$state->variableFlowCount, $state->exitPointCount, $state->throwPointCount, $state->impurePointCount, $state->dependencyCount];
+		}
+
+		return [count($state->variableFlows), count($state->exitPoints), count($state->throwPoints), count($state->impurePoints), count($state->dependencies)];
+	}
+
+	/**
+	 * Carries what the recorded walk from $from to $to added onto $state. The
+	 * lists of $from are the first entries of the lists of $to. A snapshot
+	 * $state only counts the added entries in: the state holding its lists
+	 * has to receive them.
+	 */
 	private function appendRecordedStatementResults(StatementListWalkState $state, StatementListWalkState $from, StatementListWalkState $to): void
 	{
-		foreach ($to->variableFlows as $index => $flow) {
-			if (array_key_exists($index, $from->variableFlows)) {
-				continue;
-			}
-
-			$state->variableFlows[$index] = $flow;
-		}
+		[$fromFlows, $fromExitPoints, $fromThrowPoints, $fromImpurePoints, $fromDependencies] = $this->getWalkStateListCounts($from);
+		[$toFlows, $toExitPoints, $toThrowPoints, $toImpurePoints, $toDependencies] = $this->getWalkStateListCounts($to);
 		$state->hasYield = $state->hasYield || ($to->hasYield && !$from->hasYield);
 		$state->alreadyTerminated = $state->alreadyTerminated || ($to->alreadyTerminated && !$from->alreadyTerminated);
-		$state->exitPoints = array_merge($state->exitPoints, array_slice($to->exitPoints, count($from->exitPoints)));
-		$state->throwPoints = array_merge($state->throwPoints, array_slice($to->throwPoints, count($from->throwPoints)));
-		$state->impurePoints = array_merge($state->impurePoints, array_slice($to->impurePoints, count($from->impurePoints)));
-		$state->dependencies = array_merge($state->dependencies, array_slice($to->dependencies, count($from->dependencies)));
+		$addedFlows = max(0, $toFlows - $fromFlows);
+		$addedExitPoints = max(0, $toExitPoints - $fromExitPoints);
+		$addedThrowPoints = max(0, $toThrowPoints - $fromThrowPoints);
+		$addedImpurePoints = max(0, $toImpurePoints - $fromImpurePoints);
+		$addedDependencies = max(0, $toDependencies - $fromDependencies);
+		if ($state->listsOf !== null) {
+			$state->variableFlowCount += $addedFlows;
+			$state->exitPointCount += $addedExitPoints;
+			$state->throwPointCount += $addedThrowPoints;
+			$state->impurePointCount += $addedImpurePoints;
+			$state->dependencyCount += $addedDependencies;
+			return;
+		}
+
+		$lists = $to->listsOf ?? $to;
+		foreach (array_slice($lists->variableFlows, $fromFlows, $addedFlows, true) as $index => $flow) {
+			$state->variableFlows[$index] = $flow;
+		}
+		$state->exitPoints = array_merge($state->exitPoints, array_slice($lists->exitPoints, $fromExitPoints, $addedExitPoints));
+		$state->throwPoints = array_merge($state->throwPoints, array_slice($lists->throwPoints, $fromThrowPoints, $addedThrowPoints));
+		$state->impurePoints = array_merge($state->impurePoints, array_slice($lists->impurePoints, $fromImpurePoints, $addedImpurePoints));
+		$state->dependencies = array_merge($state->dependencies, array_slice($lists->dependencies, $fromDependencies, $addedDependencies));
 	}
 
 	public function getVariableMentionFlow(Node\Stmt $stmt): ?VariableFlow

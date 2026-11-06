@@ -140,6 +140,13 @@ final class TypeCombinator
 				if ($removed !== null) {
 					return $removed;
 				}
+
+				// a union removed the whole union from each of its members and none
+				// of them changed - removing the members of it one at a time cannot
+				// change one either, peeling would only repeat that work
+				if ($fromType instanceof UnionType) {
+					return $fromType;
+				}
 			}
 
 			// mixed is the top type, so removing a union from it is exactly

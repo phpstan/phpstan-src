@@ -104,6 +104,7 @@ use PHPStan\Type\VoidType;
 use Serializable;
 use Throwable;
 use function abs;
+use function array_diff_key;
 use function array_filter;
 use function array_key_exists;
 use function array_keys;
@@ -4421,18 +4422,99 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$otherScope->nativeExpressionTypes,
 		);
 
-		/** @var static */
-		return ScopeOps::scopeWith(
+		$afterExtractCall = $this->afterExtractCall && $otherScope->afterExtractCall;
+
+		// Remembered calls whose type differs between the branches may merge into
+		// exactly what the call resolves to on its own - e.g. count($a) of
+		// int<3, max> and int<0, 2> merges into int<0, max>. Such an entry adds
+		// nothing and would shadow what later narrowing of $a implies for the call,
+		// so it is not written into the merged scope at all.
+		$callCandidates = self::findMergedCallCandidates($differingExpressionKeys, $mergedExpressionTypes);
+		$scope = ScopeOps::scopeWith(
 			$this,
-			$mergedExpressionTypes,
-			$mergedNativeTypes,
+			$callCandidates === [] ? $mergedExpressionTypes : array_diff_key($mergedExpressionTypes, $callCandidates),
+			$callCandidates === [] ? $mergedNativeTypes : array_diff_key($mergedNativeTypes, $callCandidates),
 			$conditionalExpressions,
 			[],
 			[],
 			[],
 			$this->inFirstLevelStatement,
-			$this->afterExtractCall && $otherScope->afterExtractCall,
+			$afterExtractCall,
 		);
+		if ($callCandidates === []) {
+			/** @var static */
+			return $scope;
+		}
+
+		$uninformativeKeys = $scope->findUninformativeMergedCalls($callCandidates, $mergedNativeTypes);
+		if (count($uninformativeKeys) === count($callCandidates)) {
+			/** @var static */
+			return $scope;
+		}
+
+		/** @var static */
+		return ScopeOps::scopeWith(
+			$this,
+			array_diff_key($mergedExpressionTypes, $uninformativeKeys),
+			array_diff_key($mergedNativeTypes, $uninformativeKeys),
+			$conditionalExpressions,
+			[],
+			[],
+			[],
+			$this->inFirstLevelStatement,
+			$afterExtractCall,
+		);
+	}
+
+	/**
+	 * Certain merged call expressions whose type differs between the merged branches.
+	 *
+	 * @param array<string, true> $differingExpressionKeys
+	 * @param array<string, ExpressionTypeHolder> $mergedExpressionTypes
+	 * @return array<string, ExpressionTypeHolder>
+	 */
+	private static function findMergedCallCandidates(array $differingExpressionKeys, array $mergedExpressionTypes): array
+	{
+		$candidates = [];
+		foreach (array_keys($differingExpressionKeys) as $exprString) {
+			$holder = $mergedExpressionTypes[$exprString] ?? null;
+			if ($holder === null || !$holder->getCertainty()->yes()) {
+				continue;
+			}
+			$expr = $holder->getExpr();
+			if (!$expr instanceof FuncCall && !$expr instanceof MethodCall && !$expr instanceof Expr\StaticCall) {
+				continue;
+			}
+			$candidates[$exprString] = $holder;
+		}
+
+		return $candidates;
+	}
+
+	/**
+	 * Called on the merged scope without the candidates: keys of candidates whose
+	 * merged type (and native type) is exactly what the call resolves to here.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $candidates
+	 * @param array<string, ExpressionTypeHolder> $mergedNativeTypes
+	 * @return array<string, true>
+	 */
+	private function findUninformativeMergedCalls(array $candidates, array $mergedNativeTypes): array
+	{
+		$uninformativeKeys = [];
+		foreach ($candidates as $exprString => $holder) {
+			$expr = $holder->getExpr();
+			if (!$holder->getType()->equals($this->getType($expr))) {
+				continue;
+			}
+			$nativeHolder = $mergedNativeTypes[$exprString] ?? null;
+			if ($nativeHolder !== null && !$nativeHolder->getType()->equals($this->getNativeType($expr))) {
+				continue;
+			}
+			$uninformativeKeys[$exprString] = true;
+		}
+
+		return $uninformativeKeys;
 	}
 
 	/**

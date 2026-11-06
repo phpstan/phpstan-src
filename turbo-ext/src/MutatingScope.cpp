@@ -8411,15 +8411,144 @@ public:
 			return zv::Val();
 		}
 
-		return scopeWithTables(
-			Z_ARRVAL_P(mergedTypes),
-			Z_ARRVAL_P(mergedNativeTypes),
+		bool afterExtractCall = slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL) && theirAfterExtractCall;
+
+		/* merged calls no more precise than the call itself are never written
+		 * into the merged scope */
+		zv::Val callCandidates = findMergedCallCandidates(Z_ARRVAL_P(differing.raw()), Z_ARRVAL_P(mergedTypes));
+		if (UNEXPECTED(callCandidates.isUndef())) return zv::Val();
+		HashTable *candidateTable = Z_ARRVAL_P(callCandidates.raw());
+		uint32_t candidateCount = zend_hash_num_elements(candidateTable);
+		if (candidateCount == 0) {
+			return scopeWithTables(
+				Z_ARRVAL_P(mergedTypes),
+				Z_ARRVAL_P(mergedNativeTypes),
+				Z_ARRVAL_P(conditionalExpressions.raw()),
+				(HashTable *) &zend_empty_array,
+				(HashTable *) &zend_empty_array,
+				(HashTable *) &zend_empty_array,
+				slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
+				afterExtractCall);
+		}
+
+		zv::Arr withoutTypes = withoutKeys(Z_ARRVAL_P(mergedTypes), candidateTable);
+		zv::Arr withoutNativeTypes = withoutKeys(Z_ARRVAL_P(mergedNativeTypes), candidateTable);
+		zv::Val scope = scopeWithTables(
+			withoutTypes.table(),
+			withoutNativeTypes.table(),
 			Z_ARRVAL_P(conditionalExpressions.raw()),
 			(HashTable *) &zend_empty_array,
 			(HashTable *) &zend_empty_array,
 			(HashTable *) &zend_empty_array,
 			slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
-			slotBool(PT_MS_PROP_AFTER_EXTRACT_CALL) && theirAfterExtractCall);
+			afterExtractCall);
+		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+
+		zv::Val uninformativeKeys = findUninformativeMergedCalls(scope, candidateTable, Z_ARRVAL_P(mergedNativeTypes));
+		if (UNEXPECTED(uninformativeKeys.isUndef())) return zv::Val();
+		if (zend_hash_num_elements(Z_ARRVAL_P(uninformativeKeys.raw())) == candidateCount) return scope;
+
+		zv::Arr prunedTypes = withoutKeys(Z_ARRVAL_P(mergedTypes), Z_ARRVAL_P(uninformativeKeys.raw()));
+		zv::Arr prunedNativeTypes = withoutKeys(Z_ARRVAL_P(mergedNativeTypes), Z_ARRVAL_P(uninformativeKeys.raw()));
+		return scopeWithTables(
+			prunedTypes.table(),
+			prunedNativeTypes.table(),
+			Z_ARRVAL_P(conditionalExpressions.raw()),
+			(HashTable *) &zend_empty_array,
+			(HashTable *) &zend_empty_array,
+			(HashTable *) &zend_empty_array,
+			slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT),
+			afterExtractCall);
+	}
+
+	/* array_diff_key($table, $keys) */
+	static zv::Arr withoutKeys(HashTable *table, HashTable *keys)
+	{
+		zv::Arr result = zv::Arr::copyOfTable(table);
+		result.separate();
+		for (auto entry : zv::TableRef(keys)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL) {
+				zend_hash_del(result.table(), key);
+			} else {
+				zend_hash_index_del(result.table(), entry.indexKey());
+			}
+		}
+		return result;
+	}
+
+	/* private static (twin findMergedCallCandidates()): certain merged call
+	 * expressions whose type differs between the merged branches */
+	static zv::Val findMergedCallCandidates(HashTable *differingExpressionKeys, HashTable *mergedExpressionTypes)
+	{
+		static const int callClasses[] = { PT_CLASS_FUNC_CALL, PT_CLASS_METHOD_CALL, PT_CLASS_STATIC_CALL };
+		zv::Arr candidates = zv::Arr::create(0);
+		for (auto entry : zv::TableRef(differingExpressionKeys)) {
+			zend_string *key = entry.stringKeyOrNull();
+			zval *holder = key != NULL ? zend_hash_find(mergedExpressionTypes, key) : zend_hash_index_find(mergedExpressionTypes, entry.indexKey());
+			if (holder == NULL) continue;
+			zend_long certainty = holderCertainty(zv::Ref(holder));
+			if (UNEXPECTED(certainty < 0)) return zv::Val();
+			if (certainty != PT_TRI_YES) continue;
+			zv::Val expr = holderExpr(zv::Ref(holder));
+			if (UNEXPECTED(expr.isUndef())) return zv::Val();
+			bool isCall = false;
+			for (int classIdx : callClasses) {
+				if (UNEXPECTED(!isInstance(expr.ref(), classIdx, isCall))) return zv::Val();
+				if (isCall) break;
+			}
+			if (!isCall) continue;
+			candidates.separate();
+			Z_TRY_ADDREF_P(holder);
+			if (key != NULL) {
+				zend_hash_add_new(candidates.table(), key, holder);
+			} else {
+				zend_hash_index_add_new(candidates.table(), entry.indexKey(), holder);
+			}
+		}
+		return zv::Val(std::move(candidates));
+	}
+
+	/* private (twin findUninformativeMergedCalls(), called on the merged scope
+	 * without the candidates): keys of candidates whose merged type (and
+	 * native type) is exactly what the call resolves to there */
+	static zv::Val findUninformativeMergedCalls(zv::Val &scope, HashTable *candidates, HashTable *mergedNativeTypes)
+	{
+		zend_object *scopeObject = requireObject(scope, "getType");
+		if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+
+		zv::Arr uninformativeKeys = zv::Arr::create(0);
+		for (auto entry : zv::TableRef(candidates)) {
+			zv::Val expr = holderExpr(entry.value());
+			if (UNEXPECTED(expr.isUndef())) return zv::Val();
+			zv::Val type = holderType(entry.value());
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+			zv::Val freshType = pt_mutating_scope_get_type(scopeObject, expr.raw());
+			if (UNEXPECTED(freshType.isUndef())) return zv::Val();
+			bool equal = pt_call_type_equals(type.raw(), freshType.raw());
+			if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+			if (!equal) continue;
+			zend_string *key = entry.stringKeyOrNull();
+			zval *nativeHolder = key != NULL ? zend_hash_find(mergedNativeTypes, key) : zend_hash_index_find(mergedNativeTypes, entry.indexKey());
+			if (nativeHolder != NULL) {
+				zv::Val nativeType = holderType(zv::Ref(nativeHolder));
+				if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+				zv::Val freshNativeType = pt_mutating_scope_get_native_type(scopeObject, expr.raw());
+				if (UNEXPECTED(freshNativeType.isUndef())) return zv::Val();
+				bool nativeEqual = pt_call_type_equals(nativeType.raw(), freshNativeType.raw());
+				if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+				if (!nativeEqual) continue;
+			}
+			uninformativeKeys.separate();
+			zval trueZv;
+			ZVAL_TRUE(&trueZv);
+			if (key != NULL) {
+				zend_hash_add_new(uninformativeKeys.table(), key, &trueZv);
+			} else {
+				zend_hash_index_add_new(uninformativeKeys.table(), entry.indexKey(), &trueZv);
+			}
+		}
+		return zv::Val(std::move(uninformativeKeys));
 	}
 
 	/* private (twin 4476) — drops the keys of class-constant fetches that

@@ -1523,9 +1523,12 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function isOffsetAccessible(): TrinaryLogic
 	{
-		return $this->isInstanceOf(ArrayAccess::class)->or(
-			$this->isExtraOffsetAccessibleClass(),
-		);
+		$isArrayAccess = $this->isInstanceOf(ArrayAccess::class);
+		if ($isArrayAccess->yes()) {
+			return $isArrayAccess;
+		}
+
+		return $isArrayAccess->or($this->isExtraOffsetAccessibleClass());
 	}
 
 	public function isOffsetAccessLegal(): TrinaryLogic

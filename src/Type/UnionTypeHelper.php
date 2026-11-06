@@ -12,6 +12,7 @@ use PHPStan\Type\Enum\EnumCaseObjectType;
 use function count;
 use function is_float;
 use function is_nan;
+use function spl_object_id;
 use function strcasecmp;
 use function usort;
 use const PHP_INT_MIN;
@@ -31,7 +32,11 @@ final class UnionTypeHelper
 			return $types;
 		}
 
-		usort($types, static function (Type $a, Type $b): int {
+		// usort() compares a member with many others - an array shape, whose description
+		// is costly, is described once
+		$arrayDescriptions = [];
+
+		usort($types, static function (Type $a, Type $b) use (&$arrayDescriptions): int {
 			if ($a instanceof NullType) {
 				return 1;
 			} elseif ($b instanceof NullType) {
@@ -136,7 +141,10 @@ final class UnionTypeHelper
 					return 1;
 				}
 
-				return self::compareStrings($a->describe(VerbosityLevel::value()), $b->describe(VerbosityLevel::value()));
+				return self::compareStrings(
+					$arrayDescriptions[spl_object_id($a)] ??= $a->describe(VerbosityLevel::value()),
+					$arrayDescriptions[spl_object_id($b)] ??= $b->describe(VerbosityLevel::value()),
+				);
 			}
 
 			if ($a->isString()->yes() && $b->isString()->yes()) {

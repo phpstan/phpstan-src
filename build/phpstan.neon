@@ -28,12 +28,12 @@ parameters:
 	reportPossiblyNonexistentConstantArrayOffset: true
 	excludePaths:
 		- ../tests/*/data/*
+		- ../tests/bench/Warmup.php
 		- ../tests/tmp/*
 		- ../tests/vendor/*
 		- ../tests/PHPStan/Analyser/nsrt/*
 		- ../tests/PHPStan/Analyser/traits/*
 		- ../tests/notAutoloaded/*
-		- ../tests/bench/*
 		- ../tests/PHPStan/Reflection/CircularReferenceClassReflectionTest.php
 		- ../tests/PHPStan/Reflection/UnionTypesTest.php
 		- ../tests/PHPStan/Reflection/MixedTypeTest.php
@@ -90,6 +90,7 @@ parameters:
 			paths:
 				- ../src/File/FsEventsFileMonitor.php
 				- ../src/File/InotifyFileMonitor.php
+				- ../tests/bench/measure.php
 		-
 			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?::__construct#' # likely used in DIC

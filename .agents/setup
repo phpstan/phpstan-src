@@ -75,7 +75,7 @@ log "Using $(composer --version 2>/dev/null | head -1)"
 # the same lockfile. Patches are applied by cweagans/composer-patches on install.
 log "composer install (root)"
 composer install --no-interaction --no-progress
-log "composer install (tests: paratest, phpbench, phpunit)"
+log "composer install (tests: paratest, phpunit)"
 composer install --working-dir tests --no-interaction --no-progress
 
 log "setup complete"

@@ -26,6 +26,8 @@ final class ComposerPhpVersionFactory
 	public function __construct(
 		#[AutowiredParameter]
 		private array $composerAutoloaderProjectPaths,
+		#[AutowiredParameter(ref: '%featureToggles.composerPhp64Bit%')]
+		private bool $composerPhp64Bit = false,
 	)
 	{
 	}
@@ -37,14 +39,14 @@ final class ComposerPhpVersionFactory
 		// don't limit minVersion... PHPStan can analyze even PHP5
 		$this->maxVersion = new PhpVersion(PhpVersionFactory::MAX_PHP_VERSION);
 
-		// fallback to composer.json based php-version constraint
-		$composerPhpVersion = $this->getComposerRequireVersion();
-		if ($composerPhpVersion === null) {
+		// fallback to composer.json based php-version constraints
+		$composerPhpVersions = $this->getComposerRequireVersions();
+		if (count($composerPhpVersions) === 0) {
 			return;
 		}
 
 		$parser = new ComposerPhpVersionParser();
-		[$minVersion, $maxVersion] = $parser->parse($composerPhpVersion, static function (string $version, int $versionId, bool $isMaxVersion): PhpVersion {
+		[$minVersion, $maxVersion] = $parser->parse($composerPhpVersions, static function (string $version, int $versionId, bool $isMaxVersion): PhpVersion {
 			if ($isMaxVersion && $version === '6.0.0.0-dev') {
 				$versionId = min($versionId, PhpVersionFactory::MAX_PHP5_VERSION);
 			} elseif ($isMaxVersion && $version === '8.0.0.0-dev') {
@@ -83,22 +85,34 @@ final class ComposerPhpVersionFactory
 		return $this->maxVersion;
 	}
 
-	private function getComposerRequireVersion(): ?string
+	/**
+	 * Composer registers php-64bit as a virtual package carrying the very same version as php,
+	 * so a requirement on either one constrains the PHP version, and requiring both means
+	 * both constraints have to hold at once.
+	 *
+	 * @return list<string>
+	 */
+	private function getComposerRequireVersions(): array
 	{
-		$composerPhpVersion = null;
+		$packageNames = $this->composerPhp64Bit ? ['php', 'php-64bit'] : ['php'];
+		$composerPhpVersions = [];
 
 		if (count($this->composerAutoloaderProjectPaths) > 0) {
 			$composer = ComposerHelper::getComposerConfig(end($this->composerAutoloaderProjectPaths));
 			if ($composer !== null) {
-				$requiredVersion = $composer['require']['php'] ?? null;
+				foreach ($packageNames as $packageName) {
+					$requiredVersion = $composer['require'][$packageName] ?? null;
 
-				if (is_string($requiredVersion)) {
-					$composerPhpVersion = $requiredVersion;
+					if (!is_string($requiredVersion)) {
+						continue;
+					}
+
+					$composerPhpVersions[] = $requiredVersion;
 				}
 			}
 		}
 
-		return $composerPhpVersion;
+		return $composerPhpVersions;
 	}
 
 }

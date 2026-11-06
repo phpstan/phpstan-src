@@ -63,6 +63,7 @@ parametersSchema:
 		unusedVariable: bool()
 		unusedParameters: bool()
 		reuseCollectedDataRuleErrors: bool()
+		composerPhp64Bit: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()
@@ -122,6 +123,7 @@ parametersSchema:
 		buffer: int(),
 		loadLimit: schema(float(), nullable())
 	])
+	phpIntSize: schema(anyOf(8), nullable())
 	phpVersion: schema(anyOf(
 		schema(int(), min(70100), max(80699)),
 		structure([

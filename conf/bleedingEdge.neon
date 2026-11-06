@@ -34,3 +34,4 @@ parameters:
 		unusedVariable: true
 		unusedParameters: true
 		reuseCollectedDataRuleErrors: true
+		composerPhp64Bit: true

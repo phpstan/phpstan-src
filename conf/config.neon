@@ -66,6 +66,7 @@ parameters:
 		unusedVariable: false
 		unusedParameters: false
 		reuseCollectedDataRuleErrors: false
+		composerPhp64Bit: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false
@@ -120,6 +121,7 @@ parameters:
 		minimumNumberOfJobsPerProcess: 2
 		buffer: 134217728 # 128 MB
 		loadLimit: 1.0
+	phpIntSize: null
 	phpVersion: null
 	polluteScopeWithLoopInitialAssignments: true
 	polluteScopeWithAlwaysIterableForeach: true

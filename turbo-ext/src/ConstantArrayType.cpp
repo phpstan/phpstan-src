@@ -5216,9 +5216,6 @@ public:
 		bool compound;
 		if (UNEXPECTED(!isInstance(offsetType, PT_CLASS_COMPOUND_TYPE, compound))) return false;
 		if (compound) return true;
-		zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
-		if (UNEXPECTED(isConstantScalar < 0)) return false;
-		if (isConstantScalar != PT_TRI_YES) return true;
 
 		zv::Val values = pt_type_call_array(Z_OBJ_P(offsetType), PT_LC("getconstantscalarvalues"), 0, NULL);
 		if (UNEXPECTED(values.isUndef())) return false;

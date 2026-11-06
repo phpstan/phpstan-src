@@ -3318,7 +3318,7 @@ class ConstantArrayType implements Type
 	 */
 	private function isKeyIndexMiss(Type $offsetType): bool
 	{
-		if ($offsetType instanceof CompoundType || !$offsetType->isConstantScalarValue()->yes()) {
+		if ($offsetType instanceof CompoundType) {
 			return false;
 		}
 

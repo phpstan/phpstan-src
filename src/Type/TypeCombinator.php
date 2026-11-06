@@ -33,10 +33,13 @@ use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_fill;
 use function array_filter;
+use function array_flip;
+use function array_intersect_key;
 use function array_key_exists;
 use function array_key_first;
 use function array_keys;
 use function array_merge;
+use function array_search;
 use function array_slice;
 use function array_splice;
 use function array_values;
@@ -44,6 +47,9 @@ use function count;
 use function get_class;
 use function implode;
 use function in_array;
+use function ksort;
+use function serialize;
+use function sort;
 use function spl_object_id;
 use function sprintf;
 use function usort;
@@ -1691,6 +1697,29 @@ final class TypeCombinator
 	}
 
 	/**
+	 * The arrays after $i sharing a key with it, by the first key they share
+	 * in $arraysToProcessPerKey's order, then by their indexes.
+	 *
+	 * @param array<int, list<int|string>> $keysByRank
+	 * @param array<int|string, list<int>> $arraysToProcessPerKey
+	 * @return list<int>
+	 */
+	private static function getReduceArraysPartners(int $i, array $keysByRank, array $arraysToProcessPerKey): array
+	{
+		$partners = [];
+		foreach ($keysByRank[$i] as $key) {
+			foreach ($arraysToProcessPerKey[$key] as $j) {
+				if ($j <= $i || isset($partners[$j])) {
+					continue;
+				}
+				$partners[$j] = $j;
+			}
+		}
+
+		return array_values($partners);
+	}
+
+	/**
 	 * @param list<Type> $constantArrays
 	 * @return list<Type>
 	 */
@@ -1745,93 +1774,217 @@ final class TypeCombinator
 			}
 		}
 
-		$eligibleCombinations = [];
+		// The loop below visits the pairs of arrays sharing a key: by the first
+		// key they share in $arraysToProcessPerKey's order, then by their
+		// indexes. It skips the pairs whose single constant scalar values rule out
+		// a keys-superset (haveDisjointConstantScalarValues()). For arrays with the
+		// same number of keys (two or more) and the same keys holding a single
+		// constant scalar, those are the pairs differing in two or more of them, so
+		// only the pairs sharing a bucket of the values with one key left out are
+		// visited - enumerating all pairs is quadratic in the number of arrays,
+		// which dominated unions of many same-shaped arrays (bug-12671).
+		$keyRanks = array_flip(array_keys($arraysToProcessPerKey));
+		$keySets = [];
+		$keysByRank = [];
+		foreach ($arraysToProcess as $i => $arrayToProcess) {
+			$keys = [];
+			foreach ($arrayToProcess->getKeyTypes() as $keyType) {
+				$keys[$keyRanks[$keyType->getValue()]] = $keyType->getValue();
+			}
+			ksort($keys);
+			$keysByRank[$i] = array_values($keys);
+			$keySets[$i] = array_flip($keys);
+		}
 
-		foreach ($arraysToProcessPerKey as $arrays) {
-			for ($i = 0, $arraysCount = count($arrays); $i < $arraysCount - 1; $i++) {
-				for ($j = $i + 1; $j < $arraysCount; $j++) {
-					$eligibleCombinations[$arrays[$i]][$arrays[$j]] ??= 0;
-					$eligibleCombinations[$arrays[$i]][$arrays[$j]]++;
+		$bucketGroups = [];
+		$bucketPartners = [];
+		$arraysPerKeyAndGroup = [];
+		if ($preserveTaggedUnions) {
+			$buckets = [];
+			foreach ($constantScalarValues as $i => $values) {
+				if ($values === null || $values === [] || count($keysByRank[$i]) < 2) {
+					continue;
+				}
+
+				$sortedValues = [];
+				foreach ($values as $key => $value) {
+					// -0.0 === 0.0
+					$sortedValues[$keyRanks[$key]] = $value === 0.0 ? 0.0 : $value;
+				}
+				ksort($sortedValues);
+				$group = count($keysByRank[$i]) . ':' . implode(',', array_keys($sortedValues));
+				$bucketGroups[$i] = $group;
+				$sortedValues = array_values($sortedValues);
+				foreach (array_keys($sortedValues) as $leftOut) {
+					$projection = $sortedValues;
+					unset($projection[$leftOut]);
+					$buckets[$group . "\0" . $leftOut . "\0" . serialize($projection)][] = $i;
+				}
+			}
+			foreach ($buckets as $bucket) {
+				for ($a = 0, $bucketCount = count($bucket); $a < $bucketCount - 1; $a++) {
+					for ($b = $a + 1; $b < $bucketCount; $b++) {
+						$bucketPartners[$bucket[$a]][$bucket[$b]] = true;
+					}
+				}
+			}
+			foreach ($keysByRank as $i => $keys) {
+				foreach ($keys as $key) {
+					$arraysPerKeyAndGroup[$key][$bucketGroups[$i] ?? ''][] = $i;
 				}
 			}
 		}
 
-		foreach ($eligibleCombinations as $i => $other) {
-			if (!array_key_exists($i, $arraysToProcess)) {
-				continue;
+		$visitOrder = [];
+		foreach ($keysByRank as $i => $keys) {
+			foreach ($keys as $key) {
+				$arrays = $arraysToProcessPerKey[$key];
+				if ($arrays[count($arrays) - 1] !== $i) {
+					$visitOrder[$keyRanks[$key]][] = $i;
+					break;
+				}
 			}
+		}
+		ksort($visitOrder);
 
-			foreach ($other as $j => $overlappingKeysCount) {
-				if (!array_key_exists($j, $arraysToProcess)) {
+		$nullifiedConstantScalarValues = [];
+		foreach ($visitOrder as $arraysOfRank) {
+			foreach ($arraysOfRank as $i) {
+				if (!array_key_exists($i, $arraysToProcess)) {
 					continue;
 				}
 
-				// Merge two single-key arrays sharing the same key when their value
-				// types union into a single type (not a UnionType). This is lossless
-				// and prevents exponential union growth when narrowing nested
-				// ArrayDimFetch expressions on a ConstantArrayType parent (see
-				// phpstan/phpstan#14462).
-				if (
-					$preserveTaggedUnions
-					&& $overlappingKeysCount === 1
-					&& count($arraysToProcess[$i]->getKeyTypes()) === 1
-					&& count($arraysToProcess[$j]->getKeyTypes()) === 1
-				) {
-					$iValueType = $arraysToProcess[$i]->getValueTypes()[0];
-					$jValueType = $arraysToProcess[$j]->getValueTypes()[0];
-					$unionValueType = self::union($iValueType, $jValueType);
-					if (!$unionValueType instanceof UnionType) {
-						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-						$constantScalarValues[$j] = null;
-						unset($arraysToProcess[$i]);
-						continue 2;
+				$allPartnersVisited = !isset($bucketGroups[$i]) || $constantScalarValues[$i] === null;
+				if ($allPartnersVisited) {
+					$partners = self::getReduceArraysPartners($i, $keysByRank, $arraysToProcessPerKey);
+				} else {
+					// the bucket partners, the arrays not in $i's group and the
+					// arrays that lost their single constant scalar values
+					$partners = $bucketPartners[$i] ?? [];
+					foreach ($keysByRank[$i] as $key) {
+						foreach ($arraysPerKeyAndGroup[$key] as $group => $arrays) {
+							if ($group === $bucketGroups[$i]) {
+								continue;
+							}
+							foreach ($arrays as $j) {
+								if ($j <= $i) {
+									continue;
+								}
+								$partners[$j] = true;
+							}
+						}
+					}
+					foreach (array_keys($nullifiedConstantScalarValues) as $j) {
+						if ($j <= $i || array_intersect_key($keySets[$i], $keySets[$j]) === []) {
+							continue;
+						}
+						$partners[$j] = true;
+					}
+
+					$partnersByRank = [];
+					foreach (array_keys($partners) as $j) {
+						foreach ($keysByRank[$i] as $key) {
+							if (isset($keySets[$j][$key])) {
+								$partnersByRank[$keyRanks[$key]][] = $j;
+								break;
+							}
+						}
+					}
+					ksort($partnersByRank);
+					$partners = [];
+					foreach ($partnersByRank as $partnersOfRank) {
+						sort($partnersOfRank);
+						foreach ($partnersOfRank as $j) {
+							$partners[] = $j;
+						}
 					}
 				}
 
-				if (
-					$preserveTaggedUnions
-					&& self::haveDisjointConstantScalarValues(
-						$constantScalarValues[$i] ?? null,
-						$constantScalarValues[$j] ?? null,
-						count($arraysToProcess[$i]->getKeyTypes()) === count($arraysToProcess[$j]->getKeyTypes())
-							&& count($arraysToProcess[$i]->getKeyTypes()) >= 2,
-					)
-				) {
-					// neither array is a keys-superset of the other
-					continue;
-				}
+				for ($p = 0; $p < count($partners); $p++) {
+					$j = $partners[$p];
+					if (!array_key_exists($j, $arraysToProcess)) {
+						continue;
+					}
 
-				if (
-					$preserveTaggedUnions
-					&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
-					&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
-				) {
-					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-					$constantScalarValues[$j] = null;
-					unset($arraysToProcess[$i]);
-					continue 2;
-				}
+					$overlappingKeysCount = count(array_intersect_key($keySets[$i], $keySets[$j]));
 
-				if (
-					$preserveTaggedUnions
-					&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
-					&& $arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])
-				) {
-					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
-					$constantScalarValues[$i] = null;
-					unset($arraysToProcess[$j]);
-					continue 1;
-				}
+					// Merge two single-key arrays sharing the same key when their value
+					// types union into a single type (not a UnionType). This is lossless
+					// and prevents exponential union growth when narrowing nested
+					// ArrayDimFetch expressions on a ConstantArrayType parent (see
+					// phpstan/phpstan#14462).
+					if (
+						$preserveTaggedUnions
+						&& $overlappingKeysCount === 1
+						&& count($arraysToProcess[$i]->getKeyTypes()) === 1
+						&& count($arraysToProcess[$j]->getKeyTypes()) === 1
+					) {
+						$iValueType = $arraysToProcess[$i]->getValueTypes()[0];
+						$jValueType = $arraysToProcess[$j]->getValueTypes()[0];
+						$unionValueType = self::union($iValueType, $jValueType);
+						if (!$unionValueType instanceof UnionType) {
+							$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+							$constantScalarValues[$j] = null;
+							$nullifiedConstantScalarValues[$j] = true;
+							unset($arraysToProcess[$i]);
+							continue 2;
+						}
+					}
 
-				if (
-					!$preserveTaggedUnions
-					// both arrays have same keys
-					&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
-					&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
-				) {
-					$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-					unset($arraysToProcess[$i]);
-					continue 2;
+					if (
+						$preserveTaggedUnions
+						&& self::haveDisjointConstantScalarValues(
+							$constantScalarValues[$i] ?? null,
+							$constantScalarValues[$j] ?? null,
+							count($arraysToProcess[$i]->getKeyTypes()) === count($arraysToProcess[$j]->getKeyTypes())
+								&& count($arraysToProcess[$i]->getKeyTypes()) >= 2,
+						)
+					) {
+						// neither array is a keys-superset of the other
+						continue;
+					}
+
+					if (
+						$preserveTaggedUnions
+						&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
+						&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
+					) {
+						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						$constantScalarValues[$j] = null;
+						$nullifiedConstantScalarValues[$j] = true;
+						unset($arraysToProcess[$i]);
+						continue 2;
+					}
+
+					if (
+						$preserveTaggedUnions
+						&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
+						&& $arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])
+					) {
+						$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
+						$constantScalarValues[$i] = null;
+						$nullifiedConstantScalarValues[$i] = true;
+						unset($arraysToProcess[$j]);
+						if (!$allPartnersVisited) {
+							// from now on visited with every array after $j
+							$allPartners = self::getReduceArraysPartners($i, $keysByRank, $arraysToProcessPerKey);
+							$partners = array_slice($allPartners, (int) array_search($j, $allPartners, true) + 1);
+							$p = -1;
+							$allPartnersVisited = true;
+						}
+						continue 1;
+					}
+
+					if (
+						!$preserveTaggedUnions
+						// both arrays have same keys
+						&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
+						&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
+					) {
+						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						unset($arraysToProcess[$i]);
+						continue 2;
+					}
 				}
 			}
 		}

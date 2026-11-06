@@ -556,7 +556,8 @@ private:
 			if (UNEXPECTED(attributes.isUndef())) return zv::Val();
 			zv::Val accExpr = newIsset(firstVar, attributes.raw());
 			if (UNEXPECTED(accExpr.isUndef())) return zv::Val();
-			zv::Val accTypes = pt_native_closure(&subjectTypesBody, handler, chainResults, expr, firstVar, firstResult);
+			zv::Val firstTypes = pt_native_closure(&subjectTypesBody, handler, chainResults, expr, firstVar, firstResult);
+			zv::Val accTypes = memoizeSubjectTypes(firstTypes.raw());
 			zv::Val accTruthyScope = applySpecifiedTypes(afterScope, callNarrowing(accTypes.raw(), afterScope, pt_type_specifier_context_create_truthy()));
 			if (UNEXPECTED(accTruthyScope.isUndef())) return zv::Val();
 			zv::Val accFalseyScope = applySpecifiedTypes(afterScope, callNarrowing(accTypes.raw(), afterScope, pt_type_specifier_context_create_falsey()));
@@ -584,14 +585,14 @@ private:
 				ZVAL_COPY_VALUE(&conjunctionCaptures[1], nodeScopeResolver);
 				ZVAL_COPY_VALUE(&conjunctionCaptures[2], expr);
 				ZVAL_COPY_VALUE(&conjunctionCaptures[3], leftExprNode.raw());
-				zv::Val leftTypes = memoizeSubjectTypes(accTypes.raw());
-				ZVAL_COPY_VALUE(&conjunctionCaptures[4], leftTypes.raw());
+				ZVAL_COPY_VALUE(&conjunctionCaptures[4], accTypes.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[5], accTruthyScope.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[6], accFalseyScope.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[7], rightExprNode.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[8], rightTypes.raw());
 				ZVAL_COPY_VALUE(&conjunctionCaptures[9], rightFalseyScope.raw());
-				accTypes = pt_native_closure_new(&conjunctionBody, 10, conjunctionCaptures);
+				zv::Val conjunctionTypes = pt_native_closure_new(&conjunctionBody, 10, conjunctionCaptures);
+				accTypes = memoizeSubjectTypes(conjunctionTypes.raw());
 
 				zv::Args andArgv{leftExprNode.raw(), rightExprNode.raw()};
 				accExpr = pt_type_new(PT_CLASS_BOOLEAN_AND_EXPR, 2, andArgv);

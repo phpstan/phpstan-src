@@ -2882,14 +2882,25 @@ public:
 		return zv::Val::adoptString(smart_str_extract(&signature));
 	}
 
-	/* countConstantArrayValueTypes()'s callback: `use (&$constantArrayValuesCount)`
-	 * in the holder's first state slot, every ConstantArrayType's value
-	 * count added, the type traversed */
-	static void countValueTypesCallback(zval *count, zval *state1, uint32_t argc, zval *argv, zval *return_value)
+	/* countConstantArrayValueTypes()'s callback: `use (&$constantArrayValuesCount,
+	 * &$countsByType)` in the holder's two state slots. A type seen before
+	 * adds its memoized count without being traversed again; otherwise every
+	 * ConstantArrayType's value count is added, the type traversed and its
+	 * count memoized as [$type, $count] (the entry keeps the type alive, so
+	 * its object id is not reused) */
+	static void countValueTypesCallback(zval *count, zval *countsByType, uint32_t argc, zval *argv, zval *return_value)
 	{
-		(void) state1;
 		if (UNEXPECTED(!checkTraverseCallbackArguments(argc, argv))) return;
 		zval *type = &argv[0];
+		zend_ulong id = (zend_ulong) Z_OBJ_HANDLE_P(type);
+		zval *known = Z_TYPE_P(countsByType) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(countsByType), id) : NULL;
+		if (known != NULL) {
+			ZVAL_LONG(count, Z_LVAL_P(count) + Z_LVAL_P(zend_hash_index_find(Z_ARRVAL_P(known), 1)));
+			ZVAL_COPY(return_value, type);
+			return;
+		}
+
+		zend_long countBefore = Z_LVAL_P(count);
 		if (isInstance(type, pt_ce_constant_array_type)) {
 			zv::Val valueTypes = call(type, PT_LC("getvaluetypes"));
 			if (UNEXPECTED(valueTypes.isUndef())) return;
@@ -2898,6 +2909,17 @@ public:
 
 		zv::Val traversed = pt_type_call_callable(&argv[1], 1, type);
 		if (UNEXPECTED(traversed.isUndef())) return;
+
+		zv::Arr entry = zv::Arr::create(2);
+		entry.push(zv::Ref(type));
+		entry.push(zv::Val::integer(Z_LVAL_P(count) - countBefore));
+		if (Z_TYPE_P(countsByType) != IS_ARRAY) {
+			array_init(countsByType);
+		}
+		SEPARATE_ARRAY(countsByType);
+		zval entryZv = zv::Val(std::move(entry)).take();
+		zend_hash_index_update(Z_ARRVAL_P(countsByType), id, &entryZv);
+
 		traversed.intoReturnValue(return_value);
 	}
 
@@ -2905,7 +2927,11 @@ public:
 	 * exception */
 	[[nodiscard]] static zend_long countConstantArrayValueTypes(zval *types)
 	{
-		zend_long constantArrayValuesCount = 0;
+		zval count;
+		ZVAL_LONG(&count, 0);
+		zval countsByType;
+		ZVAL_EMPTY_ARRAY(&countsByType);
+		zv::Val callback;
 		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
 			/* TypeTraverser::map()'s `Type $type` parameter */
 			bool isType;
@@ -2914,15 +2940,15 @@ public:
 				zend_type_error("%s::map(): Argument #1 ($type) must be of type %s, %s given", ZSTR_VAL(pt_ce_type_traverser->name), ptcls::type, zend_zval_value_name(entry.value().raw()));
 				return -1;
 			}
-			zval count;
-			ZVAL_LONG(&count, constantArrayValuesCount);
-			zv::Val callback = pt_type_native_callback(countValueTypesCallback, &count, NULL);
-			if (UNEXPECTED(callback.isUndef())) return -1;
+			if (callback.isUndef()) {
+				callback = pt_type_native_callback(countValueTypesCallback, &count, &countsByType);
+				if (UNEXPECTED(callback.isUndef())) return -1;
+			}
 			zv::Val mapped;
 			if (UNEXPECTED(!pt_type_traverser_map(mapped.raw(), entry.value().raw(), callback.raw()))) return -1;
-			constantArrayValuesCount = Z_LVAL_P(pt_type_native_callback_state(callback.raw(), 0));
 		}
-		return constantArrayValuesCount;
+		if (callback.isUndef()) return 0;
+		return Z_LVAL_P(pt_type_native_callback_state(callback.raw(), 0));
 	}
 
 	/* {{{ reduceArrays() */
@@ -2982,22 +3008,38 @@ public:
 		PT_FAIL_IF_UNDEF(valueTypes);
 		zv::Val keyTypes = call(array, PT_LC("getkeytypes"));
 		PT_FAIL_IF_UNDEF(keyTypes);
+		/* keys written through a union offset share one value type - inspect
+		 * it once: object id => [the single value] or null */
+		zv::Arr singleValues = zv::Arr::create(0);
 		for (zv::ArrayEntry keyEntry : zv::ArrRef(keyTypes.raw())) {
 			zval *valueType = zend_hash_index_find(Z_ARRVAL_P(valueTypes.raw()), keyEntry.indexKey());
 			if (UNEXPECTED(valueType == NULL)) {
 				zend_throw_error(NULL, "Undefined array key " ZEND_ULONG_FMT, keyEntry.indexKey());
 				return zv::Val();
 			}
-			zend_long isConstantScalar = callTrinary(valueType, PT_LC("isconstantscalarvalue"));
-			PT_FAIL_IF_NEG(isConstantScalar);
-			if (isConstantScalar != PT_TRI_YES) continue;
-			zv::Val constantScalarValues = call(valueType, PT_LC("getconstantscalarvalues"));
-			PT_FAIL_IF_UNDEF(constantScalarValues);
-			if (countOf(constantScalarValues.raw()) != 1) continue;
+			zend_ulong id = (zend_ulong) Z_OBJ_HANDLE_P(valueType);
+			zval *single = zend_hash_index_find(singleValues.table(), id);
+			if (single == NULL) {
+				zv::Val singleValue = zv::Val::null();
+				zend_long isConstantScalar = callTrinary(valueType, PT_LC("isconstantscalarvalue"));
+				PT_FAIL_IF_NEG(isConstantScalar);
+				if (isConstantScalar == PT_TRI_YES) {
+					zv::Val constantScalarValues = call(valueType, PT_LC("getconstantscalarvalues"));
+					PT_FAIL_IF_UNDEF(constantScalarValues);
+					if (countOf(constantScalarValues.raw()) == 1) {
+						zv::Arr wrapped = zv::Arr::create(1);
+						wrapped.push(zv::Ref(indexOf(constantScalarValues.raw(), 0)));
+						singleValue = zv::Val(std::move(wrapped));
+					}
+				}
+				singleValues.arrRef().setIndex(id, zv::Ref(singleValue.raw()));
+				single = zend_hash_index_find(singleValues.table(), id);
+			}
+			if (Z_TYPE_P(single) == IS_NULL) continue;
 			zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
 			PT_FAIL_IF_UNDEF(keyValue);
 			zval value;
-			ZVAL_COPY(&value, indexOf(constantScalarValues.raw(), 0));
+			ZVAL_COPY(&value, indexOf(single, 0));
 			if (UNEXPECTED(!symtableSet(values.table(), keyValue.raw(), &value))) return zv::Val();
 		}
 		return zv::Val(std::move(values));

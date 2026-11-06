@@ -809,6 +809,7 @@ class ConstantArrayType implements Type
 			}
 
 			$results = [];
+			$valueResults = [];
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
 				if ($bothDefinite && $hasOffset->no() && $typeUnsealedness->yes()) {
@@ -831,12 +832,26 @@ class ConstantArrayType implements Type
 					$results[] = IsSuperTypeOfResult::createMaybe();
 				}
 
-				$otherValueType = $type->getOffsetValueType($keyType);
-				if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
-					[, $typeUnsealedValue] = $type->unsealed;
-					$otherValueType = $typeUnsealedValue;
+				// The offset value at one of $type's explicit keys depends only on
+				// the value type stored there, so keys sharing their value types on
+				// both sides (keys written through a union offset) compare them once.
+				$otherIndex = $type->getKeyIndex($keyType);
+				$valuePairKey = $otherIndex !== null
+					? spl_object_id($this->valueTypes[$i]) . ':' . spl_object_id($type->valueTypes[$otherIndex])
+					: null;
+				if ($valuePairKey !== null && array_key_exists($valuePairKey, $valueResults)) {
+					$isValueSuperType = $valueResults[$valuePairKey];
+				} else {
+					$otherValueType = $type->getOffsetValueType($keyType);
+					if ($otherValueType instanceof ErrorType && $bothDefinite && $typeUnsealedness->yes()) {
+						[, $typeUnsealedValue] = $type->unsealed;
+						$otherValueType = $typeUnsealedValue;
+					}
+					$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
+					if ($valuePairKey !== null) {
+						$valueResults[$valuePairKey] = $isValueSuperType;
+					}
 				}
-				$isValueSuperType = $this->valueTypes[$i]->isSuperTypeOf($otherValueType);
 				if ($isValueSuperType->no()) {
 					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
 				}
@@ -2579,6 +2594,18 @@ class ConstantArrayType implements Type
 		$optionalKeys = [];
 		$maxIndex = 0;
 
+		// Position $i of the result can hold any source value from $i up to
+		// $maxIndex. Both ends of that window only move forward, so the
+		// window unions are kept as a two-stack queue: $suffixUnions[$j] is
+		// the union of $types[$j..$suffixEnd] and $tailUnion the union of
+		// the values added after $suffixEnd. Each value enters the suffix
+		// unions once, which keeps this linear in the number of keys instead
+		// of unioning every window from scratch.
+		$suffixUnions = [];
+		$suffixEnd = -1;
+		$tailUnion = null;
+		$tailEnd = -1;
+
 		foreach ($types as $i => $type) {
 			$keyTypes[] = new ConstantIntegerType($i);
 
@@ -2592,7 +2619,26 @@ class ConstantArrayType implements Type
 			if ($i === $maxIndex) {
 				$valueTypes[] = $type;
 			} else {
-				$valueTypes[] = TypeCombinator::union(...array_slice($types, $i, $maxIndex - $i + 1));
+				$windowEnd = min($maxIndex, $count - 1);
+				if ($i === $windowEnd) {
+					$valueTypes[] = TypeCombinator::union($type);
+				} else {
+					if ($i > $suffixEnd) {
+						$suffixEnd = $windowEnd;
+						$suffixUnions = [$suffixEnd => $types[$suffixEnd]];
+						for ($j = $suffixEnd - 1; $j >= $i; $j--) {
+							$suffixUnions[$j] = TypeCombinator::union($types[$j], $suffixUnions[$j + 1]);
+						}
+						$tailUnion = null;
+						$tailEnd = $suffixEnd;
+					}
+					for ($j = $tailEnd + 1; $j <= $windowEnd; $j++) {
+						$tailUnion = $tailUnion === null ? $types[$j] : TypeCombinator::union($tailUnion, $types[$j]);
+					}
+					$tailEnd = $windowEnd;
+
+					$valueTypes[] = $tailUnion === null ? $suffixUnions[$i] : TypeCombinator::union($suffixUnions[$i], $tailUnion);
+				}
 				if ($maxIndex >= $count) {
 					$optionalKeys[] = $i;
 				}
@@ -3155,6 +3201,10 @@ class ConstantArrayType implements Type
 
 		$otherKeyIndexMap = $otherArray->getKeyIndexMap();
 		$processed = [];
+		// Keys written through a union offset share their value type: union
+		// each pair of value types once, which also keeps the merged keys
+		// sharing the result.
+		$mergedValues = [];
 
 		foreach ($this->keyTypes as $i => $keyType) {
 			$keyValue = $keyType->getValue();
@@ -3164,7 +3214,7 @@ class ConstantArrayType implements Type
 			if (array_key_exists($keyValue, $otherKeyIndexMap)) {
 				$j = $otherKeyIndexMap[$keyValue];
 				$otherValueType = $otherArray->valueTypes[$j];
-				$mergedValue = TypeCombinator::union($valueType, $otherValueType);
+				$mergedValue = $mergedValues[spl_object_id($valueType) . ':' . spl_object_id($otherValueType)] ??= TypeCombinator::union($valueType, $otherValueType);
 				$optional = $this->isOptionalKey($i) || $otherArray->isOptionalKey($j);
 
 				$keyTypes[] = $keyType;
@@ -3238,6 +3288,8 @@ class ConstantArrayType implements Type
 	{
 		$valueTypes = $this->valueTypes;
 		$optionalKeys = $this->optionalKeys;
+		// union each pair of value types once, see mergeWith()
+		$mergedValues = [];
 		foreach ($this->keyTypes as $i => $keyType) {
 			$otherIndex = $otherArray->getKeyIndex($keyType);
 			if ($otherIndex === null) {
@@ -3248,7 +3300,7 @@ class ConstantArrayType implements Type
 				$optionalKeys[] = $i;
 			}
 			$otherValueType = $otherArray->valueTypes[$otherIndex];
-			$valueTypes[$i] = TypeCombinator::union($valueTypes[$i], $otherValueType);
+			$valueTypes[$i] = $mergedValues[spl_object_id($valueTypes[$i]) . ':' . spl_object_id($otherValueType)] ??= TypeCombinator::union($valueTypes[$i], $otherValueType);
 		}
 
 		$optionalKeys = array_values(array_unique($optionalKeys));

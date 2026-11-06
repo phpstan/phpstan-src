@@ -3,13 +3,11 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
-use PHPStan\Collectors\CollectedData;
 use PHPStan\Dependency\RootExportedNode;
 use function usort;
 
 /**
  * @phpstan-import-type LinesToIgnore from FileAnalyserResult
- * @phpstan-import-type CollectorData from CollectedData
  * @phpstan-import-type ValueDependencies from ValueDependencyCollector
  */
 final class AnalyserResult
@@ -142,16 +140,6 @@ final class AnalyserResult
 	public function getInternalErrors(): array
 	{
 		return $this->internalErrors;
-	}
-
-	/**
-	 * Decodes what came from the result cache; getLazyCollectedData() passes it on undecoded.
-	 *
-	 * @return CollectorData
-	 */
-	public function getCollectedData(): array
-	{
-		return $this->collectedData->toArray();
 	}
 
 	public function getLazyCollectedData(): LazyCollectedData

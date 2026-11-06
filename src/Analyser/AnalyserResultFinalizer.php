@@ -199,7 +199,7 @@ final class AnalyserResultFinalizer
 				throw $e;
 			}
 
-			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $e)), [], []);
+			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($this->withUnreadableCollectedData($analyserResult, $internalErrors, $e)), [], []);
 		}
 
 		$errors = $analyserResult->getUnorderedErrors();
@@ -343,12 +343,13 @@ final class AnalyserResultFinalizer
 	}
 
 	/**
-	 * The result cache was discarded by the reader, so the run reports the failure and the collector
-	 * rules do not run; the next run analyses everything and starts a new cache.
+	 * The result cache was discarded by the reader, so the run reports the failure and no errors of the
+	 * rules on CollectedDataNode; the next run analyses everything and starts a new cache.
+	 *
+	 * @param list<InternalError> $internalErrors including the crashes of the rules that ran before the read failed
 	 */
-	private function withUnreadableCollectedData(AnalyserResult $analyserResult, Throwable $t): AnalyserResult
+	private function withUnreadableCollectedData(AnalyserResult $analyserResult, array $internalErrors, Throwable $t): AnalyserResult
 	{
-		$internalErrors = $analyserResult->getInternalErrors();
 		$internalErrors[] = new InternalError(
 			$t->getMessage(),
 			'reading the collected data from the result cache',

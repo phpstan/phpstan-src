@@ -12,6 +12,9 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Throwable;
+use function array_diff_key;
+use function array_fill_keys;
+use function array_key_exists;
 use function array_keys;
 use function array_pop;
 use function array_reverse;
@@ -88,6 +91,9 @@ final class VariableLivenessResolver
 
 	/** @var array<string, array<string, array<string, int>>> variable name => replaced slot => marker => id of the write leaving it */
 	private array $markersBySlot = [];
+
+	/** @var array<string, array<string, int>> variable name => marker => id of the write leaving it */
+	private array $markersByName = [];
 
 	/** @var array<int, true> */
 	private array $overwrittenIds = [];
@@ -264,9 +270,7 @@ final class VariableLivenessResolver
 					$this->observeOverwrite($item, $next);
 				}
 			}
-			foreach (array_keys($this->killedKeys[$id] ?? []) as $key) {
-				unset($next[$key]);
-			}
+			$next = self::withoutKeys($next, $this->killedKeys[$id] ?? []);
 			$next = $this->killOverwriteMarkers($flow->write, $next);
 			if (isset($this->overwriteMarkers[$id])) {
 				$next[$this->overwriteMarkers[$id]] = true;
@@ -532,6 +536,14 @@ final class VariableLivenessResolver
 					$this->nameKeys[$name][$key] = true;
 				}
 			}
+			// the keys of every slot, shared by all writes of the whole variable
+			// instead of copied into each of them
+			$allKeys = [];
+			foreach ($keysBySlot as $keys) {
+				$allKeys += $keys;
+			}
+			$offsetKeys = array_diff_key($allKeys, $keysBySlot['container'] ?? []);
+			$allKills = array_fill_keys(array_keys($allKeys), true);
 			foreach ($accesses as $access) {
 				$write = $access->write;
 				if ($write === null) {
@@ -540,25 +552,21 @@ final class VariableLivenessResolver
 				$id = $write->getId();
 				$offset = $write->getOffset();
 				if ($write->isOffsetWrite() && $offset !== null) {
-					$slot = self::offsetKey($offset);
-					$selectedKeys = [$slot => $keysBySlot[$slot] ?? []];
+					$keys = $keysBySlot[self::offsetKey($offset)] ?? [];
+					$kills = $write->replacesOffset();
 				} else {
-					$selectedKeys = $keysBySlot;
-					if ($write->isOffsetWrite()) {
-						unset($selectedKeys['container']);
-					}
+					$keys = $write->isOffsetWrite() ? $offsetKeys : $allKeys;
+					$kills = !$write->isOffsetWrite();
 				}
-				$kills = !$write->isOffsetWrite() || ($offset !== null && $write->replacesOffset());
-				foreach ($selectedKeys as $keys) {
-					foreach ($keys as $key => $targetId) {
-						$this->observedKeys[$id][$key] = $targetId;
-						if (!$kills) {
-							continue;
-						}
-
-						$this->killedKeys[$id][$key] = true;
-					}
+				if ($keys === []) {
+					continue;
 				}
+				$this->observedKeys[$id] = isset($this->observedKeys[$id]) ? $this->observedKeys[$id] + $keys : $keys;
+				if (!$kills) {
+					continue;
+				}
+				$killedKeys = $keys === $allKeys ? $allKills : array_fill_keys(array_keys($keys), true);
+				$this->killedKeys[$id] = isset($this->killedKeys[$id]) ? $this->killedKeys[$id] + $killedKeys : $killedKeys;
 			}
 			$this->compileOverwrites($name, $accesses);
 		}
@@ -597,6 +605,11 @@ final class VariableLivenessResolver
 		}
 
 		$this->markersBySlot[$name] = $markersBySlot;
+		$markersOfName = [];
+		foreach ($markersBySlot as $markers) {
+			$markersOfName += $markers;
+		}
+		$this->markersByName[$name] = $markersOfName;
 	}
 
 	/** The slot a write replaces: '' for the whole variable, null when it keeps the old value. */
@@ -616,7 +629,19 @@ final class VariableLivenessResolver
 	/** @param array<string, true> $next */
 	private function observeWrite(int $id, array $next): void
 	{
-		foreach ($this->observedKeys[$id] ?? [] as $key => $targetId) {
+		$observedKeys = $this->observedKeys[$id] ?? [];
+		// walk the smaller of the two sets
+		if (count($observedKeys) > count($next)) {
+			$live = [];
+			foreach (array_keys($next) as $key) {
+				if (!array_key_exists($key, $observedKeys)) {
+					continue;
+				}
+				$live[$key] = $observedKeys[$key];
+			}
+			$observedKeys = $live;
+		}
+		foreach ($observedKeys as $key => $targetId) {
 			if (!isset($next[$key])) {
 				continue;
 			}
@@ -689,23 +714,34 @@ final class VariableLivenessResolver
 		if ($slot === null) {
 			return $next;
 		}
-		foreach ($markersBySlot as $markerSlot => $markers) {
-			if ($slot !== '' && $markerSlot !== $slot) {
-				continue;
-			}
-			// walk the smaller of the two sets
-			if (count($markers) <= count($next)) {
-				foreach (array_keys($markers) as $marker) {
-					unset($next[$marker]);
-				}
-				continue;
-			}
-			foreach (array_keys($next) as $key) {
-				if (!isset($markers[$key])) {
-					continue;
-				}
+		if ($slot === '') {
+			return self::withoutKeys($next, $this->markersByName[$write->getVariableName()]);
+		}
+
+		return self::withoutKeys($next, $markersBySlot[$slot] ?? []);
+	}
+
+	/**
+	 * Walks the smaller of the two sets.
+	 *
+	 * @param array<string, true> $next
+	 * @param array<string, mixed> $keys
+	 * @return array<string, true>
+	 */
+	private static function withoutKeys(array $next, array $keys): array
+	{
+		if (count($keys) <= count($next)) {
+			foreach (array_keys($keys) as $key) {
 				unset($next[$key]);
 			}
+
+			return $next;
+		}
+		foreach (array_keys($next) as $key) {
+			if (!array_key_exists($key, $keys)) {
+				continue;
+			}
+			unset($next[$key]);
 		}
 
 		return $next;

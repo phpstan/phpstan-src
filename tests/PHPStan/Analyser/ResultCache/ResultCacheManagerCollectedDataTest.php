@@ -154,6 +154,54 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		$this->assertSame($partial, $this->cacheContentsWithoutTime());
 	}
 
+	public function testSpooledFullSaveEqualsFreshSave(): void
+	{
+		$data = $this->collectedData(['b', 'a', 'c']);
+		$data[$this->files[0]][PossiblyPureFuncCallCollector::class] = ['call in a'];
+		$this->saveFullAnalysis($data);
+		$fromArrays = $this->cacheContentsWithoutTime();
+
+		@unlink($this->cacheFilePath());
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertTrue($resultCache->isFullAnalysis());
+		$spooled = $this->spooled($data);
+		$processed = $manager->process($this->analyserResult($spooled), $resultCache, $this->nullOutput(), false, true);
+		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
+
+		$this->assertSame($fromArrays, $this->cacheContentsWithoutTime());
+		$this->assertSame($data, $this->savedCollectedData($processed));
+	}
+
+	public function testSpooledPartialSaveEqualsFreshSave(): void
+	{
+		$this->waitUntilTheFilesAreInThePast();
+		$this->saveFullAnalysis($this->collectedData(['a', 'b', 'c']));
+
+		file_put_contents($this->files[1], "<?php class Cacheb { public function m(): void {} }\n");
+		$this->waitUntilTheFilesAreInThePast();
+		$manager = $this->createManager();
+		$resultCache = $manager->restore($this->files, false, false, null, $this->nullOutput());
+		$this->assertSame([$this->files[1]], $resultCache->getFilesToAnalyse());
+
+		// the data of a file that is not re-analysed is left out, as it is from the data in memory
+		$spooled = $this->spooled([
+			$this->files[1] => [MethodWithoutImpurePointsCollector::class => ['fresh b']],
+			$this->files[2] => [MethodWithoutImpurePointsCollector::class => ['not re-analysed c']],
+		]);
+		$processed = $manager->process($this->analyserResult($spooled), $resultCache, $this->nullOutput(), false, true);
+		$this->assertSame([$this->files[1] => true], $processed->getAnalyserResult()->getLazyCollectedData()->getSpooled()?->getFiles());
+		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
+
+		$expected = $this->collectedData(['a', 'c', 'b']);
+		$expected[$this->files[1]] = [MethodWithoutImpurePointsCollector::class => ['fresh b']];
+		$this->assertSame($expected, $this->savedCollectedData($processed));
+
+		$partial = $this->cacheContentsWithoutTime();
+		$this->saveFullAnalysis($expected);
+		$this->assertSame($partial, $this->cacheContentsWithoutTime());
+	}
+
 	public function testDamagedValueDiscardsTheCacheWhenRead(): void
 	{
 		$this->saveFullAnalysis($this->collectedData(['a', 'b', 'c']));
@@ -423,12 +471,12 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	}
 
 	/**
-	 * @param CollectorData $collectedData
+	 * @param CollectorData|LazyCollectedData $collectedData
 	 * @param array<string, list<string>> $dependencies of the files that depend on others
 	 * @param list<string> $filesWithExportedNodes analysed files whose exported nodes are read now
 	 * @param list<string> $filesWithErrors
 	 */
-	private function analyserResult(array $collectedData, array $dependencies = [], array $filesWithExportedNodes = [], array $filesWithErrors = []): AnalyserResult
+	private function analyserResult(array|LazyCollectedData $collectedData, array $dependencies = [], array $filesWithExportedNodes = [], array $filesWithErrors = []): AnalyserResult
 	{
 		foreach ($this->files as $file) {
 			$dependencies[$file] ??= [];
@@ -453,7 +501,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			linesToIgnore: [],
 			unmatchedLineIgnores: [],
 			internalErrors: [],
-			collectedData: LazyCollectedData::fromArray($collectedData),
+			collectedData: $collectedData instanceof LazyCollectedData ? $collectedData : LazyCollectedData::fromArray($collectedData),
 			dependencies: $dependencies,
 			usedTraitDependencies: [],
 			valueDependencies: ['values' => [], 'dependents' => []],
@@ -530,6 +578,17 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 		$this->assertNotNull($collectedData);
 
 		return $collectedData->toArray();
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 */
+	private function spooled(array $collectedData): LazyCollectedData
+	{
+		$spool = new CollectedDataSpool($this->directory . '/collectedData.spool');
+		$spool->append($collectedData);
+
+		return new LazyCollectedData([], null, [], $spool->finish());
 	}
 
 	private function cacheFilePath(): string

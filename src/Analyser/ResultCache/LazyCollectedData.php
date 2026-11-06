@@ -7,6 +7,7 @@ use PHPStan\Collectors\CollectedData;
 use PHPStan\ShouldNotHappenException;
 use function array_diff_key;
 use function array_key_exists;
+use function array_keys;
 use function count;
 use function ksort;
 use function md5;
@@ -18,7 +19,8 @@ use const SORT_STRING;
  *
  * The cached part is an index of where each analysed file's entry sits in the cache file; the
  * fresh part is what this run's analysis produced. Until something reads it, the main process
- * holds a few bytes per file, which is all the forked workers inherit.
+ * holds a few bytes per file, which is all the forked workers inherit. A parallel analysis writes
+ * its fresh data to a CollectedDataSpool (the spooled part); other analyses keep it in memory.
  *
  * iterate() reads the data of one collector, one file at a time. toArray() reads all of it.
  *
@@ -39,8 +41,13 @@ final class LazyCollectedData
 		private array $cachedIndex,
 		private ?CollectedDataReader $cachedReader,
 		private array $fresh,
+		private ?SpooledCollectedData $spooled = null,
 	)
 	{
+		if ($spooled !== null && $spooled->isEmpty()) {
+			$this->spooled = null;
+		}
+
 		if ($cachedIndex !== [] && $cachedReader === null) {
 			throw new ShouldNotHappenException();
 		}
@@ -71,7 +78,7 @@ final class LazyCollectedData
 			$fresh[$file === $from ? $to : $file] = $data;
 		}
 
-		return new self($this->cachedIndex, $this->cachedReader, $fresh);
+		return new self($this->cachedIndex, $this->cachedReader, $fresh, $this->spooled?->withRenamedFile($from, $to));
 	}
 
 	/**
@@ -90,15 +97,20 @@ final class LazyCollectedData
 		return $this->fresh;
 	}
 
+	public function getSpooled(): ?SpooledCollectedData
+	{
+		return $this->spooled;
+	}
+
 	public function isEmpty(): bool
 	{
-		return count($this->cachedIndex) === 0 && count($this->fresh) === 0;
+		return count($this->cachedIndex) === 0 && count($this->fresh) === 0 && $this->spooled === null;
 	}
 
 	/**
 	 * The values of one collector, one analysed file at a time: the cached files in the order of the
-	 * cache file, then the fresh ones. A fresh file replaces its cached entry and comes with the fresh
-	 * ones. Holds only the file being yielded in memory.
+	 * cache file, then the spooled ones, then the fresh ones. A spooled or fresh file replaces its
+	 * cached entry. Holds only the file being yielded in memory.
 	 *
 	 * @return Generator<string, list<mixed>>
 	 */
@@ -113,6 +125,10 @@ final class LazyCollectedData
 
 				throw $e;
 			}
+		}
+
+		if ($this->spooled !== null) {
+			yield from $this->spooled->iterate($collectorType);
 		}
 
 		foreach ($this->fresh as $file => $data) {
@@ -133,7 +149,11 @@ final class LazyCollectedData
 	{
 		$hashes = [];
 		if ($this->cachedIndex !== []) {
-			$hashes = array_diff_key($this->getCollectorLocations()->getHashes($collectorType), $this->fresh);
+			$hashes = $this->withoutSpooledAndFresh($this->getCollectorLocations()->getHashes($collectorType));
+		}
+
+		if ($this->spooled !== null) {
+			$hashes = $this->spooled->getHashes($collectorType) + $hashes;
 		}
 
 		foreach ($this->fresh as $file => $data) {
@@ -167,16 +187,21 @@ final class LazyCollectedData
 	 */
 	public function toArray(): array
 	{
-		if (count($this->cachedIndex) === 0 || $this->cachedReader === null) {
-			return $this->fresh;
+		$result = [];
+		if (count($this->cachedIndex) !== 0 && $this->cachedReader !== null) {
+			try {
+				$result = $this->cachedReader->read($this->cachedIndex);
+			} catch (UnreadableCollectedDataException $e) {
+				$this->unreadableException = $e;
+
+				throw $e;
+			}
 		}
 
-		try {
-			$result = $this->cachedReader->read($this->cachedIndex);
-		} catch (UnreadableCollectedDataException $e) {
-			$this->unreadableException = $e;
-
-			throw $e;
+		if ($this->spooled !== null) {
+			foreach (array_keys($this->spooled->getFiles()) as $file) {
+				$result[$file] = $this->spooled->read($file);
+			}
 		}
 
 		foreach ($this->fresh as $file => $data) {
@@ -195,7 +220,22 @@ final class LazyCollectedData
 			return [];
 		}
 
-		return array_diff_key($this->getCollectorLocations()->getPositions($collectorType), $this->fresh);
+		return $this->withoutSpooledAndFresh($this->getCollectorLocations()->getPositions($collectorType));
+	}
+
+	/**
+	 * @template T
+	 * @param array<string, T> $cached
+	 * @return array<string, T>
+	 */
+	private function withoutSpooledAndFresh(array $cached): array
+	{
+		$cached = array_diff_key($cached, $this->fresh);
+		if ($this->spooled !== null) {
+			$cached = array_diff_key($cached, $this->spooled->getFiles());
+		}
+
+		return $cached;
 	}
 
 	/**

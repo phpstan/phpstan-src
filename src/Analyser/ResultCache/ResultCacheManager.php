@@ -1450,6 +1450,7 @@ final class ResultCacheManager
 				&& $linesToIgnore === $resultCache->getLinesToIgnore()
 				&& $unmatchedLineIgnores === $resultCache->getUnmatchedLineIgnores()
 				&& $collectedData->getFresh() === []
+				&& $collectedData->getSpooled() === null
 				&& $collectedData->getCachedIndex() === $resultCache->getCollectedData()->getCachedIndex()
 				&& $collectedDataRuleResults === $resultCache->getCollectedDataRuleResults()
 				&& $filesWithCollectedDataRuleErrors === $resultCache->getFilesWithCollectedDataRuleErrors()
@@ -1512,7 +1513,7 @@ final class ResultCacheManager
 
 		$errorsByFile = $this->mergeErrors($resultCache, $freshErrorsByFile);
 		$locallyIgnoredErrorsByFile = $this->mergeLocallyIgnoredErrors($resultCache, $freshLocallyIgnoredErrorsByFile);
-		$collectedData = $this->mergeCollectedData($resultCache, $freshCollectedData->getFresh());
+		$collectedData = $this->mergeCollectedData($resultCache, $freshCollectedData);
 		$dependencies = $this->mergeDependencies($resultCache->getDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getDependencies());
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
 		$valueDependencies = $this->mergeValueDependencies($resultCache->getValueDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getValueDependencies());
@@ -1630,26 +1631,26 @@ final class ResultCacheManager
 		return $errorsByFile;
 	}
 
-	/**
-	 * @param CollectorData $freshCollectedDataByFile
-	 */
-	private function mergeCollectedData(ResultCache $resultCache, array $freshCollectedDataByFile): LazyCollectedData
+	private function mergeCollectedData(ResultCache $resultCache, LazyCollectedData $freshCollectedData): LazyCollectedData
 	{
 		$cachedIndex = $resultCache->getCollectedData()->getCachedIndex();
+		$freshCollectedDataByFile = $freshCollectedData->getFresh();
 		$mergedFresh = [];
+		$analysedFiles = [];
 		foreach ($resultCache->getFilesToAnalyse() as $file) {
 			if (array_key_exists($file, $this->fileReplacements)) {
 				unset($cachedIndex[$file]);
 				$file = $this->fileReplacements[$file];
 			}
 			unset($cachedIndex[$file]);
+			$analysedFiles[$file] = true;
 			if (!array_key_exists($file, $freshCollectedDataByFile)) {
 				continue;
 			}
 			$mergedFresh[$file] = $freshCollectedDataByFile[$file];
 		}
 
-		return new LazyCollectedData($cachedIndex, $this->createCollectedDataReader(), $mergedFresh);
+		return new LazyCollectedData($cachedIndex, $this->createCollectedDataReader(), $mergedFresh, $freshCollectedData->getSpooled()?->only($analysedFiles));
 	}
 
 	/**
@@ -2178,13 +2179,14 @@ final class ResultCacheManager
 			}
 		}
 
-		return new LazyCollectedData($savedCollectedDataIndex, $this->createCollectedDataReader(), $collectedData->getFresh());
+		return new LazyCollectedData($savedCollectedDataIndex, $this->createCollectedDataReader(), $collectedData->getFresh(), $collectedData->getSpooled());
 	}
 
 	/**
 	 * The collected data section: the cached entries are copied byte for byte from the file they
-	 * were restored from, the fresh ones are serialized. Written in the order of the file paths, as
-	 * every other section is, so the file does not depend on which files were re-analysed.
+	 * were restored from, the spooled and fresh ones are serialized, one file at a time. Written in
+	 * the order of the file paths, as every other section is, so the file does not depend on which
+	 * files were re-analysed.
 	 *
 	 * @param resource $handle
 	 * @return array<string, array{int, int}> Where every copied entry is in the new file
@@ -2194,15 +2196,22 @@ final class ResultCacheManager
 		$transformer = $this->getPathTransformer();
 		$cachedIndex = $collectedData->getCachedIndex();
 		$fresh = $collectedData->getFresh();
-		$files = array_keys($cachedIndex + $fresh);
+		$spooled = $collectedData->getSpooled();
+		$files = array_keys($cachedIndex + $fresh + ($spooled !== null ? $spooled->getFiles() : []));
 		sort($files);
 		$this->writeToHandle($handle, $file, 'collectedData* ' . count($files) . "\n");
 
 		$sourceHandle = null;
 		$savedIndex = [];
 		foreach ($files as $analysedFile) {
+			$collectedDataPerFile = null;
 			if (array_key_exists($analysedFile, $fresh)) {
 				$collectedDataPerFile = $fresh[$analysedFile];
+			} elseif ($spooled !== null && array_key_exists($analysedFile, $spooled->getFiles())) {
+				$collectedDataPerFile = $spooled->read($analysedFile);
+			}
+
+			if ($collectedDataPerFile !== null) {
 				ksort($collectedDataPerFile);
 				foreach ($transformer->relativizeCollectedData([$analysedFile => $collectedDataPerFile]) as $relativeFile => $data) {
 					$this->writeCollectedDataEntry($handle, $file, $relativeFile, $data, $collectedDataPerFile);

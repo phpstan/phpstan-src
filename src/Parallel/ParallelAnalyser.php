@@ -9,15 +9,18 @@ use Nette\Utils\Random;
 use PHPStan\Analyser\AnalyserResult;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\InternalError;
+use PHPStan\Analyser\ResultCache\CollectedDataSpool;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Cache\ArenaCache;
+use PHPStan\Collectors\CollectedData;
 use PHPStan\Command\CommandHelper;
 use PHPStan\Command\Output;
 use PHPStan\Dependency\ExportedNodeDecoder;
 use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\CouldNotWriteFileException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\TerminationSignal;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PreForkDirectorySymbolScanner;
@@ -42,6 +45,9 @@ use function sprintf;
 use function str_contains;
 use const PHP_URL_PORT;
 
+/**
+ * @phpstan-import-type CollectorData from CollectedData
+ */
 #[AutowiredService]
 final class ParallelAnalyser
 {
@@ -59,6 +65,8 @@ final class ParallelAnalyser
 		float $processTimeout,
 		#[AutowiredParameter(ref: '%parallel.buffer%')]
 		private int $decoderBufferSize,
+		#[AutowiredParameter]
+		private string $tmpDir,
 		private ForkParallelChecker $forkParallelChecker,
 		private PreForkDirectorySymbolScanner $preForkDirectorySymbolScanner,
 		private WorkerRunner $workerRunner,
@@ -122,6 +130,9 @@ final class ParallelAnalyser
 		$internalErrors = [];
 		$internalErrorsCount = 0;
 		$collectedData = [];
+		// Editor mode renames the temporary file in the collected data later, and it analyses few
+		// files, so it keeps them in memory.
+		$spool = $tmpFile === null ? new CollectedDataSpool(sprintf('%s/collectedData.%s.spool', $this->tmpDir, Random::generate())) : null;
 		$dependencies = [];
 		$usedTraitDependencies = [];
 		$valueDependencies = ['values' => [], 'dependents' => []];
@@ -137,7 +148,7 @@ final class ParallelAnalyser
 		$useFork = $this->forkParallelChecker->isSupported();
 
 		$server = new TcpServer('127.0.0.1:0', $loop);
-		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
+		$this->processPool = new ProcessPool($server, static function () use ($deferred, &$jobs, &$internalErrors, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$spool, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$allProcessedFiles, $arenaName): void {
 			if ($arenaName !== null) {
 				ArenaCache::destroy();
 			}
@@ -161,7 +172,7 @@ final class ParallelAnalyser
 				linesToIgnore: $linesToIgnore,
 				unmatchedLineIgnores: $unmatchedLineIgnores,
 				internalErrors: $internalErrors,
-				collectedData: LazyCollectedData::fromArray($collectedData),
+				collectedData: self::finishCollectedData($collectedData, $spool),
 				dependencies: $internalErrorsCount === 0 ? $dependencies : null,
 				usedTraitDependencies: $internalErrorsCount === 0 ? $usedTraitDependencies : null,
 				valueDependencies: $internalErrorsCount === 0 ? $valueDependencies : null,
@@ -288,7 +299,7 @@ final class ParallelAnalyser
 				$insteadOfFile,
 				$input,
 			);
-			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
+			$process->start(function (array $json) use ($process, &$internalErrors, &$errors, &$filteredPhpErrors, &$allPhpErrors, &$locallyIgnoredErrors, &$linesToIgnore, &$unmatchedLineIgnores, &$collectedData, &$spool, &$dependencies, &$usedTraitDependencies, &$valueDependencies, &$packageDependencies, &$exportedNodes, &$peakMemoryUsages, &$jobs, $postFileCallback, &$internalErrorsCount, &$reachedInternalErrorsCountLimit, $processIdentifier, $onFileAnalysisHandler, &$allProcessedFiles): void {
 				$fileErrors = [];
 				foreach ($json['errors'] as $jsonError) {
 					$fileErrors[] = Error::decode($jsonError);
@@ -320,6 +331,17 @@ final class ParallelAnalyser
 
 				foreach ($locallyIgnoredFileErrors as $locallyIgnoredFileError) {
 					$locallyIgnoredErrors[] = $locallyIgnoredFileError;
+				}
+
+				if ($spool !== null) {
+					try {
+						$spool->append($json['collectedData']);
+						$json['collectedData'] = [];
+					} catch (CouldNotWriteFileException) {
+						// the disk is full or the tmpDir is not writable: keep all of it in memory, as without the spool
+						$collectedData = $spool->toArray();
+						$spool = null;
+					}
 				}
 
 				foreach ($json['collectedData'] as $file => $jsonDataByCollector) {
@@ -480,6 +502,22 @@ final class ParallelAnalyser
 		}
 
 		return $deferred->promise();
+	}
+
+	/**
+	 * @param CollectorData $collectedData
+	 */
+	private static function finishCollectedData(array $collectedData, ?CollectedDataSpool $spool): LazyCollectedData
+	{
+		if ($spool === null) {
+			return LazyCollectedData::fromArray($collectedData);
+		}
+
+		try {
+			return new LazyCollectedData([], null, $collectedData, $spool->finish());
+		} catch (CouldNotWriteFileException) {
+			return LazyCollectedData::fromArray($spool->toArray());
+		}
 	}
 
 	/**

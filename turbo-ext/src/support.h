@@ -2991,7 +2991,7 @@ zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval
 [[nodiscard]] bool pt_node_scope_resolver_is_returning_stored_expression_results(zval *nodeScopeResolver, bool &out);
 /* MutatingScope.cpp — $scope->pushInFunctionCall($reflection, $parameter,
  * $rememberTypes) ($reflection / $parameter IS_NULL for null) /
- * ->popInFunctionCall() / ->withClosureBindScopeClasses($classes) /
+ * ->popInFunctionCall() / ->withClosureBindScopeClasses($classes) / ->withoutThis() /
  * ->restoreThis($scope) / ->getIterableValueType($type) /
  * ->getIterableKeyType($type): the native body
  * for a MutatingScope (or a subclass inheriting the method), the method by
@@ -2999,6 +2999,7 @@ zv::Val pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(zval
 zv::Val pt_mutating_scope_push_in_function_call(zend_object *scope, zval *reflection, zval *parameter, bool rememberTypes);
 zv::Val pt_mutating_scope_pop_in_function_call(zend_object *scope);
 zv::Val pt_mutating_scope_with_closure_bind_scope_classes(zend_object *scope, zval *scopeClasses);
+zv::Val pt_mutating_scope_without_this(zend_object *scope);
 zv::Val pt_mutating_scope_restore_this(zend_object *scope, zval *restoreThisScope);
 zv::Val pt_mutating_scope_get_iterable_value_type(zend_object *scope, zval *type);
 zv::Val pt_mutating_scope_get_iterable_key_type(zend_object *scope, zval *type);

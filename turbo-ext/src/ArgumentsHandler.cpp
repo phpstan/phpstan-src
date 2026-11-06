@@ -1852,15 +1852,44 @@ private:
 						zend_throw_error(NULL, "Call to a member function assignVariable() on %s", zend_zval_value_name(a.scopeToPass.raw()));
 						return false;
 					}
-					zv::Val objectWithoutClassType = pt_type_new_object_without_class_type();
-					if (UNEXPECTED(objectWithoutClassType.isUndef())) return false;
-					zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(a.scopeToPass.raw()), pt_ah_this, closureThisType.raw(), objectWithoutClassType.raw(), pt_trinary_singleton(PT_TRI_YES));
-					if (UNEXPECTED(assigned.isUndef())) return false;
-					zv::Val classNames = pt_type_op(Z_OBJ_P(closureThisType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
-					if (UNEXPECTED(classNames.isUndef())) return false;
-					zv::Val bound = pt_mutating_scope_with_closure_bind_scope_classes(Z_OBJ_P(assigned.raw()), classNames.raw());
-					if (UNEXPECTED(bound.isUndef())) return false;
-					a.scopeToPass = std::move(bound);
+					/* the closure branch (the only caller passing restoreThisScope)
+					 * honours a nullable / null $this binding; the arrow-function
+					 * branch binds it unconditionally */
+					zend_long isNull = PT_TRI_NO;
+					if (restoreThisScope != NULL) {
+						isNull = pt_type_op_trinary(Z_OBJ_P(closureThisType.raw()), PT_OP_IS_NULL, 0, NULL);
+						if (UNEXPECTED(isNull < 0)) return false;
+					}
+					if (isNull == PT_TRI_YES) {
+						zv::Val withoutThis = pt_mutating_scope_without_this(Z_OBJ_P(a.scopeToPass.raw()));
+						if (UNEXPECTED(withoutThis.isUndef())) return false;
+						if (UNEXPECTED(Z_TYPE_P(withoutThis.raw()) != IS_OBJECT)) {
+							zend_throw_error(NULL, "Call to a member function withClosureBindScopeClasses() on %s", zend_zval_value_name(withoutThis.raw()));
+							return false;
+						}
+						zval noClassesZv;
+						ZVAL_EMPTY_ARRAY(&noClassesZv);
+						zv::Val bound = pt_mutating_scope_with_closure_bind_scope_classes(Z_OBJ_P(withoutThis.raw()), &noClassesZv);
+						if (UNEXPECTED(bound.isUndef())) return false;
+						a.scopeToPass = std::move(bound);
+					} else {
+						zv::Val objectThisType;
+						if (isNull == PT_TRI_MAYBE) {
+							objectThisType = pt_type_combinator_remove_null(closureThisType.raw());
+							if (UNEXPECTED(objectThisType.isUndef())) return false;
+						} else {
+							objectThisType = zv::Val::copyOf(closureThisType.ref());
+						}
+						zv::Val objectWithoutClassType = pt_type_new_object_without_class_type();
+						if (UNEXPECTED(objectWithoutClassType.isUndef())) return false;
+						zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(a.scopeToPass.raw()), pt_ah_this, objectThisType.raw(), objectWithoutClassType.raw(), pt_trinary_singleton(isNull == PT_TRI_MAYBE ? PT_TRI_MAYBE : PT_TRI_YES));
+						if (UNEXPECTED(assigned.isUndef())) return false;
+						zv::Val classNames = pt_type_op(Z_OBJ_P(objectThisType.raw()), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
+						if (UNEXPECTED(classNames.isUndef())) return false;
+						zv::Val bound = pt_mutating_scope_with_closure_bind_scope_classes(Z_OBJ_P(assigned.raw()), classNames.raw());
+						if (UNEXPECTED(bound.isUndef())) return false;
+						a.scopeToPass = std::move(bound);
+					}
 				}
 			}
 		}

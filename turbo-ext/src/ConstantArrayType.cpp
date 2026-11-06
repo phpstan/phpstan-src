@@ -1798,6 +1798,17 @@ public:
 				/* $this is unsealed with no known keys — fall through to extras/unsealed-part checks below */
 			}
 
+			/* Two sealed shapes where one has a required key the other lacks
+			 * share no value. The loops below would reach the same answer,
+			 * but only after comparing the value of every key that precedes
+			 * the missing one. */
+			if (thisUnsealedness == PT_TRI_NO && typeUnsealedness == PT_TRI_NO) {
+				bool missing;
+				if (UNEXPECTED(!hasRequiredKeyMissingIn(Z_OBJ_P(type), missing))) return zv::Val();
+				if (!missing && UNEXPECTED(!ConstantArrayType(Z_OBJ_P(type)).hasRequiredKeyMissingIn(self, missing))) return zv::Val();
+				if (missing) return sealedShapesNo(type);
+			}
+
 			zv::Arr results = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(k)) + 4);
 			for (zv::ArrayEntry entry : zv::ArrRef(k)) {
 				zend_long i = (zend_long) entry.indexKey();
@@ -2459,8 +2470,9 @@ public:
 		}
 
 		/* Constant offsets against constant keys resolve by value: a hit at
-		 * the indexed slot is verified before use, a miss falls through to
-		 * the scan (which also covers the unsealed extras below). */
+		 * the indexed slot is verified before use, an offset no key's value
+		 * collides with skips the scan, any other miss falls through to it
+		 * (the unsealed extras below are checked either way). */
 		NullableLong index;
 		if (UNEXPECTED(!findVerifiedKeyIndex(offsetType, index))) return -1;
 		if (!index.isNull) {
@@ -2468,11 +2480,14 @@ public:
 			if (UNEXPECTED(!thisIsOptionalKey(index.value, optional))) return -1;
 			return optional ? PT_TRI_MAYBE : PT_TRI_YES;
 		}
+		bool keyIndexMiss;
+		if (UNEXPECTED(!isKeyIndexMiss(offsetType, keyIndexMiss))) return -1;
 
 		zend_long result = PT_TRI_NO;
 		zval *k = keyTypes();
 		if (UNEXPECTED(k == NULL)) return -1;
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
+			if (keyIndexMiss) break;
 			zend_long i = (zend_long) entry.indexKey();
 			zval *keyType = entry.value().deref().raw();
 			/* PHP coerces decimal-integer strings to int when used as array
@@ -2571,7 +2586,17 @@ public:
 		zv::Arr matchingValueTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(k)) + 1);
 		bool all = true;
 		bool maybeAll = true;
+		bool keyIndexMiss = false;
+		if (arrayCount(k) > 0 && UNEXPECTED(!isKeyIndexMiss(offsetType.raw(), keyIndexMiss))) return zv::Val();
+		if (keyIndexMiss) {
+			/* What the scan below concludes for an offset no key's value
+			 * collides with: every key misses it, and a constant offset
+			 * cannot be a decimal-integer string hitting an integer key. */
+			all = false;
+			maybeAll = false;
+		}
 		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
+			if (keyIndexMiss) break;
 			zend_long i = (zend_long) entry.indexKey();
 			zval *keyType = entry.value().deref().raw();
 			zend_long covers = isSuperTypeOfValue(keyType, offsetType.raw());
@@ -5176,6 +5201,58 @@ public:
 		if (UNEXPECTED(covers < 0)) return false;
 		if (covers == PT_TRI_YES) {
 			out = NullableLong::of(Z_LVAL_P(found));
+		}
+		return true;
+	}
+
+	/* private: whether a constant integer or string offset (already passed
+	 * through toArrayKey()) has a value no explicit key's value collides
+	 * with as an array key - then no explicit key is a supertype of it; a
+	 * CompoundType offset (a template, an intersection) is left to the scan,
+	 * its isSubTypeOf() may answer maybe; false = pending exception */
+	[[nodiscard]] bool isKeyIndexMiss(zval *offsetType, bool &out) const
+	{
+		out = false;
+		bool compound;
+		if (UNEXPECTED(!isInstance(offsetType, PT_CLASS_COMPOUND_TYPE, compound))) return false;
+		if (compound) return true;
+		zend_long isConstantScalar = pt_type_op_trinary(Z_OBJ_P(offsetType), PT_OP_IS_CONSTANT_SCALAR_VALUE, 0, NULL);
+		if (UNEXPECTED(isConstantScalar < 0)) return false;
+		if (isConstantScalar != PT_TRI_YES) return true;
+
+		zv::Val values = pt_type_call_array(Z_OBJ_P(offsetType), PT_LC("getconstantscalarvalues"), 0, NULL);
+		if (UNEXPECTED(values.isUndef())) return false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(values.raw())) != 1) return true;
+		/* $values[0], an int or a string */
+		zval *value = zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0);
+		if (value == NULL) return true;
+		ZVAL_DEREF(value);
+		if (Z_TYPE_P(value) != IS_LONG && Z_TYPE_P(value) != IS_STRING) return true;
+
+		zv::Val map = getKeyIndexMap();
+		if (UNEXPECTED(map.isUndef())) return false;
+		out = mapFind(Z_ARRVAL_P(map.raw()), value) == NULL;
+		return true;
+	}
+
+	/* private: whether a required key of this shape is a key index miss of
+	 * the other shape; false = pending exception */
+	[[nodiscard]] bool hasRequiredKeyMissingIn(zend_object *other, bool &out) const
+	{
+		out = false;
+		zval *k = keyTypes();
+		if (UNEXPECTED(k == NULL)) return false;
+		ConstantArrayType otherArray(other);
+		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
+			bool optional;
+			if (UNEXPECTED(!thisIsOptionalKey((zend_long) entry.indexKey(), optional))) return false;
+			if (optional) continue;
+			bool miss;
+			if (UNEXPECTED(!otherArray.isKeyIndexMiss(entry.value().deref().raw(), miss))) return false;
+			if (miss) {
+				out = true;
+				return true;
+			}
 		}
 		return true;
 	}

@@ -797,6 +797,17 @@ class ConstantArrayType implements Type
 				// $this is unsealed with no known keys — fall through to extras/unsealed-part checks below
 			}
 
+			// Two sealed shapes where one has a required key the other lacks share
+			// no value. The loops below would reach the same answer, but only after
+			// comparing the value of every key that precedes the missing one.
+			if (
+				$thisUnsealedness->no()
+				&& $typeUnsealedness->no()
+				&& ($this->hasRequiredKeyMissingIn($type) || $type->hasRequiredKeyMissingIn($this))
+			) {
+				return IsSuperTypeOfResult::createNo(lazyReasons: [fn (): string => $this->sealedArrayShapesCannotBeIntersectedReason($type)]);
+			}
+
 			$results = [];
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
@@ -1228,8 +1239,9 @@ class ConstantArrayType implements Type
 		}
 
 		// Constant offsets against constant keys resolve by value: a hit at the
-		// indexed slot is verified before use, a miss falls through to the scan
-		// (which also covers the unsealed extras below).
+		// indexed slot is verified before use, an offset no key's value collides
+		// with skips the scan, any other miss falls through to it (the unsealed
+		// extras below are checked either way).
 		$index = $this->findVerifiedKeyIndex($offsetType);
 		if ($index !== null) {
 			if ($this->isOptionalKey($index)) {
@@ -1239,7 +1251,7 @@ class ConstantArrayType implements Type
 		}
 
 		$result = TrinaryLogic::createNo();
-		foreach ($this->keyTypes as $i => $keyType) {
+		foreach ($this->isKeyIndexMiss($offsetType) ? [] : $this->keyTypes as $i => $keyType) {
 			// PHP coerces decimal-integer strings to int when used as array
 			// keys ("123" → 123), so a non-constant string offset *could* hit
 			// a constant-integer slot. Skip the upgrade when the offset is
@@ -1310,7 +1322,15 @@ class ConstantArrayType implements Type
 		$matchingValueTypes = [];
 		$all = true;
 		$maybeAll = true;
-		foreach ($this->keyTypes as $i => $keyType) {
+		$keyIndexMiss = count($this->keyTypes) > 0 && $this->isKeyIndexMiss($offsetType);
+		if ($keyIndexMiss) {
+			// What the scan below concludes for an offset no key's value
+			// collides with: every key misses it, and a constant offset cannot
+			// be a decimal-integer string hitting an integer key.
+			$all = false;
+			$maybeAll = false;
+		}
+		foreach ($keyIndexMiss ? [] : $this->keyTypes as $i => $keyType) {
 			if ($keyType->isSuperTypeOf($offsetType)->no()) {
 				$all = false;
 
@@ -3287,6 +3307,38 @@ class ConstantArrayType implements Type
 		}
 
 		return $index;
+	}
+
+	/**
+	 * Whether a constant integer or string offset (already passed through
+	 * toArrayKey()) has a value no explicit key's value collides with as an
+	 * array key - then no explicit key is a supertype of it, so scanning the
+	 * keys for one is pointless. A CompoundType offset (a template, an
+	 * intersection) is left to the scan: its isSubTypeOf() may answer maybe.
+	 */
+	private function isKeyIndexMiss(Type $offsetType): bool
+	{
+		if ($offsetType instanceof CompoundType || !$offsetType->isConstantScalarValue()->yes()) {
+			return false;
+		}
+
+		$values = $offsetType->getConstantScalarValues();
+		if (count($values) !== 1 || (!is_int($values[0]) && !is_string($values[0]))) {
+			return false;
+		}
+
+		return !array_key_exists($values[0], $this->getKeyIndexMap());
+	}
+
+	private function hasRequiredKeyMissingIn(self $other): bool
+	{
+		foreach ($this->keyTypes as $i => $keyType) {
+			if (!$this->isOptionalKey($i) && $other->isKeyIndexMiss($keyType)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

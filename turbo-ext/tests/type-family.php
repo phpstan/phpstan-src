@@ -3246,6 +3246,10 @@ $callableOthers = static fn (): array => [
 		'strKeys' => $shape(['a' => $int, 'b' => $string]),
 		'strKeysOptional' => $shape(['a' => $int, 'b' => $string], [1]),
 		'strKeysAllOptional' => $shape(['a' => $int, 'b' => $string], [0, 1]),
+		'sealedStrKeys' => $shape(['a' => $int, 'b' => $string], [], null, [$never, $never]),
+		'sealedStrKeysOptional' => $shape(['a' => $int, 'b' => $string], [1], null, [$never, $never]),
+		// a value mismatch at 'a' ahead of the required key 'c' sealedStrKeys lacks
+		'sealedStrKeysMismatch' => $shape(['a' => $string, 'b' => $string, 'c' => $int], [], null, [$never, $never]),
 		'mixedKeys' => $shape(['a' => $int, 0 => $string, 'b' => $bool]),
 		'nonSeqInts' => $shape([1 => $string, 5 => $int, 3 => $bool]),
 		'negativeInt' => $shape([-1 => $string, 0 => $int]),

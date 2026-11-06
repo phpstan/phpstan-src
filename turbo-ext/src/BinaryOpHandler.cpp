@@ -38,6 +38,7 @@
 #include "support.h"
 #include "generated/BinaryOpHandler.h"
 #include "generated/TypeResult.h"
+#include "generated/MutatingScope.h"
 
 namespace slots = ptdecl::BinaryOpHandler::slot;
 namespace sigs = ptdecl::BinaryOpHandler::sig;
@@ -342,6 +343,7 @@ int isScalarOrNegatedScalar(zval *node)
 /* the twin's literals, permanent interned strings (module startup) */
 zend_string *pt_boh_division_by_zero_error = nullptr;
 zend_string *pt_boh_countable = nullptr;
+zend_string *pt_boh_comparison_forms = nullptr;
 
 /* $result->type of a TypeResult (the slot of the native class, the property
  * otherwise); UNDEF = pending exception */
@@ -655,58 +657,140 @@ public:
 		return typeResultType(typeResult.raw());
 	}
 
-	/* one entry of getEquivalentComparisonForms(): the form node and whether
-	 * it is the complement */
+	/* one entry of getEquivalentComparisonForms(): the form node, whether it
+	 * is the complement and its node key - borrowed from the cache array the
+	 * comparison node keeps in its attributes (the caller holds it) */
 	struct ComparisonForm
 	{
-		zv::Val node;
+		zval *node = NULL;
 		bool isComplement = false;
+		zend_string *key = NULL;
 	};
 
 	static constexpr int COMPARISON_FORMS_LIMIT = 6;
 
-	/* Mirrors getEquivalentComparisonForms(); count = -1 for a non-comparison
-	 * ($forms === null). false = pending exception */
-	template <typename GetType>
-	static bool equivalentComparisonForms(int kind, zval *left, zval *right, GetType &&getType, ComparisonForm (&forms)[COMPARISON_FORMS_LIMIT], int &count)
+	/* Mirrors the COMPARISON_FORMS_ATTRIBUTE cache of
+	 * getEquivalentComparisonForms(): [class, left, right, forms,
+	 * complementForms]. Built and stored on a miss; UNDEF = pending
+	 * exception */
+	zv::Val comparisonFormsCache(zval *expr, int kind, zval *left, zval *right) const
 	{
-		count = 0;
-		auto add = [&](int classIdx, zval *formLeft, zval *formRight, bool isComplement) -> bool {
+		zval *cached = pt_node_attribute(Z_OBJ_P(expr), pt_boh_comparison_forms);
+		if (cached != NULL) {
+			ZVAL_DEREF(cached);
+			if (Z_TYPE_P(cached) == IS_ARRAY) {
+				zval *cachedClass = zend_hash_index_find(Z_ARRVAL_P(cached), 0);
+				zval *cachedLeft = zend_hash_index_find(Z_ARRVAL_P(cached), 1);
+				zval *cachedRight = zend_hash_index_find(Z_ARRVAL_P(cached), 2);
+				if (
+					cachedClass != NULL && Z_TYPE_P(cachedClass) == IS_STRING && zend_string_equals(Z_STR_P(cachedClass), Z_OBJCE_P(expr)->name)
+					&& cachedLeft != NULL && Z_TYPE_P(cachedLeft) == IS_OBJECT && Z_OBJ_P(cachedLeft) == Z_OBJ_P(left)
+					&& cachedRight != NULL && Z_TYPE_P(cachedRight) == IS_OBJECT && Z_OBJ_P(cachedRight) == Z_OBJ_P(right)
+				) {
+					return zv::Val::copyOf(zv::Ref(cached));
+				}
+			}
+		}
+
+		zv::Val created = createComparisonForms(expr, kind, left, right);
+		if (UNEXPECTED(created.isUndef())) return zv::Val();
+		zv::Arr cache = zv::Arr::create(5);
+		cache.push(zv::Val::string(Z_OBJCE_P(expr)->name));
+		cache.push(zv::Ref(left));
+		cache.push(zv::Ref(right));
+		cache.push(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(created.raw()), 0)));
+		cache.push(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(created.raw()), 1)));
+		zv::Val cacheHold = zv::Val(std::move(cache));
+		pt_node_set_attribute(Z_OBJ_P(expr), pt_boh_comparison_forms, cacheHold.raw());
+		return cacheHold;
+	}
+
+	/* Mirrors createComparisonForms(): [forms, complementForms], each entry
+	 * [node, isComplement, nodeKey]; UNDEF = pending exception */
+	zv::Val createComparisonForms(zval *expr, int kind, zval *left, zval *right) const
+	{
+		zval *exprPrinter = OBJ_PROP_NUM(self, slots::exprPrinter);
+		zv::Arr forms = zv::Arr::create(4);
+		zv::Arr complementForms = zv::Arr::create(2);
+		auto add = [&](zv::Arr &list, int classIdx, zval *formLeft, zval *formRight, bool isComplement) -> bool {
 			zv::Args argv{formLeft, formRight};
 			zv::Val node = pt_type_new(classIdx, 2, argv);
 			if (UNEXPECTED(node.isUndef())) return false;
-			forms[count].node = std::move(node);
-			forms[count].isComplement = isComplement;
-			count++;
+			// a comparison's node key is its printed form
+			zend_string *key = pt_expr_printer_print(exprPrinter, Z_OBJ_P(node.raw()));
+			if (UNEXPECTED(key == NULL)) return false;
+			zv::Arr entry = zv::Arr::create(3);
+			entry.push(std::move(node));
+			entry.push(zv::Val::boolean(isComplement));
+			entry.push(zv::Val::adoptString(key));
+			list.push(zv::Val(std::move(entry)));
 			return true;
 		};
 
+		bool built;
 		if (kind == KIND_IDENTICAL || kind == KIND_NOT_IDENTICAL || kind == KIND_EQUAL || kind == KIND_NOT_EQUAL) {
 			bool identity = kind == KIND_IDENTICAL || kind == KIND_NOT_IDENTICAL;
 			bool isNegated = kind == KIND_NOT_IDENTICAL || kind == KIND_NOT_EQUAL;
 			int sameClass = identity ? PT_CLASS_IDENTICAL_EXPR : PT_CLASS_EQUAL_EXPR;
 			int negatedClass = identity ? PT_CLASS_BINARY_OP_NOT_IDENTICAL : PT_CLASS_NOT_EQUAL_EXPR;
-			return add(sameClass, left, right, isNegated)
-				&& add(sameClass, right, left, isNegated)
-				&& add(negatedClass, left, right, !isNegated)
-				&& add(negatedClass, right, left, !isNegated);
+			built = add(forms, sameClass, left, right, isNegated)
+				&& add(forms, sameClass, right, left, isNegated)
+				&& add(forms, negatedClass, left, right, !isNegated)
+				&& add(forms, negatedClass, right, left, !isNegated);
+		} else {
+			// normalized to `$smaller < $larger` / `$smaller <= $larger`
+			bool smallerFirst = kind == KIND_SMALLER || kind == KIND_SMALLER_OR_EQUAL;
+			zval *smaller = smallerFirst ? left : right;
+			zval *larger = smallerFirst ? right : left;
+			if (kind == KIND_SMALLER_OR_EQUAL || kind == KIND_GREATER_OR_EQUAL) {
+				built = add(forms, PT_CLASS_SMALLER_OR_EQUAL_EXPR, smaller, larger, false)
+					&& add(forms, PT_CLASS_GREATER_OR_EQUAL_EXPR, larger, smaller, false)
+					&& add(complementForms, PT_CLASS_SMALLER_EXPR, larger, smaller, true)
+					&& add(complementForms, PT_CLASS_GREATER_EXPR, smaller, larger, true);
+			} else {
+				built = add(forms, PT_CLASS_SMALLER_EXPR, smaller, larger, false)
+					&& add(forms, PT_CLASS_GREATER_EXPR, larger, smaller, false)
+					&& add(complementForms, PT_CLASS_SMALLER_OR_EQUAL_EXPR, larger, smaller, true)
+					&& add(complementForms, PT_CLASS_GREATER_OR_EQUAL_EXPR, smaller, larger, true);
+			}
 		}
+		if (UNEXPECTED(!built)) return zv::Val();
 
-		if (kind != KIND_SMALLER && kind != KIND_SMALLER_OR_EQUAL && kind != KIND_GREATER && kind != KIND_GREATER_OR_EQUAL) {
+		zv::Arr result = zv::Arr::create(2);
+		result.push(zv::Val(std::move(forms)));
+		result.push(zv::Val(std::move(complementForms)));
+		return zv::Val(std::move(result));
+	}
+
+	/* Mirrors getEquivalentComparisonForms(); count = -1 for a non-comparison
+	 * ($forms === null). The forms borrow from hold. false = pending
+	 * exception */
+	template <typename GetType>
+	bool equivalentComparisonForms(zval *expr, int kind, zval *left, zval *right, GetType &&getType, zv::Val &hold, ComparisonForm (&forms)[COMPARISON_FORMS_LIMIT], int &count) const
+	{
+		count = 0;
+		if (
+			kind != KIND_IDENTICAL && kind != KIND_NOT_IDENTICAL && kind != KIND_EQUAL && kind != KIND_NOT_EQUAL
+			&& kind != KIND_SMALLER && kind != KIND_SMALLER_OR_EQUAL && kind != KIND_GREATER && kind != KIND_GREATER_OR_EQUAL
+		) {
 			count = -1;
 			return true;
 		}
 
-		// normalized to `$smaller < $larger` / `$smaller <= $larger`
-		bool smallerFirst = kind == KIND_SMALLER || kind == KIND_SMALLER_OR_EQUAL;
-		zval *smaller = smallerFirst ? left : right;
-		zval *larger = smallerFirst ? right : left;
-		bool orEqual = kind == KIND_SMALLER_OR_EQUAL || kind == KIND_GREATER_OR_EQUAL;
-		if (orEqual) {
-			if (!add(PT_CLASS_SMALLER_OR_EQUAL_EXPR, smaller, larger, false) || !add(PT_CLASS_GREATER_OR_EQUAL_EXPR, larger, smaller, false)) return false;
-		} else {
-			if (!add(PT_CLASS_SMALLER_EXPR, smaller, larger, false) || !add(PT_CLASS_GREATER_EXPR, larger, smaller, false)) return false;
-		}
+		hold = comparisonFormsCache(expr, kind, left, right);
+		if (UNEXPECTED(hold.isUndef())) return false;
+		auto read = [&](zval *list) {
+			for (zv::ArrayEntry entry : zv::ArrRef(list)) {
+				zval *form = entry.value().deref().raw();
+				forms[count].node = zend_hash_index_find(Z_ARRVAL_P(form), 0);
+				forms[count].isComplement = Z_TYPE_P(zend_hash_index_find(Z_ARRVAL_P(form), 1)) == IS_TRUE;
+				forms[count].key = Z_STR_P(zend_hash_index_find(Z_ARRVAL_P(form), 2));
+				count++;
+			}
+		};
+		read(zend_hash_index_find(Z_ARRVAL_P(hold.raw()), 3));
+		zval *complementForms = zend_hash_index_find(Z_ARRVAL_P(hold.raw()), 4);
+		if (zend_hash_num_elements(Z_ARRVAL_P(complementForms)) == 0) return true;
 
 		// `<` and `>=` only complement each other for comparable operands
 		zv::Val leftType = getType(left);
@@ -720,30 +804,50 @@ public:
 		if (UNEXPECTED(rightIsInteger < 0)) return false;
 		if (!rightIsInteger) return true;
 
-		if (orEqual) {
-			return add(PT_CLASS_SMALLER_EXPR, larger, smaller, true) && add(PT_CLASS_GREATER_EXPR, smaller, larger, true);
-		}
+		read(complementForms);
+		return true;
+	}
 
-		return add(PT_CLASS_SMALLER_OR_EQUAL_EXPR, larger, smaller, true) && add(PT_CLASS_GREATER_OR_EQUAL_EXPR, smaller, larger, true);
+	/* $scope->expressionTypes[$formKey] ?? null when its certainty is yes;
+	 * NULL otherwise, and false = pending exception */
+	static bool certainHolder(zval *scope, zend_string *formKey, zend_object *&holder)
+	{
+		holder = NULL;
+		zval *table;
+		zval rv;
+		if (EXPECTED(instanceof_function(Z_OBJCE_P(scope), pt_ce_mutating_scope))) {
+			table = OBJ_PROP_NUM(Z_OBJ_P(scope), ptdecl::MutatingScope::slot::expressionTypes);
+		} else {
+			table = zend_read_property(Z_OBJCE_P(scope), Z_OBJ_P(scope), PT_LC("expressionTypes"), 0, &rv);
+			if (UNEXPECTED(EG(exception) != NULL)) return false;
+		}
+		ZVAL_DEREF(table);
+		if (UNEXPECTED(Z_TYPE_P(table) != IS_ARRAY)) return true;
+		zval *found = zend_symtable_find(Z_ARRVAL_P(table), formKey);
+		if (found == NULL) return true;
+		ZVAL_DEREF(found);
+		if (UNEXPECTED(!pt_check_holder(found))) return false;
+		if (pt_holder_certainty_value(Z_OBJ_P(found)) == PT_TRI_YES) holder = Z_OBJ_P(found);
+		return true;
 	}
 
 	/* Mirrors resolveRememberedComparisonType(); found = false for null */
 	template <typename GetType>
-	zv::Val resolveRememberedComparisonType(zval *scope, int kind, zval *left, zval *right, GetType &&getType, bool &found) const
+	zv::Val resolveRememberedComparisonType(zval *scope, zval *expr, int kind, zval *left, zval *right, GetType &&getType, bool &found) const
 	{
 		found = false;
+		zv::Val formsHold;
 		ComparisonForm forms[COMPARISON_FORMS_LIMIT];
 		int count;
-		if (UNEXPECTED(!equivalentComparisonForms(kind, left, right, getType, forms, count))) return zv::Val();
+		if (UNEXPECTED(!equivalentComparisonForms(expr, kind, left, right, getType, formsHold, forms, count))) return zv::Val();
 		for (int i = 0; i < count; i++) {
-			zend_long has = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), forms[i].node.raw());
-			if (UNEXPECTED(has < 0)) return zv::Val();
-			if (has != PT_TRI_YES) continue;
+			zend_object *holder;
+			if (UNEXPECTED(!certainHolder(scope, forms[i].key, holder))) return zv::Val();
+			if (holder == NULL) continue;
 
-			zv::Val formType = pt_mutating_scope_get_tracked_expression_type(Z_OBJ_P(scope), Z_OBJ_P(forms[i].node.raw()));
-			if (UNEXPECTED(formType.isUndef())) return zv::Val();
+			zval *formType = OBJ_PROP_NUM(holder, PT_ETH_PROP_TYPE);
 			ptoh::BooleanOf formBoolean;
-			if (UNEXPECTED(!formBoolean.init(formType.raw()))) return zv::Val();
+			if (UNEXPECTED(!formBoolean.init(formType))) return zv::Val();
 			int isTrue = formBoolean.isTrue();
 			if (UNEXPECTED(isTrue < 0)) return zv::Val();
 			if (isTrue) {
@@ -780,9 +884,10 @@ public:
 			if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), scopeNativeTypesPromoted))) return zv::Val();
 			return pt_expression_result_get_type_on_scope(e == left ? leftResult : rightResult, scope, scopeNativeTypesPromoted);
 		};
+		zv::Val formsHold;
 		ComparisonForm forms[COMPARISON_FORMS_LIMIT];
 		int count;
-		if (UNEXPECTED(!equivalentComparisonForms(kind, left, right, getType, forms, count))) return zv::Val();
+		if (UNEXPECTED(!equivalentComparisonForms(expr, kind, left, right, getType, formsHold, forms, count))) return zv::Val();
 		if (count < 0) return specifiedTypes;
 
 		zval *exprPrinter = OBJ_PROP_NUM(self, slots::exprPrinter);
@@ -792,16 +897,14 @@ public:
 		zv::Arr sureTypes = zv::Arr::create(COMPARISON_FORMS_LIMIT);
 		bool hasSureTypes = false;
 		for (int i = 0; i < count; i++) {
-			zend_string *formKey = pt_expr_printer_print(exprPrinter, Z_OBJ_P(forms[i].node.raw()));
-			if (UNEXPECTED(formKey == NULL)) return zv::Val();
-			zv::Str formKeyHold = zv::Str::adopt(formKey);
+			zend_string *formKey = forms[i].key;
 			if (zend_string_equals(formKey, exprKey)) continue;
-			zend_long has = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), forms[i].node.raw());
-			if (UNEXPECTED(has < 0)) return zv::Val();
-			if (has != PT_TRI_YES) continue;
+			zend_object *holder;
+			if (UNEXPECTED(!certainHolder(scope, formKey, holder))) return zv::Val();
+			if (holder == NULL) continue;
 
 			zv::Arr entry = zv::Arr::create(2);
-			entry.push(zv::Ref(forms[i].node.raw()));
+			entry.push(zv::Ref(forms[i].node));
 			entry.push(ptoh::constantBoolean(contextTrue != forms[i].isComplement));
 			sureTypes.set(formKey, zv::Val(std::move(entry)));
 			hasSureTypes = true;
@@ -1063,7 +1166,7 @@ private:
 		if (UNEXPECTED(right == NULL)) return zv::Val();
 		{
 			bool found;
-			zv::Val rememberedType = resolveRememberedComparisonType(scope, kind, left, right, getType, found);
+			zv::Val rememberedType = resolveRememberedComparisonType(scope, expr, kind, left, right, getType, found);
 			if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
 			if (found) return rememberedType;
 		}
@@ -1893,10 +1996,12 @@ PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 {
 	pt_boh_division_by_zero_error = zend_string_init_interned(PT_LC("DivisionByZeroError"), 1);
 	pt_boh_countable = zend_string_init_interned(PT_LC("Countable"), 1);
+	pt_boh_comparison_forms = zend_string_init_interned(PT_LC("phpstan_comparison_forms"), 1);
 
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\BinaryOpHandler");
 	ptdecl::BinaryOpHandler::declareClass(cls);
 	ptdecl::BinaryOpHandler::declareProperties(cls);
+	cls.privateClassConstantString("COMPARISON_FORMS_ATTRIBUTE", "phpstan_comparison_forms");
 
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
@@ -1954,7 +2059,7 @@ PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 		if (UNEXPECTED(right == NULL)) RETURN_THROWS();
 		auto getType = [&](zval *e) { return pt_type_call_callable(getTypeCallable, 1, e); };
 		bool found;
-		zv::Val type = BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).resolveRememberedComparisonType(scope, kind, left, right, getType, found);
+		zv::Val type = BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).resolveRememberedComparisonType(scope, expr, kind, left, right, getType, found);
 		if (UNEXPECTED(EG(exception) != NULL)) RETURN_THROWS();
 		if (!found) RETURN_NULL();
 		PT_RETURN_VAL(std::move(type));
@@ -1979,18 +2084,32 @@ PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 		zval *right = ptoh::binaryOpRight(expr);
 		if (UNEXPECTED(right == NULL)) RETURN_THROWS();
 		auto getType = [&](zval *e) { return pt_type_call_callable(getTypeCallable, 1, e); };
+		zv::Val formsHold;
 		BinaryOpHandler::ComparisonForm forms[BinaryOpHandler::COMPARISON_FORMS_LIMIT];
 		int count;
-		if (UNEXPECTED(!BinaryOpHandler::equivalentComparisonForms(kind, left, right, getType, forms, count))) RETURN_THROWS();
+		if (UNEXPECTED(!BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).equivalentComparisonForms(expr, kind, left, right, getType, formsHold, forms, count))) RETURN_THROWS();
 		if (count < 0) RETURN_NULL();
 		zv::Arr list = zv::Arr::create((uint32_t) count);
 		for (int i = 0; i < count; i++) {
-			zv::Arr pair = zv::Arr::create(2);
-			pair.push(std::move(forms[i].node));
-			pair.push(zv::Val::boolean(forms[i].isComplement));
-			list.push(zv::Val(std::move(pair)));
+			zv::Arr entry = zv::Arr::create(3);
+			entry.push(zv::Ref(forms[i].node));
+			entry.push(zv::Val::boolean(forms[i].isComplement));
+			entry.push(zv::Val::string(forms[i].key));
+			list.push(zv::Val(std::move(entry)));
 		}
 		PT_RETURN_VAL(zv::Val(std::move(list)));
+	});
+
+	cls.method(sigs::createComparisonForms, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr;
+		if (!zp::parse<zp::Obj>(execute_data, expr)) RETURN_THROWS();
+		int kind = kindOf(expr);
+		if (UNEXPECTED(kind < 0)) RETURN_THROWS();
+		zval *left = ptoh::binaryOpLeft(expr);
+		if (UNEXPECTED(left == NULL)) RETURN_THROWS();
+		zval *right = ptoh::binaryOpRight(expr);
+		if (UNEXPECTED(right == NULL)) RETURN_THROWS();
+		PT_RETURN_VAL(BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).createComparisonForms(expr, kind, left, right));
 	});
 
 	cls.method(sigs::resolveEqualType, [](INTERNAL_FUNCTION_PARAMETERS) {

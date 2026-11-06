@@ -68,6 +68,8 @@ use const NAN;
 final class BinaryOpHandler implements ExprHandler
 {
 
+	private const COMPARISON_FORMS_ATTRIBUTE = 'phpstan_comparison_forms';
+
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private RicherScopeGetTypeHelper $richerScopeGetTypeHelper,
@@ -737,12 +739,13 @@ final class BinaryOpHandler implements ExprHandler
 			return null;
 		}
 
-		foreach ($forms as [$form, $isComplement]) {
-			if (!$scope->hasExpressionType($form)->yes()) {
+		foreach ($forms as [, $isComplement, $formKey]) {
+			$holder = $scope->expressionTypes[$formKey] ?? null;
+			if ($holder === null || !$holder->getCertainty()->yes()) {
 				continue;
 			}
 
-			$formType = $scope->getTrackedExpressionType($form)->toBoolean();
+			$formType = $holder->getType()->toBoolean();
 			if ($formType->isTrue()->yes()) {
 				return new ConstantBooleanType(!$isComplement);
 			}
@@ -776,9 +779,12 @@ final class BinaryOpHandler implements ExprHandler
 
 		$exprKey = $this->exprPrinter->printExpr($expr);
 		$sureTypes = [];
-		foreach ($forms as [$form, $isComplement]) {
-			$formKey = $this->exprPrinter->printExpr($form);
-			if ($formKey === $exprKey || !$scope->hasExpressionType($form)->yes()) {
+		foreach ($forms as [$form, $isComplement, $formKey]) {
+			if ($formKey === $exprKey) {
+				continue;
+			}
+			$holder = $scope->expressionTypes[$formKey] ?? null;
+			if ($holder === null || !$holder->getCertainty()->yes()) {
 				continue;
 			}
 
@@ -797,36 +803,16 @@ final class BinaryOpHandler implements ExprHandler
 	 * paired with whether it is the complement (always the opposite value).
 	 *
 	 * @param callable(Expr): Type $getType
-	 * @return list<array{BinaryOp, bool}>|null
+	 * @return list<array{BinaryOp, bool, string}>|null
 	 */
 	private function getEquivalentComparisonForms(BinaryOp $expr, callable $getType): ?array
 	{
-		$left = $expr->left;
-		$right = $expr->right;
-		if ($expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical) {
-			$isNegated = $expr instanceof BinaryOp\NotIdentical;
-
-			return [
-				[new BinaryOp\Identical($left, $right), $isNegated],
-				[new BinaryOp\Identical($right, $left), $isNegated],
-				[new BinaryOp\NotIdentical($left, $right), !$isNegated],
-				[new BinaryOp\NotIdentical($right, $left), !$isNegated],
-			];
-		}
-
-		if ($expr instanceof BinaryOp\Equal || $expr instanceof BinaryOp\NotEqual) {
-			$isNegated = $expr instanceof BinaryOp\NotEqual;
-
-			return [
-				[new BinaryOp\Equal($left, $right), $isNegated],
-				[new BinaryOp\Equal($right, $left), $isNegated],
-				[new BinaryOp\NotEqual($left, $right), !$isNegated],
-				[new BinaryOp\NotEqual($right, $left), !$isNegated],
-			];
-		}
-
 		if (
-			!$expr instanceof BinaryOp\Smaller
+			!$expr instanceof BinaryOp\Identical
+			&& !$expr instanceof BinaryOp\NotIdentical
+			&& !$expr instanceof BinaryOp\Equal
+			&& !$expr instanceof BinaryOp\NotEqual
+			&& !$expr instanceof BinaryOp\Smaller
 			&& !$expr instanceof BinaryOp\SmallerOrEqual
 			&& !$expr instanceof BinaryOp\Greater
 			&& !$expr instanceof BinaryOp\GreaterOrEqual
@@ -834,41 +820,100 @@ final class BinaryOpHandler implements ExprHandler
 			return null;
 		}
 
-		// normalized to `$smaller < $larger` / `$smaller <= $larger`
-		if ($expr instanceof BinaryOp\Smaller || $expr instanceof BinaryOp\SmallerOrEqual) {
-			$smaller = $left;
-			$larger = $right;
-		} else {
-			$smaller = $right;
-			$larger = $left;
+		$left = $expr->left;
+		$right = $expr->right;
+
+		// The forms are built and printed once per comparison node and kept
+		// in its attributes: scopes are keyed by the printed expression, and
+		// fresh form nodes would be printed again on every lookup. Attributes
+		// travel to new nodes, which can be of another class or have other
+		// operands.
+		$cached = $expr->getAttribute(self::COMPARISON_FORMS_ATTRIBUTE);
+		if ($cached === null || $cached[0] !== get_class($expr) || $cached[1] !== $left || $cached[2] !== $right) {
+			$cached = [get_class($expr), $left, $right, ...$this->createComparisonForms($expr)];
+			$expr->setAttribute(self::COMPARISON_FORMS_ATTRIBUTE, $cached);
 		}
-		$orEqual = $expr instanceof BinaryOp\SmallerOrEqual || $expr instanceof BinaryOp\GreaterOrEqual;
-		$forms = $orEqual
-			? [
-				[new BinaryOp\SmallerOrEqual($smaller, $larger), false],
-				[new BinaryOp\GreaterOrEqual($larger, $smaller), false],
-			]
-			: [
-				[new BinaryOp\Smaller($smaller, $larger), false],
-				[new BinaryOp\Greater($larger, $smaller), false],
-			];
+
+		$forms = $cached[3];
+		$complementForms = $cached[4];
 
 		// `<` and `>=` only complement each other for comparable operands
 		// (NAN and uncomparable arrays/objects are neither smaller nor
 		// larger-or-equal)
-		if (!$getType($left)->isInteger()->yes() || !$getType($right)->isInteger()->yes()) {
+		if ($complementForms === [] || !$getType($left)->isInteger()->yes() || !$getType($right)->isInteger()->yes()) {
 			return $forms;
 		}
 
-		if ($orEqual) {
-			$forms[] = [new BinaryOp\Smaller($larger, $smaller), true];
-			$forms[] = [new BinaryOp\Greater($smaller, $larger), true];
+		return array_merge($forms, $complementForms);
+	}
+
+	/**
+	 * The equivalent forms, and the complement forms that hold only for
+	 * comparable operands, each with its node key (a comparison's node key
+	 * is its printed form).
+	 *
+	 * @return array{list<array{BinaryOp, bool, string}>, list<array{BinaryOp, bool, string}>}
+	 */
+	private function createComparisonForms(BinaryOp $expr): array
+	{
+		$left = $expr->left;
+		$right = $expr->right;
+		$complementForms = [];
+		if ($expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical) {
+			$isNegated = $expr instanceof BinaryOp\NotIdentical;
+			$forms = [
+				[new BinaryOp\Identical($left, $right), $isNegated],
+				[new BinaryOp\Identical($right, $left), $isNegated],
+				[new BinaryOp\NotIdentical($left, $right), !$isNegated],
+				[new BinaryOp\NotIdentical($right, $left), !$isNegated],
+			];
+		} elseif ($expr instanceof BinaryOp\Equal || $expr instanceof BinaryOp\NotEqual) {
+			$isNegated = $expr instanceof BinaryOp\NotEqual;
+			$forms = [
+				[new BinaryOp\Equal($left, $right), $isNegated],
+				[new BinaryOp\Equal($right, $left), $isNegated],
+				[new BinaryOp\NotEqual($left, $right), !$isNegated],
+				[new BinaryOp\NotEqual($right, $left), !$isNegated],
+			];
 		} else {
-			$forms[] = [new BinaryOp\SmallerOrEqual($larger, $smaller), true];
-			$forms[] = [new BinaryOp\GreaterOrEqual($smaller, $larger), true];
+			// normalized to `$smaller < $larger` / `$smaller <= $larger`
+			if ($expr instanceof BinaryOp\Smaller || $expr instanceof BinaryOp\SmallerOrEqual) {
+				$smaller = $left;
+				$larger = $right;
+			} else {
+				$smaller = $right;
+				$larger = $left;
+			}
+
+			if ($expr instanceof BinaryOp\SmallerOrEqual || $expr instanceof BinaryOp\GreaterOrEqual) {
+				$forms = [
+					[new BinaryOp\SmallerOrEqual($smaller, $larger), false],
+					[new BinaryOp\GreaterOrEqual($larger, $smaller), false],
+				];
+				$complementForms = [
+					[new BinaryOp\Smaller($larger, $smaller), true],
+					[new BinaryOp\Greater($smaller, $larger), true],
+				];
+			} else {
+				$forms = [
+					[new BinaryOp\Smaller($smaller, $larger), false],
+					[new BinaryOp\Greater($larger, $smaller), false],
+				];
+				$complementForms = [
+					[new BinaryOp\SmallerOrEqual($larger, $smaller), true],
+					[new BinaryOp\GreaterOrEqual($smaller, $larger), true],
+				];
+			}
 		}
 
-		return $forms;
+		$keyed = [[], []];
+		foreach ([$forms, $complementForms] as $i => $list) {
+			foreach ($list as [$form, $isComplement]) {
+				$keyed[$i][] = [$form, $isComplement, $this->exprPrinter->printExpr($form)];
+			}
+		}
+
+		return $keyed;
 	}
 
 	/**

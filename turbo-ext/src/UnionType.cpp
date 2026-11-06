@@ -5,10 +5,11 @@
  * native BenevolentUnionType and the PHP TemplateUnionType extend it — their
  * constructors call parent::__construct(), so the constructor is a proper
  * method), implementing PHPStan\Type\CompoundType. State is the twin's
- * ten private properties, declared typed property slots in the twin's
- * declaration order — the eight memos ($sortedTypesCache, $cachedDescriptions,
+ * eleven private properties, declared typed property slots in the twin's
+ * declaration order — the nine memos ($sortedTypesCache, $cachedDescriptions,
  * $finiteTypeSet, $finiteTypes, $isNull, $isCallable,
- * $possiblyLooselyEqualTypes, $alwaysLooselyEqualTypes) first, the promoted
+ * $hasTemplateOrLateResolvableType, $possiblyLooselyEqualTypes,
+ * $alwaysLooselyEqualTypes) first, the promoted
  * $types and $normalized after them — so the std object handlers do
  * GC/clone and a PHP subclass's own properties follow them. The one trait
  * the twin uses (NonGeneralizableTypeTrait) comes from the shared registrar
@@ -2144,19 +2145,27 @@ public:
 		return pt_type_new(PT_CLASS_UNION_TYPE_NODE, 1, nodes.raw());
 	}
 
-	/* whether any member has one; -1 = pending exception */
+	/* $this->hasTemplateOrLateResolvableType ??= whether any member has
+	 * one; -1 = pending exception */
 	int hasTemplateOrLateResolvableType() const
 	{
+		zval *memo = OBJ_PROP_NUM(self, slots::hasTemplateOrLateResolvableType);
+		if (Z_TYPE_P(memo) == IS_TRUE) return 1;
+		if (Z_TYPE_P(memo) == IS_FALSE) return 0;
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return -1;
 		zv::Val typesCopy = zv::Val::copyOf(zv::Ref(types));
+		bool has = false;
 		for (zv::ArrayEntry entry : zv::ArrRef(typesCopy.raw())) {
-			int has = pt_type_call_is_true(entry.value().deref().asObject(), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
-			if (UNEXPECTED(has < 0)) return -1;
-			if (has == 0) continue;
-			return 1;
+			int memberHas = pt_type_call_is_true(entry.value().deref().asObject(), PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+			if (UNEXPECTED(memberHas < 0)) return -1;
+			if (memberHas == 0) continue;
+			has = true;
+			break;
 		}
-		return 0;
+		memo = OBJ_PROP_NUM(self, slots::hasTemplateOrLateResolvableType);
+		zv::Ref(memo).assign(zv::Val::boolean(has));
+		return has ? 1 : 0;
 	}
 
 	/* the three protected methods: this class's own body when the object's
@@ -3031,7 +3040,7 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 		PT_RETURN_VAL(PT_THIS.memoizedLooselyEqualType(slots::alwaysLooselyEqualTypes, phpVersion, PT_LC("getalwayslooselyequaltype")));
 	});
 	cls.classConstantValue("EQUAL_UNION_CLASSES", pt_ut_equal_union_classes);
-	/* the slots PT_UT_PROP_*: the eight memo properties first, the promoted
+	/* the slots PT_UT_PROP_*: the nine memo properties first, the promoted
 	 * $types and $normalized after them */
 	cls.privateTypedPropertyDefaultNull("sortedTypesCache", MAY_BE_ARRAY);
 	cls.privateTypedArrayPropertyDefaultEmpty("cachedDescriptions");
@@ -3039,6 +3048,7 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	cls.privateTypedPropertyDefaultNull("finiteTypes", MAY_BE_ARRAY);
 	cls.privateTypedClassPropertyDefaultNull("isNull", ptcls::trinaryLogic);
 	cls.privateTypedClassPropertyDefaultNull("isCallable", ptcls::trinaryLogic);
+	cls.privateTypedPropertyDefaultNull("hasTemplateOrLateResolvableType", MAY_BE_BOOL);
 	cls.privateTypedArrayPropertyDefaultEmpty("possiblyLooselyEqualTypes");
 	cls.privateTypedArrayPropertyDefaultEmpty("alwaysLooselyEqualTypes");
 	cls.privateTypedProperty("types", MAY_BE_ARRAY);

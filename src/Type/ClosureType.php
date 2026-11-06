@@ -100,6 +100,8 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	/** @var array<int, string> */
 	private array $cachedDescriptions = [];
 
+	private ?bool $containsUnresolvedTemplateArgument = null;
+
 	/**
 	 * @api
 	 * @param list<ParameterReflection>|null $parameters
@@ -567,6 +569,33 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getByRefUseTypes(): array
 	{
 		return $this->byRefUseTypes;
+	}
+
+	/**
+	 * Whether an UnresolvedTemplateArgumentType occurs anywhere in the
+	 * closure's signature - it is still being inferred (see
+	 * ClosureSignatureInference). Memoized: every invocation of a closure
+	 * asks, and a signature inferred from the invocations is as large as
+	 * they are many.
+	 *
+	 * @internal
+	 */
+	public function containsUnresolvedTemplateArgument(): bool
+	{
+		if ($this->containsUnresolvedTemplateArgument !== null) {
+			return $this->containsUnresolvedTemplateArgument;
+		}
+
+		$contains = false;
+		TypeTraverser::map($this, static function (Type $type, callable $traverse) use (&$contains): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType) {
+				$contains = true;
+			}
+
+			return $contains ? $type : $traverse($type);
+		});
+
+		return $this->containsUnresolvedTemplateArgument = $contains;
 	}
 
 	public function acceptsNamedArguments(): TrinaryLogic

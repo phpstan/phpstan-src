@@ -1121,16 +1121,7 @@ final class ClosureSignatureInference
 			return false;
 		}
 
-		$containsMarker = false;
-		TypeTraverser::map($closureType, static function (Type $type, callable $traverse) use (&$containsMarker): Type {
-			if ($type instanceof UnresolvedTemplateArgumentType) {
-				$containsMarker = true;
-			}
-
-			return $containsMarker ? $type : $traverse($type);
-		});
-
-		return !$containsMarker;
+		return !$closureType->containsUnresolvedTemplateArgument();
 	}
 
 	/**

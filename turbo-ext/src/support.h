@@ -3277,6 +3277,9 @@ zv::Val pt_closure_signature_inference_add_absorbed_in_union_of_two(zval *scope,
 zv::Val pt_closure_parameter_resolver_resolve_callable_type_for_scope(zval *resolver, zval *expr, zval *scope);
 /* $closureType->getByRefUseTypes(); UNDEF = pending exception */
 zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType);
+/* $closureType->containsUnresolvedTemplateArgument(); false = pending
+ * exception */
+[[nodiscard]] bool pt_closure_type_contains_unresolved_template_argument(zval *closureType, bool &out);
 /* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage, $passedToType) /
  * ->buildClosureTypeForClosure(...) / ->buildClosureTypeForArrowFunction(...)
  * / ->getDeclaredClosureType($scope, $expr) — the native bodies for the

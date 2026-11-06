@@ -2782,6 +2782,7 @@ $callableSubjects = static fn (): array => [
 	'closureTemplate' => new \PHPStan\Type\ClosureType([$callableParam('a', $callableT), $callableParam('b', $callableU)], $callableT, true, $callableTemplateTypeMap, $callableResolvedTemplateTypeMap, null, $callableTemplateTags),
 	'closureAsserts' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), assertions: $callableAssertionsIfTrue),
 	'closureAssertsTemplate' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\MixedType())], new \PHPStan\Type\BooleanType(), true, $callableTemplateTypeMap, null, null, $callableTemplateTags, [], null, [], [], null, null, $callableAssertionsTemplate),
+	'closureNestedMarker' => new \PHPStan\Type\ClosureType([$callableParam('a', new \PHPStan\Type\UnionType([new \PHPStan\Type\IntegerType(), new \PHPStan\Type\ArrayType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType(new \PhpParser\Node\Expr\Variable('x'), $callableT, null))]))], new \PHPStan\Type\VoidType()),
 	'iterable' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(), new \PHPStan\Type\MixedType()),
 	'iterableExplicit' => new \PHPStan\Type\IterableType(new \PHPStan\Type\MixedType(true), new \PHPStan\Type\MixedType(true)),
 	'iterableIntString' => new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()),
@@ -3027,6 +3028,10 @@ $callableOthers = static fn (): array => [
 				'templateTags' => $cv($subject->getTemplateTags()),
 				'isCommonCallable' => $subject->isCommonCallable(),
 			];
+		}
+		if ($subject instanceof \PHPStan\Type\ClosureType) {
+			// asked twice: the second answer is the memoized one
+			$r["$name containsUnresolvedTemplateArgument"] = [$subject->containsUnresolvedTemplateArgument(), $subject->containsUnresolvedTemplateArgument()];
 		}
 		if ($subject instanceof \PHPStan\Type\TypeWithClassName) {
 			$r["$name withClassName"] = [$subject->getClassName(), $cv($subject->getClassReflection()), $cv($subject->getAncestorWithClassName(\Closure::class)), $cv($subject->getAncestorWithClassName(\stdClass::class))];

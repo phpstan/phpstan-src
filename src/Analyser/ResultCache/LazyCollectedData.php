@@ -78,7 +78,7 @@ final class LazyCollectedData
 			$fresh[$file === $from ? $to : $file] = $data;
 		}
 
-		return new self($this->cachedIndex, $this->cachedReader, $fresh, $this->spooled?->withRenamedFile($from, $to));
+		return new self($this->cachedIndex, $this->cachedReader, $fresh, $this->spooled !== null ? $this->spooled->withRenamedFile($from, $to) : null);
 	}
 
 	/**

@@ -193,7 +193,9 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			$this->files[2] => [MethodWithoutImpurePointsCollector::class => ['not re-analysed c']],
 		]);
 		$processed = $manager->process($this->analyserResult($spooled), $resultCache, $this->nullOutput(), false, true);
-		$this->assertSame([$this->files[1] => true], $processed->getAnalyserResult()->getLazyCollectedData()->getSpooled()?->getFiles());
+		$mergedSpooled = $processed->getAnalyserResult()->getLazyCollectedData()->getSpooled();
+		$this->assertNotNull($mergedSpooled);
+		$this->assertSame([$this->files[1] => true], $mergedSpooled->getFiles());
 		$this->assertTrue($processed->save(new FinalizerResult($processed->getAnalyserResult(), [], [])));
 
 		$expected = $this->collectedData(['a', 'c', 'b']);

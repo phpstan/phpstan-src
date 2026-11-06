@@ -1650,7 +1650,9 @@ final class ResultCacheManager
 			$mergedFresh[$file] = $freshCollectedDataByFile[$file];
 		}
 
-		return new LazyCollectedData($cachedIndex, $this->createCollectedDataReader(), $mergedFresh, $freshCollectedData->getSpooled()?->only($analysedFiles));
+		$spooled = $freshCollectedData->getSpooled();
+
+		return new LazyCollectedData($cachedIndex, $this->createCollectedDataReader(), $mergedFresh, $spooled !== null ? $spooled->only($analysedFiles) : null);
 	}
 
 	/**

@@ -142,6 +142,27 @@ final class TypeCombinator
 				}
 			}
 
+			// mixed is the top type, so removing a union from it is exactly
+			// subtracting the members it does not subtract already, all of them at
+			// once. Peeling them one at a time would ask each member about the mixed
+			// the earlier members left, which walks everything they subtracted.
+			if ($fromType instanceof MixedType && !$fromType instanceof TemplateType) {
+				$subtractedType = $fromType->getSubtractedType();
+				$remainingTypes = [];
+				foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
+					if ($subtractedType !== null && $subtractedType->isSuperTypeOf($unionTypeToRemove)->yes()) {
+						continue;
+					}
+					$remainingTypes[] = $unionTypeToRemove;
+				}
+
+				if ($remainingTypes === []) {
+					return $fromType;
+				}
+
+				return $fromType->subtract(count($remainingTypes) === 1 ? $remainingTypes[0] : new UnionType($remainingTypes));
+			}
+
 			foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
 				$fromType = self::remove($fromType, $unionTypeToRemove);
 				if ($fromType instanceof NeverType) {

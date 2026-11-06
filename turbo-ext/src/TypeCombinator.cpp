@@ -642,6 +642,38 @@ public:
 
 			zv::Val types = getTypes(typeToRemove);
 			PT_FAIL_IF_UNDEF(types);
+
+			/* mixed is the top type: the members it does not subtract
+			 * already are subtracted all at once */
+			if (isInstance(fromType, pt_ce_mixed_type)) {
+				int isTemplate = isInstanceMap(fromType, PT_CLASS_TEMPLATE_TYPE);
+				PT_FAIL_IF_NEG(isTemplate);
+				if (!isTemplate) {
+					zv::Val subtractedType = call(fromType, PT_LC("getsubtractedtype"));
+					PT_FAIL_IF_UNDEF(subtractedType);
+					zv::Arr remainingTypes = zv::Arr::create(0);
+					for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+						zval *member = entry.value().deref().raw();
+						if (!isNull(subtractedType)) {
+							zend_long covered = callResultTrinary(subtractedType.raw(), PT_LC("issupertypeof"), 1, member);
+							PT_FAIL_IF_NEG(covered);
+							if (covered == PT_TRI_YES) continue;
+						}
+						remainingTypes.push(zv::Val::copyOf(zv::Ref(member)));
+					}
+					uint32_t remainingCount = zv::ArrRef(remainingTypes.raw()).size();
+					if (remainingCount == 0) return copy(fromType);
+					zv::Val subtract;
+					if (remainingCount == 1) {
+						subtract = copy(indexOf(remainingTypes.raw(), 0));
+					} else {
+						subtract = unionType(std::move(remainingTypes), false);
+						PT_FAIL_IF_UNDEF(subtract);
+					}
+					return call(fromType, PT_LC("subtract"), 1, subtract.raw());
+				}
+			}
+
 			zv::Val current = copy(fromType);
 			for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
 				zv::Val next = remove(current.raw(), entry.value().raw());

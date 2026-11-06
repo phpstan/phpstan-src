@@ -94,6 +94,12 @@ class UnionType implements CompoundType
 
 	private ?TrinaryLogic $isCallable = null;
 
+	/** @var array<int, Type> */
+	private array $possiblyLooselyEqualTypes = [];
+
+	/** @var array<int, Type> */
+	private array $alwaysLooselyEqualTypes = [];
+
 	/**
 	 * @api
 	 * @param list<Type> $types
@@ -1817,6 +1823,16 @@ class UnionType implements CompoundType
 		}
 
 		return false;
+	}
+
+	public function getPossiblyLooselyEqualType(PhpVersion $phpVersion): Type
+	{
+		return $this->possiblyLooselyEqualTypes[$phpVersion->getVersionId()] ??= $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion);
+	}
+
+	public function getAlwaysLooselyEqualType(PhpVersion $phpVersion): Type
+	{
+		return $this->alwaysLooselyEqualTypes[$phpVersion->getVersionId()] ??= $this->toValueSet()->getAlwaysLooselyEqualType($phpVersion);
 	}
 
 	public function toValueSet(): ValueSet

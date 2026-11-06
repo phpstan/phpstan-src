@@ -69,6 +69,7 @@ final class CallUserFuncRule implements Rule
 			return [];
 		}
 		[$parametersAcceptor, $funcCall, $acceptsNamedArguments] = $result;
+		$funcCall->setAttribute(FunctionCallParametersCheck::NOT_FIXABLE_CALL_ATTRIBUTE, true);
 
 		$callableDescription = sprintf('callable passed to %s()', $functionName);
 

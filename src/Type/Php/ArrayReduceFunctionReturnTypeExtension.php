@@ -7,7 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -56,7 +58,10 @@ final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionRet
 			$initialType = new NullType();
 		}
 
-		$iterableAtLeastOnce = $scope->getType($args[0]->value)->isIterableAtLeastOnce();
+		// array_reduce() throws on anything but an array, so only the arrays
+		// it is given decide whether the initial value can come back
+		$arrayType = TypeCombinator::intersect($scope->getType($args[0]->value), new ArrayType(new MixedType(), new MixedType()));
+		$iterableAtLeastOnce = $arrayType->isIterableAtLeastOnce();
 		if ($iterableAtLeastOnce->no()) {
 			return $initialType;
 		}

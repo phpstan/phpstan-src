@@ -114,3 +114,21 @@ function doNever(array $strings): void
 	}, 0);
 	assertType('0', $alwaysThrows);
 }
+
+/** @param list<int> $integers */
+function callableString(array $integers, string $callback): void
+{
+	// the callback may be a function name, whose return type is unknown
+	assertType('mixed', array_reduce($integers, $callback, 0));
+}
+
+/** @param non-empty-array<int, object{id: int}>|object $items */
+function nonArrayMember($items): void
+{
+	// array_reduce() throws on the object, so only the non-empty array reaches the callback and the initial null cannot come back
+	$byId = array_reduce($items, function ($carry, $item) {
+		$carry[$item->id][] = $item;
+		return $carry;
+	});
+	assertType('non-empty-array<int, non-empty-list<object{id: int}>>', $byId);
+}

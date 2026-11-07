@@ -427,7 +427,22 @@ public:
 
 			// emit error
 			for (uint32_t catchTypeIndex = 0; catchTypeIndex < catchTypeCount; catchTypeIndex++) {
-				if (matchingCatchTypes[catchTypeIndex]) continue;
+				if (matchingCatchTypes[catchTypeIndex]) {
+					// A trait's catch can be dead in the context of one class using the
+					// trait and alive in the context of another, so the alive ones have
+					// to be reported there as well for the disagreement to be noticed.
+					bool inTrait;
+					if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(scope), inTrait))) return zv::Val();
+					if (inTrait) {
+						zval *originalCaughtType = zend_hash_index_find(originalCatchTypes.table(), catchTypeIndex);
+						zv::Args nodeArgv{catchNode, originalCaughtType};
+						zv::Val thrownNode = pt_type_new(PT_CLASS_CATCH_WITH_THROWN_EXCEPTION_IN_TRAIT_NODE, 2, nodeArgv);
+						if (UNEXPECTED(thrownNode.isUndef())) return zv::Val();
+						if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, thrownNode.raw(), scope, storage))) return zv::Val();
+					}
+
+					continue;
+				}
 				zval *caughtType = zend_hash_index_find(catchTypes.table(), catchTypeIndex);
 				zval *originalCaughtType = zend_hash_index_find(originalCatchTypes.table(), catchTypeIndex);
 				zv::Args nodeArgv{catchNode, caughtType, originalCaughtType};

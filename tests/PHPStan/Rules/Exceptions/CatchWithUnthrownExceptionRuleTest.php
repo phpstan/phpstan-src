@@ -4,12 +4,15 @@ namespace PHPStan\Rules\Exceptions;
 
 use Error;
 use InvalidArgumentException;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 {
@@ -26,13 +29,24 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
-			self::createReflectionProvider(),
-			[],
-			$this->uncheckedExceptionClasses,
-			[],
-			[],
-		), $this->reportUncheckedExceptionDeadCatch);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new CatchWithUnthrownExceptionRule(
+				new DefaultExceptionTypeResolver(
+					self::createReflectionProvider(),
+					[],
+					$this->uncheckedExceptionClasses,
+					[],
+					[],
+				),
+				$this->reportUncheckedExceptionDeadCatch,
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			),
+			new CatchWithThrownExceptionInTraitRule(
+				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
+			),
+			new ConstantConditionInTraitRule(),
+		]);
 	}
 
 	public function testRule(): void
@@ -1513,6 +1527,16 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				81,
 			],
 		]);
+	}
+
+	public function testBug10315(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10315.php'], []);
+	}
+
+	public function testDeadCatchInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-in-trait.php'], []);
 	}
 
 }

@@ -39,4 +39,11 @@ interface ReflectionProvider
 
 	public function resolveConstantName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string;
 
+	/**
+	 * Names of the global constants whose fully qualified name matches $pattern, in which * stands for any sequence of characters.
+	 *
+	 * @return list<non-empty-string>
+	 */
+	public function findConstantNames(string $pattern): array;
+
 }

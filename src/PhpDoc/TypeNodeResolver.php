@@ -1333,7 +1333,11 @@ final class TypeNodeResolver
 
 		if ($constExpr instanceof ConstFetchNode) {
 			if ($constExpr->className === '') {
-				throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
+				if (!Strings::contains($constExpr->name, '*')) {
+					throw new ShouldNotHappenException(); // global constant should get parsed as class name in IdentifierTypeNode
+				}
+
+				return $this->resolveGlobalConstantPattern($constExpr->name, $nameScope);
 			}
 
 			$isStatic = false;
@@ -1471,6 +1475,41 @@ final class TypeNodeResolver
 
 		if ($constExpr instanceof ConstExprStringNode) {
 			return new ConstantStringType($constExpr->value);
+		}
+
+		return new ErrorType();
+	}
+
+	/**
+	 * Resolves a pattern like PHP_ROUND_* to the union of the global constants it matches. Like PHP does
+	 * for an unqualified constant name, an unqualified pattern looks in the current namespace first and
+	 * falls back to the global one.
+	 */
+	private function resolveGlobalConstantPattern(string $pattern, NameScope $nameScope): Type
+	{
+		$namespace = $nameScope->getNamespace();
+		if (Strings::contains($pattern, '\\')) {
+			$patterns = [$nameScope->resolveStringName($pattern)];
+		} elseif ($namespace !== null) {
+			$patterns = [$namespace . '\\' . $pattern, $pattern];
+		} else {
+			$patterns = [$pattern];
+		}
+
+		foreach ($patterns as $fullyQualifiedPattern) {
+			$constantTypes = [];
+			foreach ($this->getReflectionProvider()->findConstantNames($fullyQualifiedPattern) as $constantName) {
+				$constantType = $this->constantResolver->resolveConstant(new Name\FullyQualified($constantName), null);
+				if ($constantType === null) {
+					continue;
+				}
+
+				$constantTypes[] = $constantType;
+			}
+
+			if (count($constantTypes) > 0) {
+				return TypeCombinator::union(...$constantTypes);
+			}
 		}
 
 		return new ErrorType();

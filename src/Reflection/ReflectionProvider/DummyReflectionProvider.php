@@ -69,4 +69,9 @@ final class DummyReflectionProvider implements ReflectionProvider
 		return null;
 	}
 
+	public function findConstantNames(string $pattern): array
+	{
+		return [];
+	}
+
 }

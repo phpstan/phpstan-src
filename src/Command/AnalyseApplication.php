@@ -109,7 +109,7 @@ final class AnalyseApplication
 
 			$forceValidateStubFiles = (bool) ($_SERVER['__PHPSTAN_FORCE_VALIDATE_STUB_FILES'] ?? false);
 			if (
-				$resultCache->isFullAnalysis()
+				($resultCache->isFullAnalysis() || $resultCache->hasChangedStubFiles())
 				&& count($projectStubFiles) !== 0
 				&& (!$onlyFiles || $forceValidateStubFiles)
 			) {

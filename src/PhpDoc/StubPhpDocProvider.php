@@ -13,6 +13,7 @@ use PHPStan\Parser\Parser;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Type\FileTypeMapper;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function is_string;
 
@@ -59,6 +60,12 @@ final class StubPhpDocProvider
 
 	/** @var array<string, array<string>> */
 	private array $knownFunctionParameterNames = [];
+
+	/** @var array<string, array<string, true>> class name => stub files declaring it */
+	private array $classStubFiles = [];
+
+	/** @var array<string, array<string, true>> function name => stub files declaring it */
+	private array $functionStubFiles = [];
 
 	public function __construct(
 		#[AutowiredParameter(ref: '@stubParser')]
@@ -246,6 +253,28 @@ final class StubPhpDocProvider
 		return null;
 	}
 
+	/**
+	 * The stub files declaring the class, whether they give it a PHPDoc or not.
+	 *
+	 * @return list<string>
+	 */
+	public function getClassStubFiles(string $className): array
+	{
+		$this->initializeKnownElements();
+
+		return array_keys($this->classStubFiles[$className] ?? []);
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getFunctionStubFiles(string $functionName): array
+	{
+		$this->initializeKnownElements();
+
+		return array_keys($this->functionStubFiles[$functionName] ?? []);
+	}
+
 	public function isKnownClass(string $className): bool
 	{
 		$this->initializeKnownElements();
@@ -303,6 +332,7 @@ final class StubPhpDocProvider
 
 		if ($node instanceof Node\Stmt\Function_) {
 			$functionName = (string) $node->namespacedName;
+			$this->functionStubFiles[$functionName][$stubFile] = true;
 			$docComment = $node->getDocComment();
 			if ($docComment === null) {
 				$this->functionMap[$functionName] = null;
@@ -329,6 +359,7 @@ final class StubPhpDocProvider
 		}
 
 		$className = (string) $node->namespacedName;
+		$this->classStubFiles[$className][$stubFile] = true;
 		$docComment = $node->getDocComment();
 		if ($docComment === null) {
 			$this->classMap[$className] = null;

@@ -13,7 +13,9 @@ use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\ShouldNotHappenException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
 use function array_keys;
+use function assert;
 use function closedir;
 use function dirname;
 use function error_get_last;
@@ -162,6 +164,7 @@ final class FileCacheStorage implements CacheStorage
 		$files = new RecursiveIteratorIterator($iterator);
 		$emptyDirectoriesToCheck = [];
 		foreach ($files as $file) {
+			assert($file instanceof SplFileInfo);
 			$path = $file->getPathname();
 			if (!str_ends_with($path, '.php')) {
 				continue;

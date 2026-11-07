@@ -193,7 +193,9 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use ReflectionClass;
 use RuntimeException;
+use SplFileInfo;
 use Throwable;
+use function assert;
 use function class_exists;
 use function count;
 use function file_get_contents;
@@ -502,6 +504,7 @@ final class TurboAttributeCollector
 		$sourceDir = $this->realRoot . '/src';
 		$iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($sourceDir, FilesystemIterator::SKIP_DOTS));
 		foreach ($iterator as $file) {
+			assert($file instanceof SplFileInfo);
 			if ($file->getExtension() !== 'php') {
 				continue;
 			}

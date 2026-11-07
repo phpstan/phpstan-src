@@ -1,4 +1,6 @@
 *.php text eol=lf
+*.sh text eol=lf
+.bashunitrc text eol=lf
 *.stub linguist-language=PHP
 
 tests/PHPStan/Command/ErrorFormatter/data/WindowsNewlines.php eol=crlf

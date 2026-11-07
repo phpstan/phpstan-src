@@ -13,6 +13,7 @@ use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Parser\ArrowFunctionArgVisitor;
 use PHPStan\Parser\ClosureArgVisitor;
 use PHPStan\Parser\ImmediatelyInvokedClosureVisitor;
+use PHPStan\Reflection\ArrayMapCallbackParameterTypes;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
@@ -90,17 +91,38 @@ final class ContextualClosureParameterResolver
 			);
 		}
 
-		$parameters = [];
-		$nativeParameters = [];
+		$types = [];
+		$nativeTypes = [];
+		$arrayTypes = [];
+		$nativeArrayTypes = [];
+		$hasUnpackedArg = false;
 		foreach ($intrinsicArgs as $arg) {
+			$hasUnpackedArg = $hasUnpackedArg || $arg->unpack;
 			$result = $storage !== null ? $storage->findExpressionResult($arg->value) : null;
 			$type = $result !== null ? $result->getType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope);
 			$nativeType = $result !== null ? $result->getNativeType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope->doNotTreatPhpDocTypesAsCertain());
 			if ($arrayMapArgs !== null) {
+				$arrayTypes[] = $type;
+				$nativeArrayTypes[] = $nativeType;
 				$type = $type->getIterableValueType();
 				$nativeType = $nativeType->getIterableValueType();
 			}
+			$types[] = $type;
+			$nativeTypes[] = $nativeType;
+		}
+
+		// an unpacked arg is one parameter here, so its arrays cannot be told apart
+		if ($arrayMapArgs !== null && !$hasUnpackedArg) {
+			$types = ArrayMapCallbackParameterTypes::addPaddingNull($types, $arrayTypes);
+			$nativeTypes = ArrayMapCallbackParameterTypes::addPaddingNull($nativeTypes, $nativeArrayTypes);
+		}
+
+		$parameters = [];
+		foreach ($types as $type) {
 			$parameters[] = new DummyParameter('item', $type, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+		}
+		$nativeParameters = [];
+		foreach ($nativeTypes as $nativeType) {
 			$nativeParameters[] = new DummyParameter('item', $nativeType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
 

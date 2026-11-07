@@ -206,8 +206,10 @@ final class ParametersAcceptorSelector
 		) {
 			$arrayMapArgs = $args[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
-				$callbackParameters = [];
-				$nativeCallbackParameters = [];
+				$callbackValueTypes = [];
+				$callbackArrayTypes = [];
+				$nativeCallbackValueTypes = [];
+				$nativeCallbackArrayTypes = [];
 				foreach ($arrayMapArgs as $arg) {
 					$argType = ($typeGetter)($arg->value);
 					$nativeArgType = ($nativeTypeGetter)($arg->value);
@@ -217,7 +219,8 @@ final class ParametersAcceptorSelector
 							foreach ($constantArrays as $constantArray) {
 								$valueTypes = $constantArray->getValueTypes();
 								foreach ($valueTypes as $valueType) {
-									$callbackParameters[] = new DummyParameter('item', ($iterableValueTypeGetter)($valueType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+									$callbackValueTypes[] = ($iterableValueTypeGetter)($valueType);
+									$callbackArrayTypes[] = $valueType;
 								}
 							}
 						}
@@ -226,14 +229,26 @@ final class ParametersAcceptorSelector
 							foreach ($nativeConstantArrays as $constantArray) {
 								$valueTypes = $constantArray->getValueTypes();
 								foreach ($valueTypes as $valueType) {
-									$nativeCallbackParameters[] = new DummyParameter('item', ($iterableValueTypeGetter)($valueType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+									$nativeCallbackValueTypes[] = ($iterableValueTypeGetter)($valueType);
+									$nativeCallbackArrayTypes[] = $valueType;
 								}
 							}
 						}
 					} else {
-						$callbackParameters[] = new DummyParameter('item', ($iterableValueTypeGetter)($argType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-						$nativeCallbackParameters[] = new DummyParameter('item', ($iterableValueTypeGetter)($nativeArgType), optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+						$callbackValueTypes[] = ($iterableValueTypeGetter)($argType);
+						$callbackArrayTypes[] = $argType;
+						$nativeCallbackValueTypes[] = ($iterableValueTypeGetter)($nativeArgType);
+						$nativeCallbackArrayTypes[] = $nativeArgType;
 					}
+				}
+
+				$callbackParameters = [];
+				foreach (ArrayMapCallbackParameterTypes::addPaddingNull($callbackValueTypes, $callbackArrayTypes) as $valueType) {
+					$callbackParameters[] = new DummyParameter('item', $valueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				}
+				$nativeCallbackParameters = [];
+				foreach (ArrayMapCallbackParameterTypes::addPaddingNull($nativeCallbackValueTypes, $nativeCallbackArrayTypes) as $valueType) {
+					$nativeCallbackParameters[] = new DummyParameter('item', $valueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 				}
 
 				$acceptor = $parametersAcceptors[0];

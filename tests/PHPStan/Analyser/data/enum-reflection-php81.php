@@ -3,8 +3,6 @@
 namespace EnumReflection81;
 
 use ReflectionEnum;
-use ReflectionEnumBackedCase;
-use ReflectionEnumUnitCase;
 use function PHPStan\Testing\assertType;
 
 enum Foo: int

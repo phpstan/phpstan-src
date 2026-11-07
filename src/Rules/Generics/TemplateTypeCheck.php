@@ -14,31 +14,12 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ArrayType;
-use PHPStan\Type\BooleanType;
-use PHPStan\Type\Constant\ConstantArrayType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\FloatType;
-use PHPStan\Type\Generic\GenericObjectType;
-use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateTypeScope;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\IntersectionType;
-use PHPStan\Type\IterableType;
-use PHPStan\Type\KeyOfType;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectShapeType;
-use PHPStan\Type\ObjectType;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\StringType;
 use PHPStan\Type\TypeAliasResolver;
-use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_map;
 use function array_merge;
-use function get_class;
 use function sprintf;
 
 #[AutowiredService]
@@ -116,28 +97,10 @@ final class TemplateTypeCheck
 				'templateTagName' => $templateTagName,
 			]), $this->checkClassCaseSensitivity));
 
-			$boundTypeClass = get_class($boundType);
-			if (
-				$boundTypeClass !== MixedType::class
-				&& $boundTypeClass !== ConstantArrayType::class
-				&& $boundTypeClass !== ArrayType::class
-				&& $boundTypeClass !== ConstantStringType::class
-				&& $boundTypeClass !== StringType::class
-				&& $boundTypeClass !== ConstantIntegerType::class
-				&& $boundTypeClass !== IntegerType::class
-				&& $boundTypeClass !== FloatType::class
-				&& $boundTypeClass !== BooleanType::class
-				&& $boundTypeClass !== ObjectWithoutClassType::class
-				&& $boundTypeClass !== ObjectType::class
-				&& $boundTypeClass !== ObjectShapeType::class
-				&& $boundTypeClass !== GenericObjectType::class
-				&& $boundTypeClass !== KeyOfType::class
-				&& $boundTypeClass !== IterableType::class
-				&& $boundTypeClass !== NullType::class
-				&& !$boundType instanceof UnionType
-				&& !$boundType instanceof IntersectionType
-				&& !$boundType instanceof TemplateType
-			) {
+			// TemplateTypeFactory silently widens bounds it has no Template* class for
+			// to `mixed`. Ask it instead of maintaining a second list of supported
+			// bound types that can drift out of sync with it.
+			if (TemplateTypeFactory::fromTemplateTag($templateTypeScope, $templateTag)->getBound() !== $boundType) {
 				$messages[] = RuleErrorBuilder::message(sprintf($notSupportedBoundMessage, $templateTagName, $boundType->describe(VerbosityLevel::typeOnly())))
 					->identifier('generics.notSupportedBound')
 					->build();

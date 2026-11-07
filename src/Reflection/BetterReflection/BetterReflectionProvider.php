@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use Closure;
+use JetBrains\PHPStormStub\PhpStormStubsMap;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
@@ -39,6 +40,7 @@ use PHPStan\Reflection\ClassNameHelper;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\Constant\RuntimeConstantReflection;
+use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\Deprecation\DeprecationProvider;
 use PHPStan\Reflection\FunctionReflection;
@@ -61,9 +63,14 @@ use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function array_key_first;
+use function array_keys;
 use function array_map;
+use function array_values;
+use function get_defined_constants;
 use function in_array;
+use function preg_quote;
 use function sprintf;
+use function str_replace;
 use function strtolower;
 use const PHP_VERSION_ID;
 
@@ -89,6 +96,9 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 	/** @var array<string, array<string, ConstantReflection>> */
 	private array $cachedConstants = [];
+
+	/** @var list<non-empty-string>|null */
+	private ?array $constantNameCandidates = null;
 
 	/**
 	 * @param list<string> $universalObjectCratesClasses
@@ -524,6 +534,56 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$this->resolvedConstantNames[$cacheKey] = $resolved ?? false;
 
 		return $resolved;
+	}
+
+	public function findConstantNames(string $pattern): array
+	{
+		$regex = '{^' . str_replace('\\*', '.*', preg_quote(ConstantNameHelper::normalize($pattern))) . '$}D';
+		$names = [];
+		foreach ($this->getConstantNameCandidates() as $candidate) {
+			if (Strings::match($candidate, $regex) === null) {
+				continue;
+			}
+
+			// a candidate can be a stub of a constant the configured PHP version does not have
+			if (!$this->hasConstant(new Node\Name\FullyQualified($candidate), null)) {
+				continue;
+			}
+
+			$names[] = $candidate;
+		}
+
+		return $names;
+	}
+
+	/**
+	 * Names of every global constant the reflection might find: the built-in ones from the stubs,
+	 * the ones defined at runtime, and the ones declared in the analysed and scanned files.
+	 *
+	 * @return list<non-empty-string>
+	 */
+	private function getConstantNameCandidates(): array
+	{
+		if ($this->constantNameCandidates !== null) {
+			return $this->constantNameCandidates;
+		}
+
+		$names = [...array_keys(PhpStormStubsMap::CONSTANTS), ...array_keys(get_defined_constants())];
+		foreach ($this->reflector->reflectAllConstants() as $constantReflection) {
+			$names[] = $constantReflection->getName();
+		}
+
+		$candidates = [];
+		foreach ($names as $name) {
+			$name = ConstantNameHelper::normalize($name);
+			if ($name === '') {
+				continue; // define('', ...) is allowed, but no pattern can name it
+			}
+
+			$candidates[$name] = $name;
+		}
+
+		return $this->constantNameCandidates = array_values($candidates);
 	}
 
 	private function nameResolutionCacheKey(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): string

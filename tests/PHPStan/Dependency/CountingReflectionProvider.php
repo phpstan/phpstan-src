@@ -80,4 +80,9 @@ final class CountingReflectionProvider implements ReflectionProvider
 		return $this->inner->resolveConstantName($nameNode, $namespaceAnswerer);
 	}
 
+	public function findConstantNames(string $pattern): array
+	{
+		return $this->inner->findConstantNames($pattern);
+	}
+
 }

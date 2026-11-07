@@ -104,4 +104,9 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->provider->resolveConstantName($nameNode, $namespaceAnswerer);
 	}
 
+	public function findConstantNames(string $pattern): array
+	{
+		return $this->provider->findConstantNames($pattern);
+	}
+
 }

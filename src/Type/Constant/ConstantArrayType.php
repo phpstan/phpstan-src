@@ -1593,6 +1593,55 @@ class ConstantArrayType implements Type
 	}
 
 	/**
+	 * inferIsListFromShape() of a shape merged from $this and $otherArray. The
+	 * merged keys follow $this's order, but the arrays $otherArray describes
+	 * have its order: merging `[1 => 0, 0 => 0]` into `[0 => 1, 1 => 0]` gives
+	 * keys a list in one order and not in the other. So the shape is read in
+	 * $otherArray's order too (its keys first, then the rest), and the two
+	 * readings combine to `maybe` when they disagree.
+	 *
+	 * @param list<ConstantIntegerType|ConstantStringType> $keyTypes
+	 * @param int[] $optionalKeys
+	 */
+	private function inferMergedIsListFromShape(array $keyTypes, array $optionalKeys, self $otherArray): TrinaryLogic
+	{
+		$isList = self::inferIsListFromShape($keyTypes, $optionalKeys);
+		if ($isList->maybe()) {
+			return $isList;
+		}
+
+		$positions = [];
+		foreach ($keyTypes as $i => $keyType) {
+			$positions[$keyType->getValue()] = $i;
+		}
+
+		// merged position => key type, $otherArray's keys first
+		$reordered = [];
+		foreach ($otherArray->keyTypes as $keyType) {
+			$i = $positions[$keyType->getValue()] ?? null;
+			if ($i === null) {
+				continue;
+			}
+			$reordered[$i] = $keyTypes[$i];
+		}
+		$reordered += $keyTypes;
+		if (array_keys($reordered) === array_keys($keyTypes)) {
+			return $isList;
+		}
+
+		$optional = array_flip($optionalKeys);
+		$reorderedOptionalKeys = [];
+		foreach (array_keys($reordered) as $position => $i) {
+			if (!array_key_exists($i, $optional)) {
+				continue;
+			}
+			$reorderedOptionalKeys[] = $position;
+		}
+
+		return TrinaryLogic::extremeIdentity($isList, self::inferIsListFromShape(array_values($reordered), $reorderedOptionalKeys));
+	}
+
+	/**
 	 * When we're unsetting something not on the array, it will be untouched,
 	 * So the nextAutoIndexes won't change, and the array might still be a list even with PHPStan definition.
 	 *
@@ -3271,8 +3320,8 @@ class ConstantArrayType implements Type
 		// where two list inputs guarantee `yes`.
 		$naiveIsList = $this->isList->and($otherArray->isList);
 		$mergedIsSealed = $mergedUnsealedKey instanceof NeverType && $mergedUnsealedKey->isExplicit();
-		$isList = $mergedIsSealed
-			? $naiveIsList->or(self::inferIsListFromShape($keyTypes, $optionalKeys))
+		$isList = $mergedIsSealed && !$naiveIsList->yes()
+			? $naiveIsList->or($this->inferMergedIsListFromShape($keyTypes, $optionalKeys, $otherArray))
 			: $naiveIsList;
 
 		return $this->recreate(
@@ -3314,8 +3363,8 @@ class ConstantArrayType implements Type
 		$naiveIsList = $this->isList->and($otherArray->isList);
 		$mergedIsSealed = $this->unsealed === null
 			|| ($this->unsealed[0] instanceof NeverType && $this->unsealed[0]->isExplicit());
-		$isList = $mergedIsSealed
-			? $naiveIsList->or(self::inferIsListFromShape($this->keyTypes, $optionalKeys))
+		$isList = $mergedIsSealed && !$naiveIsList->yes()
+			? $naiveIsList->or($this->inferMergedIsListFromShape($this->keyTypes, $optionalKeys, $otherArray))
 			: $naiveIsList;
 
 		return $this->recreate($this->keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $this->unsealed);

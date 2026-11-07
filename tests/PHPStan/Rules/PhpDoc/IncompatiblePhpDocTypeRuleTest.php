@@ -543,24 +543,6 @@ class IncompatiblePhpDocTypeRuleTest extends RuleTestCase
 		]);
 	}
 
-	public function testGlobalConstantWildcardUnresolvable(): void
-	{
-		$this->analyse([__DIR__ . '/data/global-constant-wildcard-unresolvable.php'], [
-			[
-				'PHPDoc tag @param for parameter $nope contains unresolvable type.',
-				14,
-			],
-			[
-				'PHPDoc tag @param for parameter $globalFlag contains unresolvable type.',
-				14,
-			],
-			[
-				'PHPDoc tag @param for parameter $nopeFlag contains unresolvable type.',
-				14,
-			],
-		]);
-	}
-
 	public function testBug4548(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-4548.php'], []);

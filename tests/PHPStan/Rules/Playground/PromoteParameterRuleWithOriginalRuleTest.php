@@ -31,6 +31,7 @@ class PromoteParameterRuleWithOriginalRuleTest extends RuleTestCase
 				$container->getByType(MethodVisibilityComparisonHelper::class),
 				$container->getByType(MethodPrototypeFinder::class),
 				true,
+				true,
 			),
 			$container,
 			InClassMethodNode::class,

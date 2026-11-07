@@ -32,6 +32,7 @@ class ScopePhpVersionRangeReturnTypeExtensionsTest extends TypeInferenceTestCase
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [
+			__DIR__ . '/../../../conf/bleedingEdge.neon',
 			__DIR__ . '/scopePhpVersionRange.neon',
 		];
 	}

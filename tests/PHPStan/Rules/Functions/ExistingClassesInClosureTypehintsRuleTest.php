@@ -42,6 +42,7 @@ class ExistingClassesInClosureTypehintsRuleTest extends RuleTestCase
 				true,
 				false,
 				true,
+				true,
 			),
 		);
 	}

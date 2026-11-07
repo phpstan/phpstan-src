@@ -13,6 +13,7 @@ namespace slot {
 inline constexpr uint32_t methodThrowPointHelper = 0;
 inline constexpr uint32_t methodCallReturnTypeHelper = 1;
 inline constexpr uint32_t expressionResultFactory = 2;
+inline constexpr uint32_t checkWholePhpVersionRange = 3;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -26,6 +27,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("methodThrowPointHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper");
 	cls.property("methodCallReturnTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper");
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
+	cls.property("checkWholePhpVersionRange", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -37,31 +39,33 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper\0" /* 109 */
 	"expressionResultFactory\0" /* 172 */
 	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 196 */
-	"__construct\0" /* 237 */
-	"expr\0" /* 249 */
-	"PhpParser\\Node\\Expr\0" /* 254 */
-	"scope\0" /* 274 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 280 */
-	"exprResult\0" /* 311 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 322 */
-	"\0" /* 356 */
-	"processImplicitToStringCall"; /* 357 */
+	"checkWholePhpVersionRange\0" /* 237 */
+	"__construct\0" /* 263 */
+	"expr\0" /* 275 */
+	"PhpParser\\Node\\Expr\0" /* 280 */
+	"scope\0" /* 300 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 306 */
+	"exprResult\0" /* 337 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 348 */
+	"\0" /* 382 */
+	"processImplicitToStringCall"; /* 383 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 23), /* __construct $methodThrowPointHelper */
 	reg::packed(82, 0, 109), /* __construct $methodCallReturnTypeHelper */
 	reg::packed(172, 0, 196), /* __construct $expressionResultFactory */
-	reg::packed(249, 0, 254), /* processImplicitToStringCall $expr */
-	reg::packed(274, 0, 280), /* processImplicitToStringCall $scope */
-	reg::packed(311, 0, 322), /* processImplicitToStringCall $exprResult */
-	reg::packed(356, 0, 322), /* processImplicitToStringCall return */
+	reg::packed(237, MAY_BE_BOOL), /* __construct $checkWholePhpVersionRange */
+	reg::packed(275, 0, 280), /* processImplicitToStringCall $expr */
+	reg::packed(300, 0, 306), /* processImplicitToStringCall $scope */
+	reg::packed(337, 0, 348), /* processImplicitToStringCall $exprResult */
+	reg::packed(382, 0, 348), /* processImplicitToStringCall return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 237 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processImplicitToStringCall = { { 357 /* processImplicitToStringCall */, 3, 3, 3, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 263 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processImplicitToStringCall = { { 383 /* processImplicitToStringCall */, 3, 4, 3, 7, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ImplicitToStringCallHelper

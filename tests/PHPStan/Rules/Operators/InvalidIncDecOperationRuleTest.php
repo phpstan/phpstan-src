@@ -33,6 +33,7 @@ class InvalidIncDecOperationRuleTest extends RuleTestCase
 				discoveringSymbolsTip: true,
 			),
 			new PhpVersion(PHP_VERSION_ID),
+			true,
 		);
 	}
 

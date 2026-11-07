@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Methods;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\InClassNode;
 use PHPStan\Rules\Rule;
@@ -20,6 +21,13 @@ use function strtolower;
 final class MissingMagicSerializationMethodsRule implements Rule
 {
 
+	public function __construct(
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
+	)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return InClassNode::class;
@@ -28,7 +36,8 @@ final class MissingMagicSerializationMethodsRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$classReflection = $node->getClassReflection();
-		if ($scope->getPhpVersion()->serializableRequiresMagicMethods()->no()) {
+		$serializableRequiresMagicMethods = $scope->getPhpVersion()->serializableRequiresMagicMethods();
+		if ($this->checkWholePhpVersionRange ? $serializableRequiresMagicMethods->no() : !$serializableRequiresMagicMethods->yes()) {
 			return [];
 		}
 		if (!$classReflection->implementsInterface(Serializable::class)) {

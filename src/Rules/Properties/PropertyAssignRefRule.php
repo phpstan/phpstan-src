@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Properties;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,6 +19,8 @@ final class PropertyAssignRefRule implements Rule
 
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -29,7 +32,8 @@ final class PropertyAssignRefRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($scope->getPhpVersion()->supportsAsymmetricVisibility()->no()) {
+		$supportsAsymmetricVisibility = $scope->getPhpVersion()->supportsAsymmetricVisibility();
+		if ($this->checkWholePhpVersionRange ? $supportsAsymmetricVisibility->no() : !$supportsAsymmetricVisibility->yes()) {
 			return [];
 		}
 

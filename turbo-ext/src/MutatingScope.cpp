@@ -339,6 +339,7 @@ enum : uint32_t
 	PT_MSS_PHP_VERSION,
 	PT_MSS_ATTRIBUTE_REFLECTION_FACTORY,
 	PT_MSS_CONFIGURED_PHP_VERSION_RANGE_HELPER,
+	PT_MSS_CHECK_WHOLE_PHP_VERSION_RANGE,
 	PT_MSS_NODE_CALLBACK,
 	PT_MSS_COUNT,
 };
@@ -357,6 +358,7 @@ static const char *const pt_mss_names[PT_MSS_COUNT] = {
 	"phpVersion",
 	"attributeReflectionFactory",
 	"configuredPhpVersionRangeHelper",
+	"checkWholePhpVersionRange",
 	"nodeCallback",
 };
 
@@ -638,6 +640,9 @@ public:
 	/* $this->services-><name> (PT_MSS_*) — UNDEF while the constructor has
 	 * not written $services */
 	zv::Ref service(uint32_t which) const { return zv::Ref(pt_ms_service_of(slot(PT_MS_PROP_SERVICES).deref().raw(), which)); }
+
+	/* $this->services->checkWholePhpVersionRange */
+	bool checkWholePhpVersionRange() const { return Z_TYPE_P(service(PT_MSS_CHECK_WHOLE_PHP_VERSION_RANGE).raw()) == IS_TRUE; }
 
 	/* $services written: the twin's Error otherwise */
 	bool requireService()
@@ -1429,10 +1434,10 @@ public:
 			expr = zv::Val::copyOf(var);
 		}
 
-		/* return !$this->getPhpVersion()->supportsReadOnlyProperties()->no(); */
+		/* return $this->services->checkWholePhpVersionRange ? !$supportsReadOnlyProperties->no() : $supportsReadOnlyProperties->yes(); */
 		zend_long supports = phpVersionsTrinary(PT_LC("supportsreadonlyproperties"));
 		if (UNEXPECTED(supports < 0)) return false;
-		out = supports != PT_TRI_NO;
+		out = checkWholePhpVersionRange() ? supports != PT_TRI_NO : supports == PT_TRI_YES;
 		return true;
 	}
 
@@ -10048,10 +10053,10 @@ public:
 			if (!isProtectedSet) return canAccessClassMember(propertyReflection, out);
 		}
 
-		/* $this->getPhpVersion()->supportsAsymmetricVisibility()->no() */
+		/* $this->services->checkWholePhpVersionRange ? $supportsAsymmetricVisibility->no() : !$supportsAsymmetricVisibility->yes() */
 		zend_long supportsAsymmetricVisibility = phpVersionsTrinary(PT_LC("supportsasymmetricvisibility"));
 		if (UNEXPECTED(supportsAsymmetricVisibility < 0)) return false;
-		if (supportsAsymmetricVisibility == PT_TRI_NO) return canAccessClassMember(propertyReflection, out);
+		if (checkWholePhpVersionRange() ? supportsAsymmetricVisibility == PT_TRI_NO : supportsAsymmetricVisibility != PT_TRI_YES) return canAccessClassMember(propertyReflection, out);
 
 		return memberAccessibleFromScope(propertyReflection, PT_LC("isprivateset"), out);
 	}

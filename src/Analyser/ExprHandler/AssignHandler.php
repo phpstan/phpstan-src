@@ -55,6 +55,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VirtualAssignNodeCallback;
 use PHPStan\Dependency\Dependencies;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
@@ -158,6 +159,8 @@ final class AssignHandler implements ExprHandler
 		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
 		private StatementsHandler $statementsHandler,
 		private ArrayUnpackingHelper $arrayUnpackingHelper,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -1582,8 +1585,11 @@ final class AssignHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
 			$scope = $result->getScope();
 
-			if ($var->name instanceof Expr && !$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
-				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $var);
+			if ($var->name instanceof Expr) {
+				$supportsPropertyHooks = $scope->getPhpVersion()->supportsPropertyHooks();
+				if ($this->checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes()) {
+					$throwPoints[] = InternalThrowPoint::createImplicit($scope, $var);
+				}
 			}
 
 			$propertyHolderType = $objectResult->getType();
@@ -1645,7 +1651,8 @@ final class AssignHandler implements ExprHandler
 					) {
 						$throwPoints[] = InternalThrowPoint::createExplicit($scope, new ObjectType(TypeError::class), $assignedExpr, false);
 					}
-					if (!$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
+					$supportsPropertyHooks = $scope->getPhpVersion()->supportsPropertyHooks();
+					if ($this->checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes()) {
 						$throwPoints = array_merge($throwPoints, $this->propertyHookThrowPointsResolver->getThrowPointsFromPropertyHook($scope, $var, $nativeProperty, 'set'));
 					}
 					if ($enterExpressionAssign) {

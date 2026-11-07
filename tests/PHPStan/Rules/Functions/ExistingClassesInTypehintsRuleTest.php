@@ -42,6 +42,7 @@ class ExistingClassesInTypehintsRuleTest extends RuleTestCase
 				true,
 				false,
 				true,
+				true,
 			),
 		);
 	}

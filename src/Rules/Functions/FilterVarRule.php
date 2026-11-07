@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -24,6 +25,8 @@ final class FilterVarRule implements Rule
 		private ReflectionProvider $reflectionProvider,
 		private FilterFunctionReturnTypeHelper $filterFunctionReturnTypeHelper,
 		private FilterFunctionFlagsHelper $filterFunctionFlagsHelper,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -48,8 +51,9 @@ final class FilterVarRule implements Rule
 			return [];
 		}
 
+		$hasFilterThrowOnFailureConstant = $scope->getPhpVersion()->hasFilterThrowOnFailureConstant();
 		if (
-			$scope->getPhpVersion()->hasFilterThrowOnFailureConstant()->no()
+			($this->checkWholePhpVersionRange ? $hasFilterThrowOnFailureConstant->no() : !$hasFilterThrowOnFailureConstant->yes())
 			|| !$this->reflectionProvider->hasConstant(new Name\FullyQualified('FILTER_THROW_ON_FAILURE'), null)
 		) {
 			return [];

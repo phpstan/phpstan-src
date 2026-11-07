@@ -11,6 +11,7 @@ use PHPStan\Analyser\Generics\TemplateArgumentFrame;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\SpecifiedTypes;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -27,6 +28,8 @@ final class ImplicitToStringCallHelper
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private ExpressionResultFactory $expressionResultFactory,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -71,7 +74,8 @@ final class ImplicitToStringCallHelper
 			);
 		}
 
-		if (!$scope->getPhpVersion()->throwsOnStringCast()->no()) {
+		$throwsOnStringCast = $scope->getPhpVersion()->throwsOnStringCast();
+		if ($this->checkWholePhpVersionRange ? !$throwsOnStringCast->no() : $throwsOnStringCast->yes()) {
 			// the __toString() call's return type resolves directly (the receiver
 			// type is already in hand); the fabricated node is only the payload
 			// dynamic extensions receive - nothing walks it

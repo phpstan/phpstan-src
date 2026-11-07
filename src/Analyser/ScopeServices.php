@@ -43,6 +43,7 @@ final class ScopeServices
 		public readonly PhpVersion $phpVersion,
 		public readonly AttributeReflectionFactory $attributeReflectionFactory,
 		public readonly ConfiguredPhpVersionRangeHelper $configuredPhpVersionRangeHelper,
+		public readonly bool $checkWholePhpVersionRange,
 		public readonly mixed $nodeCallback,
 	)
 	{

@@ -36,6 +36,7 @@ class InvalidKeyInArrayItemRuleTest extends RuleTestCase
 		return new InvalidKeyInArrayItemRule(
 			$ruleLevelHelper,
 			$this->reportNonIntStringArrayKey,
+			true,
 		);
 	}
 

@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Operators;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ShellExec;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -17,6 +18,13 @@ use PHPStan\ShouldNotHappenException;
 final class BacktickRule implements Rule
 {
 
+	public function __construct(
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
+	)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return ShellExec::class;
@@ -24,7 +32,8 @@ final class BacktickRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($scope->getPhpVersion()->deprecatesBacktickOperator()->no()) {
+		$deprecatesBacktickOperator = $scope->getPhpVersion()->deprecatesBacktickOperator();
+		if ($this->checkWholePhpVersionRange ? $deprecatesBacktickOperator->no() : !$deprecatesBacktickOperator->yes()) {
 			return [];
 		}
 

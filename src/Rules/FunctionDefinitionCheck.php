@@ -30,6 +30,7 @@ use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\PhpDoc\UnresolvableTypeHelper;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\NeverType;
@@ -65,6 +66,8 @@ final class FunctionDefinitionCheck
 		private bool $checkThisOnly,
 		#[AutowiredParameter(ref: '%featureToggles.checkImportedClassNameCase%')]
 		private bool $checkImportedClassNameCase,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -204,7 +207,7 @@ final class FunctionDefinitionCheck
 			);
 		}
 
-		if (!$scope->getPhpVersion()->deprecatesRequiredParameterAfterOptional()->no()) {
+		if ($this->isDeprecated($scope->getPhpVersion()->deprecatesRequiredParameterAfterOptional())) {
 			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($scope->getPhpVersion(), $parameters));
 		}
 
@@ -412,7 +415,7 @@ final class FunctionDefinitionCheck
 			$errors[] = $implicitlyNullableTypeError;
 		}
 
-		if (!$scope->getPhpVersion()->deprecatesRequiredParameterAfterOptional()->no()) {
+		if ($this->isDeprecated($scope->getPhpVersion()->deprecatesRequiredParameterAfterOptional())) {
 			$errors = array_merge($errors, $this->checkRequiredParameterAfterOptional($scope->getPhpVersion(), $parameterNodes));
 		}
 
@@ -674,7 +677,7 @@ final class FunctionDefinitionCheck
 
 			$constantName = $defaultValue->name->toLowerString();
 			if ($constantName === 'null') {
-				if ($phpVersions->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull()->no()) {
+				if (!$this->isDeprecated($phpVersions->deprecatesRequiredParameterAfterOptionalNullableAndDefaultNull())) {
 					continue;
 				}
 
@@ -684,7 +687,7 @@ final class FunctionDefinitionCheck
 					$targetPhpVersion = '8.1';
 				}
 
-				if (!$phpVersions->deprecatesRequiredParameterAfterOptionalUnionOrMixed()->no()) {
+				if ($this->isDeprecated($phpVersions->deprecatesRequiredParameterAfterOptionalUnionOrMixed())) {
 					$types = [];
 
 					if ($parameterNodeType instanceof UnionType) {
@@ -808,7 +811,7 @@ final class FunctionDefinitionCheck
 			return null;
 		}
 
-		if ($phpVersions->deprecatesImplicitlyNullableParameterTypes()->no()) {
+		if (!$this->isDeprecated($phpVersions->deprecatesImplicitlyNullableParameterTypes())) {
 			return null;
 		}
 
@@ -899,6 +902,15 @@ final class FunctionDefinitionCheck
 		}
 
 		return [];
+	}
+
+	/**
+	 * Whether the deprecation applies to the analysed PHP versions: to any of
+	 * them with checkWholePhpVersionRange, to all of them otherwise.
+	 */
+	private function isDeprecated(TrinaryLogic $deprecation): bool
+	{
+		return $this->checkWholePhpVersionRange ? !$deprecation->no() : $deprecation->yes();
 	}
 
 }

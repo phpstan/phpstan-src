@@ -32,6 +32,7 @@ class InvalidKeyInArrayDimFetchRuleTest extends RuleTestCase
 			$ruleLevelHelper,
 			true,
 			$this->reportNonIntStringArrayKey,
+			true,
 		);
 	}
 

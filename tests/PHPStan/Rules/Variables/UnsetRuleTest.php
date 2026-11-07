@@ -20,6 +20,7 @@ class UnsetRuleTest extends RuleTestCase
 		$container = self::getContainer();
 		return new UnsetRule(
 			$container->getByType(PropertyReflectionFinder::class),
+			true,
 		);
 	}
 

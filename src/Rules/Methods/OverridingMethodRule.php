@@ -44,6 +44,8 @@ final class OverridingMethodRule implements Rule
 		private MethodPrototypeFinder $methodPrototypeFinder,
 		#[AutowiredParameter]
 		private bool $checkMissingOverrideMethodAttribute,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -56,7 +58,12 @@ final class OverridingMethodRule implements Rule
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter&DependencyTracker $scope): array
 	{
 		$method = $node->getMethodReflection();
-		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName(), $scope->getPhpVersion());
+		$supportsAbstractTraitMethods = $scope->getPhpVersion()->supportsAbstractTraitMethods();
+		$prototypeData = $this->methodPrototypeFinder->findPrototype(
+			$node->getClassReflection(),
+			$method->getName(),
+			$this->checkWholePhpVersionRange ? !$supportsAbstractTraitMethods->no() : $supportsAbstractTraitMethods->yes(),
+		);
 		if ($prototypeData === null) {
 			if (strtolower($method->getName()) === '__construct') {
 				$parent = $method->getDeclaringClass()->getParentClass();
@@ -237,7 +244,8 @@ final class OverridingMethodRule implements Rule
 		$methodReturnType = $method->getNativeReturnType();
 
 		$realPrototype = $method->getPrototype();
-		$hasTentativeReturnTypes = !$scope->getPhpVersion()->hasTentativeReturnTypes()->no();
+		$tentativeReturnTypes = $scope->getPhpVersion()->hasTentativeReturnTypes();
+		$hasTentativeReturnTypes = $this->checkWholePhpVersionRange ? !$tentativeReturnTypes->no() : $tentativeReturnTypes->yes();
 
 		if (
 			$realPrototype instanceof MethodPrototypeReflection

@@ -27,6 +27,8 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 		private bool $reportMaybes,
 		#[AutowiredParameter]
 		private bool $reportNonIntStringArrayKey,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -58,7 +60,7 @@ final class InvalidKeyInArrayDimFetchRule implements Rule
 			return [];
 		}
 
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType($scope->getPhpVersion(), $this->reportNonIntStringArrayKey);
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType($scope->getPhpVersion(), $this->reportNonIntStringArrayKey, $this->checkWholePhpVersionRange);
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->dim,

@@ -688,13 +688,14 @@ zv::Val vehCreateTypeExprResult(zval *helper, zval *scope, zval *expr)
 	return pt_virtual_expr_result_helper_create_type_expr_result(helper, scope, expr);
 }
 
-/* !$scope->getPhpVersion()->supportsPropertyHooks()->no(); false = pending
- * exception */
-[[nodiscard]] bool scopeMaySupportPropertyHooks(zval *scope, bool &out)
+/* $supportsPropertyHooks = $scope->getPhpVersion()->supportsPropertyHooks();
+ * $checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes();
+ * false = pending exception */
+[[nodiscard]] bool scopeMaySupportPropertyHooks(zval *scope, bool checkWholePhpVersionRange, bool &out)
 {
 	zend_long supports = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scope), PT_LC("supportspropertyhooks"));
 	if (UNEXPECTED(supports < 0)) return false;
-	out = supports != PT_TRI_NO;
+	out = checkWholePhpVersionRange ? supports != PT_TRI_NO : supports == PT_TRI_YES;
 	return true;
 }
 
@@ -1086,7 +1087,7 @@ public:
 	void construct(zval *argv)
 	{
 		zv::ObjRef object(self);
-		for (uint32_t i = 0; i < 19; i++) {
+		for (uint32_t i = 0; i < 20; i++) {
 			object.propAtWrite(i, zv::Val::copyOf(zv::Ref(&argv[i])));
 		}
 	}
@@ -3977,7 +3978,7 @@ private:
 
 		if (ahIs(AH_PROP(var, name), PT_CLASS_EXPR)) {
 			bool supportsPropertyHooks;
-			AH_OKB(scopeMaySupportPropertyHooks(scope.raw(), supportsPropertyHooks));
+			AH_OKB(scopeMaySupportPropertyHooks(scope.raw(), Z_TYPE_P(prop(slots::checkWholePhpVersionRange)) == IS_TRUE, supportsPropertyHooks));
 			if (supportsPropertyHooks) {
 				AH_VALB(throwPoint, itpCreateImplicit(scope.raw(), var));
 				ahPush(throwPoints, std::move(throwPoint));
@@ -4027,7 +4028,7 @@ private:
 					ahPush(throwPoints, std::move(throwPoint));
 				}
 				bool supportsPropertyHooks;
-				AH_OKB(scopeMaySupportPropertyHooks(scope.raw(), supportsPropertyHooks));
+				AH_OKB(scopeMaySupportPropertyHooks(scope.raw(), Z_TYPE_P(prop(slots::checkWholePhpVersionRange)) == IS_TRUE, supportsPropertyHooks));
 				if (supportsPropertyHooks) {
 					AH_VALB(points, phtprGetThrowPointsFromSetHook(prop(slots::propertyHookThrowPointsResolver), scope.raw(), var, nativeProperty.raw()));
 					AH_OKB(ahMerge(throwPoints, points.raw()));
@@ -4887,14 +4888,19 @@ PT_MINIT_REGISTRATION(pt_register_assign_handler)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *argv;
 		uint32_t argc;
-		ZEND_PARSE_PARAMETERS_START(19, 19)
+		ZEND_PARSE_PARAMETERS_START(20, 20)
 			Z_PARAM_VARIADIC('+', argv, argc)
 		ZEND_PARSE_PARAMETERS_END();
-		for (uint32_t i = 0; i < argc; i++) {
+		for (uint32_t i = 0; i < argc - 1; i++) {
 			if (UNEXPECTED(Z_TYPE(argv[i]) != IS_OBJECT)) {
 				zend_argument_type_error(i + 1, "must be of type object, %s given", zend_zval_value_name(&argv[i]));
 				RETURN_THROWS();
 			}
+		}
+		/* the trailing bool $checkWholePhpVersionRange */
+		if (UNEXPECTED(Z_TYPE(argv[argc - 1]) != IS_TRUE && Z_TYPE(argv[argc - 1]) != IS_FALSE)) {
+			zend_argument_type_error(argc, "must be of type bool, %s given", zend_zval_value_name(&argv[argc - 1]));
+			RETURN_THROWS();
 		}
 		AssignHandler(Z_OBJ_P(ZEND_THIS)).construct(argv);
 	});

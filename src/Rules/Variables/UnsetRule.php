@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Variables;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -22,6 +23,8 @@ final class UnsetRule implements Rule
 
 	public function __construct(
 		private PropertyReflectionFinder $propertyReflectionFinder,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -35,6 +38,8 @@ final class UnsetRule implements Rule
 	{
 		$functionArguments = $node->vars;
 		$errors = [];
+		$supportsPropertyHooks = $scope->getPhpVersion()->supportsPropertyHooks();
+		$mayHaveHooks = $this->checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes();
 
 		foreach ($functionArguments as $argument) {
 			if (
@@ -78,7 +83,7 @@ final class UnsetRule implements Rule
 						->identifier('unset.hookedProperty')
 						->build();
 					continue;
-				} elseif (!$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
+				} elseif ($mayHaveHooks) {
 					if (
 						!$propertyReflection->isPrivate()
 						&& !$propertyReflection->isFinal()->yes()

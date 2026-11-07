@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -18,6 +19,13 @@ use function strtolower;
 final class DefineParametersRule implements Rule
 {
 
+	public function __construct(
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
+	)
+	{
+	}
+
 	public function getNodeType(): string
 	{
 		return FuncCall::class;
@@ -28,7 +36,8 @@ final class DefineParametersRule implements Rule
 		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
-		if ($scope->getPhpVersion()->supportsCaseInsensitiveConstantNames()->yes()) {
+		$supportsCaseInsensitiveConstantNames = $scope->getPhpVersion()->supportsCaseInsensitiveConstantNames();
+		if ($this->checkWholePhpVersionRange ? $supportsCaseInsensitiveConstantNames->yes() : !$supportsCaseInsensitiveConstantNames->no()) {
 			return [];
 		}
 		$name = strtolower((string) $node->name);

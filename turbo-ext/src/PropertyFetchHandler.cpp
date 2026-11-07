@@ -80,8 +80,15 @@ public:
 	explicit PropertyFetchHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *propertyReflectionFinder, zval *expressionResultFactory, zval *propertyHookThrowPointsResolver, zval *defaultNarrowingHelper) const
+	/* $this->checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes() */
+	bool mayHavePropertyHooks(zend_long supportsPropertyHooks) const
 	{
+		return Z_TYPE_P(OBJ_PROP_NUM(self, slots::checkWholePhpVersionRange)) == IS_TRUE ? supportsPropertyHooks != PT_TRI_NO : supportsPropertyHooks == PT_TRI_YES;
+	}
+
+	void construct(zval *propertyReflectionFinder, zval *expressionResultFactory, zval *propertyHookThrowPointsResolver, zval *defaultNarrowingHelper, bool checkWholePhpVersionRange) const
+	{
+		zv::ObjRef(self).propAtWrite(slots::checkWholePhpVersionRange, zv::Val::boolean(checkWholePhpVersionRange));
 		pt_write_slot(self, slots::propertyReflectionFinder, propertyReflectionFinder);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::propertyHookThrowPointsResolver, propertyHookThrowPointsResolver);
@@ -152,10 +159,9 @@ public:
 		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
 		bool mayShortCircuit = false;
 		if (nameIsIdentifier) {
-			/* $scopeBeforeVar->getPhpVersion()->supportsPropertyHooks()->no() negated */
 			zend_long supportsPropertyHooks = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scopeBeforeVar), PT_LC("supportspropertyhooks"));
 			if (UNEXPECTED(supportsPropertyHooks < 0)) return zv::Val();
-			if (supportsPropertyHooks != PT_TRI_NO && UNEXPECTED(!addGetHookPoints(nodeScopeResolver, expr, name, varResult, scopeBeforeVar, throwPoints, impurePoints))) return zv::Val();
+			if (mayHavePropertyHooks(supportsPropertyHooks) && UNEXPECTED(!addGetHookPoints(nodeScopeResolver, expr, name, varResult, scopeBeforeVar, throwPoints, impurePoints))) return zv::Val();
 		} else if (nameResult != NULL) {
 			// a fetch that is a link in a nullsafe chain may never run - see
 			// MethodCallHandler::processExpr(). Only the dynamic name is skipped
@@ -180,10 +186,9 @@ public:
 				scope = pt_mutating_scope_merge_with(Z_OBJ_P(scope.raw()), borrowed);
 				if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			}
-			/* $scope->getPhpVersion()->supportsPropertyHooks()->no() negated */
 			zend_long supportsPropertyHooks = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scope.raw()), PT_LC("supportspropertyhooks"));
 			if (UNEXPECTED(supportsPropertyHooks < 0)) return zv::Val();
-			if (supportsPropertyHooks != PT_TRI_NO) {
+			if (mayHavePropertyHooks(supportsPropertyHooks)) {
 				zv::Val throwPoint = pt_internal_throw_point_create_implicit(scope.raw(), expr);
 				if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
 				appendTo(throwPoints, std::move(throwPoint));
@@ -513,13 +518,15 @@ PT_MINIT_REGISTRATION(pt_register_property_fetch_handler)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *propertyReflectionFinder, *expressionResultFactory, *propertyHookThrowPointsResolver, *defaultNarrowingHelper;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		bool checkWholePhpVersionRange;
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_OBJECT(propertyReflectionFinder)
 			Z_PARAM_OBJECT(expressionResultFactory)
 			Z_PARAM_OBJECT(propertyHookThrowPointsResolver)
 			Z_PARAM_OBJECT(defaultNarrowingHelper)
+			Z_PARAM_BOOL(checkWholePhpVersionRange)
 		ZEND_PARSE_PARAMETERS_END();
-		PropertyFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(propertyReflectionFinder, expressionResultFactory, propertyHookThrowPointsResolver, defaultNarrowingHelper);
+		PropertyFetchHandler(Z_OBJ_P(ZEND_THIS)).construct(propertyReflectionFinder, expressionResultFactory, propertyHookThrowPointsResolver, defaultNarrowingHelper, checkWholePhpVersionRange);
 	});
 
 	cls.method<&PropertyFetchHandler::supports, zp::Obj>(sigs::supports);

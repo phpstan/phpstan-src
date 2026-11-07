@@ -22,6 +22,7 @@ use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Dependency\Dependencies;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Rules\Properties\FoundPropertyReflection;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
@@ -48,6 +49,8 @@ final class PropertyFetchHandler implements ExprHandler
 		private ExpressionResultFactory $expressionResultFactory,
 		private PropertyHookThrowPointsResolver $propertyHookThrowPointsResolver,
 		private DefaultNarrowingHelper $defaultNarrowingHelper,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -85,7 +88,8 @@ final class PropertyFetchHandler implements ExprHandler
 		$scope = $varResult->getScope();
 		$mayShortCircuit = false;
 		if ($expr->name instanceof Identifier) {
-			if (!$scopeBeforeVar->getPhpVersion()->supportsPropertyHooks()->no()) {
+			$supportsPropertyHooks = $scopeBeforeVar->getPhpVersion()->supportsPropertyHooks();
+			if ($this->checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes()) {
 				$propertyName = $expr->name->toString();
 				$propertyHolderType = $varResult->getType();
 				$propertyReflection = $scopeBeforeVar->getInstancePropertyReflection($propertyHolderType, $propertyName);
@@ -113,7 +117,8 @@ final class PropertyFetchHandler implements ExprHandler
 				// short-circuited world
 				$scope = $scope->mergeWith($varResult->getScope());
 			}
-			if (!$scope->getPhpVersion()->supportsPropertyHooks()->no()) {
+			$supportsPropertyHooks = $scope->getPhpVersion()->supportsPropertyHooks();
+			if ($this->checkWholePhpVersionRange ? !$supportsPropertyHooks->no() : $supportsPropertyHooks->yes()) {
 				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 			}
 		}

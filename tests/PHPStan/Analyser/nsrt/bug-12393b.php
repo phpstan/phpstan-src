@@ -436,7 +436,7 @@ class FooFloatString
 	public function doFoo(float $b): void
 	{
 		$this->foo = $b;
-		assertType('non-empty-string&uppercase-string', $this->foo);
+		assertType("'-INF'|'INF'|'NAN'|(numeric-string&uppercase-string)", $this->foo);
 	}
 
 	public function doBar(): void
@@ -472,7 +472,7 @@ class FooNumericToString
 	public function doFoo(float|int $b): void
 	{
 		$this->foo = $b;
-		assertType('non-empty-string&uppercase-string', $this->foo);
+		assertType("'-INF'|'INF'|'NAN'|(numeric-string&uppercase-string)", $this->foo);
 	}
 
 }

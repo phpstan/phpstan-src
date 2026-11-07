@@ -1,0 +1,8 @@
+--- src/A.php
++++ src/A.php
+@@ -4,5 +4,4 @@
+ 
+ class A
+ {
+-	use MyTrait;
+ }

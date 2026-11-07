@@ -155,8 +155,8 @@ final class FileAnalyser
 									$ignoredFile,
 									$line,
 									false,
-									$ignoredFile,
-									null,
+									$file,
+									$nodeCallback->getTraitFilePaths()[$ignoredFile] ?? null,
 									'Use @phpstan-ignore with an identifier and a comment (in parentheses).',
 								))->withIdentifier('ignore.allLineErrors');
 								unset($linesToIgnore[$ignoredFile][$line]);
@@ -174,8 +174,8 @@ final class FileAnalyser
 									$ignoredFile,
 									$line,
 									false,
-									$ignoredFile,
-									null,
+									$file,
+									$nodeCallback->getTraitFilePaths()[$ignoredFile] ?? null,
 									'Explain why this ignore is necessary in parentheses after the identifier.',
 								))->withIdentifier('ignore.noComment');
 								unset($linesToIgnore[$ignoredFile][$line]);

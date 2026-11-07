@@ -55,5 +55,5 @@ $mappedAWithFirstClassSyntax = mapArray(
 	filterArrayNotNull(...)
 );
 
-assertType('array<int<0, max>, array<int|string, mixed>>', $mappedA);
+assertType('array<int<0, max>, array<string, int>>', $mappedA);
 assertType('array<int<0, max>, array<int|string, mixed>>', $mappedAWithFirstClassSyntax);

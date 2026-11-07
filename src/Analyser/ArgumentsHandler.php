@@ -35,6 +35,8 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -48,6 +50,7 @@ use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
+use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
@@ -63,6 +66,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
+use PHPStan\Type\UnionType;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -954,11 +958,14 @@ final class ArgumentsHandler
 	/**
 	 * Resolves the type of a closure/arrow function argument for the generic
 	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
-	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
-	 * onto the in-function-call stack, so its body sees the template parameter
-	 * (effectively mixed for an untyped param) rather than a parameter already
-	 * resolved from sibling args. That keeps the inferred return type (the U in
-	 * callable(T): U) faithful to the closure's own declaration.
+	 * type is read with the acceptor parameter pushed onto the in-function-call
+	 * stack before its templates are resolved, so the inferred return type (the
+	 * U in callable(T): U) stays faithful to the closure's own declaration.
+	 *
+	 * The templates the closure only receives (the T in callable(T): U) are
+	 * resolved from the other arguments gathered so far before the push: left
+	 * as T, an offset or a property read off the closure's parameter is mixed,
+	 * and U would be inferred from that mixed (see resolveReceivedTemplateTypes()).
 	 *
 	 * A template of the callee that the raw parameter leaks into the closure
 	 * type (the T in callable(T): T, read back from a closure returning its
@@ -995,9 +1002,17 @@ final class ArgumentsHandler
 			return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
 		}
 
+		$siblingTemplateTypeMap = null;
+		$pushedParameter = $rawParameter;
+		$receivedTemplateNames = self::getReceivedTemplateNames($rawParameter->getType(), $scope);
+		if ($receivedTemplateNames !== []) {
+			$siblingTemplateTypeMap = $this->selectSiblingTemplateTypeMap($nodeScopeResolver, $args, $parametersAcceptors, $namedArgumentsVariants, $gatheredArgTypeByIndex, $i, $scope);
+			$pushedParameter = self::resolveReceivedTemplateTypes($rawParameter, $receivedTemplateNames, $siblingTemplateTypeMap);
+		}
+
 		$closureType = $this->closureParameterResolver->resolveCallableTypeForScope(
 			$closureExpr,
-			$scope->pushInFunctionCall(null, $rawParameter, false),
+			$scope->pushInFunctionCall(null, $pushedParameter, false),
 		);
 
 		$calleeTemplateTypeMap = $parametersAcceptors[0]->getTemplateTypeMap();
@@ -1005,6 +1020,32 @@ final class ArgumentsHandler
 			return $closureType;
 		}
 
+		return self::resolveCalleeTemplateTypes(
+			$closureType,
+			$calleeTemplateTypeMap,
+			$siblingTemplateTypeMap ?? $this->selectSiblingTemplateTypeMap($nodeScopeResolver, $args, $parametersAcceptors, $namedArgumentsVariants, $gatheredArgTypeByIndex, $i, $scope),
+		);
+	}
+
+	/**
+	 * The template types resolved from every argument gathered so far except
+	 * the i-th one, which counts as mixed.
+	 *
+	 * @param Node\Arg[] $args
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 * @param array<int, Type> $gatheredArgTypeByIndex
+	 */
+	private function selectSiblingTemplateTypeMap(
+		NodeScopeResolver $nodeScopeResolver,
+		array $args,
+		array $parametersAcceptors,
+		?array $namedArgumentsVariants,
+		array $gatheredArgTypeByIndex,
+		int $i,
+		MutatingScope $scope,
+	): TemplateTypeMap
+	{
 		$siblingTypes = [];
 		$siblingUnpack = false;
 		$siblingHasName = false;
@@ -1013,10 +1054,105 @@ final class ArgumentsHandler
 			$this->addGatheredArgType($siblingTypes, $siblingUnpack, $siblingHasName, $siblingOriginalArg, $j, $j !== $i ? ($gatheredArgTypeByIndex[$j] ?? new MixedType()) : new MixedType());
 		}
 
-		return self::resolveCalleeTemplateTypes(
-			$closureType,
-			$calleeTemplateTypeMap,
-			$this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $siblingTypes, $parametersAcceptors, $namedArgumentsVariants, $siblingHasName, $siblingUnpack, $scope)->getResolvedTemplateTypeMap(),
+		return $this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $siblingTypes, $parametersAcceptors, $namedArgumentsVariants, $siblingHasName, $siblingUnpack, $scope)->getResolvedTemplateTypeMap();
+	}
+
+	/**
+	 * The names of the template types a callable parameter type passes to the
+	 * callable without expecting them back: those its parameters reference and
+	 * its return type does not. A template in the return type is left alone, as
+	 * the closure's own return takes part in its inference.
+	 *
+	 * @return list<string>
+	 */
+	private static function getReceivedTemplateNames(Type $parameterType, MutatingScope $scope): array
+	{
+		if (!$parameterType->hasTemplateOrLateResolvableType() || $parameterType->isCallable()->no()) {
+			return [];
+		}
+
+		$callableType = $parameterType;
+		if ($callableType instanceof UnionType) {
+			$callableType = $callableType->filterTypes(static fn (Type $innerType): bool => $innerType->isCallable()->yes());
+		}
+		if (!$callableType->isCallable()->yes()) {
+			return [];
+		}
+
+		$returnedTemplateNames = [];
+		foreach ($callableType->getCallableParametersAcceptors($scope) as $acceptor) {
+			foreach ($acceptor->getReturnType()->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()) as $reference) {
+				$returnedTemplateNames[$reference->getType()->getName()] = true;
+			}
+		}
+
+		$receivedTemplateNames = [];
+		foreach ($callableType->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant()) as $reference) {
+			$name = $reference->getType()->getName();
+			if (isset($returnedTemplateNames[$name])) {
+				continue;
+			}
+			$receivedTemplateNames[$name] = true;
+		}
+
+		return array_keys($receivedTemplateNames);
+	}
+
+	/**
+	 * The parameter with the received template types replaced by what the other
+	 * arguments resolve them to - left alone when they say nothing about them,
+	 * or pass no value of them (never, from an empty array).
+	 *
+	 * @param list<string> $receivedTemplateNames
+	 */
+	private static function resolveReceivedTemplateTypes(ParameterReflection $parameter, array $receivedTemplateNames, TemplateTypeMap $siblingTemplateTypeMap): ParameterReflection
+	{
+		$receivedTypes = [];
+		foreach ($receivedTemplateNames as $name) {
+			$resolvedType = $siblingTemplateTypeMap->getType($name);
+			if ($resolvedType === null || $resolvedType instanceof ErrorType || $resolvedType instanceof NeverType) {
+				continue;
+			}
+			$receivedTypes[$name] = $resolvedType;
+		}
+		if ($receivedTypes === []) {
+			return $parameter;
+		}
+
+		$type = TemplateTypeHelper::resolveTemplateTypes(
+			$parameter->getType(),
+			new TemplateTypeMap($receivedTypes),
+			TemplateTypeVarianceMap::createEmpty(),
+			TemplateTypeVariance::createInvariant(),
+		);
+
+		if (!$parameter instanceof ExtendedParameterReflection) {
+			return new DummyParameter(
+				$parameter->getName(),
+				$type,
+				$parameter->isOptional(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$parameter->getDefaultValue(),
+			);
+		}
+
+		return new ExtendedDummyParameter(
+			$parameter->getName(),
+			$type,
+			$parameter->isOptional(),
+			$parameter->passedByReference(),
+			$parameter->isVariadic(),
+			$parameter->getDefaultValue(),
+			$parameter->getNativeType(),
+			$type,
+			$parameter->getOutType(),
+			$parameter->isImmediatelyInvokedCallable(),
+			$parameter->getClosureThisType(),
+			$parameter->getAttributes(),
+			$parameter->getAllowedConstants(),
+			$parameter->isPureUnlessCallableIsImpureParameter(),
+			$parameter->isPureUnlessParameterPassedParameter(),
 		);
 	}
 

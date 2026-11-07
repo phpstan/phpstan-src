@@ -71,6 +71,8 @@ final class Patcher
 
 				$insertionsByFile[$diff->file] = $insertions;
 			}
+			// a reference to the runs would make the insertions below copy them all, for each group
+			unset($fileRuns);
 
 			foreach ($insertionsByFile as $file => $insertions) {
 				$acceptedRuns[$file] ??= [];
@@ -78,6 +80,11 @@ final class Patcher
 				// runs of a single diff are ordered and non-overlapping,
 				// inserting from the last one keeps the earlier indexes valid
 				for ($i = count($insertions) - 1; $i >= 0; $i--) {
+					if ($insertions[$i][0] === count($acceptedRuns[$file])) {
+						// the diffs usually come in the order of their lines, array_splice() would copy the runs to append one
+						$acceptedRuns[$file][] = $insertions[$i][1];
+						continue;
+					}
 					array_splice($acceptedRuns[$file], $insertions[$i][0], 0, [$insertions[$i][1]]);
 				}
 			}

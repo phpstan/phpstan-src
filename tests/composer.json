@@ -2,8 +2,7 @@
 	"name": "phpstan/phpstan-src-tests",
     "require-dev": {
         "phpunit/phpunit": "^11.5.23",
-        "brianium/paratest": "^7.8.3",
-		"phpbench/phpbench": "^1.7"
+        "brianium/paratest": "^7.8.3"
     },
 	"config": {
 		"platform": {

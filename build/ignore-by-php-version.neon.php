@@ -27,6 +27,7 @@ if (PHP_VERSION_ID < 80000) {
 
 if (PHP_VERSION_ID < 80200) {
 	$includes[] = __DIR__ . '/randomizer.neon';
+	$includes[] = __DIR__ . '/memory-reset-peak-usage.neon';
 }
 
 if (PHP_VERSION_ID >= 80000) {

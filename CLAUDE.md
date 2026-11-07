@@ -294,6 +294,7 @@ New introduced classes in these categories should be shadowed with a native C++ 
 - **Always verify the test fails before the fix.** Stating "tests pass" is not enough — that only proves the fix doesn't break things. `git stash` the source change, run the test, see it fail for the right reason; `git stash pop`, run again, see it pass. Only then is the fix confirmed. The `regression-test` skill bakes this in for bug-issue workflows.
 - **Reproducers come from the OP's playground link** in the issue body, not from later comments. Copy the snippet as close to verbatim as practical.
 - **Integration tests**: `AnalyserIntegrationTest` runs full analysis on test files and checks error output.
+- **Benchmarks**: every file in `tests/bench/data` is analysed in the Benchmarks workflow under CodSpeed's CPU simulation, which counts instructions instead of measuring time, so the numbers are the same on every runner. `tests/bench/measure.php` boots PHPStan and analyses a warm-up file first, so only the analysis of the benchmark file itself is counted. `tests/bench/compare.php` compares them against `tests/bench/expected.neon`; when a change moves them on purpose or adds a benchmark, replace that file with the workflow's `benchmark-measured` artifact.
 
 ### Adding support for new PHP versions
 
@@ -311,7 +312,7 @@ Recent work on PHP 8.5 support shows the pattern:
 
 - **One fix, one commit (or one PR)**. Bench scripts and tests for a fix go in the same commit as the source change, not separately.
 - **Commit messages and PR titles describe the change, not the bug they close.** Prefer "Do not subtract TemplateType from TemplateType" over "Fix #14459: type subtraction". Issue closure goes in the PR body via `Closes https://github.com/phpstan/phpstan/issues/<n>`.
-- **Standard reproducer command**: `bin/phpstan analyse -l 8 <file> --debug` (add `-vvv` for hangs and infinite loops). Files under `tests/bench/data` are not directly runnable as PHPStan inputs — copy the reproducing snippet into a `test.php` at the repo root first, then analyse that.
+- **Standard reproducer command**: `bin/phpstan analyse -l 8 <file> --debug` (add `-vvv` for hangs and infinite loops). Files under `tests/bench/data` are excluded by the default config — analyse them with the benchmarks' own config: `bin/phpstan analyse -c tests/bench/phpstan.neon --debug <file>`.
 - **Debug helpers in analysed code**: `\PHPStan\dumpType($expr)` prints the inferred type of an expression at that point; `\PHPStan\debugScope()` prints the current scope. Inside `NodeScopeResolver` itself, `var_dump($scope->debug())` is the canonical inspection point. Reach for these before guessing what PHPStan is doing.
 - **When the user says "I don't understand why X is needed"** about existing code, treat it as a request to investigate whether X is actually needed — not a request to defend the status quo. The answer is often that two paths can be unified or one block deleted.
 

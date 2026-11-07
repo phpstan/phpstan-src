@@ -7,7 +7,8 @@
  * cache lives in the twin's $cachedTypes slot with the twin's shape
  * (spl_object_id => ['expr' => ..., 'types' => [cacheKey => [...]]]) and is
  * updated in place. The private static $resolveClosureTypeDepth guard is a
- * C++ counter (the declared static stays for reflection parity).
+ * C++ list of the closure nodes being walked (the declared static stays for
+ * reflection parity).
  *
  * getClosureType(), buildClosureTypeForClosure(),
  * buildClosureTypeForArrowFunction() and getDeclaredClosureType() are exported
@@ -36,6 +37,8 @@ namespace sigs = ptdecl::ClosureTypeResolver::sig;
 
 #include "zend_smart_str.h"
 
+#include <vector>
+
 zend_class_entry *pt_ce_closure_type_resolver = nullptr;
 
 namespace {
@@ -55,8 +58,30 @@ zend_string *pt_ctr_impure_points = nullptr;
 zend_string *pt_ctr_invalidate_expressions = nullptr;
 zend_string *pt_ctr_used_variables = nullptr;
 
-/* the private static $resolveClosureTypeDepth */
-int pt_ctr_resolve_closure_type_depth = 0;
+/* the private static $resolveClosureTypeDepth: the object handles of the
+ * closure nodes whose body walk is in progress, innermost last - a node's
+ * depth is the number of its entries */
+std::vector<uint32_t> pt_ctr_resolve_closure_type_walks;
+
+int resolveClosureTypeDepth(uint32_t exprId)
+{
+	int depth = 0;
+	for (uint32_t id : pt_ctr_resolve_closure_type_walks) {
+		if (id == exprId) depth++;
+	}
+	return depth;
+}
+
+void decrementResolveClosureTypeDepth(uint32_t exprId)
+{
+	for (auto it = pt_ctr_resolve_closure_type_walks.end(); it != pt_ctr_resolve_closure_type_walks.begin();) {
+		--it;
+		if (*it == exprId) {
+			pt_ctr_resolve_closure_type_walks.erase(it);
+			return;
+		}
+	}
+}
 
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
@@ -355,7 +380,7 @@ public:
 			ZVAL_DEREF(cached);
 			return createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree);
 		}
-		if (pt_ctr_resolve_closure_type_depth >= 2) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
+		if (resolveClosureTypeDepth(Z_OBJ_HANDLE_P(expr)) >= 2) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
 
 		if (UNEXPECTED(!countClosureTypeBodyWalk())) return zv::Val();
 		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
@@ -1353,7 +1378,7 @@ private:
 
 		zv::Val arrowFunctionImpurePoints = ptsh::newArrayReference();
 		zv::Val invalidateExpressions = ptsh::newArrayReference();
-		pt_ctr_resolve_closure_type_depth++;
+		pt_ctr_resolve_closure_type_walks.push_back(Z_OBJ_HANDLE_P(expr));
 		zv::Val walkStorage = pt_expression_result_storage_new();
 		if (UNEXPECTED(walkStorage.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(arrowScope.raw()), walkStorage.raw()))) return zv::Val();
@@ -1374,7 +1399,7 @@ private:
 		}
 		pt_finally([&]() {
 			(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(arrowScope.raw()));
-			pt_ctr_resolve_closure_type_depth--;
+			decrementResolveClosureTypeDepth(Z_OBJ_HANDLE_P(expr));
 		});
 		if (UNEXPECTED(exprResult.isUndef() || EG(exception) != NULL)) return zv::Val();
 
@@ -1400,7 +1425,7 @@ private:
 	/* the closure body walk of getClosureType() */
 	zv::Val walkClosure(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey)
 	{
-		pt_ctr_resolve_closure_type_depth++;
+		pt_ctr_resolve_closure_type_walks.push_back(Z_OBJ_HANDLE_P(expr));
 
 		zval null;
 		ZVAL_NULL(&null);
@@ -1448,7 +1473,7 @@ private:
 		}
 		pt_finally([&]() {
 			(void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(closureScope.raw()));
-			pt_ctr_resolve_closure_type_depth--;
+			decrementResolveClosureTypeDepth(Z_OBJ_HANDLE_P(expr));
 		});
 		if (UNEXPECTED(closureStatementResult.isUndef() || EG(exception) != NULL)) return zv::Val();
 

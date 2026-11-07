@@ -26,7 +26,7 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
-	cls.property("resolveClosureTypeDepth", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedLong, 0);
+	cls.property("resolveClosureTypeDepth", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("cachedTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("nodeScopeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\NodeScopeResolver");
 	cls.property("initializerExprTypeResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\InitializerExprTypeResolver");

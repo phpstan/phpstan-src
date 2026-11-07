@@ -326,6 +326,11 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15243.php'], []);
 	}
 
+	public function testBug15420(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15420.php'], []);
+	}
+
 	public function testShiftLeftUnboundedRange(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/shift-left-unbounded-range.php'], []);

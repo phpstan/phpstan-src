@@ -8,11 +8,12 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
+use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
@@ -169,12 +170,17 @@ class FloatType implements Type
 
 	public function toString(): Type
 	{
-		// INF, -INF and NAN are not numeric
-		return new IntersectionType([
-			new StringType(),
-			new AccessoryNonEmptyStringType(),
-			new AccessoryUppercaseStringType(),
-		]);
+		// a finite float is numeric, INF, -INF and NAN are not
+		return TypeCombinator::union(
+			new IntersectionType([
+				new StringType(),
+				new AccessoryNumericStringType(),
+				new AccessoryUppercaseStringType(),
+			]),
+			new ConstantStringType('INF'),
+			new ConstantStringType('-INF'),
+			new ConstantStringType('NAN'),
+		);
 	}
 
 	public function toArray(): Type

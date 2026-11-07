@@ -129,22 +129,37 @@ public:
 
 	static zv::Val toInteger() { return integerType(); }
 
-	/* new IntersectionType([new StringType(), new AccessoryNonEmptyStringType(),
-	 * new AccessoryUppercaseStringType()]): INF, -INF and NAN are not numeric */
+	/* TypeCombinator::union(new IntersectionType([new StringType(),
+	 * new AccessoryNumericStringType(), new AccessoryUppercaseStringType()]),
+	 * 'INF', '-INF', 'NAN'): a finite float is numeric, INF, -INF and NAN
+	 * are not */
 	static zv::Val toString()
 	{
 		zval stringZv;
 		if (UNEXPECTED(!pt_string_type_new(&stringZv))) return zv::Val();
 		zv::Val string = zv::Val::adopt(stringZv);
-		zv::Val nonEmpty = pt_type_new_shadowed(pt_accessory_non_empty_string_type_new);
-		if (UNEXPECTED(nonEmpty.isUndef())) return zv::Val();
+		zv::Val numeric = pt_type_new_shadowed(pt_accessory_numeric_string_type_new);
+		if (UNEXPECTED(numeric.isUndef())) return zv::Val();
 		zv::Val uppercase = pt_type_new_shadowed(pt_accessory_uppercase_string_type_new);
 		if (UNEXPECTED(uppercase.isUndef())) return zv::Val();
 		zv::Arr types = zv::Arr::create(3);
 		types.push(std::move(string));
-		types.push(std::move(nonEmpty));
+		types.push(std::move(numeric));
 		types.push(std::move(uppercase));
-		return pt_intersection_of(std::move(types));
+		zv::Val finite = pt_intersection_of(std::move(types));
+		if (UNEXPECTED(finite.isUndef())) return zv::Val();
+		zv::Val inf = pt_type_new_constant_string(PT_LC("INF"));
+		if (UNEXPECTED(inf.isUndef())) return zv::Val();
+		zv::Val negInf = pt_type_new_constant_string(PT_LC("-INF"));
+		if (UNEXPECTED(negInf.isUndef())) return zv::Val();
+		zv::Val nan = pt_type_new_constant_string(PT_LC("NAN"));
+		if (UNEXPECTED(nan.isUndef())) return zv::Val();
+		zval args[4];
+		ZVAL_COPY_VALUE(&args[0], finite.raw());
+		ZVAL_COPY_VALUE(&args[1], inf.raw());
+		ZVAL_COPY_VALUE(&args[2], negInf.raw());
+		ZVAL_COPY_VALUE(&args[3], nan.raw());
+		return pt_type_combinator_call(PT_LC("union"), 4, args);
 	}
 
 	/* new ConstantArrayType([new ConstantIntegerType(0)], [$this], [1],

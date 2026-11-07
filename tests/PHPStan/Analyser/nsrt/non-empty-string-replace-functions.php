@@ -26,7 +26,7 @@ class Foo {
 
 	function foo(float $f) {
 		$s = (string) $f;
-		assertType('non-empty-string&uppercase-string', $s);
+		assertType("'-INF'|'INF'|'NAN'|(numeric-string&uppercase-string)", $s);
 
 		$price = str_replace(',', '.', $s);
 		assertType('non-empty-string&uppercase-string', $price);

@@ -62,6 +62,16 @@ final class CallUserFuncRule implements Rule
 				$node,
 				$scope,
 			);
+		} elseif ($functionName === 'forward_static_call') {
+			$result = ArgumentsNormalizer::reorderForwardStaticCallArguments(
+				$node,
+				$scope,
+			);
+		} elseif ($functionName === 'forward_static_call_array') {
+			$result = ArgumentsNormalizer::reorderForwardStaticCallArrayArguments(
+				$node,
+				$scope,
+			);
 		} else {
 			return [];
 		}

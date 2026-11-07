@@ -30,24 +30,30 @@ inline constexpr char strings[] =
 	"reorderCallUserFuncArguments\0" /* 76 */
 	"callUserFuncArrayCall\0" /* 105 */
 	"reorderCallUserFuncArrayArguments\0" /* 127 */
-	"parametersAcceptor\0" /* 161 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 180 */
-	"functionCall\0" /* 218 */
-	"reorderFuncArguments\0" /* 231 */
-	"methodCall\0" /* 252 */
-	"PhpParser\\Node\\Expr\\MethodCall\0" /* 263 */
-	"reorderMethodArguments\0" /* 294 */
-	"staticCall\0" /* 317 */
-	"PhpParser\\Node\\Expr\\StaticCall\0" /* 328 */
-	"reorderStaticCallArguments\0" /* 359 */
-	"new\0" /* 386 */
-	"PhpParser\\Node\\Expr\\New_\0" /* 390 */
-	"reorderNewArguments\0" /* 415 */
-	"callArgs\0" /* 435 */
-	"reorderArgs\0" /* 444 */
-	"node\0" /* 456 */
-	"PhpParser\\Node\0" /* 461 */
-	"attributesWithoutPrintedForm"; /* 476 */
+	"forwardStaticCallCall\0" /* 161 */
+	"reorderForwardStaticCallArguments\0" /* 183 */
+	"forwardStaticCallArrayCall\0" /* 217 */
+	"reorderForwardStaticCallArrayArguments\0" /* 244 */
+	"funcCall\0" /* 283 */
+	"PhpParser\\Node\\Expr\\StaticCall\0" /* 292 */
+	"createForwardingStaticCall\0" /* 323 */
+	"parametersAcceptor\0" /* 350 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 369 */
+	"functionCall\0" /* 407 */
+	"reorderFuncArguments\0" /* 420 */
+	"methodCall\0" /* 441 */
+	"PhpParser\\Node\\Expr\\MethodCall\0" /* 452 */
+	"reorderMethodArguments\0" /* 483 */
+	"staticCall\0" /* 506 */
+	"reorderStaticCallArguments\0" /* 517 */
+	"new\0" /* 544 */
+	"PhpParser\\Node\\Expr\\New_\0" /* 548 */
+	"reorderNewArguments\0" /* 573 */
+	"callArgs\0" /* 593 */
+	"reorderArgs\0" /* 602 */
+	"node\0" /* 614 */
+	"PhpParser\\Node\0" /* 619 */
+	"attributesWithoutPrintedForm"; /* 634 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 17), /* reorderCallUserFuncArguments $callUserFuncCall */
 	reg::packed(46, 0, 52), /* reorderCallUserFuncArguments $scope */
@@ -55,22 +61,31 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(105, 0, 17), /* reorderCallUserFuncArrayArguments $callUserFuncArrayCall */
 	reg::packed(46, 0, 52), /* reorderCallUserFuncArrayArguments $scope */
 	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderCallUserFuncArrayArguments return */
-	reg::packed(161, 0, 180), /* reorderFuncArguments $parametersAcceptor */
-	reg::packed(218, 0, 17), /* reorderFuncArguments $functionCall */
+	reg::packed(161, 0, 17), /* reorderForwardStaticCallArguments $forwardStaticCallCall */
+	reg::packed(46, 0, 52), /* reorderForwardStaticCallArguments $scope */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderForwardStaticCallArguments return */
+	reg::packed(217, 0, 17), /* reorderForwardStaticCallArrayArguments $forwardStaticCallArrayCall */
+	reg::packed(46, 0, 52), /* reorderForwardStaticCallArrayArguments $scope */
+	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderForwardStaticCallArrayArguments return */
+	reg::packed(283, 0, 17), /* createForwardingStaticCall $funcCall */
+	reg::packed(46, 0, 52), /* createForwardingStaticCall $scope */
+	reg::packed(75, MAY_BE_NULL, 292), /* createForwardingStaticCall return */
+	reg::packed(350, 0, 369), /* reorderFuncArguments $parametersAcceptor */
+	reg::packed(407, 0, 17), /* reorderFuncArguments $functionCall */
 	reg::packed(75, MAY_BE_NULL, 17), /* reorderFuncArguments return */
-	reg::packed(161, 0, 180), /* reorderMethodArguments $parametersAcceptor */
-	reg::packed(252, 0, 263), /* reorderMethodArguments $methodCall */
-	reg::packed(75, MAY_BE_NULL, 263), /* reorderMethodArguments return */
-	reg::packed(161, 0, 180), /* reorderStaticCallArguments $parametersAcceptor */
-	reg::packed(317, 0, 328), /* reorderStaticCallArguments $staticCall */
-	reg::packed(75, MAY_BE_NULL, 328), /* reorderStaticCallArguments return */
-	reg::packed(161, 0, 180), /* reorderNewArguments $parametersAcceptor */
-	reg::packed(386, 0, 390), /* reorderNewArguments $new */
-	reg::packed(75, MAY_BE_NULL, 390), /* reorderNewArguments return */
-	reg::packed(161, 0, 180), /* reorderArgs $parametersAcceptor */
-	reg::packed(435, MAY_BE_ARRAY), /* reorderArgs $callArgs */
+	reg::packed(350, 0, 369), /* reorderMethodArguments $parametersAcceptor */
+	reg::packed(441, 0, 452), /* reorderMethodArguments $methodCall */
+	reg::packed(75, MAY_BE_NULL, 452), /* reorderMethodArguments return */
+	reg::packed(350, 0, 369), /* reorderStaticCallArguments $parametersAcceptor */
+	reg::packed(506, 0, 292), /* reorderStaticCallArguments $staticCall */
+	reg::packed(75, MAY_BE_NULL, 292), /* reorderStaticCallArguments return */
+	reg::packed(350, 0, 369), /* reorderNewArguments $parametersAcceptor */
+	reg::packed(544, 0, 548), /* reorderNewArguments $new */
+	reg::packed(75, MAY_BE_NULL, 548), /* reorderNewArguments return */
+	reg::packed(350, 0, 369), /* reorderArgs $parametersAcceptor */
+	reg::packed(593, MAY_BE_ARRAY), /* reorderArgs $callArgs */
 	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderArgs return */
-	reg::packed(456, 0, 461), /* attributesWithoutPrintedForm $node */
+	reg::packed(614, 0, 619), /* attributesWithoutPrintedForm $node */
 	reg::packed(75, MAY_BE_ARRAY), /* attributesWithoutPrintedForm return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -80,12 +95,15 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig reorderCallUserFuncArguments = { { 76 /* reorderCallUserFuncArguments */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig reorderCallUserFuncArrayArguments = { { 127 /* reorderCallUserFuncArrayArguments */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderFuncArguments = { { 231 /* reorderFuncArguments */, 2, 6, 2, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderMethodArguments = { { 294 /* reorderMethodArguments */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderStaticCallArguments = { { 359 /* reorderStaticCallArguments */, 2, 12, 2, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderNewArguments = { { 415 /* reorderNewArguments */, 2, 15, 2, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderArgs = { { 444 /* reorderArgs */, 2, 18, 2, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig attributesWithoutPrintedForm = { { 476 /* attributesWithoutPrintedForm */, 1, 21, 1, 22, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderForwardStaticCallArguments = { { 183 /* reorderForwardStaticCallArguments */, 2, 6, 2, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderForwardStaticCallArrayArguments = { { 244 /* reorderForwardStaticCallArrayArguments */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createForwardingStaticCall = { { 323 /* createForwardingStaticCall */, 2, 12, 2, 14, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderFuncArguments = { { 420 /* reorderFuncArguments */, 2, 15, 2, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderMethodArguments = { { 483 /* reorderMethodArguments */, 2, 18, 2, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderStaticCallArguments = { { 517 /* reorderStaticCallArguments */, 2, 21, 2, 23, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderNewArguments = { { 573 /* reorderNewArguments */, 2, 24, 2, 26, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderArgs = { { 602 /* reorderArgs */, 2, 27, 2, 29, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig attributesWithoutPrintedForm = { { 634 /* attributesWithoutPrintedForm */, 1, 30, 1, 31, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArgumentsNormalizer

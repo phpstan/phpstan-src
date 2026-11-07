@@ -3114,6 +3114,11 @@ final class AssignHandler implements ExprHandler
 		if (count($values) !== 1 || !$values[0]->equals($rhs->getType())) {
 			return null;
 		}
+		// 0.0 and -0.0 are identical (`===`) but distinguishable (`(string)`, `fdiv()`),
+		// and `$f === 0.0` narrows $f to 0.0 while it may still hold -0.0
+		if (in_array(0.0, $values[0]->getConstantScalarValues(), true)) {
+			return null;
+		}
 		$nativeValues = $nativeType->getFiniteTypes();
 		return count($nativeValues) === 1 && $nativeValues[0]->equals($rhs->getNativeType()) ? $rhs->getType() : null;
 	}

@@ -66,6 +66,14 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	private static int $resolveClosureTypeDepth = 0;
 
 	/**
+	 * Counts the closure types the $resolveClosureTypeDepth guard answered
+	 * without a walk. A body walk that sees it change stored the types of
+	 * nested closures it could not walk, so its return types are priced again
+	 * on the scope once the guard is lower. See readableWalkStorage().
+	 */
+	private static int $cappedClosureTypeWalks = 0;
+
+	/**
 	 * Per-context resolved closure types, keyed by the closure node. Node
 	 * attributes would persist on the parser cache's retained ASTs after the
 	 * file's analysis ends - the per-file reset releases the Types and
@@ -156,6 +164,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			return $this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree);
 		}
 		if (self::$resolveClosureTypeDepth >= 2) {
+			self::$cappedClosureTypeWalks++;
 			return new ClosureType(
 				$parameters,
 				$scope->getFunctionType($expr->returnType, false, false),
@@ -173,6 +182,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$arrowFunctionImpurePoints = [];
 			$invalidateExpressions = [];
 			self::$resolveClosureTypeDepth++;
+			$cappedBefore = self::$cappedClosureTypeWalks;
 			$walkStorage = new ExpressionResultStorage();
 			$arrowScope->pushExpressionResultStorage($walkStorage);
 			try {
@@ -215,12 +225,13 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 			// the body was processed just above; resolve the return type from its stored
 			// result rather than reading the still-unprocessed body expression
-			$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, false, $walkStorage);
+			$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, false, self::readableWalkStorage($walkStorage, $cappedBefore));
 
 			return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey, $contextFree);
 		}
 
 		self::$resolveClosureTypeDepth++;
+		$cappedBefore = self::$cappedClosureTypeWalks;
 
 		$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
 		$closureReturnStatements = [];
@@ -290,9 +301,21 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$invalidateExpressions,
 			$cacheKey,
 			false,
-			$walkStorage,
+			self::readableWalkStorage($walkStorage, $cappedBefore),
 			$contextFree,
 		);
+	}
+
+	/**
+	 * The walk's storage, or null when the depth guard answered a nested
+	 * closure type during the walk. The stored types then hold the declared
+	 * return types of the closures the walk could not reach, and reading
+	 * the returns on the scope after the walk prices those closures with
+	 * the guard one level lower.
+	 */
+	private static function readableWalkStorage(ExpressionResultStorage $walkStorage, int $cappedBefore): ?ExpressionResultStorage
+	{
+		return self::$cappedClosureTypeWalks === $cappedBefore ? $walkStorage : null;
 	}
 
 	/**

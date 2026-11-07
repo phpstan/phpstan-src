@@ -1046,17 +1046,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			}
 			$parts[] = sprintf('%s::%s', $exprString, $expressionTypeHolder->getType()->describe(VerbosityLevel::cache()));
 		}
-		$parts[] = '---';
-
-		$parts[] = sprintf(':%d', count($this->inFunctionCallsStack));
-		foreach ($this->inFunctionCallsStack as [, $parameter]) {
-			if ($parameter === null) {
-				$parts[] = ',null';
-				continue;
-			}
-
-			$parts[] = sprintf(',%s', $parameter->getType()->describe(VerbosityLevel::cache()));
-		}
 
 		return md5(implode("\n", $parts));
 	}

@@ -2367,55 +2367,6 @@ public:
 			smart_str_appendl(&parts, "::", 2);
 			smart_str_append(&parts, Z_STR_P(description.raw()));
 		}
-		separate();
-		smart_str_appendl(&parts, "---", 3);
-
-		if (UNEXPECTED(!requireSlot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK, "inFunctionCallsStack"))) {
-			smart_str_free(&parts);
-			return zv::Val();
-		}
-		zv::ArrRef stack(slot(PT_MS_PROP_IN_FUNCTION_CALLS_STACK).raw());
-		separate();
-		smart_str_appendc(&parts, ':');
-		smart_str_append_long(&parts, (zend_long) stack.size());
-		for (auto entry : stack) {
-			/* [, $parameter] */
-			zv::Ref pair = entry.value().deref();
-			zval *parameter = NULL;
-			if (pair.isArray()) {
-				parameter = zend_hash_index_find(Z_ARRVAL_P(pair.raw()), 1);
-				if (parameter == NULL) {
-					zend_error(E_WARNING, "Undefined array key 1");
-					if (UNEXPECTED(EG(exception))) {
-						smart_str_free(&parts);
-						return zv::Val();
-					}
-				}
-			}
-			separate();
-			if (parameter == NULL || Z_TYPE_P(parameter) == IS_NULL) {
-				smart_str_appendl(&parts, ",null", 5);
-				continue;
-			}
-			ZVAL_DEREF(parameter);
-			if (UNEXPECTED(Z_TYPE_P(parameter) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(parameter));
-				smart_str_free(&parts);
-				return zv::Val();
-			}
-			zv::Val type = pt_type_call(Z_OBJ_P(parameter), PT_LC("gettype"), 0, NULL);
-			if (UNEXPECTED(type.isUndef())) {
-				smart_str_free(&parts);
-				return zv::Val();
-			}
-			zv::Val description = describeAt(type, cacheLevel);
-			if (UNEXPECTED(description.isUndef())) {
-				smart_str_free(&parts);
-				return zv::Val();
-			}
-			smart_str_appendc(&parts, ',');
-			smart_str_append(&parts, Z_STR_P(description.raw()));
-		}
 		smart_str_0(&parts);
 
 		/* md5(implode("\n", $parts)) */

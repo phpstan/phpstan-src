@@ -409,6 +409,9 @@ trait TemplateTypeTrait
 		if ($this->getBound() === $bound || $this->getBound()->equals($bound)) {
 			return null;
 		}
+		if ($bound instanceof NeverType) {
+			return $bound;
+		}
 
 		return TemplateTypeFactory::create(
 			$this->getScope(),

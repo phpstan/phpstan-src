@@ -2755,8 +2755,8 @@ zv::Val pt_class_reflection_get_file_name(zend_object *classReflection);
  * $flow) ($flow NULL or IS_NULL for null); UNDEF = pending exception */
 zv::Val pt_variable_liveness_resolver_resolve(zval *function, zval *flow);
 
-/* ClassStatementsGatherer.cpp — new ClassStatementsGatherer($classReflection,
- * $nodeCallback) / its collected lists (getProperties() ... getPropertyAssigns()
+/* ClassStatementsGatherer.cpp — new ClassStatementsGatherer(
+ * $phpDocPrivateClassConstFetchFinder, $classReflection, $nodeCallback) / its collected lists (getProperties() ... getPropertyAssigns()
  * of an instance of the shadowing class); UNDEF = pending exception */
 enum pt_class_statements_gatherer_list
 {
@@ -2769,7 +2769,7 @@ enum pt_class_statements_gatherer_list
 	PT_CSG_LIST_RETURN_STATEMENT_NODES,
 	PT_CSG_LIST_PROPERTY_ASSIGNS,
 };
-zv::Val pt_class_statements_gatherer_new(zval *classReflection, zval *nodeCallback);
+zv::Val pt_class_statements_gatherer_new(zval *phpDocPrivateClassConstFetchFinder, zval *classReflection, zval *nodeCallback);
 zv::Val pt_class_statements_gatherer_get(zval *gatherer, pt_class_statements_gatherer_list list);
 
 /* }}} */

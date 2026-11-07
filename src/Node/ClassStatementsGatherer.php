@@ -19,6 +19,7 @@ use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
 use PHPStan\Node\Property\PropertyWrite;
+use PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\ShouldNotHappenException;
@@ -70,6 +71,7 @@ final class ClassStatementsGatherer
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
 	public function __construct(
+		private PhpDocPrivateClassConstFetchFinder $phpDocPrivateClassConstFetchFinder,
 		private ClassReflection $classReflection,
 		callable $nodeCallback,
 	)
@@ -156,6 +158,14 @@ final class ClassStatementsGatherer
 		if ($scope->getClassReflection()->getName() !== $this->classReflection->getName()) {
 			return;
 		}
+
+		$docComment = $node->getDocComment();
+		if ($docComment !== null) {
+			foreach ($this->phpDocPrivateClassConstFetchFinder->findClassConstFetches($docComment->getText(), $scope) as $constFetch) {
+				$this->constantFetches[] = $constFetch;
+			}
+		}
+
 		if ($node instanceof ClassPropertyNode) {
 			$this->properties[] = $node;
 			if ($node->isPromoted()) {

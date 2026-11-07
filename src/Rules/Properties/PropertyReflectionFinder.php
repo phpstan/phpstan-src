@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Properties;
 
+use ArrayAccess;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\String_;
@@ -9,6 +10,7 @@ use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_map;
 use function count;
@@ -144,6 +146,29 @@ final class PropertyReflectionFinder
 		}
 
 		return $this->findStaticPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
+	}
+
+	/**
+	 * A reference to an element of a property ($a = &$this->prop['key']) indirectly
+	 * modifies the property itself, unless the property holds an ArrayAccess object,
+	 * whose elements are reached through offsetGet().
+	 */
+	public function findReferencedPropertyFetch(Expr $expr, Scope $scope): Expr\PropertyFetch|Expr\StaticPropertyFetch|null
+	{
+		$propertyFetch = $expr;
+		while ($propertyFetch instanceof Expr\ArrayDimFetch) {
+			$propertyFetch = $propertyFetch->var;
+		}
+
+		if (!$propertyFetch instanceof Expr\PropertyFetch && !$propertyFetch instanceof Expr\StaticPropertyFetch) {
+			return null;
+		}
+
+		if ($propertyFetch !== $expr && (new ObjectType(ArrayAccess::class))->isSuperTypeOf($scope->getType($propertyFetch))->yes()) {
+			return null;
+		}
+
+		return $propertyFetch;
 	}
 
 	private function findInstancePropertyReflection(Type $propertyHolderType, string $propertyName, Scope $scope): ?FoundPropertyReflection

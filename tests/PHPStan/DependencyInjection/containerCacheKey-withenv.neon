@@ -1,0 +1,6 @@
+# References an environment variable via %env.<name>%, so that env var must stay in the container
+# cache key - otherwise changing it would wrongly reuse a stale container. The resolved tmpDir value
+# is irrelevant here (ContainerFactory::create() overrides tmpDir with its own argument); the
+# reference itself is what keeps PHPSTAN_TEST_W1_CACHE_KEY in the cache key.
+parameters:
+	tmpDir: %env.PHPSTAN_TEST_W1_CACHE_KEY%

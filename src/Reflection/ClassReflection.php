@@ -15,7 +15,6 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClassConstant;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnumBackedCase;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
-use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\DependencyInjection\GenerateFactory;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Php\PhpVersion;
@@ -258,9 +257,12 @@ final class ClassReflection
 			return $this->cachedParentClass = null;
 		}
 
+		// a class on an inheritance cycle cannot be declared, so it has no parent, and every walk
+		// over the hierarchy ends; CircularInheritanceRule reports the cycle. A class that extends
+		// a class on a cycle keeps that parent.
 		$circularParentClassName = $this->findCircularParentClassName($parentClass->getName());
-		if ($circularParentClassName !== null) {
-			throw CircularReference::fromClassName($circularParentClassName);
+		if ($circularParentClassName !== null && strtolower($circularParentClassName) === strtolower($this->getName())) {
+			return $this->cachedParentClass = null;
 		}
 
 		$extendsTag = $this->getFirstExtendsTag();
@@ -297,7 +299,7 @@ final class ClassReflection
 	}
 
 	/**
-	 * BetterReflection only rejects a class extending itself directly. A cycle spanning
+	 * BetterReflection only stops a class extending itself directly. A cycle spanning
 	 * several classes (A extends B, B extends A) reaches this class intact and would make
 	 * every walk over the class hierarchy run forever, so it is detected here instead.
 	 *
@@ -426,8 +428,7 @@ final class ClassReflection
 			}
 
 			// walking the parents through getParentClass() and not through the native
-			// reflection makes a cyclic class hierarchy end in a CircularReference
-			// exception instead of looping forever
+			// reflection makes a cyclic class hierarchy end instead of looping forever
 			while (($currentClassReflection = $currentClassReflection->getParentClass()) !== null) {
 				$distance++;
 				$parentClassName = $currentClassReflection->getName();

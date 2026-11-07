@@ -12,7 +12,9 @@ use function array_keys;
 
 /**
  * The classes under test reference each other in a cycle, which is a fatal error in PHP.
- * Walking such a hierarchy used to never terminate.
+ * Walking such a hierarchy used to never terminate. A class-like on a cycle has no supertypes
+ * of its kind, so a trait on a trait cycle uses no trait and a class on a parent class cycle
+ * has no parent.
  */
 class CircularReferenceClassReflectionTest extends PHPStanTestCase
 {
@@ -71,16 +73,19 @@ class CircularReferenceClassReflectionTest extends PHPStanTestCase
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->expectNotToPerformAssertions();
-		$reflectionProvider->getClass(FirstClassInCycle::class)->getTraits(true);
+		$classReflection = $reflectionProvider->getClass(FirstClassInCycle::class);
+		$this->assertNull($classReflection->getParentClass());
+		$this->assertSame([], $classReflection->getTraits(true));
 	}
 
 	public function testClassHierarchyDistancesOfClassInParentClassCycle(): void
 	{
 		$reflectionProvider = self::createReflectionProvider();
 
-		$this->expectNotToPerformAssertions();
-		$reflectionProvider->getClass(FirstClassInCycle::class)->getClassHierarchyDistances();
+		$this->assertSame(
+			[FirstClassInCycle::class => 0],
+			$reflectionProvider->getClass(FirstClassInCycle::class)->getClassHierarchyDistances(),
+		);
 	}
 
 }

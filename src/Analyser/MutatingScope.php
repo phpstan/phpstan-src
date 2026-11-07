@@ -3435,7 +3435,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		if ($expr instanceof Variable && is_string($expr->name)) {
 			$scope = $native ? $this->doNotTreatPhpDocTypesAsCertain() : $this;
 
-			return $scope->hasVariableType($expr->name)->no() ? new ErrorType() : $scope->getVariableType($expr->name);
+			return $scope->hasVariableType($expr->name)->no() ? new ErrorType() : TypeUtils::resolveLateResolvableTypes($scope->getVariableType($expr->name));
 		}
 
 		if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null) {

@@ -10700,7 +10700,9 @@ public:
 				zend_long certainty = pt_type_trinary_value(has.raw());
 				if (UNEXPECTED(certainty < 0)) return zv::Val();
 				if (certainty == PT_TRI_NO) return pt_type_new_error_type();
-				return asked.thisGetVariableType(name.raw());
+				zv::Val variableType = asked.thisGetVariableType(name.raw());
+				if (UNEXPECTED(variableType.isUndef())) return zv::Val();
+				return pt_type_utils_resolve_late_resolvable_types(variableType.raw());
 			}
 		}
 

@@ -554,4 +554,69 @@ final class PhpVersion
 		return $this->versionId >= 70400;
 	}
 
+	public function warnsOnContinueTargetingSwitch(): bool
+	{
+		return $this->versionId >= 70300;
+	}
+
+	public function restrictsGlobalsModification(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
+	public function deprecatesArrayPointerFunctionsOnObjects(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
+	public function deprecatesStaticTraitMemberAccess(): bool
+	{
+		return $this->versionId >= 80100;
+	}
+
+	public function deprecatesMbstringPseudoEncodings(): bool
+	{
+		return $this->versionId >= 80200;
+	}
+
+	public function deprecatesGetClassWithoutArguments(): bool
+	{
+		return $this->versionId >= 80300;
+	}
+
+	public function deprecatesTriggerErrorWithUserError(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
+	public function deprecatesPowerOfZeroWithNegativeExponent(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
+	public function deprecatesCsvEscapeParameterDefault(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
+	public function deprecatesUnderscoreClassName(): bool
+	{
+		return $this->versionId >= 80400;
+	}
+
+	public function deprecatesDebugInfoReturningNull(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
+	public function deprecatesOrdWithoutSingleByte(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
+	public function deprecatesFinfoBufferContext(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
 }

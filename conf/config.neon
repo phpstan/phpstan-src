@@ -55,6 +55,7 @@ parameters:
 		unusedLabel: false
 		newOnNonObject: false
 		unnecessaryNullCoalesce: false
+		unnecessaryTernary: false
 		finiteTypesInHaystack: false
 		switchConditionAlwaysFalse: false
 		checkImportedClassNameCase: false

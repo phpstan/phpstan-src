@@ -24,6 +24,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
+use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateMixedType;
@@ -1175,6 +1176,20 @@ final class TypeCombinator
 				return $a;
 			} elseif ($isBAlreadySubtracted->yes()) {
 				$subtractedType = self::remove($a->getSubtractedType(), $b);
+
+				// The subtracted type counts only within $a, where a class written
+				// without type arguments has the ones $a implies: in Option<int>,
+				// a subtracted Some is used up by Some<int>.
+				$subtractedWithinA = GenericObjectType::specializeSubclass(
+					$a->getTypeWithoutSubtractedType(),
+					$a->getSubtractedType(),
+				);
+				if (
+					$subtractedWithinA !== $a->getSubtractedType()
+					&& self::remove($subtractedWithinA, $b) instanceof NeverType
+				) {
+					$subtractedType = new NeverType();
+				}
 
 				if (
 					$subtractedType instanceof NeverType
@@ -2510,6 +2525,7 @@ final class TypeCombinator
 
 		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
 		// transform Child & Parent to Child
+		// transform Child & Parent<int> to Child<int>
 		// transform Object & ~null to Object
 		// transform A & A to A
 		// transform int[] & string to never
@@ -2527,7 +2543,13 @@ final class TypeCombinator
 						$isSuperTypeSubtractableA = $typeWithoutSubtractedTypeA->isSuperTypeOf($types[$i]);
 					}
 					if ($isSuperTypeSubtractableA->yes()) {
-						$types[$i] = self::unionWithSubtractedType($types[$i], $types[$j]->getSubtractedType());
+						// A generic class written without type arguments is a subtype of
+						// every parameterization of its generic ancestors, so it is kept -
+						// with the arguments the dropped ancestor implies for it.
+						$types[$i] = self::unionWithSubtractedType(
+							GenericObjectType::specializeSubclass($typeWithoutSubtractedTypeA, $types[$i]),
+							$types[$j]->getSubtractedType(),
+						);
 						array_splice($types, $j--, 1);
 						$typesCount--;
 						continue 1;
@@ -2543,7 +2565,10 @@ final class TypeCombinator
 						$isSuperTypeSubtractableB = $typeWithoutSubtractedTypeB->isSuperTypeOf($types[$j]);
 					}
 					if ($isSuperTypeSubtractableB->yes()) {
-						$types[$j] = self::unionWithSubtractedType($types[$j], $types[$i]->getSubtractedType());
+						$types[$j] = self::unionWithSubtractedType(
+							GenericObjectType::specializeSubclass($typeWithoutSubtractedTypeB, $types[$j]),
+							$types[$i]->getSubtractedType(),
+						);
 						array_splice($types, $i--, 1);
 						$typesCount--;
 						continue 2;

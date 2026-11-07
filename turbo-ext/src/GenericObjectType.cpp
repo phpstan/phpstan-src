@@ -763,8 +763,9 @@ public:
 		return create(name.get(), types, subtractedType.isNull() ? NULL : subtractedType.raw(), withoutOverride.raw(), variances);
 	}
 
-	/* the parent's sealed-hierarchy verdict when it changes the class, a
-	 * new self with the type arguments otherwise; $subtractedType IS_NULL
+	/* the parent's sealed-hierarchy verdict when it changes the class (a
+	 * remaining subtype given the type arguments this type implies for it),
+	 * a new self with the type arguments otherwise; $subtractedType IS_NULL
 	 * for null; UNDEF = pending exception */
 	zv::Val changeSubtractedType(zval *subtractedType) const
 	{
@@ -774,11 +775,18 @@ public:
 		// Parent handles sealed type exhaustiveness (returning NeverType when all
 		// allowed subtypes are subtracted, or a single remaining subtype).
 		if (!zv::Ref(result.raw()).instanceOf(pt_ce_object_type)) return result;
+
+		// The remaining subtype comes back as the sealed tag names it, without
+		// type arguments, and takes the ones this type implies for it.
 		zv::Val resultClassName = pt_type_call(Z_OBJ_P(result.raw()), PT_LC("getclassname"), 0, NULL);
 		if (UNEXPECTED(resultClassName.isUndef())) return zv::Val();
 		zv::Val className = thisGetClassName();
 		if (UNEXPECTED(className.isUndef())) return zv::Val();
-		if (!zend_is_identical(resultClassName.raw(), className.raw())) return result;
+		if (!zend_is_identical(resultClassName.raw(), className.raw())) {
+			zval selfZv;
+			ZVAL_OBJ(&selfZv, self);
+			return specializeSubclass(&selfZv, result.raw());
+		}
 
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
@@ -786,6 +794,125 @@ public:
 		if (UNEXPECTED(variances == NULL)) return zv::Val();
 		zv::Str name = zv::Str::adopt(zval_get_string(className.raw()));
 		return create(name.get(), types, Z_TYPE_P(subtractedType) == IS_NULL ? NULL : subtractedType, NULL, variances);
+	}
+
+	/* Gives $subclass, a class written without type arguments, the ones
+	 * $supertype implies for it through the class's `@extends` and
+	 * `@implements` tags: Some with Option<int> is Some<int>, Err with
+	 * Result<int, string> is Err<string>. The class of $supertype itself
+	 * takes its arguments and call-site variance as written: X with X<*> is
+	 * X<*>.
+	 *
+	 * Returns $subclass unchanged (the same object) unless $supertype is a
+	 * generic object type and $subclass is its class or a generic subtype
+	 * of it. A subtype also stays unchanged when $supertype has call-site
+	 * variance or does not determine every type argument of the subtype -
+	 * an explicit argument would claim more than is known. UNDEF = pending
+	 * exception */
+	static zv::Val specializeSubclass(zval *supertype, zval *subclass)
+	{
+		/* $subclass is exactly an ObjectType: the shadowing class carries
+		 * the twin's name, so get_class() === ObjectType::class is the
+		 * class entry */
+		if (!zv::Ref(supertype).instanceOf(pt_ce_generic_object_type) || Z_OBJCE_P(subclass) != pt_ce_object_type) return zv::Val::copyOf(zv::Ref(subclass));
+		zend_object *supertypeObject = Z_OBJ_P(supertype);
+
+		/* $subclass->getClassName() — the slot, the object is exactly the
+		 * native class */
+		zend_string *subclassName = pt_object_type_class_name(Z_OBJ_P(subclass));
+		if (UNEXPECTED(subclassName == NULL)) return zv::Val();
+		zv::Val supertypeClassName = pt_type_call(supertypeObject, PT_LC("getclassname"), 0, NULL);
+		if (UNEXPECTED(supertypeClassName.isUndef())) return zv::Val();
+		zval *variances = variancesOf(supertypeObject);
+		if (UNEXPECTED(variances == NULL)) return zv::Val();
+		if (zv::Ref(supertypeClassName.raw()).isString() && zend_string_equals(subclassName, Z_STR_P(supertypeClassName.raw()))) {
+			zval *types = typesOf(supertypeObject);
+			if (UNEXPECTED(types == NULL)) return zv::Val();
+			zval *subtractedType = pt_object_type_subtracted_type(Z_OBJ_P(subclass));
+			if (UNEXPECTED(subtractedType == NULL)) return zv::Val();
+			zend_string *supertypeName = Z_STR_P(supertypeClassName.raw());
+			return create(supertypeName, types, Z_TYPE_P(subtractedType) == IS_NULL ? NULL : subtractedType, NULL, variances);
+		}
+
+		for (zv::ArrayEntry entry : zv::ArrRef(variances)) {
+			zv::Ref variance = entry.value().deref();
+			if (UNEXPECTED(!variance.isObject())) {
+				zend_type_error("phpstan_turbo: a variance must be %s", ptcls::templateTypeVariance);
+				return zv::Val();
+			}
+			bool invariant;
+			if (UNEXPECTED(!pt_type_call_bool(variance.asObject(), PT_LC("invariant"), 0, NULL, invariant))) return zv::Val();
+			if (!invariant) return zv::Val::copyOf(zv::Ref(subclass));
+		}
+
+		/* $subclass->getClassReflection() — the native body, the object is
+		 * exactly the native class */
+		zv::Val classReflection = pt_object_type_get_class_reflection(Z_OBJ_P(subclass));
+		if (UNEXPECTED(classReflection.isUndef())) return zv::Val();
+		if (classReflection.isNull()) return zv::Val::copyOf(zv::Ref(subclass));
+		if (UNEXPECTED(!zv::Ref(classReflection.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getClassReflection() must return an object or null");
+			return zv::Val();
+		}
+		zend_object *reflection = Z_OBJ_P(classReflection.raw());
+		bool generic;
+		if (UNEXPECTED(!pt_class_reflection_is_generic(reflection, generic))) return zv::Val();
+		if (!generic) return zv::Val::copyOf(zv::Ref(subclass));
+
+		zv::Val templateTypeMap = pt_class_reflection_get_template_type_map(reflection);
+		if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(templateTypeMap.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getTemplateTypeMap() must return an object");
+			return zv::Val();
+		}
+		zv::Val reflectionName = pt_class_reflection_get_name(reflection);
+		if (UNEXPECTED(reflectionName.isUndef())) return zv::Val();
+		zv::Str name = zv::Str::adopt(zval_get_string(reflectionName.raw()));
+		zv::Val templateTypeList = pt_class_reflection_type_map_to_list(reflection, templateTypeMap.raw());
+		if (UNEXPECTED(templateTypeList.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(templateTypeList.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: typeMapToList() must return array");
+			return zv::Val();
+		}
+		zv::Val bare = create(name.get(), templateTypeList.raw(), NULL, NULL, NULL);
+		if (UNEXPECTED(bare.isUndef())) return zv::Val();
+		zv::Val ancestor = pt_type_call(Z_OBJ_P(bare.raw()), PT_LC("getancestorwithclassname"), 1, supertypeClassName.raw());
+		if (UNEXPECTED(ancestor.isUndef())) return zv::Val();
+		if (ancestor.isNull()) return zv::Val::copyOf(zv::Ref(subclass));
+		if (UNEXPECTED(!zv::Ref(ancestor.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getAncestorWithClassName() must return an object or null");
+			return zv::Val();
+		}
+
+		zv::Val inferredTypeMap = pt_type_call(Z_OBJ_P(ancestor.raw()), PT_LC("infertemplatetypes"), 1, supertype);
+		if (UNEXPECTED(inferredTypeMap.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(inferredTypeMap.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: inferTemplateTypes() must return an object");
+			return zv::Val();
+		}
+		zv::Val templateTypes = pt_template_type_map_get_types(templateTypeMap.raw());
+		if (UNEXPECTED(templateTypes.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(templateTypes.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: getTypes() must return array");
+			return zv::Val();
+		}
+		for (zv::ArrayEntry entry : zv::ArrRef(templateTypes.raw())) {
+			/* template names are identifiers, never integer keys */
+			zv::Val templateName = entry.hasStringKey() ? zv::Val::string(entry.stringKey()) : zv::Val::adoptString(zend_long_to_str((zend_long) entry.indexKey()));
+			bool hasType;
+			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(inferredTypeMap.raw()), PT_LC("hastype"), 1, templateName.raw(), hasType))) return zv::Val();
+			if (!hasType) return zv::Val::copyOf(zv::Ref(subclass));
+		}
+
+		zv::Val inferredTypeList = pt_class_reflection_type_map_to_list(reflection, inferredTypeMap.raw());
+		if (UNEXPECTED(inferredTypeList.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(inferredTypeList.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: typeMapToList() must return array");
+			return zv::Val();
+		}
+		zval *subtractedType = pt_object_type_subtracted_type(Z_OBJ_P(subclass));
+		if (UNEXPECTED(subtractedType == NULL)) return zv::Val();
+		return create(name.get(), inferredTypeList.raw(), Z_TYPE_P(subtractedType) == IS_NULL ? NULL : subtractedType, NULL, NULL);
 	}
 
 	/* new GenericTypeNode(parent::toPhpDocNode(), the arguments' nodes, the
@@ -1002,6 +1129,11 @@ bool pt_generic_object_type_new(zval *out, zend_string *mainType, zval *types, z
 	return pt_val_into(GenericObjectType::create(mainType, types, subtractedType, classReflection, variances), out);
 }
 
+zv::Val pt_generic_object_type_specialize_subclass(zval *supertype, zval *subclass)
+{
+	return GenericObjectType::specializeSubclass(supertype, subclass);
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS GenericObjectType(Z_OBJ_P(ZEND_THIS))
@@ -1160,6 +1292,11 @@ PT_MINIT_REGISTRATION(pt_register_generic_object_type)
 			subtractedType = &nullZv;
 		}
 		PT_RETURN_VAL(PT_THIS.changeSubtractedType(subtractedType));
+	});
+	cls.method(sigs::specializeSubclass, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *supertype, *subclass;
+		if (!zp::parse<zp::TypeObj, zp::TypeObj>(execute_data, supertype, subclass)) RETURN_THROWS();
+		PT_RETURN_VAL(GenericObjectType::specializeSubclass(supertype, subclass));
 	});
 	cls.method(sigs::toPhpDocNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_got_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &GenericObjectType::toPhpDocNode);

@@ -78,6 +78,8 @@ final class StaticVariableHandler implements StmtHandler
 				$dependencies[] = $defaultExprResult->getDependencies();
 				$variableFlows[] = $defaultExprResult->getVariableFlow();
 				$impurePoints = array_merge($impurePoints, $defaultExprResult->getImpurePoints());
+				// the default is evaluated by the first call only, but the sites it creates are the variable's
+				$scope = $scope->addTemplateArgumentConstraints($defaultExprResult->getScope()->getTemplateArgumentConstraints());
 			}
 
 			$scope = $scope->enterExpressionAssign($var->var);

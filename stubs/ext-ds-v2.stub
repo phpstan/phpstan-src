@@ -1,0 +1,249 @@
+<?php
+
+namespace Ds;
+
+use ArrayAccess;
+use Countable;
+use IteratorAggregate;
+use JsonSerializable;
+
+/**
+ * @template TValue
+ * @implements IteratorAggregate<int, TValue>
+ * @implements ArrayAccess<int, TValue>
+ */
+final class Seq implements Countable, IteratorAggregate, JsonSerializable, ArrayAccess
+{
+	/**
+	 * @template TValue2
+	 * @param iterable<TValue2> $values
+	 * @return Seq<TValue|TValue2>
+	 */
+	public function merge($values): Seq
+	{
+	}
+
+	/**
+	 * @template TCarry
+	 * @param callable(TCarry, TValue): TCarry $callback
+	 * @param TCarry $initial
+	 * @return TCarry
+	 */
+	public function reduce(callable $callback, $initial = null)
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function jsonSerialize(): array
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function __serialize(): array
+	{
+	}
+}
+
+/**
+ * @template TKey
+ * @template TValue
+ * @implements IteratorAggregate<TKey, TValue>
+ * @implements ArrayAccess<TKey, TValue>
+ */
+final class Map implements Countable, IteratorAggregate, JsonSerializable, ArrayAccess
+{
+	/**
+	 * @template TValue2
+	 * @param Map<TKey, TValue2> $map
+	 * @return Map<TKey, TValue>
+	 */
+	public function diff(Map $map): Map
+	{
+	}
+
+	/**
+	 * @template TDefault
+	 * @param TKey $key
+	 * @param TDefault $default
+	 * @return TValue|TDefault
+	 */
+	public function get($key, $default = null)
+	{
+	}
+
+	/**
+	 * @template TKey2
+	 * @template TValue2
+	 * @param Map<TKey2, TValue2> $map
+	 * @return Map<TKey&TKey2, TValue>
+	 */
+	public function intersect(Map $map): Map
+	{
+	}
+
+	/**
+	 * @template TKey2
+	 * @template TValue2
+	 * @param iterable<TKey2, TValue2> $values
+	 * @return Map<TKey|TKey2, TValue|TValue2>
+	 */
+	public function merge($values): Map
+	{
+	}
+
+	/**
+	 * @template TCarry
+	 * @param callable(TCarry, TKey, TValue): TCarry $callback
+	 * @param TCarry $initial
+	 * @return TCarry
+	 */
+	public function reduce(callable $callback, $initial = null)
+	{
+	}
+
+	/**
+	 * @template TDefault
+	 * @param TKey $key
+	 * @param TDefault $default
+	 * @return TValue|TDefault
+	 */
+	public function remove($key, $default = null)
+	{
+	}
+
+	/**
+	 * @template TKey2
+	 * @template TValue2
+	 * @param Map<TKey2, TValue2> $map
+	 * @return Map<TKey|TKey2, TValue|TValue2>
+	 */
+	public function union(Map $map): Map
+	{
+	}
+
+	/**
+	 * @template TKey2
+	 * @template TValue2
+	 * @param Map<TKey2, TValue2> $map
+	 * @return Map<TKey|TKey2, TValue|TValue2>
+	 */
+	public function xor(Map $map): Map
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements IteratorAggregate<int, TValue>
+ * @implements ArrayAccess<int, TValue>
+ */
+final class Set implements Countable, IteratorAggregate, JsonSerializable, ArrayAccess
+{
+	/**
+	 * @template TValue2
+	 * @param Set<TValue2> $set
+	 * @return Set<TValue>
+	 */
+	public function diff(Set $set): Set
+	{
+	}
+
+	/**
+	 * @template TValue2
+	 * @param Set<TValue2> $set
+	 * @return Set<TValue&TValue2>
+	 */
+	public function intersect(Set $set): Set
+	{
+	}
+
+	/**
+	 * @template TValue2
+	 * @param iterable<TValue2> $values
+	 * @return Set<TValue|TValue2>
+	 */
+	public function merge($values): Set
+	{
+	}
+
+	/**
+	 * @template TCarry
+	 * @param callable(TCarry, TValue): TCarry $callback
+	 * @param TCarry $initial
+	 * @return TCarry
+	 */
+	public function reduce(callable $callback, $initial = null)
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function jsonSerialize(): array
+	{
+	}
+
+	/**
+	 * @template TValue2
+	 * @param Set<TValue2> $set
+	 * @return Set<TValue|TValue2>
+	 */
+	public function union(Set $set): Set
+	{
+	}
+
+	/**
+	 * @template TValue2
+	 * @param Set<TValue2> $set
+	 * @return Set<TValue|TValue2>
+	 */
+	public function xor(Set $set): Set
+	{
+	}
+}
+
+/**
+ * @template TValue
+ * @implements IteratorAggregate<int, TValue>
+ */
+final class Heap implements Countable, IteratorAggregate, JsonSerializable
+{
+	/**
+	 * @return list<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function jsonSerialize(): array
+	{
+	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function __serialize(): array
+	{
+	}
+}

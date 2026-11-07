@@ -34,7 +34,7 @@ class OverridingMethodRuleConfigPhpTest extends RuleTestCase
 	#[RequiresPhp('>= 8.1.0')]
 	public function testTentativeReturnTypesInPhpVersionRange(): void
 	{
-		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], OverridingMethodRuleTest::getTentativeReturnTypesErrors());
+		$this->analyse([__DIR__ . '/data/tentative-return-types.php'], TentativeReturnTypesErrors::get());
 	}
 
 	#[RequiresPhp('>= 8.0.0')]

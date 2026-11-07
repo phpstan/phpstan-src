@@ -57,6 +57,7 @@ final class IgnoredErrorHelperResult
 		private array $ignoreErrorsByFile,
 		private array $ignoreErrors,
 		private bool $reportUnmatchedIgnoredErrors,
+		private bool $partialAnalysis,
 	)
 	{
 	}
@@ -108,6 +109,7 @@ final class IgnoredErrorHelperResult
 		// offset writes — otherwise PHPStan widens it to `array<mixed>`.
 		$realCounts = [];
 		$matchedAt = [];
+		$matchedInTrait = [];
 
 		// Preserve configuration order while filtering out identifier-specific
 		// entries that cannot match, once per distinct error identifier.
@@ -115,7 +117,7 @@ final class IgnoredErrorHelperResult
 
 		$ignoreErrorsByFileAndIdentifier = [];
 
-		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors, &$realCounts, &$matchedAt): bool {
+		$processIgnoreError = function (Error $error, int $i, $ignore) use (&$unmatchedIgnoredErrors, &$stringErrors, &$realCounts, &$matchedAt, &$matchedInTrait): bool {
 			$shouldBeIgnored = false;
 			if (is_string($ignore)) {
 				$shouldBeIgnored = IgnoredError::shouldIgnore($this->fileHelper, $error, ignoredErrorPattern: $ignore, ignoredErrorMessage: null, identifier: null, path: null);
@@ -132,6 +134,9 @@ final class IgnoredErrorHelperResult
 
 							if (!isset($matchedAt[$i])) {
 								$matchedAt[$i] = ['file' => $error->getFile(), 'line' => $error->getLine()];
+							}
+							if ($error->getTraitFilePath() !== null) {
+								$matchedInTrait[$i] = true;
 							}
 
 							if ($realCount > $ignore['count']) {
@@ -356,6 +361,10 @@ final class IgnoredErrorHelperResult
 
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
+		// on a list of files or on part of the configured paths, the errors outside them are not reported,
+		// and neither are the errors of a trait used by a class outside them
+		$partialAnalysis = $onlyFiles || $this->partialAnalysis;
+
 		if (!$hasInternalErrors) {
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 				$reportUnmatched = is_array($unmatchedIgnoredError)
@@ -368,7 +377,12 @@ final class IgnoredErrorHelperResult
 				if (
 					isset($unmatchedIgnoredError['count'])
 					&& $realCount !== null
-					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
+					&& (
+						!$partialAnalysis
+						// a partial analysis reports all errors of an analysed file, but not those of a trait in it
+						// that a class outside the analysed files uses
+						|| (isset($unmatchedIgnoredError['realPath']) && !isset($matchedInTrait[$i]))
+					)
 				) {
 					if ($realCount < $unmatchedIgnoredError['count']) {
 						$matchedFile = $matchedAt[$i]['file'] ?? null;
@@ -396,7 +410,7 @@ final class IgnoredErrorHelperResult
 						continue;
 					}
 
-					if ($onlyFiles) {
+					if ($partialAnalysis) {
 						continue;
 					}
 
@@ -411,7 +425,7 @@ final class IgnoredErrorHelperResult
 						identifier: 'ignore.unmatched',
 						fixedErrorDiffs: $this->configFixer->removeUnmatched($unmatchedIgnoredError),
 					);
-				} elseif (!$onlyFiles) {
+				} elseif (!$partialAnalysis) {
 					$message = sprintf(
 						'%s %s was not matched in reported errors.',
 						IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),

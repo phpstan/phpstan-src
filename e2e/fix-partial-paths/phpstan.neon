@@ -1,0 +1,34 @@
+parameters:
+	level: 0
+	phpVersion: 80300
+	checkMissingOverrideMethodAttribute: true
+	paths: [src, lib]
+	tmpDir: tmp
+	# every entry matches in src/ or through it, except #neverReported#
+	ignoreErrors:
+		-
+			message: '#undefinedTwo#'
+		-
+			message: '#undefinedWildcard#'
+			path: src/*
+		-
+			message: '#undefinedInTrait#'
+			path: src/T.php
+		-
+			identifier: method.missingOverride
+		-
+			message: '#undefinedList#'
+			paths: [src/B.php]
+		# once in src/ and once in lib/
+		-
+			message: '#undefinedCounted#'
+			path: '*'
+			count: 2
+		# matched nowhere, a full analysis removes it
+		-
+			message: '#neverReported#'
+		# once through a class in src/ and once through a class in lib/
+		-
+			message: '#undefinedCountedInTrait#'
+			path: src/C.php
+			count: 2

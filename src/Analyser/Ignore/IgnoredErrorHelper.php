@@ -12,7 +12,10 @@ use function array_key_exists;
 use function array_values;
 use function is_array;
 use function is_file;
+use function rtrim;
 use function sprintf;
+use function str_starts_with;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @phpstan-type IgnoredErrorData = array{
@@ -34,6 +37,8 @@ final class IgnoredErrorHelper
 
 	/**
 	 * @param (string|IgnoredErrorData)[] $ignoreErrors
+	 * @param string[] $analysedPaths
+	 * @param string[] $analysedPathsFromConfig
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -42,6 +47,10 @@ final class IgnoredErrorHelper
 		private array $ignoreErrors,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
+		#[AutowiredParameter]
+		private array $analysedPaths,
+		#[AutowiredParameter]
+		private array $analysedPathsFromConfig,
 	)
 	{
 	}
@@ -171,7 +180,29 @@ final class IgnoredErrorHelper
 			}
 		}
 
-		return new IgnoredErrorHelperResult($this->fileHelper, $this->configFixer, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors);
+		return new IgnoredErrorHelperResult($this->fileHelper, $this->configFixer, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors, $this->isPartialAnalysis());
+	}
+
+	/**
+	 * Whether the analysed paths leave out some of the configured `paths`, like `analyse lib`
+	 * with `paths: [src, lib]`. Errors in what is left out are not reported, so the entries
+	 * that may match them cannot be told unmatched.
+	 */
+	private function isPartialAnalysis(): bool
+	{
+		foreach ($this->analysedPathsFromConfig as $pathFromConfig) {
+			$pathFromConfig = $this->fileHelper->normalizePath($pathFromConfig);
+			foreach ($this->analysedPaths as $analysedPath) {
+				$analysedPath = $this->fileHelper->normalizePath($analysedPath);
+				if ($pathFromConfig === $analysedPath || str_starts_with($pathFromConfig, rtrim($analysedPath, '/\\') . DIRECTORY_SEPARATOR)) {
+					continue 2;
+				}
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

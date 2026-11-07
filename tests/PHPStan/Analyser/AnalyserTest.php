@@ -66,6 +66,55 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertCount(0, $result);
 	}
 
+	/**
+	 * @return iterable<string, array{list<string>, list<string>, bool}>
+	 */
+	public static function dataReportUnmatchedIgnoredErrorsByAnalysedPaths(): iterable
+	{
+		$dir = __DIR__ . '/data/empty';
+
+		yield 'the configured paths' => [[$dir], [$dir], true];
+		yield 'a parent of the configured paths' => [[__DIR__ . '/data'], [$dir], true];
+		yield 'without configured paths' => [[$dir], [], true];
+		yield 'part of the configured paths' => [[$dir], [$dir, __DIR__ . '/data/other'], false];
+		yield 'a directory inside the configured paths' => [[$dir], [__DIR__ . '/data'], false];
+		yield 'a sibling with the same prefix as the configured paths' => [[$dir], [$dir . '-other'], false];
+	}
+
+	/**
+	 * @param list<string> $analysedPaths
+	 * @param list<string> $analysedPathsFromConfig
+	 */
+	#[DataProvider('dataReportUnmatchedIgnoredErrorsByAnalysedPaths')]
+	public function testReportUnmatchedIgnoredErrorsByAnalysedPaths(array $analysedPaths, array $analysedPathsFromConfig, bool $expectReported): void
+	{
+		$ignoreErrors = [
+			'#Unknown error#',
+			[
+				'message' => '#Unknown error in a path pattern#',
+				'path' => __DIR__ . '/data/*',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', false, analysedPaths: $analysedPaths, analysedPathsFromConfig: $analysedPathsFromConfig);
+		$this->assertSame($expectReported ? [
+			'Ignored error pattern #Unknown error# was not matched in reported errors.',
+			'Ignored error pattern #Unknown error in a path pattern# in path ' . __DIR__ . '/data/* was not matched in reported errors.',
+		] : [], $result);
+	}
+
+	public function testDoNotReportTooHighCountOfIgnoredErrorsFromTraitOnPartialAnalysis(): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/partial-analysis-trait.php',
+				'count' => 2,
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, [__DIR__ . '/data/partial-analysis-trait.php'], false, analysedPaths: [__DIR__ . '/data'], analysedPathsFromConfig: [__DIR__ . '/data', __DIR__ . '/other']);
+		$this->assertNoErrors($result);
+	}
+
 	public function testFileWithAnIgnoredError(): void
 	{
 		$result = $this->runAnalyser(['#Fail\.#'], true, __DIR__ . '/data/bootstrap-error.php', false);
@@ -851,6 +900,8 @@ class AnalyserTest extends PHPStanTestCase
 	 * @param string|string[] $filePaths
 	 * @param list<Collector<Node, mixed>> $collectors
 	 * @param list<Rule<CollectedDataNode>> $collectedDataRules
+	 * @param string[] $analysedPaths
+	 * @param string[] $analysedPathsFromConfig
 	 * @return string[]|Error[]
 	 */
 	private function runAnalyser(
@@ -861,6 +912,8 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportIgnoresWithoutComments = false,
 		array $collectors = [],
 		array $collectedDataRules = [],
+		array $analysedPaths = [],
+		array $analysedPathsFromConfig = [],
 	): array
 	{
 		$analyser = $this->createAnalyser($reportIgnoresWithoutComments, $collectors);
@@ -874,6 +927,8 @@ class AnalyserTest extends PHPStanTestCase
 			self::getContainer()->getByType(IgnoreErrorsConfigFixer::class),
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,
+			$analysedPaths,
+			$analysedPathsFromConfig,
 		);
 		$ignoredErrorHelperResult = $ignoredErrorHelper->initialize();
 		if (count($ignoredErrorHelperResult->getErrors()) > 0) {

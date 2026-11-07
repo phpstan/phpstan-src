@@ -989,6 +989,16 @@ public:
 						if (verdict == PT_TRI_YES) taken = true;
 						continue;
 					}
+					zend_long memberCallable = pt_type_op_trinary(Z_OBJ_P(member), PT_OP_IS_CALLABLE, 0, NULL);
+					if (UNEXPECTED(memberCallable < 0)) return zv::Val();
+					if (memberCallable == PT_TRI_YES) {
+						zv::Val superType = pt_type_op(Z_OBJ_P(member), PT_OP_IS_SUPER_TYPE_OF, 1, argumentMember);
+						if (UNEXPECTED(superType.isUndef())) return zv::Val();
+						zend_long verdict = pt_type_result_trinary(superType.raw());
+						if (UNEXPECTED(verdict < 0)) return zv::Val();
+						if (verdict == PT_TRI_YES) taken = true;
+						continue;
+					}
 					zv::Val before = zv::Val::copyOf(zv::Ref(constraints.raw()));
 					constraints = observeLowerBound(std::move(constraints), member, argumentMember);
 					if (UNEXPECTED(constraints.isUndef())) return zv::Val();

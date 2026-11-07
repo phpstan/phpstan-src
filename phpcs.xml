@@ -7,6 +7,7 @@
 	<arg name="encoding" value="utf-8"/>
 	<arg name="tab-width" value="4"/>
 	<arg name="cache" value="tmp/cache/phpcs"/>
+	<arg name="parallel" value="32"/>
 	<arg value="sp"/>
 	<file>bin</file>
 	<file>build</file>

@@ -34,7 +34,7 @@ final class OverrideAttributeThirdPartyMethodRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $node->getMethodReflection();
-		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName(), $scope->getPhpVersion());
+		$prototypeData = $this->methodPrototypeFinder->findPrototype($node->getClassReflection(), $method->getName());
 		if ($prototypeData === null) {
 			return [];
 		}

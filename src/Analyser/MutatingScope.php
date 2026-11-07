@@ -432,7 +432,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$expr = $expr->var;
 		}
 
-		return !$this->getPhpVersion()->supportsReadOnlyProperties()->no();
+		$supportsReadOnlyProperties = $this->getPhpVersion()->supportsReadOnlyProperties();
+		return $this->services->checkWholePhpVersionRange ? !$supportsReadOnlyProperties->no() : $supportsReadOnlyProperties->yes();
 	}
 
 	/** @api */
@@ -5592,7 +5593,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			return $this->canAccessClassMember($propertyReflection);
 		}
 
-		if ($this->getPhpVersion()->supportsAsymmetricVisibility()->no()) {
+		$supportsAsymmetricVisibility = $this->getPhpVersion()->supportsAsymmetricVisibility();
+		if ($this->services->checkWholePhpVersionRange ? $supportsAsymmetricVisibility->no() : !$supportsAsymmetricVisibility->yes()) {
 			return $this->canAccessClassMember($propertyReflection);
 		}
 

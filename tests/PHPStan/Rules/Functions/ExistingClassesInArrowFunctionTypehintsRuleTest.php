@@ -42,6 +42,7 @@ class ExistingClassesInArrowFunctionTypehintsRuleTest extends RuleTestCase
 				true,
 				false,
 				true,
+				true,
 			),
 		);
 	}

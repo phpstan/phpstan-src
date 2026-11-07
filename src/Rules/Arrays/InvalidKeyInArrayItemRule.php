@@ -25,6 +25,8 @@ final class InvalidKeyInArrayItemRule implements Rule
 		private RuleLevelHelper $ruleLevelHelper,
 		#[AutowiredParameter]
 		private bool $reportNonIntStringArrayKey,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -40,7 +42,7 @@ final class InvalidKeyInArrayItemRule implements Rule
 			return [];
 		}
 
-		$allowedArrayKeys = AllowedArrayKeysTypes::getType($scope->getPhpVersion(), $this->reportNonIntStringArrayKey);
+		$allowedArrayKeys = AllowedArrayKeysTypes::getType($scope->getPhpVersion(), $this->reportNonIntStringArrayKey, $this->checkWholePhpVersionRange);
 		$dimensionType = $this->ruleLevelHelper->findTypeToCheck(
 			$scope,
 			$node->key,

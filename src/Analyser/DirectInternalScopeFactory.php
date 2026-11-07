@@ -92,6 +92,7 @@ final class DirectInternalScopeFactory implements InternalScopeFactory
 			$this->phpVersion,
 			$this->attributeReflectionFactory,
 			$this->configuredPhpVersionRangeHelper,
+			$this->container->getParameter('featureToggles')['checkWholePhpVersionRange'],
 			$this->nodeCallback,
 		);
 

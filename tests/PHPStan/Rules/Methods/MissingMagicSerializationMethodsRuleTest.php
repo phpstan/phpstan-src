@@ -14,7 +14,7 @@ class MissingMagicSerializationMethodsRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new MissingMagicSerializationMethodsRule();
+		return new MissingMagicSerializationMethodsRule(true);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]

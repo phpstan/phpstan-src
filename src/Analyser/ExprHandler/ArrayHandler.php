@@ -29,6 +29,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Analyser\VariableWriteOffset;
 use PHPStan\Dependency\Dependencies;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\LiteralArrayItem;
 use PHPStan\Node\LiteralArrayNode;
@@ -69,6 +70,8 @@ final class ArrayHandler implements ExprHandler
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ExpressionResultFactory $expressionResultFactory,
 		private ClosureTypeResolver $closureTypeResolver,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -299,7 +302,7 @@ final class ArrayHandler implements ExprHandler
 			}
 
 			if ($inner instanceof Array_) {
-				return $this->initializerExprTypeResolver->getArrayType($inner, $getType, $scope->getPhpVersion());
+				return $this->initializerExprTypeResolver->getArrayType($inner, $getType, $this->checkWholePhpVersionRange ? $scope->getPhpVersion() : null);
 			}
 
 			if ($inner instanceof Scalar\String_ || $inner instanceof Scalar\Int_ || $inner instanceof Scalar\Float_) {
@@ -309,7 +312,7 @@ final class ArrayHandler implements ExprHandler
 			return new MixedType();
 		};
 
-		return $this->initializerExprTypeResolver->getArrayType($walk['expr'], $getType, $scope->getPhpVersion());
+		return $this->initializerExprTypeResolver->getArrayType($walk['expr'], $getType, $this->checkWholePhpVersionRange ? $scope->getPhpVersion() : null);
 	}
 
 	/**
@@ -394,7 +397,7 @@ final class ArrayHandler implements ExprHandler
 					}
 
 					throw new ShouldNotHappenException();
-				}, $beforeScope->getPhpVersion());
+				}, $this->checkWholePhpVersionRange ? $beforeScope->getPhpVersion() : null);
 
 				if (
 					count($expr->items) === 2
@@ -594,7 +597,7 @@ final class ArrayHandler implements ExprHandler
 			return $scope;
 		}
 
-		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType(), $scope->getPhpVersion());
+		$arrayType = $this->initializerExprTypeResolver->getArrayType($expr, static fn (Expr $inner): Type => $itemResults[spl_object_id($inner)]->getType(), $this->checkWholePhpVersionRange ? $scope->getPhpVersion() : null);
 
 		return $scope->addTemplateArgumentConstraints(ClosureSignatureInference::collectAbsorbedInto($itemTypes, $arrayType));
 	}

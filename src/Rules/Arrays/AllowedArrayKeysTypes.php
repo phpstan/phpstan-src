@@ -2,7 +2,9 @@
 
 namespace PHPStan\Rules\Arrays;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Php\PhpVersions;
+use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
@@ -24,7 +26,11 @@ use PHPStan\Type\UnionType;
 final class AllowedArrayKeysTypes
 {
 
-	public static function getType(?PhpVersions $phpVersions = null, bool $reportNonIntStringArrayKey = false): Type
+	/**
+	 * A PhpVersions is checked against all its versions, or any of them with
+	 * $checkWholePhpVersionRange; a single PhpVersion is still accepted.
+	 */
+	public static function getType(PhpVersion|PhpVersions|null $phpVersion = null, bool $reportNonIntStringArrayKey = false, bool $checkWholePhpVersionRange = false): Type
 	{
 		$types = [
 			new IntegerType(),
@@ -34,15 +40,24 @@ final class AllowedArrayKeysTypes
 		if (!$reportNonIntStringArrayKey) {
 			$types[] = new BooleanType();
 
-			if ($phpVersions === null || $phpVersions->deprecatesImplicitlyFloatConversionToInt()->no()) {
+			if ($phpVersion === null || !self::isDeprecated($phpVersion->deprecatesImplicitlyFloatConversionToInt(), $checkWholePhpVersionRange)) {
 				$types[] = new FloatType();
 			}
-			if ($phpVersions === null || $phpVersions->deprecatesNullArrayOffset()->no()) {
+			if ($phpVersion === null || !self::isDeprecated($phpVersion->deprecatesNullArrayOffset(), $checkWholePhpVersionRange)) {
 				$types[] = new NullType();
 			}
 		}
 
 		return new UnionType($types);
+	}
+
+	private static function isDeprecated(bool|TrinaryLogic $deprecation, bool $checkWholePhpVersionRange): bool
+	{
+		if ($deprecation instanceof TrinaryLogic) {
+			return $checkWholePhpVersionRange ? !$deprecation->no() : $deprecation->yes();
+		}
+
+		return $deprecation;
 	}
 
 	public static function narrowOffsetKeyType(Type $varType, Type $keyType): ?Type

@@ -63,11 +63,12 @@ public:
 	explicit ImplicitToStringCallHelper(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *methodThrowPointHelper, zval *methodCallReturnTypeHelper, zval *expressionResultFactory) const
+	void construct(zval *methodThrowPointHelper, zval *methodCallReturnTypeHelper, zval *expressionResultFactory, bool checkWholePhpVersionRange) const
 	{
 		pt_write_slot(self, slots::methodThrowPointHelper, methodThrowPointHelper);
 		pt_write_slot(self, slots::methodCallReturnTypeHelper, methodCallReturnTypeHelper);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
+		zv::ObjRef(self).propAtWrite(slots::checkWholePhpVersionRange, zv::Val::boolean(checkWholePhpVersionRange));
 	}
 
 	/* Mirrors processImplicitToStringCall(). */
@@ -126,10 +127,10 @@ public:
 			impurePoints.push(std::move(impurePoint));
 		}
 
-		/* $scope->getPhpVersion()->throwsOnStringCast()->no() negated */
+		/* $this->checkWholePhpVersionRange ? !$throwsOnStringCast->no() : $throwsOnStringCast->yes() */
 		zend_long throws = pt_mutating_scope_php_versions_trinary(Z_OBJ_P(scope), PT_LC("throwsonstringcast"));
 		if (UNEXPECTED(throws < 0)) return zv::Val();
-		if (throws != PT_TRI_NO) {
+		if (Z_TYPE_P(OBJ_PROP_NUM(self, slots::checkWholePhpVersionRange)) == IS_TRUE ? throws != PT_TRI_NO : throws == PT_TRI_YES) {
 			// the __toString() call's return type resolves directly (the receiver
 			// type is already in hand); the fabricated node is only the payload
 			// dynamic extensions receive - nothing walks it
@@ -239,8 +240,9 @@ PT_MINIT_REGISTRATION(pt_register_implicit_to_string_call_helper)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *methodThrowPointHelper, *methodCallReturnTypeHelper, *expressionResultFactory;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory)) RETURN_THROWS();
-		ImplicitToStringCallHelper(Z_OBJ_P(ZEND_THIS)).construct(methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory);
+		bool checkWholePhpVersionRange;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Bool>(execute_data, methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory, checkWholePhpVersionRange)) RETURN_THROWS();
+		ImplicitToStringCallHelper(Z_OBJ_P(ZEND_THIS)).construct(methodThrowPointHelper, methodCallReturnTypeHelper, expressionResultFactory, checkWholePhpVersionRange);
 	});
 
 	cls.method(sigs::processImplicitToStringCall, [](INTERNAL_FUNCTION_PARAMETERS) {

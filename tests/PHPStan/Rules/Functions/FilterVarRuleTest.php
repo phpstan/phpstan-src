@@ -18,6 +18,7 @@ class FilterVarRuleTest extends RuleTestCase
 			self::createReflectionProvider(),
 			self::getContainer()->getByType(FilterFunctionReturnTypeHelper::class),
 			self::getContainer()->getByType(FilterFunctionFlagsHelper::class),
+			true,
 		);
 	}
 

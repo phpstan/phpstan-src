@@ -57,9 +57,13 @@ constexpr zend_long PT_ARH_KIND_ARRAY_LITERAL_ITEM = 14;
 /* {{{ the PHP collaborators (one site each; switch to their direct entries
  * once they are ported) */
 
-/* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback, $scope->getPhpVersion()) */
-zv::Val getArrayType(zval *initializerExprTypeResolver, zval *expr, const pt_ietr_get_type &getTypeCallback, zval *scope)
+/* $initializerExprTypeResolver->getArrayType($expr, $getTypeCallback,
+ * $this->checkWholePhpVersionRange ? $scope->getPhpVersion() : null) */
+zv::Val getArrayType(zend_object *handler, zval *initializerExprTypeResolver, zval *expr, const pt_ietr_get_type &getTypeCallback, zval *scope)
 {
+	if (Z_TYPE_P(OBJ_PROP_NUM(handler, slots::checkWholePhpVersionRange)) != IS_TRUE) {
+		return pt_initializer_expr_type_resolver_get_array_type(initializerExprTypeResolver, expr, getTypeCallback, NULL);
+	}
 	zv::Val phpVersions = pt_type_call(Z_OBJ_P(scope), PT_LC("getphpversion"), 0, NULL);
 	if (UNEXPECTED(phpVersions.isUndef())) return zv::Val();
 	return pt_initializer_expr_type_resolver_get_array_type(initializerExprTypeResolver, expr, getTypeCallback, phpVersions.raw());
@@ -203,11 +207,12 @@ public:
 	explicit ArrayHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *initializerExprTypeResolver, zval *expressionResultFactory, zval *closureTypeResolver) const
+	void construct(zval *initializerExprTypeResolver, zval *expressionResultFactory, zval *closureTypeResolver, bool checkWholePhpVersionRange) const
 	{
 		pt_write_slot(self, slots::initializerExprTypeResolver, initializerExprTypeResolver);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::closureTypeResolver, closureTypeResolver);
+		zv::ObjRef(self).propAtWrite(slots::checkWholePhpVersionRange, zv::Val::boolean(checkWholePhpVersionRange));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -282,7 +287,7 @@ public:
 		{
 			ItemTypeFrame frame{itemResults, false};
 			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
-			arrayType = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback, scope.raw());
+			arrayType = getArrayType(self, OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback, scope.raw());
 			if (UNEXPECTED(arrayType.isUndef())) return zv::Val();
 		}
 		zv::Val itemTypesHold(std::move(itemTypes));
@@ -620,7 +625,7 @@ private:
 		if (UNEXPECTED(isArray < 0)) return zv::Val();
 		if (isArray == 1) {
 			pt_ietr_get_type getTypeCallback{&walkedType, frame, &walkedTypeCallable};
-			return getArrayType(OBJ_PROP_NUM(handler.self, slots::initializerExprTypeResolver), inner, getTypeCallback, frame->scope);
+			return getArrayType(handler.self, OBJ_PROP_NUM(handler.self, slots::initializerExprTypeResolver), inner, getTypeCallback, frame->scope);
 		}
 
 		for (int scalarClass : {PT_CLASS_SCALAR_STRING, PT_CLASS_SCALAR_INT, PT_CLASS_SCALAR_FLOAT}) {
@@ -714,7 +719,7 @@ private:
 		zv::Val typesValue(std::move(types));
 		WalkedTypeFrame frame{self, typesValue.raw(), nodeScopeResolver, view.walk->scope.raw()};
 		pt_ietr_get_type getTypeCallback{&walkedType, &frame, &walkedTypeCallable};
-		return getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), view.walk->expr, getTypeCallback, view.walk->scope.raw());
+		return getArrayType(self, OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), view.walk->expr, getTypeCallback, view.walk->scope.raw());
 	}
 
 	/* Mirrors createResult() */
@@ -1206,7 +1211,7 @@ private:
 		{
 			ItemTypeFrame frame{itemResults, nativeTypesPromoted};
 			pt_ietr_get_type getTypeCallback{&itemTypeCallback, &frame, &itemTypeCallable};
-			type = getArrayType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback, beforeScope);
+			type = getArrayType(self, OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), expr, getTypeCallback, beforeScope);
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 		}
 
@@ -1296,8 +1301,9 @@ PT_MINIT_REGISTRATION(pt_register_array_handler)
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *initializerExprTypeResolver, *expressionResultFactory, *closureTypeResolver;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, initializerExprTypeResolver, expressionResultFactory, closureTypeResolver)) RETURN_THROWS();
-		ArrayHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, expressionResultFactory, closureTypeResolver);
+		bool checkWholePhpVersionRange;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Bool>(execute_data, initializerExprTypeResolver, expressionResultFactory, closureTypeResolver, checkWholePhpVersionRange)) RETURN_THROWS();
+		ArrayHandler(Z_OBJ_P(ZEND_THIS)).construct(initializerExprTypeResolver, expressionResultFactory, closureTypeResolver, checkWholePhpVersionRange);
 	});
 
 	cls.method<&ArrayHandler::supports, zp::Obj>(sigs::supports);

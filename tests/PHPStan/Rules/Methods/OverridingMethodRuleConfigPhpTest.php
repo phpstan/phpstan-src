@@ -25,8 +25,9 @@ class OverridingMethodRuleConfigPhpTest extends RuleTestCase
 			false,
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
-			new MethodPrototypeFinder($phpClassReflectionExtension),
+			new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
 			false,
+			true,
 		);
 	}
 

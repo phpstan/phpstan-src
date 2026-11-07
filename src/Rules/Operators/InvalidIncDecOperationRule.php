@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Operators;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\MultipleNodeTypesRule;
@@ -36,6 +37,8 @@ final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private PhpVersion $phpVersion,
+		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
+		private bool $checkWholePhpVersionRange,
 	)
 	{
 	}
@@ -98,7 +101,10 @@ final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 		}
 
 		$phpVersions = $scope->getPhpVersion();
-		$deprecatesDecOnNonNumericString = !$phpVersions->deprecatesDecOnNonNumericString()->no();
+		$decDeprecation = $phpVersions->deprecatesDecOnNonNumericString();
+		$incDeprecation = $phpVersions->deprecatesIncOnNonNumericString();
+		$deprecatesDecOnNonNumericString = $this->checkWholePhpVersionRange ? !$decDeprecation->no() : $decDeprecation->yes();
+		$deprecatesIncOnNonNumericString = $this->checkWholePhpVersionRange ? !$incDeprecation->no() : $incDeprecation->yes();
 		$string = new StringType();
 		$deprecatedString = false;
 		if (
@@ -109,7 +115,7 @@ final class InvalidIncDecOperationRule implements MultipleNodeTypesRule
 					|| $node instanceof Node\Expr\PostDec
 				)
 			) || (
-				!$phpVersions->deprecatesIncOnNonNumericString()->no()
+				$deprecatesIncOnNonNumericString
 				&& (
 					$node instanceof Node\Expr\PreInc
 					|| $node instanceof Node\Expr\PostInc

@@ -14,7 +14,7 @@ class DefineParametersRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new DefineParametersRule();
+		return new DefineParametersRule(true);
 	}
 
 	public function testFile(): void

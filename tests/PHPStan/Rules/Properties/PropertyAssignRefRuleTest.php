@@ -14,7 +14,7 @@ class PropertyAssignRefRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new PropertyAssignRefRule(new PropertyReflectionFinder());
+		return new PropertyAssignRefRule(new PropertyReflectionFinder(), true);
 	}
 
 	#[RequiresPhp('>= 8.4.0')]

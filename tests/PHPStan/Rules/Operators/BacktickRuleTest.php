@@ -15,7 +15,7 @@ class BacktickRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new BacktickRule();
+		return new BacktickRule(true);
 	}
 
 	public function testRule(): void

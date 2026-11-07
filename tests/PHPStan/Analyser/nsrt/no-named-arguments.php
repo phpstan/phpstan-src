@@ -11,7 +11,7 @@ use function PHPStan\Testing\assertType;
 function noNamedArgumentsInFunction(float ...$args)
 {
 	assertType('list<float>', $args);
-	assertNativeType('list<float>', $args);
+	assertNativeType('array<int<0, max>|string, float>', $args);
 }
 
 class Baz extends Foo implements Bar
@@ -22,19 +22,19 @@ class Baz extends Foo implements Bar
 	public function noNamedArgumentsInMethod(float ...$args)
 	{
 		assertType('list<float>', $args);
-		assertNativeType('list<float>', $args);
+		assertNativeType('array<int<0, max>|string, float>', $args);
 	}
 
 	public function noNamedArgumentsInParent(float ...$args)
 	{
 		assertType('list<float>', $args);
-		assertNativeType('list<float>', $args);
+		assertNativeType('array<int<0, max>|string, float>', $args);
 	}
 
 	public function noNamedArgumentsInInterface(float ...$args)
 	{
 		assertType('list<float>', $args);
-		assertNativeType('list<float>', $args);
+		assertNativeType('array<int<0, max>|string, float>', $args);
 	}
 }
 

@@ -54,6 +54,7 @@ final class IfHandler implements StmtHandler
 		$entryScope = $scope;
 		$flowBranches = [];
 		$elseFlow = null;
+		$deadBranchScopes = [];
 		$condResult = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
 		$dependencies[] = $condResult->getDependencies();
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $entryScope, $storage);
@@ -84,6 +85,8 @@ final class IfHandler implements StmtHandler
 				$endStatements[] = new InternalEndStatementResult($stmt, $branchScopeStatementResult);
 			}
 			$hasYield = $branchScopeStatementResult->hasYield() || $hasYield;
+		} else {
+			$deadBranchScopes[] = $branchScopeStatementResult->getScope();
 		}
 
 		$scope = $condResult->getFalseyScope();
@@ -119,6 +122,8 @@ final class IfHandler implements StmtHandler
 					$endStatements[] = new InternalEndStatementResult($elseif, $branchScopeStatementResult);
 				}
 				$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
+			} else {
+				$deadBranchScopes[] = $branchScopeStatementResult->getScope();
 			}
 
 			if (
@@ -156,11 +161,19 @@ final class IfHandler implements StmtHandler
 					$endStatements[] = new InternalEndStatementResult($stmt->else, $branchScopeStatementResult);
 				}
 				$hasYield = $hasYield || $branchScopeStatementResult->hasYield();
+			} else {
+				$deadBranchScopes[] = $branchScopeStatementResult->getScope();
 			}
 		}
 
 		if ($finalScope === null) {
 			$finalScope = $scope;
+		}
+
+		// a branch the condition rules out is still walked and its rules still
+		// see its calls - their template arguments are resolved from it too
+		foreach ($deadBranchScopes as $deadBranchScope) {
+			$finalScope = $finalScope->addTemplateArgumentConstraints($deadBranchScope->getTemplateArgumentConstraints());
 		}
 
 		if ($stmt->else === null && !$ifAlwaysTrue && !$lastElseIfConditionIsTrue) {

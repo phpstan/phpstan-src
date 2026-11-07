@@ -517,6 +517,8 @@ enum {
 	/* the class names of Type::toPhpDocNode() and how describe() prints them */
 	PT_CLASS_FULLY_QUALIFIED_NAME_NODE,
 	PT_CLASS_TYPE_NODE_DESCRIBER,
+	/* the post-loop offsets of a foreach over a constant array that is not unrolled */
+	PT_CLASS_FOREACH_ITERATION_OFFSET_WRITES_HELPER,
 	PT_CLASS_COUNT
 };
 

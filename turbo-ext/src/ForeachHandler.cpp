@@ -63,6 +63,7 @@ pt_property_site pt_feh_scalar_value_site;
 pt_method_site pt_feh_get_attributes_site;
 pt_method_site pt_feh_set_attributes_site;
 pt_method_site pt_feh_get_doc_comment_site;
+pt_method_site pt_feh_make_written_offsets_required_site;
 
 /* the permanent interned strings of the twin's literals (module startup) */
 zend_string *pt_feh_identical_narrowing_helper_class = nullptr;
@@ -721,6 +722,8 @@ public:
 
 		if (!unrolledEndScope.isNull()) {
 			finalScope = zv::Val::copyOf(unrolledEndScope.ref());
+		} else if (ptlh::countOf(breakExitPoints.raw()) == 0) {
+			if (UNEXPECTED(!makeWrittenOffsetsRequired(nodeScopeResolver, stmt, result, foreachIterateeType.raw(), foreachNativeIterateeType.raw(), finalScope))) return zv::Val();
 		}
 
 		// $scope is the post-loop scope; the body may have modified the iteratee
@@ -1221,6 +1224,39 @@ private:
 		}
 		if (UNEXPECTED(assigned.isUndef())) return false;
 		finalScope = std::move(assigned);
+		return true;
+	}
+
+	/* ForeachIterationOffsetWritesHelper::makeWrittenOffsetsRequired($nodeScopeResolver, $stmt,
+	 *     $finalScope, $backEdgeScopes, $foreachIterateeType, $foreachNativeIterateeType,
+	 *     $finalScopeResult->getImpurePoints()) - the back-edge scopes are the end
+	 * scope when reachable followed by the continue scopes */
+	[[nodiscard]] bool makeWrittenOffsetsRequired(zval *nodeScopeResolver, zval *stmt, zval *result, zval *iterateeType, zval *nativeIterateeType, zv::Val &finalScope) const
+	{
+		zv::Arr backEdgeScopes = zv::Arr::empty();
+		bool endReachable;
+		if (UNEXPECTED(!pt_internal_statement_result_is_end_reachable(result, endReachable))) return false;
+		if (endReachable) {
+			zv::Val hold;
+			zval *resultScope = pt_internal_statement_result_scope(result, hold);
+			if (UNEXPECTED(resultScope == NULL)) return false;
+			backEdgeScopes.push(zv::Ref(resultScope));
+		}
+		zv::Val continues = ptlh::continueExitPoints(result);
+		if (UNEXPECTED(continues.isUndef())) return false;
+		for (auto entry : zv::ArrRef(continues.raw())) {
+			zv::Val hold;
+			zval *continueScope = pt_internal_statement_exit_point_scope(entry.value().deref().raw(), hold);
+			if (UNEXPECTED(continueScope == NULL)) return false;
+			backEdgeScopes.push(zv::Ref(continueScope));
+		}
+		zv::Val impurePointsHold;
+		zval *impurePoints = pt_internal_statement_result_impure_points(result, impurePointsHold);
+		if (UNEXPECTED(impurePoints == NULL)) return false;
+		zv::Args argv{nodeScopeResolver, stmt, finalScope.raw(), backEdgeScopes.raw(), iterateeType, nativeIterateeType, impurePoints};
+		zv::Val required = pt_call_static_cached(pt_feh_make_written_offsets_required_site, PT_CLASS_FOREACH_ITERATION_OFFSET_WRITES_HELPER, PT_LC("makewrittenoffsetsrequired"), 7, argv);
+		if (UNEXPECTED(required.isUndef())) return false;
+		finalScope = std::move(required);
 		return true;
 	}
 

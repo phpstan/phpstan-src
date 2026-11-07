@@ -297,7 +297,7 @@ public:
 	explicit ForeachHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *container, bool implicitThrows, zval *varAnnotationProcessor, zval *assignHandler, bool polluteScopeWithAlwaysIterableForeach)
+	void construct(zval *container, bool implicitThrows, zval *varAnnotationProcessor, zval *assignHandler, bool polluteScopeWithAlwaysIterableForeach, bool narrowForeachBodyNonEmpty)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::container, zv::Val::copyOf(zv::Ref(container)));
@@ -305,6 +305,7 @@ public:
 		object.propAtWrite(slots::varAnnotationProcessor, zv::Val::copyOf(zv::Ref(varAnnotationProcessor)));
 		object.propAtWrite(slots::assignHandler, zv::Val::copyOf(zv::Ref(assignHandler)));
 		object.propAtWrite(slots::polluteScopeWithAlwaysIterableForeach, zv::Val::boolean(polluteScopeWithAlwaysIterableForeach));
+		object.propAtWrite(slots::narrowForeachBodyNonEmpty, zv::Val::boolean(narrowForeachBodyNonEmpty));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -407,9 +408,12 @@ public:
 		// the "iteratee !== []" narrowing every loop pass merges in - composed
 		// once from the iteratee's result (the same sentinel comparison the
 		// walked synthetic would delegate to); the walk is the composition's
-		// miss seam
+		// miss seam. The loop body is only entered when the iteratee is
+		// non-empty; narrowForeachBodyNonEmpty narrows it there (list to
+		// non-empty-list, array to non-empty-array) even with
+		// polluteScopeWithAlwaysIterableForeach off.
 		zv::Val nonEmptyIterateeScope = zv::Val::copyOf(scope.ref());
-		if (polluteScopeWithAlwaysIterableForeach) {
+		if (ptlh::boolSlot(self, slots::narrowForeachBodyNonEmpty) || polluteScopeWithAlwaysIterableForeach) {
 			zv::Val identicalNarrowingHelper = ptlh::containerGetByType(OBJ_PROP_NUM(self, slots::container), pt_feh_identical_narrowing_helper_class);
 			if (UNEXPECTED(identicalNarrowingHelper.isUndef())) return zv::Val();
 			if (UNEXPECTED(Z_TYPE_P(identicalNarrowingHelper.raw()) != IS_OBJECT)) {
@@ -2006,9 +2010,9 @@ PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 	 * container autowires the service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *container, *varAnnotationProcessor, *assignHandler;
-		bool implicitThrows, polluteScopeWithAlwaysIterableForeach;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj, zp::Obj, zp::Bool>(execute_data, container, implicitThrows, varAnnotationProcessor, assignHandler, polluteScopeWithAlwaysIterableForeach)) RETURN_THROWS();
-		ForeachHandler(Z_OBJ_P(ZEND_THIS)).construct(container, implicitThrows, varAnnotationProcessor, assignHandler, polluteScopeWithAlwaysIterableForeach);
+		bool implicitThrows, polluteScopeWithAlwaysIterableForeach, narrowForeachBodyNonEmpty;
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj, zp::Obj, zp::Bool, zp::Bool>(execute_data, container, implicitThrows, varAnnotationProcessor, assignHandler, polluteScopeWithAlwaysIterableForeach, narrowForeachBodyNonEmpty)) RETURN_THROWS();
+		ForeachHandler(Z_OBJ_P(ZEND_THIS)).construct(container, implicitThrows, varAnnotationProcessor, assignHandler, polluteScopeWithAlwaysIterableForeach, narrowForeachBodyNonEmpty);
 	});
 
 	cls.method<&ForeachHandler::supports, zp::Obj>(sigs::supports);

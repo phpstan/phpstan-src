@@ -4,6 +4,7 @@ namespace PHPStan\Rules;
 
 use PHPStan\Rules\Arrays\InvalidKeyInArrayDimFetchRule;
 use PHPStan\Rules\Arrays\InvalidKeyInArrayItemRule;
+use PHPStan\Rules\Functions\DefineParametersRule;
 use PHPStan\Rules\Functions\ExistingClassesInTypehintsRule;
 use PHPStan\Rules\Operators\BacktickRule;
 use PHPStan\Rules\Operators\InvalidIncDecOperationRule;
@@ -28,6 +29,7 @@ class PhpVersionRangeWithoutBleedingEdgeTest extends RuleTestCase
 		// @phpstan-ignore argument.type
 		return new CompositeRule([
 			$container->getByType(BacktickRule::class),
+			$container->getByType(DefineParametersRule::class),
 			$container->getByType(ExistingClassesInTypehintsRule::class),
 			$container->getByType(InvalidIncDecOperationRule::class),
 			$container->getByType(InvalidKeyInArrayDimFetchRule::class),
@@ -40,6 +42,7 @@ class PhpVersionRangeWithoutBleedingEdgeTest extends RuleTestCase
 	{
 		$this->analyse([
 			__DIR__ . '/Arrays/data/invalid-key-php-version-range.php',
+			__DIR__ . '/Functions/data/call-to-define.php',
 			__DIR__ . '/Functions/data/function-definition-php-version-range.php',
 			__DIR__ . '/Operators/data/backtick.php',
 			__DIR__ . '/Operators/data/dec-non-numeric-string.php',

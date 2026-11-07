@@ -32,8 +32,8 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			0,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="0" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="phpstan"/>
+<testsuite failures="0" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
+  <testcase classname="phpstan:0" name=""/>
 </testsuite>
 ',
 		];
@@ -43,8 +43,8 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			1,
 			0,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="1" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:4">
+<testsuite failures="1" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
+  <testcase classname="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:4" name="">
     <failure type="ERROR" message="Foo" />
   </testcase>
 </testsuite>
@@ -56,8 +56,8 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			1,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="1" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="General error">
+<testsuite failures="1" name="phpstan" tests="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
+  <testcase classname="General error:0" name="">
     <failure type="ERROR" message="first generic error" />
   </testcase>
 </testsuite>
@@ -69,18 +69,18 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			4,
 			0,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="4" name="phpstan" tests="4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:2">
+<testsuite failures="4" name="phpstan" tests="4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
+  <testcase classname="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:2" name="">
     <failure type="ERROR" message="Bar Bar2" />
   </testcase>
-  <testcase name="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:4">
+  <testcase classname="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:4" name="">
     <failure type="ERROR" message="Foo" />
   </testcase>
-  <testcase name="foo.php:1">
+  <testcase classname="foo.php:1" name="">
     <failure type="ERROR" message="Foo&lt;Bar&gt;"/>
   </testcase>
-  <testcase name="foo.php:5">
-    <failure type="ERROR" message="Bar Bar2"/>
+  <testcase classname="foo.php:5" name="">
+    <failure type="ERROR" message="Bar Bar2 a tip"/>
   </testcase>
 </testsuite>
 ',
@@ -91,11 +91,11 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			0,
 			2,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="2" name="phpstan" tests="2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="General error">
+<testsuite failures="2" name="phpstan" tests="2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
+  <testcase classname="General error:0" name="">
     <failure type="ERROR" message="first generic error" />
   </testcase>
-  <testcase name="General error">
+  <testcase classname="General error:0" name="">
     <failure type="ERROR" message="second generic&lt;error&gt;"/>
   </testcase>
 </testsuite>
@@ -107,23 +107,23 @@ class JunitErrorFormatterTest extends ErrorFormatterTestCase
 			4,
 			2,
 			'<?xml version="1.0" encoding="UTF-8"?>
-<testsuite failures="6" name="phpstan" tests="6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">
-  <testcase name="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:2">
+<testsuite failures="6" name="phpstan" tests="6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">
+  <testcase classname="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:2" name="">
     <failure type="ERROR" message="Bar Bar2" />
   </testcase>
-  <testcase name="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:4">
+  <testcase classname="folder with unicode &#x1F603;/file name with &quot;spaces&quot; and unicode &#x1F603;.php:4" name="">
     <failure type="ERROR" message="Foo" />
   </testcase>
-  <testcase name="foo.php:1">
+  <testcase classname="foo.php:1" name="">
     <failure type="ERROR" message="Foo&lt;Bar&gt;"/>
   </testcase>
-  <testcase name="foo.php:5">
-    <failure type="ERROR" message="Bar Bar2"/>
+  <testcase classname="foo.php:5" name="">
+    <failure type="ERROR" message="Bar Bar2 a tip"/>
   </testcase>
-  <testcase name="General error">
+  <testcase classname="General error:0" name="">
     <failure type="ERROR" message="first generic error" />
   </testcase>
-  <testcase name="General error">
+  <testcase classname="General error:0" name="">
     <failure type="ERROR" message="second generic&lt;error&gt;"/>
   </testcase>
 </testsuite>

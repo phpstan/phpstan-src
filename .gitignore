@@ -14,6 +14,7 @@
 /tests/bench/storage/local-baseline.xml
 tmp/.memory_limit
 e2e/bashunit
+/.bashunit
 /.phpbench
 /.amp/portals/
 /e2e/turbo-arena/tmp

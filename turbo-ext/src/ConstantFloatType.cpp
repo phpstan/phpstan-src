@@ -177,8 +177,10 @@ public:
 	}
 
 	/* new UnionType([new ConstantStringType('0'), new ConstantStringType('-0')])
-	 * for 0.0 (and -0.0, which === 0.0), new ConstantStringType((string) $this->value)
-	 * otherwise — the cast under the current `precision` ini */
+	 * for 0.0 (and -0.0, which === 0.0), new ConstantStringType('NAN') for a
+	 * NAN, which PHP 8.5's zend_double_to_str() would convert with a warning,
+	 * new ConstantStringType((string) $this->value) otherwise — the cast under
+	 * the current `precision` ini */
 	zv::Val toString() const
 	{
 		double v = 0.0;
@@ -193,6 +195,7 @@ public:
 			types.push(std::move(negativeZero));
 			return pt_type_new_union(std::move(types));
 		}
+		if (std::isnan(v)) return pt_type_new_constant_string("NAN", 3);
 		zend_string *str = zend_double_to_str(v);
 		zv::Val result = pt_type_new_constant_string(ZSTR_VAL(str), ZSTR_LEN(str));
 		zend_string_release(str);

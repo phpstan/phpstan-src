@@ -108,6 +108,10 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 			]);
 		}
 
+		if (is_nan($this->value)) {
+			return new ConstantStringType('NAN');
+		}
+
 		return new ConstantStringType((string) $this->value);
 	}
 

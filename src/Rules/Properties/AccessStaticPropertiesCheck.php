@@ -16,6 +16,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\ClassNameCheck;
@@ -175,9 +176,21 @@ final class AccessStaticPropertiesCheck
 				$classType = $scope->resolveTypeByName($node->class);
 			}
 		} else {
+			$exprToCheck = NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class);
+			// A constant class-name string or a class-string type describes the
+			// object it names, so route the check through that object type. This
+			// makes constant-string / class-string unions behave exactly like
+			// object unions with regard to rule levels (member filtering when
+			// checkUnionTypes is off, whole-union check when it is on).
+			// Every other type (objects, or unions with members that are not
+			// class-strings) yields no class name here and keeps the old path.
+			$objectType = $scope->getType($exprToCheck)->getClassStringObjectType();
+			if ($this->canCheckThroughObjectType($objectType)) {
+				$exprToCheck = new TypeExpr($objectType);
+			}
 			$classTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 				$scope,
-				NullsafeOperatorHelper::getNullsafeShortcircuitedExprRespectingScope($scope, $node->class),
+				$exprToCheck,
 				sprintf('Access to static property $%s on an unknown class %%s.', SprintfHelper::escapeFormatString($name)),
 				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasStaticProperty($name)->yes(),
 			);
@@ -337,6 +350,27 @@ final class AccessStaticPropertiesCheck
 				->identifier(sprintf('assign.staticProperty%s', $property->isPrivateSet() ? 'PrivateSet' : 'ProtectedSet'))
 				->build(),
 		]);
+	}
+
+	/**
+	 * Class-strings without a class name (class-string, class-string<object>,
+	 * class-string<T of object>) and class-strings naming a trait keep the
+	 * string code path: RuleLevelHelper would filter the object type out or
+	 * report the trait as an unknown class.
+	 */
+	private function canCheckThroughObjectType(Type $objectType): bool
+	{
+		if (count($objectType->getObjectClassNames()) === 0) {
+			return false;
+		}
+
+		foreach ($objectType->getObjectClassReflections() as $classReflection) {
+			if ($classReflection->isTrait()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

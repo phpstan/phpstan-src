@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Pure;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\MethodReturnStatementsNode;
 use PHPStan\Rules\Rule;
@@ -16,7 +17,11 @@ use function sprintf;
 final class PureMethodRule implements Rule
 {
 
-	public function __construct(private FunctionPurityCheck $check)
+	public function __construct(
+		private FunctionPurityCheck $check,
+		#[AutowiredParameter]
+		private bool $checkMissingPurePhpDocTag,
+	)
 	{
 	}
 
@@ -28,10 +33,11 @@ final class PureMethodRule implements Rule
 	public function processNode(Node $node, Scope $scope): array
 	{
 		$method = $node->getMethodReflection();
+		$description = sprintf('Method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName());
 
-		return $this->check->check(
+		$errors = $this->check->check(
 			$scope,
-			sprintf('Method %s::%s()', $method->getDeclaringClass()->getDisplayName(), $method->getName()),
+			$description,
 			'Method',
 			$method,
 			$method->getParameters(),
@@ -41,6 +47,26 @@ final class PureMethodRule implements Rule
 			$node->getStatements(),
 			$method->isConstructor(),
 		);
+
+		// a trait method is analysed once per using class, and its PHPDoc is shared by all of them
+		if (
+			$this->checkMissingPurePhpDocTag
+			&& !$scope->isInTrait()
+			&& $this->check->canBeMarkedPure(
+				$method,
+				$method->getParameters(),
+				$method->getReturnType(),
+				$node->getImpurePoints(),
+				$node->getStatementResult()->getThrowPoints(),
+				$node->isGenerator(),
+				$node->returnsByRef(),
+				$method->isConstructor(),
+			)
+		) {
+			$errors[] = $this->check->createMissingPureTagError($description, 'Method', $node->getClassMethod());
+		}
+
+		return $errors;
 	}
 
 }

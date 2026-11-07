@@ -40,7 +40,7 @@ public:
 		zend_string *functionName = visitors::plainFuncCallName(node, call, nameProp, &args);
 		if (functionName == NULL) return !EG(exception);
 		if (!(visitors::lowerEquals(functionName, "curl_setopt_array"))) return true;
-		zend_object *arg = visitors::argAt(args, 1);
+		zend_object *arg = visitors::argForParameter(args, 1, "options");
 		if (arg != NULL) {
 			visitors::setAttributeTrue(arg, pt_curl_set_opt_array_arg_attribute_str);
 		}

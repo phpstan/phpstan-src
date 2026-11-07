@@ -44,6 +44,7 @@ final class DeclareHandler implements StmtHandler
 		$impurePoints = [];
 		$alwaysTerminating = false;
 		$exitPoints = [];
+		$variableFlow = null;
 		foreach ($stmt->declares as $declare) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $declare, $scope, $storage);
 			// the value is a constant scalar - process it so its result is stored
@@ -69,9 +70,10 @@ final class DeclareHandler implements StmtHandler
 			$impurePoints = $result->getImpurePoints();
 			$alwaysTerminating = $result->isAlwaysTerminating();
 			$exitPoints = $result->getExitPoints();
+			$variableFlow = $result->getVariableFlow();
 		}
 
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
+		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, variableFlow: $variableFlow, dependencies: Dependencies::merge(...$dependencies));
 	}
 
 }

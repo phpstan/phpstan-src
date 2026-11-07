@@ -2091,6 +2091,11 @@ final class ResultCacheManager
 
 		ksort($exportedNodes);
 		ksort($collectedDataRuleResults);
+		ksort($packageDependencies);
+		foreach ($packageDependencies as $file => $packages) {
+			sort($packages);
+			$packageDependencies[$file] = $packages;
+		}
 
 		// The only point where the StubFilesExtensions may run: the analysis is over, bootstrapFiles
 		// have been executed, so the extensions can rely on them. restore() reads these hashes back

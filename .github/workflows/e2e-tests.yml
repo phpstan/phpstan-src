@@ -1440,6 +1440,12 @@ jobs:
               ../bashunit assert contains 'Composer packages changed (test/logger); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
               ../bashunit assert contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
           - script: |
+              cd e2e/result-cache-deterministic-order
+              composer install
+              ../../bin/phpstan analyse
+              OUTPUT=$(php assert-sorted.php tmp/resultCache.php 2>&1) || { echo "$OUTPUT"; exit 1; }
+              echo "$OUTPUT"
+          - script: |
               cd e2e/result-cache-path-repository
               composer install
               ../../bin/phpstan analyse

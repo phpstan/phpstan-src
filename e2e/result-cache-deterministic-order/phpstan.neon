@@ -1,0 +1,10 @@
+parameters:
+	level: 5
+	tmpDir: tmp
+	paths:
+		- src
+	parallel:
+		# two jobs, so the files reach the main process interleaved
+		jobSize: 2
+		maximumNumberOfProcesses: 4
+		minimumNumberOfJobsPerProcess: 1

@@ -254,6 +254,11 @@ final class ForeachHandler implements StmtHandler
 						$previousPass = $passRecord;
 						$previousPassStorage = $storage;
 						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+						if ($backEdgeScope === null && !$bodyIsReplayable) {
+							// a nested loop walks only its first iteration in a pass - its unconverged
+							// types can make the back edge look dead, so a walk converging it decides
+							$backEdgeScope = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage->duplicate(), new NoopNodeCallback(), $context->withoutTemplateArgumentResolution())->filterOutLoopExitPoints()->getLoopBackEdgeScope();
+						}
 						if ($backEdgeScope === null) {
 							$bodyScope = $prevScope;
 							break;
@@ -868,6 +873,11 @@ final class ForeachHandler implements StmtHandler
 				$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
 				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 				$backEdgeScope = $iterBodyScopeResult->getLoopBackEdgeScope();
+				if ($backEdgeScope === null && !$nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts)) {
+					// a nested loop walks only its first iteration in a pass - its unconverged
+					// types can make the back edge look dead, so a walk converging it decides
+					$backEdgeScope = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage->duplicate(), new NoopNodeCallback(), $context->withoutTemplateArgumentResolution())->filterOutLoopExitPoints()->getLoopBackEdgeScope();
+				}
 				foreach ($iterBodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 					$endScope = $endScope->mergeWith($breakExitPoint->getScope());
 				}

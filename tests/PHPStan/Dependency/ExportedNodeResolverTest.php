@@ -83,6 +83,29 @@ final class ExportedNodeResolverTest extends PHPStanTestCase
 		$this->assertUsesStoredOnce($decodedNodes);
 	}
 
+	public function testMemberOrderDoesNotMatter(): void
+	{
+		$reflectionProvider = new CountingReflectionProvider(new DummyReflectionProvider());
+		$nodes = $this->fetchNodes(__DIR__ . '/data/exported-member-order-a.php', $reflectionProvider);
+		$reorderedNodes = $this->fetchNodes(__DIR__ . '/data/exported-member-order-b.php', $reflectionProvider);
+
+		$this->assertCount(1, $nodes);
+		$this->assertCount(1, $reorderedNodes);
+		$this->assertTrue($nodes[0]->equals($reorderedNodes[0]));
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testEnumCaseOrderMatters(): void
+	{
+		$reflectionProvider = new CountingReflectionProvider(new DummyReflectionProvider());
+		$nodes = $this->fetchNodes(__DIR__ . '/data/exported-enum-case-order-a.php', $reflectionProvider);
+		$reorderedNodes = $this->fetchNodes(__DIR__ . '/data/exported-enum-case-order-b.php', $reflectionProvider);
+
+		$this->assertCount(1, $nodes);
+		$this->assertCount(1, $reorderedNodes);
+		$this->assertFalse($nodes[0]->equals($reorderedNodes[0]));
+	}
+
 	/**
 	 * @param ExportedNode[] $nodes
 	 */

@@ -16,7 +16,8 @@ class HelloWorld
 		$key = $data === null ? null : array_key_first($data);
 		if ($key !== null) {
 			assertType('non-empty-array<string, string>', $data);
-			assertType('string', $key);
+			// array_key_first() on a string-keyed array can hand back an int
+			assertType('(int|string)', $key);
 			echo $data[$key];
 		}
 		echo $key === null ? null : $data[$key];

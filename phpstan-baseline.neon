@@ -13,12 +13,6 @@ parameters:
 			path: src/Analyser/AnalyserResultFinalizer.php
 
 		-
-			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
-			identifier: varTag.type
-			count: 1
-			path: src/Analyser/ArgumentsNormalizer.php
-
-		-
 			rawMessage: Casting to string something that's already string.
 			identifier: cast.useless
 			count: 3
@@ -162,6 +156,12 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: src/Analyser/StmtHandler/ClassLikeHandler.php
+
+		-
+			rawMessage: 'Property PHPStan\Analyser\VariableLivenessResolver::$killedKeys (array<int, array<string, true>>) does not accept non-empty-array<int, array<int|string, true>>.'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Analyser/VariableLivenessResolver.php
 
 		-
 			rawMessage: 'Template type TNodeType is declared as covariant, but occurs in contravariant position in parameter node of method PHPStan\Collectors\Collector::processNode().'
@@ -994,12 +994,6 @@ parameters:
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\StringType is error-prone and deprecated. Use Type::isString() instead.'
 			identifier: phpstanApi.instanceofType
-			count: 1
-			path: src/Type/Constant/ConstantStringType.php
-
-		-
-			rawMessage: PHPDoc tag @var with type int|string is not subtype of type string.
-			identifier: varTag.type
 			count: 1
 			path: src/Type/Constant/ConstantStringType.php
 

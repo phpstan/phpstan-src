@@ -22,11 +22,11 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
 use function array_is_list;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_values;
 use function count;
 use function is_string;
-use function key;
 use function ksort;
 use function max;
 use function sprintf;
@@ -151,8 +151,7 @@ final class ArgumentsNormalizer
 		foreach ($argsArrayArg->value->items as $item) {
 			$key = null;
 			if ($item->key instanceof String_) {
-				/** @var int|string $key */
-				$key = key([$item->key->value => null]);
+				$key = array_key_first([$item->key->value => null]);
 				if ($key === '') {
 					return null;
 				}

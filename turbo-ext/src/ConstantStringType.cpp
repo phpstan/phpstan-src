@@ -664,7 +664,7 @@ public:
 		return pt_type_new_constant_float(zval_get_double(&valueZv));
 	}
 
-	/* $this when the value stays a string key (key([$this->value => null])),
+	/* $this when the value stays a string key (array_key_first([$this->value => null])),
 	 * the memoized ConstantIntegerType of its integer key otherwise; UNDEF
 	 * = pending exception */
 	zv::Val toArrayKey() const

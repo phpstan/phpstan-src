@@ -3029,7 +3029,9 @@ public:
 		return builderGetArray(builder.raw());
 	}
 
-	/* a shape keyed by the values' array keys holding the keys, each
+	/* a shape keyed by the values' array keys holding the keys (the keys
+	 * become values, so they go through
+	 * UnsafeArrayStringKeyCastingTraverser::castReadKeyType()), each
 	 * optional for an optional key or a multi-valued one; the unsealed pair
 	 * flipped; UNDEF = pending exception */
 	zv::Val flipArray() const
@@ -3046,6 +3048,8 @@ public:
 			if (UNEXPECTED(valueType == NULL)) return zv::Val();
 			zv::Val offsetType = callType(Z_OBJ_P(valueType), PT_LC("toarraykey"), 0, NULL);
 			if (UNEXPECTED(offsetType.isUndef())) return zv::Val();
+			zv::Val readKeyType = castReadKeyType(keyType);
+			if (UNEXPECTED(readKeyType.isUndef())) return zv::Val();
 			bool optional;
 			if (UNEXPECTED(!thisIsOptionalKey(i, optional))) return zv::Val();
 			if (!optional) {
@@ -3053,7 +3057,7 @@ public:
 				if (UNEXPECTED(scalars.isUndef())) return zv::Val();
 				optional = arrayCount(scalars.raw()) > 1;
 			}
-			if (UNEXPECTED(!builderSet(builder.raw(), offsetType.raw(), keyType, optional ? 1 : 0))) return zv::Val();
+			if (UNEXPECTED(!builderSet(builder.raw(), offsetType.raw(), readKeyType.raw(), optional ? 1 : 0))) return zv::Val();
 		}
 
 		zend_long unsealedness = thisIsUnsealed();
@@ -3065,6 +3069,8 @@ public:
 			if (UNEXPECTED(!unsealedPair(unsealed, unsealedKey, unsealedValue))) return zv::Val();
 			zv::Val flippedKey = callType(Z_OBJ_P(unsealedValue), PT_LC("toarraykey"), 0, NULL);
 			if (UNEXPECTED(flippedKey.isUndef())) return zv::Val();
+			zv::Val flippedValue = castReadKeyType(unsealedKey);
+			if (UNEXPECTED(flippedValue.isUndef())) return zv::Val();
 			/* For a non-finite tail key (e.g. `string`), install the unsealed
 			 * extras first; setOffsetValueType then widens any overlapping
 			 * explicit values with the tail's value type. For a finite tail
@@ -3073,8 +3079,8 @@ public:
 			 * no residual unsealed tail is needed. */
 			zv::Val finiteTypes = pt_type_call_array(Z_OBJ_P(flippedKey.raw()), PT_LC("getfinitetypes"), 0, NULL);
 			if (UNEXPECTED(finiteTypes.isUndef())) return zv::Val();
-			if (arrayCount(finiteTypes.raw()) == 0 && UNEXPECTED(!builderMakeUnsealed(builder.raw(), flippedKey.raw(), unsealedKey))) return zv::Val();
-			if (UNEXPECTED(!builderSet(builder.raw(), flippedKey.raw(), unsealedKey, 1))) return zv::Val();
+			if (arrayCount(finiteTypes.raw()) == 0 && UNEXPECTED(!builderMakeUnsealed(builder.raw(), flippedKey.raw(), flippedValue.raw()))) return zv::Val();
+			if (UNEXPECTED(!builderSet(builder.raw(), flippedKey.raw(), flippedValue.raw(), 1))) return zv::Val();
 		}
 
 		return builderGetArray(builder.raw());
@@ -3175,9 +3181,11 @@ public:
 
 	/* the keys whose values may hold the needle (constant scalars compared
 	 * loosely; strictly for a strict search) unioned, with false unless a
-	 * required key surely holds it; the unsealed key range too; false when
-	 * nothing matches; strict NULL = the twin's null; UNDEF = pending
-	 * exception */
+	 * required key surely holds it; the unsealed key range too; the found
+	 * key becomes a value of its own, so it goes through
+	 * UnsafeArrayStringKeyCastingTraverser::castReadKeyType() /
+	 * unionWithReadKeyType(); false when nothing matches; strict NULL = the
+	 * twin's null; UNDEF = pending exception */
 	zv::Val searchArray(zval *needleType, zval *strict) const
 	{
 		zend_long strictValue = PT_TRI_MAYBE;
@@ -3258,16 +3266,14 @@ public:
 		}
 
 		if (matches.arrRef().size() > 0) {
-			if (hasIdenticalValue) return combinatorSpread(PT_LC("union"), matches.table());
+			zv::Val matchedKeyType = combinatorSpread(PT_LC("union"), matches.table());
+			if (UNEXPECTED(matchedKeyType.isUndef())) return zv::Val();
+			if (hasIdenticalValue) return castReadKeyType(matchedKeyType.raw());
 
 			zv::Val falseType = constantBoolean(false);
 			if (UNEXPECTED(falseType.isUndef())) return zv::Val();
-			zv::Arr withFalse = zv::Arr::create(matches.arrRef().size() + 1);
-			withFalse.push(std::move(falseType));
-			for (zv::ArrayEntry entry : matches.arrRef()) {
-				withFalse.push(entry.value());
-			}
-			return combinatorSpread(PT_LC("union"), withFalse.table());
+			zv::Args args{matchedKeyType.raw(), falseType.raw()};
+			return pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("unionwithreadkeytype"), 2, args);
 		}
 
 		return constantBoolean(false);
@@ -4153,12 +4159,10 @@ public:
 		return builderGetArray(builder.raw());
 	}
 
-	/* a list of the keys' value type */
+	/* a list of the read keys' value type */
 	zv::Val getKeysArrayFiltered() const
 	{
-		zval *k = keyTypes();
-		if (UNEXPECTED(k == NULL)) return zv::Val();
-		zv::Val keysArray = getKeysOrValuesArray(k, unsealedSourceType(0));
+		zv::Val keysArray = getReadKeysArray();
 		if (UNEXPECTED(keysArray.isUndef())) return zv::Val();
 		zval zero;
 		ZVAL_LONG(&zero, 0);
@@ -4175,11 +4179,36 @@ public:
 		return intersection(std::move(types));
 	}
 
-	zv::Val getKeysArray() const
+	zv::Val getKeysArray() const { return getReadKeysArray(); }
+
+	/* private: the keys as a list of values - they've left the array, so
+	 * each key type and the unsealed key type go through
+	 * UnsafeArrayStringKeyCastingTraverser::castReadKeyType(); UNDEF =
+	 * pending exception */
+	zv::Val getReadKeysArray() const
 	{
+		zval *unsealedKeyType = unsealedSourceType(0);
 		zval *k = keyTypes();
 		if (UNEXPECTED(k == NULL)) return zv::Val();
-		return getKeysOrValuesArray(k, unsealedSourceType(0));
+		zv::Arr readKeyTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(k)));
+		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
+			zv::Val readKeyType = castReadKeyType(entry.value().deref().raw());
+			if (UNEXPECTED(readKeyType.isUndef())) return zv::Val();
+			readKeyTypes.push(std::move(readKeyType));
+		}
+		zv::Val readUnsealedKeyType = zv::Val::null();
+		if (unsealedKeyType != NULL) {
+			readUnsealedKeyType = castReadKeyType(unsealedKeyType);
+			if (UNEXPECTED(readUnsealedKeyType.isUndef())) return zv::Val();
+		}
+		return getKeysOrValuesArray(readKeyTypes.raw(), unsealedKeyType != NULL ? readUnsealedKeyType.raw() : NULL);
+	}
+
+	/* UnsafeArrayStringKeyCastingTraverser::castReadKeyType($keyType); UNDEF =
+	 * pending exception */
+	static zv::Val castReadKeyType(zval *keyType)
+	{
+		return pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("castreadkeytype"), 1, keyType);
 	}
 
 	zv::Val getValuesArray() const
@@ -6771,7 +6800,8 @@ private:
 
 	/* getFirst/LastIterableKey/ValueType(): the leading (or trailing) keys
 	 * or values up to the first required key, plus the unsealed key type
-	 * (mixed substituted) or value type of an unsealed shape, unioned;
+	 * (mixed substituted) or value type of an unsealed shape, unioned - the
+	 * keys through UnsafeArrayStringKeyCastingTraverser::castKeyType();
 	 * UNDEF = pending exception */
 	zv::Val leadingUnion(bool keys, bool fromStart) const
 	{
@@ -6816,7 +6846,9 @@ private:
 			}
 		}
 
-		return combinatorSpread(PT_LC("union"), collected.table());
+		zv::Val unionType = combinatorSpread(PT_LC("union"), collected.table());
+		if (!keys || UNEXPECTED(unionType.isUndef())) return unionType;
+		return pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("castkeytype"), 1, unionType.raw());
 	}
 
 	/* $this->toBoolean()->$method() */

@@ -427,12 +427,16 @@ public:
 		return pt_type_call(self, PT_LC("getkeysarray"), 0, NULL);
 	}
 
-	/* TypeCombinator::intersect(new self(new IntegerType(), $this->getIterableKeyType()), new AccessoryArrayListType()) */
+	/* TypeCombinator::intersect(new self(new IntegerType(),
+	 * UnsafeArrayStringKeyCastingTraverser::castReadKeyType($this->getIterableKeyType())),
+	 * new AccessoryArrayListType()) */
 	zv::Val getKeysArray() const
 	{
 		zv::Val keyType = thisGetIterableKeyType();
 		if (UNEXPECTED(keyType.isUndef())) return zv::Val();
-		return listOfIntersected(keyType.raw());
+		zv::Val readKeyType = pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("castreadkeytype"), 1, keyType.raw());
+		if (UNEXPECTED(readKeyType.isUndef())) return zv::Val();
+		return listOfIntersected(readKeyType.raw());
 	}
 
 	/* TypeCombinator::intersect(new self(new IntegerType(), $this->itemType), new AccessoryArrayListType()) */
@@ -876,7 +880,9 @@ public:
 		return create(itemArrayKey.raw(), valueType);
 	}
 
-	/* new self($this->getIterableValueType()->toArrayKey(), $this->getIterableKeyType()) */
+	/* new self($this->getIterableValueType()->toArrayKey(),
+	 * UnsafeArrayStringKeyCastingTraverser::castReadKeyType($this->getIterableKeyType())) -
+	 * the keys become values, so they're subject to PHP's array key cast */
 	zv::Val flipArray() const
 	{
 		zv::Val valueType = thisGetIterableValueType();
@@ -885,7 +891,9 @@ public:
 		if (UNEXPECTED(keyType.isUndef())) return zv::Val();
 		zv::Val iterableKeyType = thisGetIterableKeyType();
 		if (UNEXPECTED(iterableKeyType.isUndef())) return zv::Val();
-		return create(keyType.raw(), iterableKeyType.raw());
+		zv::Val readKeyType = pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("castreadkeytype"), 1, iterableKeyType.raw());
+		if (UNEXPECTED(readKeyType.isUndef())) return zv::Val();
+		return create(keyType.raw(), readKeyType.raw());
 	}
 
 	/* the empty shape when the other key type excludes this one, $this
@@ -999,8 +1007,9 @@ public:
 	zv::Val reverseArray() const { return thisValue(); }
 
 	/* false for a strict search of a needle outside the value type, the
-	 * iterable key type or false otherwise; strict NULL = the twin's null;
-	 * UNDEF = pending exception */
+	 * iterable key type (UnsafeArrayStringKeyCastingTraverser::unionWithReadKeyType())
+	 * or false otherwise; strict NULL = the twin's null; UNDEF = pending
+	 * exception */
 	zv::Val searchArray(zval *needleType, zval *strict) const
 	{
 		zend_long strictValue = PT_TRI_MAYBE;
@@ -1018,7 +1027,8 @@ public:
 		zv::Val keyType = thisGetIterableKeyType();
 		zv::Val falseType = constantBoolean(false);
 		if (UNEXPECTED(keyType.isUndef() || falseType.isUndef())) return zv::Val();
-		return combinator2(PT_LC("union"), keyType.raw(), falseType.raw());
+		zv::Args args{keyType.raw(), falseType.raw()};
+		return pt_type_call_static(PT_CLASS_UNSAFE_ARRAY_STRING_KEY_CASTING_TRAVERSER, PT_LC("unionwithreadkeytype"), 2, args);
 	}
 
 	zv::Val shiftArray() const { return thisValue(); }

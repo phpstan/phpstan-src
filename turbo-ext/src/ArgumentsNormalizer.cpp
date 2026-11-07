@@ -408,7 +408,7 @@ public:
 					zend_type_error("Illegal offset type");
 					return zv::Val();
 				}
-				/* key([$value => null]): a numeric string becomes an integer key */
+				/* array_key_first([$value => null]): a numeric string becomes an integer key */
 				zend_ulong index;
 				if (!ZEND_HANDLE_NUMERIC_STR(ZSTR_VAL(Z_STR_P(keyValue)), ZSTR_LEN(Z_STR_P(keyValue)), index)) {
 					if (ZSTR_LEN(Z_STR_P(keyValue)) == 0) return zv::Val::null();

@@ -4386,8 +4386,12 @@ public:
 			}
 
 			if (constArrayIsI) {
+				/* The rebuilt shape meets the other members from the start
+				 * again - the list accessory of `list<mixed>` can come after
+				 * the array it is paired with. */
 				types[i] = std::move(newArrayType);
 				types.erase(types.begin() + (ptrdiff_t) j);
+				i--;
 			} else {
 				types[j] = std::move(newArrayType);
 				types.erase(types.begin() + (ptrdiff_t) i);

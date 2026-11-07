@@ -36,4 +36,25 @@ class PatcherTest extends TestCase
 		$this->assertSame(2, $result['skippedCount']);
 	}
 
+	public function testRunsAreSplicedInTheOrderOfTheirLines(): void
+	{
+		$code = "1\n2\n3\n4\n5\n6\n";
+		$group = static fn (string $diff): array => [new FixedErrorDiff('a.php', hash('sha256', $code), $diff)];
+
+		$result = (new Patcher())->apply(['a.php' => $code], [
+			$group("@@ -4,1 +4,1 @@\n-4\n+D\n"),
+			// before the run of an earlier error
+			$group("@@ -2,1 +2,1 @@\n-2\n+B\n"),
+			// one run before the accepted ones and one after them
+			$group("@@ -1,1 +1,1 @@\n-1\n+A\n@@ -6,1 +6,1 @@\n-6\n+F\n"),
+			// between them
+			$group("@@ -5,1 +5,1 @@\n-5\n+E\n"),
+			// the same change as another error
+			$group("@@ -4,1 +4,1 @@\n-4\n+D\n"),
+		]);
+
+		$this->assertSame(['a.php' => "A\nB\n3\nD\nE\nF\n"], $result['contents']);
+		$this->assertSame(5, $result['appliedCount']);
+	}
+
 }

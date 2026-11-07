@@ -161,7 +161,7 @@ final class DefaultNarrowingHelper
 	 * it, like strlen($record->getName()) - must not get a remembered type.
 	 * The result carries the impure points of its whole subtree.
 	 */
-	private function isSubjectValueRemembered(ExpressionResult $subjectResult, Expr $subject): bool
+	public function isSubjectValueRemembered(ExpressionResult $subjectResult, Expr $subject): bool
 	{
 		if ($subject instanceof AlwaysRememberedExpr) {
 			return true;

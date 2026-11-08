@@ -58,6 +58,14 @@ class RestrictedClassConstantUsageRuleTest extends RuleTestCase
 				'Cannot access FOO',
 				90,
 			],
+			[
+				'Cannot access FOO',
+				118,
+			],
+			[
+				'Cannot access FOO',
+				123,
+			],
 		]);
 	}
 

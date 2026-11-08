@@ -69,6 +69,14 @@ class RestrictedStaticPropertyUsageRuleTest extends RuleTestCase
 				'Cannot access $foo',
 				89,
 			],
+			[
+				'Cannot access $foo',
+				117,
+			],
+			[
+				'Cannot access $foo',
+				122,
+			],
 		]);
 	}
 

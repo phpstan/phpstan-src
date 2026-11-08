@@ -89,3 +89,36 @@ function testClassString(string $className, ?string $nullableClassName): void
 	echo $nullableClassName::$foo;
 	echo $nullableClassName::FOO;
 }
+
+/**
+ * @template T
+ */
+class GenericStaticRequest
+{
+
+	public static string $foo = '';
+
+	public const FOO = 1;
+
+	public static function doFoo(): void
+	{
+	}
+
+}
+
+/**
+ * @param GenericStaticRequest<StaticRequest>|null $generic
+ * @param class-string<GenericStaticRequest<StaticRequest>> $genericClassName
+ */
+function testGeneric(?GenericStaticRequest $generic, string $genericClassName): void
+{
+	$generic::doFoo();
+	$generic::doFoo(...);
+	echo $generic::$foo;
+	echo $generic::FOO;
+
+	$genericClassName::doFoo();
+	$genericClassName::doFoo(...);
+	echo $genericClassName::$foo;
+	echo $genericClassName::FOO;
+}

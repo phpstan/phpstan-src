@@ -71,6 +71,14 @@ class RestrictedStaticMethodCallableUsageRuleTest extends RuleTestCase
 				'Cannot call doFoo',
 				88,
 			],
+			[
+				'Cannot call doFoo',
+				116,
+			],
+			[
+				'Cannot call doFoo',
+				121,
+			],
 		]);
 	}
 

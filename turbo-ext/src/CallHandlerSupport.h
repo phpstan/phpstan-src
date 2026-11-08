@@ -79,6 +79,18 @@ inline zv::Val reorderCallUserFuncArrayArguments(zval *callUserFuncArrayCall, zv
 	return pt_arguments_normalizer_reorder_call_user_func_array_arguments(callUserFuncArrayCall, scope);
 }
 
+/* ArgumentsNormalizer::reorderForwardStaticCallArguments($forwardStaticCallCall, $scope) */
+inline zv::Val reorderForwardStaticCallArguments(zval *forwardStaticCallCall, zval *scope)
+{
+	return pt_arguments_normalizer_reorder_forward_static_call_arguments(forwardStaticCallCall, scope);
+}
+
+/* ArgumentsNormalizer::reorderForwardStaticCallArrayArguments($forwardStaticCallArrayCall, $scope) */
+inline zv::Val reorderForwardStaticCallArrayArguments(zval *forwardStaticCallArrayCall, zval *scope)
+{
+	return pt_arguments_normalizer_reorder_forward_static_call_array_arguments(forwardStaticCallArrayCall, scope);
+}
+
 /* $parametersAcceptor->getReturnType() (the structural acceptor) —
  * AcceptorValues.h */
 inline zv::Val acceptorReturnType(zval *acceptor)

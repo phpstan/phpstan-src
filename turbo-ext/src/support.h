@@ -2963,6 +2963,11 @@ zv::Val pt_args_result_with_resolved_parameters_acceptor(zval *argsResult, zval 
  * pending exception */
 zv::Val pt_arguments_normalizer_reorder_call_user_func_arguments(zval *callUserFuncCall, zval *scope);
 zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *callUserFuncArrayCall, zval *scope);
+/* ... ::reorderForwardStaticCallArguments($call, $scope) /
+ * ::reorderForwardStaticCallArrayArguments($call, $scope): the same, the
+ * inner call a forwarding StaticCall when the callable names a method */
+zv::Val pt_arguments_normalizer_reorder_forward_static_call_arguments(zval *forwardStaticCallCall, zval *scope);
+zv::Val pt_arguments_normalizer_reorder_forward_static_call_array_arguments(zval *forwardStaticCallArrayCall, zval *scope);
 
 /* FunctionReflectionAccess.cpp — $reflectionProvider->hasFunction($nameNode,
  * $namespaceAnswerer) / ->getFunction(...): the memoized answer of a

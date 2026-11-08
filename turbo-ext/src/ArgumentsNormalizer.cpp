@@ -444,7 +444,150 @@ public:
 		return reorderedCallUserFunc(callUserFuncArrayCall, scope, callbackArg, passThruArgs);
 	}
 
+	/* Mirrors reorderForwardStaticCallArguments() */
+	static zv::Val reorderForwardStaticCallArguments(zval *forwardStaticCallCall, zval *scope)
+	{
+		return withForwardingStaticCall(reorderCallUserFuncArguments(forwardStaticCallCall, scope), scope);
+	}
+
+	/* Mirrors reorderForwardStaticCallArrayArguments() */
+	static zv::Val reorderForwardStaticCallArrayArguments(zval *forwardStaticCallArrayCall, zval *scope)
+	{
+		return withForwardingStaticCall(reorderCallUserFuncArrayArguments(forwardStaticCallArrayCall, scope), scope);
+	}
+
 private:
+	/* the shared tail of the forward_static_call*() reorderings: the
+	 * call_user_func*() result with its inner call replaced by
+	 * createForwardingStaticCall() when that builds one */
+	static zv::Val withForwardingStaticCall(zv::Val result, zval *scope)
+	{
+		if (result.isUndef() || result.isNull()) return result;
+		zval *innerFuncCall = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 1);
+		if (UNEXPECTED(innerFuncCall == NULL)) {
+			pt_throw_should_not_happen();
+			return zv::Val();
+		}
+		zv::Val staticCall = createForwardingStaticCall(innerFuncCall, scope);
+		if (UNEXPECTED(staticCall.isUndef())) return zv::Val();
+		if (staticCall.isNull()) return result;
+
+		zv::Arr replaced = zv::Arr::create(3);
+		for (zv::ArrayEntry entry : zv::ArrRef(result.raw())) {
+			if (entry.stringKeyOrNull() == NULL && entry.indexKey() == 1) {
+				replaced.push(zv::Val::copyOf(staticCall.ref()));
+				continue;
+			}
+			replaced.push(zv::Ref(entry.value().deref().raw()));
+		}
+		return zv::Val(std::move(replaced));
+	}
+
+	/* the only constant string of $type->getConstantStrings(), as an owned
+	 * zend_string (NULL when there is not exactly one); false = pending exception */
+	static bool singleConstantString(zval *type, zv::Str &out)
+	{
+		if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getConstantStrings() on %s", zend_zval_value_name(type));
+			return false;
+		}
+		zv::Val strings = pt_type_call(Z_OBJ_P(type), PT_LC("getconstantstrings"), 0, NULL);
+		if (UNEXPECTED(strings.isUndef() || !requireArray(strings.raw(), "getConstantStrings()"))) return false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(strings.raw())) != 1) return true;
+		zval *first = zend_hash_index_find(Z_ARRVAL_P(strings.raw()), 0);
+		if (UNEXPECTED(first == NULL || Z_TYPE_P(first) != IS_OBJECT)) {
+			pt_throw_should_not_happen();
+			return false;
+		}
+		zv::Val value = pt_type_op(Z_OBJ_P(first), PT_OP_GET_VALUE, 0, NULL);
+		if (UNEXPECTED(value.isUndef())) return false;
+		if (UNEXPECTED(!value.ref().isString())) {
+			pt_throw_should_not_happen();
+			return false;
+		}
+		out = zv::Str::adopt(zend_string_copy(Z_STR_P(value.raw())));
+		return true;
+	}
+
+	/* Mirrors createForwardingStaticCall(): the StaticCall, or null */
+	static zv::Val createForwardingStaticCall(zval *funcCall, zval *scope)
+	{
+		zv::Val nameHold;
+		zval *callableExpr = readProperty(pt_an_call_name_site, funcCall, PT_LC("name"), nameHold);
+		if (UNEXPECTED(callableExpr == NULL)) return zv::Val();
+		bool isExpr = false;
+		if (UNEXPECTED(!isA(callableExpr, PT_CLASS_EXPR, isExpr))) return zv::Val();
+		if (!isExpr) return zv::Val::null();
+
+		if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(scope));
+			return zv::Val();
+		}
+		zv::Val callableType = pt_mutating_scope_get_type(Z_OBJ_P(scope), callableExpr);
+		if (UNEXPECTED(callableType.isUndef())) return zv::Val();
+		if (UNEXPECTED(!callableType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function getConstantArrays() on %s", zend_zval_value_name(callableType.raw()));
+			return zv::Val();
+		}
+
+		zv::Str className;
+		zv::Str methodName;
+		zv::Val constantArrays = pt_type_op(Z_OBJ_P(callableType.raw()), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
+		if (UNEXPECTED(constantArrays.isUndef() || !requireArray(constantArrays.raw(), "getConstantArrays()"))) return zv::Val();
+		zv::Str constantString;
+		if (UNEXPECTED(!singleConstantString(callableType.raw(), constantString))) return zv::Val();
+		if (zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw())) == 1) {
+			zval *constantArray = zend_hash_index_find(Z_ARRVAL_P(constantArrays.raw()), 0);
+			if (UNEXPECTED(constantArray == NULL || Z_TYPE_P(constantArray) != IS_OBJECT)) {
+				pt_throw_should_not_happen();
+				return zv::Val();
+			}
+			zv::Str classString, methodString;
+			for (zend_long offset = 0; offset <= 1; offset++) {
+				zval offsetType;
+				if (UNEXPECTED(!pt_constant_integer_type_new(&offsetType, offset))) return zv::Val();
+				zv::Val offsetTypeHold = zv::Val::adopt(offsetType);
+				zv::Val valueType = pt_type_op(Z_OBJ_P(constantArray), PT_OP_GET_OFFSET_VALUE_TYPE, 1, offsetTypeHold.raw());
+				if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+				if (UNEXPECTED(!singleConstantString(valueType.raw(), offset == 0 ? classString : methodString))) return zv::Val();
+			}
+			if (classString.get() != NULL && methodString.get() != NULL) {
+				className = std::move(classString);
+				methodName = std::move(methodString);
+			}
+		} else if (constantString.get() != NULL) {
+			zend_string *value = constantString.get();
+			const char *separator = (const char *) zend_memnstr(ZSTR_VAL(value), "::", 2, ZSTR_VAL(value) + ZSTR_LEN(value));
+			if (separator != NULL) {
+				size_t classLength = (size_t) (separator - ZSTR_VAL(value));
+				className = zv::Str::adopt(zend_string_init(ZSTR_VAL(value), classLength, 0));
+				methodName = zv::Str::adopt(zend_string_init(separator + 2, ZSTR_LEN(value) - classLength - 2, 0));
+			}
+		}
+
+		if (className.get() == NULL || ZSTR_LEN(className.get()) == 0 || methodName.get() == NULL || ZSTR_LEN(methodName.get()) == 0) {
+			return zv::Val::null();
+		}
+
+		zv::Val attributes = nodeAttributes(funcCall);
+		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
+		zval classNameZv, methodNameZv;
+		ZVAL_STR(&classNameZv, className.get());
+		ZVAL_STR(&methodNameZv, methodName.get());
+		// The original call's position attributes are propagated to the name nodes too,
+		// so rule errors about the synthesized call point at the original call site.
+		zv::Args classArgv{&classNameZv, attributes.raw()};
+		zv::Val classNode = pt_type_new(PT_CLASS_FULLY_QUALIFIED, 2, classArgv);
+		if (UNEXPECTED(classNode.isUndef())) return zv::Val();
+		zv::Args methodArgv{&methodNameZv, attributes.raw()};
+		zv::Val methodNode = pt_type_new(PT_CLASS_IDENTIFIER, 2, methodArgv);
+		if (UNEXPECTED(methodNode.isUndef())) return zv::Val();
+		zv::Val args = callArgs(funcCall);
+		if (UNEXPECTED(args.isUndef())) return zv::Val();
+		zv::Args argv{classNode.raw(), methodNode.raw(), args.raw(), attributes.raw()};
+		return pt_type_new(PT_CLASS_STATIC_CALL, 4, argv);
+	}
+
 	/* the callback argument of call_user_func*(): the unnamed first one, or
 	 * the one named `callback`; false = pending exception */
 	static bool isCallbackArg(zval *arg, zv::ArrayEntry &entry, bool &out)
@@ -813,6 +956,16 @@ zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *cal
 	return ArgumentsNormalizer::reorderCallUserFuncArrayArguments(callUserFuncArrayCall, scope);
 }
 
+zv::Val pt_arguments_normalizer_reorder_forward_static_call_arguments(zval *forwardStaticCallCall, zval *scope)
+{
+	return ArgumentsNormalizer::reorderForwardStaticCallArguments(forwardStaticCallCall, scope);
+}
+
+zv::Val pt_arguments_normalizer_reorder_forward_static_call_array_arguments(zval *forwardStaticCallArrayCall, zval *scope)
+{
+	return ArgumentsNormalizer::reorderForwardStaticCallArrayArguments(forwardStaticCallArrayCall, scope);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -857,6 +1010,8 @@ PT_MINIT_REGISTRATION(pt_register_arguments_normalizer)
 
 	cls.method(sigs::reorderCallUserFuncArguments, PT_AN_REORDER_CALL_USER_FUNC(reorderCallUserFuncArguments));
 	cls.method(sigs::reorderCallUserFuncArrayArguments, PT_AN_REORDER_CALL_USER_FUNC(reorderCallUserFuncArrayArguments));
+	cls.method(sigs::reorderForwardStaticCallArguments, PT_AN_REORDER_CALL_USER_FUNC(reorderForwardStaticCallArguments));
+	cls.method(sigs::reorderForwardStaticCallArrayArguments, PT_AN_REORDER_CALL_USER_FUNC(reorderForwardStaticCallArrayArguments));
 	cls.method(sigs::reorderFuncArguments, PT_AN_REORDER_CALL(FUNC_CALL, PT_CLASS_FUNC_CALL));
 	cls.method(sigs::reorderMethodArguments, PT_AN_REORDER_CALL(METHOD_CALL, PT_CLASS_METHOD_CALL));
 	cls.method(sigs::reorderStaticCallArguments, PT_AN_REORDER_CALL(STATIC_CALL, PT_CLASS_STATIC_CALL));

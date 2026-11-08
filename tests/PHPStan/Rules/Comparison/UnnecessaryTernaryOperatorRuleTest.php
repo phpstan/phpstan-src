@@ -25,7 +25,6 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 			new UnnecessaryTernaryOperatorRule(
 				self::getContainer()->getByType(ConstantConditionRuleHelper::class),
 				self::getContainer()->getByType(ConstantConditionInTraitHelper::class),
-				self::createReflectionProvider(),
 				self::getContainer()->getByType(ExprPrinter::class),
 				$this->unnecessaryTernary,
 				$this->treatPhpDocTypesAsCertain,
@@ -58,6 +57,10 @@ class UnnecessaryTernaryOperatorRuleTest extends RuleTestCase
 				'Short ternary operator ?: is unnecessary because it always results in $foo.',
 				87,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+			[
+				'Ternary operator is unnecessary because it always results in (int) $value.',
+				123,
 			],
 		]);
 	}

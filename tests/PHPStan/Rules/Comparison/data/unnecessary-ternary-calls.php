@@ -102,3 +102,23 @@ function nullableCallable(?Foo $foo, $cb): ?Foo
 {
 	return $foo ?: $cb();
 }
+
+function assignInElse(?Foo $foo, ?Foo $bar): ?Foo
+{
+	return $foo ?: ($bar = null);
+}
+
+function assignInElseOfFullTernary(?int $i, ?int $j): ?int
+{
+	return $i !== null ? $i : ($j = null);
+}
+
+function assignInCondition(?int $i): ?int
+{
+	return ($j = $i) !== null ? $j : null;
+}
+
+function castOfFalse(string|false $value): int
+{
+	return $value === false ? 0 : (int) $value;
+}

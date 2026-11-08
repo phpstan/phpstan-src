@@ -8,19 +8,20 @@ use PhpParser\NodeFinder;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\CloningVisitor;
 use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\ExpressionResult;
+use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Node\TernaryExpressionNode;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_filter;
 use function count;
 use function is_float;
 use function is_string;
@@ -30,7 +31,7 @@ use function sprintf;
  * Reports `$a ?: X`, `$cond ? $a : X` and `$cond ? X : $a` when the result is
  * always `$a`: whenever the ternary picks `X`, `$a` already has its value.
  *
- * @implements Rule<Node\Expr\Ternary>
+ * @implements Rule<TernaryExpressionNode>
  */
 #[RegisteredRule(level: 4)]
 final class UnnecessaryTernaryOperatorRule implements Rule
@@ -39,7 +40,6 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 	public function __construct(
 		private ConstantConditionRuleHelper $helper,
 		private ConstantConditionInTraitHelper $constantConditionInTraitHelper,
-		private ReflectionProvider $reflectionProvider,
 		private ExprPrinter $exprPrinter,
 		#[AutowiredParameter(ref: '%featureToggles.unnecessaryTernary%')]
 		private bool $unnecessaryTernary,
@@ -53,7 +53,7 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 
 	public function getNodeType(): string
 	{
-		return Node\Expr\Ternary::class;
+		return TernaryExpressionNode::class;
 	}
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
@@ -62,29 +62,32 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 			return [];
 		}
 
+		$ternary = $node->getOriginalExpr();
 		$error = $this->check($node, $scope);
 		if ($error === null) {
-			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $node);
+			$this->constantConditionInTraitHelper->emitNoError(self::class, $scope, $ternary);
 			return [];
 		}
 
 		if ($scope->isInTrait()) {
-			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $node, true, $error);
+			$this->constantConditionInTraitHelper->emitError(self::class, $scope, $ternary, true, $error);
 			return [];
 		}
 
 		return [$error];
 	}
 
-	private function check(Node\Expr\Ternary $node, Scope $scope): ?IdentifierRuleError
+	private function check(TernaryExpressionNode $ternaryNode, Scope $scope): ?IdentifierRuleError
 	{
+		$node = $ternaryNode->getOriginalExpr();
+
 		// TernaryOperatorConstantConditionRule already reports these
 		$conditionType = $this->helper->getBooleanType($scope, $node->cond);
 		if (count($conditionType->getConstantScalarValues()) === 1) {
 			return null;
 		}
 
-		$result = $this->findResult($node, $scope, !$this->treatPhpDocTypesAsCertain);
+		$result = $this->findResult($ternaryNode, $scope, !$this->treatPhpDocTypesAsCertain);
 		if ($result === null) {
 			return null;
 		}
@@ -99,7 +102,7 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 		if (
 			$this->treatPhpDocTypesAsCertain
 			&& $this->treatPhpDocTypesAsCertainTip
-			&& $this->findResult($node, $scope, true) === null
+			&& $this->findResult($ternaryNode, $scope, true) === null
 		) {
 			$ruleErrorBuilder = $ruleErrorBuilder->treatPhpDocTypesAsCertainTip();
 		}
@@ -110,11 +113,13 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 	/**
 	 * The branch the ternary always results in, or null.
 	 */
-	private function findResult(Node\Expr\Ternary $node, Scope $scope, bool $native): ?Expr
+	private function findResult(TernaryExpressionNode $ternaryNode, Scope $scope, bool $native): ?Expr
 	{
+		$node = $ternaryNode->getOriginalExpr();
+
 		// Without the ternary, the result is evaluated every time, and the
 		// condition and the other branch are not evaluated at all.
-		if (!$this->isPure($node->else, $scope)) {
+		if (!$this->isPure($node->else, $ternaryNode->getElseResult(), $scope)) {
 			return null;
 		}
 
@@ -130,7 +135,8 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 			return $node->cond;
 		}
 
-		if (!$this->isPure($node->cond, $scope) || !$this->isPure($node->if, $scope)) {
+		$ifResult = $ternaryNode->getIfResult();
+		if ($ifResult === null || !$this->isPure($node->cond, $ternaryNode->getCondResult(), $scope) || !$this->isPure($node->if, $ifResult, $scope)) {
 			return null;
 		}
 
@@ -224,129 +230,35 @@ final class UnnecessaryTernaryOperatorRule implements Rule
 	 * Whether evaluating the expression can only produce its value, so that
 	 * dropping it or evaluating it once more does not change anything.
 	 */
-	private function isPure(Expr $expr, Scope $scope): bool
+	private function isPure(Expr $expr, ExpressionResult $result, Scope $scope): bool
 	{
-		if ($expr instanceof Expr\Variable) {
-			return is_string($expr->name);
-		}
-
-		if ($expr instanceof Node\Scalar\Int_ || $expr instanceof Node\Scalar\Float_ || $expr instanceof Node\Scalar\String_) {
-			return true;
-		}
-
-		if ($expr instanceof Expr\ConstFetch) {
-			return true;
-		}
-
-		if ($expr instanceof Expr\ClassConstFetch) {
-			return $expr->class instanceof Node\Name && $expr->name instanceof Node\Identifier;
-		}
-
-		if ($expr instanceof Expr\Array_) {
-			foreach ($expr->items as $item) {
-				if ($item->unpack || $item->byRef) {
-					return false;
-				}
-				if ($item->key !== null && !$this->isPure($item->key, $scope)) {
-					return false;
-				}
-				if (!$this->isPure($item->value, $scope)) {
-					return false;
-				}
-			}
-
-			return true;
-		}
-
 		if (
-			$expr instanceof Expr\BinaryOp\Identical
-			|| $expr instanceof Expr\BinaryOp\NotIdentical
-			|| $expr instanceof Expr\BinaryOp\BooleanAnd
-			|| $expr instanceof Expr\BinaryOp\BooleanOr
-			|| $expr instanceof Expr\BinaryOp\LogicalAnd
-			|| $expr instanceof Expr\BinaryOp\LogicalOr
+			$result->getImpurePoints() !== []
+			|| array_filter($result->getThrowPoints(), static fn (InternalThrowPoint $throwPoint): bool => $throwPoint->isExplicit()) !== []
+			|| $result->hasYield()
 		) {
-			return $this->isPure($expr->left, $scope) && $this->isPure($expr->right, $scope);
-		}
-
-		if ($expr instanceof Expr\BooleanNot) {
-			return $this->isPure($expr->expr, $scope);
-		}
-
-		if ($expr instanceof Expr\Instanceof_) {
-			return $expr->class instanceof Node\Name && $this->isPure($expr->expr, $scope);
-		}
-
-		if ($expr instanceof Expr\FuncCall) {
-			if ($expr->isFirstClassCallable() || !$this->areArgsPure($expr, $scope)) {
-				return false;
-			}
-			if ($expr->name instanceof Node\Name) {
-				return $this->reflectionProvider->hasFunction($expr->name, $scope)
-					&& $this->reflectionProvider->getFunction($expr->name, $scope)->hasSideEffects()->no();
-			}
-
-			return $this->isPure($expr->name, $scope) && $this->isPureCallable($scope->getType($expr->name), $scope);
-		}
-
-		if ($expr instanceof Expr\MethodCall) {
-			if (!$expr->name instanceof Node\Identifier || $expr->isFirstClassCallable() || !$this->isPure($expr->var, $scope) || !$this->areArgsPure($expr, $scope)) {
-				return false;
-			}
-
-			return $this->isPureMethod($scope->getType($expr->var), $expr->name->toString(), $scope);
-		}
-
-		if ($expr instanceof Expr\StaticCall) {
-			if (!$expr->class instanceof Node\Name || !$expr->name instanceof Node\Identifier || $expr->isFirstClassCallable() || !$this->areArgsPure($expr, $scope)) {
-				return false;
-			}
-			$className = $scope->resolveName($expr->class);
-			if (!$this->reflectionProvider->hasClass($className)) {
-				return false;
-			}
-
-			return $this->isPureMethod(new ObjectType($className), $expr->name->toString(), $scope);
-		}
-
-		return false;
-	}
-
-	private function areArgsPure(Expr\CallLike $call, Scope $scope): bool
-	{
-		foreach ($call->getArgs() as $arg) {
-			if ($arg->unpack || $arg->byRef || !$this->isPure($arg->value, $scope)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private function isPureMethod(Type $calledOnType, string $methodName, Scope $scope): bool
-	{
-		if (!$calledOnType->hasMethod($methodName)->yes()) {
 			return false;
 		}
 
-		$method = $scope->getMethodReflection($calledOnType, $methodName);
-
-		return $method !== null && $method->hasSideEffects()->no();
-	}
-
-	private function isPureCallable(Type $type, Scope $scope): bool
-	{
-		if (!$type->isCallable()->yes()) {
-			return false;
-		}
-
-		foreach ($type->getCallableParametersAcceptors($scope) as $acceptor) {
-			if (!$acceptor->isPure()->yes()) {
-				return false;
-			}
-		}
-
-		return true;
+		// Writes are not impure points. A fetch can give a warning and a call
+		// can throw an Error without one, for example for an undefined offset
+		// or for a method call on null.
+		return (new NodeFinder())->findFirst([$expr], static fn (Node $node): bool => $node instanceof Expr\Assign
+			|| $node instanceof Expr\AssignRef
+			|| $node instanceof Expr\AssignOp
+			|| $node instanceof Expr\PreInc
+			|| $node instanceof Expr\PreDec
+			|| $node instanceof Expr\PostInc
+			|| $node instanceof Expr\PostDec
+			|| $node instanceof Expr\ArrayDimFetch
+			|| $node instanceof Expr\PropertyFetch
+			|| $node instanceof Expr\NullsafePropertyFetch
+			|| $node instanceof Expr\StaticPropertyFetch
+			|| ($node instanceof Expr\Variable && !is_string($node->name))
+			|| $node instanceof Expr\NullsafeMethodCall
+			|| ($node instanceof Expr\MethodCall && (!$node->name instanceof Node\Identifier || !$scope->getType($node->var)->hasMethod($node->name->toString())->yes()))
+			|| ($node instanceof Expr\FuncCall && $node->name instanceof Expr && !$scope->getType($node->name)->isCallable()->yes())
+			|| ($node instanceof Node\Arg && ($node->byRef || $node->unpack))) === null;
 	}
 
 }

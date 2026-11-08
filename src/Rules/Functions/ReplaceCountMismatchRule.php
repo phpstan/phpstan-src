@@ -1,0 +1,146 @@
+<?php declare(strict_types = 1);
+
+namespace PHPStan\Rules\Functions;
+
+use PhpParser\Node;
+use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
+use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
+use PHPStan\DependencyInjection\Conditional;
+use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\Type;
+use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
+use function count;
+use function sprintf;
+
+/**
+ * Reports replace functions called with an array of replacements that is shorter
+ * than the array of search values. PHP silently replaces the remaining search values
+ * with an empty string, which is usually a mistake.
+ *
+ * @implements Rule<Node\Expr\FuncCall>
+ */
+#[Conditional(
+	attribute: new RegisteredRule(level: 5),
+	if: '%featureToggles.replaceCountMismatch%',
+)]
+final class ReplaceCountMismatchRule implements Rule
+{
+
+	private const FUNCTIONS = [
+		'str_replace' => 'strReplace',
+		'str_ireplace' => 'strReplace',
+		'preg_replace' => 'pregReplace',
+		'preg_filter' => 'pregReplace',
+	];
+
+	public function __construct(
+		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
+		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
+		private bool $treatPhpDocTypesAsCertainTip,
+	)
+	{
+	}
+
+	public function getNodeType(): string
+	{
+		return FuncCall::class;
+	}
+
+	public function processNode(Node $node, Scope $scope): array
+	{
+		if (!($node->name instanceof Node\Name)) {
+			return [];
+		}
+
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+			return [];
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		$functionName = $functionReflection->getName();
+		if (!array_key_exists($functionName, self::FUNCTIONS)) {
+			return [];
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$node->getArgs(),
+			$functionReflection->getVariants(),
+			$functionReflection->getNamedArgumentsVariants(),
+		);
+
+		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+		if ($normalizedFuncCall === null) {
+			return [];
+		}
+
+		$args = $normalizedFuncCall->getArgs();
+		if (!array_key_exists(0, $args) || !array_key_exists(1, $args)) {
+			return [];
+		}
+
+		$parameters = $parametersAcceptor->getParameters();
+		if (count($parameters) < 2) {
+			return [];
+		}
+
+		if ($this->treatPhpDocTypesAsCertain) {
+			$searchType = $scope->getType($args[0]->value);
+			$replaceType = $scope->getType($args[1]->value);
+		} else {
+			$searchType = $scope->getNativeType($args[0]->value);
+			$replaceType = $scope->getNativeType($args[1]->value);
+		}
+
+		if (!$this->hasFewerReplacements($searchType, $replaceType)) {
+			return [];
+		}
+
+		$errorBuilder = RuleErrorBuilder::message(sprintf(
+			'Parameter #2 $%s of function %s has fewer elements (%s) than parameter #1 $%s (%s), the remaining values will be replaced with an empty string.',
+			$parameters[1]->getName(),
+			$functionName,
+			$replaceType->getArraySize()->describe(VerbosityLevel::value()),
+			$parameters[0]->getName(),
+			$searchType->getArraySize()->describe(VerbosityLevel::value()),
+		))->identifier(sprintf('%s.replaceCount', self::FUNCTIONS[$functionName]));
+
+		if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {
+			$nativeSearchType = $scope->getNativeType($args[0]->value);
+			$nativeReplaceType = $scope->getNativeType($args[1]->value);
+			if (!$this->hasFewerReplacements($nativeSearchType, $nativeReplaceType)) {
+				$errorBuilder->treatPhpDocTypesAsCertainTip();
+			}
+		}
+
+		return [
+			$errorBuilder->build(),
+		];
+	}
+
+	private function hasFewerReplacements(Type $searchType, Type $replaceType): bool
+	{
+		if (!$searchType->isArray()->yes() || !$replaceType->isArray()->yes()) {
+			return false;
+		}
+
+		// an explicitly empty array of replacements is a deliberate way to remove all search values
+		if ($replaceType->isIterableAtLeastOnce()->no()) {
+			return false;
+		}
+
+		return $replaceType->getArraySize()->isSmallerThan($searchType->getArraySize(), $this->phpVersion)->yes();
+	}
+
+}

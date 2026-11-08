@@ -21,6 +21,11 @@ class FooToString
 		(string) $f;
 	}
 
+	public function doTest3(?FooToString $f)
+	{
+		(string) $f;
+	}
+
 }
 
 class FooWithoutToString

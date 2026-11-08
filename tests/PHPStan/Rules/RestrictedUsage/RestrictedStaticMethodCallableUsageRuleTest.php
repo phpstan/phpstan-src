@@ -55,6 +55,17 @@ class RestrictedStaticMethodCallableUsageRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNullable(): void
+	{
+		$this->analyse([__DIR__ . '/data/restricted-nullable.php'], [
+			[
+				'Cannot call doFoo',
+				55,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

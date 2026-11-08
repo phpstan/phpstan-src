@@ -12,6 +12,8 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<MethodCallableNode>
@@ -52,7 +54,7 @@ final class RestrictedMethodCallableUsageRule implements Rule
 
 		$methodName = $node->getName()->name;
 		$methodCalledOnType = $scope->getType($node->getVar());
-		$referencedClasses = $methodCalledOnType->getObjectClassNames();
+		$referencedClasses = TypeCombinator::intersect($methodCalledOnType, new ObjectWithoutClassType())->getObjectClassNames();
 
 		$errors = [];
 

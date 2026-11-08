@@ -5,6 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RestrictedClassConstantUsageRule>
@@ -37,6 +38,17 @@ class RestrictedClassConstantUsageRuleTest extends RuleTestCase
 			[
 				'Cannot access FOO',
 				17,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNullable(): void
+	{
+		$this->analyse([__DIR__ . '/data/restricted-nullable.php'], [
+			[
+				'Cannot access FOO',
+				53,
 			],
 		]);
 	}

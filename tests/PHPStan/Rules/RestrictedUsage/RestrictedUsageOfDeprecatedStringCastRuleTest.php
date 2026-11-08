@@ -26,6 +26,10 @@ class RestrictedUsageOfDeprecatedStringCastRuleTest extends RuleTestCase
 				'Cannot call __toString',
 				11,
 			],
+			[
+				'Cannot call __toString',
+				26,
+			],
 		]);
 	}
 

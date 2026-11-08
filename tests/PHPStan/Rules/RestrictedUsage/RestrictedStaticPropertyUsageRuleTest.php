@@ -5,6 +5,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 use PHPStan\Rules\Rule as TRule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RestrictedStaticPropertyUsageRule>
@@ -48,6 +49,17 @@ class RestrictedStaticPropertyUsageRuleTest extends RuleTestCase
 			[
 				'Access to static property $prop of internal class Bug12951Polyfill\NumberFormatter from outside its root namespace Bug12951Polyfill.',
 				7,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNullable(): void
+	{
+		$this->analyse([__DIR__ . '/data/restricted-nullable.php'], [
+			[
+				'Cannot access $foo',
+				56,
 			],
 		]);
 	}

@@ -272,7 +272,11 @@ final class FunctionCallParametersCheck
 			];
 		}
 
-		if ($hasNamedArguments && !$scope->getPhpVersion()->supportsNamedArguments()->yes() && !(bool) $funcCall->getAttribute('isAttribute', false)) {
+		if (
+			$hasNamedArguments
+			&& !$scope->getPhpVersion()->supportsNamedArguments()->yes()
+			&& !(bool) $funcCall->getAttribute(AttributesCheck::IS_ATTRIBUTE, false)
+		) {
 			$errors[] = RuleErrorBuilder::message('Named arguments are supported only on PHP 8.0 and later.')
 				->identifier('argument.namedNotSupported')
 				->line($funcCallLine)
@@ -920,7 +924,7 @@ final class FunctionCallParametersCheck
 	{
 		if (
 			// the call was created from an attribute, it is not in the file
-			(bool) $funcCall->getAttribute('isAttribute', false)
+			(bool) $funcCall->getAttribute(AttributesCheck::IS_ATTRIBUTE, false)
 			|| (bool) $funcCall->getAttribute(self::NOT_FIXABLE_CALL_ATTRIBUTE, false)
 		) {
 			return false;

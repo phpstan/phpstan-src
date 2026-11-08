@@ -14,7 +14,6 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
-use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 
@@ -73,10 +72,7 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 				return [];
 			}
 
-			$referencedClasses = TypeCombinator::intersect(
-				TypeCombinator::removeNull($classTypeResult->getType())->getObjectTypeOrClassStringObjectType(),
-				new ObjectWithoutClassType(),
-			)->getObjectClassNames();
+			$referencedClasses = TypeCombinator::removeNull($classTypeResult->getType())->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 		}
 
 		$errors = [];

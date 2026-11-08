@@ -24,6 +24,8 @@ use function strtolower;
 final class AttributesCheck
 {
 
+	public const IS_ATTRIBUTE = 'isAttribute';
+
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private FunctionCallParametersCheck $functionCallParametersCheck,
@@ -146,7 +148,7 @@ final class AttributesCheck
 				$attributeClassName = SprintfHelper::escapeFormatString($attributeClass->getDisplayName());
 
 				$nodeAttributes = $attribute->getAttributes();
-				$nodeAttributes['isAttribute'] = true;
+				$nodeAttributes[self::IS_ATTRIBUTE] = true;
 
 				$parameterErrors = $this->functionCallParametersCheck->check(
 					ParametersAcceptorSelector::selectFromArgs(

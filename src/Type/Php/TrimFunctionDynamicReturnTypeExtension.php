@@ -17,8 +17,8 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
-use function preg_match;
 use function rtrim;
+use function strpbrk;
 use function trim;
 
 #[AutowiredService]
@@ -77,7 +77,7 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 							true,
 						);
 					}
-				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $stringType->isNumericString()->yes()) {
+				} elseif (strpbrk($trimConstantString->getValue(), '0123456789') === false && $stringType->isNumericString()->yes()) {
 					$result[] = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 				} else {
 					return $defaultType;

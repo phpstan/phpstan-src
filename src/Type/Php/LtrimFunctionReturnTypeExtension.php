@@ -18,7 +18,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function ltrim;
-use function preg_match;
+use function strpbrk;
 
 #[AutowiredService]
 final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -72,7 +72,7 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					}
 				} elseif ($trimConstantString->getValue() === '\\' && $string->isClassString()->yes()) {
 					$result[] = new ClassStringType();
-				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $string->isNumericString()->yes()) {
+				} elseif (strpbrk($trimConstantString->getValue(), '0123456789') === false && $string->isNumericString()->yes()) {
 					$result[] = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 				} else {
 					return $defaultType;

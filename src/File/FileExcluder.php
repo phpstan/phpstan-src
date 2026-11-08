@@ -7,9 +7,9 @@ use function fnmatch;
 use function in_array;
 use function is_dir;
 use function is_file;
-use function preg_match;
 use function str_starts_with;
 use function strlen;
+use function strpbrk;
 use function substr;
 use const DIRECTORY_SEPARATOR;
 use const FNM_CASEFOLD;
@@ -118,7 +118,7 @@ final class FileExcluder
 
 	public static function isFnmatchPattern(string $path): bool
 	{
-		return preg_match('~[*?[\]]~', $path) > 0;
+		return strpbrk($path, '*?[]') !== false;
 	}
 
 }

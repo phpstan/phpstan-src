@@ -63,6 +63,8 @@ use function spl_object_id;
 final class ClosureTypeResolver implements PerFileAnalysisResettable
 {
 
+	private const PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE = 'phpstanFreeVariableRoots';
+
 	private static int $resolveClosureTypeDepth = 0;
 
 	/**
@@ -424,7 +426,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	private function freeVariableRoots(Node\Expr\Closure|ArrowFunction $expr): ?array
 	{
 		/** @var list<string>|false|null $cached */
-		$cached = $expr->getAttribute('phpstanFreeVariableRoots', false);
+		$cached = $expr->getAttribute(self::PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE, false);
 		if ($cached !== false) {
 			return $cached;
 		}
@@ -437,7 +439,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		if ($expr instanceof Node\Expr\Closure) {
 			foreach ($expr->uses as $use) {
 				if (!is_string($use->var->name)) {
-					$expr->setAttribute('phpstanFreeVariableRoots', null);
+					$expr->setAttribute(self::PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE, null);
 					return null;
 				}
 				$roots['$' . $use->var->name] = true;
@@ -454,7 +456,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$finder = new NodeFinder();
 			foreach ($finder->findInstanceOf([$expr->expr], Node\Expr\Variable::class) as $variable) {
 				if (!is_string($variable->name)) {
-					$expr->setAttribute('phpstanFreeVariableRoots', null);
+					$expr->setAttribute(self::PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE, null);
 					return null;
 				}
 				$name = '$' . $variable->name;
@@ -465,14 +467,14 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			}
 			foreach ($finder->findInstanceOf([$expr->expr], Node\Expr\FuncCall::class) as $call) {
 				if ($call->name instanceof Node\Name && in_array($call->name->toLowerString(), ['compact', 'extract', 'get_defined_vars'], true)) {
-					$expr->setAttribute('phpstanFreeVariableRoots', null);
+					$expr->setAttribute(self::PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE, null);
 					return null;
 				}
 			}
 		}
 
 		$rootList = array_keys($roots);
-		$expr->setAttribute('phpstanFreeVariableRoots', $rootList);
+		$expr->setAttribute(self::PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE, $rootList);
 
 		return $rootList;
 	}

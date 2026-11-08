@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Whitespace;
 
-use Nette\Utils\Strings;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeTraverser;
@@ -15,6 +14,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function array_last;
 use function count;
+use function strlen;
+use function strspn;
 
 /**
  * @implements Rule<FileNode>
@@ -85,7 +86,11 @@ final class FileWhitespaceRule implements Rule
 		$lastNodes = $visitor->getLastNodes();
 		$lastNodes[] = array_last($nodes);
 		foreach ($lastNodes as $lastNode) {
-			if (!$lastNode instanceof Node\Stmt\InlineHTML || Strings::match($lastNode->value, '#^(\s+)$#') === null) {
+			if (
+				!$lastNode instanceof Node\Stmt\InlineHTML
+				|| $lastNode->value === ''
+				|| strspn($lastNode->value, " \t\n\r\v\f") !== strlen($lastNode->value)
+			) {
 				continue;
 			}
 

@@ -202,4 +202,10 @@ class CallUserFuncRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15664(): void
+	{
+		$this->fix(__DIR__ . '/data/bug-15664.php', __DIR__ . '/data/bug-15664.php.fixed');
+	}
+
 }

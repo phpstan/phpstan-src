@@ -56,6 +56,12 @@ use function sprintf;
 final class FunctionCallParametersCheck
 {
 
+	/**
+	 * Marks a call node that was synthesized from a different node (e.g. the callback call of call_user_func()),
+	 * its arguments do not correspond to the arguments of the node in the file, so it cannot be fixed.
+	 */
+	public const NOT_FIXABLE_CALL_ATTRIBUTE = 'phpstanNotFixableCall';
+
 	public function __construct(
 		private RuleLevelHelper $ruleLevelHelper,
 		private NullsafeCheck $nullsafeCheck,
@@ -912,8 +918,11 @@ final class FunctionCallParametersCheck
 		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall|Node\Expr\New_ $funcCall,
 	): Closure|false
 	{
-		if ((bool) $funcCall->getAttribute('isAttribute', false)) {
+		if (
 			// the call was created from an attribute, it is not in the file
+			(bool) $funcCall->getAttribute('isAttribute', false)
+			|| (bool) $funcCall->getAttribute(self::NOT_FIXABLE_CALL_ATTRIBUTE, false)
+		) {
 			return false;
 		}
 

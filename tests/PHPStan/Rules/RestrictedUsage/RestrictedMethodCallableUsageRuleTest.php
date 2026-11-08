@@ -31,6 +31,21 @@ class RestrictedMethodCallableUsageRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15681(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15681.php'], [
+			[
+				'Cannot call doFoo',
+				64,
+			],
+			[
+				'Cannot call doFoo',
+				65,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

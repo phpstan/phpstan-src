@@ -15,6 +15,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
@@ -71,7 +72,7 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 				return [];
 			}
 
-			$referencedClasses = $classTypeResult->getReferencedClasses();
+			$referencedClasses = TypeCombinator::removeNull($classTypeResult->getType())->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 		}
 
 		$errors = [];

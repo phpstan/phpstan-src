@@ -40,6 +40,8 @@ zend_class_entry *pt_ce_closure_type_resolver = nullptr;
 
 namespace {
 
+constexpr char pt_ctr_free_variable_roots_attribute[] = "phpstanFreeVariableRoots";
+
 /* the literals, permanent interned strings (module startup) */
 zend_string *pt_ctr_free_variable_roots = nullptr;
 zend_string *pt_ctr_this_root = nullptr;
@@ -1547,7 +1549,7 @@ namespace {
 
 PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 {
-	pt_ctr_free_variable_roots = zend_string_init_interned(PT_LC("phpstanFreeVariableRoots"), 1);
+	pt_ctr_free_variable_roots = zend_string_init_interned(PT_LC(pt_ctr_free_variable_roots_attribute), 1);
 	pt_ctr_this_root = zend_string_init_interned(PT_LC("$this"), 1);
 	ptclosure::initStrings();
 	pt_ctr_function_call = zend_string_init_interned(PT_LC("functionCall"), 1);
@@ -1565,6 +1567,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureTypeResolver");
 	ptdecl::ClosureTypeResolver::declareClass(cls);
 	ptdecl::ClosureTypeResolver::declareProperties(cls);
+	cls.privateClassConstantString("PHPSTAN_FREE_VARIABLE_ROOTS_ATTRIBUTE", pt_ctr_free_variable_roots_attribute);
 
 	/* the DI service's constructor: the generated arginfo names the twin's
 	 * parameter classes exactly */

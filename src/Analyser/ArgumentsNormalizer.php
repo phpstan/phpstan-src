@@ -298,6 +298,8 @@ final class ArgumentsNormalizer
 	 * positional argument at that index or the one passed by that name.
 	 *
 	 * @param Arg[] $args
+	 * @param 0|positive-int $position
+	 * @param non-empty-string $name
 	 */
 	public static function getArgByPositionOrName(array $args, int $position, string $name): ?Arg
 	{

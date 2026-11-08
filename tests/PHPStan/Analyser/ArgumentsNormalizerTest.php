@@ -420,14 +420,12 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 
 		// argument names are case-sensitive
 		yield [['Array'], 0, 'array', null];
-
-		// negative position never matches a positional argument
-		yield [[null, null], -1, 'array', null];
-		yield [[null, 'array'], -1, 'array', 1];
 	}
 
 	/**
 	 * @param list<?non-empty-string> $argumentNames
+	 * @param 0|positive-int $position
+	 * @param non-empty-string $name
 	 */
 	#[DataProvider('dataGetArgByPositionOrName')]
 	public function testGetArgByPositionOrName(

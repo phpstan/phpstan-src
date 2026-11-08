@@ -340,6 +340,15 @@ zv::Val genericResolve(zval *types, zval *acceptor)
 	return pt_call_static_cached(pt_pas_generic_resolve_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolve"), 2, argv);
 }
 
+/* ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) */
+pt_method_site pt_pas_add_padding_null_site;
+
+zv::Val addPaddingNull(zval *valueTypes, zval *arrayTypes)
+{
+	zv::Args argv{valueTypes, arrayTypes};
+	return pt_call_static_cached(pt_pas_add_padding_null_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnull"), 2, argv);
+}
+
 /* }}} */
 
 } // namespace
@@ -1978,14 +1987,15 @@ private:
 		return !parameters.isUndef();
 	}
 
-	/* the array_map() callback parameters of one arg type flavour; false =
-	 * pending exception */
-	static bool arrayMapParameters(zv::Arr &callbackParameters, zval *argType, bool unpack, const Getters &getters)
+	/* the array_map() callback value types of one arg type flavour, with the
+	 * array each comes from; false = pending exception */
+	static bool arrayMapValueTypes(zv::Arr &valueTypes, zv::Arr &arrayTypes, zval *argType, bool unpack, const Getters &getters)
 	{
 		if (!unpack) {
-			zv::Val parameter = dummyParameter(pt_pas_item, getters.iterableValueType(argType));
-			if (UNEXPECTED(parameter.isUndef())) return false;
-			callbackParameters.push(std::move(parameter));
+			zv::Val valueType = getters.iterableValueType(argType);
+			if (UNEXPECTED(valueType.isUndef())) return false;
+			valueTypes.push(std::move(valueType));
+			arrayTypes.push(zv::Ref(argType));
 			return true;
 		}
 		if (UNEXPECTED(!requireObject(argType, "getConstantArrays"))) return false;
@@ -1994,22 +2004,41 @@ private:
 		for (zv::ArrayEntry entry : zv::ArrRef(constantArrays.raw())) {
 			zval *constantArray = entry.value().deref().raw();
 			if (UNEXPECTED(!requireObject(constantArray, "getValueTypes"))) return false;
-			zv::Val valueTypes = pt_type_op(Z_OBJ_P(constantArray), PT_OP_GET_VALUE_TYPES, 0, NULL);
-			if (UNEXPECTED(valueTypes.isUndef() || !requireArray(valueTypes.raw(), "foreach() argument"))) return false;
-			for (zv::ArrayEntry valueEntry : zv::ArrRef(valueTypes.raw())) {
-				zv::Val parameter = dummyParameter(pt_pas_item, getters.iterableValueType(valueEntry.value().deref().raw()));
-				if (UNEXPECTED(parameter.isUndef())) return false;
-				callbackParameters.push(std::move(parameter));
+			zv::Val constantValueTypes = pt_type_op(Z_OBJ_P(constantArray), PT_OP_GET_VALUE_TYPES, 0, NULL);
+			if (UNEXPECTED(constantValueTypes.isUndef() || !requireArray(constantValueTypes.raw(), "foreach() argument"))) return false;
+			for (zv::ArrayEntry valueEntry : zv::ArrRef(constantValueTypes.raw())) {
+				zval *arrayType = valueEntry.value().deref().raw();
+				zv::Val valueType = getters.iterableValueType(arrayType);
+				if (UNEXPECTED(valueType.isUndef())) return false;
+				valueTypes.push(std::move(valueType));
+				arrayTypes.push(zv::Ref(arrayType));
 			}
 		}
 		return true;
 	}
 
+	/* the DummyParameters over ArrayMapCallbackParameterTypes::addPaddingNull();
+	 * UNDEF = pending exception */
+	static zv::Val arrayMapParameters(zv::Arr &valueTypes, zv::Arr &arrayTypes)
+	{
+		zv::Val paddedValueTypes = addPaddingNull(valueTypes.raw(), arrayTypes.raw());
+		if (UNEXPECTED(paddedValueTypes.isUndef() || !requireArray(paddedValueTypes.raw(), "foreach() argument"))) return zv::Val();
+		zv::Arr callbackParameters = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(paddedValueTypes.raw())) {
+			zv::Val parameter = dummyParameter(pt_pas_item, zv::Val::copyOf(entry.value().deref()));
+			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+			callbackParameters.push(std::move(parameter));
+		}
+		return zv::Val(std::move(callbackParameters));
+	}
+
 	/* the ArrayMapArgVisitor override; false = pending exception */
 	static bool applyArrayMap(zv::Val &parametersAcceptors, zval *arrayMapArgs, const Getters &getters)
 	{
-		zv::Arr callbackParameters = zv::Arr::empty();
-		zv::Arr nativeCallbackParameters = zv::Arr::empty();
+		zv::Arr callbackValueTypes = zv::Arr::empty();
+		zv::Arr callbackArrayTypes = zv::Arr::empty();
+		zv::Arr nativeCallbackValueTypes = zv::Arr::empty();
+		zv::Arr nativeCallbackArrayTypes = zv::Arr::empty();
 		if (UNEXPECTED(!requireArray(arrayMapArgs, "foreach() argument"))) return false;
 		for (zv::ArrayEntry entry : zv::ArrRef(arrayMapArgs)) {
 			zval *arg = entry.value().deref().raw();
@@ -2023,22 +2052,23 @@ private:
 			zv::Val unpackHold;
 			zval *unpack = readProperty(pt_pas_arg_unpack_site, arg, PT_LC("unpack"), unpackHold);
 			if (UNEXPECTED(unpack == NULL)) return false;
-			if (zend_is_true(unpack)) {
-				if (UNEXPECTED(!arrayMapParameters(callbackParameters, argType.raw(), true, getters))) return false;
-				if (UNEXPECTED(!arrayMapParameters(nativeCallbackParameters, nativeArgType.raw(), true, getters))) return false;
-			} else {
-				if (UNEXPECTED(!arrayMapParameters(callbackParameters, argType.raw(), false, getters))) return false;
-				if (UNEXPECTED(!arrayMapParameters(nativeCallbackParameters, nativeArgType.raw(), false, getters))) return false;
-			}
+			bool isUnpack = zend_is_true(unpack);
+			if (UNEXPECTED(!arrayMapValueTypes(callbackValueTypes, callbackArrayTypes, argType.raw(), isUnpack, getters))) return false;
+			if (UNEXPECTED(!arrayMapValueTypes(nativeCallbackValueTypes, nativeCallbackArrayTypes, nativeArgType.raw(), isUnpack, getters))) return false;
 		}
+
+		zv::Val callbackParameters = arrayMapParameters(callbackValueTypes, callbackArrayTypes);
+		if (UNEXPECTED(callbackParameters.isUndef())) return false;
+		zv::Val nativeCallbackParameters = arrayMapParameters(nativeCallbackValueTypes, nativeCallbackArrayTypes);
+		if (UNEXPECTED(nativeCallbackParameters.isUndef())) return false;
 
 		zv::Val acceptor, parameters;
 		if (UNEXPECTED(!firstAcceptor(parametersAcceptors, acceptor, parameters))) return false;
 		zval *firstParameter = issetIndex(Z_ARRVAL_P(parameters.raw()), 0);
 		if (firstParameter == NULL) return true;
-		zv::Val callable = orNull(callableType(zv::Val(std::move(callbackParameters)), pt_type_new_mixed_type()));
+		zv::Val callable = orNull(callableType(std::move(callbackParameters), pt_type_new_mixed_type()));
 		if (UNEXPECTED(callable.isUndef())) return false;
-		zv::Val nativeCallable = orNull(callableType(zv::Val(std::move(nativeCallbackParameters)), pt_type_new_mixed_type()));
+		zv::Val nativeCallable = orNull(callableType(std::move(nativeCallbackParameters), pt_type_new_mixed_type()));
 		if (UNEXPECTED(nativeCallable.isUndef())) return false;
 		zv::Val replaced = replacedParameterAcceptors(acceptor.raw(), parameters, 0, overrideParameterType(firstParameter, callable.raw(), nativeCallable.raw()), true);
 		if (UNEXPECTED(replaced.isUndef())) return false;

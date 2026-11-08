@@ -52,7 +52,7 @@ final class RestrictedMethodUsageRule implements Rule
 
 		$methodName = $node->name->name;
 		$methodCalledOnType = $scope->getType($node->var);
-		$referencedClasses = $methodCalledOnType->getObjectClassNames();
+		$referencedClasses = RestrictedUsageObjectClassNames::get($methodCalledOnType);
 
 		$errors = [];
 

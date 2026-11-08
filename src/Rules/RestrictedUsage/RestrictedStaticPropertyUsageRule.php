@@ -71,7 +71,7 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 				return [];
 			}
 
-			$referencedClasses = $classTypeResult->getReferencedClasses();
+			$referencedClasses = RestrictedUsageObjectClassNames::getForStaticAccess($classTypeResult->getType());
 		}
 
 		$errors = [];

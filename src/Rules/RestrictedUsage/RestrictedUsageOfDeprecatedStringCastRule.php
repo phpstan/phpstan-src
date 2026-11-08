@@ -43,7 +43,7 @@ final class RestrictedUsageOfDeprecatedStringCastRule implements Rule
 		}
 
 		$exprType = $scope->getType($node->expr);
-		$referencedClasses = $exprType->getObjectClassNames();
+		$referencedClasses = RestrictedUsageObjectClassNames::get($exprType);
 
 		$errors = [];
 

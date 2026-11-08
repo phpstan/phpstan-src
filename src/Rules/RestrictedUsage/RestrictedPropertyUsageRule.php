@@ -51,7 +51,7 @@ final class RestrictedPropertyUsageRule implements Rule
 
 		$propertyName = $node->name->name;
 		$propertyCalledOnType = $scope->getType($node->var);
-		$referencedClasses = $propertyCalledOnType->getObjectClassNames();
+		$referencedClasses = RestrictedUsageObjectClassNames::get($propertyCalledOnType);
 
 		$errors = [];
 

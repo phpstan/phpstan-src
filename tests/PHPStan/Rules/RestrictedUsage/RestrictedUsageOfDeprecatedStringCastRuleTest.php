@@ -4,6 +4,7 @@ namespace PHPStan\Rules\RestrictedUsage;
 
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<RestrictedUsageOfDeprecatedStringCastRule>
@@ -25,6 +26,21 @@ class RestrictedUsageOfDeprecatedStringCastRuleTest extends RuleTestCase
 			[
 				'Cannot call __toString',
 				11,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15681(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15681.php'], [
+			[
+				'Cannot call __toString',
+				67,
+			],
+			[
+				'Cannot call __toString',
+				68,
 			],
 		]);
 	}

@@ -59,6 +59,10 @@ final class ReplaceCountMismatchRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (count($node->getArgs()) < 2) {
+			return [];
+		}
+
 		if (!($node->name instanceof Node\Name)) {
 			return [];
 		}
@@ -85,6 +89,7 @@ final class ReplaceCountMismatchRule implements Rule
 			return [];
 		}
 
+		// named arguments can leave a gap in the normalized arguments when a required one is missing
 		$args = $normalizedFuncCall->getArgs();
 		if (!array_key_exists(0, $args) || !array_key_exists(1, $args)) {
 			return [];

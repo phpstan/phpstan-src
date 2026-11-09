@@ -15,9 +15,9 @@
  * methods must be declared here — linking checks that.
  *
  * Layout. The twin's properties are declared typed property slots in the
- * twin's declaration order — the five class-body properties first
+ * twin's declaration order — the seven class-body properties first
  * (resolvedTypes, nodeCallbackScope, namespace, scopeOutOfFirstLevelStatement,
- * scopeWithPromotedNativeTypes), then the 32 promoted constructor
+ * scopeWithPromotedNativeTypes, phpVersion, phpVersionExpressionTypes), then the 32 promoted constructor
  * properties in parameter order ($namespace is the one constructor
  * parameter that is not promoted) — so the std object handlers do
  * GC/clone/free and a PHP subclass's own properties follow them. Promoted
@@ -300,6 +300,8 @@ enum : uint32_t
 	PT_MS_PROP_NAMESPACE,
 	PT_MS_PROP_SCOPE_OUT_OF_FIRST_LEVEL_STATEMENT,
 	PT_MS_PROP_SCOPE_WITH_PROMOTED_NATIVE_TYPES,
+	PT_MS_PROP_PHP_VERSION,
+	PT_MS_PROP_PHP_VERSION_EXPRESSION_TYPES,
 	PT_MS_PROP_SERVICES,
 	PT_MS_PROP_SCOPE_FACTORY,
 	PT_MS_PROP_CONTEXT,
@@ -3666,6 +3668,32 @@ public:
 	 * getFunctionType() (2881) */
 
 	zv::Val getPhpVersion()
+	{
+		/* the twin's memo: the answer for the expression types it was
+		 * computed from - the same array while they are untouched (the
+		 * pointer check `===` starts with), a separated one after a write in
+		 * place */
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
+		zval *expressionTypes = OBJ_PROP_NUM(self, PT_MS_PROP_EXPRESSION_TYPES);
+		zval *memoTypes = OBJ_PROP_NUM(self, PT_MS_PROP_PHP_VERSION_EXPRESSION_TYPES);
+		zv::Ref memo = slot(PT_MS_PROP_PHP_VERSION);
+		if (
+			memo.isObject()
+			&& Z_TYPE_P(memoTypes) == IS_ARRAY
+			&& (Z_ARR_P(memoTypes) == Z_ARR_P(expressionTypes) || zend_is_identical(memoTypes, expressionTypes))
+		) {
+			return zv::Val::copyOf(memo);
+		}
+
+		writeSlot(PT_MS_PROP_PHP_VERSION_EXPRESSION_TYPES, zv::Val::copyOf(zv::Ref(expressionTypes)));
+		zv::Val phpVersion = resolvePhpVersion();
+		if (UNEXPECTED(phpVersion.isUndef())) return zv::Val();
+		writeSlot(PT_MS_PROP_PHP_VERSION, zv::Val::copyOf(phpVersion.ref()));
+		return phpVersion;
+	}
+
+	/* private */
+	zv::Val resolvePhpVersion()
 	{
 		zv::Val constantName = zv::Val::string(PT_LC("PHP_VERSION_ID"));
 		zv::Val nameNode = pt_name_node_new(PT_CLASS_NAME, constantName.raw());
@@ -12411,6 +12439,8 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.property("namespace", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_STRING | MAY_BE_NULL);
 	cls.property("scopeOutOfFirstLevelStatement", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "self");
 	cls.property("scopeWithPromotedNativeTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "self");
+	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, phpVersions);
+	cls.property("phpVersionExpressionTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("services", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, scopeServices);
 	cls.property("scopeFactory", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, 0, internalScopeFactory);
 	cls.property("context", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, 0, scopeContext);

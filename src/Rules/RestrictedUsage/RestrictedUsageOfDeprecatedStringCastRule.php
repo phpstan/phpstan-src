@@ -11,8 +11,6 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<Cast\String_>
@@ -45,7 +43,7 @@ final class RestrictedUsageOfDeprecatedStringCastRule implements Rule
 		}
 
 		$exprType = $scope->getType($node->expr);
-		$referencedClasses = TypeCombinator::intersect($exprType, new ObjectWithoutClassType())->getObjectClassNames();
+		$referencedClasses = RestrictedUsageObjectClassNames::get($exprType);
 
 		$errors = [];
 

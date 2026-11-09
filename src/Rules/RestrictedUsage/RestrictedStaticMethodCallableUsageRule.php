@@ -16,7 +16,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<StaticMethodCallableNode>
@@ -73,7 +72,7 @@ final class RestrictedStaticMethodCallableUsageRule implements Rule
 				return [];
 			}
 
-			$referencedClasses = TypeCombinator::removeNull($classTypeResult->getType())->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
+			$referencedClasses = RestrictedUsageObjectClassNames::getFromClassExpression($classTypeResult->getType());
 		}
 
 		$errors = [];

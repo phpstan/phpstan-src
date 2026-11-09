@@ -12,8 +12,6 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<MethodCall>
@@ -54,7 +52,7 @@ final class RestrictedMethodUsageRule implements Rule
 
 		$methodName = $node->name->name;
 		$methodCalledOnType = $scope->getType($node->var);
-		$referencedClasses = TypeCombinator::intersect($methodCalledOnType, new ObjectWithoutClassType())->getObjectClassNames();
+		$referencedClasses = RestrictedUsageObjectClassNames::get($methodCalledOnType);
 
 		$errors = [];
 

@@ -122,3 +122,73 @@ function testGeneric(?GenericStaticRequest $generic, string $genericClassName): 
 	echo $genericClassName::$foo;
 	echo $genericClassName::FOO;
 }
+
+/**
+ * @param (callable(): void)|Request $callable
+ * @param iterable<int>|Request $iterable
+ * @param object{a: int}|Request $objectShape
+ */
+function testUnionWithClasslessObject($callable, $iterable, $objectShape): void
+{
+	$callable->doFoo();
+	$iterable->doFoo();
+	$objectShape->doFoo();
+
+	echo $callable->foo;
+	echo $iterable->foo;
+	echo $objectShape->foo;
+
+	$callable->doFoo(...);
+	$iterable->doFoo(...);
+	$objectShape->doFoo(...);
+
+	(string) $callable;
+	(string) $iterable;
+	(string) $objectShape;
+}
+
+/**
+ * @template TObject of object
+ * @param TObject|Request $templated
+ */
+function testUnionWithTemplate(object $templated): void
+{
+	$templated->doFoo();
+	echo $templated->foo;
+	$templated->doFoo(...);
+	(string) $templated;
+}
+
+/**
+ * @param StaticRequest|false $orFalse
+ * @param StaticRequest|string $orString
+ * @param StaticRequest|int|null $orIntOrNull
+ */
+function testStaticOnMixedUnion(StaticRequest|false $orFalse, StaticRequest|string $orString, StaticRequest|int|null $orIntOrNull): void
+{
+	$orFalse::doFoo();
+	$orFalse::doFoo(...);
+	echo $orFalse::$foo;
+	echo $orFalse::FOO;
+
+	$orString::doFoo();
+	$orString::doFoo(...);
+	echo $orString::$foo;
+	echo $orString::FOO;
+
+	$orIntOrNull::doFoo();
+	$orIntOrNull::doFoo(...);
+	echo $orIntOrNull::$foo;
+	echo $orIntOrNull::FOO;
+}
+
+/**
+ * @param class-string<StaticRequest>|false $classNameOrFalse
+ */
+function testClassStringOrFalse(string|false $classNameOrFalse): void
+{
+	$classNameOrFalse::doFoo();
+	$classNameOrFalse::doFoo(...);
+	echo $classNameOrFalse::$foo;
+	echo $classNameOrFalse::FOO;
+}

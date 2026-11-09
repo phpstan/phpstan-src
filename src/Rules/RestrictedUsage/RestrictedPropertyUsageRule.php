@@ -11,8 +11,6 @@ use PHPStan\DependencyInjection\ExtensionsCollection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use PHPStan\Type\ObjectWithoutClassType;
-use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<Node\Expr\PropertyFetch>
@@ -53,7 +51,7 @@ final class RestrictedPropertyUsageRule implements Rule
 
 		$propertyName = $node->name->name;
 		$propertyCalledOnType = $scope->getType($node->var);
-		$referencedClasses = TypeCombinator::intersect($propertyCalledOnType, new ObjectWithoutClassType())->getObjectClassNames();
+		$referencedClasses = RestrictedUsageObjectClassNames::get($propertyCalledOnType);
 
 		$errors = [];
 

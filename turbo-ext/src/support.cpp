@@ -340,6 +340,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_DO_WHILE_LOOP_CONDITION_NODE */ {"doWhileLoopConditionNode", "PHPStan\\Node\\DoWhileLoopConditionNode"},
 	/* PT_CLASS_SWITCH_CONDITION_ARM */ {"switchConditionArm", "PHPStan\\Node\\SwitchConditionArm"},
 	/* PT_CLASS_SWITCH_CONDITION_NODE */ {"switchConditionNode", "PHPStan\\Node\\SwitchConditionNode"},
+	/* PT_CLASS_CATCH_TYPE_NODE */ {"catchTypeNode", "PHPStan\\Node\\CatchTypeNode"},
 	/* PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE */ {"catchWithUnthrownExceptionNode", "PHPStan\\Node\\CatchWithUnthrownExceptionNode"},
 	/* PT_CLASS_FINALLY_EXIT_POINTS_NODE */ {"finallyExitPointsNode", "PHPStan\\Node\\FinallyExitPointsNode"},
 	/* PT_CLASS_IN_FOREACH_NODE */ {"inForeachNode", "PHPStan\\Node\\InForeachNode"},

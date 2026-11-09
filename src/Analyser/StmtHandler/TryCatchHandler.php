@@ -21,6 +21,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\CatchTypeNode;
 use PHPStan\Node\CatchWithUnthrownExceptionNode;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\FinallyExitPointsNode;
@@ -112,9 +113,11 @@ final class TryCatchHandler implements StmtHandler
 			}
 			$dependencies[] = Dependencies::create($scope->getFile(), classNames: $caughtClassNames);
 
+			$catchTypeNodes = [];
 			$originalCatchTypes = [];
 			$catchTypes = [];
 			foreach ($catchNode->types as $catchNodeType) {
+				$catchTypeNodes[] = $catchNodeType;
 				$catchType = new ObjectType($catchNodeType->toString());
 				$originalCatchTypes[] = $catchType;
 				$catchTypes[] = TypeCombinator::remove($catchType, $pastCatchTypes);
@@ -207,6 +210,7 @@ final class TryCatchHandler implements StmtHandler
 
 			// emit error
 			foreach ($matchingCatchTypes as $catchTypeIndex => $matched) {
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new CatchTypeNode($catchNode, $catchTypeNodes[$catchTypeIndex], $catchTypes[$catchTypeIndex], $originalCatchTypes[$catchTypeIndex], $matched), $scope, $storage);
 				if ($matched) {
 					continue;
 				}

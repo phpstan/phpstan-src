@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Name;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\RuleErrorTransformer;
@@ -27,9 +28,9 @@ final class ConstantConditionInTraitHelper
 	{
 	}
 
-	private function exprString(Expr $expr): string
+	private function exprString(Expr|Name $expr): string
 	{
-		return sprintf('%s:%d', $this->exprPrinter->printExpr($expr), $expr->getStartLine());
+		return sprintf('%s:%d', $expr instanceof Name ? $expr->toString() : $this->exprPrinter->printExpr($expr), $expr->getStartLine());
 	}
 
 	/**
@@ -38,7 +39,7 @@ final class ConstantConditionInTraitHelper
 	public function emitNoError(
 		string $ruleName,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
-		Expr $expr,
+		Expr|Name $expr,
 	): void
 	{
 		if (!$scope->isInTrait()) {
@@ -59,7 +60,7 @@ final class ConstantConditionInTraitHelper
 	public function emitError(
 		string $ruleName,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
-		Expr $expr,
+		Expr|Name $expr,
 		bool $value,
 		RuleError $ruleError,
 	): void

@@ -10,6 +10,7 @@ use PHPStan\Type\Type;
 
 /**
  * @api
+ * @deprecated Use CatchTypeNode, emitted for every catch type, and check isThrown().
  */
 #[ReferencedByTurboExtension(key: 'catchWithUnthrownExceptionNode')]
 final class CatchWithUnthrownExceptionNode extends NodeAbstract implements VirtualNode

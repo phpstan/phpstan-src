@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -21,7 +22,7 @@ class AbilityToDisableImplicitThrowsTest extends RuleTestCase
 			[],
 			[],
 			[],
-		), true);
+		), self::getContainer()->getByType(ConstantConditionInTraitHelper::class), true);
 	}
 
 	public function testRule(): void

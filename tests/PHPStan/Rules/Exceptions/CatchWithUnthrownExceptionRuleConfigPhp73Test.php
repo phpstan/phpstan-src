@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Exceptions;
 
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -19,7 +20,7 @@ class CatchWithUnthrownExceptionRuleConfigPhp73Test extends RuleTestCase
 			[],
 			[],
 			[],
-		), true);
+		), self::getContainer()->getByType(ConstantConditionInTraitHelper::class), true);
 	}
 
 	public function testRuleInPhpVersionRange(): void

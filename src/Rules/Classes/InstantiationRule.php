@@ -288,9 +288,13 @@ final class InstantiationRule implements Rule
 				}
 			}
 
-			$messages[] = RuleErrorBuilder::message($restrictedUsage->errorMessage)
-				->identifier($restrictedUsage->identifier)
-				->build();
+			$errorBuilder = RuleErrorBuilder::message($restrictedUsage->errorMessage)
+				->identifier($restrictedUsage->identifier);
+			if ($restrictedUsage->tip !== null) {
+				$errorBuilder->tip($restrictedUsage->tip);
+			}
+
+			$messages[] = $errorBuilder->build();
 		}
 
 		$classDisplayName = SprintfHelper::escapeFormatString($classReflection->getDisplayName());

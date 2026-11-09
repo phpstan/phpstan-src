@@ -69,10 +69,14 @@ final class ClassNameCheck
 					continue;
 				}
 
-				$errors[] = RuleErrorBuilder::message($restrictedUsage->errorMessage)
+				$errorBuilder = RuleErrorBuilder::message($restrictedUsage->errorMessage)
 					->identifier($restrictedUsage->identifier)
-					->line($pair->getNode()->getStartLine())
-					->build();
+					->line($pair->getNode()->getStartLine());
+				if ($restrictedUsage->tip !== null) {
+					$errorBuilder->tip($restrictedUsage->tip);
+				}
+
+				$errors[] = $errorBuilder->build();
 			}
 		}
 

@@ -11,6 +11,7 @@ final class RestrictedUsage
 	private function __construct(
 		public readonly string $errorMessage,
 		public readonly string $identifier,
+		public readonly ?string $tip,
 	)
 	{
 	}
@@ -18,9 +19,10 @@ final class RestrictedUsage
 	public static function create(
 		string $errorMessage,
 		string $identifier,
+		?string $tip = null,
 	): self
 	{
-		return new self($errorMessage, $identifier);
+		return new self($errorMessage, $identifier, $tip);
 	}
 
 }

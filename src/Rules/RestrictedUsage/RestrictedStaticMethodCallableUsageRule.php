@@ -102,9 +102,13 @@ final class RestrictedStaticMethodCallableUsageRule implements Rule
 					}
 				}
 
-				$errors[] = RuleErrorBuilder::message($restrictedUsage->errorMessage)
-					->identifier($restrictedUsage->identifier)
-					->build();
+				$errorBuilder = RuleErrorBuilder::message($restrictedUsage->errorMessage)
+					->identifier($restrictedUsage->identifier);
+				if ($restrictedUsage->tip !== null) {
+					$errorBuilder->tip($restrictedUsage->tip);
+				}
+
+				$errors[] = $errorBuilder->build();
 			}
 		}
 

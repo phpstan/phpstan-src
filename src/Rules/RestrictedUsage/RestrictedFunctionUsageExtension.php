@@ -10,7 +10,7 @@ use PHPStan\Reflection\FunctionReflection;
  * Extensions implementing this interface are called for each analysed function call.
  *
  * Extension can decide to create RestrictedUsage object
- * with error message & error identifier to be reported for this function call.
+ * with error message, error identifier & optional tip to be reported for this function call.
  *
  * Typical usage is to report errors for functions marked as @-deprecated or @-internal.
  *

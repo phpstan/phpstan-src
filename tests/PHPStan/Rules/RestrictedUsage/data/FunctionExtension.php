@@ -19,7 +19,7 @@ class FunctionExtension implements RestrictedFunctionUsageExtension
 			return null;
 		}
 
-		return RestrictedUsage::create('Cannot call doFoo', 'restrictedUsage.doFoo');
+		return RestrictedUsage::create('Cannot call doFoo', 'restrictedUsage.doFoo', 'Use doBar() instead.');
 	}
 
 }

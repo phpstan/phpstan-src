@@ -15,25 +15,27 @@ inline constexpr uint32_t nodeCallbackScope = 1;
 inline constexpr uint32_t namespace_ = 2;
 inline constexpr uint32_t scopeOutOfFirstLevelStatement = 3;
 inline constexpr uint32_t scopeWithPromotedNativeTypes = 4;
-inline constexpr uint32_t services = 5;
-inline constexpr uint32_t scopeFactory = 6;
-inline constexpr uint32_t context = 7;
-inline constexpr uint32_t declareStrictTypes = 8;
-inline constexpr uint32_t function = 9;
-inline constexpr uint32_t expressionTypes = 10;
-inline constexpr uint32_t nativeExpressionTypes = 11;
-inline constexpr uint32_t conditionalExpressions = 12;
-inline constexpr uint32_t inClosureBindScopeClasses = 13;
-inline constexpr uint32_t anonymousFunctionReflection = 14;
-inline constexpr uint32_t inFirstLevelStatement = 15;
-inline constexpr uint32_t currentlyAssignedExpressions = 16;
-inline constexpr uint32_t currentlyAllowedUndefinedExpressions = 17;
-inline constexpr uint32_t inFunctionCallsStack = 18;
-inline constexpr uint32_t afterExtractCall = 19;
-inline constexpr uint32_t parentScope = 20;
-inline constexpr uint32_t nativeTypesPromoted = 21;
-inline constexpr uint32_t templateArgumentFrame = 22;
-inline constexpr uint32_t templateArgumentConstraints = 23;
+inline constexpr uint32_t phpVersion = 5;
+inline constexpr uint32_t phpVersionExpressionTypes = 6;
+inline constexpr uint32_t services = 7;
+inline constexpr uint32_t scopeFactory = 8;
+inline constexpr uint32_t context = 9;
+inline constexpr uint32_t declareStrictTypes = 10;
+inline constexpr uint32_t function = 11;
+inline constexpr uint32_t expressionTypes = 12;
+inline constexpr uint32_t nativeExpressionTypes = 13;
+inline constexpr uint32_t conditionalExpressions = 14;
+inline constexpr uint32_t inClosureBindScopeClasses = 15;
+inline constexpr uint32_t anonymousFunctionReflection = 16;
+inline constexpr uint32_t inFirstLevelStatement = 17;
+inline constexpr uint32_t currentlyAssignedExpressions = 18;
+inline constexpr uint32_t currentlyAllowedUndefinedExpressions = 19;
+inline constexpr uint32_t inFunctionCallsStack = 20;
+inline constexpr uint32_t afterExtractCall = 21;
+inline constexpr uint32_t parentScope = 22;
+inline constexpr uint32_t nativeTypesPromoted = 23;
+inline constexpr uint32_t templateArgumentFrame = 24;
+inline constexpr uint32_t templateArgumentConstraints = 25;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -50,6 +52,8 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("namespace", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_STRING);
 	cls.property("scopeOutOfFirstLevelStatement", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope");
 	cls.property("scopeWithPromotedNativeTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope");
+	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Php\\PhpVersions");
+	cls.property("phpVersionExpressionTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("services", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ScopeServices");
 	cls.property("scopeFactory", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\InternalScopeFactory");
 	cls.property("context", ZEND_ACC_PROTECTED, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ScopeContext");
@@ -482,22 +486,23 @@ inline constexpr char strings[] =
 	"getIterableValueType\0" /* 8547 */
 	"PHPStan\\Php\\PhpVersions\0" /* 8568 */
 	"getPhpVersion\0" /* 8592 */
-	"getConfiguredPhpVersionRange\0" /* 8606 */
-	"isOverallPhpVersionRange\0" /* 8635 */
-	"PhpParser\\Node\0" /* 8660 */
-	"invokeNodeCallback\0" /* 8675 */
-	"collectorType\0" /* 8694 */
-	"data\0" /* 8708 */
-	"emitCollectedData\0" /* 8713 */
-	"extensionClass\0" /* 8731 */
-	"trackValueDependency\0" /* 8746 */
-	"file\0" /* 8767 */
-	"trackFileDependency\0" /* 8772 */
-	"directory\0" /* 8792 */
-	"pattern\0" /* 8802 */
-	"'*'\0" /* 8810 */
-	"trackDirectoryDependency\0" /* 8814 */
-	"trackClassDependency"; /* 8839 */
+	"resolvePhpVersion\0" /* 8606 */
+	"getConfiguredPhpVersionRange\0" /* 8624 */
+	"isOverallPhpVersionRange\0" /* 8653 */
+	"PhpParser\\Node\0" /* 8678 */
+	"invokeNodeCallback\0" /* 8693 */
+	"collectorType\0" /* 8712 */
+	"data\0" /* 8726 */
+	"emitCollectedData\0" /* 8731 */
+	"extensionClass\0" /* 8749 */
+	"trackValueDependency\0" /* 8764 */
+	"file\0" /* 8785 */
+	"trackFileDependency\0" /* 8790 */
+	"directory\0" /* 8810 */
+	"pattern\0" /* 8820 */
+	"'*'\0" /* 8828 */
+	"trackDirectoryDependency\0" /* 8832 */
+	"trackClassDependency"; /* 8857 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 9), /* __construct $services */
 	reg::packed(40, 0, 53), /* __construct $scopeFactory */
@@ -1016,21 +1021,22 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(5138, 0, 1424), /* getIterableValueType $iteratee */
 	reg::packed(738, 0, 1424), /* getIterableValueType return */
 	reg::packed(738, 0, 8568), /* getPhpVersion return */
+	reg::packed(738, 0, 8568), /* resolvePhpVersion return */
 	reg::packed(738, MAY_BE_NULL, 1424), /* getConfiguredPhpVersionRange return */
 	reg::packed(3874, 0, 1424), /* isOverallPhpVersionRange $type */
 	reg::packed(738, MAY_BE_BOOL), /* isOverallPhpVersionRange return */
-	reg::packed(1707, 0, 8660), /* invokeNodeCallback $node */
+	reg::packed(1707, 0, 8678), /* invokeNodeCallback $node */
 	reg::packed(738, MAY_BE_VOID), /* invokeNodeCallback return */
-	reg::packed(8694, MAY_BE_STRING), /* emitCollectedData $collectorType */
-	reg::packed(8708, MAY_BE_ANY), /* emitCollectedData $data */
+	reg::packed(8712, MAY_BE_STRING), /* emitCollectedData $collectorType */
+	reg::packed(8726, MAY_BE_ANY), /* emitCollectedData $data */
 	reg::packed(738, MAY_BE_VOID), /* emitCollectedData return */
-	reg::packed(8731, MAY_BE_STRING), /* trackValueDependency $extensionClass */
+	reg::packed(8749, MAY_BE_STRING), /* trackValueDependency $extensionClass */
 	reg::packed(2540, MAY_BE_STRING), /* trackValueDependency $key */
 	reg::packed(738, MAY_BE_VOID), /* trackValueDependency return */
-	reg::packed(8767, MAY_BE_STRING), /* trackFileDependency $file */
+	reg::packed(8785, MAY_BE_STRING), /* trackFileDependency $file */
 	reg::packed(738, MAY_BE_VOID), /* trackFileDependency return */
-	reg::packed(8792, MAY_BE_STRING), /* trackDirectoryDependency $directory */
-	reg::packed(8802, MAY_BE_STRING, reg::NoString, false, false, 8810), /* trackDirectoryDependency $pattern */
+	reg::packed(8810, MAY_BE_STRING), /* trackDirectoryDependency $directory */
+	reg::packed(8820, MAY_BE_STRING, reg::NoString, false, false, 8828), /* trackDirectoryDependency $pattern */
 	reg::packed(738, MAY_BE_VOID), /* trackDirectoryDependency return */
 	reg::packed(2977, MAY_BE_STRING), /* trackClassDependency $className */
 	reg::packed(738, MAY_BE_VOID), /* trackClassDependency return */
@@ -1233,14 +1239,15 @@ inline constexpr sigtab::Sig getNativeConstantTypes = { { 8505 /* getNativeConst
 inline constexpr sigtab::Sig getIterableKeyType = { { 8528 /* getIterableKeyType */, 1, 512, 1, 513, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getIterableValueType = { { 8547 /* getIterableValueType */, 1, 514, 1, 515, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getPhpVersion = { { 8592 /* getPhpVersion */, 0, 516, 0, 516, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConfiguredPhpVersionRange = { { 8606 /* getConfiguredPhpVersionRange */, 0, 517, 0, 517, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 8635 /* isOverallPhpVersionRange */, 1, 518, 1, 519, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig invokeNodeCallback = { { 8675 /* invokeNodeCallback */, 1, 520, 1, 521, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig emitCollectedData = { { 8713 /* emitCollectedData */, 2, 522, 2, 524, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackValueDependency = { { 8746 /* trackValueDependency */, 2, 525, 2, 527, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackFileDependency = { { 8772 /* trackFileDependency */, 1, 528, 1, 529, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackDirectoryDependency = { { 8814 /* trackDirectoryDependency */, 1, 530, 2, 532, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackClassDependency = { { 8839 /* trackClassDependency */, 1, 533, 1, 534, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolvePhpVersion = { { 8606 /* resolvePhpVersion */, 0, 517, 0, 517, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getConfiguredPhpVersionRange = { { 8624 /* getConfiguredPhpVersionRange */, 0, 518, 0, 518, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 8653 /* isOverallPhpVersionRange */, 1, 519, 1, 520, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig invokeNodeCallback = { { 8693 /* invokeNodeCallback */, 1, 521, 1, 522, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig emitCollectedData = { { 8731 /* emitCollectedData */, 2, 523, 2, 525, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackValueDependency = { { 8764 /* trackValueDependency */, 2, 526, 2, 528, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackFileDependency = { { 8790 /* trackFileDependency */, 1, 529, 1, 530, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackDirectoryDependency = { { 8832 /* trackDirectoryDependency */, 1, 531, 2, 533, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackClassDependency = { { 8857 /* trackClassDependency */, 1, 534, 1, 535, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MutatingScope

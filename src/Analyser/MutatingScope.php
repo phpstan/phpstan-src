@@ -177,6 +177,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	private ?self $scopeWithPromotedNativeTypes = null;
 
+	/** What getPhpVersion() answered for the expression types in $phpVersionExpressionTypes. */
+	private ?PhpVersions $phpVersion = null;
+
+	/** @var array<string, ExpressionTypeHolder> */
+	private array $phpVersionExpressionTypes = [];
+
 	/**
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
@@ -5953,6 +5959,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	}
 
 	public function getPhpVersion(): PhpVersions
+	{
+		// The same scope is asked over and over - on every property fetch, among others - and the
+		// answer depends only on its expression types. While they are untouched, both properties
+		// hold the same array and the comparison is a pointer check; a write in place separates
+		// them and the answer is computed again.
+		if ($this->phpVersion !== null && $this->phpVersionExpressionTypes === $this->expressionTypes) {
+			return $this->phpVersion;
+		}
+
+		$this->phpVersionExpressionTypes = $this->expressionTypes;
+
+		return $this->phpVersion = $this->resolvePhpVersion();
+	}
+
+	private function resolvePhpVersion(): PhpVersions
 	{
 		$constType = $this->getGlobalConstantType(new Name('PHP_VERSION_ID'));
 		if ($constType !== null && !$this->isOverallPhpVersionRange($constType)) {

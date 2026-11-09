@@ -19,6 +19,7 @@ use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
@@ -250,7 +251,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		// before PHP 8.3 a float argument produced floats even when none of the arguments had a fractional
 		// part, and even for two strings, of which only a numeric one kept its value
-		$floatListType = self::getNonEmptyListOfType(new FloatType());
+		$floatListType = self::getFloatListType($startConstant->getValue(), $endConstant->getValue());
 		if ($hasStricterRange->no()) {
 			return $floatListType;
 		}
@@ -272,8 +273,6 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		?array $rangeValues,
 	): Type
 	{
-		$floatListType = self::getNonEmptyListOfType(new FloatType());
-
 		if ($rangeValues !== null) {
 			// range() only ever returns values of a single type
 			$firstValue = $rangeValues[0];
@@ -289,14 +288,14 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			}
 
 			if (is_float($firstValue) || is_float($lastValue)) {
-				return $floatListType;
+				return self::getFloatListType($firstValue, $lastValue);
 			}
 
 			$bounds = $startConstant instanceof ConstantIntegerType && $endConstant instanceof ConstantIntegerType
 				? [$startConstant->getValue(), $endConstant->getValue()]
 				: [$firstValue, $lastValue];
 		} elseif ($startConstant instanceof ConstantFloatType || $endConstant instanceof ConstantFloatType) {
-			return $floatListType;
+			return self::getFloatListType($startConstant->getValue(), $endConstant->getValue());
 		} elseif (!$startConstant instanceof ConstantIntegerType || !$endConstant instanceof ConstantIntegerType) {
 			return self::getNonEmptyListOfType(
 				TypeCombinator::union(
@@ -307,7 +306,7 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			);
 		} elseif (floor($stepConstant->getValue()) !== (float) $stepConstant->getValue()) {
 			// a step with a fractional part produces floats
-			return $floatListType;
+			return self::getFloatListType($startConstant->getValue(), $endConstant->getValue());
 		} else {
 			$bounds = [$startConstant->getValue(), $endConstant->getValue()];
 		}
@@ -327,6 +326,22 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		return self::getNonEmptyListOfType(IntegerRangeType::fromInterval($low, $high), $maxKey);
+	}
+
+	/**
+	 * range() stops before it passes the end, so the floats lie between the boundaries,
+	 * which a finite range length keeps finite. A string boundary leaves them unbounded.
+	 */
+	private static function getFloatListType(int|float|string $start, int|float|string $end): IntersectionType
+	{
+		if (is_string($start) || is_string($end)) {
+			return self::getNonEmptyListOfType(new FloatType());
+		}
+
+		return self::getNonEmptyListOfType(FloatRangeType::fromInterval(
+			min((float) $start, (float) $end),
+			max((float) $start, (float) $end),
+		));
 	}
 
 	private static function getNonEmptyListOfType(Type $type, ?int $maxKey = null): IntersectionType

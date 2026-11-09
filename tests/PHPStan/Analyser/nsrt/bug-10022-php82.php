@@ -11,4 +11,4 @@ assertType('array{1, 0}', range('1', 'a'));
 assertType('array{2, 3, 4, 5}', range(2, 5, -1));
 
 // a float step with no fractional part used to produce floats
-assertType('non-empty-list<float>', range(1, 200, 1.0));
+assertType('non-empty-list<float<1.0, 200.0>>', range(1, 200, 1.0));

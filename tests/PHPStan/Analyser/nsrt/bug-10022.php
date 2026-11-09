@@ -25,7 +25,7 @@ function doFoo(bool $flag): void
 		assertType('non-empty-list<string>', range('a', 'z', -1));
 
 		// a float argument used to produce floats even without a fractional part
-		assertType('non-empty-list<float>', range(1, 200, 1.0));
+		assertType('non-empty-list<float<1.0, 200.0>>', range(1, 200, 1.0));
 		assertType('non-empty-list<float>', range('A', 'z', 1.0));
 	} else {
 		// PHP 7 returns false for an invalid step, next to what the other combinations return
@@ -35,11 +35,14 @@ function doFoo(bool $flag): void
 
 	// every combination of the constant arguments contributes to the type
 	assertType('non-empty-list<0|1|(literal-string&non-empty-string)>', range($flag ? 'A' : 1, 'z'));
-	assertType('non-empty-list<float|int<1, 100>>', range($flag ? 1.0 : 1, 100));
-	assertType('non-empty-list<float|int<1, 100>>', range(1, 100, $flag ? 0.5 : 1));
+	assertType('non-empty-list<float<1.0, 100.0>|int<1, 100>>', range($flag ? 1.0 : 1, 100));
+	assertType('non-empty-list<float<1.0, 100.0>|int<1, 100>>', range(1, 100, $flag ? 0.5 : 1));
 
 	// ranges longer than the threshold are generalized from the returned values
-	assertType('non-empty-list<float>', range(1.0, 100.0));
+	assertType('non-empty-list<float<1.0, 100.0>>', range(1.0, 100.0));
+	// the floats stop at the last one before the end
+	assertType('non-empty-list<float<-1.0, 100.0>>', range(100.0, -1.5));
+	assertType('non-empty-list<float<0.0, 30.9>>', range(0, 31, 0.3));
 	assertType('non-empty-list<literal-string&non-empty-string>', range('A', 'z'));
 
 	// a step that is neither an int nor a float is not folded at all, so nothing

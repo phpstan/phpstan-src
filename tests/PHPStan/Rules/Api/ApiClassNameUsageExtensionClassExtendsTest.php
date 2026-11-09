@@ -2,24 +2,30 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\Classes\ExistingClassInClassExtendsRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
 
 /**
- * @extends RuleTestCase<ApiClassExtendsRule>
+ * @extends RuleTestCase<ExistingClassInClassExtendsRule>
  */
-class ApiClassExtendsRuleTest extends RuleTestCase
+class ApiClassNameUsageExtensionClassExtendsTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ApiClassExtendsRule(new ApiRuleHelper(), self::createReflectionProvider());
+		return self::getContainer()->getByType(ExistingClassInClassExtendsRule::class);
 	}
 
 	public function testRuleInPhpStan(): void
 	{
-		$this->analyse([__DIR__ . '/data/class-extends-in-phpstan.php'], []);
+		$this->analyse([__DIR__ . '/data/class-extends-in-phpstan.php'], [
+			[
+				'Class PHPStan\ClassExtends\Foo extends final class PHPStan\Type\FileTypeMapper.',
+				8,
+			],
+		]);
 	}
 
 	public function testRuleOutOfPhpStan(): void
@@ -30,6 +36,10 @@ class ApiClassExtendsRuleTest extends RuleTestCase
 		);
 
 		$this->analyse([__DIR__ . '/data/class-extends-out-of-phpstan.php'], [
+			[
+				'Class AppClassExtends\Foo extends final class PHPStan\Type\FileTypeMapper.',
+				9,
+			],
 			[
 				'Extending PHPStan\Type\FileTypeMapper is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
 				9,

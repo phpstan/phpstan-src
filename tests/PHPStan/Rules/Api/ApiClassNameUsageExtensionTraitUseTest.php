@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\Classes\ExistingClassInTraitUseRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
 
 /**
- * @extends RuleTestCase<ApiTraitUseRule>
+ * @extends RuleTestCase<ExistingClassInTraitUseRule>
  */
-class ApiTraitUseRuleTest extends RuleTestCase
+class ApiClassNameUsageExtensionTraitUseTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ApiTraitUseRule(new ApiRuleHelper(), self::createReflectionProvider());
+		return self::getContainer()->getByType(ExistingClassInTraitUseRule::class);
 	}
 
 	public function testRuleInPhpStan(): void

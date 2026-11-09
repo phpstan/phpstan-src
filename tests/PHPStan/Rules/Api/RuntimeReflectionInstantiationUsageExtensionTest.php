@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\Classes\InstantiationRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use const PHP_VERSION_ID;
 
 /**
- * @extends RuleTestCase<RuntimeReflectionInstantiationRule>
+ * @extends RuleTestCase<InstantiationRule>
  */
-class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
+class RuntimeReflectionInstantiationUsageExtensionTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new RuntimeReflectionInstantiationRule(self::createReflectionProvider());
+		return self::getContainer()->getByType(InstantiationRule::class);
 	}
 
 	public function testRule(): void
@@ -70,6 +71,10 @@ class RuntimeReflectionInstantiationRuleTest extends RuleTestCase
 		if (PHP_VERSION_ID >= 80000) {
 			$errors[] = [
 				'Creating new ReflectionEnum is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
+				56,
+			];
+			$errors[] = [
+				'Parameter #1 $objectOrClass of class ReflectionEnum constructor expects class-string<T of UnitEnum>|T of UnitEnum, string given.',
 				56,
 			];
 			$errors[] = [

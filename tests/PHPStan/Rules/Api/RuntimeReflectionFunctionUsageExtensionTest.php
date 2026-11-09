@@ -2,18 +2,23 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\RestrictedUsage\RestrictedFunctionUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedFunctionUsageRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
 /**
- * @extends RuleTestCase<RuntimeReflectionFunctionRule>
+ * @extends RuleTestCase<RestrictedFunctionUsageRule>
  */
-class RuntimeReflectionFunctionRuleTest extends RuleTestCase
+class RuntimeReflectionFunctionUsageExtensionTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new RuntimeReflectionFunctionRule(self::createReflectionProvider());
+		return new RestrictedFunctionUsageRule(
+			self::getContainer()->getExtensionsCollection(RestrictedFunctionUsageExtension::class),
+			self::createReflectionProvider(),
+		);
 	}
 
 	public function testRule(): void

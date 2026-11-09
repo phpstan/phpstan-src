@@ -71,7 +71,7 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 				if (count($stringConstantStrings) > 0) {
 					foreach ($stringConstantStrings as $stringConstantString) {
 						$result[] = new ConstantStringType(
-							$functionName === 'rtrim'
+							in_array($functionName, ['rtrim', 'chop'], true)
 								? rtrim($stringConstantString->getValue(), $trimConstantString->getValue())
 								: trim($stringConstantString->getValue(), $trimConstantString->getValue()),
 							true,

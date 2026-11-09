@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\Classes\ExistingClassesInInterfaceExtendsRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
 
 /**
- * @extends RuleTestCase<ApiInterfaceExtendsRule>
+ * @extends RuleTestCase<ExistingClassesInInterfaceExtendsRule>
  */
-class ApiInterfaceExtendsRuleTest extends RuleTestCase
+class ApiClassNameUsageExtensionInterfaceExtendsTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ApiInterfaceExtendsRule(new ApiRuleHelper(), self::createReflectionProvider());
+		return self::getContainer()->getByType(ExistingClassesInInterfaceExtendsRule::class);
 	}
 
 	public function testRuleInPhpStan(): void

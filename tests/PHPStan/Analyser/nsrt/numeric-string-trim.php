@@ -28,6 +28,16 @@ class Foo
 		assertType('string', trim($numericString, '-0'));
 		assertType('string', ltrim($numericString, '-0'));
 		assertType('string', rtrim($numericString, '-0'));
+
+		assertType('string', trim($numericString, '/..:'));
+		assertType('string', ltrim($numericString, '/..:'));
+		assertType('string', rtrim($numericString, '/..:'));
+		assertType('string', chop($numericString, '/..:'));
+		assertType('string', trim($numericString, '!..~'));
+
+		assertType('numeric-string', trim($numericString, 'a..z'));
+		assertType('numeric-string', trim($numericString, '..:'));
+		assertType('numeric-string', trim($numericString, ':../'));
 	}
 
 }

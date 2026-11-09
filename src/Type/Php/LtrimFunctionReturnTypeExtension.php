@@ -18,11 +18,16 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function ltrim;
-use function preg_match;
 
 #[AutowiredService]
 final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(
+		private TrimCharactersHelper $trimCharactersHelper,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -72,7 +77,7 @@ final class LtrimFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 					}
 				} elseif ($trimConstantString->getValue() === '\\' && $string->isClassString()->yes()) {
 					$result[] = new ClassStringType();
-				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $string->isNumericString()->yes()) {
+				} elseif (!$this->trimCharactersHelper->containsDigit($trimConstantString->getValue()) && $string->isNumericString()->yes()) {
 					$result[] = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 				} else {
 					return $defaultType;

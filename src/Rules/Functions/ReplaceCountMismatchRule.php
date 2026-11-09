@@ -15,7 +15,6 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Type;
-use PHPStan\Type\VerbosityLevel;
 use function array_key_exists;
 use function count;
 use function sprintf;
@@ -95,11 +94,6 @@ final class ReplaceCountMismatchRule implements Rule
 			return [];
 		}
 
-		$parameters = $parametersAcceptor->getParameters();
-		if (count($parameters) < 2) {
-			return [];
-		}
-
 		if ($this->treatPhpDocTypesAsCertain) {
 			$searchType = $scope->getType($args[0]->value);
 			$replaceType = $scope->getType($args[1]->value);
@@ -113,12 +107,8 @@ final class ReplaceCountMismatchRule implements Rule
 		}
 
 		$errorBuilder = RuleErrorBuilder::message(sprintf(
-			'Parameter #2 $%s of function %s has fewer elements (%s) than parameter #1 $%s (%s), the remaining values will be replaced with an empty string.',
-			$parameters[1]->getName(),
+			'Call to %s is using fewer replacements than search values.',
 			$functionName,
-			$replaceType->getArraySize()->describe(VerbosityLevel::value()),
-			$parameters[0]->getName(),
-			$searchType->getArraySize()->describe(VerbosityLevel::value()),
 		))->identifier('argument.replaceCount');
 
 		if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {

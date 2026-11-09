@@ -28,24 +28,24 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3889.php'], [
 			[
-				'Parameter #2 $replace of function str_replace has fewer elements (2) than parameter #1 $search (3), the remaining values will be replaced with an empty string.',
+				'Call to str_replace is using fewer replacements than search values.',
 				12,
 			],
 			[
-				'Parameter #2 $replace of function str_ireplace has fewer elements (1) than parameter #1 $search (3), the remaining values will be replaced with an empty string.',
+				'Call to str_ireplace is using fewer replacements than search values.',
 				36,
 			],
 			[
-				'Parameter #2 $replace of function str_replace has fewer elements (1) than parameter #1 $search (2), the remaining values will be replaced with an empty string.',
+				'Call to str_replace is using fewer replacements than search values.',
 				40,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
-				'Parameter #2 $replacement of function preg_replace has fewer elements (1) than parameter #1 $pattern (2), the remaining values will be replaced with an empty string.',
+				'Call to preg_replace is using fewer replacements than search values.',
 				46,
 			],
 			[
-				'Parameter #2 $replacement of function preg_filter has fewer elements (1) than parameter #1 $pattern (2), the remaining values will be replaced with an empty string.',
+				'Call to preg_filter is using fewer replacements than search values.',
 				49,
 			],
 		]);
@@ -56,7 +56,7 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-3889-named-args.php'], [
 			[
-				'Parameter #2 $replace of function str_replace has fewer elements (1) than parameter #1 $search (2), the remaining values will be replaced with an empty string.',
+				'Call to str_replace is using fewer replacements than search values.',
 				9,
 			],
 		]);

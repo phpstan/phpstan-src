@@ -146,6 +146,34 @@ class MissingNativeTypeRuleTest extends RuleTestCase
 				'Method MissingNativeType\ExplicitMixedValueType::doFoo() is missing native types: array $a, return type array.',
 				327,
 			],
+			[
+				'Method MissingNativeType\\ApiClass::__construct() is missing native types: int $a, int $b.',
+				343,
+			],
+			[
+				'Method MissingNativeType\\ApiClass::doFoo() is missing native types: return type int.',
+				351,
+			],
+			[
+				'Property MissingNativeType\\ApiClass::$private is missing native type int.',
+				360,
+			],
+			[
+				'Method MissingNativeType\\ApiMethod::notApi() is missing native types: int $a.',
+				376,
+			],
+			[
+				'Method MissingNativeType\\NotDowngradable::params() is missing native types: int $b.',
+				390,
+			],
+			[
+				'Method MissingNativeType\\NotDowngradable::returnsUnion() is missing native types: return type string|false.',
+				419,
+			],
+			[
+				'Method MissingNativeType\\ApiClassPrivateMethod::doFoo() is missing native types: int $a.',
+				434,
+			],
 		]);
 	}
 

@@ -294,3 +294,101 @@ final class ExplicitMixedValueType
 	}
 
 }
+
+/** @api */
+final class ApiClass
+{
+
+	/**
+	 * @param int $c
+	 */
+	public function __construct(int $a, private int $b, public $c = 1)
+	{
+	}
+
+	/**
+	 * @param int $a
+	 */
+	public function doFoo($a): int
+	{
+		return $a;
+	}
+
+	/** @var int */
+	public $public = 1;
+
+	private int $private = 1;
+
+}
+
+final class ApiMethod
+{
+
+	/**
+	 * @api
+	 * @param int $a
+	 */
+	public function api($a): void
+	{
+	}
+
+	public function notApi(int $a): void
+	{
+	}
+
+}
+
+final class NotDowngradable
+{
+
+	/**
+	 * @param true $a
+	 * @param (Countable&\Traversable)|null $c
+	 */
+	public function params($a, int $b, $c): void
+	{
+	}
+
+	/** @return null */
+	public function returnsNull()
+	{
+		return null;
+	}
+
+	/** @return false */
+	public function returnsFalse()
+	{
+		return false;
+	}
+
+	/** @return true|null */
+	public function returnsNullableTrue()
+	{
+		return true;
+	}
+
+	/** @return never */
+	public function returnsNever()
+	{
+		throw new \Exception();
+	}
+
+	public function returnsUnion(): string|false
+	{
+		return false;
+	}
+
+	/** @var true */
+	private $true = true;
+
+}
+
+/** @api */
+final class ApiClassPrivateMethod
+{
+
+	private function doFoo(int $a): void
+	{
+	}
+
+}

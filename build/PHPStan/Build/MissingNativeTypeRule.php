@@ -42,6 +42,7 @@ use function count;
 use function implode;
 use function in_array;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 use function strtolower;
 use function trim;
@@ -132,13 +133,20 @@ final class MissingNativeTypeRule implements Rule
 
 		$ancestorMethods = $classReflection !== null ? $this->getAncestorMethods($classReflection, $functionNode->name->toString()) : [];
 
+		// the backward compatibility promise covers what callers pass, a native type would reject what the PHPDoc did not allow
+		$areParametersApi = !($functionNode instanceof Node\Stmt\ClassMethod && $functionNode->isPrivate())
+			&& (
+				str_contains($functionNode->getDocComment()?->getText() ?? '', '@api')
+				|| ($classReflection !== null && $lowercasedName !== '__construct' && self::isApi($classReflection))
+			);
+
 		/** @var array<int, Identifier|Name|ComplexType> $paramTypeNodes */
 		$paramTypeNodes = [];
 		$sameParamNames = [];
 		$descriptions = [];
 		$parameters = $function->getParameters();
 		foreach ($functionNode->params as $i => $paramNode) {
-			if ($paramNode->type !== null || $paramNode->byRef || !isset($parameters[$i])) {
+			if ($paramNode->type !== null || $paramNode->byRef || $areParametersApi || !isset($parameters[$i])) {
 				// the type of a parameter passed by reference describes the variable after the call too
 				continue;
 			}
@@ -148,7 +156,7 @@ final class MissingNativeTypeRule implements Rule
 			// a promoted parameter declares a property too
 			$position = $paramNode->isPromoted() ? NativeTypePosition::property($this->phpVersion) : NativeTypePosition::parameter($this->phpVersion);
 			$typeNode = $type->toNativePhpTypeNode($position);
-			if ($typeNode === null) {
+			if ($typeNode === null || !self::isDowngradable($typeNode)) {
 				continue;
 			}
 
@@ -190,7 +198,7 @@ final class MissingNativeTypeRule implements Rule
 			$returnTypeNode = $returnType->toNativePhpTypeNode(NativeTypePosition::returnType($this->phpVersion));
 			if ($returnTypeNode !== null) {
 				$nativeReturnType = ParserNodeTypeToPHPStanType::resolve($returnTypeNode, $classReflection);
-				if (!$nativeReturnType->isSuperTypeOf($returnType)->yes() || !self::isCovariant($nativeReturnType, $ancestorMethods)) {
+				if (!self::isDowngradable($returnTypeNode) || !$nativeReturnType->isSuperTypeOf($returnType)->yes() || !self::isCovariant($nativeReturnType, $ancestorMethods)) {
 					$returnTypeNode = null;
 				} else {
 					$descriptions[] = sprintf('return type %s', self::printTypeNode($returnTypeNode));
@@ -271,7 +279,7 @@ final class MissingNativeTypeRule implements Rule
 		}
 
 		$typeNode = $type->toNativePhpTypeNode(NativeTypePosition::property($this->phpVersion));
-		if ($typeNode === null) {
+		if ($typeNode === null || !self::isDowngradable($typeNode)) {
 			return [];
 		}
 
@@ -348,7 +356,7 @@ final class MissingNativeTypeRule implements Rule
 	 */
 	private function canDeclarePropertyType(ClassReflection $classReflection, string $propertyName, bool $isPrivate): bool
 	{
-		if (!$isPrivate && !self::isFinal($classReflection)) {
+		if (!$isPrivate && (!self::isFinal($classReflection) || self::isApi($classReflection))) {
 			return false;
 		}
 
@@ -445,6 +453,47 @@ final class MissingNativeTypeRule implements Rule
 	 * Whether the PHPDoc type says nothing more than the native type. An explicit `mixed[]` says more than `array`:
 	 * they accept the same values, but only the former has a value type.
 	 */
+	/**
+	 * build/downgrade.php lowers mixed, static, unions and pure intersections for PHP 7.4,
+	 * but not standalone null, true, false, never or DNF types
+	 */
+	private static function isDowngradable(Identifier|Name|ComplexType $node): bool
+	{
+		if ($node instanceof Node\NullableType) {
+			$node = $node->type;
+		}
+
+		if ($node instanceof Identifier) {
+			return !in_array($node->toLowerString(), ['null', 'true', 'false', 'never'], true);
+		}
+
+		if ($node instanceof Node\UnionType) {
+			foreach ($node->types as $member) {
+				if ($member instanceof Node\IntersectionType) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private static function isApi(ClassReflection $classReflection): bool
+	{
+		$phpDoc = $classReflection->getResolvedPhpDoc();
+		if ($phpDoc === null) {
+			return false;
+		}
+
+		foreach ($phpDoc->getPhpDocNodes() as $phpDocNode) {
+			if (count($phpDocNode->getTagsByName('@api')) > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private function isSameType(Type $nativeType, Type $phpDocType): bool
 	{
 		return $nativeType->isSuperTypeOf($phpDocType)->yes()

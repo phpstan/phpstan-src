@@ -2,12 +2,12 @@
 
 namespace PHPStan\Rules\Api;
 
-use PhpParser\Node;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Rules\Rule;
-use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Reflection\ClassReflection;
+use PHPStan\Rules\ClassNameUsageLocation;
+use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
+use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionExtension;
@@ -23,38 +23,24 @@ use function in_array;
 use function sprintf;
 use function str_starts_with;
 
-/**
- * @implements Rule<Node\Expr\New_>
- */
-#[RegisteredRule(level: 0)]
-final class RuntimeReflectionInstantiationRule implements Rule
+#[AutowiredService]
+final class RuntimeReflectionInstantiationUsageExtension implements RestrictedClassNameUsageExtension
 {
 
-	public function __construct(private ReflectionProvider $reflectionProvider)
+	public function isRestrictedClassNameUsage(
+		ClassReflection $classReflection,
+		Scope $scope,
+		ClassNameUsageLocation $location,
+	): ?RestrictedUsage
 	{
-	}
-
-	public function getNodeType(): string
-	{
-		return Node\Expr\New_::class;
-	}
-
-	public function processNode(Node $node, Scope $scope): array
-	{
-		if (!$node->class instanceof Node\Name) {
-			return [];
+		if ($location->value !== ClassNameUsageLocation::INSTANTIATION) {
+			return null;
 		}
 
 		if (!$scope->isInClass()) {
-			return [];
+			return null;
 		}
 
-		$className = $scope->resolveName($node->class);
-		if (!$this->reflectionProvider->hasClass($className)) {
-			return [];
-		}
-
-		$classReflection = $this->reflectionProvider->getClass($className);
 		if (!in_array($classReflection->getName(), [
 			ReflectionMethod::class,
 			ReflectionClass::class,
@@ -70,7 +56,7 @@ final class RuntimeReflectionInstantiationRule implements Rule
 			ReflectionGenerator::class,
 			'ReflectionFiber',
 		], true)) {
-			return [];
+			return null;
 		}
 
 		$scopeClassReflection = $scope->getClassReflection();
@@ -84,14 +70,13 @@ final class RuntimeReflectionInstantiationRule implements Rule
 		}
 
 		if (!$hasPhpStanInterface) {
-			return [];
+			return null;
 		}
 
-		return [
-			RuleErrorBuilder::message(
-				sprintf('Creating new %s is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.', $classReflection->getName()),
-			)->identifier('phpstanApi.runtimeReflection')->build(),
-		];
+		return RestrictedUsage::create(
+			sprintf('Creating new %s is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.', $classReflection->getName()),
+			'phpstanApi.runtimeReflection',
+		);
 	}
 
 }

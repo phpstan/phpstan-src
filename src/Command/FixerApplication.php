@@ -49,10 +49,12 @@ use function is_file;
 use function microtime;
 use function min;
 use function parse_url;
+use function php_uname;
 use function sprintf;
 use function unlink;
 use const JSON_INVALID_UTF8_IGNORE;
 use const PHP_BINARY;
+use const PHP_OS_FAMILY;
 use const PHP_URL_PORT;
 use const PHP_VERSION_ID;
 
@@ -338,37 +340,51 @@ final class FixerApplication
 		string $infoPath,
 	): void
 	{
-		$currentVersion = null;
+		$currentUrl = null;
 		$branch = '2.2.x';
+		// the PHAR bundles a native binary, download-api answers the one for this system
+		$os = PHP_OS_FAMILY;
+		$arch = php_uname('m');
 		if (is_file($pharPath) && is_file($infoPath)) {
-			/** @var array{version: string, date: string, branch?: string} $currentInfo */
+			/** @var array{version: string, date: string, branch?: string, url?: string, os?: string, arch?: string} $currentInfo */
 			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
-			$currentVersion = $currentInfo['version'];
-			$currentBranch = $currentInfo['branch'] ?? 'master';
-			$currentDate = DateTime::createFromFormat(DateTime::ATOM, $currentInfo['date']);
-			if ($currentDate === false) {
-				throw new ShouldNotHappenException();
-			}
-			if (
-				$currentBranch === $branch
-				&& (new DateTimeImmutable('', new DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')
-			) {
-				return;
+			if (($currentInfo['os'] ?? null) === $os && ($currentInfo['arch'] ?? null) === $arch) {
+				$currentUrl = $currentInfo['url'] ?? null;
 			}
 
-			$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
+			if ($currentUrl === null) {
+				// downloaded on another system (the directory was carried over, or is shared with a Docker container),
+				// or by an older PHPStan; its native binary might not run here
+				@unlink($pharPath);
+				@unlink($infoPath);
+			} else {
+				$currentBranch = $currentInfo['branch'] ?? 'master';
+				$currentDate = DateTime::createFromFormat(DateTime::ATOM, $currentInfo['date']);
+				if ($currentDate === false) {
+					throw new ShouldNotHappenException();
+				}
+				if (
+					$currentBranch === $branch
+					&& (new DateTimeImmutable('', new DateTimeZone('UTC'))) <= $currentDate->modify('+24 hours')
+				) {
+					return;
+				}
+
+				$output->writeln('<fg=green>Checking if there\'s a new PHPStan Pro release...</>');
+			}
 		}
 
 		$client = $this->httpClientFactory->createClient([]);
 
-		$latestUrl = sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch]));
+		$latestUrl = sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch, 'os' => $os, 'arch' => $arch]));
 
 		/**
 		 * @var array{url: string, version: string} $latestInfo
 		 */
 		$latestInfo = Json::decode($client->get($latestUrl)->getBody()->getContents(), Json::FORCE_ARRAY);
-		if ($currentVersion !== null && $latestInfo['version'] === $currentVersion) {
-			$this->writeInfoFile($infoPath, $latestInfo['version'], $branch);
+		// the URL changes with the version, and with the PHAR download-api picks for this system
+		if ($latestInfo['url'] === $currentUrl) {
+			$this->writeInfoFile($infoPath, $latestInfo, $branch, $os, $arch);
 			$output->writeln('<fg=green>You\'re running the latest PHPStan Pro!</>');
 			return;
 		}
@@ -405,7 +421,7 @@ final class FixerApplication
 		$output->writeln('');
 		$output->writeln('');
 
-		$this->writeInfoFile($infoPath, $latestInfo['version'], $branch);
+		$this->writeInfoFile($infoPath, $latestInfo, $branch, $os, $arch);
 	}
 
 	private function printDownloadError(OutputInterface $output, Throwable $e): void
@@ -414,10 +430,16 @@ final class FixerApplication
 		$output->writeln('');
 	}
 
-	private function writeInfoFile(string $infoPath, string $version, string $branch): void
+	/**
+	 * @param array{url: string, version: string} $latestInfo
+	 */
+	private function writeInfoFile(string $infoPath, array $latestInfo, string $branch, string $os, string $arch): void
 	{
 		FileWriter::write($infoPath, Json::encode([
-			'version' => $version,
+			'version' => $latestInfo['version'],
+			'url' => $latestInfo['url'],
+			'os' => $os,
+			'arch' => $arch,
 			'branch' => $branch,
 			'date' => (new DateTimeImmutable('', new DateTimeZone('UTC')))->format(DateTime::ATOM),
 		]));

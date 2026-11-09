@@ -266,6 +266,7 @@ public:
 			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, catchNode, scope, storage))) return zv::Val();
 			if (UNEXPECTED(!pushCaughtClassDependencies(dependencies, catchNode, scope))) return zv::Val();
 
+			zv::Arr catchTypeNodes = zv::Arr::empty();
 			zv::Arr originalCatchTypes = zv::Arr::empty();
 			zv::Arr catchTypes = zv::Arr::empty();
 			{
@@ -289,6 +290,7 @@ public:
 						zend_type_error("PHPStan\\Type\\ObjectType::__construct(): Argument #1 ($className) must be of type string, %s given", zend_zval_value_name(className.raw()));
 						return zv::Val();
 					}
+					catchTypeNodes.push(zv::Ref(catchNodeType));
 					zv::Val catchType = newObjectType(Z_STR_P(className.raw()));
 					if (UNEXPECTED(catchType.isUndef())) return zv::Val();
 					originalCatchTypes.push(zv::Ref(catchType.raw()));
@@ -427,9 +429,16 @@ public:
 
 			// emit error
 			for (uint32_t catchTypeIndex = 0; catchTypeIndex < catchTypeCount; catchTypeIndex++) {
-				if (matchingCatchTypes[catchTypeIndex]) continue;
 				zval *caughtType = zend_hash_index_find(catchTypes.table(), catchTypeIndex);
 				zval *originalCaughtType = zend_hash_index_find(originalCatchTypes.table(), catchTypeIndex);
+				{
+					zv::Val thrown = zv::Val::boolean(matchingCatchTypes[catchTypeIndex]);
+					zv::Args typeNodeArgv{catchNode, zend_hash_index_find(catchTypeNodes.table(), catchTypeIndex), caughtType, originalCaughtType, thrown.raw()};
+					zv::Val catchTypeNode = pt_type_new(PT_CLASS_CATCH_TYPE_NODE, 5, typeNodeArgv);
+					if (UNEXPECTED(catchTypeNode.isUndef())) return zv::Val();
+					if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, catchTypeNode.raw(), scope, storage))) return zv::Val();
+				}
+				if (matchingCatchTypes[catchTypeIndex]) continue;
 				zv::Args nodeArgv{catchNode, caughtType, originalCaughtType};
 				zv::Val unthrownNode = pt_type_new(PT_CLASS_CATCH_WITH_UNTHROWN_EXCEPTION_NODE, 3, nodeArgv);
 				if (UNEXPECTED(unthrownNode.isUndef())) return zv::Val();

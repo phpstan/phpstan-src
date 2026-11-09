@@ -164,6 +164,24 @@ parameters:
 			path: src/Analyser/StmtHandler/ClassLikeHandler.php
 
 		-
+			rawMessage: '''
+				Call to method __construct() of deprecated class PHPStan\Node\CatchWithUnthrownExceptionNode:
+				Use CatchTypeNode, emitted for every catch type, and check isThrown().
+			'''
+			identifier: method.deprecatedClass
+			count: 1
+			path: src/Analyser/StmtHandler/TryCatchHandler.php
+
+		-
+			rawMessage: '''
+				Instantiation of deprecated class PHPStan\Node\CatchWithUnthrownExceptionNode:
+				Use CatchTypeNode, emitted for every catch type, and check isThrown().
+			'''
+			identifier: new.deprecatedClass
+			count: 1
+			path: src/Analyser/StmtHandler/TryCatchHandler.php
+
+		-
 			rawMessage: 'Template type TNodeType is declared as covariant, but occurs in contravariant position in parameter node of method PHPStan\Collectors\Collector::processNode().'
 			identifier: generics.variance
 			count: 1

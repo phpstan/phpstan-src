@@ -4,12 +4,15 @@ namespace PHPStan\Rules\Exceptions;
 
 use Error;
 use InvalidArgumentException;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitHelper;
+use PHPStan\Rules\Comparison\ConstantConditionInTraitRule;
 use PHPStan\Rules\Rule;
+use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
- * @extends RuleTestCase<CatchWithUnthrownExceptionRule>
+ * @extends RuleTestCase<CompositeRule>
  */
 class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 {
@@ -26,13 +29,35 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		return new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
-			self::createReflectionProvider(),
-			[],
-			$this->uncheckedExceptionClasses,
-			[],
-			[],
-		), $this->reportUncheckedExceptionDeadCatch);
+		// @phpstan-ignore argument.type
+		return new CompositeRule([
+			new CatchWithUnthrownExceptionRule(new DefaultExceptionTypeResolver(
+				self::createReflectionProvider(),
+				[],
+				$this->uncheckedExceptionClasses,
+				[],
+				[],
+			), self::getContainer()->getByType(ConstantConditionInTraitHelper::class), $this->reportUncheckedExceptionDeadCatch),
+			new ConstantConditionInTraitRule(),
+		]);
+	}
+
+	public function testInTrait(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-in-trait.php'], [
+			[
+				'Dead catch - DeadCatchInTrait\BarException is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - DeadCatchInTrait\BarException is never thrown in the try block.',
+				43,
+			],
+			[
+				'Dead catch - DeadCatchInTrait\FooException is already caught above.',
+				55,
+			],
+		]);
 	}
 
 	public function testRule(): void

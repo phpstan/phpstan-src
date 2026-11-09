@@ -122,13 +122,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(75, MAY_BE_NULL | MAY_BE_LONG), /* isDisjoint $maxB */
 	reg::packed(80, MAY_BE_BOOL, reg::NoString, false, false, 99), /* isDisjoint $touchingIsDisjoint */
 	reg::packed(28, MAY_BE_BOOL), /* isDisjoint return */
-	reg::packed(115, MAY_BE_LONG | MAY_BE_DOUBLE), /* createAllSmallerThan $value */
+	reg::packed(115, 0), /* createAllSmallerThan $value */
 	reg::packed(28, 0, 29), /* createAllSmallerThan return */
-	reg::packed(115, MAY_BE_LONG | MAY_BE_DOUBLE), /* createAllSmallerThanOrEqualTo $value */
+	reg::packed(115, 0), /* createAllSmallerThanOrEqualTo $value */
 	reg::packed(28, 0, 29), /* createAllSmallerThanOrEqualTo return */
-	reg::packed(115, MAY_BE_LONG | MAY_BE_DOUBLE), /* createAllGreaterThan $value */
+	reg::packed(115, 0), /* createAllGreaterThan $value */
 	reg::packed(28, 0, 29), /* createAllGreaterThan return */
-	reg::packed(115, MAY_BE_LONG | MAY_BE_DOUBLE), /* createAllGreaterThanOrEqualTo $value */
+	reg::packed(115, 0), /* createAllGreaterThanOrEqualTo $value */
 	reg::packed(28, 0, 29), /* createAllGreaterThanOrEqualTo return */
 	reg::packed(28, 0, 223), /* toNumberSet return */
 	reg::packed(28, MAY_BE_NULL | MAY_BE_LONG), /* getMin return */

@@ -90,8 +90,10 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	/**
 	 * Return the range of integers smaller than the given value
+	 *
+	 * @param int|float $value
 	 */
-	public static function createAllSmallerThan(int|float $value): Type
+	public static function createAllSmallerThan($value): Type
 	{
 		if (is_int($value)) {
 			return self::fromInterval(null, $value, -1);
@@ -113,8 +115,10 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	/**
 	 * Return the range of integers smaller than or equal to the given value
+	 *
+	 * @param int|float $value
 	 */
-	public static function createAllSmallerThanOrEqualTo(int|float $value): Type
+	public static function createAllSmallerThanOrEqualTo($value): Type
 	{
 		if (is_int($value)) {
 			return self::fromInterval(null, $value);
@@ -133,8 +137,10 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	/**
 	 * Return the range of integers greater than the given value
+	 *
+	 * @param int|float $value
 	 */
-	public static function createAllGreaterThan(int|float $value): Type
+	public static function createAllGreaterThan($value): Type
 	{
 		if (is_int($value)) {
 			return self::fromInterval($value, null, 1);
@@ -153,8 +159,10 @@ class IntegerRangeType extends IntegerType implements CompoundType
 
 	/**
 	 * Return the range of integers greater than or equal to the given value
+	 *
+	 * @param int|float $value
 	 */
-	public static function createAllGreaterThanOrEqualTo(int|float $value): Type
+	public static function createAllGreaterThanOrEqualTo($value): Type
 	{
 		if (is_int($value)) {
 			return self::fromInterval($value, null);

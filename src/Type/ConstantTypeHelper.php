@@ -31,7 +31,10 @@ use function is_string;
 final class ConstantTypeHelper
 {
 
-	public static function getTypeFromValue(mixed $value): Type
+	/**
+	 * @param mixed $value
+	 */
+	public static function getTypeFromValue($value): Type
 	{
 		if (is_int($value)) {
 			return new ConstantIntegerType($value);

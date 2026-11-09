@@ -32,6 +32,6 @@ interface CollectorWithPaths extends Collector
 	 * @param callable(string): string $transformPath
 	 * @return TValue
 	 */
-	public static function transformCollectedDataPaths(mixed $data, callable $transformPath);
+	public static function transformCollectedDataPaths($data, callable $transformPath);
 
 }

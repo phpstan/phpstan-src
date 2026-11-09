@@ -97,11 +97,12 @@ abstract class TypeInferenceTestCase extends PHPStanTestCase
 
 	/**
 	 * @api
+	 * @param mixed ...$args
 	 */
 	public function assertFileAsserts(
 		string $assertType,
 		string $file,
-		mixed ...$args,
+		...$args,
 	): void
 	{
 		if ($assertType === 'type') {

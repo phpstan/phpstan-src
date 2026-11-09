@@ -28,7 +28,10 @@ final class PropertyHookStatementNode extends Stmt implements VirtualNode
 		parent::__construct($propertyHook->getAttributes());
 	}
 
-	public function getReturnType(): null
+	/**
+	 * @return null
+	 */
+	public function getReturnType()
 	{
 		return null;
 	}

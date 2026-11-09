@@ -1690,8 +1690,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/**
 	 * @api
+	 * @param mixed $value
 	 */
-	public function getTypeFromValue(mixed $value): Type
+	public function getTypeFromValue($value): Type
 	{
 		return ConstantTypeHelper::getTypeFromValue($value);
 	}
@@ -2765,8 +2766,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/**
 	 * @api
+	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
 	 */
-	public function getFunctionType(Name|Identifier|ComplexType|null $type, bool $isNullable, bool $isVariadic): Type
+	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type
 	{
 		if ($isVariadic) {
 			if (!$this->getPhpVersion()->supportsNamedArguments()->no()) {

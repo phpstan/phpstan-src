@@ -1308,14 +1308,12 @@ static NullableLong pt_nullable_long_arg(zend_long value, bool isNull)
 	return isNull ? NullableLong::null() : NullableLong::of(value);
 }
 
-/* the createAll*() family: one int|float $value, rejected like the twin's
- * declaration rejects anything else under strict_types (zp has no number kind) */
+/* the createAll*() family: one untyped $value */
 static void pt_irt_create_all(INTERNAL_FUNCTION_PARAMETERS, zv::Val (*factory)(zval *))
 {
 	zval *value;
-	ZEND_PARSE_PARAMETERS_START(1, 1)
-		Z_PARAM_NUMBER(value)
-	ZEND_PARSE_PARAMETERS_END();
+	if (!zp::parse<zp::Zval>(execute_data, value)) RETURN_THROWS();
+	ZVAL_DEREF(value);
 	PT_RETURN_VAL(factory(value));
 }
 

@@ -10,7 +10,7 @@ use PHPStan\Reflection\ClassConstantReflection;
  * Extensions implementing this interface are called for each analysed class constant access.
  *
  * Extension can decide to create RestrictedUsage object
- * with error message & error identifier to be reported for this class constant access.
+ * with error message, error identifier & optional tip to be reported for this class constant access.
  *
  * Typical usage is to report errors for constants marked as @-deprecated or @-internal.
  *

@@ -25,6 +25,7 @@ class RestrictedFunctionUsageRuleTest extends RuleTestCase
 			[
 				'Cannot call doFoo',
 				17,
+				'Use doBar() instead.',
 			],
 		]);
 	}

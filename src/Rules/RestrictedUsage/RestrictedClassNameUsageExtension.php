@@ -11,7 +11,7 @@ use PHPStan\Rules\ClassNameUsageLocation;
  * Extensions implementing this interface are called for each analysed class name usage.
  *
  * Extension can decide to create RestrictedUsage object
- * with error message & error identifier to be reported for this method call.
+ * with error message, error identifier & optional tip to be reported for this method call.
  *
  * Typical usage is to report errors for class names marked as @-deprecated or @-internal.
  *

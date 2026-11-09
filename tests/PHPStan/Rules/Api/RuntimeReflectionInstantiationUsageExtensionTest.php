@@ -74,15 +74,22 @@ class RuntimeReflectionInstantiationUsageExtensionTest extends RuleTestCase
 				56,
 			];
 			$errors[] = [
-				'Parameter #1 $objectOrClass of class ReflectionEnum constructor expects class-string<T of UnitEnum>|T of UnitEnum, string given.',
-				56,
-			];
-			$errors[] = [
 				'Creating new ReflectionEnumBackedCase is a runtime reflection concept that might not work in PHPStan because it uses fully static reflection engine. Use objects retrieved from ReflectionProvider instead.',
 				57,
 			];
 		}
-		$this->analyse([__DIR__ . '/data/runtime-reflection-instantiation.php'], $errors);
+
+		// InstantiationRule's own errors on this file differ between PHP versions
+		$actualErrors = [];
+		foreach ($this->gatherAnalyserErrors([__DIR__ . '/data/runtime-reflection-instantiation.php']) as $error) {
+			if ($error->getIdentifier() !== 'phpstanApi.runtimeReflection') {
+				continue;
+			}
+
+			$actualErrors[] = [$error->getMessage(), $error->getLine()];
+		}
+
+		$this->assertSame($errors, $actualErrors);
 	}
 
 }

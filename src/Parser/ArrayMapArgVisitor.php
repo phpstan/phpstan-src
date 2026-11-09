@@ -5,9 +5,9 @@ namespace PHPStan\Parser;
 use Override;
 use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use function array_slice;
 use function count;
 
 #[AutowiredService]
@@ -35,11 +35,9 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 
 					$arrayArgs[] = $arg;
 				}
-				if (isset($args[0])) {
-					$slicedArgs = array_slice($args, 1);
-					if (count($slicedArgs) > 0) {
-						$args[0]->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
-					}
+				$callbackArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback');
+				if ($callbackArg !== null && count($arrayArgs) > 0) {
+					$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
 				}
 			}
 		}

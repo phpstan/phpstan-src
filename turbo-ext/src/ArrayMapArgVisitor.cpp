@@ -62,10 +62,10 @@ public:
 			arrayArgs.push(arg);
 		}
 
-		/* isset($args[0]) && count(array_slice($args, 1)) > 0 */
-		zend_object *firstArg = visitors::argAt(args, 0);
-		if (firstArg == NULL || zend_hash_num_elements(Z_ARRVAL_P(args)) <= 1) return true;
-		zval *value = argValueProp.of(firstArg);
+		/* ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback') */
+		zend_object *callbackArg = visitors::argForParameter(args, 0, "callback");
+		if (callbackArg == NULL || zend_hash_num_elements(arrayArgs.table()) == 0) return true;
+		zval *value = argValueProp.of(callbackArg);
 		if (value == NULL || Z_TYPE_P(value) != IS_OBJECT) return true;
 		visitors::setAttribute(Z_OBJ_P(value), pt_array_map_arg_attribute_str, arrayArgs.raw());
 		return true;

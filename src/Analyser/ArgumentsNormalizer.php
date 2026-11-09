@@ -294,6 +294,25 @@ final class ArgumentsNormalizer
 	}
 
 	/**
+	 * The argument bound to the parameter at $position named $name: the
+	 * positional argument at that index or the one passed by that name.
+	 *
+	 * @param Arg[] $args
+	 * @param 0|positive-int $position
+	 * @param non-empty-string $name
+	 */
+	public static function getArgByPositionOrName(array $args, int $position, string $name): ?Arg
+	{
+		foreach ($args as $i => $arg) {
+			if ($arg->name === null ? $i === $position : $arg->name->toString() === $name) {
+				return $arg;
+			}
+		}
+
+		return null;
+	}
+
+	/**
 	 * @param Arg[] $callArgs
 	 * @return ?list<Arg>
 	 */

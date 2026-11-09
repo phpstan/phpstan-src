@@ -24,6 +24,7 @@ namespace sigs = ptdecl::ArgumentsNormalizer::sig;
 #include "Engine.h"
 #include "ParameterValues.h"
 #include "AcceptorValues.h"
+#include "ParserVisitors.h"
 
 zend_class_entry *pt_ce_arguments_normalizer = nullptr;
 
@@ -869,6 +870,20 @@ PT_MINIT_REGISTRATION(pt_register_arguments_normalizer)
 			Z_PARAM_ARRAY(callArgs)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(ArgumentsNormalizer::reorderArgs(parametersAcceptor, callArgs));
+	});
+
+	cls.method(sigs::getArgByPositionOrName, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *args;
+		zend_long position;
+		zend_string *name;
+		ZEND_PARSE_PARAMETERS_START(3, 3)
+			Z_PARAM_ARRAY(args)
+			Z_PARAM_LONG(position)
+			Z_PARAM_STR(name)
+		ZEND_PARSE_PARAMETERS_END();
+		zend_object *arg = phpstanturbo::visitors::argForParameter(args, (zend_ulong) position, ZSTR_VAL(name), ZSTR_LEN(name));
+		if (arg == NULL) RETURN_NULL();
+		RETURN_OBJ_COPY(arg);
 	});
 
 	cls.shadow(&pt_ce_arguments_normalizer);

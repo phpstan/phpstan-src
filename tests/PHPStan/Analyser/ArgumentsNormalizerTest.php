@@ -392,4 +392,61 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		$this->assertNull($normalized);
 	}
 
+	public static function dataGetArgByPositionOrName(): iterable
+	{
+		// no arguments
+		yield [[], 0, 'array', null];
+
+		// positional argument at the position
+		yield [[null, null], 0, 'array', 0];
+		yield [[null, null], 1, 'callback', 1];
+
+		// fewer positional arguments than the position
+		yield [[null], 1, 'callback', null];
+
+		// named argument written in signature order
+		yield [['array', 'callback'], 0, 'array', 0];
+
+		// named argument written in a different order
+		yield [['callback', 'array'], 0, 'array', 1];
+		yield [['mode', 'callback', 'array'], 0, 'array', 2];
+
+		// positional arguments followed by the named one
+		yield [[null, 'mode', 'callback'], 1, 'callback', 2];
+
+		// named argument at the position is bound to a different parameter
+		yield [['callback'], 0, 'array', null];
+		yield [[null, 'mode'], 1, 'callback', null];
+
+		// argument names are case-sensitive
+		yield [['Array'], 0, 'array', null];
+	}
+
+	/**
+	 * @param list<?non-empty-string> $argumentNames
+	 * @param 0|positive-int $position
+	 * @param non-empty-string $name
+	 */
+	#[DataProvider('dataGetArgByPositionOrName')]
+	public function testGetArgByPositionOrName(
+		array $argumentNames,
+		int $position,
+		string $name,
+		?int $expectedIndex,
+	): void
+	{
+		$arguments = [];
+		foreach ($argumentNames as $argumentName) {
+			$arguments[] = new Arg(new TypeExpr(new MixedType()), name: $argumentName === null ? null : new Identifier($argumentName));
+		}
+
+		$arg = ArgumentsNormalizer::getArgByPositionOrName($arguments, $position, $name);
+		if ($expectedIndex === null) {
+			$this->assertNull($arg);
+			return;
+		}
+
+		$this->assertSame($arguments[$expectedIndex], $arg);
+	}
+
 }

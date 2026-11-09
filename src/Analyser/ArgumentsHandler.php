@@ -126,7 +126,6 @@ final class ArgumentsHandler
 	}
 
 	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -135,7 +134,7 @@ final class ArgumentsHandler
 	public function processArgs(
 		NodeScopeResolver $nodeScopeResolver,
 		Node\Stmt $stmt,
-		$calleeReflection,
+		MethodReflection|FunctionReflection|null $calleeReflection,
 		?ExtendedMethodReflection $nakedMethodReflection,
 		array $parametersAcceptors,
 		?array $namedArgumentsVariants,
@@ -1096,10 +1095,7 @@ final class ArgumentsHandler
 		}
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
-	 */
-	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, $calleeReflection): bool
+	private function callCallbackImmediately(?ParameterReflection $parameter, ?Type $parameterType, MethodReflection|FunctionReflection|null $calleeReflection): bool
 	{
 		$parameterCallableType = null;
 		if ($parameterType !== null && $calleeReflection instanceof FunctionReflection) {
@@ -1135,10 +1131,7 @@ final class ArgumentsHandler
 		return true;
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
-	 */
-	private function getParameterTypeFromParameterClosureTypeExtension(CallLike $callLike, $calleeReflection, ParameterReflection $parameter, MutatingScope $scope): ?Type
+	private function getParameterTypeFromParameterClosureTypeExtension(CallLike $callLike, MethodReflection|FunctionReflection|null $calleeReflection, ParameterReflection $parameter, MutatingScope $scope): ?Type
 	{
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
 			foreach ($this->functionParameterClosureTypeExtensions->getAll() as $functionParameterClosureTypeExtension) {
@@ -1176,10 +1169,7 @@ final class ArgumentsHandler
 		return null;
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection|null $calleeReflection
-	 */
-	private function getParameterOutExtensionsType(CallLike $callLike, $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): ?Type
+	private function getParameterOutExtensionsType(CallLike $callLike, MethodReflection|FunctionReflection|null $calleeReflection, ParameterReflection $currentParameter, MutatingScope $scope): ?Type
 	{
 		$paramOutTypes = [];
 		if ($callLike instanceof FuncCall && $calleeReflection instanceof FunctionReflection) {
@@ -1231,12 +1221,9 @@ final class ArgumentsHandler
 		return null;
 	}
 
-	/**
-	 * @param FunctionReflection|MethodReflection|null $calleeReflection
-	 */
 	private function resolveClosureThisType(
 		?CallLike $call,
-		$calleeReflection,
+		FunctionReflection|MethodReflection|null $calleeReflection,
 		ParameterReflection $parameter,
 		MutatingScope $scope,
 	): ?Type

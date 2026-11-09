@@ -130,7 +130,7 @@ final class CalledMethodProcessor
 	 * @param Node[]|Node|scalar|null $node
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	private function processNodesForCalledMethod(NodeScopeResolver $nodeScopeResolver, $node, ExpressionResultStorage $storage, string $fileName, MethodReflection $methodReflection, callable $nodeCallback): void
+	private function processNodesForCalledMethod(NodeScopeResolver $nodeScopeResolver, Node|int|float|string|bool|array|null $node, ExpressionResultStorage $storage, string $fileName, MethodReflection $methodReflection, callable $nodeCallback): void
 	{
 		if ($node instanceof Node) {
 			$declaringClass = $methodReflection->getDeclaringClass();

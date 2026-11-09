@@ -120,11 +120,8 @@ final class CachingVisitor extends NodeVisitorAbstract
 		return null;
 	}
 
-	/**
-	 * @return null
-	 */
 	#[Override]
-	public function leaveNode(Node $node)
+	public function leaveNode(Node $node): null
 	{
 		if (!$node instanceof Namespace_) {
 			return null;

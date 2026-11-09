@@ -489,8 +489,7 @@ final class VariableLivenessResolver
 		return $next;
 	}
 
-	/** @param int|string $offset */
-	private static function offsetKey($offset): string
+	private static function offsetKey(int|string $offset): string
 	{
 		return (is_int($offset) ? 'i:' : 's:') . $offset;
 	}

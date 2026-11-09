@@ -197,10 +197,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 * Converts runtime PHP values to their corresponding constant types:
 	 * integers become ConstantIntegerType, strings become ConstantStringType,
 	 * arrays become ConstantArrayType (if small enough), etc.
-	 *
-	 * @param mixed $value
 	 */
-	public function getTypeFromValue($value): Type;
+	public function getTypeFromValue(mixed $value): Type;
 
 	/**
 	 * Returns whether an expression has a tracked type in this scope.
@@ -276,10 +274,8 @@ interface Scope extends ClassMemberAccessAnswerer, NamespaceAnswerer
 	 * Handles named types, identifier types (int, string, etc.), union types,
 	 * intersection types, and nullable types. The $isNullable flag adds null
 	 * to the type, and $isVariadic wraps the type in an array.
-	 *
-	 * @param Node\Name|Node\Identifier|Node\ComplexType|null $type
 	 */
-	public function getFunctionType($type, bool $isNullable, bool $isVariadic): Type;
+	public function getFunctionType(Name|Node\Identifier|Node\ComplexType|null $type, bool $isNullable, bool $isVariadic): Type;
 
 	/**
 	 * Returns whether the given expression is currently being assigned to.

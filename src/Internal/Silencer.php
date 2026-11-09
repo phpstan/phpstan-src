@@ -27,7 +27,7 @@ final class Silencer
 	 * @param Closure(): T $callback
 	 * @return T
 	 */
-	public static function call(Closure $callback)
+	public static function call(Closure $callback): mixed
 	{
 		set_error_handler(static fn (): bool => true);
 

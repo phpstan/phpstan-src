@@ -3394,10 +3394,7 @@ class ConstantArrayType implements Type
 		return false;
 	}
 
-	/**
-	 * @param ConstantIntegerType|ConstantStringType $otherKeyType
-	 */
-	private function getKeyIndex($otherKeyType): ?int
+	private function getKeyIndex(ConstantIntegerType|ConstantStringType $otherKeyType): ?int
 	{
 		return $this->getKeyIndexMap()[$otherKeyType->getValue()] ?? null;
 	}

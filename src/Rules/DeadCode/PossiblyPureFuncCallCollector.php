@@ -25,7 +25,7 @@ final class PossiblyPureFuncCallCollector implements Collector
 		return Expression::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		$expr = $node->expr;
 		if ($expr instanceof Node\Expr\BinaryOp\Pipe) {

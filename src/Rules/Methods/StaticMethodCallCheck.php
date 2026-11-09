@@ -55,13 +55,12 @@ final class StaticMethodCallCheck
 	}
 
 	/**
-	 * @param Name|Expr $class
 	 * @return array{list<IdentifierRuleError>, ExtendedMethodReflection|null}
 	 */
 	public function check(
 		Scope $scope,
 		string $methodName,
-		$class,
+		Name|Expr $class,
 		Identifier|Expr $astName,
 	): array
 	{

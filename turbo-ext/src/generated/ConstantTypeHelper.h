@@ -33,7 +33,7 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\GeneralizePrecision\0" /* 91 */
 	"unionGeneralized"; /* 124 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0), /* getTypeFromValue $value */
+	reg::packed(0, MAY_BE_ANY), /* getTypeFromValue $value */
 	reg::packed(6, 0, 7), /* getTypeFromValue return */
 	reg::packed(0, MAY_BE_ARRAY), /* getOversizedArrayType $value */
 	reg::packed(6, 0, 7), /* getOversizedArrayType return */

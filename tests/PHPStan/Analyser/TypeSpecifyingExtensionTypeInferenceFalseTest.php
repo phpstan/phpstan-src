@@ -15,14 +15,11 @@ class TypeSpecifyingExtensionTypeInferenceFalseTest extends TypeInferenceTestCas
 		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-false.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataTypeSpecifyingExtensionsFalse')]
 	public function testTypeSpecifyingExtensionsFalse(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

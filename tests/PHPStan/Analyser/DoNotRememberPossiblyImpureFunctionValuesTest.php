@@ -13,14 +13,11 @@ class DoNotRememberPossiblyImpureFunctionValuesTest extends TypeInferenceTestCas
 		yield from self::gatherAssertTypes(__DIR__ . '/data/do-not-remember-possibly-impure-function-values.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataAsserts')]
 	public function testAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

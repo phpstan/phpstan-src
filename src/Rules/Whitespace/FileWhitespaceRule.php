@@ -49,11 +49,8 @@ final class FileWhitespaceRule implements Rule
 			/** @var Node[] */
 			private array $lastNodes = [];
 
-			/**
-			 * @return int|null
-			 */
 			#[Override]
-			public function enterNode(Node $node)
+			public function enterNode(Node $node): ?int
 			{
 				if ($node instanceof Node\Stmt\Declare_) {
 					if ($node->stmts !== null && count($node->stmts) > 0) {

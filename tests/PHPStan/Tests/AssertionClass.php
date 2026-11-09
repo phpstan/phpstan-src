@@ -26,10 +26,9 @@ class AssertionClass
 	}
 
 	/**
-	 * @param mixed $arg
 	 * @throws AssertionException
 	 */
-	public function assertNotInt($arg): bool
+	public function assertNotInt(mixed $arg): bool
 	{
 		if (is_int($arg)) {
 			throw new AssertionException();

@@ -16,11 +16,10 @@ final class CollectedData implements JsonSerializable
 {
 
 	/**
-	 * @param mixed $data
 	 * @param class-string<Collector<Node, mixed>> $collectorType
 	 */
 	public function __construct(
-		private $data,
+		private mixed $data,
 		private string $filePath,
 		private string $collectorType,
 	)
@@ -50,12 +49,9 @@ final class CollectedData implements JsonSerializable
 		return $this->collectorType;
 	}
 
-	/**
-	 * @return mixed
-	 */
 	#[ReturnTypeWillChange]
 	#[Override]
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return [
 			'data' => $this->data,

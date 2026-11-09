@@ -271,10 +271,7 @@ final class LateResolvableObjectShapeType implements CompoundType, LateResolvabl
 		return new ObjectShapeNode($items);
 	}
 
-	/**
-	 * @return ConstExprStringNode|IdentifierTypeNode
-	 */
-	private static function keyNameNode(Type $keyType)
+	private static function keyNameNode(Type $keyType): ConstExprStringNode|IdentifierTypeNode
 	{
 		$node = $keyType->toPhpDocNode();
 		if ($node instanceof IdentifierTypeNode) {

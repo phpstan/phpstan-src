@@ -56,10 +56,9 @@ final class AttributeServicesDirectoriesResolver
 	}
 
 	/**
-	 * @param mixed $rawSectionValue
 	 * @throws InvalidAttributeServicesDirectoriesException
 	 */
-	public function resolve($rawSectionValue): ResolvedAttributeServicesDirectories
+	public function resolve(mixed $rawSectionValue): ResolvedAttributeServicesDirectories
 	{
 		if ($rawSectionValue === null || $rawSectionValue === []) {
 			return ResolvedAttributeServicesDirectories::createEmpty();

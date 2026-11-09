@@ -133,11 +133,8 @@ final class TypeInferenceTestCaseTest extends TypeInferenceTestCase
 		return self::gatherAssertTypes(__DIR__ . '/data/assert-super-type-failed.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataSuperTypeFailed')]
-	public function testSuperTypeFailed(...$args): void
+	public function testSuperTypeFailed(mixed ...$args): void
 	{
 		$this->expectException(AssertionFailedError::class);
 		$this->assertFileAsserts(...$args);

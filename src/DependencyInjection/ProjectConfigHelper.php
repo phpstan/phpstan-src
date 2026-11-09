@@ -42,10 +42,9 @@ final class ProjectConfigHelper
 	}
 
 	/**
-	 * @param mixed $definition
 	 * @return string[]
 	 */
-	private static function getClassesFromConfigDefinition($definition): array
+	private static function getClassesFromConfigDefinition(mixed $definition): array
 	{
 		if (is_string($definition)) {
 			return [$definition];

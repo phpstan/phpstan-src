@@ -28,18 +28,12 @@ final class StaticMethodCallableNode extends Expr implements VirtualNode
 		parent::__construct($attributes);
 	}
 
-	/**
-	 * @return Expr|Name
-	 */
-	public function getClass()
+	public function getClass(): Expr|Name
 	{
 		return $this->class;
 	}
 
-	/**
-	 * @return Identifier|Expr
-	 */
-	public function getName()
+	public function getName(): Identifier|Expr
 	{
 		return $this->name;
 	}

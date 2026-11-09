@@ -20,10 +20,8 @@ final class Cache
 
 	/**
 	 * @param non-empty-string $key
-	 *
-	 * @return mixed|null
 	 */
-	public function load(string $key, string $variableKey)
+	public function load(string $key, string $variableKey): mixed
 	{
 		// Every entry is also shared across the run's parallel workers
 		// through the shared-memory arena (turbo extension only; the seam is
@@ -58,10 +56,8 @@ final class Cache
 
 	/**
 	 * @param non-empty-string $key
-	 *
-	 * @param mixed $data
 	 */
-	public function save(string $key, string $variableKey, $data): void
+	public function save(string $key, string $variableKey, mixed $data): void
 	{
 		$this->storage->save($key, $variableKey, $data);
 

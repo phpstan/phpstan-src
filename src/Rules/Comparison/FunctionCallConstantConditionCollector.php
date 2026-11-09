@@ -21,7 +21,7 @@ final class FunctionCallConstantConditionCollector implements CollectorWithPaths
 		throw new ShouldNotHappenException();
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		throw new ShouldNotHappenException();
 	}
@@ -31,7 +31,7 @@ final class FunctionCallConstantConditionCollector implements CollectorWithPaths
 	 * @param callable(string): string $transformPath
 	 * @return array{class-string<Rule<covariant Node>>, trait-string|null, string, null}|array{class-string<Rule<covariant Node>>, trait-string|null, string, bool, Error|array<mixed>}
 	 */
-	public static function transformCollectedDataPaths($data, callable $transformPath)
+	public static function transformCollectedDataPaths($data, callable $transformPath): array
 	{
 		if (!array_key_exists(4, $data)) {
 			return $data;

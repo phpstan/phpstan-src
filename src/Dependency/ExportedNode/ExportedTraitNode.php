@@ -102,12 +102,9 @@ final class ExportedTraitNode implements RootExportedNode, JsonSerializable
 		);
 	}
 
-	/**
-	 * @return mixed
-	 */
 	#[ReturnTypeWillChange]
 	#[Override]
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return [
 			'type' => self::class,

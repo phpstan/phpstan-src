@@ -13,14 +13,11 @@ class Bug10922Test extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-10922.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

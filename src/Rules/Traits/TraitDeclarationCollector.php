@@ -19,7 +19,7 @@ final class TraitDeclarationCollector implements Collector
 		return Node\Stmt\Trait_::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		if ($node->namespacedName === null) {
 			return null;

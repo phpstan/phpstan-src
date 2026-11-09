@@ -70,11 +70,12 @@ inline constexpr char strings[] =
 	"node\0" /* 588 */
 	"classScope\0" /* 593 */
 	"processTraitUse\0" /* 604 */
-	"traitReflection\0" /* 620 */
-	"PHPStan\\Reflection\\ClassReflection\0" /* 636 */
-	"adaptations\0" /* 671 */
-	"dependencies\0" /* 683 */
-	"processNodesForTraitUse"; /* 696 */
+	"PhpParser\\Node\0" /* 620 */
+	"traitReflection\0" /* 635 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 651 */
+	"adaptations\0" /* 686 */
+	"dependencies\0" /* 698 */
+	"processNodesForTraitUse"; /* 711 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, 0, 68), /* __construct $fileHelper */
@@ -100,13 +101,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(403, MAY_BE_CALLABLE), /* processTraitUse $nodeCallback */
 	reg::packed(254, MAY_BE_NULL, 540), /* processTraitUse return */
 	reg::packed(264, 0, 282), /* processNodesForTraitUse $nodeScopeResolver */
-	reg::packed(588, 0), /* processNodesForTraitUse $node */
-	reg::packed(620, 0, 636), /* processNodesForTraitUse $traitReflection */
+	reg::packed(588, MAY_BE_NULL | MAY_BE_BOOL | MAY_BE_LONG | MAY_BE_DOUBLE | MAY_BE_STRING | MAY_BE_ARRAY, 620), /* processNodesForTraitUse $node */
+	reg::packed(635, 0, 651), /* processNodesForTraitUse $traitReflection */
 	reg::packed(317, 0, 323), /* processNodesForTraitUse $scope */
 	reg::packed(354, 0, 362), /* processNodesForTraitUse $storage */
-	reg::packed(671, MAY_BE_ARRAY), /* processNodesForTraitUse $adaptations */
+	reg::packed(686, MAY_BE_ARRAY), /* processNodesForTraitUse $adaptations */
 	reg::packed(403, MAY_BE_CALLABLE), /* processNodesForTraitUse $nodeCallback */
-	reg::packed(683, MAY_BE_ARRAY, reg::NoString, true, false), /* processNodesForTraitUse $dependencies */
+	reg::packed(698, MAY_BE_ARRAY, reg::NoString, true, false), /* processNodesForTraitUse $dependencies */
 	reg::packed(254, MAY_BE_VOID), /* processNodesForTraitUse return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -119,7 +120,7 @@ inline constexpr sigtab::Sig supports = { { 255 /* supports */, 1, 5, 1, 6, ZEND
 inline constexpr sigtab::Sig processStmt = { { 499 /* processStmt */, 6, 7, 6, 13, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getDependencies = { { 572 /* getDependencies */, 2, 14, 2, 16, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig processTraitUse = { { 604 /* processTraitUse */, 5, 17, 5, 22, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processNodesForTraitUse = { { 696 /* processNodesForTraitUse */, 8, 23, 8, 31, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processNodesForTraitUse = { { 711 /* processNodesForTraitUse */, 8, 23, 8, 31, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TraitUseHandler

@@ -16,14 +16,11 @@ class LooseConstComparisonPhp8Test extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-11732-php8.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

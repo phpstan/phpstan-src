@@ -417,12 +417,9 @@ final class Error implements JsonSerializable
 		);
 	}
 
-	/**
-	 * @return mixed
-	 */
 	#[ReturnTypeWillChange]
 	#[Override]
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return [
 			'message' => $this->message,

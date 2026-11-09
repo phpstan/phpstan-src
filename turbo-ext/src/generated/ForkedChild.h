@@ -22,16 +22,17 @@ inline void declareProperties(reg::Class &cls)
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"exitImmediately"; /* 0 */
+	"\0" /* 0 */
+	"exitImmediately"; /* 1 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0), /* placeholder: C++ has no empty arrays */
+	reg::packed(0, MAY_BE_NEVER), /* exitImmediately return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig exitImmediately = { { 0 /* exitImmediately */, 0, 0, 0, reg::NoArg, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig exitImmediately = { { 1 /* exitImmediately */, 0, 0, 0, 0, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ForkedChild

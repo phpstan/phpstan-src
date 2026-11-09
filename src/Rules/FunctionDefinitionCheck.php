@@ -104,14 +104,13 @@ final class FunctionDefinitionCheck
 
 	/**
 	 * @param Node\Param[] $parameters
-	 * @param Node\Identifier|Node\Name|Node\ComplexType|null $returnTypeNode
 	 * @param Node\AttributeGroup[] $attribGroups
 	 * @return list<IdentifierRuleError>
 	 */
 	public function checkAnonymousFunction(
 		Scope $scope,
 		array $parameters,
-		$returnTypeNode,
+		Identifier|Name|ComplexType|null $returnTypeNode,
 		array $attribGroups,
 		string $parameterMessage,
 		string $returnMessage,

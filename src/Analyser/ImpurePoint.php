@@ -33,10 +33,7 @@ final class ImpurePoint
 		return $this->scope;
 	}
 
-	/**
-	 * @return Node\Expr|Node\Stmt|VirtualNode
-	 */
-	public function getNode()
+	public function getNode(): Node\Expr|Node\Stmt|VirtualNode
 	{
 		return $this->node;
 	}

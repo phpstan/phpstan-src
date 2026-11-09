@@ -30,12 +30,12 @@ final class MemoizingContainer implements Container
 		return $this->originalContainer->hasService($serviceName);
 	}
 
-	public function getService(string $serviceName)
+	public function getService(string $serviceName): mixed
 	{
 		return $this->servicesByName[$serviceName] ??= $this->originalContainer->getService($serviceName);
 	}
 
-	public function getByType(string $className)
+	public function getByType(string $className): object
 	{
 		return $this->servicesByType[$className] ??= $this->originalContainer->getByType($className);
 	}
@@ -71,7 +71,7 @@ final class MemoizingContainer implements Container
 		return $this->originalContainer->hasParameter($parameterName);
 	}
 
-	public function getParameter(string $parameterName)
+	public function getParameter(string $parameterName): mixed
 	{
 		return $this->originalContainer->getParameter($parameterName);
 	}

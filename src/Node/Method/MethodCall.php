@@ -22,10 +22,7 @@ final class MethodCall
 	{
 	}
 
-	/**
-	 * @return Node\Expr\MethodCall|StaticCall|Array_
-	 */
-	public function getNode()
+	public function getNode(): Node\Expr\MethodCall|StaticCall|Array_
 	{
 		return $this->node;
 	}

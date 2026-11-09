@@ -34,10 +34,7 @@ final class NetteContainer implements Container
 		return $this->container->hasService($serviceName);
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function getService(string $serviceName)
+	public function getService(string $serviceName): mixed
 	{
 		try {
 			return $this->container->getService($serviceName);
@@ -51,7 +48,7 @@ final class NetteContainer implements Container
 	 * @param class-string<T> $className
 	 * @return T
 	 */
-	public function getByType(string $className)
+	public function getByType(string $className): object
 	{
 		try {
 			return $this->container->getByType($className);
@@ -108,10 +105,7 @@ final class NetteContainer implements Container
 		return array_key_exists($parameterName, $parameters);
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function getParameter(string $parameterName)
+	public function getParameter(string $parameterName): mixed
 	{
 		$parameters = $this->parameters ??= $this->container->getParameters();
 

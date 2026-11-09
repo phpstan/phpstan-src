@@ -19,10 +19,9 @@ final class ForkedChild
 	 * inherited - one waiting for threads the child never had wedges there.
 	 * Register it as the child's last shutdown function.
 	 *
-	 * @return never
 	 * @throws TurboNotActiveException
 	 */
-	public static function exitImmediately()
+	public static function exitImmediately(): never
 	{
 		throw new TurboNotActiveException();
 	}

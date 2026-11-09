@@ -153,10 +153,7 @@ final class ClassPropertyNode extends NodeAbstract implements VirtualNode
 		return $this->type;
 	}
 
-	/**
-	 * @return Node\Identifier|Node\Name|Node\ComplexType|null
-	 */
-	public function getNativeTypeNode()
+	public function getNativeTypeNode(): Node\Identifier|Node\Name|Node\ComplexType|null
 	{
 		return $this->originalNode->type;
 	}

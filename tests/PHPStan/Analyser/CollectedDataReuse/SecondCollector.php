@@ -18,7 +18,7 @@ final class SecondCollector implements Collector
 		return Node::class;
 	}
 
-	public function processNode(Node $node, Scope&DependencyTracker $scope)
+	public function processNode(Node $node, Scope&DependencyTracker $scope): ?string
 	{
 		return null;
 	}

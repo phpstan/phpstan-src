@@ -13,14 +13,11 @@ class UnaryOperatorTypeSpecifyingExtensionTypeInferenceTest extends TypeInferenc
 		yield from self::gatherAssertTypes(__DIR__ . '/data/unary-operator-type-specifying-extension.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataAsserts')]
 	public function testAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

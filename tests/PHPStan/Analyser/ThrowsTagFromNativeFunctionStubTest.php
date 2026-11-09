@@ -13,14 +13,11 @@ class ThrowsTagFromNativeFunctionStubTest extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/throws-tag-from-native-function-stub.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

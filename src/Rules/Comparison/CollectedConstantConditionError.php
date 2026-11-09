@@ -16,7 +16,7 @@ final class CollectedConstantConditionError
 	 * @param callable(string): string $transformPath
 	 * @return Error|array<mixed>
 	 */
-	public static function transformPaths($error, callable $transformPath)
+	public static function transformPaths(Error|array $error, callable $transformPath): Error|array
 	{
 		if ($error instanceof Error) {
 			return $error->transformPaths($transformPath);

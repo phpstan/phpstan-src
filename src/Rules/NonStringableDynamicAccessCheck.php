@@ -40,7 +40,7 @@ final class NonStringableDynamicAccessCheck
 	 * @param 'property.nameNotString'|'staticProperty.nameNotString'|'variable.nameNotString' $identifier
 	 * @return list<IdentifierRuleError>
 	 */
-	public function checkStringCastableName(Scope $scope, Expr $name, string $messageFormat, $classNode, string $identifier): array
+	public function checkStringCastableName(Scope $scope, Expr $name, string $messageFormat, Name|Expr|null $classNode, string $identifier): array
 	{
 		if (!$this->checkNonStringableDynamicAccess) {
 			return [];
@@ -71,7 +71,7 @@ final class NonStringableDynamicAccessCheck
 	 * @param 'classConstant.nameNotString'|'method.nameNotString'|'staticMethod.nameNotString' $identifier
 	 * @return list<IdentifierRuleError>
 	 */
-	public function checkStringName(Scope $scope, Expr $name, string $messageFormat, $classNode, string $identifier): array
+	public function checkStringName(Scope $scope, Expr $name, string $messageFormat, Name|Expr|null $classNode, string $identifier): array
 	{
 		if (!$this->checkNonStringableDynamicAccess) {
 			return [];
@@ -92,10 +92,9 @@ final class NonStringableDynamicAccessCheck
 	}
 
 	/**
-	 * @param Name|Expr|null $classNode
 	 * @param 'classConstant.nameNotString'|'method.nameNotString'|'property.nameNotString'|'staticMethod.nameNotString'|'staticProperty.nameNotString'|'variable.nameNotString' $identifier
 	 */
-	private function buildError(Scope $scope, Expr $name, Type $nameType, string $messageFormat, $classNode, string $identifier): IdentifierRuleError
+	private function buildError(Scope $scope, Expr $name, Type $nameType, string $messageFormat, Name|Expr|null $classNode, string $identifier): IdentifierRuleError
 	{
 		$messageArgs = [];
 		if ($classNode !== null) {

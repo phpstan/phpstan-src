@@ -11202,6 +11202,7 @@ inline constexpr const char *trinaryLogic = "PHPStan\\TrinaryLogic";
 inline constexpr const char *type = "PHPStan\\Type\\Type";
 inline constexpr const char *specifiedTypes = "PHPStan\\Analyser\\SpecifiedTypes";
 inline constexpr const char *parameterReflection = "PHPStan\\Reflection\\ParameterReflection";
+inline constexpr const char *methodOrFunctionReflection = "PHPStan\\Reflection\\MethodReflection|PHPStan\\Reflection\\FunctionReflection";
 inline constexpr const char *phpVersions = "PHPStan\\Php\\PhpVersions";
 inline constexpr const char *param = "PhpParser\\Node\\Param";
 inline constexpr const char *classMethodNode = "PhpParser\\Node\\Stmt\\ClassMethod";
@@ -12704,7 +12705,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	/* {{{ twin 1835-2011 */
 
 	cls.method("pushInFunctionCall", reg::Public, 3, {
-		reg::any("reflection"),
+		reg::obj("reflection", methodOrFunctionReflection, true),
 		reg::obj("parameter", parameterReflection, true),
 		reg::boolArg("rememberTypes"),
 	}, msPushInFunctionCall, &returnsSelf);

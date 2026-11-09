@@ -8,10 +8,7 @@ final class MemoryCacheStorage implements CacheStorage
 	/** @var array<string, CacheItem> */
 	private array $storage = [];
 
-	/**
-	 * @return mixed|null
-	 */
-	public function load(string $key, string $variableKey)
+	public function load(string $key, string $variableKey): mixed
 	{
 		if (!isset($this->storage[$key])) {
 			return null;
@@ -25,10 +22,7 @@ final class MemoryCacheStorage implements CacheStorage
 		return $item->getData();
 	}
 
-	/**
-	 * @param mixed $data
-	 */
-	public function save(string $key, string $variableKey, $data): void
+	public function save(string $key, string $variableKey, mixed $data): void
 	{
 		$this->storage[$key] = new CacheItem($variableKey, $data);
 	}

@@ -26,7 +26,7 @@ final class PossiblyPureNewCollector implements Collector
 		return Expression::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		if (!$node->expr instanceof Node\Expr\New_) {
 			return null;

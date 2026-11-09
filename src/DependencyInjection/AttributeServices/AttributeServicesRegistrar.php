@@ -267,10 +267,8 @@ final class AttributeServicesRegistrar
 	 * `Class::CONST`, `::CONST`, `Enum::Case` and `@service` strings into constants and references,
 	 * also inside the value of a referenced parameter. A parameter with such strings is inlined
 	 * like Nette does in NEON, other parameters are looked up at runtime.
-	 *
-	 * @return mixed
 	 */
-	private static function createArgument(ContainerBuilder $builder, string $ref)
+	private static function createArgument(ContainerBuilder $builder, string $ref): mixed
 	{
 		$deferred = self::createDeferredParameter($builder, $ref);
 		if (is_string($deferred)) {
@@ -309,10 +307,9 @@ final class AttributeServicesRegistrar
 	 * `%foo.bar%` becomes `$this->getParameter('foo')['bar']` and `%foo%/suffix` becomes a concatenation,
 	 * mirroring how Nette itself compiles references to dynamic parameters.
 	 *
-	 * @return PhpLiteral|string
 	 * @throws ShouldNotHappenException when the reference points at a parameter that does not exist
 	 */
-	private static function createDeferredParameter(ContainerBuilder $builder, string $ref)
+	private static function createDeferredParameter(ContainerBuilder $builder, string $ref): PhpLiteral|string
 	{
 		$parts = preg_split('#%([\w.-]*)%#', $ref, flags: PREG_SPLIT_DELIM_CAPTURE);
 		if ($parts === false) {

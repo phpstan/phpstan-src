@@ -98,7 +98,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(132, MAY_BE_STRING), /* read $name */
 	reg::packed(137, MAY_BE_NULL | MAY_BE_LONG, reg::NoString, false, false, 146), /* read $targetId */
 	reg::packed(151, MAY_BE_BOOL, reg::NoString, false, false, 161), /* read $container */
-	reg::packed(167, 0, reg::NoString, false, false, 146), /* read $offset */
+	reg::packed(167, MAY_BE_NULL | MAY_BE_LONG | MAY_BE_STRING, reg::NoString, false, false, 146), /* read $offset */
 	reg::packed(53, MAY_BE_NULL, 23), /* read return */
 	reg::packed(179, MAY_BE_NULL, 23), /* conditional $condition */
 	reg::packed(189, MAY_BE_NULL, 23), /* conditional $if */

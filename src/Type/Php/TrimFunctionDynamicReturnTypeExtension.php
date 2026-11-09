@@ -17,13 +17,18 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
 use function in_array;
-use function preg_match;
 use function rtrim;
 use function trim;
 
 #[AutowiredService]
 final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(
+		private TrimCharactersHelper $trimCharactersHelper,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -77,7 +82,7 @@ final class TrimFunctionDynamicReturnTypeExtension implements DynamicFunctionRet
 							true,
 						);
 					}
-				} elseif (preg_match('/\d/', $trimConstantString->getValue()) === 0 && $stringType->isNumericString()->yes()) {
+				} elseif (!$this->trimCharactersHelper->containsDigit($trimConstantString->getValue()) && $stringType->isNumericString()->yes()) {
 					$result[] = new IntersectionType([new StringType(), new AccessoryNumericStringType()]);
 				} else {
 					return $defaultType;

@@ -35,10 +35,10 @@ final class ReplaceCountMismatchRule implements Rule
 {
 
 	private const FUNCTIONS = [
-		'str_replace' => 'strReplace',
-		'str_ireplace' => 'strReplace',
-		'preg_replace' => 'pregReplace',
-		'preg_filter' => 'pregReplace',
+		'str_replace' => true,
+		'str_ireplace' => true,
+		'preg_replace' => true,
+		'preg_filter' => true,
 	];
 
 	public function __construct(
@@ -119,7 +119,7 @@ final class ReplaceCountMismatchRule implements Rule
 			$replaceType->getArraySize()->describe(VerbosityLevel::value()),
 			$parameters[0]->getName(),
 			$searchType->getArraySize()->describe(VerbosityLevel::value()),
-		))->identifier(sprintf('%s.replaceCount', self::FUNCTIONS[$functionName]));
+		))->identifier('argument.replaceCount');
 
 		if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {
 			$nativeSearchType = $scope->getNativeType($args[0]->value);

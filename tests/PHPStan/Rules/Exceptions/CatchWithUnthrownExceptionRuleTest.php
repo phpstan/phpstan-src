@@ -60,6 +60,12 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug10315(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10315.php'], []);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/unthrown-exception.php'], [

@@ -24,16 +24,18 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"dimType\0" /* 0 */
 	"PHPStan\\Type\\Type\0" /* 8 */
-	"fromType"; /* 26 */
+	"\0" /* 26 */
+	"fromType"; /* 27 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 8), /* fromType $dimType */
+	reg::packed(26, MAY_BE_NULL | MAY_BE_LONG | MAY_BE_STRING), /* fromType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig fromType = { { 26 /* fromType */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromType = { { 27 /* fromType */, 1, 0, 1, 1, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VariableWriteOffset

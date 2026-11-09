@@ -2,7 +2,10 @@
 
 namespace PHPStan\Type\Generic;
 
+use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Reflection\ClassConstantReflection;
@@ -297,7 +300,7 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->getDelegate()->toPhpDocNode();
 	}
 
-	public function toNativePhpTypeNode(NativeTypePosition $position)
+	public function toNativePhpTypeNode(NativeTypePosition $position): Identifier|Name|ComplexType|null
 	{
 		return $this->getDelegate()->toNativePhpTypeNode($position);
 	}

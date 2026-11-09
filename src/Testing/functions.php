@@ -8,14 +8,12 @@ use PHPStan\TrinaryLogic;
  * Asserts the static type of a value.
  *
  * @phpstan-pure
- * @param mixed $value
- * @return mixed
  *
  * @throws void
  */
 // the parameters are consumed by the analyser, not by the function body
 // @phpstan-ignore function.unusedParameter, function.unusedParameter
-function assertType(string $type, $value) // phpcs:ignore
+function assertType(string $type, mixed $value): mixed // phpcs:ignore
 {
 	return null;
 }
@@ -27,14 +25,12 @@ function assertType(string $type, $value) // phpcs:ignore
  * method/function parameter phpDocs.
  *
  * @phpstan-pure
- * @param mixed $value
- * @return mixed
  *
  * @throws void
  */
 // the parameters are consumed by the analyser, not by the function body
 // @phpstan-ignore function.unusedParameter, function.unusedParameter
-function assertNativeType(string $type, $value) // phpcs:ignore
+function assertNativeType(string $type, mixed $value): mixed // phpcs:ignore
 {
 	return null;
 }
@@ -43,28 +39,24 @@ function assertNativeType(string $type, $value) // phpcs:ignore
  * Asserts a super type of a value.
  *
  * @phpstan-pure
- * @param mixed $value
- * @return mixed
  *
  * @throws void
  */
 // the parameters are consumed by the analyser, not by the function body
 // @phpstan-ignore function.unusedParameter, function.unusedParameter
-function assertSuperType(string $superType, $value) // phpcs:ignore
+function assertSuperType(string $superType, mixed $value): mixed // phpcs:ignore
 {
 	return null;
 }
 
 /**
  * @phpstan-pure
- * @param mixed $variable
- * @return mixed
  *
  * @throws void
  */
 // the parameters are consumed by the analyser, not by the function body
 // @phpstan-ignore function.unusedParameter, function.unusedParameter
-function assertVariableCertainty(TrinaryLogic $certainty, $variable) // phpcs:ignore
+function assertVariableCertainty(TrinaryLogic $certainty, mixed $variable): mixed // phpcs:ignore
 {
 	return null;
 }

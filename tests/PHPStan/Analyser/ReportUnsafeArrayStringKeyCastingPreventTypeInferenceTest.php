@@ -14,14 +14,11 @@ class ReportUnsafeArrayStringKeyCastingPreventTypeInferenceTest extends TypeInfe
 		yield from self::gatherAssertTypes(__DIR__ . '/data/report-unsafe-array-string-key-casting-prevent.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataAsserts')]
 	public function testAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

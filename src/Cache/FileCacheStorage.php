@@ -53,10 +53,7 @@ final class FileCacheStorage implements CacheStorage
 	{
 	}
 
-	/**
-	 * @return mixed|null
-	 */
-	public function load(string $key, string $variableKey)
+	public function load(string $key, string $variableKey): mixed
 	{
 		[,, $filePath] = $this->getFilePaths($key);
 
@@ -88,10 +85,9 @@ final class FileCacheStorage implements CacheStorage
 	}
 
 	/**
-	 * @param mixed $data
 	 * @throws DirectoryCreatorException
 	 */
-	public function save(string $key, string $variableKey, $data): void
+	public function save(string $key, string $variableKey, mixed $data): void
 	{
 		[$firstDirectory, $secondDirectory, $path] = $this->getFilePaths($key);
 		DirectoryCreator::ensureDirectoryExists($this->directory, 0777);

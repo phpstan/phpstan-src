@@ -14,9 +14,7 @@ interface CacheStorage
 
 	/**
 	 * @param non-empty-string $key
-	 *
-	 * @param mixed $data
 	 */
-	public function save(string $key, string $variableKey, $data): void;
+	public function save(string $key, string $variableKey, mixed $data): void;
 
 }

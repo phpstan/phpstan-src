@@ -21,10 +21,7 @@ final class PropertyRead
 	{
 	}
 
-	/**
-	 * @return PropertyFetch|StaticPropertyFetch
-	 */
-	public function getFetch()
+	public function getFetch(): PropertyFetch|StaticPropertyFetch
 	{
 		return $this->fetch;
 	}

@@ -335,8 +335,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 		return $result;
 	}
 
-	/** @param FunctionReflection|ExtendedMethodReflection $reflection */
-	private static function generateFunctionMethodBaseDescription($reflection): string
+	private static function generateFunctionMethodBaseDescription(FunctionReflection|ExtendedMethodReflection $reflection): string
 	{
 		$result = '';
 
@@ -637,7 +636,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			private Node\Stmt\ClassLike $classLike;
 
 			#[Override]
-			public function enterNode(Node $node)
+			public function enterNode(Node $node): int|Node|array|null
 			{
 				if ($node instanceof Node\Stmt\ClassLike && $node->namespacedName !== null) {
 					$this->symbols['CLASS ' . $node->namespacedName->toString()] = true;
@@ -660,7 +659,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			}
 
 			#[Override]
-			public function leaveNode(Node $node)
+			public function leaveNode(Node $node): int|Node|array|null
 			{
 				if ($node instanceof Node\Stmt\ClassLike) {
 					unset($this->classLike);

@@ -15,14 +15,11 @@ class DynamicConstantsNativeTypesTest extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/dynamic-constant-native-types.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataFileAsserts')]
 	public function testFileAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

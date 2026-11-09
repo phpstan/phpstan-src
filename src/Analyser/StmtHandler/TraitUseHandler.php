@@ -170,7 +170,7 @@ final class TraitUseHandler implements StmtHandler
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 * @param list<Dependencies|null> $dependencies what the walked trait statements depend on
 	 */
-	private function processNodesForTraitUse(NodeScopeResolver $nodeScopeResolver, $node, ClassReflection $traitReflection, MutatingScope $scope, ExpressionResultStorage $storage, array $adaptations, callable $nodeCallback, array &$dependencies): void
+	private function processNodesForTraitUse(NodeScopeResolver $nodeScopeResolver, Node|int|float|string|bool|array|null $node, ClassReflection $traitReflection, MutatingScope $scope, ExpressionResultStorage $storage, array $adaptations, callable $nodeCallback, array &$dependencies): void
 	{
 		if ($node instanceof Node) {
 			if ($node instanceof Node\Stmt\Trait_ && $traitReflection->getName() === (string) $node->namespacedName && $traitReflection->getNativeReflection()->getStartLine() === $node->getStartLine()) {

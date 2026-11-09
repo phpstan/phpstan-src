@@ -1716,10 +1716,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $this->expressionTypes[$this->getNodeKey($node)]->getType();
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection|null $reflection
-	 */
-	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
+	public function pushInFunctionCall(MethodReflection|FunctionReflection|null $reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
 	{
 		$stack = $this->inFunctionCallsStack;
 		$stack[] = [$reflection, $parameter];

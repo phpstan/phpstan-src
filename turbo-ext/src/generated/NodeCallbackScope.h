@@ -65,12 +65,13 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\Scope\0" /* 390 */
 	"preprocessScope\0" /* 413 */
 	"reflection\0" /* 429 */
-	"parameter\0" /* 440 */
-	"PHPStan\\Reflection\\ParameterReflection\0" /* 450 */
-	"rememberTypes\0" /* 489 */
-	"pushInFunctionCall\0" /* 503 */
-	"popInFunctionCall\0" /* 522 */
-	"getParentScope"; /* 540 */
+	"PHPStan\\Reflection\\MethodReflection|PHPStan\\Reflection\\FunctionReflection\0" /* 440 */
+	"parameter\0" /* 514 */
+	"PHPStan\\Reflection\\ParameterReflection\0" /* 524 */
+	"rememberTypes\0" /* 563 */
+	"pushInFunctionCall\0" /* 577 */
+	"popInFunctionCall\0" /* 596 */
+	"getParentScope"; /* 614 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* toNodeCallbackScope return */
 	reg::packed(56, 0, 62), /* seedWalkScope $scope */
@@ -100,9 +101,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* filterByFalseyValue return */
 	reg::packed(56, 0, 62), /* preprocessScope $scope */
 	reg::packed(0, 0, 390), /* preprocessScope return */
-	reg::packed(429, 0), /* pushInFunctionCall $reflection */
-	reg::packed(440, MAY_BE_NULL, 450), /* pushInFunctionCall $parameter */
-	reg::packed(489, MAY_BE_BOOL), /* pushInFunctionCall $rememberTypes */
+	reg::packed(429, MAY_BE_NULL, 440), /* pushInFunctionCall $reflection */
+	reg::packed(514, MAY_BE_NULL, 524), /* pushInFunctionCall $parameter */
+	reg::packed(563, MAY_BE_BOOL), /* pushInFunctionCall $rememberTypes */
 	reg::packed(0, 0, 1), /* pushInFunctionCall return */
 	reg::packed(0, 0, 1), /* popInFunctionCall return */
 	reg::packed(0, MAY_BE_NULL, 62), /* getParentScope return */
@@ -126,9 +127,9 @@ inline constexpr sigtab::Sig getKeepVoidType = { { 334 /* getKeepVoidType */, 1,
 inline constexpr sigtab::Sig filterByTruthyValue = { { 350 /* filterByTruthyValue */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig filterByFalseyValue = { { 370 /* filterByFalseyValue */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig preprocessScope = { { 413 /* preprocessScope */, 1, 26, 1, 27, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig pushInFunctionCall = { { 503 /* pushInFunctionCall */, 3, 28, 3, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig popInFunctionCall = { { 522 /* popInFunctionCall */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getParentScope = { { 540 /* getParentScope */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig pushInFunctionCall = { { 577 /* pushInFunctionCall */, 3, 28, 3, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig popInFunctionCall = { { 596 /* popInFunctionCall */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParentScope = { { 614 /* getParentScope */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NodeCallbackScope

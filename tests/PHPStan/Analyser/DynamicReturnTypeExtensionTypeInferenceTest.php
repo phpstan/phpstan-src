@@ -27,14 +27,11 @@ class DynamicReturnTypeExtensionTypeInferenceTest extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15303.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataAsserts')]
 	public function testAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

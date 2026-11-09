@@ -25,8 +25,7 @@ use function strtolower;
 final class NativePhpTypeNodeHelper
 {
 
-	/** @return Identifier|Name|ComplexType|null */
-	public static function union(UnionType $unionType, NativeTypePosition $position)
+	public static function union(UnionType $unionType, NativeTypePosition $position): Identifier|Name|ComplexType|null
 	{
 		$nonNullTypes = [];
 		$hasNull = false;
@@ -121,8 +120,7 @@ final class NativePhpTypeNodeHelper
 		return new Node\UnionType($nodes);
 	}
 
-	/** @return Identifier|Name|ComplexType|null */
-	public static function intersection(IntersectionType $intersectionType, NativeTypePosition $position)
+	public static function intersection(IntersectionType $intersectionType, NativeTypePosition $position): Identifier|Name|ComplexType|null
 	{
 		if ($intersectionType->isString()->yes()) {
 			return (new StringType())->toNativePhpTypeNode($position);

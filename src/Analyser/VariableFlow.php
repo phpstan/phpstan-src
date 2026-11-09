@@ -83,8 +83,7 @@ abstract class VariableFlow
 		return new VariableControlFlow(self::ARROW, [$body, $outputs], arrow: $arrow);
 	}
 
-	/** @param int|string|null $offset */
-	public static function read(string $name, ?int $targetId = null, bool $container = false, $offset = null): ?self
+	public static function read(string $name, ?int $targetId = null, bool $container = false, int|string|null $offset = null): ?self
 	{
 		if ($name === 'this' || in_array($name, Scope::SUPERGLOBAL_VARIABLES, true)) {
 			return null;

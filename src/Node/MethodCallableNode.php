@@ -32,10 +32,7 @@ final class MethodCallableNode extends Expr implements VirtualNode
 		return $this->var;
 	}
 
-	/**
-	 * @return Expr|Identifier
-	 */
-	public function getName()
+	public function getName(): Expr|Identifier
 	{
 		return $this->name;
 	}

@@ -18,7 +18,7 @@ final class ImpossibleCheckTypeReportedCollector implements Collector
 		throw new ShouldNotHappenException();
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		throw new ShouldNotHappenException();
 	}

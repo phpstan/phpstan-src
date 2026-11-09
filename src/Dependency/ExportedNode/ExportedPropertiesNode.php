@@ -158,12 +158,9 @@ final class ExportedPropertiesNode implements JsonSerializable, ExportedNode
 		);
 	}
 
-	/**
-	 * @return mixed
-	 */
 	#[ReturnTypeWillChange]
 	#[Override]
-	public function jsonSerialize()
+	public function jsonSerialize(): mixed
 	{
 		return [
 			'type' => self::class,

@@ -1853,10 +1853,9 @@ final class ResultCacheManager
 	}
 
 	/**
-	 * @param mixed $encoded
 	 * @return list<array{extensionClass: string, storedKey: string, value: string, analysis: list<string>, declarations: list<string>}>
 	 */
-	private function decodeValueDependencies($encoded, ResultCachePathTransformer $transformer): array
+	private function decodeValueDependencies(mixed $encoded, ResultCachePathTransformer $transformer): array
 	{
 		if (!is_array($encoded) || !is_array($encoded['paths'] ?? null) || !is_array($encoded['entries'] ?? null)) {
 			throw new RuntimeException('The value dependencies are malformed.');
@@ -2326,10 +2325,9 @@ final class ResultCacheManager
 	}
 
 	/**
-	 * @param mixed $dependencyGraph
 	 * @return array<string, array{fileHash: string, fileStat?: string, dependentFiles: list<string>, usedTraitDependentFiles?: list<string>}>
 	 */
-	private function decodeDependencyGraph($dependencyGraph, ResultCachePathTransformer $transformer): array
+	private function decodeDependencyGraph(mixed $dependencyGraph, ResultCachePathTransformer $transformer): array
 	{
 		if (!is_array($dependencyGraph) || !is_array($dependencyGraph['paths'] ?? null) || !is_array($dependencyGraph['entries'] ?? null)) {
 			throw new RuntimeException('The dependency graph is malformed.');

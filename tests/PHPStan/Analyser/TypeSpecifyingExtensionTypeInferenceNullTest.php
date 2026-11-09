@@ -15,14 +15,11 @@ class TypeSpecifyingExtensionTypeInferenceNullTest extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-3-null.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataTypeSpecifyingExtensionsNull')]
 	public function testTypeSpecifyingExtensionsNull(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

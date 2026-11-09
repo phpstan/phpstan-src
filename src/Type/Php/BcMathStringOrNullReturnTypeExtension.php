@@ -258,10 +258,8 @@ final class BcMathStringOrNullReturnTypeExtension implements DynamicFunctionRetu
 
 	/**
 	 * Utility to help us determine if value is zero. Handles cases where we pass "0.000" too.
-	 *
-	 * @param mixed $value
 	 */
-	private function isZero($value): bool
+	private function isZero(mixed $value): bool
 	{
 		if (is_numeric($value) === false) {
 			return false;

@@ -230,10 +230,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 			/** @var array<string, string> */
 			public array $storage = [];
 
-			/**
-			 * @return mixed|null
-			 */
-			public function load(string $key, string $variableKey)
+			public function load(string $key, string $variableKey): mixed
 			{
 				if (!isset($this->storage[$key])) {
 					return null;
@@ -247,10 +244,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 				return $item->getData();
 			}
 
-			/**
-			 * @param mixed $data
-			 */
-			public function save(string $key, string $variableKey, $data): void
+			public function save(string $key, string $variableKey, mixed $data): void
 			{
 				$this->storage[$key] = serialize(new CacheItem($variableKey, $data));
 			}

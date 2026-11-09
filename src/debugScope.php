@@ -4,11 +4,10 @@ namespace PHPStan;
 
 /**
  * @phpstan-pure
- * @return mixed
  *
  * @throws void
  */
-function debugScope() // phpcs:ignore Squiz.Functions.GlobalFunction.Found
+function debugScope(): mixed // phpcs:ignore Squiz.Functions.GlobalFunction.Found
 {
 	return null;
 }

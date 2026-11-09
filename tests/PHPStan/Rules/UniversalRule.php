@@ -12,9 +12,6 @@ use PHPStan\Analyser\Scope;
 class UniversalRule implements Rule
 {
 
-	/** @phpstan-var class-string<TNodeType> */
-	private $nodeType;
-
 	/** @var (callable(TNodeType, Scope): list<IdentifierRuleError>) */
 	private $processNodeCallback;
 
@@ -22,9 +19,8 @@ class UniversalRule implements Rule
 	 * @param class-string<TNodeType> $nodeType
 	 * @param (callable(TNodeType, Scope): list<IdentifierRuleError>) $processNodeCallback
 	 */
-	public function __construct(string $nodeType, callable $processNodeCallback)
+	public function __construct(private string $nodeType, callable $processNodeCallback)
 	{
-		$this->nodeType = $nodeType;
 		$this->processNodeCallback = $processNodeCallback;
 	}
 

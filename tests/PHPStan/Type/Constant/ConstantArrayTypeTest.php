@@ -1022,13 +1022,9 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		];
 	}
 
-	/**
-	 * @param ConstantArrayType|string $type
-	 * @param Type|string $otherType
-	 */
 	#[DataProvider('dataIsSuperTypeOfWithoutBleedingEdge')]
 	#[DataProvider('dataIsSuperTypeOfWithBleedingEdge')]
-	public function testIsSuperTypeOf($type, $otherType, TrinaryLogic $expectedResult): void
+	public function testIsSuperTypeOf(ConstantArrayType|string $type, Type|string $otherType, TrinaryLogic $expectedResult): void
 	{
 		// Fetch the resolver - and thereby build the container - *before* entering the
 		// bleeding-edge window. Building a container resets the global BleedingEdgeToggle to

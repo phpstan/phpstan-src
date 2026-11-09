@@ -36,7 +36,7 @@ final class IgnoredError
 	 * @param mixed[]|string $ignoredError
 	 * @return string Representation of the ignored error
 	 */
-	public static function stringifyPattern($ignoredError): string
+	public static function stringifyPattern(string|array $ignoredError): string
 	{
 		if (!is_array($ignoredError)) {
 			return $ignoredError;

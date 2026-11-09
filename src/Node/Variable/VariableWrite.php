@@ -35,7 +35,6 @@ final class VariableWrite
 
 	/**
 	 * @param self::KIND_* $kind
-	 * @param int|string|null $offset
 	 */
 	public function __construct(
 		private string $variableName,
@@ -43,7 +42,7 @@ final class VariableWrite
 		private int $id,
 		private int $kind,
 		private bool $offsetWrite = false,
-		private $offset = null,
+		private int|string|null $offset = null,
 		private ?int $parentId = null,
 		private bool $replacesOffset = true,
 	)
@@ -81,8 +80,7 @@ final class VariableWrite
 		return $this->offsetWrite;
 	}
 
-	/** @return int|string|null */
-	public function getOffset()
+	public function getOffset(): int|string|null
 	{
 		return $this->offset;
 	}

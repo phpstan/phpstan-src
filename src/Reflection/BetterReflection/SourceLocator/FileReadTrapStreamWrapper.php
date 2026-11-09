@@ -72,7 +72,7 @@ final class FileReadTrapStreamWrapper
 	public static function withStreamWrapperOverride(
 		callable $executeMeWithinStreamWrapperOverride,
 		array $streamWrapperProtocols = self::DEFAULT_STREAM_WRAPPER_PROTOCOLS,
-	)
+	): mixed
 	{
 		self::$registeredStreamWrapperProtocols = $streamWrapperProtocols;
 		self::$autoloadLocatedFiles = [];
@@ -106,12 +106,9 @@ final class FileReadTrapStreamWrapper
 	 * @see https://php.net/manual/en/class.streamwrapper.php
 	 * @see https://php.net/manual/en/streamwrapper.stream-open.php
 	 *
-	 * @param string $path
-	 * @param string $mode
-	 * @param int    $options
 	 * @param string $openedPath
 	 */
-	public function stream_open($path, $mode, $options, &$openedPath): bool
+	public function stream_open(string $path, string $mode, int $options, &$openedPath): bool
 	{
 		$exists = is_file($path) || (stream_resolve_include_path($path) !== false);
 
@@ -128,11 +125,8 @@ final class FileReadTrapStreamWrapper
 	/**
 	 * Since we allow our wrapper's stream_open() to succeed, we need to
 	 * simulate a successful read so autoloaders with require() don't explode.
-	 *
-	 * @param int $count
-	 *
 	 */
-	public function stream_read($count): string
+	public function stream_read(int $count): string
 	{
 		$this->readFromFile = true;
 
@@ -203,7 +197,7 @@ final class FileReadTrapStreamWrapper
 	 *
 	 * @return mixed[]|bool
 	 */
-	public function stream_stat()
+	public function stream_stat(): bool|array
 	{
 		if (self::$autoloadLocatedFiles === []) {
 			return false;
@@ -223,12 +217,10 @@ final class FileReadTrapStreamWrapper
 	 * @see https://php.net/manual/en/class.streamwrapper.php
 	 * @see https://php.net/manual/en/streamwrapper.url-stat.php
 	 *
-	 * @param string $path
-	 * @param int    $flags
 	 *
 	 * @return mixed[]|bool
 	 */
-	public function url_stat($path, $flags)
+	public function url_stat(string $path, int $flags): bool|array
 	{
 		return $this->invokeWithRealFileStreamWrapper(static function ($path, $flags) {
 			if (($flags & STREAM_URL_STAT_QUIET) !== 0) {
@@ -241,9 +233,8 @@ final class FileReadTrapStreamWrapper
 
 	/**
 	 * @param mixed[] $args
-	 * @return mixed
 	 */
-	private function invokeWithRealFileStreamWrapper(callable $cb, array $args)
+	private function invokeWithRealFileStreamWrapper(callable $cb, array $args): mixed
 	{
 		if (self::$registeredStreamWrapperProtocols === null) {
 			throw new ShouldNotHappenException(self::class . ' not registered: cannot operate. Do not call this method directly.');
@@ -285,11 +276,7 @@ final class FileReadTrapStreamWrapper
 		return $this->seekPosition;
 	}
 
-	/**
-	 * @param   int  $offset
-	 * @param   int  $whence
-	 */
-	public function stream_seek($offset, $whence): bool
+	public function stream_seek(int $offset, int $whence): bool
 	{
 		switch ($whence) {
 			// Behavior is the same for a zero-length file
@@ -314,13 +301,10 @@ final class FileReadTrapStreamWrapper
 	}
 
 	/**
-	 * @param int  $option
-	 * @param int  $arg1
-	 * @param int  $arg2
 	 *
 	 * @return false
 	 */
-	public function stream_set_option($option, $arg1, $arg2): bool
+	public function stream_set_option(int $option, int $arg1, int $arg2): bool
 	{
 		return false;
 	}

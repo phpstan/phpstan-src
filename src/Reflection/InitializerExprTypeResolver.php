@@ -724,10 +724,7 @@ final class InitializerExprTypeResolver
 		return $castToObject($exprType);
 	}
 
-	/**
-	 * @param Name|Identifier|ComplexType|null $type
-	 */
-	public function getFunctionType($type, bool $isNullable, bool $isVariadic, InitializerExprContext $context): Type
+	public function getFunctionType(Name|Identifier|ComplexType|null $type, bool $isNullable, bool $isVariadic, InitializerExprContext $context): Type
 	{
 		if ($isNullable) {
 			return TypeCombinator::addNull(

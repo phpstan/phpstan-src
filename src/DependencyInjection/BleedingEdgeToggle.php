@@ -33,7 +33,7 @@ final class BleedingEdgeToggle
 	 * @param callable(): T $callback
 	 * @return T
 	 */
-	public static function withBleedingEdge(bool $bleedingEdge, callable $callback)
+	public static function withBleedingEdge(bool $bleedingEdge, callable $callback): mixed
 	{
 		$backup = self::$bleedingEdge;
 		self::$bleedingEdge = $bleedingEdge;

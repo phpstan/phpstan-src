@@ -23,10 +23,7 @@ final class InstantiationCallableNode extends Expr implements VirtualNode
 		parent::__construct($attributes);
 	}
 
-	/**
-	 * @return Expr|Name
-	 */
-	public function getClass()
+	public function getClass(): Expr|Name
 	{
 		return $this->class;
 	}

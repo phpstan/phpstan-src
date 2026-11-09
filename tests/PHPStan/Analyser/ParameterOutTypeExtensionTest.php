@@ -13,14 +13,11 @@ class ParameterOutTypeExtensionTest extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/data/param-out/parameter-out-types.php');
 	}
 
-	/**
-	 * @param mixed ...$args
-	 */
 	#[DataProvider('dataAsserts')]
 	public function testAsserts(
 		string $assertType,
 		string $file,
-		...$args,
+		mixed ...$args,
 	): void
 	{
 		$this->assertFileAsserts($assertType, $file, ...$args);

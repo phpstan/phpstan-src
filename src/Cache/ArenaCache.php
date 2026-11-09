@@ -61,20 +61,16 @@ final class ArenaCache
 
 	/**
 	 * Publishes the value unless the key already has one - the first publish wins.
-	 *
-	 * @param mixed $value
 	 */
-	public static function publish(string $key, $value): void
+	public static function publish(string $key, mixed $value): void
 	{
 	}
 
 	/**
 	 * Publishes the value in place of the one the key has - for a value just
 	 * computed because the published one was out of date.
-	 *
-	 * @param mixed $value
 	 */
-	public static function replace(string $key, $value): void
+	public static function replace(string $key, mixed $value): void
 	{
 	}
 

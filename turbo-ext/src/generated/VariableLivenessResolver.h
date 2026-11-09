@@ -137,7 +137,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(262, MAY_BE_NULL, 202), /* passBindingProbes $write */
 	reg::packed(268, MAY_BE_BOOL, reg::NoString, false, false, 276), /* passBindingProbes $discard */
 	reg::packed(84, MAY_BE_ARRAY), /* passBindingProbes return */
-	reg::packed(300, 0), /* offsetKey $offset */
+	reg::packed(300, MAY_BE_LONG | MAY_BE_STRING), /* offsetKey $offset */
 	reg::packed(84, MAY_BE_STRING), /* offsetKey return */
 	reg::packed(84, MAY_BE_VOID), /* compileAccesses return */
 	reg::packed(257, MAY_BE_STRING), /* compileOverwrites $name */

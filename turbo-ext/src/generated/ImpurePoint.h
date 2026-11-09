@@ -45,10 +45,11 @@ inline constexpr char strings[] =
 	"__construct\0" /* 80 */
 	"\0" /* 92 */
 	"getScope\0" /* 93 */
-	"getNode\0" /* 102 */
-	"getIdentifier\0" /* 110 */
-	"getDescription\0" /* 124 */
-	"isCertain"; /* 139 */
+	"PhpParser\\Node\\Expr|PhpParser\\Node\\Stmt|PHPStan\\Node\\VirtualNode\0" /* 102 */
+	"getNode\0" /* 167 */
+	"getIdentifier\0" /* 175 */
+	"getDescription\0" /* 189 */
+	"isCertain"; /* 204 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* __construct $scope */
 	reg::packed(29, 0, 34), /* __construct $node */
@@ -56,6 +57,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(60, MAY_BE_STRING), /* __construct $description */
 	reg::packed(72, MAY_BE_BOOL), /* __construct $certain */
 	reg::packed(92, 0, 6), /* getScope return */
+	reg::packed(92, 0, 102), /* getNode return */
 	reg::packed(92, MAY_BE_STRING), /* getIdentifier return */
 	reg::packed(92, MAY_BE_STRING), /* getDescription return */
 	reg::packed(92, MAY_BE_BOOL), /* isCertain return */
@@ -67,10 +69,10 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 80 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getScope = { { 93 /* getScope */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNode = { { 102 /* getNode */, 0, 6, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getIdentifier = { { 110 /* getIdentifier */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDescription = { { 124 /* getDescription */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isCertain = { { 139 /* isCertain */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNode = { { 167 /* getNode */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIdentifier = { { 175 /* getIdentifier */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDescription = { { 189 /* getDescription */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCertain = { { 204 /* isCertain */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ImpurePoint

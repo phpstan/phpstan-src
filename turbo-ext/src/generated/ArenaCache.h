@@ -53,10 +53,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(45, MAY_BE_STRING), /* lookup $key */
 	reg::packed(6, MAY_BE_ANY), /* lookup return */
 	reg::packed(45, MAY_BE_STRING), /* publish $key */
-	reg::packed(66, 0), /* publish $value */
+	reg::packed(66, MAY_BE_ANY), /* publish $value */
 	reg::packed(6, MAY_BE_VOID), /* publish return */
 	reg::packed(45, MAY_BE_STRING), /* replace $key */
-	reg::packed(66, 0), /* replace $value */
+	reg::packed(66, MAY_BE_ANY), /* replace $value */
 	reg::packed(6, MAY_BE_VOID), /* replace return */
 	reg::packed(88, MAY_BE_STRING), /* lookupHash $recordKey */
 	reg::packed(98, MAY_BE_STRING), /* lookupHash $entryKey */

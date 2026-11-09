@@ -17,10 +17,7 @@ use function is_string;
 final class VariableWriteOffset
 {
 
-	/**
-	 * @return int|string|null
-	 */
-	public static function fromType(Type $dimType)
+	public static function fromType(Type $dimType): int|string|null
 	{
 		$keyType = $dimType->toArrayKey();
 		if (!$keyType->isConstantScalarValue()->yes()) {

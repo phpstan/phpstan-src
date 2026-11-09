@@ -25,7 +25,7 @@ final class FunctionWithoutImpurePointsCollector implements Collector
 		return FunctionReturnStatementsNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		$function = $node->getFunctionReflection();
 		if (!$function->isPure()->maybe()) {

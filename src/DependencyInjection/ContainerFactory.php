@@ -432,11 +432,7 @@ final class ContainerFactory
 		return $parameterSchema;
 	}
 
-	/**
-	 * @param mixed $argument
-	 * @return mixed
-	 */
-	private function processArgument($argument, bool $required = true)
+	private function processArgument(mixed $argument, bool $required = true): mixed
 	{
 		if ($argument instanceof Statement) {
 			if ($argument->entity === 'schema') {

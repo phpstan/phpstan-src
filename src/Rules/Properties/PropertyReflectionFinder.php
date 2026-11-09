@@ -18,10 +18,9 @@ final class PropertyReflectionFinder
 {
 
 	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 * @return FoundPropertyReflection[]
 	 */
-	public function findPropertyReflectionsFromNode($propertyFetch, Scope $scope): array
+	public function findPropertyReflectionsFromNode(Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch, Scope $scope): array
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			if ($propertyFetch->name instanceof Node\Identifier) {
@@ -87,10 +86,8 @@ final class PropertyReflectionFinder
 	 * Variant of findPropertyReflectionFromNode() for callers that already hold
 	 * the property holder's type (e.g. from an ExpressionResult) - the receiver
 	 * is not re-read through Scope::getType().
-	 *
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
 	 */
-	public function findPropertyReflectionFromNodeWithHolderType($propertyFetch, Type $propertyHolderType, Scope $scope): ?FoundPropertyReflection
+	public function findPropertyReflectionFromNodeWithHolderType(Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch, Type $propertyHolderType, Scope $scope): ?FoundPropertyReflection
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			if ($propertyFetch->name instanceof Node\Identifier) {
@@ -113,10 +110,7 @@ final class PropertyReflectionFinder
 		return $this->findStaticPropertyReflection($propertyHolderType, $propertyFetch->name->name, $scope);
 	}
 
-	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
-	 */
-	public function findPropertyReflectionFromNode($propertyFetch, Scope $scope): ?FoundPropertyReflection
+	public function findPropertyReflectionFromNode(Expr\PropertyFetch|Expr\StaticPropertyFetch $propertyFetch, Scope $scope): ?FoundPropertyReflection
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			$propertyHolderType = $scope->getType($propertyFetch->var);

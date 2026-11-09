@@ -14,10 +14,7 @@ use function sprintf;
 final class PropertyDescriptor
 {
 
-	/**
-	 * @param Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch
-	 */
-	public function describeProperty(PropertyReflection $property, Scope $scope, $propertyFetch): string
+	public function describeProperty(PropertyReflection $property, Scope $scope, Node\Expr\PropertyFetch|Node\Expr\StaticPropertyFetch $propertyFetch): string
 	{
 		if ($propertyFetch instanceof Node\Expr\PropertyFetch) {
 			$fetchedOnType = $scope->getType($propertyFetch->var);

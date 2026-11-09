@@ -422,10 +422,7 @@ final class LateResolvableArrayShapeType implements CompoundType, LateResolvable
 			&& $type->getSubtractedType() === null;
 	}
 
-	/**
-	 * @return ConstExprIntegerNode|ConstExprStringNode|ConstFetchNode|IdentifierTypeNode
-	 */
-	private static function keyNameNode(Type $keyType)
+	private static function keyNameNode(Type $keyType): ConstExprIntegerNode|ConstExprStringNode|ConstFetchNode|IdentifierTypeNode
 	{
 		$node = $keyType->toPhpDocNode();
 		if ($node instanceof IdentifierTypeNode) {

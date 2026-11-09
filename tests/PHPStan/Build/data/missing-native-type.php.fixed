@@ -1,0 +1,394 @@
+<?php // lint >= 8.0
+
+namespace MissingNativeType;
+
+use Countable;
+use stdClass;
+
+final class SameTypes
+{
+
+	public function doFoo(int $a): string
+	{
+		return (string) $a;
+	}
+
+	/**
+	 * Keeps the description.
+	 */
+	public function doBar(stdClass $o, ?Countable $c): void
+	{
+	}
+
+	/** @param int $a the amount */
+	public function withDescription(int $a): void
+	{
+	}
+
+	public function nullDefault(?int $a = null): void
+	{
+	}
+
+	public function variadic(string ...$parts): void
+	{
+	}
+
+	public function explicitMixed(mixed $a): void
+	{
+	}
+
+	public function callable(callable $cb): void
+	{
+	}
+
+	public function returnStatic(): SameTypes
+	{
+		return $this;
+	}
+
+	public function returnVoid(): void
+	{
+	}
+
+}
+
+final class MoreSpecificTypes
+{
+
+	/**
+	 * @param non-empty-string $s
+	 * @param positive-int|null $i
+	 * @return list<int>
+	 */
+	public function doFoo(string $s, ?int $i): array
+	{
+		return [];
+	}
+
+	/**
+	 * @template T of object
+	 * @param T $o
+	 * @return T
+	 */
+	public function template(object $o): object
+	{
+		return $o;
+	}
+
+	/** @return $this */
+	public function returnThis(): static
+	{
+		return $this;
+	}
+
+}
+
+final class NotConvertible
+{
+
+	/**
+	 * @param resource $r
+	 * @param int $byRef
+	 * @param int $d
+	 */
+	public function doFoo($r, &$byRef, $d = 'foo', $noPhpDoc = 1): void
+	{
+	}
+
+	/** @param string $name */
+	public function __get($name)
+	{
+		return 1;
+	}
+
+	/** @return string */
+	public function __toString()
+	{
+		return '';
+	}
+
+}
+
+class ParentClass
+{
+
+	public function untyped($a)
+	{
+		return $a;
+	}
+
+	public function typed(int $a): int
+	{
+		return $a;
+	}
+
+	public function __construct($a)
+	{
+	}
+
+	/**
+	 * @return int
+	 */
+	public function overridable(int $a)
+	{
+		return $a;
+	}
+
+	private function privateMethod(int $a): int
+	{
+		return $a;
+	}
+
+	final public function finalMethod(int $a): int
+	{
+		return $a;
+	}
+
+}
+
+final class ChildClass extends ParentClass
+{
+
+	/**
+	 * @param int $a
+	 */
+	public function untyped($a): int
+	{
+		return $a;
+	}
+
+	/**
+	 * @param positive-int $a
+	 * @return positive-int
+	 */
+	public function typed(int $a): int
+	{
+		return 1;
+	}
+
+	public function __construct(int $a)
+	{
+	}
+
+}
+
+interface SomeInterface
+{
+
+	/**
+	 * @return int
+	 */
+	public function doFoo(int $a);
+
+}
+
+function doFoo(int $a): int
+{
+	return $a;
+}
+
+final class Properties
+{
+
+	private int $a = 1;
+
+	private ?stdClass $nullable = null;
+
+	/** @var non-empty-string */
+	private string $moreSpecific = 'foo';
+
+	private stdClass $noDefault;
+
+	/** @var stdClass */
+	private static $staticNoDefault;
+
+	private static ?stdClass $staticNullable = null;
+
+	/** @var int */
+	private $wrongDefault = 'foo';
+
+	/** @var int */
+	private $b = 1, $c = 2;
+
+	/** @var callable */
+	private $callable;
+
+	/** @var int the description */
+	public int $withDescription = 1;
+
+	public function __construct(stdClass $noDefault)
+	{
+		$this->noDefault = $noDefault;
+	}
+
+}
+
+class NonFinalProperties
+{
+
+	private int $private = 1;
+
+	/** @var int */
+	protected $protected = 1;
+
+}
+
+final class PromotedProperties
+{
+
+	public function __construct(private int $a)
+	{
+	}
+
+}
+
+class NonFinalPromotedProperties
+{
+
+	/**
+	 * @param int $b
+	 */
+	public function __construct(private int $a, public $b)
+	{
+	}
+
+}
+
+trait SomeTrait
+{
+
+	/** @param int $a */
+	public function doFoo($a): void
+	{
+	}
+
+}
+
+final class UsesTrait
+{
+
+	use SomeTrait;
+
+}
+
+final class PromotedCallable
+{
+
+	/** @param callable $cb */
+	public function __construct(private $cb)
+	{
+	}
+
+}
+
+final class ExplicitMixedValueType
+{
+
+	/**
+	 * @param mixed[] $a
+	 * @return array<mixed>
+	 */
+	public function doFoo(array $a): array
+	{
+		return $a;
+	}
+
+}
+
+/** @api */
+final class ApiClass
+{
+
+	/**
+	 * @param int $c
+	 */
+	public function __construct(int $a, private int $b, public $c = 1)
+	{
+	}
+
+	/**
+	 * @param int $a
+	 */
+	public function doFoo($a): int
+	{
+		return $a;
+	}
+
+	/** @var int */
+	public $public = 1;
+
+	private int $private = 1;
+
+}
+
+final class ApiMethod
+{
+
+	/**
+	 * @api
+	 * @param int $a
+	 */
+	public function api($a): void
+	{
+	}
+
+	public function notApi(int $a): void
+	{
+	}
+
+}
+
+final class NotDowngradable
+{
+
+	/**
+	 * @param true $a
+	 * @param (Countable&\Traversable)|null $c
+	 */
+	public function params($a, int $b, $c): void
+	{
+	}
+
+	/** @return null */
+	public function returnsNull()
+	{
+		return null;
+	}
+
+	/** @return false */
+	public function returnsFalse()
+	{
+		return false;
+	}
+
+	/** @return true|null */
+	public function returnsNullableTrue()
+	{
+		return true;
+	}
+
+	/** @return never */
+	public function returnsNever()
+	{
+		throw new \Exception();
+	}
+
+	public function returnsUnion(): string|false
+	{
+		return false;
+	}
+
+	/** @var true */
+	private $true = true;
+
+}
+
+/** @api */
+final class ApiClassPrivateMethod
+{
+
+	private function doFoo(int $a): void
+	{
+	}
+
+}

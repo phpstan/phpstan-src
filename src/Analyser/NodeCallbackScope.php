@@ -271,10 +271,7 @@ final class NodeCallbackScope extends MutatingScope
 		return $scope;
 	}
 
-	/**
-	 * @param MethodReflection|FunctionReflection|null $reflection
-	 */
-	public function pushInFunctionCall($reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
+	public function pushInFunctionCall(MethodReflection|FunctionReflection|null $reflection, ?ParameterReflection $parameter, bool $rememberTypes): self
 	{
 		/** @var self $scope */
 		$scope = parent::pushInFunctionCall($reflection, $parameter, $rememberTypes);

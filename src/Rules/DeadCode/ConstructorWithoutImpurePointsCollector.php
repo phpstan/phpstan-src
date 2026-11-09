@@ -25,7 +25,7 @@ final class ConstructorWithoutImpurePointsCollector implements Collector
 		return MethodReturnStatementsNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope $scope): ?array
 	{
 		$method = $node->getMethodReflection();
 		if (!$method->isConstructor()) {

@@ -71,7 +71,8 @@ inline constexpr char strings[] =
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 372 */
 	"toPhpDocNode\0" /* 411 */
 	"isImplicitMixed\0" /* 424 */
-	"keyNameNode"; /* 440 */
+	"PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprIntegerNode|PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstExprStringNode|PHPStan\\PhpDocParser\\Ast\\ConstExpr\\ConstFetchNode|PHPStan\\PhpDocParser\\Ast\\Type\\IdentifierTypeNode\0" /* 440 */
+	"keyNameNode"; /* 650 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $items */
 	reg::packed(6, MAY_BE_NULL | MAY_BE_ARRAY), /* __construct $unsealed */
@@ -103,6 +104,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(211, 0, 33), /* isImplicitMixed $type */
 	reg::packed(32, MAY_BE_BOOL), /* isImplicitMixed return */
 	reg::packed(289, 0, 33), /* keyNameNode $keyType */
+	reg::packed(32, 0, 440), /* keyNameNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -125,7 +127,7 @@ inline constexpr sigtab::Sig traverse = { { 334 /* traverse */, 1, 21, 1, 22, ZE
 inline constexpr sigtab::Sig traverseSimultaneously = { { 349 /* traverseSimultaneously */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 411 /* toPhpDocNode */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isImplicitMixed = { { 424 /* isImplicitMixed */, 1, 27, 1, 28, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig keyNameNode = { { 440 /* keyNameNode */, 1, 29, 1, reg::NoArg, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig keyNameNode = { { 650 /* keyNameNode */, 1, 29, 1, 30, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::LateResolvableArrayShapeType

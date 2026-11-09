@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PhpParser\NodeVisitorAbstract;
 use function array_pop;
+use function get_class;
 
 /**
  * Clones only the nodes that a fix can change: the fixed nodes with all their
@@ -135,7 +136,7 @@ final class PathCloningVisitor extends NodeVisitorAbstract
 
 	private static function getKey(Node $node): string
 	{
-		return $node::class . ':' . $node->getStartFilePos() . ':' . $node->getEndFilePos();
+		return get_class($node) . ':' . $node->getStartFilePos() . ':' . $node->getEndFilePos();
 	}
 
 }

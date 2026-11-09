@@ -278,7 +278,9 @@ final class RuleErrorTransformer
 
 			return new FixedErrorDiff($fixingFile, $parsedFile['hash'], $this->diff($parsedFile['code'], $newCode));
 		} finally {
-			$pathCloningVisitor?->restoreOriginalNodes();
+			if ($pathCloningVisitor !== null) {
+				$pathCloningVisitor->restoreOriginalNodes();
+			}
 		}
 	}
 

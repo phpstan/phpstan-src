@@ -33,6 +33,7 @@
 		"../tests/PHPStan/Analyser/nsrt/partial-function-application-signature.php",
 		"../tests/PHPStan/Rules/Functions/data/partial-function-application-closure-calls.php",
 		"../tests/PHPStan/Rules/Functions/data/partial-function-application-arguments.php",
-		"../tests/PHPStan/Rules/Methods/data/partial-function-application-method-arguments.php"
+		"../tests/PHPStan/Rules/Methods/data/partial-function-application-method-arguments.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-callbacks.php"
     ]
 }

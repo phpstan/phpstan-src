@@ -59,6 +59,18 @@ function repeat($value, int $times): array
 	return [];
 }
 
+/**
+ * @template T
+ * @template U
+ * @param list<T> $items
+ * @param callable(T): U $fn
+ * @return list<U>
+ */
+function mapList(array $items, callable $fn): array
+{
+	return [];
+}
+
 class Foo
 {
 
@@ -158,6 +170,10 @@ function templatesThroughCallbacks(array $ints): void
 {
 	assertType('list<list<\'x\'|int>>', array_map(pair(?, 'x'), $ints));
 	assertType('list<list<int>>', array_map(repeat(?, 2), $ints));
+	assertType('list<list<\'x\'|int>>', mapList($ints, pair(?, 'x')));
+	assertType('list<list<int>>', mapList($ints, repeat(?, 2)));
+	assertType('list<int>', mapList($ints, identity(...)));
+	assertType('list<int>', mapList($ints, identity(?)));
 }
 
 function methods(Foo $foo): void

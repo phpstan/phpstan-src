@@ -284,6 +284,26 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Unknown parameter $str in call to callable (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)).',
 				54,
 			],
+			[
+				'Missing parameter $b (string) in call to closure.',
+				69,
+			],
+			[
+				'Argument for parameter $a has already been passed.',
+				70,
+			],
+			[
+				'Parameter $a of closure expects int, string given.',
+				72,
+			],
+			[
+				'Parameter $b of closure expects string, int given.',
+				72,
+			],
+			[
+				'Parameter #1 $array of closure is passed by reference, so it expects variables only.',
+				76,
+			],
 		]);
 	}
 

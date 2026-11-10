@@ -106,6 +106,10 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				'Cannot call static method doFoo() on int.',
 				22,
 			],
+			[
+				'Cannot call abstract method StaticMethodCallable\\AbstractParent::doFoo().',
+				88,
+			],
 		]);
 	}
 

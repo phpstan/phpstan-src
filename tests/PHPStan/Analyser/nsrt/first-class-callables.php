@@ -114,3 +114,106 @@ class NeverCallable
 	}
 
 }
+
+/**
+ * @method static string magicStatic(int $i)
+ * @method string magic(int $i)
+ */
+class MagicCallables
+{
+
+	/**
+	 * @param array<mixed> $args
+	 */
+	public static function __callStatic(string $name, array $args): mixed
+	{
+		return '';
+	}
+
+	/**
+	 * @param array<mixed> $args
+	 */
+	public function __call(string $name, array $args): mixed
+	{
+		return '';
+	}
+
+	public function doFoo(): void
+	{
+		assertType('Closure(int): string', self::magicStatic(...));
+		assertType('string', self::magicStatic(...)(1));
+		assertType('Closure(int): string', $this->magic(...));
+		assertType('string', $this->magic(...)(1));
+	}
+
+}
+
+class MultiVariantCallables
+{
+
+	public function doFoo(): void
+	{
+		assertType('(Closure(): int)|(Closure(int, int): int)', mt_rand(...));
+		assertType('(Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false))', strtok(...));
+		assertType('int<1, 6>', mt_rand(...)(1, 6));
+	}
+
+}
+
+class SecondLevelCallables
+{
+
+	/**
+	 * @template T
+	 * @param T $a
+	 * @return T
+	 */
+	public function identity($a)
+	{
+		return $a;
+	}
+
+	public function doFoo(): void
+	{
+		$f = $this->identity(...);
+		$g = $f(...);
+		assertType('Closure<T of mixed>(T): T', $g);
+		assertType('1', $g(1));
+		$h = $g(...);
+		assertType("'x'", $h('x'));
+	}
+
+}
+
+class NewCallable
+{
+
+	public function doFoo(): void
+	{
+		assertType('*ERROR*', new \stdClass(...));
+	}
+
+}
+
+class CallbackCallables
+{
+
+	public function sum(int $carry, int $item): int
+	{
+		return $carry + $item;
+	}
+
+	/**
+	 * @param list<string> $strings
+	 * @param list<int> $ints
+	 */
+	public function doFoo(array $strings, array $ints): void
+	{
+		usort($strings, strcmp(...));
+		assertType('list<string>', $strings);
+		assertType('int', array_reduce($ints, $this->sum(...), 0));
+		assertType('lowercase-string&non-falsy-string', call_user_func_array(str_replace(...), [' ', '-', 'a b']));
+		assertType('3', call_user_func(strlen(...), 'abc'));
+	}
+
+}

@@ -1,0 +1,28 @@
+--- src/Dep.php
++++ src/Dep.php
+@@ -5,21 +5,21 @@
+ class Dep
+ {
+ 
+-	public function m(): string
++	public function m(): int
+ 	{
+-		return 'a';
++		return 1;
+ 	}
+ 
+-	public static function s(): string
++	public static function s(): int
+ 	{
+-		return 'a';
++		return 1;
+ 	}
+ 
+ }
+ 
+-function f(): string
++function f(): int
+ {
+-	return 'a';
++	return 1;
+ }

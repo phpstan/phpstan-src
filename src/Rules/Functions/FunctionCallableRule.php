@@ -108,7 +108,9 @@ final class FunctionCallableRule implements Rule
 
 				if (in_array(strtolower($function->getName()), self::DYNAMIC_CALL_FORBIDDEN_FUNCTIONS, true)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Cannot create callable from %s(), it cannot be called dynamically.',
+						$node->getOriginalNode()->isFirstClassCallable()
+							? 'Calling the callable created from %s() throws, it cannot be called dynamically.'
+							: 'Cannot create callable from %s(), it cannot be called dynamically.',
 						$function->getName(),
 					))->identifier('callable.notSupported')->build();
 				}

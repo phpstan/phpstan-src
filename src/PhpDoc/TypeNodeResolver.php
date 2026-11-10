@@ -10,6 +10,7 @@ use Nette\Utils\Strings;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ReportUnsafeArrayStringKeyCastingToggle;
@@ -161,12 +162,25 @@ final class TypeNodeResolver
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		#[AutowiredParameter]
 		private ?string $reportUnsafeArrayStringKeyCasting,
+		private ValueDependencyCollector $valueDependencyCollector,
 	)
 	{
 	}
 
 	/** @api */
 	public function resolve(TypeNode $typeNode, NameScope $nameScope): Type
+	{
+		// The resolved type is remembered with the reflection of what the PHPDoc describes, so a name
+		// in it that is not a class yet is what it declares depends on.
+		$this->valueDependencyCollector->enterDeclaration($nameScope->getFileName(), $nameScope->getClassName(), $nameScope->getFunctionName());
+		try {
+			return $this->resolveType($typeNode, $nameScope);
+		} finally {
+			$this->valueDependencyCollector->leaveDeclaration();
+		}
+	}
+
+	private function resolveType(TypeNode $typeNode, NameScope $nameScope): Type
 	{
 		foreach ($this->extensionRegistryProvider->getRegistry()->getExtensions() as $extension) {
 			$type = $extension->resolve($typeNode, $nameScope);

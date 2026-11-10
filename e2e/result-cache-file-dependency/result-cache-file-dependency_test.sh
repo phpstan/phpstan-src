@@ -132,8 +132,8 @@ function test_result_cache_file_dependency() {
 	assert_not_contains 'Holder.php:17:Method ResultCacheE2EFileDependency\Holder::get() should return int but returns string.' "$OUTPUT"
 	assert_not_contains 'UsesHolder.php:9:Function ResultCacheE2EFileDependency\usesHolder() should return int but returns string.' "$OUTPUT"
 	# And for a declared file that is analysed itself: deleted, it is no longer analysed, and the files
-	# of the rule's nodes are re-analysed; created again, all three are - and as with any new file, so
-	# are the three files with errors.
+	# of the rule's nodes are re-analysed; created again, all three are - but not the three files with
+	# errors, the file declares no symbol they could be waiting for.
 	rm src/Config.php
 	INFO=$(../../bin/phpstan result-cache-info --json)
 	echo "$INFO"
@@ -145,7 +145,7 @@ function test_result_cache_file_dependency() {
 	printf "<?php\n\nreturn 'report';\n" > src/Config.php
 	INFO=$(../../bin/phpstan result-cache-info --json)
 	echo "$INFO"
-	assert_equals '6' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	assert_equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"

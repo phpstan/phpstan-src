@@ -133,7 +133,10 @@ final class AnalyserResultFinalizer
 				}
 				try {
 					$ruleErrors = $rule->processNode($ruleNode, $scope);
-					$ruleValueDependencies = $this->valueDependencyCollector->getCollectedDataRuleValues();
+					// a rule that never asked for collected data works with something else, so it runs
+					// every time - its result is not kept, and neither are the values it depends on
+					$isReusable = $this->reuseCollectedDataRuleErrors && $reads->getCollectorTypes() !== [];
+					$ruleValueDependencies = $isReusable ? $this->valueDependencyCollector->getCollectedDataRuleValues() : [];
 					// the rule may have caught the read error and reported errors from partial data
 					$unreadableException = $collectedData->getUnreadableException();
 					if ($unreadableException !== null) {
@@ -192,8 +195,7 @@ final class AnalyserResultFinalizer
 					$errors[] = $this->ruleErrorTransformer->transform($ruleError, $scope, [], $ruleNode);
 				}
 
-				// a rule that never asked for collected data works with something else, so it runs every time
-				if ($this->reuseCollectedDataRuleErrors && $reads->getCollectorTypes() !== []) {
+				if ($isReusable) {
 					$collectedDataRuleResults[$ruleKey] = $this->createRuleResult($reads, $onlyFiles, $hashCollector, $errors, $ruleValueDependencies);
 				}
 

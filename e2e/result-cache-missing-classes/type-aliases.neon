@@ -1,0 +1,6 @@
+includes:
+	- phpstan.neon
+
+parameters:
+	typeAliases:
+		Amount: 'ResultCacheE2EMissingClasses\Money'

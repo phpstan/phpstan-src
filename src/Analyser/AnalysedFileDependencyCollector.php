@@ -13,6 +13,9 @@ use PHPStan\ShouldNotHappenException;
  * of the declarations in a file depends on is AnalysedDeclarationDependencyCollector data. It is not registered as a collector,
  * the data is emitted with CollectedDataEmitter.
  *
+ * The result cache makes the same split for the values and symbols a file depends on: the "analysis" and
+ * "declarations" dependents of ValueDependencyCollector.
+ *
  * @implements CollectorWithPaths<never, string|null>
  */
 final class AnalysedFileDependencyCollector implements CollectorWithPaths

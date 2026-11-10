@@ -13,6 +13,9 @@ use PHPStan\ShouldNotHappenException;
  * UnmatchedIgnoredErrorJudge follows it from the files reached through AnalysedFileDependencyCollector data.
  * It is not registered as a collector, the data is emitted with CollectedDataEmitter.
  *
+ * The result cache makes the same split for the values and symbols a file depends on: the "analysis" and
+ * "declarations" dependents of ValueDependencyCollector.
+ *
  * @implements CollectorWithPaths<never, string>
  */
 final class AnalysedDeclarationDependencyCollector implements CollectorWithPaths

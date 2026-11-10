@@ -6,6 +6,7 @@ use Closure;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\BetterReflection\Identifier\Exception\InvalidIdentifierName;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionAttributeFactory;
@@ -13,6 +14,7 @@ use PHPStan\BetterReflection\Reflection\Adapter\ReflectionClass;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionFunction;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\ReflectionAttribute as BetterReflectionAttribute;
+use PHPStan\BetterReflection\Reflection\ReflectionClass as BetterReflectionClass;
 use PHPStan\BetterReflection\Reflection\ReflectionEnum;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\BetterReflection\Reflector\Reflector;
@@ -113,6 +115,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		private AttributeReflectionFactory $attributeReflectionFactory,
 		#[AutowiredParameter(ref: '%universalObjectCratesClasses%')]
 		private array $universalObjectCratesClasses,
+		private ValueDependencyCollector $valueDependencyCollector,
 	)
 	{
 	}
@@ -155,6 +158,8 @@ final class BetterReflectionProvider implements ReflectionProvider
 			return $this->classReflections[$reflectionClassName];
 		}
 
+		$this->recordMissingAncestors($reflectionClass);
+
 		if ($reflectionClass instanceof ReflectionEnum && PHP_VERSION_ID >= 80000) {
 			$adaptedClass = new \PHPStan\BetterReflection\Reflection\Adapter\ReflectionEnum($reflectionClass);
 		} else {
@@ -168,6 +173,33 @@ final class BetterReflectionProvider implements ReflectionProvider
 			null,
 			fn (): ?ResolvedPhpDocBlock => $this->stubPhpDocProvider->findClassPhpDoc($reflectionClass->getName()),
 		);
+	}
+
+	/**
+	 * A parent, interface or trait that does not exist is left out of the class reflection, which
+	 * is remembered for the rest of the process: every file depending on the class depends on it
+	 * not existing.
+	 */
+	private function recordMissingAncestors(BetterReflectionClass $reflectionClass): void
+	{
+		$ancestorNames = [...$reflectionClass->getInterfaceClassNames(), ...$reflectionClass->getTraitClassNames()];
+		$parentClassName = $reflectionClass->getParentClassName();
+		if ($parentClassName !== null) {
+			$ancestorNames[] = $parentClassName;
+		}
+
+		$this->valueDependencyCollector->enterDeclaration($reflectionClass->getFileName(), $reflectionClass->getName());
+		try {
+			foreach ($ancestorNames as $ancestorName) {
+				if ($this->hasClass($ancestorName)) {
+					continue;
+				}
+
+				$this->valueDependencyCollector->recordMissingSymbol(ValueDependencyCollector::KIND_CLASS, $ancestorName);
+			}
+		} finally {
+			$this->valueDependencyCollector->leaveDeclaration();
+		}
 	}
 
 	public function getClassName(string $className): string

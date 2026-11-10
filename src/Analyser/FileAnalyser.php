@@ -9,7 +9,10 @@ use PHPStan\BetterReflection\Reflection\Exception\CircularReference;
 use PHPStan\BetterReflection\Reflector\Exception\IdentifierNotFound;
 use PHPStan\Collectors\CollectedData;
 use PHPStan\Collectors\Registry as CollectorRegistry;
+use PHPStan\Dependency\Dependencies;
 use PHPStan\Dependency\DependencyResolver;
+use PHPStan\Dependency\ResolvedDependencies;
+use PHPStan\Dependency\RootExportedNode;
 use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -18,6 +21,9 @@ use PHPStan\Node\FileNode;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\ParserErrorsException;
 use PHPStan\Rules\Registry as RuleRegistry;
+use function array_fill_keys;
+use function array_keys;
+use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
@@ -71,6 +77,93 @@ final class FileAnalyser
 		private DependencyResolver $dependencyResolver,
 	)
 	{
+	}
+
+	/**
+	 * The files declaring what the code references, and what the reflection layer found by name -
+	 * from a string, a PHPDoc, a rule asking - during the analysis of the file, or while resolving
+	 * the declarations it depends on: those of the symbols it depends on, and every one of its own.
+	 * Those are remembered for the rest of the process and reused without asking again, so what they
+	 * found is what every file depending on them depends on - also through the declarations of what
+	 * they found.
+	 *
+	 * @param list<RootExportedNode> $exportedNodes what the analysed file declares
+	 * @param array<string, true> $analysedFiles
+	 */
+	private function resolveDependenciesWithFoundSymbols(string $file, ?Dependencies $dependencies, array $exportedNodes, array $analysedFiles): ResolvedDependencies
+	{
+		$resolvedDependencies = $this->dependencyResolver->resolveFileDependencies($dependencies, $analysedFiles);
+		$fileDependencies = array_fill_keys($resolvedDependencies->getFileDependencies(), true);
+		$usedTraitFileDependencies = $resolvedDependencies->getUsedTraitFileDependencies();
+		$packageDependencies = $resolvedDependencies->getPackageDependencies();
+		$classReflections = $resolvedDependencies->getClassReflections();
+
+		// the declarations depended on - every one of the analysed file, and those of the symbols
+		// depended on; what was found while resolving them is depended on too
+		$declarationKeys = $this->valueDependencyCollector->getDeclarationKeysOfFile($file);
+		foreach ($exportedNodes as $exportedNode) {
+			if ($exportedNode->getType() === RootExportedNode::TYPE_FUNCTION) {
+				$declarationKeys[] = ValueDependencyCollector::getFunctionDeclarationKey($exportedNode->getName());
+			} elseif ($exportedNode->getType() !== RootExportedNode::TYPE_CONSTANT) {
+				$declarationKeys[] = ValueDependencyCollector::getClassDeclarationKey($exportedNode->getName());
+			}
+		}
+		$keysToFollow = [];
+		$followedKeys = [];
+		$addDeclarationKeys = static function (ResolvedDependencies $resolved, array $newFiles, array $keys) use (&$keysToFollow, &$followedKeys): void {
+			foreach ($newFiles as $newFile) {
+				$keys[] = ValueDependencyCollector::getFileDeclarationKey($newFile);
+			}
+			foreach ($resolved->getClassReflections() as $classReflection) {
+				$keys[] = ValueDependencyCollector::getClassDeclarationKey($classReflection->getName());
+			}
+			foreach ($resolved->getFunctionNames() as $functionName) {
+				$keys[] = ValueDependencyCollector::getFunctionDeclarationKey($functionName);
+			}
+			foreach ($keys as $key) {
+				if (isset($followedKeys[$key])) {
+					continue;
+				}
+
+				$followedKeys[$key] = true;
+				$keysToFollow[] = $key;
+			}
+		};
+		$addDeclarationKeys($resolvedDependencies, [$file, ...array_keys($fileDependencies)], $declarationKeys);
+
+		$includeAnalysis = true;
+		while ($keysToFollow !== [] || $includeAnalysis) {
+			$foundDependencies = $this->dependencyResolver->createFoundSymbolDependencies(
+				$file,
+				$this->valueDependencyCollector->getFoundSymbols($keysToFollow, $includeAnalysis),
+			);
+			$includeAnalysis = false;
+			$keysToFollow = [];
+			if ($foundDependencies === null) {
+				break;
+			}
+
+			$resolvedFoundDependencies = $this->dependencyResolver->resolveFileDependencies($foundDependencies, $analysedFiles);
+			$newFiles = [];
+			foreach ($resolvedFoundDependencies->getFileDependencies() as $foundFile) {
+				if (isset($fileDependencies[$foundFile])) {
+					continue;
+				}
+
+				$fileDependencies[$foundFile] = true;
+				$newFiles[] = $foundFile;
+			}
+			$addDeclarationKeys($resolvedFoundDependencies, $newFiles, []);
+			$packageDependencies = array_merge($packageDependencies, $resolvedFoundDependencies->getPackageDependencies());
+			$classReflections = array_merge($classReflections, $resolvedFoundDependencies->getClassReflections());
+		}
+
+		return new ResolvedDependencies(
+			array_keys($fileDependencies),
+			$usedTraitFileDependencies,
+			array_values(array_unique($packageDependencies)),
+			$classReflections,
+		);
 	}
 
 	/**
@@ -132,7 +225,8 @@ final class FileAnalyser
 				);
 				$fileErrors = $nodeCallback->getFileErrors();
 				$fileCollectedData = $nodeCallback->getFileCollectedData();
-				$resolvedDependencies = $this->dependencyResolver->resolveFileDependencies($dependencies, $analysedFiles);
+				$exportedNodes = $nodeCallback->getExportedNodes();
+				$resolvedDependencies = $this->resolveDependenciesWithFoundSymbols($file, $dependencies, $exportedNodes, $analysedFiles);
 				$fileDependencies = $resolvedDependencies->getFileDependencies();
 				$usedTraitFileDependencies = $resolvedDependencies->getUsedTraitFileDependencies();
 				$filePackageDependencies = $resolvedDependencies->getPackageDependencies();
@@ -140,7 +234,6 @@ final class FileAnalyser
 					// what an extension described the class with may depend on something - see DeclarationDependencyTracker
 					$this->valueDependencyCollector->noteClassDependency($classReflection);
 				}
-				$exportedNodes = $nodeCallback->getExportedNodes();
 				$linesToIgnore = $nodeCallback->getLinesToIgnore();
 				$unmatchedLineIgnores = $nodeCallback->getUnmatchedLineIgnores();
 				$temporaryFileErrors = $nodeCallback->getTemporaryFileErrors();

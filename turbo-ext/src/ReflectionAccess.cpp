@@ -7,8 +7,11 @@
  *   provider from the twin's `private static ?ReflectionProvider
  *   $instance` (the method, which throws, while it is null);
  * - MemoizingReflectionProvider::hasClass() / getClass(): the memoized
- *   answer from $knownClasses / $unknownClasses / $classes (the method,
- *   which asks the decorated provider and memoizes, on a miss);
+ *   answer from $knownClasses / $unknownClasses / $classes while it is
+ *   recorded in the current context - the value in $knownClasses /
+ *   $unknownClasses is ValueDependencyCollector::$context (the method,
+ *   which asks the decorated provider, memoizes and records the lookup,
+ *   otherwise);
  * - LazyClassReflectionExtensionRegistryProvider::getRegistry() followed by
  *   one ClassReflectionExtensionRegistry getter: the built registry from the
  *   provider's $registry memo and the extension from the registry's own
@@ -49,6 +52,8 @@ struct StaticSlot
 
 MemoizingProviderSlots pt_mrp_slots = { NULL, 0, 0, 0 };
 StaticSlot pt_rpsa_slot = { NULL, NULL };
+/* ValueDependencyCollector's `private static int $context` */
+StaticSlot pt_vdc_context_slot = { NULL, NULL };
 
 /* the $registry memo slot of the lazy registry provider's class entry */
 struct RegistryProviderSlots
@@ -132,6 +137,40 @@ const MemoizingProviderSlots *memoizingProviderSlots(zend_object *provider, bool
 	return &pt_mrp_slots;
 }
 
+} // namespace
+
+/* ValueDependencyCollector::getContext(); false while it cannot be read -
+ * the class not loaded or its statics not initialized yet, and then
+ * nothing is answered from the memo */
+bool pt_value_dependency_context(zend_long &context)
+{
+	if (UNEXPECTED(pt_vdc_context_slot.slot == NULL)) {
+		zend_class_entry *ce = pt_class_loaded(PT_CLASS_VALUE_DEPENDENCY_COLLECTOR);
+		if (ce == NULL) return false;
+		zval *slot = staticSlot(ce, PT_LC("context"));
+		if (slot == NULL) return false;
+		pt_vdc_context_slot = { ce, slot };
+	}
+	zval *value = pt_vdc_context_slot.slot;
+	ZVAL_DEREF(value);
+	if (UNEXPECTED(Z_TYPE_P(value) != IS_LONG)) return false;
+	context = Z_LVAL_P(value);
+	return true;
+}
+
+namespace {
+
+/* $memo[$key] === $context: the memoized answer was recorded in the current
+ * context */
+bool recordedInContext(zval *memo, zend_string *key, zend_long context)
+{
+	if (Z_TYPE_P(memo) != IS_ARRAY) return false;
+	zval *found = zend_symtable_find(Z_ARRVAL_P(memo), key);
+	if (found == NULL) return false;
+	ZVAL_DEREF(found);
+	return Z_TYPE_P(found) == IS_LONG && Z_LVAL_P(found) == context;
+}
+
 /* $object->method(...$args) through the object's own class entry, coerced
  * to bool; false = pending exception */
 [[nodiscard]] bool callBool(zend_object *object, const char *lcname, size_t len, uint32_t argc, zval *argv, bool &out)
@@ -142,23 +181,13 @@ const MemoizingProviderSlots *memoizingProviderSlots(zend_object *provider, bool
 	return true;
 }
 
-/* isset($array[$key]) for a string offset: the symtable lookup (a numeric
- * string is an integer key), an entry holding null is not set */
-bool issetStringOffset(zval *array, zend_string *key)
-{
-	if (Z_TYPE_P(array) != IS_ARRAY) return false;
-	zval *found = zend_symtable_find(Z_ARRVAL_P(array), key);
-	if (found == NULL) return false;
-	ZVAL_DEREF(found);
-	return Z_TYPE_P(found) != IS_NULL;
-}
-
 } // namespace
 
 void pt_reflection_access_rinit()
 {
 	pt_mrp_slots.ce = NULL;
 	pt_rpsa_slot = { NULL, NULL };
+	pt_vdc_context_slot = { NULL, NULL };
 	pt_registry_provider_slots.ce = NULL;
 	pt_registry_slots.ce = NULL;
 	pt_lazy_extensions_collection_slots.ce = NULL;
@@ -195,23 +224,26 @@ zv::Val pt_reflection_provider_instance()
 
 /* {{{ MemoizingReflectionProvider */
 
-/* $lower = strtolower($className); if (isset($this->knownClasses[$lower]))
- * return true; if (isset($this->unknownClasses[$className])) return false;
- * — the memoized answer; the method asks the decorated provider otherwise.
+/* $lower = strtolower($className); $context = ValueDependencyCollector::getContext();
+ * if (($this->knownClasses[$lower] ?? null) === $context) return true;
+ * if (($this->unknownClasses[$className] ?? null) === $context) return false;
+ * — the memoized answer, recorded in this context already; the method asks
+ * the decorated provider, or records the remembered answer, otherwise.
  * strtolower() is ASCII-only since PHP 8.2, as zend_string_tolower() is. */
 bool pt_reflection_provider_has_class(zend_object *provider, zval *className, bool &out)
 {
 	bool error;
 	const MemoizingProviderSlots *slots = memoizingProviderSlots(provider, error);
-	if (slots != NULL && Z_TYPE_P(className) == IS_STRING) {
+	zend_long context;
+	if (slots != NULL && Z_TYPE_P(className) == IS_STRING && pt_value_dependency_context(context)) {
 		zend_string *lower = zend_string_tolower(Z_STR_P(className));
-		bool known = issetStringOffset(OBJ_PROP(provider, slots->knownClasses), lower);
+		bool known = recordedInContext(OBJ_PROP(provider, slots->knownClasses), lower, context);
 		zend_string_release(lower);
 		if (known) {
 			out = true;
 			return true;
 		}
-		if (issetStringOffset(OBJ_PROP(provider, slots->unknownClasses), Z_STR_P(className))) {
+		if (recordedInContext(OBJ_PROP(provider, slots->unknownClasses), Z_STR_P(className), context)) {
 			out = false;
 			return true;
 		}
@@ -230,16 +262,21 @@ zv::Val pt_reflection_provider_has_class_zv(zend_object *provider, zval *classNa
 }
 
 /* return $this->classes[strtolower($className)] ??= $this->provider->getClass($className);
- * — the memoized reflection; the method resolves and memoizes otherwise */
+ * — the memoized reflection while it is recorded in the current context
+ * (see pt_reflection_provider_has_class()); the method resolves, memoizes
+ * and records otherwise */
 zv::Val pt_reflection_provider_get_class(zend_object *provider, zval *className)
 {
 	bool error;
 	const MemoizingProviderSlots *slots = memoizingProviderSlots(provider, error);
-	if (slots != NULL && Z_TYPE_P(className) == IS_STRING) {
+	zend_long context;
+	if (slots != NULL && Z_TYPE_P(className) == IS_STRING && pt_value_dependency_context(context)) {
 		zval *classes = OBJ_PROP(provider, slots->classes);
 		if (EXPECTED(Z_TYPE_P(classes) == IS_ARRAY)) {
 			zend_string *lower = zend_string_tolower(Z_STR_P(className));
-			zval *found = zend_symtable_find(Z_ARRVAL_P(classes), lower);
+			zval *found = recordedInContext(OBJ_PROP(provider, slots->knownClasses), lower, context)
+				? zend_symtable_find(Z_ARRVAL_P(classes), lower)
+				: NULL;
 			zend_string_release(lower);
 			if (found != NULL) {
 				ZVAL_DEREF(found);

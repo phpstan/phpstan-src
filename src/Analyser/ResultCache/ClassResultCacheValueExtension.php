@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ResultCache;
 
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileContentHasher;
@@ -29,8 +30,6 @@ use function strtolower;
 final class ClassResultCacheValueExtension implements ResultCacheValueExtension
 {
 
-	private const MISSING_CLASS = 'missing';
-
 	/** @var array<string, array{string, array<string, string>}> file => [content hash, lowercase name => exported node JSON] */
 	private array $exportedNodesByFile = [];
 
@@ -50,7 +49,7 @@ final class ClassResultCacheValueExtension implements ResultCacheValueExtension
 	public function getValue(string $key): string
 	{
 		if (!$this->reflectionProvider->hasClass($key)) {
-			return self::MISSING_CLASS;
+			return ValueDependencyCollector::MISSING;
 		}
 
 		$classReflection = $this->reflectionProvider->getClass($key);

@@ -15,12 +15,14 @@ final class ResolvedDependencies
 	 * @param list<string> $usedTraitFileDependencies
 	 * @param list<string> $packageDependencies
 	 * @param list<ClassReflection> $classReflections every class depended on, with its ancestors
+	 * @param list<string> $functionNames every function depended on
 	 */
 	public function __construct(
 		private array $fileDependencies,
 		private array $usedTraitFileDependencies,
 		private array $packageDependencies,
 		private array $classReflections,
+		private array $functionNames = [],
 	)
 	{
 	}
@@ -55,6 +57,14 @@ final class ResolvedDependencies
 	public function getClassReflections(): array
 	{
 		return $this->classReflections;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	public function getFunctionNames(): array
+	{
+		return $this->functionNames;
 	}
 
 }

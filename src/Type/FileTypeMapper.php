@@ -281,6 +281,7 @@ final class FileTypeMapper
 					$parent->shouldBypassTypeAliases(),
 					$parent->getConstUses(),
 					$parent->getClassNameForTypeAlias(),
+					$fileName,
 				);
 				if ($parent->getTraitData() !== null) {
 					[$traitFileName, $traitClassName, $traitName, $lookForTraitName, $traitDocComment] = $parent->getTraitData();
@@ -364,6 +365,7 @@ final class FileTypeMapper
 				$intermediaryNameScope->shouldBypassTypeAliases(),
 				$intermediaryNameScope->getConstUses(),
 				$intermediaryNameScope->getClassNameForTypeAlias(),
+				$fileName,
 			);
 		} finally {
 			unset($this->inProcess[$nameScopeKey]);

@@ -25,5 +25,5 @@ function test_result_cache_package_update() {
 	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1) && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Composer packages changed (test/logger); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+	assert_contains 'Composer packages changed (test/logger); re-analysing the files depending on them.' "$OUTPUT"
 }

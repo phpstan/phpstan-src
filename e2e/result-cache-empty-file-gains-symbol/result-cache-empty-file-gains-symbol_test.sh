@@ -16,9 +16,8 @@ function test_result_cache_empty_file_gains_symbol() {
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'user.php:7:Instantiated class ResultCacheE2EEmptyFileGainsSymbol\Thing not found.' "$OUTPUT"
-	# That file now declares a class. A root symbol appeared, so the files with errors have to
-	# be re-analysed, the same way a brand new file makes them re-analysed - the missing
-	# exported nodes entry must not be read as "nothing changed".
+	# That file now declares a class. src/user.php recorded it as missing, so it is re-analysed
+	# no matter whether the file declaring it was known to the cache before.
 	mv gains/script.php src/script.php
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"

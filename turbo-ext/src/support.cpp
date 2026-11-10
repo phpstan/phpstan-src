@@ -416,6 +416,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_FULLY_QUALIFIED_NAME_NODE */ {"fullyQualifiedNameNode", "PHPStan\\PhpDocParser\\Ast\\Type\\FullyQualifiedNameNode"},
 	/* PT_CLASS_TYPE_NODE_DESCRIBER */ {"typeNodeDescriber", "PHPStan\\Type\\TypeNodeDescriber"},
 	/* PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES */ {"arrayMapCallbackParameterTypes", "PHPStan\\Reflection\\ArrayMapCallbackParameterTypes"},
+	/* PT_CLASS_VALUE_DEPENDENCY_COLLECTOR */ {"valueDependencyCollector", "PHPStan\\Analyser\\ValueDependencyCollector"},
 };
 
 zend_class_entry *pt_class(int idx)

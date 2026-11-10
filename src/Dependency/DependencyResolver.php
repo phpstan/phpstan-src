@@ -3,8 +3,10 @@
 namespace PHPStan\Dependency;
 
 use PhpParser\Node;
+use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\NamespaceUsesTracker;
 use PHPStan\Analyser\Scope;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Broker\ClassNotFoundException;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
@@ -172,8 +174,13 @@ final class DependencyResolver
 
 		$packages = [];
 		$classReflections = [];
+		$functionNames = [];
 		foreach ($reflectionsByFile as $file => $reflections) {
 			foreach ($reflections as $id => $reflection) {
+				if ($reflection instanceof FunctionReflection) {
+					$functionNames[$reflection->getName()] = $reflection->getName();
+					continue;
+				}
 				if (!$reflection instanceof ClassReflection) {
 					continue;
 				}
@@ -193,7 +200,45 @@ final class DependencyResolver
 			array_values($usedTraitFileDependencies),
 			array_values($packages),
 			array_values($classReflections),
+			array_values($functionNames),
 		);
+	}
+
+	/**
+	 * What the reflection layer found by name, see ValueDependencyCollector::getFoundSymbols(), as
+	 * dependencies of $file to resolve.
+	 *
+	 * @param array<ValueDependencyCollector::KIND_*, list<string>> $foundSymbols
+	 */
+	public function createFoundSymbolDependencies(string $file, array $foundSymbols): ?Dependencies
+	{
+		$reflections = [];
+		foreach ($foundSymbols[ValueDependencyCollector::KIND_FUNCTION] ?? [] as $functionName) {
+			if ($functionName === '') {
+				continue;
+			}
+
+			$nameNode = new FullyQualified($functionName);
+			if (!$this->reflectionProvider->hasFunction($nameNode, null)) {
+				continue;
+			}
+
+			$reflections[] = $this->reflectionProvider->getFunction($nameNode, null);
+		}
+		foreach ($foundSymbols[ValueDependencyCollector::KIND_CONSTANT] ?? [] as $constantName) {
+			if ($constantName === '') {
+				continue;
+			}
+
+			$nameNode = new FullyQualified($constantName);
+			if (!$this->reflectionProvider->hasConstant($nameNode, null)) {
+				continue;
+			}
+
+			$reflections[] = $this->reflectionProvider->getConstant($nameNode, null);
+		}
+
+		return Dependencies::create($file, [], $foundSymbols[ValueDependencyCollector::KIND_CLASS] ?? [], $reflections);
 	}
 
 	/**

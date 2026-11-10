@@ -1055,6 +1055,16 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testIdenticalArrayDoesNotCompareItsValues(): void
+	{
+		$value = $this->createMock(Type::class);
+		$value->method('isArray')->willReturn(TrinaryLogic::createNo());
+		$value->expects(self::never())->method('isSuperTypeOf');
+		$type = new ConstantArrayType([new ConstantStringType('context')], [$value]);
+
+		self::assertTrue($type->isSuperTypeOf($type)->yes());
+	}
+
 	public function testSealedArrayShapesCannotBeIntersectedReasonIsLazy(): void
 	{
 		$resolver = self::getContainer()->getByType(TypeStringResolver::class);

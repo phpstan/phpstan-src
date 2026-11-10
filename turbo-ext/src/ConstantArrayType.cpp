@@ -1785,6 +1785,8 @@ public:
 	 * CompoundType callback; no otherwise; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
+		if (Z_OBJ_P(type) == self) return pt_type_is_super_type_of_result(PT_TRI_YES);
+
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type)) {
 			zend_long thisUnsealedness = thisIsUnsealed();
 			if (UNEXPECTED(thisUnsealedness < 0)) return zv::Val();

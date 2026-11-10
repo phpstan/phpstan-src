@@ -782,6 +782,10 @@ class ConstantArrayType implements Type
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
+		if ($type === $this) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
 		if ($type instanceof self) {
 			$thisUnsealedness = $this->isUnsealed();
 			$typeUnsealedness = $type->isUnsealed();

@@ -53,3 +53,25 @@ function doBaz($context, \Closure $union): void
 	$strtok(string: 'a b', token: ' ');
 	$strtok(str: 'a b');
 }
+
+function namedArgs(int $a, string $b, bool ...$c): void
+{
+}
+
+/**
+ * @param list<int> $ints
+ */
+function storedClosures(array $ints): void
+{
+	$f = namedArgs(...);
+	$f(b: 'x', a: 1);
+	$f(1, 'x', true, false);
+	$f(a: 1);
+	$f(1, a: 2, b: 'x');
+	$f(1, 'x', d: true);
+	$f(b: 1, a: 'x');
+
+	$sort = sort(...);
+	$sort($ints);
+	$sort([3, 1, 2]);
+}

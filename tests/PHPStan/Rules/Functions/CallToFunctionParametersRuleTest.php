@@ -3539,6 +3539,41 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testFirstClassCallableCallbacks(): void
+	{
+		$this->analyse([__DIR__ . '/data/first-class-callable-callbacks.php'], [
+			[
+				'Parameter #2 $callback of function usort expects callable(string, string): int, Closure(int, int): int given.',
+				66,
+			],
+			[
+				'Parameter #2 $callback of function uasort expects callable(string, string): int, Closure(int, int): int given.',
+				67,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): int given.',
+				68,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(int, string): int, Closure(int, int): int given.',
+				69,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
+				70,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(string, int<0, max>): mixed, Closure(int, int): void given.',
+				71,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, int<0, max>): mixed, Closure(string, string): void given.',
+				72,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.6.0-dev')]
 	public function testPartialFunctionApplicationCallbacks(): void
 	{

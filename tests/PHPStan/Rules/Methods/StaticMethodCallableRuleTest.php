@@ -117,6 +117,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testPartialFunctionApplication(): void
 	{
 		$errors = [];

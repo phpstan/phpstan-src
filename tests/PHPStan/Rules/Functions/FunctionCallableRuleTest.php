@@ -78,6 +78,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testDynamicCallForbidden(): void
 	{
 		$errors = [
@@ -137,6 +138,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/function-callable-dynamic-call-forbidden.php'], $errors);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testPartialFunctionApplication(): void
 	{
 		$errors = [];

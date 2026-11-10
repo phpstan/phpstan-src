@@ -246,6 +246,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1849.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-first-class-callables.php'], [

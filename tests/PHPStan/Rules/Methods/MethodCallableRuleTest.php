@@ -87,6 +87,7 @@ class MethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testPartialFunctionApplication(): void
 	{
 		$errors = [];

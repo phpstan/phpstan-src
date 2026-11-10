@@ -61,6 +61,7 @@ final class NullCoalesceRule implements Rule
 
 				return 'is not nullable';
 			},
+			$this->getOperatorLine($node),
 		) ?? $this->checkUnnecessaryNullCoalesce($node, $scope);
 
 		if ($error === null) {
@@ -76,6 +77,24 @@ final class NullCoalesceRule implements Rule
 		}
 
 		return [$error];
+	}
+
+	/**
+	 * The AST does not keep the operator token. The left side ends on the operator's
+	 * line or above it, so its last line is the closest one that never overshoots.
+	 */
+	private function getOperatorLine(CoalesceExpressionNode $node): int
+	{
+		$originalExpr = $node->getOriginalExpr();
+		if ($originalExpr instanceof Node\Expr\BinaryOp\Coalesce) {
+			return $originalExpr->left->getEndLine();
+		}
+
+		if ($originalExpr instanceof Node\Expr\AssignOp\Coalesce) {
+			return $originalExpr->var->getEndLine();
+		}
+
+		return $node->getStartLine();
 	}
 
 	private function checkUnnecessaryNullCoalesce(CoalesceExpressionNode $node, Scope $scope): ?IdentifierRuleError
@@ -123,7 +142,7 @@ final class NullCoalesceRule implements Rule
 
 		return RuleErrorBuilder::message(
 			sprintf('Coalesce operator %s is unnecessary because the left side is always set and the right side is null.', $operator),
-		)->identifier('nullCoalesce.unnecessary')->build();
+		)->identifier('nullCoalesce.unnecessary')->line($this->getOperatorLine($node))->build();
 	}
 
 	/**

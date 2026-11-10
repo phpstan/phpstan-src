@@ -23,6 +23,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\StaticMethodCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
@@ -103,7 +104,12 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
-			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->initializerExprTypeResolver->getFirstClassCallableType($expr->getOriginalNode(), InitializerExprContext::fromScope($beforeScope), $nativeTypesPromoted),
+			typeCallback: fn (bool $nativeTypesPromoted): Type => $this->initializerExprTypeResolver->getFirstClassCallableType(
+				$expr->getOriginalNode(),
+				InitializerExprContext::fromScope($beforeScope),
+				$nativeTypesPromoted,
+				$expr->getOriginalNode()->isFirstClassCallable() ? null : PartialFunctionApplicationParameters::getBoundArgTypes($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, $expr->getOriginalNode()),
+			),
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
 

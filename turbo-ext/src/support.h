@@ -4081,9 +4081,10 @@ enum pt_ietr_binary_operator : uint8_t
  * (a TypeResult) / ->getArrayType($expr, $getTypeCallback) /
  * ->getCastType($expr, $getTypeCallback) / ->getCastObjectType($exprType) /
  * ->getFunctionType($type, $isNullable, $isVariadic, $context) /
- * ->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) /
+ * ->getFirstClassCallableType($expr, $context, $nativeTypesPromoted,
+ * $boundArgTypes) /
  * ->createFirstClassCallable($function, $variants, $nativeTypesPromoted,
- * $partialApplicationArgs) /
+ * $partialApplicationArgs, $boundArgTypes) /
  * ->getClassConstFetchTypeByReflection($class, $constantName,
  * $classReflection, $getTypeCallback) / ->getUnaryPlusType($expr,
  * $getTypeCallback) / ->getUnaryMinusType(...) / ->getBitwiseNotType(...):
@@ -4102,8 +4103,8 @@ zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *e
 zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, zval *exprType);
 zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval *type, bool isNullable, bool isVariadic, zval *context);
-zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted);
-zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs);
+zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted, zval *boundArgTypes);
+zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes);
 zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted = false);
 zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_unary_minus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);

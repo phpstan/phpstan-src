@@ -4,10 +4,17 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node\Arg;
 use PhpParser\Node\ArgPlaceholder;
+use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\VariadicPlaceholder;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function count;
 
@@ -33,12 +40,96 @@ final class PartialFunctionApplicationParameters
 {
 
 	/**
+	 * The closure's parameters, whether it is variadic, its return type and its template types.
+	 *
+	 * Templates the bound arguments infer are resolved: in the return type, a template
+	 * no closure parameter mentions becomes the inferred type, and one a closure parameter
+	 * still mentions is joined with it, since a call unions what both bring to it.
+	 *
 	 * @param list<ParameterReflection> $parameters
 	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
-	 * @return array{list<ParameterReflection>, bool}|null the closure's parameters and whether it is variadic,
-	 *                                                    null when creating the closure throws
+	 * @param array<int, Type> $boundArgTypes the types of the bound arguments, keyed like $args
+	 * @return array{list<ParameterReflection>, bool, Type, TemplateTypeMap}|null null when creating the closure throws
 	 */
-	public static function apply(array $parameters, array $args): ?array
+	public static function apply(array $parameters, array $args, array $boundArgTypes, Type $returnType, TemplateTypeMap $templateTypeMap): ?array
+	{
+		$mapped = self::map($parameters, $args);
+		if ($mapped === null) {
+			return null;
+		}
+		[$closureParameters, $isVariadic, $bound] = $mapped;
+		if ($templateTypeMap->isEmpty()) {
+			return [$closureParameters, $isVariadic, $returnType, $templateTypeMap];
+		}
+
+		$inferred = TemplateTypeMap::createEmpty();
+		foreach ($bound as [$parameter, $argIndex]) {
+			if (!isset($boundArgTypes[$argIndex])) {
+				continue;
+			}
+			$inferred = $inferred->union($parameter->getType()->inferTemplateTypes($boundArgTypes[$argIndex]));
+		}
+		if ($inferred->isEmpty()) {
+			return [$closureParameters, $isVariadic, $returnType, $templateTypeMap];
+		}
+
+		$inClosureParameters = [];
+		foreach ($closureParameters as $parameter) {
+			TypeTraverser::map($parameter->getType(), static function (Type $type, callable $traverse) use ($templateTypeMap, &$inClosureParameters): Type {
+				if (self::isOwnTemplate($type, $templateTypeMap)) {
+					$inClosureParameters[$type->getName()] = true;
+				}
+
+				return $traverse($type);
+			});
+		}
+
+		$returnType = TypeTraverser::map($returnType, static function (Type $type, callable $traverse) use ($templateTypeMap, $inferred, $inClosureParameters): Type {
+			if (!self::isOwnTemplate($type, $templateTypeMap)) {
+				return $traverse($type);
+			}
+			$inferredType = $inferred->getType($type->getName());
+			if ($inferredType === null) {
+				return $type;
+			}
+			if (isset($inClosureParameters[$type->getName()])) {
+				return TypeCombinator::union($type, $inferredType);
+			}
+
+			return $inferredType;
+		});
+
+		$closureTemplateTypes = [];
+		foreach ($templateTypeMap->getTypes() as $name => $templateType) {
+			if (!isset($inClosureParameters[$name]) && $inferred->hasType($name)) {
+				continue;
+			}
+			$closureTemplateTypes[$name] = $templateType;
+		}
+
+		return [$closureParameters, $isVariadic, $returnType, new TemplateTypeMap($closureTemplateTypes)];
+	}
+
+	/**
+	 * @phpstan-assert-if-true TemplateType $type
+	 */
+	private static function isOwnTemplate(Type $type, TemplateTypeMap $templateTypeMap): bool
+	{
+		if (!$type instanceof TemplateType) {
+			return false;
+		}
+		$templateType = $templateTypeMap->getType($type->getName());
+
+		return $templateType instanceof TemplateType && $templateType->getScope()->equals($type->getScope());
+	}
+
+	/**
+	 * @param list<ParameterReflection> $parameters
+	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
+	 * @return array{list<ParameterReflection>, bool, list<array{ParameterReflection, int}>}|null the closure's parameters,
+	 *         whether it is variadic and the parameters the bound arguments go to, null when creating the closure throws
+	 */
+	private static function map(array $parameters, array $args): ?array
 	{
 		$variadicParameter = null;
 		$declared = $parameters;
@@ -59,7 +150,8 @@ final class PartialFunctionApplicationParameters
 		$position = 0;
 		$variadicPlaceholders = 0;
 		$seenNamed = false;
-		foreach ($args as $arg) {
+		$bound = [];
+		foreach ($args as $argIndex => $arg) {
 			if ($arg instanceof VariadicPlaceholder) {
 				$hasVariadicPlaceholder = true;
 				continue;
@@ -85,11 +177,15 @@ final class PartialFunctionApplicationParameters
 					$covered[$position] = true;
 					if ($isPlaceholder) {
 						$positional[] = self::required($declared[$position], $declared[$position]->getName());
+					} else {
+						$bound[] = [$declared[$position], $argIndex];
 					}
 				} elseif ($variadicParameter !== null) {
 					if ($isPlaceholder) {
 						$positional[] = self::required($variadicParameter, $variadicParameter->getName() . $variadicPlaceholders);
 						$variadicPlaceholders++;
+					} else {
+						$bound[] = [$variadicParameter, $argIndex];
 					}
 				} else {
 					// too many arguments
@@ -107,6 +203,7 @@ final class PartialFunctionApplicationParameters
 					// or an unknown named argument without a variadic to collect it
 					return null;
 				}
+				$bound[] = [$variadicParameter, $argIndex];
 				continue;
 			}
 
@@ -117,6 +214,7 @@ final class PartialFunctionApplicationParameters
 			}
 			$covered[$index] = true;
 			if (!$isPlaceholder) {
+				$bound[] = [$declared[$index], $argIndex];
 				continue;
 			}
 
@@ -132,7 +230,7 @@ final class PartialFunctionApplicationParameters
 				}
 			}
 
-			return [$closureParameters, false];
+			return [$closureParameters, false, $bound];
 		}
 
 		foreach ($declared as $i => $parameter) {
@@ -145,7 +243,23 @@ final class PartialFunctionApplicationParameters
 			$closureParameters[] = $variadicParameter;
 		}
 
-		return [$closureParameters, $variadicParameter !== null];
+		return [$closureParameters, $variadicParameter !== null, $bound];
+	}
+
+	/**
+	 * @return array<int, Type> the types of the bound arguments, keyed like the raw arguments
+	 */
+	public static function getBoundArgTypes(Scope $scope, CallLike $call): array
+	{
+		$types = [];
+		foreach ($call->getRawArgs() as $i => $arg) {
+			if (!$arg instanceof Arg) {
+				continue;
+			}
+			$types[$i] = $scope->getType($arg->value);
+		}
+
+		return $types;
 	}
 
 	/**
@@ -173,7 +287,7 @@ final class PartialFunctionApplicationParameters
 
 		$fitting = [];
 		foreach ($variants as $variant) {
-			if (self::apply($variant->getParameters(), $args) === null) {
+			if (self::map($variant->getParameters(), $args) === null) {
 				continue;
 			}
 			$fitting[] = $variant;

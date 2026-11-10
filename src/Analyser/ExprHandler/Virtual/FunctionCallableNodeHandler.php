@@ -24,6 +24,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\FunctionCallableNode;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -171,10 +172,16 @@ final class FunctionCallableNodeHandler implements ExprHandler
 				$callableType->getCallableParametersAcceptors($scope),
 				$scope->nativeTypesPromoted,
 				$isFirstClassCallable ? null : $originalNode->getRawArgs(),
+				$isFirstClassCallable ? [] : PartialFunctionApplicationParameters::getBoundArgTypes($scope, $originalNode),
 			);
 		}
 
-		return $this->initializerExprTypeResolver->getFirstClassCallableType($originalNode, InitializerExprContext::fromScope($scope), $scope->nativeTypesPromoted);
+		return $this->initializerExprTypeResolver->getFirstClassCallableType(
+			$originalNode,
+			InitializerExprContext::fromScope($scope),
+			$scope->nativeTypesPromoted,
+			$originalNode->isFirstClassCallable() ? null : PartialFunctionApplicationParameters::getBoundArgTypes($scope, $originalNode),
+		);
 	}
 
 	private static function isClosureObject(Type $type): bool

@@ -3539,4 +3539,36 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.6.0-dev')]
+	public function testPartialFunctionApplicationCallbacks(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-callbacks.php'], [
+			[
+				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(int): string given.',
+				73,
+			],
+			[
+				'Parameter #1 $callback of function array_map expects (callable(int): mixed)|null, Closure(int, string): string given.',
+				74,
+				'Type #1 from the union: Parameter #2 $prefix of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+			],
+			[
+				'Parameter #2 $callback of function array_filter expects (callable(int): bool)|null, Closure(string): bool given.',
+				75,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(string, string): int, Closure(int, int): int given.',
+				76,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(int, bool): int given.',
+				77,
+			],
+			[
+				'Parameter #2 $fn of function PartialFunctionApplicationCallbacks\\mapList expects callable(string): string, Closure(int): string given.',
+				78,
+			],
+		]);
+	}
+
 }

@@ -1825,7 +1825,11 @@ public:
 					}
 				}
 
-				zv::Val variant = createNativeMethodVariant(declaringClassNameArg, methodNameArg, methodSignature, phpDocParameterTypes.raw(), phpDocReturnType.raw(), phpDocParameterNameMapping.raw(), phpDocParameterOutTypes.raw(), immediatelyInvokedCallableParameters.raw(), closureThisParameters.raw(), phpDocFromStubs, !isNamed);
+				zv::Val variantTemplateTypeMap = Z_TYPE_P(currentResolvedPhpDoc.raw()) != IS_NULL
+					? pt_resolved_php_doc_block_call(currentResolvedPhpDoc.raw(), PT_RPD_GET_TEMPLATE_TYPE_MAP)
+					: templateTypeMapEmpty();
+				if (UNEXPECTED(variantTemplateTypeMap.isUndef())) return zv::Val();
+				zv::Val variant = createNativeMethodVariant(declaringClassNameArg, methodNameArg, methodSignature, variantTemplateTypeMap.raw(), phpDocParameterTypes.raw(), phpDocReturnType.raw(), phpDocParameterNameMapping.raw(), phpDocParameterOutTypes.raw(), immediatelyInvokedCallableParameters.raw(), closureThisParameters.raw(), phpDocFromStubs, !isNamed);
 				if (UNEXPECTED(variant.isUndef())) return zv::Val();
 				variants.push(std::move(variant));
 				lastResolvedPhpDoc = std::move(currentResolvedPhpDoc);
@@ -1934,7 +1938,7 @@ public:
 	}
 
 	/* Mirrors createNativeMethodVariant(). */
-	zv::Val createNativeMethodVariant(zval *declaringClassName, zval *methodName, zval *methodSignature, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *phpDocParameterNameMapping, zval *phpDocParameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *closureThisParameters, bool phpDocFromStubs, bool usePhpDocParameterNames)
+	zv::Val createNativeMethodVariant(zval *declaringClassName, zval *methodName, zval *methodSignature, zval *templateTypeMap, zval *phpDocParameterTypes, zval *phpDocReturnType, zval *phpDocParameterNameMapping, zval *phpDocParameterOutTypes, zval *immediatelyInvokedCallableParameters, zval *closureThisParameters, bool phpDocFromStubs, bool usePhpDocParameterNames)
 	{
 		bool ok;
 		zv::Val signatureParameters = call(methodSignature, PT_LC("getparameters"));
@@ -2046,8 +2050,6 @@ public:
 			if (UNEXPECTED(returnType.isUndef())) return zv::Val();
 		}
 
-		zv::Val ownedEmptyMap = templateTypeMapEmpty();
-		if (UNEXPECTED(ownedEmptyMap.isUndef())) return zv::Val();
 		bool isVariadicSignature = callBool(methodSignature, PT_LC("isvariadic"), 0, NULL, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		zv::Val nativeReturnType = call(methodSignature, PT_LC("getnativereturntype"));
@@ -2059,7 +2061,7 @@ public:
 		}
 
 		zval variantArgs[7];
-		ZVAL_COPY_VALUE(&variantArgs[0], ownedEmptyMap.raw());
+		ZVAL_COPY_VALUE(&variantArgs[0], templateTypeMap);
 		ZVAL_NULL(&variantArgs[1]);
 		ZVAL_COPY_VALUE(&variantArgs[2], parameters.raw());
 		ZVAL_BOOL(&variantArgs[3], isVariadicSignature);

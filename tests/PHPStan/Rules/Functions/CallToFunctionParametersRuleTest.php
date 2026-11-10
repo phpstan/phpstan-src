@@ -765,11 +765,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $arr1 of function array_udiff expects array<(int&TK)|(string&TK), string>, null given.',
+				'Unable to resolve the template type TK in call to function array_udiff',
+				19,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $arr1 of function array_udiff expects array<int|string, string>, null given.',
 				20,
 			],
 			[
-				'Parameter #2 $arr2 of function array_udiff expects array<(int&TK)|(string&TK), string>, null given.',
+				'Parameter #2 $arr2 of function array_udiff expects array<int|string, string>, null given.',
 				21,
 			],
 			[

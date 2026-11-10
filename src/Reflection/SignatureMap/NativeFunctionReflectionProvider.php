@@ -128,7 +128,7 @@ final class NativeFunctionReflectionProvider
 		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
 			foreach ($functionSignatures ?? [] as $functionSignature) {
 				$variantsByType[$signatureType][] = new ExtendedFunctionVariant(
-					TemplateTypeMap::createEmpty(),
+					$phpDoc !== null ? $phpDoc->getTemplateTypeMap() : TemplateTypeMap::createEmpty(),
 					null,
 					array_map(static function (ParameterSignature $parameterSignature) use ($phpDoc, $lowerCasedFunctionName, $allowedConstantsMapProvider, $pureUnlessCallableIsImpureParameters, $pureUnlessParameterPassedParameters): ExtendedNativeParameterReflection {
 						$name = $parameterSignature->getName();

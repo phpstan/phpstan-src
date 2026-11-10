@@ -768,7 +768,7 @@ final class PhpClassReflectionExtension
 							}
 						}
 					}
-					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($declaringClassName, $methodReflection->getName(), $methodSignature, $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named');
+					$variantsByType[$signatureType][] = $this->createNativeMethodVariant($declaringClassName, $methodReflection->getName(), $methodSignature, $currentResolvedPhpDoc !== null ? $currentResolvedPhpDoc->getTemplateTypeMap() : TemplateTypeMap::createEmpty(), $phpDocParameterTypes, $phpDocReturnType, $phpDocParameterNameMapping, $phpDocParameterOutTypes, $immediatelyInvokedCallableParameters, $closureThisParameters, $phpDocFromStubs, $signatureType !== 'named');
 				}
 			}
 
@@ -1047,6 +1047,7 @@ final class PhpClassReflectionExtension
 		string $declaringClassName,
 		string $methodName,
 		FunctionSignature $methodSignature,
+		TemplateTypeMap $templateTypeMap,
 		array $phpDocParameterTypes,
 		?Type $phpDocReturnType,
 		array $phpDocParameterNameMapping,
@@ -1116,7 +1117,7 @@ final class PhpClassReflectionExtension
 		}
 
 		return new ExtendedFunctionVariant(
-			TemplateTypeMap::createEmpty(),
+			$templateTypeMap,
 			null,
 			$parameters,
 			$methodSignature->isVariadic(),

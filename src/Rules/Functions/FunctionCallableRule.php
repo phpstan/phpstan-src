@@ -3,18 +3,26 @@
 namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\FunctionCallableNode;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function array_merge;
 use function in_array;
 use function sprintf;
 use function strtolower;
@@ -43,6 +51,7 @@ final class FunctionCallableRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private RuleLevelHelper $ruleLevelHelper,
+		private FunctionCallParametersCheck $parametersCheck,
 		#[AutowiredParameter]
 		private bool $checkFunctionNameCase,
 		#[AutowiredParameter]
@@ -56,7 +65,7 @@ final class FunctionCallableRule implements Rule
 		return FunctionCallableNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$node->getOriginalNode()->isFirstClassCallable()) {
 			if (!$scope->getPhpVersion()->supportsPartialFunctionApplication()->yes()) {
@@ -104,6 +113,19 @@ final class FunctionCallableRule implements Rule
 					))->identifier('callable.notSupported')->build();
 				}
 
+				if (!$node->getOriginalNode()->isFirstClassCallable()) {
+					$errors = array_merge($errors, $this->parametersCheck->checkPartialApplication(
+						PartialFunctionApplicationParameters::selectVariant($node->getArgs(), $function->getVariants(), $function->getNamedArgumentsVariants()),
+						$scope,
+						$function->isBuiltin(),
+						$node->getOriginalNode(),
+						'function',
+						$function->acceptsNamedArguments(),
+						'function ' . SprintfHelper::escapeFormatString($function->getName()),
+						$function,
+					));
+				}
+
 				return $errors;
 			}
 
@@ -145,7 +167,26 @@ final class FunctionCallableRule implements Rule
 			];
 		}
 
-		return [];
+		if ($node->getOriginalNode()->isFirstClassCallable() || !$isCallable->yes()) {
+			return [];
+		}
+
+		$parametersAcceptors = $type->getCallableParametersAcceptors($scope);
+		$acceptsNamedArguments = TrinaryLogic::createYes();
+		foreach ($parametersAcceptors as $parametersAcceptor) {
+			$acceptsNamedArguments = $acceptsNamedArguments->and($parametersAcceptor->acceptsNamedArguments());
+		}
+
+		return $this->parametersCheck->checkPartialApplication(
+			PartialFunctionApplicationParameters::selectVariant($node->getArgs(), $parametersAcceptors, null),
+			$scope,
+			false,
+			$node->getOriginalNode(),
+			'callable',
+			$acceptsNamedArguments,
+			$type instanceof ClosureType ? 'closure' : sprintf('callable %s', SprintfHelper::escapeFormatString($type->describe(VerbosityLevel::value()))),
+			null,
+		);
 	}
 
 }

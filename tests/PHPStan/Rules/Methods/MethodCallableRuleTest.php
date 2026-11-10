@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Methods;
 
+use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -35,6 +36,7 @@ class MethodCallableRuleTest extends RuleTestCase
 				checkFunctionNameCase: true,
 				reportMagicMethods: true,
 			),
+			self::getContainer()->getByType(FunctionCallParametersCheck::class),
 		);
 	}
 
@@ -110,6 +112,25 @@ class MethodCallableRuleTest extends RuleTestCase
 			[
 				'Cannot combine nullsafe operator with Closure creation.',
 				16,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.6.0-dev')]
+	public function testPartialFunctionApplicationArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-method-arguments.php'], [
+			[
+				'Method PartialFunctionApplicationMethodArguments\\Foo::doFoo() partially applied with 1 argument, at least 2 required.',
+				28,
+			],
+			[
+				'Parameter #1 $a of method PartialFunctionApplicationMethodArguments\\Foo::doFoo() expects int, string given.',
+				29,
+			],
+			[
+				'Cannot use named placeholder for unknown or variadic parameter $c.',
+				30,
 			],
 		]);
 	}

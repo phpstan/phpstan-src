@@ -352,22 +352,26 @@ public:
 	/* Mirrors unresolvedOrResolvedTemplateArgument() (private). */
 	static zv::Val unresolvedOrResolvedTemplateArgument(zval *templateType, zval *inferred, zval *site, zval *frame, bool allowUnresolved, bool onlyCovariant)
 	{
+		zv::Val name = templateName(templateType);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
+			zend_type_error("phpstan_turbo: getName() must return string");
+			return zv::Val();
+		}
 		if (allowUnresolved) {
 			bool observing;
 			if (UNEXPECTED(!pt_template_argument_frame_is_observing(frame, observing))) return zv::Val();
 			if (observing) {
+				// a send in a body enclosing this one decided the site
+				zv::Val resolved = pt_template_argument_frame_resolve_sent_from_enclosing_body(frame, site, Z_STR_P(name.raw()));
+				if (UNEXPECTED(resolved.isUndef())) return zv::Val();
+				if (!resolved.isNull()) return resolved;
 				if (Z_TYPE_P(inferred) == IS_OBJECT && instanceof_function(Z_OBJCE_P(inferred), pt_ce_unresolved_template_argument_type)) return zv::Val::copyOf(zv::Ref(inferred));
 				if (onlyCovariant && !(Z_TYPE_P(inferred) == IS_OBJECT && instanceof_function(Z_OBJCE_P(inferred), pt_ce_never_type))) return zv::Val::copyOf(zv::Ref(inferred));
 				zv::Val unresolved;
 				if (UNEXPECTED(!pt_unresolved_template_argument_type_new(unresolved.raw(), site, templateType, inferred))) return zv::Val();
 				return unresolved;
 			}
-		}
-		zv::Val name = templateName(templateType);
-		if (UNEXPECTED(name.isUndef())) return zv::Val();
-		if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
-			zend_type_error("phpstan_turbo: getName() must return string");
-			return zv::Val();
 		}
 		zv::Val resolved = pt_template_argument_frame_resolve(frame, site, Z_STR_P(name.raw()));
 		if (UNEXPECTED(resolved.isUndef())) return zv::Val();

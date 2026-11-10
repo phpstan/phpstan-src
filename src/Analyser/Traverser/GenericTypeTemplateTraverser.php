@@ -64,6 +64,13 @@ final class GenericTypeTemplateTraverser implements TypeTraverserCallable
 			// markers - the real site re-keys and resolves them
 			$synthetic = $this->site->getAttribute(TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE) === true;
 			if ($synthetic || ($this->allowUnresolved && $this->frame->isObserving())) {
+				if (!$synthetic) {
+					// a send in a body enclosing this one decided the site
+					$resolved = $this->frame->resolveSentFromEnclosingBody($this->site, $type->getName());
+					if ($resolved !== null) {
+						return $resolved;
+					}
+				}
 				if ($initialType instanceof UnresolvedTemplateArgumentType) {
 					return $initialType;
 				}

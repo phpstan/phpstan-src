@@ -48,4 +48,8 @@ function doBaz($context, \Closure $union): void
 
 	$union();
 	$union(1);
+
+	$strtok = strtok(...);
+	$strtok(string: 'a b', token: ' ');
+	$strtok(str: 'a b');
 }

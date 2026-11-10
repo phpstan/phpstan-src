@@ -275,6 +275,14 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Callable (Closure(): int)|(Closure(int, int): int) invoked with 1 parameter, 2 required.',
 				50,
 			],
+			[
+				'Missing parameter $string (string) in call to callable (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)).',
+				54,
+			],
+			[
+				'Unknown parameter $str in call to callable (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)).',
+				54,
+			],
 		]);
 	}
 

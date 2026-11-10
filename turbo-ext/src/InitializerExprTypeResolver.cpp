@@ -45,6 +45,7 @@
 #include "TypeOps.h"
 #include "Engine.h"
 #include "ParserVisitors.h"
+#include "ParameterValues.h"
 
 #include <cmath>
 #include <limits>
@@ -2279,6 +2280,59 @@ public:
 		return zv::Val();
 	}
 
+	/* Mirrors renameParameters(). */
+	static zv::Val renameParameters(zval *parameters, zval *names)
+	{
+		if (UNEXPECTED(!requireArray(parameters))) return zv::Val();
+		zend_class_entry *extendedParameterCe = pt_class(PT_CLASS_EXTENDED_PARAMETER_REFLECTION);
+		if (UNEXPECTED(extendedParameterCe == NULL)) return zv::Val();
+		zv::Arr renamed = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(parameters)));
+		for (zv::ArrayEntry entry : zv::ArrRef(parameters)) {
+			zval *parameter = entry.value().deref().raw();
+			zval *name = entry.hasStringKey()
+				? zend_hash_find(Z_ARRVAL_P(names), entry.stringKey())
+				: zend_hash_index_find(Z_ARRVAL_P(names), entry.indexKey());
+			if (name != NULL) {
+				ZVAL_DEREF(name);
+			}
+			if (name == NULL || Z_TYPE_P(name) == IS_NULL) {
+				renamed.push(zv::Ref(parameter));
+				continue;
+			}
+			IETR_VAL(parameterName, callOn(parameter, mGetName));
+			if (
+				(Z_TYPE_P(parameterName.raw()) == IS_STRING && Z_TYPE_P(name) == IS_STRING && zend_string_equals(Z_STR_P(parameterName.raw()), Z_STR_P(name)))
+				|| !isA(parameter, extendedParameterCe)
+			) {
+				renamed.push(zv::Ref(parameter));
+				continue;
+			}
+
+			/* new ExtendedDummyParameter($names[$i], $parameter->getType(), ...) —
+			 * the getters in argument order */
+			static constexpr pt_parameter_reflection_member getters[14] = {
+				PT_PR_GET_TYPE, PT_PR_IS_OPTIONAL, PT_PR_PASSED_BY_REFERENCE, PT_PR_IS_VARIADIC, PT_PR_GET_DEFAULT_VALUE,
+				PT_PR_GET_NATIVE_TYPE, PT_PR_GET_PHPDOC_TYPE, PT_PR_GET_OUT_TYPE, PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE,
+				PT_PR_GET_CLOSURE_THIS_TYPE, PT_PR_GET_ATTRIBUTES, PT_PR_GET_ALLOWED_CONSTANTS,
+				PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER, PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER,
+			};
+			zv::Val values[14];
+			for (int j = 0; j < 14; j++) {
+				values[j] = pt_parameter_reflection_call(parameter, getters[j]);
+				if (UNEXPECTED(values[j].isUndef())) return zv::Val();
+			}
+			zval args[15];
+			ZVAL_COPY_VALUE(&args[0], name);
+			for (int j = 0; j < 14; j++) {
+				ZVAL_COPY_VALUE(&args[j + 1], values[j].raw());
+			}
+			IETR_VAL(renamedParameter, pt_extended_dummy_parameter_new(15, args));
+			renamed.push(std::move(renamedParameter));
+		}
+
+		return zv::Val(std::move(renamed));
+	}
+
 	/* Mirrors createFirstClassCallable(); $function PHP null for null */
 	static zv::Val createFirstClassCallable(zval *function, zval *variants, bool nativeTypesPromoted)
 	{
@@ -2294,6 +2348,29 @@ public:
 		zend_class_entry *templateTypeCe = pt_class(PT_CLASS_TEMPLATE_TYPE);
 		if (UNEXPECTED(templateTypeCe == NULL)) return zv::Val();
 		bool hasFunction = Z_TYPE_P(function) != IS_NULL;
+
+		// variants of multi-variant built-ins carry functionMap parameter names,
+		// but the closure accepts the native names as named arguments
+		zv::Arr namedArgumentNames = zv::Arr::create(0);
+		if (hasFunction) {
+			IETR_VAL(namedArgumentsVariants, callOn(function, mGetNamedArgumentsVariants));
+			if (Z_TYPE_P(namedArgumentsVariants.raw()) == IS_ARRAY) {
+				for (zv::ArrayEntry variantEntry : zv::ArrRef(namedArgumentsVariants.raw())) {
+					IETR_VAL(variantParameters, callOn(variantEntry.value().deref().raw(), mGetParameters));
+					if (UNEXPECTED(!requireArray(variantParameters.raw()))) return zv::Val();
+					for (zv::ArrayEntry parameterEntry : zv::ArrRef(variantParameters.raw())) {
+						IETR_VAL(name, callOn(parameterEntry.value().deref().raw(), mGetName));
+						zval key;
+						if (parameterEntry.hasStringKey()) {
+							ZVAL_STR(&key, parameterEntry.stringKey());
+						} else {
+							ZVAL_LONG(&key, (zend_long) parameterEntry.indexKey());
+						}
+						if (UNEXPECTED(!arrayKeyUpdate(namedArgumentNames, &key, std::move(name)))) return zv::Val();
+					}
+				}
+			}
+		}
 
 		zv::Arr closureTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(variants)));
 		for (zv::ArrayEntry variantEntry : zv::ArrRef(variants)) {
@@ -2397,7 +2474,12 @@ public:
 				if (UNEXPECTED(mustUseReturnValue.isUndef())) return zv::Val();
 			}
 
-			IETR_VAL(parameters, callOn(variant, mGetParameters));
+			IETR_VAL(variantParameters, callOn(variant, mGetParameters));
+			zv::Val parameters = std::move(variantParameters);
+			if (zend_hash_num_elements(namedArgumentNames.table()) > 0) {
+				IETR_VAL(renamedParameters, renameParameters(parameters.raw(), namedArgumentNames.raw()));
+				parameters = std::move(renamedParameters);
+			}
 			zv::Val assertions;
 			if (hasFunction) {
 				assertions = callOn(function, mGetAsserts);
@@ -3766,6 +3848,12 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, leftType, rightType)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgType(leftType, 1) || !ietrArgType(rightType, 2))) RETURN_THROWS();
 		PT_RETURN_VAL(InitializerExprTypeResolver::getNeverType(leftType, rightType));
+	});
+
+	cls.method(sigs::renameParameters, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *parameters, *names;
+		if (!zp::parse<zp::Arr, zp::Arr>(execute_data, parameters, names)) RETURN_THROWS();
+		PT_RETURN_VAL(InitializerExprTypeResolver::renameParameters(parameters, names));
 	});
 
 	cls.shadow(&pt_ce_initializer_expr_type_resolver);

@@ -39,6 +39,7 @@ use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\Callables\SimpleThrowPoint;
 use PHPStan\Reflection\Native\NativeParameterReflection;
+use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -857,6 +858,17 @@ final class InitializerExprTypeResolver
 		bool $nativeTypesPromoted,
 	): Type
 	{
+		// variants of multi-variant built-ins carry functionMap parameter names,
+		// but the closure accepts the native names as named arguments
+		$namedArgumentNames = [];
+		if ($function !== null) {
+			foreach ($function->getNamedArgumentsVariants() ?? [] as $namedArgumentsVariant) {
+				foreach ($namedArgumentsVariant->getParameters() as $i => $parameter) {
+					$namedArgumentNames[$i] = $parameter->getName();
+				}
+			}
+		}
+
 		$closureTypes = [];
 
 		foreach ($variants as $variant) {
@@ -918,6 +930,9 @@ final class InitializerExprTypeResolver
 			}
 
 			$parameters = $variant->getParameters();
+			if (count($namedArgumentNames) > 0) {
+				$parameters = self::renameParameters($parameters, $namedArgumentNames);
+			}
 			if ($function !== null) {
 				$assertions = $function->getAsserts();
 			} elseif ($variant instanceof CallableParametersAcceptor) {
@@ -948,6 +963,46 @@ final class InitializerExprTypeResolver
 		}
 
 		return TypeCombinator::union(...$closureTypes);
+	}
+
+	/**
+	 * @param list<ParameterReflection> $parameters
+	 * @param array<int, string> $names
+	 * @return list<ParameterReflection>
+	 */
+	private static function renameParameters(array $parameters, array $names): array
+	{
+		$renamed = [];
+		foreach ($parameters as $i => $parameter) {
+			if (
+				!isset($names[$i])
+				|| $names[$i] === $parameter->getName()
+				|| !$parameter instanceof ExtendedParameterReflection
+			) {
+				$renamed[] = $parameter;
+				continue;
+			}
+
+			$renamed[] = new ExtendedDummyParameter(
+				$names[$i],
+				$parameter->getType(),
+				$parameter->isOptional(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$parameter->getDefaultValue(),
+				$parameter->getNativeType(),
+				$parameter->getPhpDocType(),
+				$parameter->getOutType(),
+				$parameter->isImmediatelyInvokedCallable(),
+				$parameter->getClosureThisType(),
+				$parameter->getAttributes(),
+				$parameter->getAllowedConstants(),
+				$parameter->isPureUnlessCallableIsImpureParameter(),
+				$parameter->isPureUnlessParameterPassedParameter(),
+			);
+		}
+
+		return $renamed;
 	}
 
 	/**

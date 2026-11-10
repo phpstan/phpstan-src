@@ -15,18 +15,24 @@ function test_result_cache_scanned() {
 	# analysed directory) is tracked as a file dependency: editing it re-analyses just the
 	# files depending on it instead of invalidating the whole result cache.
 	patch -b src/Generated/Foo.php < patch.patch
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'Scanned files with changed symbols (1); re-analysing the files affected by them.' "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
 	assert_contains 'Instantiated class ResultCacheE2EGenerated\Foo not found.' "$OUTPUT"
 }
 
 # @tag windows
 function test_windows_excluded_files_hashed_as_scannedfiles() {
 	php ../../bin/phpstan analyse --no-ansi
-	php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
-	grep -F "Result cache restored. 0 files will be reanalysed." output.txt && CODE=0 || CODE=$?
-	assert_same "0" "$CODE"
+	INFO=$(php ../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	# jq.exe ends its output with CRLF, and the command substitution would keep the CR:
+	# --join-output prints no line ending at all.
+	assert_equals 'true' "$(echo "$INFO" | jq --join-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --join-output '.filesToAnalyseCount')"
 }

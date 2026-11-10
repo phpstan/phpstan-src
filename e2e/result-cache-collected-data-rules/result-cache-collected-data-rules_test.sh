@@ -29,10 +29,13 @@ function test_result_cache_collected_data_rules() {
 	assert_not_contains 'Result cache reused the errors' "$OUTPUT"
 	# src/Other.php is analysed again, but what it collects stays the same.
 	echo '// changed' >> src/Other.php
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
 	assert_contains 'Caller.php:10:Call to function ResultCacheCollectedDataRules\pure() on a separate line has no effect.' "$OUTPUT"
 	echo "$OUTPUT" | grep -E 'Result cache reused the errors of ([0-9]+) of \1 rules on collected data\.'
 	# Removing the call changes what src/Caller.php collects, so the rule runs again and the error goes away.

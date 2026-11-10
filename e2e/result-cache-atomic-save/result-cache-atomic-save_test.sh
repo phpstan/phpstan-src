@@ -28,7 +28,8 @@ function test_result_cache_atomic_save() {
 	# A completed save leaves nothing next to the cache file.
 	LEFTOVERS=$(ls tmp/ | grep -c '\.tmp$' || true)
 	assert_equals '0' "$LEFTOVERS"
-	OUTPUT=$(../../bin/phpstan -vvv 2>&1)
-	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 }

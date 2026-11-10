@@ -27,6 +27,7 @@ use function count;
 use function get_class;
 use function hash_file;
 use function is_file;
+use function ksort;
 use function sprintf;
 
 #[AutowiredService]
@@ -404,7 +405,7 @@ final class AnalyserResultFinalizer
 
 	/**
 	 * Replaces each ignore of all errors on a line with an ignore of the identifiers of the errors reported there,
-	 * including the errors of CollectedDataNode rules.
+	 * including the errors of CollectedDataNode rules and the errors of a trait in the contexts of the classes using it.
 	 *
 	 * @param list<Error> $errors
 	 * @return list<Error>
@@ -423,31 +424,55 @@ final class AnalyserResultFinalizer
 			return $errors;
 		}
 
-		$identifiers = [];
+		// an error in a trait is reported in the context of each class using it, and each context
+		// matches the errors against its own copy of the ignore, so the identifiers are grouped by context
+		$contextIdentifiers = [];
 		foreach ($errors as $error) {
 			$line = $error->getLine();
-			if ($line === null || !isset($allLineErrors[$error->getFile()][$line]) || !$error->canBeIgnored()) {
+			$file = $error->getTraitFilePath() ?? $error->getFile();
+			if ($line === null || !isset($allLineErrors[$file][$line]) || !$error->canBeIgnored()) {
 				continue;
 			}
 
 			$identifier = $error->getIdentifier();
 			if ($identifier === null) {
 				// such an error cannot be ignored by an identifier
-				$identifiers[$error->getFile()][$line] = false;
-			} elseif (($identifiers[$error->getFile()][$line] ?? null) !== false) {
-				$identifiers[$error->getFile()][$line][] = $identifier;
+				$contextIdentifiers[$file][$line] = false;
+			} elseif (($contextIdentifiers[$file][$line] ?? null) !== false) {
+				$contextIdentifiers[$file][$line][$error->getFile()][] = $identifier;
 			}
 		}
 
 		$fixes = [];
-		foreach ($identifiers as $file => $lines) {
+		foreach ($contextIdentifiers as $file => $lines) {
 			if (!is_file($file)) {
 				continue;
 			}
 
 			$code = FileReader::read($file);
-			foreach ($lines as $line => $lineIdentifiers) {
-				if ($lineIdentifiers === false) {
+			foreach ($lines as $line => $identifiersByContext) {
+				if ($identifiersByContext === false) {
+					continue;
+				}
+
+				// each identifier as many times as the context that reports it the most,
+				// with the contexts sorted for the same result whatever order the files were analysed in
+				ksort($identifiersByContext);
+				$lineIdentifiers = [];
+				$counts = [];
+				foreach ($identifiersByContext as $identifiers) {
+					$contextCounts = [];
+					foreach ($identifiers as $identifier) {
+						$contextCounts[$identifier] = ($contextCounts[$identifier] ?? 0) + 1;
+						if ($contextCounts[$identifier] <= ($counts[$identifier] ?? 0)) {
+							continue;
+						}
+
+						$counts[$identifier] = $contextCounts[$identifier];
+						$lineIdentifiers[] = $identifier;
+					}
+				}
+				if ($lineIdentifiers === []) {
 					continue;
 				}
 

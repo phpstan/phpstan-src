@@ -130,7 +130,7 @@ final class NeonAdapter implements Adapter
 
 			if (
 				$keyToResolve === '[parameters][excludePaths]'
-				&& $val !== null
+				&& is_array($val)
 				&& array_values($val) === $val
 			) {
 				$val = ['analyseAndScan' => $val, 'analyse' => []];

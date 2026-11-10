@@ -23,6 +23,7 @@ use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
@@ -159,6 +160,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 			$method->getVariants(),
 			$scope->nativeTypesPromoted,
 			$originalNode->isFirstClassCallable() ? null : $originalNode->getRawArgs(),
+			$originalNode->isFirstClassCallable() ? [] : PartialFunctionApplicationParameters::getBoundArgTypes($scope, $originalNode),
 		);
 	}
 

@@ -790,9 +790,25 @@ final class InitializerExprTypeResolver
 		return false;
 	}
 
-	public function getFirstClassCallableType(Expr\CallLike $expr, InitializerExprContext $context, bool $nativeTypesPromoted): Type
+	/**
+	 * @param array<int, Type>|null $boundArgTypes the types of the bound arguments of a partial function application,
+	 *                                            keyed like its raw arguments; null to resolve them as constant expressions
+	 */
+	public function getFirstClassCallableType(Expr\CallLike $expr, InitializerExprContext $context, bool $nativeTypesPromoted, ?array $boundArgTypes = null): Type
 	{
-		$partialApplicationArgs = $expr->isFirstClassCallable() ? null : $expr->getRawArgs();
+		$partialApplicationArgs = null;
+		if (!$expr->isFirstClassCallable()) {
+			$partialApplicationArgs = $expr->getRawArgs();
+			if ($boundArgTypes === null) {
+				$boundArgTypes = [];
+				foreach ($partialApplicationArgs as $i => $arg) {
+					if (!$arg instanceof Arg) {
+						continue;
+					}
+					$boundArgTypes[$i] = $this->getType($arg->value, $context);
+				}
+			}
+		}
 
 		if ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Name) {
@@ -803,6 +819,7 @@ final class InitializerExprTypeResolver
 						$function->getVariants(),
 						$nativeTypesPromoted,
 						$partialApplicationArgs,
+						$boundArgTypes ?? [],
 					);
 				}
 
@@ -842,6 +859,7 @@ final class InitializerExprTypeResolver
 				$method->getVariants(),
 				$nativeTypesPromoted,
 				$partialApplicationArgs,
+				$boundArgTypes ?? [],
 			);
 		}
 
@@ -855,12 +873,14 @@ final class InitializerExprTypeResolver
 	/**
 	 * @param ParametersAcceptor[] $variants
 	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder>|null $partialApplicationArgs the arguments of a partial function application, null for a first-class callable
+	 * @param array<int, Type> $boundArgTypes the types of the bound arguments of a partial function application, keyed like $partialApplicationArgs
 	 */
 	public function createFirstClassCallable(
 		FunctionReflection|ExtendedMethodReflection|null $function,
 		array $variants,
 		bool $nativeTypesPromoted,
 		?array $partialApplicationArgs = null,
+		array $boundArgTypes = [],
 	): Type
 	{
 		// variants of multi-variant built-ins carry functionMap parameter names,
@@ -880,19 +900,6 @@ final class InitializerExprTypeResolver
 			$returnType = $variant->getReturnType();
 			if ($variant instanceof ExtendedParametersAcceptor) {
 				$returnType = $nativeTypesPromoted ? $variant->getNativeReturnType() : $returnType;
-			}
-
-			$templateTags = [];
-			foreach ($variant->getTemplateTypeMap()->getTypes() as $templateType) {
-				if (!$templateType instanceof TemplateType) {
-					continue;
-				}
-				$templateTags[$templateType->getName()] = new TemplateTag(
-					$templateType->getName(),
-					$templateType->getBound(),
-					$templateType->getDefault(),
-					$templateType->getVariance(),
-				);
 			}
 
 			$throwPoints = [];
@@ -939,13 +946,27 @@ final class InitializerExprTypeResolver
 				$parameters = self::renameParameters($parameters, $namedArgumentNames);
 			}
 			$isVariadic = $variant->isVariadic();
+			$templateTypeMap = $variant->getTemplateTypeMap();
 			if ($partialApplicationArgs !== null) {
-				$partialApplication = PartialFunctionApplicationParameters::apply($parameters, $partialApplicationArgs);
+				$partialApplication = PartialFunctionApplicationParameters::apply($parameters, $partialApplicationArgs, $boundArgTypes, $returnType, $templateTypeMap);
 				if ($partialApplication === null) {
 					// creating the closure from this variant throws
 					continue;
 				}
-				[$parameters, $isVariadic] = $partialApplication;
+				[$parameters, $isVariadic, $returnType, $templateTypeMap] = $partialApplication;
+			}
+
+			$templateTags = [];
+			foreach ($templateTypeMap->getTypes() as $templateType) {
+				if (!$templateType instanceof TemplateType) {
+					continue;
+				}
+				$templateTags[$templateType->getName()] = new TemplateTag(
+					$templateType->getName(),
+					$templateType->getBound(),
+					$templateType->getDefault(),
+					$templateType->getVariance(),
+				);
 			}
 			if ($function !== null) {
 				$assertions = $function->getAsserts();
@@ -963,7 +984,7 @@ final class InitializerExprTypeResolver
 				$parameters,
 				$returnType,
 				$isVariadic,
-				$variant->getTemplateTypeMap(),
+				$templateTypeMap,
 				$variant->getResolvedTemplateTypeMap(),
 				$variant instanceof ExtendedParametersAcceptor ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
 				$templateTags,

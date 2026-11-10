@@ -38,6 +38,27 @@ function identity($a)
 	return $a;
 }
 
+/**
+ * @template T
+ * @param T $value
+ * @param T $other
+ * @return list<T>
+ */
+function pair($value, $other): array
+{
+	return [$value, $other];
+}
+
+/**
+ * @template T
+ * @param T $value
+ * @return list<T>
+ */
+function repeat($value, int $times): array
+{
+	return [];
+}
+
 class Foo
 {
 
@@ -67,6 +88,8 @@ class Constants
 {
 
 	const PARTIAL = doFoo(1, ?, ...);
+
+	const REPEATED = repeat('a', ?);
 
 }
 
@@ -120,6 +143,21 @@ function functions(): void
 
 	// templates
 	assertType('Closure<T of mixed>(T): T', identity(?));
+	assertType('Closure(int): list<\'a\'>', repeat('a', ?));
+	assertType('Closure<T of mixed>(T): list<T>', repeat(?, 3));
+	// a template a closure parameter still mentions gets what the bound arguments bring to it
+	assertType('Closure<T of mixed>(T): list<\'x\'|T>', pair(?, 'x'));
+	$pair = pair(?, 'x');
+	assertType('list<1|\'x\'>', $pair(1));
+}
+
+/**
+ * @param list<int> $ints
+ */
+function templatesThroughCallbacks(array $ints): void
+{
+	assertType('list<list<\'x\'|int>>', array_map(pair(?, 'x'), $ints));
+	assertType('list<list<int>>', array_map(repeat(?, 2), $ints));
 }
 
 function methods(Foo $foo): void
@@ -140,6 +178,7 @@ function closures(Invokable $i): void
 	assertType('Closure(string): bool', $i(1, ?));
 	assertType('Closure(int): bool', $i->__invoke(?, 'x'));
 	assertType('Closure(string, float, bool ...): string', Constants::PARTIAL);
+	assertType('Closure(int): list<\'a\'>', Constants::REPEATED);
 
 	$c = fn (int $a, string $b, float $c = 1.0): int => 1;
 	assertType('Closure(string): 1', $c(1, ?));

@@ -141,16 +141,33 @@ inline zval *nodeRead(NodeProp &prop, zval *node)
  * once they are ported) */
 
 
-/* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted, $partialApplicationArgs) */
-inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs)
+/* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted, $partialApplicationArgs, $boundArgTypes) */
+inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes)
 {
-	return pt_initializer_expr_type_resolver_create_first_class_callable(initializerExprTypeResolver, function, variants, nativeTypesPromoted, partialApplicationArgs);
+	return pt_initializer_expr_type_resolver_create_first_class_callable(initializerExprTypeResolver, function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes);
 }
 
-/* $initializerExprTypeResolver->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) */
-inline zv::Val getFirstClassCallableType(zval *initializerExprTypeResolver, zval *expr, zval *context, bool nativeTypesPromoted)
+/* $initializerExprTypeResolver->getFirstClassCallableType($expr, $context, $nativeTypesPromoted, $boundArgTypes) */
+inline zv::Val getFirstClassCallableType(zval *initializerExprTypeResolver, zval *expr, zval *context, bool nativeTypesPromoted, zval *boundArgTypes)
 {
-	return pt_initializer_expr_type_resolver_get_first_class_callable_type(initializerExprTypeResolver, expr, context, nativeTypesPromoted);
+	return pt_initializer_expr_type_resolver_get_first_class_callable_type(initializerExprTypeResolver, expr, context, nativeTypesPromoted, boundArgTypes);
+}
+
+/* PartialFunctionApplicationParameters::getBoundArgTypes($scope, $call) for a partial
+ * function application, PHP null for a first-class callable (written into out,
+ * which owns it); false = pending exception */
+inline bool boundArgTypesOrNull(zval *scope, zval *call, zv::Val &out)
+{
+	bool firstClassCallable;
+	if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return false;
+	if (firstClassCallable) {
+		out = zv::Val::null();
+		return true;
+	}
+	static pt_method_site site;
+	zv::Args argv{scope, call};
+	out = pt_call_static_cached(site, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("getboundargtypes"), 2, argv);
+	return !out.isUndef();
 }
 
 /* InitializerExprContext::fromScope($scope) */

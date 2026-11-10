@@ -282,7 +282,10 @@ private:
 
 	/* fn (bool $nativeTypesPromoted): Type =>
 	 * $this->initializerExprTypeResolver->getFirstClassCallableType($expr->getOriginalNode(),
-	 * InitializerExprContext::fromScope($beforeScope), $nativeTypesPromoted) —
+	 * InitializerExprContext::fromScope($beforeScope), $nativeTypesPromoted,
+	 * $expr->getOriginalNode()->isFirstClassCallable() ? null :
+	 * PartialFunctionApplicationParameters::getBoundArgTypes($nativeTypesPromoted
+	 * ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope, $expr->getOriginalNode())) —
 	 * captures: $this, $expr, $beforeScope */
 	static void typeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
@@ -295,7 +298,12 @@ private:
 			if (UNEXPECTED(originalNode == NULL)) return;
 			zv::Val initializerExprContext = ptveh::initializerExprContextFromScope(&captures[2]);
 			if (UNEXPECTED(initializerExprContext.isUndef())) return;
-			type = ptveh::getFirstClassCallableType(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted);
+			zv::Val scopeHold;
+			zval *boundArgTypesScope = ptveh::promotedScope(&captures[2], nativeTypesPromoted, scopeHold);
+			if (UNEXPECTED(boundArgTypesScope == NULL)) return;
+			zv::Val boundArgTypes;
+			if (UNEXPECTED(!ptveh::boundArgTypesOrNull(boundArgTypesScope, originalNode, boundArgTypes))) return;
+			type = ptveh::getFirstClassCallableType(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted, boundArgTypes.raw());
 		});
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);

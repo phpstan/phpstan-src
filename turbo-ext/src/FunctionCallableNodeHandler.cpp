@@ -298,14 +298,21 @@ public:
 				partialApplicationArgs = pt_call_like_raw_args(Z_OBJ_P(originalNode), rawArgsHold);
 				if (UNEXPECTED(partialApplicationArgs == NULL)) return zv::Val();
 			}
-			return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), &null, acceptors.raw(), nativeTypesPromoted, partialApplicationArgs);
+			zv::Val boundArgTypes;
+			if (UNEXPECTED(!ptveh::boundArgTypesOrNull(scope, originalNode, boundArgTypes))) return zv::Val();
+			if (boundArgTypes.isNull()) {
+				boundArgTypes = zv::Val(zv::Arr::empty());
+			}
+			return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), &null, acceptors.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw());
 		}
 
 		zv::Val initializerExprContext = ptveh::initializerExprContextFromScope(scope);
 		if (UNEXPECTED(initializerExprContext.isUndef())) return zv::Val();
 		bool nativeTypesPromoted;
 		if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
-		return ptveh::getFirstClassCallableType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted);
+		zv::Val boundArgTypes;
+		if (UNEXPECTED(!ptveh::boundArgTypesOrNull(scope, originalNode, boundArgTypes))) return zv::Val();
+		return ptveh::getFirstClassCallableType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted, boundArgTypes.raw());
 	}
 
 	/* the handler entry (Engine.h) */

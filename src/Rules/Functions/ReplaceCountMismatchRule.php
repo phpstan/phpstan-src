@@ -9,6 +9,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
@@ -41,6 +42,7 @@ final class ReplaceCountMismatchRule implements Rule
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
+		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
 		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
@@ -99,7 +101,7 @@ final class ReplaceCountMismatchRule implements Rule
 			$replaceType = $scope->getNativeType($args[1]->value);
 		}
 
-		if (!$this->hasFewerReplacements($scope, $searchType, $replaceType)) {
+		if (!$this->hasFewerReplacements($searchType, $replaceType)) {
 			return [];
 		}
 
@@ -111,7 +113,7 @@ final class ReplaceCountMismatchRule implements Rule
 		if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {
 			$nativeSearchType = $scope->getNativeType($args[0]->value);
 			$nativeReplaceType = $scope->getNativeType($args[1]->value);
-			if (!$this->hasFewerReplacements($scope, $nativeSearchType, $nativeReplaceType)) {
+			if (!$this->hasFewerReplacements($nativeSearchType, $nativeReplaceType)) {
 				$errorBuilder->treatPhpDocTypesAsCertainTip();
 			}
 		}
@@ -121,7 +123,7 @@ final class ReplaceCountMismatchRule implements Rule
 		];
 	}
 
-	private function hasFewerReplacements(Scope $scope, Type $searchType, Type $replaceType): bool
+	private function hasFewerReplacements(Type $searchType, Type $replaceType): bool
 	{
 		if (!$searchType->isArray()->yes() || !$replaceType->isArray()->yes()) {
 			return false;
@@ -132,15 +134,7 @@ final class ReplaceCountMismatchRule implements Rule
 			return false;
 		}
 
-		$replaceSize = $replaceType->getArraySize();
-		$searchSize = $searchType->getArraySize();
-		foreach ($scope->getPhpVersion()->getLooseComparisonVersions() as $phpVersion) {
-			if (!$replaceSize->isSmallerThan($searchSize, $phpVersion)->yes()) {
-				return false;
-			}
-		}
-
-		return true;
+		return $replaceType->getArraySize()->isSmallerThan($searchType->getArraySize(), $this->phpVersion)->yes();
 	}
 
 }

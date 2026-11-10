@@ -6,9 +6,11 @@ use DirectoryIterator;
 use Override;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use function chmod;
 use function file_put_contents;
 use function is_dir;
 use function mkdir;
+use function posix_geteuid;
 use function rmdir;
 use function sprintf;
 use function sys_get_temp_dir;
@@ -123,6 +125,34 @@ class FileMonitorTest extends TestCase
 		unlink($this->directory . '/sub/b.php');
 		$changes = $this->waitForChanges($monitor);
 		$this->assertSame([$this->expectedPath('sub/b.php')], $changes->getDeletedFiles());
+	}
+
+	#[DataProvider('dataMonitors')]
+	public function testFileThatCannotBeReadIsDeleted(string $kind): void
+	{
+		// what a file deleted after the finder listed it and before it was hashed, during a git checkout, looks like
+		if (PHP_OS_FAMILY === 'Windows' || posix_geteuid() === 0) {
+			self::markTestSkipped('A file can be made unreadable only on Unix and not for root.');
+		}
+
+		$monitor = $this->createMonitor($kind);
+		chmod($this->directory . '/a.php', 0000);
+		$changes = $this->waitForChanges($monitor);
+		$this->assertSame([$this->expectedPath('a.php')], $changes->getDeletedFiles());
+
+		chmod($this->directory . '/a.php', 0644);
+		$changes = $this->waitForChanges($monitor);
+		$this->assertSame([$this->expectedPath('a.php')], $changes->getNewFiles());
+	}
+
+	#[DataProvider('dataMonitors')]
+	public function testDeletedConfigFile(string $kind): void
+	{
+		$config = $this->directory . '-config/phpstan.neon';
+		$monitor = $this->createMonitor($kind, [$config]);
+		unlink($config);
+		$changes = $this->waitForChanges($monitor);
+		$this->assertSame([$config], $changes->getDeletedFiles());
 	}
 
 	#[DataProvider('dataMonitors')]

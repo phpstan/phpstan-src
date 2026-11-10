@@ -2,11 +2,9 @@
 
 namespace PHPStan\Rules\Functions;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
-use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ReplaceCountMismatchRule>
@@ -18,7 +16,6 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 	{
 		return new ReplaceCountMismatchRule(
 			self::createReflectionProvider(),
-			new PhpVersion(PHP_VERSION_ID),
 			true,
 			true,
 		);

@@ -79,6 +79,27 @@ inline zv::Val newPassNodeCallback(bool replayable)
 	return replayable ? newRecordingNodeCallback() : newNoopNodeCallback();
 }
 
+/* a nested loop walks only its first iteration in a pass - its unconverged
+ * types can make the back edge look dead, so a walk converging it decides:
+ * $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $entryScope,
+ *     $storage->duplicate(), new NoopNodeCallback(), $context->withoutTemplateArgumentResolution())
+ *     ->filterOutLoopExitPoints()->getLoopBackEdgeScope()
+ * (UNDEF = pending exception) */
+inline zv::Val convergedPassBackEdgeScope(zval *nodeScopeResolver, zval *stmt, zval *stmts, zval *entryScope, zval *storage, zval *context)
+{
+	zv::Val storageCopy = pt_expression_result_storage_duplicate(storage);
+	if (UNEXPECTED(storageCopy.isUndef())) return zv::Val();
+	zv::Val noop = newNoopNodeCallback();
+	if (UNEXPECTED(noop.isUndef())) return zv::Val();
+	zv::Val walkContext = pt_statement_context_without_template_argument_resolution(context);
+	if (UNEXPECTED(walkContext.isUndef())) return zv::Val();
+	zv::Val walked = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmts, entryScope, storageCopy.raw(), noop.raw(), walkContext.raw());
+	if (UNEXPECTED(walked.isUndef())) return zv::Val();
+	zv::Val result = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
+	if (UNEXPECTED(result.isUndef())) return zv::Val();
+	return pt_internal_statement_result_loop_back_edge_scope(result.raw());
+}
+
 /* $into = array_merge($into, $more): the array itself when $into is empty and
  * $more a list without holes (what array_merge() returns then), appended
  * otherwise; false = pending exception */

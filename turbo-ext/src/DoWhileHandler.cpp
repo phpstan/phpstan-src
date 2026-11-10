@@ -130,6 +130,10 @@ public:
 					if (UNEXPECTED(bodyScopeResult.isUndef())) return;
 					zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
 					if (UNEXPECTED(backEdgeScope.isUndef())) return;
+					if (backEdgeScope.isNull() && !bodyIsReplayable) {
+						backEdgeScope = ptlh::convergedPassBackEdgeScope(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage.raw(), context);
+						if (UNEXPECTED(backEdgeScope.isUndef())) return;
+					}
 					if (!backEdgeScope.isNull()) {
 						if (UNEXPECTED(!ptlh::otherMergeWith(backEdgeScope.raw(), finalScope))) return;
 					}

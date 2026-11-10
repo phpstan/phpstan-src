@@ -543,6 +543,10 @@ public:
 						if (UNEXPECTED(bodyScopeResult.isUndef())) return;
 						zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
 						if (UNEXPECTED(backEdgeScope.isUndef())) return;
+						if (backEdgeScope.isNull() && !bodyIsReplayable) {
+							backEdgeScope = ptlh::convergedPassBackEdgeScope(nodeScopeResolver, stmt, parts.stmts.raw(), bodyScope.raw(), storage.raw(), context);
+							if (UNEXPECTED(backEdgeScope.isUndef())) return;
+						}
 						if (backEdgeScope.isNull()) {
 							bodyScope = std::move(prevScope);
 							brokeOut = true;
@@ -1724,6 +1728,14 @@ private:
 				if (UNEXPECTED(iterBodyScopeResult.isUndef())) return false;
 				zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(iterBodyScopeResult.raw());
 				if (UNEXPECTED(backEdgeScope.isUndef())) return false;
+				if (backEdgeScope.isNull()) {
+					bool bodyIsReplayable;
+					if (UNEXPECTED(!pt_node_scope_resolver_is_replayable_convergence_body(nodeScopeResolver, stmt, parts.stmts.raw(), bodyIsReplayable))) return false;
+					if (!bodyIsReplayable) {
+						backEdgeScope = ptlh::convergedPassBackEdgeScope(nodeScopeResolver, stmt, parts.stmts.raw(), iterBodyScope.raw(), iterStorage.raw(), context);
+						if (UNEXPECTED(backEdgeScope.isUndef())) return false;
+					}
+				}
 				{
 					zv::Val breaks = ptlh::breakExitPoints(iterBodyScopeResult.raw());
 					if (UNEXPECTED(breaks.isUndef())) return false;

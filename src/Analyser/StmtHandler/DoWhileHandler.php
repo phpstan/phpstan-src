@@ -95,6 +95,11 @@ final class DoWhileHandler implements StmtHandler
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
+					if ($backEdgeScope === null && !$bodyIsReplayable) {
+						// a nested loop walks only its first iteration in a pass - its unconverged
+						// types can make the back edge look dead, so a walk converging it decides
+						$backEdgeScope = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage->duplicate(), new NoopNodeCallback(), $context->withoutTemplateArgumentResolution())->filterOutLoopExitPoints()->getLoopBackEdgeScope();
+					}
 					$finalScope = $backEdgeScope === null ? $finalScope : $backEdgeScope->mergeWith($finalScope);
 					foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
 						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);

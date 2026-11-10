@@ -2773,7 +2773,7 @@ private:
 	{
 		if (!ahNameIs(AH_PROP(assignedExpr, name), PT_LC("in_array"))) return true;
 		bool firstClassCallable;
-		AH_OKB(pt_call_like_is_first_class_callable(Z_OBJ_P(assignedExpr), firstClassCallable));
+		AH_OKB(pt_call_like_is_partial_function_application(Z_OBJ_P(assignedExpr), firstClassCallable));
 		if (firstClassCallable) return true;
 		{
 			zend_long isTrue = ahCallTri(assignedType, PT_LC("istrue"), 0, NULL);
@@ -4285,7 +4285,7 @@ private:
 		}
 		if (call == NULL) return ahEmptyArray();
 		bool firstClassCallable;
-		AH_OK(pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable));
+		AH_OK(pt_call_like_is_partial_function_application(Z_OBJ_P(call), firstClassCallable));
 		if (firstClassCallable) return ahEmptyArray();
 
 		zv::Val argResults = ahEmptyArray();
@@ -4387,7 +4387,7 @@ private:
 		zval *funcName = isFuncCall ? AH_PROP(exprExpr, name) : NULL;
 		bool firstClassCallable = false;
 		if (isFuncCall && ahIs(funcName, PT_CLASS_NAME)) {
-			AH_OK(pt_call_like_is_first_class_callable(Z_OBJ_P(exprExpr), firstClassCallable));
+			AH_OK(pt_call_like_is_partial_function_application(Z_OBJ_P(exprExpr), firstClassCallable));
 		}
 
 		// infer $arr[$key] after $key = array_key_first/last($arr)
@@ -4549,7 +4549,7 @@ private:
 				bool leftFirstClassCallable = false;
 				bool leftIsCall = ahIs(left, PT_CLASS_FUNC_CALL) && ahIs(AH_PROP(left, name), PT_CLASS_NAME);
 				if (leftIsCall) {
-					AH_OK(pt_call_like_is_first_class_callable(Z_OBJ_P(left), leftFirstClassCallable));
+					AH_OK(pt_call_like_is_partial_function_application(Z_OBJ_P(left), leftFirstClassCallable));
 				}
 				if (
 					leftIsCall

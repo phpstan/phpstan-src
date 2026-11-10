@@ -156,6 +156,7 @@ inline constexpr Method mMustUseReturnValue{"mustUseReturnValue"};
 inline constexpr Method mIsStaticClosure{"isStaticClosure"};
 inline constexpr Method mGetThrowType{"getThrowType"};
 inline constexpr Method mGetParameters{"getParameters"};
+inline constexpr Method mGetNamedArgumentsVariants{"getNamedArgumentsVariants"};
 inline constexpr Method mGetAsserts{"getAsserts"};
 inline constexpr Method mIsVariadic{"isVariadic", PT_OP_IS_VARIADIC};
 inline constexpr Method mGetResolvedTemplateTypeMap{"getResolvedTemplateTypeMap"};

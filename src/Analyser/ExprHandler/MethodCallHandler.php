@@ -87,7 +87,7 @@ final class MethodCallHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof MethodCall && !$expr->isFirstClassCallable();
+		return $expr instanceof MethodCall && !$expr->isPartialFunctionApplication();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult

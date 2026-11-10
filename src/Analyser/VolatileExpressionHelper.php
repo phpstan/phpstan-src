@@ -140,7 +140,7 @@ final class VolatileExpressionHelper
 
 			if (
 				!$expr instanceof FuncCall
-				|| $expr->isFirstClassCallable()
+				|| $expr->isPartialFunctionApplication()
 				|| !$expr->name instanceof Name
 				|| !in_array($expr->name->toLowerString(), $functionNames, true)
 				|| $exprTypeHolder->getType()->isTrue()->yes()

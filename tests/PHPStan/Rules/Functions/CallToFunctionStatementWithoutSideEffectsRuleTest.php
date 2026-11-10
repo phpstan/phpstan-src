@@ -136,6 +136,17 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-4455.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplication(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-bound-args.php'], [
+			[
+				'Call to function PartialFunctionApplicationBoundArgsCalls\f() on a separate line has no effect.',
+				31,
+			],
+		]);
+	}
+
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/first-class-callable-function-without-side-effect.php'], [

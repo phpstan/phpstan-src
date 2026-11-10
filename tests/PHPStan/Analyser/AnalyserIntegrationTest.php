@@ -1698,6 +1698,40 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNotCount(0, $errors);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationPositions(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/partial-function-application-positions.php');
+		$this->assertNotCount(0, $errors);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug9746(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-9746.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Call to method Bug9746\\HelloWorld::sayHello() on a separate line has no effect.', $errors[0]->getMessage());
+		$this->assertSame(9, $errors[0]->getLine());
+		$this->assertSame('Cannot combine nullsafe operator with Closure creation.', $errors[1]->getMessage());
+		$this->assertSame(9, $errors[1]->getLine());
+	}
+
+	public function testBug15364(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15364.php');
+		if (PHP_VERSION_ID >= 80600) {
+			$this->assertCount(0, $errors);
+			return;
+		}
+
+		$this->assertCount(1, $errors);
+		$this->assertSame('Partial function application is supported only on PHP 8.6 and later.', $errors[0]->getMessage());
+		$this->assertSame(8, $errors[0]->getLine());
+	}
+
 	public function testBug14596(): void
 	{
 		// crash

@@ -1105,7 +1105,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// ExprHandler dispatch - no handler supports the original node, its closure
 		// type lives on the stored result's typeCallback (see the *CallableNode
 		// handlers), mirroring TypeSpecifier::specifyTypesInCondition().
-		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+		if ($node instanceof Expr\CallLike && $node->isPartialFunctionApplication()) {
 			return $this->resolveTypeOfNewWorldHandlerNode($node);
 		}
 
@@ -1217,7 +1217,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				// argument-less instance calls: the shape @phpstan-assert subjects
 				// take (synthetic per-build nodes, never stored - a walk per
 				// application otherwise)
-				|| ($expr instanceof Expr\MethodCall && $expr->name instanceof Identifier && !$expr->isFirstClassCallable() && $expr->getArgs() === [])
+				|| ($expr instanceof Expr\MethodCall && $expr->name instanceof Identifier && !$expr->isPartialFunctionApplication() && $expr->getArgs() === [])
 			)
 			&& ($exprResult === null || !$exprResult->containsNullsafe())
 		) {
@@ -1571,7 +1571,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					&& !$node instanceof MethodCall
 					&& !$node instanceof Expr\NullsafeMethodCall
 					&& !$node instanceof Expr\StaticCall
-				) || $node->isFirstClassCallable()
+				) || $node->isPartialFunctionApplication()
 			)
 		) {
 			return $this->getScopeStateType($node);
@@ -2643,7 +2643,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$type = $typeHolder->getType();
 
 		return $expr instanceof FuncCall
-			&& !$expr->isFirstClassCallable()
+			&& !$expr->isPartialFunctionApplication()
 			&& $expr->name instanceof FullyQualified
 			&& in_array(
 				$expr->name->toLowerString(),
@@ -3501,7 +3501,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		if (
 			$expr instanceof Expr\NullsafeMethodCall
 			&& $expr->name instanceof Identifier
-			&& !$expr->isFirstClassCallable()
+			&& !$expr->isPartialFunctionApplication()
 			&& $expr->getArgs() === []
 		) {
 			$attributes = $expr->getAttributes();
@@ -3519,7 +3519,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		if (
 			$expr instanceof Expr\MethodCall
 			&& $expr->name instanceof Identifier
-			&& !$expr->isFirstClassCallable()
+			&& !$expr->isPartialFunctionApplication()
 			&& $expr->getArgs() === []
 		) {
 			$storage = $this->services->expressionResultStorageStack->getCurrent();

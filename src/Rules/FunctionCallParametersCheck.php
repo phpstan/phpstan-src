@@ -1071,4 +1071,76 @@ final class FunctionCallParametersCheck
 		return false;
 	}
 
+	/**
+	 * When no variant accepts the number of arguments, they are combined into
+	 * one whose parameters missing from some variant are optional, so mt_rand()
+	 * with the variants () and ($min, $max) would accept a single argument.
+	 * Such a count is checked against the variant closest to it instead.
+	 * The same applies to the members of a union of closures, such as mt_rand(...).
+	 *
+	 * @param Node\Arg[] $args
+	 * @param list<ParametersAcceptor> $variants
+	 */
+	public static function getVariantForArgumentsCount(array $args, array $variants, ParametersAcceptor $selectedParametersAcceptor): ?ParametersAcceptor
+	{
+		if (count($variants) < 2) {
+			return null;
+		}
+
+		foreach ($args as $arg) {
+			if ($arg->unpack || $arg->name !== null) {
+				return null;
+			}
+		}
+
+		$argsCount = count($args);
+		if (!self::acceptsArgumentsCount($selectedParametersAcceptor, $argsCount)) {
+			return null;
+		}
+
+		$closestVariant = null;
+		$closestDistance = null;
+		foreach ($variants as $variant) {
+			if (self::acceptsArgumentsCount($variant, $argsCount)) {
+				return null;
+			}
+
+			[$minCount, $maxCount] = self::getArgumentsCountRange($variant);
+			$isInsufficient = $argsCount < $minCount;
+			$distance = $isInsufficient ? $minCount - $argsCount : $argsCount - (int) $maxCount;
+			if ($closestDistance !== null && ($distance > $closestDistance || ($distance === $closestDistance && !$isInsufficient))) {
+				continue;
+			}
+
+			$closestVariant = $variant;
+			$closestDistance = $distance;
+		}
+
+		return $closestVariant;
+	}
+
+	private static function acceptsArgumentsCount(ParametersAcceptor $parametersAcceptor, int $argsCount): bool
+	{
+		[$minCount, $maxCount] = self::getArgumentsCountRange($parametersAcceptor);
+
+		return $argsCount >= $minCount && ($maxCount === null || $argsCount <= $maxCount);
+	}
+
+	/**
+	 * @return array{int, int|null}
+	 */
+	private static function getArgumentsCountRange(ParametersAcceptor $parametersAcceptor): array
+	{
+		$minCount = 0;
+		foreach ($parametersAcceptor->getParameters() as $parameter) {
+			if ($parameter->isOptional()) {
+				continue;
+			}
+
+			$minCount++;
+		}
+
+		return [$minCount, $parametersAcceptor->isVariadic() ? null : count($parametersAcceptor->getParameters())];
+	}
+
 }

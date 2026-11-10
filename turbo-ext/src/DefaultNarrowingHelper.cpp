@@ -209,7 +209,7 @@ zend_string *identifierString(zval *identifier)
 zv::Val callArgs(zval *call)
 {
 	bool firstClassCallable;
-	if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return zv::Val();
+	if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), firstClassCallable))) return zv::Val();
 	if (UNEXPECTED(firstClassCallable)) return pt_type_call(Z_OBJ_P(call), PT_LC("getargs"), 0, NULL);
 	zval *args = nodeProp(pt_dnh_args_site, call, PT_LC("args"));
 	if (UNEXPECTED(Z_TYPE_P(args) == IS_UNDEF)) return zv::Val::null();
@@ -377,7 +377,7 @@ public:
 	{
 		if (isA(node, PT_CLASS_CALL_LIKE)) {
 			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(node), firstClassCallable))) return zv::Val();
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(node), firstClassCallable))) return zv::Val();
 			if (firstClassCallable) return emptyTypesRooted(node);
 		} else if (UNEXPECTED(EG(exception))) {
 			return zv::Val();

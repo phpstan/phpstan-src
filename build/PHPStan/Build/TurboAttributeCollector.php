@@ -9,6 +9,7 @@ use Nette\Utils\Strings;
 use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node\ArgPlaceholder;
 use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
@@ -254,6 +255,7 @@ final class TurboAttributeCollector
 		'newExpr' => New_::class,
 		'classStmt' => Class_::class,
 		'variadicPlaceholder' => VariadicPlaceholder::class,
+		'argPlaceholder' => ArgPlaceholder::class,
 		'scalar' => Scalar::class,
 		'arrayExpr' => Array_::class,
 		'unaryMinus' => UnaryMinus::class,

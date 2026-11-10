@@ -23,7 +23,7 @@ final class ArrowFunctionArgVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		if ($node->isFirstClassCallable()) {
+		if ($node->isPartialFunctionApplication()) {
 			return null;
 		}
 

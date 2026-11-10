@@ -15,6 +15,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
+use function in_array;
 use function sprintf;
 use function strtolower;
 
@@ -24,6 +25,20 @@ use function strtolower;
 #[RegisteredRule(level: 0)]
 final class FunctionCallableRule implements Rule
 {
+
+	/**
+	 * PHP throws "Cannot call %s() dynamically" when these are called through
+	 * a closure: a first-class callable of them throws on every call,
+	 * a partial application of them already when it is created.
+	 */
+	private const DYNAMIC_CALL_FORBIDDEN_FUNCTIONS = [
+		'compact',
+		'extract',
+		'func_get_arg',
+		'func_get_args',
+		'func_num_args',
+		'get_defined_vars',
+	];
 
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -43,7 +58,16 @@ final class FunctionCallableRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
+		if (!$node->getOriginalNode()->isFirstClassCallable()) {
+			if (!$scope->getPhpVersion()->supportsPartialFunctionApplication()->yes()) {
+				return [
+					RuleErrorBuilder::message('Partial function application is supported only on PHP 8.6 and later.')
+						->nonIgnorable()
+						->identifier('callable.notSupported')
+						->build(),
+				];
+			}
+		} elseif (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')
 					->nonIgnorable()
@@ -56,26 +80,31 @@ final class FunctionCallableRule implements Rule
 		if ($functionName instanceof Node\Name) {
 			$functionNameName = $functionName->toString();
 			if ($this->reflectionProvider->hasFunction($functionName, $scope)) {
+				$function = $this->reflectionProvider->getFunction($functionName, $scope);
+				$errors = [];
 				if ($this->checkFunctionNameCase) {
-					$function = $this->reflectionProvider->getFunction($functionName, $scope);
-
 					/** @var string $calledFunctionName */
 					$calledFunctionName = $this->reflectionProvider->resolveFunctionName($functionName, $scope);
 					if (
 						strtolower($function->getName()) === strtolower($calledFunctionName)
 						&& $function->getName() !== $calledFunctionName
 					) {
-						return [
-							RuleErrorBuilder::message(sprintf(
-								'Call to function %s() with incorrect case: %s',
-								$function->getName(),
-								$functionNameName,
-							))->identifier('function.nameCase')->build(),
-						];
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'Call to function %s() with incorrect case: %s',
+							$function->getName(),
+							$functionNameName,
+						))->identifier('function.nameCase')->build();
 					}
 				}
 
-				return [];
+				if (in_array(strtolower($function->getName()), self::DYNAMIC_CALL_FORBIDDEN_FUNCTIONS, true)) {
+					$errors[] = RuleErrorBuilder::message(sprintf(
+						'Cannot create callable from %s(), it cannot be called dynamically.',
+						$function->getName(),
+					))->identifier('callable.notSupported')->build();
+				}
+
+				return $errors;
 			}
 
 			if ($scope->isInFunctionExists($functionNameName)) {

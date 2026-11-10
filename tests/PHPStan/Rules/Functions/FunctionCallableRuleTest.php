@@ -78,6 +78,86 @@ class FunctionCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testDynamicCallForbidden(): void
+	{
+		$errors = [
+			[
+				'Cannot create callable from compact(), it cannot be called dynamically.',
+				7,
+			],
+			[
+				'Cannot create callable from extract(), it cannot be called dynamically.',
+				8,
+			],
+			[
+				'Cannot create callable from func_get_arg(), it cannot be called dynamically.',
+				9,
+			],
+			[
+				'Cannot create callable from func_get_args(), it cannot be called dynamically.',
+				10,
+			],
+			[
+				'Cannot create callable from func_num_args(), it cannot be called dynamically.',
+				11,
+			],
+			[
+				'Cannot create callable from get_defined_vars(), it cannot be called dynamically.',
+				12,
+			],
+			[
+				'Call to function compact() with incorrect case: COMPACT',
+				13,
+			],
+			[
+				'Cannot create callable from compact(), it cannot be called dynamically.',
+				13,
+			],
+		];
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Partial function application is supported only on PHP 8.6 and later.',
+				14,
+			];
+			$errors[] = [
+				'Partial function application is supported only on PHP 8.6 and later.',
+				15,
+			];
+		} else {
+			$errors[] = [
+				'Cannot create callable from compact(), it cannot be called dynamically.',
+				14,
+			];
+			$errors[] = [
+				'Cannot create callable from extract(), it cannot be called dynamically.',
+				15,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/function-callable-dynamic-call-forbidden.php'], $errors);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplication(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80600) {
+			$errors = [
+				[
+					'Partial function application is supported only on PHP 8.6 and later.',
+					7,
+				],
+				[
+					'Partial function application is supported only on PHP 8.6 and later.',
+					8,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/function-partial-function-application.php'], $errors);
+	}
+
 	public function testConditionallyExecutedCode(): void
 	{
 		$errors = [

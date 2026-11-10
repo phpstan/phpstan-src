@@ -39,6 +39,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_NEW */ {"newExpr", "PhpParser\\Node\\Expr\\New_"},
 	/* PT_CLASS_CLASS_STMT */ {"classStmt", "PhpParser\\Node\\Stmt\\Class_"},
 	/* PT_CLASS_VARIADIC_PLACEHOLDER */ {"variadicPlaceholder", "PhpParser\\Node\\VariadicPlaceholder"},
+	/* PT_CLASS_ARG_PLACEHOLDER */ {"argPlaceholder", "PhpParser\\Node\\ArgPlaceholder"},
 	/* PT_CLASS_SCALAR */ {"scalar", "PhpParser\\Node\\Scalar"},
 	/* PT_CLASS_ARRAY_EXPR */ {"arrayExpr", "PhpParser\\Node\\Expr\\Array_"},
 	/* PT_CLASS_UNARY_MINUS */ {"unaryMinus", "PhpParser\\Node\\Expr\\UnaryMinus"},
@@ -1144,7 +1145,8 @@ namespace {
 
 /* a class entry's verdict: the byte offset of its `args` slot when
  * getRawArgs() is a php-parser call class's `return $this->args;` and
- * isFirstClassCallable() / getArgs() are CallLike's own; -1 = call the
+ * isFirstClassCallable() / isPartialFunctionApplication() / getArgs() are
+ * CallLike's own; -1 = call the
  * methods */
 struct pt_call_like_class
 {
@@ -1181,6 +1183,7 @@ int32_t pt_call_like_resolve(zend_class_entry *ce)
 	if (info != NULL && (info->flags & ZEND_ACC_STATIC) == 0
 		&& pt_call_like_declared_by(ce, PT_LC("getrawargs"), { PT_CLASS_FUNC_CALL, PT_CLASS_METHOD_CALL, PT_CLASS_NULLSAFE_METHOD_CALL, PT_CLASS_STATIC_CALL, PT_CLASS_NEW })
 		&& pt_call_like_declared_by(ce, PT_LC("isfirstclasscallable"), { PT_CLASS_CALL_LIKE })
+		&& pt_call_like_declared_by(ce, PT_LC("ispartialfunctionapplication"), { PT_CLASS_CALL_LIKE })
 		&& pt_call_like_declared_by(ce, PT_LC("getargs"), { PT_CLASS_CALL_LIKE })) {
 		argsOffset = (int32_t) info->offset;
 	}
@@ -1217,6 +1220,26 @@ bool pt_call_like_raw_args_are_first_class_callable(zval *rawArgs, bool &out)
 	return true;
 }
 
+/* any element of $rawArgs instanceof VariadicPlaceholder or ArgPlaceholder;
+ * false = pending exception */
+bool pt_call_like_raw_args_are_partial_function_application(zval *rawArgs, bool &out)
+{
+	out = false;
+	if (Z_TYPE_P(rawArgs) != IS_ARRAY) return true;
+	zend_class_entry *variadicPlaceholderCe = pt_class(PT_CLASS_VARIADIC_PLACEHOLDER);
+	if (UNEXPECTED(variadicPlaceholderCe == NULL)) return false;
+	zend_class_entry *argPlaceholderCe = pt_class(PT_CLASS_ARG_PLACEHOLDER);
+	if (UNEXPECTED(argPlaceholderCe == NULL)) return false;
+	for (auto entry : zv::ArrRef(rawArgs)) {
+		zv::Ref value = entry.value().deref();
+		if (value.instanceOf(variadicPlaceholderCe) || value.instanceOf(argPlaceholderCe)) {
+			out = true;
+			return true;
+		}
+	}
+	return true;
+}
+
 /* $call->method() by name, kept in hold; NULL = pending exception */
 zend_never_inline ZEND_COLD zval *pt_call_like_call(zend_object *call, const char *lcname, size_t len, zv::Val &hold)
 {
@@ -1243,13 +1266,24 @@ bool pt_call_like_is_first_class_callable(zend_object *call, bool &out)
 	return true;
 }
 
+bool pt_call_like_is_partial_function_application(zend_object *call, bool &out)
+{
+	zval *args = pt_call_like_args_slot(call);
+	if (EXPECTED(args != NULL)) return pt_call_like_raw_args_are_partial_function_application(args, out);
+	zv::Val hold;
+	zval *result = pt_call_like_call(call, PT_LC("ispartialfunctionapplication"), hold);
+	if (UNEXPECTED(result == NULL)) return false;
+	out = zend_is_true(result);
+	return true;
+}
+
 zval *pt_call_like_args(zend_object *call, zv::Val &hold)
 {
 	zval *args = pt_call_like_args_slot(call);
 	if (EXPECTED(args != NULL)) {
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_raw_args_are_first_class_callable(args, firstClassCallable))) return NULL;
-		if (EXPECTED(!firstClassCallable)) return args;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!pt_call_like_raw_args_are_partial_function_application(args, partialFunctionApplication))) return NULL;
+		if (EXPECTED(!partialFunctionApplication)) return args;
 	}
 	return pt_call_like_call(call, PT_LC("getargs"), hold);
 }

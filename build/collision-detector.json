@@ -18,6 +18,16 @@
 		"../tests/PHPStan/Levels/data/stubs/function.php",
 		"../tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php",
 		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php",
-		"../tests/PHPStan/Rules/Cast/data/void-cast.php"
+		"../tests/PHPStan/Rules/Cast/data/void-cast.php",
+		"../tests/PHPStan/Analyser/data/bug-15364.php",
+		"../tests/PHPStan/Analyser/data/partial-function-application-positions.php",
+		"../tests/PHPStan/Rules/Functions/data/function-callable-dynamic-call-forbidden.php",
+		"../tests/PHPStan/Rules/Functions/data/function-partial-function-application.php",
+		"../tests/PHPStan/Rules/Methods/data/method-partial-function-application.php",
+		"../tests/PHPStan/Rules/Variables/data/partial-function-application.php",
+		"../tests/PHPStan/Rules/DeadCode/data/partial-function-application-bound-args.php",
+		"../tests/PHPStan/Rules/Exceptions/data/dead-catch-partial-function-application.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-bound-args.php",
+		"../tests/PHPStan/Rules/Pure/data/partial-function-application-pure.php"
     ]
 }

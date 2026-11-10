@@ -44,7 +44,7 @@ public:
 		zend_object *closure = Z_OBJ_P(callee);
 		if (!visitors::isInstanceOf(closure, PT_CLASS_CLOSURE_EXPR) && !visitors::isInstanceOf(closure, PT_CLASS_ARROW_FUNCTION)) return !EG(exception);
 		zval *args = argsProp.of(node);
-		if (visitors::isFirstClassCallable(args)) return true;
+		if (visitors::isPartialFunctionApplication(args)) return true;
 
 		visitors::setAttributeTrue(closure, pt_immediately_invoked_closure_attribute_str);
 		if (args != NULL) {

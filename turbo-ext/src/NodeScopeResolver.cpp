@@ -749,7 +749,7 @@ public:
 			bool firstClassCallable = false;
 			bool isCallLike;
 			if (UNEXPECTED(!isInstance(Z_OBJ_P(expr), PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
-			if (isCallLike && UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
+			if (isCallLike && UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
 			if (!firstClassCallable) {
 				zv::Val mixed = pt_type_new_mixed_type();
 				if (UNEXPECTED(mixed.isUndef())) return zv::Val();
@@ -1981,9 +1981,15 @@ private:
 		bool isCallLike;
 		if (UNEXPECTED(!isInstance(exprObject, PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {
-			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(exprObject, firstClassCallable))) return zv::Val();
-			if (firstClassCallable) return processFirstClassCallable(stmt, expr, scope, storage, nodeCallback, context);
+			// a nullsafe first-class callable is a compile error; its handler turns
+			// it into a plain MethodCall, which then lands here
+			bool isNullsafeMethodCall;
+			if (UNEXPECTED(!isInstance(exprObject, PT_CLASS_NULLSAFE_METHOD_CALL, isNullsafeMethodCall))) return zv::Val();
+			if (!isNullsafeMethodCall) {
+				bool firstClassCallable;
+				if (UNEXPECTED(!pt_call_like_is_partial_function_application(exprObject, firstClassCallable))) return zv::Val();
+				if (firstClassCallable) return processFirstClassCallable(stmt, expr, scope, storage, nodeCallback, context);
+			}
 		}
 
 		zv::Ref container = slot(slots::container);

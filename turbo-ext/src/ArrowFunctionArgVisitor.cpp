@@ -39,7 +39,7 @@ public:
 
 		if (!visitors::isInstanceOf(node, PT_CLASS_FUNC_CALL)) return !EG(exception);
 		zval *args = argsProp.of(node);
-		if (visitors::isFirstClassCallable(args)) return true;
+		if (visitors::isPartialFunctionApplication(args)) return true;
 
 		zval *callee = calleeProp.of(node);
 		if (callee == NULL || Z_TYPE_P(callee) != IS_OBJECT) return true;

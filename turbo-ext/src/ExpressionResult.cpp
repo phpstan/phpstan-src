@@ -992,7 +992,7 @@ private:
 			zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
 			if (name.raw() == NULL || !name.deref().instanceOf(nameCe)) return 0;
 			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, firstClassCallable))) return -1;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, firstClassCallable))) return -1;
 			return firstClassCallable ? 0 : 1;
 		}
 
@@ -1000,7 +1000,7 @@ private:
 			return 0;
 		}
 		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, firstClassCallable))) return -1;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, firstClassCallable))) return -1;
 		return firstClassCallable ? 0 : 1;
 	}
 

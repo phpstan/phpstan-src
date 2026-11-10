@@ -403,6 +403,29 @@ class UnreachableStatementRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationBoundArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-bound-args.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				50,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				56,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				62,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				68,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallableTerminatingVar(): void
 	{
 		$this->treatPhpDocTypesAsCertain = true;

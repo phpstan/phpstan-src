@@ -405,6 +405,17 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplication(): void
+	{
+		$this->analyse([__DIR__ . '/data/dead-catch-partial-function-application.php'], [
+			[
+				'Dead catch - DeadCatchPartialFunctionApplication\FooException is never thrown in the try block.',
+				61,
+			],
+		]);
+	}
+
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/dead-catch-first-class-callables.php'], [

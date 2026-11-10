@@ -102,6 +102,17 @@ class CallToStaticMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12224.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplication(): void
+	{
+		$this->analyse([__DIR__ . '/../Functions/data/partial-function-application-bound-args.php'], [
+			[
+				'Call to static method PartialFunctionApplicationBoundArgsCalls\Foo::s() on a separate line has no effect.',
+				33,
+			],
+		]);
+	}
+
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/first-class-callable-static-method-without-side-effect.php'], [

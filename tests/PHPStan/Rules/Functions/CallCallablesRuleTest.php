@@ -246,6 +246,7 @@ class CallCallablesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-1849.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallables(): void
 	{
 		$this->analyse([__DIR__ . '/data/call-first-class-callables.php'], [
@@ -258,6 +259,30 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Unable to resolve the template type T in call to closure',
 				17,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Callable (Closure(): int)|(Closure(int, int): int) invoked with 1 parameter, 2 required.',
+				41,
+			],
+			[
+				'Callable (Closure(): int)|(Closure(int, int): int) invoked with 3 parameters, 0-2 required.',
+				42,
+			],
+			[
+				'Callable (Closure(mixed, array): bool)|(Closure(mixed, string, string, mixed): bool) invoked with 3 parameters, 4 required.',
+				47,
+			],
+			[
+				'Callable (Closure(): int)|(Closure(int, int): int) invoked with 1 parameter, 2 required.',
+				50,
+			],
+			[
+				'Missing parameter $string (string) in call to callable (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)).',
+				54,
+			],
+			[
+				'Unknown parameter $str in call to callable (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)).',
+				54,
 			],
 		]);
 	}

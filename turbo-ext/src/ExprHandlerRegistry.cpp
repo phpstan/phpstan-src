@@ -77,7 +77,7 @@ struct CacheKey
 	}
 };
 
-/* $cacheKey = get_class($expr); CallLike: .= '|' . $expr->isFirstClassCallable();
+/* $cacheKey = get_class($expr); CallLike: .= '|' . $expr->isPartialFunctionApplication();
  * New_: .= '|' . get_class($expr->class). false = pending exception */
 [[nodiscard]] bool buildCacheKey(zend_object *expr, CacheKey &key)
 {
@@ -92,7 +92,7 @@ struct CacheKey
 	}
 
 	bool firstClassCallable;
-	if (UNEXPECTED(!pt_call_like_is_first_class_callable(expr, firstClassCallable))) return false;
+	if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, firstClassCallable))) return false;
 	zend_string *newClassName = NULL;
 	zend_class_entry *newCe = pt_class(PT_CLASS_NEW);
 	if (UNEXPECTED(newCe == NULL)) return false;

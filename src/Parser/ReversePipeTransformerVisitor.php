@@ -15,7 +15,7 @@ final class ReversePipeTransformerVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Expr\FuncCall && !$node->isFirstClassCallable()) {
+		if ($node instanceof Node\Expr\FuncCall && !$node->isPartialFunctionApplication()) {
 			$attributes = $node->getAttributes();
 			$origPipeAttributes = $attributes[PipeTransformerVisitor::ORIGINAL_PIPE_ATTRIBUTE_NAME] ?? [];
 			$origVariadicPlaceholderAttributes = $attributes[PipeTransformerVisitor::ORIGINAL_VARIADIC_PLACEHOLDER_ATTRIBUTE_NAME] ?? [];
@@ -39,7 +39,7 @@ final class ReversePipeTransformerVisitor extends NodeVisitorAbstract
 			}
 		}
 
-		if ($node instanceof Node\Expr\MethodCall && !$node->isFirstClassCallable()) {
+		if ($node instanceof Node\Expr\MethodCall && !$node->isPartialFunctionApplication()) {
 			$attributes = $node->getAttributes();
 			$origPipeAttributes = $attributes[PipeTransformerVisitor::ORIGINAL_PIPE_ATTRIBUTE_NAME] ?? [];
 			$origVariadicPlaceholderAttributes = $attributes[PipeTransformerVisitor::ORIGINAL_VARIADIC_PLACEHOLDER_ATTRIBUTE_NAME] ?? [];
@@ -55,7 +55,7 @@ final class ReversePipeTransformerVisitor extends NodeVisitorAbstract
 			}
 		}
 
-		if ($node instanceof Node\Expr\StaticCall && !$node->isFirstClassCallable()) {
+		if ($node instanceof Node\Expr\StaticCall && !$node->isPartialFunctionApplication()) {
 			$attributes = $node->getAttributes();
 			$origPipeAttributes = $attributes[PipeTransformerVisitor::ORIGINAL_PIPE_ATTRIBUTE_NAME] ?? [];
 			$origVariadicPlaceholderAttributes = $attributes[PipeTransformerVisitor::ORIGINAL_VARIADIC_PLACEHOLDER_ATTRIBUTE_NAME] ?? [];

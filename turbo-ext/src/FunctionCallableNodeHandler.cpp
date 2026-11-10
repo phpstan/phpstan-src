@@ -22,6 +22,7 @@
 namespace slots = ptdecl::FunctionCallableNodeHandler::slot;
 namespace sigs = ptdecl::FunctionCallableNodeHandler::sig;
 #include "VirtualExprHandlers.h"
+#include "CallableNodeArgs.h"
 
 zend_class_entry *pt_ce_function_callable_node_handler = nullptr;
 
@@ -136,27 +137,47 @@ public:
 			if (UNEXPECTED(!pt_expression_result_is_always_terminating(nameResult.raw(), isAlwaysTerminating))) return zv::Val();
 		}
 
-		zv::Val variableFlow = zv::Val::null();
+		zv::Val nameFlow = zv::Val::null();
 		if (!nameResult.isNull()) {
-			variableFlow = pt_expression_result_variable_flow(nameResult.raw());
-			if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
+			nameFlow = pt_expression_result_variable_flow(nameResult.raw());
+			if (UNEXPECTED(nameFlow.isUndef())) return zv::Val();
 		}
+
+		// a partial function application evaluates its bound arguments when the
+		// closure is created
+		zv::Val ownThrowPoints = throwPoints != NULL ? zv::Val::copyOf(zv::Ref(throwPoints)) : zv::Val(zv::Arr::empty());
+		zv::Val ownImpurePoints = impurePoints != NULL ? zv::Val::copyOf(zv::Ref(impurePoints)) : zv::Val(zv::Arr::empty());
+		zv::Arr flows = zv::Arr::empty();
+		flows.push(std::move(nameFlow));
+		zv::Arr argsDependencies = zv::Arr::empty();
+		zv::Val originalNodeHold, argsScopeHold;
+		zval *originalNode = ptveh::getterRead(ptveh::functionCallableNodeOriginalNode, expr, PT_LC("getoriginalnode"), originalNodeHold);
+		if (UNEXPECTED(originalNode == NULL)) return zv::Val();
+		if (UNEXPECTED(!ptveh::processBoundArgs(originalNode, nodeScopeResolver, stmt, currentScope, argsScopeHold, storage, nodeCallback, context, hasYield, isAlwaysTerminating, ownThrowPoints, ownImpurePoints, flows, argsDependencies))) return zv::Val();
+
+		zv::Val variableFlow = pt_variable_flow_sequence_list(Z_ARRVAL_P(flows.raw()));
+		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, beforeScope, expr, nameResult.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
-		pt_expression_result_args args(currentScope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints, impurePoints, typeCallback.raw(), specifyTypesCallback.raw());
+		pt_expression_result_args args(currentScope, beforeScope, expr, hasYield, isAlwaysTerminating, ownThrowPoints.raw(), ownImpurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
 		args.withVariableFlow(variableFlow.raw());
 		zv::Val result = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), args);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 
-		zval *nameDependencies = NULL;
+		zv::Arr dependencyList = zv::Arr::empty();
 		zv::Val nameDependenciesHold;
 		if (!nameResult.isNull()) {
-			nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
+			zval *nameDependencies = pt_expression_result_dependencies(nameResult.raw(), nameDependenciesHold);
 			if (UNEXPECTED(nameDependencies == NULL)) return zv::Val();
+			dependencyList.push(zv::Ref(nameDependencies));
 		}
 		zv::Val ownDependencies = getDependencies(beforeScope, expr, nameResult.raw(), result.raw());
 		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
-		zv::Val dependencies = pt_dependencies_merge({nameDependencies, ownDependencies.raw()});
+		dependencyList.push(std::move(ownDependencies));
+		for (auto entry : zv::ArrRef(argsDependencies.raw())) {
+			dependencyList.push(entry.value().deref());
+		}
+		zv::Val dependencies = pt_dependencies_merge_list(Z_ARRVAL_P(dependencyList.raw()));
 		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}
@@ -234,6 +255,12 @@ public:
 		zv::Val originalNodeHold;
 		zval *originalNode = ptveh::getterRead(ptveh::functionCallableNodeOriginalNode, expr, PT_LC("getoriginalnode"), originalNodeHold);
 		if (UNEXPECTED(originalNode == NULL)) return zv::Val();
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(originalNode), firstClassCallable))) return zv::Val();
+		if (!firstClassCallable) {
+			// the signature of a partial function application is not inferred yet
+			return ptveh::closureObjectType();
+		}
 		zval *originalName = ptveh::nodeRead(ptveh::funcCallName, originalNode);
 		if (UNEXPECTED(originalName == NULL)) return zv::Val();
 		int originalNameIsExpr = ptveh::isInstance(originalName, PT_CLASS_EXPR);

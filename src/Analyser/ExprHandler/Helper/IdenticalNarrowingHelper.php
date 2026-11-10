@@ -435,8 +435,8 @@ final class IdenticalNarrowingHelper
 			// one non-empty side makes both non-empty
 			if (
 				$context->true()
-				&& $unwrappedLeft->name instanceof Name && in_array($unwrappedLeft->name->toLowerString(), ['count', 'sizeof'], true) && !$unwrappedLeft->isFirstClassCallable() && isset($unwrappedLeft->getArgs()[0])
-				&& $unwrappedRight->name instanceof Name && in_array($unwrappedRight->name->toLowerString(), ['count', 'sizeof'], true) && !$unwrappedRight->isFirstClassCallable() && isset($unwrappedRight->getArgs()[0])
+				&& $unwrappedLeft->name instanceof Name && in_array($unwrappedLeft->name->toLowerString(), ['count', 'sizeof'], true) && !$unwrappedLeft->isPartialFunctionApplication() && isset($unwrappedLeft->getArgs()[0])
+				&& $unwrappedRight->name instanceof Name && in_array($unwrappedRight->name->toLowerString(), ['count', 'sizeof'], true) && !$unwrappedRight->isPartialFunctionApplication() && isset($unwrappedRight->getArgs()[0])
 			) {
 				if ($leftArgResult === null || $rightArgResult === null) {
 					return null;
@@ -812,7 +812,7 @@ final class IdenticalNarrowingHelper
 		if (
 			$unwrappedSubject instanceof Expr\FuncCall
 			&& $unwrappedSubject->name instanceof Name
-			&& !$unwrappedSubject->isFirstClassCallable()
+			&& !$unwrappedSubject->isPartialFunctionApplication()
 			&& isset($unwrappedSubject->getArgs()[0])
 		) {
 			$funcName = $unwrappedSubject->name->toLowerString();
@@ -854,7 +854,7 @@ final class IdenticalNarrowingHelper
 		?ExpressionResult $argResult,
 	): SpecifiedTypes|false|null
 	{
-		if (!($call->name instanceof Name) || $call->isFirstClassCallable() || !isset($call->getArgs()[0])) {
+		if (!($call->name instanceof Name) || $call->isPartialFunctionApplication() || !isset($call->getArgs()[0])) {
 			return false;
 		}
 
@@ -1132,7 +1132,7 @@ final class IdenticalNarrowingHelper
 	public function captureFirstArgResult(Expr $side, ExpressionResultStorage $storage): ?ExpressionResult
 	{
 		$unwrapped = $side instanceof AlwaysRememberedExpr ? $side->getExpr() : $side;
-		if (!$unwrapped instanceof Expr\FuncCall || $unwrapped->isFirstClassCallable() || !isset($unwrapped->getArgs()[0])) {
+		if (!$unwrapped instanceof Expr\FuncCall || $unwrapped->isPartialFunctionApplication() || !isset($unwrapped->getArgs()[0])) {
 			return null;
 		}
 

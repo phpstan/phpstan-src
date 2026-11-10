@@ -130,7 +130,7 @@ final class FuncCallHandler implements ExprHandler
 
 	public function supports(Expr $expr): bool
 	{
-		return $expr instanceof FuncCall && !$expr->isFirstClassCallable();
+		return $expr instanceof FuncCall && !$expr->isPartialFunctionApplication();
 	}
 
 	public function processExpr(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, Expr $expr, MutatingScope $scope, ExpressionResultStorage $storage, callable $nodeCallback, ExpressionContext $context): ExpressionResult
@@ -471,7 +471,7 @@ final class FuncCallHandler implements ExprHandler
 			// for find_key: an empty result does not mean an empty array)
 			if (
 				$expr->name instanceof Name
-				&& !$expr->isFirstClassCallable()
+				&& !$expr->isPartialFunctionApplication()
 				&& isset($normalizedExpr->getArgs()[0])
 				&& $type->isNull()->yes()
 			) {

@@ -125,11 +125,11 @@ final class BinaryOpHandler implements ExprHandler
 		// never collects)
 		$specifySubResults = [];
 		$specifySubExprs = [];
-		if ($expr->right instanceof Expr\FuncCall && !$expr->right->isFirstClassCallable() && isset($expr->right->getArgs()[0])) {
+		if ($expr->right instanceof Expr\FuncCall && !$expr->right->isPartialFunctionApplication() && isset($expr->right->getArgs()[0])) {
 			$specifySubExprs[] = $expr->right->getArgs()[0]->value;
 		} elseif ($expr->right instanceof BinaryOp\Minus) {
 			$specifySubExprs[] = $expr->right->right;
-			if ($expr->right->left instanceof Expr\FuncCall && !$expr->right->left->isFirstClassCallable() && isset($expr->right->left->getArgs()[0])) {
+			if ($expr->right->left instanceof Expr\FuncCall && !$expr->right->left->isPartialFunctionApplication() && isset($expr->right->left->getArgs()[0])) {
 				$specifySubExprs[] = $expr->right->left->getArgs()[0]->value;
 			}
 		}
@@ -364,7 +364,7 @@ final class BinaryOpHandler implements ExprHandler
 				if (
 					$expr->left instanceof Expr\FuncCall
 					&& $expr->left->name instanceof Name
-					&& !$expr->left->isFirstClassCallable()
+					&& !$expr->left->isPartialFunctionApplication()
 					&& in_array(strtolower((string) $expr->left->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
 					&& count($expr->left->getArgs()) >= 1
 					&& (
@@ -422,7 +422,7 @@ final class BinaryOpHandler implements ExprHandler
 					!$context->null()
 					&& $expr->right instanceof Expr\FuncCall
 					&& $expr->right->name instanceof Name
-					&& !$expr->right->isFirstClassCallable()
+					&& !$expr->right->isPartialFunctionApplication()
 					&& in_array(strtolower((string) $expr->right->name), ['count', 'sizeof'], true)
 					&& count($expr->right->getArgs()) >= 1
 					&& $leftType->isInteger()->yes()
@@ -526,7 +526,7 @@ final class BinaryOpHandler implements ExprHandler
 					&& $expr->right instanceof BinaryOp\Minus
 					&& $expr->right->left instanceof Expr\FuncCall
 					&& $expr->right->left->name instanceof Name
-					&& !$expr->right->left->isFirstClassCallable()
+					&& !$expr->right->left->isPartialFunctionApplication()
 					&& in_array(strtolower((string) $expr->right->left->name), ['count', 'sizeof'], true)
 					&& count($expr->right->left->getArgs()) >= 1
 					// constant offsets are handled via HasOffsetType/HasOffsetValueType
@@ -553,7 +553,7 @@ final class BinaryOpHandler implements ExprHandler
 					!$context->null()
 					&& $expr->right instanceof Expr\FuncCall
 					&& $expr->right->name instanceof Name
-					&& !$expr->right->isFirstClassCallable()
+					&& !$expr->right->isPartialFunctionApplication()
 					&& in_array(strtolower((string) $expr->right->name), ['preg_match'], true)
 					&& count($expr->right->getArgs()) >= 3
 					&& (
@@ -571,7 +571,7 @@ final class BinaryOpHandler implements ExprHandler
 					!$context->null()
 					&& $expr->right instanceof Expr\FuncCall
 					&& $expr->right->name instanceof Name
-					&& !$expr->right->isFirstClassCallable()
+					&& !$expr->right->isPartialFunctionApplication()
 					&& in_array(strtolower((string) $expr->right->name), ['strlen', 'mb_strlen'], true)
 					&& count($expr->right->getArgs()) === 1
 					&& $leftType->isInteger()->yes()

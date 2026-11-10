@@ -120,7 +120,7 @@ final class CallCallablesRule implements Rule
 		return array_merge(
 			$messages,
 			$this->check->check(
-				$parametersAcceptor,
+				FunctionCallParametersCheck::getVariantForArgumentsCount($node->getArgs(), $parametersAcceptors, $parametersAcceptor) ?? $parametersAcceptor,
 				$scope,
 				false,
 				$node,

@@ -765,11 +765,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Parameter #1 $arr1 of function array_udiff expects array<(int&TK)|(string&TK), string>, null given.',
+				'Unable to resolve the template type TK in call to function array_udiff',
+				19,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+			[
+				'Parameter #1 $arr1 of function array_udiff expects array<int|string, string>, null given.',
 				20,
 			],
 			[
-				'Parameter #2 $arr2 of function array_udiff expects array<(int&TK)|(string&TK), string>, null given.',
+				'Parameter #2 $arr2 of function array_udiff expects array<int|string, string>, null given.',
 				21,
 			],
 			[
@@ -3278,6 +3283,29 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 	public function testBug11919(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-11919.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationBoundArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-bound-args.php'], [
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				42,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				43,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				44,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				45,
+			],
+		]);
 	}
 
 	public function testArgumentsCountAcceptedByNoVariant(): void

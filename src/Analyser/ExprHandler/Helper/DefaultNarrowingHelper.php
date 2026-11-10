@@ -93,7 +93,7 @@ final class DefaultNarrowingHelper
 	 */
 	public function specifyTypesForNode(Scope $scope, Expr $node, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+		if ($node instanceof Expr\CallLike && $node->isPartialFunctionApplication()) {
 			return (new SpecifiedTypes([], []))->setRootExpr($node);
 		}
 

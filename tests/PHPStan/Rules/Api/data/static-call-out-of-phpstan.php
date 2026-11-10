@@ -30,7 +30,7 @@ class Bar extends InClassNode
 
 	public function __construct()
 	{
-		parent::__construct();
+		parent::__construct(); // not reported - extending the class is what gets checked
 	}
 
 }

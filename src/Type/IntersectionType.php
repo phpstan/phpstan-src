@@ -63,6 +63,7 @@ use function array_shift;
 use function array_unique;
 use function array_values;
 use function count;
+use function get_class;
 use function implode;
 use function in_array;
 use function is_int;
@@ -326,7 +327,7 @@ class IntersectionType implements CompoundType
 			return IsSuperTypeOfResult::createYes();
 		}
 
-		if ($otherType::class === MixedType::class && $otherType->getSubtractedType() === null) {
+		if (get_class($otherType) === MixedType::class && $otherType->getSubtractedType() === null) {
 			// Immutable, so it compares to plain mixed the same way every time -
 			// remembered because comparing to mixed walks every nested member,
 			// and a member shared by several nested types (e.g. a snapshot of

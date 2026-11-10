@@ -16,6 +16,7 @@ use PHPStan\Rules\ClassNameNodePair;
 use PHPStan\Rules\ClassNameUsageLocation;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\NonStringableDynamicAccessCheck;
+use PHPStan\Rules\RestrictedUsage\ClassNameConstantReflection;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
@@ -167,7 +168,9 @@ final class ClassConstantRule implements Rule
 
 				$locationData = [];
 				$locationClassReflection = $this->reflectionProvider->getClass($className);
-				if ($locationClassReflection->hasConstant($constantName)) {
+				if (strtolower($constantName) === 'class') {
+					$locationData['classConstant'] = new ClassNameConstantReflection($locationClassReflection);
+				} elseif ($locationClassReflection->hasConstant($constantName)) {
 					$locationData['classConstant'] = $locationClassReflection->getConstant($constantName);
 				}
 

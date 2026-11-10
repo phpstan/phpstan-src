@@ -108,3 +108,11 @@ namespace SomeNamespace {
 	};
 
 }
+
+namespace ClassConstantInternalTagThree {
+
+	function (): void {
+		\ClassConstantInternalTagOne\FooInternal::class;
+	};
+
+}

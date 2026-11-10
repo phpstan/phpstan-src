@@ -145,10 +145,6 @@ final class MethodCallableNodeHandler implements ExprHandler
 		if (!$originalNode->name instanceof Identifier) {
 			return new ObjectType(Closure::class);
 		}
-		if (!$originalNode->isFirstClassCallable()) {
-			// the signature of a partial function application is not inferred yet
-			return new ObjectType(Closure::class);
-		}
 
 		// $originalNode->var is the same node as $expr->getVar(), processed in
 		// processExpr - read its ExpressionResult instead of Scope::getType()
@@ -162,6 +158,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 			$method,
 			$method->getVariants(),
 			$scope->nativeTypesPromoted,
+			$originalNode->isFirstClassCallable() ? null : $originalNode->getRawArgs(),
 		);
 	}
 

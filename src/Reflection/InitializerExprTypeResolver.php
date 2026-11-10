@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use Closure;
 use PhpParser\Node\Arg;
+use PhpParser\Node\ArgPlaceholder;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
@@ -27,6 +28,7 @@ use PhpParser\Node\Scalar\MagicConst\Dir;
 use PhpParser\Node\Scalar\MagicConst\File;
 use PhpParser\Node\Scalar\MagicConst\Line;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\VariadicPlaceholder;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Analyser\ValueDependencyCollector;
@@ -790,10 +792,7 @@ final class InitializerExprTypeResolver
 
 	public function getFirstClassCallableType(Expr\CallLike $expr, InitializerExprContext $context, bool $nativeTypesPromoted): Type
 	{
-		if (!$expr->isFirstClassCallable()) {
-			// the signature of a partial function application is not inferred yet
-			return new ObjectType(Closure::class);
-		}
+		$partialApplicationArgs = $expr->isFirstClassCallable() ? null : $expr->getRawArgs();
 
 		if ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Name) {
@@ -803,6 +802,7 @@ final class InitializerExprTypeResolver
 						$function,
 						$function->getVariants(),
 						$nativeTypesPromoted,
+						$partialApplicationArgs,
 					);
 				}
 
@@ -841,6 +841,7 @@ final class InitializerExprTypeResolver
 				$method,
 				$method->getVariants(),
 				$nativeTypesPromoted,
+				$partialApplicationArgs,
 			);
 		}
 
@@ -853,11 +854,13 @@ final class InitializerExprTypeResolver
 
 	/**
 	 * @param ParametersAcceptor[] $variants
+	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder>|null $partialApplicationArgs the arguments of a partial function application, null for a first-class callable
 	 */
 	public function createFirstClassCallable(
 		FunctionReflection|ExtendedMethodReflection|null $function,
 		array $variants,
 		bool $nativeTypesPromoted,
+		?array $partialApplicationArgs = null,
 	): Type
 	{
 		// variants of multi-variant built-ins carry functionMap parameter names,
@@ -935,6 +938,15 @@ final class InitializerExprTypeResolver
 			if (count($namedArgumentNames) > 0) {
 				$parameters = self::renameParameters($parameters, $namedArgumentNames);
 			}
+			$isVariadic = $variant->isVariadic();
+			if ($partialApplicationArgs !== null) {
+				$partialApplication = PartialFunctionApplicationParameters::apply($parameters, $partialApplicationArgs);
+				if ($partialApplication === null) {
+					// creating the closure from this variant throws
+					continue;
+				}
+				[$parameters, $isVariadic] = $partialApplication;
+			}
 			if ($function !== null) {
 				$assertions = $function->getAsserts();
 			} elseif ($variant instanceof CallableParametersAcceptor) {
@@ -950,7 +962,7 @@ final class InitializerExprTypeResolver
 			$closureTypes[] = new ClosureType(
 				$parameters,
 				$returnType,
-				$variant->isVariadic(),
+				$isVariadic,
 				$variant->getTemplateTypeMap(),
 				$variant->getResolvedTemplateTypeMap(),
 				$variant instanceof ExtendedParametersAcceptor ? $variant->getCallSiteVarianceMap() : TemplateTypeVarianceMap::createEmpty(),
@@ -962,6 +974,10 @@ final class InitializerExprTypeResolver
 				assertions: $assertions,
 				isStatic: $isStaticClosure,
 			);
+		}
+
+		if ($partialApplicationArgs !== null && count($closureTypes) === 0) {
+			return new ObjectType(Closure::class);
 		}
 
 		return TypeCombinator::union(...$closureTypes);

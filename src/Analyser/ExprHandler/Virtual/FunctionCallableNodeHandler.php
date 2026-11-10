@@ -150,10 +150,6 @@ final class FunctionCallableNodeHandler implements ExprHandler
 	private function resolveType(MutatingScope $scope, FunctionCallableNode $expr, ?ExpressionResult $nameResult): Type
 	{
 		$originalNode = $expr->getOriginalNode();
-		if (!$originalNode->isFirstClassCallable()) {
-			// the signature of a partial function application is not inferred yet
-			return new ObjectType(Closure::class);
-		}
 		if ($originalNode->name instanceof Expr) {
 			// $originalNode->name is the same node as $expr->getName(), processed
 			// in processExpr exactly in this branch - read its ExpressionResult
@@ -161,7 +157,8 @@ final class FunctionCallableNodeHandler implements ExprHandler
 				throw new ShouldNotHappenException();
 			}
 			$callableType = $nameResult->getTypeOnScope($scope, $scope->nativeTypesPromoted);
-			if (self::isClosureObject($callableType)) {
+			$isFirstClassCallable = $originalNode->isFirstClassCallable();
+			if ($isFirstClassCallable && self::isClosureObject($callableType)) {
 				// the first-class callable of a closure object is the object itself
 				return $callableType;
 			}
@@ -173,6 +170,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 				null,
 				$callableType->getCallableParametersAcceptors($scope),
 				$scope->nativeTypesPromoted,
+				$isFirstClassCallable ? null : $originalNode->getRawArgs(),
 			);
 		}
 

@@ -29,6 +29,8 @@
 		"../tests/PHPStan/Rules/DeadCode/data/partial-function-application-bound-args.php",
 		"../tests/PHPStan/Rules/Exceptions/data/dead-catch-partial-function-application.php",
 		"../tests/PHPStan/Rules/Functions/data/partial-function-application-bound-args.php",
-		"../tests/PHPStan/Rules/Pure/data/partial-function-application-pure.php"
+		"../tests/PHPStan/Rules/Pure/data/partial-function-application-pure.php",
+		"../tests/PHPStan/Analyser/nsrt/partial-function-application-signature.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-closure-calls.php"
     ]
 }

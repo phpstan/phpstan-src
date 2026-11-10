@@ -20,11 +20,14 @@ function test_result_cache_parse_error() {
 	assert_contains 'Result cache is saved.' "$OUTPUT"
 	test -f tmp/resultCache.php
 	# Only src/Thing.php is analysed again, and the result cache is not rewritten.
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse -vvv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
 	assert_contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
 	# Fixing the parse error declares Thing, so the error that src/User.php had in the result
 	# cache goes away.
@@ -58,8 +61,10 @@ function test_result_cache_parse_error_keeps_symbols() {
 	echo "$INFO"
 	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	../../bin/phpstan analyse > /dev/null 2>&1 || true
-	# Fixing it declares the same symbols as before it broke, so it is re-analysed alone too.
-	cp fixed/Thing.php src/Thing.php
+	# Fixing it declares the same symbols as before it broke, so it is re-analysed alone too. A
+	# comment makes the file differ from what it was before it broke: the cache may still hold
+	# that version, if no run had a reason to rewrite it, and then nothing is re-analysed.
+	{ cat fixed/Thing.php; printf '\n// fixed\n'; } > src/Thing.php
 	INFO=$(../../bin/phpstan result-cache-info --json)
 	echo "$INFO"
 	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"

@@ -36,6 +36,15 @@ final class MethodCallableRule implements Rule
 			];
 		}
 
+		if ($node->getOriginalNode()->getAttribute('virtualNullsafeMethodCall') === true) {
+			return [
+				RuleErrorBuilder::message('Cannot combine nullsafe operator with Closure creation.')
+					->nonIgnorable()
+					->identifier('callable.notSupported')
+					->build(),
+			];
+		}
+
 		$methodName = $node->getName();
 		if (!$methodName instanceof Node\Identifier) {
 			return [];

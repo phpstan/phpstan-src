@@ -87,6 +87,17 @@ class MethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNullsafe(): void
+	{
+		$this->analyse([__DIR__ . '/data/nullsafe-method-callable.php'], [
+			[
+				'Cannot combine nullsafe operator with Closure creation.',
+				16,
+			],
+		]);
+	}
+
 	public function testConditionallyExecutedCode(): void
 	{
 		$errors = [

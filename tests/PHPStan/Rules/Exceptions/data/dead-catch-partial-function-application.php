@@ -61,3 +61,18 @@ function (Foo $foo, callable $cb): void {
 	} catch (FooException $e) {
 	}
 };
+
+function (string $s): void {
+	// calling the closure throws what the call of its callee throws
+	$decodeThrowing = json_decode(?, flags: JSON_THROW_ON_ERROR);
+	try {
+		$decodeThrowing($s);
+	} catch (\JsonException $e) {
+	}
+
+	$decode = json_decode(?, true);
+	try {
+		$decode($s);
+	} catch (\JsonException $e) {
+	}
+};

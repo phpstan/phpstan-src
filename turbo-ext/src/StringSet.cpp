@@ -4,6 +4,7 @@
  * Declared as PHPStan\Type\StringSet itself at activation: final, no parent,
  * no interfaces. State is the twin's `private array $constants`, `private
  * ?Type $type`, `private bool $digits` and `private bool $whitespaceFree`,
+ * plus its `private ?array $values` lookup of the constants (unused here),
  * declared typed property slots, so the std object handlers do GC/clone. The
  * twin's private constructor is not declared: the sets are made by the
  * factories only, natively.

@@ -50,6 +50,9 @@ final class StringSet
 	{
 	}
 
+	/** @var array<string, true>|null */
+	private ?array $values = null;
+
 	public static function createEmpty(): self
 	{
 		return new self([], null, false, false);
@@ -92,43 +95,56 @@ final class StringSet
 	public function union(self $other): self
 	{
 		$constants = $this->constants;
+		$values = $this->getValues();
 		foreach ($other->constants as $constant) {
-			if (self::contains($constants, $constant->getValue())) {
+			$value = $constant->getValue();
+			if (isset($values[$value])) {
 				continue;
 			}
 
+			$values[$value] = true;
 			$constants[] = $constant;
 		}
 
 		if ($this->type === null || $other->type === null) {
 			$typed = $this->type === null ? $other : $this;
 
-			return new self($constants, $typed->type, $typed->digits, $typed->whitespaceFree);
+			$union = new self($constants, $typed->type, $typed->digits, $typed->whitespaceFree);
+		} else {
+			$union = new self(
+				$constants,
+				TypeCombinator::union($this->type, $other->type),
+				$this->digits && $other->digits,
+				$this->whitespaceFree && $other->whitespaceFree,
+			);
 		}
 
-		return new self(
-			$constants,
-			TypeCombinator::union($this->type, $other->type),
-			$this->digits && $other->digits,
-			$this->whitespaceFree && $other->whitespaceFree,
-		);
+		// a union of many members is folded one member at a time - handing the
+		// lookup on spares rebuilding it from the constants at every step
+		$union->values = $values;
+
+		return $union;
 	}
 
 	public function intersect(self $other): self
 	{
 		$constants = [];
+		$seen = [];
 		foreach ([[$this, $other], [$other, $this]] as [$set, $otherSet]) {
+			$otherValues = $otherSet->getValues();
 			foreach ($set->constants as $constant) {
+				$value = $constant->getValue();
 				if (
-					self::contains($constants, $constant->getValue())
+					isset($seen[$value])
 					|| (
-						!self::contains($otherSet->constants, $constant->getValue())
+						!isset($otherValues[$value])
 						&& ($otherSet->type === null || $otherSet->type->isSuperTypeOf($constant)->no())
 					)
 				) {
 					continue;
 				}
 
+				$seen[$value] = true;
 				$constants[] = $constant;
 			}
 		}
@@ -396,16 +412,26 @@ final class StringSet
 		return self::parseNumericString($value, $phpVersion) !== null;
 	}
 
-	/** @param list<ConstantStringType> $constants */
-	private static function contains(array $constants, string $value): bool
+	/**
+	 * The values of the constants as array keys, so membership is a lookup
+	 * rather than a scan - scanning made merging two sets quadratic. Distinct
+	 * strings stay distinct keys: PHP turns only canonical decimal integer
+	 * strings into integer keys, and no other string maps to the same one.
+	 *
+	 * @return array<string, true>
+	 */
+	private function getValues(): array
 	{
-		foreach ($constants as $constant) {
-			if ($constant->getValue() === $value) {
-				return true;
-			}
+		if ($this->values !== null) {
+			return $this->values;
 		}
 
-		return false;
+		$values = [];
+		foreach ($this->constants as $constant) {
+			$values[$constant->getValue()] = true;
+		}
+
+		return $this->values = $values;
 	}
 
 }

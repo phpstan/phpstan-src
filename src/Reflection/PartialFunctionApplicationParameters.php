@@ -148,6 +148,44 @@ final class PartialFunctionApplicationParameters
 		return [$closureParameters, $variadicParameter !== null];
 	}
 
+	/**
+	 * The variant whose partial application the arguments fit. When several fit,
+	 * they are combined; when none does, all of them are.
+	 *
+	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
+	 * @param list<ParametersAcceptor> $variants
+	 * @param list<ParametersAcceptor>|null $namedArgumentsVariants
+	 */
+	public static function selectVariant(array $args, array $variants, ?array $namedArgumentsVariants): ParametersAcceptor
+	{
+		if ($namedArgumentsVariants !== null) {
+			foreach ($args as $arg) {
+				if (!$arg instanceof VariadicPlaceholder && $arg->name !== null) {
+					$variants = $namedArgumentsVariants;
+					break;
+				}
+			}
+		}
+
+		if (count($variants) === 1) {
+			return $variants[0];
+		}
+
+		$fitting = [];
+		foreach ($variants as $variant) {
+			if (self::apply($variant->getParameters(), $args) === null) {
+				continue;
+			}
+			$fitting[] = $variant;
+		}
+
+		if (count($fitting) === 1) {
+			return $fitting[0];
+		}
+
+		return ParametersAcceptorSelector::combineAcceptors(count($fitting) > 0 ? $fitting : $variants);
+	}
+
 	private static function required(ParameterReflection $parameter, string $name): ParameterReflection
 	{
 		if ($parameter instanceof ExtendedParameterReflection) {

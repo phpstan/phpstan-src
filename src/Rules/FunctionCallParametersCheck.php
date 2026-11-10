@@ -16,6 +16,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ConstantReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -52,6 +53,7 @@ use function is_string;
 use function lcfirst;
 use function max;
 use function sprintf;
+use function ucfirst;
 
 #[AutowiredService]
 final class FunctionCallParametersCheck
@@ -150,14 +152,46 @@ final class FunctionCallParametersCheck
 			$functionParametersMaxCount = -1;
 		}
 
-		/** @var array<int, array{Expr, Type|null, bool, string|null, int}> $arguments */
+		/** @var array<int, array{Expr|Node\ArgPlaceholder, Type|null, bool, string|null, int}> $arguments */
 		$arguments = [];
-		/** @var array<int, Node\Arg> $args */
-		$args = $funcCall->getArgs();
+		$isPartialApplication = $funcCall->isPartialFunctionApplication();
+		$args = $isPartialApplication ? $funcCall->getRawArgs() : $funcCall->getArgs();
 		$hasNamedArguments = false;
 		$hasUnpackedArgument = false;
+		$hasVariadicPlaceholder = false;
 		$errors = [];
 		foreach ($args as $arg) {
+			if ($hasVariadicPlaceholder) {
+				$errors[] = RuleErrorBuilder::message('Variadic placeholder must be last.')
+					->identifier('argument.variadicPlaceholderNotLast')
+					->line($arg->getStartLine())
+					->nonIgnorable()
+					->build();
+				break;
+			}
+			if ($arg instanceof Node\VariadicPlaceholder) {
+				$hasVariadicPlaceholder = true;
+				continue;
+			}
+			if ($arg instanceof Node\ArgPlaceholder) {
+				$argumentName = null;
+				if ($arg->name !== null) {
+					$hasNamedArguments = true;
+					$argumentName = $arg->name->toString();
+				}
+				$arguments[] = [$arg, null, false, $argumentName, $arg->getStartLine()];
+				continue;
+			}
+
+			if ($isPartialApplication && $arg->unpack) {
+				$errors[] = RuleErrorBuilder::message('Cannot combine partial application and unpacking.')
+					->identifier('argument.unpackInPartialApplication')
+					->line($arg->getStartLine())
+					->nonIgnorable()
+					->build();
+				continue;
+			}
+
 			$argumentName = null;
 			if ($arg->name !== null) {
 				$hasNamedArguments = true;
@@ -295,8 +329,10 @@ final class FunctionCallParametersCheck
 			}
 
 			if (
-				$invokedParametersCount < $functionParametersMinCount
-				|| ($this->checkExtraArguments && $invokedParametersCount > $functionParametersMaxCount)
+				// ... of a partial application fills in the parameters left
+				($invokedParametersCount < $functionParametersMinCount && !$hasVariadicPlaceholder)
+				// a partial application with too many arguments throws when it is created
+				|| (($this->checkExtraArguments || $isPartialApplication) && $functionParametersMaxCount !== -1 && $invokedParametersCount > $functionParametersMaxCount)
 			) {
 				if ($functionParametersMinCount === $functionParametersMaxCount) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
@@ -332,6 +368,7 @@ final class FunctionCallParametersCheck
 
 		if (
 			!$funcCall instanceof Node\Expr\New_
+			&& !$isPartialApplication
 			&& !$scope->isInFirstLevelStatement()
 			&& $scope->getKeepVoidType($funcCall)->isVoid()->yes()
 		) {
@@ -341,7 +378,7 @@ final class FunctionCallParametersCheck
 				->build();
 		}
 
-		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCallLine, $isBuiltin, $arguments, $hasNamedArguments, $missingParameterMessage, $unknownParameterMessage);
+		[$addedErrors, $argumentsWithParameters] = $this->processArguments($parametersAcceptor, $funcCallLine, $isBuiltin, $arguments, $hasNamedArguments, !$hasVariadicPlaceholder, $missingParameterMessage, $unknownParameterMessage);
 		foreach ($addedErrors as $error) {
 			$errors[] = $error;
 		}
@@ -352,6 +389,11 @@ final class FunctionCallParametersCheck
 
 		$positionalArgumentsFix = null;
 		foreach ($argumentsWithParameters as $i => [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, $parameter, $originalParameter]) {
+			if ($argumentValue instanceof Node\ArgPlaceholder) {
+				// a placeholder has no value, it becomes a parameter of the closure
+				continue;
+			}
+
 			if ($this->checkArgumentTypes && $unpack) {
 				$iterableTypeResult = $this->ruleLevelHelper->findTypeToCheck(
 					$scope,
@@ -462,7 +504,7 @@ final class FunctionCallParametersCheck
 
 				// only the parameter of a resolved generic acceptor has an original
 				// type to tell an unresolvable type this call made from a declared one
-				$unresolvableParameterType = $originalParameter !== null ? $this->unresolvableTypeHelper->getUnresolvableType($parameterType) : null;
+				$unresolvableParameterType = $originalParameter !== null && !$isPartialApplication ? $this->unresolvableTypeHelper->getUnresolvableType($parameterType) : null;
 				if (
 					$unresolvableParameterType !== null
 					&& $this->unresolvableTypeHelper->getUnresolvableType($originalParameter->getType()) === null
@@ -631,7 +673,7 @@ final class FunctionCallParametersCheck
 			))->identifier('argument.byRef')->line($argumentLine)->build();
 		}
 
-		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
+		if ($this->checkMissingTypehints && !$isPartialApplication && $parametersAcceptor instanceof ResolvedFunctionVariant) {
 			$originalParametersAcceptor = $parametersAcceptor->getOriginalParametersAcceptor();
 			$resolvedTypes = $parametersAcceptor->getResolvedTemplateTypeMap()->getTypes();
 			if (!$isBuiltin && count($resolvedTypes) > 0) {
@@ -716,8 +758,88 @@ final class FunctionCallParametersCheck
 	}
 
 	/**
-	 * @param array<int, array{Expr, Type|null, bool, string|null, int}> $arguments
-	 * @return array{list<IdentifierRuleError>, array<int, array{Expr, Type|null, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
+	 * Checks the bound arguments and placeholders of a partial function application
+	 * against the callee: PHP throws when such a closure is created from arguments
+	 * that do not fit.
+	 *
+	 * @param 'callable'|'method'|'staticMethod'|'function' $nodeType
+	 * @param string $calleeDescription like "function foo" or "method Foo::bar()", escaped for sprintf()
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkPartialApplication(
+		ParametersAcceptor $parametersAcceptor,
+		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
+		bool $isBuiltin,
+		Node\Expr\FuncCall|Node\Expr\MethodCall|Node\Expr\StaticCall $call,
+		string $nodeType,
+		TrinaryLogic $acceptsNamedArguments,
+		string $calleeDescription,
+		FunctionReflection|MethodReflection|null $calleeReflection,
+	): array
+	{
+		// templates are resolved from the bound arguments, as in a call;
+		// the ones only the placeholders determine stay unresolved
+		$argTypes = [];
+		$position = 0;
+		foreach ($call->getRawArgs() as $arg) {
+			if ($arg instanceof Node\VariadicPlaceholder) {
+				break;
+			}
+			if ($arg instanceof Node\ArgPlaceholder) {
+				if ($arg->name === null) {
+					$position++;
+				}
+				continue;
+			}
+			if ($arg->unpack) {
+				continue;
+			}
+			if ($arg->name !== null) {
+				$argTypes[$arg->name->toString()] = $scope->getType($arg->value);
+				continue;
+			}
+			$argTypes[$position++] = $scope->getType($arg->value);
+		}
+		if (!$parametersAcceptor->getTemplateTypeMap()->isEmpty()) {
+			$parametersAcceptor = GenericParametersAcceptorResolver::resolve($argTypes, $parametersAcceptor);
+		}
+
+		$applied = ucfirst($calleeDescription) . ' partially applied with';
+
+		return $this->check(
+			$parametersAcceptor,
+			$scope,
+			$isBuiltin,
+			$call,
+			$nodeType,
+			$acceptsNamedArguments,
+			$applied . ' %d argument, %d required.',
+			$applied . ' %d arguments, %d required.',
+			$applied . ' %d argument, at least %d required.',
+			$applied . ' %d arguments, at least %d required.',
+			$applied . ' %d argument, %d-%d required.',
+			$applied . ' %d arguments, %d-%d required.',
+			'%s of ' . $calleeDescription . ' expects %s, %s given.',
+			'Result of ' . $calleeDescription . ' (void) is used.',
+			'%s of ' . $calleeDescription . ' is passed by reference, so it expects variables only.',
+			'Unable to resolve the template type %s in partial application of ' . $calleeDescription,
+			'Missing parameter $%s in partial application of ' . $calleeDescription . '.',
+			'Unknown parameter $%s in partial application of ' . $calleeDescription . '.',
+			'Return type of partial application of ' . $calleeDescription . ' contains unresolvable type.',
+			'%s of ' . $calleeDescription . ' contains unresolvable type.',
+			$applied . ' %s, but it\'s not allowed because of @no-named-arguments.',
+			'Constant %s is not allowed for %s of ' . $calleeDescription . '.',
+			'Constants %s cannot be combined for %s of ' . $calleeDescription . '.',
+			'Combining constants with | is not allowed for %s of ' . $calleeDescription . '.',
+			null,
+			$calleeReflection,
+		);
+	}
+
+	/**
+	 * @param array<int, array{Expr|Node\ArgPlaceholder, Type|null, bool, string|null, int}> $arguments
+	 * @param bool $checkMissingParameters false when ... of a partial application fills in the parameters left
+	 * @return array{list<IdentifierRuleError>, array<int, array{Expr|Node\ArgPlaceholder, Type|null, bool, (string|null), int, (ParameterReflection|null), (ParameterReflection|null)}>}
 	 */
 	private function processArguments(
 		ParametersAcceptor $parametersAcceptor,
@@ -725,6 +847,7 @@ final class FunctionCallParametersCheck
 		bool $isBuiltin,
 		array $arguments,
 		bool $hasNamedArguments,
+		bool $checkMissingParameters,
 		string $missingParameterMessage,
 		string $unknownParameterMessage,
 	): array
@@ -772,6 +895,17 @@ final class FunctionCallParametersCheck
 					$parameter = $parameters[$i];
 					$originalParameter = $originalParameters[$i];
 				}
+			} elseif (
+				$argumentValue instanceof Node\ArgPlaceholder
+				&& (!array_key_exists($argumentName, $parametersByName) || $parametersByName[$argumentName]->isVariadic())
+			) {
+				$namedArgumentAlreadyOccurred = true;
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot use named placeholder for unknown or variadic parameter $%s.', $argumentName))
+					->identifier('argument.unknown')
+					->line($argumentLine)
+					->build();
+				$newArguments[$i] = [$argumentValue, $argumentValueType, $unpack, $argumentName, $argumentLine, null, null];
+				continue;
 			} elseif (array_key_exists($argumentName, $parametersByName)) {
 				$namedArgumentAlreadyOccurred = true;
 				$parameter = $parametersByName[$argumentName];
@@ -828,7 +962,7 @@ final class FunctionCallParametersCheck
 			unset($unusedParametersByName[$parameter->getName()]);
 		}
 
-		if ($hasNamedArguments) {
+		if ($hasNamedArguments && $checkMissingParameters) {
 			foreach ($unusedParametersByName as $parameter) {
 				if ($parameter->isOptional()) {
 					continue;

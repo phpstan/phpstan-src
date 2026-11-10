@@ -3,11 +3,17 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
+use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
+use PHPStan\Internal\SprintfHelper;
 use PHPStan\Node\StaticMethodCallableNode;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
+use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
+use function array_merge;
 
 /**
  * @implements Rule<StaticMethodCallableNode>
@@ -16,7 +22,10 @@ use PHPStan\Rules\RuleErrorBuilder;
 final class StaticMethodCallableRule implements Rule
 {
 
-	public function __construct(private StaticMethodCallCheck $methodCallCheck)
+	public function __construct(
+		private StaticMethodCallCheck $methodCallCheck,
+		private FunctionCallParametersCheck $parametersCheck,
+	)
 	{
 	}
 
@@ -25,7 +34,7 @@ final class StaticMethodCallableRule implements Rule
 		return StaticMethodCallableNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope): array
+	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
 		if (!$node->getOriginalNode()->isFirstClassCallable()) {
 			if (!$scope->getPhpVersion()->supportsPartialFunctionApplication()->yes()) {
@@ -52,7 +61,23 @@ final class StaticMethodCallableRule implements Rule
 
 		$methodNameName = $methodName->toString();
 
-		return $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName())[0];
+		[$errors, $methodReflection] = $this->methodCallCheck->check($scope, $methodNameName, $node->getClass(), $node->getName());
+		if ($methodReflection === null || $node->getOriginalNode()->isFirstClassCallable()) {
+			return $errors;
+		}
+
+		$declaringClass = $methodReflection->getDeclaringClass();
+
+		return array_merge($errors, $this->parametersCheck->checkPartialApplication(
+			PartialFunctionApplicationParameters::selectVariant($node->getArgs(), $methodReflection->getVariants(), $methodReflection->getNamedArgumentsVariants()),
+			$scope,
+			$declaringClass->isBuiltin(),
+			$node->getOriginalNode(),
+			'staticMethod',
+			$methodReflection->acceptsNamedArguments(),
+			'static method ' . SprintfHelper::escapeFormatString($declaringClass->getDisplayName() . '::' . $methodReflection->getName() . '()'),
+			$methodReflection,
+		));
 	}
 
 }

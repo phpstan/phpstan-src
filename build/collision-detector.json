@@ -19,6 +19,7 @@
 		"../tests/PHPStan/Rules/Properties/data/abstract-final-property-hook-parse-error.php",
 		"../tests/PHPStan/Rules/Properties/data/final-property-hooks.php",
 		"../tests/PHPStan/Rules/Cast/data/void-cast.php",
+		"../tests/PHPStan/Analyser/data/bug-15364.php",
 		"../tests/PHPStan/Analyser/data/partial-function-application-positions.php",
 		"../tests/PHPStan/Rules/Functions/data/function-callable-dynamic-call-forbidden.php",
 		"../tests/PHPStan/Rules/Functions/data/function-partial-function-application.php",

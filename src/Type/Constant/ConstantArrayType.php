@@ -142,6 +142,8 @@ class ConstantArrayType implements Type
 
 	private ?bool $hasTemplateOrLateResolvableType = null;
 
+	private bool $preserveArrayShape = false;
+
 	/** @var list<non-empty-string>|null */
 	private ?array $referencedClasses = null;
 
@@ -269,7 +271,30 @@ class ConstantArrayType implements Type
 		?array $unsealed,
 	): self
 	{
-		return new self($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $unsealed);
+		$array = new self($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $unsealed);
+		return $this->preserveArrayShape ? $array->withPreservedArrayShape() : $array;
+	}
+
+	/**
+	 * Prevent complexity-based widening of this shape during subsequent analysis.
+	 * @api
+	 */
+	public function withPreservedArrayShape(): self
+	{
+		if ($this->preserveArrayShape) {
+			return $this;
+		}
+
+		$array = clone $this;
+		$array->preserveArrayShape = true;
+		$array->allArrays = null;
+		return $array;
+	}
+
+	/** @api */
+	public function isArrayShapePreserved(): bool
+	{
+		return $this->preserveArrayShape;
 	}
 
 	public function getConstantArrays(): array
@@ -435,7 +460,8 @@ class ConstantArrayType implements Type
 				// builder's getArray() would degrade this to a general
 				// ArrayType. Construct the CAT directly so the variant keeps
 				// its extras for downstream consumers (e.g. flattenTypes).
-				$arrays[] = new ConstantArrayType([], [], unsealed: $this->unsealed);
+				$array = new ConstantArrayType([], [], unsealed: $this->unsealed);
+				$arrays[] = $this->preserveArrayShape ? $array->withPreservedArrayShape() : $array;
 				continue;
 			}
 
@@ -453,7 +479,7 @@ class ConstantArrayType implements Type
 				throw new ShouldNotHappenException();
 			}
 
-			$arrays[] = $array;
+			$arrays[] = $this->preserveArrayShape ? $array->withPreservedArrayShape() : $array;
 		}
 
 		return $this->allArrays = $arrays;
@@ -981,6 +1007,10 @@ class ConstantArrayType implements Type
 	public function equals(Type $type): bool
 	{
 		if (!$type instanceof self) {
+			return false;
+		}
+
+		if ($this->preserveArrayShape !== $type->preserveArrayShape) {
 			return false;
 		}
 
@@ -3163,6 +3193,10 @@ class ConstantArrayType implements Type
 
 	public function mergeWith(self $otherArray): self
 	{
+		if (!$this->preserveArrayShape && $otherArray->preserveArrayShape) {
+			return $this->withPreservedArrayShape()->mergeWith($otherArray);
+		}
+
 		// only call this after verifying isKeysSupersetOf, or if losing tagged unions is not an issue
 		if ($this->unsealed === null || $otherArray->unsealed === null) {
 			return $this->legacyMergeWith($otherArray);

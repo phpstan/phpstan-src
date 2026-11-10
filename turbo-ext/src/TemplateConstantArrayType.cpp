@@ -62,7 +62,12 @@ public:
 	{
 		zval constantArray;
 		if (UNEXPECTED(!pt_constant_array_type_new(&constantArray, keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList, unsealed))) return zv::Val();
-		return rebuild(zv::Val::adopt(constantArray));
+		zv::Val array = rebuild(zv::Val::adopt(constantArray));
+		if (UNEXPECTED(array.isUndef())) return zv::Val();
+		zv::Val preserved = pt_type_call(self, PT_LC("isarrayshapepreserved"), 0, NULL);
+		if (UNEXPECTED(preserved.isUndef())) return zv::Val();
+		if (zend_is_true(preserved.raw())) return pt_type_call(Z_OBJ_P(array.raw()), PT_LC("withpreservedarrayshape"), 0, NULL);
+		return array;
 	}
 
 private:

@@ -1037,9 +1037,27 @@ public:
 	}
 
 	/* protected recreate(): new self(...) */
-	static zv::Val recreate(zval *keyTypes, zval *valueTypes, zval *nextAutoIndexes, zval *optionalKeys, zval *isList, zval *unsealed)
+	zv::Val recreate(zval *keyTypes, zval *valueTypes, zval *nextAutoIndexes, zval *optionalKeys, zval *isList, zval *unsealed) const
 	{
-		return create(keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList, unsealed);
+		zv::Val array = create(keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList, unsealed);
+		if (UNEXPECTED(array.isUndef())) return zv::Val();
+		if (isArrayShapePreserved()) return pt_type_call(Z_OBJ_P(array.raw()), PT_LC("withpreservedarrayshape"), 0, NULL);
+		return array;
+	}
+
+	bool isArrayShapePreserved() const
+	{
+		return Z_TYPE_P(OBJ_PROP_NUM(self, slots::preserveArrayShape)) == IS_TRUE;
+	}
+
+	zv::Val withPreservedArrayShape() const
+	{
+		if (isArrayShapePreserved()) return zv::Val::copyOf(zv::Ref(thisZv()));
+		zv::Val array = cloneObject(thisZv());
+		if (UNEXPECTED(array.isUndef())) return zv::Val();
+		zv::ObjRef(Z_OBJ_P(array.raw())).propAtWrite(slots::preserveArrayShape, zv::Val::boolean(true));
+		zv::ObjRef(Z_OBJ_P(array.raw())).propAtWrite(slots::allArrays, zv::Val::null());
+		return array;
 	}
 
 	/* [$this] */
@@ -1266,6 +1284,10 @@ public:
 				ZVAL_EMPTY_ARRAY(&empty);
 				zv::Val array = create(&empty, &empty, NULL, NULL, NULL, unsealed);
 				if (UNEXPECTED(array.isUndef())) return zv::Val();
+				if (isArrayShapePreserved()) {
+					array = pt_type_call(Z_OBJ_P(array.raw()), PT_LC("withpreservedarrayshape"), 0, NULL);
+					if (UNEXPECTED(array.isUndef())) return zv::Val();
+				}
 				arrays.push(std::move(array));
 				continue;
 			}
@@ -1288,6 +1310,10 @@ public:
 
 			zv::Val array = builderGetArray(builder.raw());
 			if (UNEXPECTED(array.isUndef())) return zv::Val();
+			if (isArrayShapePreserved()) {
+				array = pt_type_call(Z_OBJ_P(array.raw()), PT_LC("withpreservedarrayshape"), 0, NULL);
+				if (UNEXPECTED(array.isUndef())) return zv::Val();
+			}
 			if (!instanceof_function(Z_OBJCE_P(array.raw()), pt_ce_constant_array_type)) {
 				pt_throw_should_not_happen();
 				return zv::Val();
@@ -2100,6 +2126,10 @@ public:
 			return true;
 		}
 		zend_object *other = Z_OBJ_P(type);
+		if (isArrayShapePreserved() != (Z_TYPE_P(OBJ_PROP_NUM(other, slots::preserveArrayShape)) == IS_TRUE)) {
+			out = false;
+			return true;
+		}
 		zval *k = keyTypes();
 		zval *otherK = k != NULL ? slotOf(other, slots::keyTypes, "keyTypes") : NULL;
 		if (UNEXPECTED(otherK == NULL)) return false;
@@ -5010,6 +5040,12 @@ public:
 	 * own for a sealed result); UNDEF = pending exception */
 	zv::Val mergeWith(zval *otherArray) const
 	{
+		if (!isArrayShapePreserved() && Z_TYPE_P(OBJ_PROP_NUM(Z_OBJ_P(otherArray), slots::preserveArrayShape)) == IS_TRUE) {
+			zv::Val array = withPreservedArrayShape();
+			if (UNEXPECTED(array.isUndef())) return zv::Val();
+			return pt_type_call(Z_OBJ_P(array.raw()), PT_LC("mergewith"), 1, otherArray);
+		}
+
 		/* only call this after verifying isKeysSupersetOf, or if losing tagged unions is not an issue */
 		zend_object *other = Z_OBJ_P(otherArray);
 		zval *u = unsealedSlot();
@@ -7389,7 +7425,7 @@ static void ZEND_FASTCALL catRecreate(INTERNAL_FUNCTION_PARAMETERS)
 	zval nullZv;
 	ZVAL_NULL(&nullZv);
 	if (isList != NULL && UNEXPECTED(!ConstantArrayType::checkNullableTrinary(isList, 5))) RETURN_THROWS();
-	PT_RETURN_VAL(ConstantArrayType::recreate(keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList != NULL ? isList : &nullZv, unsealed != NULL ? unsealed : &nullZv));
+	PT_RETURN_VAL(PT_THIS.recreate(keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList != NULL ? isList : &nullZv, unsealed != NULL ? unsealed : &nullZv));
 }
 
 static void ZEND_FASTCALL catGetIterableKeyType(INTERNAL_FUNCTION_PARAMETERS)
@@ -7519,6 +7555,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	cls.privateTypedPropertyDefaultNull("keyIndexMap", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedPropertyDefaultNull("optionalKeySet", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedPropertyDefaultNull("hasTemplateOrLateResolvableType", MAY_BE_BOOL | MAY_BE_NULL);
+	cls.privateTypedBoolProperty("preserveArrayShape", false);
 	cls.privateTypedPropertyDefaultNull("referencedClasses", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedPropertyDefaultNull("referencedTemplateTypes", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedProperty("keyTypes", MAY_BE_ARRAY);
@@ -7550,6 +7587,11 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	});
 
 	cls.method(sigs::recreate, catRecreate);
+	cls.method(sigs::isArrayShapePreserved, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_BOOL(PT_THIS.isArrayShapePreserved());
+	});
+	cls.method<&ConstantArrayType::withPreservedArrayShape>(sigs::withPreservedArrayShape);
 
 	cls.method(sigs::getConstantArrays, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_cat_no_args(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ConstantArrayType::getConstantArrays);

@@ -36,6 +36,7 @@ use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -67,6 +68,7 @@ use function array_map;
 use function array_reverse;
 use function get_class;
 use function implode;
+use function intdiv;
 use function is_string;
 use function sprintf;
 use const PHP_VERSION_ID;
@@ -3486,6 +3488,68 @@ class TypeCombinatorTest extends PHPStanTestCase
 		if ($hasSubtraction) {
 			return;
 		}
+	}
+
+	public static function dataUnionPreservesFieldsWithNestedArrays(): array
+	{
+		return [
+			'below complexity limit' => [1, false, 'int'],
+			'unprotected above complexity limit' => [intdiv(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT, 2) + 1, false, 'mixed'],
+			'protected above complexity limit' => [intdiv(ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT, 2) + 1, true, 'int'],
+		];
+	}
+
+	#[DataProvider('dataUnionPreservesFieldsWithNestedArrays')]
+	public function testUnionPreservesFieldsWithNestedArrays(int $nestedSize, bool $preserveArrayShape, string $expectedType): void
+	{
+		$metadata = ConstantArrayTypeBuilder::createEmpty();
+		for ($i = 0; $i < $nestedSize; $i++) {
+			$metadata->setOffsetValueType(new ConstantStringType('meta' . $i), new MixedType());
+		}
+
+		$types = [];
+		foreach (['a', 'b'] as $branch) {
+			$type = new ConstantArrayType(
+				[
+					new ConstantStringType('known'),
+					new ConstantStringType('dynamic'),
+					new ConstantStringType('metadata'),
+					new ConstantStringType($branch),
+				],
+				[new IntegerType(), new MixedType(), $metadata->getArray(), new ConstantBooleanType(true)],
+			);
+			$types[] = $preserveArrayShape ? $type->withPreservedArrayShape() : $type;
+		}
+
+		$type = TypeCombinator::union(...$types);
+
+		$this->assertSame($expectedType, $type->getOffsetValueType(new ConstantStringType('known'))->describe(VerbosityLevel::precise()));
+	}
+
+	public function testUnionPreservesArrayShapeWhenOnlyOneOperandIsProtected(): void
+	{
+		$plain = new ConstantArrayType([new ConstantStringType('known')], [new IntegerType()]);
+		$protected = $plain->withPreservedArrayShape();
+
+		foreach ([[$plain, $protected], [$protected, $plain]] as $types) {
+			$union = TypeCombinator::union(...$types);
+			$this->assertInstanceOf(ConstantArrayType::class, $union);
+			$this->assertTrue($union->isArrayShapePreserved());
+		}
+	}
+
+	public function testPreservedArrayShapeStillUnionsFieldTypes(): void
+	{
+		$key = new ConstantStringType('known');
+		$protected = (new ConstantArrayType([$key], [new IntegerType()]))->withPreservedArrayShape();
+		$other = new ConstantArrayType([$key], [new StringType()]);
+
+		$union = TypeCombinator::union($protected, $other);
+		$this->assertTrue($protected->mergeWith($other)->isArrayShapePreserved());
+		$this->assertSame('int|string', $union->getOffsetValueType($key)->describe(VerbosityLevel::precise()));
+
+		$unknown = new ConstantArrayType([$key], [new MixedType()]);
+		$this->assertSame('mixed', TypeCombinator::union($protected, $unknown)->getOffsetValueType($key)->describe(VerbosityLevel::precise()));
 	}
 
 	/**

@@ -119,7 +119,13 @@ public:
 		}
 		zv::ObjRef(Z_OBJ(object)).propAtWrite(slots::isNonEmpty, std::move(isNonEmpty));
 
-		if (zv::ArrRef(keyTypes.raw()).size() > PT_CATB_ARRAY_COUNT_LIMIT) {
+		zv::Val preserved = pt_type_call(array, PT_LC("isarrayshapepreserved"), 0, NULL);
+		if (UNEXPECTED(preserved.isUndef())) return zv::Val();
+		bool preserveArrayShape = zend_is_true(preserved.raw());
+		handle.setBool(slots::preserveArrayShape, preserveArrayShape);
+		if (preserveArrayShape) {
+			handle.disableArrayDegradation();
+		} else if (zv::ArrRef(keyTypes.raw()).size() > PT_CATB_ARRAY_COUNT_LIMIT) {
 			if (UNEXPECTED(!handle.degradeToGeneralArray(true))) return zv::Val();
 		}
 
@@ -336,7 +342,9 @@ public:
 			ZVAL_EMPTY_ARRAY(&empty);
 			zval raw;
 			if (UNEXPECTED(!pt_constant_array_type_new(&raw, &empty, &empty, NULL, NULL, NULL, unsealed))) return zv::Val();
-			return zv::Val::adopt(raw);
+			zv::Val array = zv::Val::adopt(raw);
+			if (flag(slots::preserveArrayShape)) return pt_type_call(Z_OBJ_P(array.raw()), PT_LC("withpreservedarrayshape"), 0, NULL);
+			return array;
 		}
 
 		zval *valueTypes = arraySlot(slots::valueTypes, "valueTypes");
@@ -351,6 +359,10 @@ public:
 			zval raw;
 			if (UNEXPECTED(!pt_constant_array_type_new(&raw, keyTypes, valueTypes, nextAutoIndexes, optionalKeys, isList, unsealed))) return zv::Val();
 			zv::Val array = zv::Val::adopt(raw);
+			if (flag(slots::preserveArrayShape)) {
+				array = pt_type_call(Z_OBJ_P(array.raw()), PT_LC("withpreservedarrayshape"), 0, NULL);
+				if (UNEXPECTED(array.isUndef())) return zv::Val();
+			}
 			if (isNonEmpty == PT_TRI_YES) {
 				zend_long atLeastOnce = pt_type_op_trinary(Z_OBJ_P(array.raw()), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
 				if (UNEXPECTED(atLeastOnce < 0)) return zv::Val();
@@ -1188,6 +1200,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type_builder)
 	cls.privateTypedBoolProperty("disableArrayDegradation", false);
 	cls.privateTypedPropertyDefaultNull("degradeClosures", MAY_BE_BOOL);
 	cls.privateTypedBoolProperty("oversized", false);
+	cls.privateTypedBoolProperty("preserveArrayShape", false);
 	cls.privateTypedClassProperty("isNonEmpty", ptcls::trinaryLogic, false);
 	cls.privateTypedProperty("keyTypes", MAY_BE_ARRAY);
 	cls.privateTypedProperty("valueTypes", MAY_BE_ARRAY);

@@ -9518,6 +9518,20 @@ public:
 				if (sameKeys && sizeGreaterOrEqual) {
 					zv::Val builder = pt_constant_array_type_builder_create_empty();
 					if (UNEXPECTED(builder.isUndef())) return zv::Val();
+					bool preserveArrayShape = false;
+					for (zval *arrays : {constantArraysA.raw(), constantArraysB.raw()}) {
+						zv::Val shapes = pt_type_op(Z_OBJ_P(arrays), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
+						if (UNEXPECTED(shapes.isUndef())) return zv::Val();
+						for (auto entry : zv::ArrRef(shapes.raw())) {
+							zv::Val preserved = pt_type_call(Z_OBJ_P(entry.value().raw()), PT_LC("isarrayshapepreserved"), 0, NULL);
+							if (UNEXPECTED(preserved.isUndef())) return zv::Val();
+							preserveArrayShape = preserveArrayShape || zend_is_true(preserved.raw());
+						}
+					}
+					if (preserveArrayShape) {
+						zv::Val disabled = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("disablearraydegradation"), 0, NULL);
+						if (UNEXPECTED(disabled.isUndef())) return zv::Val();
+					}
 					zv::Val flattenedKeys = pt_type_utils_flatten_types(keyTypeA.raw());
 					if (UNEXPECTED(flattenedKeys.isUndef() || Z_TYPE_P(flattenedKeys.raw()) != IS_ARRAY)) return zv::Val();
 					for (auto keyEntry : zv::TableRef(Z_ARRVAL_P(flattenedKeys.raw()))) {
@@ -9541,6 +9555,17 @@ public:
 					}
 					zv::Val resultArray = pt_constant_array_type_builder_get_array(builder.raw());
 					if (UNEXPECTED(resultArray.isUndef())) return zv::Val();
+					zv::Val resultConstantArrays = pt_type_op(Z_OBJ_P(resultArray.raw()), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
+					if (UNEXPECTED(resultConstantArrays.isUndef())) return zv::Val();
+					if (preserveArrayShape && zend_hash_num_elements(Z_ARRVAL_P(resultConstantArrays.raw())) == 1) {
+						zval *shape = zend_hash_index_find(Z_ARRVAL_P(resultConstantArrays.raw()), 0);
+						zv::Val preserved = pt_type_call(Z_OBJ_P(shape), PT_LC("withpreservedarrayshape"), 0, NULL);
+						if (UNEXPECTED(preserved.isUndef())) return zv::Val();
+						zv::Val accessories = pt_type_call_static_ce(pt_ce_type_utils, PT_LC("getaccessorytypes"), 1, resultArray.raw());
+						if (UNEXPECTED(accessories.isUndef())) return zv::Val();
+						resultArray = intersectWithAccessories(preserved.raw(), Z_ARRVAL_P(accessories.raw()));
+						if (UNEXPECTED(resultArray.isUndef())) return zv::Val();
+					}
 					resultTypes.push(std::move(resultArray));
 				} else {
 					/* Both inputs are sealed constant array shapes — see the

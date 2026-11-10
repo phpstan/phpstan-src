@@ -2421,6 +2421,13 @@ public:
 			return;
 		}
 
+		int preserved = callBool(type, PT_LC("isarrayshapepreserved"));
+		if (UNEXPECTED(preserved < 0)) return;
+		if (preserved) {
+			ZVAL_COPY(return_value, type);
+			return;
+		}
+
 		zend_long atLeastOnce = callTrinary(type, PT_LC("isiterableatleastonce"));
 		if (UNEXPECTED(atLeastOnce < 0)) return;
 		if (atLeastOnce == PT_TRI_NO) {
@@ -2532,6 +2539,13 @@ public:
 		if (UNEXPECTED(!checkTraverseCallbackArguments(argc, argv))) return;
 		zval *type = &argv[0];
 		if (isInstance(type, pt_ce_constant_array_type)) {
+			int preserved = callBool(type, PT_LC("isarrayshapepreserved"));
+			if (UNEXPECTED(preserved < 0)) return;
+			if (preserved) {
+				ZVAL_COPY(return_value, type);
+				return;
+			}
+
 			zend_long atLeastOnce = callTrinary(type, PT_LC("isiterableatleastonce"));
 			if (UNEXPECTED(atLeastOnce < 0)) return;
 			if (atLeastOnce == PT_TRI_NO) {
@@ -2902,6 +2916,13 @@ public:
 
 		zend_long countBefore = Z_LVAL_P(count);
 		if (isInstance(type, pt_ce_constant_array_type)) {
+			int preserved = callBool(type, PT_LC("isarrayshapepreserved"));
+			if (UNEXPECTED(preserved < 0)) return;
+			if (preserved) {
+				ZVAL_COPY(return_value, type);
+				return;
+			}
+
 			zv::Val valueTypes = call(type, PT_LC("getvaluetypes"));
 			if (UNEXPECTED(valueTypes.isUndef())) return;
 			ZVAL_LONG(count, Z_LVAL_P(count) + (zend_long) countOf(valueTypes.raw()));
@@ -3569,6 +3590,9 @@ public:
 			for (zv::ArrayEntry entry : zv::ArrRef(arraysToProcess.raw())) {
 				zval *arr = entry.value().raw();
 				zend_long isList = callTrinary(arr, PT_LC("islist"));
+				int preserved = callBool(arr, PT_LC("isarrayshapepreserved"));
+				PT_FAIL_IF_NEG(preserved);
+				if (preserved) continue;
 				PT_FAIL_IF_NEG(isList);
 				if (isList != PT_TRI_YES) continue;
 				zend_long atLeastOnce = callTrinary(arr, PT_LC("isiterableatleastonce"));

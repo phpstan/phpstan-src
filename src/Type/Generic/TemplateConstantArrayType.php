@@ -47,7 +47,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 		?array $unsealed,
 	): ConstantArrayType
 	{
-		return new self(
+		$array = new self(
 			$this->scope,
 			$this->strategy,
 			$this->variance,
@@ -55,6 +55,7 @@ final class TemplateConstantArrayType extends ConstantArrayType implements Templ
 			new ConstantArrayType($keyTypes, $valueTypes, $nextAutoIndexes, $optionalKeys, $isList, $unsealed),
 			$this->default,
 		);
+		return $this->isArrayShapePreserved() ? $array->withPreservedArrayShape() : $array;
 	}
 
 }

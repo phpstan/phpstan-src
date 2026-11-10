@@ -244,6 +244,21 @@ class ScopeTest extends PHPStanTestCase
 		$this->assertSame($expectedTypeDescription, $resultScope->getVariableType('a')->describe(VerbosityLevel::precise()));
 	}
 
+	public function testGeneralizePreservesProtectedArrayShape(): void
+	{
+		$scopeFactory = self::getContainer()->getByType(ScopeFactory::class);
+		$key = new ConstantStringType('known');
+		$a = (new ConstantArrayType([$key], [new ConstantIntegerType(1)]))->withPreservedArrayShape();
+		$b = new ConstantArrayType([$key], [new ConstantIntegerType(2)]);
+		$scopeA = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $a, $a, TrinaryLogic::createYes());
+		$scopeB = $scopeFactory->create(ScopeContext::create('file.php'))->assignVariable('a', $b, $b, TrinaryLogic::createYes());
+
+		$type = $scopeA->generalizeWith($scopeB)->getVariableType('a');
+		$this->assertInstanceOf(ConstantArrayType::class, $type);
+		$this->assertTrue($type->isArrayShapePreserved());
+		$this->assertTrue($type->getOffsetValueType($key)->isInteger()->yes());
+	}
+
 	public function testGetConstantType(): void
 	{
 		/** @var ScopeFactory $scopeFactory */

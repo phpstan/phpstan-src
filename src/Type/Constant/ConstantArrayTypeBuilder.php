@@ -45,6 +45,8 @@ final class ConstantArrayTypeBuilder
 
 	private bool $oversized = false;
 
+	private bool $preserveArrayShape = false;
+
 	private TrinaryLogic $isNonEmpty;
 
 	/**
@@ -87,8 +89,11 @@ final class ConstantArrayTypeBuilder
 			$startArrayType->getUnsealedTypes(),
 		);
 		$builder->isNonEmpty = $startArrayType->isIterableAtLeastOnce();
+		$builder->preserveArrayShape = $startArrayType->isArrayShapePreserved();
 
-		if (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
+		if ($builder->preserveArrayShape) {
+			$builder->disableArrayDegradation();
+		} elseif (count($startArrayType->getKeyTypes()) > self::ARRAY_COUNT_LIMIT) {
 			$builder->degradeToGeneralArray(true);
 		}
 
@@ -488,13 +493,17 @@ final class ConstantArrayTypeBuilder
 					return $arrayType;
 				}
 			}
-			return new ConstantArrayType([], [], unsealed: $this->unsealed);
+			$array = new ConstantArrayType([], [], unsealed: $this->unsealed);
+			return $this->preserveArrayShape ? $array->withPreservedArrayShape() : $array;
 		}
 
 		if (!$this->degradeToGeneralArray) {
 			/** @var list<ConstantIntegerType|ConstantStringType> $keyTypes */
 			$keyTypes = $this->keyTypes;
 			$array = new ConstantArrayType($keyTypes, $this->valueTypes, $this->nextAutoIndexes, $this->optionalKeys, $this->isList, $this->unsealed);
+			if ($this->preserveArrayShape) {
+				$array = $array->withPreservedArrayShape();
+			}
 			if ($this->isNonEmpty->yes() && !$array->isIterableAtLeastOnce()->yes()) {
 				return TypeCombinator::intersect($array, new NonEmptyArrayType());
 			}

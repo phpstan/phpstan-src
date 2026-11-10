@@ -14,13 +14,14 @@ inline constexpr uint32_t degradeToGeneralArray = 0;
 inline constexpr uint32_t disableArrayDegradation = 1;
 inline constexpr uint32_t degradeClosures = 2;
 inline constexpr uint32_t oversized = 3;
-inline constexpr uint32_t isNonEmpty = 4;
-inline constexpr uint32_t keyTypes = 5;
-inline constexpr uint32_t valueTypes = 6;
-inline constexpr uint32_t nextAutoIndexes = 7;
-inline constexpr uint32_t optionalKeys = 8;
-inline constexpr uint32_t isList = 9;
-inline constexpr uint32_t unsealed = 10;
+inline constexpr uint32_t preserveArrayShape = 4;
+inline constexpr uint32_t isNonEmpty = 5;
+inline constexpr uint32_t keyTypes = 6;
+inline constexpr uint32_t valueTypes = 7;
+inline constexpr uint32_t nextAutoIndexes = 8;
+inline constexpr uint32_t optionalKeys = 9;
+inline constexpr uint32_t isList = 10;
+inline constexpr uint32_t unsealed = 11;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -35,6 +36,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("disableArrayDegradation", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
 	cls.property("degradeClosures", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_BOOL);
 	cls.property("oversized", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
+	cls.property("preserveArrayShape", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
 	cls.property("isNonEmpty", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 	cls.property("keyTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("valueTypes", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);

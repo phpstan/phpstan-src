@@ -5196,6 +5196,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->services->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
 				) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
+					$preserveArrayShape = false;
+					foreach ([...$constantArraysA->getConstantArrays(), ...$constantArraysB->getConstantArrays()] as $constantArray) {
+						if (!$constantArray->isArrayShapePreserved()) {
+							continue;
+						}
+
+						$preserveArrayShape = true;
+						$resultArrayBuilder->disableArrayDegradation();
+						break;
+					}
 					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
 						$resultArrayBuilder->setOffsetValueType(
 							$keyType,
@@ -5208,7 +5218,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						);
 					}
 
-					$resultTypes[] = $resultArrayBuilder->getArray();
+					$resultArray = $resultArrayBuilder->getArray();
+					$resultConstantArrays = $resultArray->getConstantArrays();
+					if ($preserveArrayShape && count($resultConstantArrays) === 1) {
+						$resultArray = TypeCombinator::intersect(
+							$resultConstantArrays[0]->withPreservedArrayShape(),
+							...TypeUtils::getAccessoryTypes($resultArray),
+						);
+					}
+					$resultTypes[] = $resultArray;
 				} else {
 					// Both inputs are sealed constant array shapes — their key
 					// sets are finite by construction. On the fall-through

@@ -3197,6 +3197,15 @@ $callableOthers = static fn (): array => [
 {
 	$catClass = \PHPStan\Type\Constant\ConstantArrayType::class;
 	$r = [];
+	$protectedKey = new \PHPStan\Type\Constant\ConstantStringType('known');
+	$plainShape = new $catClass([$protectedKey], [new \PHPStan\Type\IntegerType()]);
+	$protectedShape = $plainShape->withPreservedArrayShape();
+	$updatedShape = $protectedShape->setOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('added'), new \PHPStan\Type\StringType());
+	$r['preserved shape flag'] = [$plainShape->isArrayShapePreserved(), $protectedShape->isArrayShapePreserved(), $updatedShape->isArrayShapePreserved(), $plainShape->equals($protectedShape)];
+	foreach ([[$plainShape, $protectedShape], [$protectedShape, $plainShape]] as $i => $types) {
+		$mergedShape = \PHPStan\Type\TypeCombinator::union(...$types);
+		$r['preserved shape merge ' . $i] = [$mergedShape->isArrayShapePreserved(), $mergedShape->getOffsetValueType($protectedKey)->describe(\PHPStan\Type\VerbosityLevel::precise())];
+	}
 	$others = $arrayOthers(\PHPStan\Type\ArrayType::class, \PHPStan\Type\Accessory\NonEmptyArrayType::class, \PHPStan\Type\Accessory\AccessoryArrayListType::class, \PHPStan\Type\Accessory\OversizedArrayType::class, \PHPStan\Type\Accessory\HasOffsetType::class, \PHPStan\Type\Accessory\HasOffsetValueType::class);
 	$ci = static fn (int $i): \PHPStan\Type\Constant\ConstantIntegerType => new \PHPStan\Type\Constant\ConstantIntegerType($i);
 	$cs = static fn (string $s): \PHPStan\Type\Constant\ConstantStringType => new \PHPStan\Type\Constant\ConstantStringType($s);

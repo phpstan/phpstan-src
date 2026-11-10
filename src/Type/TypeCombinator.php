@@ -1571,6 +1571,10 @@ final class TypeCombinator
 					return $traverse($type);
 				}
 
+				if ($type->isArrayShapePreserved()) {
+					return $type;
+				}
+
 				if ($type->isIterableAtLeastOnce()->no()) {
 					return $type;
 				}
@@ -1609,6 +1613,10 @@ final class TypeCombinator
 					//   reached directly, leaving `processArrayTypes` with a
 					//   mix of shapes it cannot unify cleanly.
 					$generalizedValueType = TypeTraverser::map($innerValueTypes[$i], static function (Type $type, callable $innerTraverse): Type {
+						if ($type instanceof ConstantArrayType && $type->isArrayShapePreserved()) {
+							return $type;
+						}
+
 						if ($type instanceof ConstantArrayType && $type->isIterableAtLeastOnce()->no()) {
 							return $type;
 						}
@@ -1700,6 +1708,10 @@ final class TypeCombinator
 
 				$countBefore = $constantArrayValuesCount;
 				if ($type instanceof ConstantArrayType) {
+					if ($type->isArrayShapePreserved()) {
+						return $type;
+					}
+
 					$constantArrayValuesCount += count($type->getValueTypes());
 				}
 
@@ -2189,7 +2201,7 @@ final class TypeCombinator
 			$listVariants = [];
 			$listVariantSignatures = [];
 			foreach ($arraysToProcess as $idx => $arr) {
-				if (!$arr->isList()->yes() || !$arr->isIterableAtLeastOnce()->yes()) {
+				if ($arr->isArrayShapePreserved() || !$arr->isList()->yes() || !$arr->isIterableAtLeastOnce()->yes()) {
 					continue;
 				}
 				$listVariantIndices[] = $idx;

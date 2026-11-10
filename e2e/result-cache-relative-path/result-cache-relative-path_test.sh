@@ -22,10 +22,13 @@ function test_cache_holds_no_absolute_paths() {
 		exit 1
 	fi
 	# Warm run: the relative cache re-absolutizes against the current anchor and is fully reused.
-	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1) && CODE=0 || CODE=$?
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	OUTPUT=$(../../bin/phpstan analyse 2>&1) && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
 }
 
 function test_optional_exclude_path_is_stored_relative() {
@@ -38,10 +41,13 @@ function test_optional_exclude_path_is_stored_relative() {
 		grep -o "$(cd ../.. && pwd)/[^'\"]*" tmp-optional-path/resultCache.php | sort -u | head -20
 		exit 1
 	fi
-	OUTPUT=$(../../bin/phpstan analyse -c phpstan-optional-path.neon -vv 2>&1) && CODE=0 || CODE=$?
+	INFO=$(../../bin/phpstan result-cache-info -c phpstan-optional-path.neon --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	OUTPUT=$(../../bin/phpstan analyse -c phpstan-optional-path.neon 2>&1) && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
 }
 
 function test_cache_is_reused_in_a_git_worktree() {
@@ -61,18 +67,22 @@ function test_cache_is_reused_in_a_git_worktree() {
 	# Running in the worktree (a different absolute prefix) must re-absolutize the relative cache
 	# against the worktree and reuse it, with 0 files reanalysed.
 	cd "$WORKTREE/e2e/result-cache-relative-path"
-	# -vv progress (incl. "Result cache restored") goes to stderr, so capture both streams
-	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1)
-	echo "$OUTPUT"
-	echo "$OUTPUT" | grep -q 'Result cache restored. 0 files will be reanalysed.' || { echo 'result cache was not reused in the git worktree'; exit 1; }
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	../../bin/phpstan analyse
 	# Remove the worktree and confirm the original checkout still reuses its own cache, i.e.
 	# running phpstan in a different worktree in between did not disturb it.
 	cd "$MAIN"
 	git -C ../.. worktree remove --force "$WORKTREE"
-	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1) && CODE=0 || CODE=$?
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	OUTPUT=$(../../bin/phpstan analyse 2>&1) && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
 }
 
 # @tag windows
@@ -86,7 +96,10 @@ function test_windows_relative_paths() {
 		grep -nF "$PREFIX" tmp/resultCache.php | head -20
 		exit 1
 	fi
-	php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
-	grep -F "Result cache restored. 0 files will be reanalysed." output.txt && CODE=0 || CODE=$?
-	assert_same "0" "$CODE"
+	# jq.exe ends its output with CRLF, and the command substitution would keep the CR:
+	# --join-output prints no line ending at all.
+	INFO=$(php ../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --join-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --join-output '.filesToAnalyseCount')"
 }

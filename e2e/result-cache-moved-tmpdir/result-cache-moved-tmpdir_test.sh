@@ -15,8 +15,8 @@ function test_result_cache_moved_tmpdir() {
 	# usable: same project, same analysis, cache read from a different tmpDir.
 	mkdir -p tmp-b
 	cp tmp-a/resultCache.php tmp-b/resultCache.php
-	OUTPUT=$(../../bin/phpstan analyse -c moved.neon -vv 2>&1)
-	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
-	assert_not_contains 'metadata do not match' "$OUTPUT"
+	INFO=$(../../bin/phpstan result-cache-info -c moved.neon --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 }

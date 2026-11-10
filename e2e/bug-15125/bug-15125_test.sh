@@ -18,16 +18,19 @@ function test_bug_15125() {
 	# "..", so a second run without any change must still restore the whole cache without
 	# reporting a metadata mismatch.
 	../../bin/phpstan analyse
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	# The Composer metadata must not be reported as changed either, which -vvv shows.
 	OUTPUT=$(../../bin/phpstan analyse -vvv 2>&1)
 	echo "$OUTPUT"
-	assert_not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
 	assert_not_contains 'Composer metadata changed but no package versions changed' "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
 	# --autoload-file is recorded in executedFilesHashes under the path it was given with;
 	# a './' segment must not keep the cache from being reused either.
 	../../bin/phpstan analyse -a ./vendor/autoload.php
-	OUTPUT=$(../../bin/phpstan analyse -a ./vendor/autoload.php -vvv 2>&1)
-	echo "$OUTPUT"
-	assert_not_contains 'Result cache not used because the metadata do not match' "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
+	INFO=$(../../bin/phpstan result-cache-info -a ./vendor/autoload.php --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 }

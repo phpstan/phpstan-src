@@ -16,7 +16,10 @@ function test_windows_paths_through_the_currentworkingdirectory_placeholder() {
 	# executedFilesHashes). Values carrying a placeholder skip the path normalisation
 	# the Neon loader applies to plain relative paths.
 	php ../../bin/phpstan analyse --no-ansi
-	php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
-	grep -F "Result cache restored. 0 files will be reanalysed." output.txt && CODE=0 || CODE=$?
-	assert_same "0" "$CODE"
+	# jq.exe ends its output with CRLF, and the command substitution would keep the CR:
+	# --join-output prints no line ending at all.
+	INFO=$(php ../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --join-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --join-output '.filesToAnalyseCount')"
 }

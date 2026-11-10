@@ -25,7 +25,10 @@ function test_result_cache_1() {
 function test_windows_plain_project() {
 	echo -n > phpstan-baseline.neon
 	php ../../bin/phpstan analyse --no-ansi
-	php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
-	grep -F "Result cache restored. 0 files will be reanalysed." output.txt && CODE=0 || CODE=$?
-	assert_same "0" "$CODE"
+	INFO=$(php ../../bin/phpstan result-cache-info --json --no-ansi)
+	echo "$INFO"
+	# jq.exe ends its output with CRLF, and the command substitution would keep the CR:
+	# --join-output prints no line ending at all.
+	assert_equals 'true' "$(echo "$INFO" | jq --join-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --join-output '.filesToAnalyseCount')"
 }

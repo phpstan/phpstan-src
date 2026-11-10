@@ -12,7 +12,7 @@ function tear_down() {
 function test_changed_ext_ds_version_reanalyses_dependent_files() {
 	cp composer-json/v1-platform.json composer.json
 	composer install --ignore-platform-reqs
-	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
@@ -20,20 +20,26 @@ function test_changed_ext_ds_version_reanalyses_dependent_files() {
 	# selects the ext-ds 2 stubs. src/Bar.php has no error with ext-ds 1, so only its dependency on
 	# ext-ds re-analyses it; src/Baz.php does not use ext-ds and stays cached.
 	cp composer-json/v2-platform.json composer.json
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-	assert_contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
 	assert_contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
 	assert_contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
 	assert_not_contains 'Ds\Seq' "$OUTPUT"
 	cp composer-json/v1-platform.json composer.json
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
-	assert_contains 'Result cache restored. 2 files will be reanalysed.' "$OUTPUT"
 	assert_contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
 	assert_not_contains 'Ds\Vector' "$OUTPUT"
 	assert_not_contains 'Bar.php' "$OUTPUT"

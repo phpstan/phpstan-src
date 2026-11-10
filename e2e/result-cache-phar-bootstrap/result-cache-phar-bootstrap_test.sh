@@ -23,10 +23,12 @@ function test_result_cache_phar_bootstrap() {
 	if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
 		echo 'bootstrap path stored without its phar:// scheme'; exit 1
 	fi
-	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1) && CODE=0 || CODE=$?
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	../../bin/phpstan analyse && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"
-	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 0 files will be reanalysed.' "$OUTPUT"
 }
 
 # @tag windows
@@ -38,7 +40,10 @@ function test_windows_phar_bootstrap_file() {
 	if grep -oE "'[^']*boot\.phar/boot\.php'" tmp/resultCache.php | grep -v 'phar://'; then
 		echo 'bootstrap path stored without its phar:// scheme'; exit 1
 	fi
-	php ../../bin/phpstan analyse -vv --no-ansi 2>&1 | tee output.txt
-	grep -F "Result cache restored. 0 files will be reanalysed." output.txt && CODE=0 || CODE=$?
-	assert_same "0" "$CODE"
+	INFO=$(php ../../bin/phpstan result-cache-info --json --no-ansi)
+	echo "$INFO"
+	# jq.exe ends its output with CRLF, and the command substitution would keep the CR:
+	# --join-output prints no line ending at all.
+	assert_equals 'true' "$(echo "$INFO" | jq --join-output '.resultCacheUsed')"
+	assert_equals '0' "$(echo "$INFO" | jq --join-output '.filesToAnalyseCount')"
 }

@@ -16,9 +16,12 @@ function test_result_cache_autoloaded() {
 	# through the Composer autoloader - is tracked as a file dependency too, so editing it
 	# re-analyses the files depending on it instead of leaving stale results behind.
 	patch -b other/Dep.php < patch.patch
-	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
 	assert_contains 'Foo.php:12:Method ResultCacheE2EAutoloaded\Foo::doFoo() should return int but returns string.' "$OUTPUT"
 }

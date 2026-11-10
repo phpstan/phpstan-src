@@ -6,6 +6,7 @@ use PHPStan\DependencyInjection\Container;
 use PHPStan\File\PathNotFoundException;
 use PHPStan\Internal\BytesHelper;
 use PHPStan\Parallel\ForkParallelChecker;
+use PHPStan\Process\ProcessTreeMemoryTracker;
 use function floor;
 use function implode;
 use function memory_get_peak_usage;
@@ -140,6 +141,16 @@ final class InceptionResult
 						? sprintf('the %s worker', $mechanism)
 						: sprintf('largest of %d %s workers', $workerCount, $mechanism),
 				));
+
+				// Physical memory of the whole tree at its sampled largest - the
+				// per-process peaks above do not add up to it, see the tracker.
+				$totalPeakBytes = $this->container->getByType(ProcessTreeMemoryTracker::class)->getPeakBytes();
+				if ($totalPeakBytes !== null) {
+					$this->getErrorOutput()->writeLineFormatted(sprintf(
+						'Total peak memory: %s (all processes combined, sampled)',
+						BytesHelper::bytes($totalPeakBytes),
+					));
+				}
 			}
 		}
 

@@ -47,6 +47,8 @@ final class ForkedProcess extends ProcessBase
 
 	private ?TimerInterface $waitTimer = null;
 
+	private ?int $pid = null;
+
 	/**
 	 * @param string[] $analysedFiles
 	 */
@@ -159,6 +161,7 @@ final class ForkedProcess extends ProcessBase
 		}
 
 		// Parent: poll for the child to exit and report it through $onExit.
+		$this->pid = $pid;
 		$this->waitTimer = $this->loop->addPeriodicTimer(self::WAITPID_POLL_INTERVAL, function () use ($pid, $onExit): void {
 			$status = 0;
 			$result = pcntl_waitpid($pid, $status, WNOHANG);
@@ -204,6 +207,11 @@ final class ForkedProcess extends ProcessBase
 		// child exit; the waitpid poll timer must keep running until then so
 		// the child is actually reaped (otherwise: zombie + hang).
 		$this->endConnection();
+	}
+
+	public function getPid(): ?int
+	{
+		return $this->pid;
 	}
 
 	private function cancelWaitTimer(): void

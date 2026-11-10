@@ -258,6 +258,10 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 
 					return new BooleanType();
 				};
+				/**
+				 * @param callable(bool): Type $left
+				 * @param callable(bool): Type $right
+				 */
 				$andVerdict = static fn (callable $left, callable $right): callable => static function (bool $nativeTypesPromoted) use ($left, $right): Type {
 					$leftBool = $left($nativeTypesPromoted)->toBoolean();
 					$rightBool = $right($nativeTypesPromoted)->toBoolean();

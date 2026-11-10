@@ -126,6 +126,7 @@ final class IssetHandler implements ExprHandler
 		$afterScope = $scope;
 
 		// lazily memoized multi-subject conjunction fold (ask-independent)
+		/** @var (Closure(MutatingScope, TypeSpecifierContext): SpecifiedTypes)|null $foldAccTypes */
 		$foldAccTypes = null;
 
 		return $this->expressionResultFactory->create(

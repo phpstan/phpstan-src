@@ -15,7 +15,6 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
 
 /**
  * @implements Rule<Node\Expr\StaticPropertyFetch>
@@ -65,14 +64,14 @@ final class RestrictedStaticPropertyUsageRule implements Rule
 				$scope,
 				$node->class,
 				'', // We don't care about the error message
-				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasInstanceProperty($propertyName)->yes(),
+				static fn (Type $type): bool => $type->canAccessProperties()->yes() && $type->hasStaticProperty($propertyName)->yes(),
 			);
 
 			if ($classTypeResult->getType() instanceof ErrorType) {
 				return [];
 			}
 
-			$referencedClasses = TypeCombinator::removeNull($classTypeResult->getType())->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
+			$referencedClasses = RestrictedUsageObjectClassNames::getFromClassExpression($classTypeResult->getType());
 		}
 
 		$errors = [];

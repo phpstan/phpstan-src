@@ -752,7 +752,7 @@ foreach (['php' => \PHPStan\Analyser\RecordingNodeCallback::class, 'native' => \
 	// an internal function words the argument count error differently
 	$r['too few arguments'] = $avCatch(static fn () => $recording($avN['one']))[0];
 	foreach (['native gatherer' => \PHPStanTurbo\ClassStatementsGatherer::class, 'php gatherer' => \PHPStan\Node\ClassStatementsGatherer::class] as $gathererLabel => $gathererClass) {
-		$gatherer = new $gathererClass($avGathererClass, $recording);
+		$gatherer = new $gathererClass($avContainer->getByType(\PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder::class), $avGathererClass, $recording);
 		$r['through ' . $gathererLabel] = $avCatch(static fn () => $gatherer($avN['dim'], $avScope));
 	}
 	$r['pairs'] = array_map(static fn (array $pair): array => [$avDescribe($pair[0]), $avDescribe($pair[1]), array_keys($pair)], $recording->getPairs());

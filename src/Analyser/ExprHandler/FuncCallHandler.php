@@ -602,11 +602,11 @@ final class FuncCallHandler implements ExprHandler
 			$this->getDependencies($beforeScope, $functionReflection, $nameResult, $preliminaryResult),
 		);
 		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
-		if ($nameType === null) {
+		if ($nameResult === null) {
 			return $result;
 		}
 
-		return ClosureOriginCallReplay::replay($nodeScopeResolver, $this->expressionResultFactory, $expr, $nameType, $scopeBeforeArgs, $storage, $result);
+		return ClosureOriginCallReplay::replay($nodeScopeResolver, $this->expressionResultFactory, $expr, $nameResult, $nameType, $scopeBeforeArgs, $storage, $result);
 	}
 
 	/**

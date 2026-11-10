@@ -1282,12 +1282,12 @@ public:
 			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		}
 		zv::Val result = pt_expression_result_finalize(preliminaryResult.raw(), scope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
-		if (UNEXPECTED(result.isUndef()) || calleeNameType.isNull()) return result;
+		if (UNEXPECTED(result.isUndef()) || nameResult.isNull() || calleeNameType.isNull()) return result;
 
-		/* ClosureOriginCallReplay::replay($nodeScopeResolver, $this->expressionResultFactory, $expr, $nameType, $scopeBeforeArgs, $storage, $result) */
+		/* ClosureOriginCallReplay::replay($nodeScopeResolver, $this->expressionResultFactory, $expr, $nameResult, $nameType, $scopeBeforeArgs, $storage, $result) */
 		static pt_method_site replaySite;
-		zv::Args replayArgv{nodeScopeResolver, slot(slots::expressionResultFactory), expr, calleeNameType.raw(), scopeBeforeArgs, storage, result.raw()};
-		return pt_call_static_cached(replaySite, PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY, PT_LC("replay"), 7, replayArgv);
+		zv::Args replayArgv{nodeScopeResolver, slot(slots::expressionResultFactory), expr, nameResult.raw(), calleeNameType.raw(), scopeBeforeArgs, storage, result.raw()};
+		return pt_call_static_cached(replaySite, PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY, PT_LC("replay"), 8, replayArgv);
 	}
 
 	/* the handler entry (Engine.h) */

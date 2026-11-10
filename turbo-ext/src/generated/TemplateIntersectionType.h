@@ -10,12 +10,12 @@ namespace ptdecl::TemplateIntersectionType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t name = 17;
-inline constexpr uint32_t scope = 18;
-inline constexpr uint32_t strategy = 19;
-inline constexpr uint32_t variance = 20;
-inline constexpr uint32_t bound = 21;
-inline constexpr uint32_t default_ = 22;
+inline constexpr uint32_t name = 19;
+inline constexpr uint32_t scope = 20;
+inline constexpr uint32_t strategy = 21;
+inline constexpr uint32_t variance = 22;
+inline constexpr uint32_t bound = 23;
+inline constexpr uint32_t default_ = 24;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

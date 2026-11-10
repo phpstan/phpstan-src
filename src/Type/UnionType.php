@@ -51,6 +51,7 @@ use function array_unique;
 use function array_values;
 use function count;
 use function implode;
+use function spl_object_id;
 use function sprintf;
 use function str_contains;
 
@@ -128,6 +129,20 @@ class UnionType implements CompoundType
 
 			$throwException();
 		}
+	}
+
+	/** @var array<int, Type> */
+	private array $generalizedTypes = [];
+
+	/** @var array<string, Type> */
+	private array $cachedGetOffsetValueType = [];
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		// Immutable, so it generalizes the same way every time - remembered
+		// because a member shared by several nested types is otherwise
+		// generalized once per path leading to it (see ConstantArrayType::generalize()).
+		return $this->generalizedTypes[spl_object_id($precision)] ??= $this->traverse(static fn (Type $type) => $type->generalize($precision));
 	}
 
 	/**
@@ -994,6 +1009,15 @@ class UnionType implements CompoundType
 	}
 
 	public function getOffsetValueType(Type $offsetType): Type
+	{
+		// Immutable, so it answers the same way every time - remembered
+		// because comparing nested shapes looks the same offset up on the
+		// same union once per path leading to it, and a new union each time
+		// would also defeat the memos of the types inside the result.
+		return $this->cachedGetOffsetValueType[$offsetType->describe(VerbosityLevel::cache())] ??= $this->doGetOffsetValueType($offsetType);
+	}
+
+	private function doGetOffsetValueType(Type $offsetType): Type
 	{
 		$types = [];
 		foreach ($this->types as $innerType) {

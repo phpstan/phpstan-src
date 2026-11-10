@@ -68,6 +68,7 @@ use function in_array;
 use function is_int;
 use function is_string;
 use function ksort;
+use function spl_object_id;
 use function sprintf;
 use function str_starts_with;
 use function strcasecmp;
@@ -143,6 +144,20 @@ class IntersectionType implements CompoundType
 				implode(', ', array_map(static fn (Type $type): string => $type->describe(VerbosityLevel::value()), $types)),
 			));
 		}
+	}
+
+	/** @var array<int, Type> */
+	private array $generalizedTypes = [];
+
+	/** @var array<int, IsSuperTypeOfResult> */
+	private array $superTypeOfMixedResults = [];
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		// Immutable, so it generalizes the same way every time - remembered
+		// because a member shared by several nested types is otherwise
+		// generalized once per path leading to it (see ConstantArrayType::generalize()).
+		return $this->generalizedTypes[spl_object_id($precision)] ??= $this->traverse(static fn (Type $type) => $type->generalize($precision));
 	}
 
 	/**
@@ -309,6 +324,15 @@ class IntersectionType implements CompoundType
 
 		if ($otherType instanceof NeverType) {
 			return IsSuperTypeOfResult::createYes();
+		}
+
+		if ($otherType::class === MixedType::class && $otherType->getSubtractedType() === null) {
+			// Immutable, so it compares to plain mixed the same way every time -
+			// remembered because comparing to mixed walks every nested member,
+			// and a member shared by several nested types (e.g. a snapshot of
+			// an array stored in it at every nesting level) is otherwise
+			// walked once per path leading to it.
+			return $this->superTypeOfMixedResults[(int) $otherType->isExplicitMixed()] ??= IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));
 		}
 
 		return IsSuperTypeOfResult::createYes()->and(...array_map(static fn (Type $innerType) => $innerType->isSuperTypeOf($otherType), $this->types));

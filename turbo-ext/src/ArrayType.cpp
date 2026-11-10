@@ -2061,12 +2061,14 @@ PT_MINIT_REGISTRATION(pt_register_array_type)
 	reg::Class cls("PHPStan\\Type\\ArrayType");
 	ptdecl::ArrayType::declareClass(cls);
 	/* the slots PT_AT_PROP_*: the three class-body properties first, the
-	 * promoted $itemType after them */
+	 * promoted $itemType after them, then the generalize() memo (unused
+	 * natively: TypeCombinatorCache memoizes the work it saves) */
 	cls.privateClassConstantLong("TRUNCATE_ACCESSORIES_LIMIT", PT_AT_TRUNCATE_ACCESSORIES_LIMIT);
 	cls.privateTypedClassProperty("keyType", ptcls::type, false);
 	cls.privateTypedClassPropertyDefaultNull("cachedIterableKeyType", ptcls::type);
 	cls.privateTypedClassPropertyDefaultNull("isList", ptcls::trinaryLogic);
 	cls.privateTypedClassProperty("itemType", ptcls::type, false);
+	cls.privateTypedArrayPropertyDefaultEmpty("generalizedTypes");
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *keyType, *itemType;

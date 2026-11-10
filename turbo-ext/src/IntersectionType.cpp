@@ -587,6 +587,41 @@ public:
 		}
 		if (zv::Ref(otherType).instanceOf(pt_ce_never_type)) return pt_type_is_super_type_of_result(PT_TRI_YES);
 
+		/* the answer for plain mixed is memoized per explicitness: comparing
+		 * to mixed walks every nested member, and a member shared by several
+		 * nested types is otherwise walked once per path leading to it */
+		if (Z_OBJCE_P(otherType) == pt_ce_mixed_type) {
+			zv::Val subtracted = pt_type_call(Z_OBJ_P(otherType), PT_LC("getsubtractedtype"), 0, NULL);
+			if (UNEXPECTED(subtracted.isUndef())) return zv::Val();
+			if (Z_TYPE_P(subtracted.raw()) == IS_NULL) {
+				zv::Val explicitMixed = pt_type_call(Z_OBJ_P(otherType), PT_LC("isexplicitmixed"), 0, NULL);
+				if (UNEXPECTED(explicitMixed.isUndef())) return zv::Val();
+				zend_ulong key = Z_TYPE_P(explicitMixed.raw()) == IS_TRUE ? 1 : 0;
+				zval *cache = OBJ_PROP_NUM(self, slots::superTypeOfMixedResults);
+				if (Z_TYPE_P(cache) == IS_ARRAY) {
+					zval *cached = zend_hash_index_find(Z_ARRVAL_P(cache), key);
+					if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
+				}
+				zv::Val result = membersIsSuperTypeOf(otherType);
+				if (UNEXPECTED(result.isUndef())) return zv::Val();
+				cache = OBJ_PROP_NUM(self, slots::superTypeOfMixedResults);
+				if (Z_TYPE_P(cache) != IS_ARRAY) {
+					zv::Ref(cache).assign(zv::Val(zv::Arr::create(2)));
+				}
+				SEPARATE_ARRAY(cache);
+				Z_TRY_ADDREF_P(result.raw());
+				zend_hash_index_update(Z_ARRVAL_P(cache), key, result.raw());
+				return result;
+			}
+		}
+
+		return membersIsSuperTypeOf(otherType);
+	}
+
+	/* IsSuperTypeOfResult::createYes()->and() over the members' answers;
+	 * UNDEF = pending exception */
+	zv::Val membersIsSuperTypeOf(zval *otherType) const
+	{
 		zv::Val results = mapCall(PT_LC("issupertypeof"), 1, otherType);
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
 		zv::Val yes = pt_type_is_super_type_of_result(PT_TRI_YES);
@@ -3234,7 +3269,9 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, true); });
 	/* the slots PT_IT_PROP_*: the sixteen explicit properties first, the
-	 * promoted $types after them */
+	 * promoted $types after them, then the generalize() memo (unused
+	 * natively: TypeCombinatorCache memoizes the work it saves) and the
+	 * isSuperTypeOf() memo for plain mixed */
 	cls.privateTypedPropertyDefaultNull("sortedTypesCache", MAY_BE_ARRAY);
 	cls.privateTypedClassPropertyDefaultNull("isBoolean", ptcls::trinaryLogic);
 	cls.privateTypedClassPropertyDefaultNull("isFloat", ptcls::trinaryLogic);
@@ -3252,6 +3289,8 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 	cls.privateTypedArrayPropertyDefaultEmpty("cachedHasOffsetValueType");
 	cls.privateTypedArrayPropertyDefaultEmpty("cachedDescriptions");
 	cls.privateTypedProperty("types", MAY_BE_ARRAY);
+	cls.privateTypedArrayPropertyDefaultEmpty("generalizedTypes");
+	cls.privateTypedArrayPropertyDefaultEmpty("superTypeOfMixedResults");
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;

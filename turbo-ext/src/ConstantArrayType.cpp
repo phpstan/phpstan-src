@@ -1785,6 +1785,12 @@ public:
 	 * CompoundType callback; no otherwise; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
+		/* the same shape: nested shapes share their members, so comparing
+		 * two of them meets the same member on both sides along every path */
+		if (Z_OBJ_P(type) == self) {
+			return pt_type_is_super_type_of_result(PT_TRI_YES);
+		}
+
 		if (instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type)) {
 			zend_long thisUnsealedness = thisIsUnsealed();
 			if (UNEXPECTED(thisUnsealedness < 0)) return zv::Val();
@@ -2095,6 +2101,10 @@ public:
 	 * exception */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
+		if (Z_OBJ_P(type) == self) {
+			out = true;
+			return true;
+		}
 		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type)) {
 			out = false;
 			return true;
@@ -7509,7 +7519,9 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantArrayType");
 	ptdecl::ConstantArrayType::declareClass(cls);
 	/* the slots PT_CAT_PROP_*: the eleven class-body properties first, the
-	 * four promoted constructor properties after them */
+	 * four promoted constructor properties after them, then the memos of
+	 * getOffsetValueType()'s normalized values and of generalize() (unused
+	 * natively: TypeCombinatorCache memoizes the work they save) */
 	cls.privateTypedClassProperty("isList", ptcls::trinaryLogic, false);
 	cls.privateTypedProperty("unsealed", MAY_BE_ARRAY | MAY_BE_NULL);
 	cls.privateTypedPropertyDefaultNull("allArrays", MAY_BE_ARRAY | MAY_BE_NULL);
@@ -7525,6 +7537,8 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 	cls.privateTypedProperty("valueTypes", MAY_BE_ARRAY);
 	cls.privateTypedProperty("nextAutoIndexes", MAY_BE_ARRAY);
 	cls.privateTypedProperty("optionalKeys", MAY_BE_ARRAY);
+	cls.privateTypedArrayPropertyDefaultEmpty("normalizedValueTypes");
+	cls.privateTypedArrayPropertyDefaultEmpty("generalizedTypes");
 	cls.privateClassConstantLong("DESCRIBE_LIMIT", PT_CAT_DESCRIBE_LIMIT);
 	cls.privateClassConstantLong("CHUNK_FINITE_TYPES_LIMIT", PT_CAT_CHUNK_FINITE_TYPES_LIMIT);
 	cls.privateClassConstantString("UNSEALED_ARRAY_SHAPES_LINK", PT_CAT_UNSEALED_ARRAY_SHAPES_LINK);

@@ -212,6 +212,12 @@ class ConstantArrayType implements Type
 		$this->unsealed = $unsealed;
 	}
 
+	/** @var array<int, Type> */
+	private array $normalizedValueTypes = [];
+
+	/** @var array<int, Type> */
+	private array $generalizedTypes = [];
+
 	public function isSealed(): TrinaryLogic
 	{
 		return $this->isUnsealed()->negate();
@@ -782,6 +788,13 @@ class ConstantArrayType implements Type
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
+		// Shapes nested in each other share their members (`$a['parent'] = $a`),
+		// so comparing two of them meets the same member on both sides along
+		// every path leading to it.
+		if ($type === $this) {
+			return IsSuperTypeOfResult::createYes();
+		}
+
 		if ($type instanceof self) {
 			$thisUnsealedness = $this->isUnsealed();
 			$typeUnsealedness = $type->isUnsealed();
@@ -980,6 +993,10 @@ class ConstantArrayType implements Type
 
 	public function equals(Type $type): bool
 	{
+		if ($type === $this) {
+			return true;
+		}
+
 		if (!$type instanceof self) {
 			return false;
 		}
@@ -1326,7 +1343,10 @@ class ConstantArrayType implements Type
 			// maybe-all fallbacks apply and the unsealed extras cannot contribute.
 			$index = $this->findVerifiedKeyIndex($offsetType);
 			if ($index !== null) {
-				$type = TypeCombinator::union($this->valueTypes[$index]);
+				// The shape is immutable, so the normalized value at an index is
+				// computed once. Comparing nested shapes asks for the same offsets
+				// over and over, and normalizing a union of shapes is not cheap.
+				$type = $this->normalizedValueTypes[$index] ??= TypeCombinator::union($this->valueTypes[$index]);
 				if ($type instanceof ErrorType) {
 					return new MixedType();
 				}
@@ -2471,6 +2491,15 @@ class ConstantArrayType implements Type
 			return $this;
 		}
 
+		// The shape is immutable, so it generalizes the same way every time.
+		// Shapes nested in each other share their members (`$a['parent'] = $a`),
+		// and without remembering the result every path to a shared member
+		// generalizes it again - exponential in the nesting depth.
+		return $this->generalizedTypes[spl_object_id($precision)] ??= $this->doGeneralize($precision);
+	}
+
+	private function doGeneralize(GeneralizePrecision $precision): Type
+	{
 		if ($precision->isTemplateArgument()) {
 			return $this->traverse(static fn (Type $type) => $type->generalize($precision));
 		}

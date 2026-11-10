@@ -12,6 +12,10 @@
  * - ParameterReflection::isOptional() (pt_parameter_reflection_bool());
  * (Assertions::getAll() is pt_assertions_all(), Assertions.cpp).
  *
+ * The resolved names are answered only for a lookup the
+ * MemoizingReflectionProvider recorded in the current context already
+ * (functionLookupRecorded()); the method records it otherwise.
+ *
  * Same contract as ReflectionAccess.cpp: only an object of exactly the
  * twin's class entry (resolved through the class map without autoloading —
  * an object of an undeclared class cannot exist) takes the slot, its offsets
@@ -85,7 +89,7 @@ const ClassSlots *slotsOf(ClassSlots &cache, int classIdx, zend_object *object, 
 }
 
 const char *const pt_fra_nfr_names[PT_FRA_NFR_SLOT_COUNT] = { "name", "variants", "namedArgumentsVariants", "throwType", "hasSideEffects", "assertions" };
-const char *const pt_fra_memoizing_names[1] = { "provider" };
+const char *const pt_fra_memoizing_names[2] = { "provider", "nameLookups" };
 const char *const pt_fra_better_names[2] = { "resolvedFunctionNames", "functionReflections" };
 const char *const pt_fra_name_names[1] = { "name" };
 
@@ -227,7 +231,7 @@ namespace {
 zval *betterReflectionProviderOf(zval *provider, const ClassSlots *&slots)
 {
 	if (UNEXPECTED(Z_TYPE_P(provider) != IS_OBJECT)) return NULL;
-	const ClassSlots *memoizing = slotsOf(pt_fra_memoizing_reflection_provider, PT_CLASS_MEMOIZING_REFLECTION_PROVIDER, Z_OBJ_P(provider), pt_fra_memoizing_names, 1);
+	const ClassSlots *memoizing = slotsOf(pt_fra_memoizing_reflection_provider, PT_CLASS_MEMOIZING_REFLECTION_PROVIDER, Z_OBJ_P(provider), pt_fra_memoizing_names, 2);
 	if (memoizing == NULL) return NULL;
 	zval *inner = initializedSlot(provider, memoizing, 0);
 	if (inner == NULL || Z_TYPE_P(inner) != IS_OBJECT) return NULL;
@@ -319,6 +323,55 @@ enum MemoAnswer
 	return true;
 }
 
+/* ($provider->nameLookups['function:' . $lookupName] ?? null) ===
+ * ValueDependencyCollector::getContext() of exactly a
+ * MemoizingReflectionProvider - the lookup was recorded in the current
+ * context already, see MemoizingReflectionProvider::recordNameLookup(); the
+ * lookup name is the namespace and the name for an unqualified name in a
+ * namespace, the name with a leading backslash otherwise. false also when
+ * the reader cannot tell (the caller then calls the method, which records
+ * it); error = pending exception */
+bool functionLookupRecorded(zval *provider, zval *nameNode, zval *namespaceAnswerer, bool &error)
+{
+	error = false;
+	zend_long context;
+	if (!pt_value_dependency_context(context)) return false;
+	const ClassSlots *memoizing = slotsOf(pt_fra_memoizing_reflection_provider, PT_CLASS_MEMOIZING_REFLECTION_PROVIDER, Z_OBJ_P(provider), pt_fra_memoizing_names, 2);
+	if (memoizing == NULL) return false;
+	zval *lookups = initializedSlot(provider, memoizing, 1);
+	if (lookups == NULL || Z_TYPE_P(lookups) != IS_ARRAY) return false;
+	bool fullyQualified;
+	zend_string *name = plainName(nameNode, fullyQualified);
+	if (name == NULL) return false;
+	zv::Val ns = zv::Val::null();
+	if (namespaceAnswerer != NULL && Z_TYPE_P(namespaceAnswerer) != IS_NULL) {
+		if (Z_TYPE_P(namespaceAnswerer) != IS_OBJECT) return false;
+		ns = pt_mutating_scope_get_namespace(Z_OBJ_P(namespaceAnswerer));
+		if (UNEXPECTED(ns.isUndef())) {
+			error = true;
+			return false;
+		}
+		if (UNEXPECTED(!ns.isNull() && !ns.ref().isString())) return false;
+	}
+	zend_string *nsString = !ns.isNull() && !fullyQualified ? Z_STR_P(ns.raw()) : ZSTR_EMPTY_ALLOC();
+	size_t length = sizeof("function:") - 1 + ZSTR_LEN(nsString) + 1 + ZSTR_LEN(name);
+	zend_string *key = zend_string_alloc(length, 0);
+	char *cursor = ZSTR_VAL(key);
+	memcpy(cursor, "function:", sizeof("function:") - 1);
+	cursor += sizeof("function:") - 1;
+	memcpy(cursor, ZSTR_VAL(nsString), ZSTR_LEN(nsString));
+	cursor += ZSTR_LEN(nsString);
+	*cursor++ = '\\';
+	memcpy(cursor, ZSTR_VAL(name), ZSTR_LEN(name));
+	cursor += ZSTR_LEN(name);
+	*cursor = '\0';
+	zval *found = zend_symtable_find(Z_ARRVAL_P(lookups), key);
+	zend_string_release(key);
+	if (found == NULL) return false;
+	ZVAL_DEREF(found);
+	return Z_TYPE_P(found) == IS_LONG && Z_LVAL_P(found) == context;
+}
+
 /* $provider->method($nameNode, $namespaceAnswerer) through the engine */
 zv::Val callProvider(zval *provider, const char *lcname, size_t len, const char *name, zval *nameNode, zval *namespaceAnswerer)
 {
@@ -338,7 +391,8 @@ bool pt_reflection_provider_has_function(zval *provider, zval *nameNode, zval *n
 {
 	const ClassSlots *slots = NULL;
 	zval *better = betterReflectionProviderOf(provider, slots);
-	if (EXPECTED(better != NULL)) {
+	bool lookupError = false;
+	if (EXPECTED(better != NULL) && functionLookupRecorded(provider, nameNode, namespaceAnswerer, lookupError)) {
 		MemoAnswer answer;
 		zend_string *resolved = NULL;
 		zv::Str hold;
@@ -349,6 +403,7 @@ bool pt_reflection_provider_has_function(zval *provider, zval *nameNode, zval *n
 			return true;
 		}
 	}
+	if (UNEXPECTED(lookupError)) return false;
 	zv::Val value = callProvider(provider, PT_LC("hasfunction"), "hasFunction", nameNode, namespaceAnswerer);
 	if (UNEXPECTED(value.isUndef())) return false;
 	out = zend_is_true(value.raw());
@@ -359,7 +414,8 @@ zv::Val pt_reflection_provider_get_function(zval *provider, zval *nameNode, zval
 {
 	const ClassSlots *slots = NULL;
 	zval *better = betterReflectionProviderOf(provider, slots);
-	if (EXPECTED(better != NULL)) {
+	bool lookupError = false;
+	if (EXPECTED(better != NULL) && functionLookupRecorded(provider, nameNode, namespaceAnswerer, lookupError)) {
 		MemoAnswer answer;
 		zend_string *resolved = NULL;
 		zv::Str hold;
@@ -376,6 +432,7 @@ zv::Val pt_reflection_provider_get_function(zval *provider, zval *nameNode, zval
 			}
 		}
 	}
+	if (UNEXPECTED(lookupError)) return zv::Val();
 	return callProvider(provider, PT_LC("getfunction"), "getFunction", nameNode, namespaceAnswerer);
 }
 

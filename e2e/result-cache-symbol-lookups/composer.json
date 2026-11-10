@@ -1,0 +1,10 @@
+{
+	"name": "phpstan/result-cache-symbol-lookups-e2e",
+	"autoload": {
+		"psr-4": {
+			"ResultCacheE2ESymbolLookups\\": "src/",
+			"ResultCacheE2ESymbolLookups\\Lib\\": "lib/",
+			"ResultCacheE2ESymbolLookupsRules\\": "rules/"
+		}
+	}
+}

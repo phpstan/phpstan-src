@@ -47,7 +47,6 @@ use function array_intersect;
 use function array_is_list;
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 use function array_merge;
 use function array_unique;
 use function array_values;
@@ -116,7 +115,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v27-exportedNodesSignatureDetails';
+	private const CACHE_VERSION = 'v28-symbolLookups';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on
@@ -131,10 +130,6 @@ final class ResultCacheManager
 	 * real hash, so the file is re-analysed by the next run.
 	 */
 	private const REANALYSE_FILE_HASH_PREFIX = 'reanalyse:';
-
-	private const SCANNED_FILE_APPEARED = 'appeared';
-	private const SCANNED_FILE_EDITED = 'edited';
-	private const SCANNED_FILE_GONE = 'gone';
 
 	/**
 	 * Metadata keys whose change does not invalidate the whole result cache: the analysed files they
@@ -483,7 +478,6 @@ final class ResultCacheManager
 		// absolutized above, so it is always present here
 		$packageDependencies = $data['packageDependencies'];
 		$packageSeededFiles = [];
-		$notAnalysedFileSymbolsChanged = false;
 		// Scanned files whose exported nodes differ from the ones the cache holds - the only ones that
 		// make anything be re-analysed. A scanned file can change without any of its symbols changing,
 		// and then nothing here has to happen at all.
@@ -514,13 +508,9 @@ final class ResultCacheManager
 				// treats an analysed file: the files depending on it are re-analysed only when its
 				// exported nodes changed, and it is that loop which counts it as changed. What is left
 				// for the metadata to notice is a file the dependency graph does not know: one that
-				// appeared, or an edited one nothing depends on. Either may define a symbol that was
-				// reported as unknown somewhere - if it declares any symbol at all - so the files with
-				// errors are re-analysed the same way a new analysed file makes them re-analysed. The
-				// previous nodes of a file nothing depends on are not kept, so for it "declares a symbol"
-				// stands in for "declares a new symbol".
-				$changedScannedFiles = $this->getChangedScannedFiles($data['meta'], $meta);
-				foreach ($changedScannedFiles as $changedScannedFile => $change) {
+				// appeared, or an edited one nothing depends on. A symbol it declares now was looked up
+				// and not found by the files waiting for it, which recorded that as a value dependency.
+				foreach ($this->getChangedScannedFiles($data['meta'], $meta) as $changedScannedFile) {
 					// The scanned files getFileAndPackageDependencies() leaves out: nothing would
 					// re-analyse the files depending on them, so the whole cache has to go.
 					$notTrackedReason = null;
@@ -540,20 +530,6 @@ final class ResultCacheManager
 						);
 					}
 
-					if ($change === self::SCANNED_FILE_GONE) {
-						continue;
-					}
-
-					if ($change === self::SCANNED_FILE_EDITED && array_key_exists($changedScannedFile, $data['dependencies'])) {
-						continue;
-					}
-
-					if ($this->exportedNodeFetcher->fetchNodes($changedScannedFile) === []) {
-						continue;
-					}
-
-					$scannedFilesWithChangedSymbols[$changedScannedFile] = true;
-					$notAnalysedFileSymbolsChanged = true;
 				}
 			}
 
@@ -614,7 +590,7 @@ final class ResultCacheManager
 
 				if ($output->isVeryVerbose()) {
 					$output->writeLineFormatted(sprintf(
-						'Composer packages changed (%s); re-analysing the files depending on them and the files with errors.',
+						'Composer packages changed (%s); re-analysing the files depending on them.',
 						implode(', ', $changedPackages),
 					));
 				}
@@ -622,20 +598,15 @@ final class ResultCacheManager
 
 			if ($changedExtensionPackages !== [] && $output->isVeryVerbose()) {
 				$output->writeLineFormatted(sprintf(
-					'PHP extension versions changed (%s); re-analysing the files depending on them and the files with errors.',
+					'PHP extension versions changed (%s); re-analysing the files depending on them.',
 					implode(', ', $changedExtensionPackages),
 				));
 			}
 
 			if ($changedPackages !== [] || $changedExtensionPackages !== []) {
-				// The files depending on a changed package are seeded below, but a file whose error is
-				// that a class does not exist depends on nothing: there was no file to record an edge to.
-				// An installed package is exactly where such a class tends to arrive from - Composer
-				// unpacking a new version, or a plugin writing into vendor/ while it does - and so is a
-				// newly selected extension version, so the files with errors are re-analysed too, the
-				// same way a new analysed file makes them.
-				$notAnalysedFileSymbolsChanged = true;
-
+				// The files depending on a changed package are seeded below. A symbol a package declares
+				// now was looked up and not found by the files waiting for it, which recorded that as a
+				// value dependency.
 				$changedPackagesLookup = array_fill_keys(array_merge($changedPackages, $changedExtensionPackages), true);
 				foreach ($packageDependencies as $packageDependentFile => $filePackages) {
 					foreach ($filePackages as $filePackage) {
@@ -747,18 +718,6 @@ final class ResultCacheManager
 				}
 			}
 			$collectedDataRuleResults = $transformer->absolutizeCollectedDataRuleResults($collectedDataRuleResults);
-			$storedFilesWithCollectedDataRuleErrors = $data['filesWithCollectedDataRuleErrors'] ?? [];
-			if (!is_array($storedFilesWithCollectedDataRuleErrors)) {
-				throw new RuntimeException('The cached files with errors of the rules on collected data are not an array.');
-			}
-			$filesWithCollectedDataRuleErrors = [];
-			foreach ($storedFilesWithCollectedDataRuleErrors as $fileWithCollectedDataRuleError) {
-				if (!is_string($fileWithCollectedDataRuleError)) {
-					throw new RuntimeException('A cached file with errors of the rules on collected data is not a string.');
-				}
-
-				$filesWithCollectedDataRuleErrors[] = $transformer->absolutizePath($fileWithCollectedDataRuleError);
-			}
 		} catch (Throwable $e) {
 			@unlink($cacheFilePath);
 
@@ -778,7 +737,6 @@ final class ResultCacheManager
 		$filteredExportedNodes = [];
 		// the analysed and scanned files whose exported nodes stay in the old cache file until save()
 		$keptCachedExportedNodes = [];
-		$newFileAppeared = false;
 		$dependencyFilesChanged = false;
 		$cachedExportedNodesError = null;
 		$decodeCachedExportedNodes = static function (string $file) use ($cachedExportedNodes, &$cachedExportedNodesError): array {
@@ -800,8 +758,8 @@ final class ResultCacheManager
 		}
 
 		// Whether a changed file's exported nodes changed decides what else has to be re-analysed with
-		// it: its dependents, the classes using a trait it declares, and - when a symbol appeared or
-		// disappeared - the files with errors. Finding out means parsing the file, serially here in
+		// it: its dependents and the classes using a trait it declares. Finding out means parsing the
+		// file, serially here in
 		// the main process. When all of those files are re-analysed anyway, because they changed
 		// themselves, the answer cannot add anything and the file is not parsed. After a branch switch
 		// or a formatting run that touched most of the project, that is most of the changed files -
@@ -818,37 +776,9 @@ final class ResultCacheManager
 
 			$changedAnalysedFiles[$analysedFile] = true;
 		}
-		// The errors of the rules on CollectedDataNode are not in $errors: those rules run on the merged
-		// collected data on every run, a cached copy would be reported twice. But such an error waits
-		// for a symbol to appear just like any other, and re-analysing its file renews the file's share
-		// of the collected data.
-		$cachedFilesWithCollectedDataRuleErrors = array_fill_keys($filesWithCollectedDataRuleErrors, true);
-		$filteredFilesWithCollectedDataRuleErrors = [];
-
-		// only the stub files with errors so far, which are never analysed
-		$filesWithErrorsAllChanged = $filteredErrors === [];
-		foreach ($allAnalysedFiles as $analysedFile) {
-			if (
-				(
-					!array_key_exists($analysedFile, $errors)
-					&& !array_key_exists($analysedFile, $locallyIgnoredErrors)
-					&& !array_key_exists($analysedFile, $cachedFilesWithCollectedDataRuleErrors)
-				)
-				|| array_key_exists($analysedFile, $changedAnalysedFiles)
-			) {
-				continue;
-			}
-
-			$filesWithErrorsAllChanged = false;
-			break;
-		}
-
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
 				$filteredErrors[$analysedFile] = $errors[$analysedFile];
-			}
-			if (array_key_exists($analysedFile, $cachedFilesWithCollectedDataRuleErrors)) {
-				$filteredFilesWithCollectedDataRuleErrors[] = $analysedFile;
 			}
 			if (array_key_exists($analysedFile, $locallyIgnoredErrors)) {
 				$filteredLocallyIgnoredErrors[$analysedFile] = $locallyIgnoredErrors[$analysedFile];
@@ -870,7 +800,6 @@ final class ResultCacheManager
 			if (!array_key_exists($analysedFile, $invertedDependencies)) {
 				// new file
 				$filesToAnalyse[] = $analysedFile;
-				$newFileAppeared = true;
 				continue;
 			}
 
@@ -892,25 +821,21 @@ final class ResultCacheManager
 
 			$filesToAnalyse[] = $analysedFile;
 			if (
-				($filesWithErrorsAllChanged || $newFileAppeared)
-				&& $this->areAllChanged($dependentFiles, $changedAnalysedFiles)
+				$this->areAllChanged($dependentFiles, $changedAnalysedFiles)
 				&& $this->areAllChanged($usedTraitDependentFiles, $changedAnalysedFiles)
 			) {
 				continue;
 			}
 
 			// A file that declared nothing has no entry at all - save() only writes one for a file with
-			// at least one exported node - and a missing entry is not the same as nothing to propagate:
-			// the file may have gained its first symbol, which is exactly what the files with errors are
-			// waiting for. Comparing against an empty list says so, and says nothing changed when the
+			// at least one exported node. Comparing against an empty list says nothing changed when the
 			// file still declares nothing.
 			$fileExportedNodes = $this->exportedNodeFetcher->fetchNodesIfParsable($this->fileReplacements[$analysedFile] ?? $analysedFile);
 			if ($fileExportedNodes === null) {
 				// A parse error, typically code saved half typed. The file is re-analysed and reports it,
 				// but its symbols count as unchanged: the files using them keep their results until it is
-				// fixed, instead of being analysed against a file that declares nothing, and so do the
-				// files with errors. process() keeps the symbols it had, which the fixed file is compared
-				// with.
+				// fixed, instead of being analysed against a file that declares nothing. process() keeps
+				// the symbols it had, which the fixed file is compared with.
 				continue;
 			}
 			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile]
@@ -938,10 +863,6 @@ final class ResultCacheManager
 				continue;
 			}
 
-			if ($exportedNodesChanged) {
-				$newFileAppeared = true;
-			}
-
 			foreach ($dependentFiles as $dependentFile) {
 				if (!is_file($dependentFile)) {
 					continue;
@@ -949,9 +870,6 @@ final class ResultCacheManager
 				$filesToAnalyse[] = $dependentFile;
 			}
 		}
-
-		// in the order process() compares them in
-		sort($filteredFilesWithCollectedDataRuleErrors);
 
 		// the freshly computed metadata, so a file that stopped being scanned is not counted
 		$scannedFiles = is_array($meta['scannedFiles'] ?? null) ? $meta['scannedFiles'] : [];
@@ -1036,25 +954,11 @@ final class ResultCacheManager
 					$scannedFilesWithChangedSymbols[$notAnalysedFile] = true;
 				}
 
-				if ($exportedNodesChanged) {
-					// A symbol appeared or disappeared. The dependents are not enough then: a file that
-					// reported the symbol as unknown - or referenced this file while it had a syntax error
-					// and no symbols at all - recorded no edge to it, so only the files with errors can
-					// bring it back, the same way a new analysed file makes them re-analysed.
-					$notAnalysedFileSymbolsChanged = true;
-				}
-
 				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
 			} else {
+				// Deleted. The files that found its symbols depend on it, by name too - see
+				// ValueDependencyCollector::recordFoundSymbol().
 				$dependencyFilesChanged = true;
-				// Deleted. The files using its symbols depend on it and are re-analysed, but a file can
-				// also have an error because a symbol exists - a dead catch of ReflectionException, a
-				// comparison with a class name that is always false - without depending on its file.
-				$deletedFileExportedNodes = $exportedNodes[$notAnalysedFile]
-					?? ($cachedExportedNodes->has($notAnalysedFile) ? $decodeCachedExportedNodes($notAnalysedFile) : []);
-				if (count($deletedFileExportedNodes) > 0) {
-					$notAnalysedFileSymbolsChanged = true;
-				}
 			}
 
 			foreach ($dependentFiles as $dependentFile) {
@@ -1104,26 +1008,6 @@ final class ResultCacheManager
 				$cachedValueDependency['analysis'],
 				$cachedValueDependency['declarations'],
 			];
-		}
-
-		if ($newFileAppeared || $notAnalysedFileSymbolsChanged) {
-			foreach (array_keys($filteredErrors) as $fileWithError) {
-				// A stub file has errors from the stub validation, which runs on the full analysis only.
-				// It is not an analysed file, so analysing it would report the errors of all rules in it.
-				if (array_key_exists($fileWithError, $cachedStubFiles)) {
-					continue;
-				}
-
-				$filesToAnalyse[] = $fileWithError;
-			}
-			// An error ignored by a comment on its line waits for the symbol all the same, and when it
-			// goes away, the comment no longer matches anything, which is reported.
-			foreach (array_keys($filteredLocallyIgnoredErrors) as $fileWithError) {
-				$filesToAnalyse[] = $fileWithError;
-			}
-			foreach ($filteredFilesWithCollectedDataRuleErrors as $fileWithError) {
-				$filesToAnalyse[] = $fileWithError;
-			}
 		}
 
 		foreach ($packageSeededFiles as $packageSeededFile) {
@@ -1193,7 +1077,6 @@ final class ResultCacheManager
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
 			collectedDataRuleResults: $collectedDataRuleResults,
-			filesWithCollectedDataRuleErrors: $filteredFilesWithCollectedDataRuleErrors,
 		);
 	}
 
@@ -1450,13 +1333,6 @@ final class ResultCacheManager
 			$collectedDataRuleResults = $finalizerResult->getCollectedDataRuleResults();
 			ksort($collectedDataRuleResults);
 
-			$filesWithCollectedDataRuleErrors = [];
-			foreach ($finalizerResult->getCollectorErrors() as $collectorError) {
-				$filesWithCollectedDataRuleErrors[$collectorError->getFilePath()] = true;
-			}
-			ksort($filesWithCollectedDataRuleErrors);
-			$filesWithCollectedDataRuleErrors = array_keys($filesWithCollectedDataRuleErrors);
-
 			$stubFiles = $this->getStubFiles();
 			if (
 				!$resultCache->isFullAnalysis()
@@ -1470,7 +1346,6 @@ final class ResultCacheManager
 				&& $collectedData->getFresh() === []
 				&& $collectedData->getCachedIndex() === $resultCache->getCollectedData()->getCachedIndex()
 				&& $collectedDataRuleResults === $resultCache->getCollectedDataRuleResults()
-				&& $filesWithCollectedDataRuleErrors === $resultCache->getFilesWithCollectedDataRuleErrors()
 				&& $packageDependencies === $resultCache->getPackageDependencies()
 				&& $exportedNodes === $resultCache->getExportedNodes()
 				&& $cachedExportedNodes->getFiles() === $resultCache->getCachedExportedNodes()->getFiles()
@@ -1490,7 +1365,7 @@ final class ResultCacheManager
 			}
 
 			try {
-				$savedCollectedData = $this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles, $collectedDataRuleResults, $filesWithCollectedDataRuleErrors);
+				$savedCollectedData = $this->save($resultCache->getLastFullAnalysisTime(), $errorsByFile, $locallyIgnoredErrorsByFile, $linesToIgnore, $unmatchedLineIgnores, $collectedData, $dependencies, $usedTraitDependencies, $valueDependencies, $packageDependencies, $exportedNodes, $cachedExportedNodes, $projectExtensionFiles, $currentFileHashes, $meta, $stubFiles, $collectedDataRuleResults);
 			} catch (RuntimeException $e) {
 				// Only the copy of the cached collected data throws this: the file it was restored from
 				// no longer holds the entries where the index says, so another run sharing the tmpDir
@@ -2044,7 +1919,6 @@ final class ResultCacheManager
 	 * @param mixed[] $meta
 	 * @param array<string, string> $stubFiles
 	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
-	 * @param list<string> $filesWithCollectedDataRuleErrors
 	 * @return LazyCollectedData The same collected data, with the cached entries indexed in the saved file
 	 */
 	private function save(
@@ -2065,7 +1939,6 @@ final class ResultCacheManager
 		array $meta,
 		array $stubFiles,
 		array $collectedDataRuleResults,
-		array $filesWithCollectedDataRuleErrors,
 	): LazyCollectedData
 	{
 		$invertedDependencies = [];
@@ -2146,7 +2019,6 @@ final class ResultCacheManager
 		$packageDependencies = $transformer->relativizeFileKeyed($packageDependencies);
 		$projectExtensionFiles = $transformer->relativizeFileKeyed($projectExtensionFiles);
 		$collectedDataRuleResults = $transformer->relativizeCollectedDataRuleResults($collectedDataRuleResults);
-		$filesWithCollectedDataRuleErrors = array_map(static fn (string $path): string => $transformer->relativizePath($path), $filesWithCollectedDataRuleErrors);
 
 		$file = $this->cacheFilePath;
 
@@ -2184,7 +2056,6 @@ final class ResultCacheManager
 			$this->writeArrayFrame($handle, $file, 'unmatchedLineIgnores', $unmatchedLineIgnores);
 			$savedCollectedDataIndex = $this->writeCollectedDataFrame($handle, $file, $collectedData);
 			$this->writeValueFrame($handle, $file, 'collectedDataRuleResults', $collectedDataRuleResults);
-			$this->writeValueFrame($handle, $file, 'filesWithCollectedDataRuleErrors', $filesWithCollectedDataRuleErrors);
 			// An older PHPStan reading this file absolutizes the dependencies before it gets to the
 			// cacheVersion check that makes it discard the file, and fails on a missing section.
 			$this->writeArrayFrame($handle, $file, 'dependencies', []);
@@ -3254,11 +3125,11 @@ final class ResultCacheManager
 	}
 
 	/**
-	 * Scanned files that differ between two metadata snapshots, each mapped to what happened to it.
+	 * Scanned files that differ between two metadata snapshots: appeared, edited or gone.
 	 *
 	 * @param mixed[] $cachedMeta
 	 * @param mixed[] $currentMeta
-	 * @return array<string, self::SCANNED_FILE_*>
+	 * @return list<string>
 	 */
 	private function getChangedScannedFiles(array $cachedMeta, array $currentMeta): array
 	{
@@ -3267,23 +3138,18 @@ final class ResultCacheManager
 
 		$changed = [];
 		foreach ($current as $file => $hash) {
-			if (!array_key_exists($file, $cached)) {
-				$changed[$file] = self::SCANNED_FILE_APPEARED;
+			if (array_key_exists($file, $cached) && $cached[$file] === $hash) {
 				continue;
 			}
 
-			if ($cached[$file] === $hash) {
-				continue;
-			}
-
-			$changed[$file] = self::SCANNED_FILE_EDITED;
+			$changed[] = (string) $file;
 		}
 		foreach (array_keys($cached) as $file) {
 			if (array_key_exists($file, $current)) {
 				continue;
 			}
 
-			$changed[$file] = self::SCANNED_FILE_GONE;
+			$changed[] = (string) $file;
 		}
 
 		return $changed;

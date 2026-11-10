@@ -22,7 +22,7 @@ function test_result_cache_path_repository() {
 	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1) && CODE=0 || CODE=$?
 	assert_same "0" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Composer packages changed (psr/log); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+	assert_contains 'Composer packages changed (psr/log); re-analysing the files depending on them.' "$OUTPUT"
 	# Editing a file of an installed package is not a valid thing to do - the next Composer
 	# command overwrites it - so PHPStan does not track it and keeps the cached results, even
 	# though this edit takes away a method the analysed code calls.

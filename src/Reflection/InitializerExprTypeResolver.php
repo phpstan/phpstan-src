@@ -29,6 +29,7 @@ use PhpParser\Node\Scalar\MagicConst\Line;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\OutOfClassScope;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\TypeExpr;
@@ -131,6 +132,7 @@ final class InitializerExprTypeResolver
 		private OversizedArrayBuilder $oversizedArrayBuilder,
 		#[AutowiredParameter]
 		private bool $usePathConstantsAsConstantString,
+		private ValueDependencyCollector $valueDependencyCollector,
 	)
 	{
 	}
@@ -1496,7 +1498,14 @@ final class InitializerExprTypeResolver
 					continue;
 				}
 				$reflectionConstantDeclaringClass = $reflectionConstant->getDeclaringClass();
-				$constantType = $this->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($reflectionConstantDeclaringClass->getName(), $reflectionConstantDeclaringClass->getFileName() ?: null));
+				// the resolved type is cached: a class it names that does not exist is what the
+				// declaring class declares depends on
+				$this->valueDependencyCollector->enterDeclaration($reflectionConstantDeclaringClass->getFileName() ?: null, $reflectionConstantDeclaringClass->getName());
+				try {
+					$constantType = $this->getType($reflectionConstant->getValueExpression(), InitializerExprContext::fromClass($reflectionConstantDeclaringClass->getName(), $reflectionConstantDeclaringClass->getFileName() ?: null));
+				} finally {
+					$this->valueDependencyCollector->leaveDeclaration();
+				}
 				$nativeType = null;
 				if ($reflectionConstant->getType() !== null) {
 					$nativeType = TypehintHelper::decideTypeFromReflection($reflectionConstant->getType(), selfClass: $constantClassReflection);

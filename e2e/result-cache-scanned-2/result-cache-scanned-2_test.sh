@@ -41,13 +41,13 @@ function test_result_cache_scanned_2() {
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'UsesExtra.php:10:Method ResultCacheE2EScanned2\UsesExtra::doUsesExtra() should return int but returns string.' "$OUTPUT"
-	# Deleting a scanned file re-analyses the files depending on it, and because it declared a
-	# symbol, the files with errors too: src/Foo.php and src/UsesExtra.php.
+	# Deleting a scanned file re-analyses the files depending on it: src/Foo.php, not
+	# src/UsesExtra.php with its unrelated error.
 	rm scanned/Dep.php
 	INFO=$(../../bin/phpstan result-cache-info --json)
 	echo "$INFO"
 	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
-	assert_equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"

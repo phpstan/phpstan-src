@@ -28,7 +28,6 @@ final class ResultCache
 	 * @param array<string, array{string, bool, string}> $projectExtensionFiles
 	 * @param array<string, string> $currentFileHashes
 	 * @param array<string, CollectedDataRuleResult> $collectedDataRuleResults
-	 * @param list<string> $filesWithCollectedDataRuleErrors the files with errors of the rules on CollectedDataNode
 	 */
 	public function __construct(
 		private array $filesToAnalyse,
@@ -50,7 +49,6 @@ final class ResultCache
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
 		private array $collectedDataRuleResults = [],
-		private array $filesWithCollectedDataRuleErrors = [],
 	)
 	{
 	}
@@ -197,14 +195,6 @@ final class ResultCache
 	public function getCollectedDataRuleResults(): array
 	{
 		return $this->collectedDataRuleResults;
-	}
-
-	/**
-	 * @return list<string>
-	 */
-	public function getFilesWithCollectedDataRuleErrors(): array
-	{
-		return $this->filesWithCollectedDataRuleErrors;
 	}
 
 }

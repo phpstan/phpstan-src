@@ -44,9 +44,18 @@ final class NameScope
 		private bool $bypassTypeAliases = false,
 		private array $constUses = [],
 		private ?string $typeAliasClassName = null,
+		private ?string $fileName = null,
 	)
 	{
 		$this->templateTypeMap = $templateTypeMap ?? TemplateTypeMap::createEmpty();
+	}
+
+	/**
+	 * The file the PHPDoc resolved in this scope is in, if it is in one.
+	 */
+	public function getFileName(): ?string
+	{
+		return $this->fileName;
 	}
 
 	public function getNamespace(): ?string
@@ -78,6 +87,11 @@ final class NameScope
 	public function getClassName(): ?string
 	{
 		return $this->className;
+	}
+
+	public function getFunctionName(): ?string
+	{
+		return $this->functionName;
 	}
 
 	public function getClassNameForTypeAlias(): ?string
@@ -196,6 +210,7 @@ final class NameScope
 			$this->typeAliasesMap,
 			$this->bypassTypeAliases,
 			$this->constUses,
+			fileName: $this->fileName,
 		);
 	}
 
@@ -211,6 +226,7 @@ final class NameScope
 			$this->typeAliasesMap,
 			$this->bypassTypeAliases,
 			$this->constUses,
+			fileName: $this->fileName,
 		);
 	}
 
@@ -226,6 +242,7 @@ final class NameScope
 			$this->typeAliasesMap,
 			$this->bypassTypeAliases,
 			$this->constUses,
+			fileName: $this->fileName,
 		);
 	}
 
@@ -246,12 +263,13 @@ final class NameScope
 			$this->typeAliasesMap,
 			$this->bypassTypeAliases,
 			$this->constUses,
+			fileName: $this->fileName,
 		);
 	}
 
 	public function bypassTypeAliases(): self
 	{
-		return new self($this->namespace, $this->uses, $this->className, $this->functionName, $this->templateTypeMap, $this->templateTags, $this->typeAliasesMap, true, $this->constUses);
+		return new self($this->namespace, $this->uses, $this->className, $this->functionName, $this->templateTypeMap, $this->templateTags, $this->typeAliasesMap, true, $this->constUses, fileName: $this->fileName);
 	}
 
 	public function shouldBypassTypeAliases(): bool

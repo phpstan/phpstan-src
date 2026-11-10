@@ -27,7 +27,7 @@ function test_changed_ext_ds_version_reanalyses_dependent_files() {
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+	assert_contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them.' "$OUTPUT"
 	assert_contains 'Foo.php:11:Instantiated class Ds\Vector not found.' "$OUTPUT"
 	assert_contains 'Bar.php:15:Call to an undefined method Ds\Pair<string, int>::copy().' "$OUTPUT"
 	assert_not_contains 'Ds\Seq' "$OUTPUT"
@@ -39,7 +39,7 @@ function test_changed_ext_ds_version_reanalyses_dependent_files() {
 	OUTPUT=$(../../bin/phpstan analyse -vv --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them and the files with errors.' "$OUTPUT"
+	assert_contains 'PHP extension versions changed (ext-ds); re-analysing the files depending on them.' "$OUTPUT"
 	assert_contains 'Foo.php:12:Instantiated class Ds\Seq not found.' "$OUTPUT"
 	assert_not_contains 'Ds\Vector' "$OUTPUT"
 	assert_not_contains 'Bar.php' "$OUTPUT"

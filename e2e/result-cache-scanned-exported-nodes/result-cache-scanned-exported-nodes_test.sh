@@ -64,13 +64,13 @@ function test_result_cache_scanned_exported_nodes() {
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
 	assert_contains 'Bar.php:10:Instantiated class ResultCacheE2EScannedExportedNodes\NewDep not found.' "$OUTPUT"
-	# A file declaring a class may define a symbol reported as unknown, so the files with
-	# errors are re-analysed - both of them - and the error about the class is gone.
+	# A file declaring the missing class re-analyses the file that looked it up, src/Bar.php,
+	# and not src/Foo.php with its unrelated error. The error about the class is gone.
 	mv new-file/NewDep.php scanned/NewDep.php
 	INFO=$(../../bin/phpstan result-cache-info --json)
 	echo "$INFO"
 	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
-	assert_equals '2' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"

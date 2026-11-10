@@ -1,0 +1,10 @@
+{
+	"name": "phpstan/result-cache-missing-classes-e2e",
+	"autoload": {
+		"psr-4": {
+			"ResultCacheE2EMissingClasses\\": "src/",
+			"ResultCacheE2EMissingClasses\\Lib\\": "lib/",
+			"ResultCacheE2EMissingClassesRules\\": "rules/"
+		}
+	}
+}

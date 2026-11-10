@@ -2776,7 +2776,21 @@ public:
 				IETR_VAL(declaringFileNameHold, callOn(reflectionConstantDeclaringClass.raw(), mGetFileName));
 				zv::Val declaringFileName = zend_is_true(declaringFileNameHold.raw()) ? std::move(declaringFileNameHold) : zv::Val::null();
 				IETR_VAL(constantContext, contextFromClass(declaringClassName.raw(), declaringFileName.raw()));
+				/* the resolved type is cached: a class it names that does not
+				 * exist is what the declaring class declares depends on —
+				 * ValueDependencyCollector::enterDeclaration(), as in the twin.
+				 * With an exception pending (an internal error already) the
+				 * declaration is not left: what is missed later counts for the
+				 * class too, more is re-analysed, nothing goes stale. */
+				zval *valueDependencyCollector = prop(slots::valueDependencyCollector);
+				zv::Args enterDeclarationArgs{declaringFileName.raw(), declaringClassName.raw()};
+				if (UNEXPECTED(pt_type_call(Z_OBJ_P(valueDependencyCollector), PT_LC("enterdeclaration"), 2, enterDeclarationArgs).isUndef())) {
+					return zv::Val();
+				}
 				IETR_VAL(constantType, getTypeRecursive(valueExpression.raw(), constantContext.raw()));
+				if (UNEXPECTED(pt_type_call(Z_OBJ_P(valueDependencyCollector), PT_LC("leavedeclaration"), 0, NULL).isUndef())) {
+					return zv::Val();
+				}
 				zv::Val nativeType = zv::Val::null();
 				{
 					IETR_VAL(reflectionType, callOn(reflectionConstant.raw(), mGetType));
@@ -3596,9 +3610,9 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *constantResolver, *reflectionProviderProvider, *phpVersion, *operatorTypeSpecifyingExtensionRegistry, *unaryOperatorTypeSpecifyingExtensionRegistry, *oversizedArrayBuilder;
+		zval *constantResolver, *reflectionProviderProvider, *phpVersion, *operatorTypeSpecifyingExtensionRegistry, *unaryOperatorTypeSpecifyingExtensionRegistry, *oversizedArrayBuilder, *valueDependencyCollector;
 		bool usePathConstantsAsConstantString;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(8, 8)
 			Z_PARAM_OBJECT(constantResolver)
 			Z_PARAM_OBJECT(reflectionProviderProvider)
 			Z_PARAM_OBJECT(phpVersion)
@@ -3606,6 +3620,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 			Z_PARAM_OBJECT(unaryOperatorTypeSpecifyingExtensionRegistry)
 			Z_PARAM_OBJECT(oversizedArrayBuilder)
 			Z_PARAM_BOOL(usePathConstantsAsConstantString)
+			Z_PARAM_OBJECT(valueDependencyCollector)
 		ZEND_PARSE_PARAMETERS_END();
 		zend_object *self = Z_OBJ_P(ZEND_THIS);
 		pt_write_slot(self, slots::constantResolver, constantResolver);
@@ -3617,6 +3632,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 		zval flag = {};
 		ZVAL_BOOL(&flag, usePathConstantsAsConstantString);
 		pt_write_slot(self, slots::usePathConstantsAsConstantString, &flag);
+		pt_write_slot(self, slots::valueDependencyCollector, valueDependencyCollector);
 	});
 
 	cls.method(sigs::getType, [](INTERNAL_FUNCTION_PARAMETERS) {

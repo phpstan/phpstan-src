@@ -8,8 +8,10 @@ use Nette\Utils\Strings;
 use Override;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\NameScope;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\Command\IgnoredRegexValidator;
 use PHPStan\File\FileExcluder;
+use PHPStan\File\FileHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\ConfiguredPhpVersionRangeHelper;
 use PHPStan\Php\PhpVersion;
@@ -89,6 +91,8 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 		try {
 			$composerPhpVersionFactory = new ComposerPhpVersionFactory([]);
 			$constantResolver = new ConstantResolver($reflectionProviderProvider, [], new ConfiguredPhpVersionRangeHelper(null, $composerPhpVersionFactory), container: null);
+			// nothing is analysed while the configuration is validated, nothing is recorded
+			$valueDependencyCollector = new ValueDependencyCollector(new DirectExtensionsCollection([]), new FileHelper($builder->parameters['currentWorkingDirectory']));
 
 			$phpDocParserConfig = new ParserConfig([]);
 			$ignoredRegexValidator = new IgnoredRegexValidator(
@@ -122,8 +126,9 @@ final class ValidateIgnoredErrorsExtension extends CompilerExtension
 
 						}),
 						$constantResolver,
-						new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new OperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new UnaryOperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new OversizedArrayBuilder(), true),
+						new InitializerExprTypeResolver($constantResolver, $reflectionProviderProvider, new PhpVersion(PHP_VERSION_ID), new OperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new UnaryOperatorTypeSpecifyingExtensionRegistry(new DirectExtensionsCollection([])), new OversizedArrayBuilder(), true, $valueDependencyCollector),
 						reportUnsafeArrayStringKeyCasting: null,
+						valueDependencyCollector: $valueDependencyCollector,
 					),
 				),
 			);

@@ -521,6 +521,8 @@ enum {
 	PT_CLASS_TYPE_NODE_DESCRIBER,
 	/* the null array_map() passes for the shorter arrays */
 	PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES,
+	/* the result cache's record of what a declaration's resolution looked up */
+	PT_CLASS_VALUE_DEPENDENCY_COLLECTOR,
 	PT_CLASS_COUNT
 };
 
@@ -2969,6 +2971,11 @@ zv::Val pt_args_result_with_resolved_parameters_acceptor(zval *argsResult, zval 
  * pending exception */
 zv::Val pt_arguments_normalizer_reorder_call_user_func_arguments(zval *callUserFuncCall, zval *scope);
 zv::Val pt_arguments_normalizer_reorder_call_user_func_array_arguments(zval *callUserFuncArrayCall, zval *scope);
+
+/* ReflectionAccess.cpp — ValueDependencyCollector::getContext(), the
+ * context lookups are recorded in: a memoized answer is given natively only
+ * when it was recorded in it already; false while it cannot be read */
+[[nodiscard]] bool pt_value_dependency_context(zend_long &context);
 
 /* FunctionReflectionAccess.cpp — $reflectionProvider->hasFunction($nameNode,
  * $namespaceAnswerer) / ->getFunction(...): the memoized answer of a

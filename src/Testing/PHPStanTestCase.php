@@ -8,6 +8,7 @@ use PHPStan\Analyser\DirectInternalScopeFactoryFactory;
 use PHPStan\Analyser\Error;
 use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Analyser\TypeSpecifier;
+use PHPStan\Analyser\ValueDependencyCollector;
 use PHPStan\BetterReflection\Reflector\Reflector;
 use PHPStan\DependencyInjection\Reflection\ClassReflectionExtensionRegistryProvider;
 use PHPStan\Node\Printer\ExprPrinter;
@@ -114,6 +115,7 @@ abstract class PHPStanTestCase extends TestCase
 			$container->getByType(UnaryOperatorTypeSpecifyingExtensionRegistry::class),
 			new OversizedArrayBuilder(),
 			$container->getParameter('usePathConstantsAsConstantString'),
+			$container->getByType(ValueDependencyCollector::class),
 		);
 
 		return new ScopeFactory(

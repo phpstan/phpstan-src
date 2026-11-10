@@ -7,6 +7,8 @@ use AnnotationsMethods\Baz;
 use AnnotationsMethods\BazBaz;
 use AnnotationsMethods\Foo;
 use AnnotationsMethods\FooInterface;
+use AnnotationsMethods\ImpureMagicMethods;
+use AnnotationsMethods\PureMagicMethods;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\PhpMethodReflection;
@@ -1030,6 +1032,21 @@ class AnnotationsMethodsClassReflectionExtensionTest extends PHPStanTestCase
 		$class = $reflectionProvider->getClass(Bar::class);
 		$this->assertTrue($class->hasNativeMethod('overridenMethodWithAnnotation'));
 		$this->assertInstanceOf(PhpMethodReflection::class, $class->getNativeMethod('overridenMethodWithAnnotation'));
+	}
+
+	public function testMagicMethodsInheritClassPurity(): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		foreach ([PureMagicMethods::class => true, ImpureMagicMethods::class => false] as $className => $isPure) {
+			$class = $reflectionProvider->getClass($className);
+			$scope = $this->createStub(Scope::class);
+			$scope->method('isInClass')->willReturn(true);
+			$scope->method('getClassReflection')->willReturn($class);
+			$scope->method('canCallMethod')->willReturn(true);
+			$method = $class->getMethod('magic', $scope);
+			$this->assertSame($isPure, $method->isPure()->yes());
+			$this->assertSame(!$isPure, $method->hasSideEffects()->yes());
+		}
 	}
 
 }

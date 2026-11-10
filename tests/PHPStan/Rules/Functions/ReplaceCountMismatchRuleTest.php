@@ -51,7 +51,7 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testNamedArgs(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-3889-named-args.php'], [

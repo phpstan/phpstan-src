@@ -85,27 +85,27 @@ class FunctionCallableRuleTest extends RuleTestCase
 	{
 		$errors = [
 			[
-				'Cannot create callable from compact(), it cannot be called dynamically.',
+				'Calling the callable created from compact() throws, it cannot be called dynamically.',
 				7,
 			],
 			[
-				'Cannot create callable from extract(), it cannot be called dynamically.',
+				'Calling the callable created from extract() throws, it cannot be called dynamically.',
 				8,
 			],
 			[
-				'Cannot create callable from func_get_arg(), it cannot be called dynamically.',
+				'Calling the callable created from func_get_arg() throws, it cannot be called dynamically.',
 				9,
 			],
 			[
-				'Cannot create callable from func_get_args(), it cannot be called dynamically.',
+				'Calling the callable created from func_get_args() throws, it cannot be called dynamically.',
 				10,
 			],
 			[
-				'Cannot create callable from func_num_args(), it cannot be called dynamically.',
+				'Calling the callable created from func_num_args() throws, it cannot be called dynamically.',
 				11,
 			],
 			[
-				'Cannot create callable from get_defined_vars(), it cannot be called dynamically.',
+				'Calling the callable created from get_defined_vars() throws, it cannot be called dynamically.',
 				12,
 			],
 			[
@@ -113,7 +113,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 				13,
 			],
 			[
-				'Cannot create callable from compact(), it cannot be called dynamically.',
+				'Calling the callable created from compact() throws, it cannot be called dynamically.',
 				13,
 			],
 		];

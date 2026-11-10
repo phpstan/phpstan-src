@@ -98,6 +98,11 @@ final class NonexistentOffsetInArrayDimFetchCheck
 				: TypeCombinator::intersect(AllowedArrayKeysTypes::getType(), $dimType);
 
 			foreach ($flattenedTypes as $innerType) {
+				if (!$innerType->isOffsetAccessible()->yes()) {
+					// array{host: string}|false: the rule already reports the offset access on false
+					continue;
+				}
+
 				$dimTypeToCheck = $innerType->isArray()->yes() ? $validArrayDimType : $dimType;
 
 				if (

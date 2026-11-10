@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\RestrictedUsage\RestrictedStaticMethodUsageRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
 
 /**
- * @extends RuleTestCase<ApiStaticCallRule>
+ * @extends RuleTestCase<RestrictedStaticMethodUsageRule>
  */
-class ApiStaticCallRuleTest extends RuleTestCase
+class ApiMethodUsageExtensionStaticCallTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ApiStaticCallRule(new ApiRuleHelper(), self::createReflectionProvider());
+		return self::getContainer()->getByType(RestrictedStaticMethodUsageRule::class);
 	}
 
 	public function testRuleInPhpStan(): void
@@ -33,11 +34,6 @@ class ApiStaticCallRuleTest extends RuleTestCase
 			[
 				'Calling PHPStan\Command\CommandHelper::begin() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
 				17,
-				$tip,
-			],
-			[
-				'Calling PHPStan\Node\InClassNode::__construct() is not covered by backward compatibility promise. The method might change in a minor PHPStan version.',
-				33,
 				$tip,
 			],
 		]);

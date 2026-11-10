@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
 
 /**
- * @extends RuleTestCase<ApiMethodCallRule>
+ * @extends RuleTestCase<RestrictedMethodUsageRule>
  */
-class ApiMethodCallRuleTest extends RuleTestCase
+class ApiMethodUsageExtensionMethodCallTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ApiMethodCallRule(new ApiRuleHelper());
+		return self::getContainer()->getByType(RestrictedMethodUsageRule::class);
 	}
 
 	public function testRuleInPhpStan(): void

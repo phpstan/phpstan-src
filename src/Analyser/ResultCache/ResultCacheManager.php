@@ -829,7 +829,11 @@ final class ResultCacheManager
 		$filesWithErrorsAllChanged = $filteredErrors === [];
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (
-				(!array_key_exists($analysedFile, $errors) && !array_key_exists($analysedFile, $cachedFilesWithCollectedDataRuleErrors))
+				(
+					!array_key_exists($analysedFile, $errors)
+					&& !array_key_exists($analysedFile, $locallyIgnoredErrors)
+					&& !array_key_exists($analysedFile, $cachedFilesWithCollectedDataRuleErrors)
+				)
 				|| array_key_exists($analysedFile, $changedAnalysedFiles)
 			) {
 				continue;
@@ -1043,6 +1047,14 @@ final class ResultCacheManager
 				$dependentFiles = array_merge($dependentFiles, $usedTraitDependentFiles);
 			} else {
 				$dependencyFilesChanged = true;
+				// Deleted. The files using its symbols depend on it and are re-analysed, but a file can
+				// also have an error because a symbol exists - a dead catch of ReflectionException, a
+				// comparison with a class name that is always false - without depending on its file.
+				$deletedFileExportedNodes = $exportedNodes[$notAnalysedFile]
+					?? ($cachedExportedNodes->has($notAnalysedFile) ? $decodeCachedExportedNodes($notAnalysedFile) : []);
+				if (count($deletedFileExportedNodes) > 0) {
+					$notAnalysedFileSymbolsChanged = true;
+				}
 			}
 
 			foreach ($dependentFiles as $dependentFile) {
@@ -1102,6 +1114,11 @@ final class ResultCacheManager
 					continue;
 				}
 
+				$filesToAnalyse[] = $fileWithError;
+			}
+			// An error ignored by a comment on its line waits for the symbol all the same, and when it
+			// goes away, the comment no longer matches anything, which is reported.
+			foreach (array_keys($filteredLocallyIgnoredErrors) as $fileWithError) {
 				$filesToAnalyse[] = $fileWithError;
 			}
 			foreach ($filteredFilesWithCollectedDataRuleErrors as $fileWithError) {

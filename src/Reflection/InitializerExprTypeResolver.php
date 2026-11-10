@@ -199,7 +199,7 @@ final class InitializerExprTypeResolver
 		if ($expr instanceof Expr\Cast) {
 			return $this->getCastType($expr, fn (Expr $expr): Type => $this->getType($expr, $context));
 		}
-		if ($expr instanceof Expr\CallLike && $expr->isFirstClassCallable()) {
+		if ($expr instanceof Expr\CallLike && $expr->isPartialFunctionApplication()) {
 			return $this->getFirstClassCallableType($expr, $context, false);
 		}
 		if ($expr instanceof Expr\Closure && $expr->static) {
@@ -787,6 +787,11 @@ final class InitializerExprTypeResolver
 
 	public function getFirstClassCallableType(Expr\CallLike $expr, InitializerExprContext $context, bool $nativeTypesPromoted): Type
 	{
+		if (!$expr->isFirstClassCallable()) {
+			// the signature of a partial function application is not inferred yet
+			return new ObjectType(Closure::class);
+		}
+
 		if ($expr instanceof FuncCall) {
 			if ($expr->name instanceof Name) {
 				if ($this->getReflectionProvider()->hasFunction($expr->name, $context)) {

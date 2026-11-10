@@ -67,6 +67,11 @@ $parserVisitorSnippets = [
 	'<?php array_map($cb, $a, $b); array_map($cb, $a); array_map($cb); array_map(null, $a, $b);
 		array_map(callback: $cb, array: $a); array_map(array: $a, callback: $cb); array_map(...);',
 
+	// partial function applications are not calls either
+	'<?php curl_setopt(?, CURLOPT_URL, $url); curl_setopt_array($ch, ?); array_walk(?, $cb); implode(",", ?);
+		array_filter($a, ?); array_find(?, $cb); array_map($cb, ?); array_map(?, $a, ...); array_map($cb, $a, ...);',
+	'<?php (function ($x, $y) { return $x; })(1, ?); (fn ($x, $y) => $x)(?, 2); $c->bindTo(?); Closure::bind($c, ?);',
+
 	// closures and arrow functions called where they are written
 	'<?php (function ($x) { return $x; })(1); (function () {})(); ($f = function ($x) {})(2);',
 	'<?php (fn ($x) => $x)(1); (fn () => 1)(); ($f = fn ($x) => $x)(2);',

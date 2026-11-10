@@ -19,7 +19,7 @@ final class CurlSetOptArrayArgVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
+		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isPartialFunctionApplication()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'curl_setopt_array') {
 				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 1, 'options');

@@ -87,6 +87,21 @@ class MethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPartialFunctionApplication(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80600) {
+			$errors = [
+				[
+					'Partial function application is supported only on PHP 8.6 and later.',
+					19,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/method-partial-function-application.php'], $errors);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testNullsafe(): void
 	{

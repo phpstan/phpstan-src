@@ -147,7 +147,7 @@ final class ImpossibleCheckTypeHelper
 	): ?bool
 	{
 		if ($node instanceof FuncCall) {
-			if ($node->isFirstClassCallable()) {
+			if ($node->isPartialFunctionApplication()) {
 				return null;
 			}
 			$args = $node->getArgs();
@@ -573,7 +573,7 @@ final class ImpossibleCheckTypeHelper
 
 	private function determineContext(Scope $scope, Expr $node): TypeSpecifierContext
 	{
-		if ($node instanceof Expr\CallLike && $node->isFirstClassCallable()) {
+		if ($node instanceof Expr\CallLike && $node->isPartialFunctionApplication()) {
 			return TypeSpecifierContext::createTruthy();
 		}
 

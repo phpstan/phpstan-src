@@ -125,6 +125,7 @@ enum {
 	PT_CLASS_NEW,
 	PT_CLASS_CLASS_STMT,
 	PT_CLASS_VARIADIC_PLACEHOLDER,
+	PT_CLASS_ARG_PLACEHOLDER,
 	PT_CLASS_SCALAR,
 	PT_CLASS_ARRAY_EXPR,
 	PT_CLASS_UNARY_MINUS,
@@ -1696,9 +1697,9 @@ static zend_always_inline void pt_persistent_list_into(zval *out, HashTable *lis
 }
 
 /* {{{ PhpParser CallLike reads without a call: $call->getRawArgs(),
- * ->isFirstClassCallable() and ->getArgs() of a FuncCall, MethodCall,
- * NullsafeMethodCall, StaticCall or New_ (or a subclass keeping those three
- * methods) answered from its `args` slot, exactly what the methods return —
+ * ->isFirstClassCallable(), ->isPartialFunctionApplication() and ->getArgs()
+ * of a FuncCall, MethodCall, NullsafeMethodCall, StaticCall or New_ (or a
+ * subclass keeping those four methods) answered from its `args` slot, exactly what the methods return —
  * the class is checked once per class entry per request. A class overriding
  * one of the methods, or an instance whose `args` was never initialized,
  * gets the methods by name. */
@@ -1709,8 +1710,12 @@ zval *pt_call_like_raw_args(zend_object *call, zv::Val &hold);
 /* $call->isFirstClassCallable(): a single VariadicPlaceholder argument;
  * false = pending exception */
 [[nodiscard]] bool pt_call_like_is_first_class_callable(zend_object *call, bool &out);
-/* $call->getArgs(): the `args` slot of a call that is not a first-class
- * callable (borrowed, dereferenced); a first-class callable gets the method,
+/* $call->isPartialFunctionApplication(): a VariadicPlaceholder or an
+ * ArgPlaceholder among the arguments - first-class callables included;
+ * false = pending exception */
+[[nodiscard]] bool pt_call_like_is_partial_function_application(zend_object *call, bool &out);
+/* $call->getArgs(): the `args` slot of a call that is not a partial function
+ * application (borrowed, dereferenced); a partial function application gets the method,
  * whose assert() throws under zend.assertions=1 and returns the raw
  * arguments otherwise, its result kept alive in hold; NULL = pending
  * exception */

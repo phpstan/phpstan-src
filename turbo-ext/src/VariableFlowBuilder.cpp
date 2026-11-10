@@ -160,7 +160,7 @@ public:
 		zv::ScratchTable callbackArguments(0);
 		if (instanceof_function(Z_OBJCE_P(expr), classes.callLike)) {
 			bool isFirstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), isFirstClassCallable))) return zv::Val();
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), isFirstClassCallable))) return zv::Val();
 			if (!isFirstClassCallable) {
 				zv::Val argsHold;
 				zval *args = pt_call_like_args(Z_OBJ_P(expr), argsHold);

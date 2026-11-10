@@ -21,6 +21,7 @@ namespace slots = ptdecl::StaticMethodCallableNodeHandler::slot;
 namespace sigs = ptdecl::StaticMethodCallableNodeHandler::sig;
 #include "VirtualExprHandlers.h"
 #include "CallHandlerSupport.h"
+#include "CallableNodeArgs.h"
 
 zend_class_entry *pt_ce_static_method_callable_node_handler = nullptr;
 
@@ -139,8 +140,19 @@ public:
 			nameFlow = pt_expression_result_variable_flow(nameResult.raw());
 			if (UNEXPECTED(nameFlow.isUndef())) return zv::Val();
 		}
-		zv::Args flows{classFlow.raw(), nameFlow.raw()};
-		zv::Val variableFlow = pt_variable_flow_sequence(2, flows);
+
+		// a partial function application evaluates its bound arguments when the
+		// closure is created
+		zv::Arr flows = zv::Arr::empty();
+		flows.push(std::move(classFlow));
+		flows.push(std::move(nameFlow));
+		zv::Arr argsDependencies = zv::Arr::empty();
+		zv::Val originalNodeHold, argsScopeHold;
+		zval *originalNode = ptveh::getterRead(ptveh::staticMethodCallableNodeOriginalNode, expr, PT_LC("getoriginalnode"), originalNodeHold);
+		if (UNEXPECTED(originalNode == NULL)) return zv::Val();
+		if (UNEXPECTED(!ptveh::processBoundArgs(originalNode, nodeScopeResolver, stmt, currentScope, argsScopeHold, storage, nodeCallback, context, hasYield, isAlwaysTerminating, throwPoints, impurePoints, flows, argsDependencies))) return zv::Val();
+
+		zv::Val variableFlow = pt_variable_flow_sequence_list(Z_ARRVAL_P(flows.raw()));
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, beforeScope);
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
@@ -163,7 +175,14 @@ public:
 		}
 		zv::Val ownDependencies = getDependencies(beforeScope, expr, classResult.raw(), result.raw());
 		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
-		zv::Val dependencies = pt_dependencies_merge({classDependencies, nameDependencies, ownDependencies.raw()});
+		zv::Arr dependencyList = zv::Arr::empty();
+		if (classDependencies != NULL) dependencyList.push(zv::Ref(classDependencies));
+		if (nameDependencies != NULL) dependencyList.push(zv::Ref(nameDependencies));
+		dependencyList.push(std::move(ownDependencies));
+		for (auto entry : zv::ArrRef(argsDependencies.raw())) {
+			dependencyList.push(entry.value().deref());
+		}
+		zv::Val dependencies = pt_dependencies_merge_list(Z_ARRVAL_P(dependencyList.raw()));
 		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}

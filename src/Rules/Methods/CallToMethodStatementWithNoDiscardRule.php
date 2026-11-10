@@ -42,7 +42,7 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 
 		if ($methodCall instanceof Node\Expr\BinaryOp\Pipe) {
 			if ($methodCall->right instanceof Node\Expr\MethodCall || $methodCall->right instanceof Node\Expr\NullsafeMethodCall) {
-				if (!$methodCall->right->isFirstClassCallable()) {
+				if (!$methodCall->right->isPartialFunctionApplication()) {
 					return [];
 				}
 
@@ -61,7 +61,7 @@ final class CallToMethodStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
-		if ($methodCall->isFirstClassCallable()) {
+		if ($methodCall->isPartialFunctionApplication()) {
 			return [];
 		}
 

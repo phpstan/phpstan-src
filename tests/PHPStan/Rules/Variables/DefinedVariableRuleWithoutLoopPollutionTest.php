@@ -753,6 +753,26 @@ class DefinedVariableRuleWithoutLoopPollutionTest extends RuleTestCase
 		]);
 	}
 
+	public function testPartialFunctionApplication(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/partial-function-application.php'], [
+			[
+				'Undefined variable: $undefined',
+				21,
+			],
+			[
+				'Undefined variable: $undefined',
+				22,
+			],
+			[
+				'Undefined variable: $undefined',
+				23,
+			],
+		]);
+	}
+
 	public function testBug6112(): void
 	{
 		$this->cliArgumentsVariablesRegistered = true;

@@ -27,7 +27,16 @@ final class MethodCallableRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
+		if (!$node->getOriginalNode()->isFirstClassCallable()) {
+			if (!$scope->getPhpVersion()->supportsPartialFunctionApplication()->yes()) {
+				return [
+					RuleErrorBuilder::message('Partial function application is supported only on PHP 8.6 and later.')
+						->nonIgnorable()
+						->identifier('callable.notSupported')
+						->build(),
+				];
+			}
+		} elseif (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')
 					->nonIgnorable()

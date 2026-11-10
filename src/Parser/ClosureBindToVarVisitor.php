@@ -23,7 +23,7 @@ final class ClosureBindToVarVisitor extends NodeVisitorAbstract
 			$node instanceof Node\Expr\MethodCall
 			&& $node->name instanceof Identifier
 			&& $node->name->toLowerString() === 'bindto'
-			&& !$node->isFirstClassCallable()
+			&& !$node->isPartialFunctionApplication()
 		) {
 			$args = $node->getArgs();
 			if (isset($args[0])) {

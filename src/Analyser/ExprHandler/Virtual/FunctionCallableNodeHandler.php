@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\ExprHandler\Virtual;
 
 use Closure;
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
@@ -16,6 +17,7 @@ use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -27,6 +29,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use function array_merge;
 
 /**
  * @implements ExprHandler<FunctionCallableNode>
@@ -72,11 +75,29 @@ final class FunctionCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $nameResult->isAlwaysTerminating();
 		}
 
+		// a partial function application evaluates its bound arguments when the
+		// closure is created
+		$variableFlows = [$nameResult !== null ? $nameResult->getVariableFlow() : null];
+		$argsDependencies = [];
+		foreach ($expr->getOriginalNode()->getRawArgs() as $arg) {
+			if (!$arg instanceof Arg) {
+				continue;
+			}
+			$argResult = $nodeScopeResolver->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$scope = $argResult->getScope();
+			$hasYield = $hasYield || $argResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $argResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $argResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $argResult->isAlwaysTerminating();
+			$variableFlows[] = $argResult->getVariableFlow();
+			$argsDependencies[] = $argResult->getDependencies();
+		}
+
 		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: $nameResult !== null ? $nameResult->getVariableFlow() : null,
+			variableFlow: VariableFlow::sequence(...$variableFlows),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
@@ -88,6 +109,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 		return $result->withDependencies(Dependencies::merge(
 			$nameResult !== null ? $nameResult->getDependencies() : null,
 			$this->getDependencies($beforeScope, $expr, $nameResult, $result),
+			...$argsDependencies,
 		));
 	}
 
@@ -128,6 +150,10 @@ final class FunctionCallableNodeHandler implements ExprHandler
 	private function resolveType(MutatingScope $scope, FunctionCallableNode $expr, ?ExpressionResult $nameResult): Type
 	{
 		$originalNode = $expr->getOriginalNode();
+		if (!$originalNode->isFirstClassCallable()) {
+			// the signature of a partial function application is not inferred yet
+			return new ObjectType(Closure::class);
+		}
 		if ($originalNode->name instanceof Expr) {
 			// $originalNode->name is the same node as $expr->getName(), processed
 			// in processExpr exactly in this branch - read its ExpressionResult

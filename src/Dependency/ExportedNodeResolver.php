@@ -217,6 +217,7 @@ final class ExportedNodeResolver
 			$node instanceof Node\Expr\FuncCall
 			&& $node->name instanceof Name
 			&& $node->name->toLowerString() === 'define'
+			&& !$node->isPartialFunctionApplication()
 		) {
 			$args = $node->getArgs();
 			if (

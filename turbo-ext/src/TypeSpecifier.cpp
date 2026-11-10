@@ -202,7 +202,7 @@ public:
 		if (UNEXPECTED(!isA(expr, PT_CLASS_CALL_LIKE, isCallLike))) return zv::Val();
 		if (isCallLike) {
 			bool firstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
 			if (firstClassCallable) return emptySpecifiedTypesWithRoot(expr);
 		}
 

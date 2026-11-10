@@ -49,7 +49,7 @@ public:
 		zend_string *methodName = visitors::nameString(method, identifierProp);
 		if (methodName == NULL || !visitors::lowerEquals(methodName, "bind")) return true;
 		zval *args = argsProp.of(node);
-		if (visitors::isFirstClassCallable(args)) return true;
+		if (visitors::isPartialFunctionApplication(args)) return true;
 
 		if (args == NULL || Z_TYPE_P(args) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args)) <= 1) return true;
 		zend_object *arg = visitors::argAt(args, 0);

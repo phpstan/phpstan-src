@@ -117,6 +117,21 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Comparison/data/impossible-method-exists-on-generic-class-string.php'], []);
 	}
 
+	public function testPartialFunctionApplication(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80600) {
+			$errors = [
+				[
+					'Partial function application is supported only on PHP 8.6 and later.',
+					21,
+				],
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/method-partial-function-application.php'], $errors);
+	}
+
 	public function testConditionallyExecutedCode(): void
 	{
 		$errors = [

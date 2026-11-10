@@ -564,7 +564,7 @@ class NodeScopeResolver
 		// throw stays: real source nodes must have a handler.
 		if (
 			ExprHandlerRegistry::resolve($expr, $this->container) === null
-			&& !($expr instanceof Expr\CallLike && $expr->isFirstClassCallable())
+			&& !($expr instanceof Expr\CallLike && $expr->isPartialFunctionApplication())
 		) {
 			$mixed = new MixedType();
 			return $this->expressionResultFactory->create(
@@ -817,7 +817,7 @@ class NodeScopeResolver
 	{
 		// a nullsafe first-class callable is a compile error; its handler turns it
 		// into a plain MethodCall, which then lands here
-		if ($expr instanceof Expr\CallLike && !$expr instanceof Expr\NullsafeMethodCall && $expr->isFirstClassCallable()) {
+		if ($expr instanceof Expr\CallLike && !$expr instanceof Expr\NullsafeMethodCall && $expr->isPartialFunctionApplication()) {
 			if ($expr instanceof FuncCall) {
 				$newExpr = new FunctionCallableNode($expr->name, $expr);
 			} elseif ($expr instanceof MethodCall) {

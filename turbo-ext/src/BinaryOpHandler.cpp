@@ -242,7 +242,7 @@ struct NamedCall
 };
 
 /* $node instanceof FuncCall && $node->name instanceof Name (and, when
- * requireCallable, && !$node->isFirstClassCallable()); 1 fills `out`, -1 =
+ * requireCallable, && !$node->isPartialFunctionApplication()); 1 fills `out`, -1 =
  * pending exception */
 int namedCall(zval *node, bool requireCallable, NamedCall &out)
 {
@@ -254,7 +254,7 @@ int namedCall(zval *node, bool requireCallable, NamedCall &out)
 	if (isName <= 0) return isName;
 	if (requireCallable) {
 		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(node), firstClassCallable))) return -1;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(node), firstClassCallable))) return -1;
 		if (firstClassCallable) return 0;
 	}
 	/* (string) $node->name: Name::__toString() is its $name */
@@ -908,14 +908,14 @@ private:
 		return true;
 	}
 
-	/* `!$call->isFirstClassCallable() && isset($call->getArgs()[0])` of a
+	/* `!$call->isPartialFunctionApplication() && isset($call->getArgs()[0])` of a
 	 * FuncCall: its first argument's value (the condition holding sets
 	 * `matched`); NULL with an exception pending, or when it does not hold */
 	static zval *callableFirstArgValue(zval *call, bool &matched, zv::Val &hold)
 	{
 		matched = false;
 		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return NULL;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), firstClassCallable))) return NULL;
 		if (firstClassCallable) return NULL;
 		zval *args = pt_call_like_args(Z_OBJ_P(call), hold);
 		if (UNEXPECTED(args == NULL)) return NULL;

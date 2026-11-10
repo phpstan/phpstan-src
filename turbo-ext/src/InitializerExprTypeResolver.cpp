@@ -1240,7 +1240,7 @@ public:
 					return getCastType(expr, callback);
 				case ARM_CALL_LIKE: {
 					bool firstClassCallable;
-					if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
+					if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
 					if (firstClassCallable) {
 						return getFirstClassCallableType(expr, context, false);
 					}
@@ -2166,6 +2166,13 @@ public:
 	/* Mirrors getFirstClassCallableType(). */
 	zv::Val getFirstClassCallableType(zval *expr, zval *context, bool nativeTypesPromoted) const
 	{
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
+		if (!firstClassCallable) {
+			// the signature of a partial function application is not inferred yet
+			return newObjectTypeLiteral(PT_LC("Closure"));
+		}
+
 		int isFuncCall = isAClass(expr, PT_CLASS_FUNC_CALL);
 		if (UNEXPECTED(isFuncCall < 0)) return zv::Val();
 		if (isFuncCall) {

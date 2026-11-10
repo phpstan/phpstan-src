@@ -1698,6 +1698,13 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNotCount(0, $errors);
 	}
 
+	public function testPartialFunctionApplicationPositions(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/partial-function-application-positions.php');
+		$this->assertNotCount(0, $errors);
+	}
+
 	public function testBug14596(): void
 	{
 		// crash

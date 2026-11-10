@@ -309,6 +309,12 @@ zv::Val callArgs(zval *call)
 	return pt_call_like_is_first_class_callable(Z_OBJ_P(call), out);
 }
 
+/* $call->isPartialFunctionApplication(); false = pending exception */
+[[nodiscard]] inline bool isPartialFunctionApplication(zval *call, bool &out)
+{
+	return pt_call_like_is_partial_function_application(Z_OBJ_P(call), out);
+}
+
 inline uint32_t countOf(zval *array)
 {
 	return Z_TYPE_P(array) == IS_ARRAY ? zend_hash_num_elements(Z_ARRVAL_P(array)) : 0;
@@ -801,9 +807,9 @@ public:
 	{
 		out = false;
 		if (!isA(expr, PT_CLASS_FUNC_CALL)) return EG(exception) == NULL;
-		bool firstClassCallable;
-		if (UNEXPECTED(!isFirstClassCallable(expr, firstClassCallable))) return false;
-		out = !firstClassCallable;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!isPartialFunctionApplication(expr, partialFunctionApplication))) return false;
+		out = !partialFunctionApplication;
 		return true;
 	}
 
@@ -2790,9 +2796,9 @@ private:
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 			return types;
 		}
-		bool firstClassCallable;
-		if (UNEXPECTED(!isFirstClassCallable(expr, firstClassCallable))) return zv::Val();
-		if (firstClassCallable) return types;
+		bool partialFunctionApplication;
+		if (UNEXPECTED(!isPartialFunctionApplication(expr, partialFunctionApplication))) return zv::Val();
+		if (partialFunctionApplication) return types;
 		zv::Val normalizedArgs = callArgs(normalizedExpr);
 		if (UNEXPECTED(normalizedArgs.isUndef())) return zv::Val();
 		if (!argIsset(normalizedArgs.raw(), 0)) return types;

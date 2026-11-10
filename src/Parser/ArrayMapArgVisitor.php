@@ -20,7 +20,7 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
-		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isFirstClassCallable()) {
+		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isPartialFunctionApplication()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_map') {
 				$args = $node->getArgs();

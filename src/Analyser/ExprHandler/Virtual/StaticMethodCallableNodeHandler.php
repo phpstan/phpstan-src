@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\ExprHandler\Virtual;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
@@ -75,11 +76,29 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $nameResult->isAlwaysTerminating();
 		}
 
+		// a partial function application evaluates its bound arguments when the
+		// closure is created
+		$argsVariableFlows = [];
+		$argsDependencies = [];
+		foreach ($expr->getOriginalNode()->getRawArgs() as $arg) {
+			if (!$arg instanceof Arg) {
+				continue;
+			}
+			$argResult = $nodeScopeResolver->processExprNode($stmt, $arg->value, $scope, $storage, $nodeCallback, ExpressionContext::createDeep($context->shouldResolveTemplateArguments()));
+			$scope = $argResult->getScope();
+			$hasYield = $hasYield || $argResult->hasYield();
+			$throwPoints = array_merge($throwPoints, $argResult->getThrowPoints());
+			$impurePoints = array_merge($impurePoints, $argResult->getImpurePoints());
+			$isAlwaysTerminating = $isAlwaysTerminating || $argResult->isAlwaysTerminating();
+			$argsVariableFlows[] = $argResult->getVariableFlow();
+			$argsDependencies[] = $argResult->getDependencies();
+		}
+
 		$result = $this->expressionResultFactory->create(
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($classResult !== null ? $classResult->getVariableFlow() : null, $nameResult !== null ? $nameResult->getVariableFlow() : null),
+			variableFlow: VariableFlow::sequence($classResult !== null ? $classResult->getVariableFlow() : null, $nameResult !== null ? $nameResult->getVariableFlow() : null, ...$argsVariableFlows),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
@@ -92,6 +111,7 @@ final class StaticMethodCallableNodeHandler implements ExprHandler
 			$classResult !== null ? $classResult->getDependencies() : null,
 			$nameResult !== null ? $nameResult->getDependencies() : null,
 			$this->getDependencies($beforeScope, $expr, $classResult, $result),
+			...$argsDependencies,
 		));
 	}
 

@@ -1401,7 +1401,7 @@ private:
 		bool error = false;
 		if (!ptsh::isInstanceOf(name, PT_CLASS_NAME, error)) return error ? zv::Val() : std::move(scope);
 		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(call), firstClassCallable))) return zv::Val();
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(call), firstClassCallable))) return zv::Val();
 		if (firstClassCallable) return scope;
 		zv::Val nameHold = zv::Val::copyOf(zv::Ref(name));
 		zv::Val lower = ptlh::nameToLowerString(nameHold.raw());

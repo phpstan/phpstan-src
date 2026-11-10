@@ -21,6 +21,7 @@ namespace slots = ptdecl::MethodCallableNodeHandler::slot;
 namespace sigs = ptdecl::MethodCallableNodeHandler::sig;
 #include "VirtualExprHandlers.h"
 #include "CallHandlerSupport.h"
+#include "CallableNodeArgs.h"
 
 zend_class_entry *pt_ce_method_callable_node_handler = nullptr;
 
@@ -128,8 +129,19 @@ public:
 			nameFlow = pt_expression_result_variable_flow(nameResult.raw());
 			if (UNEXPECTED(nameFlow.isUndef())) return zv::Val();
 		}
-		zv::Args flows{varFlow.raw(), nameFlow.raw()};
-		zv::Val variableFlow = pt_variable_flow_sequence(2, flows);
+
+		// a partial function application evaluates its bound arguments when the
+		// closure is created
+		zv::Arr flows = zv::Arr::empty();
+		flows.push(std::move(varFlow));
+		flows.push(std::move(nameFlow));
+		zv::Arr argsDependencies = zv::Arr::empty();
+		zv::Val originalNodeHold, argsScopeHold;
+		zval *originalNode = ptveh::getterRead(ptveh::methodCallableNodeOriginalNode, expr, PT_LC("getoriginalnode"), originalNodeHold);
+		if (UNEXPECTED(originalNode == NULL)) return zv::Val();
+		if (UNEXPECTED(!ptveh::processBoundArgs(originalNode, nodeScopeResolver, stmt, currentScope, argsScopeHold, storage, nodeCallback, context, hasYield, isAlwaysTerminating, throwPoints, impurePoints, flows, argsDependencies))) return zv::Val();
+
+		zv::Val variableFlow = pt_variable_flow_sequence_list(Z_ARRVAL_P(flows.raw()));
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, beforeScope, expr, varResult.raw());
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
@@ -149,7 +161,14 @@ public:
 		}
 		zv::Val ownDependencies = getDependencies(beforeScope, expr, varResult.raw(), result.raw());
 		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
-		zv::Val dependencies = pt_dependencies_merge({varDependencies, nameDependencies, ownDependencies.raw()});
+		zv::Arr dependencyList = zv::Arr::empty();
+		dependencyList.push(zv::Ref(varDependencies));
+		if (nameDependencies != NULL) dependencyList.push(zv::Ref(nameDependencies));
+		dependencyList.push(std::move(ownDependencies));
+		for (auto entry : zv::ArrRef(argsDependencies.raw())) {
+			dependencyList.push(entry.value().deref());
+		}
+		zv::Val dependencies = pt_dependencies_merge_list(Z_ARRVAL_P(dependencyList.raw()));
 		if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		return pt_expression_result_with_dependencies(result.raw(), dependencies.raw());
 	}
@@ -216,6 +235,12 @@ public:
 		int originalNameIsIdentifier = ptveh::isInstance(originalName, PT_CLASS_IDENTIFIER);
 		if (UNEXPECTED(originalNameIsIdentifier < 0)) return zv::Val();
 		if (!originalNameIsIdentifier) {
+			return ptveh::closureObjectType();
+		}
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(originalNode), firstClassCallable))) return zv::Val();
+		if (!firstClassCallable) {
+			// the signature of a partial function application is not inferred yet
 			return ptveh::closureObjectType();
 		}
 

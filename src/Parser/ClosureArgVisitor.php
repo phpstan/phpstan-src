@@ -23,7 +23,7 @@ final class ClosureArgVisitor extends NodeVisitorAbstract
 			return null;
 		}
 
-		if ($node->isFirstClassCallable()) {
+		if ($node->isPartialFunctionApplication()) {
 			return null;
 		}
 

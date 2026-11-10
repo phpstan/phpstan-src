@@ -45,7 +45,7 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 
 		if ($methodCall instanceof Node\Expr\BinaryOp\Pipe) {
 			if ($methodCall->right instanceof Node\Expr\StaticCall) {
-				if (!$methodCall->right->isFirstClassCallable()) {
+				if (!$methodCall->right->isPartialFunctionApplication()) {
 					return [];
 				}
 
@@ -62,7 +62,7 @@ final class CallToStaticMethodStatementWithNoDiscardRule implements Rule
 			return [];
 		}
 
-		if ($methodCall->isFirstClassCallable()) {
+		if ($methodCall->isPartialFunctionApplication()) {
 			return [];
 		}
 

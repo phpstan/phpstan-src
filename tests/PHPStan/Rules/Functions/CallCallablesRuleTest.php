@@ -521,6 +521,26 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Parameter #2 $a of closure expects int, float given.',
 				39,
 			],
+			[
+				'Argument for parameter $a has already been bound by the partial function application.',
+				46,
+			],
+			[
+				'Argument for parameter $c has already been bound by the partial function application.',
+				48,
+			],
+			[
+				'Argument for parameter $x has already been bound by the partial function application.',
+				52,
+			],
+			[
+				'Unknown parameter $a in call to closure.',
+				56,
+			],
+			[
+				'Argument for parameter $a has already been bound by the partial function application.',
+				60,
+			],
 		]);
 	}
 

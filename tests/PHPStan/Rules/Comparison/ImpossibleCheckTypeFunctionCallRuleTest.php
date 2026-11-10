@@ -1207,6 +1207,14 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14993(): void
+	{
+		$this->analyse([
+			__DIR__ . '/data/bug-14993/CheckedTrait.php',
+			__DIR__ . '/data/bug-14993/Classes.php',
+		], []);
+	}
+
 	public function testBug12063(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-12063.php'], []);

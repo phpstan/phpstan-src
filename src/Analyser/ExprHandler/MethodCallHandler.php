@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\ExprHandler;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsHandler;
@@ -327,7 +328,23 @@ final class MethodCallHandler implements ExprHandler
 			}
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
-				if ($selfOutType !== null) {
+				// the self-out type describes the object this call ran on - a
+				// receiver whose value is not remembered may evaluate to another
+				// object next time, so its key must not keep that type; a new or
+				// clone expression, or a call of the clone() function, counts as
+				// remembered for narrowing, but each evaluation of it creates
+				// another object
+				if (
+					$selfOutType !== null
+					&& !$normalizedExpr->var instanceof Expr\New_
+					&& !$normalizedExpr->var instanceof Expr\Clone_
+					&& !(
+						$normalizedExpr->var instanceof Expr\FuncCall
+						&& $normalizedExpr->var->name instanceof Name
+						&& $normalizedExpr->var->name->toLowerString() === 'clone'
+					)
+					&& $this->defaultNarrowingHelper->isSubjectValueRemembered($varResult, $normalizedExpr->var)
+				) {
 					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 					$scope = $scope->assignExpression(
 						$normalizedExpr->var,

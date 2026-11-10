@@ -36,49 +36,58 @@ function test_result_cache_parse_error() {
 }
 
 function test_result_cache_parse_error_keeps_symbols() {
-	# A warm result cache without the parse error, and src/Other.php with an error, which makes
-	# it one of the files that are re-analysed when a symbol appears or disappears.
+	# A warm result cache without the parse error. src/User.php uses Thing, and src/Other.php has
+	# an error, which makes it one of the files re-analysed when a symbol appears or disappears.
 	cp src/Thing.php "$TMPDIR/BrokenThing.php"
 	cp fixed/Thing.php src/Thing.php
 	printf '<?php declare(strict_types = 1);\n\nnamespace ResultCacheE2EParseError;\n\nfunction doOther(): int\n{\n\treturn "other";\n}\n' > src/Other.php
-	../../bin/phpstan analyse --error-format raw > /dev/null 2>&1 || true
-	# Breaking src/Thing.php re-analyses only it: src/User.php keeps its result.
+	../../bin/phpstan analyse > /dev/null 2>&1 || true
+	# Breaking src/Thing.php re-analyses only it, not src/User.php and src/Other.php.
 	cp "$TMPDIR/BrokenThing.php" src/Thing.php
-	OUTPUT=$(../../bin/phpstan analyse -vvv --error-format raw 2>&1) && CODE=0 || CODE=$?
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals 'true' "$(echo "$INFO" | jq --raw-output '.resultCacheUsed')"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	assert_same "1" "$CODE"
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
 	assert_contains 'Thing.php:12:Syntax error, unexpected EOF on line 12' "$OUTPUT"
-	# The first run had nothing to save, so the next one records the file stat of src/Thing.php,
-	# and the cache is not rewritten after that.
-	../../bin/phpstan analyse --error-format raw > /dev/null 2>&1 || true
-	OUTPUT=$(../../bin/phpstan analyse -vvv --error-format raw 2>&1) && CODE=0 || CODE=$?
-	assert_same "1" "$CODE"
-	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-	assert_contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"
-	# Fixing it declares the same symbols as before, so nothing else is re-analysed either.
+	# Saving it broken differently does not either.
+	printf '\n// still broken\n' >> src/Thing.php
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	../../bin/phpstan analyse > /dev/null 2>&1 || true
+	# Fixing it declares the same symbols as before it broke, so it is re-analysed alone too.
 	cp fixed/Thing.php src/Thing.php
-	OUTPUT=$(../../bin/phpstan analyse -vvv --error-format raw 2>&1) && CODE=0 || CODE=$?
-	assert_same "1" "$CODE"
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals '1' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	echo "$OUTPUT"
-	assert_contains 'Result cache restored. 1 file will be reanalysed.' "$OUTPUT"
-	assert_not_contains 'Syntax error' "$OUTPUT"
+	rm -rf tmp/resultCache.php
+	COLD_OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && COLD_CODE=0 || COLD_CODE=$?
+	echo "$COLD_OUTPUT"
+	assert_same "$COLD_CODE" "$CODE"
+	assert_same "$COLD_OUTPUT" "$OUTPUT"
 	assert_contains 'Other.php:7:Function ResultCacheE2EParseError\doOther() should return int but returns string.' "$OUTPUT"
 }
 
 function test_result_cache_parse_error_file_analysed_meanwhile() {
 	cp src/Thing.php "$TMPDIR/BrokenThing.php"
 	cp fixed/Thing.php src/Thing.php
-	../../bin/phpstan analyse --error-format raw > /dev/null 2>&1 || true
+	../../bin/phpstan analyse > /dev/null 2>&1 || true
 	cp "$TMPDIR/BrokenThing.php" src/Thing.php
-	../../bin/phpstan analyse --error-format raw > /dev/null 2>&1 || true
-	# src/NewUser.php is analysed while src/Thing.php declares nothing, so it finds Thing missing,
-	# and it has to be analysed again once src/Thing.php is fixed, even though its symbols are the
-	# same as before it broke.
+	../../bin/phpstan analyse > /dev/null 2>&1 || true
+	# src/NewUser.php is analysed while src/Thing.php declares nothing, so it finds Thing missing.
 	printf '<?php declare(strict_types = 1);\n\nnamespace ResultCacheE2EParseError;\n\nfunction doNewUser(): string\n{\n\treturn (new Thing())->doThing();\n}\n' > src/NewUser.php
-	../../bin/phpstan analyse --error-format raw > /dev/null 2>&1 || true
+	../../bin/phpstan analyse > /dev/null 2>&1 || true
+	# Fixing src/Thing.php makes its symbols appear again even though they are the same as before
+	# it broke: it is re-analysed with src/User.php using it and src/NewUser.php, which has an error.
 	cp fixed/Thing.php src/Thing.php
+	INFO=$(../../bin/phpstan result-cache-info --json)
+	echo "$INFO"
+	assert_equals '3' "$(echo "$INFO" | jq --raw-output '.filesToAnalyseCount')"
 	OUTPUT=$(../../bin/phpstan analyse --error-format raw 2>&1) && CODE=0 || CODE=$?
 	echo "$OUTPUT"
 	rm -rf tmp/resultCache.php

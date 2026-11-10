@@ -141,10 +141,10 @@ inline zval *nodeRead(NodeProp &prop, zval *node)
  * once they are ported) */
 
 
-/* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted, $partialApplicationArgs, $boundArgTypes) */
-inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes)
+/* $initializerExprTypeResolver->createFirstClassCallable($function, $variants, $nativeTypesPromoted, $partialApplicationArgs, $boundArgTypes, $origin) */
+inline zv::Val createFirstClassCallable(zval *initializerExprTypeResolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes, zval *origin)
 {
-	return pt_initializer_expr_type_resolver_create_first_class_callable(initializerExprTypeResolver, function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes);
+	return pt_initializer_expr_type_resolver_create_first_class_callable(initializerExprTypeResolver, function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin);
 }
 
 /* $initializerExprTypeResolver->getFirstClassCallableType($expr, $context, $nativeTypesPromoted, $boundArgTypes) */

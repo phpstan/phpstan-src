@@ -25,6 +25,7 @@ use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\ClosureOrigin;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -161,6 +162,7 @@ final class MethodCallableNodeHandler implements ExprHandler
 			$scope->nativeTypesPromoted,
 			$originalNode->isFirstClassCallable() ? null : $originalNode->getRawArgs(),
 			$originalNode->isFirstClassCallable() ? [] : PartialFunctionApplicationParameters::getBoundArgTypes($scope, $originalNode),
+			ClosureOrigin::forMethod($varType, $originalNode->name->toString(), false),
 		);
 	}
 

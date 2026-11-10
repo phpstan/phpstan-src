@@ -29,6 +29,7 @@
 #include "TypeTraits.h"
 #include "AnalyserValues.h"
 #include "generated/ClosureType.h"
+#include "Engine.h"
 
 namespace slots = ptdecl::ClosureType::slot;
 namespace sigs = ptdecl::ClosureType::sig;
@@ -89,6 +90,7 @@ struct ClosureTypeArguments
 	zval *assertions;
 	zval *isStatic;
 	zval *byRefUseTypes;
+	zval *origin;
 };
 
 /* Mirrors PHPStan\Type\ClosureType. State lives in the PHP object's slots. */
@@ -118,6 +120,9 @@ public:
 		writeSlot(slots::invalidateExpressions, a.invalidateExpressions != NULL ? a.invalidateExpressions : &emptyArray);
 		writeSlot(slots::usedVariables, a.usedVariables != NULL ? a.usedVariables : &emptyArray);
 		writeSlot(slots::byRefUseTypes, a.byRefUseTypes != NULL ? a.byRefUseTypes : &emptyArray);
+		zval null = {};
+		ZVAL_NULL(&null);
+		writeSlot(slots::origin, a.origin != NULL ? a.origin : &null);
 
 		writeSlot(slots::acceptsNamedArguments, a.acceptsNamedArguments != NULL ? a.acceptsNamedArguments : pt_trinary_singleton(PT_TRI_YES));
 		writeSlot(slots::mustUseReturnValue, a.mustUseReturnValue != NULL ? a.mustUseReturnValue : pt_trinary_singleton(PT_TRI_MAYBE));
@@ -206,6 +211,7 @@ public:
 	zval *invalidateExpressions() const { return slot(self, slots::invalidateExpressions, "invalidateExpressions"); }
 	zval *usedVariables() const { return slot(self, slots::usedVariables, "usedVariables"); }
 	zval *byRefUseTypes() const { return slot(self, slots::byRefUseTypes, "byRefUseTypes"); }
+	zval *origin() const { return slot(self, slots::origin, "origin"); }
 
 	static zval *slot(zend_object *object, uint32_t index, const char *name) { return pt_typed_slot(object, index, pt_ce_closure_type, name); }
 
@@ -346,7 +352,19 @@ public:
 			if (!isCallableAcceptor) return pt_type_is_super_type_of_result(PT_TRI_NO);
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
-			return pt_callable_type_helper_is_parameters_acceptor_super_type_of(&selfZv, variant.raw(), treatMixedAsAny, strictTypes);
+			zv::Val result = pt_callable_type_helper_is_parameters_acceptor_super_type_of(&selfZv, variant.raw(), treatMixedAsAny, strictTypes);
+			if (UNEXPECTED(result.isUndef()) || treatMixedAsAny) return result;
+			zval *ownOrigin = origin();
+			if (UNEXPECTED(ownOrigin == NULL)) return zv::Val();
+			if (Z_TYPE_P(ownOrigin) != IS_OBJECT) return result;
+			bool equalOrigins;
+			if (UNEXPECTED(!hasEqualOrigins(Z_OBJ_P(type), equalOrigins))) return zv::Val();
+			if (equalOrigins) return result;
+			/* a closure created from another callee, or from an unknown one,
+			 * is not known to be created from this one */
+			zv::Val maybe = pt_type_is_super_type_of_result(PT_TRI_MAYBE);
+			if (UNEXPECTED(maybe.isUndef())) return zv::Val();
+			return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("and"), 1, maybe.raw());
 		}
 		/* $type->getObjectClassNames() === [Closure::class] */
 		zv::Val classNames = pt_type_op(Z_OBJ_P(type), PT_OP_GET_OBJECT_CLASS_NAMES, 0, NULL);
@@ -394,7 +412,26 @@ public:
 			out = false;
 			return true;
 		}
-		return hasEqualUnresolvedSignature(Z_OBJ_P(type), out);
+		if (UNEXPECTED(!hasEqualUnresolvedSignature(Z_OBJ_P(type), out))) return false;
+		if (!out) return true;
+		return hasEqualOrigins(Z_OBJ_P(type), out);
+	}
+
+	/* Mirrors the private static hasEqualOrigins(): both without an origin,
+	 * or with equal ones; false with an exception pending */
+	[[nodiscard]] bool hasEqualOrigins(zend_object *other, bool &out) const
+	{
+		zval *ownOrigin = origin();
+		zval *theirOrigin = ownOrigin != NULL ? slot(other, slots::origin, "origin") : NULL;
+		if (UNEXPECTED(theirOrigin == NULL)) return false;
+		if (Z_TYPE_P(ownOrigin) != IS_OBJECT || Z_TYPE_P(theirOrigin) != IS_OBJECT) {
+			out = Z_TYPE_P(ownOrigin) != IS_OBJECT && Z_TYPE_P(theirOrigin) != IS_OBJECT;
+			return true;
+		}
+		int equal = pt_type_call_is_true(Z_OBJ_P(ownOrigin), PT_LC("equals"), 1, theirOrigin);
+		if (UNEXPECTED(equal < 0)) return false;
+		out = equal == 1;
+		return true;
 	}
 
 	/* Mirrors the private hasEqualUnresolvedSignature(): the markers of a
@@ -504,7 +541,24 @@ public:
 			if (common == 1) return prefixedName();
 			return describeCallable();
 		}
-		/* the precise and cache levels */
+		if (which == PT_VERBOSITY_CACHE) {
+			/* the precise description and the origin */
+			zv::Val precise = pt_type_verbosity_level(PT_VERBOSITY_LEVEL_PRECISE);
+			if (UNEXPECTED(precise.isUndef())) return zv::Val();
+			zv::Val description = thisDescribe(precise.raw());
+			if (UNEXPECTED(description.isUndef())) return zv::Val();
+			zval *ownOrigin = origin();
+			if (UNEXPECTED(ownOrigin == NULL)) return zv::Val();
+			if (Z_TYPE_P(ownOrigin) != IS_OBJECT) return description;
+			zv::Val originDescription = pt_type_call(Z_OBJ_P(ownOrigin), PT_LC("describe"), 0, NULL);
+			if (UNEXPECTED(originDescription.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(description.raw()) != IS_STRING || Z_TYPE_P(originDescription.raw()) != IS_STRING)) {
+				zend_type_error("phpstan_turbo: describe() must return a string");
+				return zv::Val();
+			}
+			return zv::Val::adoptString(zend_strpprintf(0, "%s from %s", ZSTR_VAL(Z_STR_P(description.raw())), ZSTR_VAL(Z_STR_P(originDescription.raw()))));
+		}
+		/* the precise level */
 		zval *isStaticSlot = isStatic();
 		if (UNEXPECTED(isStaticSlot == NULL)) return zv::Val();
 		zend_long staticValue = pt_type_trinary_value(isStaticSlot);
@@ -645,6 +699,13 @@ public:
 		}
 		zv::Val mappedAssertions = pt_assertions_map_types(args.assertions, &fci->function_name);
 		if (UNEXPECTED(mappedAssertions.isUndef())) return zv::Val();
+		/* $this->origin !== null ? $this->origin->traverse($cb) : null */
+		zv::Val traversedOrigin;
+		if (Z_TYPE_P(args.origin) == IS_OBJECT) {
+			traversedOrigin = pt_type_call(Z_OBJ_P(args.origin), PT_LC("traverse"), 1, &fci->function_name);
+			if (UNEXPECTED(traversedOrigin.isUndef())) return zv::Val();
+			args.origin = traversedOrigin.raw();
+		}
 		args.parameters = traversedParameters.raw();
 		args.returnType = traversedReturnType.raw();
 		args.variadic = variadic == 1;
@@ -860,7 +921,8 @@ private:
 		a.assertions = a.mustUseReturnValue != NULL ? assertions() : NULL;
 		a.isStatic = a.assertions != NULL ? isStatic() : NULL;
 		a.byRefUseTypes = a.isStatic != NULL ? byRefUseTypes() : NULL;
-		if (UNEXPECTED(a.byRefUseTypes == NULL)) return false;
+		a.origin = a.byRefUseTypes != NULL ? origin() : NULL;
+		if (UNEXPECTED(a.origin == NULL)) return false;
 		a.variadic = zend_is_true(variadic);
 		return true;
 	}
@@ -871,10 +933,23 @@ private:
 using phpstanturbo::ClosureType;
 using phpstanturbo::ClosureTypeArguments;
 
-bool pt_closure_type_new(zval *out, zval *parameters, zval *returnType, bool variadic, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap, zval *templateTags, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *usedVariables, zval *acceptsNamedArguments, zval *mustUseReturnValue, zval *assertions, zval *isStatic, zval *byRefUseTypes)
+bool pt_closure_type_new(zval *out, zval *parameters, zval *returnType, bool variadic, zval *templateTypeMap, zval *resolvedTemplateTypeMap, zval *callSiteVarianceMap, zval *templateTags, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, zval *usedVariables, zval *acceptsNamedArguments, zval *mustUseReturnValue, zval *assertions, zval *isStatic, zval *byRefUseTypes, zval *origin)
 {
-	ClosureTypeArguments a = { parameters, returnType, variadic, templateTypeMap, resolvedTemplateTypeMap, callSiteVarianceMap, templateTags, throwPoints, impurePoints, invalidateExpressions, usedVariables, acceptsNamedArguments, mustUseReturnValue, assertions, isStatic, byRefUseTypes };
+	ClosureTypeArguments a = { parameters, returnType, variadic, templateTypeMap, resolvedTemplateTypeMap, callSiteVarianceMap, templateTags, throwPoints, impurePoints, invalidateExpressions, usedVariables, acceptsNamedArguments, mustUseReturnValue, assertions, isStatic, byRefUseTypes, origin };
 	return pt_val_into(ClosureType::create(a), out);
+}
+
+zv::Val pt_closure_origin_for_function(zval *functionName)
+{
+	static pt_method_site site;
+	return pt_call_static_cached(site, PT_CLASS_CLOSURE_ORIGIN, PT_LC("forfunction"), 1, functionName);
+}
+
+zv::Val pt_closure_origin_for_method(zval *calledOnType, zval *methodName, bool isStaticCall)
+{
+	static pt_method_site site;
+	zv::Args argv{calledOnType, methodName, isStaticCall};
+	return pt_call_static_cached(site, PT_CLASS_CLOSURE_ORIGIN, PT_LC("formethod"), 3, argv);
 }
 
 zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType)
@@ -1024,10 +1099,11 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 		reg::withDefault(reg::obj("assertions", "PHPStan\\Reflection\\Assertions", true), "null"),
 		reg::withDefault(reg::obj("isStatic", ptcls::trinaryLogic, true), "null"),
 		reg::withDefault(reg::arrayArg("byRefUseTypes"), "[]"),
+		reg::withDefault(reg::obj("origin", "PHPStan\\Type\\ClosureOrigin", true), "null"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ClosureTypeArguments a = {};
 		a.variadic = true;
-		ZEND_PARSE_PARAMETERS_START(0, 16)
+		ZEND_PARSE_PARAMETERS_START(0, 17)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(a.parameters)
 			Z_PARAM_OBJECT_OR_NULL(a.returnType)
@@ -1045,6 +1121,7 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 			Z_PARAM_OBJECT_OR_NULL(a.assertions)
 			Z_PARAM_OBJECT_OR_NULL(a.isStatic)
 			Z_PARAM_ARRAY(a.byRefUseTypes)
+			Z_PARAM_OBJECT_OR_NULL(a.origin)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_THIS.construct(a);
 	});
@@ -1056,6 +1133,10 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 	cls.method(sigs::getByRefUseTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		cltReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.byRefUseTypes());
+	});
+	cls.method(sigs::getOrigin, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		cltReturnSlot(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_THIS.origin());
 	});
 	cls.method(sigs::containsUnresolvedTemplateArgument, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

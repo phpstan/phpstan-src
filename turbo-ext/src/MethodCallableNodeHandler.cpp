@@ -274,7 +274,9 @@ public:
 		if (boundArgTypes.isNull()) {
 			boundArgTypes = zv::Val(zv::Arr::empty());
 		}
-		return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), method.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw());
+		zv::Val origin = pt_closure_origin_for_method(varType.raw(), methodName, false);
+		if (UNEXPECTED(origin.isUndef())) return zv::Val();
+		return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), method.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw(), origin.raw());
 	}
 
 	/* the handler entry (Engine.h) */

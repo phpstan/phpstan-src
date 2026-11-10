@@ -636,4 +636,10 @@ class ClassConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInternalClassConstantAccessIsReportedOnce(): void
+	{
+		// reported by RestrictedClassConstantUsageRule, including Foo::class
+		$this->analyse([__DIR__ . '/../InternalTag/data/class-constant-internal-tag.php'], []);
+	}
+
 }

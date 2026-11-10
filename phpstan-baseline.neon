@@ -1784,19 +1784,19 @@ parameters:
 			path: tests/PHPStan/Node/FileNodeTest.php
 
 		-
-			rawMessage: Access to constant on internal class InternalAnnotations\InternalFoo.
+			rawMessage: Access to constant class of internal class InternalAnnotations\InternalFoo from outside its root namespace InternalAnnotations.
 			identifier: classConstant.internalClass
 			count: 1
 			path: tests/PHPStan/Reflection/Annotations/InternalAnnotationsTest.php
 
 		-
-			rawMessage: Access to constant on internal interface InternalAnnotations\InternalFooInterface.
+			rawMessage: Access to constant class of internal interface InternalAnnotations\InternalFooInterface from outside its root namespace InternalAnnotations.
 			identifier: classConstant.internalInterface
 			count: 1
 			path: tests/PHPStan/Reflection/Annotations/InternalAnnotationsTest.php
 
 		-
-			rawMessage: Access to constant on internal trait InternalAnnotations\InternalFooTrait.
+			rawMessage: Access to constant class of internal trait InternalAnnotations\InternalFooTrait from outside its root namespace InternalAnnotations.
 			identifier: classConstant.internalTrait
 			count: 1
 			path: tests/PHPStan/Reflection/Annotations/InternalAnnotationsTest.php
@@ -1820,7 +1820,7 @@ parameters:
 			path: tests/PHPStan/Reflection/SignatureMap/Php8SignatureMapProviderTest.php
 
 		-
-			rawMessage: Access to constant on internal class PHPUnit\Framework\AssertionFailedError.
+			rawMessage: Access to constant class of internal class PHPUnit\Framework\AssertionFailedError from outside its root namespace PHPUnit.
 			identifier: classConstant.internalClass
 			count: 2
 			path: tests/PHPStan/Testing/TypeInferenceTestCaseTest.php

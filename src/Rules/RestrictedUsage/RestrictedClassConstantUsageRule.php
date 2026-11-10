@@ -16,6 +16,7 @@ use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\ClassConstFetch>
@@ -82,11 +83,14 @@ final class RestrictedClassConstantUsageRule implements Rule
 			}
 
 			$classReflection = $this->reflectionProvider->getClass($referencedClass);
-			if (!$classReflection->hasConstant($constantName)) {
+			if (strtolower($constantName) === 'class') {
+				$constantReflection = new ClassNameConstantReflection($classReflection);
+			} elseif ($classReflection->hasConstant($constantName)) {
+				$constantReflection = $classReflection->getConstant($constantName);
+			} else {
 				continue;
 			}
 
-			$constantReflection = $classReflection->getConstant($constantName);
 			foreach ($extensions as $extension) {
 				$restrictedUsage = $extension->isRestrictedClassConstantUsage($constantReflection, $scope);
 				if ($restrictedUsage === null) {

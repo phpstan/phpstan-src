@@ -121,13 +121,13 @@ parameters:
 			reportUnmatched: false # enum cases, not reported on PHP8-
 		-
 			message: '''
-				#^Access to constant on deprecated class DeprecatedAnnotations\\DeprecatedFoo\:
+				#^Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedFoo\:
 				in 1\.0\.0\.$#
 			'''
 			path: ../tests/PHPStan/Reflection/Annotations/DeprecatedAnnotationsTest.php
 		-
 			message: '''
-				#^Access to constant on deprecated class DeprecatedAnnotations\\DeprecatedWithMultipleTags\:
+				#^Fetching class constant class of deprecated class DeprecatedAnnotations\\DeprecatedWithMultipleTags\:
 				in Foo 1\.1\.0 and will be removed in 1\.5\.0, use
 				  \\Foo\\Bar\\NotDeprecated instead\.$#
 			'''

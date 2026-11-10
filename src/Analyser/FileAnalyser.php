@@ -148,17 +148,22 @@ final class FileAnalyser
 
 				if ($this->reportIgnoresWithoutComments) {
 					foreach ($linesToIgnore as $ignoredFile => $lines) {
+						// an ignore in a trait is disabled in the context of every class using it,
+						// but reported only once, when the trait's own file is analysed
+						$report = $ignoredFile === $file;
 						foreach ($lines as $line => $identifiers) {
 							if ($identifiers === null) {
-								$fileErrors[] = (new Error(
-									'Ignoring all errors on a line is not allowed.',
-									$ignoredFile,
-									$line,
-									false,
-									$ignoredFile,
-									null,
-									'Use @phpstan-ignore with an identifier and a comment (in parentheses).',
-								))->withIdentifier('ignore.allLineErrors');
+								if ($report) {
+									$fileErrors[] = (new Error(
+										'Ignoring all errors on a line is not allowed.',
+										$ignoredFile,
+										$line,
+										false,
+										$ignoredFile,
+										null,
+										'Use @phpstan-ignore with an identifier and a comment (in parentheses).',
+									))->withIdentifier('ignore.allLineErrors');
+								}
 								unset($linesToIgnore[$ignoredFile][$line]);
 								unset($unmatchedLineIgnores[$ignoredFile][$line]);
 								continue;
@@ -169,15 +174,17 @@ final class FileAnalyser
 									continue;
 								}
 
-								$fileErrors[] = (new Error(
-									sprintf('Ignore with identifier %s has no comment.', $identifier['name']),
-									$ignoredFile,
-									$line,
-									false,
-									$ignoredFile,
-									null,
-									'Explain why this ignore is necessary in parentheses after the identifier.',
-								))->withIdentifier('ignore.noComment');
+								if ($report) {
+									$fileErrors[] = (new Error(
+										sprintf('Ignore with identifier %s has no comment.', $identifier['name']),
+										$ignoredFile,
+										$line,
+										false,
+										$ignoredFile,
+										null,
+										'Explain why this ignore is necessary in parentheses after the identifier.',
+									))->withIdentifier('ignore.noComment');
+								}
 								unset($linesToIgnore[$ignoredFile][$line]);
 								unset($unmatchedLineIgnores[$ignoredFile][$line]);
 							}

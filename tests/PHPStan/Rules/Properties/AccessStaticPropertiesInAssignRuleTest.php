@@ -109,4 +109,46 @@ class AccessStaticPropertiesInAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testWritesOnStringUnions(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-property-string-unions-assign.php'], [
+			[
+				'Access to an undefined static property StaticPropertyStringUnionsAssign\Baz::$missing.',
+				32,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnionsAssign\Baz::$missing.',
+				38,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnionsAssign\Baz::$missing.',
+				44,
+			],
+			[
+				'Access to private property $secret of class StaticPropertyStringUnionsAssign\Foo.',
+				50,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnionsAssign\Baz|StaticPropertyStringUnionsAssign\Foo::$count.',
+				56,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.5.0')]
+	public function testAsymmetricVisibilityOnConstantString(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-property-string-unions-asymmetric.php'], [
+			[
+				'Access to private(set) property $privateSet of class StaticPropertyStringUnionsAsymmetric\Foo.',
+				16,
+			],
+			[
+				'Access to protected(set) property $protectedSet of class StaticPropertyStringUnionsAsymmetric\Foo.',
+				17,
+			],
+		]);
+	}
+
 }

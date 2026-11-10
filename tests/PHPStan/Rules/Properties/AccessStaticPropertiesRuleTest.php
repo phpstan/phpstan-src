@@ -21,6 +21,8 @@ use const PHP_VERSION_ID;
 class AccessStaticPropertiesRuleTest extends RuleTestCase
 {
 
+	private bool $checkUnionTypes = true;
+
 	protected function getRule(): Rule
 	{
 		$reflectionProvider = self::createReflectionProvider();
@@ -28,7 +30,7 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 			$reflectionProvider,
 			checkNullables: true,
 			checkThisOnly: false,
-			checkUnionTypes: true,
+			checkUnionTypes: $this->checkUnionTypes,
 			checkExplicitMixed: false,
 			checkImplicitMixed: false,
 			checkBenevolentUnionTypes: false,
@@ -394,6 +396,97 @@ class AccessStaticPropertiesRuleTest extends RuleTestCase
 	public function testBug15002(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-15002.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticPropertyAccessOnStringUnions(): void
+	{
+		$this->analyse([__DIR__ . '/data/static-property-string-unions.php'], [
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				32,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz|StaticPropertyStringUnions\Foo::$create.',
+				38,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz|StaticPropertyStringUnions\Foo::$create.',
+				50,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz|StaticPropertyStringUnions\Foo::$create.',
+				58,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				66,
+			],
+			[
+				'Static access to instance property StaticPropertyStringUnions\Foo::$doBar.',
+				80,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$missing.',
+				118,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$missing.',
+				119,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$missing.',
+				120,
+			],
+			[
+				'Access to private property $privateProperty of class StaticPropertyStringUnions\WithNonPublic.',
+				126,
+			],
+			[
+				'Access to protected property $protectedProperty of class StaticPropertyStringUnions\WithNonPublic.',
+				127,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testStaticPropertyAccessOnStringUnionsWithoutCheckUnionTypes(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/static-property-string-unions.php'], [
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				32,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$create.',
+				66,
+			],
+			[
+				'Static access to instance property StaticPropertyStringUnions\Foo::$doBar.',
+				80,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$missing.',
+				118,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$missing.',
+				119,
+			],
+			[
+				'Access to an undefined static property StaticPropertyStringUnions\Baz::$missing.',
+				120,
+			],
+			[
+				'Access to private property $privateProperty of class StaticPropertyStringUnions\WithNonPublic.',
+				126,
+			],
+			[
+				'Access to protected property $protectedProperty of class StaticPropertyStringUnions\WithNonPublic.',
+				127,
+			],
+		]);
 	}
 
 }

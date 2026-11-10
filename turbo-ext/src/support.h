@@ -523,6 +523,8 @@ enum {
 	PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES,
 	/* the result cache's record of what a declaration's resolution looked up */
 	PT_CLASS_VALUE_DEPENDENCY_COLLECTOR,
+	/* the closure parameters of a partial function application */
+	PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS,
 	PT_CLASS_COUNT
 };
 
@@ -4080,7 +4082,8 @@ enum pt_ietr_binary_operator : uint8_t
  * ->getCastType($expr, $getTypeCallback) / ->getCastObjectType($exprType) /
  * ->getFunctionType($type, $isNullable, $isVariadic, $context) /
  * ->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) /
- * ->createFirstClassCallable($function, $variants, $nativeTypesPromoted) /
+ * ->createFirstClassCallable($function, $variants, $nativeTypesPromoted,
+ * $partialApplicationArgs) /
  * ->getClassConstFetchTypeByReflection($class, $constantName,
  * $classReflection, $getTypeCallback) / ->getUnaryPlusType($expr,
  * $getTypeCallback) / ->getUnaryMinusType(...) / ->getBitwiseNotType(...):
@@ -4100,7 +4103,7 @@ zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *ex
 zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, zval *exprType);
 zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval *type, bool isNullable, bool isVariadic, zval *context);
 zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted);
-zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted);
+zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs);
 zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted = false);
 zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_unary_minus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);

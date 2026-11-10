@@ -494,6 +494,37 @@ class CallCallablesRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationClosureCalls(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-closure-calls.php'], [
+			[
+				'Missing parameter $d0 (bool) in call to closure.',
+				24,
+			],
+			[
+				'Missing parameter $d1 (bool) in call to closure.',
+				24,
+			],
+			[
+				'Unknown parameter $d in call to closure.',
+				24,
+			],
+			[
+				'Parameter $rest0 of closure expects int, string given.',
+				29,
+			],
+			[
+				'Closure invoked with 1 parameter, 2 required.',
+				33,
+			],
+			[
+				'Parameter #2 $a of closure expects int, float given.',
+				39,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug15235(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-15235.php'], []);

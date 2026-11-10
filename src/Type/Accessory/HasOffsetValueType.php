@@ -19,6 +19,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
@@ -43,6 +44,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function spl_object_id;
 use function sprintf;
 use function strtolower;
 use function strtoupper;
@@ -66,6 +68,17 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function __construct(private ConstantStringType|ConstantIntegerType $offsetType, private Type $valueType)
 	{
+	}
+
+	/** @var array<int, Type> */
+	private array $generalizedTypes = [];
+
+	public function generalize(GeneralizePrecision $precision): Type
+	{
+		// Immutable, so it generalizes the same way every time - remembered
+		// because a member shared by several nested types is otherwise
+		// generalized once per path leading to it (see ConstantArrayType::generalize()).
+		return $this->generalizedTypes[spl_object_id($precision)] ??= $this->traverse(static fn (Type $type) => $type->generalize($precision));
 	}
 
 	public function getOffsetType(): ConstantStringType|ConstantIntegerType

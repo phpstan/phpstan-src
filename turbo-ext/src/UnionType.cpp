@@ -1436,9 +1436,34 @@ public:
 	zend_long isOffsetAccessLegal() const { return unionResults(UnionMemberOp::call(PT_LC("isoffsetaccesslegal"))); }
 	zend_long hasOffsetValueType(zval *offsetType) const { return unionResults(UnionMemberOp::call(PT_LC("hasoffsetvaluetype"), 1, offsetType)); }
 
+	/* the per-offset cache in front of doGetOffsetValueType(), keyed by the
+	 * offset's cache description; UNDEF = pending exception */
+	zv::Val getOffsetValueType(zval *offsetType) const
+	{
+		zv::Val cacheLevel = verbosityLevel(PT_VERBOSITY_LEVEL_CACHE);
+		if (UNEXPECTED(cacheLevel.isUndef())) return zv::Val();
+		zv::Val cacheKey = describeOf(offsetType, cacheLevel.raw());
+		if (UNEXPECTED(cacheKey.isUndef())) return zv::Val();
+		zval *cache = OBJ_PROP_NUM(self, slots::cachedGetOffsetValueType);
+		if (Z_TYPE_P(cache) == IS_ARRAY) {
+			zval *cached = zend_symtable_find(Z_ARRVAL_P(cache), zv::Ref(cacheKey.raw()).asString());
+			if (cached != NULL) return zv::Val::copyOf(zv::Ref(cached));
+		}
+		zv::Val result = doGetOffsetValueType(offsetType);
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+		cache = OBJ_PROP_NUM(self, slots::cachedGetOffsetValueType);
+		if (Z_TYPE_P(cache) != IS_ARRAY) {
+			zv::Ref(cache).assign(zv::Val(zv::Arr::create(4)));
+		}
+		SEPARATE_ARRAY(cache);
+		Z_TRY_ADDREF_P(result.raw());
+		zend_symtable_update(Z_ARRVAL_P(cache), zv::Ref(cacheKey.raw()).asString(), result.raw());
+		return result;
+	}
+
 	/* the union of the members' offset value types that are no ErrorType,
 	 * an ErrorType when none is; UNDEF = pending exception */
-	zv::Val getOffsetValueType(zval *offsetType) const
+	zv::Val doGetOffsetValueType(zval *offsetType) const
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
@@ -3041,7 +3066,9 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	});
 	cls.classConstantValue("EQUAL_UNION_CLASSES", pt_ut_equal_union_classes);
 	/* the slots PT_UT_PROP_*: the nine memo properties first, the promoted
-	 * $types and $normalized after them */
+	 * $types and $normalized after them, then the generalize() memo (unused
+	 * natively: TypeCombinatorCache memoizes the work it saves) and the
+	 * getOffsetValueType() memo */
 	cls.privateTypedPropertyDefaultNull("sortedTypesCache", MAY_BE_ARRAY);
 	cls.privateTypedArrayPropertyDefaultEmpty("cachedDescriptions");
 	cls.privateTypedClassPropertyDefaultNull("finiteTypeSet", "PHPStan\\Type\\FiniteTypeSet", MAY_BE_FALSE);
@@ -3053,6 +3080,8 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 	cls.privateTypedArrayPropertyDefaultEmpty("alwaysLooselyEqualTypes");
 	cls.privateTypedProperty("types", MAY_BE_ARRAY);
 	cls.privateTypedProperty("normalized", MAY_BE_BOOL);
+	cls.privateTypedArrayPropertyDefaultEmpty("generalizedTypes");
+	cls.privateTypedArrayPropertyDefaultEmpty("cachedGetOffsetValueType");
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types;

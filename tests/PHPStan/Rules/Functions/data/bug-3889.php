@@ -30,6 +30,7 @@ class Variants
 	 */
 	public function doFoo(string $s, array $list, array $nonEmptyList, array $two, array $oneOrThree): void
 	{
+		// see https://3v4l.org/Ct0Ts#v
 		str_replace(['a', 'b'], ['x', 'y'], $s);
 		str_replace(['a', 'b'], ['x', 'y', 'z'], $s);
 		str_replace(['a', 'b'], [], $s);

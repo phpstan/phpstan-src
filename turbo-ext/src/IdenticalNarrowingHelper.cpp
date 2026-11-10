@@ -1090,7 +1090,8 @@ private:
 
 		// a `$a::class` side falls back only where the old instanceof-style
 		// blocks would fire: a true context with a single class-name string
-		// on the other side; everything else narrows generically
+		// or a `static::class`-like fetch on the other side; everything else
+		// narrows generically
 		bool contextTrue;
 		if (UNEXPECTED(!ctxTrue(context, contextTrue))) return zv::Val();
 		if (contextTrue) {
@@ -1098,6 +1099,7 @@ private:
 				zval *sideUnwrapped = i == 0 ? unwrappedLeft : unwrappedRight;
 				zval *side = i == 0 ? left : right;
 				zval *sideResult = i == 0 ? leftResult : rightResult;
+				zval *otherUnwrapped = i == 0 ? unwrappedRight : unwrappedLeft;
 				zval *otherResult = i == 0 ? rightResult : leftResult;
 				if (!isA(sideUnwrapped, PT_CLASS_CLASS_CONST_FETCH) || !isA(classOf(sideUnwrapped), PT_CLASS_EXPR)) {
 					if (UNEXPECTED(EG(exception))) return zv::Val();
@@ -1110,11 +1112,32 @@ private:
 				if (UNEXPECTED(otherType.isUndef())) return zv::Val();
 				zv::Val otherStrings = constantStringsOf(otherType.raw());
 				if (UNEXPECTED(otherStrings.isUndef())) return zv::Val();
-				if (countOf(otherStrings.raw()) != 1) continue;
-				zval *otherString = firstOf(otherStrings.raw());
-				zv::Val value = constantStringValue(otherString);
-				if (UNEXPECTED(value.isUndef())) return zv::Val();
-				if (Z_TYPE_P(value.raw()) == IS_STRING && ZSTR_LEN(Z_STR_P(value.raw())) == 0) continue;
+				bool singleNonEmpty = countOf(otherStrings.raw()) == 1;
+				zval *otherString = NULL;
+				zv::Val value;
+				if (singleNonEmpty) {
+					otherString = firstOf(otherStrings.raw());
+					value = constantStringValue(otherString);
+					if (UNEXPECTED(value.isUndef())) return zv::Val();
+					singleNonEmpty = !(Z_TYPE_P(value.raw()) == IS_STRING && ZSTR_LEN(Z_STR_P(value.raw())) == 0);
+				}
+				if (!singleNonEmpty) {
+					// $a::class === static::class narrows $a to the class-string's object type
+					bool otherIsClassConstFetch = isA(otherUnwrapped, PT_CLASS_CLASS_CONST_FETCH) && isA(classOf(otherUnwrapped), PT_CLASS_NAME);
+					if (UNEXPECTED(EG(exception))) return zv::Val();
+					if (otherIsClassConstFetch) {
+						zv::Val otherObjectType = typeCall(otherType.raw(), "getClassStringObjectType", PT_LC("getclassstringobjecttype"));
+						if (UNEXPECTED(otherObjectType.isUndef())) return zv::Val();
+						zend_long isObject = trinaryByName(otherObjectType.raw(), "isObject", PT_LC("isobject"));
+						if (UNEXPECTED(isObject < 0)) return zv::Val();
+						if (isObject == PT_TRI_YES) {
+							zv::Val classTypes = createForSubject(classOf(sideUnwrapped), otherObjectType.raw(), context, evaluationScope);
+							if (UNEXPECTED(classTypes.isUndef())) return zv::Val();
+							return unionWith(std::move(classTypes), createSubjectTypes(evaluationScope, side, sideResult, otherType.raw(), context));
+						}
+					}
+					continue;
+				}
 
 				bool known;
 				if (UNEXPECTED(!hasClass(value.raw(), known))) return zv::Val();

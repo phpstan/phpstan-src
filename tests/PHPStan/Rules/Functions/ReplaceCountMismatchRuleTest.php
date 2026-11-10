@@ -33,20 +33,20 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 			],
 			[
 				'Call to str_ireplace is using fewer replacements than search values.',
-				36,
+				37,
 			],
 			[
 				'Call to str_replace is using fewer replacements than search values.',
-				40,
+				41,
 				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Call to preg_replace is using fewer replacements than search values.',
-				46,
+				47,
 			],
 			[
 				'Call to preg_filter is using fewer replacements than search values.',
-				49,
+				50,
 			],
 		]);
 	}

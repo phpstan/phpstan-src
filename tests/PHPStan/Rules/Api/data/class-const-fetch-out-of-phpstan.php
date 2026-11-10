@@ -20,7 +20,7 @@ class Foo
 		echo NodeScopeResolver::class;
 		echo ScopeFactory::class;
 
-		echo NodeScopeResolver::FOO;
+		echo NodeScopeResolver::FOO; // nonexistent constants are reported by ClassConstantRule
 
 		echo Scope::SUPERGLOBAL_VARIABLES;
 		echo MutatingScope::SUPERGLOBAL_VARIABLES;

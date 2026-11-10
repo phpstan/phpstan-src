@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bug7903;
 
+// Loop-scope merges repeatedly compare the identical nested template shapes shared below.
 class Thing
 {
 	private const C         = 1;

@@ -302,9 +302,9 @@ bug-7901.php:
 	peakMemory: 93495520
 
 bug-7903.php:
-	instructions: 7793234919
-	estimatedCycles: 9815275959
-	peakMemory: 50541320
+	instructions: 6358641712
+	estimatedCycles: 7995544152
+	peakMemory: 50524392
 
 bug-8146a.php:
 	instructions: 882446224

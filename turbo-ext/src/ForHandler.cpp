@@ -212,7 +212,9 @@ public:
 
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
-		if (isTopLevel) {
+		bool shouldConvergeLoops;
+		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
+		if (shouldConvergeLoops) {
 			zend_long count = 0;
 			zv::Val prevEntryScope;
 			// each pass after the first re-walks only the statements whose
@@ -260,9 +262,9 @@ public:
 					zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
 					zv::Val noop = ptlh::newNoopNodeCallback();
 					if (UNEXPECTED(noop.isUndef())) return;
-					zv::Val deepContext = pt_statement_context_enter_deep(context);
-					if (UNEXPECTED(deepContext.isUndef())) return;
-					zv::Val passContext = pt_statement_context_without_template_argument_resolution(deepContext.raw());
+					zv::Val loopPassContext = pt_statement_context_enter_loop_pass(context);
+					if (UNEXPECTED(loopPassContext.isUndef())) return;
+					zv::Val passContext = pt_statement_context_without_template_argument_resolution(loopPassContext.raw());
 					if (UNEXPECTED(passContext.isUndef())) return;
 					zv::Val passRecord = zv::Val::null();
 					zv::Val walked = pt_node_scope_resolver_process_loop_pass_stmt_nodes(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage.raw(), noop.raw(), passContext.raw(), previousPass.raw(), passRecord);

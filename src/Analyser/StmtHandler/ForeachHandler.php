@@ -195,7 +195,7 @@ final class ForeachHandler implements StmtHandler
 		$replayEntryScope = null;
 		$unrolledEndScope = null;
 		$unrolledTotalKeys = null;
-		if ($context->isTopLevel()) {
+		if ($context->shouldConvergeLoops()) {
 			$storage = $originalStorage->duplicate();
 
 			$originalScope = $nonEmptyIterateeScope;
@@ -213,7 +213,7 @@ final class ForeachHandler implements StmtHandler
 				$foreachIterateeType = $iterateeResult->getType();
 				$foreachNativeIterateeType = $iterateeResult->getNativeType();
 			}
-			$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($nodeScopeResolver, $stmt, $originalScope, $originalStorage, $context, $foreachIterateeType, $foreachNativeIterateeType);
+			$unrolledResult = $context->isTopLevel() ? $this->tryProcessUnrolledConstantArrayForeach($nodeScopeResolver, $stmt, $originalScope, $originalStorage, $context, $foreachIterateeType, $foreachNativeIterateeType) : null;
 			if ($unrolledResult !== null) {
 				$bodyScope = $unrolledResult['bodyScope'];
 				$unrolledEndScope = $unrolledResult['endScope'];
@@ -250,7 +250,7 @@ final class ForeachHandler implements StmtHandler
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 						$passRecord = null;
-						$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+						$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterLoopPass()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
 						$previousPass = $passRecord;
 						$previousPassStorage = $storage;
 						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();

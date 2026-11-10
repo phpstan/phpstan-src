@@ -67,7 +67,7 @@ final class DoWhileHandler implements StmtHandler
 		$prevEntryScope = null;
 		$previousPass = null;
 		$previousPassStorage = null;
-		if ($context->isTopLevel()) {
+		if ($context->shouldConvergeLoops()) {
 			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
@@ -91,7 +91,7 @@ final class DoWhileHandler implements StmtHandler
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$passRecord = null;
-					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterLoopPass()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();

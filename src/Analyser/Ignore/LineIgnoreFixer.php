@@ -33,7 +33,7 @@ final class LineIgnoreFixer
 	}
 
 	/**
-	 * @param non-empty-list<string> $identifiers identifiers of all errors reported on $line, one for each error
+	 * @param non-empty-list<string> $identifiers identifiers of the errors reported on $line, one for each error that one ignore has to match
 	 */
 	public function fix(string $code, int $line, array $identifiers): ?string
 	{

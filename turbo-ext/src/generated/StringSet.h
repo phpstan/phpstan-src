@@ -14,6 +14,7 @@ inline constexpr uint32_t constants = 0;
 inline constexpr uint32_t type = 1;
 inline constexpr uint32_t digits = 2;
 inline constexpr uint32_t whitespaceFree = 3;
+inline constexpr uint32_t values = 4;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -28,6 +29,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("type", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Type\\Type");
 	cls.property("digits", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("whitespaceFree", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
+	cls.property("values", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_ARRAY);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -76,7 +78,7 @@ inline constexpr char strings[] =
 	"matches\0" /* 512 */
 	"toNumber\0" /* 520 */
 	"isNumeric\0" /* 529 */
-	"contains"; /* 539 */
+	"getValues"; /* 539 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $constants */
 	reg::packed(10, MAY_BE_NULL, 15), /* __construct $type */
@@ -124,9 +126,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(468, MAY_BE_STRING), /* isNumeric $value */
 	reg::packed(271, 0, 282), /* isNumeric $phpVersion */
 	reg::packed(67, MAY_BE_BOOL), /* isNumeric return */
-	reg::packed(0, MAY_BE_ARRAY), /* contains $constants */
-	reg::packed(468, MAY_BE_STRING), /* contains $value */
-	reg::packed(67, MAY_BE_BOOL), /* contains return */
+	reg::packed(67, MAY_BE_ARRAY), /* getValues return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -159,7 +159,7 @@ inline constexpr sigtab::Sig parseNumericString = { { 474 /* parseNumericString 
 inline constexpr sigtab::Sig parseNumericPrefix = { { 493 /* parseNumericPrefix */, 1, 39, 1, 40, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig toNumber = { { 520 /* toNumber */, 1, 41, 1, 42, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig isNumeric = { { 529 /* isNumeric */, 2, 43, 2, 45, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig contains = { { 539 /* contains */, 2, 46, 2, 48, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getValues = { { 539 /* getValues */, 0, 46, 0, 46, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::StringSet

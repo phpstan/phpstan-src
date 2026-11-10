@@ -2967,15 +2967,21 @@ public:
 		return (zend_long) countOf(keyTypes.raw());
 	}
 
+	/* $arraysToProcess[$into] = $merged; unset($arraysToProcess[$from]); */
+	static void storeMerged(zv::Arr &arraysToProcess, zend_ulong into, zend_ulong from, zv::Val merged)
+	{
+		zval v = merged.take();
+		zend_hash_index_update(arraysToProcess.table(), into, &v);
+		zend_hash_index_del(arraysToProcess.table(), from);
+	}
+
 	/* $arraysToProcess[$into] = $arraysToProcess[$into]->mergeWith($arraysToProcess[$from]);
 	 * unset($arraysToProcess[$from]); false = pending exception */
 	[[nodiscard]] static bool mergeInto(zv::Arr &arraysToProcess, zend_ulong into, zend_ulong from)
 	{
 		zv::Val merged = call(arrayAt(arraysToProcess, into), PT_LC("mergewith"), 1, arrayAt(arraysToProcess, from));
 		if (UNEXPECTED(merged.isUndef())) return false;
-		zval v = merged.take();
-		zend_hash_index_update(arraysToProcess.table(), into, &v);
-		zend_hash_index_del(arraysToProcess.table(), from);
+		storeMerged(arraysToProcess, into, from, std::move(merged));
 		return true;
 	}
 
@@ -3379,25 +3385,29 @@ public:
 				/* Merge two single-key arrays sharing the same key when their
 				 * value types union into a single type (not a UnionType) —
 				 * lossless, and it prevents exponential union growth
-				 * (phpstan/phpstan#14462) */
+				 * (phpstan/phpstan#14462). mergeWith() unions the two values,
+				 * so its result answers the question, and a keys-superset
+				 * merge of the same pair below reuses it: unioning the values
+				 * once more there made nested single-key arrays (`$x = [$x]`
+				 * in nested loops) exponential in their depth. */
+				zv::Val singleKeyMerge;
+				bool hasSingleKeyMerge = false;
 				if (preserveTaggedUnions && overlappingKeysCount == 1 && iKeysCount == 1) {
 					zend_long jKeysCount = keyTypesCount(arrayAt(arraysToProcess, j));
 					PT_FAIL_IF_NEG(jKeysCount);
 					if (jKeysCount == 1) {
-						zv::Val iValueTypes = call(arrayAt(arraysToProcess, i), PT_LC("getvaluetypes"));
-						PT_FAIL_IF_UNDEF(iValueTypes);
-						zv::Val jValueTypes = call(arrayAt(arraysToProcess, j), PT_LC("getvaluetypes"));
-						PT_FAIL_IF_UNDEF(jValueTypes);
-						zval *iValueType = indexOf(iValueTypes.raw(), 0);
-						zval *jValueType = indexOf(jValueTypes.raw(), 0);
-						if (UNEXPECTED(iValueType == NULL || jValueType == NULL)) {
+						singleKeyMerge = call(arrayAt(arraysToProcess, j), PT_LC("mergewith"), 1, arrayAt(arraysToProcess, i));
+						PT_FAIL_IF_UNDEF(singleKeyMerge);
+						hasSingleKeyMerge = true;
+						zv::Val mergedValueTypes = call(singleKeyMerge.raw(), PT_LC("getvaluetypes"));
+						PT_FAIL_IF_UNDEF(mergedValueTypes);
+						zval *mergedValueType = indexOf(mergedValueTypes.raw(), 0);
+						if (UNEXPECTED(mergedValueType == NULL)) {
 							zend_throw_error(NULL, "Undefined array key 0");
 							return zv::Val();
 						}
-						zv::Val unionValueType = union2(iValueType, jValueType);
-						PT_FAIL_IF_UNDEF(unionValueType);
-						if (!isInstance(unionValueType.raw(), pt_ce_union_type)) {
-							if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) return zv::Val();
+						if (!isInstance(mergedValueType, pt_ce_union_type)) {
+							storeMerged(arraysToProcess, j, i, std::move(singleKeyMerge));
 							forgetConstantScalarValues(constantScalarValues, j);
 							nullify(nullified, nullifiedList, j);
 							break;
@@ -3420,7 +3430,11 @@ public:
 					int superset = isKeysSupersetOf(arrayAt(arraysToProcess, j), arrayAt(arraysToProcess, i));
 					PT_FAIL_IF_NEG(superset);
 					if (superset) {
-						if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) return zv::Val();
+						if (hasSingleKeyMerge) {
+							storeMerged(arraysToProcess, j, i, std::move(singleKeyMerge));
+						} else if (UNEXPECTED(!mergeInto(arraysToProcess, j, i))) {
+							return zv::Val();
+						}
 						forgetConstantScalarValues(constantScalarValues, j);
 						nullify(nullified, nullifiedList, j);
 						break;

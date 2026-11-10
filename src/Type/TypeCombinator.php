@@ -2003,17 +2003,21 @@ final class TypeCombinator
 					// and prevents exponential union growth when narrowing nested
 					// ArrayDimFetch expressions on a ConstantArrayType parent (see
 					// phpstan/phpstan#14462).
+					// mergeWith() unions the two values, so its result answers the
+					// question, and a keys-superset merge of the same pair below
+					// reuses it: unioning the values once more there made nested
+					// single-key arrays (`$x = [$x]` in nested loops) exponential
+					// in their depth.
+					$singleKeyMerge = null;
 					if (
 						$preserveTaggedUnions
 						&& $overlappingKeysCount === 1
 						&& count($arraysToProcess[$i]->getKeyTypes()) === 1
 						&& count($arraysToProcess[$j]->getKeyTypes()) === 1
 					) {
-						$iValueType = $arraysToProcess[$i]->getValueTypes()[0];
-						$jValueType = $arraysToProcess[$j]->getValueTypes()[0];
-						$unionValueType = self::union($iValueType, $jValueType);
-						if (!$unionValueType instanceof UnionType) {
-							$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						$singleKeyMerge = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						if (!$singleKeyMerge->getValueTypes()[0] instanceof UnionType) {
+							$arraysToProcess[$j] = $singleKeyMerge;
 							$constantScalarValues[$j] = null;
 							$nullifiedConstantScalarValues[$j] = true;
 							unset($arraysToProcess[$i]);
@@ -2039,7 +2043,7 @@ final class TypeCombinator
 						&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
 						&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
 					) {
-						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
+						$arraysToProcess[$j] = $singleKeyMerge ?? $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
 						$constantScalarValues[$j] = null;
 						$nullifiedConstantScalarValues[$j] = true;
 						unset($arraysToProcess[$i]);

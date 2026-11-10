@@ -33,6 +33,7 @@
 #include "generated/ConstantArrayType.h"
 
 #include <unordered_map>
+#include <vector>
 
 namespace slots = ptdecl::ConstantArrayType::slot;
 namespace sigs = ptdecl::ConstantArrayType::sig;
@@ -2922,6 +2923,84 @@ public:
 		return existsInvalid ? PT_TRI_MAYBE : PT_TRI_YES;
 	}
 
+	/* inferIsListFromShape() of a shape merged from $this and the other
+	 * array. The merged keys follow $this's order, but the arrays the other
+	 * describes have its order: merging `[1 => 0, 0 => 0]` into
+	 * `[0 => 1, 1 => 0]` gives keys a list in one order and not in the
+	 * other. So the shape is read in the other's order too (its keys first,
+	 * then the rest), and the two readings combine to `maybe` when they
+	 * disagree; -1 = pending exception */
+	[[nodiscard]] static zend_long inferMergedIsListFromShape(zval *keyTypes, zval *optionalKeys, zend_object *other)
+	{
+		zend_long isList = inferIsListFromShape(keyTypes, optionalKeys);
+		if (isList < 0 || isList == PT_TRI_MAYBE) return isList;
+
+		zval *otherK = slotOf(other, slots::keyTypes, "keyTypes");
+		if (UNEXPECTED(otherK == NULL)) return -1;
+
+		uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(keyTypes));
+		zv::ScratchTable positions(count);
+		std::vector<zend_ulong> keyOrder;
+		keyOrder.reserve(count);
+		for (zv::ArrayEntry entry : zv::ArrRef(keyTypes)) {
+			zv::Val keyValueZv = keyValue(entry.value().deref().raw());
+			if (UNEXPECTED(keyValueZv.isUndef())) return -1;
+			zval position;
+			ZVAL_LONG(&position, (zend_long) entry.indexKey());
+			if (UNEXPECTED(!mapSet(positions.table(), keyValueZv.raw(), &position))) return -1;
+			keyOrder.push_back(entry.indexKey());
+		}
+
+		/* merged positions, the other's keys first ($reordered += $keyTypes) */
+		zv::ScratchTable reordered(count);
+		for (zv::ArrayEntry entry : zv::ArrRef(otherK)) {
+			zv::Val keyValueZv = keyValue(entry.value().deref().raw());
+			if (UNEXPECTED(keyValueZv.isUndef())) return -1;
+			zval *position = mapFind(positions.table(), keyValueZv.raw());
+			if (position == NULL) continue;
+			zend_hash_index_add_empty_element(reordered.table(), (zend_ulong) Z_LVAL_P(position));
+		}
+		for (zend_ulong i : keyOrder) {
+			zend_hash_index_add_empty_element(reordered.table(), i);
+		}
+
+		bool sameOrder = true;
+		size_t p = 0;
+		for (zv::ArrayEntry entry : zv::TableRef(reordered.table())) {
+			if (entry.indexKey() != keyOrder[p++]) {
+				sameOrder = false;
+				break;
+			}
+		}
+		if (sameOrder) return isList;
+
+		zv::ScratchTable optional((uint32_t) zend_hash_num_elements(Z_ARRVAL_P(optionalKeys)));
+		for (zv::ArrayEntry entry : zv::ArrRef(optionalKeys)) {
+			zval *optionalKey = entry.value().deref().raw();
+			if (Z_TYPE_P(optionalKey) == IS_LONG) {
+				zend_hash_index_add_empty_element(optional.table(), (zend_ulong) Z_LVAL_P(optionalKey));
+			}
+		}
+
+		zv::Arr reorderedKeyTypes = zv::Arr::create(count);
+		zv::Arr reorderedOptionalKeys = zv::Arr::create(8);
+		zend_long position = 0;
+		for (zv::ArrayEntry entry : zv::TableRef(reordered.table())) {
+			zend_ulong i = entry.indexKey();
+			if (zend_hash_index_exists(optional.table(), i)) {
+				reorderedOptionalKeys.push(zv::Val::integer(position));
+			}
+			reorderedKeyTypes.push(zv::Ref(zend_hash_index_find(Z_ARRVAL_P(keyTypes), i)));
+			position++;
+		}
+
+		zend_long otherOrderIsList = inferIsListFromShape(reorderedKeyTypes.raw(), reorderedOptionalKeys.raw());
+		if (UNEXPECTED(otherOrderIsList < 0)) return -1;
+
+		/* TrinaryLogic::extremeIdentity() */
+		return isList == otherOrderIsList ? isList : PT_TRI_MAYBE;
+	}
+
 	/* When we're unsetting something not on the array, it will be untouched,
 	 * so the nextAutoIndexes won't change, and the array might still be a
 	 * list even with PHPStan definition; -1 = pending exception */
@@ -5175,8 +5254,8 @@ public:
 		bool mergedIsSealed;
 		if (UNEXPECTED(!isExplicitNever(mergedUnsealedKey.raw(), mergedIsSealed))) return zv::Val();
 		zend_long isListValue = naiveIsList;
-		if (mergedIsSealed) {
-			zend_long inferred = inferIsListFromShape(keyTypesNew.raw(), optionalKeysUnique.raw());
+		if (mergedIsSealed && naiveIsList != PT_TRI_YES) {
+			zend_long inferred = inferMergedIsListFromShape(keyTypesNew.raw(), optionalKeysUnique.raw(), other);
 			if (UNEXPECTED(inferred < 0)) return zv::Val();
 			isListValue = naiveIsList | inferred;
 		}
@@ -5251,8 +5330,8 @@ public:
 			if (UNEXPECTED(unsealedKey == NULL || !isExplicitNever(unsealedKey, mergedIsSealed))) return zv::Val();
 		}
 		zend_long isListValue = naiveIsList;
-		if (mergedIsSealed) {
-			zend_long inferred = inferIsListFromShape(k, optionalKeysUnique.raw());
+		if (mergedIsSealed && naiveIsList != PT_TRI_YES) {
+			zend_long inferred = inferMergedIsListFromShape(k, optionalKeysUnique.raw(), other);
 			if (UNEXPECTED(inferred < 0)) return zv::Val();
 			isListValue = naiveIsList | inferred;
 		}

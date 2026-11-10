@@ -1755,6 +1755,35 @@ class ConstantArrayTypeTest extends PHPStanTestCase
 			[[0, new IntegerType(), false], [5, new StringType(), true]],
 			TrinaryLogic::createYes(),
 		];
+
+		// The merged keys follow $this's order, but the other side's arrays have
+		// theirs: a list merged with the same keys in another order is maybe a
+		// list, whichever side comes first.
+		foreach ([true, false] as $bleedingEdge) {
+			$prefix = $bleedingEdge ? '' : 'legacy: ';
+			yield $prefix . 'list merged with its keys reordered is maybe a list' => [
+				$bleedingEdge,
+				[[0, new IntegerType(), false], [1, new IntegerType(), false]],
+				[[1, new IntegerType(), false], [0, new StringType(), false]],
+				TrinaryLogic::createMaybe(),
+			];
+
+			yield $prefix . 'reordered keys merged with a list are maybe a list' => [
+				$bleedingEdge,
+				[[1, new IntegerType(), false], [0, new StringType(), false]],
+				[[0, new IntegerType(), false], [1, new IntegerType(), false]],
+				TrinaryLogic::createMaybe(),
+			];
+		}
+
+		// The other side's extra key comes before the shared one there, so its
+		// arrays are no list, unlike the merged shape read in $this's order.
+		yield 'list merged with a key before the shared one is maybe a list' => [
+			true,
+			[[0, new IntegerType(), false]],
+			[[1, new StringType(), true], [0, new IntegerType(), false]],
+			TrinaryLogic::createMaybe(),
+		];
 	}
 
 	/**

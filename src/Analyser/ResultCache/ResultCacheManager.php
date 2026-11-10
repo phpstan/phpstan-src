@@ -40,6 +40,7 @@ use ReflectionException;
 use RuntimeException;
 use Throwable;
 use function array_diff;
+use function array_diff_key;
 use function array_fill_keys;
 use function array_filter;
 use function array_intersect;
@@ -899,9 +900,18 @@ final class ResultCacheManager
 			// the file may have gained its first symbol, which is exactly what the files with errors are
 			// waiting for. Comparing against an empty list says so, and says nothing changed when the
 			// file still declares nothing.
+			$fileExportedNodes = $this->exportedNodeFetcher->fetchNodesIfParsable($this->fileReplacements[$analysedFile] ?? $analysedFile);
+			if ($fileExportedNodes === null) {
+				// A parse error, typically code saved half typed. The file is re-analysed and reports it,
+				// but its symbols count as unchanged: the files using them keep their results until it is
+				// fixed, instead of being analysed against a file that declares nothing, and so do the
+				// files with errors. process() keeps the symbols it had, which the fixed file is compared
+				// with.
+				continue;
+			}
 			$cachedFileExportedNodes = $filteredExportedNodes[$analysedFile]
 				?? ($cachedExportedNodes->has($analysedFile) ? $decodeCachedExportedNodes($analysedFile) : []);
-			$exportedNodesChanged = $this->exportedNodesChanged($analysedFile, $cachedFileExportedNodes);
+			$exportedNodesChanged = $this->compareExportedNodes($cachedFileExportedNodes, $fileExportedNodes);
 			if ($exportedNodesChanged === null) {
 				if (count($cachedFileExportedNodes) === 0) {
 					continue;
@@ -1246,19 +1256,6 @@ final class ResultCacheManager
 
 	/**
 	 * @param array<int, RootExportedNode> $cachedFileExportedNodes
-	 * @return bool|null null means nothing changed, true means new root symbol appeared, false means nested node changed
-	 */
-	private function exportedNodesChanged(string $analysedFile, array $cachedFileExportedNodes): ?bool
-	{
-		if (array_key_exists($analysedFile, $this->fileReplacements)) {
-			$analysedFile = $this->fileReplacements[$analysedFile];
-		}
-
-		return $this->compareExportedNodes($cachedFileExportedNodes, $this->exportedNodeFetcher->fetchNodes($analysedFile));
-	}
-
-	/**
-	 * @param array<int, RootExportedNode> $cachedFileExportedNodes
 	 * @param array<int, RootExportedNode> $fileExportedNodes
 	 * @return bool|null null means nothing changed, true means new root symbol appeared, false means nested node changed
 	 */
@@ -1521,8 +1518,27 @@ final class ResultCacheManager
 		$usedTraitDependencies = $this->mergeDependencies($resultCache->getUsedTraitDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getUsedTraitDependencies());
 		$valueDependencies = $this->mergeValueDependencies($resultCache->getValueDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getValueDependencies());
 		$packageDependencies = $this->mergePackageDependencies($resultCache->getPackageDependencies(), $resultCache->getFilesToAnalyse(), $analyserResult->getPackageDependencies());
+		// A re-analysed file with a parse error keeps the symbols it had before, see restore(), so that
+		// fixing it re-analyses nothing else when they are the same. But only while no other file is
+		// analysed: that file sees the broken file's symbols missing, and its result has to be renewed
+		// when they come back, which comparing the fixed file with no symbols does.
+		$filesToReplaceExportedNodes = array_fill_keys($resultCache->getFilesToAnalyse(), true);
+		$filesWithParseError = [];
+		foreach ($freshErrorsByFile as $file => $errors) {
+			foreach ($errors as $error) {
+				if ($error->getIdentifier() !== 'phpstan.parse' || !$error->hasNonIgnorableException()) {
+					continue;
+				}
+
+				$filesWithParseError[$file] = true;
+			}
+		}
+		if (array_diff_key($filesToReplaceExportedNodes, $filesWithParseError) === []) {
+			$filesToReplaceExportedNodes = [];
+		}
+
 		// the re-analysed files take their fresh nodes, what is left of the cached ones stays undecoded
-		$cachedExportedNodes = $resultCache->getCachedExportedNodes()->without(array_fill_keys($resultCache->getFilesToAnalyse(), true));
+		$cachedExportedNodes = $resultCache->getCachedExportedNodes()->without($filesToReplaceExportedNodes);
 		$exportedNodes = $this->addNonAnalysedExportedNodes($this->mergeExportedNodes($resultCache, $analyserResult->getExportedNodes()), $dependencies, $usedTraitDependencies, $cachedExportedNodes);
 		$linesToIgnore = $this->mergeLinesToIgnore($resultCache, $analyserResult->getLinesToIgnore());
 		$unmatchedLineIgnores = $this->mergeUnmatchedLineIgnores($resultCache, $analyserResult->getUnmatchedLineIgnores());

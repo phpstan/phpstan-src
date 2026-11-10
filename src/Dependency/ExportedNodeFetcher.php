@@ -25,13 +25,21 @@ final class ExportedNodeFetcher
 	 */
 	public function fetchNodes(string $fileName): array
 	{
+		return $this->fetchNodesIfParsable($fileName) ?? [];
+	}
+
+	/**
+	 * @return RootExportedNode[]|null null when the file has a parse error
+	 */
+	public function fetchNodesIfParsable(string $fileName): ?array
+	{
 		$nodeTraverser = new NodeTraverser();
 		$nodeTraverser->addVisitor($this->visitor);
 
 		try {
 			$ast = $this->parser->parseFile($fileName);
 		} catch (ParserErrorsException) {
-			return [];
+			return null;
 		}
 		$this->visitor->reset($fileName);
 		$nodeTraverser->traverse($ast);

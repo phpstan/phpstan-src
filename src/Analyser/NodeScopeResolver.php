@@ -786,6 +786,18 @@ class NodeScopeResolver
 					return $storedResult;
 				}
 
+				// re-anchoring drops what the node did to the scope (an assignment
+				// inside a closure body an extension prices on demand) - such a
+				// node is re-processed on the asking scope instead
+				if (
+					!$consume
+					&& $storedResult->getScope() !== $storedResult->getBeforeScope()
+					&& !$expr instanceof Expr\Closure
+					&& !$expr instanceof Expr\ArrowFunction
+				) {
+					return $this->processExprNodeInternal($stmt, $expr, $scope, $storage, $nodeCallback, $context);
+				}
+
 				$reanchored = $storedResult->atAskPosition($scope);
 				if ($consume) {
 					// the re-anchored view IS this walk's result for the node

@@ -1963,6 +1963,20 @@ private:
 					if (UNEXPECTED(beforeScope.isUndef())) return zv::Val();
 					if (beforeScope.ref().isObject() && Z_OBJ_P(beforeScope.raw()) == Z_OBJ_P(scope)) return storedResult;
 
+					// re-anchoring drops what the node did to the scope - such a
+					// node is re-processed on the asking scope instead
+					if (!consume) {
+						zv::Val afterScope = expressionResultScope(storedResult.raw());
+						if (UNEXPECTED(afterScope.isUndef())) return zv::Val();
+						bool sameScope = afterScope.ref().isObject() && beforeScope.ref().isObject() && Z_OBJ_P(afterScope.raw()) == Z_OBJ_P(beforeScope.raw());
+						if (!sameScope) {
+							bool isClosure;
+							if (UNEXPECTED(!isInstance(Z_OBJ_P(expr), PT_CLASS_CLOSURE_EXPR, isClosure))) return zv::Val();
+							if (!isClosure && UNEXPECTED(!isInstance(Z_OBJ_P(expr), PT_CLASS_ARROW_FUNCTION, isClosure))) return zv::Val();
+							if (!isClosure) return processExprNodeInternal(stmt, expr, scope, storage, nodeCallback, context);
+						}
+					}
+
 					zv::Val reanchored = pt_expression_result_at_ask_position(storedResult.raw(), scope);
 					if (UNEXPECTED(reanchored.isUndef())) return zv::Val();
 					if (consume && UNEXPECTED(!thisStoreExpressionResult(storage, expr, reanchored.raw()))) return zv::Val();

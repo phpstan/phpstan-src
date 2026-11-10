@@ -40,7 +40,9 @@ final class PartialFunctionApplicationParameters
 {
 
 	/**
-	 * The closure's parameters, whether it is variadic, its return type and its template types.
+	 * The closure's parameters, whether it is variadic, its return type, its template types
+	 * and the names of the callee's parameters the bound arguments fill (a bound argument
+	 * collected by the variadic counts by its own name, when it has one).
 	 *
 	 * Templates the bound arguments infer are resolved: in the return type, a template
 	 * no closure parameter mentions becomes the inferred type, and one a closure parameter
@@ -49,7 +51,7 @@ final class PartialFunctionApplicationParameters
 	 * @param list<ParameterReflection> $parameters
 	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
 	 * @param array<int, Type> $boundArgTypes the types of the bound arguments, keyed like $args
-	 * @return array{list<ParameterReflection>, bool, Type, TemplateTypeMap}|null null when creating the closure throws
+	 * @return array{list<ParameterReflection>, bool, Type, TemplateTypeMap, list<string>}|null null when creating the closure throws
 	 */
 	public static function apply(array $parameters, array $args, array $boundArgTypes, Type $returnType, TemplateTypeMap $templateTypeMap): ?array
 	{
@@ -58,8 +60,20 @@ final class PartialFunctionApplicationParameters
 			return null;
 		}
 		[$closureParameters, $isVariadic, $bound] = $mapped;
+		$boundNames = [];
+		foreach ($bound as [$parameter, $argIndex]) {
+			if (!$parameter->isVariadic()) {
+				$boundNames[] = $parameter->getName();
+				continue;
+			}
+			$arg = $args[$argIndex];
+			if (!$arg instanceof Arg || $arg->name === null) {
+				continue;
+			}
+			$boundNames[] = $arg->name->toString();
+		}
 		if ($templateTypeMap->isEmpty()) {
-			return [$closureParameters, $isVariadic, $returnType, $templateTypeMap];
+			return [$closureParameters, $isVariadic, $returnType, $templateTypeMap, $boundNames];
 		}
 
 		$inferred = TemplateTypeMap::createEmpty();
@@ -70,7 +84,7 @@ final class PartialFunctionApplicationParameters
 			$inferred = $inferred->union($parameter->getType()->inferTemplateTypes($boundArgTypes[$argIndex]));
 		}
 		if ($inferred->isEmpty()) {
-			return [$closureParameters, $isVariadic, $returnType, $templateTypeMap];
+			return [$closureParameters, $isVariadic, $returnType, $templateTypeMap, $boundNames];
 		}
 
 		$inClosureParameters = [];
@@ -107,7 +121,7 @@ final class PartialFunctionApplicationParameters
 			$closureTemplateTypes[$name] = $templateType;
 		}
 
-		return [$closureParameters, $isVariadic, $returnType, new TemplateTypeMap($closureTemplateTypes)];
+		return [$closureParameters, $isVariadic, $returnType, new TemplateTypeMap($closureTemplateTypes), $boundNames];
 	}
 
 	/**

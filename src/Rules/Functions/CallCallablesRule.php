@@ -20,9 +20,11 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 use function ucfirst;
 
@@ -111,6 +113,16 @@ final class CallCallablesRule implements Rule
 			null,
 		);
 
+		foreach ($node->getArgs() as $arg) {
+			if ($arg->name === null || !self::isBoundByPartialApplication($type, $arg->name->toString())) {
+				continue;
+			}
+			$messages[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been bound by the partial function application.', $arg->name->toString()))
+				->identifier('argument.duplicate')
+				->line($arg->getStartLine())
+				->build();
+		}
+
 		if ($type instanceof ClosureType) {
 			$callableDescription = 'closure';
 		} else {
@@ -148,6 +160,27 @@ final class CallCallablesRule implements Rule
 				null,
 			),
 		);
+	}
+
+	/**
+	 * Whether every closure the type can be is a variadic one a partial function application
+	 * created with the parameter bound - its call then throws "Named parameter overwrites
+	 * previous argument". A closure that is not variadic reports the name as unknown instead.
+	 */
+	private static function isBoundByPartialApplication(Type $type, string $name): bool
+	{
+		$members = $type instanceof UnionType ? $type->getTypes() : [$type];
+		foreach ($members as $member) {
+			if (!$member instanceof ClosureType || !$member->isVariadic()) {
+				return false;
+			}
+			$origin = $member->getOrigin();
+			if ($origin === null || !in_array($name, $origin->getBoundParameterNames(), true)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

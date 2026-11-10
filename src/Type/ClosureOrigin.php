@@ -35,6 +35,7 @@ final class ClosureOrigin
 	 * @param list<array{non-empty-string|null, Type|null}>|null $partialApplicationArgs the name and the bound type (null for `?`) of each
 	 *                                                                         argument of a partial function application before `...`,
 	 *                                                                         null for a first-class callable
+	 * @param list<string> $boundParameterNames the callee's parameters the partial function application bound
 	 */
 	private function __construct(
 		private ?string $functionName,
@@ -43,6 +44,7 @@ final class ClosureOrigin
 		private bool $isStaticCall,
 		private ?array $partialApplicationArgs,
 		private bool $hasVariadicPlaceholder,
+		private array $boundParameterNames = [],
 	)
 	{
 	}
@@ -79,6 +81,25 @@ final class ClosureOrigin
 		return new self($this->functionName, $this->calledOnType, $this->methodName, $this->isStaticCall, $partialApplicationArgs, $hasVariadicPlaceholder);
 	}
 
+	/**
+	 * @param list<string> $boundParameterNames
+	 */
+	public function withBoundParameterNames(array $boundParameterNames): self
+	{
+		return new self($this->functionName, $this->calledOnType, $this->methodName, $this->isStaticCall, $this->partialApplicationArgs, $this->hasVariadicPlaceholder, $boundParameterNames);
+	}
+
+	/**
+	 * The names a call of the closure cannot pass by name: PHP reports that such an argument
+	 * overwrites the bound one when the closure is variadic.
+	 *
+	 * @return list<string>
+	 */
+	public function getBoundParameterNames(): array
+	{
+		return $this->boundParameterNames;
+	}
+
 	public function equals(self $other): bool
 	{
 		if (
@@ -86,6 +107,7 @@ final class ClosureOrigin
 			|| $this->methodName !== $other->methodName
 			|| $this->isStaticCall !== $other->isStaticCall
 			|| $this->hasVariadicPlaceholder !== $other->hasVariadicPlaceholder
+			|| $this->boundParameterNames !== $other->boundParameterNames
 		) {
 			return false;
 		}
@@ -170,7 +192,7 @@ final class ClosureOrigin
 			return $this;
 		}
 
-		return new self($this->functionName, $calledOnType, $this->methodName, $this->isStaticCall, $partialApplicationArgs, $this->hasVariadicPlaceholder);
+		return new self($this->functionName, $calledOnType, $this->methodName, $this->isStaticCall, $partialApplicationArgs, $this->hasVariadicPlaceholder, $this->boundParameterNames);
 	}
 
 	/**

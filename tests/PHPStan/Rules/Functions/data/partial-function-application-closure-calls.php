@@ -38,3 +38,26 @@ function test(): void
 	$i(1.0, 1, 'b');
 	$i(1, 1.0, 'b');
 }
+
+function bound(bool $flag): void
+{
+	// a variadic closure cannot take a bound parameter by name
+	$j = doFoo(1, ?, ...);
+	$j('b', 1.0, a: true);
+	$j('b', 1.0, x: true);
+	doFoo(1, ?, 3.0, ...)('b', c: true);
+
+	// a bound argument the variadic collects by name counts too
+	$k = doFoo(1, 'b', 3.0, x: true, ...);
+	$k(x: false);
+	$k(y: false);
+
+	// a closure that is not variadic reports the name as unknown
+	opt(1, ?)('b', a: 1);
+
+	// a union reports it when every member bound the parameter
+	$l = $flag ? doFoo(1, 'b', ?, ...) : doFoo(2, 'c', ?, ...);
+	$l(1.0, a: true);
+	$m = $flag ? doFoo(1, 'b', ?, ...) : static fn (float $c, bool ...$d): string => '';
+	$m(1.0, a: true);
+}

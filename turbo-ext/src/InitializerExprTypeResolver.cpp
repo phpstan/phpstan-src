@@ -2508,6 +2508,7 @@ public:
 			bool isVariadic = zend_is_true(isVariadicHold.raw());
 			IETR_VAL(templateTypeMapInit, callOn(variant, mGetTemplateTypeMap));
 			zv::Val templateTypeMap = std::move(templateTypeMapInit);
+			zv::Val variantOrigin = zv::Val::copyOf(zv::Ref(origin.raw()));
 			if (partialApplication) {
 				static pt_method_site applySite;
 				zv::Args applyArgv{parameters.raw(), partialApplicationArgs, boundArgTypes, returnType.raw(), templateTypeMap.raw()};
@@ -2521,7 +2522,8 @@ public:
 				zval *appliedIsVariadic = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 1);
 				zval *appliedReturnType = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 2);
 				zval *appliedTemplateTypeMap = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 3);
-				if (UNEXPECTED(appliedParameters == NULL || appliedIsVariadic == NULL || appliedReturnType == NULL || appliedTemplateTypeMap == NULL)) {
+				zval *appliedBoundParameterNames = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 4);
+				if (UNEXPECTED(appliedParameters == NULL || appliedIsVariadic == NULL || appliedReturnType == NULL || appliedTemplateTypeMap == NULL || appliedBoundParameterNames == NULL)) {
 					pt_throw_should_not_happen();
 					return zv::Val();
 				}
@@ -2529,6 +2531,10 @@ public:
 				isVariadic = zend_is_true(appliedIsVariadic);
 				returnType = zv::Val::copyOf(zv::Ref(appliedReturnType));
 				templateTypeMap = zv::Val::copyOf(zv::Ref(appliedTemplateTypeMap));
+				if (Z_TYPE_P(variantOrigin.raw()) == IS_OBJECT) {
+					IETR_VAL(withBoundNames, pt_type_call(Z_OBJ_P(variantOrigin.raw()), PT_LC("withboundparameternames"), 1, appliedBoundParameterNames));
+					variantOrigin = std::move(withBoundNames);
+				}
 			}
 
 			zv::Arr templateTags = zv::Arr::create(0);
@@ -2588,7 +2594,7 @@ public:
 				predicateAssertions.raw(),
 				isStaticClosure.raw(),
 				NULL,
-				origin.raw()
+				variantOrigin.raw()
 			))) return zv::Val();
 			closureTypes.push(zv::Val::adopt(closureType));
 		}

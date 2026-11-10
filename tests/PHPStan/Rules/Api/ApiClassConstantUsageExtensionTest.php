@@ -2,19 +2,20 @@
 
 namespace PHPStan\Rules\Api;
 
+use PHPStan\Rules\RestrictedUsage\RestrictedClassConstantUsageRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use function sprintf;
 
 /**
- * @extends RuleTestCase<ApiClassConstFetchRule>
+ * @extends RuleTestCase<RestrictedClassConstantUsageRule>
  */
-class ApiClassConstFetchRuleTest extends RuleTestCase
+class ApiClassConstantUsageExtensionTest extends RuleTestCase
 {
 
 	protected function getRule(): Rule
 	{
-		return new ApiClassConstFetchRule(new ApiRuleHelper(), self::createReflectionProvider());
+		return self::getContainer()->getByType(RestrictedClassConstantUsageRule::class);
 	}
 
 	public function testRuleInPhpStan(): void
@@ -33,11 +34,6 @@ class ApiClassConstFetchRuleTest extends RuleTestCase
 			[
 				'Accessing PHPStan\Command\AnalyseCommand::class is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
 				19,
-				$tip,
-			],
-			[
-				'Accessing PHPStan\Analyser\NodeScopeResolver::FOO is not covered by backward compatibility promise. The class might change in a minor PHPStan version.',
-				23,
 				$tip,
 			],
 			[

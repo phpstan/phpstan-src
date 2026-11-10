@@ -2226,7 +2226,9 @@ public:
 					IETR_VAL(reflectionProvider, reflectionProviderOf(prop(slots::reflectionProviderProvider)));
 					IETR_VAL(function, pt_reflection_provider_get_function(reflectionProvider.raw(), name, context));
 					IETR_VAL(variants, callOn(function.raw(), mGetVariants));
-					return createFirstClassCallable(function.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes);
+					IETR_VAL(functionName, callOn(function.raw(), mGetName));
+					IETR_VAL(origin, pt_closure_origin_for_function(functionName.raw()));
+					return createFirstClassCallable(function.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin.raw());
 				}
 
 				return newObjectTypeLiteral(PT_LC("Closure"));
@@ -2302,7 +2304,8 @@ public:
 			}
 
 			IETR_VAL(variants, callOn(method.raw(), mGetVariants));
-			return createFirstClassCallable(method.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes);
+			IETR_VAL(origin, pt_closure_origin_for_method(classType.raw(), &methodName, true));
+			return createFirstClassCallable(method.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin.raw());
 		}
 
 		int isNew = isAClass(expr, PT_CLASS_NEW);
@@ -2368,10 +2371,16 @@ public:
 		return zv::Val(std::move(renamed));
 	}
 
-	/* Mirrors createFirstClassCallable(); $function and $partialApplicationArgs PHP null for null */
-	static zv::Val createFirstClassCallable(zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes)
+	/* Mirrors createFirstClassCallable(); $function, $partialApplicationArgs and $origin PHP null for null */
+	static zv::Val createFirstClassCallable(zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes, zval *originIn)
 	{
 		bool partialApplication = Z_TYPE_P(partialApplicationArgs) != IS_NULL;
+		zv::Val origin = zv::Val::copyOf(zv::Ref(originIn));
+		if (Z_TYPE_P(originIn) == IS_OBJECT && partialApplication) {
+			zv::Args withArgv{partialApplicationArgs, boundArgTypes};
+			origin = pt_type_call(Z_OBJ_P(originIn), PT_LC("withpartialapplication"), 2, withArgv);
+			if (UNEXPECTED(origin.isUndef())) return zv::Val();
+		}
 		if (UNEXPECTED(Z_TYPE_P(variants) != IS_ARRAY)) {
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(variants));
 			if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
@@ -2577,7 +2586,9 @@ public:
 				acceptsNamedArguments.raw(),
 				mustUseReturnValue.raw(),
 				predicateAssertions.raw(),
-				isStaticClosure.raw()
+				isStaticClosure.raw(),
+				NULL,
+				origin.raw()
 			))) return zv::Val();
 			closureTypes.push(zv::Val::adopt(closureType));
 		}
@@ -3543,12 +3554,12 @@ zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *re
 	return callResolverMethod(site, resolver, PT_LC("getfirstclasscallabletype"), 4, argv);
 }
 
-zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes)
+zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes, zval *origin)
 {
-	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes);
+	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin);
 	static pt_method_site site;
-	zv::Args argv{function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes};
-	return callResolverMethod(site, resolver, PT_LC("createfirstclasscallable"), 5, argv);
+	zv::Args argv{function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin};
+	return callResolverMethod(site, resolver, PT_LC("createfirstclasscallable"), 6, argv);
 }
 
 zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted)
@@ -3769,9 +3780,21 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	});
 
 	cls.method(sigs::createFirstClassCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *function, *variants, *partialApplicationArgs = NULL, *boundArgTypes = NULL;
+		zval *function, *variants, *partialApplicationArgs = NULL, *boundArgTypes = NULL, *origin = NULL;
 		bool nativeTypesPromoted;
-		if (!zp::parse<zp::ObjOrNull, zp::Arr, zp::Bool, zp::Opt<zp::ArrOrNull>, zp::Opt<zp::Arr>>(execute_data, function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes)) RETURN_THROWS();
+		if (!zp::parse<zp::ObjOrNull, zp::Arr, zp::Bool, zp::Opt<zp::ArrOrNull>, zp::Opt<zp::Arr>, zp::Opt<zp::ObjOrNull>>(execute_data, function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin)) RETURN_THROWS();
+		zval nullOrigin;
+		if (origin == NULL) {
+			ZVAL_NULL(&nullOrigin);
+			origin = &nullOrigin;
+		} else if (Z_TYPE_P(origin) == IS_OBJECT) {
+			zend_class_entry *closureOriginCe = pt_class(PT_CLASS_CLOSURE_ORIGIN);
+			if (UNEXPECTED(closureOriginCe == NULL)) RETURN_THROWS();
+			if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(origin), closureOriginCe))) {
+				zend_argument_type_error(6, "must be of type ?PHPStan\\Type\\ClosureOrigin, %s given", zend_zval_value_name(origin));
+				RETURN_THROWS();
+			}
+		}
 		zval nullArgs;
 		if (partialApplicationArgs == NULL) {
 			ZVAL_NULL(&nullArgs);
@@ -3795,7 +3818,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 				RETURN_THROWS();
 			}
 		}
-		PT_RETURN_VAL(InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes));
+		PT_RETURN_VAL(InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin));
 	});
 
 	cls.method(sigs::getBitwiseAndType, IETR_OPERATOR_GLUE(self.getOperatorType(IETR_BITWISE_AND, left, right, getTypeCallback)));

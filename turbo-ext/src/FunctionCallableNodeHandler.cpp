@@ -303,7 +303,7 @@ public:
 			if (boundArgTypes.isNull()) {
 				boundArgTypes = zv::Val(zv::Arr::empty());
 			}
-			return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), &null, acceptors.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw());
+			return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), &null, acceptors.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw(), &null);
 		}
 
 		zv::Val initializerExprContext = ptveh::initializerExprContextFromScope(scope);

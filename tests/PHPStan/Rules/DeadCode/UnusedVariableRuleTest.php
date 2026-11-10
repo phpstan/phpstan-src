@@ -62,6 +62,21 @@ class UnusedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationBoundArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-bound-args.php'], [
+			[
+				'Variable $unused is never read.',
+				35,
+			],
+			[
+				'Value assigned to variable $foo is never read.',
+				44,
+			],
+		]);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable.php'], [

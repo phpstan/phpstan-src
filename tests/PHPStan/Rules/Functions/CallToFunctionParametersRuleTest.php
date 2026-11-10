@@ -3285,6 +3285,29 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-11919.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationBoundArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-bound-args.php'], [
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				42,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				43,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				44,
+			],
+			[
+				'Parameter #1 $string of function strlen expects string, array given.',
+				45,
+			],
+		]);
+	}
+
 	public function testArgumentsCountAcceptedByNoVariant(): void
 	{
 		$this->analyse([__DIR__ . '/data/arguments-count-accepted-by-no-variant.php'], [

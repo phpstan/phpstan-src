@@ -132,6 +132,25 @@ class PureFunctionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplication(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-pure.php'], [
+			[
+				'Impure call to function rand() in pure function PartialFunctionApplicationPure\pure().',
+				35,
+			],
+			[
+				'Impure call to function rand() in pure function PartialFunctionApplicationPure\pure().',
+				36,
+			],
+			[
+				'Impure call to function rand() in pure function PartialFunctionApplicationPure\pure().',
+				37,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallable(): void
 	{
 		$this->analyse([__DIR__ . '/data/first-class-callable-pure-function.php'], [

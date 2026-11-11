@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use Closure;
 use PhpParser\Node\Arg;
 use PhpParser\Node\ArgPlaceholder;
 use PhpParser\Node\Expr\CallLike;
@@ -98,6 +99,18 @@ final class ClosureOrigin
 	public function getBoundParameterNames(): array
 	{
 		return $this->boundParameterNames;
+	}
+
+	/**
+	 * Whether the closure is one of a method called on an object, bound to that object for
+	 * good: unbinding it fails. Closure::__invoke(...) is the closure itself, so it does not count.
+	 */
+	public function keepsCalledOnObject(): bool
+	{
+		return $this->methodName !== null
+			&& !$this->isStaticCall
+			&& $this->calledOnType !== null
+			&& (new ObjectType(Closure::class))->isSuperTypeOf($this->calledOnType)->no();
 	}
 
 	/**

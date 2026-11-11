@@ -40,8 +40,8 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 			return null;
 		}
 
+		$newThisIsNull = isset($args[1]) ? $scope->getType($args[1]->value)->isNull() : TrinaryLogic::createYes();
 		if ($closureType->isStaticClosure()->yes()) {
-			$newThisIsNull = isset($args[1]) ? $scope->getType($args[1]->value)->isNull() : TrinaryLogic::createYes();
 			if ($newThisIsNull->yes()) {
 				return $closureType;
 			}
@@ -50,6 +50,11 @@ final class ClosureBindDynamicReturnTypeExtension implements DynamicStaticMethod
 			}
 
 			return new BenevolentUnionType([$closureType, new NullType()]);
+		}
+
+		$origin = $closureType->getOrigin();
+		if ($newThisIsNull->yes() && $origin !== null && $origin->keepsCalledOnObject()) {
+			return new NullType();
 		}
 
 		return new BenevolentUnionType([$closureType, new NullType()]);

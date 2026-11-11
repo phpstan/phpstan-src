@@ -18,6 +18,7 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 		return new ImpossibleInArrayHaystackFiniteTypesRule(
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			true,
+			self::createReflectionProvider(),
 		);
 	}
 
@@ -71,6 +72,12 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 				261,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNamespacedInArrayRule(): void
+	{
+		$this->analyse([__DIR__ . '/data/impossible-in-array-in-namespace.php'], []);
 	}
 
 }

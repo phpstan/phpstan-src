@@ -10,6 +10,7 @@ use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -52,6 +53,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}
@@ -67,7 +69,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 			return [];
 		}
 
-		$functionName = strtolower((string) $node->name);
+		$functionName = strtolower((string) $this->reflectionProvider->resolveFunctionName($node->name, $scope));
 		if (!array_key_exists($functionName, self::FUNCTIONS)) {
 			return [];
 		}

@@ -561,6 +561,14 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Argument for parameter $a has already been bound by the partial function application.',
 				60,
 			],
+			[
+				'Missing parameter $arguments0 (string) in call to closure.',
+				93,
+			],
+			[
+				'Unknown parameter $x in call to closure.',
+				93,
+			],
 		]);
 	}
 

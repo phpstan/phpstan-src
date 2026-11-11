@@ -164,8 +164,12 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				45,
 			],
 			[
+				'Cannot use named placeholder for unknown or variadic parameter $y.',
+				73,
+			],
+			[
 				'Variadic placeholder may only appear once.',
-				51,
+				79,
 			],
 		]);
 	}

@@ -141,8 +141,12 @@ class MethodCallableRuleTest extends RuleTestCase
 				43,
 			],
 			[
+				'Cannot use named placeholder for unknown or variadic parameter $x.',
+				72,
+			],
+			[
 				'Variadic placeholder may only appear once.',
-				50,
+				78,
 			],
 		]);
 	}

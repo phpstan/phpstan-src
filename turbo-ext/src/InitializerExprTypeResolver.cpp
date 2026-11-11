@@ -2543,6 +2543,15 @@ public:
 				isVariadic = zend_is_true(appliedIsVariadic);
 				returnType = zv::Val::copyOf(zv::Ref(appliedReturnType));
 				templateTypeMap = zv::Val::copyOf(zv::Ref(appliedTemplateTypeMap));
+				static pt_method_site magicNamesSite;
+				zv::Args magicNamesArgv{function, partialApplicationArgs};
+				IETR_VAL(magicMethodParameterNames, pt_call_static_cached(magicNamesSite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("getmagicmethodparameternames"), 2, magicNamesArgv));
+				if (Z_TYPE_P(magicMethodParameterNames.raw()) == IS_NULL) {
+					// creating the closure of a method called through __call() throws
+					continue;
+				}
+				IETR_VAL(renamedForMagicMethod, renameParameters(parameters.raw(), magicMethodParameterNames.raw()));
+				parameters = std::move(renamedForMagicMethod);
 				if (Z_TYPE_P(variantOrigin.raw()) == IS_OBJECT) {
 					IETR_VAL(withBoundNames, pt_type_call(Z_OBJ_P(variantOrigin.raw()), PT_LC("withboundparameternames"), 1, appliedBoundParameterNames));
 					variantOrigin = std::move(withBoundNames);

@@ -128,6 +128,42 @@ final class PartialFunctionApplicationParameters
 	}
 
 	/**
+	 * PHP calls a method it does not declare through __call() or __callStatic(), so the
+	 * closure of its partial application is one of that trampoline, (mixed ...$arguments):
+	 * the placeholders become $arguments0, $arguments1..., and a named one throws.
+	 *
+	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
+	 * @return list<string>|null the names of the closure's first parameters, the ones of its
+	 *                           positional placeholders; null when creating the closure throws
+	 */
+	public static function getMagicMethodParameterNames(FunctionReflection|MethodReflection|null $function, array $args): ?array
+	{
+		if (!self::isMagicMethod($function)) {
+			return [];
+		}
+
+		$names = [];
+		foreach ($args as $arg) {
+			if (!$arg instanceof ArgPlaceholder) {
+				continue;
+			}
+			if ($arg->name !== null) {
+				return null;
+			}
+			$names[] = 'arguments' . count($names);
+		}
+
+		return $names;
+	}
+
+	/** @phpstan-assert-if-true MethodReflection $function */
+	public static function isMagicMethod(FunctionReflection|MethodReflection|null $function): bool
+	{
+		return $function instanceof MethodReflection
+			&& !$function->getDeclaringClass()->hasNativeMethod($function->getName());
+	}
+
+	/**
 	 * @phpstan-assert-if-true TemplateType $type
 	 */
 	private static function isOwnTemplate(Type $type, TemplateTypeMap $templateTypeMap): bool

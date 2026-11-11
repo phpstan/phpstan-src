@@ -17,6 +17,7 @@ use function count;
 use function in_array;
 use function sprintf;
 use function sscanf;
+use function strtolower;
 
 /**
  * @implements Rule<Node\Expr\FuncCall>
@@ -56,12 +57,11 @@ final class PrintfParametersRule implements Rule
 			return [];
 		}
 
-		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+		$name = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+		if ($name === null) {
 			return [];
 		}
-
-		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
-		$name = $functionReflection->getName();
+		$name = strtolower($name);
 		if (!array_key_exists($name, self::FORMAT_ARGUMENT_POSITIONS)) {
 			return [];
 		}

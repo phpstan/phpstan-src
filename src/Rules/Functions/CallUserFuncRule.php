@@ -14,6 +14,7 @@ use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use function count;
 use function sprintf;
+use function strtolower;
 use function ucfirst;
 
 /**
@@ -45,13 +46,11 @@ final class CallUserFuncRule implements Rule
 			return [];
 		}
 
-		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+		$functionName = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+		if ($functionName === null) {
 			return [];
 		}
-
-		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
-
-		$functionName = $functionReflection->getName();
+		$functionName = strtolower($functionName);
 		if ($functionName === 'call_user_func') {
 			$result = ArgumentsNormalizer::reorderCallUserFuncArguments(
 				$node,

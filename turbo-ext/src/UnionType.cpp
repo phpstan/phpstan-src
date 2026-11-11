@@ -35,6 +35,7 @@
 
 #include "TypeTraits.h"
 #include "generated/UnionType.h"
+#include "Engine.h"
 
 namespace slots = ptdecl::UnionType::slot;
 namespace sigs = ptdecl::UnionType::sig;
@@ -845,6 +846,9 @@ public:
 
 		zv::Val results = mapReversed(PT_LC("issupertypeof"), Z_OBJ_P(otherType), 0, NULL);
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
+		static pt_method_site combineSite;
+		results = combineOverloadResults(std::move(results), combineSite, PT_LC("combineoverloadissupertypeofresults"));
+		if (UNEXPECTED(results.isUndef())) return zv::Val();
 		return pt_is_super_type_of_result_extreme_identity_spread(zv::ArrRef(results.raw()).table());
 	}
 
@@ -860,7 +864,30 @@ public:
 		ZVAL_BOOL(&strictZv, strictTypes);
 		zv::Val results = mapReversed(PT_LC("accepts"), Z_OBJ_P(acceptingType), 1, &strictZv);
 		if (UNEXPECTED(results.isUndef())) return zv::Val();
+		static pt_method_site combineSite;
+		results = combineOverloadResults(std::move(results), combineSite, PT_LC("combineoverloadacceptsresults"));
+		if (UNEXPECTED(results.isUndef())) return zv::Val();
 		return pt_accepts_result_extreme_identity_spread(zv::ArrRef(results.raw()).table());
+	}
+
+	/* The results as they are without a ClosureType member (the private
+	 * hasClosureMember()), else ClosureOrigin::combineOverload*Results($this->types,
+	 * $results) named by lcName; UNDEF = pending exception */
+	zv::Val combineOverloadResults(zv::Val results, pt_method_site &site, const char *lcName, size_t lcNameLen) const
+	{
+		zval *types = this->types();
+		if (UNEXPECTED(types == NULL)) return zv::Val();
+		bool hasClosure = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
+			zval *member = entry.value().deref().raw();
+			if (Z_TYPE_P(member) == IS_OBJECT && instanceof_function(Z_OBJCE_P(member), pt_ce_closure_type)) {
+				hasClosure = true;
+				break;
+			}
+		}
+		if (!hasClosure) return results;
+		zv::Args argv{types, results.raw()};
+		return pt_call_static_cached(site, PT_CLASS_CLOSURE_ORIGIN, lcName, lcNameLen, 2, argv);
 	}
 
 	/* the same class (`$type instanceof static`) with the same member

@@ -35,3 +35,4 @@ parameters:
 		unusedParameters: true
 		reuseCollectedDataRuleErrors: true
 		checkWholePhpVersionRange: true
+		replaceCountMismatch: true

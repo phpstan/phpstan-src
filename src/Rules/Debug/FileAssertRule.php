@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Debug;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\PhpDoc\TypeStringResolver;
@@ -46,25 +47,42 @@ final class FileAssertRule implements Rule
 			return [];
 		}
 
-		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
-			return [];
+		$name = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
+		$args = $node->getArgs();
+		if ($name === 'PHPStan\\Testing\\assertType') {
+			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'type');
+			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+			if ($typeArg === null || $valueArg === null) {
+				return [];
+			}
+			return $this->processAssertType([$typeArg, $valueArg], $scope);
 		}
 
-		$function = $this->reflectionProvider->getFunction($node->name, $scope);
-		if ($function->getName() === 'PHPStan\\Testing\\assertType') {
-			return $this->processAssertType($node->getArgs(), $scope);
+		if ($name === 'PHPStan\\Testing\\assertNativeType') {
+			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'type');
+			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+			if ($typeArg === null || $valueArg === null) {
+				return [];
+			}
+			return $this->processAssertNativeType([$typeArg, $valueArg], $scope);
 		}
 
-		if ($function->getName() === 'PHPStan\\Testing\\assertNativeType') {
-			return $this->processAssertNativeType($node->getArgs(), $scope);
+		if ($name === 'PHPStan\\Testing\\assertSuperType') {
+			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'superType');
+			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+			if ($typeArg === null || $valueArg === null) {
+				return [];
+			}
+			return $this->processAssertSuperType([$typeArg, $valueArg], $scope);
 		}
 
-		if ($function->getName() === 'PHPStan\\Testing\\assertSuperType') {
-			return $this->processAssertSuperType($node->getArgs(), $scope);
-		}
-
-		if ($function->getName() === 'PHPStan\\Testing\\assertVariableCertainty') {
-			return $this->processAssertVariableCertainty($node->getArgs(), $scope);
+		if ($name === 'PHPStan\\Testing\\assertVariableCertainty') {
+			$certaintyArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'certainty');
+			$variableArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'variable');
+			if ($certaintyArg === null || $variableArg === null) {
+				return [];
+			}
+			return $this->processAssertVariableCertainty([$certaintyArg, $variableArg], $scope);
 		}
 
 		return [];

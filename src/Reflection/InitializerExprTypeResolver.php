@@ -969,6 +969,11 @@ final class InitializerExprTypeResolver
 					continue;
 				}
 				[$parameters, $isVariadic, $returnType, $templateTypeMap, $boundParameterNames] = $partialApplication;
+				$magicMethodParameterNames = PartialFunctionApplicationParameters::getMagicMethodParameterNames($function, $partialApplicationArgs);
+				if ($magicMethodParameterNames === null) {
+					continue;
+				}
+				$parameters = self::renameParameters($parameters, $magicMethodParameterNames);
 				if ($variantOrigin !== null) {
 					$variantOrigin = $variantOrigin->withBoundParameterNames($boundParameterNames);
 				}

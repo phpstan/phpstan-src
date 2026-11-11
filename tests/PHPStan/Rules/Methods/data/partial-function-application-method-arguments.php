@@ -45,6 +45,34 @@ function placementsWithUnknownCallees(Foo $foo, array $ints): void
 	Foo::undefinedStatic(?, ...$ints);
 }
 
+/**
+ * @method int magic(string $x, int $y)
+ * @method static int staticMagic(string $x, int $y)
+ */
+class Magic
+{
+
+	/** @param array<mixed> $arguments */
+	public function __call(string $name, array $arguments): int
+	{
+		return 1;
+	}
+
+	/** @param array<mixed> $arguments */
+	public static function __callStatic(string $name, array $arguments): int
+	{
+		return 1;
+	}
+
+}
+
+function magicMethods(Magic $magic): void
+{
+	// the __call() trampoline only has a variadic parameter
+	$magic->magic(x: ?);
+	Magic::staticMagic(?, y: ?);
+}
+
 function variadicPlaceholderPlacements(Foo $foo): void
 {
 	$foo->doFoo(?, ..., ...);

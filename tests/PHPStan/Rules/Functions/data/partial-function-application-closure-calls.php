@@ -72,3 +72,24 @@ function forwardedArguments(): void
 	// the variadic placeholder forwards the extra arguments to func_get_args()
 	forwardsToFuncGetArgs(?, ...)(1, 2, 3);
 }
+
+/**
+ * @method int magic(string $x, int $y)
+ */
+class Magic
+{
+
+	/** @param array<mixed> $arguments */
+	public function __call(string $name, array $arguments): int
+	{
+		return 1;
+	}
+
+}
+
+function magicMethods(Magic $magic): void
+{
+	// a method called through __call() takes its placeholders as $arguments0, $arguments1...
+	$magic->magic(?, 1)(x: 'a');
+	$magic->magic(?, ?)(arguments0: 'a', arguments1: 1);
+}

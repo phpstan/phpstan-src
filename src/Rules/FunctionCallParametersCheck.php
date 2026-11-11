@@ -20,6 +20,7 @@ use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Rules\Methods\NamedArgumentParameterMethodCallsCollector;
@@ -812,6 +813,23 @@ final class FunctionCallParametersCheck
 		FunctionReflection|MethodReflection|null $calleeReflection,
 	): array
 	{
+		if (PartialFunctionApplicationParameters::isMagicMethod($calleeReflection)) {
+			// the __call() trampoline it calls only has a variadic parameter
+			$errors = [];
+			foreach ($call->getRawArgs() as $arg) {
+				if (!$arg instanceof Node\ArgPlaceholder || $arg->name === null) {
+					continue;
+				}
+				$errors[] = RuleErrorBuilder::message(sprintf('Cannot use named placeholder for unknown or variadic parameter $%s.', $arg->name->toString()))
+					->identifier('argument.unknown')
+					->line($arg->getStartLine())
+					->build();
+			}
+			if ($errors !== []) {
+				return $errors;
+			}
+		}
+
 		// templates are resolved from the bound arguments, as in a call;
 		// the ones only the placeholders determine stay unresolved
 		$argTypes = [];

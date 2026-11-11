@@ -59,6 +59,10 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 				'Call to str_replace is using fewer replacements than search values.',
 				9,
 			],
+			[
+				'Call to str_replace is using fewer replacements than search values.',
+				14,
+			],
 		]);
 	}
 

@@ -7,6 +7,7 @@ use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_fill_keys;
+use function array_flip;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -358,7 +359,7 @@ final class IgnoredErrorHelperResult
 		}
 
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
-		$filesChangedByFixKeys = array_fill_keys(array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $filesChangedByFix), true);
+		$filesChangedByFixKeys = array_flip(array_map(fn (string $file): string => $this->fileHelper->normalizePath($file), $filesChangedByFix));
 
 		if (!$hasInternalErrors) {
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {

@@ -664,6 +664,7 @@ class AnalyserTest extends PHPStanTestCase
 	{
 		yield 'list of files' => [true, [], false];
 		yield 'list of files, file changed by an earlier fix round' => [true, [__DIR__ . '/data/empty/empty.php'], true];
+		yield 'list of files, file changed by an earlier fix round, path not normalized' => [true, [__DIR__ . '/data/empty/../empty/empty.php'], true];
 		yield 'list of files, another file changed by an earlier fix round' => [true, [__DIR__ . '/data/two-fails.php'], false];
 		yield 'full analysis' => [false, [], true];
 	}

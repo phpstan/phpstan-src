@@ -23,6 +23,7 @@ use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\TernaryExpressionNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -124,6 +125,8 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 		if ($ifResult !== null) {
 			$this->capturedResults[spl_object_id($expr)] = [$expr, $ternaryCondResult, $ifResult, $elseResult];
 		}
+
+		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new TernaryExpressionNode($expr, $ternaryCondResult, $ifResult, $elseResult), $scope, $storage, $context);
 
 		$condType = $this->treatPhpDocTypesAsCertain ? $ternaryCondResult->getType() : $ternaryCondResult->getNativeType();
 		if ($condType->isTrue()->yes()) {

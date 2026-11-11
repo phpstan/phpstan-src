@@ -23,6 +23,7 @@ parameters:
 		unusedLabel: true
 		newOnNonObject: true
 		unnecessaryNullCoalesce: true
+		unnecessaryTernary: true
 		finiteTypesInHaystack: true
 		switchConditionAlwaysFalse: true
 		checkImportedClassNameCase: true

@@ -1165,4 +1165,17 @@ class CallStaticMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15235.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug15700(): void
+	{
+		$this->checkThisOnly = false;
+		$this->analyse([__DIR__ . '/data/bug-15700.php'], [
+			[
+				'Unable to resolve the template type TIn in call to static method Bug15700Methods\\Foo::create()',
+				26,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+		]);
+	}
+
 }

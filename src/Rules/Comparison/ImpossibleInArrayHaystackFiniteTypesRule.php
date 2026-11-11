@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersions;
@@ -53,8 +52,6 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		private ReflectionProvider $reflectionProvider,
-		#[AutowiredParameter]
-		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
@@ -101,8 +98,8 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 			return [];
 		}
 
-		$needleType = $this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg->value) : $scope->getNativeType($needleArg->value);
-		$haystackType = $this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg->value) : $scope->getNativeType($haystackArg->value);
+		$needleType = $scope->getType($needleArg->value);
+		$haystackType = $scope->getType($haystackArg->value);
 
 		$constantArrays = $haystackType->getConstantArrays();
 		if (count($constantArrays) === 0) {
@@ -111,7 +108,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 
 		$strictArg = $normalizedArgs[2] ?? null;
 		$isStrict = $strictArg !== null
-			? ($this->treatPhpDocTypesAsCertain ? $scope->getType($strictArg->value) : $scope->getNativeType($strictArg->value))->isTrue()
+			? $scope->getNativeType($strictArg->value)->isTrue()
 			: TrinaryLogic::createNo();
 
 		/** @var array<string, array{Type, list<string>, bool}> $deadValueTypes */

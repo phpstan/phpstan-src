@@ -14,6 +14,8 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\Type;
+use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function count;
 use function sprintf;
@@ -63,20 +65,16 @@ final class RandomIntParametersRule implements Rule
 		$minType = $scope->getType($minArg->value)->toInteger();
 		$maxType = $scope->getType($maxArg->value)->toInteger();
 
-		if (
-			!$minType instanceof ConstantIntegerType && !$minType instanceof IntegerRangeType
-			|| !$maxType instanceof ConstantIntegerType && !$maxType instanceof IntegerRangeType
-		) {
+		$minBounded = $this->isBoundedIntegerType($minType);
+		$maxBounded = $this->isBoundedIntegerType($maxType);
+		if ($minBounded === null || $maxBounded === null) {
 			return [];
 		}
 
 		$isSmaller = $maxType->isSmallerThan($minType, $this->phpVersion);
 
 		if ($isSmaller->maybe() && $this->reportMaybes) {
-			if (
-				$minType instanceof IntegerRangeType && ($minType->getMin() === null || $minType->getMax() === null)
-				|| $maxType instanceof IntegerRangeType && ($maxType->getMin() === null || $maxType->getMax() === null)
-			) {
+			if (!$minBounded || !$maxBounded) {
 				return [];
 			}
 		}
@@ -93,6 +91,30 @@ final class RandomIntParametersRule implements Rule
 		}
 
 		return [];
+	}
+
+	/**
+	 * Returns null when the type is not composed solely of integer constants and integer ranges,
+	 * otherwise whether all of its parts are bounded on both sides.
+	 */
+	private function isBoundedIntegerType(Type $type): ?bool
+	{
+		$bounded = true;
+		foreach (TypeUtils::flattenTypes($type) as $innerType) {
+			if ($innerType instanceof ConstantIntegerType) {
+				continue;
+			}
+			if (!$innerType instanceof IntegerRangeType) {
+				return null;
+			}
+			if ($innerType->getMin() !== null && $innerType->getMax() !== null) {
+				continue;
+			}
+
+			$bounded = false;
+		}
+
+		return $bounded;
 	}
 
 }

@@ -28,7 +28,7 @@ class Variants
 	 * @param array{string, string} $two
 	 * @param array{string, string, string}|array{string} $oneOrThree
 	 */
-	public function doFoo(string $s, array $list, array $nonEmptyList, array $two, array $oneOrThree): void
+	public function doFoo(string $s, array $list, array $nonEmptyList, array $two, array $oneOrThree, bool $b): void
 	{
 		// see https://3v4l.org/Ct0Ts#v
 		str_replace(['a', 'b'], ['x', 'y'], $s);
@@ -48,5 +48,13 @@ class Variants
 		preg_replace(['/a/', '/b/'], ['x', 'y'], $s);
 		preg_replace(['/a/', '/b/'], 'x', $s);
 		preg_filter(['/a/', '/b/'], ['x'], $s);
+
+		$r = $b ? [] : ['x'];
+		str_replace(['a', 'b', 'c'], $r, $s);
+
+		$r = $b ? ['x'] : ['x', 'y', 'z'];
+		str_replace(['a', 'b', 'c'], $r, $s);
+
+		str_replace(['a', 'b', 'c'], ['x', 'y', 'z'], $s);
 	}
 }

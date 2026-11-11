@@ -680,7 +680,7 @@ class AnalyserTest extends PHPStanTestCase
 				'path' => __DIR__ . '/data/empty/empty.php',
 			],
 		];
-		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', $onlyFiles, filesChangedByFix: $filesChangedByFix);
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', $onlyFiles, false, [], [], $filesChangedByFix);
 		if (!$expectReported) {
 			$this->assertNoErrors($result);
 			return;

@@ -6,6 +6,7 @@ use Nette\Utils\RegexpException;
 use Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
@@ -36,6 +37,15 @@ final class RegularExpressionPatternRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		if (!$node->name instanceof Node\Name) {
+			return [];
+		}
+
+		$functionName = strtolower((string) $node->name);
+		if (!str_starts_with($functionName, 'preg_')) {
+			return [];
+		}
+
 		$patterns = $this->extractPatterns($node, $scope);
 
 		$errors = [];
@@ -60,14 +70,17 @@ final class RegularExpressionPatternRule implements Rule
 			return [];
 		}
 		$functionName = strtolower((string) $functionCall->name);
-		if (!str_starts_with($functionName, 'preg_')) {
+
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return [];
 		}
 
-		if (!isset($functionCall->getArgs()[0])) {
+		$patternArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'pattern');
+		if ($patternArg === null) {
 			return [];
 		}
-		$patternNode = $functionCall->getArgs()[0]->value;
+		$patternNode = $patternArg->value;
 		$patternType = $scope->getType($patternNode);
 
 		$patternStrings = [];

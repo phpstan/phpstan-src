@@ -17,6 +17,8 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
 use function count;
+use function max;
+use function min;
 
 /**
  * Maps the parameters of a callee to the parameters of the closure its partial
@@ -166,13 +168,13 @@ final class PartialFunctionApplicationParameters
 		$seenNamed = false;
 		$bound = [];
 		foreach ($args as $argIndex => $arg) {
+			if ($hasVariadicPlaceholder) {
+				// the variadic placeholder must be last and may only appear once
+				return null;
+			}
 			if ($arg instanceof VariadicPlaceholder) {
 				$hasVariadicPlaceholder = true;
 				continue;
-			}
-			if ($hasVariadicPlaceholder) {
-				// the variadic placeholder must be last
-				return null;
 			}
 
 			if ($arg instanceof Arg && $arg->unpack) {

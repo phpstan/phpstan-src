@@ -76,6 +76,11 @@ final class FunctionCallableRule implements Rule
 						->build(),
 				];
 			}
+			// compile errors, even when the callee is unknown
+			$syntaxErrors = $this->parametersCheck->checkPartialApplicationSyntax($node->getOriginalNode());
+			if ($syntaxErrors !== []) {
+				return $syntaxErrors;
+			}
 		} elseif (!$scope->getPhpVersion()->supportsFirstClassCallables()->yes()) {
 			return [
 				RuleErrorBuilder::message('First-class callables are supported only on PHP 8.1 and later.')

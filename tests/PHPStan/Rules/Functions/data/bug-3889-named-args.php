@@ -12,4 +12,9 @@ function doFoo(string $s, bool $b): void
 
 	$r = $b ? [] : ['x'];
 	str_replace(['a', 'b', 'c'], $r, $s);
+
+	$r = $b ? ['x'] : ['x', 'y', 'z'];
+	str_replace(['a', 'b', 'c'], $r, $s);
+
+	str_replace(['a', 'b', 'c'], ['x', 'y', 'z'], $s);
 }

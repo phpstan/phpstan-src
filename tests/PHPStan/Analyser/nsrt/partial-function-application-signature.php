@@ -215,5 +215,6 @@ function bind(Foo $foo, Invokable $i, object $o): void
 	assertType('static-Closure(string): string', doFoo(1, ?, 3.0)->bindTo(null));
 	assertType('null', Foo::doStatic(1, ?)->bindTo($o));
 	assertType('((Closure(string, float ...): bool)|null)', $foo->doFoo(1, ...)->bindTo($o));
+	assertType('null', $foo->doFoo(1, ...)->bindTo(null));
 	assertType('((Closure(string): bool)|null)', $i(1, ?)->bindTo($o));
 }

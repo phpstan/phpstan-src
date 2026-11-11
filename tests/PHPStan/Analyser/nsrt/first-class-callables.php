@@ -231,13 +231,19 @@ class BindCallables
 		return 1;
 	}
 
-	public function doFoo(object $o): void
+	public function doFoo(object $o, ?object $maybe): void
 	{
 		assertType('((Closure(string): int<0, max>)|null)', strlen(...)->bindTo($o));
 		assertType('null', self::doStatic(...)->bindTo($o));
 		assertType('null', \Closure::bind(self::doStatic(...), $o));
 		assertType('static-Closure(): int', self::doStatic(...)->bindTo(null));
 		assertType('((Closure(): int)|null)', $this->doInstance(...)->bindTo($o));
+		// the closure of an instance method keeps its object
+		assertType('null', $this->doInstance(...)->bindTo(null));
+		assertType('null', \Closure::bind($this->doInstance(...), null));
+		// only unbinding it for sure returns null
+		assertType('((Closure(): int)|null)', $this->doInstance(...)->bindTo($maybe));
+		assertType('((Closure(): int)|null)', \Closure::bind($this->doInstance(...), $maybe));
 	}
 
 	public function doInvoke(): void

@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
-use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersion;
@@ -43,10 +42,6 @@ final class ReplaceCountMismatchRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private PhpVersion $phpVersion,
-		#[AutowiredParameter]
-		private bool $treatPhpDocTypesAsCertain,
-		#[AutowiredParameter(ref: '%tips.treatPhpDocTypesAsCertain%')]
-		private bool $treatPhpDocTypesAsCertainTip,
 	)
 	{
 	}
@@ -93,33 +88,17 @@ final class ReplaceCountMismatchRule implements Rule
 			return [];
 		}
 
-		if ($this->treatPhpDocTypesAsCertain) {
-			$searchType = $scope->getType($args[0]->value);
-			$replaceType = $scope->getType($args[1]->value);
-		} else {
-			$searchType = $scope->getNativeType($args[0]->value);
-			$replaceType = $scope->getNativeType($args[1]->value);
-		}
-
+		$searchType = $scope->getType($args[0]->value);
+		$replaceType = $scope->getType($args[1]->value);
 		if (!$this->hasFewerReplacements($searchType, $replaceType)) {
 			return [];
 		}
 
-		$errorBuilder = RuleErrorBuilder::message(sprintf(
-			'Call to %s is using fewer replacements than search values.',
-			$functionName,
-		))->identifier('argument.replaceCount');
-
-		if ($this->treatPhpDocTypesAsCertain && $this->treatPhpDocTypesAsCertainTip) {
-			$nativeSearchType = $scope->getNativeType($args[0]->value);
-			$nativeReplaceType = $scope->getNativeType($args[1]->value);
-			if (!$this->hasFewerReplacements($nativeSearchType, $nativeReplaceType)) {
-				$errorBuilder->treatPhpDocTypesAsCertainTip();
-			}
-		}
-
 		return [
-			$errorBuilder->build(),
+			RuleErrorBuilder::message(sprintf(
+				'Call to %s is using fewer replacements than search values.',
+				$functionName,
+			))->identifier('argument.replaceCount')->build(),
 		];
 	}
 

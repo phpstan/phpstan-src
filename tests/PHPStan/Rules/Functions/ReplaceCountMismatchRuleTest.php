@@ -19,8 +19,6 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 		return new ReplaceCountMismatchRule(
 			self::createReflectionProvider(),
 			new PhpVersion(PHP_VERSION_ID),
-			true,
-			true,
 		);
 	}
 
@@ -38,7 +36,6 @@ class ReplaceCountMismatchRuleTest extends RuleTestCase
 			[
 				'Call to str_replace is using fewer replacements than search values.',
 				41,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Call to preg_replace is using fewer replacements than search values.',

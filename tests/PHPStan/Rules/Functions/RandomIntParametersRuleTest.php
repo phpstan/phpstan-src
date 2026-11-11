@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Functions;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
+use function usort;
 use const PHP_INT_SIZE;
 
 /**
@@ -63,12 +64,17 @@ class RandomIntParametersRuleTest extends RuleTestCase
 			],
 		];
 		if (PHP_INT_SIZE === 4) {
-			// TODO: should fail on 64-bit in a similar fashion, guess it does not because of the union type
 			$expectedErrors[] = [
 				'Parameter #1 $min (2147483647) of function random_int expects lower number than parameter #2 $max (-2147483648).',
 				33,
 			];
+		} else {
+			$expectedErrors[] = [
+				'Parameter #1 $min (2147483647|9223372036854775807) of function random_int expects lower number than parameter #2 $max (-9223372036854775808|-2147483648).',
+				33,
+			];
 		}
+		usort($expectedErrors, static fn (array $a, array $b): int => $a[1] <=> $b[1]);
 
 		$this->analyse([__DIR__ . '/data/random-int.php'], $expectedErrors);
 	}
@@ -84,6 +90,32 @@ class RandomIntParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $min (int<5, max>) of function random_int expects lower number than parameter #2 $max (int<min, 3>).',
 				57,
+			],
+		]);
+	}
+
+	public function testBug15698(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15698.php'], [
+			[
+				'Parameter #1 $min (8|9|10) of function random_int expects lower number than parameter #2 $max (1|2|3).',
+				12,
+			],
+			[
+				'Parameter #1 $min (1|5) of function random_int expects lower number than parameter #2 $max (3|7).',
+				24,
+			],
+			[
+				'Parameter #1 $min (int<1, 3>|int<8, 10>) of function random_int expects lower number than parameter #2 $max (0).',
+				25,
+			],
+			[
+				'Parameter #1 $min (11) of function random_int expects lower number than parameter #2 $max (int<1, 3>|int<8, 10>).',
+				26,
+			],
+			[
+				'Parameter #1 $min (5|int<20, max>) of function random_int expects lower number than parameter #2 $max (4).',
+				27,
 			],
 		]);
 	}

@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 namespace DateIntervalInstantiation;
 
 // invalid - missing P prefix
@@ -36,3 +36,5 @@ function bar(string $duration, string $duration2): void {
 	new \DateInterval($duration);
 	new \DateInterval($duration2);
 }
+
+new \DateInterval(duration: '1M');

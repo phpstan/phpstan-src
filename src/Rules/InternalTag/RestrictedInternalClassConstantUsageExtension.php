@@ -4,6 +4,7 @@ namespace PHPStan\Rules\InternalTag;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassConstantReflection;
+use PHPStan\Rules\RestrictedUsage\ClassNameConstantReflection;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassConstantUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
 use function sprintf;
@@ -21,6 +22,11 @@ final class RestrictedInternalClassConstantUsageExtension implements RestrictedC
 		Scope $scope,
 	): ?RestrictedUsage
 	{
+		// Foo::class is reported as an internal class name usage
+		if ($constantReflection instanceof ClassNameConstantReflection) {
+			return null;
+		}
+
 		$isConstantInternal = $constantReflection->isInternal()->yes();
 		$declaringClass = $constantReflection->getDeclaringClass();
 		$isDeclaringClassInternal = $declaringClass->isInternal();

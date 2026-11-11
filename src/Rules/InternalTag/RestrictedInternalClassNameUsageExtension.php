@@ -5,6 +5,7 @@ namespace PHPStan\Rules\InternalTag;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\ClassNameUsageLocation;
+use PHPStan\Rules\RestrictedUsage\ClassNameConstantReflection;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\RestrictedUsage\RestrictedUsage;
 use function sprintf;
@@ -53,7 +54,7 @@ final class RestrictedInternalClassNameUsageExtension implements RestrictedClass
 
 		if ($location->value === ClassNameUsageLocation::CLASS_CONSTANT_ACCESS) {
 			$constant = $location->getClassConstant();
-			if ($constant !== null) {
+			if ($constant !== null && !$constant instanceof ClassNameConstantReflection) {
 				if ($constant->isInternal()->yes() || $constant->getDeclaringClass()->isInternal()) {
 					return null;
 				}

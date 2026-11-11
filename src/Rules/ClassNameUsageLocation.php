@@ -6,6 +6,7 @@ use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Rules\RestrictedUsage\ClassNameConstantReflection;
 use function sprintf;
 use function ucfirst;
 
@@ -153,7 +154,8 @@ final class ClassNameUsageLocation
 			case self::EXCEPTION_CATCH:
 				return sprintf('Catching %s.', $part);
 			case self::CLASS_CONSTANT_ACCESS:
-				if ($this->getClassConstant() !== null) {
+				// Foo::class is reported as a usage of the class name, as before it was passed to the extensions
+				if ($this->getClassConstant() !== null && !$this->getClassConstant() instanceof ClassNameConstantReflection) {
 					return sprintf('Access to constant %s on %s.', $this->getClassConstant()->getName(), $part);
 				}
 				return sprintf('Access to constant on %s.', $part);

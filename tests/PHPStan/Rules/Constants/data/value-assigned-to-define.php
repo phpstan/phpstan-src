@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace ValueAssignedToDefine;
 
@@ -15,3 +15,5 @@ define('A_NON_EMPTY_STRING', getString());
 define('A_NON_EMPTY_STRING', dirname(__DIR__, 2));
 
 function getString(): string {}
+
+define(value: false, constant_name: 'BAR_CONSTANT'); // error

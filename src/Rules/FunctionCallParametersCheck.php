@@ -162,11 +162,7 @@ final class FunctionCallParametersCheck
 		$errors = [];
 		foreach ($args as $arg) {
 			if ($hasVariadicPlaceholder) {
-				$errors[] = RuleErrorBuilder::message('Variadic placeholder must be last.')
-					->identifier('argument.variadicPlaceholderNotLast')
-					->line($arg->getStartLine())
-					->nonIgnorable()
-					->build();
+				// reported by checkPartialApplicationSyntax()
 				break;
 			}
 			if ($arg instanceof Node\VariadicPlaceholder) {
@@ -184,11 +180,7 @@ final class FunctionCallParametersCheck
 			}
 
 			if ($isPartialApplication && $arg->unpack) {
-				$errors[] = RuleErrorBuilder::message('Cannot combine partial application and unpacking.')
-					->identifier('argument.unpackInPartialApplication')
-					->line($arg->getStartLine())
-					->nonIgnorable()
-					->build();
+				// reported by checkPartialApplicationSyntax()
 				continue;
 			}
 
@@ -752,6 +744,49 @@ final class FunctionCallParametersCheck
 				}
 				$errors[] = $errorBuilder->build();
 			}
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * The placements of placeholders PHP refuses to compile, whatever the callee is.
+	 *
+	 * @return list<IdentifierRuleError>
+	 */
+	public function checkPartialApplicationSyntax(Node\Expr\CallLike $call): array
+	{
+		$errors = [];
+		$hasVariadicPlaceholder = false;
+		foreach ($call->getRawArgs() as $arg) {
+			if ($hasVariadicPlaceholder) {
+				// PHP judges the argument right after the variadic placeholder
+				if ($arg instanceof Node\VariadicPlaceholder) {
+					$errorBuilder = RuleErrorBuilder::message('Variadic placeholder may only appear once.')
+						->identifier('argument.duplicateVariadicPlaceholder');
+				} else {
+					$errorBuilder = RuleErrorBuilder::message('Variadic placeholder must be last.')
+						->identifier('argument.variadicPlaceholderNotLast');
+				}
+				$errors[] = $errorBuilder
+					->line($arg->getStartLine())
+					->nonIgnorable()
+					->build();
+				break;
+			}
+			if ($arg instanceof Node\VariadicPlaceholder) {
+				$hasVariadicPlaceholder = true;
+				continue;
+			}
+			if (!$arg instanceof Node\Arg || !$arg->unpack) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message('Cannot combine partial application and unpacking.')
+				->identifier('argument.unpackInPartialApplication')
+				->line($arg->getStartLine())
+				->nonIgnorable()
+				->build();
 		}
 
 		return $errors;

@@ -240,6 +240,30 @@ class FunctionCallableRuleTest extends RuleTestCase
 				'Parameter #1 $a of function PartialFunctionApplicationArguments\\intOnly expects int, string given.',
 				75,
 			],
+			[
+				'Variadic placeholder must be last.',
+				82,
+			],
+			[
+				'Cannot combine partial application and unpacking.',
+				83,
+			],
+			[
+				'Variadic placeholder must be last.',
+				84,
+			],
+			[
+				'Variadic placeholder may only appear once.',
+				89,
+			],
+			[
+				'Variadic placeholder may only appear once.',
+				90,
+			],
+			[
+				'Variadic placeholder must be last.',
+				91,
+			],
 		]);
 	}
 

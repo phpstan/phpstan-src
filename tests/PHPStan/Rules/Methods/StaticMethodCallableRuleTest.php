@@ -155,6 +155,18 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				'Argument for parameter $a has already been passed.',
 				33,
 			],
+			[
+				'Variadic placeholder must be last.',
+				44,
+			],
+			[
+				'Cannot combine partial application and unpacking.',
+				45,
+			],
+			[
+				'Variadic placeholder may only appear once.',
+				51,
+			],
 		]);
 	}
 

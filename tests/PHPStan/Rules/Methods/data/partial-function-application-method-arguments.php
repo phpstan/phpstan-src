@@ -34,3 +34,19 @@ class Foo
 	}
 
 }
+
+/** @param array<int> $ints */
+function placementsWithUnknownCallees(Foo $foo, array $ints): void
+{
+	// compile errors whatever the callee is
+	$foo->undefinedMethod(..., ?);
+	$foo->undefinedMethod(?, ...$ints);
+	Foo::undefinedStatic(..., ?);
+	Foo::undefinedStatic(?, ...$ints);
+}
+
+function variadicPlaceholderPlacements(Foo $foo): void
+{
+	$foo->doFoo(?, ..., ...);
+	Foo::doStatic(?, ..., ...);
+}

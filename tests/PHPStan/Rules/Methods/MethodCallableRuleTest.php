@@ -132,6 +132,18 @@ class MethodCallableRuleTest extends RuleTestCase
 				'Cannot use named placeholder for unknown or variadic parameter $c.',
 				30,
 			],
+			[
+				'Variadic placeholder must be last.',
+				42,
+			],
+			[
+				'Cannot combine partial application and unpacking.',
+				43,
+			],
+			[
+				'Variadic placeholder may only appear once.',
+				50,
+			],
 		]);
 	}
 

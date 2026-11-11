@@ -146,6 +146,7 @@ function functions(): void
 	assertType('Closure', doFoo(1, 'b', 3.0, d: ?));
 	assertType('Closure', opt(?, a: 1));
 	assertType('Closure', opt(a: ?, a: ?));
+	assertType('Closure', doFoo(?, ..., ...));
 
 	// built-ins
 	assertType('static-Closure(string): (non-empty-string|false)', strtok(?));

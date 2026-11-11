@@ -58,13 +58,16 @@ inline constexpr char strings[] =
 	"curlOpt\0" /* 649 */
 	"PHPStan\\Type\\Type\0" /* 657 */
 	"getCurlOptValueType\0" /* 675 */
-	"original\0" /* 695 */
-	"type\0" /* 704 */
-	"nativeType\0" /* 709 */
-	"PHPStan\\Reflection\\Php\\ExtendedDummyParameter\0" /* 720 */
-	"overrideParameterType\0" /* 766 */
-	"parameters\0" /* 788 */
-	"overrideAcceptorParameters"; /* 799 */
+	"argTypes\0" /* 695 */
+	"unpacked\0" /* 704 */
+	"createArrayMapCallbackParameters\0" /* 713 */
+	"original\0" /* 746 */
+	"type\0" /* 755 */
+	"nativeType\0" /* 760 */
+	"PHPStan\\Reflection\\Php\\ExtendedDummyParameter\0" /* 771 */
+	"overrideParameterType\0" /* 817 */
+	"parameters\0" /* 839 */
+	"overrideAcceptorParameters"; /* 850 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* selectFromArgs $scope */
 	reg::packed(29, MAY_BE_ARRAY), /* selectFromArgs $args */
@@ -103,12 +106,16 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(82, 0, 588), /* wrapParameter return */
 	reg::packed(649, MAY_BE_LONG), /* getCurlOptValueType $curlOpt */
 	reg::packed(82, MAY_BE_NULL, 657), /* getCurlOptValueType return */
-	reg::packed(695, 0, 549), /* overrideParameterType $original */
-	reg::packed(704, 0, 657), /* overrideParameterType $type */
-	reg::packed(709, 0, 657), /* overrideParameterType $nativeType */
-	reg::packed(82, 0, 720), /* overrideParameterType return */
+	reg::packed(695, MAY_BE_ARRAY), /* createArrayMapCallbackParameters $argTypes */
+	reg::packed(704, MAY_BE_ARRAY), /* createArrayMapCallbackParameters $unpacked */
+	reg::packed(212, 0, 187), /* createArrayMapCallbackParameters $iterableValueTypeGetter */
+	reg::packed(82, MAY_BE_NULL | MAY_BE_ARRAY), /* createArrayMapCallbackParameters return */
+	reg::packed(746, 0, 549), /* overrideParameterType $original */
+	reg::packed(755, 0, 657), /* overrideParameterType $type */
+	reg::packed(760, 0, 657), /* overrideParameterType $nativeType */
+	reg::packed(82, 0, 771), /* overrideParameterType return */
 	reg::packed(285, 0, 83), /* overrideAcceptorParameters $acceptor */
-	reg::packed(788, MAY_BE_ARRAY), /* overrideAcceptorParameters $parameters */
+	reg::packed(839, MAY_BE_ARRAY), /* overrideAcceptorParameters $parameters */
 	reg::packed(82, 0, 83), /* overrideAcceptorParameters return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -127,8 +134,9 @@ inline constexpr sigtab::Sig combineAcceptors = { { 509 /* combineAcceptors */, 
 inline constexpr sigtab::Sig wrapAcceptor = { { 526 /* wrapAcceptor */, 1, 31, 1, 32, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig wrapParameter = { { 635 /* wrapParameter */, 1, 33, 1, 34, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig getCurlOptValueType = { { 675 /* getCurlOptValueType */, 1, 35, 1, 36, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig overrideParameterType = { { 766 /* overrideParameterType */, 3, 37, 3, 40, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig overrideAcceptorParameters = { { 799 /* overrideAcceptorParameters */, 2, 41, 2, 43, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig createArrayMapCallbackParameters = { { 713 /* createArrayMapCallbackParameters */, 3, 37, 3, 40, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig overrideParameterType = { { 817 /* overrideParameterType */, 3, 41, 3, 44, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig overrideAcceptorParameters = { { 850 /* overrideAcceptorParameters */, 2, 45, 2, 47, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ParametersAcceptorSelector

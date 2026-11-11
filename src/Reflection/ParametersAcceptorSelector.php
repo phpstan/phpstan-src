@@ -54,6 +54,7 @@ use function array_values;
 use function constant;
 use function count;
 use function defined;
+use function in_array;
 use function is_int;
 use function is_string;
 use function sprintf;
@@ -232,62 +233,29 @@ final class ParametersAcceptorSelector
 			$positionalArgs = self::reorderIntrinsicArgs($args, $namedArgumentsVariants[0] ?? $parametersAcceptors[0]);
 			$arrayMapArgs = $positionalArgs[0]->value->getAttribute(ArrayMapArgVisitor::ATTRIBUTE_NAME);
 			if ($arrayMapArgs !== null) {
-				$callbackValueTypes = [];
-				$callbackArrayTypes = [];
-				$nativeCallbackValueTypes = [];
-				$nativeCallbackArrayTypes = [];
+				$argTypes = [];
+				$nativeArgTypes = [];
+				$unpacked = [];
 				foreach ($arrayMapArgs as $arg) {
-					$argType = ($typeGetter)($arg->value);
-					$nativeArgType = ($nativeTypeGetter)($arg->value);
-					if ($arg->unpack) {
-						$constantArrays = $argType->getConstantArrays();
-						if (count($constantArrays) > 0) {
-							foreach ($constantArrays as $constantArray) {
-								$valueTypes = $constantArray->getValueTypes();
-								foreach ($valueTypes as $valueType) {
-									$callbackValueTypes[] = ($iterableValueTypeGetter)($valueType);
-									$callbackArrayTypes[] = $valueType;
-								}
-							}
-						}
-						$nativeConstantArrays = $nativeArgType->getConstantArrays();
-						if (count($nativeConstantArrays) > 0) {
-							foreach ($nativeConstantArrays as $constantArray) {
-								$valueTypes = $constantArray->getValueTypes();
-								foreach ($valueTypes as $valueType) {
-									$nativeCallbackValueTypes[] = ($iterableValueTypeGetter)($valueType);
-									$nativeCallbackArrayTypes[] = $valueType;
-								}
-							}
-						}
-					} else {
-						$callbackValueTypes[] = ($iterableValueTypeGetter)($argType);
-						$callbackArrayTypes[] = $argType;
-						$nativeCallbackValueTypes[] = ($iterableValueTypeGetter)($nativeArgType);
-						$nativeCallbackArrayTypes[] = $nativeArgType;
-					}
+					$argTypes[] = ($typeGetter)($arg->value);
+					$nativeArgTypes[] = ($nativeTypeGetter)($arg->value);
+					$unpacked[] = $arg->unpack;
 				}
-
-				$callbackParameters = [];
-				foreach (ArrayMapCallbackParameterTypes::addPaddingNull($callbackValueTypes, $callbackArrayTypes) as $valueType) {
-					$callbackParameters[] = new DummyParameter('item', $valueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-				}
-				$nativeCallbackParameters = [];
-				foreach (ArrayMapCallbackParameterTypes::addPaddingNull($nativeCallbackValueTypes, $nativeCallbackArrayTypes) as $valueType) {
-					$nativeCallbackParameters[] = new DummyParameter('item', $valueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
-				}
+				$callbackParameters = self::createArrayMapCallbackParameters($argTypes, $unpacked, $iterableValueTypeGetter);
+				$nativeCallbackParameters = self::createArrayMapCallbackParameters($nativeArgTypes, $unpacked, $iterableValueTypeGetter);
 
 				$acceptor = $parametersAcceptors[0];
 				$parameters = $acceptor->getParameters();
-				if (isset($parameters[0])) {
+				// with an unknown number of arrays, the callback keeps the type from the signature
+				if (isset($parameters[0]) && $callbackParameters !== null) {
 					$callableType = new UnionType([
 						new CallableType($callbackParameters, new MixedType(), false),
 						new NullType(),
 					]);
-					$nativeCallableType = new UnionType([
+					$nativeCallableType = $nativeCallbackParameters !== null ? new UnionType([
 						new CallableType($nativeCallbackParameters, new MixedType(), false),
 						new NullType(),
-					]);
+					]) : self::wrapParameter($parameters[0])->getNativeType();
 					$parameters[0] = self::overrideParameterType($parameters[0], $callableType, $nativeCallableType);
 					$parametersAcceptors = [self::overrideAcceptorParameters($acceptor, $parameters)];
 				}
@@ -1423,6 +1391,34 @@ final class ParametersAcceptorSelector
 
 		// unknown constant
 		return null;
+	}
+
+	/**
+	 * @param list<Type> $argTypes
+	 * @param list<bool> $unpacked
+	 * @param Closure(Type): Type $iterableValueTypeGetter
+	 * @return list<DummyParameter>|null null when the number of arrays is not known
+	 */
+	private static function createArrayMapCallbackParameters(array $argTypes, array $unpacked, Closure $iterableValueTypeGetter): ?array
+	{
+		if (in_array(true, $unpacked, true)) {
+			[$argTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
+			if ($restType !== null) {
+				return null;
+			}
+		}
+
+		$valueTypes = [];
+		foreach ($argTypes as $argType) {
+			$valueTypes[] = ($iterableValueTypeGetter)($argType);
+		}
+
+		$parameters = [];
+		foreach (ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $argTypes) as $valueType) {
+			$parameters[] = new DummyParameter('item', $valueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+		}
+
+		return $parameters;
 	}
 
 	private static function overrideParameterType(ParameterReflection $original, Type $type, Type $nativeType): ExtendedDummyParameter

@@ -11,11 +11,13 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\UnpackedArgumentTypes;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use function count;
+use function in_array;
 
 #[AutowiredService]
 final class ArrayMapParameterClosureTypeExtension implements FunctionParameterClosureTypeExtension
@@ -33,31 +35,29 @@ final class ArrayMapParameterClosureTypeExtension implements FunctionParameterCl
 			return null;
 		}
 
-		$valueTypes = [];
-		$arrayTypes = [];
+		$argTypes = [];
+		$unpacked = [];
 		$argCount = count($args);
 		for ($i = 1; $i < $argCount; $i++) {
-			$arg = $args[$i];
-			$arrayType = $scope->getType($arg->value);
-			if ($arg->unpack) {
-				$constantArrays = $arrayType->getConstantArrays();
-				if (count($constantArrays) === 0) {
-					return null;
-				}
-				foreach ($constantArrays as $constantArray) {
-					foreach ($constantArray->getValueTypes() as $valueType) {
-						$valueTypes[] = $scope->getIterableValueType($valueType);
-						$arrayTypes[] = $valueType;
-					}
-				}
-			} else {
-				$valueTypes[] = $scope->getIterableValueType($arrayType);
-				$arrayTypes[] = $arrayType;
+			$argTypes[] = $scope->getType($args[$i]->value);
+			$unpacked[] = $args[$i]->unpack;
+		}
+
+		if (in_array(true, $unpacked, true)) {
+			[$argTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
+			if ($restType !== null) {
+				// the number of arrays is not known
+				return null;
 			}
 		}
 
+		$valueTypes = [];
+		foreach ($argTypes as $argType) {
+			$valueTypes[] = $scope->getIterableValueType($argType);
+		}
+
 		$callbackParameters = [];
-		foreach (ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) as $valueType) {
+		foreach (ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $argTypes) as $valueType) {
 			$callbackParameters[] = $this->createParameter($valueType);
 		}
 

@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -44,17 +45,23 @@ final class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		if ($this->reflectionProvider->resolveFunctionName($node->name, $scope) !== 'random_int') {
-			return [];
-		}
-
 		$args = $node->getArgs();
 		if (count($args) < 2) {
 			return [];
 		}
 
-		$minType = $scope->getType($args[0]->value)->toInteger();
-		$maxType = $scope->getType($args[1]->value)->toInteger();
+		if ($this->reflectionProvider->resolveFunctionName($node->name, $scope) !== 'random_int') {
+			return [];
+		}
+
+		$minArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'min');
+		$maxArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'max');
+		if ($minArg === null || $maxArg === null) {
+			return [];
+		}
+
+		$minType = $scope->getType($minArg->value)->toInteger();
+		$maxType = $scope->getType($maxArg->value)->toInteger();
 
 		if (
 			!$minType instanceof ConstantIntegerType && !$minType instanceof IntegerRangeType

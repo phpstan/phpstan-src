@@ -610,17 +610,18 @@ public:
 		return pt_type_transformed_member(self, PT_LC("getunresolvedmethodprototype"), true, methodName, scope);
 	}
 
-	/* the object type's prototype, wrapped for `call` in a
-	 * ClosureCallUnresolvedMethodPrototypeReflection over $this; UNDEF =
-	 * pending exception */
+	/* the object type's prototype, wrapped for `call` and `__invoke` in a
+	 * ClosureCallUnresolvedMethodPrototypeReflection over $this (taking the
+	 * new $this first for `call` only); UNDEF = pending exception */
 	zv::Val getUnresolvedMethodPrototype(zval *methodName, zval *scope) const
 	{
 		zv::Args args{methodName, scope};
-		if (zv::Ref(methodName).stringEquals("call")) {
+		bool isCall = zv::Ref(methodName).stringEquals("call");
+		if (isCall || zv::Ref(methodName).stringEquals("__invoke")) {
 			zv::Val prototype = delegate(PT_LC("getunresolvedmethodprototype"), 2, args);
 			if (UNEXPECTED(prototype.isUndef())) return zv::Val();
-			zv::Args wrapArgs{prototype.raw(), self};
-			return pt_type_new(PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION, 2, wrapArgs);
+			zv::Args wrapArgs{prototype.raw(), self, isCall};
+			return pt_type_new(PT_CLASS_CLOSURE_CALL_UNRESOLVED_METHOD_PROTOTYPE_REFLECTION, 3, wrapArgs);
 		}
 		return delegate(PT_LC("getunresolvedmethodprototype"), 2, args);
 	}

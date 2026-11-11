@@ -57,6 +57,7 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 
 /** @api */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClosureType.cpp')]
@@ -507,10 +508,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
 	{
-		if ($methodName === 'call') {
+		if (in_array($methodName, ['call', '__invoke'], true)) {
 			return new ClosureCallUnresolvedMethodPrototypeReflection(
 				$this->objectType->getUnresolvedMethodPrototype($methodName, $scope),
 				$this,
+				$methodName === 'call',
 			);
 		}
 

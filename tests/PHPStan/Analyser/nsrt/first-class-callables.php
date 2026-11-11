@@ -240,4 +240,14 @@ class BindCallables
 		assertType('((Closure(): int)|null)', $this->doInstance(...)->bindTo($o));
 	}
 
+	public function doInvoke(): void
+	{
+		$c = function (int $a, string $b, ?float $c = null): int {
+			return 1;
+		};
+		assertType('1', $c->__invoke(1, 'x'));
+		assertType('Closure(int, string, float|null=): 1', $c->__invoke(...));
+		assertType('((Closure(int, string, float|null=): 1)|null)', $c->__invoke(...)->bindTo(null));
+	}
+
 }

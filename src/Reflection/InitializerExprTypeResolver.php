@@ -963,7 +963,7 @@ final class InitializerExprTypeResolver
 			$templateTypeMap = $variant->getTemplateTypeMap();
 			$variantOrigin = $origin;
 			if ($partialApplicationArgs !== null) {
-				$partialApplication = PartialFunctionApplicationParameters::apply($parameters, $partialApplicationArgs, $boundArgTypes, $returnType, $templateTypeMap);
+				$partialApplication = PartialFunctionApplicationParameters::apply($parameters, $isVariadic, $partialApplicationArgs, $boundArgTypes, $returnType, $templateTypeMap);
 				if ($partialApplication === null) {
 					// creating the closure from this variant throws
 					continue;

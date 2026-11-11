@@ -1,4 +1,6 @@
-<?php namespace RegexExpressionPatterns;
+<?php // lint >= 8.0
+
+namespace RegexExpressionPatterns;
 
 $string = (function (): string {})();
 
@@ -91,3 +93,5 @@ class Bug11432 {
 		return ($trim) ? trim($str, $character) : $str;
 	}
 }
+
+preg_match(subject: '', pattern: 'nok');

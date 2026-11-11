@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Functions;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
@@ -46,23 +47,22 @@ final class PrintfArrayParametersRule implements Rule
 			return [];
 		}
 
-		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
-			return [];
-		}
-
-		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
-		$name = $functionReflection->getName();
+		$name = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
 		if (!in_array($name, ['vprintf', 'vsprintf'], true)) {
 			return [];
 		}
 
 		$args = $node->getArgs();
-		$argsCount = count($args);
-		if ($argsCount < 1) {
+		if (count($args) < 1) {
 			return []; // caught by CallToFunctionParametersRule
 		}
 
-		$formatArgType = $scope->getType($args[0]->value);
+		$formatArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'format');
+		if ($formatArg === null) {
+			return [];
+		}
+
+		$formatArgType = $scope->getType($formatArg->value);
 		$placeHoldersCounts = [];
 		foreach ($formatArgType->getConstantStrings() as $formatString) {
 			$format = $formatString->getValue();
@@ -97,8 +97,9 @@ final class PrintfArrayParametersRule implements Rule
 		}
 
 		$formatArgsCounts = [];
-		if (isset($args[1])) {
-			$formatArgsType = $scope->getType($args[1]->value);
+		$formatValuesArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'values');
+		if ($formatValuesArg !== null) {
+			$formatArgsType = $scope->getType($formatValuesArg->value);
 
 			$constantArrays = $formatArgsType->getConstantArrays();
 			if ($constantArrays === []) {

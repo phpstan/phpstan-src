@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace PrintfArrayParametersRuleTest;
 
@@ -20,6 +20,9 @@ function doFoo($message, array $arr) {
 	vsprintf('%-4s', ['foo']); // ok
 	vsprintf('%%s %s', ['foo', 'bar']); // one parameter over
 
+
+	vsprintf(values: ['foo'], format: '%s %s');
+	vprintf(values: ['foo'], format: '%s %s');
 
 	if (rand(0,1)) {
 		$args = ['foo'];

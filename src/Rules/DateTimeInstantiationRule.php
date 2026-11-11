@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use DateTime;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use Throwable;
@@ -35,14 +36,20 @@ final class DateTimeInstantiationRule implements Rule
 		}
 
 		$lowerClassName = strtolower((string) $node->class);
+		$args = $node->getArgs();
 		if (
-			count($node->getArgs()) === 0
+			count($args) === 0
 			|| !in_array($lowerClassName, ['datetime', 'datetimeimmutable'], true)
 		) {
 			return [];
 		}
 
-		$arg = $scope->getType($node->getArgs()[0]->value);
+		$arg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'datetime');
+		if ($arg === null) {
+			return [];
+		}
+
+		$arg = $scope->getType($arg->value);
 		$errors = [];
 
 		foreach ($arg->getConstantStrings() as $constantString) {

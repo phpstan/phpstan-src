@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use DateInterval;
 use PhpParser\Node;
 use PhpParser\Node\Expr\New_;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
@@ -37,14 +38,20 @@ final class DateIntervalInstantiationRule implements Rule
 			return [];
 		}
 
+		$args = $node->getArgs();
 		if (
-			count($node->getArgs()) === 0
+			count($args) === 0
 			|| strtolower((string) $node->class) !== 'dateinterval'
 		) {
 			return [];
 		}
 
-		$arg = $scope->getType($node->getArgs()[0]->value);
+		$arg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'duration');
+		if ($arg === null) {
+			return [];
+		}
+
+		$arg = $scope->getType($arg->value);
 		$errors = [];
 
 		foreach ($arg->getConstantStrings() as $constantString) {

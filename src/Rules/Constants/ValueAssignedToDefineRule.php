@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Constants;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ConstantResolver;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\Conditional;
@@ -49,12 +50,18 @@ final class ValueAssignedToDefineRule implements Rule
 			return [];
 		}
 
-		$constantNameStrings = $scope->getType($args[0]->value)->getConstantStrings();
+		$constantNameArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'constant_name');
+		$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+		if ($constantNameArg === null || $valueArg === null) {
+			return [];
+		}
+
+		$constantNameStrings = $scope->getType($constantNameArg->value)->getConstantStrings();
 		if (count($constantNameStrings) === 0) {
 			return [];
 		}
 
-		$valueType = $scope->getType($args[1]->value);
+		$valueType = $scope->getType($valueArg->value);
 		$errors = [];
 
 		foreach ($constantNameStrings as $constantNameString) {

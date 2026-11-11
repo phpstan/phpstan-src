@@ -57,6 +57,10 @@ class RandomIntParametersRuleTest extends RuleTestCase
 				'Parameter #1 $min (int<0, 10>) of function random_int expects lower number than parameter #2 $max (int<0, 10>).',
 				31,
 			],
+			[
+				'Parameter #1 $min (1) of function random_int expects lower number than parameter #2 $max (0).',
+				35,
+			],
 		];
 		if (PHP_INT_SIZE === 4) {
 			// TODO: should fail on 64-bit in a similar fashion, guess it does not because of the union type

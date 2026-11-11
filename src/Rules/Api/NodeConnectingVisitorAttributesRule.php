@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\Rule;
@@ -36,7 +37,8 @@ final class NodeConnectingVisitorAttributesRule implements Rule
 		}
 
 		$args = $node->getArgs();
-		if (!isset($args[0])) {
+		$keyArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'key');
+		if ($keyArg === null) {
 			return [];
 		}
 
@@ -46,7 +48,7 @@ final class NodeConnectingVisitorAttributesRule implements Rule
 		}
 
 		$messages = [];
-		$argType = $scope->getType($args[0]->value);
+		$argType = $scope->getType($keyArg->value);
 		foreach ($argType->getConstantStrings() as $constantString) {
 			$argValue = $constantString->getValue();
 			if (!in_array($argValue, ['parent', 'previous', 'next'], true)) {

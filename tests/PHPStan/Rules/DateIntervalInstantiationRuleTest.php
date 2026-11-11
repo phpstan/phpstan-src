@@ -47,6 +47,10 @@ class DateIntervalInstantiationRuleTest extends RuleTestCase
 					'Instantiating DateInterval with invalid produces an error: ' . $prefix . 'Unknown or bad format (invalid)',
 					37,
 				],
+				[
+					'Instantiating DateInterval with 1M produces an error: ' . $prefix . 'Unknown or bad format (1M)',
+					40,
+				],
 			],
 		);
 	}

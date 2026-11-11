@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace NodeConnectingVisitorRule;
 
@@ -22,6 +22,7 @@ class MyRule implements Rule
 		$parent = $node->getAttribute("parent");
 		$custom = $node->getAttribute("myCustomAttribute");
 		$parent = $node->getAttribute($this->attrName);
+		$namedArgs = $node->getAttribute(default: null, key: 'parent');
 
 		return [];
 	}

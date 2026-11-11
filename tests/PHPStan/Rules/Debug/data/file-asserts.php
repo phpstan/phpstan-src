@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace FileAsserts;
 
@@ -74,6 +74,14 @@ class Foo
 
 		// Deliberate error:
 		assertVariableCertainty(TrinaryLogic::createNo(), $context['firstName']);
+	}
+
+	public function namedArguments($a, $b): void
+	{
+		assertType(value: $a, type: 'array<string>');
+		assertNativeType(value: $a, type: 'array<string>');
+		assertSuperType(value: $a, superType: 'array<string>');
+		assertVariableCertainty(variable: $b, certainty: TrinaryLogic::createNo());
 	}
 
 }

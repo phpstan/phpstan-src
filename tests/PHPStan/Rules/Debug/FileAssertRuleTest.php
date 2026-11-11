@@ -59,6 +59,22 @@ class FileAssertRuleTest extends RuleTestCase
 				"Expected offset 'firstName' certainty No, actual: Yes",
 				76,
 			],
+			[
+				'Expected type array<string>, actual: mixed',
+				81,
+			],
+			[
+				'Expected native type array<string>, actual: mixed',
+				82,
+			],
+			[
+				'Expected subtype of array<string>, actual: mixed',
+				83,
+			],
+			[
+				'Expected variable $b certainty No, actual: Yes',
+				84,
+			],
 		]);
 	}
 

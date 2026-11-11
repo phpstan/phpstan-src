@@ -526,11 +526,14 @@ final class BetterReflectionProvider implements ReflectionProvider
 		return $resolved;
 	}
 
+	/**
+	 * A fully qualified name is marked apart from the name: new Name('\\strval'), the name of a
+	 * callable string, keeps the backslash and resolves differently than new FullyQualified('strval').
+	 */
 	private function nameResolutionCacheKey(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): string
 	{
 		return ($namespaceAnswerer !== null ? ($namespaceAnswerer->getNamespace() ?? '') : '')
-			. '::'
-			. ($nameNode->isFullyQualified() ? '\\' : '')
+			. ($nameNode->isFullyQualified() ? ':fq:' : '::')
 			. (string) $nameNode;
 	}
 

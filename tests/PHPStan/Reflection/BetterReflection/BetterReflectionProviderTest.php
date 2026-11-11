@@ -3,10 +3,13 @@
 namespace PHPStan\Reflection\BetterReflection;
 
 use PhpParser\Node;
+use PhpParser\Node\Name;
+use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\NodeFinder;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_shift;
 use function file_put_contents;
@@ -23,6 +26,15 @@ class BetterReflectionProviderTest extends PHPStanTestCase
 {
 
 	private const ANONYMOUS_CLASS_COUNT_LIMIT = 10;
+
+	public function testFullyQualifiedNameDoesNotAnswerNameWithLeadingBackslash(): void
+	{
+		$reflectionProvider = self::getContainer()->getByType(ReflectionProvider::class);
+
+		// the name of a callable string keeps its backslash, a fully qualified name does not
+		$this->assertSame('strval', $reflectionProvider->resolveFunctionName(new FullyQualified('strval'), null));
+		$this->assertSame('\\strval', $reflectionProvider->resolveFunctionName(new Name('\\strval'), null));
+	}
 
 	public function testAnonymousClassesOfOneFileShareItsContents(): void
 	{

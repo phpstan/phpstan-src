@@ -290,14 +290,18 @@ enum MemoAnswer
 		if (UNEXPECTED(!ns.isNull() && !ns.ref().isString())) return true;
 	}
 	zend_string *nsString = ns.isNull() ? ZSTR_EMPTY_ALLOC() : Z_STR_P(ns.raw());
-	size_t length = ZSTR_LEN(nsString) + 2 + (fullyQualified ? 1 : 0) + ZSTR_LEN(name);
+	size_t length = ZSTR_LEN(nsString) + (fullyQualified ? 4 : 2) + ZSTR_LEN(name);
 	zend_string *key = zend_string_alloc(length, 0);
 	char *cursor = ZSTR_VAL(key);
 	memcpy(cursor, ZSTR_VAL(nsString), ZSTR_LEN(nsString));
 	cursor += ZSTR_LEN(nsString);
-	*cursor++ = ':';
-	*cursor++ = ':';
-	if (fullyQualified) *cursor++ = '\\';
+	if (fullyQualified) {
+		memcpy(cursor, ":fq:", 4);
+		cursor += 4;
+	} else {
+		*cursor++ = ':';
+		*cursor++ = ':';
+	}
 	memcpy(cursor, ZSTR_VAL(name), ZSTR_LEN(name));
 	cursor += ZSTR_LEN(name);
 	*cursor = '\0';

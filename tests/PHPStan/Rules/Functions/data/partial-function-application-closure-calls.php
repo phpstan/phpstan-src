@@ -61,3 +61,14 @@ function bound(bool $flag): void
 	$m = $flag ? doFoo(1, 'b', ?, ...) : static fn (float $c, bool ...$d): string => '';
 	$m(1.0, a: true);
 }
+
+function forwardsToFuncGetArgs($a): array
+{
+	return func_get_args();
+}
+
+function forwardedArguments(): void
+{
+	// the variadic placeholder forwards the extra arguments to func_get_args()
+	forwardsToFuncGetArgs(?, ...)(1, 2, 3);
+}

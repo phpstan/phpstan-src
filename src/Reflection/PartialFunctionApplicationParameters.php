@@ -51,13 +51,14 @@ final class PartialFunctionApplicationParameters
 	 * still mentions is joined with it, since a call unions what both bring to it.
 	 *
 	 * @param list<ParameterReflection> $parameters
+	 * @param bool $isVariadic whether the callee takes more arguments than its parameters, like one calling func_get_args()
 	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
 	 * @param array<int, Type> $boundArgTypes the types of the bound arguments, keyed like $args
 	 * @return array{list<ParameterReflection>, bool, Type, TemplateTypeMap, list<string>}|null null when creating the closure throws
 	 */
-	public static function apply(array $parameters, array $args, array $boundArgTypes, Type $returnType, TemplateTypeMap $templateTypeMap): ?array
+	public static function apply(array $parameters, bool $isVariadic, array $args, array $boundArgTypes, Type $returnType, TemplateTypeMap $templateTypeMap): ?array
 	{
-		$mapped = self::map($parameters, $args);
+		$mapped = self::map($parameters, $isVariadic, $args);
 		if ($mapped === null) {
 			return null;
 		}
@@ -145,7 +146,7 @@ final class PartialFunctionApplicationParameters
 	 * @return array{list<ParameterReflection>, bool, list<array{ParameterReflection, int}>}|null the closure's parameters,
 	 *         whether it is variadic and the parameters the bound arguments go to, null when creating the closure throws
 	 */
-	private static function map(array $parameters, array $args): ?array
+	private static function map(array $parameters, bool $isVariadic, array $args): ?array
 	{
 		$variadicParameter = null;
 		$declared = $parameters;
@@ -259,7 +260,8 @@ final class PartialFunctionApplicationParameters
 			$closureParameters[] = $variadicParameter;
 		}
 
-		return [$closureParameters, $variadicParameter !== null, $bound];
+		// the variadic placeholder forwards the extra arguments to the callee
+		return [$closureParameters, $isVariadic, $bound];
 	}
 
 	/**
@@ -303,7 +305,7 @@ final class PartialFunctionApplicationParameters
 
 		$fitting = [];
 		foreach ($variants as $variant) {
-			if (self::map($variant->getParameters(), $args) === null) {
+			if (self::map($variant->getParameters(), $variant->isVariadic(), $args) === null) {
 				continue;
 			}
 			$fitting[] = $variant;

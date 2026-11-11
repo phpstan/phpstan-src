@@ -2523,8 +2523,8 @@ public:
 			zv::Val variantOrigin = zv::Val::copyOf(zv::Ref(origin.raw()));
 			if (partialApplication) {
 				static pt_method_site applySite;
-				zv::Args applyArgv{parameters.raw(), partialApplicationArgs, boundArgTypes, returnType.raw(), templateTypeMap.raw()};
-				IETR_VAL(applied, pt_call_static_cached(applySite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("apply"), 5, applyArgv));
+				zv::Args applyArgv{parameters.raw(), isVariadic, partialApplicationArgs, boundArgTypes, returnType.raw(), templateTypeMap.raw()};
+				IETR_VAL(applied, pt_call_static_cached(applySite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("apply"), 6, applyArgv));
 				if (Z_TYPE_P(applied.raw()) == IS_NULL) {
 					// creating the closure from this variant throws
 					continue;

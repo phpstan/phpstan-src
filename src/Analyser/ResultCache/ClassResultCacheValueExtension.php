@@ -56,7 +56,9 @@ final class ClassResultCacheValueExtension implements ResultCacheValueExtension
 		$classReflection = $this->reflectionProvider->getClass($key);
 		$declarations = [];
 		foreach ([$classReflection->getName() => $classReflection] + $classReflection->getAncestors() as $name => $declaringClass) {
-			$fileName = $declaringClass->getFileName();
+			// a built-in class is read from a stub, which one depends on the source locator that
+			// reflected it first; it changes only with PHP, its extensions or PHPStan itself
+			$fileName = $declaringClass->isBuiltin() ? null : $declaringClass->getFileName();
 			$declarations[strtolower($name)] = $fileName === null
 				? 'built-in'
 				: sprintf('%s %s', $fileName, $this->getExportedNode($fileName, $name));

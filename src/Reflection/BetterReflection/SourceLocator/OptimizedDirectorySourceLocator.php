@@ -21,9 +21,12 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ConstantNameHelper;
 use PHPStan\ShouldNotHappenException;
+use function array_fill_keys;
 use function array_key_exists;
+use function array_keys;
 use function array_values;
 use function current;
+use function is_array;
 use function sprintf;
 use function strtolower;
 
@@ -165,6 +168,10 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 			$fetchedFunctionNode = null;
 			$fetchedFile = null;
 			foreach ($files as $file) {
+				if (!$this->declares($file, $identifier, $identifierName)) {
+					continue;
+				}
+
 				$fetchedFunctionNodes = $this->fileNodesFetcher->fetchNodes($file)->getFunctionNodes();
 
 				if (!array_key_exists($identifierName, $fetchedFunctionNodes)) {
@@ -191,6 +198,10 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 		} elseif ($identifier->isConstant()) {
 			$fetchedConstantNode = null;
 			foreach ($files as $file) {
+				if (!$this->declares($file, $identifier, $identifierName)) {
+					return null;
+				}
+
 				$fetchedConstantNodes = $this->fileNodesFetcher->fetchNodes($file)->getConstantNodes();
 
 				if (!array_key_exists($identifierName, $fetchedConstantNodes)) {
@@ -232,6 +243,31 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 			$fetchedNode->getNamespace(),
 			$positionInNode,
 		);
+	}
+
+	/**
+	 * Whether the file declares the function or the constant, remembered for its contents.
+	 *
+	 * The symbol scan lists more files than declare them - a method looks like a function to it,
+	 * and define() may be called anywhere - so a function or a constant that does not exist would
+	 * otherwise parse those files on each lookup, such as when the result cache checks on every
+	 * run that it is still missing.
+	 */
+	private function declares(string $file, Identifier $identifier, string $identifierName): bool
+	{
+		[, $variableCacheKey] = $this->getCacheKeys($file, $identifier);
+		$cacheKey = sprintf('odsl-declared-%s', $file);
+		$declared = $this->cache->load($cacheKey, $variableCacheKey);
+		if (!is_array($declared)) {
+			$fetchedNodes = $this->fileNodesFetcher->fetchNodes($file);
+			$declared = [
+				'functions' => array_fill_keys(array_keys($fetchedNodes->getFunctionNodes()), true),
+				'constants' => array_fill_keys(array_keys($fetchedNodes->getConstantNodes()), true),
+			];
+			$this->cache->save($cacheKey, $variableCacheKey, $declared);
+		}
+
+		return isset($declared[$identifier->isFunction() ? 'functions' : 'constants'][$identifierName]);
 	}
 
 	private function findFileByClass(string $className): ?string

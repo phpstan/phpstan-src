@@ -45,8 +45,8 @@ function firstClassCallables(C $c): void
 	assertType('Closure(): array{a: int}', $c->info(...));
 	assertNativeType('Closure(): array', $c->info(...));
 
-	assertType('Closure(): array{a: int}', C::staticInfo(...));
-	assertNativeType('Closure(): array', C::staticInfo(...));
+	assertType('static-Closure(): array{a: int}', C::staticInfo(...));
+	assertNativeType('static-Closure(): array', C::staticInfo(...));
 
 	assertType('Closure(): array{a: int}', info(...));
 	assertNativeType('Closure(): array', info(...));

@@ -948,6 +948,11 @@ final class InitializerExprTypeResolver
 
 				$acceptsNamedArguments = $function->acceptsNamedArguments();
 				$mustUseReturnValue = $function->mustUseReturnValue();
+				// binding an object to the closure of a static method, or to a partial
+				// application of a function, fails; a function's first-class callable can be bound
+				if ($function instanceof ExtendedMethodReflection ? $function->isStatic() : $partialApplicationArgs !== null) {
+					$isStaticClosure = TrinaryLogic::createYes();
+				}
 			}
 
 			$parameters = $variant->getParameters();

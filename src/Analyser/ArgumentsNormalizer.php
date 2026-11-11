@@ -297,6 +297,10 @@ final class ArgumentsNormalizer
 	 * The argument bound to the parameter at $position named $name: the
 	 * positional argument at that index or the one passed by that name.
 	 *
+	 * This method can be useful in simple cases when no reflection is needed.
+	 * In more complex cases where reflection information is available,
+	 * use ParametersAcceptorSelector::selectFromArgs() and ArgumentsNormalizer::reorder*Arguments() instead.
+	 *
 	 * @param Arg[] $args
 	 * @param 0|positive-int $position
 	 * @param non-empty-string $name

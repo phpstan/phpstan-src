@@ -199,6 +199,7 @@ function closures(Invokable $i): void
 
 	$c = fn (int $a, string $b, float $c = 1.0): int => 1;
 	assertType('Closure(string): 1', $c(1, ?));
+	assertType('Closure(string): 1', $c->__invoke(1, ?));
 	assertType('Closure(string, float=): 1', $c(1, ...));
 	assertType('Closure', $c(?));
 

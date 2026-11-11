@@ -232,6 +232,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				113,
 			],
 			[
+				'Method Closure::__invoke() invoked with 3 parameters, 0 required.',
+				139,
+			],
+			[
 				'Parameter #1 $bar of method Test\ClassWithNullableProperty::doBar() is passed by reference, so it expects variables only.',
 				167,
 			],

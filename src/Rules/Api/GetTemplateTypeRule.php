@@ -4,6 +4,7 @@ namespace PHPStan\Rules\Api;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ReflectionProvider;
@@ -43,6 +44,12 @@ final class GetTemplateTypeRule implements Rule
 			return [];
 		}
 
+		$classArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'ancestorClassName');
+		$templateArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'templateTypeName');
+		if ($classArg === null || $templateArg === null) {
+			return [];
+		}
+
 		$calledOnType = $scope->getType($node->var);
 		$methodReflection = $scope->getMethodReflection($calledOnType, $node->name->toString());
 		if ($methodReflection === null) {
@@ -53,8 +60,8 @@ final class GetTemplateTypeRule implements Rule
 			return [];
 		}
 
-		$classType = $scope->getType($args[0]->value);
-		$templateType = $scope->getType($args[1]->value);
+		$classType = $scope->getType($classArg->value);
+		$templateType = $scope->getType($templateArg->value);
 		$errors = [];
 		foreach ($classType->getConstantStrings() as $classNameType) {
 			if (!$this->reflectionProvider->hasClass($classNameType->getValue())) {

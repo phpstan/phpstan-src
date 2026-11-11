@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace GetTemplateType;
 
@@ -19,6 +19,11 @@ class Foo
 	{
 		$type->getTemplateType(Generator::class, 'TSend');
 		$type->getTemplateType(Generator::class, 'TSendd');
+	}
+
+	public function doNamed(Type $type): void
+	{
+		$type->getTemplateType(templateTypeName: 'TSendd', ancestorClassName: Generator::class);
 	}
 
 }

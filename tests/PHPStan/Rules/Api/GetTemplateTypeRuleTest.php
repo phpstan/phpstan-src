@@ -27,6 +27,10 @@ class GetTemplateTypeRuleTest extends RuleTestCase
 				'Call to PHPStan\Type\ObjectType::getTemplateType() references unknown template type TSendd on class Generator.',
 				21,
 			],
+			[
+				'Call to PHPStan\Type\Type::getTemplateType() references unknown template type TSendd on class Generator.',
+				26,
+			],
 		]);
 	}
 

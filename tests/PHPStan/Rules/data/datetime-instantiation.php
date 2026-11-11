@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 namespace DateTimeInstantiation;
 new \DateTime('2020.11.17');
 
@@ -21,3 +21,5 @@ new \DateTime('2020-04-31');
 
 new \dateTime('2020.11.17');
 new \dateTimeImmutablE('2020.11.17');
+
+new \DateTimeImmutable(timezone: null, datetime: '2020.11.17');

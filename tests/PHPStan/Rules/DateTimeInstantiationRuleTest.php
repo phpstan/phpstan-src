@@ -52,6 +52,10 @@ class DateTimeInstantiationRuleTest extends RuleTestCase
 					'Instantiating DateTimeImmutable with 2020.11.17 produces an error: Double time specification',
 					23,
 				],
+				[
+					'Instantiating DateTimeImmutable with 2020.11.17 produces an error: Double time specification',
+					25,
+				],
 			],
 		);
 	}

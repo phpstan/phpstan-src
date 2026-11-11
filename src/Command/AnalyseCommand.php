@@ -397,6 +397,9 @@ final class AnalyseCommand extends Command
 			$inceptionResult->getErrorOutput()->writeLineFormatted('Analysing files...');
 		}
 
+		/** @var string[] $filesChangedByFix */
+		$filesChangedByFix = $input->getOption(self::OPTION_FIXED_IGNORED_IN);
+
 		try {
 			$analysisResult = $application->analyse(
 				$files,
@@ -410,6 +413,7 @@ final class AnalyseCommand extends Command
 				$inceptionResult->getEditorModeTmpFile(),
 				$inceptionResult->getEditorModeInsteadOfFile(),
 				$input,
+				$filesChangedByFix,
 			);
 		} catch (Throwable $t) {
 			if ($debug) {

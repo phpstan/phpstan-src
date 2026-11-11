@@ -53,6 +53,7 @@ final class AnalyseApplication
 	/**
 	 * @param string[] $files
 	 * @param mixed[]|null $projectConfigArray
+	 * @param string[] $filesChangedByFix
 	 * @throws InceptionNotSuccessfulException
 	 */
 	public function analyse(
@@ -67,6 +68,7 @@ final class AnalyseApplication
 		?string $tmpFile,
 		?string $insteadOfFile,
 		InputInterface $input,
+		array $filesChangedByFix = [],
 	): AnalysisResult
 	{
 		$isResultCacheUsed = false;
@@ -167,7 +169,7 @@ final class AnalyseApplication
 			$workerCount = $analyserResult->getWorkerCount();
 			$isResultCacheUsed = !$resultCache->isFullAnalysis();
 
-			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors);
+			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors, $filesChangedByFix);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			foreach ($ignoredErrorHelperProcessedResult->getIgnoredErrors() as [$ignoredError]) {

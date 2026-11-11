@@ -657,6 +657,41 @@ class AnalyserTest extends PHPStanTestCase
 		$this->assertNoErrors($result);
 	}
 
+	/**
+	 * @return iterable<string, array{bool, list<string>, bool}>
+	 */
+	public static function dataReportUnmatchedIgnoredErrorFromPathInFileChangedByFix(): iterable
+	{
+		yield 'list of files' => [true, [], false];
+		yield 'list of files, file changed by an earlier fix round' => [true, [__DIR__ . '/data/empty/empty.php'], true];
+		yield 'list of files, another file changed by an earlier fix round' => [true, [__DIR__ . '/data/two-fails.php'], false];
+		yield 'full analysis' => [false, [], true];
+	}
+
+	/**
+	 * @param list<string> $filesChangedByFix
+	 */
+	#[DataProvider('dataReportUnmatchedIgnoredErrorFromPathInFileChangedByFix')]
+	public function testReportUnmatchedIgnoredErrorFromPathInFileChangedByFix(bool $onlyFiles, array $filesChangedByFix, bool $expectReported): void
+	{
+		$ignoreErrors = [
+			[
+				'message' => '#Fail\.#',
+				'path' => __DIR__ . '/data/empty/empty.php',
+			],
+		];
+		$result = $this->runAnalyser($ignoreErrors, true, __DIR__ . '/data/empty/empty.php', $onlyFiles, filesChangedByFix: $filesChangedByFix);
+		if (!$expectReported) {
+			$this->assertNoErrors($result);
+			return;
+		}
+
+		$this->assertCount(1, $result);
+		$this->assertInstanceOf(Error::class, $result[0]);
+		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/empty/empty.php was not matched in reported errors.', $result[0]->getMessage());
+		$this->assertSame('ignore.unmatched', $result[0]->getIdentifier());
+	}
+
 	public function testIgnoreNextLine(): void
 	{
 		$result = $this->runAnalyser([], false, [
@@ -851,6 +886,7 @@ class AnalyserTest extends PHPStanTestCase
 	 * @param string|string[] $filePaths
 	 * @param list<Collector<Node, mixed>> $collectors
 	 * @param list<Rule<CollectedDataNode>> $collectedDataRules
+	 * @param list<string> $filesChangedByFix
 	 * @return string[]|Error[]
 	 */
 	private function runAnalyser(
@@ -861,6 +897,7 @@ class AnalyserTest extends PHPStanTestCase
 		bool $reportIgnoresWithoutComments = false,
 		array $collectors = [],
 		array $collectedDataRules = [],
+		array $filesChangedByFix = [],
 	): array
 	{
 		$analyser = $this->createAnalyser($reportIgnoresWithoutComments, $collectors);
@@ -901,7 +938,13 @@ class AnalyserTest extends PHPStanTestCase
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
 
-		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
+			$analyserResult->getErrors(),
+			$onlyFiles,
+			$normalizedFilePaths,
+			$analyserResult->hasReachedInternalErrorsCountLimit(),
+			$filesChangedByFix,
+		);
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {

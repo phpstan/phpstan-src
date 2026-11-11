@@ -50,6 +50,8 @@ void isCallableYesBody(zval *captures, uint32_t argc, zval *argv, zval *return_v
 
 /* ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) */
 pt_method_site pt_ccpr_add_padding_null_site;
+/* UnpackedArgumentTypes::expand($argTypes, $unpacked) */
+pt_method_site pt_ccpr_expand_unpacked_site;
 /* $arg->unpack */
 pt_property_site pt_ccpr_arg_unpack_site;
 
@@ -57,6 +59,12 @@ zv::Val addPaddingNull(zval *valueTypes, zval *arrayTypes)
 {
 	zv::Args argv{valueTypes, arrayTypes};
 	return pt_call_static_cached(pt_ccpr_add_padding_null_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnull"), 2, argv);
+}
+
+zv::Val expandUnpacked(zval *argTypes, zval *unpacked)
+{
+	zv::Args argv{argTypes, unpacked};
+	return pt_call_static_cached(pt_ccpr_expand_unpacked_site, PT_CLASS_UNPACKED_ARGUMENT_TYPES, PT_LC("expand"), 2, argv);
 }
 
 } // namespace
@@ -155,20 +163,10 @@ public:
 		uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(argsHold.raw()));
 		zv::Arr typeList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
 		zv::Arr nativeTypeList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
-		zv::Arr arrayTypeList = zv::Arr::empty();
-		zv::Arr nativeArrayTypeList = zv::Arr::empty();
+		zv::Arr unpackedList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
+		bool hasUnpacked = false;
 		zval *nodeScopeResolver = OBJ_PROP_NUM(self, slots::nodeScopeResolver);
-		zend_object *no = pt_passed_by_reference_create_no();
-		if (UNEXPECTED(no == NULL)) return false;
-		zval noZv;
-		ZVAL_OBJ(&noZv, no);
-		bool hasUnpackedArg = false;
 		for (zv::ArrayEntry entry : zv::ArrRef(argsHold.raw())) {
-			if (!hasUnpackedArg) {
-				zval *unpack = ptclosure::prop(pt_ccpr_arg_unpack_site, entry.value().deref().raw(), PT_LC("unpack"));
-				if (UNEXPECTED(unpack == NULL)) return false;
-				hasUnpackedArg = zend_is_true(unpack);
-			}
 			zval *value = ptclosure::prop(ptclosure::argValueSite, entry.value().deref().raw(), PT_LC("value"));
 			if (UNEXPECTED(value == NULL)) return false;
 			zv::Val valueHold = zv::Val::copyOf(zv::Ref(value));
@@ -188,55 +186,92 @@ public:
 				nativeType = pt_node_scope_resolver_read_scope_state_or_synthetic_type(nodeScopeResolver, valueHold.raw(), nativeScope.raw());
 			}
 			if (UNEXPECTED(nativeType.isUndef())) return false;
-			if (arrayMapArgs != NULL) {
-				if (UNEXPECTED(!type.ref().isObject() || !nativeType.ref().isObject())) {
-					zend_throw_error(NULL, "Call to a member function getIterableValueType() on %s", zend_zval_value_name(type.ref().isObject() ? nativeType.raw() : type.raw()));
-					return false;
-				}
-				arrayTypeList.push(type.ref());
-				nativeArrayTypeList.push(nativeType.ref());
-				type = pt_type_op(Z_OBJ_P(type.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
-				if (UNEXPECTED(type.isUndef())) return false;
-				nativeType = pt_type_op(Z_OBJ_P(nativeType.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
-				if (UNEXPECTED(nativeType.isUndef())) return false;
-			}
+			zval *unpack = ptclosure::prop(pt_ccpr_arg_unpack_site, entry.value().deref().raw(), PT_LC("unpack"));
+			if (UNEXPECTED(unpack == NULL)) return false;
+			bool isUnpack = zend_is_true(unpack);
+			hasUnpacked = hasUnpacked || isUnpack;
 			typeList.push(std::move(type));
 			nativeTypeList.push(std::move(nativeType));
+			unpackedList.push(zv::Val::boolean(isUnpack));
 		}
 
-		zv::Val types = zv::Val(std::move(typeList));
-		zv::Val nativeTypes = zv::Val(std::move(nativeTypeList));
-		// an unpacked arg is one parameter here, so its arrays cannot be told apart
-		if (arrayMapArgs != NULL && !hasUnpackedArg) {
-			types = addPaddingNull(types.raw(), arrayTypeList.raw());
-			if (UNEXPECTED(types.isUndef())) return false;
-			nativeTypes = addPaddingNull(nativeTypes.raw(), nativeArrayTypeList.raw());
-			if (UNEXPECTED(nativeTypes.isUndef())) return false;
-		}
-		if (UNEXPECTED(Z_TYPE_P(types.raw()) != IS_ARRAY || Z_TYPE_P(nativeTypes.raw()) != IS_ARRAY)) {
-			zend_throw_error(NULL, "ArrayMapCallbackParameterTypes::addPaddingNull() did not return an array");
-			return false;
-		}
-
-		zv::Arr parameterList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
-		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
-			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, entry.value().deref().raw(), false, &noZv, false, NULL);
-			if (UNEXPECTED(parameter.isUndef())) return false;
-			parameterList.push(std::move(parameter));
-		}
-		zv::Arr nativeParameterList = count > 0 ? zv::Arr::create(count) : zv::Arr::empty();
-		for (zv::ArrayEntry entry : zv::ArrRef(nativeTypes.raw())) {
-			zv::Val nativeParameter = pt_dummy_parameter_new(pt_ccpr_item, entry.value().deref().raw(), false, &noZv, false, NULL);
-			if (UNEXPECTED(nativeParameter.isUndef())) return false;
-			nativeParameterList.push(std::move(nativeParameter));
-		}
-		parameters = zv::Val(std::move(parameterList));
-		nativeParameters = zv::Val(std::move(nativeParameterList));
-		return true;
+		zv::Val unpacked = zv::Val(std::move(unpackedList));
+		parameters = createIntrinsicParameters(zv::Val(std::move(typeList)), unpacked.raw(), hasUnpacked, arrayMapArgs != NULL);
+		if (UNEXPECTED(parameters.isUndef())) return false;
+		nativeParameters = createIntrinsicParameters(zv::Val(std::move(nativeTypeList)), unpacked.raw(), hasUnpacked, arrayMapArgs != NULL);
+		return !nativeParameters.isUndef();
 	}
 
 private:
 	zend_object *self;
+
+	/* Mirrors createIntrinsicParameters(); UNDEF = pending exception */
+	static zv::Val createIntrinsicParameters(zv::Val argTypes, zval *unpacked, bool hasUnpacked, bool isArrayMap)
+	{
+		zv::Val restType = zv::Val::null();
+		if (hasUnpacked) {
+			zv::Val expanded = expandUnpacked(argTypes.raw(), unpacked);
+			if (UNEXPECTED(expanded.isUndef())) return zv::Val();
+			zval *types = Z_TYPE_P(expanded.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(expanded.raw()), 0) : NULL;
+			zval *rest = Z_TYPE_P(expanded.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(expanded.raw()), 1) : NULL;
+			if (UNEXPECTED(types == NULL || rest == NULL || Z_TYPE_P(types) != IS_ARRAY)) {
+				zend_throw_error(NULL, "UnpackedArgumentTypes::expand() did not return a pair");
+				return zv::Val();
+			}
+			argTypes = zv::Val::copyOf(zv::Ref(types));
+			restType = zv::Val::copyOf(zv::Ref(rest));
+		}
+
+		zend_object *no = pt_passed_by_reference_create_no();
+		if (UNEXPECTED(no == NULL)) return zv::Val();
+		zval noZv;
+		ZVAL_OBJ(&noZv, no);
+		zv::Val types = zv::Val::copyOf(argTypes.ref());
+		if (isArrayMap) {
+			zv::Arr valueTypeList = zv::Arr::empty();
+			for (zv::ArrayEntry entry : zv::ArrRef(argTypes.raw())) {
+				zv::Val valueType = itemType(entry.value().deref().raw(), true);
+				if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+				valueTypeList.push(std::move(valueType));
+			}
+			types = zv::Val(std::move(valueTypeList));
+			// with a rest, the number of arrays is not known
+			if (restType.isNull()) {
+				types = addPaddingNull(types.raw(), argTypes.raw());
+				if (UNEXPECTED(types.isUndef())) return zv::Val();
+				if (UNEXPECTED(Z_TYPE_P(types.raw()) != IS_ARRAY)) {
+					zend_throw_error(NULL, "ArrayMapCallbackParameterTypes::addPaddingNull() did not return an array");
+					return zv::Val();
+				}
+			}
+		}
+
+		zv::Arr parameterList = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, entry.value().deref().raw(), false, &noZv, false, NULL);
+			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+			parameterList.push(std::move(parameter));
+		}
+		if (!restType.isNull()) {
+			zv::Val type = itemType(restType.raw(), isArrayMap);
+			if (UNEXPECTED(type.isUndef())) return zv::Val();
+			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, type.raw(), true, &noZv, true, NULL);
+			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+			parameterList.push(std::move(parameter));
+		}
+		return zv::Val(std::move(parameterList));
+	}
+
+	/* $isArrayMap ? $argType->getIterableValueType() : $argType */
+	static zv::Val itemType(zval *argType, bool isArrayMap)
+	{
+		if (!isArrayMap) return zv::Val::copyOf(zv::Ref(argType));
+		if (UNEXPECTED(Z_TYPE_P(argType) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getIterableValueType() on %s", zend_zval_value_name(argType));
+			return zv::Val();
+		}
+		return pt_type_op(Z_OBJ_P(argType), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
+	}
 
 	/* Mirrors createPassedToTypeParameters() ($passedToType NULL for null):
 	 * the list or null */

@@ -18,6 +18,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\UnpackedArgumentTypes;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -26,6 +27,7 @@ use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function in_array;
 use function max;
 
 /**
@@ -93,40 +95,53 @@ final class ContextualClosureParameterResolver
 
 		$types = [];
 		$nativeTypes = [];
-		$arrayTypes = [];
-		$nativeArrayTypes = [];
-		$hasUnpackedArg = false;
+		$unpacked = [];
 		foreach ($intrinsicArgs as $arg) {
-			$hasUnpackedArg = $hasUnpackedArg || $arg->unpack;
 			$result = $storage?->findExpressionResult($arg->value);
-			$type = $result !== null ? $result->getType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope);
-			$nativeType = $result !== null ? $result->getNativeType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope->doNotTreatPhpDocTypesAsCertain());
-			if ($arrayMapArgs !== null) {
-				$arrayTypes[] = $type;
-				$nativeArrayTypes[] = $nativeType;
-				$type = $type->getIterableValueType();
-				$nativeType = $nativeType->getIterableValueType();
-			}
-			$types[] = $type;
-			$nativeTypes[] = $nativeType;
+			$types[] = $result !== null ? $result->getType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope);
+			$nativeTypes[] = $result !== null ? $result->getNativeType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope->doNotTreatPhpDocTypesAsCertain());
+			$unpacked[] = $arg->unpack;
 		}
 
-		// an unpacked arg is one parameter here, so its arrays cannot be told apart
-		if ($arrayMapArgs !== null && !$hasUnpackedArg) {
-			$types = ArrayMapCallbackParameterTypes::addPaddingNull($types, $arrayTypes);
-			$nativeTypes = ArrayMapCallbackParameterTypes::addPaddingNull($nativeTypes, $nativeArrayTypes);
+		return new ClosureParameterTypes(
+			$this->createIntrinsicParameters($types, $unpacked, $arrayMapArgs !== null),
+			$this->createIntrinsicParameters($nativeTypes, $unpacked, $arrayMapArgs !== null),
+		);
+	}
+
+	/**
+	 * @param list<Type> $argTypes
+	 * @param list<bool> $unpacked
+	 * @return list<DummyParameter>
+	 */
+	private function createIntrinsicParameters(array $argTypes, array $unpacked, bool $isArrayMap): array
+	{
+		$restType = null;
+		if (in_array(true, $unpacked, true)) {
+			[$argTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
+		}
+
+		$types = $argTypes;
+		if ($isArrayMap) {
+			$types = [];
+			foreach ($argTypes as $argType) {
+				$types[] = $argType->getIterableValueType();
+			}
+			// with a rest, the number of arrays is not known
+			if ($restType === null) {
+				$types = ArrayMapCallbackParameterTypes::addPaddingNull($types, $argTypes);
+			}
 		}
 
 		$parameters = [];
 		foreach ($types as $type) {
 			$parameters[] = new DummyParameter('item', $type, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
-		$nativeParameters = [];
-		foreach ($nativeTypes as $nativeType) {
-			$nativeParameters[] = new DummyParameter('item', $nativeType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+		if ($restType !== null) {
+			$parameters[] = new DummyParameter('item', $isArrayMap ? $restType->getIterableValueType() : $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: true, defaultValue: null);
 		}
 
-		return new ClosureParameterTypes($parameters, $nativeParameters);
+		return $parameters;
 	}
 
 	/**

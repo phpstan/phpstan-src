@@ -17,7 +17,7 @@ enum Foo
 
 function reportedFiniteValueStrict(int $i): void
 {
-	// Foo::ONE can never be an int, but 1 and 2 can.
+	// should not error, as the in_array is namespaced and not the global one
 	if (in_array($i, [Foo::ONE, 1, 2], true)) {
 		echo 'yes';
 	}

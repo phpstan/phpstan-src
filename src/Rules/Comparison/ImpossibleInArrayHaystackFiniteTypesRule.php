@@ -53,6 +53,7 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}

@@ -2496,6 +2496,18 @@ public:
 				if (UNEXPECTED(acceptsNamedArguments.isUndef())) return zv::Val();
 				mustUseReturnValue = callOn(function, mMustUseReturnValue);
 				if (UNEXPECTED(mustUseReturnValue.isUndef())) return zv::Val();
+				// binding an object to the closure of a static method, or to a partial
+				// application of a function, fails; a function's first-class callable can be bound
+				zend_class_entry *methodReflectionCe = pt_class(PT_CLASS_EXTENDED_METHOD_REFLECTION);
+				if (UNEXPECTED(methodReflectionCe == NULL)) return zv::Val();
+				bool staticClosure = partialApplication;
+				if (instanceof_function(Z_OBJCE_P(function), methodReflectionCe)) {
+					IETR_VAL(isStaticMethod, callOn(function, mIsStatic));
+					staticClosure = zend_is_true(isStaticMethod.raw());
+				}
+				if (staticClosure) {
+					isStaticClosure = zv::Val::copyOf(zv::Ref(pt_trinary_singleton(PT_TRI_YES)));
+				}
 			}
 
 			IETR_VAL(variantParameters, callOn(variant, mGetParameters));

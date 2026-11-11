@@ -26,7 +26,7 @@ class Foo
 		assertType('3', (LENGTH)('abc'));
 		assertType('Closure(string): uppercase-string', self::UPPER);
 		assertType("'A'", (self::UPPER)('a'));
-		assertType('Closure(int): int', self::SELF);
+		assertType('static-Closure(int): int', self::SELF);
 		assertType('int', (self::SELF)(2));
 	}
 

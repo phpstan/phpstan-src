@@ -12,7 +12,7 @@ class Foo
 	public function doFoo(string $foo): void
 	{
 		assertType('Closure(string): void', $this->doFoo(...));
-		assertType('Closure(): void', self::doBar(...));
+		assertType('static-Closure(): void', self::doBar(...));
 		assertType('Closure', self::$foo(...));
 		assertType('Closure', $this->nonexistent(...));
 		assertType('Closure', $this->$foo(...));
@@ -140,7 +140,7 @@ class MagicCallables
 
 	public function doFoo(): void
 	{
-		assertType('Closure(int): string', self::magicStatic(...));
+		assertType('static-Closure(int): string', self::magicStatic(...));
 		assertType('string', self::magicStatic(...)(1));
 		assertType('Closure(int): string', $this->magic(...));
 		assertType('string', $this->magic(...)(1));
@@ -214,6 +214,30 @@ class CallbackCallables
 		assertType('int', array_reduce($ints, $this->sum(...), 0));
 		assertType('lowercase-string&non-falsy-string', call_user_func_array(str_replace(...), [' ', '-', 'a b']));
 		assertType('3', call_user_func(strlen(...), 'abc'));
+	}
+
+}
+
+class BindCallables
+{
+
+	public static function doStatic(): int
+	{
+		return 1;
+	}
+
+	public function doInstance(): int
+	{
+		return 1;
+	}
+
+	public function doFoo(object $o): void
+	{
+		assertType('((Closure(string): int<0, max>)|null)', strlen(...)->bindTo($o));
+		assertType('null', self::doStatic(...)->bindTo($o));
+		assertType('null', \Closure::bind(self::doStatic(...), $o));
+		assertType('static-Closure(): int', self::doStatic(...)->bindTo(null));
+		assertType('((Closure(): int)|null)', $this->doInstance(...)->bindTo($o));
 	}
 
 }

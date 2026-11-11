@@ -53,10 +53,6 @@ class RestrictedInternalClassConstantUsageExtensionTest extends RuleTestCase
 				'Access to constant FOO of internal class FooInternalWithClassConstantWithoutNamespace.',
 				107,
 			],
-			[
-				'Access to constant class of internal class ClassConstantInternalTagOne\\FooInternal from outside its root namespace ClassConstantInternalTagOne.',
-				115,
-			],
 		]);
 	}
 

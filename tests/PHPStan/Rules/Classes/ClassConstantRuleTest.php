@@ -638,8 +638,13 @@ class ClassConstantRuleTest extends RuleTestCase
 
 	public function testInternalClassConstantAccessIsReportedOnce(): void
 	{
-		// reported by RestrictedClassConstantUsageRule, including Foo::class
-		$this->analyse([__DIR__ . '/../InternalTag/data/class-constant-internal-tag.php'], []);
+		// constants are reported by RestrictedClassConstantUsageRule, Foo::class as an internal class name usage here
+		$this->analyse([__DIR__ . '/../InternalTag/data/class-constant-internal-tag.php'], [
+			[
+				'Access to constant on internal class ClassConstantInternalTagOne\\FooInternal.',
+				115,
+			],
+		]);
 	}
 
 }

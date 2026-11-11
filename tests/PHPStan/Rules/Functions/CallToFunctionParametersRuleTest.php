@@ -765,11 +765,6 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				14,
 			],
 			[
-				'Unable to resolve the template type TK in call to function array_udiff',
-				19,
-				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
-			],
-			[
 				'Parameter #1 $arr1 of function array_udiff expects array<int|string, string>, null given.',
 				20,
 			],
@@ -3529,6 +3524,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 			[
 				'Parameter #1 $s of function BenevolentUnionDescription\\takesString expects string, (float|int) given.',
 				19,
+			],
+		]);
+	}
+
+	public function testBug15700(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15700.php'], [
+			[
+				'Unable to resolve the template type T in call to function Bug15700Functions\\userArrayValues',
+				22,
+				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
 			],
 		]);
 	}

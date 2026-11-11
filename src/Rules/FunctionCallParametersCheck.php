@@ -631,7 +631,7 @@ final class FunctionCallParametersCheck
 		if ($this->checkMissingTypehints && $parametersAcceptor instanceof ResolvedFunctionVariant) {
 			$originalParametersAcceptor = $parametersAcceptor->getOriginalParametersAcceptor();
 			$resolvedTypes = $parametersAcceptor->getResolvedTemplateTypeMap()->getTypes();
-			if (count($resolvedTypes) > 0) {
+			if (!$isBuiltin && count($resolvedTypes) > 0) {
 				$returnTemplateTypes = [];
 				TypeTraverser::map(
 					$parametersAcceptor->getReturnTypeWithUnresolvableTemplateTypes(),

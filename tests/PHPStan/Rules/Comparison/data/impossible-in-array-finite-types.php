@@ -272,3 +272,15 @@ function noErrorIntegerRangeNeedle(int $i): void
 		echo 'yes';
 	}
 }
+
+function reportedNamedInArray(int $i): void
+{
+	in_array(haystack: [Foo::ONE, 1, 2], strict: true, needle: $i);
+	array_search(haystack: [Foo::ONE, 1, 2], strict: true, needle: $i);
+	array_keys(strict: true, filter_value: $i, array: [Foo::ONE, 1, 2]);
+}
+
+function noErrorNamedArrayKeysWithoutFilterValue(): void
+{
+	array_keys(array: [Foo::ONE], strict: true);
+}

@@ -67,6 +67,7 @@ parameters:
 		unusedParameters: false
 		reuseCollectedDataRuleErrors: false
 		checkWholePhpVersionRange: false
+		reportConflictingPurityTags: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

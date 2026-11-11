@@ -686,9 +686,11 @@ class AnalyserTest extends PHPStanTestCase
 			return;
 		}
 
+		$expectedPath = $this->getFileHelper()->normalizePath(__DIR__ . '/data/empty/empty.php');
 		$this->assertCount(1, $result);
 		$this->assertInstanceOf(Error::class, $result[0]);
-		$this->assertSame('Ignored error pattern #Fail\.# in path ' . __DIR__ . '/data/empty/empty.php was not matched in reported errors.', $result[0]->getMessage());
+		$this->assertSame('Ignored error pattern #Fail\.# in path ' . $expectedPath . ' was not matched in reported errors.', $result[0]->getMessage());
+		$this->assertSame($expectedPath, $result[0]->getFilePath());
 		$this->assertSame('ignore.unmatched', $result[0]->getIdentifier());
 	}
 

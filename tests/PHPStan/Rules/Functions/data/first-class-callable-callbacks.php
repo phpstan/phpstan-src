@@ -54,6 +54,11 @@ function compatible(array $ints, array $strings, array $map, Callbacks $callback
 	array_walk($map, describe(...));
 	call_user_func_array(compareInts(...), [1, 2]);
 	call_user_func_array(str_replace(...), [' ', '-', 'a b']);
+
+	// the closure of a multi-variant function fits when any of its variants does
+	array_reduce($ints, max(...), 0);
+	array_map(max(...), $ints, $ints);
+	array_map(mt_rand(...), $ints, $ints);
 }
 
 /**
@@ -70,4 +75,14 @@ function incompatible(array $ints, array $strings, array $map, Callbacks $callba
 	array_reduce($ints, Callbacks::concat(...), '');
 	array_walk($strings, increment(...));
 	array_walk($ints, describe(...));
+	array_map(strtok(...), $ints);
+}
+
+/**
+ * @param list<int> $ints
+ */
+function differentCallees(array $ints, bool $flag): void
+{
+	// closures of different functions are alternatives, each of them has to fit
+	array_map($flag ? strtoupper(...) : strtolower(...), $ints);
 }

@@ -3545,31 +3545,40 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/first-class-callable-callbacks.php'], [
 			[
 				'Parameter #2 $callback of function usort expects callable(string, string): int, Closure(int, int): int given.',
-				66,
-			],
-			[
-				'Parameter #2 $callback of function uasort expects callable(string, string): int, Closure(int, int): int given.',
-				67,
-			],
-			[
-				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): int given.',
-				68,
-			],
-			[
-				'Parameter #2 $callback of function array_reduce expects callable(int, string): int, Closure(int, int): int given.',
-				69,
-			],
-			[
-				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
-				70,
-			],
-			[
-				'Parameter #2 $callback of function array_walk expects callable(string, int<0, max>): mixed, Closure(int, int): void given.',
 				71,
 			],
 			[
-				'Parameter #2 $callback of function array_walk expects callable(int, int<0, max>): mixed, Closure(string, string): void given.',
+				'Parameter #2 $callback of function uasort expects callable(string, string): int, Closure(int, int): int given.',
 				72,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): int given.',
+				73,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(int, string): int, Closure(int, int): int given.',
+				74,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
+				75,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(string, int<0, max>): mixed, Closure(int, int): void given.',
+				76,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, int<0, max>): mixed, Closure(string, string): void given.',
+				77,
+			],
+			[
+				'Parameter #1 $callback of function array_map expects (callable(int): mixed)|null, (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)) given.',
+				78,
+				'Type #1 from the union: Parameter #2 $token of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+			],
+			[
+				'Parameter #1 $callback of function array_map expects (callable(int): mixed)|null, (Closure(string): lowercase-string)|(Closure(string): uppercase-string) given.',
+				87,
 			],
 		]);
 	}

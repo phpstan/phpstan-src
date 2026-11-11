@@ -100,6 +100,73 @@ final class ClosureOrigin
 		return $this->boundParameterNames;
 	}
 
+	/**
+	 * The answers of a union's members combined per closure the union can hold. Closures
+	 * created from the same callable with the same arguments are one closure, overloaded
+	 * with the variants of its callee: like the variants of a callable string, any of its
+	 * signatures that holds is enough.
+	 *
+	 * @param list<Type> $types
+	 * @param list<AcceptsResult> $results the answer for each of $types
+	 * @return list<AcceptsResult>
+	 */
+	public static function combineOverloadAcceptsResults(array $types, array $results): array
+	{
+		$combined = [];
+		foreach (self::groupOverloadResults($types, $results) as $overloads) {
+			$result = $overloads[0];
+			foreach (array_slice($overloads, 1) as $overload) {
+				$result = $result->or($overload);
+			}
+			$combined[] = $result;
+		}
+
+		return $combined;
+	}
+
+	/**
+	 * @see combineOverloadAcceptsResults()
+	 * @param list<Type> $types
+	 * @param list<IsSuperTypeOfResult> $results the answer for each of $types
+	 * @return list<IsSuperTypeOfResult>
+	 */
+	public static function combineOverloadIsSuperTypeOfResults(array $types, array $results): array
+	{
+		$combined = [];
+		foreach (self::groupOverloadResults($types, $results) as $overloads) {
+			$combined[] = count($overloads) === 1 ? $overloads[0] : $overloads[0]->or(...array_slice($overloads, 1));
+		}
+
+		return $combined;
+	}
+
+	/**
+	 * @template TResult
+	 * @param list<Type> $types
+	 * @param list<TResult> $results
+	 * @return list<non-empty-list<TResult>>
+	 */
+	private static function groupOverloadResults(array $types, array $results): array
+	{
+		$origins = [];
+		$groups = [];
+		foreach ($types as $i => $type) {
+			$origin = $type instanceof ClosureType ? $type->getOrigin() : null;
+			if ($origin !== null) {
+				foreach ($origins as $index => $groupOrigin) {
+					if ($groupOrigin !== null && $groupOrigin->equals($origin)) {
+						$groups[$index][] = $results[$i];
+						continue 2;
+					}
+				}
+			}
+			$origins[] = $origin;
+			$groups[] = [$results[$i]];
+		}
+
+		return $groups;
+	}
+
 	public function equals(self $other): bool
 	{
 		if (

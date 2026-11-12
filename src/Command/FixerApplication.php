@@ -289,7 +289,7 @@ final class FixerApplication
 					return;
 				}
 
-				$this->writeToFixer(['action' => 'changedFiles', 'data' => [
+				$this->fixerEncoder?->write(['action' => 'changedFiles', 'data' => [
 					'paths' => $changes->getChangedFiles(),
 				]]);
 			}, function () use ($loop, $mainScript, $projectConfigFile, $input): void {
@@ -386,7 +386,7 @@ final class FixerApplication
 			if ($restart) {
 				$this->restartFixer($loop, $this->downloadedUpdate['info']['version']);
 			} else {
-				$this->writeToFixer(['action' => 'updateReady', 'data' => [
+				$this->fixerEncoder?->write(['action' => 'updateReady', 'data' => [
 					'version' => $this->downloadedUpdate['info']['version'],
 				]]);
 			}
@@ -425,7 +425,7 @@ final class FixerApplication
 
 			$output->writeln(sprintf('<fg=green>Downloading PHPStan Pro %s...</>', $latestInfo['version']));
 			$downloadPath = sprintf('%s/phpstan-fixer-%s.phar', $this->proTmpDir, substr(sha1($latestInfo['url']), 0, 16));
-			$this->writeToFixer(['action' => 'updateProgress', 'data' => [
+			$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
 				'version' => $latestInfo['version'],
 				'downloadedBytes' => 0,
 				'totalBytes' => 0,
@@ -442,7 +442,7 @@ final class FixerApplication
 						return;
 					}
 					$lastProgressAt = $now;
-					$this->writeToFixer(['action' => 'updateProgress', 'data' => [
+					$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
 						'version' => $latestInfo['version'],
 						'downloadedBytes' => $downloadedBytes,
 						'totalBytes' => $downloadTotal,
@@ -462,25 +462,12 @@ final class FixerApplication
 				return;
 			}
 
-			$this->writeToFixer(['action' => 'updateReady', 'data' => [
+			$this->fixerEncoder?->write(['action' => 'updateReady', 'data' => [
 				'version' => $downloaded['info']['version'],
 			]]);
 		})->catch(function (Throwable $e) use ($output): void {
 			$this->failUpdate($output, $e instanceof FixerUpdateException ? $e->getMessage() : sprintf('Could not update PHPStan Pro: %s', $e->getMessage()));
 		});
-	}
-
-	/**
-	 * @param array<string, mixed> $message
-	 */
-	private function writeToFixer(array $message): void
-	{
-		// the PHPStan Pro process connected now, none between a restart and the connection of the updated one
-		if ($this->fixerEncoder === null) {
-			return;
-		}
-
-		$this->fixerEncoder->write($message);
 	}
 
 	/**
@@ -494,7 +481,7 @@ final class FixerApplication
 		if ($restart) {
 			$output->writeln(sprintf('<fg=red>%s</>', $message));
 		}
-		$this->writeToFixer(['action' => 'updateFailed', 'data' => [
+		$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
 			'message' => $message,
 			'restart' => $restart,
 		]]);
@@ -506,7 +493,7 @@ final class FixerApplication
 	private function restartFixer(LoopInterface $loop, string $version): void
 	{
 		$this->restarting = true;
-		$this->writeToFixer(['action' => 'updateRestart', 'data' => [
+		$this->fixerEncoder?->write(['action' => 'updateRestart', 'data' => [
 			'version' => $version,
 		]]);
 		$fixerProcess = $this->fixerProcess;

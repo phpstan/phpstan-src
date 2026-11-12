@@ -16,6 +16,7 @@ use PHPStan\Reflection\ClassReflection;
  * class - referencing it, calling its methods, reading its properties - is analysed again.
  *
  * @api
+ * @api-do-not-implement
  */
 interface DeclarationDependencyTracker
 {

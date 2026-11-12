@@ -28,6 +28,7 @@ use PhpParser\Node;
  * is actually in the code.
  *
  * @api
+ * @api-do-not-implement
  */
 interface NodeCallbackInvoker
 {

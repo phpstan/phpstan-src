@@ -87,3 +87,21 @@ parameters:
 		-
 			identifier: function.resultUnused
 			path: src/Calls/CallsPureFunction.php
+		# reported only when the declarations of the called function and of the function it calls are analysed too
+		-
+			identifier: function.resultUnused
+			path: src/Calls/CallsTransitivelyPureFunction.php
+		# reported only when the subclass renaming the parameter is analysed too
+		-
+			identifier: argument.parameterRenamedInSubtype
+			path: src/Named/CallsWithNamedArgument.php
+		# stale, reported only when what is reported in the file is known
+		-
+			message: '#never in CallsPureFunction#'
+			path: src/Calls/CallsPureFunction.php
+		-
+			message: '#never in CallsTransitivelyPureFunction#'
+			path: src/Calls/CallsTransitivelyPureFunction.php
+		-
+			message: '#never in CallsWithNamedArgument#'
+			path: src/Named/CallsWithNamedArgument.php

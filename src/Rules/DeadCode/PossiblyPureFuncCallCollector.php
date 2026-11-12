@@ -4,6 +4,8 @@ namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Expression;
+use PHPStan\Analyser\AnalysedFileDependencyCollector;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
@@ -25,7 +27,7 @@ final class PossiblyPureFuncCallCollector implements Collector
 		return Expression::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope&CollectedDataEmitter $scope)
 	{
 		$expr = $node->expr;
 		if ($expr instanceof Node\Expr\BinaryOp\Pipe) {
@@ -59,6 +61,12 @@ final class PossiblyPureFuncCallCollector implements Collector
 		}
 		if (!$functionReflection->hasSideEffects()->maybe()) {
 			return null;
+		}
+
+		// whether the call is reported depends on the declaration being analysed
+		$fileName = $functionReflection->getFileName();
+		if ($fileName !== null) {
+			$scope->emitCollectedData(AnalysedFileDependencyCollector::class, $fileName);
 		}
 
 		return [$functionReflection->getName(), $node->getStartLine()];

@@ -5,6 +5,7 @@ namespace PHPStan\Rules;
 use Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
+use PHPStan\Analyser\AnalysedFileDependencyCollector;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\MutatingScope;
@@ -409,6 +410,8 @@ final class FunctionCallParametersCheck
 					}
 				}
 			} elseif ($argumentName !== null && $renamedNamedArgumentParameterData !== null) {
+				// whether the call is reported depends on the subclasses, which can be anywhere
+				$scope->emitCollectedData(AnalysedFileDependencyCollector::class, null);
 				$scope->emitCollectedData(NamedArgumentParameterMethodCallsCollector::class, array_merge(
 					$renamedNamedArgumentParameterData,
 					[$parameter->getName(), $argumentLine],

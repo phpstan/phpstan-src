@@ -2,14 +2,15 @@
 
 namespace PHPStan\Analyser\Ignore;
 
+use PHPStan\Analyser\AnalysedFileDependencyCollector;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use PHPStan\Rules\Traits\TraitDeclarationCollector;
-use PHPStan\Rules\Traits\UsedTraitFilesCollector;
 use function array_fill_keys;
 use function array_key_exists;
 use function array_keys;
+use function array_pop;
 use function count;
 use function is_array;
 use function rtrim;
@@ -23,11 +24,13 @@ use const DIRECTORY_SEPARATOR;
  * Decides which ignoreErrors entries that matched nothing can be reported as unmatched when the analysed paths
  * do not cover all the paths from the configuration. What is not analysed reports no errors, so only the part
  * of an entry about the analysed code that is analysed entirely can be reported: not an entry without a path,
- * and not a file that uses a trait that is not analysed (the trait's errors are reported in the file),
- * or that declares a trait (the trait is analysed in the context of its users, which are not all known).
+ * not a file that declares a trait (the trait is analysed in the context of its users, which are not all known),
+ * and not a file what is reported in depends on a file that is not analysed, directly or through other files -
+ * a trait used by a class in the file, or the declaration of a function whose purity decides whether a call
+ * is reported, see AnalysedFileDependencyCollector.
  *
- * The traits come from what the analysis already collected: the trait files analysed as a part of the classes
- * in each analysed file, and the analysed files declaring a trait. Without them, no file is taken as analysed entirely.
+ * Both come from the collected data: the analysed files declaring a trait, and the dependencies tracked while
+ * the files were analysed. Without them, no file is taken as analysed entirely.
  *
  * Without paths in the configuration, the analysed directories are taken as the whole project, but analysed files
  * are only a part of an unknown one.
@@ -45,8 +48,14 @@ final class UnmatchedIgnoredErrorJudge
 	/** @var array<string, true>|null */
 	private ?array $traitDeclaringFiles = null;
 
-	/** @var array<string, array<string, true>> analysed file => normalized trait files */
-	private array $usedTraitFiles = [];
+	/** @var array<string, array<string, true>> analysed file => normalized files what is reported in it depends on */
+	private array $analysedFileDependencies = [];
+
+	/** @var array<string, true> analysed files what is reported in depends on the whole project */
+	private array $projectDependentFiles = [];
+
+	/** @var array<string, bool> */
+	private array $entirelyAnalysedFiles = [];
 
 	/** @var array<string, bool> */
 	private array $judgeablePaths = [];
@@ -191,11 +200,14 @@ final class UnmatchedIgnoredErrorJudge
 				$this->traitDeclaringFiles[$declaringFile] = true;
 			}
 
-			foreach ($this->collectedData->iterate(UsedTraitFilesCollector::class) as $usingFile => $traitFilesOfClasses) {
-				foreach ($traitFilesOfClasses as $traitFiles) {
-					foreach ($traitFiles as $traitFile) {
-						$this->usedTraitFiles[$usingFile][$this->fileHelper->normalizePath($traitFile)] = true;
+			foreach ($this->collectedData->iterate(AnalysedFileDependencyCollector::class) as $dependentFile => $dependencies) {
+				foreach ($dependencies as $dependency) {
+					if ($dependency === null) {
+						$this->projectDependentFiles[$dependentFile] = true;
+						continue;
 					}
+
+					$this->analysedFileDependencies[$dependentFile][$this->fileHelper->normalizePath($dependency)] = true;
 				}
 			}
 		}
@@ -204,18 +216,47 @@ final class UnmatchedIgnoredErrorJudge
 			return false;
 		}
 
-		foreach (array_keys($this->usedTraitFiles[$file] ?? []) as $traitFile) {
-			if (array_key_exists($traitFile, $this->analysedFiles)) {
-				continue;
+		return $this->entirelyAnalysedFiles[$file] ??= $this->areDependenciesAnalysed($file);
+	}
+
+	private function areDependenciesAnalysed(string $file): bool
+	{
+		$visited = [$file => true];
+		$queue = [$file];
+		while ($queue !== []) {
+			$current = array_pop($queue);
+			if ($current !== $file && array_key_exists($current, $this->entirelyAnalysedFiles)) {
+				// its dependencies were already followed
+				if ($this->entirelyAnalysedFiles[$current]) {
+					continue;
+				}
+
+				return false;
 			}
 
-			// a trait that is not analysed even when the whole project is, like one in a scanned directory, reports no errors either way;
-			// without paths in the configuration, the project is not known and every trait counts
-			if (
-				($this->analysedPathsFromConfig === [] || self::isUnder($traitFile, $this->analysedPathsFromConfig))
-				&& !$this->analyseFileExcluder->isExcludedFromAnalysing($traitFile)
-			) {
+			if (array_key_exists($current, $this->projectDependentFiles)) {
 				return false;
+			}
+
+			foreach (array_keys($this->analysedFileDependencies[$current] ?? []) as $dependency) {
+				if (array_key_exists($dependency, $visited)) {
+					continue;
+				}
+
+				$visited[$dependency] = true;
+				if (array_key_exists($dependency, $this->analysedFiles)) {
+					$queue[] = $dependency;
+					continue;
+				}
+
+				// a file that is not analysed even when the whole project is, like one in vendor, reports no errors either way;
+				// without paths in the configuration, the project is not known and every file counts
+				if (
+					($this->analysedPathsFromConfig === [] || self::isUnder($dependency, $this->analysedPathsFromConfig))
+					&& !$this->analyseFileExcluder->isExcludedFromAnalysing($dependency)
+				) {
+					return false;
+				}
 			}
 		}
 

@@ -3,6 +3,7 @@
 namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\RegisteredCollector;
@@ -25,7 +26,7 @@ final class MethodWithoutImpurePointsCollector implements Collector
 		return MethodReturnStatementsNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope&CollectedDataEmitter $scope)
 	{
 		$method = $node->getMethodReflection();
 		if (!$method->isPure()->maybe()) {
@@ -59,6 +60,7 @@ final class MethodWithoutImpurePointsCollector implements Collector
 		$dependencies = $this->purityResolver->resolveDependencies(
 			$node->getImpurePoints(),
 			$node->getStatementResult()->getThrowPoints(),
+			$scope,
 		);
 		if ($dependencies === null) {
 			return null;

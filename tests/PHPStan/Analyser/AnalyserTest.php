@@ -26,6 +26,8 @@ use PHPStan\Parser\RichParser;
 use PHPStan\Rules\AlwaysFailRule;
 use PHPStan\Rules\DirectRegistry as DirectRuleRegistry;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\Traits\TraitDeclarationCollector;
+use PHPStan\Rules\Traits\UsedTraitFilesCollector;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use function array_filter;
@@ -904,7 +906,7 @@ class AnalyserTest extends PHPStanTestCase
 		);
 		$analyserResult = $finalizer->finalize($analyserResult, $onlyFiles, false)->getAnalyserResult();
 
-		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit());
+		$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($analyserResult->getErrors(), $onlyFiles, $normalizedFilePaths, $analyserResult->hasReachedInternalErrorsCountLimit(), false, $analyserResult->getLazyCollectedData());
 		$errors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 		$errors = array_merge($errors, $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages());
 		if ($analyserResult->hasReachedInternalErrorsCountLimit()) {
@@ -925,7 +927,8 @@ class AnalyserTest extends PHPStanTestCase
 		$ruleRegistry = new DirectRuleRegistry([
 			new AlwaysFailRule(),
 		]);
-		$collectorRegistry = new CollectorRegistry($collectors);
+		// registered on every level, they tell which files are analysed together with their traits
+		$collectorRegistry = new CollectorRegistry([...$collectors, new TraitDeclarationCollector(), new UsedTraitFilesCollector()]);
 
 		$reflectionProvider = self::createReflectionProvider();
 		$fileHelper = $this->getFileHelper();

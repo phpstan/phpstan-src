@@ -22,3 +22,15 @@ function test_directories_are_the_whole_project() {
 	# a file that is not analysed reports no errors either way
 	assert_not_contains '#never in srcc# in path' "$OUTPUT"
 }
+
+# Files are only a part of a project that is not known, so every trait that is not analysed counts, even one
+# that would not be analysed in the whole project.
+function test_only_files_are_a_part_of_the_project() {
+	OUTPUT=$(../../bin/phpstan analyse -c phpstan-no-paths.neon --error-format raw src/Plain/Clean.php src/Classes/UsesLibTrait.php 2>&1) && CODE=0 || CODE=$?
+	echo "$OUTPUT"
+	assert_same "1" "$CODE"
+	assert_contains '#never in Clean# in path' "$OUTPUT"
+	assert_not_contains '#never in UsesLibTrait#' "$OUTPUT"
+	assert_not_contains '#never globally#' "$OUTPUT"
+	assert_not_contains '#never in Plain directory#' "$OUTPUT"
+}

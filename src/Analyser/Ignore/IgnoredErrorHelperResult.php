@@ -101,12 +101,14 @@ final class IgnoredErrorHelperResult
 	/**
 	 * @param list<Error> $errors
 	 * @param string[] $analysedFiles
+	 * @param bool $collectedDataRuleSkipped see FinalizerResult::isCollectedDataRuleSkippedForOnlyFiles()
 	 */
 	public function process(
 		array $errors,
 		bool $onlyFiles,
 		array $analysedFiles,
 		bool $hasInternalErrors,
+		bool $collectedDataRuleSkipped = false,
 	): IgnoredErrorHelperProcessedResult
 	{
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
@@ -366,7 +368,7 @@ final class IgnoredErrorHelperResult
 
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
-		if (!$hasInternalErrors) {
+		if (!$hasInternalErrors && !$collectedDataRuleSkipped) {
 			$partialAnalysis = $this->isPartialAnalysis();
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 				$reportUnmatched = is_array($unmatchedIgnoredError)

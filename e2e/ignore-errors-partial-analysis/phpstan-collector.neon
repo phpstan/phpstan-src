@@ -1,0 +1,19 @@
+includes:
+	- phpstan.neon
+
+parameters:
+	ignoreErrors:
+		# one of the errors is reported by the rule on collected data
+		-
+			message: '#^(Class is never used\.|Method IgnoreErrorsPartialAnalysis\\DeadCount\:\:doDeadCount\(\) should return int but returns string\.)$#'
+			path: src/Plain/DeadCount.php
+			count: 2
+
+services:
+	-
+		class: IgnoreErrorsPartialAnalysisRules\DeadCodeCollector
+		tags:
+			- phpstan.collector
+
+rules:
+	- IgnoreErrorsPartialAnalysisRules\DeadCodeRule

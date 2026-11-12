@@ -25,11 +25,13 @@ final class NotAnalysedTraitRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if ($node->isOnlyFilesAnalysis()) {
+		$traitDeclarationData = $node->get(TraitDeclarationCollector::class);
+		// asked only when there is something to report: when a rule asks, no ignore is reported as unmatched
+		// in an analysis of only files, as the rule may have skipped the errors it ignores
+		if ($traitDeclarationData === [] || $node->isOnlyFilesAnalysis()) {
 			return [];
 		}
 
-		$traitDeclarationData = $node->get(TraitDeclarationCollector::class);
 		$traitUseData = $node->get(TraitUseCollector::class);
 
 		$declaredTraits = [];

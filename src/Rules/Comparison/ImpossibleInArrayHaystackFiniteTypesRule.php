@@ -52,9 +52,9 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
-		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter]
 		private bool $treatPhpDocTypesAsCertain,
+		private ReflectionProvider $reflectionProvider,
 	)
 	{
 	}

@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Comparison;
 
 use PHPStan\Reflection\InitializerExprTypeResolver;
-use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -18,8 +17,8 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 	{
 		return new ImpossibleInArrayHaystackFiniteTypesRule(
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
-			self::getContainer()->getByType(ReflectionProvider::class),
 			true,
+			self::createReflectionProvider(),
 		);
 	}
 

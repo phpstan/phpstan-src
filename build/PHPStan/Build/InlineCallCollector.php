@@ -292,7 +292,7 @@ final class InlineCallCollector implements Collector
 				$receivers = [$declaringClass];
 			} elseif ($call->var instanceof Expr\Variable && is_string($call->var->name) && isset($paramNames[$call->var->name])) {
 				$parameter = $parameters[$paramNames[$call->var->name]] ?? null;
-				$receivers = $parameter === null ? null : $parameter->getType()->getObjectClassReflections();
+				$receivers = $parameter?->getType()->getObjectClassReflections();
 			} elseif ($call->var instanceof Expr\PropertyFetch && $call->var->var instanceof Expr\Variable && $call->var->var->name === 'this' && $call->var->name instanceof Node\Identifier) {
 				$propertyName = $call->var->name->toString();
 				$receivers = $declaringClass->hasNativeProperty($propertyName)

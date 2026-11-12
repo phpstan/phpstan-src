@@ -93,7 +93,7 @@ final class NoScopeTypeReadInEngineRule implements Rule
 		}
 
 		$function = $scope->getFunction();
-		$functionName = $function !== null ? $function->getName() : null;
+		$functionName = $function?->getName();
 		if (
 			array_key_exists($namespace, self::ALLOWED_SEAMS)
 			&& $functionName !== null

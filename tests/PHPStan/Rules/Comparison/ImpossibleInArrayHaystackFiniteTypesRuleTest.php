@@ -83,6 +83,14 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 				'Value ImpossibleInArrayFiniteTypes\HttpStatus::ServerError in the haystack passed to in_array() can never be identical to the needle type int.',
 				261,
 			],
+			[
+				"Value 'c' in the haystack passed to array_search() can never be identical to the needle type 'a'|'b'.",
+				291,
+			],
+			[
+				"Value '1' in the haystack passed to array_search() can never be identical to the needle type int.",
+				297,
+			],
 		]);
 	}
 

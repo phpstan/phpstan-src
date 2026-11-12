@@ -284,3 +284,15 @@ function noErrorNamedArrayKeysWithoutFilterValue(): void
 {
 	array_keys(array: [Foo::ONE], strict: true);
 }
+
+/** @param 'a'|'b' $s */
+function phpDocOnlyImpossible(string $s): void
+{
+	array_search($s, ['c'], true);
+}
+
+/** @param true $strict */
+function phpDocStrict(int $i, bool $strict): void
+{
+	array_search($i, ['1', 1, 2], $strict);
+}

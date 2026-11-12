@@ -33,7 +33,6 @@ use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\SpawnedProcessPromise;
 use PHPStan\ShouldNotHappenException;
-use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
@@ -290,7 +289,7 @@ final class FixerApplication
 					return;
 				}
 
-				$this->fixerEncoder?->write(['action' => 'changedFiles', 'data' => [
+				$this->writeToFixer(['action' => 'changedFiles', 'data' => [
 					'paths' => $changes->getChangedFiles(),
 				]]);
 			}, function () use ($loop, $mainScript, $projectConfigFile, $input): void {
@@ -387,7 +386,7 @@ final class FixerApplication
 			if ($restart) {
 				$this->restartFixer($loop, $this->downloadedUpdate['info']['version']);
 			} else {
-				$this->fixerEncoder?->write(['action' => 'updateReady', 'data' => [
+				$this->writeToFixer(['action' => 'updateReady', 'data' => [
 					'version' => $this->downloadedUpdate['info']['version'],
 				]]);
 			}
@@ -411,12 +410,12 @@ final class FixerApplication
 		}
 
 		$lastProgressAt = 0.0;
-		$this->requestAsync($loop, $this->getLatestUrl(self::PHAR_BRANCH, PHP_OS_FAMILY, php_uname('m')), [])->then(static fn (ResponseInterface $response): ResponseInterface => $response, static function (Throwable $e): void {
+		$this->requestAsync($loop, $this->getLatestUrl(self::PHAR_BRANCH, PHP_OS_FAMILY, php_uname('m')), [])->then(static fn (string $body): string => $body, static function (Throwable $e): void {
 			throw new FixerUpdateException(sprintf('Could not find the latest PHPStan Pro: %s', self::describeHttpFailure($e)));
-		})->then(function (ResponseInterface $response) use ($loop, $output, $currentUrl, &$lastProgressAt): PromiseInterface {
+		})->then(function (string $body) use ($loop, $output, $currentUrl, &$lastProgressAt): PromiseInterface {
 			try {
 				/** @var array{url: string, version: string} $latestInfo */
-				$latestInfo = Json::decode((string) $response->getBody(), Json::FORCE_ARRAY);
+				$latestInfo = Json::decode($body, Json::FORCE_ARRAY);
 			} catch (JsonException) {
 				throw new FixerUpdateException('Could not find the latest PHPStan Pro: the download server answered something else than JSON.');
 			}
@@ -426,7 +425,7 @@ final class FixerApplication
 
 			$output->writeln(sprintf('<fg=green>Downloading PHPStan Pro %s...</>', $latestInfo['version']));
 			$downloadPath = sprintf('%s/phpstan-fixer-%s.phar', $this->proTmpDir, substr(sha1($latestInfo['url']), 0, 16));
-			$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
+			$this->writeToFixer(['action' => 'updateProgress', 'data' => [
 				'version' => $latestInfo['version'],
 				'downloadedBytes' => 0,
 				'totalBytes' => 0,
@@ -443,7 +442,7 @@ final class FixerApplication
 						return;
 					}
 					$lastProgressAt = $now;
-					$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
+					$this->writeToFixer(['action' => 'updateProgress', 'data' => [
 						'version' => $latestInfo['version'],
 						'downloadedBytes' => $downloadedBytes,
 						'totalBytes' => $downloadTotal,
@@ -463,12 +462,25 @@ final class FixerApplication
 				return;
 			}
 
-			$this->fixerEncoder?->write(['action' => 'updateReady', 'data' => [
+			$this->writeToFixer(['action' => 'updateReady', 'data' => [
 				'version' => $downloaded['info']['version'],
 			]]);
 		})->catch(function (Throwable $e) use ($output): void {
 			$this->failUpdate($output, $e instanceof FixerUpdateException ? $e->getMessage() : sprintf('Could not update PHPStan Pro: %s', $e->getMessage()));
 		});
+	}
+
+	/**
+	 * @param array<string, mixed> $message
+	 */
+	private function writeToFixer(array $message): void
+	{
+		// the PHPStan Pro process connected now, none between a restart and the connection of the updated one
+		if ($this->fixerEncoder === null) {
+			return;
+		}
+
+		$this->fixerEncoder->write($message);
 	}
 
 	/**
@@ -482,7 +494,7 @@ final class FixerApplication
 		if ($restart) {
 			$output->writeln(sprintf('<fg=red>%s</>', $message));
 		}
-		$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
+		$this->writeToFixer(['action' => 'updateFailed', 'data' => [
 			'message' => $message,
 			'restart' => $restart,
 		]]);
@@ -494,7 +506,7 @@ final class FixerApplication
 	private function restartFixer(LoopInterface $loop, string $version): void
 	{
 		$this->restarting = true;
-		$this->fixerEncoder?->write(['action' => 'updateRestart', 'data' => [
+		$this->writeToFixer(['action' => 'updateRestart', 'data' => [
 			'version' => $version,
 		]]);
 		$fixerProcess = $this->fixerProcess;
@@ -625,7 +637,7 @@ final class FixerApplication
 
 	/**
 	 * @param array<mixed> $options
-	 * @return PromiseInterface<ResponseInterface>
+	 * @return PromiseInterface<string> the response body, empty when it was saved to a file (RequestOptions::SINK)
 	 */
 	private function requestAsync(LoopInterface $loop, string $url, array $options): PromiseInterface
 	{
@@ -637,9 +649,10 @@ final class FixerApplication
 			$handler->tick();
 		});
 		$client->requestAsync('GET', $url, $options)->then(
-			static function (ResponseInterface $response) use ($deferred, $loop, $timer): void {
+			// psr/http-message is not a direct dependency, so its ResponseInterface is not named
+			static function ($response) use ($deferred, $loop, $timer, $options): void {
 				$loop->cancelTimer($timer);
-				$deferred->resolve($response);
+				$deferred->resolve(isset($options[RequestOptions::SINK]) ? '' : (string) $response->getBody());
 			},
 			static function (Throwable $e) use ($deferred, $loop, $timer): void {
 				$loop->cancelTimer($timer);

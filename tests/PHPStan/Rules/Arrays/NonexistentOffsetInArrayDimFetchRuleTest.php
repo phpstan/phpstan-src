@@ -856,6 +856,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 				'Offset null does not exist on array{}.',
 				19,
 			],
+			[
+				'Offset mixed might not exist on array<string, string>|string.',
+				81,
+			],
+			[
+				'Offset int|string might not exist on array<string, string>|string.',
+				89,
+			],
 		]);
 	}
 
@@ -875,6 +883,14 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 			[
 				'Offset int<0, max> might not exist on non-empty-array<string>.',
 				42,
+			],
+			[
+				'Offset int<-1, max> might not exist on list<string>.',
+				50,
+			],
+			[
+				'Offset int<0, max> might not exist on non-empty-array<int, string>.',
+				58,
 			],
 		]);
 	}

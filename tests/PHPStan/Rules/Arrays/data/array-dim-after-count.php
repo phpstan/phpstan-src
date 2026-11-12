@@ -42,4 +42,19 @@ class HelloWorld
 		return $hellos[$count];
 	}
 
+	/**
+	 * @param list<string> $hellos
+	 */
+	public function maybeEmptyList(array $hellos): string
+	{
+		return $hellos[count($hellos) - 1];
+	}
+
+	/**
+	 * @param non-empty-array<int, string> $hellos
+	 */
+	public function maybeNonListWithIntKeys(array $hellos): string
+	{
+		return $hellos[count($hellos) - 1];
+	}
 }

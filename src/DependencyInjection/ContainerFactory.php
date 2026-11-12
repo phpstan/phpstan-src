@@ -188,7 +188,7 @@ final class ContainerFactory
 		// Comparing spl_object_id()s would be wrong: an id is recycled as soon as its
 		// container is freed, so a fresh container could inherit the last initialized
 		// one's id and silently skip installing its own global state.
-		$lastInitializedContainer = self::$lastInitializedContainer !== null ? self::$lastInitializedContainer->get() : null;
+		$lastInitializedContainer = self::$lastInitializedContainer?->get();
 		if ($lastInitializedContainer === $container) {
 			return;
 		}

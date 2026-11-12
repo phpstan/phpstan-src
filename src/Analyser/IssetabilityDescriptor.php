@@ -131,7 +131,7 @@ final class IssetabilityDescriptor
 			throw new ShouldNotHappenException();
 		}
 
-		$inner = $this->innerResult !== null ? $this->innerResult->getIssetabilityResolution($scope, $useNativeTypes, $reprocessUntrackedLinks) : null;
+		$inner = $this->innerResult?->getIssetabilityResolution($scope, $useNativeTypes, $reprocessUntrackedLinks);
 
 		$propertyReflection = $reflectionResolver($scope);
 		if ($propertyReflection === null) {

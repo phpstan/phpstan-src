@@ -131,7 +131,7 @@ final class PropertyFetchHandler implements ExprHandler
 				$varResult->getVariableFlow(),
 				$nameResult !== null && $mayShortCircuit
 					? VariableFlow::choice($nameResult->getVariableFlow(), null)
-					: ($nameResult !== null ? $nameResult->getVariableFlow() : null),
+					: $nameResult?->getVariableFlow(),
 				VariableFlowBuilder::throws($expr, $throwPoints),
 			),
 			hasYield: $hasYield,
@@ -200,7 +200,7 @@ final class PropertyFetchHandler implements ExprHandler
 		);
 		return $result->withDependencies(Dependencies::merge(
 			$varResult->getDependencies(),
-			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$nameResult?->getDependencies(),
 			$this->getDependencies($scopeBeforeVar, $expr, $varResult, $result),
 		));
 	}

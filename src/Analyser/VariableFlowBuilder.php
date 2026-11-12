@@ -51,7 +51,7 @@ final class VariableFlowBuilder
 		$flows = [];
 		foreach ($call->getArgs() as $arg) {
 			$result = $argsResult->findArgResult($arg->value) ?? $storage->findExpressionResult($arg->value);
-			$flows[] = $result !== null ? $result->getVariableFlow() : null;
+			$flows[] = $result?->getVariableFlow();
 			if (!$arg->byRef && !$argsResult->isPassedByReference($arg->value)) {
 				continue;
 			}
@@ -65,7 +65,7 @@ final class VariableFlowBuilder
 	{
 		if ($node instanceof Expr) {
 			$result = $storage->findExpressionResult($node);
-			return $result !== null ? $result->getVariableFlow() : null;
+			return $result?->getVariableFlow();
 		}
 		return null;
 	}

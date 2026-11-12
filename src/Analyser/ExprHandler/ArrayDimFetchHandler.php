@@ -191,7 +191,7 @@ final class ArrayDimFetchHandler implements ExprHandler
 			return null;
 		}
 		$target = $context->getValueFlowTarget();
-		return VariableFlow::read($expr->var->name, $target !== null ? $target->getId() : null, offset: $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null);
+		return VariableFlow::read($expr->var->name, $target?->getId(), offset: $dimResult !== null ? VariableWriteOffset::fromType($dimResult->getType()) : null);
 	}
 
 }

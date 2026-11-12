@@ -67,7 +67,7 @@ final class IssetabilityResolution
 
 		if ($link->isOffset()) {
 			if (!$link->getIsOffsetAccessible()->yes()) {
-				return $result ?? ($this->inner !== null ? $this->inner->isSetUndefined() : null);
+				return $result ?? $this->inner?->isSetUndefined();
 			}
 
 			$hasOffsetValue = $link->getHasOffsetValue();
@@ -92,7 +92,7 @@ final class IssetabilityResolution
 
 		if ($link->isProperty()) {
 			if ($link->getPropertyReflection() === null || !$link->isReflectionNative()) {
-				return $this->inner !== null ? $this->inner->isSetUndefined() : null;
+				return $this->inner?->isSetUndefined();
 			}
 
 			if (
@@ -102,7 +102,7 @@ final class IssetabilityResolution
 				&& !$link->nativeHasDefaultValue()
 				&& (!$link->nativeReflectionExists() || !$link->nativeIsPromoted() || (!$link->nativeIsReadOnly() && !$link->nativeIsHooked()))
 			) {
-				return $this->inner !== null ? $this->inner->isSetUndefined() : null;
+				return $this->inner?->isSetUndefined();
 			}
 
 			if ($result !== null) {
@@ -135,18 +135,18 @@ final class IssetabilityResolution
 
 		if ($link->isOffset()) {
 			if (!$link->getIsOffsetAccessible()->yes()) {
-				return $this->inner !== null ? $this->inner->isSetUndefined() : null;
+				return $this->inner?->isSetUndefined();
 			}
 
 			if (!$link->getHasOffsetValue()->no()) {
-				return $this->inner !== null ? $this->inner->isSetUndefined() : null;
+				return $this->inner?->isSetUndefined();
 			}
 
 			return false;
 		}
 
 		if ($link->isProperty()) {
-			return $this->inner !== null ? $this->inner->isSetUndefined() : null;
+			return $this->inner?->isSetUndefined();
 		}
 
 		return null;

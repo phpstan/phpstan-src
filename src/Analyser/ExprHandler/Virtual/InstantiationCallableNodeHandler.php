@@ -66,7 +66,7 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($classResult !== null ? $classResult->getVariableFlow() : null),
+			variableFlow: VariableFlow::sequence($classResult?->getVariableFlow()),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
@@ -76,7 +76,7 @@ final class InstantiationCallableNodeHandler implements ExprHandler
 		);
 
 		return $result->withDependencies(Dependencies::merge(
-			$classResult !== null ? $classResult->getDependencies() : null,
+			$classResult?->getDependencies(),
 			$this->getDependencies($beforeScope, $expr, $classResult, $result),
 		));
 	}

@@ -336,9 +336,7 @@ final class RegexGroupParser
 		) {
 			$astWalkResult = $astWalkResult->addCapturingGroup($group);
 
-			if ($alternation !== null) {
-				$alternation->pushGroup($combinationIndex, $group);
-			}
+			$alternation?->pushGroup($combinationIndex, $group);
 		}
 
 		foreach ($ast->getChildren() as $child) {

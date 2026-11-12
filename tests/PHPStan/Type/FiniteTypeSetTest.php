@@ -201,8 +201,8 @@ class FiniteTypeSetTest extends PHPStanTestCase
 		$actual = $type->tryRemove($otherType);
 
 		$this->assertSame(
-			$expected === null ? null : $expected->describe(VerbosityLevel::precise()),
-			$actual === null ? null : $actual->describe(VerbosityLevel::precise()),
+			$expected?->describe(VerbosityLevel::precise()),
+			$actual?->describe(VerbosityLevel::precise()),
 			sprintf('%s -> tryRemove(%s)', $type->describe(VerbosityLevel::precise()), $otherType->describe(VerbosityLevel::precise())),
 		);
 	}

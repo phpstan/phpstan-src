@@ -341,7 +341,7 @@ final class DefaultNarrowingHelper
 
 		$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 		$storage = $s->getCurrentExpressionResultStorage();
-		$result = $storage !== null ? $storage->findExpressionResult($expr) : null;
+		$result = $storage?->findExpressionResult($expr);
 		if ($result === null) {
 			return $default;
 		}
@@ -418,7 +418,7 @@ final class DefaultNarrowingHelper
 				return $this->createSubjectTypes(
 					$s,
 					$expr,
-					$storage !== null ? $storage->findExpressionResult($expr) : null,
+					$storage?->findExpressionResult($expr),
 					new NullType(),
 					TypeSpecifierContext::createFalse(),
 				);
@@ -458,7 +458,7 @@ final class DefaultNarrowingHelper
 		return $this->createSubjectTypes(
 			$walkScope,
 			$subject,
-			$subjectResult ?? ($storage !== null ? $storage->findExpressionResult($subject) : null),
+			$subjectResult ?? $storage?->findExpressionResult($subject),
 			$type,
 			$context,
 		);
@@ -847,7 +847,7 @@ final class DefaultNarrowingHelper
 			}
 
 			$storage = $scope->getCurrentExpressionResultStorage();
-			$result = $storage !== null ? $storage->findExpressionResult($expr) : null;
+			$result = $storage?->findExpressionResult($expr);
 			if ($result !== null) {
 				return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 			}
@@ -1027,7 +1027,7 @@ final class DefaultNarrowingHelper
 		}
 
 		$argumentStorage = $scope->getCurrentExpressionResultStorage();
-		$argumentResult = $argumentStorage !== null ? $argumentStorage->findExpressionResult($argumentExpr) : null;
+		$argumentResult = $argumentStorage?->findExpressionResult($argumentExpr);
 		if ($argumentResult === null && $argumentExpr instanceof CallLike && !$this->mayRememberCallSubject($scope, $argumentExpr)) {
 			// old create()'s purity gate, derived from reflection instead of a walk
 			return null;

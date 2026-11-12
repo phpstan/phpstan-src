@@ -82,8 +82,8 @@ final class YieldHandler implements ExprHandler
 
 		$scope = $scope->addTemplateArgumentConstraints($nodeScopeResolver->collectYieldSend(
 			$scope,
-			$keyResult !== null ? $keyResult->getType() : null,
-			$valueResult !== null ? $valueResult->getType() : null,
+			$keyResult?->getType(),
+			$valueResult?->getType(),
 		));
 
 		// the enclosing function is lexical - the generator TSend type does not
@@ -94,7 +94,7 @@ final class YieldHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($keyResult !== null ? $keyResult->getVariableFlow() : null, $valueResult !== null ? $valueResult->getVariableFlow() : null, VariableFlowBuilder::throws($expr, $throwPoints)),
+			variableFlow: VariableFlow::sequence($keyResult?->getVariableFlow(), $valueResult?->getVariableFlow(), VariableFlowBuilder::throws($expr, $throwPoints)),
 			hasYield: true,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,
@@ -113,7 +113,7 @@ final class YieldHandler implements ExprHandler
 				return $generatorSendType;
 			},
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
-			dependencies: Dependencies::merge($keyResult !== null ? $keyResult->getDependencies() : null, $valueResult !== null ? $valueResult->getDependencies() : null),
+			dependencies: Dependencies::merge($keyResult?->getDependencies(), $valueResult?->getDependencies()),
 		);
 	}
 

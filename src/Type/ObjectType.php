@@ -1850,7 +1850,7 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	private function matchAllowedSubTypes(array $subtractedTypes): ?Type
 	{
 		$classReflection = $this->getClassReflection();
-		$allowedSubTypes = $classReflection !== null ? $classReflection->getAllowedSubTypes() : null;
+		$allowedSubTypes = $classReflection?->getAllowedSubTypes();
 		if ($allowedSubTypes === null) {
 			return null;
 		}

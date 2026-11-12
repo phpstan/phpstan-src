@@ -42,7 +42,7 @@ final class NamespaceUsesTracker
 	public function enterNode(Node $node): void
 	{
 		if ($node instanceof Node\Stmt\Namespace_) {
-			$this->namespace = $node->name !== null ? $node->name->toString() : null;
+			$this->namespace = $node->name?->toString();
 			$this->uses = [];
 			$this->constUses = [];
 		} elseif ($node instanceof Node\Stmt\Use_) {

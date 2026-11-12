@@ -130,7 +130,7 @@ final class StaticVariableInference
 	{
 		$frame = $scope->getCurrentTemplateArgumentFrame();
 
-		return $frame !== null ? $frame->getStaticVariableTypes($var) : null;
+		return $frame?->getStaticVariableTypes($var);
 	}
 
 	/**

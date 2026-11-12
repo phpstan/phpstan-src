@@ -293,7 +293,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 		$phpDocThrowsTag = null;
 
 		$deprecation = $this->deprecationProvider->getFunctionDeprecation($reflectionFunction);
-		$deprecationDescription = $deprecation === null ? null : $deprecation->getDescription();
+		$deprecationDescription = $deprecation?->getDescription();
 		$isDeprecated = $deprecation !== null;
 
 		$isInternal = false;
@@ -359,8 +359,8 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$reflectionFunction,
 			$templateTypeMap,
 			$phpDocParameterTypes,
-			$phpDocReturnTag !== null ? $phpDocReturnTag->getType() : null,
-			$phpDocThrowsTag !== null ? $phpDocThrowsTag->getType() : null,
+			$phpDocReturnTag?->getType(),
+			$phpDocThrowsTag?->getType(),
 			$deprecationDescription,
 			$isDeprecated,
 			$isInternal,
@@ -452,7 +452,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 
 		$deprecation = $this->deprecationProvider->getConstantDeprecation($constantReflection);
 		$isDeprecated = $deprecation !== null;
-		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
+		$deprecatedDescription = $deprecation?->getDescription();
 
 		if ($isDeprecated === false && $docComment !== null) {
 			$resolvedPhpDoc = $this->fileTypeMapper->getResolvedPhpDoc($fileName, null, null, null, $docComment);

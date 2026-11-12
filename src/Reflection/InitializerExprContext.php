@@ -60,7 +60,7 @@ final class InitializerExprContext implements NamespaceAnswerer
 			$scope->getNamespace(),
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$scope->isInAnonymousFunction() ? '{closure}' : ($function !== null ? $function->getName() : null),
+			$scope->isInAnonymousFunction() ? '{closure}' : $function?->getName(),
 			$scope->isInAnonymousFunction() ? '{closure}' : ($function instanceof MethodReflection
 				? sprintf('%s::%s', $function->getDeclaringClass()->getName(), $function->getName())
 				: ($function instanceof FunctionReflection ? $function->getName() : null)),

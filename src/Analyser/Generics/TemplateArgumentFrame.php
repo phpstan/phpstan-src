@@ -147,7 +147,7 @@ final class TemplateArgumentFrame
 			return $byRefSite[2] ? 'local' : 'escaped';
 		}
 
-		return $this->parent !== null ? $this->parent->getByRefSiteMode($site) : null;
+		return $this->parent?->getByRefSiteMode($site);
 	}
 
 	/**

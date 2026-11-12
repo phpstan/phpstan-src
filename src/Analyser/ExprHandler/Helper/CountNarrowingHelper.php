@@ -52,7 +52,7 @@ final class CountNarrowingHelper
 		// the mode argument was processed with the call - a census over the suite
 		// and self-analysis found every ask answered from the stored result
 		$storage = $scope->getCurrentExpressionResultStorage();
-		$modeResult = $storage !== null ? $storage->findExpressionResult($modeArg) : null;
+		$modeResult = $storage?->findExpressionResult($modeArg);
 		if ($modeResult === null) {
 			throw new ShouldNotHappenException(sprintf('count() mode argument on line %d has no stored ExpressionResult.', $modeArg->getStartLine()));
 		}

@@ -424,7 +424,7 @@ final class FuncCallHandler implements ExprHandler
 					&& in_array($expr->name->toLowerString(), ['array_key_exists', 'key_exists', 'in_array', 'is_subclass_of'], true)
 				) {
 					$callStorage = $storageRef->get();
-					$callResult = $callStorage === null ? null : $callStorage->findExpressionResult($expr);
+					$callResult = $callStorage?->findExpressionResult($expr);
 					if ($callResult !== null) {
 						$isAlways = $this->impossibleCheckTypeHelper->findSpecifiedType($beforeScope, $expr, $callResult, $argsResult);
 						if ($isAlways !== null) {
@@ -587,16 +587,16 @@ final class FuncCallHandler implements ExprHandler
 		}
 		$byRefFlow = $byRefFlows === [] ? null : VariableFlow::sequence(...$byRefFlows);
 		$variableFlow = VariableFlow::sequence(
-			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			$nameResult?->getVariableFlow(),
 			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
-			self::getCallVariableFlow($functionReflection !== null ? $functionReflection->getName() : null, $normalizedExpr, $argsResult, $scope),
+			self::getCallVariableFlow($functionReflection?->getName(), $normalizedExpr, $argsResult, $scope),
 			VariableFlowBuilder::throws($expr, $throwPoints),
 			$byRefFlow,
 			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
 		);
 
 		$dependencies = Dependencies::merge(
-			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$nameResult?->getDependencies(),
 			$argsResult->getDependencies(),
 			$this->getDependencies($beforeScope, $functionReflection, $nameResult, $preliminaryResult),
 		);

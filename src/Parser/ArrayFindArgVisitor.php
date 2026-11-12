@@ -24,9 +24,7 @@ final class ArrayFindArgVisitor extends NodeVisitorAbstract
 			$functionName = $node->name->toLowerString();
 			if (in_array($functionName, ['array_all', 'array_any', 'array_find', 'array_find_key'], true)) {
 				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'array');
-				if ($arg !== null) {
-					$arg->setAttribute(self::ATTRIBUTE_NAME, true);
-				}
+				$arg?->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}
 		return null;

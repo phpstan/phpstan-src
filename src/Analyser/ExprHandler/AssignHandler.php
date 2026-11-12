@@ -728,7 +728,7 @@ final class AssignHandler implements ExprHandler
 				targetReadResult: $targetReadResult,
 				targetChainResults: $targetChainResults,
 				variableNameResult: $variableNameResult,
-				dependencies: $variableNameResult !== null ? $variableNameResult->getDependencies() : null,
+				dependencies: $variableNameResult?->getDependencies(),
 			);
 		}
 
@@ -1819,7 +1819,7 @@ final class AssignHandler implements ExprHandler
 				$throwPoints = array_merge($throwPoints, $result->getThrowPoints());
 				$impurePoints = array_merge($impurePoints, $result->getImpurePoints());
 				$isAlwaysTerminating = $isAlwaysTerminating || $result->isAlwaysTerminating();
-				$writeDependencies[] = $keyResult !== null ? $keyResult->getDependencies() : null;
+				$writeDependencies[] = $keyResult?->getDependencies();
 				$writeDependencies[] = $result->getDependencies();
 			}
 		} elseif ($kind === PreparedAssignTarget::KIND_EXISTING_ARRAY_DIM_FETCH) {

@@ -486,7 +486,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 */
 	private function readExprType(?ExpressionResultStorage $storage, Node\Expr $expr, MutatingScope $readScope, bool $native): Type
 	{
-		$result = $storage !== null ? $storage->findExpressionResult($expr) : null;
+		$result = $storage?->findExpressionResult($expr);
 		if ($result !== null) {
 			return $native ? $result->getNativeType() : $result->getType();
 		}
@@ -676,7 +676,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		// scope re-pricing of the body expression would not consult. The
 		// flavour follows the read scope: a native build promotes it (either
 		// via $native or by walking on an already-promoted scope).
-		$storedBodyResult = $storage !== null ? $storage->findExpressionResult($expr->expr) : null;
+		$storedBodyResult = $storage?->findExpressionResult($expr->expr);
 		if ($storedBodyResult !== null) {
 			$returnType = $storedBodyResult->getKeepVoidType($readScope->nativeTypesPromoted);
 		} else {

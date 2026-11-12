@@ -242,7 +242,7 @@ final class NewHandler implements ExprHandler
 		}
 
 		$variants = $constructorReflection !== null ? $constructorReflection->getVariants() : [];
-		$namedArgumentsVariants = $constructorReflection !== null ? $constructorReflection->getNamedArgumentsVariants() : null;
+		$namedArgumentsVariants = $constructorReflection?->getNamedArgumentsVariants();
 		$scopeBeforeArgs = $scope;
 		$argsResult = $this->argumentsHandler->processArgs($nodeScopeResolver, $stmt, $constructorReflection, null, $variants, $namedArgumentsVariants, $normalizedExpr, $scope, $storage, $nodeCallback, $context);
 		$resolvedParametersAcceptor = $argsResult->getResolvedParametersAcceptor();
@@ -320,7 +320,7 @@ final class NewHandler implements ExprHandler
 		}
 
 		$variableFlow = VariableFlow::sequence(
-			$classResult !== null ? $classResult->getVariableFlow() : null,
+			$classResult?->getVariableFlow(),
 			VariableFlowBuilder::arguments($expr, $argsResult, $storage),
 			VariableFlowBuilder::throws($expr, $throwPoints),
 			$isAlwaysTerminating ? VariableFlow::exit(VariableFlow::STOP) : null,
@@ -335,7 +335,7 @@ final class NewHandler implements ExprHandler
 			$ownDependencies = null;
 		}
 		$dependencies = Dependencies::merge(
-			$classResult !== null ? $classResult->getDependencies() : null,
+			$classResult?->getDependencies(),
 			$anonymousClassDependencies,
 			$argsResult->getDependencies(),
 			$ownDependencies,

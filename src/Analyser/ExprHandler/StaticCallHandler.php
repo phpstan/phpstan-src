@@ -425,8 +425,8 @@ final class StaticCallHandler implements ExprHandler
 
 		$argumentsFlow = VariableFlowBuilder::arguments($expr, $argsResult, $storage);
 		$variableFlow = VariableFlow::sequence(
-			$classResult !== null ? $classResult->getVariableFlow() : null,
-			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			$classResult?->getVariableFlow(),
+			$nameResult?->getVariableFlow(),
 			// the short-circuited world evaluates none of the arguments
 			$mayShortCircuit ? VariableFlow::choice($argumentsFlow, null) : $argumentsFlow,
 			VariableFlowBuilder::throws($expr, $throwPoints),
@@ -453,8 +453,8 @@ final class StaticCallHandler implements ExprHandler
 			$calledOnTypes = [...$calledOnTypes, ...DependencyTypes::ofCalledMethod($walkMethodReflection, false)];
 		}
 		$dependencies = Dependencies::merge(
-			$classResult !== null ? $classResult->getDependencies() : null,
-			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$classResult?->getDependencies(),
+			$nameResult?->getDependencies(),
 			$argsResult->getDependencies(),
 			Dependencies::create($beforeScope->getFile(), $calledOnTypes, $calledOnClassNames),
 		);

@@ -55,7 +55,7 @@ final class ExpressionResultStorage
 
 	public function findExpressionResult(Expr $expr): ?ExpressionResult
 	{
-		return $this->exprResults[$expr] ?? ($this->fallback !== null ? $this->fallback->findExpressionResult($expr) : null);
+		return $this->exprResults[$expr] ?? $this->fallback?->findExpressionResult($expr);
 	}
 
 	/**

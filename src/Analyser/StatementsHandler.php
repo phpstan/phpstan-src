@@ -1950,7 +1950,7 @@ final class StatementsHandler
 				$scope->getFile(),
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
+				$function?->getName(),
 				$comment->getText(),
 			);
 			foreach ($resolvedPhpDoc->getVarTags() as $varTag) {
@@ -1976,7 +1976,7 @@ final class StatementsHandler
 				$scope->getFile(),
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
+				$function?->getName(),
 				$comment->getText(),
 			);
 
@@ -2011,7 +2011,7 @@ final class StatementsHandler
 				$scope->getFile(),
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
+				$function?->getName(),
 				$comment->getText(),
 			);
 
@@ -2098,7 +2098,7 @@ final class StatementsHandler
 				$scope->getFile(),
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
+				$function?->getName(),
 				$comment->getText(),
 			);
 			foreach ($resolvedPhpDoc->getVarTags() as $name => $varTag) {

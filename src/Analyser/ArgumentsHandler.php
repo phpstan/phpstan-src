@@ -758,7 +758,7 @@ final class ArgumentsHandler
 		) {
 			$writebackAcceptor = $resolvedAcceptor;
 		}
-		$writebackParameters = $writebackAcceptor !== null ? $writebackAcceptor->getParameters() : null;
+		$writebackParameters = $writebackAcceptor?->getParameters();
 		if ($writebackParameters !== null) {
 			foreach ($args as $i => $arg) {
 				$assignByReference = false;

@@ -731,7 +731,7 @@ final class IgnoreErrorsConfigFixer
 			$items = [];
 			// a plain string pattern has no items
 			foreach ($entryItem->value instanceof NeonArrayNode ? $entryItem->value->items : [] as $item) {
-				$key = $item->key !== null ? $item->key->toValue() : null;
+				$key = $item->key?->toValue();
 				if (!is_string($key) || !in_array($key, self::ENTRY_KEYS, true)) {
 					continue 2;
 				}

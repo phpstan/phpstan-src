@@ -77,7 +77,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 
 		// a partial function application evaluates its bound arguments when the
 		// closure is created
-		$variableFlows = [$nameResult !== null ? $nameResult->getVariableFlow() : null];
+		$variableFlows = [$nameResult?->getVariableFlow()];
 		$argsDependencies = [];
 		foreach ($expr->getOriginalNode()->getRawArgs() as $arg) {
 			if (!$arg instanceof Arg) {
@@ -107,7 +107,7 @@ final class FunctionCallableNodeHandler implements ExprHandler
 		);
 
 		return $result->withDependencies(Dependencies::merge(
-			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$nameResult?->getDependencies(),
 			$this->getDependencies($beforeScope, $expr, $nameResult, $result),
 			...$argsDependencies,
 		));

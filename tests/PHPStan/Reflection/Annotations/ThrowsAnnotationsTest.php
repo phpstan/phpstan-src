@@ -81,7 +81,7 @@ class ThrowsAnnotationsTest extends PHPStanTestCase
 		foreach ($throwsAnnotations as $methodName => $type) {
 			$methodAnnotation = $class->getMethod($methodName, $scope);
 			$throwType = $methodAnnotation->getThrowType();
-			$this->assertSame($type, $throwType !== null ? $throwType->describe(VerbosityLevel::typeOnly()) : null);
+			$this->assertSame($type, $throwType?->describe(VerbosityLevel::typeOnly()));
 		}
 	}
 

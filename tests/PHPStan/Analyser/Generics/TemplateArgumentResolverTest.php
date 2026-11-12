@@ -63,7 +63,7 @@ class TemplateArgumentResolverTest extends PHPStanTestCase
 
 	private static function describe(?Type $type): ?string
 	{
-		return $type !== null ? $type->describe(VerbosityLevel::precise()) : null;
+		return $type?->describe(VerbosityLevel::precise());
 	}
 
 	public function testInvariantSendResolvesToTheFirstAcceptingSend(): void

@@ -262,7 +262,7 @@ final class ValueSet
 		foreach ($this->getConstantStrings() as $constantString) {
 			$types[] = self::getConstantStringPartnerType($constantString->getValue(), $phpVersion);
 		}
-		$stringType = $this->strings !== null ? $this->strings->getType() : null;
+		$stringType = $this->strings?->getType();
 		if ($stringType !== null) {
 			$types[] = self::getStringPartnerType($stringType, $phpVersion);
 		}
@@ -802,7 +802,7 @@ final class ValueSet
 		foreach ($this->getConstantStrings() as $constantString) {
 			$members[] = self::createConstantString($constantString);
 		}
-		$stringType = $this->strings !== null ? $this->strings->getType() : null;
+		$stringType = $this->strings?->getType();
 		if ($stringType !== null) {
 			$members[] = self::createStrings($stringType);
 		}
@@ -831,7 +831,7 @@ final class ValueSet
 			}
 			$numbers = $numbers->union($stringNumbers);
 		}
-		$stringType = $this->strings !== null ? $this->strings->getType() : null;
+		$stringType = $this->strings?->getType();
 		if ($stringType !== null) {
 			$stringNumbers = $stringType->toNumber()->toNumberSet();
 			if ($stringNumbers === null) {
@@ -1018,8 +1018,8 @@ final class ValueSet
 			|| $leftNumberType instanceof BenevolentUnionType
 			|| $rightNumberType instanceof BenevolentUnionType;
 
-		$leftNumbers = $this->unknown || $right->unknown ? null : ($leftNumberType !== null ? $leftNumberType->toNumberSet() : null);
-		$rightNumbers = $this->unknown || $right->unknown ? null : ($rightNumberType !== null ? $rightNumberType->toNumberSet() : null);
+		$leftNumbers = $this->unknown || $right->unknown ? null : $leftNumberType?->toNumberSet();
+		$rightNumbers = $this->unknown || $right->unknown ? null : $rightNumberType?->toNumberSet();
 		if ($leftNumbers !== null && $rightNumbers !== null) {
 			if ($operator === '+') {
 				$result = $leftNumbers->add($rightNumbers, $phpVersion);
@@ -1105,7 +1105,7 @@ final class ValueSet
 		}
 
 		$otherTypes = $this->getConstantStrings();
-		foreach ([$this->strings !== null ? $this->strings->getType() : null, $this->arrays, $this->objects] as $type) {
+		foreach ([$this->strings?->getType(), $this->arrays, $this->objects] as $type) {
 			if ($type === null) {
 				continue;
 			}
@@ -1491,7 +1491,7 @@ final class ValueSet
 		}
 
 		$types = $this->getConstantStrings();
-		$stringType = $this->strings !== null ? $this->strings->getType() : null;
+		$stringType = $this->strings?->getType();
 		if ($stringType !== null) {
 			$types[] = $stringType;
 		}

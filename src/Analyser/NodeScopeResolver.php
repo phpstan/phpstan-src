@@ -636,7 +636,7 @@ class NodeScopeResolver
 	public function readTypeOfMaybeStored(Expr $expr, MutatingScope $scope): Type
 	{
 		$storage = $scope->getCurrentExpressionResultStorage();
-		$result = $storage !== null ? $storage->findExpressionResult($expr) : null;
+		$result = $storage?->findExpressionResult($expr);
 		if ($result !== null) {
 			return $result->getTypeOnScope($scope, $scope->nativeTypesPromoted);
 		}
@@ -1284,7 +1284,7 @@ class NodeScopeResolver
 
 		$function = $scope->getFunction();
 
-		return $function !== null ? $function->getReturnType() : null;
+		return $function?->getReturnType();
 	}
 
 }

@@ -74,7 +74,7 @@ final class ExportedNodeResolver
 
 			return new ExportedClassNode(
 				$className,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$node->isAbstract(),
 				$node->isFinal(),
 				$extendsName,
@@ -83,16 +83,16 @@ final class ExportedNodeResolver
 				array_map(static function (Node\Stmt\TraitUseAdaptation $adaptation): ExportedTraitUseAdaptation {
 					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 						return ExportedTraitUseAdaptation::createAlias(
-							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
+							$adaptation->trait?->toString(),
 							$adaptation->method->toString(),
 							$adaptation->newModifier,
-							$adaptation->newName !== null ? $adaptation->newName->toString() : null,
+							$adaptation->newName?->toString(),
 						);
 					}
 
 					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 						return ExportedTraitUseAdaptation::createPrecedence(
-							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
+							$adaptation->trait?->toString(),
 							$adaptation->method->toString(),
 							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
 						);
@@ -113,7 +113,7 @@ final class ExportedNodeResolver
 
 			return new ExportedInterfaceNode(
 				$interfaceName,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$extendsNames,
 				$this->exportClassStatements($node->stmts, $interfaceName, $namespaceUses),
 			);
@@ -132,7 +132,7 @@ final class ExportedNodeResolver
 			return new ExportedEnumNode(
 				$enumName,
 				$scalarType,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$implementsNames,
 				$this->exportClassStatements($node->stmts, $enumName, $namespaceUses),
 				$this->exportAttributeNodes($node->attrGroups),
@@ -156,21 +156,21 @@ final class ExportedNodeResolver
 
 			return new ExportedTraitNode(
 				$className,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$usedTraits,
 				array_map(static function (Node\Stmt\TraitUseAdaptation $adaptation): ExportedTraitUseAdaptation {
 					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
 						return ExportedTraitUseAdaptation::createAlias(
-							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
+							$adaptation->trait?->toString(),
 							$adaptation->method->toString(),
 							$adaptation->newModifier,
-							$adaptation->newName !== null ? $adaptation->newName->toString() : null,
+							$adaptation->newName?->toString(),
 						);
 					}
 
 					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
 						return ExportedTraitUseAdaptation::createPrecedence(
-							$adaptation->trait !== null ? $adaptation->trait->toString() : null,
+							$adaptation->trait?->toString(),
 							$adaptation->method->toString(),
 							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
 						);
@@ -193,7 +193,7 @@ final class ExportedNodeResolver
 
 			return new ExportedFunctionNode(
 				$functionName,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$node->byRef,
 				NodeTypePrinter::printType($node->returnType),
 				$this->exportParameterNodes($node->params, $namespaceUses),
@@ -269,7 +269,7 @@ final class ExportedNodeResolver
 				$param->variadic,
 				$param->default !== null,
 				$this->exportAttributeNodes($param->attrGroups),
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$param->flags,
 			);
 		}
@@ -314,7 +314,7 @@ final class ExportedNodeResolver
 
 				return new ExportedMethodNode(
 					$methodName,
-					$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+					$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 					$node->byRef,
 					$node->isPublic(),
 					$node->isPrivate(),
@@ -355,7 +355,7 @@ final class ExportedNodeResolver
 
 			return new ExportedPropertiesNode(
 				$names,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				NodeTypePrinter::printType($node->type),
 				$node->isPublic(),
 				$node->isPrivate(),
@@ -393,7 +393,7 @@ final class ExportedNodeResolver
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isFinal(),
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 			);
 		}
 
@@ -403,7 +403,7 @@ final class ExportedNodeResolver
 			return new ExportedEnumCaseNode(
 				$node->name->toString(),
 				$node->expr !== null ? $this->exprPrinter->printExpr($node->expr) : null,
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 			);
 		}
 
@@ -452,7 +452,7 @@ final class ExportedNodeResolver
 			}
 			$nodes[] = new ExportedPropertyHookNode(
 				$hook->name->toString(),
-				$this->exportPhpDocNode($docComment !== null ? $docComment->getText() : null, $namespaceUses),
+				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$hook->byRef,
 				$hook->body === null,
 				$hook->isFinal(),

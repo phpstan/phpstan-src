@@ -167,7 +167,15 @@ final class AnalyseApplication
 			$workerCount = $analyserResult->getWorkerCount();
 			$isResultCacheUsed = !$resultCache->isFullAnalysis();
 
-			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process($errors, $onlyFiles, $files, $hasInternalErrors, $finalizerResult->isCollectedDataRuleSkippedForOnlyFiles());
+			$collectedData = $resultCacheResult->getSavedCollectedData() ?? $analyserResult->getLazyCollectedData();
+			$ignoredErrorHelperProcessedResult = $ignoredErrorHelperResult->process(
+				$errors,
+				$onlyFiles,
+				$files,
+				$hasInternalErrors,
+				$finalizerResult->isCollectedDataRuleSkippedForOnlyFiles(),
+				$collectedData,
+			);
 			$fileSpecificErrors = $ignoredErrorHelperProcessedResult->getNotIgnoredErrors();
 			$notFileSpecificErrors = $ignoredErrorHelperProcessedResult->getOtherIgnoreMessages();
 			foreach ($ignoredErrorHelperProcessedResult->getIgnoredErrors() as [$ignoredError]) {
@@ -184,7 +192,6 @@ final class AnalyseApplication
 
 				$fixableIgnoredErrors[] = $locallyIgnoredError;
 			}
-			$collectedData = $resultCacheResult->getSavedCollectedData() ?? $analyserResult->getLazyCollectedData();
 		}
 
 		return new AnalysisResult(

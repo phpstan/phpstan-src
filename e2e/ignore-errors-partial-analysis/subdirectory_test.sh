@@ -87,3 +87,15 @@ function test_directory_without_ignores() {
 	echo "$OUTPUT"
 	assert_same "0" "$CODE"
 }
+
+# A rule on collected data reports that a call has no effect only when the called function is analysed too.
+# Unlike a trait, what the rule reports does not show in what the analysis records about the file.
+function test_rule_on_collected_data_across_directories() {
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw src/Calls 2>&1) && CODE=0 || CODE=$?
+	echo "$OUTPUT"
+	if [[ "$OUTPUT" == *'CallsPureFunction.php'* ]]; then
+		bashunit::todo 'the unmatched entry is reported, the rule cannot tell that srcc/pure-function.php is not analysed'
+		return
+	fi
+	assert_same "0" "$CODE"
+}

@@ -1,0 +1,14 @@
+includes:
+	- ignore-errors.neon
+
+parameters:
+	customRulesetUsed: true
+	paths:
+		- src
+		- srcc
+		- tests
+	scanDirectories:
+		- lib
+	excludePaths:
+		analyse:
+			- src/Excluded

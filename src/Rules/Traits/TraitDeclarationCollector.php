@@ -5,12 +5,15 @@ namespace PHPStan\Rules\Traits;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
-use PHPStan\DependencyInjection\RegisteredCollector;
+use PHPStan\DependencyInjection\AutowiredService;
 
 /**
+ * Registered regardless of the level, also with customRulesetUsed: which analysed files declare
+ * a trait decides which unmatched ignoreErrors entries are reported in a partial analysis.
+ *
  * @implements Collector<Node\Stmt\Trait_, array{string, int}>
  */
-#[RegisteredCollector(level: 4)]
+#[AutowiredService]
 final class TraitDeclarationCollector implements Collector
 {
 

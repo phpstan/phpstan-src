@@ -6,6 +6,7 @@ use Nette\Utils\Json;
 use Nette\Utils\JsonException;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
@@ -41,6 +42,8 @@ final class IgnoredErrorHelper
 	public function __construct(
 		private FileHelper $fileHelper,
 		private IgnoreErrorsConfigFixer $configFixer,
+		#[AutowiredParameter(ref: '@fileExcluderAnalyse')]
+		private FileExcluder $analyseFileExcluder,
 		#[AutowiredParameter]
 		private array $ignoreErrors,
 		#[AutowiredParameter]
@@ -183,6 +186,7 @@ final class IgnoredErrorHelper
 		return new IgnoredErrorHelperResult(
 			$this->fileHelper,
 			$this->configFixer,
+			$this->analyseFileExcluder,
 			$errors,
 			$otherIgnoreErrors,
 			$ignoreErrorsByFile,

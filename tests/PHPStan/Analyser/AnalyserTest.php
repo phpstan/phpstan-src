@@ -872,6 +872,7 @@ class AnalyserTest extends PHPStanTestCase
 		$ignoredErrorHelper = new IgnoredErrorHelper(
 			$this->getFileHelper(),
 			self::getContainer()->getByType(IgnoreErrorsConfigFixer::class),
+			self::getContainer()->getService('fileExcluderAnalyse'),
 			$ignoreErrors,
 			$reportUnmatchedIgnoredErrors,
 			$filePaths,

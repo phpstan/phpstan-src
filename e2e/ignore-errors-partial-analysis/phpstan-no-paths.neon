@@ -3,3 +3,5 @@ includes:
 
 parameters:
 	level: 8
+	scanDirectories:
+		- lib

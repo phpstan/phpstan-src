@@ -3,6 +3,7 @@
 namespace PHPStan\Analyser\Ignore;
 
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\File\FileExcluder;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
@@ -12,14 +13,8 @@ use function array_keys;
 use function count;
 use function is_array;
 use function is_string;
-use function rtrim;
 use function spl_object_id;
 use function sprintf;
-use function str_starts_with;
-use function strcspn;
-use function strrpos;
-use function substr;
-use const DIRECTORY_SEPARATOR;
 
 /**
  * `IgnoredErrorHelper` may collapse several configured ignores into one
@@ -60,6 +55,7 @@ final class IgnoredErrorHelperResult
 	public function __construct(
 		private FileHelper $fileHelper,
 		private IgnoreErrorsConfigFixer $configFixer,
+		private FileExcluder $analyseFileExcluder,
 		private array $errors,
 		private array $otherIgnoreErrors,
 		private array $ignoreErrorsByFile,
@@ -102,6 +98,8 @@ final class IgnoredErrorHelperResult
 	 * @param list<Error> $errors
 	 * @param string[] $analysedFiles
 	 * @param bool $collectedDataRuleSkipped see FinalizerResult::isCollectedDataRuleSkippedForOnlyFiles()
+	 * @param LazyCollectedData|null $collectedData what is known about the traits of the analysed files
+	 *        decides which unmatched entries are reported when the analysed paths do not cover the configured ones
 	 */
 	public function process(
 		array $errors,
@@ -109,6 +107,7 @@ final class IgnoredErrorHelperResult
 		array $analysedFiles,
 		bool $hasInternalErrors,
 		bool $collectedDataRuleSkipped = false,
+		?LazyCollectedData $collectedData = null,
 	): IgnoredErrorHelperProcessedResult
 	{
 		$unmatchedIgnoredErrors = $this->ignoreErrors;
@@ -369,19 +368,21 @@ final class IgnoredErrorHelperResult
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
 		if (!$hasInternalErrors && !$collectedDataRuleSkipped) {
-			$partialAnalysis = $this->isPartialAnalysis();
+			// asked only about an entry that would be reported; only an entry with `paths` has a part that differs from the entry
+			$judge = new UnmatchedIgnoredErrorJudge(
+				$this->fileHelper,
+				$this->analyseFileExcluder,
+				$analysedFiles,
+				$this->analysedPaths,
+				$this->analysedPathsFromConfig,
+				$collectedData,
+			);
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 				$reportUnmatched = is_array($unmatchedIgnoredError)
 					? ($unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors)
 					: $this->reportUnmatchedIgnoredErrors;
 				if ($reportUnmatched === false) {
 					continue;
-				}
-				if ($partialAnalysis && !isset($unmatchedIgnoredError['realPath'])) {
-					$unmatchedIgnoredError = $this->getAnalysedPart($unmatchedIgnoredError);
-					if ($unmatchedIgnoredError === null) {
-						continue;
-					}
 				}
 				$realCount = $realCounts[$i] ?? null;
 				if (
@@ -390,6 +391,9 @@ final class IgnoredErrorHelperResult
 					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($realCount < $unmatchedIgnoredError['count']) {
+						if ($judge->getJudgeablePart($unmatchedIgnoredError) === null) {
+							continue;
+						}
 						$matchedFile = $matchedAt[$i]['file'] ?? null;
 						$matchedLine = $matchedAt[$i]['line'] ?? null;
 						// $realCount is at least 1 (it was incremented in the closure)
@@ -419,6 +423,10 @@ final class IgnoredErrorHelperResult
 						continue;
 					}
 
+					if ($judge->getJudgeablePart($unmatchedIgnoredError) === null) {
+						continue;
+					}
+
 					$errors[] = new Error(
 						sprintf(
 							'%s %s was not matched in reported errors.',
@@ -431,6 +439,11 @@ final class IgnoredErrorHelperResult
 						fixedErrorDiffs: $this->configFixer->removeUnmatched($unmatchedIgnoredError),
 					);
 				} elseif (!$onlyFiles) {
+					$unmatchedIgnoredError = $judge->getJudgeablePart($unmatchedIgnoredError);
+					if ($unmatchedIgnoredError === null) {
+						continue;
+					}
+
 					$message = sprintf(
 						'%s %s was not matched in reported errors.',
 						IgnoredError::getIgnoredErrorLabel($unmatchedIgnoredError),
@@ -456,90 +469,6 @@ final class IgnoredErrorHelperResult
 		}
 
 		return new IgnoredErrorHelperProcessedResult($errors, $ignoredErrors, $stringErrors);
-	}
-
-	/**
-	 * The analysed paths do not cover all the paths from the configuration. Without paths
-	 * in the configuration, the analysed directories are taken as the whole project.
-	 */
-	private function isPartialAnalysis(): bool
-	{
-		foreach ($this->analysedPathsFromConfig as $configPath) {
-			if (!self::isUnder($configPath, $this->analysedPaths)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Of an entry not about a single file, the part about the analysed paths only. What is not
-	 * analysed reports no errors, so the rest of the entry cannot be reported as unmatched.
-	 *
-	 * @param string|ExpandedIgnoredErrorData $ignoreError
-	 * @return ExpandedIgnoredErrorData|null
-	 */
-	private function getAnalysedPart(string|array $ignoreError): ?array
-	{
-		if (!is_array($ignoreError)) {
-			return null;
-		}
-
-		if (isset($ignoreError['path'])) {
-			return $this->isAnalysedPath($ignoreError['path']) ? $ignoreError : null;
-		}
-
-		if (!isset($ignoreError['paths'])) {
-			return null;
-		}
-
-		foreach ($ignoreError['paths'] as $j => $path) {
-			if ($this->isAnalysedPath($path)) {
-				continue;
-			}
-
-			unset($ignoreError['paths'][$j]);
-		}
-
-		return count($ignoreError['paths']) === 0 ? null : $ignoreError;
-	}
-
-	/**
-	 * A directory, a fnmatch pattern, or a path that does not exist.
-	 */
-	private function isAnalysedPath(string $path): bool
-	{
-		$path = $this->fileHelper->normalizePath($path);
-		if (FileExcluder::isFnmatchPattern($path)) {
-			// the pattern matches only files under the directory before its first wildcard
-			$separatorPosition = strrpos(substr($path, 0, strcspn($path, '*?[]')), DIRECTORY_SEPARATOR);
-			if ($separatorPosition === false) {
-				return false;
-			}
-
-			$path = substr($path, 0, $separatorPosition);
-		}
-
-		return self::isUnder($path, $this->analysedPaths);
-	}
-
-	/**
-	 * Compares whole path segments, src/Foo.php is not under srcc/.
-	 *
-	 * @param string[] $directories
-	 */
-	private static function isUnder(string $path, array $directories): bool
-	{
-		$path = rtrim($path, DIRECTORY_SEPARATOR);
-		foreach ($directories as $directory) {
-			$directory = rtrim($directory, DIRECTORY_SEPARATOR);
-			if ($path === $directory || str_starts_with($path, $directory . DIRECTORY_SEPARATOR)) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 }

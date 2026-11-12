@@ -37,3 +37,53 @@ parameters:
 		- '#never globally#'
 		-
 			message: '#never globally either#'
+
+		# SharedTrait's error is reported in the files of the classes using it
+		-
+			identifier: return.type
+			path: src/Classes/UsesSharedTrait.php
+		-
+			identifier: return.type
+			path: tests/TestUsesSharedTrait.php
+		# InnerTrait's error is reported in the file of the class using OuterTrait
+		-
+			identifier: return.type
+			path: src/Classes/UsesNestedTrait.php
+		-
+			message: '#never in SharedTrait#'
+			path: src/Traits/SharedTrait.php
+		-
+			message: '#never in Classes directory#'
+			path: src/Classes
+		# LibTrait is not in the analysed paths even when the whole project is analysed
+		-
+			message: '#never in UsesLibTrait#'
+			path: src/Classes/UsesLibTrait.php
+		# one error is the class's own, the other one is SharedTrait's
+		-
+			identifier: return.type
+			path: src/Classes/UsesSharedTraitWithOwnError.php
+			count: 2
+		-
+			identifier: return.type
+			path: src/Classes/EnumUsesSharedTrait.php
+		-
+			identifier: return.type
+			path: src/Classes/AnonymousUsesSharedTrait.php
+		-
+			message: '#never in ChildOfTraitUser#'
+			path: src/Inherit/ChildOfTraitUser.php
+		# ExcludedTrait is excluded from the analysis even when the whole project is analysed
+		-
+			message: '#never in UsesExcludedTrait#'
+			path: src/Classes/UsesExcludedTrait.php
+		-
+			message: '#never in ClassAndTrait#'
+			path: src/Mixed/ClassAndTrait.php
+		-
+			identifier: trait.unused
+			path: src/Mixed/ClassAndTrait.php
+		# reported only when the declaration of the called function is analysed too
+		-
+			identifier: function.resultUnused
+			path: src/Calls/CallsPureFunction.php

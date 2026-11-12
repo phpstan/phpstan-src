@@ -3,23 +3,25 @@
 namespace PHPStan\Rules\Traits;
 
 use PhpParser\Node;
+use PHPStan\Analyser\AnalysedFileDependencyCollector;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\Scope;
-use PHPStan\Collectors\CollectorWithPaths;
+use PHPStan\Collectors\Collector;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ClassReflection;
 use function array_keys;
-use function array_map;
 
 /**
- * The files of the traits analysed as a part of a class: the ones it uses, also through other traits,
- * but not the ones of its parents, whose errors are reported in the parent. Registered regardless of the level,
- * also with customRulesetUsed: it decides which unmatched ignoreErrors entries are reported in a partial analysis.
+ * What is reported in the file of a class depends on the traits analysed as a part of it: the ones it uses,
+ * also through other traits, but not the ones of its parents, whose errors are reported in the parent.
+ * Registered regardless of the level, also with customRulesetUsed: it decides which unmatched ignoreErrors
+ * entries are reported in a partial analysis. It collects nothing itself.
  *
- * @implements CollectorWithPaths<InClassNode, non-empty-list<string>>
+ * @implements Collector<InClassNode, never>
  */
 #[AutowiredService]
-final class UsedTraitFilesCollector implements CollectorWithPaths
+final class UsedTraitFilesCollector implements Collector
 {
 
 	public function getNodeType(): string
@@ -27,26 +29,16 @@ final class UsedTraitFilesCollector implements CollectorWithPaths
 		return InClassNode::class;
 	}
 
-	public function processNode(Node $node, Scope $scope)
+	public function processNode(Node $node, Scope&CollectedDataEmitter $scope)
 	{
 		$files = [];
 		$visited = [];
 		$this->collectTraitFiles($node->getClassReflection(), $files, $visited);
-		if ($files === []) {
-			return null;
+		foreach (array_keys($files) as $file) {
+			$scope->emitCollectedData(AnalysedFileDependencyCollector::class, $file);
 		}
 
-		return array_keys($files);
-	}
-
-	/**
-	 * @param non-empty-list<string> $data
-	 * @param callable(string): string $transformPath
-	 * @return non-empty-list<string>
-	 */
-	public static function transformCollectedDataPaths($data, callable $transformPath)
-	{
-		return array_map($transformPath, $data);
+		return null;
 	}
 
 	/**

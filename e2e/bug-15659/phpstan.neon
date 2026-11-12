@@ -1,0 +1,19 @@
+parameters:
+	level: 0
+	phpVersion: 80300
+	checkMissingOverrideMethodAttribute: true
+	paths: [src, lib]
+	ignoreErrors:
+		-
+			message: '#undefinedTwo#'
+		-
+			message: '#undefinedWildcard#'
+			path: src/*
+		-
+			message: '#undefinedInTrait#'
+			path: src/T.php
+		-
+			identifier: method.missingOverride
+		-
+			message: '#undefinedList#'
+			paths: [src/B.php]

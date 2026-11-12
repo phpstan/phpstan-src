@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
+use PHPStan\Analyser\AnalysedFileDependencyCollector;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ThrowPoint;
@@ -55,11 +57,14 @@ final class PossiblyPureCallTransitivePurityResolver
 	 * throw point). Implicit throw points are ignored, mirroring how noop expression
 	 * statements are detected in NodeScopeResolver.
 	 *
+	 * Whether the declaration is effect-free depends on the declarations of its dependencies
+	 * being analysed, so their files are tracked as analysed file dependencies.
+	 *
 	 * @param ImpurePoint[] $impurePoints
 	 * @param ThrowPoint[] $throwPoints
 	 * @return list<string>|null
 	 */
-	public function resolveDependencies(array $impurePoints, array $throwPoints): ?array
+	public function resolveDependencies(array $impurePoints, array $throwPoints, CollectedDataEmitter $collectedDataEmitter): ?array
 	{
 		foreach ($throwPoints as $throwPoint) {
 			if ($throwPoint->isExplicit()) {
@@ -68,8 +73,9 @@ final class PossiblyPureCallTransitivePurityResolver
 		}
 
 		$dependencies = [];
+		$files = [];
 		foreach ($impurePoints as $impurePoint) {
-			$keys = $this->resolveCall($impurePoint->getNode(), $impurePoint->getScope());
+			$keys = $this->resolveCall($impurePoint->getNode(), $impurePoint->getScope(), $files);
 			if ($keys === null) {
 				return null;
 			}
@@ -77,6 +83,10 @@ final class PossiblyPureCallTransitivePurityResolver
 			foreach ($keys as $key) {
 				$dependencies[$key] = true;
 			}
+		}
+
+		foreach (array_keys($files) as $file) {
+			$collectedDataEmitter->emitCollectedData(AnalysedFileDependencyCollector::class, $file);
 		}
 
 		return array_keys($dependencies);
@@ -147,9 +157,10 @@ final class PossiblyPureCallTransitivePurityResolver
 	 * Resolves a call expression to the keys of the callables it targets, or null when
 	 * the call cannot be guaranteed effect-free (unknown callee, overridable method, ...).
 	 *
+	 * @param array<string, true> $files the files declaring the callables
 	 * @return list<string>|null
 	 */
-	private function resolveCall(Node $expr, Scope $scope): ?array
+	private function resolveCall(Node $expr, Scope $scope, array &$files): ?array
 	{
 		if ($expr instanceof Node\Expr\FuncCall) {
 			if ($expr->isPartialFunctionApplication()) {
@@ -162,7 +173,10 @@ final class PossiblyPureCallTransitivePurityResolver
 				return null;
 			}
 
-			return [self::functionKey($this->reflectionProvider->getFunction($expr->name, $scope)->getName())];
+			$function = $this->reflectionProvider->getFunction($expr->name, $scope);
+			self::addFile($files, $function->getFileName());
+
+			return [self::functionKey($function->getName())];
 		}
 
 		if ($expr instanceof Node\Expr\MethodCall || $expr instanceof Node\Expr\NullsafeMethodCall) {
@@ -196,6 +210,7 @@ final class PossiblyPureCallTransitivePurityResolver
 					}
 				}
 
+				self::addFile($files, $methodReflection->getDeclaringClass()->getFileName());
 				$keys[] = self::methodKey($methodReflection->getDeclaringClass()->getName(), $methodReflection->getName());
 			}
 
@@ -224,6 +239,8 @@ final class PossiblyPureCallTransitivePurityResolver
 				return null;
 			}
 
+			self::addFile($files, $methodReflection->getDeclaringClass()->getFileName());
+
 			return [self::methodKey($methodReflection->getDeclaringClass()->getName(), $methodReflection->getName())];
 		}
 
@@ -247,10 +264,24 @@ final class PossiblyPureCallTransitivePurityResolver
 				return null;
 			}
 
+			self::addFile($files, $constructor->getDeclaringClass()->getFileName());
+
 			return [self::methodKey($constructor->getDeclaringClass()->getName(), '__construct')];
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param array<string, true> $files
+	 */
+	private static function addFile(array &$files, ?string $file): void
+	{
+		if ($file === null) {
+			return;
+		}
+
+		$files[$file] = true;
 	}
 
 }

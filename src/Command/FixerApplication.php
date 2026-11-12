@@ -135,6 +135,12 @@ final class FixerApplication
 
 	private bool $updateInProgress = false;
 
+	/** The user asked for the update, PHPStan Pro restarts once it is downloaded; otherwise it waits for them to ask. */
+	private bool $restartRequested = false;
+
+	/** The running process was told to exit, its exit starts the updated one. */
+	private bool $restarting = false;
+
 	/** @var array{path: string, info: array{url: string, version: string}}|null the downloaded PHAR, installed once the running process exits */
 	private ?array $downloadedUpdate = null;
 
@@ -219,6 +225,7 @@ final class FixerApplication
 			if ($this->updateFailureAfterRestart !== null) {
 				$encoder->write(['action' => 'updateFailed', 'data' => [
 					'message' => $this->updateFailureAfterRestart,
+					'restart' => true,
 				]]);
 				$this->updateFailureAfterRestart = null;
 			}
@@ -245,7 +252,8 @@ final class FixerApplication
 					return;
 				}
 				if ($data['action'] === 'update') {
-					$this->update($loop, $output);
+					// PHPStan Pro checks for updates in the background too, those are downloaded without a restart
+					$this->update($loop, $output, (bool) ($data['data']['restart'] ?? true));
 					return;
 				}
 			});
@@ -328,9 +336,14 @@ final class FixerApplication
 		$this->fixerProcess = $fixerProcess;
 		$fixerProcess->start($loop);
 		$fixerProcess->on('exit', function ($exitCode) use ($output, $loop, $serverPort): void {
-			if ($this->downloadedUpdate !== null) {
+			if ($this->restarting) {
 				$this->startUpdatedFixerProcess($loop, $output, $serverPort);
 				return;
+			}
+
+			// downloaded in the background, never installed
+			if ($this->downloadedUpdate !== null) {
+				@unlink($this->downloadedUpdate['path']);
 			}
 
 			if ($this->fixerBeforeUpdate !== null) {
@@ -352,26 +365,43 @@ final class FixerApplication
 
 	/**
 	 * Asked for by PHPStan Pro: downloads the latest PHPStan Pro while the running one keeps working, and reports the progress to it.
-	 * Once the download is verified, the running process tells its pages and exits, and the updated one starts
-	 * on the same web port, without opening the browser: the pages reconnect to it.
+	 * Without $restart, the download waits for PHPStan Pro to ask again with it (updateReady). With it, once the download
+	 * is verified, the running process tells its pages and exits, and the updated one starts on the same web port,
+	 * without opening the browser: the pages reconnect to it.
 	 */
-	private function update(LoopInterface $loop, OutputInterface $output): void
+	private function update(LoopInterface $loop, OutputInterface $output, bool $restart): void
 	{
-		if ($this->updateInProgress) {
+		if ($this->restarting) {
 			return;
 		}
-		$this->updateInProgress = true;
+		if ($restart) {
+			$this->restartRequested = true;
+		}
 
+		if ($this->updateInProgress) {
+			// the download in progress restarts PHPStan Pro once it ends, its next progress tells the pages so
+			return;
+		}
+
+		if ($this->downloadedUpdate !== null) {
+			if ($restart) {
+				$this->restartFixer($loop, $this->downloadedUpdate['info']['version']);
+			} else {
+				$this->fixerEncoder?->write(['action' => 'updateReady', 'data' => [
+					'version' => $this->downloadedUpdate['info']['version'],
+				]]);
+			}
+			return;
+		}
+
+		$this->updateInProgress = true;
 		$pharPath = $this->proTmpDir . '/phpstan-fixer.phar';
 		$infoPath = $this->proTmpDir . '/phar-info.json';
 		$currentUrl = null;
 		try {
 			DirectoryCreator::ensureDirectoryExists($this->proTmpDir, 0777);
 		} catch (DirectoryCreatorException $e) {
-			$this->updateInProgress = false;
-			$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
-				'message' => $e->getMessage(),
-			]]);
+			$this->failUpdate($output, $e->getMessage());
 			return;
 		}
 		if (is_file($pharPath) && is_file($infoPath)) {
@@ -380,11 +410,10 @@ final class FixerApplication
 			$currentUrl = $currentInfo['url'] ?? null;
 		}
 
-		$output->writeln('<fg=green>Downloading the latest PHPStan Pro...</>');
 		$lastProgressAt = 0.0;
 		$this->requestAsync($loop, $this->getLatestUrl(self::PHAR_BRANCH, PHP_OS_FAMILY, php_uname('m')), [])->then(static fn (ResponseInterface $response): ResponseInterface => $response, static function (Throwable $e): void {
 			throw new FixerUpdateException(sprintf('Could not find the latest PHPStan Pro: %s', self::describeHttpFailure($e)));
-		})->then(function (ResponseInterface $response) use ($loop, $currentUrl, &$lastProgressAt): PromiseInterface {
+		})->then(function (ResponseInterface $response) use ($loop, $output, $currentUrl, &$lastProgressAt): PromiseInterface {
 			try {
 				/** @var array{url: string, version: string} $latestInfo */
 				$latestInfo = Json::decode((string) $response->getBody(), Json::FORCE_ARRAY);
@@ -395,11 +424,13 @@ final class FixerApplication
 				throw new FixerUpdateException('You\'re running the latest PHPStan Pro.');
 			}
 
+			$output->writeln(sprintf('<fg=green>Downloading PHPStan Pro %s...</>', $latestInfo['version']));
 			$downloadPath = sprintf('%s/phpstan-fixer-%s.phar', $this->proTmpDir, substr(sha1($latestInfo['url']), 0, 16));
 			$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
 				'version' => $latestInfo['version'],
 				'downloadedBytes' => 0,
 				'totalBytes' => 0,
+				'restart' => $this->restartRequested,
 			]]);
 
 			return $this->requestAsync($loop, $latestInfo['url'], [
@@ -416,6 +447,7 @@ final class FixerApplication
 						'version' => $latestInfo['version'],
 						'downloadedBytes' => $downloadedBytes,
 						'totalBytes' => $downloadTotal,
+						'restart' => $this->restartRequested,
 					]]);
 				},
 			])->then(static fn (): array => ['path' => $downloadPath, 'info' => $latestInfo], static function (Throwable $e) use ($downloadPath, $latestInfo): void {
@@ -425,26 +457,53 @@ final class FixerApplication
 		})->then(function (array $downloaded) use ($loop): void {
 			$this->verifyDownloadedPhar($downloaded['path']);
 			$this->downloadedUpdate = $downloaded;
+			$this->updateInProgress = false;
+			if ($this->restartRequested) {
+				$this->restartFixer($loop, $downloaded['info']['version']);
+				return;
+			}
 
-			// PHPStan Pro tells its pages and exits, the exit starts the updated one, see startFixerProcess()
-			$this->fixerEncoder?->write(['action' => 'updateRestart', 'data' => [
+			$this->fixerEncoder?->write(['action' => 'updateReady', 'data' => [
 				'version' => $downloaded['info']['version'],
 			]]);
-			$fixerProcess = $this->fixerProcess;
-			$loop->addTimer(10, static function () use ($fixerProcess): void {
-				if ($fixerProcess === null || !$fixerProcess->isRunning()) {
-					return;
-				}
-
-				$fixerProcess->terminate();
-			});
 		})->catch(function (Throwable $e) use ($output): void {
-			$this->updateInProgress = false;
-			$message = $e instanceof FixerUpdateException ? $e->getMessage() : sprintf('Could not update PHPStan Pro: %s', $e->getMessage());
+			$this->failUpdate($output, $e instanceof FixerUpdateException ? $e->getMessage() : sprintf('Could not update PHPStan Pro: %s', $e->getMessage()));
+		});
+	}
+
+	/**
+	 * A failed background check stays silent, PHPStan Pro checks again later.
+	 */
+	private function failUpdate(OutputInterface $output, string $message): void
+	{
+		$this->updateInProgress = false;
+		$restart = $this->restartRequested;
+		$this->restartRequested = false;
+		if ($restart) {
 			$output->writeln(sprintf('<fg=red>%s</>', $message));
-			$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
-				'message' => $message,
-			]]);
+		}
+		$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
+			'message' => $message,
+			'restart' => $restart,
+		]]);
+	}
+
+	/**
+	 * PHPStan Pro tells its pages and exits, the exit starts the updated one, see startFixerProcess().
+	 */
+	private function restartFixer(LoopInterface $loop, string $version): void
+	{
+		$this->restarting = true;
+		$this->fixerEncoder?->write(['action' => 'updateRestart', 'data' => [
+			'version' => $version,
+		]]);
+		$fixerProcess = $this->fixerProcess;
+		$loop->addTimer(10, static function () use ($fixerProcess): void {
+			if ($fixerProcess === null || !$fixerProcess->isRunning()) {
+				return;
+			}
+
+			$fixerProcess->terminate();
 		});
 	}
 
@@ -478,7 +537,8 @@ final class FixerApplication
 
 		$downloaded = $this->downloadedUpdate;
 		$this->downloadedUpdate = null;
-		$this->updateInProgress = false;
+		$this->restarting = false;
+		$this->restartRequested = false;
 		$previousCommand = $this->fixerCommand;
 
 		// replaced only now, Windows does not let a running PHAR be overwritten; the previous one is kept

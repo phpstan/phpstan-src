@@ -376,6 +376,7 @@ final class IgnoredErrorHelperResult
 				$this->analysedPaths,
 				$this->analysedPathsFromConfig,
 				$collectedData,
+				$onlyFiles,
 			);
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 				$reportUnmatched = is_array($unmatchedIgnoredError)
@@ -388,7 +389,6 @@ final class IgnoredErrorHelperResult
 				if (
 					isset($unmatchedIgnoredError['count'])
 					&& $realCount !== null
-					&& (isset($unmatchedIgnoredError['realPath']) || !$onlyFiles)
 				) {
 					if ($realCount < $unmatchedIgnoredError['count']) {
 						if ($judge->getJudgeablePart($unmatchedIgnoredError) === null) {
@@ -419,10 +419,6 @@ final class IgnoredErrorHelperResult
 						continue;
 					}
 
-					if ($onlyFiles) {
-						continue;
-					}
-
 					if ($judge->getJudgeablePart($unmatchedIgnoredError) === null) {
 						continue;
 					}
@@ -438,7 +434,7 @@ final class IgnoredErrorHelperResult
 						identifier: 'ignore.unmatched',
 						fixedErrorDiffs: $this->configFixer->removeUnmatched($unmatchedIgnoredError),
 					);
-				} elseif (!$onlyFiles) {
+				} else {
 					$unmatchedIgnoredError = $judge->getJudgeablePart($unmatchedIgnoredError);
 					if ($unmatchedIgnoredError === null) {
 						continue;

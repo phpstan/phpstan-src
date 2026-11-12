@@ -29,7 +29,8 @@ use const DIRECTORY_SEPARATOR;
  * The traits come from what the analysis already collected: the trait files analysed as a part of the classes
  * in each analysed file, and the analysed files declaring a trait. Without them, no file is taken as analysed entirely.
  *
- * Without paths in the configuration, the analysed directories are taken as the whole project.
+ * Without paths in the configuration, the analysed directories are taken as the whole project, but analysed files
+ * are only a part of an unknown one.
  *
  * @phpstan-import-type ExpandedIgnoredErrorData from IgnoredErrorHelperResult
  */
@@ -54,6 +55,7 @@ final class UnmatchedIgnoredErrorJudge
 	 * @param string[] $analysedFiles normalized
 	 * @param string[] $analysedPaths normalized
 	 * @param string[] $analysedPathsFromConfig normalized
+	 * @param bool $onlyFiles all the analysed paths are files
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -62,9 +64,11 @@ final class UnmatchedIgnoredErrorJudge
 		private array $analysedPaths,
 		private array $analysedPathsFromConfig,
 		private ?LazyCollectedData $collectedData,
+		bool $onlyFiles,
 	)
 	{
 		$this->analysedFiles = array_fill_keys($analysedFiles, true);
+		$this->partialAnalysis = $onlyFiles && $analysedPathsFromConfig === [];
 		foreach ($analysedPathsFromConfig as $configPath) {
 			if (!self::isUnder($configPath, $analysedPaths)) {
 				$this->partialAnalysis = true;
@@ -205,8 +209,12 @@ final class UnmatchedIgnoredErrorJudge
 				continue;
 			}
 
-			// a trait that is not analysed even when the whole project is, like one in a scanned directory, reports no errors either way
-			if (self::isUnder($traitFile, $this->analysedPathsFromConfig) && !$this->analyseFileExcluder->isExcludedFromAnalysing($traitFile)) {
+			// a trait that is not analysed even when the whole project is, like one in a scanned directory, reports no errors either way;
+			// without paths in the configuration, the project is not known and every trait counts
+			if (
+				($this->analysedPathsFromConfig === [] || self::isUnder($traitFile, $this->analysedPathsFromConfig))
+				&& !$this->analyseFileExcluder->isExcludedFromAnalysing($traitFile)
+			) {
 				return false;
 			}
 		}

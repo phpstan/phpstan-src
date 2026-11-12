@@ -1,0 +1,39 @@
+parameters:
+	ignoreErrors:
+		# matched whenever src/Plain/Foo.php is analysed, but fewer times than expected
+		-
+			identifier: return.type
+			path: src/Plain/Foo.php
+			count: 2
+		-
+			identifier: return.type
+			path: srcc/Bar.php
+		-
+			message: '#never in Clean#'
+			path: src/Plain/Clean.php
+		-
+			message: '#never in srcc#'
+			path: srcc/Bar.php
+		-
+			message: '#never in Plain directory#'
+			path: src/Plain
+		-
+			message: '#never in srcc directory#'
+			path: srcc
+		-
+			message: '#never in Plain glob#'
+			path: src/Plain/*.php
+		-
+			message: '#never in src glob#'
+			path: src/*/Clean.php
+		-
+			message: '#never in leading glob#'
+			path: '*/Plain/Clean.php'
+		-
+			message: '#never in two paths#'
+			paths:
+				- src/Plain/Clean.php
+				- srcc/Bar.php
+		- '#never globally#'
+		-
+			message: '#never globally either#'

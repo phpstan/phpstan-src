@@ -9,6 +9,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_key_exists;
+use function array_map;
 use function array_values;
 use function is_array;
 use function is_file;
@@ -34,6 +35,8 @@ final class IgnoredErrorHelper
 
 	/**
 	 * @param (string|IgnoredErrorData)[] $ignoreErrors
+	 * @param string[] $analysedPaths
+	 * @param string[] $analysedPathsFromConfig
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -42,6 +45,10 @@ final class IgnoredErrorHelper
 		private array $ignoreErrors,
 		#[AutowiredParameter]
 		private bool $reportUnmatchedIgnoredErrors,
+		#[AutowiredParameter]
+		private array $analysedPaths,
+		#[AutowiredParameter]
+		private array $analysedPathsFromConfig,
 	)
 	{
 	}
@@ -171,7 +178,19 @@ final class IgnoredErrorHelper
 			}
 		}
 
-		return new IgnoredErrorHelperResult($this->fileHelper, $this->configFixer, $errors, $otherIgnoreErrors, $ignoreErrorsByFile, $expandedIgnoreErrors, $this->reportUnmatchedIgnoredErrors);
+		$normalizePath = fn (string $path): string => $this->fileHelper->normalizePath($path);
+
+		return new IgnoredErrorHelperResult(
+			$this->fileHelper,
+			$this->configFixer,
+			$errors,
+			$otherIgnoreErrors,
+			$ignoreErrorsByFile,
+			$expandedIgnoreErrors,
+			$this->reportUnmatchedIgnoredErrors,
+			array_map($normalizePath, $this->analysedPaths),
+			array_map($normalizePath, $this->analysedPathsFromConfig),
+		);
 	}
 
 }

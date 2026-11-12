@@ -305,6 +305,24 @@ class OptimizedDirectorySourceLocatorTest extends PHPStanTestCase
 		$reflector->reflectFunction($functionName);
 	}
 
+	public function testGroupAnswersLikeTheLocatorsInTurn(): void
+	{
+		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);
+		$first = $factory->createByDirectory(__DIR__ . '/data/group/first');
+		$second = $factory->createByDirectory(__DIR__ . '/data/group/second');
+
+		$reflector = new DefaultReflector(OptimizedDirectorySourceLocatorGroup::create([$first, $second]));
+		$this->assertStringEndsWith('/first/Duplicate.php', (string) $reflector->reflectClass('OptimizedDirectoryGroup\\duplicate')->getFileName());
+		$this->assertSame('OptimizedDirectoryGroup\\onlyInSecond', $reflector->reflectFunction('optimizeddirectorygroup\\onlyinsecond')->getName());
+		$this->assertSame('OptimizedDirectoryGroup\\ONLY_IN_SECOND', $reflector->reflectConstant('OptimizedDirectoryGroup\\ONLY_IN_SECOND')->getName());
+
+		$reflector = new DefaultReflector(OptimizedDirectorySourceLocatorGroup::create([$second, $first]));
+		$this->assertStringEndsWith('/second/Duplicate.php', (string) $reflector->reflectClass('OptimizedDirectoryGroup\\Duplicate')->getFileName());
+
+		$this->expectException(IdentifierNotFound::class);
+		$reflector->reflectClass('OptimizedDirectoryGroup\\Missing');
+	}
+
 	public function testBug5525(): void
 	{
 		$factory = self::getContainer()->getByType(OptimizedDirectorySourceLocatorFactory::class);

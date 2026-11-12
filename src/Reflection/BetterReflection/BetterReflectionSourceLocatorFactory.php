@@ -25,6 +25,7 @@ use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJs
 use PHPStan\Reflection\BetterReflection\SourceLocator\FileNodesFetcher;
 use PHPStan\Reflection\BetterReflection\SourceLocator\LazySourceLocator;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorFactory;
+use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorGroup;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedDirectorySourceLocatorRepository;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedPsrAutoloaderLocatorFactory;
 use PHPStan\Reflection\BetterReflection\SourceLocator\OptimizedSingleFileSourceLocatorRepository;
@@ -143,8 +144,12 @@ final class BetterReflectionSourceLocatorFactory
 			$batch = $this->optimizedDirectorySourceLocatorFactory->createBatch();
 			try {
 				$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
+				$directoryLocators = [];
 				foreach ($directories as $directory) {
-					$fileLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory, $batch);
+					$directoryLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($directory, $batch);
+				}
+				if ($directoryLocators !== []) {
+					$fileLocators[] = OptimizedDirectorySourceLocatorGroup::create($directoryLocators);
 				}
 
 				$composerLocators = [];

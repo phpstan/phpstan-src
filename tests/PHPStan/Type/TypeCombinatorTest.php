@@ -3407,6 +3407,73 @@ class TypeCombinatorTest extends PHPStanTestCase
 		];
 		yield [
 			[
+				'float<min, -5.0E-324>',
+				'float<5.0E-324, max>',
+				'0.0',
+				'NAN',
+			],
+			FloatType::class,
+			'float',
+		];
+		yield [
+			[
+				'float<min, -1.0E-323>',
+				'float<5.0E-324, max>',
+				'-5.0E-324',
+				'0.0',
+				'NAN',
+			],
+			FloatType::class,
+			'float',
+		];
+		yield [
+			[
+				'float<min, -5.0E-324>',
+				'float<5.0E-324, max>',
+				'0.0',
+				'NAN',
+				'string',
+			],
+			UnionType::class,
+			'float|string',
+		];
+		yield [
+			[
+				'float<min, -5.0E-324>',
+				'float<5.0E-324, max>',
+				'NAN',
+			],
+			UnionType::class,
+			'NAN|float<min, -5.0E-324>|float<5.0E-324, max>',
+		];
+		yield [
+			[
+				'__benevolent<float<min, -5.0E-324>|string>',
+				'float<5.0E-324, max>',
+				'0.0',
+				'NAN',
+			],
+			BenevolentUnionType::class,
+			'(float|string)',
+		];
+		yield [
+			[
+				TemplateTypeFactory::create(
+					TemplateTypeScope::createWithFunction('a'),
+					'T',
+					new FloatType(),
+					TemplateTypeVariance::createInvariant(),
+				),
+				'float<min, -5.0E-324>',
+				'float<5.0E-324, max>',
+				'0.0',
+				'NAN',
+			],
+			FloatType::class,
+			'float',
+		];
+		yield [
+			[
 				'non-empty-string',
 				'numeric-string',
 			],

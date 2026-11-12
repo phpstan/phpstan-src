@@ -122,6 +122,10 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 						if (!$fails->yes()) {
 							// the analysed PHP version might accept the step, but only the runtime's verdict is known
 							$hasUnknownCombination = true;
+							if (!$throwsValueError->yes()) {
+								// PHP 7 returns false where PHP 8 throws
+								$constantReturnTypes[] = new ConstantBooleanType(false);
+							}
 						} elseif ($throwsValueError->yes()) {
 							$throwingCombinations++;
 						} else {

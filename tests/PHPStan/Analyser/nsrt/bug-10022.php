@@ -27,10 +27,17 @@ function doFoo(bool $flag): void
 		// a float argument used to produce floats even without a fractional part
 		assertType('non-empty-list<float<1.0, 200.0>>', range(1, 200, 1.0));
 		assertType('non-empty-list<float>', range('A', 'z', 1.0));
+
+		// PHP 8 throws instead of returning false
+		assertType('non-empty-list<int>', range(0, 0, 0));
 	} else {
 		// PHP 7 returns false for an invalid step, next to what the other combinations return
 		assertType('non-empty-list<int>|false', range(2, 5, $flag ? -1 : 0));
 		assertType('non-empty-list<float|int>|false', range(2, 5, $flag ? 0 : true));
+
+		// a combination that the version might reject keeps false next to the general type
+		assertType('non-empty-list<int>|false', range(0, 0, 0));
+		assertType('non-empty-list<float|int>|false', range(1, 1, INF));
 	}
 
 	// every combination of the constant arguments contributes to the type

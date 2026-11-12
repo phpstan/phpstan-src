@@ -12,8 +12,14 @@ use function array_keys;
 use function count;
 use function is_array;
 use function is_string;
+use function rtrim;
 use function spl_object_id;
 use function sprintf;
+use function str_starts_with;
+use function strcspn;
+use function strrpos;
+use function substr;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * `IgnoredErrorHelper` may collapse several configured ignores into one
@@ -48,6 +54,8 @@ final class IgnoredErrorHelperResult
 	 * @param array<array{index: int<0, max>, ignoreError: string|ExpandedIgnoredErrorData}> $otherIgnoreErrors
 	 * @param array<string, array<array{index: int<0, max>, ignoreError: string|ExpandedIgnoredErrorData}>> $ignoreErrorsByFile
 	 * @param (string|ExpandedIgnoredErrorData)[] $ignoreErrors
+	 * @param string[] $analysedPaths normalized
+	 * @param string[] $analysedPathsFromConfig normalized
 	 */
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -57,6 +65,8 @@ final class IgnoredErrorHelperResult
 		private array $ignoreErrorsByFile,
 		private array $ignoreErrors,
 		private bool $reportUnmatchedIgnoredErrors,
+		private array $analysedPaths,
+		private array $analysedPathsFromConfig,
 	)
 	{
 	}
@@ -357,12 +367,19 @@ final class IgnoredErrorHelperResult
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
 		if (!$hasInternalErrors) {
+			$partialAnalysis = $this->isPartialAnalysis();
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 				$reportUnmatched = is_array($unmatchedIgnoredError)
 					? ($unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors)
 					: $this->reportUnmatchedIgnoredErrors;
 				if ($reportUnmatched === false) {
 					continue;
+				}
+				if ($partialAnalysis && !isset($unmatchedIgnoredError['realPath'])) {
+					$unmatchedIgnoredError = $this->getAnalysedPart($unmatchedIgnoredError);
+					if ($unmatchedIgnoredError === null) {
+						continue;
+					}
 				}
 				$realCount = $realCounts[$i] ?? null;
 				if (
@@ -437,6 +454,90 @@ final class IgnoredErrorHelperResult
 		}
 
 		return new IgnoredErrorHelperProcessedResult($errors, $ignoredErrors, $stringErrors);
+	}
+
+	/**
+	 * The analysed paths do not cover all the paths from the configuration. Without paths
+	 * in the configuration, the analysed directories are taken as the whole project.
+	 */
+	private function isPartialAnalysis(): bool
+	{
+		foreach ($this->analysedPathsFromConfig as $configPath) {
+			if (!self::isUnder($configPath, $this->analysedPaths)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Of an entry not about a single file, the part about the analysed paths only. What is not
+	 * analysed reports no errors, so the rest of the entry cannot be reported as unmatched.
+	 *
+	 * @param string|ExpandedIgnoredErrorData $ignoreError
+	 * @return ExpandedIgnoredErrorData|null
+	 */
+	private function getAnalysedPart(string|array $ignoreError): ?array
+	{
+		if (!is_array($ignoreError)) {
+			return null;
+		}
+
+		if (isset($ignoreError['path'])) {
+			return $this->isAnalysedPath($ignoreError['path']) ? $ignoreError : null;
+		}
+
+		if (!isset($ignoreError['paths'])) {
+			return null;
+		}
+
+		foreach ($ignoreError['paths'] as $j => $path) {
+			if ($this->isAnalysedPath($path)) {
+				continue;
+			}
+
+			unset($ignoreError['paths'][$j]);
+		}
+
+		return count($ignoreError['paths']) === 0 ? null : $ignoreError;
+	}
+
+	/**
+	 * A directory, a fnmatch pattern, or a path that does not exist.
+	 */
+	private function isAnalysedPath(string $path): bool
+	{
+		$path = $this->fileHelper->normalizePath($path);
+		if (FileExcluder::isFnmatchPattern($path)) {
+			// the pattern matches only files under the directory before its first wildcard
+			$separatorPosition = strrpos(substr($path, 0, strcspn($path, '*?[]')), DIRECTORY_SEPARATOR);
+			if ($separatorPosition === false) {
+				return false;
+			}
+
+			$path = substr($path, 0, $separatorPosition);
+		}
+
+		return self::isUnder($path, $this->analysedPaths);
+	}
+
+	/**
+	 * Compares whole path segments, src/Foo.php is not under srcc/.
+	 *
+	 * @param string[] $directories
+	 */
+	private static function isUnder(string $path, array $directories): bool
+	{
+		$path = rtrim($path, DIRECTORY_SEPARATOR);
+		foreach ($directories as $directory) {
+			$directory = rtrim($directory, DIRECTORY_SEPARATOR);
+			if ($path === $directory || str_starts_with($path, $directory . DIRECTORY_SEPARATOR)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

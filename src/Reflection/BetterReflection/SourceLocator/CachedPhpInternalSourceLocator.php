@@ -2,6 +2,7 @@
 
 namespace PHPStan\Reflection\BetterReflection\SourceLocator;
 
+use JetBrains\PHPStormStub\PhpStormStubsMap;
 use Override;
 use PHPStan\BetterReflection\Identifier\Identifier;
 use PHPStan\BetterReflection\Identifier\IdentifierType;
@@ -17,6 +18,7 @@ use PHPStan\Cache\Cache;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
+use function array_change_key_case;
 use function array_key_exists;
 use function is_array;
 use function is_file;
@@ -53,6 +55,9 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 
 	private const RELATIVE_FILENAME_PREFIX = 'phpstorm-stubs:';
 
+	/** @var array<string, string>|null lowercase name => stub file, of every function in the stubs of any extension version */
+	private static ?array $stubFunctions = null;
+
 	private ?string $variableCacheKey = null;
 
 	private ?string $stubsRootDir = null;
@@ -75,16 +80,21 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 			$name = strtolower($name);
 		}
 
-		// Almost everything that reaches this locator is a userland class name
-		// that every earlier locator failed to resolve, and a name the stubs do
-		// not have can never have been cached - the stubber is the only source
-		// the wrapped locator reads from. Ruling those out against the stubs map
-		// is an array lookup, where asking the cache means hashing the key and
-		// stat()ing a file that will never exist. The wrapped locator is still
-		// asked: it resolves class aliases before consulting the stubber, so it
-		// can answer for a name the map does not list - such an answer just does
-		// not get cached, under a key that would be the alias anyway.
-		if ($identifier->isClass() && !$this->stubber->hasClass($name)) {
+		// Almost everything that reaches this locator is a userland class or
+		// function name that every earlier locator failed to resolve - also every
+		// namespaced name an unqualified function call is looked up by first -
+		// and a name the stubs do not have can never have been cached - the
+		// stubber is the only source the wrapped locator reads from. Ruling those
+		// out against the stubs map is an array lookup, where asking the cache
+		// means hashing the key and stat()ing a file that will never exist. The
+		// wrapped locator is still asked: it resolves class aliases before
+		// consulting the stubber, so it can answer for a name the map does not
+		// list - such an answer just does not get cached, under a key that would
+		// be the alias anyway.
+		if (
+			($identifier->isClass() && !$this->stubber->hasClass($name))
+			|| ($identifier->isFunction() && !self::isStubFunction($name))
+		) {
 			return $this->inner->locateIdentifier($reflector, $identifier);
 		}
 
@@ -171,6 +181,26 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 	/**
 	 * @return list<Reflection>
 	 */
+	/**
+	 * Whether the stubber could have a function: the stubber has no cheap way to tell, its own
+	 * answer parses the stub file. The functions of the extension versions it selects are added
+	 * to the default ones, so they are all included.
+	 */
+	private static function isStubFunction(string $lowercaseName): bool
+	{
+		if (self::$stubFunctions === null) {
+			$functions = array_change_key_case(PhpStormStubsMap::FUNCTIONS);
+			foreach (PhpStormStubsMap::EXTENSION_VERSIONS as $versionMaps) {
+				foreach ($versionMaps as $versionMap) {
+					$functions += array_change_key_case($versionMap['functions']);
+				}
+			}
+			self::$stubFunctions = $functions;
+		}
+
+		return array_key_exists($lowercaseName, self::$stubFunctions);
+	}
+
 	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{

@@ -7,9 +7,14 @@ use Clue\React\NDJson\Encoder;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Handler\CurlMultiHandler;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\RequestOptions;
 use Nette\Utils\Json;
+use Nette\Utils\JsonException;
 use Phar;
 use PHPStan\Analyser\InternalError;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -28,9 +33,11 @@ use PHPStan\Process\ProcessCrashedException;
 use PHPStan\Process\ProcessHelper;
 use PHPStan\Process\SpawnedProcessPromise;
 use PHPStan\ShouldNotHappenException;
+use Psr\Http\Message\ResponseInterface;
 use React\ChildProcess\Process;
 use React\EventLoop\LoopInterface;
 use React\EventLoop\StreamSelectLoop;
+use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\TcpServer;
@@ -46,11 +53,15 @@ use function get_class;
 use function http_build_query;
 use function ini_get;
 use function is_file;
+use function is_string;
 use function microtime;
 use function min;
 use function parse_url;
 use function php_uname;
+use function rename;
+use function sha1;
 use function sprintf;
+use function substr;
 use function unlink;
 use const JSON_INVALID_UTF8_IGNORE;
 use const PHP_BINARY;
@@ -70,6 +81,9 @@ final class FixerApplication
 
 	/** Changes that never stop for that long are analysed this long after the first one anyway. */
 	private const CHANGES_WAIT_SECONDS_LIMIT = 2.0;
+
+	/** The PHPStan Pro branch to download */
+	private const PHAR_BRANCH = '2.2.x';
 
 	/** @var PromiseInterface<string>|null  */
 	private PromiseInterface|null $processInProgress = null;
@@ -94,6 +108,35 @@ final class FixerApplication
 
 	/** @var string[] watched files besides the analysed ones and the config files */
 	private array $watchedFilesWithoutConfig = [];
+
+	/** Writes to the PHPStan Pro process connected now, an updated one replaces it. */
+	private ?Encoder $fixerEncoder = null;
+
+	private ?Process $fixerProcess = null;
+
+	/** The command of the PHPStan Pro process running now, without the --web-port of a restart */
+	private ?string $fixerCommand = null;
+
+	/** @var array<string, string>|null */
+	private ?array $fixerEnv = null;
+
+	/**
+	 * The process before the update, started again if the updated one exits before it connects.
+	 *
+	 * @var array{command: string, backupPath: string|null, info: string|null}|null
+	 */
+	private ?array $fixerBeforeUpdate = null;
+
+	/** Why the update did not finish, told to the process started instead of the updated one. */
+	private ?string $updateFailureAfterRestart = null;
+
+	/** The port the PHPStan Pro process serves the web UI on, the updated one serves it on the same port. */
+	private ?int $webPort = null;
+
+	private bool $updateInProgress = false;
+
+	/** @var array{path: string, info: array{url: string, version: string}}|null the downloaded PHAR, installed once the running process exits */
+	private ?array $downloadedUpdate = null;
 
 	/**
 	 * @param string[] $analysedPaths
@@ -153,6 +196,15 @@ final class FixerApplication
 			// phpcs:enable
 			$decoder = new Decoder($connection, true, options: $jsonInvalidUtf8Ignore, maxlength: 128 * 1024 * 1024);
 			$encoder = new Encoder($connection, $jsonInvalidUtf8Ignore);
+			$isUpdatedProcess = $this->fixerEncoder !== null;
+			$this->fixerEncoder = $encoder;
+			if ($this->fixerBeforeUpdate !== null) {
+				// the updated process runs, the previous PHAR is not needed anymore
+				if ($this->fixerBeforeUpdate['backupPath'] !== null) {
+					@unlink($this->fixerBeforeUpdate['backupPath']);
+				}
+				$this->fixerBeforeUpdate = null;
+			}
 			$encoder->write(['action' => 'initialData', 'data' => [
 				'currentWorkingDirectory' => $this->currentWorkingDirectory,
 				'analysedPaths' => $this->analysedPaths,
@@ -161,13 +213,27 @@ final class FixerApplication
 				'phpstanVersion' => ComposerHelper::getPhpStanVersion(),
 				'editorUrl' => $this->editorUrl,
 				'ruleLevel' => $this->usedLevel,
+				// PHPStan Pro may ask for an update, see update()
+				'inPlaceUpdate' => true,
 			]]);
+			if ($this->updateFailureAfterRestart !== null) {
+				$encoder->write(['action' => 'updateFailed', 'data' => [
+					'message' => $this->updateFailureAfterRestart,
+				]]);
+				$this->updateFailureAfterRestart = null;
+			}
 			$decoder->on('data', function (array $data) use (
+				$loop,
 				$output,
 			): void {
 				if ($data['action'] === 'webPort') {
-					$output->writeln(sprintf('Open your web browser at: <fg=cyan>http://127.0.0.1:%d</>', $data['data']['port']));
-					$output->writeln('Press [Ctrl-C] to quit.');
+					if ($this->webPort === null) {
+						$output->writeln(sprintf('Open your web browser at: <fg=cyan>http://127.0.0.1:%d</>', $data['data']['port']));
+						$output->writeln('Press [Ctrl-C] to quit.');
+					} elseif ($this->webPort !== $data['data']['port']) {
+						$output->writeln(sprintf('PHPStan Pro moved to: <fg=cyan>http://127.0.0.1:%d</>', $data['data']['port']));
+					}
+					$this->webPort = $data['data']['port'];
 					return;
 				}
 				if ($data['action'] === 'resumeFileMonitor') {
@@ -178,7 +244,23 @@ final class FixerApplication
 					$this->fileMonitorActive = false;
 					return;
 				}
+				if ($data['action'] === 'update') {
+					$this->update($loop, $output);
+					return;
+				}
 			});
+
+			// an updated process starts without errors, it gets them from a new analysis
+			if ($isUpdatedProcess) {
+				if ($this->processInProgress !== null) {
+					// the analysis in progress reports to the process that exited
+					$this->analysisRequested = true;
+					return;
+				}
+
+				$this->analyse($loop, $mainScript, $projectConfigFile, $input);
+				return;
+			}
 
 			$this->watchedFilesWithoutConfig = array_merge(
 				$this->getComposerLocks(),
@@ -193,18 +275,17 @@ final class FixerApplication
 				$mainScript,
 				$projectConfigFile,
 				$input,
-				$encoder,
 			);
 
-			$this->monitorFileChanges($loop, static function (FileMonitorResult $changes) use ($encoder): void {
+			$this->monitorFileChanges($loop, function (FileMonitorResult $changes): void {
 				if (count($changes->getChangedFiles()) === 0) {
 					return;
 				}
 
-				$encoder->write(['action' => 'changedFiles', 'data' => [
+				$this->fixerEncoder?->write(['action' => 'changedFiles', 'data' => [
 					'paths' => $changes->getChangedFiles(),
 				]]);
-			}, function () use ($loop, $mainScript, $projectConfigFile, $input, $encoder): void {
+			}, function () use ($loop, $mainScript, $projectConfigFile, $input): void {
 				// The analysis in progress is not stopped: what it saves to the result cache makes the next
 				// one cheaper, and that one starts once it ends, for everything that changed meanwhile.
 				if ($this->processInProgress !== null) {
@@ -217,19 +298,46 @@ final class FixerApplication
 					$mainScript,
 					$projectConfigFile,
 					$input,
-					$encoder,
 				);
 			});
 		});
 
 		try {
-			$fixerProcess = $this->getFixerProcess($output, $serverPort);
+			$fixerCommand = $this->getFixerCommand($output, $serverPort);
 		} catch (FixerProcessException) {
 			return 1;
 		}
 
+		$this->startFixerProcess($fixerCommand, null, $loop, $output, $serverPort);
+
+		$loop->run();
+
+		return 0;
+	}
+
+	/**
+	 * @param int|null $webPort the port of the process this one replaces, its pages reconnect to it
+	 */
+	private function startFixerProcess(string $command, ?int $webPort, LoopInterface $loop, OutputInterface $output, int $serverPort): void
+	{
+		$this->fixerCommand = $command;
+		if ($webPort !== null) {
+			$command .= sprintf(' --web-port %d', $webPort);
+		}
+		$fixerProcess = new Process($command, env: $this->fixerEnv, fds: []);
+		$this->fixerProcess = $fixerProcess;
 		$fixerProcess->start($loop);
-		$fixerProcess->on('exit', function ($exitCode) use ($output, $loop): void {
+		$fixerProcess->on('exit', function ($exitCode) use ($output, $loop, $serverPort): void {
+			if ($this->downloadedUpdate !== null) {
+				$this->startUpdatedFixerProcess($loop, $output, $serverPort);
+				return;
+			}
+
+			if ($this->fixerBeforeUpdate !== null) {
+				$this->restoreFixerBeforeUpdate($exitCode, $loop, $output, $serverPort);
+				return;
+			}
+
 			$loop->stop();
 			if ($exitCode === null) {
 				return;
@@ -240,16 +348,257 @@ final class FixerApplication
 			$output->writeln(sprintf('<fg=red>PHPStan Pro process exited with code %d.</>', $exitCode));
 			@unlink($this->proTmpDir . '/phar-info.json');
 		});
+	}
 
-		$loop->run();
+	/**
+	 * Asked for by PHPStan Pro: downloads the latest PHPStan Pro while the running one keeps working, and reports the progress to it.
+	 * Once the download is verified, the running process tells its pages and exits, and the updated one starts
+	 * on the same web port, without opening the browser: the pages reconnect to it.
+	 */
+	private function update(LoopInterface $loop, OutputInterface $output): void
+	{
+		if ($this->updateInProgress) {
+			return;
+		}
+		$this->updateInProgress = true;
 
-		return 0;
+		$pharPath = $this->proTmpDir . '/phpstan-fixer.phar';
+		$infoPath = $this->proTmpDir . '/phar-info.json';
+		$currentUrl = null;
+		try {
+			DirectoryCreator::ensureDirectoryExists($this->proTmpDir, 0777);
+		} catch (DirectoryCreatorException $e) {
+			$this->updateInProgress = false;
+			$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
+				'message' => $e->getMessage(),
+			]]);
+			return;
+		}
+		if (is_file($pharPath) && is_file($infoPath)) {
+			/** @var array{url?: string} $currentInfo */
+			$currentInfo = Json::decode(FileReader::read($infoPath), Json::FORCE_ARRAY);
+			$currentUrl = $currentInfo['url'] ?? null;
+		}
+
+		$output->writeln('<fg=green>Downloading the latest PHPStan Pro...</>');
+		$lastProgressAt = 0.0;
+		$this->requestAsync($loop, $this->getLatestUrl(self::PHAR_BRANCH, PHP_OS_FAMILY, php_uname('m')), [])->then(static fn (ResponseInterface $response): ResponseInterface => $response, static function (Throwable $e): void {
+			throw new FixerUpdateException(sprintf('Could not find the latest PHPStan Pro: %s', self::describeHttpFailure($e)));
+		})->then(function (ResponseInterface $response) use ($loop, $currentUrl, &$lastProgressAt): PromiseInterface {
+			try {
+				/** @var array{url: string, version: string} $latestInfo */
+				$latestInfo = Json::decode((string) $response->getBody(), Json::FORCE_ARRAY);
+			} catch (JsonException) {
+				throw new FixerUpdateException('Could not find the latest PHPStan Pro: the download server answered something else than JSON.');
+			}
+			if ($latestInfo['url'] === $currentUrl) {
+				throw new FixerUpdateException('You\'re running the latest PHPStan Pro.');
+			}
+
+			$downloadPath = sprintf('%s/phpstan-fixer-%s.phar', $this->proTmpDir, substr(sha1($latestInfo['url']), 0, 16));
+			$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
+				'version' => $latestInfo['version'],
+				'downloadedBytes' => 0,
+				'totalBytes' => 0,
+			]]);
+
+			return $this->requestAsync($loop, $latestInfo['url'], [
+				RequestOptions::SINK => $downloadPath,
+				RequestOptions::TIMEOUT => 120,
+				RequestOptions::PROGRESS => function (int $downloadTotal, int $downloadedBytes) use ($latestInfo, &$lastProgressAt): void {
+					// what the pages can show, not every chunk
+					$now = microtime(true);
+					if ($downloadTotal === 0 || ($now - $lastProgressAt < 0.1 && $downloadedBytes < $downloadTotal)) {
+						return;
+					}
+					$lastProgressAt = $now;
+					$this->fixerEncoder?->write(['action' => 'updateProgress', 'data' => [
+						'version' => $latestInfo['version'],
+						'downloadedBytes' => $downloadedBytes,
+						'totalBytes' => $downloadTotal,
+					]]);
+				},
+			])->then(static fn (): array => ['path' => $downloadPath, 'info' => $latestInfo], static function (Throwable $e) use ($downloadPath, $latestInfo): void {
+				@unlink($downloadPath);
+				throw new FixerUpdateException(sprintf('Could not download PHPStan Pro %s: %s', $latestInfo['version'], self::describeHttpFailure($e)));
+			});
+		})->then(function (array $downloaded) use ($loop): void {
+			$this->verifyDownloadedPhar($downloaded['path']);
+			$this->downloadedUpdate = $downloaded;
+
+			// PHPStan Pro tells its pages and exits, the exit starts the updated one, see startFixerProcess()
+			$this->fixerEncoder?->write(['action' => 'updateRestart', 'data' => [
+				'version' => $downloaded['info']['version'],
+			]]);
+			$fixerProcess = $this->fixerProcess;
+			$loop->addTimer(10, static function () use ($fixerProcess): void {
+				if ($fixerProcess === null || !$fixerProcess->isRunning()) {
+					return;
+				}
+
+				$fixerProcess->terminate();
+			});
+		})->catch(function (Throwable $e) use ($output): void {
+			$this->updateInProgress = false;
+			$message = $e instanceof FixerUpdateException ? $e->getMessage() : sprintf('Could not update PHPStan Pro: %s', $e->getMessage());
+			$output->writeln(sprintf('<fg=red>%s</>', $message));
+			$this->fixerEncoder?->write(['action' => 'updateFailed', 'data' => [
+				'message' => $message,
+			]]);
+		});
+	}
+
+	/**
+	 * @throws FixerUpdateException
+	 */
+	private function verifyDownloadedPhar(string $path): void
+	{
+		$pubKeyPath = $path . '.pubkey';
+		FileWriter::write($pubKeyPath, FileReader::read(__DIR__ . '/fixer-phar.pubkey'));
+		try {
+			$phar = new Phar($path);
+			$hashType = $phar->getSignature()['hash_type'];
+		} catch (Throwable) {
+			$hashType = null;
+		} finally {
+			@unlink($pubKeyPath);
+		}
+
+		if ($hashType !== 'OpenSSL') {
+			@unlink($path);
+			throw new FixerUpdateException('The downloaded PHPStan Pro is not signed correctly, it was deleted.');
+		}
+	}
+
+	private function startUpdatedFixerProcess(LoopInterface $loop, OutputInterface $output, int $serverPort): void
+	{
+		if ($this->downloadedUpdate === null || $this->webPort === null || $this->fixerCommand === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		$downloaded = $this->downloadedUpdate;
+		$this->downloadedUpdate = null;
+		$this->updateInProgress = false;
+		$previousCommand = $this->fixerCommand;
+
+		// replaced only now, Windows does not let a running PHAR be overwritten; the previous one is kept
+		// until the updated one connects, so that it can be started again if the updated one does not start
+		$pharPath = $this->proTmpDir . '/phpstan-fixer.phar';
+		$infoPath = $this->proTmpDir . '/phar-info.json';
+		$backupPath = null;
+		if (is_file($pharPath)) {
+			$backupPath = $pharPath . '.previous';
+			if (!@rename($pharPath, $backupPath)) {
+				$backupPath = null;
+			}
+		}
+		if (($backupPath === null && is_file($pharPath)) || !@rename($downloaded['path'], $pharPath)) {
+			@unlink($downloaded['path']);
+			if ($backupPath !== null) {
+				@rename($backupPath, $pharPath);
+			}
+			$this->updateFailureAfterRestart = sprintf('Could not replace the PHPStan Pro PHAR in %s.', $this->proTmpDir);
+			$output->writeln(sprintf('<fg=red>%s</>', $this->updateFailureAfterRestart));
+			$this->startFixerProcess($previousCommand, $this->webPort, $loop, $output, $serverPort);
+			return;
+		}
+
+		$this->fixerBeforeUpdate = [
+			'command' => $previousCommand,
+			'backupPath' => $backupPath,
+			'info' => is_file($infoPath) ? FileReader::read($infoPath) : null,
+		];
+		$this->writeInfoFile($infoPath, $downloaded['info'], self::PHAR_BRANCH, PHP_OS_FAMILY, php_uname('m'));
+		$output->writeln(sprintf('<fg=green>PHPStan Pro was updated to %s.</>', $downloaded['info']['version']));
+
+		$this->startFixerProcess($this->getPharCommand($pharPath, $serverPort), $this->webPort, $loop, $output, $serverPort);
+	}
+
+	/**
+	 * The updated process exited before it connected, the previous one is started again.
+	 */
+	private function restoreFixerBeforeUpdate(?int $exitCode, LoopInterface $loop, OutputInterface $output, int $serverPort): void
+	{
+		if ($this->fixerBeforeUpdate === null || $this->webPort === null) {
+			throw new ShouldNotHappenException();
+		}
+
+		$previous = $this->fixerBeforeUpdate;
+		$this->fixerBeforeUpdate = null;
+		$pharPath = $this->proTmpDir . '/phpstan-fixer.phar';
+		$infoPath = $this->proTmpDir . '/phar-info.json';
+		@unlink($pharPath);
+		if ($previous['backupPath'] !== null) {
+			@rename($previous['backupPath'], $pharPath);
+		}
+		if ($previous['info'] !== null) {
+			FileWriter::write($infoPath, $previous['info']);
+		} else {
+			@unlink($infoPath);
+		}
+
+		$this->updateFailureAfterRestart = sprintf('The updated PHPStan Pro did not start (exit code %s), the previous version runs again.', $exitCode ?? 'none');
+		$output->writeln(sprintf('<fg=red>%s</>', $this->updateFailureAfterRestart));
+		$this->startFixerProcess($previous['command'], $this->webPort, $loop, $output, $serverPort);
+	}
+
+	private static function describeHttpFailure(Throwable $e): string
+	{
+		if ($e instanceof ConnectException) {
+			return 'the server cannot be reached';
+		}
+		if ($e instanceof RequestException) {
+			$response = $e->getResponse();
+			if ($response !== null && $response->getStatusCode() >= 400) {
+				return sprintf('the server answered %d %s', $response->getStatusCode(), $response->getReasonPhrase());
+			}
+
+			// cURL's own message, without the URL and the link to its documentation Guzzle adds
+			$error = $e->getHandlerContext()['error'] ?? null;
+			if (is_string($error) && $error !== '') {
+				return sprintf('the transfer failed (%s)', $error);
+			}
+		}
+
+		return $e->getMessage();
+	}
+
+	/**
+	 * @param array<mixed> $options
+	 * @return PromiseInterface<ResponseInterface>
+	 */
+	private function requestAsync(LoopInterface $loop, string $url, array $options): PromiseInterface
+	{
+		// does not wait for the transfers, the loop calls it
+		$handler = new CurlMultiHandler(['select_timeout' => 0]);
+		$client = $this->httpClientFactory->createClient(['handler' => HandlerStack::create($handler)]);
+		$deferred = new Deferred();
+		$timer = $loop->addPeriodicTimer(0.01, static function () use ($handler): void {
+			$handler->tick();
+		});
+		$client->requestAsync('GET', $url, $options)->then(
+			static function (ResponseInterface $response) use ($deferred, $loop, $timer): void {
+				$loop->cancelTimer($timer);
+				$deferred->resolve($response);
+			},
+			static function (Throwable $e) use ($deferred, $loop, $timer): void {
+				$loop->cancelTimer($timer);
+				$deferred->reject($e);
+			},
+		);
+
+		return $deferred->promise();
+	}
+
+	private function getLatestUrl(string $branch, string $os, string $arch): string
+	{
+		return sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch, 'os' => $os, 'arch' => $arch]));
 	}
 
 	/**
 	 * @throws FixerProcessException
 	 */
-	private function getFixerProcess(OutputInterface $output, int $serverPort): Process
+	private function getFixerCommand(OutputInterface $output, int $serverPort): string
 	{
 		try {
 			DirectoryCreator::ensureDirectoryExists($this->proTmpDir, 0777);
@@ -328,7 +677,14 @@ final class FixerApplication
 			}
 		}
 
-		return new Process(sprintf('%s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort), env: $env, fds: []);
+		$this->fixerEnv = $env;
+
+		return $this->getPharCommand($pharPath, $serverPort);
+	}
+
+	private function getPharCommand(string $pharPath, int $serverPort): string
+	{
+		return sprintf('%s -d memory_limit=%s %s --port %d', escapeshellarg(PHP_BINARY), escapeshellarg(ini_get('memory_limit')), escapeshellarg($pharPath), $serverPort);
 	}
 
 	/**
@@ -341,7 +697,7 @@ final class FixerApplication
 	): void
 	{
 		$currentUrl = null;
-		$branch = '2.2.x';
+		$branch = self::PHAR_BRANCH;
 		// the PHAR bundles a native binary, download-api answers the one for this system
 		$os = PHP_OS_FAMILY;
 		$arch = php_uname('m');
@@ -376,7 +732,7 @@ final class FixerApplication
 
 		$client = $this->httpClientFactory->createClient([]);
 
-		$latestUrl = sprintf('https://fixer-download-api.phpstan.com/latest?%s', http_build_query(['phpVersion' => PHP_VERSION_ID, 'branch' => $branch, 'os' => $os, 'arch' => $arch]));
+		$latestUrl = $this->getLatestUrl($branch, $os, $arch);
 
 		/**
 		 * @var array{url: string, version: string} $latestInfo
@@ -505,11 +861,16 @@ final class FixerApplication
 		string $mainScript,
 		?string $projectConfigFile,
 		InputInterface $input,
-		Encoder $phpstanFixerEncoder,
 	): void
 	{
 		// this analysis reads the files as they are now
 		$this->filesChangedWhileAnalysed = false;
+
+		// the process this analysis is for, an updated one gets the next analysis
+		$phpstanFixerEncoder = $this->fixerEncoder;
+		if ($phpstanFixerEncoder === null) {
+			throw new ShouldNotHappenException();
+		}
 
 		// TCP server for fixer:worker (TCP client)
 		$server = new TcpServer('127.0.0.1:0', $loop);
@@ -581,14 +942,14 @@ final class FixerApplication
 					shouldReportBug: false,
 				)],
 			]]);
-		})->finally(function () use ($loop, $mainScript, $projectConfigFile, $input, $phpstanFixerEncoder): void {
+		})->finally(function () use ($loop, $mainScript, $projectConfigFile, $input): void {
 			$this->processInProgress = null;
 			if (!$this->analysisRequested) {
 				return;
 			}
 
 			$this->analysisRequested = false;
-			$this->analyse($loop, $mainScript, $projectConfigFile, $input, $phpstanFixerEncoder);
+			$this->analyse($loop, $mainScript, $projectConfigFile, $input);
 		});
 	}
 

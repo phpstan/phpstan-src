@@ -19,6 +19,7 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 		return new ImpossibleInArrayHaystackFiniteTypesRule(
 			self::getContainer()->getByType(InitializerExprTypeResolver::class),
 			self::getContainer()->getByType(ReflectionProvider::class),
+			true,
 		);
 	}
 

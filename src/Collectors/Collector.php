@@ -3,6 +3,7 @@
 namespace PHPStan\Collectors;
 
 use PhpParser\Node;
+use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\ExtensionInterface;
@@ -38,6 +39,6 @@ interface Collector
 	 * @param TNodeType $node
 	 * @return TValue|null Collected data
 	 */
-	public function processNode(Node $node, Scope&DependencyTracker $scope);
+	public function processNode(Node $node, Scope&CollectedDataEmitter&DependencyTracker $scope);
 
 }

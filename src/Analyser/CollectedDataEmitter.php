@@ -6,14 +6,16 @@ use PhpParser\Node;
 use PHPStan\Collectors\Collector;
 
 /**
- * The interface CollectedDataEmitter can be typehinted in 2nd parameter of Rule::processNode():
+ * The interface CollectedDataEmitter can be typehinted in 2nd parameter of Rule::processNode()
+ * and Collector::processNode():
  *
  * ```php
  * public function processNode(Node $node, Scope&CollectedDataEmitter $scope): array
  * ```
  *
  * It allows rules to emit collected data directly, without having to write
- * a separate complex Collector class. The emitted data is aggregated the same way
+ * a separate complex Collector class, and collectors to emit data for other collectors
+ * besides the data they return. The emitted data is aggregated the same way
  * as data from Collectors and can be consumed by rules registered
  * for CollectedDataNode.
  *
@@ -28,6 +30,7 @@ use PHPStan\Collectors\Collector;
  * ```
  *
  * @api
+ * @api-do-not-implement
  */
 interface CollectedDataEmitter
 {

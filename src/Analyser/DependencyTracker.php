@@ -32,6 +32,7 @@ use PHPStan\Analyser\ResultCache\ResultCacheValueExtension;
  * DeclarationDependencyTracker instead.
  *
  * @api
+ * @api-do-not-implement
  */
 interface DependencyTracker
 {

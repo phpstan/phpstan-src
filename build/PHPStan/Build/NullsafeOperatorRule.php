@@ -22,6 +22,7 @@ use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\VarLikeIdentifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\Printer\ExprPrinter;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use function count;
@@ -39,7 +40,10 @@ use function is_string;
 final class NullsafeOperatorRule implements Rule
 {
 
-	public function __construct(private ExprPrinter $printer)
+	public function __construct(
+		private ExprPrinter $printer,
+		private PhpVersion $phpVersion,
+	)
 	{
 	}
 
@@ -50,6 +54,11 @@ final class NullsafeOperatorRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
+		// on PHP 7.4, the downgraded code has these null checks in place of the nullsafe operator
+		if (!$this->phpVersion->supportsNullsafeOperator()) {
+			return [];
+		}
+
 		$replacement = $this->createReplacement($node);
 		if ($replacement === null) {
 			return [];

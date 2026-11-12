@@ -103,6 +103,11 @@ final class PhpVersion
 		return $this->versionId >= 80000;
 	}
 
+	public function supportsNullsafeOperator(): bool
+	{
+		return $this->versionId >= 80000;
+	}
+
 	public function supportsNativeUnionTypes(): bool
 	{
 		return $this->versionId >= 80000;

@@ -4,12 +4,14 @@ namespace PHPStan\Rules\Comparison;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\Conditional;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\Rule;
@@ -23,7 +25,6 @@ use function array_merge;
 use function array_unique;
 use function array_values;
 use function count;
-use function max;
 use function sprintf;
 use function strtolower;
 
@@ -69,29 +70,48 @@ final class ImpossibleInArrayHaystackFiniteTypesRule implements Rule
 			return [];
 		}
 
-		$functionName = strtolower((string) $this->reflectionProvider->resolveFunctionName($node->name, $scope));
+		if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+			return [];
+		}
+
+		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		$functionName = strtolower($functionReflection->getName());
 		if (!array_key_exists($functionName, self::FUNCTIONS)) {
 			return [];
 		}
 
-		$needleArg = self::FUNCTIONS[$functionName]['needle'];
-		$haystackArg = self::FUNCTIONS[$functionName]['haystack'];
-
 		$args = $node->getArgs();
-		if (count($args) <= max($needleArg, $haystackArg)) {
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
+			$scope,
+			$args,
+			$functionReflection->getVariants(),
+			$functionReflection->getNamedArgumentsVariants(),
+		);
+		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+		if ($normalizedFuncCall === null) {
 			return [];
 		}
 
-		$needleType = $this->treatPhpDocTypesAsCertain ? $scope->getType($args[$needleArg]->value) : $scope->getNativeType($args[$needleArg]->value);
-		$haystackType = $this->treatPhpDocTypesAsCertain ? $scope->getType($args[$haystackArg]->value) : $scope->getNativeType($args[$haystackArg]->value);
+		$normalizedArgs = $normalizedFuncCall->getArgs();
+		$needlePosition = self::FUNCTIONS[$functionName]['needle'];
+		$haystackPosition = self::FUNCTIONS[$functionName]['haystack'];
+		$needleArg = $normalizedArgs[$needlePosition] ?? null;
+		$haystackArg = $normalizedArgs[$haystackPosition] ?? null;
+		if ($needleArg === null || $haystackArg === null) {
+			return [];
+		}
+
+		$needleType = $this->treatPhpDocTypesAsCertain ? $scope->getType($needleArg->value) : $scope->getNativeType($needleArg->value);
+		$haystackType = $this->treatPhpDocTypesAsCertain ? $scope->getType($haystackArg->value) : $scope->getNativeType($haystackArg->value);
 
 		$constantArrays = $haystackType->getConstantArrays();
 		if (count($constantArrays) === 0) {
 			return [];
 		}
 
-		$isStrict = count($args) >= 3
-			? ($this->treatPhpDocTypesAsCertain ? $scope->getType($args[2]->value) : $scope->getNativeType($args[2]->value))->isTrue()
+		$strictArg = $normalizedArgs[2] ?? null;
+		$isStrict = $strictArg !== null
+			? ($this->treatPhpDocTypesAsCertain ? $scope->getType($strictArg->value) : $scope->getNativeType($strictArg->value))->isTrue()
 			: TrinaryLogic::createNo();
 
 		/** @var array<string, array{Type, list<string>, bool}> $deadValueTypes */

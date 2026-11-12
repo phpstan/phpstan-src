@@ -43,6 +43,18 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 				38,
 			],
 			[
+				'Value ImpossibleInArrayFiniteTypes\Foo::ONE in the haystack passed to in_array() can never be identical to the needle type int.',
+				278,
+			],
+			[
+				'Value ImpossibleInArrayFiniteTypes\Foo::ONE in the haystack passed to array_search() can never be identical to the needle type int.',
+				279,
+			],
+			[
+				'Value ImpossibleInArrayFiniteTypes\Foo::ONE in the haystack passed to array_keys() can never be identical to the needle type int.',
+				280,
+			],
+			[
 				'Value \'installed\' in the haystack passed to in_array() can never be identical to the needle type mixed.',
 				99,
 				'Type \'installed\' has already been eliminated from mixed.',
@@ -70,6 +82,14 @@ class ImpossibleInArrayHaystackFiniteTypesRuleTest extends RuleTestCase
 			[
 				'Value ImpossibleInArrayFiniteTypes\HttpStatus::ServerError in the haystack passed to in_array() can never be identical to the needle type int.',
 				261,
+			],
+			[
+				"Value 'c' in the haystack passed to array_search() can never be identical to the needle type 'a'|'b'.",
+				291,
+			],
+			[
+				"Value '1' in the haystack passed to array_search() can never be identical to the needle type int.",
+				297,
 			],
 		]);
 	}

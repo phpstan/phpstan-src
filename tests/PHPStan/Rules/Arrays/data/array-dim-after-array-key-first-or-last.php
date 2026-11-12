@@ -72,4 +72,20 @@ class HelloWorld
 		}
 		return $hellos[$last];
 	}
+
+	/**
+	 * @param array<string, string>|string $hellos
+	 */
+	public function maybeFirst(array|string $hellos): string
+	{
+		return $hellos[array_key_first($hellos)];
+	}
+
+	/**
+	 * @param array<string, string>|string $hellos
+	 */
+	public function maybeRandom(array|string $hellos): string
+	{
+		return $hellos[array_rand($hellos, 1)];
+	}
 }

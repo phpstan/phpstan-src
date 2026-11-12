@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Arrays;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Variable;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\NullsafeOperatorHelper;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -117,17 +118,20 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& in_array($node->dim->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
 			&& count($node->dim->getArgs()) >= 1
 		) {
-			$arrayArg = $node->dim->getArgs()[0]->value;
-			$arrayType = $scope->getType($arrayArg);
-			if (
-				$arrayArg instanceof Node\Expr\Variable
-				&& $node->var instanceof Node\Expr\Variable
-				&& is_string($arrayArg->name)
-				&& $arrayArg->name === $node->var->name
-				&& $arrayType->isArray()->yes()
-				&& $arrayType->isIterableAtLeastOnce()->yes()
-			) {
-				return [];
+			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 0, 'array');
+			if ($arrayArg !== null) {
+				$arrayArg = $arrayArg->value;
+				$arrayType = $scope->getType($arrayArg);
+				if (
+					$arrayArg instanceof Node\Expr\Variable
+					&& $node->var instanceof Node\Expr\Variable
+					&& is_string($arrayArg->name)
+					&& $arrayArg->name === $node->var->name
+					&& $arrayType->isArray()->yes()
+					&& $arrayType->isIterableAtLeastOnce()->yes()
+				) {
+					return [];
+				}
 			}
 		}
 
@@ -137,24 +141,24 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& $node->dim->name->toLowerString() === 'array_rand'
 			&& count($node->dim->getArgs()) >= 1
 		) {
-			$numArg = null;
-			$arrayArg = $node->dim->getArgs()[0]->value;
-			if (count($node->dim->getArgs()) > 1) {
-				$numArg = $node->dim->getArgs()[1]->value;
-			}
-			$one = new ConstantIntegerType(1);
-			$arrayType = $scope->getType($arrayArg);
+			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 0, 'array');
+			if ($arrayArg !== null) {
+				$arrayArg = $arrayArg->value;
+				$numArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 1, 'num');
+				$one = new ConstantIntegerType(1);
+				$arrayType = $scope->getType($arrayArg);
 
-			if (
-				$arrayArg instanceof Node\Expr\Variable
-				&& $node->var instanceof Node\Expr\Variable
-				&& is_string($arrayArg->name)
-				&& $arrayArg->name === $node->var->name
-				&& $arrayType->isArray()->yes()
-				&& $arrayType->isIterableAtLeastOnce()->yes()
-				&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg))->yes())
-			) {
-				return [];
+				if (
+					$arrayArg instanceof Node\Expr\Variable
+					&& $node->var instanceof Node\Expr\Variable
+					&& is_string($arrayArg->name)
+					&& $arrayArg->name === $node->var->name
+					&& $arrayType->isArray()->yes()
+					&& $arrayType->isIterableAtLeastOnce()->yes()
+					&& ($numArg === null || $one->isSuperTypeOf($scope->getType($numArg->value))->yes())
+				) {
+					return [];
+				}
 			}
 		}
 
@@ -167,17 +171,20 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& $node->dim->right instanceof Node\Scalar\Int_
 			&& $node->dim->right->value === 1
 		) {
-			$arrayArg = $node->dim->left->getArgs()[0]->value;
-			$arrayType = $scope->getType($arrayArg);
-			if (
-				$arrayArg instanceof Node\Expr\Variable
-				&& $node->var instanceof Node\Expr\Variable
-				&& is_string($arrayArg->name)
-				&& $arrayArg->name === $node->var->name
-				&& $arrayType->isList()->yes()
-				&& $arrayType->isIterableAtLeastOnce()->yes()
-			) {
-				return [];
+			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->left->getArgs(), 0, 'value');
+			if ($arrayArg !== null) {
+				$arrayArg = $arrayArg->value;
+				$arrayType = $scope->getType($arrayArg);
+				if (
+					$arrayArg instanceof Node\Expr\Variable
+					&& $node->var instanceof Node\Expr\Variable
+					&& is_string($arrayArg->name)
+					&& $arrayArg->name === $node->var->name
+					&& $arrayType->isList()->yes()
+					&& $arrayType->isIterableAtLeastOnce()->yes()
+				) {
+					return [];
+				}
 			}
 		}
 

@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 namespace ArrayDimFetchOnArrayKeyFirstOrLast;
 
@@ -46,5 +46,13 @@ class Hello {
 		}
 
 		return $hellos[count($hellos) - 1];
+	}
+
+	/**
+	 * @param non-empty-array<string> $hellos
+	 */
+	public function namedRandom(array $hellos): string
+	{
+		return $hellos[array_rand(num: 1, array: $hellos)];
 	}
 }

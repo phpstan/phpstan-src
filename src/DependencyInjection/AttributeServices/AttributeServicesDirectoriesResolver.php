@@ -133,7 +133,7 @@ final class AttributeServicesDirectoriesResolver
 
 		return new ResolvedAttributeServicesDirectory(
 			$directory,
-			$package === null ? null : $package->name,
+			$package?->name,
 			$cacheKeyComponent,
 		);
 	}

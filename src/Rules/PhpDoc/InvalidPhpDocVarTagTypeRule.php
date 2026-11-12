@@ -76,7 +76,7 @@ final class InvalidPhpDocVarTagTypeRule implements Rule
 			$scope->getFile(),
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$function !== null ? $function->getName() : null,
+			$function?->getName(),
 			$docComment->getText(),
 		);
 

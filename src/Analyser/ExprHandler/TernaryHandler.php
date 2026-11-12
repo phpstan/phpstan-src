@@ -160,7 +160,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 			$finalScope,
 			beforeScope: $scope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($ternaryCondResult->getVariableFlow(), VariableFlow::choice($ifResult !== null ? $ifResult->getVariableFlow() : null, $elseResult->getVariableFlow())),
+			variableFlow: VariableFlow::sequence($ternaryCondResult->getVariableFlow(), VariableFlow::choice($ifResult?->getVariableFlow(), $elseResult->getVariableFlow())),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $ternaryCondResult->isAlwaysTerminating(),
 			throwPoints: $throwPoints,
@@ -362,7 +362,7 @@ final class TernaryHandler implements ExprHandler, PerFileAnalysisResettable
 					$elseTruthyScope,
 				)->setRootExpr($expr);
 			},
-			dependencies: Dependencies::merge($ternaryCondResult->getDependencies(), $ifResult !== null ? $ifResult->getDependencies() : null, $elseResult->getDependencies()),
+			dependencies: Dependencies::merge($ternaryCondResult->getDependencies(), $ifResult?->getDependencies(), $elseResult->getDependencies()),
 		);
 	}
 

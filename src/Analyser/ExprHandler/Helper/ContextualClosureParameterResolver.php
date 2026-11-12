@@ -98,7 +98,7 @@ final class ContextualClosureParameterResolver
 		$hasUnpackedArg = false;
 		foreach ($intrinsicArgs as $arg) {
 			$hasUnpackedArg = $hasUnpackedArg || $arg->unpack;
-			$result = $storage !== null ? $storage->findExpressionResult($arg->value) : null;
+			$result = $storage?->findExpressionResult($arg->value);
 			$type = $result !== null ? $result->getType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope);
 			$nativeType = $result !== null ? $result->getNativeType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope->doNotTreatPhpDocTypesAsCertain());
 			if ($arrayMapArgs !== null) {

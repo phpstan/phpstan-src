@@ -36,9 +36,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	 */
 	public function get(string $collectorType): array
 	{
-		if ($this->reads !== null) {
-			$this->reads->addCollectorType($collectorType);
-		}
+		$this->reads?->addCollectorType($collectorType);
 
 		$result = [];
 		foreach ($this->collectedData->iterate($collectorType) as $filePath => $collectedValues) {
@@ -64,9 +62,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	 */
 	public function iterate(string $collectorType): iterable
 	{
-		if ($this->reads !== null) {
-			$this->reads->addCollectorType($collectorType);
-		}
+		$this->reads?->addCollectorType($collectorType);
 
 		return $this->collectedData->iterate($collectorType);
 	}
@@ -78,9 +74,7 @@ final class CollectedDataNode extends NodeAbstract implements VirtualNode
 	 */
 	public function isOnlyFilesAnalysis(): bool
 	{
-		if ($this->reads !== null) {
-			$this->reads->addOnlyFiles();
-		}
+		$this->reads?->addOnlyFiles();
 
 		return $this->onlyFiles;
 	}

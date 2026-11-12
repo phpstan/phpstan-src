@@ -208,7 +208,7 @@ final class ConditionalExpressionHolderHelper
 	{
 		$storage = $composeScope->getCurrentExpressionResultStorage();
 
-		return $storage !== null ? $storage->findExpressionResult($expr) : null;
+		return $storage?->findExpressionResult($expr);
 	}
 
 	/**

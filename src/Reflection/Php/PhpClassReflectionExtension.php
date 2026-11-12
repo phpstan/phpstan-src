@@ -272,7 +272,7 @@ final class PhpClassReflectionExtension
 		}
 
 		$deprecation = $this->deprecationProvider->getPropertyDeprecation($propertyReflection);
-		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
+		$deprecatedDescription = $deprecation?->getDescription();
 		$isDeprecated = $deprecation !== null;
 		$isInternal = false;
 		$isReadOnlyByPhpDoc = $classReflection->isImmutable();
@@ -818,7 +818,7 @@ final class PhpClassReflectionExtension
 	public function createUserlandMethodReflection(ClassReflection $fileDeclaringClass, ClassReflection $actualDeclaringClass, ReflectionMethod $methodReflection, ?string $declaringTraitName): PhpMethodReflection
 	{
 		$deprecation = $this->deprecationProvider->getMethodDeprecation($methodReflection);
-		$deprecatedDescription = $deprecation === null ? null : $deprecation->getDescription();
+		$deprecatedDescription = $deprecation?->getDescription();
 		$isDeprecated = $deprecation !== null;
 		$currentResolvedPhpDoc = null;
 		$stubPhpDocPair = $this->findMethodPhpDocIncludingAncestors($fileDeclaringClass, $fileDeclaringClass, $methodReflection->getName(), array_map(static fn (ReflectionParameter $parameter): string => $parameter->getName(), $methodReflection->getParameters()));

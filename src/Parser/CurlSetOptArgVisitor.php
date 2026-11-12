@@ -23,9 +23,7 @@ final class CurlSetOptArgVisitor extends NodeVisitorAbstract
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'curl_setopt') {
 				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'handle');
-				if ($arg !== null) {
-					$arg->setAttribute(self::ATTRIBUTE_NAME, true);
-				}
+				$arg?->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}
 		return null;

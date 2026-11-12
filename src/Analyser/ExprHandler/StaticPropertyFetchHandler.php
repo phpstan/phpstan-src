@@ -128,10 +128,10 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			beforeScope: $beforeScope,
 			expr: $expr,
 			variableFlow: VariableFlow::sequence(
-				$classResult !== null ? $classResult->getVariableFlow() : null,
+				$classResult?->getVariableFlow(),
 				$nameResult !== null && $mayShortCircuit
 					? VariableFlow::choice($nameResult->getVariableFlow(), null)
-					: ($nameResult !== null ? $nameResult->getVariableFlow() : null),
+					: $nameResult?->getVariableFlow(),
 				VariableFlowBuilder::throws($expr, $throwPoints),
 			),
 			hasYield: $hasYield,
@@ -208,8 +208,8 @@ final class StaticPropertyFetchHandler implements ExprHandler
 			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
 		);
 		return $result->withDependencies(Dependencies::merge(
-			$classResult !== null ? $classResult->getDependencies() : null,
-			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$classResult?->getDependencies(),
+			$nameResult?->getDependencies(),
 			$this->getDependencies($beforeScope, $expr, $classResult, $result),
 		));
 	}

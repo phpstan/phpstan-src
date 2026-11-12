@@ -477,7 +477,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** @api */
 	public function getFunctionName(): ?string
 	{
-		return $this->function !== null ? $this->function->getName() : null;
+		return $this->function?->getName();
 	}
 
 	/** @api */
@@ -1588,7 +1588,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		// body typed on the closure scope - is processed on demand there, its
 		// raw own type keeping void without any keep-void marker on the node.
 		$storage = $this->services->expressionResultStorageStack->getCurrent();
-		$result = $storage !== null ? $storage->findExpressionResult($node) : null;
+		$result = $storage?->findExpressionResult($node);
 		if ($result === null) {
 			$result = $this->services->container->getByType(NodeScopeResolver::class)->processExprOnDemand(
 				$node,
@@ -4335,7 +4335,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
 	{
-		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope !== null ? $otherScope->getTemplateArgumentConstraints() : null);
+		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope?->getTemplateArgumentConstraints());
 		if (
 			$otherScope === null
 			|| $merged->templateArgumentConstraints === null
@@ -6025,7 +6025,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 		return IntegerRangeType::fromInterval(
 			$minPhpVersion !== null ? $minPhpVersion->getVersionId() : ConstantResolver::PHP_MIN_ANALYZABLE_VERSION_ID,
-			$maxPhpVersion !== null ? $maxPhpVersion->getVersionId() : null,
+			$maxPhpVersion?->getVersionId(),
 		);
 	}
 

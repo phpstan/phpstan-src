@@ -184,7 +184,7 @@ final class TemplateArgumentSolver
 			return $this->resolveKey($key);
 		}
 
-		$resolved = $this->parent !== null ? $this->parent->resolve($marker->getSite(), $marker->getTemplateName()) : null;
+		$resolved = $this->parent?->resolve($marker->getSite(), $marker->getTemplateName());
 
 		return $resolved ?? $this->substituteResolutions($marker->getDelegate());
 	}

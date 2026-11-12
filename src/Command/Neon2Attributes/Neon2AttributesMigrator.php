@@ -107,7 +107,7 @@ final class Neon2AttributesMigrator
 
 			$files[$file] = ['code' => $code, 'tokens' => $tokens, 'root' => $root];
 			foreach ($root->items as $sectionItem) {
-				$section = $sectionItem->key !== null ? $sectionItem->key->toValue() : null;
+				$section = $sectionItem->key?->toValue();
 				if (!$sectionItem->value instanceof NeonArrayNode) {
 					continue;
 				}
@@ -117,7 +117,7 @@ final class Neon2AttributesMigrator
 					}
 				} elseif ($section === 'conditionalTags') {
 					foreach ($sectionItem->value->items as $item) {
-						$class = $item->key !== null ? $item->key->toValue() : null;
+						$class = $item->key?->toValue();
 						$tags = $item->value->toValue();
 						if (!is_string($class) || !is_array($tags)) {
 							continue;
@@ -265,7 +265,7 @@ final class Neon2AttributesMigrator
 			return new ServiceDefinition($value, null, [], null, true, [], null);
 		}
 
-		$key = $item->key !== null ? $item->key->toValue() : null;
+		$key = $item->key?->toValue();
 		$name = is_string($key) ? $key : null;
 		if (is_string($value) || $value instanceof Entity) {
 			$value = ['class' => $value];
@@ -747,7 +747,7 @@ final class Neon2AttributesMigrator
 
 	private function getEntryName(NeonArrayItemNode $item): string
 	{
-		$key = $item->key !== null ? $item->key->toValue() : null;
+		$key = $item->key?->toValue();
 		if (is_string($key)) {
 			return $key;
 		}

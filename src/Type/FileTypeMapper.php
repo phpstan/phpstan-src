@@ -608,7 +608,7 @@ final class FileTypeMapper
 						$className,
 						$functionName,
 						$parentNameScope !== null ? $parentNameScope->getTemplatePhpDocNodes() : [],
-						$parentNameScope !== null ? $parentNameScope->getParent() : null,
+						$parentNameScope?->getParent(),
 						$typeAliasesMap,
 						typeAliasClassName: $lookForTrait,
 					);

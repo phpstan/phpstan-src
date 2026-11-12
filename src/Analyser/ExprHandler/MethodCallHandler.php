@@ -252,7 +252,7 @@ final class MethodCallHandler implements ExprHandler
 				return $this->defaultNarrowingHelper->createNullsafeReceiverOnlyTypes(
 					$s,
 					$expr,
-					$resultStorage !== null ? $resultStorage->findExpressionResult($expr) : null,
+					$resultStorage?->findExpressionResult($expr),
 					$type,
 					$createContext,
 				);
@@ -267,7 +267,7 @@ final class MethodCallHandler implements ExprHandler
 			return $this->defaultNarrowingHelper->createSubjectTypesFromResultState(
 				$s,
 				$expr,
-				$resultStorage !== null ? $resultStorage->findExpressionResult($expr) : null,
+				$resultStorage?->findExpressionResult($expr),
 				$type,
 				$createContext,
 			);
@@ -357,7 +357,7 @@ final class MethodCallHandler implements ExprHandler
 		$argumentsFlow = VariableFlowBuilder::arguments($expr, $argsResult, $storage);
 		$variableFlow = VariableFlow::sequence(
 			$varResult->getVariableFlow(),
-			$nameResult !== null ? $nameResult->getVariableFlow() : null,
+			$nameResult?->getVariableFlow(),
 			// the short-circuited world evaluates none of the arguments
 			$mayShortCircuit ? VariableFlow::choice($argumentsFlow, null) : $argumentsFlow,
 			VariableFlowBuilder::throws($expr, $throwPoints),
@@ -374,7 +374,7 @@ final class MethodCallHandler implements ExprHandler
 		// of what it can make of its arguments and the object
 		$dependencies = Dependencies::merge(
 			$varResult->getDependencies(),
-			$nameResult !== null ? $nameResult->getDependencies() : null,
+			$nameResult?->getDependencies(),
 			$argsResult->getDependencies(),
 			Dependencies::create(
 				$beforeScope->getFile(),
@@ -598,7 +598,7 @@ final class MethodCallHandler implements ExprHandler
 		$nullsafeFan = null;
 		if ($context->truthy() && !$context->falsey()) {
 			$storage = $scope->getCurrentExpressionResultStorage();
-			$result = $storage !== null ? $storage->findExpressionResult($expr) : null;
+			$result = $storage?->findExpressionResult($expr);
 			if ($result !== null) {
 				$nullsafeFan = $this->defaultNarrowingHelper->createNullsafeReceiverOnlyTypes($scope, $expr, $result, StaticTypeFactory::falsey(), TypeSpecifierContext::createFalse());
 			}

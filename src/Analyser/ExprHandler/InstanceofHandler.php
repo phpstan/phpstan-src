@@ -120,7 +120,7 @@ final class InstanceofHandler implements ExprHandler
 			$scope,
 			beforeScope: $beforeScope,
 			expr: $expr,
-			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), $classResult !== null ? $classResult->getVariableFlow() : null),
+			variableFlow: VariableFlow::sequence($exprResult->getVariableFlow(), $classResult?->getVariableFlow()),
 			hasYield: $hasYield,
 			isAlwaysTerminating: $isAlwaysTerminating,
 			throwPoints: $throwPoints,

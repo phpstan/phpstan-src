@@ -23,9 +23,7 @@ final class ArrayWalkArgVisitor extends NodeVisitorAbstract
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'array_walk') {
 				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'array');
-				if ($arg !== null) {
-					$arg->setAttribute(self::ATTRIBUTE_NAME, true);
-				}
+				$arg?->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}
 		return null;

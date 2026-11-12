@@ -285,7 +285,7 @@ final class VarTagTypeRuleHelper
 			$scope->getFile(),
 			$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 			$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-			$function !== null ? $function->getName() : null,
+			$function?->getName(),
 		)->withoutNamespaceAndUses();
 	}
 

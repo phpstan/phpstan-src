@@ -1085,7 +1085,7 @@ final class ResultCacheManager
 		$valueDependenciesChanged = false;
 		foreach ($cachedValueDependencies as $cachedValueDependency) {
 			$extension = $this->valueDependencyCollector->getExtension($cachedValueDependency['extensionClass']);
-			$key = $extension !== null ? $extension->keyFromResultCache($cachedValueDependency['storedKey']) : null;
+			$key = $extension?->keyFromResultCache($cachedValueDependency['storedKey']);
 			$currentValue = $extension !== null && $key !== null ? $extension->getValue($key) : null;
 			if ($currentValue !== $cachedValueDependency['value']) {
 				$valueDependenciesChanged = true;
@@ -3383,8 +3383,8 @@ final class ResultCacheManager
 			// so a composer update need not move anything else in this metadata.
 			'phpVersionForAnalysis' => [$this->phpVersion->getVersionId(), $this->phpVersion->getSource()],
 			'composerPhpVersionRange' => [
-				$composerMinPhpVersion !== null ? $composerMinPhpVersion->getVersionId() : null,
-				$composerMaxPhpVersion !== null ? $composerMaxPhpVersion->getVersionId() : null,
+				$composerMinPhpVersion?->getVersionId(),
+				$composerMaxPhpVersion?->getVersionId(),
 			],
 			'projectConfig' => $projectConfigArray,
 			'analysedPaths' => $this->analysedPaths,

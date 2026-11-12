@@ -82,7 +82,7 @@ final class WrongVariableNameInVarTagRule implements Rule
 				$scope->getFile(),
 				$scope->isInClass() ? $scope->getClassReflection()->getName() : null,
 				$scope->isInTrait() ? $scope->getTraitReflection()->getName() : null,
-				$function !== null ? $function->getName() : null,
+				$function?->getName(),
 				$comment->getText(),
 			);
 			foreach ($resolvedPhpDoc->getVarTags() as $key => $varTag) {

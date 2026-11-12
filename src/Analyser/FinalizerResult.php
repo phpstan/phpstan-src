@@ -16,6 +16,7 @@ final class FinalizerResult
 		private array $locallyIgnoredCollectorErrors,
 		private array $collectedDataRuleResults = [],
 		private int $reusedRulesCount = 0,
+		private bool $collectedDataRuleSkipped = false,
 	)
 	{
 	}
@@ -63,6 +64,15 @@ final class FinalizerResult
 	public function getReusedRulesCount(): int
 	{
 		return $this->reusedRulesCount;
+	}
+
+	/**
+	 * A rule on CollectedDataNode asked isOnlyFilesAnalysis() and got true, so it may have skipped its errors.
+	 * Which ignores those errors would match is not known, so no ignore is reported as unmatched.
+	 */
+	public function isCollectedDataRuleSkippedForOnlyFiles(): bool
+	{
+		return $this->collectedDataRuleSkipped;
 	}
 
 }

@@ -107,6 +107,7 @@ final class AnalyserResultFinalizer
 		$reusedRulesCount = 0;
 		$ruleCountsByClass = [];
 		$currentValues = [];
+		$collectedDataRuleSkipped = false;
 		try {
 			foreach ($this->ruleRegistry->getRules($nodeType) as $rule) {
 				$ruleClass = get_class($rule);
@@ -117,6 +118,7 @@ final class AnalyserResultFinalizer
 				if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector, $currentValues)) {
 					$collectedDataRuleResults[$ruleKey] = $previousResult;
 					$reusedRulesCount++;
+					$collectedDataRuleSkipped = $collectedDataRuleSkipped || $previousResult->getOnlyFiles() === true;
 					$this->addRuleErrors($previousResult->getErrors(), $node, $scope, $tempCollectorErrors);
 					continue;
 				}
@@ -177,6 +179,8 @@ final class AnalyserResultFinalizer
 					);
 					continue;
 				} finally {
+					// the rule may have returned early, like NotAnalysedTraitRule does
+					$collectedDataRuleSkipped = $collectedDataRuleSkipped || ($onlyFiles && $reads->isOnlyFilesRead());
 					$this->valueDependencyCollector->finishCollectedDataRule();
 					if ($postRuleCallback !== null) {
 						$postRuleCallback();
@@ -248,7 +252,7 @@ final class AnalyserResultFinalizer
 			peakMemoryUsageBytes: $analyserResult->getPeakMemoryUsageBytes(),
 			processedFiles: $analyserResult->getProcessedFiles(),
 			workerCount: $analyserResult->getWorkerCount(),
-		), $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount);
+		), $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount, $collectedDataRuleSkipped);
 	}
 
 	/**
@@ -535,10 +539,12 @@ final class AnalyserResultFinalizer
 		array $locallyIgnoredCollectorErrors,
 		array $collectedDataRuleResults = [],
 		int $reusedRulesCount = 0,
+		bool $collectedDataRuleSkipped = false,
 	): FinalizerResult
 	{
 		$errors = $this->fixAllLineErrorsIgnores($analyserResult->getUnorderedErrors());
-		if (!$this->reportUnmatchedIgnoredErrors) {
+		// a rule that skipped its errors because only files are analysed may have left the ignores of them unmatched
+		if (!$this->reportUnmatchedIgnoredErrors || $collectedDataRuleSkipped) {
 			$analyserResult = new AnalyserResult(
 				unorderedErrors: $errors,
 				filteredPhpErrors: $analyserResult->getFilteredPhpErrors(),
@@ -559,7 +565,7 @@ final class AnalyserResultFinalizer
 				workerCount: $analyserResult->getWorkerCount(),
 			);
 
-			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount);
+			return new FinalizerResult($analyserResult, $collectorErrors, $locallyIgnoredCollectorErrors, $collectedDataRuleResults, $reusedRulesCount, $collectedDataRuleSkipped);
 		}
 
 		foreach ($analyserResult->getUnmatchedLineIgnores() as $file => $data) {
@@ -622,6 +628,7 @@ final class AnalyserResultFinalizer
 			$locallyIgnoredCollectorErrors,
 			$collectedDataRuleResults,
 			$reusedRulesCount,
+			$collectedDataRuleSkipped,
 		);
 	}
 

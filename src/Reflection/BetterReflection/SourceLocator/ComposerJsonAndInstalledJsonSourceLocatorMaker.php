@@ -117,9 +117,10 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		);
 
 		$files = [];
+		$directoryLocators = [];
 		foreach ($classMapPaths as $classMapPath) {
 			if (is_dir($classMapPath)) {
-				$locators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath, $batch);
+				$directoryLocators[] = $this->optimizedDirectorySourceLocatorRepository->getOrCreate($classMapPath, $batch);
 				continue;
 			}
 			if (!is_file($classMapPath)) {
@@ -135,9 +136,12 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		}
 
 		if (count($files) > 0) {
-			$locators[] = $batch !== null
+			$directoryLocators[] = $batch !== null
 				? $batch->createByFiles($files, 'odsl-installed-files')
 				: $this->optimizedDirectorySourceLocatorFactory->createByFiles($files, 'odsl-installed-files');
+		}
+		if ($directoryLocators !== []) {
+			$locators[] = OptimizedDirectorySourceLocatorGroup::create($directoryLocators);
 		}
 
 		$binDir = ComposerHelper::getBinDirFromComposerConfig($projectInstallationPath, $composer);

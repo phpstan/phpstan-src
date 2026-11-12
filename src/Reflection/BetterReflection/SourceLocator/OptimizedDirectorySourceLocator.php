@@ -77,6 +77,21 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 	}
 
 	/**
+	 * The lowercase class names, the lowercase function names and the normalized constant names
+	 * it declares - see OptimizedDirectorySourceLocatorGroup.
+	 *
+	 * @return array{list<string>, list<string>, list<string>}
+	 */
+	public function getDeclaredSymbolNames(): array
+	{
+		if ($this->awaitingScan) {
+			throw new ShouldNotHappenException('Symbols were looked up in a directory whose batch has not been scanned yet.');
+		}
+
+		return [array_keys($this->classToFile), array_keys($this->functionToFiles), array_keys($this->constantToFile)];
+	}
+
+	/**
 	 * @return array{non-empty-string, string}
 	 */
 	private function getCacheKeys(string $file, Identifier $identifier): array

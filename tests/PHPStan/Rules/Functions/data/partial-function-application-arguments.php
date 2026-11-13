@@ -90,3 +90,12 @@ function variadicPlaceholderPlacements(): void
 	doFoo(1, ..., ..., ?);
 	doFoo(1, ..., c: 5.0);
 }
+
+function multiVariant(): void
+{
+	// no variant of mt_rand() takes 1 or 3 arguments
+	mt_rand(?);
+	mt_rand(?, ?, ?, ...);
+	mt_rand(1, ?);
+	mt_rand(...);
+}

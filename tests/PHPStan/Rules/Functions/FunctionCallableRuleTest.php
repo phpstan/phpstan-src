@@ -264,6 +264,14 @@ class FunctionCallableRuleTest extends RuleTestCase
 				'Variadic placeholder must be last.',
 				91,
 			],
+			[
+				'Function mt_rand partially applied with 1 argument, 2 required.',
+				97,
+			],
+			[
+				'Function mt_rand partially applied with 3 arguments, 0-2 required.',
+				98,
+			],
 		]);
 	}
 

@@ -11,21 +11,22 @@ use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\ConstantNameHelper;
 use function array_merge;
 use function count;
-use function is_int;
 use function strtolower;
 
 /**
  * Asks OptimizedDirectorySourceLocators as if they were asked in turn, the way
- * AggregateSourceLocator would: the first one locating the symbol answers. Which of them declare
- * it is looked up once, in a map of all their symbols built when the group is first asked, instead
- * of in every one of them - a project with many Composer packages has a locator for each classmap
- * directory, and most names asked for are declared in none of them.
+ * AggregateSourceLocator would: the first one locating the symbol answers. Only the ones whose
+ * symbol map has the name are asked, and the maps are checked directly instead of through each
+ * locator - a project with many Composer packages has a locator for each classmap directory, and
+ * most names asked for are declared in none of them. The maps are the locators' own: one map of
+ * all their symbols would answer in one lookup, but it would keep a second copy of every name for
+ * the rest of the process.
  */
 final class OptimizedDirectorySourceLocatorGroup implements SourceLocator
 {
 
-	/** @var array{array<string, int|list<int>>, array<string, int|list<int>>, array<string, int|list<int>>}|null class, function and constant name => the locators declaring it */
-	private ?array $declaringLocators = null;
+	/** @var array{list<array<string, mixed>>, list<array<string, mixed>>, list<array<string, mixed>>}|null the class, function and constant maps of each locator, by its index */
+	private ?array $symbolMaps = null;
 
 	/**
 	 * @param list<OptimizedDirectorySourceLocator> $locators
@@ -62,13 +63,12 @@ final class OptimizedDirectorySourceLocatorGroup implements SourceLocator
 			return null;
 		}
 
-		$this->declaringLocators ??= $this->buildDeclaringLocators();
-		$indexes = $this->declaringLocators[$kind][$name] ?? null;
-		if ($indexes === null) {
-			return null;
-		}
+		$this->symbolMaps ??= $this->collectSymbolMaps();
+		foreach ($this->symbolMaps[$kind] as $index => $symbols) {
+			if (!isset($symbols[$name])) {
+				continue;
+			}
 
-		foreach (is_int($indexes) ? [$indexes] : $indexes as $index) {
 			$reflection = $this->locators[$index]->locateIdentifier($reflector, $identifier);
 			if ($reflection !== null) {
 				return $reflection;
@@ -79,28 +79,19 @@ final class OptimizedDirectorySourceLocatorGroup implements SourceLocator
 	}
 
 	/**
-	 * @return array{array<string, int|list<int>>, array<string, int|list<int>>, array<string, int|list<int>>}
+	 * @return array{list<array<string, mixed>>, list<array<string, mixed>>, list<array<string, mixed>>}
 	 */
-	private function buildDeclaringLocators(): array
+	private function collectSymbolMaps(): array
 	{
-		$declaringLocators = [[], [], []];
-		foreach ($this->locators as $index => $locator) {
-			foreach ($locator->getDeclaredSymbolNames() as $kind => $names) {
-				foreach ($names as $name) {
-					$declaring = $declaringLocators[$kind][$name] ?? null;
-					if ($declaring === null) {
-						$declaringLocators[$kind][$name] = $index;
-						continue;
-					}
-
-					$declaring = is_int($declaring) ? [$declaring] : $declaring;
-					$declaring[] = $index;
-					$declaringLocators[$kind][$name] = $declaring;
-				}
-			}
+		$symbolMaps = [[], [], []];
+		foreach ($this->locators as $locator) {
+			[$classes, $functions, $constants] = $locator->getSymbolMaps();
+			$symbolMaps[0][] = $classes;
+			$symbolMaps[1][] = $functions;
+			$symbolMaps[2][] = $constants;
 		}
 
-		return $declaringLocators;
+		return $symbolMaps;
 	}
 
 	#[Override]

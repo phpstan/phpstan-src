@@ -444,4 +444,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function deprecatesTriggerErrorWithUserError(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

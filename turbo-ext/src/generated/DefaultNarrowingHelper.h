@@ -13,6 +13,7 @@ namespace slot {
 inline constexpr uint32_t exprPrinter = 0;
 inline constexpr uint32_t rememberPossiblyImpureFunctionValues = 1;
 inline constexpr uint32_t reflectionProvider = 2;
+inline constexpr uint32_t treatPhpDocTypesAsCertain = 3;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -26,6 +27,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("exprPrinter", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Node\\Printer\\ExprPrinter");
 	cls.property("rememberPossiblyImpureFunctionValues", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 	cls.property("reflectionProvider", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\ReflectionProvider");
+	cls.property("treatPhpDocTypesAsCertain", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -36,203 +38,205 @@ inline constexpr char strings[] =
 	"rememberPossiblyImpureFunctionValues\0" /* 45 */
 	"reflectionProvider\0" /* 82 */
 	"PHPStan\\Reflection\\ReflectionProvider\0" /* 101 */
-	"__construct\0" /* 139 */
-	"scope\0" /* 151 */
-	"PHPStan\\Analyser\\Scope\0" /* 157 */
-	"node\0" /* 180 */
-	"PhpParser\\Node\\Expr\0" /* 185 */
-	"context\0" /* 205 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 213 */
-	"\0" /* 251 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 252 */
-	"specifyTypesForNode\0" /* 284 */
-	"expr\0" /* 304 */
-	"specifyDefaultTypes\0" /* 309 */
-	"exprResult\0" /* 329 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 340 */
-	"s\0" /* 374 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 376 */
-	"specifyDefaultTypesWithPlainTwin\0" /* 407 */
-	"subjectResult\0" /* 440 */
-	"subject\0" /* 454 */
-	"isSubjectValueRemembered\0" /* 462 */
-	"types\0" /* 487 */
-	"evaluationScope\0" /* 493 */
-	"toSureTypes\0" /* 509 */
-	"type\0" /* 521 */
-	"PHPStan\\Type\\Type\0" /* 526 */
-	"createSubjectTypes\0" /* 544 */
-	"createSubjectTypesFromResultState\0" /* 563 */
-	"beforeScope\0" /* 597 */
-	"nativeTypesPromoted\0" /* 609 */
-	"specifyDefaultTypesWithNullsafeFan\0" /* 629 */
-	"createNullsafeReceiverOnlyTypes\0" /* 664 */
-	"receiverResult\0" /* 696 */
-	"receiverType\0" /* 711 */
-	"callMayHaveBeenSkipped\0" /* 724 */
-	"nullsafeShortCircuitRuledOut\0" /* 747 */
-	"createFirstNullsafeReceiverTypes\0" /* 776 */
-	"resultFor\0" /* 809 */
-	"Closure\0" /* 819 */
-	"null\0" /* 827 */
-	"createForSubject\0" /* 832 */
-	"storage\0" /* 849 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 857 */
-	"chainResults\0" /* 898 */
-	"captureChainResults\0" /* 911 */
-	"buildChainTypeReader\0" /* 931 */
-	"issetExpr\0" /* 952 */
-	"readType\0" /* 962 */
-	"rootExpr\0" /* 971 */
-	"createIssetTruthyChainTypes\0" /* 980 */
-	"varResult\0" /* 1008 */
-	"createIssetSingleSubjectNonTrueTypes\0" /* 1018 */
-	"call\0" /* 1055 */
-	"PhpParser\\Node\\Expr\\CallLike\0" /* 1060 */
-	"assertions\0" /* 1089 */
-	"PHPStan\\Reflection\\Assertions\0" /* 1100 */
-	"parametersAcceptor\0" /* 1130 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1149 */
-	"specifyTypesFromAsserts\0" /* 1187 */
-	"specifyTypesFromConditionalReturnType\0" /* 1211 */
-	"conditionalType\0" /* 1249 */
-	"PHPStan\\Type\\ConditionalTypeForParameter\0" /* 1265 */
-	"leftType\0" /* 1306 */
-	"rightType\0" /* 1315 */
-	"argumentExpr\0" /* 1325 */
-	"getConditionalSpecifiedTypes\0" /* 1338 */
-	"mayRememberCallSubject"; /* 1367 */
+	"treatPhpDocTypesAsCertain\0" /* 139 */
+	"__construct\0" /* 165 */
+	"scope\0" /* 177 */
+	"PHPStan\\Analyser\\Scope\0" /* 183 */
+	"node\0" /* 206 */
+	"PhpParser\\Node\\Expr\0" /* 211 */
+	"context\0" /* 231 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 239 */
+	"\0" /* 277 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 278 */
+	"specifyTypesForNode\0" /* 310 */
+	"expr\0" /* 330 */
+	"specifyDefaultTypes\0" /* 335 */
+	"exprResult\0" /* 355 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 366 */
+	"s\0" /* 400 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 402 */
+	"specifyDefaultTypesWithPlainTwin\0" /* 433 */
+	"subjectResult\0" /* 466 */
+	"subject\0" /* 480 */
+	"isSubjectValueRemembered\0" /* 488 */
+	"types\0" /* 513 */
+	"evaluationScope\0" /* 519 */
+	"toSureTypes\0" /* 535 */
+	"type\0" /* 547 */
+	"PHPStan\\Type\\Type\0" /* 552 */
+	"createSubjectTypes\0" /* 570 */
+	"createSubjectTypesFromResultState\0" /* 589 */
+	"beforeScope\0" /* 623 */
+	"nativeTypesPromoted\0" /* 635 */
+	"specifyDefaultTypesWithNullsafeFan\0" /* 655 */
+	"createNullsafeReceiverOnlyTypes\0" /* 690 */
+	"receiverResult\0" /* 722 */
+	"receiverType\0" /* 737 */
+	"callMayHaveBeenSkipped\0" /* 750 */
+	"nullsafeShortCircuitRuledOut\0" /* 773 */
+	"createFirstNullsafeReceiverTypes\0" /* 802 */
+	"resultFor\0" /* 835 */
+	"Closure\0" /* 845 */
+	"null\0" /* 853 */
+	"createForSubject\0" /* 858 */
+	"storage\0" /* 875 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 883 */
+	"chainResults\0" /* 924 */
+	"captureChainResults\0" /* 937 */
+	"buildChainTypeReader\0" /* 957 */
+	"issetExpr\0" /* 978 */
+	"readType\0" /* 988 */
+	"rootExpr\0" /* 997 */
+	"createIssetTruthyChainTypes\0" /* 1006 */
+	"varResult\0" /* 1034 */
+	"createIssetSingleSubjectNonTrueTypes\0" /* 1044 */
+	"call\0" /* 1081 */
+	"PhpParser\\Node\\Expr\\CallLike\0" /* 1086 */
+	"assertions\0" /* 1115 */
+	"PHPStan\\Reflection\\Assertions\0" /* 1126 */
+	"parametersAcceptor\0" /* 1156 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1175 */
+	"specifyTypesFromAsserts\0" /* 1213 */
+	"specifyTypesFromConditionalReturnType\0" /* 1237 */
+	"conditionalType\0" /* 1275 */
+	"PHPStan\\Type\\ConditionalTypeForParameter\0" /* 1291 */
+	"leftType\0" /* 1332 */
+	"rightType\0" /* 1341 */
+	"argumentExpr\0" /* 1351 */
+	"getConditionalSpecifiedTypes\0" /* 1364 */
+	"mayRememberCallSubject"; /* 1393 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 12), /* __construct $exprPrinter */
 	reg::packed(45, MAY_BE_BOOL), /* __construct $rememberPossiblyImpureFunctionValues */
 	reg::packed(82, 0, 101), /* __construct $reflectionProvider */
-	reg::packed(151, 0, 157), /* specifyTypesForNode $scope */
-	reg::packed(180, 0, 185), /* specifyTypesForNode $node */
-	reg::packed(205, 0, 213), /* specifyTypesForNode $context */
-	reg::packed(251, 0, 252), /* specifyTypesForNode return */
-	reg::packed(304, 0, 185), /* specifyDefaultTypes $expr */
-	reg::packed(205, 0, 213), /* specifyDefaultTypes $context */
-	reg::packed(251, 0, 252), /* specifyDefaultTypes return */
-	reg::packed(304, 0, 185), /* specifyDefaultTypesWithPlainTwin $expr */
-	reg::packed(329, MAY_BE_NULL, 340), /* specifyDefaultTypesWithPlainTwin $exprResult */
-	reg::packed(205, 0, 213), /* specifyDefaultTypesWithPlainTwin $context */
-	reg::packed(374, 0, 376), /* specifyDefaultTypesWithPlainTwin $s */
-	reg::packed(251, 0, 252), /* specifyDefaultTypesWithPlainTwin return */
-	reg::packed(440, 0, 340), /* isSubjectValueRemembered $subjectResult */
-	reg::packed(454, 0, 185), /* isSubjectValueRemembered $subject */
-	reg::packed(251, MAY_BE_BOOL), /* isSubjectValueRemembered return */
-	reg::packed(487, 0, 252), /* toSureTypes $types */
-	reg::packed(493, 0, 376), /* toSureTypes $evaluationScope */
-	reg::packed(251, 0, 252), /* toSureTypes return */
-	reg::packed(374, 0, 376), /* createSubjectTypes $s */
-	reg::packed(454, 0, 185), /* createSubjectTypes $subject */
-	reg::packed(440, MAY_BE_NULL, 340), /* createSubjectTypes $subjectResult */
-	reg::packed(521, 0, 526), /* createSubjectTypes $type */
-	reg::packed(205, 0, 213), /* createSubjectTypes $context */
-	reg::packed(251, 0, 252), /* createSubjectTypes return */
-	reg::packed(374, 0, 376), /* createSubjectTypesFromResultState $s */
-	reg::packed(454, 0, 185), /* createSubjectTypesFromResultState $subject */
-	reg::packed(440, MAY_BE_NULL, 340), /* createSubjectTypesFromResultState $subjectResult */
-	reg::packed(521, 0, 526), /* createSubjectTypesFromResultState $type */
-	reg::packed(205, 0, 213), /* createSubjectTypesFromResultState $context */
-	reg::packed(251, 0, 252), /* createSubjectTypesFromResultState return */
-	reg::packed(304, 0, 185), /* specifyDefaultTypesWithNullsafeFan $expr */
-	reg::packed(205, 0, 213), /* specifyDefaultTypesWithNullsafeFan $context */
-	reg::packed(597, 0, 376), /* specifyDefaultTypesWithNullsafeFan $beforeScope */
-	reg::packed(609, MAY_BE_BOOL), /* specifyDefaultTypesWithNullsafeFan $nativeTypesPromoted */
-	reg::packed(251, 0, 252), /* specifyDefaultTypesWithNullsafeFan return */
-	reg::packed(374, 0, 376), /* createNullsafeReceiverOnlyTypes $s */
-	reg::packed(454, 0, 185), /* createNullsafeReceiverOnlyTypes $subject */
-	reg::packed(440, MAY_BE_NULL, 340), /* createNullsafeReceiverOnlyTypes $subjectResult */
-	reg::packed(521, 0, 526), /* createNullsafeReceiverOnlyTypes $type */
-	reg::packed(205, 0, 213), /* createNullsafeReceiverOnlyTypes $context */
-	reg::packed(251, 0, 252), /* createNullsafeReceiverOnlyTypes return */
-	reg::packed(696, MAY_BE_NULL, 340), /* callMayHaveBeenSkipped $receiverResult */
-	reg::packed(711, 0, 526), /* callMayHaveBeenSkipped $receiverType */
-	reg::packed(205, 0, 213), /* callMayHaveBeenSkipped $context */
-	reg::packed(251, MAY_BE_BOOL), /* callMayHaveBeenSkipped return */
-	reg::packed(374, 0, 376), /* nullsafeShortCircuitRuledOut $s */
-	reg::packed(440, 0, 340), /* nullsafeShortCircuitRuledOut $subjectResult */
-	reg::packed(521, 0, 526), /* nullsafeShortCircuitRuledOut $type */
-	reg::packed(205, 0, 213), /* nullsafeShortCircuitRuledOut $context */
-	reg::packed(251, MAY_BE_BOOL), /* nullsafeShortCircuitRuledOut return */
-	reg::packed(374, 0, 376), /* createFirstNullsafeReceiverTypes $s */
-	reg::packed(304, 0, 185), /* createFirstNullsafeReceiverTypes $expr */
-	reg::packed(251, MAY_BE_NULL, 252), /* createFirstNullsafeReceiverTypes return */
-	reg::packed(454, 0, 185), /* createForSubject $subject */
-	reg::packed(521, 0, 526), /* createForSubject $type */
-	reg::packed(205, 0, 213), /* createForSubject $context */
-	reg::packed(151, 0, 157), /* createForSubject $scope */
-	reg::packed(809, MAY_BE_NULL, 819, false, false, 827), /* createForSubject $resultFor */
-	reg::packed(251, 0, 252), /* createForSubject return */
-	reg::packed(180, 0, 185), /* captureChainResults $node */
-	reg::packed(849, 0, 857), /* captureChainResults $storage */
-	reg::packed(898, MAY_BE_ARRAY, reg::NoString, true, false), /* captureChainResults $chainResults */
-	reg::packed(251, MAY_BE_VOID), /* captureChainResults return */
-	reg::packed(898, MAY_BE_ARRAY), /* buildChainTypeReader $chainResults */
-	reg::packed(374, 0, 376), /* buildChainTypeReader $s */
-	reg::packed(251, 0, 819), /* buildChainTypeReader return */
-	reg::packed(374, 0, 376), /* createIssetTruthyChainTypes $s */
-	reg::packed(952, 0, 185), /* createIssetTruthyChainTypes $issetExpr */
-	reg::packed(962, 0, 819), /* createIssetTruthyChainTypes $readType */
-	reg::packed(971, 0, 185), /* createIssetTruthyChainTypes $rootExpr */
-	reg::packed(205, 0, 213), /* createIssetTruthyChainTypes $context */
-	reg::packed(251, 0, 252), /* createIssetTruthyChainTypes return */
-	reg::packed(374, 0, 376), /* createIssetSingleSubjectNonTrueTypes $s */
-	reg::packed(952, 0, 185), /* createIssetSingleSubjectNonTrueTypes $issetExpr */
-	reg::packed(1008, 0, 340), /* createIssetSingleSubjectNonTrueTypes $varResult */
-	reg::packed(962, MAY_BE_CALLABLE), /* createIssetSingleSubjectNonTrueTypes $readType */
-	reg::packed(205, 0, 213), /* createIssetSingleSubjectNonTrueTypes $context */
-	reg::packed(971, 0, 185), /* createIssetSingleSubjectNonTrueTypes $rootExpr */
-	reg::packed(251, 0, 252), /* createIssetSingleSubjectNonTrueTypes return */
-	reg::packed(205, 0, 213), /* specifyTypesFromAsserts $context */
-	reg::packed(1055, 0, 1060), /* specifyTypesFromAsserts $call */
-	reg::packed(1089, 0, 1100), /* specifyTypesFromAsserts $assertions */
-	reg::packed(1130, 0, 1149), /* specifyTypesFromAsserts $parametersAcceptor */
-	reg::packed(151, 0, 376), /* specifyTypesFromAsserts $scope */
-	reg::packed(251, MAY_BE_NULL, 252), /* specifyTypesFromAsserts return */
-	reg::packed(205, 0, 213), /* specifyTypesFromConditionalReturnType $context */
-	reg::packed(1055, 0, 1060), /* specifyTypesFromConditionalReturnType $call */
-	reg::packed(1130, 0, 1149), /* specifyTypesFromConditionalReturnType $parametersAcceptor */
-	reg::packed(151, 0, 376), /* specifyTypesFromConditionalReturnType $scope */
-	reg::packed(251, MAY_BE_NULL, 252), /* specifyTypesFromConditionalReturnType return */
-	reg::packed(1249, 0, 1265), /* getConditionalSpecifiedTypes $conditionalType */
-	reg::packed(1306, 0, 526), /* getConditionalSpecifiedTypes $leftType */
-	reg::packed(1315, 0, 526), /* getConditionalSpecifiedTypes $rightType */
-	reg::packed(151, 0, 376), /* getConditionalSpecifiedTypes $scope */
-	reg::packed(1325, 0, 185), /* getConditionalSpecifiedTypes $argumentExpr */
-	reg::packed(251, MAY_BE_NULL, 252), /* getConditionalSpecifiedTypes return */
-	reg::packed(151, 0, 376), /* mayRememberCallSubject $scope */
-	reg::packed(304, 0, 185), /* mayRememberCallSubject $expr */
-	reg::packed(251, MAY_BE_BOOL), /* mayRememberCallSubject return */
+	reg::packed(139, MAY_BE_BOOL), /* __construct $treatPhpDocTypesAsCertain */
+	reg::packed(177, 0, 183), /* specifyTypesForNode $scope */
+	reg::packed(206, 0, 211), /* specifyTypesForNode $node */
+	reg::packed(231, 0, 239), /* specifyTypesForNode $context */
+	reg::packed(277, 0, 278), /* specifyTypesForNode return */
+	reg::packed(330, 0, 211), /* specifyDefaultTypes $expr */
+	reg::packed(231, 0, 239), /* specifyDefaultTypes $context */
+	reg::packed(277, 0, 278), /* specifyDefaultTypes return */
+	reg::packed(330, 0, 211), /* specifyDefaultTypesWithPlainTwin $expr */
+	reg::packed(355, MAY_BE_NULL, 366), /* specifyDefaultTypesWithPlainTwin $exprResult */
+	reg::packed(231, 0, 239), /* specifyDefaultTypesWithPlainTwin $context */
+	reg::packed(400, 0, 402), /* specifyDefaultTypesWithPlainTwin $s */
+	reg::packed(277, 0, 278), /* specifyDefaultTypesWithPlainTwin return */
+	reg::packed(466, 0, 366), /* isSubjectValueRemembered $subjectResult */
+	reg::packed(480, 0, 211), /* isSubjectValueRemembered $subject */
+	reg::packed(277, MAY_BE_BOOL), /* isSubjectValueRemembered return */
+	reg::packed(513, 0, 278), /* toSureTypes $types */
+	reg::packed(519, 0, 402), /* toSureTypes $evaluationScope */
+	reg::packed(277, 0, 278), /* toSureTypes return */
+	reg::packed(400, 0, 402), /* createSubjectTypes $s */
+	reg::packed(480, 0, 211), /* createSubjectTypes $subject */
+	reg::packed(466, MAY_BE_NULL, 366), /* createSubjectTypes $subjectResult */
+	reg::packed(547, 0, 552), /* createSubjectTypes $type */
+	reg::packed(231, 0, 239), /* createSubjectTypes $context */
+	reg::packed(277, 0, 278), /* createSubjectTypes return */
+	reg::packed(400, 0, 402), /* createSubjectTypesFromResultState $s */
+	reg::packed(480, 0, 211), /* createSubjectTypesFromResultState $subject */
+	reg::packed(466, MAY_BE_NULL, 366), /* createSubjectTypesFromResultState $subjectResult */
+	reg::packed(547, 0, 552), /* createSubjectTypesFromResultState $type */
+	reg::packed(231, 0, 239), /* createSubjectTypesFromResultState $context */
+	reg::packed(277, 0, 278), /* createSubjectTypesFromResultState return */
+	reg::packed(330, 0, 211), /* specifyDefaultTypesWithNullsafeFan $expr */
+	reg::packed(231, 0, 239), /* specifyDefaultTypesWithNullsafeFan $context */
+	reg::packed(623, 0, 402), /* specifyDefaultTypesWithNullsafeFan $beforeScope */
+	reg::packed(635, MAY_BE_BOOL), /* specifyDefaultTypesWithNullsafeFan $nativeTypesPromoted */
+	reg::packed(277, 0, 278), /* specifyDefaultTypesWithNullsafeFan return */
+	reg::packed(400, 0, 402), /* createNullsafeReceiverOnlyTypes $s */
+	reg::packed(480, 0, 211), /* createNullsafeReceiverOnlyTypes $subject */
+	reg::packed(466, MAY_BE_NULL, 366), /* createNullsafeReceiverOnlyTypes $subjectResult */
+	reg::packed(547, 0, 552), /* createNullsafeReceiverOnlyTypes $type */
+	reg::packed(231, 0, 239), /* createNullsafeReceiverOnlyTypes $context */
+	reg::packed(277, 0, 278), /* createNullsafeReceiverOnlyTypes return */
+	reg::packed(722, MAY_BE_NULL, 366), /* callMayHaveBeenSkipped $receiverResult */
+	reg::packed(737, 0, 552), /* callMayHaveBeenSkipped $receiverType */
+	reg::packed(231, 0, 239), /* callMayHaveBeenSkipped $context */
+	reg::packed(277, MAY_BE_BOOL), /* callMayHaveBeenSkipped return */
+	reg::packed(400, 0, 402), /* nullsafeShortCircuitRuledOut $s */
+	reg::packed(466, 0, 366), /* nullsafeShortCircuitRuledOut $subjectResult */
+	reg::packed(547, 0, 552), /* nullsafeShortCircuitRuledOut $type */
+	reg::packed(231, 0, 239), /* nullsafeShortCircuitRuledOut $context */
+	reg::packed(277, MAY_BE_BOOL), /* nullsafeShortCircuitRuledOut return */
+	reg::packed(400, 0, 402), /* createFirstNullsafeReceiverTypes $s */
+	reg::packed(330, 0, 211), /* createFirstNullsafeReceiverTypes $expr */
+	reg::packed(277, MAY_BE_NULL, 278), /* createFirstNullsafeReceiverTypes return */
+	reg::packed(480, 0, 211), /* createForSubject $subject */
+	reg::packed(547, 0, 552), /* createForSubject $type */
+	reg::packed(231, 0, 239), /* createForSubject $context */
+	reg::packed(177, 0, 183), /* createForSubject $scope */
+	reg::packed(835, MAY_BE_NULL, 845, false, false, 853), /* createForSubject $resultFor */
+	reg::packed(277, 0, 278), /* createForSubject return */
+	reg::packed(206, 0, 211), /* captureChainResults $node */
+	reg::packed(875, 0, 883), /* captureChainResults $storage */
+	reg::packed(924, MAY_BE_ARRAY, reg::NoString, true, false), /* captureChainResults $chainResults */
+	reg::packed(277, MAY_BE_VOID), /* captureChainResults return */
+	reg::packed(924, MAY_BE_ARRAY), /* buildChainTypeReader $chainResults */
+	reg::packed(400, 0, 402), /* buildChainTypeReader $s */
+	reg::packed(277, 0, 845), /* buildChainTypeReader return */
+	reg::packed(400, 0, 402), /* createIssetTruthyChainTypes $s */
+	reg::packed(978, 0, 211), /* createIssetTruthyChainTypes $issetExpr */
+	reg::packed(988, 0, 845), /* createIssetTruthyChainTypes $readType */
+	reg::packed(997, 0, 211), /* createIssetTruthyChainTypes $rootExpr */
+	reg::packed(231, 0, 239), /* createIssetTruthyChainTypes $context */
+	reg::packed(277, 0, 278), /* createIssetTruthyChainTypes return */
+	reg::packed(400, 0, 402), /* createIssetSingleSubjectNonTrueTypes $s */
+	reg::packed(978, 0, 211), /* createIssetSingleSubjectNonTrueTypes $issetExpr */
+	reg::packed(1034, 0, 366), /* createIssetSingleSubjectNonTrueTypes $varResult */
+	reg::packed(988, MAY_BE_CALLABLE), /* createIssetSingleSubjectNonTrueTypes $readType */
+	reg::packed(231, 0, 239), /* createIssetSingleSubjectNonTrueTypes $context */
+	reg::packed(997, 0, 211), /* createIssetSingleSubjectNonTrueTypes $rootExpr */
+	reg::packed(277, 0, 278), /* createIssetSingleSubjectNonTrueTypes return */
+	reg::packed(231, 0, 239), /* specifyTypesFromAsserts $context */
+	reg::packed(1081, 0, 1086), /* specifyTypesFromAsserts $call */
+	reg::packed(1115, 0, 1126), /* specifyTypesFromAsserts $assertions */
+	reg::packed(1156, 0, 1175), /* specifyTypesFromAsserts $parametersAcceptor */
+	reg::packed(177, 0, 402), /* specifyTypesFromAsserts $scope */
+	reg::packed(277, MAY_BE_NULL, 278), /* specifyTypesFromAsserts return */
+	reg::packed(231, 0, 239), /* specifyTypesFromConditionalReturnType $context */
+	reg::packed(1081, 0, 1086), /* specifyTypesFromConditionalReturnType $call */
+	reg::packed(1156, 0, 1175), /* specifyTypesFromConditionalReturnType $parametersAcceptor */
+	reg::packed(177, 0, 402), /* specifyTypesFromConditionalReturnType $scope */
+	reg::packed(277, MAY_BE_NULL, 278), /* specifyTypesFromConditionalReturnType return */
+	reg::packed(1275, 0, 1291), /* getConditionalSpecifiedTypes $conditionalType */
+	reg::packed(1332, 0, 552), /* getConditionalSpecifiedTypes $leftType */
+	reg::packed(1341, 0, 552), /* getConditionalSpecifiedTypes $rightType */
+	reg::packed(177, 0, 402), /* getConditionalSpecifiedTypes $scope */
+	reg::packed(1351, 0, 211), /* getConditionalSpecifiedTypes $argumentExpr */
+	reg::packed(277, MAY_BE_NULL, 278), /* getConditionalSpecifiedTypes return */
+	reg::packed(177, 0, 402), /* mayRememberCallSubject $scope */
+	reg::packed(330, 0, 211), /* mayRememberCallSubject $expr */
+	reg::packed(277, MAY_BE_BOOL), /* mayRememberCallSubject return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 139 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyTypesForNode = { { 284 /* specifyTypesForNode */, 3, 3, 3, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyDefaultTypes = { { 309 /* specifyDefaultTypes */, 2, 7, 2, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyDefaultTypesWithPlainTwin = { { 407 /* specifyDefaultTypesWithPlainTwin */, 4, 10, 4, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSubjectValueRemembered = { { 462 /* isSubjectValueRemembered */, 2, 15, 2, 17, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig toSureTypes = { { 509 /* toSureTypes */, 2, 18, 2, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createSubjectTypes = { { 544 /* createSubjectTypes */, 5, 21, 5, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createSubjectTypesFromResultState = { { 563 /* createSubjectTypesFromResultState */, 5, 27, 5, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyDefaultTypesWithNullsafeFan = { { 629 /* specifyDefaultTypesWithNullsafeFan */, 4, 33, 4, 37, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createNullsafeReceiverOnlyTypes = { { 664 /* createNullsafeReceiverOnlyTypes */, 5, 38, 5, 43, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig callMayHaveBeenSkipped = { { 724 /* callMayHaveBeenSkipped */, 3, 44, 3, 47, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig nullsafeShortCircuitRuledOut = { { 747 /* nullsafeShortCircuitRuledOut */, 4, 48, 4, 52, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createFirstNullsafeReceiverTypes = { { 776 /* createFirstNullsafeReceiverTypes */, 2, 53, 2, 55, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createForSubject = { { 832 /* createForSubject */, 4, 56, 5, 61, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig captureChainResults = { { 911 /* captureChainResults */, 3, 62, 3, 65, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig buildChainTypeReader = { { 931 /* buildChainTypeReader */, 2, 66, 2, 68, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createIssetTruthyChainTypes = { { 980 /* createIssetTruthyChainTypes */, 5, 69, 5, 74, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createIssetSingleSubjectNonTrueTypes = { { 1018 /* createIssetSingleSubjectNonTrueTypes */, 6, 75, 6, 81, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyTypesFromAsserts = { { 1187 /* specifyTypesFromAsserts */, 5, 82, 5, 87, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig specifyTypesFromConditionalReturnType = { { 1211 /* specifyTypesFromConditionalReturnType */, 4, 88, 4, 92, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConditionalSpecifiedTypes = { { 1338 /* getConditionalSpecifiedTypes */, 5, 93, 5, 98, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig mayRememberCallSubject = { { 1367 /* mayRememberCallSubject */, 2, 99, 2, 101, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 165 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyTypesForNode = { { 310 /* specifyTypesForNode */, 3, 4, 3, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyDefaultTypes = { { 335 /* specifyDefaultTypes */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyDefaultTypesWithPlainTwin = { { 433 /* specifyDefaultTypesWithPlainTwin */, 4, 11, 4, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSubjectValueRemembered = { { 488 /* isSubjectValueRemembered */, 2, 16, 2, 18, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig toSureTypes = { { 535 /* toSureTypes */, 2, 19, 2, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createSubjectTypes = { { 570 /* createSubjectTypes */, 5, 22, 5, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createSubjectTypesFromResultState = { { 589 /* createSubjectTypesFromResultState */, 5, 28, 5, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyDefaultTypesWithNullsafeFan = { { 655 /* specifyDefaultTypesWithNullsafeFan */, 4, 34, 4, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createNullsafeReceiverOnlyTypes = { { 690 /* createNullsafeReceiverOnlyTypes */, 5, 39, 5, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig callMayHaveBeenSkipped = { { 750 /* callMayHaveBeenSkipped */, 3, 45, 3, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig nullsafeShortCircuitRuledOut = { { 773 /* nullsafeShortCircuitRuledOut */, 4, 49, 4, 53, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createFirstNullsafeReceiverTypes = { { 802 /* createFirstNullsafeReceiverTypes */, 2, 54, 2, 56, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createForSubject = { { 858 /* createForSubject */, 4, 57, 5, 62, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig captureChainResults = { { 937 /* captureChainResults */, 3, 63, 3, 66, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig buildChainTypeReader = { { 957 /* buildChainTypeReader */, 2, 67, 2, 69, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createIssetTruthyChainTypes = { { 1006 /* createIssetTruthyChainTypes */, 5, 70, 5, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createIssetSingleSubjectNonTrueTypes = { { 1044 /* createIssetSingleSubjectNonTrueTypes */, 6, 76, 6, 82, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyTypesFromAsserts = { { 1213 /* specifyTypesFromAsserts */, 5, 83, 5, 88, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig specifyTypesFromConditionalReturnType = { { 1237 /* specifyTypesFromConditionalReturnType */, 4, 89, 4, 93, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConditionalSpecifiedTypes = { { 1364 /* getConditionalSpecifiedTypes */, 5, 94, 5, 99, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig mayRememberCallSubject = { { 1393 /* mayRememberCallSubject */, 2, 100, 2, 102, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::DefaultNarrowingHelper

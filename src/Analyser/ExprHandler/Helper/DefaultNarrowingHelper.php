@@ -80,6 +80,8 @@ final class DefaultNarrowingHelper
 		#[AutowiredParameter]
 		private bool $rememberPossiblyImpureFunctionValues,
 		private ReflectionProvider $reflectionProvider,
+		#[AutowiredParameter]
+		private bool $treatPhpDocTypesAsCertain,
 	)
 	{
 	}
@@ -655,6 +657,13 @@ final class DefaultNarrowingHelper
 		)->setRootExpr($rootExpr);
 
 		if ($issetExpr instanceof Expr\Variable && is_string($issetExpr->name)) {
+			// the variable's existence is shared by the PHPDoc and native types:
+			// with uncertain PHPDoc types, a variable whose native type allows
+			// null still exists in !isset()
+			if (!$isNullable && !$this->treatPhpDocTypesAsCertain) {
+				$isNullable = !$varResult->getTypeOnScope($s, true)->isNull()->no();
+			}
+
 			if ($isset === true) {
 				if ($isNullable) {
 					return $exprType;

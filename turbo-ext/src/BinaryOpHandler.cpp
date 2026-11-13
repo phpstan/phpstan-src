@@ -1462,7 +1462,22 @@ private:
 				NamedCall rightCall;
 				int rightIsCall = namedCall(right, false, rightCall);
 				if (UNEXPECTED(rightIsCall < 0)) return zv::Val();
-				if (!rightIsCall || !lowerNameIn(rightCall.name.get(), { "count", "sizeof", "strlen", "mb_strlen", "preg_match" })) {
+				bool useInverse = !rightIsCall || !lowerNameIn(rightCall.name.get(), { "count", "sizeof", "strlen", "mb_strlen", "preg_match" });
+				if (useInverse) {
+					// the inverse operator is not the negation of this one when an
+					// operand can be NAN: both of them are false for a NAN, so the
+					// false branch of this one is not the true branch of the inverse
+					bool contextFalseHere = false;
+					if (UNEXPECTED(!pt_type_specifier_context_false(Z_OBJ_P(context), contextFalseHere))) return zv::Val();
+					if (contextFalseHere) {
+						zv::Val rightOperandType = specifyOperandType(captures, scope, nativeTypesPromoted, right);
+						if (UNEXPECTED(rightOperandType.isUndef())) return zv::Val();
+						int rightCannotBeNan = cannotBeNan(rightOperandType.raw());
+						if (UNEXPECTED(rightCannotBeNan < 0)) return zv::Val();
+						useInverse = rightCannotBeNan != 0;
+					}
+				}
+				if (useInverse) {
 					zv::Args inverseArgv{right, left};
 					zv::Val inverseOperator = pt_type_new(orEqual ? PT_CLASS_SMALLER_EXPR : PT_CLASS_SMALLER_OR_EQUAL_EXPR, 2, inverseArgv);
 					if (UNEXPECTED(inverseOperator.isUndef())) return zv::Val();

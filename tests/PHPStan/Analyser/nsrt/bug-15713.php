@@ -71,6 +71,24 @@ class Foo
 		assertType('NAN|int<-5, -1>', min(NAN, $r));
 	}
 
+	/**
+	 * @param array<int> $a
+	 * @param float<-1.0, 1.0> $x
+	 */
+	public function countAgainstNan(array $a, string $s, float $x): void
+	{
+		$root = sqrt($x);
+		if (count($a) < $root) {
+			return;
+		}
+		assertType('NAN|float<0.0, 1.0>', $root);
+
+		if (strlen($s) <= $root) {
+			return;
+		}
+		assertType('NAN|float<0.0, 1.0>', $root);
+	}
+
 	public function finiteRanges(float $f, float $g): void
 	{
 		if (is_nan($f) || is_nan($g)) {

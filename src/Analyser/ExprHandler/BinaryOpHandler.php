@@ -372,6 +372,13 @@ final class BinaryOpHandler implements ExprHandler
 						|| !$expr->right->name instanceof Name
 						|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
 					)
+					&& (
+						// the inverse operator is not the negation of this one when an
+						// operand can be NAN: both of them are false for a NAN, so the
+						// false branch of this one is not the true branch of the inverse
+						!$context->false()
+						|| (new ConstantFloatType(NAN))->isSuperTypeOf($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType())->no()
+					)
 				) {
 					$inverseOperator = $expr instanceof BinaryOp\Smaller
 						? new BinaryOp\SmallerOrEqual($expr->right, $expr->left)

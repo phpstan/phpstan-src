@@ -21,6 +21,7 @@ use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use PHPStan\Rules\Comparison\ConstantConditionInTraitCollector;
 use PHPStan\Rules\DeadCode\MethodWithoutImpurePointsCollector;
@@ -519,6 +520,7 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			composerPhpVersionFactory: $container->getByType(ComposerPhpVersionFactory::class),
 			fileStatSignatures: $container->getByType(FileStatSignatures::class),
 			valueDependencyCollector: $container->getByType(ValueDependencyCollector::class),
+			symbolFinderInFiles: $container->getByType(SymbolFinderInFiles::class),
 			composerSourceLocatorMaker: $container->getByType(ComposerJsonAndInstalledJsonSourceLocatorMaker::class),
 			tmpDir: $this->directory . '/tmp',
 		);

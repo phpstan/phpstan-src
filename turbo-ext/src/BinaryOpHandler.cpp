@@ -815,6 +815,27 @@ public:
 		return pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), formTypes.raw());
 	}
 
+	/* TypeCombinator::remove($type, new ConstantFloatType(NAN))->equals($type) —
+	 * NAN is the one float that no ordering comparison places, so narrowing by
+	 * such a comparison is sound only for an operand that cannot hold it, and
+	 * removing NAN from such a type leaves the type as it was;
+	 * -1 = pending exception */
+	static int cannotBeNan(zval *type)
+	{
+		zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
+		if (UNEXPECTED(nan.isUndef())) return -1;
+		zv::Args args{type, nan.raw()};
+		zv::Val removed = pt_type_combinator_call(PT_LC("remove"), 2, args);
+		if (UNEXPECTED(removed.isUndef())) return -1;
+		if (UNEXPECTED(Z_TYPE_P(removed.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function equals() on %s", zend_zval_value_name(removed.raw()));
+			return -1;
+		}
+		bool equals = false;
+		if (UNEXPECTED(!pt_type_op_bool(Z_OBJ_P(removed.raw()), PT_OP_EQUALS, 1, type, equals))) return -1;
+		return equals ? 1 : 0;
+	}
+
 	/* Mirrors createRangeTypes(); $rootExpr NULL or IS_NULL for null */
 	zv::Val createRangeTypes(zval *rootExpr, zval *expr, zval *type, zval *context) const
 	{
@@ -1423,17 +1444,6 @@ private:
 		return pt_type_combinator_call(PT_LC("union"), 2, args);
 	}
 
-	/* (new ConstantFloatType(NAN))->isSuperTypeOf($type)->no() — a NAN operand
-	 * makes the comparison false for every value of the other operand, so the
-	 * false branch tells nothing about a side whose counterpart can be NAN;
-	 * -1 = pending exception */
-	static int cannotBeNan(zval *type)
-	{
-		zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
-		if (UNEXPECTED(nan.isUndef())) return -1;
-		return superTypeVerdict(nan.raw(), type, PT_TRI_NO);
-	}
-
 	/* $this->defaultNarrowingHelper->createForSubject($subject, $type,
 	 * $context, $scope)->setRootExpr($expr) */
 	zv::Val subjectTypes(zval *subject, zval *type, zval *context, zval *scope, zval *expr) const
@@ -1465,11 +1475,11 @@ private:
 				bool useInverse = !rightIsCall || !lowerNameIn(rightCall.name.get(), { "count", "sizeof", "strlen", "mb_strlen", "preg_match" });
 				if (useInverse) {
 					// the inverse operator is not the negation of this one when an
-					// operand can be NAN: both of them are false for a NAN, so the
-					// false branch of this one is not the true branch of the inverse
-					bool contextFalseHere = false;
-					if (UNEXPECTED(!pt_type_specifier_context_false(Z_OBJ_P(context), contextFalseHere))) return zv::Val();
-					if (contextFalseHere) {
+					// operand can be NAN: both of them are false for a NAN, so what
+					// this one being false tells is not what the inverse being true tells
+					bool contextFalseyHere = false;
+					if (UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(context), contextFalseyHere))) return zv::Val();
+					if (contextFalseyHere) {
 						zv::Val rightOperandType = specifyOperandType(captures, scope, nativeTypesPromoted, right);
 						if (UNEXPECTED(rightOperandType.isUndef())) return zv::Val();
 						int rightCannotBeNan = cannotBeNan(rightOperandType.raw());
@@ -2050,6 +2060,16 @@ PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).createRangeTypes(rootExpr, expr, type, context));
+	});
+
+	cls.method(sigs::cannotBeNan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(type)
+		ZEND_PARSE_PARAMETERS_END();
+		int cannot = BinaryOpHandler::cannotBeNan(type);
+		if (UNEXPECTED(cannot < 0)) RETURN_THROWS();
+		RETURN_BOOL(cannot != 0);
 	});
 
 	cls.shadow(&pt_ce_binary_op_handler);

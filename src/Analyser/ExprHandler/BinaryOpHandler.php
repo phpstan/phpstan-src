@@ -374,10 +374,10 @@ final class BinaryOpHandler implements ExprHandler
 					)
 					&& (
 						// the inverse operator is not the negation of this one when an
-						// operand can be NAN: both of them are false for a NAN, so the
-						// false branch of this one is not the true branch of the inverse
-						!$context->false()
-						|| (new ConstantFloatType(NAN))->isSuperTypeOf($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType())->no()
+						// operand can be NAN: both of them are false for a NAN, so what
+						// this one being false tells is not what the inverse being true tells
+						!$context->falsey()
+						|| self::cannotBeNan($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType())
 					)
 				) {
 					$inverseOperator = $expr instanceof BinaryOp\Smaller
@@ -680,7 +680,7 @@ final class BinaryOpHandler implements ExprHandler
 					if (
 						!$expr->left instanceof Scalar
 						&& !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)
-						&& $nanType->isSuperTypeOf($rightType)->no()
+						&& self::cannotBeNan($rightType)
 					) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
@@ -694,7 +694,7 @@ final class BinaryOpHandler implements ExprHandler
 					if (
 						!$expr->right instanceof Scalar
 						&& !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)
-						&& $nanType->isSuperTypeOf($leftType)->no()
+						&& self::cannotBeNan($leftType)
 					) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
@@ -927,6 +927,18 @@ final class BinaryOpHandler implements ExprHandler
 		}
 
 		return (new SpecifiedTypes(sureNotTypes: $sureNotTypes))->setRootExpr($rootExpr);
+	}
+
+	/**
+	 * NAN is the one float that no ordering comparison places, so narrowing by
+	 * such a comparison is sound only for an operand that cannot hold it.
+	 * Removing NAN from a type that cannot hold it leaves the type as it was.
+	 * Asked as isSuperTypeOf() of the NAN constant instead, never would come out
+	 * as possibly NAN, because every type is a supertype of never.
+	 */
+	private static function cannotBeNan(Type $type): bool
+	{
+		return TypeCombinator::remove($type, new ConstantFloatType(NAN))->equals($type);
 	}
 
 }

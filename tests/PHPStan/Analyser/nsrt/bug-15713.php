@@ -101,4 +101,18 @@ class Foo
 		assertType('float<min, max>', $g);
 	}
 
+	/** @param float<-1.0, 1.0> $x */
+	public function notFalseContext(array $a, string $s, float $x): void
+	{
+		$root = sqrt($x) + 2.0;
+		assertType('NAN|float<2.0, 3.0>', $root);
+		// the comparison being anything but false is it being true, which no NAN is
+		if ((count($a) < $root) !== false) {
+			assertType('float<2.0, 3.0>', $root);
+		}
+		if ((strlen($s) < $root) !== false) {
+			assertType('float<2.0, 3.0>', $root);
+		}
+	}
+
 }

@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -57,23 +58,24 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		Scope $scope,
 	): ?Type
 	{
-		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $functionCall, $scope);
+		$args = $functionCall->getArgs();
+		$type = $this->getPreliminarilyResolvedTypeFromFunctionCall($functionReflection, $args, $scope);
 
-		if ($type !== null && $this->canReturnNull($functionReflection, $functionCall, $scope)) {
+		if ($type !== null && $this->canReturnNull($functionReflection, $args, $scope)) {
 			$type = TypeCombinator::addNull($type);
 		}
 
 		return $type;
 	}
 
+	/** @param list<Arg> $args */
 	private function getPreliminarilyResolvedTypeFromFunctionCall(
 		FunctionReflection $functionReflection,
-		FuncCall $functionCall,
+		array $args,
 		Scope $scope,
 	): ?Type
 	{
-		$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
-		$args = $functionCall->getArgs();
+		$subjectArgumentType = $this->getSubjectType($functionReflection, $args, $scope);
 
 		if ($subjectArgumentType === null) {
 			return null;
@@ -98,11 +100,11 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 				if ($replaceArgumentType->isArray()->yes()) {
 					$replaceArgumentType = $replaceArgumentType->getIterableValueType();
 				}
-			} elseif ($functionReflection->getName() === 'strtr' && isset($functionCall->getArgs()[1])) {
+			} elseif ($functionReflection->getName() === 'strtr' && isset($args[1])) {
 				// `strtr` has two signatures: `strtr($string1, $string2, $string3)` and `strtr($string1, $array)`
 				$secondArgumentType = TypeCombinator::intersect(
 					new ArrayType(new MixedType(), new MixedType()),
-					$scope->getType($functionCall->getArgs()[1]->value),
+					$scope->getType($args[1]->value),
 				);
 				$replaceArgumentType = $secondArgumentType->getIterableValueType();
 			}
@@ -176,9 +178,10 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		return new StringType();
 	}
 
+	/** @param list<Arg> $args */
 	private function getSubjectType(
 		FunctionReflection $functionReflection,
-		FuncCall $functionCall,
+		array $args,
 		Scope $scope,
 	): ?Type
 	{
@@ -187,25 +190,24 @@ final class ReplaceFunctionsDynamicReturnTypeExtension implements DynamicFunctio
 		}
 
 		$argumentPosition = self::FUNCTIONS_SUBJECT_POSITION[$functionReflection->getName()];
-		$args = $functionCall->getArgs();
 		if (count($args) <= $argumentPosition) {
 			return null;
 		}
 		return $scope->getType($args[$argumentPosition]->value);
 	}
 
+	/** @param list<Arg> $args */
 	private function canReturnNull(
 		FunctionReflection $functionReflection,
-		FuncCall $functionCall,
+		array $args,
 		Scope $scope,
 	): bool
 	{
-		$args = $functionCall->getArgs();
 		if (
 			in_array($functionReflection->getName(), ['preg_replace', 'preg_replace_callback', 'preg_replace_callback_array'], true)
 			&& count($args) > 0
 		) {
-			$subjectArgumentType = $this->getSubjectType($functionReflection, $functionCall, $scope);
+			$subjectArgumentType = $this->getSubjectType($functionReflection, $args, $scope);
 
 			if (
 				$subjectArgumentType !== null

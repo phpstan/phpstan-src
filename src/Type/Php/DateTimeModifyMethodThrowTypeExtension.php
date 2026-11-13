@@ -28,7 +28,8 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 
 	public function getThrowTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) === 0) {
+		$args = $methodCall->getArgs();
+		if (count($args) === 0) {
 			return null;
 		}
 
@@ -36,7 +37,7 @@ final class DateTimeModifyMethodThrowTypeExtension implements DynamicMethodThrow
 			return null;
 		}
 
-		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
+		$valueType = $scope->getType($args[0]->value);
 		$constantStrings = $valueType->getConstantStrings();
 
 		foreach ($constantStrings as $constantString) {

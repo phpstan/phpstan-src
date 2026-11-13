@@ -26,11 +26,12 @@ final class GettypeFunctionReturnTypeExtension implements DynamicFunctionReturnT
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$valueType = $scope->getType($functionCall->getArgs()[0]->value);
+		$valueType = $scope->getType($args[0]->value);
 
 		return TypeTraverser::map($valueType, static function (Type $valueType, callable $traverse): Type {
 			if ($valueType instanceof UnionType || $valueType instanceof IntersectionType) {

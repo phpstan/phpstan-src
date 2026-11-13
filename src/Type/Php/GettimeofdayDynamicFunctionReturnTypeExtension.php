@@ -40,11 +40,12 @@ final class GettimeofdayDynamicFunctionReturnTypeExtension implements DynamicFun
 		]);
 		$floatType = new FloatType();
 
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return $arrayType;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		$isTrueType = $argType->isTrue();
 		$isFalseType = $argType->isFalse();
 		$compareTypes = $isTrueType->compareTo($isFalseType);

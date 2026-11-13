@@ -22,11 +22,12 @@ final class PowFunctionReturnTypeExtension implements DynamicFunctionReturnTypeE
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return null;
 		}
 
-		return $scope->getType(new Pow($functionCall->getArgs()[0]->value, $functionCall->getArgs()[1]->value));
+		return $scope->getType(new Pow($args[0]->value, $args[1]->value));
 	}
 
 }

@@ -26,12 +26,13 @@ final class NumberFormatFunctionDynamicReturnTypeExtension implements DynamicFun
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): Type
 	{
 		$stringType = new StringType();
-		if (!isset($functionCall->getArgs()[3])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[3])) {
 			return $stringType;
 		}
 
-		$thousandsType = $scope->getType($functionCall->getArgs()[3]->value);
-		$decimalType = $scope->getType($functionCall->getArgs()[2]->value);
+		$thousandsType = $scope->getType($args[3]->value);
+		$decimalType = $scope->getType($args[2]->value);
 
 		$constantThousandsTypes = $thousandsType->getConstantStrings();
 		if (count($constantThousandsTypes) !== 1 || $constantThousandsTypes[0]->getValue() !== '') {

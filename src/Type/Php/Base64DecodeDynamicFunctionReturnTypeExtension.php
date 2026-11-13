@@ -50,8 +50,8 @@ final class Base64DecodeDynamicFunctionReturnTypeExtension implements DynamicFun
 			$isValidBase64 = TrinaryLogic::createMaybe();
 		}
 
-		if (isset($functionCall->getArgs()[1])) {
-			$strictArgNode = $functionCall->getArgs()[1]->value;
+		if (isset($args[1])) {
+			$strictArgNode = $args[1]->value;
 			$isStrict = $scope->getType($strictArgNode)->toBoolean()->toTrinaryLogic();
 		} else {
 			$isStrict = TrinaryLogic::createNo();

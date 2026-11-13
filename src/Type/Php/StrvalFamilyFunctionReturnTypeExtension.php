@@ -39,11 +39,12 @@ final class StrvalFamilyFunctionReturnTypeExtension implements DynamicFunctionRe
 		Scope $scope,
 	): Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		$args = $functionCall->getArgs();
+		if (count($args) === 0) {
 			return new NullType();
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 
 		switch ($functionReflection->getName()) {
 			case 'strval':

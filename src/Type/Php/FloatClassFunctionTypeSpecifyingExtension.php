@@ -63,12 +63,13 @@ final class FloatClassFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
 		$ruledOutTypes = self::getRuledOutTypes($functionReflection->getName());
-		if (!isset($node->getArgs()[0]) || $ruledOutTypes === null) {
+		$args = $node->getArgs();
+		if (!isset($args[0]) || $ruledOutTypes === null) {
 			return new SpecifiedTypes();
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			$context->true() ? $ruledOutTypes[0] : $ruledOutTypes[1],
 			TypeSpecifierContext::createFalse(),
 			$scope,

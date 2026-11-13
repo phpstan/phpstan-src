@@ -43,7 +43,8 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		$args = $functionCall->getArgs();
+		if (count($args) === 0) {
 			if ($scope->isInTrait()) {
 				return null;
 			}
@@ -56,7 +57,7 @@ final class GetParentClassDynamicFunctionReturnTypeExtension implements DynamicF
 			return new ConstantBooleanType(false);
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		if ($scope->isInTrait() && TypeUtils::findThisType($argType) !== null) {
 			return null;
 		}

@@ -32,12 +32,13 @@ final class DateFormatMethodReturnTypeExtension implements DynamicMethodReturnTy
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): Type
 	{
-		if (count($methodCall->getArgs()) === 0) {
+		$args = $methodCall->getArgs();
+		if (count($args) === 0) {
 			return new StringType();
 		}
 
 		return $this->dateFunctionReturnTypeHelper->getTypeFromFormatType(
-			$scope->getType($methodCall->getArgs()[0]->value),
+			$scope->getType($args[0]->value),
 			true,
 		);
 	}

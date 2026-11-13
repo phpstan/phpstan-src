@@ -33,11 +33,12 @@ final class StrWordCountFunctionDynamicReturnTypeExtension implements DynamicFun
 		Scope $scope,
 	): Type
 	{
-		$argsCount = count($functionCall->getArgs());
+		$args = $functionCall->getArgs();
+		$argsCount = count($args);
 		if ($argsCount === 1) {
 			return new IntegerType();
 		} elseif (in_array($argsCount, [2, 3], true)) {
-			$formatType = $scope->getType($functionCall->getArgs()[1]->value);
+			$formatType = $scope->getType($args[1]->value);
 			if ($formatType instanceof ConstantIntegerType) {
 				$val = $formatType->getValue();
 				if ($val === 0) {

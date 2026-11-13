@@ -40,11 +40,12 @@ final class StrlenFunctionTypeSpecifyingExtension implements FunctionTypeSpecify
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if (!$scope->getType($node->getArgs()[0]->value)->isString()->yes()) {
+		$args = $node->getArgs();
+		if (!$scope->getType($args[0]->value)->isString()->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 
-		$argSpecifiedTypes = $this->typeSpecifier->create($node->getArgs()[0]->value, new AccessoryNonEmptyStringType(), $context, $scope);
+		$argSpecifiedTypes = $this->typeSpecifier->create($args[0]->value, new AccessoryNonEmptyStringType(), $context, $scope);
 
 		if ($context->truthy()) {
 			return $this->typeSpecifier->create($node, StaticTypeFactory::falsey(), TypeSpecifierContext::createFalse(), $scope)

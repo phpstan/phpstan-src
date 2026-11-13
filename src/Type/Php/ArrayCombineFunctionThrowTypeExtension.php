@@ -25,12 +25,13 @@ final class ArrayCombineFunctionThrowTypeExtension implements DynamicFunctionThr
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
-		if (count($funcCall->getArgs()) < 2) {
+		$args = $funcCall->getArgs();
+		if (count($args) < 2) {
 			return $functionReflection->getThrowType();
 		}
 
-		$firstArg = $funcCall->getArgs()[0]->value;
-		$secondArg = $funcCall->getArgs()[1]->value;
+		$firstArg = $args[0]->value;
+		$secondArg = $args[1]->value;
 
 		$hasValueError = $this->arrayCombineHelper->getReturnAndThrowType($firstArg, $secondArg, $scope)[1];
 		if (!$hasValueError->no()) {

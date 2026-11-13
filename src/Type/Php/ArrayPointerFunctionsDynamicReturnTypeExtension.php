@@ -34,11 +34,12 @@ final class ArrayPointerFunctionsDynamicReturnTypeExtension implements DynamicFu
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		$args = $functionCall->getArgs();
+		if (count($args) === 0) {
 			return null;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		$iterableAtLeastOnce = $argType->isIterableAtLeastOnce();
 		if ($iterableAtLeastOnce->no()) {
 			return new ConstantBooleanType(false);

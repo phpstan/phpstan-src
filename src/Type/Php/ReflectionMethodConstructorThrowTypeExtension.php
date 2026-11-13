@@ -32,12 +32,13 @@ final class ReflectionMethodConstructorThrowTypeExtension implements DynamicStat
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) < 2) {
+		$args = $methodCall->getArgs();
+		if (count($args) < 2) {
 			return $methodReflection->getThrowType();
 		}
 
-		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		$propertyType = $scope->getType($methodCall->getArgs()[1]->value);
+		$valueType = $scope->getType($args[0]->value);
+		$propertyType = $scope->getType($args[1]->value);
 		foreach (TypeUtils::flattenTypes($valueType) as $type) {
 			if ($type instanceof GenericClassStringType) {
 				$classes = $type->getGenericType()->getObjectClassNames();

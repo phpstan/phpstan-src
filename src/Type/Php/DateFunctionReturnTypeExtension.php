@@ -29,12 +29,13 @@ final class DateFunctionReturnTypeExtension implements DynamicFunctionReturnType
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		$args = $functionCall->getArgs();
+		if (count($args) === 0) {
 			return null;
 		}
 
 		return $this->dateFunctionReturnTypeHelper->getTypeFromFormatType(
-			$scope->getType($functionCall->getArgs()[0]->value),
+			$scope->getType($args[0]->value),
 			false,
 		);
 	}

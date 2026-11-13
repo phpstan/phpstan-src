@@ -37,7 +37,8 @@ final class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) === 0) {
+		$args = $functionCall->getArgs();
+		if (count($args) === 0) {
 			return null;
 		}
 
@@ -46,7 +47,7 @@ final class CompactFunctionReturnTypeExtension implements DynamicFunctionReturnT
 		}
 
 		$array = ConstantArrayTypeBuilder::createEmpty();
-		foreach ($functionCall->getArgs() as $arg) {
+		foreach ($args as $arg) {
 			$type = $scope->getType($arg->value);
 			$constantStrings = $this->findConstantStrings($type);
 			if ($constantStrings === null) {

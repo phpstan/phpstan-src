@@ -36,7 +36,8 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		$argType = $scope->getType($node->getArgs()[0]->value);
+		$args = $node->getArgs();
+		$argType = $scope->getType($args[0]->value);
 
 		$constantStrings = $argType->getConstantStrings();
 		if (count($constantStrings) === 1) {
@@ -51,7 +52,7 @@ final class FunctionExistsFunctionTypeSpecifyingExtension implements FunctionTyp
 		}
 
 		return $this->typeSpecifier->create(
-			$node->getArgs()[0]->value,
+			$args[0]->value,
 			new CallableType(),
 			$context,
 			$scope,

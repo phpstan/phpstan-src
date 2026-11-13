@@ -39,11 +39,12 @@ final class CountFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyi
 		TypeSpecifierContext $context,
 	): SpecifiedTypes
 	{
-		if (!$scope->getType($node->getArgs()[0]->value)->isArray()->yes()) {
+		$args = $node->getArgs();
+		if (!$scope->getType($args[0]->value)->isArray()->yes()) {
 			return new SpecifiedTypes([], []);
 		}
 
-		return $this->typeSpecifier->create($node->getArgs()[0]->value, new NonEmptyArrayType(), $context, $scope);
+		return $this->typeSpecifier->create($args[0]->value, new NonEmptyArrayType(), $context, $scope);
 	}
 
 	public function setTypeSpecifier(TypeSpecifier $typeSpecifier): void

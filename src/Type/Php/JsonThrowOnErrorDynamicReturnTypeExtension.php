@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Analyser\Scope;
@@ -64,7 +65,7 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 		)->getReturnType();
 
 		if ($functionReflection->getName() === 'json_decode') {
-			$defaultReturnType = $this->narrowTypeForJsonDecode($functionCall, $scope, $defaultReturnType);
+			$defaultReturnType = $this->narrowTypeForJsonDecode($args, $scope, $defaultReturnType);
 		}
 
 		if (!isset($args[$argumentPosition])) {
@@ -79,10 +80,10 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 		return $defaultReturnType;
 	}
 
-	private function narrowTypeForJsonDecode(FuncCall $funcCall, Scope $scope, Type $fallbackType): Type
+	/** @param list<Arg> $args */
+	private function narrowTypeForJsonDecode(array $args, Scope $scope, Type $fallbackType): Type
 	{
-		$args = $funcCall->getArgs();
-		$isForceArray = $this->isForceArray($funcCall, $scope);
+		$isForceArray = $this->isForceArray($args, $scope);
 		if (!isset($args[0])) {
 			return $fallbackType;
 		}
@@ -107,11 +108,12 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 
 	/**
 	 * Is "json_decode(..., true)"?
+	 *
+	 * @param list<Arg> $args
 	 */
-	private function isForceArray(FuncCall $funcCall, Scope $scope): TrinaryLogic
+	private function isForceArray(array $args, Scope $scope): TrinaryLogic
 	{
-		$args = $funcCall->getArgs();
-		$flagValue = $this->getFlagValue($funcCall, $scope);
+		$flagValue = $this->getFlagValue($args, $scope);
 		if (!isset($args[1])) {
 			return TrinaryLogic::createNo();
 		}
@@ -148,9 +150,9 @@ final class JsonThrowOnErrorDynamicReturnTypeExtension implements DynamicFunctio
 		return TypeCombinator::union(...$types);
 	}
 
-	private function getFlagValue(FuncCall $funcCall, Scope $scope): TrinaryLogic
+	/** @param list<Arg> $args */
+	private function getFlagValue(array $args, Scope $scope): TrinaryLogic
 	{
-		$args = $funcCall->getArgs();
 		if (!isset($args[3])) {
 			return TrinaryLogic::createNo();
 		}

@@ -41,11 +41,12 @@ final class PDOConnectReturnTypeExtension implements DynamicStaticMethodReturnTy
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) < 1) {
+		$args = $methodCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
+		$valueType = $scope->getType($args[0]->value);
 		$constantStrings = $valueType->getConstantStrings();
 		if (count($constantStrings) === 0) {
 			return null;

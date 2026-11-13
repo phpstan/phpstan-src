@@ -43,11 +43,12 @@ final class IsCallableFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 			throw new ShouldNotHappenException();
 		}
 
-		if (!isset($node->getArgs()[0])) {
+		$args = $node->getArgs();
+		if (!isset($args[0])) {
 			return new SpecifiedTypes();
 		}
 
-		$value = $node->getArgs()[0]->value;
+		$value = $args[0]->value;
 		$valueType = $scope->getType($value);
 		if (
 			$value instanceof Array_

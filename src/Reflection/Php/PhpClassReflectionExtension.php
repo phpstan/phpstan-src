@@ -795,6 +795,7 @@ final class PhpClassReflectionExtension
 				$selfOutType,
 				$phpDocComment,
 				$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($declaringClassName, null, $methodReflection->getName(), null)),
+				$this->signatureMapProvider->isMethodDeprecated($declaringClassName, $methodReflection->getName()),
 			);
 		}
 

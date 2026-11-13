@@ -1875,8 +1875,10 @@ public:
 		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		zv::Val attributes = attributesOf(methodReflection, context.raw());
 		if (UNEXPECTED(attributes.isUndef())) return zv::Val();
+		bool isDeprecatedInSignatureMap = signatureMapBool(PT_LC("ismethoddeprecated"), declaringClassNameArg, methodNameArg, ok);
+		if (UNEXPECTED(!ok)) return zv::Val();
 
-		zval args[13];
+		zval args[14];
 		ZVAL_COPY_VALUE(&args[0], reflectionProvider.raw());
 		ZVAL_COPY_VALUE(&args[1], declaringClass);
 		ZVAL_COPY_VALUE(&args[2], methodReflection);
@@ -1890,7 +1892,8 @@ public:
 		ZVAL_COPY_VALUE(&args[10], selfOutType.raw());
 		ZVAL_COPY_VALUE(&args[11], phpDocComment.raw());
 		ZVAL_COPY_VALUE(&args[12], attributes.raw());
-		return pt_type_new(PT_CLASS_NATIVE_METHOD_REFLECTION, 13, args);
+		ZVAL_BOOL(&args[13], isDeprecatedInSignatureMap);
+		return pt_type_new(PT_CLASS_NATIVE_METHOD_REFLECTION, 14, args);
 	}
 
 	/* array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $map) */

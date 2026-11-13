@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -151,6 +152,39 @@ class FunctionReflectionTest extends PHPStanTestCase
 
 		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
 		$this->assertSame($expectedReturnsByRef, $functionReflection->returnsByReference());
+	}
+
+	public static function dataBuiltinFunctionIsDeprecated(): iterable
+	{
+		// #[\Deprecated] in php-8-stubs since 8.4, phpstorm-stubs do not deprecate them
+		yield ['pg_numrows', 80400];
+		yield ['odbc_result_all', 80400];
+		// #[\Deprecated] on two version variants in php-8-stubs (8.4 until 8.6, 8.6+)
+		yield ['zip_entry_close', 80400];
+
+		// deprecated in phpstorm-stubs since 8.1, #[\Deprecated] in php-8-stubs since 8.4
+		yield ['date_sunrise', 80100];
+		yield ['lcg_value', 80400];
+
+		yield ['strlen', null];
+		// #[\Deprecated] only on the Oracle LDAP variant under #ifdef HAVE_ORALDAP
+		yield ['ldap_connect', null];
+	}
+
+	/**
+	 * @param non-empty-string $functionName
+	 */
+	#[DataProvider('dataBuiltinFunctionIsDeprecated')]
+	public function testBuiltinFunctionIsDeprecated(string $functionName, ?int $deprecatedSincePhpVersionId): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$functionReflection = $reflectionProvider->getFunction(new Node\Name($functionName), null);
+		$phpVersionId = self::getContainer()->getByType(PhpVersion::class)->getVersionId();
+
+		$this->assertSame(
+			$deprecatedSincePhpVersionId !== null && $phpVersionId >= $deprecatedSincePhpVersionId,
+			$functionReflection->isDeprecated()->yes(),
+		);
 	}
 
 	public static function dataMethodReturnsByReference(): iterable

@@ -174,6 +174,16 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 		);
 	}
 
+	public function isFunctionDeprecated(string $functionName): bool
+	{
+		return false;
+	}
+
+	public function isMethodDeprecated(string $className, string $methodName): bool
+	{
+		return false;
+	}
+
 	public function hasMethodMetadata(string $className, string $methodName): bool
 	{
 		return $this->hasFunctionMetadata(sprintf('%s::%s', $className, $methodName));

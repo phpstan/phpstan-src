@@ -29,6 +29,7 @@ use NestedTraits\BarTrait;
 use NestedTraits\BazChild;
 use NestedTraits\BazTrait;
 use NestedTraits\NoTrait;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Testing\RuleTestCase;
 use PHPStan\Type\IntegerType;
@@ -406,6 +407,34 @@ class ClassReflectionTest extends PHPStanTestCase
 		$reflectionProvider = self::createReflectionProvider();
 		$classReflection = $reflectionProvider->getClass($className);
 		$this->assertSame($expected, $classReflection->isDeprecated());
+	}
+
+	public static function dataBuiltinMethodIsDeprecated(): iterable
+	{
+		// #[\Deprecated] in php-8-stubs since 8.4, phpstorm-stubs do not deprecate them
+		yield ['mysqli', 'init', 80400];
+		yield ['mysqli', 'get_client_info', 80400];
+		// #[\Deprecated] on two version variants in php-8-stubs (8.4 until 8.5, 8.5+)
+		yield ['SplFileInfo', '_bad_state_ex', 80400];
+
+		// deprecated in phpstorm-stubs since 8.0, #[\Deprecated] in php-8-stubs since 8.4
+		yield ['ReflectionParameter', 'getClass', 80000];
+		yield ['SplFixedArray', '__wakeup', 80400];
+
+		yield ['DateTime', 'format', null];
+	}
+
+	#[DataProvider('dataBuiltinMethodIsDeprecated')]
+	public function testBuiltinMethodIsDeprecated(string $className, string $methodName, ?int $deprecatedSincePhpVersionId): void
+	{
+		$reflectionProvider = self::createReflectionProvider();
+		$methodReflection = $reflectionProvider->getClass($className)->getNativeMethod($methodName);
+		$phpVersionId = self::getContainer()->getByType(PhpVersion::class)->getVersionId();
+
+		$this->assertSame(
+			$deprecatedSincePhpVersionId !== null && $phpVersionId >= $deprecatedSincePhpVersionId,
+			$methodReflection->isDeprecated()->yes(),
+		);
 	}
 
 	public static function dataHasInstancePropertyDoesNotChangeHasProperty(): iterable

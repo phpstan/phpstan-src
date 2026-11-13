@@ -18,8 +18,8 @@ use PHPStan\Cache\Cache;
 use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
-use function array_change_key_case;
 use function array_key_exists;
+use function array_keys;
 use function is_array;
 use function is_file;
 use function is_string;
@@ -55,8 +55,8 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 
 	private const RELATIVE_FILENAME_PREFIX = 'phpstorm-stubs:';
 
-	/** @var array<string, string>|null lowercase name => stub file, of every function in the stubs of any extension version */
-	private static ?array $stubFunctions = null;
+	/** @var array<string, true>|null lowercase names of the functions in the stubs not listed in lowercase in PhpStormStubsMap::FUNCTIONS, see isStubFunction() */
+	private static ?array $otherStubFunctions = null;
 
 	private ?string $variableCacheKey = null;
 
@@ -179,28 +179,45 @@ final class CachedPhpInternalSourceLocator implements SourceLocator
 	}
 
 	/**
-	 * @return list<Reflection>
-	 */
-	/**
 	 * Whether the stubber could have a function: the stubber has no cheap way to tell, its own
 	 * answer parses the stub file. The functions of the extension versions it selects are added
 	 * to the default ones, so they are all included.
+	 *
+	 * Nearly all names in the map are lowercase already and are looked up in it directly: a
+	 * lowercased copy of the whole map would stay in memory for the rest of the process.
 	 */
 	private static function isStubFunction(string $lowercaseName): bool
 	{
-		if (self::$stubFunctions === null) {
-			$functions = array_change_key_case(PhpStormStubsMap::FUNCTIONS);
-			foreach (PhpStormStubsMap::EXTENSION_VERSIONS as $versionMaps) {
-				foreach ($versionMaps as $versionMap) {
-					$functions += array_change_key_case($versionMap['functions']);
-				}
-			}
-			self::$stubFunctions = $functions;
+		if (array_key_exists($lowercaseName, PhpStormStubsMap::FUNCTIONS)) {
+			return true;
 		}
 
-		return array_key_exists($lowercaseName, self::$stubFunctions);
+		if (self::$otherStubFunctions === null) {
+			$functions = [];
+			foreach (array_keys(PhpStormStubsMap::FUNCTIONS) as $name) {
+				$lowercaseFunctionName = strtolower($name);
+				if ($lowercaseFunctionName === $name) {
+					continue;
+				}
+
+				$functions[$lowercaseFunctionName] = true;
+			}
+			foreach (PhpStormStubsMap::EXTENSION_VERSIONS as $versionMaps) {
+				foreach ($versionMaps as $versionMap) {
+					foreach (array_keys($versionMap['functions']) as $name) {
+						$functions[strtolower($name)] = true;
+					}
+				}
+			}
+			self::$otherStubFunctions = $functions;
+		}
+
+		return array_key_exists($lowercaseName, self::$otherStubFunctions);
 	}
 
+	/**
+	 * @return list<Reflection>
+	 */
 	#[Override]
 	public function locateIdentifiersByType(Reflector $reflector, IdentifierType $identifierType): array
 	{

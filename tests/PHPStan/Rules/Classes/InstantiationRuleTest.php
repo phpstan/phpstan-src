@@ -465,15 +465,11 @@ class InstantiationRuleTest extends RuleTestCase
 				21,
 			],
 			[
-				'Missing parameter $end (int|TEnd of DateTimeInterface) in call to DatePeriod constructor.',
-				18,
-			],
-			[
 				'Unknown parameter $isostr in call to DatePeriod constructor.',
 				25,
 			],
 			[
-				'Missing parameter $start (string) in call to DatePeriod constructor.',
+				'Missing parameter $start (string|TDate of DateTimeInterface) in call to DatePeriod constructor.',
 				24,
 			],
 			[

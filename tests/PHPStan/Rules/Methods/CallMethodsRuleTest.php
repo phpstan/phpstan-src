@@ -3338,7 +3338,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				10,
 			],
 			[
-				'Missing parameter $name (array) in call to method XSLTProcessor::setParameter().',
+				'Missing parameter $name (array|string) in call to method XSLTProcessor::setParameter().',
 				10,
 			],
 			[

@@ -791,10 +791,6 @@ public:
 		HashTable *typesTable = Z_ARRVAL_P(types);
 		zend_long typesCount = zend_hash_num_elements(typesTable);
 		zv::Arr acceptableAcceptors = zv::Arr::empty();
-		// a named argument only fits a variant that has its parameter, like
-		// session_set_save_handler($open, read: $read), unless no variant has it
-		zv::Arr acceptableAcceptorsWithNames = zv::Arr::empty();
-		bool someAcceptorHasNames = false;
 
 		for (zv::ArrayEntry entry : zv::TableRef(acceptors)) {
 			zval *parametersAcceptor = entry.value().deref().raw();
@@ -805,7 +801,6 @@ public:
 
 			zend_long functionParametersMinCount = 0;
 			zend_long functionParametersMaxCount = 0;
-			zv::Arr parameterNames = zv::Arr::create(0);
 			zv::Val parameters = acceptorParameters(parametersAcceptor);
 			if (UNEXPECTED(parameters.isUndef())) return zv::Val();
 			for (zv::ArrayEntry parameterEntry : zv::ArrRef(parameters.raw())) {
@@ -816,42 +811,15 @@ public:
 				}
 
 				functionParametersMaxCount++;
-				zv::Val parameterName = parameterGet(parameterEntry.value().deref().raw(), PG_NAME);
-				if (UNEXPECTED(parameterName.isUndef())) return zv::Val();
-				if (Z_TYPE_P(parameterName.raw()) == IS_STRING) {
-					zval trueValue;
-					ZVAL_TRUE(&trueValue);
-					zend_symtable_update(parameterNames.table(), Z_STR_P(parameterName.raw()), &trueValue);
-				}
 			}
-
-			bool isVariadic = false;
-			if (UNEXPECTED(!acceptorIsVariadic(parametersAcceptor, isVariadic))) return zv::Val();
-
-			bool hasNames = true;
-			if (!isVariadic) {
-				for (zv::ArrayEntry typeEntry : zv::TableRef(typesTable)) {
-					zend_string *key = typeEntry.stringKeyOrNull();
-					if (key != NULL && zend_symtable_find(parameterNames.table(), key) == NULL) {
-						hasNames = false;
-						break;
-					}
-				}
-			}
-			someAcceptorHasNames = someAcceptorHasNames || hasNames;
 
 			if (typesCount < functionParametersMinCount) continue;
 
+			bool isVariadic = false;
+			if (UNEXPECTED(!acceptorIsVariadic(parametersAcceptor, isVariadic))) return zv::Val();
 			if (!isVariadic && typesCount > functionParametersMaxCount) continue;
 
 			acceptableAcceptors.push(zv::Ref(parametersAcceptor));
-			if (!hasNames) continue;
-
-			acceptableAcceptorsWithNames.push(zv::Ref(parametersAcceptor));
-		}
-
-		if (someAcceptorHasNames) {
-			acceptableAcceptors = std::move(acceptableAcceptorsWithNames);
 		}
 
 		uint32_t acceptableCount = zend_hash_num_elements(acceptableAcceptors.table());
@@ -1249,12 +1217,7 @@ private:
 		zv::Val defaultValueRight = parameterGet(parameter, PG_DEFAULT_VALUE);
 		if (UNEXPECTED(defaultValueRight.isUndef())) return zv::Val();
 		zv::Val defaultValue = zv::Val::null();
-		if (Z_TYPE_P(defaultValueLeft.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(defaultValueLeft.raw()), pt_ce_error_type)) {
-			// the parameter of the real signature keeps its unknown default
-			defaultValue = std::move(defaultValueLeft);
-		} else if (Z_TYPE_P(defaultValueRight.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(defaultValueRight.raw()), pt_ce_error_type)) {
-			defaultValue = std::move(defaultValueRight);
-		} else if (!defaultValueLeft.isNull() && !defaultValueRight.isNull()) {
+		if (!defaultValueLeft.isNull() && !defaultValueRight.isNull()) {
 			defaultValue = union2(defaultValueLeft.raw(), defaultValueRight.raw());
 			if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
 		}

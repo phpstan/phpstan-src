@@ -101,6 +101,11 @@ final class ClosureOrigin
 		return $this->boundParameterNames;
 	}
 
+	public function isFirstClassCallable(): bool
+	{
+		return $this->partialApplicationArgs === null;
+	}
+
 	/**
 	 * Whether the closure is one of a method called on an object, bound to that object for
 	 * good: unbinding it fails. Closure::__invoke(...) is the closure itself, so it does not count.

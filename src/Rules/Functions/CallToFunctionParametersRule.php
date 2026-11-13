@@ -77,6 +77,7 @@ final class CallToFunctionParametersRule implements Rule
 			'Combining constants with | is not allowed for %s of function ' . $functionName . '.',
 			null,
 			$function,
+			$function->getNamedArgumentsVariants() !== null ? $function->getVariants() : [],
 		);
 	}
 

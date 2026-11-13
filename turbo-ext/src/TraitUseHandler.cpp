@@ -263,6 +263,42 @@ private:
 			}
 		}
 
+		/* the class-level @use tags of the class-like using the traits */
+		bool inClass;
+		if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return zv::Val();
+		if (inClass) {
+			bool inTrait;
+			if (UNEXPECTED(!pt_mutating_scope_is_in_trait(Z_OBJ_P(scope), inTrait))) return zv::Val();
+			zv::Val declaringReflection = inTrait ? pt_mutating_scope_get_trait_reflection(Z_OBJ_P(scope)) : pt_scope_get_class_reflection(Z_OBJ_P(scope));
+			if (UNEXPECTED(declaringReflection.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(declaringReflection.raw()) != IS_OBJECT)) {
+				memberCallOnNonObject("getResolvedPhpDoc", declaringReflection.raw());
+				return zv::Val();
+			}
+			zv::Val resolvedPhpDoc = pt_class_reflection_get_resolved_php_doc(Z_OBJ_P(declaringReflection.raw()));
+			if (UNEXPECTED(resolvedPhpDoc.isUndef())) return zv::Val();
+			if (!resolvedPhpDoc.isNull()) {
+				if (UNEXPECTED(Z_TYPE_P(resolvedPhpDoc.raw()) != IS_OBJECT)) {
+					memberCallOnNonObject("getUsesTags", resolvedPhpDoc.raw());
+					return zv::Val();
+				}
+				zv::Val usesTags = pt_resolved_php_doc_block_call(resolvedPhpDoc.raw(), PT_RPD_GET_USES_TAGS);
+				if (UNEXPECTED(usesTags.isUndef())) return zv::Val();
+				if (Z_TYPE_P(usesTags.raw()) == IS_ARRAY) {
+					for (auto entry : zv::ArrRef(usesTags.raw())) {
+						zval *usesTag = entry.value().deref().raw();
+						if (UNEXPECTED(Z_TYPE_P(usesTag) != IS_OBJECT)) {
+							memberCallOnNonObject("getType", usesTag);
+							return zv::Val();
+						}
+						zv::Val type = pt_call_method_cached(pt_tuh_uses_tag_get_type_site, Z_OBJ_P(usesTag), PT_LC("gettype"), 0, NULL);
+						if (UNEXPECTED(type.isUndef())) return zv::Val();
+						types.push(std::move(type));
+					}
+				}
+			}
+		}
+
 		return pt_dependencies_create_in(scope, types.raw(), classNames.raw());
 	}
 

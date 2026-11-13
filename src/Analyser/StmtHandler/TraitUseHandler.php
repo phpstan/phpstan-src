@@ -88,7 +88,7 @@ final class TraitUseHandler implements StmtHandler
 	}
 
 	/**
-	 * The used traits and the classes the @use tags reference.
+	 * The used traits and the classes the @use tags reference, on the statement and on the class-like using the traits.
 	 */
 	private function getDependencies(MutatingScope $scope, Node\Stmt\TraitUse $stmt): ?Dependencies
 	{
@@ -109,6 +109,16 @@ final class TraitUseHandler implements StmtHandler
 			)->getUsesTags();
 			foreach ($usesTags as $usesTag) {
 				$types[] = $usesTag->getType();
+			}
+		}
+
+		if ($scope->isInClass()) {
+			$declaringReflection = $scope->isInTrait() ? $scope->getTraitReflection() : $scope->getClassReflection();
+			$resolvedPhpDoc = $declaringReflection->getResolvedPhpDoc();
+			if ($resolvedPhpDoc !== null) {
+				foreach ($resolvedPhpDoc->getUsesTags() as $usesTag) {
+					$types[] = $usesTag->getType();
+				}
 			}
 		}
 

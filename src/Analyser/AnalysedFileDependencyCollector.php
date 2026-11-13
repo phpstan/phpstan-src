@@ -9,7 +9,8 @@ use PHPStan\ShouldNotHappenException;
 /**
  * Identifies the collected data of what is reported in the analysed file depends on: a file that has to be
  * analysed too, or null for the whole project. UnmatchedIgnoredErrorJudge does not report the ignoreErrors
- * entries of the file as unmatched in a partial analysis that misses them. It is not registered as a collector,
+ * entries of the file as unmatched in a partial analysis that misses them. What the collected data
+ * of the declarations in a file depends on is AnalysedDeclarationDependencyCollector data. It is not registered as a collector,
  * the data is emitted with CollectedDataEmitter.
  *
  * @implements CollectorWithPaths<never, string|null>

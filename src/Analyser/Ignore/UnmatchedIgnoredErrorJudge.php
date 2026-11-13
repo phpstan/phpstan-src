@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\Ignore;
 
+use PHPStan\Analyser\AnalysedDeclarationDependencyCollector;
 use PHPStan\Analyser\AnalysedFileDependencyCollector;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\File\FileExcluder;
@@ -27,7 +28,9 @@ use const DIRECTORY_SEPARATOR;
  * not a file that declares a trait (the trait is analysed in the context of its users, which are not all known),
  * and not a file what is reported in depends on a file that is not analysed, directly or through other files -
  * a trait used by a class in the file, or the declaration of a function whose purity decides whether a call
- * is reported, see AnalysedFileDependencyCollector.
+ * is reported, see AnalysedFileDependencyCollector. The purity of that function depends on the declarations
+ * it calls in turn, see AnalysedDeclarationDependencyCollector, but the purity of the functions declared
+ * in the file itself decides only what is reported in the files calling them.
  *
  * Both come from the collected data: the analysed files declaring a trait, and the dependencies tracked while
  * the files were analysed. Without them, no file is taken as analysed entirely.
@@ -50,6 +53,9 @@ final class UnmatchedIgnoredErrorJudge
 
 	/** @var array<string, array<string, true>> analysed file => normalized files what is reported in it depends on */
 	private array $analysedFileDependencies = [];
+
+	/** @var array<string, array<string, true>> analysed file => normalized files what is collected about its declarations depends on */
+	private array $analysedDeclarationDependencies = [];
 
 	/** @var array<string, true> analysed files what is reported in depends on the whole project */
 	private array $projectDependentFiles = [];
@@ -210,6 +216,12 @@ final class UnmatchedIgnoredErrorJudge
 					$this->analysedFileDependencies[$dependentFile][$this->fileHelper->normalizePath($dependency)] = true;
 				}
 			}
+
+			foreach ($this->collectedData->iterate(AnalysedDeclarationDependencyCollector::class) as $declaringFile => $dependencies) {
+				foreach ($dependencies as $dependency) {
+					$this->analysedDeclarationDependencies[$declaringFile][$this->fileHelper->normalizePath($dependency)] = true;
+				}
+			}
 		}
 
 		if (array_key_exists($file, $this->traitDeclaringFiles)) {
@@ -219,18 +231,28 @@ final class UnmatchedIgnoredErrorJudge
 		return $this->entirelyAnalysedFiles[$file] ??= $this->areDependenciesAnalysed($file);
 	}
 
+	/**
+	 * What is reported in the file depends on its dependencies, and on everything their collected data depends on:
+	 * their own dependencies and the dependencies of their declarations. The dependencies of the declarations
+	 * in the file itself count only when the file is reached as a dependency, like when it calls its own function.
+	 */
 	private function areDependenciesAnalysed(string $file): bool
 	{
-		$visited = [$file => true];
-		$queue = [$file];
+		if (array_key_exists($file, $this->projectDependentFiles)) {
+			return false;
+		}
+
+		$visited = [];
+		$queue = [];
+		if (!$this->visitDependencies($this->analysedFileDependencies[$file] ?? [], $visited, $queue)) {
+			return false;
+		}
+
 		while ($queue !== []) {
 			$current = array_pop($queue);
-			if ($current !== $file && array_key_exists($current, $this->entirelyAnalysedFiles)) {
-				// its dependencies were already followed
-				if ($this->entirelyAnalysedFiles[$current]) {
-					continue;
-				}
 
+			// even when what is reported in it was judged, the dependencies of its declarations were not followed
+			if (($this->entirelyAnalysedFiles[$current] ?? null) === false) {
 				return false;
 			}
 
@@ -238,25 +260,45 @@ final class UnmatchedIgnoredErrorJudge
 				return false;
 			}
 
-			foreach (array_keys($this->analysedFileDependencies[$current] ?? []) as $dependency) {
-				if (array_key_exists($dependency, $visited)) {
-					continue;
-				}
+			if (
+				!$this->visitDependencies($this->analysedFileDependencies[$current] ?? [], $visited, $queue)
+				|| !$this->visitDependencies($this->analysedDeclarationDependencies[$current] ?? [], $visited, $queue)
+			) {
+				return false;
+			}
+		}
 
-				$visited[$dependency] = true;
-				if (array_key_exists($dependency, $this->analysedFiles)) {
-					$queue[] = $dependency;
-					continue;
-				}
+		return true;
+	}
 
-				// a file that is not analysed even when the whole project is, like one in vendor, reports no errors either way;
-				// without paths in the configuration, the project is not known and every file counts
-				if (
-					($this->analysedPathsFromConfig === [] || self::isUnder($dependency, $this->analysedPathsFromConfig))
-					&& !$this->analyseFileExcluder->isExcludedFromAnalysing($dependency)
-				) {
-					return false;
-				}
+	/**
+	 * Queues the analysed dependencies that were not visited yet.
+	 *
+	 * @param array<string, true> $dependencies
+	 * @param array<string, true> $visited
+	 * @param list<string> $queue
+	 * @return bool false when a dependency is not analysed
+	 */
+	private function visitDependencies(array $dependencies, array &$visited, array &$queue): bool
+	{
+		foreach (array_keys($dependencies) as $dependency) {
+			if (array_key_exists($dependency, $visited)) {
+				continue;
+			}
+
+			$visited[$dependency] = true;
+			if (array_key_exists($dependency, $this->analysedFiles)) {
+				$queue[] = $dependency;
+				continue;
+			}
+
+			// a file that is not analysed even when the whole project is, like one in vendor, reports no errors either way;
+			// without paths in the configuration, the project is not known and every file counts
+			if (
+				($this->analysedPathsFromConfig === [] || self::isUnder($dependency, $this->analysedPathsFromConfig))
+				&& !$this->analyseFileExcluder->isExcludedFromAnalysing($dependency)
+			) {
+				return false;
 			}
 		}
 

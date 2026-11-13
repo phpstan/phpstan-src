@@ -91,6 +91,10 @@ parameters:
 		-
 			identifier: function.resultUnused
 			path: src/Calls/CallsTransitivelyPureFunction.php
+		# reported only when the declaration of the function the called method calls is analysed too
+		-
+			identifier: method.resultUnused
+			path: src/Declares/CallsOwnPureMethod.php
 		# reported only when the subclass renaming the parameter is analysed too
 		-
 			identifier: argument.parameterRenamedInSubtype
@@ -105,3 +109,10 @@ parameters:
 		-
 			message: '#never in CallsWithNamedArgument#'
 			path: src/Named/CallsWithNamedArgument.php
+		-
+			message: '#never in CallsOwnPureMethod#'
+			path: src/Declares/CallsOwnPureMethod.php
+		# stale, what is reported in the file does not depend on what the purity of its method depends on
+		-
+			message: '#never in DeclaresPureMethod#'
+			path: src/Declares/DeclaresPureMethod.php

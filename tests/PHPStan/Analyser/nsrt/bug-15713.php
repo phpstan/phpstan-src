@@ -115,4 +115,46 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param list<int> $a
+	 * @param NAN|float<0.0, 1.0> $root
+	 * @param float<0.0, 1.0> $safe
+	 */
+	public function countBothBranches(array $a, string $s, float $root, float $safe): void
+	{
+		// a true ordering comparison rules out NAN, so the count is still bounded
+		if (count($a) < $root) {
+			assertType('0', count($a));
+			assertType('float<5.0E-324, 1.0>', $root);
+		} else {
+			assertType('int<0, max>', count($a));
+			assertType('NAN|float<0.0, 1.0>', $root);
+		}
+
+		if (strlen($s) < $root) {
+			assertType('0', strlen($s));
+		} else {
+			assertType('int<0, max>', strlen($s));
+		}
+
+		if (count($a) <= $root) {
+			assertType('int<0, 1>', count($a));
+		}
+
+		if (preg_match('/x/', $s) < $root) {
+			assertType('0|false', preg_match('/x/', $s));
+		}
+
+		// an operand that cannot be NAN narrows as it always did
+		if (count($a) < $safe) {
+			assertType('0', count($a));
+		} else {
+			assertType('int<0, max>', count($a));
+		}
+
+		if (strlen($s) < $safe) {
+			assertType('0', strlen($s));
+		}
+	}
+
 }

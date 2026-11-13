@@ -1475,17 +1475,14 @@ private:
 				bool useInverse = !rightIsCall || !lowerNameIn(rightCall.name.get(), { "count", "sizeof", "strlen", "mb_strlen", "preg_match" });
 				if (useInverse) {
 					// the inverse operator is not the negation of this one when an
-					// operand can be NAN: both of them are false for a NAN, so what
-					// this one being false tells is not what the inverse being true tells
-					bool contextFalseyHere = false;
-					if (UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(context), contextFalseyHere))) return zv::Val();
-					if (contextFalseyHere) {
-						zv::Val rightOperandType = specifyOperandType(captures, scope, nativeTypesPromoted, right);
-						if (UNEXPECTED(rightOperandType.isUndef())) return zv::Val();
-						int rightCannotBeNan = cannotBeNan(rightOperandType.raw());
-						if (UNEXPECTED(rightCannotBeNan < 0)) return zv::Val();
-						useInverse = rightCannotBeNan != 0;
-					}
+					// operand can be NAN: both of them are false for a NAN, so neither
+					// branch of this one is a branch of the inverse. The general path
+					// below narrows each side on its own terms instead.
+					zv::Val rightOperandType = specifyOperandType(captures, scope, nativeTypesPromoted, right);
+					if (UNEXPECTED(rightOperandType.isUndef())) return zv::Val();
+					int rightCannotBeNan = cannotBeNan(rightOperandType.raw());
+					if (UNEXPECTED(rightCannotBeNan < 0)) return zv::Val();
+					useInverse = rightCannotBeNan != 0;
 				}
 				if (useInverse) {
 					zv::Args inverseArgv{right, left};

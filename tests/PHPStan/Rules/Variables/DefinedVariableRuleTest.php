@@ -539,4 +539,24 @@ class DefinedVariableRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15725(): void
+	{
+		$this->cliArgumentsVariablesRegistered = true;
+		$this->checkMaybeUndefinedVariables = true;
+		$this->analyse([__DIR__ . '/data/bug-15725.php'], [
+			[
+				'Variable $level might not be defined.',
+				5,
+			],
+			[
+				'Variable $other might not be defined.',
+				10,
+			],
+			[
+				'Variable $other might not be defined.',
+				11,
+			],
+		]);
+	}
+
 }

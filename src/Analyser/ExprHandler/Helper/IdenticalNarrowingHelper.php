@@ -661,14 +661,19 @@ final class IdenticalNarrowingHelper
 			return new SpecifiedTypes([], []);
 		}
 		// a mixed subject stays mixed rather than gain objects of classes like Stringable or GMP,
-		// which say nothing about the value; enum cases are precise enough to narrow to
+		// which say nothing about the value; enum cases are precise enough to narrow to.
+		// It still loses null when null cannot equal the value, so the offset or variable is set
 		if (
 			$context->true()
 			&& $subjectType instanceof MixedType
 			&& !$type->isObject()->no()
 			&& !TypeCombinator::intersect($type, new ObjectWithoutClassType())->isEnum()->yes()
 		) {
-			return new SpecifiedTypes([], []);
+			$nullType = new NullType();
+			if (!$type->isSuperTypeOf($nullType)->no()) {
+				return new SpecifiedTypes([], []);
+			}
+			$type = TypeCombinator::remove($subjectType, $nullType);
 		}
 
 		return $this->defaultNarrowingHelper->createSubjectTypes($evaluationScope, $subject, $subjectResult, $type, $context);

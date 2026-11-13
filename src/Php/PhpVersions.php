@@ -419,4 +419,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(70300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function restrictsGlobalsModification(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

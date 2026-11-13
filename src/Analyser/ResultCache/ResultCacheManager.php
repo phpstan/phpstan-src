@@ -34,6 +34,7 @@ use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
 use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
+use PHPStan\Reflection\BetterReflection\SourceLocator\SymbolFinderInFiles;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -264,6 +265,7 @@ final class ResultCacheManager
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 		private FileStatSignatures $fileStatSignatures,
 		private ValueDependencyCollector $valueDependencyCollector,
+		private SymbolFinderInFiles $symbolFinderInFiles,
 		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerSourceLocatorMaker,
 		#[AutowiredParameter]
 		private string $tmpDir,
@@ -325,6 +327,7 @@ final class ResultCacheManager
 			cachedExportedNodes: CachedExportedNodes::createEmpty(),
 			projectExtensionFiles: [],
 			currentFileHashes: $currentFileHashes,
+			appearedSymbols: AppearedSymbols::anything(),
 		);
 	}
 
@@ -488,6 +491,9 @@ final class ResultCacheManager
 		// make anything be re-analysed. A scanned file can change without any of its symbols changing,
 		// and then nothing here has to happen at all.
 		$scannedFilesWithChangedSymbols = [];
+		// what may declare a symbol a lookup did not find last time - see AppearedSymbols
+		$anySymbolMayHaveAppeared = false;
+		$changedDeclaringFiles = [];
 		$metaDifferent = $this->isMetaDifferent($data['meta'], $meta);
 		if ($metaDifferent) {
 			$diffs = $this->getMetaKeyDifferences($data['meta'], $meta);
@@ -540,6 +546,7 @@ final class ResultCacheManager
 						);
 					}
 
+					$changedDeclaringFiles[$changedScannedFile] = true;
 				}
 			}
 
@@ -617,6 +624,7 @@ final class ResultCacheManager
 				// The files depending on a changed package are seeded below. A symbol a package declares
 				// now was looked up and not found by the files waiting for it, which recorded that as a
 				// value dependency.
+				$anySymbolMayHaveAppeared = true;
 				$changedPackagesLookup = array_fill_keys(array_merge($changedPackages, $changedExtensionPackages), true);
 				foreach ($packageDependencies as $packageDependentFile => $filePackages) {
 					foreach ($filePackages as $filePackage) {
@@ -785,6 +793,7 @@ final class ResultCacheManager
 			}
 
 			$changedAnalysedFiles[$analysedFile] = true;
+			$changedDeclaringFiles[$analysedFile] = true;
 		}
 		foreach ($allAnalysedFiles as $analysedFile) {
 			if (array_key_exists($analysedFile, $errors)) {
@@ -906,6 +915,7 @@ final class ResultCacheManager
 
 			if (is_file($notAnalysedFile) && $wasMissing) {
 				$dependencyFilesChanged = true;
+				$changedDeclaringFiles[$notAnalysedFile] = true;
 				// It exists now. Whether it holds any symbol is beside the point - a file that was named
 				// and was not there is now there, and that alone changes what the analysis says.
 				$invertedDependenciesToReturn[$notAnalysedFile] = $dependentFiles;
@@ -936,6 +946,7 @@ final class ResultCacheManager
 					?? ($cachedExportedNodes->has($notAnalysedFile) ? $decodeCachedExportedNodes($notAnalysedFile) : null);
 
 				$dependencyFilesChanged = true;
+				$changedDeclaringFiles[$notAnalysedFile] = true;
 				// Edited: the same rule as for an analysed file. Nothing the files depending on it can
 				// see changed unless its exported nodes did, so a body-only edit re-analyses nothing -
 				// except the classes using a trait declared here, whose body is analysed in their
@@ -997,10 +1008,22 @@ final class ResultCacheManager
 		$allAnalysedFilesSet = array_fill_keys($allAnalysedFiles, true);
 		$valueDependenciesToReturn = [];
 		$valueDependenciesChanged = false;
+		$appearedSymbols = $anySymbolMayHaveAppeared
+			? AppearedSymbols::anything()
+			: $this->getSymbolsDeclaredIn(array_keys($changedDeclaringFiles));
 		foreach ($cachedValueDependencies as $cachedValueDependency) {
 			$extension = $this->valueDependencyCollector->getExtension($cachedValueDependency['extensionClass']);
 			$key = $extension?->keyFromResultCache($cachedValueDependency['storedKey']);
-			$currentValue = $extension !== null && $key !== null ? $extension->getValue($key) : null;
+			if ($extension === null || $key === null) {
+				$currentValue = null;
+			} elseif (
+				$cachedValueDependency['value'] === ValueDependencyCollector::MISSING
+				&& $appearedSymbols->isStillMissing($cachedValueDependency['extensionClass'], $key)
+			) {
+				$currentValue = ValueDependencyCollector::MISSING;
+			} else {
+				$currentValue = $extension->getValue($key);
+			}
 			if ($currentValue !== $cachedValueDependency['value']) {
 				$valueDependenciesChanged = true;
 				foreach ($this->getValueDependentFilesToAnalyse($cachedValueDependency['analysis'], $cachedValueDependency['declarations'], $invertedDependencies, $allAnalysedFilesSet) as $valueDependentFile) {
@@ -1086,6 +1109,7 @@ final class ResultCacheManager
 			cachedExportedNodes: $cachedExportedNodes->only($keptCachedExportedNodes),
 			projectExtensionFiles: $data['projectExtensionFiles'],
 			currentFileHashes: $currentFileHashes,
+			appearedSymbols: $appearedSymbols,
 			collectedDataRuleResults: $collectedDataRuleResults,
 		);
 	}
@@ -3491,6 +3515,36 @@ final class ResultCacheManager
 		$this->fileHashes[$path] = $hash;
 
 		return $hash;
+	}
+
+	/**
+	 * The names a new or changed file declares, scanned the way the directory locators scan them -
+	 * see AppearedSymbols.
+	 *
+	 * @param list<string> $changedFiles
+	 */
+	private function getSymbolsDeclaredIn(array $changedFiles): AppearedSymbols
+	{
+		$existingFiles = [];
+		foreach ($changedFiles as $changedFile) {
+			$changedFile = $this->fileReplacements[$changedFile] ?? $changedFile;
+			if (!is_file($changedFile)) {
+				continue;
+			}
+
+			$existingFiles[] = $changedFile;
+		}
+
+		$names = [];
+		foreach ($this->symbolFinderInFiles->findSymbols($existingFiles, $this->phpVersion->supportsEnums()) as $symbols) {
+			foreach ($symbols as $symbolsOfKind) {
+				foreach ($symbolsOfKind as $name) {
+					$names[] = $name;
+				}
+			}
+		}
+
+		return AppearedSymbols::fromNames($names);
 	}
 
 	/**

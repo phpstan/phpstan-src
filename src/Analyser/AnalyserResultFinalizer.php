@@ -6,6 +6,7 @@ use Closure;
 use PHPStan\AnalysedCodeException;
 use PHPStan\Analyser\Ignore\LineIgnoreFixer;
 use PHPStan\Analyser\Ignore\UnmatchedIgnoreFixer;
+use PHPStan\Analyser\ResultCache\AppearedSymbols;
 use PHPStan\Analyser\ResultCache\LazyCollectedData;
 use PHPStan\Analyser\ResultCache\UnreadableCollectedDataException;
 use PHPStan\BetterReflection\NodeCompiler\Exception\UnableToCompileNode;
@@ -65,6 +66,8 @@ final class AnalyserResultFinalizer
 	 *        previous run, from the result cache - a rule whose input did not change reuses its errors.
 	 *        Only with the reuseCollectedDataRuleErrors feature toggle, otherwise every rule runs. A rule that
 	 *        does not call get() on the node always runs.
+	 * @param AppearedSymbols|null $appearedSymbols what may have been declared since they were saved, see
+	 *        ResultCache::getAppearedSymbols() - anything when null
 	 */
 	public function finalize(
 		AnalyserResult $analyserResult,
@@ -73,8 +76,10 @@ final class AnalyserResultFinalizer
 		?Closure $preRuleCallback = null,
 		?Closure $postRuleCallback = null,
 		array $previousCollectedDataRuleResults = [],
+		?AppearedSymbols $appearedSymbols = null,
 	): FinalizerResult
 	{
+		$appearedSymbols ??= AppearedSymbols::anything();
 		if ($analyserResult->getLazyCollectedData()->isEmpty()) {
 			return $this->processInlineIgnores($this->mergeFilteredPhpErrors($analyserResult), [], []);
 		}
@@ -115,7 +120,7 @@ final class AnalyserResultFinalizer
 				$ruleKey = sprintf('%s#%d', $ruleClass, $ruleCountsByClass[$ruleClass]);
 
 				$previousResult = $this->reuseCollectedDataRuleErrors ? $previousCollectedDataRuleResults[$ruleKey] ?? null : null;
-				if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector, $currentValues)) {
+				if ($previousResult !== null && $this->canReuse($previousResult, $onlyFiles, $hashCollector, $appearedSymbols, $currentValues)) {
 					$collectedDataRuleResults[$ruleKey] = $previousResult;
 					$reusedRulesCount++;
 					$collectedDataRuleSkipped = $collectedDataRuleSkipped || $previousResult->getOnlyFiles() === true;
@@ -291,7 +296,7 @@ final class AnalyserResultFinalizer
 	 * @param Closure(string): string $hashCollector
 	 * @param array<string, string> $currentValues id => value, asked for once per run - every rule shares the values of the classes
 	 */
-	private function canReuse(CollectedDataRuleResult $previousResult, bool $onlyFiles, Closure $hashCollector, array &$currentValues): bool
+	private function canReuse(CollectedDataRuleResult $previousResult, bool $onlyFiles, Closure $hashCollector, AppearedSymbols $appearedSymbols, array &$currentValues): bool
 	{
 		$previousOnlyFiles = $previousResult->getOnlyFiles();
 		if ($previousOnlyFiles !== null && $previousOnlyFiles !== $onlyFiles) {
@@ -312,7 +317,10 @@ final class AnalyserResultFinalizer
 			}
 
 			$id = ValueDependencyCollector::getId($extensionClass, $storedKey);
-			$currentValues[$id] ??= $extension->getValue($extension->keyFromResultCache($storedKey));
+			$key = $extension->keyFromResultCache($storedKey);
+			$currentValues[$id] ??= $value === ValueDependencyCollector::MISSING && $appearedSymbols->isStillMissing($extensionClass, $key)
+				? ValueDependencyCollector::MISSING
+				: $extension->getValue($key);
 			if ($currentValues[$id] !== $value) {
 				return false;
 			}

@@ -48,6 +48,7 @@ final class ResultCache
 		private CachedExportedNodes $cachedExportedNodes,
 		private array $projectExtensionFiles,
 		private array $currentFileHashes,
+		private AppearedSymbols $appearedSymbols,
 		private array $collectedDataRuleResults = [],
 	)
 	{
@@ -187,6 +188,11 @@ final class ResultCache
 	public function getCurrentFileHashes(): array
 	{
 		return $this->currentFileHashes;
+	}
+
+	public function getAppearedSymbols(): AppearedSymbols
+	{
+		return $this->appearedSymbols;
 	}
 
 	/**

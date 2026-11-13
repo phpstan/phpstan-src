@@ -78,13 +78,12 @@ final class RangeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 	 */
 	private static function getConstantValues(Type $type, bool $allowString): ?array
 	{
-		$constantValues = $type->getConstantScalarValues();
-		if ($constantValues === []) {
+		if (!$type->isConstantScalarValue()->yes()) {
 			return null;
 		}
 
 		$values = [];
-		foreach ($constantValues as $value) {
+		foreach ($type->getConstantScalarValues() as $value) {
 			if (!is_int($value) && !is_float($value) && (!$allowString || !is_string($value))) {
 				return null;
 			}

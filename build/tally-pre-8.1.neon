@@ -1,0 +1,7 @@
+parameters:
+	excludePaths:
+		# Tally's sources use enums and readonly properties, which PHPStan does not parse for PHP < 8.1
+		- ../tally.php
+		- ../tests/bench/AnalysedFileExpectations.php
+		- ../tests/bench/AnalysedFileHeader.php
+		- ../tests/bench/AnalysisBench.php

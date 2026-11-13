@@ -43,13 +43,10 @@ use const STDERR;
  * is converted to milliseconds by how many of it the analysis runs per millisecond (the median
  * over the benchmarks, natively on PHP 8.5 and an Intel Xeon @ 2.60 GHz), and the quicker the
  * benchmark, the larger the share of it that may change.
+ *
+ * The attribute is on one line because PHP 7.4 reads #[ as a comment until the end of the line.
  */
-#[DurationTolerance(
-	tolerances: [0 => 0.5, 100 => 0.25, 500 => 0.2, 2000 => 0.1],
-	instructionsPerMillisecond: 5_800_000,
-	cyclesPerMillisecond: 7_400_000,
-	memory: 0.1,
-)]
+#[DurationTolerance(tolerances: [0 => 0.5, 100 => 0.25, 500 => 0.2, 2000 => 0.1], instructionsPerMillisecond: 5_800_000, cyclesPerMillisecond: 7_400_000, memory: 0.1)]
 final class AnalysisBench
 {
 

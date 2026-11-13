@@ -27,7 +27,6 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
-use function array_filter;
 use function array_map;
 use function array_reduce;
 use function array_slice;
@@ -53,11 +52,14 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$unpackedArgTypes = array_map(static fn (Node\Arg $arg) => $scope->getType($arg->value), $arrayArgs);
 			$unpacked = array_map(static fn (Node\Arg $arg) => $arg->unpack, $arrayArgs);
 			[$arrayTypes, $restType] = UnpackedArgumentTypes::expand($unpackedArgTypes, $unpacked);
-			if ($restType === null) {
-				$args = [$args[0], ...array_map(static fn (Type $arrayType) => new Node\Arg(new TypeExpr($arrayType)), $arrayTypes)];
-			} else {
-				$unpackedArgTypes = null;
+			if ($restType !== null) {
+				return self::getTypeForUnknownArrayCount($scope, $args[0]->value, [
+					...$arrayTypes,
+					$restType,
+				]);
 			}
+
+			$args = [$args[0], ...array_map(static fn (Type $arrayType) => new Node\Arg(new TypeExpr($arrayType)), $arrayTypes)];
 		}
 
 		$numArgs = count($args);
@@ -77,7 +79,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			if ($unpackedArgTypes !== null) {
 				// the args are the arrays expand() gave, so the unpacked args decide the padding
 				$callbackValueTypes = ArrayMapCallbackParameterTypes::addPaddingNullToArgs($callbackValueTypes, null, $unpackedArgTypes, $unpacked)[0];
-			} elseif (count(array_filter($arrayArgs, static fn (Node\Arg $arg) => $arg->unpack)) === 0) {
+			} else {
 				$callbackValueTypes = ArrayMapCallbackParameterTypes::addPaddingNull($callbackValueTypes, $arrayTypes);
 			}
 			$valueType = $scope->getType(new FuncCall(
@@ -188,6 +190,43 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return $mappedArrayType;
+	}
+
+	/**
+	 * The number of arrays is not known, so the values have the return type of the callback.
+	 * One array keeps its keys, more arrays give a list.
+	 *
+	 * @param list<Type> $arrayTypes
+	 */
+	private static function getTypeForUnknownArrayCount(Scope $scope, Node\Expr $callback, array $arrayTypes): ?Type
+	{
+		$callableType = $scope->getType($callback);
+		if (!$callableType->isCallable()->yes()) {
+			return null;
+		}
+
+		$returnTypes = [];
+		foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
+			$returnTypes[] = $parametersAcceptor->getReturnType();
+		}
+		$valueType = TypeCombinator::union(...$returnTypes);
+
+		$keyTypes = [IntegerRangeType::createAllGreaterThanOrEqualTo(0)];
+		$isList = true;
+		foreach ($arrayTypes as $arrayType) {
+			if ($arrayType->isList()->yes()) {
+				continue;
+			}
+
+			$isList = false;
+			$keyTypes[] = $arrayType->getIterableKeyType();
+		}
+
+		if ($isList) {
+			return TypeCombinator::intersect(new ArrayType($keyTypes[0], $valueType), new AccessoryArrayListType());
+		}
+
+		return new ArrayType(TypeCombinator::union(...$keyTypes), $valueType);
 	}
 
 	private static function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type

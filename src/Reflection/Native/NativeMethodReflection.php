@@ -44,6 +44,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		private ?Type $selfOutType,
 		private ?string $phpDocComment,
 		private array $attributes,
+		private bool $isDeprecatedInSignatureMap,
 	)
 	{
 	}
@@ -139,7 +140,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function isDeprecated(): TrinaryLogic
 	{
-		return TrinaryLogic::createFromBoolean($this->reflection->isDeprecated());
+		return TrinaryLogic::createFromBoolean($this->isDeprecatedInSignatureMap || $this->reflection->isDeprecated());
 	}
 
 	public function isInternal(): TrinaryLogic

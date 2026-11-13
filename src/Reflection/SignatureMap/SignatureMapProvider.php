@@ -21,6 +21,12 @@ interface SignatureMapProvider
 	/** @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} */
 	public function getFunctionSignatures(string $functionName, ?string $className, ?ReflectionFunctionAbstract $reflectionFunction): array;
 
+	/** Whether the stub for the configured PHP version marks the function deprecated. */
+	public function isFunctionDeprecated(string $functionName): bool;
+
+	/** Whether the stub for the configured PHP version marks the method deprecated. */
+	public function isMethodDeprecated(string $className, string $methodName): bool;
+
 	public function hasMethodMetadata(string $className, string $methodName): bool;
 
 	public function hasFunctionMetadata(string $name): bool;

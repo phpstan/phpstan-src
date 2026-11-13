@@ -44,6 +44,9 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	/** @var array<lowercase-string, array<lowercase-string, array{ClassMethod, string}>> */
 	private array $methodNodes = [];
 
+	/** @var array<lowercase-string, array{Function_, string}> */
+	private array $functionNodes = [];
+
 	/** @var array<lowercase-string, array<lowercase-string, Type|null>> */
 	private array $constantTypes = [];
 
@@ -278,9 +281,35 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 	public function getFunctionSignatures(string $functionName, ?string $className, ReflectionFunctionAbstract|null $reflectionFunction): array
 	{
+		$functionNode = $this->findFunctionNode($functionName);
+		if ($functionNode === null) {
+			return $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
+		}
+
+		[$functionNode, $stubFile] = $functionNode;
+
+		$signature = $this->getSignature($functionNode, null, $stubFile);
+		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
+			$functionMapSignatures = $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
+
+			return $this->getMergedSignatures($signature, $functionMapSignatures);
+		}
+
+		return ['positional' => [$signature], 'named' => null];
+	}
+
+	/**
+	 * @return array{Function_, string}|null
+	 */
+	private function findFunctionNode(string $functionName): ?array
+	{
 		$lowerName = strtolower($functionName);
 		if (!array_key_exists($lowerName, $this->map->functions)) {
-			return $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
+			return null;
+		}
+
+		if (isset($this->functionNodes[$lowerName])) {
+			return $this->functionNodes[$lowerName];
 		}
 
 		$stubFile = self::DIRECTORY . '/' . $this->map->functions[$lowerName];
@@ -294,17 +323,44 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 				continue;
 			}
 
-			$signature = $this->getSignature($functionNode->getNode(), null, $stubFile);
-			if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
-				$functionMapSignatures = $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
-
-				return $this->getMergedSignatures($signature, $functionMapSignatures);
-			}
-
-			return ['positional' => [$signature], 'named' => null];
+			return $this->functionNodes[$lowerName] = [$functionNode->getNode(), $stubFile];
 		}
 
 		throw new ShouldNotHappenException(sprintf('Function %s stub not found in %s.', $functionName, $stubFile));
+	}
+
+	public function isFunctionDeprecated(string $functionName): bool
+	{
+		$functionNode = $this->findFunctionNode($functionName);
+
+		return $functionNode !== null && $this->hasDeprecatedAttribute($functionNode[0]->getAttrGroups());
+	}
+
+	public function isMethodDeprecated(string $className, string $methodName): bool
+	{
+		if (!array_key_exists(strtolower($className), $this->map->classes)) {
+			return false;
+		}
+
+		$methodNode = $this->findMethodNode($className, $methodName);
+
+		return $methodNode !== null && $this->hasDeprecatedAttribute($methodNode[0]->getAttrGroups());
+	}
+
+	/**
+	 * @param AttributeGroup[] $attrGroups
+	 */
+	private function hasDeprecatedAttribute(array $attrGroups): bool
+	{
+		foreach ($attrGroups as $attrGroup) {
+			foreach ($attrGroup->attrs as $attr) {
+				if ($attr->name->toString() === 'Deprecated') {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

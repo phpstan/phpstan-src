@@ -95,6 +95,7 @@ final class NativeFunctionReflectionProvider
 		}
 
 		$functionSignaturesResult = $this->signatureMapProvider->getFunctionSignatures($lowerCasedFunctionName, null, $reflectionFunctionAdapter);
+		$isDeprecated = $isDeprecated || $this->signatureMapProvider->isFunctionDeprecated($lowerCasedFunctionName);
 
 		$phpDoc = $this->stubPhpDocProvider->findFunctionPhpDoc($lowerCasedFunctionName, array_map(static fn (ParameterSignature $parameter): string => $parameter->getName(), $functionSignaturesResult['positional'][0]->getParameters()));
 		if ($phpDoc !== null) {

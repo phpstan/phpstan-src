@@ -349,6 +349,15 @@ zv::Val addPaddingNull(zval *valueTypes, zval *arrayTypes)
 	return pt_call_static_cached(pt_pas_add_padding_null_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnull"), 2, argv);
 }
 
+/* UnpackedArgumentTypes::expand($argTypes, $unpacked) */
+pt_method_site pt_pas_expand_unpacked_site;
+
+zv::Val expandUnpacked(zval *argTypes, zval *unpacked)
+{
+	zv::Args argv{argTypes, unpacked};
+	return pt_call_static_cached(pt_pas_expand_unpacked_site, PT_CLASS_UNPACKED_ARGUMENT_TYPES, PT_LC("expand"), 2, argv);
+}
+
 /* }}} */
 
 } // namespace
@@ -2027,41 +2036,32 @@ private:
 		return !parameters.isUndef();
 	}
 
-	/* the array_map() callback value types of one arg type flavour, with the
-	 * array each comes from; false = pending exception */
-	static bool arrayMapValueTypes(zv::Arr &valueTypes, zv::Arr &arrayTypes, zval *argType, bool unpack, const Getters &getters)
+	/* Mirrors createArrayMapCallbackParameters(): the list, or null when the
+	 * number of arrays is not known; UNDEF = pending exception */
+	static zv::Val arrayMapCallbackParameters(zv::Val argTypes, zval *unpacked, bool hasUnpacked, const Getters &getters)
 	{
-		if (!unpack) {
-			zv::Val valueType = getters.iterableValueType(argType);
-			if (UNEXPECTED(valueType.isUndef())) return false;
-			valueTypes.push(std::move(valueType));
-			arrayTypes.push(zv::Ref(argType));
-			return true;
-		}
-		if (UNEXPECTED(!requireObject(argType, "getConstantArrays"))) return false;
-		zv::Val constantArrays = pt_type_op(Z_OBJ_P(argType), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
-		if (UNEXPECTED(constantArrays.isUndef() || !requireArray(constantArrays.raw(), "count(): Argument #1 ($value)"))) return false;
-		for (zv::ArrayEntry entry : zv::ArrRef(constantArrays.raw())) {
-			zval *constantArray = entry.value().deref().raw();
-			if (UNEXPECTED(!requireObject(constantArray, "getValueTypes"))) return false;
-			zv::Val constantValueTypes = pt_type_op(Z_OBJ_P(constantArray), PT_OP_GET_VALUE_TYPES, 0, NULL);
-			if (UNEXPECTED(constantValueTypes.isUndef() || !requireArray(constantValueTypes.raw(), "foreach() argument"))) return false;
-			for (zv::ArrayEntry valueEntry : zv::ArrRef(constantValueTypes.raw())) {
-				zval *arrayType = valueEntry.value().deref().raw();
-				zv::Val valueType = getters.iterableValueType(arrayType);
-				if (UNEXPECTED(valueType.isUndef())) return false;
-				valueTypes.push(std::move(valueType));
-				arrayTypes.push(zv::Ref(arrayType));
+		if (hasUnpacked) {
+			zv::Val expanded = expandUnpacked(argTypes.raw(), unpacked);
+			if (UNEXPECTED(expanded.isUndef() || !requireArray(expanded.raw(), "list()"))) return zv::Val();
+			// zend_hash_index_find(), not issetIndex(): the rest type is null when every position is known
+			zval *types = zend_hash_index_find(Z_ARRVAL_P(expanded.raw()), 0);
+			zval *restType = zend_hash_index_find(Z_ARRVAL_P(expanded.raw()), 1);
+			if (UNEXPECTED(types == NULL || restType == NULL)) {
+				zend_throw_error(NULL, "UnpackedArgumentTypes::expand() did not return a pair");
+				return zv::Val();
 			}
+			if (Z_TYPE_P(restType) != IS_NULL) return zv::Val::null();
+			argTypes = zv::Val::copyOf(zv::Ref(types));
 		}
-		return true;
-	}
+		if (UNEXPECTED(!requireArray(argTypes.raw(), "foreach() argument"))) return zv::Val();
+		zv::Arr valueTypes = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(argTypes.raw())) {
+			zv::Val valueType = getters.iterableValueType(entry.value().deref().raw());
+			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+			valueTypes.push(std::move(valueType));
+		}
 
-	/* the DummyParameters over ArrayMapCallbackParameterTypes::addPaddingNull();
-	 * UNDEF = pending exception */
-	static zv::Val arrayMapParameters(zv::Arr &valueTypes, zv::Arr &arrayTypes)
-	{
-		zv::Val paddedValueTypes = addPaddingNull(valueTypes.raw(), arrayTypes.raw());
+		zv::Val paddedValueTypes = addPaddingNull(valueTypes.raw(), argTypes.raw());
 		if (UNEXPECTED(paddedValueTypes.isUndef() || !requireArray(paddedValueTypes.raw(), "foreach() argument"))) return zv::Val();
 		zv::Arr callbackParameters = zv::Arr::empty();
 		for (zv::ArrayEntry entry : zv::ArrRef(paddedValueTypes.raw())) {
@@ -2075,11 +2075,11 @@ private:
 	/* the ArrayMapArgVisitor override; false = pending exception */
 	static bool applyArrayMap(zv::Val &parametersAcceptors, zval *arrayMapArgs, const Getters &getters)
 	{
-		zv::Arr callbackValueTypes = zv::Arr::empty();
-		zv::Arr callbackArrayTypes = zv::Arr::empty();
-		zv::Arr nativeCallbackValueTypes = zv::Arr::empty();
-		zv::Arr nativeCallbackArrayTypes = zv::Arr::empty();
 		if (UNEXPECTED(!requireArray(arrayMapArgs, "foreach() argument"))) return false;
+		zv::Arr argTypes = zv::Arr::empty();
+		zv::Arr nativeArgTypes = zv::Arr::empty();
+		zv::Arr unpackedList = zv::Arr::empty();
+		bool hasUnpacked = false;
 		for (zv::ArrayEntry entry : zv::ArrRef(arrayMapArgs)) {
 			zval *arg = entry.value().deref().raw();
 			zv::Val valueHold;
@@ -2093,22 +2093,32 @@ private:
 			zval *unpack = readProperty(pt_pas_arg_unpack_site, arg, PT_LC("unpack"), unpackHold);
 			if (UNEXPECTED(unpack == NULL)) return false;
 			bool isUnpack = zend_is_true(unpack);
-			if (UNEXPECTED(!arrayMapValueTypes(callbackValueTypes, callbackArrayTypes, argType.raw(), isUnpack, getters))) return false;
-			if (UNEXPECTED(!arrayMapValueTypes(nativeCallbackValueTypes, nativeCallbackArrayTypes, nativeArgType.raw(), isUnpack, getters))) return false;
+			hasUnpacked = hasUnpacked || isUnpack;
+			argTypes.push(std::move(argType));
+			nativeArgTypes.push(std::move(nativeArgType));
+			unpackedList.push(zv::Val::boolean(isUnpack));
 		}
-
-		zv::Val callbackParameters = arrayMapParameters(callbackValueTypes, callbackArrayTypes);
+		zv::Val unpacked = zv::Val(std::move(unpackedList));
+		zv::Val callbackParameters = arrayMapCallbackParameters(zv::Val(std::move(argTypes)), unpacked.raw(), hasUnpacked, getters);
 		if (UNEXPECTED(callbackParameters.isUndef())) return false;
-		zv::Val nativeCallbackParameters = arrayMapParameters(nativeCallbackValueTypes, nativeCallbackArrayTypes);
+		zv::Val nativeCallbackParameters = arrayMapCallbackParameters(zv::Val(std::move(nativeArgTypes)), unpacked.raw(), hasUnpacked, getters);
 		if (UNEXPECTED(nativeCallbackParameters.isUndef())) return false;
 
 		zv::Val acceptor, parameters;
 		if (UNEXPECTED(!firstAcceptor(parametersAcceptors, acceptor, parameters))) return false;
 		zval *firstParameter = issetIndex(Z_ARRVAL_P(parameters.raw()), 0);
-		if (firstParameter == NULL) return true;
+		// with an unknown number of arrays, the callback keeps the type from the signature
+		if (firstParameter == NULL || callbackParameters.isNull()) return true;
 		zv::Val callable = orNull(callableType(std::move(callbackParameters), pt_type_new_mixed_type()));
 		if (UNEXPECTED(callable.isUndef())) return false;
-		zv::Val nativeCallable = orNull(callableType(std::move(nativeCallbackParameters), pt_type_new_mixed_type()));
+		zv::Val nativeCallable;
+		if (!nativeCallbackParameters.isNull()) {
+			nativeCallable = orNull(callableType(std::move(nativeCallbackParameters), pt_type_new_mixed_type()));
+		} else {
+			zv::Val wrapped = wrapParameter(firstParameter);
+			if (UNEXPECTED(wrapped.isUndef())) return false;
+			nativeCallable = parameterGet(wrapped.raw(), PG_NATIVE_TYPE);
+		}
 		if (UNEXPECTED(nativeCallable.isUndef())) return false;
 		zv::Val replaced = replacedParameterAcceptors(acceptor.raw(), parameters, 0, overrideParameterType(firstParameter, callable.raw(), nativeCallable.raw()), true);
 		if (UNEXPECTED(replaced.isUndef())) return false;

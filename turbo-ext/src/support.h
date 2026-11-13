@@ -521,6 +521,8 @@ enum {
 	PT_CLASS_TYPE_NODE_DESCRIBER,
 	/* the null array_map() passes for the shorter arrays */
 	PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES,
+	/* the types of the values an unpacked arg passes */
+	PT_CLASS_UNPACKED_ARGUMENT_TYPES,
 	PT_CLASS_COUNT
 };
 

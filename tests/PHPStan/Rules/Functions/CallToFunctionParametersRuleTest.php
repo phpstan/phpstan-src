@@ -1984,6 +1984,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10527.php'], []);
 	}
 
+	public function testArrayMapUnpackedArgs(): void
+	{
+		$this->analyse([__DIR__ . '/data/array-map-unpacked-args.php'], [
+			[
+				'Parameter #1 $callback of function array_map expects (callable(1|2, 3|4): mixed)|null, Closure(string, string): string given.',
+				13,
+			],
+		]);
+	}
+
 	public function testBug10626(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-10626.php'], [

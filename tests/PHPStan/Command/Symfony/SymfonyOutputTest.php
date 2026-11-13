@@ -2,6 +2,7 @@
 
 namespace PHPStan\Command\Symfony;
 
+use Override;
 use PHPStan\Command\OutputStyle;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -30,7 +31,7 @@ final class SymfonyOutputTest extends TestCase
 			{
 			}
 
-			#[\Override]
+			#[Override]
 			public function isDecorated(): mixed
 			{
 				return $this->value;

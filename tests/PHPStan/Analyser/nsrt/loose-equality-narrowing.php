@@ -28,15 +28,16 @@ class Bar
 	 */
 	public function doFoo(mixed $mixed, int $int, float $float, string $string, bool $bool, $intOrString, $constants, Foo|int $fooOrInt, $scalar, float $floatRange, string $numericString, $intStringOrArray, array $array, Suit $suit): void
 	{
-		// mixed would only become a union with objects it says nothing about
+		// mixed would only become a union with objects it says nothing about,
+		// so it only loses null, which cannot equal the value
 		if ($mixed == 'bar') {
-			assertType('mixed', $mixed);
+			assertType('mixed~null', $mixed);
 		} else {
 			assertType("mixed~('bar'|true)", $mixed);
 		}
 
 		if ($mixed == 5) {
-			assertType('mixed', $mixed);
+			assertType('mixed~null', $mixed);
 		}
 
 		if ($mixed == NAN) {
@@ -174,20 +175,20 @@ class Bar
 function mixedStaysMixed($t, $nonEmptyMixed, array $array, $stringBoolOrNull, $objectOrString): void
 {
 	if ($t == 'a') {
-		assertType('T (function LooseEqualityNarrowing\\mixedStaysMixed(), argument)', $t);
+		assertType('T of mixed~null (function LooseEqualityNarrowing\\mixedStaysMixed(), argument)', $t);
 	}
 	if ($nonEmptyMixed == 'a') {
 		assertType("mixed~(0|0.0|''|'0'|array{}|false|null)", $nonEmptyMixed);
 	}
 	if ($array['x'] == 'a') {
-		assertType('mixed', $array['x']);
+		assertType('mixed~null', $array['x']);
 	}
 	if (in_array($array['y'], ['a', 'b'])) {
-		assertType('mixed', $array['y']);
+		assertType('mixed~null', $array['y']);
 	}
 	switch ($array['z']) {
 		case 'a':
-			assertType('mixed', $array['z']);
+			assertType('mixed~null', $array['z']);
 			break;
 	}
 

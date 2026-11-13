@@ -675,7 +675,8 @@ public:
 		if (UNEXPECTED(!ctxFalse(context, isFalse))) return zv::Val();
 		if (isFalse && instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_never_type)) return pt_specified_types_new();
 		// a mixed subject stays mixed rather than gain objects of classes like Stringable or GMP,
-		// which say nothing about the value; enum cases are precise enough to narrow to
+		// which say nothing about the value; enum cases are precise enough to narrow to.
+		// It still loses null when null cannot equal the value, so the offset or variable is set
 		if (isTrue && Z_TYPE_P(subjectType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(subjectType), pt_ce_mixed_type)) {
 			zend_long isObject = trinaryByName(type.raw(), "isObject", PT_LC("isobject"));
 			if (UNEXPECTED(isObject < 0)) return zv::Val();
@@ -690,7 +691,17 @@ public:
 				if (UNEXPECTED(objects.isUndef())) return zv::Val();
 				zend_long isEnum = trinaryByName(objects.raw(), "isEnum", PT_LC("isenum"));
 				if (UNEXPECTED(isEnum < 0)) return zv::Val();
-				if (isEnum != PT_TRI_YES) return pt_specified_types_new();
+				if (isEnum != PT_TRI_YES) {
+					zv::Val nullType = newNullType();
+					if (UNEXPECTED(nullType.isUndef())) return zv::Val();
+					zv::Val coversNull = pt_type_op(Z_OBJ_P(type.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, nullType.raw());
+					if (UNEXPECTED(coversNull.isUndef())) return zv::Val();
+					zend_long coversNullValue = pt_type_result_trinary(coversNull.raw());
+					if (UNEXPECTED(coversNullValue < 0)) return zv::Val();
+					if (coversNullValue != PT_TRI_NO) return pt_specified_types_new();
+					type = pt_type_combinator_remove(subjectType, nullType.raw());
+					if (UNEXPECTED(type.isUndef())) return zv::Val();
+				}
 			}
 		}
 

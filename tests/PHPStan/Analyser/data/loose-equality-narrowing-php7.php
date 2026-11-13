@@ -29,7 +29,7 @@ function doFoo(int $int, string $string, float $float, $mixed): void
 	}
 
 	if ($mixed == 'abc') {
-		assertType('mixed', $mixed);
+		assertType('mixed~null', $mixed);
 	}
 
 	if ($mixed == NAN) {

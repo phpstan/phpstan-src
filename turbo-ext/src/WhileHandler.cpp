@@ -294,27 +294,31 @@ public:
 		} else {
 			finalScope = std::move(backEdgeScope);
 		}
-		// the loop condition narrows the post-loop scope to its falsey branch;
-		// $finalScope (after the body ran) is a different scope than the condition's
-		// own, so reprocess the condition there rather than re-running its result.
-		// The duplicate lets subresults whose state did not change in the body
-		// answer from the final pass instead of being re-priced.
+		// the loop exits when the condition, evaluated again after the body ran,
+		// is falsey - walk it on $finalScope and take its falsey scope, so the
+		// assignments it makes (`while ($row = fetch())`) replace the body's
+		// values instead of the body's stale values being narrowed by them.
+		// The duplicate keeps this walk's results out of the final pass's storage.
 		{
-			zval *cond = ptsh::readNodeProperty(pt_wh_cond_site, stmt, PT_LC("cond"));
-			if (UNEXPECTED(cond == NULL)) return zv::Val();
-			zv::Val condHold = zv::Val::copyOf(zv::Ref(cond));
-			zv::Val duplicate = pt_expression_result_storage_duplicate(finalStorage);
-			if (UNEXPECTED(duplicate.isUndef())) return zv::Val();
-			zv::Val onDemand = pt_node_scope_resolver_process_expr_on_demand(nodeScopeResolver, condHold.raw(), finalScope.raw(), duplicate.raw());
-			if (UNEXPECTED(onDemand.isUndef())) return zv::Val();
-			zend_object *falsey = pt_type_specifier_context_create_falsey();
-			if (UNEXPECTED(falsey == NULL)) return zv::Val();
-			zval falseyContext;
-			ZVAL_OBJ(&falseyContext, falsey);
-			zv::Val specifiedTypes = pt_expression_result_get_specified_types_for_scope(onDemand.raw(), finalScope.raw(), &falseyContext);
-			if (UNEXPECTED(specifiedTypes.isUndef())) return zv::Val();
-			finalScope = pt_mutating_scope_apply_specified_types(Z_OBJ_P(finalScope.raw()), specifiedTypes.raw());
-			if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
+			zv::Val exitCondStorage = pt_expression_result_storage_duplicate(finalStorage);
+			if (UNEXPECTED(exitCondStorage.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope.raw()), exitCondStorage.raw()))) return zv::Val();
+			zv::Val falseyScope;
+			[&]() {
+				zval *cond = ptsh::readNodeProperty(pt_wh_cond_site, stmt, PT_LC("cond"));
+				if (UNEXPECTED(cond == NULL)) return;
+				zv::Val condHold = zv::Val::copyOf(zv::Ref(cond));
+				zv::Val noop = ptlh::newNoopNodeCallback();
+				if (UNEXPECTED(noop.isUndef())) return;
+				zv::Val expressionContext = pt_expression_context_create_deep(false);
+				if (UNEXPECTED(expressionContext.isUndef())) return;
+				zv::Val exitCondResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, condHold.raw(), finalScope.raw(), exitCondStorage.raw(), noop.raw(), expressionContext.raw());
+				if (UNEXPECTED(exitCondResult.isUndef())) return;
+				falseyScope = pt_expression_result_get_falsey_scope(exitCondResult.raw());
+			}();
+			pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope.raw())); });
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+			finalScope = std::move(falseyScope);
 		}
 
 		bool alwaysIterates = false;
@@ -376,7 +380,10 @@ public:
 			if (finalScope.isNull()) {
 				finalScope = zv::Val::copyOf(condScope.ref());
 			} else {
-				finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), condScope.raw());
+				// the loop either ran or exited on its first condition, so these are
+				// alternative paths like an if's branches: keep a conditional that only
+				// one path records when the other path makes it vacuously true
+				finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), condScope.raw(), true);
 				if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
 			}
 		}

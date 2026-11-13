@@ -30,6 +30,16 @@ class InvalidKeyInArrayDimFetchRuleConfigPhpTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15729(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15729.php'], [
+			[
+				'Possibly invalid array key type string|null.',
+				14,
+			],
+		]);
+	}
+
 	public static function getAdditionalConfigFiles(): array
 	{
 		return [

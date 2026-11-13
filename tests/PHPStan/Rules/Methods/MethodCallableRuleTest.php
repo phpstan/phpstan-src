@@ -148,6 +148,10 @@ class MethodCallableRuleTest extends RuleTestCase
 				'Variadic placeholder may only appear once.',
 				78,
 			],
+			[
+				'Cannot combine nullsafe operator with Closure creation.',
+				80,
+			],
 		]);
 	}
 

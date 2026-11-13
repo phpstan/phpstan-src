@@ -569,6 +569,10 @@ class CallCallablesRuleTest extends RuleTestCase
 				'Unknown parameter $x in call to closure.',
 				93,
 			],
+			[
+				'Parameter #1 $a of closure is passed by reference, so it expects variables only.',
+				105,
+			],
 		]);
 	}
 

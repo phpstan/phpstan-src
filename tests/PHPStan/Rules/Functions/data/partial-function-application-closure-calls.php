@@ -93,3 +93,16 @@ function magicMethods(Magic $magic): void
 	$magic->magic(?, 1)(x: 'a');
 	$magic->magic(?, ?)(arguments0: 'a', arguments1: 1);
 }
+
+function byRef(int &$a, string $b): void
+{
+}
+
+function byRefPlaceholder(): void
+{
+	// the closure keeps the by-ref parameter its placeholder stands for
+	$f = byRef(?, ?);
+	$f(1, 'b');
+	$i = 1;
+	$f($i, 'b');
+}

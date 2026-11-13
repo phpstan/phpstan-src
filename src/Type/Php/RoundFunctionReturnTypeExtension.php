@@ -54,7 +54,8 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 
 		$hasStricterRoundFunctions = $scope->getPhpVersion()->hasStricterRoundFunctions();
 
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			// PHP 8 fatals with a missing parameter, PHP 7 returns null.
 			if ($hasStricterRoundFunctions->yes()) {
 				return new NeverType(true);
@@ -63,7 +64,7 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 			return new NullType();
 		}
 
-		$firstArgType = $scope->getType($functionCall->getArgs()[0]->value);
+		$firstArgType = $scope->getType($args[0]->value);
 
 		if ($firstArgType instanceof MixedType) {
 			return $defaultReturnType;
@@ -102,8 +103,8 @@ final class RoundFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		$functionName = $functionReflection->getName();
-		if ($functionName === 'round' && isset($functionCall->getArgs()[1])) {
-			$precisionType = $scope->getType($functionCall->getArgs()[1]->value);
+		if ($functionName === 'round' && isset($args[1])) {
+			$precisionType = $scope->getType($args[1]->value);
 			if ($precisionType->getConstantScalarValues() !== [0]) {
 				// another precision keeps the sign, or rounds to zero
 				return $this->mapFloatBounds($firstArgType->toFloat(), static fn (float $value): float => $value < 0.0 ? -INF : 0.0, static fn (float $value): float => $value > 0.0 ? INF : 0.0);

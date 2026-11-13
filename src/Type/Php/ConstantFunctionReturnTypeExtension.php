@@ -31,11 +31,12 @@ final class ConstantFunctionReturnTypeExtension implements DynamicFunctionReturn
 		Scope $scope,
 	): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$nameType = $scope->getType($functionCall->getArgs()[0]->value);
+		$nameType = $scope->getType($args[0]->value);
 
 		$results = [];
 		foreach ($nameType->getConstantStrings() as $constantName) {

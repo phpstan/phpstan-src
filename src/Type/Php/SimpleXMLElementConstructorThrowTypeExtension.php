@@ -29,11 +29,12 @@ final class SimpleXMLElementConstructorThrowTypeExtension implements DynamicStat
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) === 0) {
+		$args = $methodCall->getArgs();
+		if (count($args) === 0) {
 			return $methodReflection->getThrowType();
 		}
 
-		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
+		$valueType = $scope->getType($args[0]->value);
 		$constantStrings = $valueType->getConstantStrings();
 
 		$internalErrorsOld = libxml_use_internal_errors(true);

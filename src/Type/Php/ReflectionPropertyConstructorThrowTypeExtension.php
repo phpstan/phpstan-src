@@ -29,12 +29,13 @@ final class ReflectionPropertyConstructorThrowTypeExtension implements DynamicSt
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) < 2) {
+		$args = $methodCall->getArgs();
+		if (count($args) < 2) {
 			return $methodReflection->getThrowType();
 		}
 
-		$valueType = $scope->getType($methodCall->getArgs()[0]->value);
-		$propertyType = $scope->getType($methodCall->getArgs()[1]->value);
+		$valueType = $scope->getType($args[0]->value);
+		$propertyType = $scope->getType($args[1]->value);
 		foreach ($valueType->getConstantStrings() as $constantString) {
 			if (!$this->reflectionProvider->hasClass($constantString->getValue())) {
 				return $methodReflection->getThrowType();

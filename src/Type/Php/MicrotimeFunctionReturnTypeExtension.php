@@ -32,11 +32,12 @@ final class MicrotimeFunctionReturnTypeExtension implements DynamicFunctionRetur
 		$stringType = new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]);
 		$floatType = FloatRangeType::fromInterval(0.0, INF);
 
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return $stringType;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		$isTrueType = $argType->isTrue();
 		$isFalseType = $argType->isFalse();
 		$compareTypes = $isTrueType->compareTo($isFalseType);

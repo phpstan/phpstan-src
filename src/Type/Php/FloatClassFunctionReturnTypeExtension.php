@@ -23,11 +23,12 @@ final class FloatClassFunctionReturnTypeExtension implements DynamicFunctionRetu
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$ruledOutTypes = FloatClassFunctionTypeSpecifyingExtension::getRuledOutTypes($functionReflection->getName());
-		if (!isset($functionCall->getArgs()[0]) || $ruledOutTypes === null) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0]) || $ruledOutTypes === null) {
 			return null;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		if ($ruledOutTypes[0]->isSuperTypeOf($argType)->yes()) {
 			return new ConstantBooleanType(false);
 		}

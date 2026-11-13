@@ -30,12 +30,13 @@ final class DateFormatFunctionReturnTypeExtension implements DynamicFunctionRetu
 		Scope $scope,
 	): Type
 	{
-		if (count($functionCall->getArgs()) < 2) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 2) {
 			return new StringType();
 		}
 
 		return $this->dateFunctionReturnTypeHelper->getTypeFromFormatType(
-			$scope->getType($functionCall->getArgs()[1]->value),
+			$scope->getType($args[1]->value),
 			true,
 		);
 	}

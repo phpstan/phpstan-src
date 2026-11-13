@@ -79,7 +79,7 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			$constantParts = $this->getFormatConstantParts(
 				$constantString->getValue(),
 				$functionReflection,
-				$functionCall,
+				$args,
 				$scope,
 			);
 			if ($constantParts !== null) {
@@ -251,15 +251,16 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 
 	/**
 	 * Detect constant strings in the format which neither depend on placeholders nor on given value arguments.
+	 *
+	 * @param list<Arg> $args
 	 */
 	private function getFormatConstantParts(
 		string $format,
 		FunctionReflection $functionReflection,
-		FuncCall $functionCall,
+		array $args,
 		Scope $scope,
 	): ?ConstantStringType
 	{
-		$args = $functionCall->getArgs();
 		if ($functionReflection->getName() === 'sprintf') {
 			$valuesCount = count($args) - 1;
 		} elseif (

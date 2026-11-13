@@ -45,15 +45,16 @@ final class CurlGetinfoFunctionDynamicReturnTypeExtension implements DynamicFunc
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		if (count($functionCall->getArgs()) <= 1) {
+		if (count($args) <= 1) {
 			return $this->createAllComponentsReturnType();
 		}
 
-		$componentType = $scope->getType($functionCall->getArgs()[1]->value);
+		$componentType = $scope->getType($args[1]->value);
 		if (!$componentType->isNull()->no()) {
 			return $this->createAllComponentsReturnType();
 		}

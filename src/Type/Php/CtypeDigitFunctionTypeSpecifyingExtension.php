@@ -36,14 +36,15 @@ final class CtypeDigitFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes
 	{
-		if (!isset($node->getArgs()[0])) {
+		$args = $node->getArgs();
+		if (!isset($args[0])) {
 			return new SpecifiedTypes();
 		}
 		if ($context->null()) {
 			throw new ShouldNotHappenException();
 		}
 
-		$exprArg = $node->getArgs()[0]->value;
+		$exprArg = $args[0]->value;
 		if ($context->true() && $scope->getType($exprArg)->isNumericString()->yes()) {
 			return new SpecifiedTypes();
 		}

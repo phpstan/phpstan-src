@@ -42,7 +42,8 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 			$ranges[] = IntegerRangeType::fromInterval($minCodePoint, $maxCodePoint);
 		}
 
-		if (!isset($functionCall->getArgs()[0])) {
+		$args = $functionCall->getArgs();
+		if (!isset($args[0])) {
 			return TypeCombinator::union(
 				new ConstantStringType('none'),
 				new ConstantStringType('long'),
@@ -51,7 +52,7 @@ final class MbSubstituteCharacterDynamicReturnTypeExtension implements DynamicFu
 			);
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		$isString = $argType->isString();
 		$isNull = $argType->isNull();
 		$isInteger = $argType->isInteger();

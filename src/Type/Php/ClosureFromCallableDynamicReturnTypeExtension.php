@@ -31,11 +31,12 @@ final class ClosureFromCallableDynamicReturnTypeExtension implements DynamicStat
 
 	public function getTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
 	{
-		if (!isset($methodCall->getArgs()[0])) {
+		$args = $methodCall->getArgs();
+		if (!isset($args[0])) {
 			return null;
 		}
 
-		$callableType = $scope->getType($methodCall->getArgs()[0]->value);
+		$callableType = $scope->getType($args[0]->value);
 		if ($callableType->isCallable()->no()) {
 			return new ErrorType();
 		}

@@ -40,13 +40,14 @@ final class ReflectionGetAttributesMethodReturnTypeExtension implements DynamicM
 
 	public function getTypeFromMethodCall(MethodReflection $methodReflection, MethodCall $methodCall, Scope $scope): ?Type
 	{
-		if (count($methodCall->getArgs()) === 0) {
+		$args = $methodCall->getArgs();
+		if (count($args) === 0) {
 			return null;
 		}
-		$argType = $scope->getType($methodCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		$classType = $argType->getClassStringObjectType();
 
-		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $methodCall->getArgs(), $methodReflection->getVariants());
+		$variant = ParametersAcceptorSelector::selectFromArgs($scope, $args, $methodReflection->getVariants());
 		$valueType = $this->resolveReflectionAttributeType($variant->getReturnType(), $classType);
 
 		return new IntersectionType([new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $valueType), new AccessoryArrayListType()]);

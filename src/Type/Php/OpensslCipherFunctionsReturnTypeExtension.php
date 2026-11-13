@@ -39,11 +39,12 @@ final class OpensslCipherFunctionsReturnTypeExtension implements DynamicFunction
 			return null;
 		}
 
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$strings = $scope->getType($functionCall->getArgs()[0]->value)->getConstantStrings();
+		$strings = $scope->getType($args[0]->value)->getConstantStrings();
 		$results = array_unique(array_map(fn (ConstantStringType $algorithm): bool => $this->cipherMethodsProvider->isSupportedCipherMethod($algorithm->getValue(), $scope), $strings));
 
 		if (count($results) !== 1) {
@@ -52,7 +53,7 @@ final class OpensslCipherFunctionsReturnTypeExtension implements DynamicFunction
 
 		$returnType = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
-			$functionCall->getArgs(),
+			$args,
 			$functionReflection->getVariants(),
 		)->getReturnType();
 

@@ -27,11 +27,12 @@ final class GetDebugTypeFunctionReturnTypeExtension implements DynamicFunctionRe
 
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
-		if (count($functionCall->getArgs()) < 1) {
+		$args = $functionCall->getArgs();
+		if (count($args) < 1) {
 			return null;
 		}
 
-		$argType = $scope->getType($functionCall->getArgs()[0]->value);
+		$argType = $scope->getType($args[0]->value);
 		if ($argType instanceof UnionType) {
 			return TypeCombinator::union(...array_map(static fn (Type $type) => self::resolveOneType($type), $argType->getTypes()));
 		}

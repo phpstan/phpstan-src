@@ -414,4 +414,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function warnsOnContinueTargetingSwitch(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(70300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

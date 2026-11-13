@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 1.710B
+ * cycles: 1.931B
+ * memory: 41.01MiB
+ */
+
 namespace BenchBigConstantStringUnion;
 
 /**

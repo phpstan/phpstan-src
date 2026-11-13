@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 949.9M
+ * cycles: 1.182B
+ * memory: 38.39MiB
+ */
+
 namespace Bug14462;
 
 /** @return array{menu: array<non-empty-string, bool>} */

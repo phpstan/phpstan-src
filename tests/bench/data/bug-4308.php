@@ -1,5 +1,11 @@
 <?php // lint >= 8.0
 
+/*
+ * instructions: 27.17M
+ * cycles: 39.59M
+ * memory: 35.87MiB
+ */
+
 namespace Bug4308;
 
 class Test

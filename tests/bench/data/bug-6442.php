@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 36.17M
+ * cycles: 53.17M
+ * memory: 36.85MiB
+ */
+
 namespace Bug6442;
 
 trait T

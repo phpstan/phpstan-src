@@ -1,5 +1,11 @@
 <?php // lint >= 8.0
 
+/*
+ * instructions: 3.264B
+ * cycles: 4.504B
+ * memory: 104.9MiB
+ */
+
 namespace ImpureCallColumnsBench;
 
 class Repro

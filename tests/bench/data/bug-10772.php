@@ -1,5 +1,11 @@
 <?php // lint >= 8.1
 
+/*
+ * instructions: 4.344B
+ * cycles: 5.682B
+ * memory: 94.20MiB
+ */
+
 namespace Bug10772;
 
 use PrinsFrank\Standards\Country\CountryAlpha2;

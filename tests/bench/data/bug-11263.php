@@ -1,5 +1,11 @@
 <?php // lint >= 8.1
 
+/*
+ * instructions: 1.927B
+ * cycles: 2.275B
+ * memory: 42.12MiB
+ */
+
 declare(strict_types = 1);
 
 namespace Bug11263;

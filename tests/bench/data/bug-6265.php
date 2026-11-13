@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 630.3M
+ * cycles: 828.9M
+ * memory: 39.42MiB
+ */
+
 namespace Bug6265;
 
 class swThreads

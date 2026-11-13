@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 36.44M
+ * cycles: 50.22M
+ * memory: 36.06MiB
+ */
+
 namespace BenchImplodeOptionalKeysBlowup;
 
 /**

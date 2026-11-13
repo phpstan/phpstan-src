@@ -1,4 +1,10 @@
 <?php // lint >= 8.0
+
+/*
+ * instructions: 3.496B
+ * cycles: 4.608B
+ * memory: 66.92MiB
+ */
 declare(strict_types = 1);
 
 namespace BenchHashKeyLookup;

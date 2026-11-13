@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 146.4M
+ * cycles: 192.5M
+ * memory: 37.27MiB
+ */
+
 namespace Bug14475Bench;
 
 final class Foo

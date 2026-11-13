@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 5.262B
+ * cycles: 6.426B
+ * memory: 51.46MiB
+ */
+
 namespace Bug14624;
 
 final class BenchDb extends \mysqli

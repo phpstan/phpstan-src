@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/*
+ * instructions: 6.459B
+ * cycles: 8.609B
+ * memory: 113.7MiB
+ */
+
 namespace Bug8146bNoError;
 
 class X{}

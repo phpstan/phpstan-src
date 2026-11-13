@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 104.0M
+ * cycles: 143.1M
+ * memory: 37.20MiB
+ */
+
 namespace Bug1447;
 
 class Tst {

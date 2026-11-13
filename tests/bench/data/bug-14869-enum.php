@@ -1,5 +1,11 @@
 <?php // lint >= 8.1
 
+/*
+ * instructions: 1.622B
+ * cycles: 1.942B
+ * memory: 52.35MiB
+ */
+
 namespace Bug14869Enum;
 
 /**

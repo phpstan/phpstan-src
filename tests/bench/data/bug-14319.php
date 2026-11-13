@@ -1,5 +1,11 @@
 <?php // lint >= 8.0
 
+/*
+ * instructions: 338.9M
+ * cycles: 432.9M
+ * memory: 37.44MiB
+ */
+
 namespace BenchBug14319;
 
 function foo(string $a, int $b): array|object

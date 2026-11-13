@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 227.6M
+ * cycles: 300.9M
+ * memory: 38.50MiB
+ */
+
 namespace Bug6936;
 
 class clxAuftragController

@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 8.887B
+ * cycles: 9.937B
+ * memory: 48.18MiB
+ */
+
 namespace BenchPhpDocInheritanceSpeedup;
 
 /**

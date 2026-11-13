@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 4.336B
+ * cycles: 5.332B
+ * memory: 77.36MiB
+ */
+
 namespace BenchFiniteTypesOptionalKeysCount;
 
 /**

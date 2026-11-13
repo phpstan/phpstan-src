@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 969.3M
+ * cycles: 1.251B
+ * memory: 36.70MiB
+ */
+
 namespace Bug14590;
 
 function provider(): array {

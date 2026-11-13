@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 44.33M
+ * cycles: 65.52M
+ * memory: 36.39MiB
+ */
+
 namespace Bug12787;
 
 class HelloWorld

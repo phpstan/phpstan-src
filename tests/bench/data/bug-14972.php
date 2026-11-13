@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 9.444B
+ * cycles: 11.14B
+ * memory: 135.8MiB
+ */
+
 namespace Bug14972Bench;
 
 function h(array $a): void {

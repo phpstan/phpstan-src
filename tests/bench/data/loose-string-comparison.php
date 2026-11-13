@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 10.22B
+ * cycles: 12.25B
+ * memory: 85.98MiB
+ */
+
 namespace LooseStringComparison;
 
 /**

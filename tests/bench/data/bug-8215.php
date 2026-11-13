@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 5.620B
+ * cycles: 7.464B
+ * memory: 130.3MiB
+ */
+
 namespace Bug8215;
 
 const TEST_ARRAY_1 = [

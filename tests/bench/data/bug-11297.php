@@ -1,5 +1,11 @@
 <?php // lint >= 8.1
 
+/*
+ * instructions: 9.284B
+ * cycles: 10.27B
+ * memory: 65.86MiB
+ */
+
 namespace Bug11297;
 
 class ClassA {

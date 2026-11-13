@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 3.331B
+ * cycles: 3.466B
+ * memory: 40.81MiB
+ */
+
 namespace BenchArrayValuesOfLiteralKeyedMap;
 
 final class Country

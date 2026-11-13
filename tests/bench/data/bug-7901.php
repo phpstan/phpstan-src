@@ -1,4 +1,10 @@
 <?php
+
+/*
+ * instructions: 5.143B
+ * cycles: 6.707B
+ * memory: 89.20MiB
+ */
 namespace Bug7901;
 
 class MailAddressList

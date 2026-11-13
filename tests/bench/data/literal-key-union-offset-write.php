@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 10.71B
+ * cycles: 14.65B
+ * memory: 217.0MiB
+ */
+
 namespace BenchLiteralKeyUnionOffsetWrite;
 
 /**

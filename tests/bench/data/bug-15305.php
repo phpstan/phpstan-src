@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 3.140B
+ * cycles: 3.928B
+ * memory: 37.54MiB
+ */
+
 namespace Bug15305Bench;
 
 /**

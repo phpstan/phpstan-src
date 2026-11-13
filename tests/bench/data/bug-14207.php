@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 447.1M
+ * cycles: 571.8M
+ * memory: 41.23MiB
+ */
+
 namespace Bug14207;
 
 use function assert;

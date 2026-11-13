@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 367.2M
+ * cycles: 461.0M
+ * memory: 39.43MiB
+ */
+
 namespace ProcessCalledMethodInfiniteLoop;
 
 use function PHPStan\Testing\assertType;

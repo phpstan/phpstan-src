@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 7.279B
+ * cycles: 9.257B
+ * memory: 43.86MiB
+ */
+
 namespace Bug14674;
 
 use PHPUnit\Framework\Attributes\DataProvider;

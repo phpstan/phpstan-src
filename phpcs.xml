@@ -12,6 +12,7 @@
 	<file>build</file>
 	<file>src</file>
 	<file>tests</file>
+	<file>tally.php</file>
 	<file>compiler/src</file>
 	<file>compiler/tests</file>
 	<file>apigen/src</file>

@@ -8513,6 +8513,9 @@ public:
 				if (isCall) break;
 			}
 			if (!isCall) continue;
+			bool narrowable;
+			if (UNEXPECTED(!hasNarrowableArgument(expr.ref().asObject(), narrowable))) return zv::Val();
+			if (!narrowable) continue;
 			candidates.separate();
 			Z_TRY_ADDREF_P(holder);
 			if (key != NULL) {
@@ -8522,6 +8525,47 @@ public:
 			}
 		}
 		return zv::Val(std::move(candidates));
+	}
+
+	/* private static (twin hasNarrowableArgument()): an Arg in $call->args
+	 * whose value is not a Scalar other than an InterpolatedString, a
+	 * ConstFetch, or a ClassConstFetch of a Name and an Identifier; false =
+	 * pending exception */
+	[[nodiscard]] static bool hasNarrowableArgument(zend_object *call, bool &out)
+	{
+		out = false;
+		zv::Ref args = nodeProp(call, PT_LC("args"));
+		if (UNEXPECTED(args.raw() == NULL)) return false;
+		for (auto entry : zv::ArrRef(args.deref().raw())) {
+			zv::Ref arg = entry.value().deref();
+			bool is;
+			if (UNEXPECTED(!isInstance(arg, PT_CLASS_ARG, is))) return false;
+			if (!is) continue;
+			zv::Ref valueSlot = nodeProp(arg.asObject(), PT_LC("value"));
+			if (UNEXPECTED(valueSlot.raw() == NULL)) return false;
+			zv::Ref value = valueSlot.deref();
+			if (UNEXPECTED(!isInstance(value, PT_CLASS_SCALAR, is))) return false;
+			if (is) {
+				if (UNEXPECTED(!isInstance(value, PT_CLASS_INTERPOLATED_STRING, is))) return false;
+				if (!is) continue;
+			} else {
+				if (UNEXPECTED(!isInstance(value, PT_CLASS_CONST_FETCH, is))) return false;
+				if (is) continue;
+				if (UNEXPECTED(!isInstance(value, PT_CLASS_CLASS_CONST_FETCH, is))) return false;
+				if (is) {
+					zv::Ref classSlot = nodeProp(value.asObject(), PT_LC("class"));
+					if (UNEXPECTED(classSlot.raw() == NULL)) return false;
+					bool classIsName;
+					if (UNEXPECTED(!isInstance(classSlot.deref(), PT_CLASS_NAME, classIsName))) return false;
+					bool nameIsIdentifier = false;
+					if (classIsName && UNEXPECTED(!nodeNameIs(value.asObject(), PT_CLASS_IDENTIFIER, nameIsIdentifier))) return false;
+					if (nameIsIdentifier) continue;
+				}
+			}
+			out = true;
+			return true;
+		}
+		return true;
 	}
 
 	/* private (twin findUninformativeMergedCalls(), called on the merged scope

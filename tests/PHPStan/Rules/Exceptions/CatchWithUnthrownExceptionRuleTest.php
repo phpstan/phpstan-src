@@ -1626,55 +1626,7 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			],
 			[
 				'Dead catch - ValueError is never thrown in the try block.',
-				41,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				47,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				53,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				60,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				67,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				74,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				81,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
 				88,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				95,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				102,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				109,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				115,
-			],
-			[
-				'Dead catch - ValueError is never thrown in the try block.',
-				128,
 			],
 			[
 				'Dead catch - ValueError is never thrown in the try block.',

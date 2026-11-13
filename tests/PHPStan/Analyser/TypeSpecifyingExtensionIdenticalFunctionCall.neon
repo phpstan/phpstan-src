@@ -1,0 +1,5 @@
+services:
+	-
+		class: PHPStan\Tests\MatchesIntFunctionTypeSpecifyingExtension
+		tags:
+			- phpstan.typeSpecifier.functionTypeSpecifyingExtension

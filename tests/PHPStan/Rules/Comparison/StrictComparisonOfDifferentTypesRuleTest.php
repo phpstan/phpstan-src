@@ -1287,4 +1287,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMinMaxNan(): void
+	{
+		$this->analyse([__DIR__ . '/data/minmax-nan.php'], []);
+	}
+
 }

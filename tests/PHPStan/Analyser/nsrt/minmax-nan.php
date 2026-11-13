@@ -94,6 +94,16 @@ class Foo
 		assertType('1', min(1, 2));
 	}
 
+	public function intOrFloat(int|float $n, int $i): void
+	{
+		assertType('NAN|float<min, 100.0>|int<min, 100>', min($n, 100));
+		assertType('NAN|float<min, 100.0>|int<min, 100>', min(100, $n));
+		assertType('NAN|float<100.0, max>|int<100, max>', max($n, 100));
+		assertType('NAN|float<100.00000000000001, max>|int<100, max>', max(100, $n));
+		assertType('float|int', min($n, $i));
+		assertType('float|int', min($i, $n));
+	}
+
 	public function callables(float $f): void
 	{
 		assertType('NAN|float<0.0, max>', call_user_func('max', 0.0, $f));

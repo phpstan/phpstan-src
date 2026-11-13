@@ -351,7 +351,79 @@ final class PartialFunctionApplicationParameters
 			return $fitting[0];
 		}
 
+		if (count($fitting) === 0) {
+			$closestVariant = self::selectVariantClosestToArgumentsCount($args, $variants);
+			if ($closestVariant !== null) {
+				return $closestVariant;
+			}
+		}
+
 		return ParametersAcceptorSelector::combineAcceptors(count($fitting) > 0 ? $fitting : $variants);
+	}
+
+	/**
+	 * Combining the variants () and ($min, $max) of mt_rand() would accept mt_rand(?),
+	 * so like a call, a count of positional arguments that the combined variants
+	 * accept but no variant does is checked against the variant closest to it.
+	 *
+	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
+	 * @param list<ParametersAcceptor> $variants
+	 */
+	private static function selectVariantClosestToArgumentsCount(array $args, array $variants): ?ParametersAcceptor
+	{
+		$argsCount = 0;
+		$hasVariadicPlaceholder = false;
+		foreach ($args as $arg) {
+			if ($hasVariadicPlaceholder || ($arg instanceof Arg && $arg->unpack) || (!$arg instanceof VariadicPlaceholder && $arg->name !== null)) {
+				return null;
+			}
+			if ($arg instanceof VariadicPlaceholder) {
+				$hasVariadicPlaceholder = true;
+				continue;
+			}
+			$argsCount++;
+		}
+
+		$closestVariant = null;
+		$closestDistance = null;
+		$combinedMinCount = null;
+		$combinedMaxCount = 0;
+		foreach ($variants as $variant) {
+			$minCount = 0;
+			foreach ($variant->getParameters() as $parameter) {
+				if ($parameter->isOptional()) {
+					continue;
+				}
+				$minCount++;
+			}
+			$maxCount = $variant->isVariadic() ? null : count($variant->getParameters());
+			$combinedMinCount = min($combinedMinCount ?? $minCount, $minCount);
+			$combinedMaxCount = $maxCount === null || $combinedMaxCount === null ? null : max($combinedMaxCount, $maxCount);
+
+			// the variadic placeholder fills in the parameters left
+			$isInsufficient = !$hasVariadicPlaceholder && $argsCount < $minCount;
+			if (!$isInsufficient && ($maxCount === null || $argsCount <= $maxCount)) {
+				// the count fits, the arguments do not for another reason
+				return null;
+			}
+
+			$distance = $isInsufficient ? $minCount - $argsCount : $argsCount - $maxCount;
+			if ($closestDistance !== null && ($distance > $closestDistance || ($distance === $closestDistance && !$isInsufficient))) {
+				continue;
+			}
+
+			$closestVariant = $variant;
+			$closestDistance = $distance;
+		}
+
+		if (
+			(!$hasVariadicPlaceholder && $argsCount < $combinedMinCount)
+			|| ($combinedMaxCount !== null && $argsCount > $combinedMaxCount)
+		) {
+			return null;
+		}
+
+		return $closestVariant;
 	}
 
 	private static function required(ParameterReflection $parameter, string $name): ParameterReflection

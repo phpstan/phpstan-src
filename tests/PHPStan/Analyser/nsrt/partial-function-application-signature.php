@@ -152,6 +152,7 @@ function functions(): void
 	assertType('static-Closure(string): (non-empty-string|false)', strtok(?));
 	assertType('static-Closure(string, string): (non-empty-string|false)', strtok(?, ?));
 	assertType('static-Closure(string): int<0, max>', strlen(?));
+	// PHP creates it from the declared mt_rand(int $min = UNKNOWN, int $max = UNKNOWN), calling it throws
 	assertType('Closure', mt_rand(?));
 
 	// templates

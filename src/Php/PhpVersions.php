@@ -434,4 +434,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function deprecatesMbstringPseudoEncodings(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

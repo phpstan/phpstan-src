@@ -872,8 +872,7 @@ final class IdenticalNarrowingHelper
 			return false;
 		}
 
-		// f(...) === 1 is the call's own truthy narrowing when 1 is its only truthy result
-		// - the type-specifying extensions narrow arguments such as the by-ref \$matches
+		// f(...) === 1 narrows like the truthy call when 1 is its only truthy result
 		if (
 			$context->true()
 			&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()

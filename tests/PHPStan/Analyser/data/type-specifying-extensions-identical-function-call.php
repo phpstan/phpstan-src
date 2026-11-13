@@ -74,3 +74,33 @@ function otherConstants(mixed $value): void
 		assertType('mixed', $value);
 	}
 }
+
+function constantsIncludingOne(mixed $value, bool $flag): void
+{
+	$oneOrTwo = $flag ? 1 : 2;
+	if (matchesInt($value) === $oneOrTwo) {
+		assertType('mixed', $value);
+	}
+	if (matchesInt($value) == $oneOrTwo) {
+		assertType('mixed', $value);
+	}
+}
+
+/**
+ * @return 0|1
+ * @phpstan-assert-if-true int $value
+ */
+function isIntish(mixed $value): int
+{
+	return is_int($value) ? 1 : 0;
+}
+
+function assertIfTrue(mixed $value): void
+{
+	if (isIntish($value) === 1) {
+		assertType('int', $value);
+	}
+	if (isIntish($value) == 1) {
+		assertType('int', $value);
+	}
+}

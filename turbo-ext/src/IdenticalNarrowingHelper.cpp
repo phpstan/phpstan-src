@@ -367,6 +367,28 @@ zv::Val constantStringValue(zval *constantString)
 	return true;
 }
 
+/* the twin's isOnlyTruthyResultOne(): 1 is among $callType's results and
+ * removing it leaves only falsy ones; false = pending exception */
+[[nodiscard]] bool isOnlyTruthyResultOne(zval *callType, bool &out)
+{
+	out = false;
+	zv::Val one = newConstantInteger(1);
+	if (UNEXPECTED(one.isUndef())) return false;
+	zv::Val superType = pt_type_op(Z_OBJ_P(one.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, callType);
+	if (UNEXPECTED(superType.isUndef())) return false;
+	zend_long superValue = pt_type_result_trinary(superType.raw());
+	if (UNEXPECTED(superValue < 0)) return false;
+	if (superValue == PT_TRI_NO) return true;
+	zv::Val remaining = pt_type_combinator_remove(callType, one.raw());
+	if (UNEXPECTED(remaining.isUndef())) return false;
+	zv::Val remainingBool = typeCall(remaining.raw(), "toBoolean", PT_LC("toboolean"));
+	if (UNEXPECTED(remainingBool.isUndef())) return false;
+	zend_long isFalse = PT_INH_IS_FALSE(remainingBool.raw());
+	if (UNEXPECTED(isFalse < 0)) return false;
+	out = isFalse == PT_TRI_YES;
+	return true;
+}
+
 /* IntegerRangeType::fromInterval($min, $max)->isSuperTypeOf($type)->yes() */
 [[nodiscard]] bool rangeContains(phpstanturbo::NullableLong min, phpstanturbo::NullableLong max, zval *type, bool &out)
 {
@@ -1372,10 +1394,16 @@ private:
 				}
 				bool isTrue;
 				if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-				if (isTrue && funcName != NULL && lowerNameIs(funcName, "preg_match")) {
+				if (isTrue) {
 					bool one;
 					if (UNEXPECTED(!constantIntegerContains(1, constantType, one))) return zv::Val();
-					if (one) return specifyIdentical(nodeScopeResolver, left, right, leftResult, rightResult, context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback);
+					bool onlyTruthyOne = false;
+					if (one) {
+						zv::Val callType = typeOnScope(subjectResult, evaluationScope);
+						if (UNEXPECTED(callType.isUndef())) return zv::Val();
+						if (UNEXPECTED(!isOnlyTruthyResultOne(callType.raw(), onlyTruthyOne))) return zv::Val();
+					}
+					if (onlyTruthyOne) return specifyIdentical(nodeScopeResolver, left, right, leftResult, rightResult, context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback);
 				}
 			}
 		}
@@ -1437,17 +1465,19 @@ private:
 		zend_string *name = identifierString(nameOf(call));
 		if (UNEXPECTED(name == NULL)) return zv::Val::boolean(false);
 
-		// preg_match(...) === 1 is the call's own truthy narrowing
-		if (lowerNameIs(name, "preg_match")) {
-			bool isTrue;
-			if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-			if (isTrue) {
-				bool one;
-				if (UNEXPECTED(!constantIntegerContains(1, constantType, one))) return zv::Val();
-				if (one) return pt_expression_result_get_specified_types_for_scope(subjectResult, evaluationScope, context);
+		// f(...) === 1 narrows like the truthy call when 1 is its only truthy result
+		bool isTrue;
+		if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
+		if (isTrue) {
+			bool one;
+			if (UNEXPECTED(!constantIntegerContains(1, constantType, one))) return zv::Val();
+			if (one) {
+				zv::Val callType = typeOnScope(subjectResult, evaluationScope);
+				if (UNEXPECTED(callType.isUndef())) return zv::Val();
+				bool onlyTruthyOne;
+				if (UNEXPECTED(!isOnlyTruthyResultOne(callType.raw(), onlyTruthyOne))) return zv::Val();
+				if (onlyTruthyOne) return pt_expression_result_get_specified_types_for_scope(subjectResult, evaluationScope, context);
 			}
-
-			// other constants and contexts only pin the call below
 		}
 
 		// a trimmed string that is not '' was a non-empty string already

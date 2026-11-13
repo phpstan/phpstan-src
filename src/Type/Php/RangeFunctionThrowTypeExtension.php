@@ -9,8 +9,10 @@ use PHPStan\Reflection\FunctionReflection;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use ValueError;
 use function count;
 use function is_float;
 use function is_int;
@@ -33,7 +35,7 @@ final class RangeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 		return $functionReflection->getName() === 'range';
 	}
 
-	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
+	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): Type
 	{
 		// PHP 7 reported these with a warning and a false return value
 		$phpVersions = $scope->getPhpVersion();
@@ -44,19 +46,19 @@ final class RangeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 		$args = $funcCall->getArgs();
 		foreach ($args as $arg) {
 			if ($arg->unpack || $arg->name !== null) {
-				return $functionReflection->getThrowType();
+				return self::getDeclaredThrowType($functionReflection);
 			}
 		}
 
 		if (count($args) < 2) {
-			return $functionReflection->getThrowType();
+			return self::getDeclaredThrowType($functionReflection);
 		}
 
 		$starts = self::getConstantValues($scope->getNativeType($args[0]->value), true);
 		$ends = self::getConstantValues($scope->getNativeType($args[1]->value), true);
 		$steps = count($args) >= 3 ? self::getConstantValues($scope->getNativeType($args[2]->value), false) : [1];
 		if ($starts === null || $ends === null || $steps === null) {
-			return $functionReflection->getThrowType();
+			return self::getDeclaredThrowType($functionReflection);
 		}
 
 		$hasStricterRange = $phpVersions->hasStricterRangeFunction();
@@ -64,13 +66,22 @@ final class RangeFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 			foreach ($ends as $end) {
 				foreach ($steps as $step) {
 					if (self::mightThrow($hasStricterRange, $start, $end, $step)) {
-						return $functionReflection->getThrowType();
+						return self::getDeclaredThrowType($functionReflection);
 					}
 				}
 			}
 		}
 
 		return new VoidType();
+	}
+
+	/**
+	 * The reflection of a PHP version range that starts before PHP 8 has no @throws,
+	 * but range() throws on the PHP 8 versions in it.
+	 */
+	private static function getDeclaredThrowType(FunctionReflection $functionReflection): Type
+	{
+		return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 	}
 
 	/**

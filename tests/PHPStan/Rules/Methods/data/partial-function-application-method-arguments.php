@@ -73,8 +73,9 @@ function magicMethods(Magic $magic): void
 	Magic::staticMagic(?, y: ?);
 }
 
-function variadicPlaceholderPlacements(Foo $foo): void
+function variadicPlaceholderPlacements(Foo $foo, ?Foo $nullableFoo): void
 {
 	$foo->doFoo(?, ..., ...);
 	Foo::doStatic(?, ..., ...);
+	$nullableFoo?->doFoo(1, ?);
 }

@@ -60,6 +60,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Properties/data/intersection-types.php \
 		--exclude tests/PHPStan/Rules/Classes/data/first-class-instantiation-callable.php \
 		--exclude tests/PHPStan/Rules/Classes/data/instantiation-callable.php \
+		--exclude tests/PHPStan/Rules/Classes/data/instantiation-partial-function-application.php \
 		--exclude tests/PHPStan/Rules/Classes/data/bug-9402.php \
 		--exclude tests/PHPStan/Rules/Constants/data/class-as-class-constant.php \
 		--exclude tests/PHPStan/Rules/Constants/data/value-assigned-to-class-constant-native-type.php \

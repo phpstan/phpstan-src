@@ -72,6 +72,23 @@ zv::Val newNeverType()
 	return true;
 }
 
+/* $expr instanceof ArrayDimFetch || PropertyFetch || StaticPropertyFetch;
+ * false = pending exception */
+[[nodiscard]] bool isFetchLink(zval *expr, bool &out)
+{
+	out = false;
+	if (Z_TYPE_P(expr) != IS_OBJECT) return true;
+	for (int classIdx : { PT_CLASS_ARRAY_DIM_FETCH, PT_CLASS_PROPERTY_FETCH, PT_CLASS_STATIC_PROPERTY_FETCH }) {
+		zend_class_entry *ce = pt_class(classIdx);
+		if (UNEXPECTED(ce == NULL)) return false;
+		if (instanceof_function(Z_OBJCE_P(expr), ce)) {
+			out = true;
+			return true;
+		}
+	}
+	return true;
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -216,20 +233,35 @@ private:
 			return zv::Val();
 		}
 
-		bool reprocessVar = false;
-		if (reprocessUntrackedLinks) {
-			zv::Val varExprHold;
-			zval *varExpr = pt_expression_result_expr(varResult, varExprHold);
-			if (UNEXPECTED(varExpr == NULL)) return zv::Val();
-			zend_long isTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), varExpr);
-			if (UNEXPECTED(isTracked < 0)) return zv::Val();
-			reprocessVar = isTracked != PT_TRI_YES;
+		zv::Val varExprHold;
+		zval *varExpr = pt_expression_result_expr(varResult, varExprHold);
+		if (UNEXPECTED(varExpr == NULL)) return zv::Val();
+		zend_long isVarTracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), varExpr);
+		if (UNEXPECTED(isVarTracked < 0)) return zv::Val();
+		bool readsState = false;
+		if (isVarTracked != PT_TRI_YES) {
+			bool containsNullsafe;
+			if (UNEXPECTED(!pt_expression_result_contains_nullsafe(varResult, containsNullsafe))) return zv::Val();
+			if (!containsNullsafe) {
+				bool isFetch;
+				if (UNEXPECTED(!isFetchLink(varExpr, isFetch))) return zv::Val();
+				readsState = isFetch;
+			}
 		}
 		zv::Val varType;
-		if (reprocessVar) {
-			zv::Val varExprHold;
-			zval *varExpr = pt_expression_result_expr(varResult, varExprHold);
-			if (UNEXPECTED(varExpr == NULL)) return zv::Val();
+		if (readsState) {
+			if (useNativeTypes) {
+				zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
+				if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
+				if (UNEXPECTED(Z_TYPE_P(nativeScope.raw()) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function getStateType() on %s", zend_zval_value_name(nativeScope.raw()));
+					return zv::Val();
+				}
+				varType = pt_mutating_scope_get_state_type(Z_OBJ_P(nativeScope.raw()), Z_OBJ_P(varExpr));
+			} else {
+				varType = pt_mutating_scope_get_state_type(Z_OBJ_P(scope), Z_OBJ_P(varExpr));
+			}
+		} else if (reprocessUntrackedLinks && isVarTracked != PT_TRI_YES) {
 			if (useNativeTypes) {
 				zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
 				if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();

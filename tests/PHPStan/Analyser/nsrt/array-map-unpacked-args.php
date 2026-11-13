@@ -70,20 +70,23 @@ class Foo
 			assertNativeType('mixed', $b);
 		}, ...$tuple);
 
-		assertType('array', array_map(fn ($a, $b) => $b, [1, 2], ...$lists));
+		assertType('list<int>', array_map(fn ($a, $b) => $b, [1, 2], ...$lists));
 	}
 
 	/**
 	 * @param array{list<string>, list<string>} $tuple
 	 * @param list<list<int>> $lists
+	 * @param list<array<string, int>> $maps
 	 */
-	public function returnType(array $tuple, array $lists): void
+	public function returnType(array $tuple, array $lists, array $maps): void
 	{
 		assertType('non-empty-list<4|5|6>', array_map(fn ($a, $b) => $b, [1, 2, 3], ...[[4, 5, 6]]));
 		assertType('array{1, 2}', array_map(fn ($a) => $a, ...[[1, 2]]));
 		assertType('non-empty-list<array{1|2, 3|4}>', array_map(null, ...[[1, 2], [3, 4]]));
 		assertType('list<string>', array_map(fn ($a, $b) => $a . $b, ...$tuple));
-		assertType('array', array_map(fn ($a) => $a, ...$lists));
+		assertType('list<int>', array_map(fn ($a) => $a, ...$lists));
+		assertType('list<int>', array_map(fn (int $a, int $b) => $a + $b, ...$lists));
+		assertType('array<int<0, max>|string, int>', array_map(fn (int $a) => $a, ...$maps));
 	}
 
 	public function shorterUnpackedArray(): void

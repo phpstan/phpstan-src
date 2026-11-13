@@ -52,8 +52,10 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 				array_map(static fn (Node\Arg $arg) => $arg->unpack, $arrayArgs),
 			);
 			if ($restType !== null) {
-				// the number of arrays is not known
-				return null;
+				return self::getTypeForUnknownArrayCount($scope, $args[0]->value, [
+					...$arrayTypes,
+					$restType,
+				]);
 			}
 
 			$args = [$args[0], ...array_map(static fn (Type $arrayType) => new Node\Arg(new TypeExpr($arrayType)), $arrayTypes)];
@@ -182,6 +184,43 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 		}
 
 		return $mappedArrayType;
+	}
+
+	/**
+	 * The number of arrays is not known, so the values have the return type of the callback.
+	 * One array keeps its keys, more arrays give a list.
+	 *
+	 * @param list<Type> $arrayTypes
+	 */
+	private static function getTypeForUnknownArrayCount(Scope $scope, Node\Expr $callback, array $arrayTypes): ?Type
+	{
+		$callableType = $scope->getType($callback);
+		if (!$callableType->isCallable()->yes()) {
+			return null;
+		}
+
+		$returnTypes = [];
+		foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
+			$returnTypes[] = $parametersAcceptor->getReturnType();
+		}
+		$valueType = TypeCombinator::union(...$returnTypes);
+
+		$keyTypes = [IntegerRangeType::createAllGreaterThanOrEqualTo(0)];
+		$isList = true;
+		foreach ($arrayTypes as $arrayType) {
+			if ($arrayType->isList()->yes()) {
+				continue;
+			}
+
+			$isList = false;
+			$keyTypes[] = $arrayType->getIterableKeyType();
+		}
+
+		if ($isList) {
+			return TypeCombinator::intersect(new ArrayType($keyTypes[0], $valueType), new AccessoryArrayListType());
+		}
+
+		return new ArrayType(TypeCombinator::union(...$keyTypes), $valueType);
 	}
 
 	private static function resolveCallbackReturnType(Scope $scope, Node\Expr $callback, Type $argType): Type

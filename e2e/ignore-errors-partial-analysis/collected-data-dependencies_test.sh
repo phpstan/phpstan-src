@@ -52,6 +52,35 @@ function test_call_to_pure_function_in_only_files() {
 	assert_contains '#never in CallsPureFunction# in path' "$OUTPUT"
 }
 
+# Whether a method is pure depends on the declaration of the function it calls, but that decides only
+# whether the calls to the method are reported, in the files of the calls, not what is reported
+# in the file declaring the method.
+function test_declaration_of_pure_method_without_the_declaration_it_depends_on() {
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw src/Declares 2>&1) && CODE=0 || CODE=$?
+	echo "$OUTPUT"
+	assert_same "1" "$CODE"
+	assert_contains '#never in DeclaresPureMethod# in path' "$OUTPUT"
+	# the call to its own method is reported only when the function the method calls is analysed too
+	assert_not_contains 'CallsOwnPureMethod' "$OUTPUT"
+}
+
+function test_declaration_of_pure_method_in_only_files() {
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw src/Declares/DeclaresPureMethod.php src/Declares/CallsOwnPureMethod.php 2>&1) && CODE=0 || CODE=$?
+	echo "$OUTPUT"
+	assert_same "1" "$CODE"
+	assert_contains '#never in DeclaresPureMethod# in path' "$OUTPUT"
+	assert_not_contains 'CallsOwnPureMethod' "$OUTPUT"
+}
+
+function test_call_to_own_pure_method_with_the_declaration_it_depends_on() {
+	OUTPUT=$(../../bin/phpstan analyse --error-format raw src/Declares srcc 2>&1) && CODE=0 || CODE=$?
+	echo "$OUTPUT"
+	assert_same "1" "$CODE"
+	assert_not_contains 'method.resultUnused' "$OUTPUT"
+	assert_contains '#never in DeclaresPureMethod# in path' "$OUTPUT"
+	assert_contains '#never in CallsOwnPureMethod# in path' "$OUTPUT"
+}
+
 # The dependencies of the files restored from the result cache come from the cache.
 function test_result_cache_of_call_to_pure_function() {
 	OUTPUT=$(../../bin/phpstan analyse --error-format raw src/Calls src/Pure 2>&1) && CODE=0 || CODE=$?

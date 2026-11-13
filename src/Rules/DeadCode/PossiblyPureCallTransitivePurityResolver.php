@@ -3,7 +3,7 @@
 namespace PHPStan\Rules\DeadCode;
 
 use PhpParser\Node;
-use PHPStan\Analyser\AnalysedFileDependencyCollector;
+use PHPStan\Analyser\AnalysedDeclarationDependencyCollector;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\Scope;
@@ -58,7 +58,7 @@ final class PossiblyPureCallTransitivePurityResolver
 	 * statements are detected in NodeScopeResolver.
 	 *
 	 * Whether the declaration is effect-free depends on the declarations of its dependencies
-	 * being analysed, so their files are tracked as analysed file dependencies.
+	 * being analysed, so their files are tracked as analysed declaration dependencies.
 	 *
 	 * @param ImpurePoint[] $impurePoints
 	 * @param ThrowPoint[] $throwPoints
@@ -86,7 +86,7 @@ final class PossiblyPureCallTransitivePurityResolver
 		}
 
 		foreach (array_keys($files) as $file) {
-			$collectedDataEmitter->emitCollectedData(AnalysedFileDependencyCollector::class, $file);
+			$collectedDataEmitter->emitCollectedData(AnalysedDeclarationDependencyCollector::class, $file);
 		}
 
 		return array_keys($dependencies);

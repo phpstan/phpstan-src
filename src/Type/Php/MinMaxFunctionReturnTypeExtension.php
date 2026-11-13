@@ -2,12 +2,15 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\BinaryOp\GreaterOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -49,7 +52,11 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return new ErrorType();
 		}
 
-		// rewrite min($x, $y) as $x < $y ? $x : $y
+		// PHP evaluates min($x, $y) like $x < $y ? $x : $y or like $y < $x ? $y : $x,
+		// and max($x, $y) like $x < $y ? $y : $x or like $x >= $y ? $x : $y.
+		// Which one depends on the PHP version and on whether the call was compiled to a frameless call.
+		// They differ when the arguments compare as equal (min) or cannot be ordered (NAN),
+		// so the result is the union of both rewrites.
 		// we don't handle arrays, which have different semantics
 		$functionName = $functionReflection->getName();
 		if (count($args) === 2) {
@@ -57,24 +64,28 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$argType1 = $scope->getType($args[1]->value);
 
 			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
-				$comparisonExpr = new Smaller(
-					new AlwaysRememberedExpr($args[0]->value, $argType0, $scope->getNativeType($args[0]->value)),
-					new AlwaysRememberedExpr($args[1]->value, $argType1, $scope->getNativeType($args[1]->value)),
-				);
+				$left = $this->comparisonOperand($args[0]->value, $argType0, $scope);
+				$right = $this->comparisonOperand($args[1]->value, $argType1, $scope);
 
 				if ($functionName === 'min') {
-					return $scope->getType(new Ternary(
-						$comparisonExpr,
-						$args[0]->value,
-						$args[1]->value,
-					));
-				} elseif ($functionName === 'max') {
-					return $scope->getType(new Ternary(
-						$comparisonExpr,
-						$args[1]->value,
-						$args[0]->value,
-					));
+					$rewrites = [
+						new Ternary(new Smaller($left, $right), $args[0]->value, $args[1]->value),
+						new Ternary(new Smaller($right, $left), $args[1]->value, $args[0]->value),
+					];
+				} else {
+					$rewrites = [
+						new Ternary(new Smaller($left, $right), $args[1]->value, $args[0]->value),
+						new Ternary(new GreaterOrEqual($left, $right), $args[0]->value, $args[1]->value),
+					];
 				}
+
+				$type = $scope->getType($rewrites[0]);
+				if ($argType0->isInteger()->yes() && $argType1->isInteger()->yes()) {
+					// integers are totally ordered and equal integers are the same value
+					return $type;
+				}
+
+				return TypeCombinator::union($type, $scope->getType($rewrites[1]));
 			}
 		}
 
@@ -248,6 +259,19 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		}
 
 		return null;
+	}
+
+	/**
+	 * A single value cannot be narrowed, and narrowing it by a comparison with NAN
+	 * would turn the branch that PHP can return into never.
+	 */
+	private function comparisonOperand(Expr $expr, Type $type, Scope $scope): Expr
+	{
+		if (count($type->getConstantScalarValues()) === 1) {
+			return new TypeExpr($type);
+		}
+
+		return new AlwaysRememberedExpr($expr, $type, $scope->getNativeType($expr));
 	}
 
 }

@@ -1295,6 +1295,11 @@ class ImpossibleCheckTypeFunctionCallRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testMinMaxNan(): void
+	{
+		$this->analyse([__DIR__ . '/data/minmax-nan.php'], []);
+	}
+
 	public function testBug15147(): void
 	{
 		$this->analyse([__DIR__ . '/../Arrays/data/bug-15147.php'], []);

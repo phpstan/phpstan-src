@@ -2,14 +2,16 @@
 
 namespace PHPStan\Type\Php;
 
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\GreaterOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
+use PhpParser\Node\Expr\UnaryMinus;
+use PhpParser\Node\Scalar;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
-use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -63,14 +65,10 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$argType1 = $scope->getType($args[1]->value);
 
 			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
-				// the comparison of a constant must not narrow the constant in the branches,
-				// as the narrowing by a comparison with NAN would turn it into never
-				$left = $argType0->isConstantScalarValue()->yes()
-					? new TypeExpr($argType0)
-					: new AlwaysRememberedExpr($args[0]->value, $argType0, $scope->getNativeType($args[0]->value));
-				$right = $argType1->isConstantScalarValue()->yes()
-					? new TypeExpr($argType1)
-					: new AlwaysRememberedExpr($args[1]->value, $argType1, $scope->getNativeType($args[1]->value));
+				// a literal in the comparison must stay a literal: narrowing skips those,
+				// and a comparison with NAN would otherwise turn the literal into never
+				$left = $this->rememberType($args[0]->value, $argType0, $scope);
+				$right = $this->rememberType($args[1]->value, $argType1, $scope);
 
 				if ($functionName === 'min') {
 					$rewrites = [
@@ -264,6 +262,15 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		}
 
 		return null;
+	}
+
+	private function rememberType(Expr $expr, Type $type, Scope $scope): Expr
+	{
+		if ($expr instanceof Scalar || ($expr instanceof UnaryMinus && $expr->expr instanceof Scalar)) {
+			return $expr;
+		}
+
+		return new AlwaysRememberedExpr($expr, $type, $scope->getNativeType($expr));
 	}
 
 }

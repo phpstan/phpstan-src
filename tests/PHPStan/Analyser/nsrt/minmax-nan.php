@@ -102,6 +102,15 @@ class Foo
 		assertType('-1|NAN', min(-1, NAN));
 	}
 
+	/**
+	 * @param 1|10 $x
+	 */
+	public function unionOfConstants(int $x): void
+	{
+		assertType('5|10', max($x, 5));
+		assertType('1|5', min($x, 5));
+	}
+
 	/** @param int|float $n */
 	public function intOrFloat($n, int $i): void
 	{

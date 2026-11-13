@@ -20,6 +20,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -418,7 +419,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 					$functionParam->getNativeType(),
 					$functionParam->passedByReference(),
 					$functionParam->isVariadic(),
-					$functionParam->getDefaultValue() ?? $nativeParam->getDefaultValue(),
+					$nativeParam->getDefaultValue() instanceof ErrorType ? $nativeParam->getDefaultValue() : $functionParam->getDefaultValue() ?? $nativeParam->getDefaultValue(),
 					$functionParam->getOutType() ?? $nativeParam->getOutType(),
 				);
 			}
@@ -435,7 +436,50 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			$namedArgumentsVariants = null;
 		}
 
-		return ['positional' => $functionMapSignatures['positional'], 'named' => $namedArgumentsVariants];
+		return [
+			'positional' => array_map(fn (FunctionSignature $signature): FunctionSignature => $this->withUnknownDefaultValues($nativeSignature, $signature), $functionMapSignatures['positional']),
+			'named' => $namedArgumentsVariants,
+		];
+	}
+
+	/**
+	 * A parameter of a function map variant like mt_rand(int $min, int $max) keeps the unknown default
+	 * of the parameter it stands for, also over a default the PhpStorm stubs make up for it,
+	 * so that combining the variants knows that $min must be passed explicitly before $max.
+	 */
+	private function withUnknownDefaultValues(FunctionSignature $nativeSignature, FunctionSignature $signature): FunctionSignature
+	{
+		$nativeParameters = $nativeSignature->getParameters();
+		$parameters = [];
+		foreach ($signature->getParameters() as $i => $parameter) {
+			$nativeParameter = $nativeParameters[$i] ?? null;
+			if (
+				$nativeParameter === null
+				|| $nativeParameter->getName() !== $parameter->getName()
+				|| !$nativeParameter->getDefaultValue() instanceof ErrorType
+			) {
+				$parameters[] = $parameter;
+				continue;
+			}
+
+			$parameters[] = new ParameterSignature(
+				$parameter->getName(),
+				$parameter->isOptional(),
+				$parameter->getType(),
+				$parameter->getNativeType(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$nativeParameter->getDefaultValue(),
+				$parameter->getOutType(),
+			);
+		}
+
+		return new FunctionSignature(
+			$parameters,
+			$signature->getReturnType(),
+			$signature->getNativeReturnType(),
+			$signature->isVariadic(),
+		);
 	}
 
 	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature
@@ -570,6 +614,17 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 				}
 			}
 
+			$defaultValue = null;
+			if ($param->default instanceof ConstFetch && $param->default->name->toString() === 'UNKNOWN') {
+				// see ParameterReflection::getDefaultValue()
+				$defaultValue = new ErrorType();
+			} elseif ($param->default !== null) {
+				$defaultValue = $this->initializerExprTypeResolver->getType(
+					$param->default,
+					InitializerExprContext::fromStubParameter($className, $stubFile, $function),
+				);
+			}
+
 			$parameters[] = new ParameterSignature(
 				$name->name,
 				$param->default !== null || $param->variadic,
@@ -577,10 +632,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic,
-				$param->default !== null ? $this->initializerExprTypeResolver->getType(
-					$param->default,
-					InitializerExprContext::fromStubParameter($className, $stubFile, $function),
-				) : null,
+				$defaultValue,
 				null,
 			);
 

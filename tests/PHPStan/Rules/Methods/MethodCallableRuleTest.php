@@ -152,6 +152,14 @@ class MethodCallableRuleTest extends RuleTestCase
 				'Cannot combine nullsafe operator with Closure creation.',
 				80,
 			],
+			[
+				'Argument #2 ($value) must be passed explicitly, because the default value is not known.',
+				86,
+			],
+			[
+				'Argument #2 ($default) must be passed explicitly, because the default value is not known.',
+				87,
+			],
 		]);
 	}
 

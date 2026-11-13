@@ -3615,4 +3615,23 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->analyse([__DIR__ . '/data/unknown-default-value.php'], [
+			[
+				'Argument #2 ($filter_value) must be passed explicitly, because the default value is not known.',
+				7,
+			],
+			[
+				'Argument #1 ($min) must be passed explicitly, because the default value is not known.',
+				8,
+			],
+			[
+				'Argument #2 ($close) must be passed explicitly, because the default value is not known.',
+				9,
+			],
+		]);
+	}
+
 }

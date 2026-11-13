@@ -79,3 +79,12 @@ function variadicPlaceholderPlacements(Foo $foo, ?Foo $nullableFoo): void
 	Foo::doStatic(?, ..., ...);
 	$nullableFoo?->doFoo(1, ?);
 }
+
+function unknownDefaults(\ReflectionProperty $rp, \ReflectionClass $rc): void
+{
+	// PHP does not know the default of $value or $default
+	$rp->setValue(?, ...);
+	$rc->getStaticPropertyValue(?, ...);
+	$rp->setValue(?, ?);
+	$rp->setValue(?);
+}

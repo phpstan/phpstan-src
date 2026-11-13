@@ -892,6 +892,11 @@ final class InitializerExprTypeResolver
 			$origin = $origin->withPartialApplication($partialApplicationArgs, $boundArgTypes);
 		}
 
+		if ($partialApplicationArgs !== null && PartialFunctionApplicationParameters::leavesUnknownDefaultValue($variants, $partialApplicationArgs)) {
+			// creating the closure throws
+			return new ObjectType(Closure::class);
+		}
+
 		// variants of multi-variant built-ins carry functionMap parameter names,
 		// but the closure accepts the native names as named arguments
 		$namedArgumentNames = [];

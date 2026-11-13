@@ -2381,6 +2381,15 @@ public:
 			origin = pt_type_call(Z_OBJ_P(originIn), PT_LC("withpartialapplication"), 2, withArgv);
 			if (UNEXPECTED(origin.isUndef())) return zv::Val();
 		}
+		if (partialApplication) {
+			static pt_method_site leavesUnknownDefaultValueSite;
+			zv::Args leavesArgv{variants, partialApplicationArgs};
+			IETR_VAL(leavesUnknownDefaultValue, pt_call_static_cached(leavesUnknownDefaultValueSite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("leavesunknowndefaultvalue"), 2, leavesArgv));
+			if (zend_is_true(leavesUnknownDefaultValue.raw())) {
+				// creating the closure throws
+				return newObjectTypeLiteral(PT_LC("Closure"));
+			}
+		}
 		if (UNEXPECTED(Z_TYPE_P(variants) != IS_ARRAY)) {
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(variants));
 			if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();

@@ -94,6 +94,14 @@ class Foo
 		assertType('1', min(1, 2));
 	}
 
+	public function negativeConstants(): void
+	{
+		assertType('-1|NAN', max(NAN, -1));
+		assertType('-1|NAN', max(-1, NAN));
+		assertType('-1|NAN', min(NAN, -1));
+		assertType('-1|NAN', min(-1, NAN));
+	}
+
 	/** @param int|float $n */
 	public function intOrFloat($n, int $i): void
 	{

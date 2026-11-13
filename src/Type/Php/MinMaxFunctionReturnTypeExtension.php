@@ -9,6 +9,7 @@ use PhpParser\Node\Expr\Ternary;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -62,8 +63,14 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$argType1 = $scope->getType($args[1]->value);
 
 			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
-				$left = new AlwaysRememberedExpr($args[0]->value, $argType0, $scope->getNativeType($args[0]->value));
-				$right = new AlwaysRememberedExpr($args[1]->value, $argType1, $scope->getNativeType($args[1]->value));
+				// the comparison of a constant must not narrow the constant in the branches,
+				// as the narrowing by a comparison with NAN would turn it into never
+				$left = $argType0->isConstantScalarValue()->yes()
+					? new TypeExpr($argType0)
+					: new AlwaysRememberedExpr($args[0]->value, $argType0, $scope->getNativeType($args[0]->value));
+				$right = $argType1->isConstantScalarValue()->yes()
+					? new TypeExpr($argType1)
+					: new AlwaysRememberedExpr($args[1]->value, $argType1, $scope->getNativeType($args[1]->value));
 
 				if ($functionName === 'min') {
 					$rewrites = [

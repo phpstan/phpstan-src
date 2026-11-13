@@ -817,7 +817,7 @@ public:
 				zv::Val className = methodDeclaringClassName(methodReflection.raw());
 				if (UNEXPECTED(className.isUndef())) return zv::Val();
 				calledOnClassNames.push(std::move(className));
-				zv::Val calledMethodTypes = dependencyTypesOfCalledMethod(methodReflection.raw(), false);
+				zv::Val calledMethodTypes = dependencyTypesOfCalledMethod(methodReflection.raw(), true);
 				if (UNEXPECTED(calledMethodTypes.isUndef())) return zv::Val();
 				for (auto entry : zv::ArrRef(calledMethodTypes.raw())) {
 					calledOnTypes.push(entry.value().deref());

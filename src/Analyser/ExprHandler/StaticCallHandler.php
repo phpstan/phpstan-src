@@ -450,7 +450,7 @@ final class StaticCallHandler implements ExprHandler
 		}
 		if ($walkMethodReflection !== null) {
 			$calledOnClassNames[] = $walkMethodReflection->getDeclaringClass()->getName();
-			$calledOnTypes = [...$calledOnTypes, ...DependencyTypes::ofCalledMethod($walkMethodReflection, false)];
+			$calledOnTypes = [...$calledOnTypes, ...DependencyTypes::ofCalledMethod($walkMethodReflection, true)];
 		}
 		$dependencies = Dependencies::merge(
 			$classResult?->getDependencies(),

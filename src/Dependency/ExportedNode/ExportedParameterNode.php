@@ -15,6 +15,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 {
 
 	/**
+	 * @param ?string $default the printed default value, null when the parameter has none
 	 * @param ExportedAttributeNode[] $attributes
 	 */
 	public function __construct(
@@ -22,7 +23,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 		private ?string $type,
 		private bool $byRef,
 		private bool $variadic,
-		private bool $hasDefault,
+		private ?string $default,
 		private array $attributes,
 		private ?ExportedPhpDocNode $phpDoc = null,
 		private int $flags = 0,
@@ -62,7 +63,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 			&& $this->type === $node->type
 			&& $this->byRef === $node->byRef
 			&& $this->variadic === $node->variadic
-			&& $this->hasDefault === $node->hasDefault
+			&& $this->default === $node->default
 			&& $this->flags === $node->flags;
 	}
 
@@ -76,7 +77,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$properties['type'],
 			$properties['byRef'],
 			$properties['variadic'],
-			$properties['hasDefault'],
+			$properties['default'],
 			$properties['attributes'],
 			$properties['phpDoc'] ?? null,
 			$properties['flags'] ?? 0,
@@ -97,7 +98,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 				'type' => $this->type,
 				'byRef' => $this->byRef,
 				'variadic' => $this->variadic,
-				'hasDefault' => $this->hasDefault,
+				'default' => $this->default,
 				'attributes' => $this->attributes,
 				'phpDoc' => $this->phpDoc,
 				'flags' => $this->flags,
@@ -115,7 +116,7 @@ final class ExportedParameterNode implements ExportedNode, JsonSerializable
 			$data['type'],
 			$data['byRef'],
 			$data['variadic'],
-			$data['hasDefault'],
+			$data['default'],
 			array_map(static function (array $attributeData) use ($decoder): ExportedAttributeNode {
 				if ($attributeData['type'] !== ExportedAttributeNode::class) {
 					throw new ShouldNotHappenException();

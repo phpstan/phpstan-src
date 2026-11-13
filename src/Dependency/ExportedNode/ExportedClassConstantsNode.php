@@ -17,7 +17,7 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 	/**
 	 * @param ExportedClassConstantNode[] $constants
 	 */
-	public function __construct(private array $constants, private bool $public, private bool $private, private bool $final, private ?ExportedPhpDocNode $phpDoc)
+	public function __construct(private array $constants, private bool $public, private bool $private, private bool $final, private ?string $type, private ?ExportedPhpDocNode $phpDoc)
 	{
 	}
 
@@ -51,7 +51,8 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 
 		return $this->public === $node->public
 			&& $this->private === $node->private
-			&& $this->final === $node->final;
+			&& $this->final === $node->final
+			&& $this->type === $node->type;
 	}
 
 	/**
@@ -64,6 +65,7 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 			$properties['public'],
 			$properties['private'],
 			$properties['final'],
+			$properties['type'],
 			$properties['phpDoc'],
 		);
 	}
@@ -83,6 +85,7 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 			$data['public'],
 			$data['private'],
 			$data['final'],
+			$data['type'],
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 		);
 	}
@@ -101,6 +104,7 @@ final class ExportedClassConstantsNode implements ExportedNode, JsonSerializable
 				'public' => $this->public,
 				'private' => $this->private,
 				'final' => $this->final,
+				'type' => $this->type,
 				'phpDoc' => $this->phpDoc,
 			],
 		];

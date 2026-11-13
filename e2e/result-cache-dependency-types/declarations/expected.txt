@@ -1,0 +1,15 @@
+src/ArrowFunctionParameter/User.php:7:Parameter $foo of anonymous function has invalid type ResultCacheE2EDependencyTypes\ArrowFunctionParameter\Foo.
+src/ArrowFunctionReturn/User.php:7:Anonymous function has invalid return type ResultCacheE2EDependencyTypes\ArrowFunctionReturn\Foo.
+src/ClosureParameter/User.php:7:Parameter $foo of anonymous function has invalid type ResultCacheE2EDependencyTypes\ClosureParameter\Foo.
+src/ClosureReturn/User.php:7:Anonymous function has invalid return type ResultCacheE2EDependencyTypes\ClosureReturn\Foo.
+src/FunctionAssert/User.php:8:PHPDoc tag @phpstan-assert for $value contains unknown class ResultCacheE2EDependencyTypes\FunctionAssert\Foo.
+src/FunctionParamClosureThis/User.php:8:Parameter $callback of function ResultCacheE2EDependencyTypes\FunctionParamClosureThis\user() has invalid type ResultCacheE2EDependencyTypes\FunctionParamClosureThis\Foo.
+src/FunctionParameterNative/User.php:5:Parameter $foo of function ResultCacheE2EDependencyTypes\FunctionParameterNative\user() has invalid type ResultCacheE2EDependencyTypes\FunctionParameterNative\Foo.
+src/FunctionParameterPhpDoc/User.php:8:Parameter $foo of function ResultCacheE2EDependencyTypes\FunctionParameterPhpDoc\user() has invalid type ResultCacheE2EDependencyTypes\FunctionParameterPhpDoc\Foo.
+src/HookParameter/User.php:9:Parameter $value of set hook for property ResultCacheE2EDependencyTypes\HookParameter\User::$value has invalid type ResultCacheE2EDependencyTypes\HookParameter\Foo.
+src/MethodParamOut/User.php:11:Parameter $foo of method ResultCacheE2EDependencyTypes\MethodParamOut\User::user() has invalid type ResultCacheE2EDependencyTypes\MethodParamOut\Foo.
+src/MethodParameterNative/User.php:8:Parameter $foo of method ResultCacheE2EDependencyTypes\MethodParameterNative\User::user() has invalid type ResultCacheE2EDependencyTypes\MethodParameterNative\Foo.
+src/MethodReturnNative/User.php:8:Method ResultCacheE2EDependencyTypes\MethodReturnNative\User::user() has invalid return type ResultCacheE2EDependencyTypes\MethodReturnNative\Foo.
+src/MethodReturnPhpDoc/User.php:11:Method ResultCacheE2EDependencyTypes\MethodReturnPhpDoc\User::user() has invalid return type ResultCacheE2EDependencyTypes\MethodReturnPhpDoc\Foo.
+src/MethodSelfOut/User.php:11:Method ResultCacheE2EDependencyTypes\MethodSelfOut\User::user() has invalid @phpstan-self-out type ResultCacheE2EDependencyTypes\MethodSelfOut\Foo.
+src/MethodThrows/User.php:11:PHPDoc tag @throws with type ResultCacheE2EDependencyTypes\MethodThrows\Foo is not subtype of Throwable

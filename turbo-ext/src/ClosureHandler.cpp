@@ -25,10 +25,11 @@ namespace {
 
 pt_method_site pt_clh_of_closure_type_site;
 
-/* DependencyTypes::ofClosureType($type); UNDEF = pending exception */
-zv::Val dependencyTypesOfClosureType(zval *type)
+/* DependencyTypes::ofClosureType($type, $scope, $expr); UNDEF = pending exception */
+zv::Val dependencyTypesOfClosureType(zval *type, zval *scope, zval *expr)
 {
-	return pt_call_static_cached(pt_clh_of_closure_type_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofclosuretype"), 1, type);
+	zv::Args argv{type, scope, expr};
+	return pt_call_static_cached(pt_clh_of_closure_type_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofclosuretype"), 3, argv);
 }
 
 } // namespace
@@ -111,7 +112,7 @@ public:
 		zv::Val variableFlow = pt_closure_handler_get_variable_flow(expr);
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr);
-		zv::Val closureTypes = dependencyTypesOfClosureType(type.raw());
+		zv::Val closureTypes = dependencyTypesOfClosureType(type.raw(), scope, expr);
 		if (UNEXPECTED(closureTypes.isUndef())) return zv::Val();
 		zv::Val ownDependencies = pt_dependencies_create_in(scope, closureTypes.raw());
 		if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();

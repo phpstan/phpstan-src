@@ -2,6 +2,9 @@
 
 namespace PHPStan\Dependency;
 
+use PhpParser\Node\Expr\ArrowFunction;
+use PhpParser\Node\Expr\Closure;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
@@ -109,17 +112,22 @@ final class DependencyTypes
 	}
 
 	/**
-	 * The signature of a closure or an arrow function, from its type.
+	 * The signature of a closure or an arrow function: its type, and the return type it declares -
+	 * the type has the return type narrowed to what the closure returns.
 	 *
 	 * @return list<Type>
 	 */
-	public static function ofClosureType(Type $closureType): array
+	public static function ofClosureType(Type $closureType, Scope $scope, Closure|ArrowFunction $expr): array
 	{
-		if (!$closureType instanceof ClosureType) {
-			return [];
+		$types = [];
+		if ($expr->returnType !== null) {
+			$types[] = $scope->getFunctionType($expr->returnType, false, false);
 		}
 
-		$types = [];
+		if (!$closureType instanceof ClosureType) {
+			return $types;
+		}
+
 		foreach ($closureType->getParameters() as $parameter) {
 			$types[] = $parameter->getType();
 		}

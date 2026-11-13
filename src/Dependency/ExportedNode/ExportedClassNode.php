@@ -27,6 +27,7 @@ final class ExportedClassNode implements RootExportedNode, JsonSerializable
 		private ?ExportedPhpDocNode $phpDoc,
 		private bool $abstract,
 		private bool $final,
+		private bool $readonly,
 		private ?string $extends,
 		private array $implements,
 		private array $usedTraits,
@@ -91,6 +92,7 @@ final class ExportedClassNode implements RootExportedNode, JsonSerializable
 		return $this->name === $node->name
 			&& $this->abstract === $node->abstract
 			&& $this->final === $node->final
+			&& $this->readonly === $node->readonly
 			&& $this->extends === $node->extends
 			&& $this->implements === $node->implements
 			&& $this->usedTraits === $node->usedTraits;
@@ -106,6 +108,7 @@ final class ExportedClassNode implements RootExportedNode, JsonSerializable
 			$properties['phpDoc'],
 			$properties['abstract'],
 			$properties['final'],
+			$properties['readonly'],
 			$properties['extends'],
 			$properties['implements'],
 			$properties['usedTraits'],
@@ -129,6 +132,7 @@ final class ExportedClassNode implements RootExportedNode, JsonSerializable
 				'phpDoc' => $this->phpDoc,
 				'abstract' => $this->abstract,
 				'final' => $this->final,
+				'readonly' => $this->readonly,
 				'extends' => $this->extends,
 				'implements' => $this->implements,
 				'usedTraits' => $this->usedTraits,
@@ -149,6 +153,7 @@ final class ExportedClassNode implements RootExportedNode, JsonSerializable
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['abstract'],
 			$data['final'],
+			$data['readonly'],
 			$data['extends'],
 			$data['implements'],
 			$data['usedTraits'],

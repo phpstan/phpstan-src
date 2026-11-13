@@ -93,7 +93,7 @@ final class ClosureHandler implements ExprHandler
 			type: $type,
 			nativeType: $nativeType,
 			typeCallback: null,
-			dependencies: Dependencies::merge($processClosureResult->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type))),
+			dependencies: Dependencies::merge($processClosureResult->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type, $scope, $expr))),
 		);
 	}
 

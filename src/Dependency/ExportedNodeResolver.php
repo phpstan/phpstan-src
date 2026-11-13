@@ -59,16 +59,7 @@ final class ExportedNodeResolver
 				$implementsNames[] = $className->toString();
 			}
 
-			$usedTraits = [];
-			$adaptations = [];
-			foreach ($node->getTraitUses() as $traitUse) {
-				foreach ($traitUse->traits as $usedTraitName) {
-					$usedTraits[] = $usedTraitName->toString();
-				}
-				foreach ($traitUse->adaptations as $adaptation) {
-					$adaptations[] = $adaptation;
-				}
-			}
+			[$usedTraits, $traitUseAdaptations] = $this->exportTraitUses($node);
 
 			$className = $node->namespacedName->toString();
 
@@ -77,29 +68,11 @@ final class ExportedNodeResolver
 				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$node->isAbstract(),
 				$node->isFinal(),
+				$node->isReadonly(),
 				$extendsName,
 				$implementsNames,
 				$usedTraits,
-				array_map(static function (Node\Stmt\TraitUseAdaptation $adaptation): ExportedTraitUseAdaptation {
-					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
-						return ExportedTraitUseAdaptation::createAlias(
-							$adaptation->trait?->toString(),
-							$adaptation->method->toString(),
-							$adaptation->newModifier,
-							$adaptation->newName?->toString(),
-						);
-					}
-
-					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
-						return ExportedTraitUseAdaptation::createPrecedence(
-							$adaptation->trait?->toString(),
-							$adaptation->method->toString(),
-							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
-						);
-					}
-
-					throw new ShouldNotHappenException();
-				}, $adaptations),
+				$traitUseAdaptations,
 				$this->exportClassStatements($node->stmts, $className, $namespaceUses),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
@@ -128,12 +101,15 @@ final class ExportedNodeResolver
 			if ($node->scalarType !== null) {
 				$scalarType = $node->scalarType->toString();
 			}
+			[$usedTraits, $traitUseAdaptations] = $this->exportTraitUses($node);
 
 			return new ExportedEnumNode(
 				$enumName,
 				$scalarType,
 				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$implementsNames,
+				$usedTraits,
+				$traitUseAdaptations,
 				$this->exportClassStatements($node->stmts, $enumName, $namespaceUses),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
@@ -141,16 +117,7 @@ final class ExportedNodeResolver
 
 		if ($node instanceof Node\Stmt\Trait_ && isset($node->namespacedName)) {
 			$docComment = $node->getDocComment();
-			$usedTraits = [];
-			$adaptations = [];
-			foreach ($node->getTraitUses() as $traitUse) {
-				foreach ($traitUse->traits as $usedTraitName) {
-					$usedTraits[] = $usedTraitName->toString();
-				}
-				foreach ($traitUse->adaptations as $adaptation) {
-					$adaptations[] = $adaptation;
-				}
-			}
+			[$usedTraits, $traitUseAdaptations] = $this->exportTraitUses($node);
 
 			$className = $node->namespacedName->toString();
 
@@ -158,26 +125,7 @@ final class ExportedNodeResolver
 				$className,
 				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$usedTraits,
-				array_map(static function (Node\Stmt\TraitUseAdaptation $adaptation): ExportedTraitUseAdaptation {
-					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
-						return ExportedTraitUseAdaptation::createAlias(
-							$adaptation->trait?->toString(),
-							$adaptation->method->toString(),
-							$adaptation->newModifier,
-							$adaptation->newName?->toString(),
-						);
-					}
-
-					if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
-						return ExportedTraitUseAdaptation::createPrecedence(
-							$adaptation->trait?->toString(),
-							$adaptation->method->toString(),
-							array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
-						);
-					}
-
-					throw new ShouldNotHappenException();
-				}, $adaptations),
+				$traitUseAdaptations,
 				$this->exportClassStatements($node->stmts, $className, $namespaceUses),
 				$this->exportAttributeNodes($node->attrGroups),
 			);
@@ -205,7 +153,7 @@ final class ExportedNodeResolver
 			$constants = [];
 			foreach ($node->consts as $const) {
 				$constants[] = new ExportedConstantNode(
-					$const->name->toString(),
+					($const->namespacedName ?? $const->name)->toString(),
 					$this->exprPrinter->printExpr($const->value),
 				);
 			}
@@ -234,6 +182,55 @@ final class ExportedNodeResolver
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return array{string[], ExportedTraitUseAdaptation[]}
+	 */
+	private function exportTraitUses(Class_|Node\Stmt\Enum_|Node\Stmt\Trait_ $node): array
+	{
+		$usedTraits = [];
+		$adaptations = [];
+		foreach ($node->getTraitUses() as $traitUse) {
+			foreach ($traitUse->traits as $usedTraitName) {
+				$usedTraits[] = $usedTraitName->toString();
+			}
+			foreach ($traitUse->adaptations as $adaptation) {
+				if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Alias) {
+					$adaptations[] = ExportedTraitUseAdaptation::createAlias(
+						$adaptation->trait?->toString(),
+						$adaptation->method->toString(),
+						$adaptation->newModifier,
+						$adaptation->newName?->toString(),
+					);
+					continue;
+				}
+
+				if ($adaptation instanceof Node\Stmt\TraitUseAdaptation\Precedence) {
+					$adaptations[] = ExportedTraitUseAdaptation::createPrecedence(
+						$adaptation->trait?->toString(),
+						$adaptation->method->toString(),
+						array_map(static fn (Name $name): string => $name->toString(), $adaptation->insteadof),
+					);
+					continue;
+				}
+
+				throw new ShouldNotHappenException();
+			}
+		}
+
+		return [$usedTraits, $adaptations];
+	}
+
+	private function declaresPromotedProperties(ClassMethod $node): bool
+	{
+		foreach ($node->params as $param) {
+			if ($param->isPromoted()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -267,7 +264,7 @@ final class ExportedNodeResolver
 				NodeTypePrinter::printType($type),
 				$param->byRef,
 				$param->variadic,
-				$param->default !== null,
+				$param->default !== null ? $this->exprPrinter->printExpr($param->default) : null,
 				$this->exportAttributeNodes($param->attrGroups),
 				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 				$param->flags,
@@ -308,7 +305,8 @@ final class ExportedNodeResolver
 	private function exportClassStatement(Node\Stmt $node, string $namespacedName, NamespaceUses $namespaceUses): ?ExportedNode
 	{
 		if ($node instanceof ClassMethod) {
-			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate()) {
+			// a private constructor can still declare promoted properties that are not private
+			if ($node->isAbstract() || $node->isFinal() || !$node->isPrivate() || $this->declaresPromotedProperties($node)) {
 				$methodName = $node->name->toString();
 				$docComment = $node->getDocComment();
 
@@ -393,6 +391,7 @@ final class ExportedNodeResolver
 				$node->isPublic(),
 				$node->isPrivate(),
 				$node->isFinal(),
+				NodeTypePrinter::printType($node->type),
 				$this->exportPhpDocNode($docComment?->getText(), $namespaceUses),
 			);
 		}

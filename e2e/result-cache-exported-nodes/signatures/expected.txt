@@ -1,0 +1,73 @@
+src/AttributeArgument/User.php:5:Attribute class ResultCacheE2EExportedNodes\AttributeArgument\Foo does not have the function target.
+src/ClassAttribute/User.php:5:Class ResultCacheE2EExportedNodes\ClassAttribute\Foo is not an Attribute class.
+src/ClassConstantPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\ClassConstantPhpDocAdded\user() should return string but returns int.
+src/ClassConstantPhpDocChanged/User.php:7:Function ResultCacheE2EExportedNodes\ClassConstantPhpDocChanged\user() should return string but returns int<1, max>.
+src/ClassConstantPublic/User.php:7:Access to protected constant VALUE of class ResultCacheE2EExportedNodes\ClassConstantPublic\Foo.
+src/ClassConstantType/User.php:7:Function ResultCacheE2EExportedNodes\ClassConstantType\user() should return string but returns int|string.
+src/ClassConstantValue/User.php:7:Strict comparison using === between 2 and 1 will always evaluate to false.
+src/ClassImplements/User.php:7:Function ResultCacheE2EExportedNodes\ClassImplements\user() should return Countable but returns ResultCacheE2EExportedNodes\ClassImplements\Foo.
+src/ClassPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\ClassPhpDocAdded\user() should return string but returns int.
+src/ClassPhpDocRemoved/User.php:7:Call to an undefined method ResultCacheE2EExportedNodes\ClassPhpDocRemoved\Foo::magic().
+src/ClassReadonly/User.php:7:Assign to protected(set) property ResultCacheE2EExportedNodes\ClassReadonly\Foo::$x.
+src/ClassTraitAlias/User.php:7:Call to an undefined method ResultCacheE2EExportedNodes\ClassTraitAlias\Foo::greet().
+src/ClassTraitAliasMethod/User.php:7:Function ResultCacheE2EExportedNodes\ClassTraitAliasMethod\user() should return int but returns string.
+src/ClassTraitAliasTrait/User.php:7:Function ResultCacheE2EExportedNodes\ClassTraitAliasTrait\user() should return int but returns string.
+src/ClassTraitPrecedence/User.php:7:Function ResultCacheE2EExportedNodes\ClassTraitPrecedence\user() should return int but returns string.
+src/ClassUsedTraits/IntTrait.php:5:Trait ResultCacheE2EExportedNodes\ClassUsedTraits\IntTrait is used zero times and is not analysed.
+src/ClassUsedTraits/User.php:7:Function ResultCacheE2EExportedNodes\ClassUsedTraits\user() should return int but returns string.
+src/EnumCaseName/User.php:7:Access to undefined constant ResultCacheE2EExportedNodes\EnumCaseName\Foo::First.
+src/EnumCaseValue/User.php:7:Strict comparison using === between 2 and 1 will always evaluate to false.
+src/EnumImplements/User.php:7:Function ResultCacheE2EExportedNodes\EnumImplements\user() should return ResultCacheE2EExportedNodes\EnumImplements\Marker but returns ResultCacheE2EExportedNodes\EnumImplements\Foo.
+src/EnumMethod/User.php:7:Function ResultCacheE2EExportedNodes\EnumMethod\user() should return int but returns string.
+src/EnumPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\EnumPhpDocAdded\user() should return string but returns int.
+src/EnumPhpDocRemoved/User.php:7:Call to an undefined method ResultCacheE2EExportedNodes\EnumPhpDocRemoved\Foo::magic().
+src/EnumScalarType/User.php:7:Instanceof between ResultCacheE2EExportedNodes\EnumScalarType\Foo and BackedEnum will always evaluate to true.
+src/EnumTraitAlias/User.php:7:Call to an undefined method ResultCacheE2EExportedNodes\EnumTraitAlias\Foo::greet().
+src/FunctionAttribute/User.php:7:Call to function ResultCacheE2EExportedNodes\FunctionAttribute\value() on a separate line has no effect.
+src/FunctionByRef/User.php:7:Parameter #1 $array of function array_pop is passed by reference, so it expects variables only.
+src/FunctionParameter/User.php:7:Parameter #1 $value of function ResultCacheE2EExportedNodes\FunctionParameter\take expects string, int given.
+src/FunctionPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\FunctionPhpDocAdded\user() should return string but returns int.
+src/FunctionPhpDocChanged/User.php:7:Function ResultCacheE2EExportedNodes\FunctionPhpDocChanged\user() should return string but returns int<1, max>.
+src/FunctionPhpDocRemoved/value.php:5:Function ResultCacheE2EExportedNodes\FunctionPhpDocRemoved\value() has no return type specified.
+src/InterfaceExtends/User.php:7:Function ResultCacheE2EExportedNodes\InterfaceExtends\user() should return Countable but returns ResultCacheE2EExportedNodes\InterfaceExtends\Foo.
+src/InterfaceMethod/User.php:7:Function ResultCacheE2EExportedNodes\InterfaceMethod\user() should return int but returns string.
+src/InterfacePhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\InterfacePhpDocAdded\user() should return string but returns int.
+src/InterfacePhpDocRemoved/User.php:7:Call to an undefined method ResultCacheE2EExportedNodes\InterfacePhpDocRemoved\Foo::magic().
+src/MethodByRef/User.php:7:Parameter #1 $array of function array_pop is passed by reference, so it expects variables only.
+src/MethodPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\MethodPhpDocAdded\user() should return string but returns int.
+src/MethodPhpDocChanged/User.php:7:Function ResultCacheE2EExportedNodes\MethodPhpDocChanged\user() should return string but returns int<1, max>.
+src/MethodPhpDocRemoved/Foo.php:8:Method ResultCacheE2EExportedNodes\MethodPhpDocRemoved\Foo::value() has no return type specified.
+src/MethodPrivate/Foo.php:8:Method ResultCacheE2EExportedNodes\MethodPrivate\Foo::value() is unused.
+src/MethodPrivate/Foo.php:8:Private method ResultCacheE2EExportedNodes\MethodPrivate\Foo::value() cannot be final as it is never overridden by other classes.
+src/MethodPrivate/User.php:10:Call to private method value() of class ResultCacheE2EExportedNodes\MethodPrivate\Foo.
+src/MethodPrivateConstructorPromotedProperty/User.php:7:Function ResultCacheE2EExportedNodes\MethodPrivateConstructorPromotedProperty\user() should return int but returns string.
+src/MethodPublic/User.php:7:Call to protected method value() of class ResultCacheE2EExportedNodes\MethodPublic\Foo.
+src/MethodStatic/User.php:7:Static call to instance method ResultCacheE2EExportedNodes\MethodStatic\Foo::value().
+src/ParameterDefaultValue/User.php:7:Function ResultCacheE2EExportedNodes\ParameterDefaultValue\user() should return int but returns string.
+src/ParameterHasDefault/User.php:7:Method ResultCacheE2EExportedNodes\ParameterHasDefault\Foo::take() invoked with 0 parameters, 1 required.
+src/ParameterName/User.php:7:Missing parameter $other (int) in call to method ResultCacheE2EExportedNodes\ParameterName\Foo::take().
+src/ParameterName/User.php:7:Unknown parameter $value in call to method ResultCacheE2EExportedNodes\ParameterName\Foo::take().
+src/ParameterPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\ParameterPhpDocAdded\user() should return string but returns list<int>.
+src/ParameterPhpDocRemoved/Foo.php:8:Method ResultCacheE2EExportedNodes\ParameterPhpDocRemoved\Foo::__construct() has parameter $values with no value type specified in iterable type array.
+src/ParameterPhpDocRemoved/User.php:7:Function ResultCacheE2EExportedNodes\ParameterPhpDocRemoved\user() should return string but returns array.
+src/ParameterType/User.php:7:Parameter #1 $value of method ResultCacheE2EExportedNodes\ParameterType\Foo::take() expects string, int given.
+src/ParameterVariadic/User.php:7:Method ResultCacheE2EExportedNodes\ParameterVariadic\Foo::take() invoked with 2 parameters, 1 required.
+src/PhpDocUses/User.php:7:Function ResultCacheE2EExportedNodes\PhpDocUses\user() should return int but returns string.
+src/PropertyHookParameter/User.php:7:Property ResultCacheE2EExportedNodes\PropertyHookParameter\Foo::$value (int) does not accept string.
+src/PropertyHookPhpDocAdded/Foo.php:10:Type int<1, max> of set hook parameter $value is not contravariant with type int of property ResultCacheE2EExportedNodes\PropertyHookPhpDocAdded\Foo::$value.
+src/PropertyHookPhpDocAdded/User.php:7:Property ResultCacheE2EExportedNodes\PropertyHookPhpDocAdded\Foo::$value (int<1, max>) does not accept -1.
+src/PropertyHookPhpDocChanged/Foo.php:10:Type int<min, -1> of set hook parameter $value is not contravariant with type int of property ResultCacheE2EExportedNodes\PropertyHookPhpDocChanged\Foo::$value.
+src/PropertyHookPhpDocChanged/Foo.php:8:Property ResultCacheE2EExportedNodes\PropertyHookPhpDocChanged\Foo::$value (int<min, -1>) does not accept default value of type 1.
+src/PropertyHooks/User.php:7:Property ResultCacheE2EExportedNodes\PropertyHooks\Foo::$value (int) does not accept string.
+src/PropertyName/User.php:7:Access to an undefined property ResultCacheE2EExportedNodes\PropertyName\Foo::$value.
+src/PropertyPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\PropertyPhpDocAdded\user() should return string but returns int.
+src/PropertyPhpDocChanged/User.php:7:Function ResultCacheE2EExportedNodes\PropertyPhpDocChanged\user() should return string but returns int<1, max>.
+src/PropertyPhpDocRemoved/Foo.php:8:Property ResultCacheE2EExportedNodes\PropertyPhpDocRemoved\Foo::$value has no type specified.
+src/PropertyPublic/User.php:7:Access to protected property ResultCacheE2EExportedNodes\PropertyPublic\Foo::$value.
+src/PropertyStatic/User.php:7:Static access to instance property ResultCacheE2EExportedNodes\PropertyStatic\Foo::$value.
+src/TraitPhpDocAdded/User.php:7:Function ResultCacheE2EExportedNodes\TraitPhpDocAdded\user() should return int but returns string.
+src/TraitPhpDocChanged/User.php:7:Function ResultCacheE2EExportedNodes\TraitPhpDocChanged\user() should return int but returns string.
+src/TraitPhpDocRemoved/User.php:7:Call to an undefined method ResultCacheE2EExportedNodes\TraitPhpDocRemoved\UsesFoo::magic().
+src/TraitTraitAlias/User.php:7:Function ResultCacheE2EExportedNodes\TraitTraitAlias\user() should return int but returns string.
+src/TraitUsedTraits/IntTrait.php:5:Trait ResultCacheE2EExportedNodes\TraitUsedTraits\IntTrait is used zero times and is not analysed.
+src/TraitUsedTraits/User.php:7:Function ResultCacheE2EExportedNodes\TraitUsedTraits\user() should return int but returns string.

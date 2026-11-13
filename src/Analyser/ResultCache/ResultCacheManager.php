@@ -116,7 +116,7 @@ final class ResultCacheManager
 	 */
 	private const EXTENSIONS_NOT_INVALIDATING_CACHE = ['xdebug', 'blackfire', 'phpstan_turbo'];
 
-	private const CACHE_VERSION = 'v26-collectedDataPerCollector';
+	private const CACHE_VERSION = 'v27-exportedNodesSignatureDetails';
 
 	/**
 	 * The recorded hash of a dependency that does not exist. A rule can depend on a path rather than on

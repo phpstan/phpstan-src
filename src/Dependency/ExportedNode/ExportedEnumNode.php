@@ -17,6 +17,8 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 
 	/**
 	 * @param string[] $implements
+	 * @param string[] $usedTraits
+	 * @param ExportedTraitUseAdaptation[] $traitUseAdaptations
 	 * @param ExportedNode[] $statements
 	 * @param ExportedAttributeNode[] $attributes
 	 */
@@ -25,6 +27,8 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 		private ?string $scalarType,
 		private ?ExportedPhpDocNode $phpDoc,
 		private array $implements,
+		private array $usedTraits,
+		private array $traitUseAdaptations,
 		private array $statements,
 		private array $attributes,
 	)
@@ -47,6 +51,17 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 			}
 		} else {
 			return false;
+		}
+
+		if (count($this->traitUseAdaptations) !== count($node->traitUseAdaptations)) {
+			return false;
+		}
+
+		foreach ($this->traitUseAdaptations as $i => $ourTraitUseAdaptation) {
+			$theirTraitUseAdaptation = $node->traitUseAdaptations[$i];
+			if (!$ourTraitUseAdaptation->equals($theirTraitUseAdaptation)) {
+				return false;
+			}
 		}
 
 		if (count($this->statements) !== count($node->statements)) {
@@ -73,7 +88,8 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 
 		return $this->name === $node->name
 			&& $this->scalarType === $node->scalarType
-			&& $this->implements === $node->implements;
+			&& $this->implements === $node->implements
+			&& $this->usedTraits === $node->usedTraits;
 	}
 
 	/**
@@ -86,6 +102,8 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 			$properties['scalarType'],
 			$properties['phpDoc'],
 			$properties['implements'],
+			$properties['usedTraits'],
+			$properties['traitUseAdaptations'],
 			$properties['statements'],
 			$properties['attributes'],
 		);
@@ -105,6 +123,8 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 				'scalarType' => $this->scalarType,
 				'phpDoc' => $this->phpDoc,
 				'implements' => $this->implements,
+				'usedTraits' => $this->usedTraits,
+				'traitUseAdaptations' => $this->traitUseAdaptations,
 				'statements' => $this->statements,
 				'attributes' => $this->attributes,
 			],
@@ -121,6 +141,13 @@ final class ExportedEnumNode implements RootExportedNode, JsonSerializable
 			$data['scalarType'],
 			$data['phpDoc'] !== null ? ExportedPhpDocNode::decode($data['phpDoc']['data'], $decoder) : null,
 			$data['implements'],
+			$data['usedTraits'],
+			array_map(static function (array $traitUseAdaptationData) use ($decoder): ExportedTraitUseAdaptation {
+				if ($traitUseAdaptationData['type'] !== ExportedTraitUseAdaptation::class) {
+					throw new ShouldNotHappenException();
+				}
+				return ExportedTraitUseAdaptation::decode($traitUseAdaptationData['data'], $decoder);
+			}, $data['traitUseAdaptations']),
 			array_map(static function (array $node) use ($decoder): ExportedNode {
 				$nodeType = $node['type'];
 

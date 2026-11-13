@@ -100,7 +100,7 @@ final class ArrowFunctionHandler implements ExprHandler
 			type: $type,
 			nativeType: $nativeType,
 			typeCallback: null,
-			dependencies: Dependencies::merge($result->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type))),
+			dependencies: Dependencies::merge($result->getDependencies(), Dependencies::create($scope->getFile(), DependencyTypes::ofClosureType($type, $scope, $expr))),
 		);
 	}
 

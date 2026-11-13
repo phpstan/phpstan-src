@@ -459,4 +459,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function deprecatesUnderscoreClassName(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

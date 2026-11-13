@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use Closure;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Variable;
@@ -98,16 +99,28 @@ final class IssetabilityDescriptor
 				throw new ShouldNotHappenException();
 			}
 
-			// A rule-facing resolution re-prices untracked links on the asking
-			// scope: the stored results were priced under the coalesce walk's
-			// ensured non-nullability (NonNullabilityHelper), so their own types
-			// have null already stripped - folding the isset verdict from them
-			// would be circular. Engine-side folds keep the stored reads (their
-			// scopes track the ensured links; re-pricing there would walk).
-			$reprocessVar = $reprocessUntrackedLinks && !$scope->hasExpressionType($varResult->getExpr())->yes();
-			$varType = $reprocessVar
-				? ($useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain()->getNativeType($varResult->getExpr()) : $scope->getType($varResult->getExpr()))
-				: $varResult->getTypeOnScope($scope, $useNativeTypes);
+			// The stored results of the chain links were priced under the
+			// isset/empty/?? walk's ensured non-nullability (NonNullabilityHelper):
+			// a link deviced non-null also narrows the fetches it is read from,
+			// so their own types have null already stripped - folding the verdict
+			// from them would be circular. A fetch the asking scope does not track
+			// reads its state there instead, derived from its receiver's state
+			// without a walk. Any other untracked link is re-priced on the asking
+			// scope by a rule-facing resolution; engine-side folds keep its stored
+			// read (re-pricing there would walk).
+			$varExpr = $varResult->getExpr();
+			$isVarTracked = $scope->hasExpressionType($varExpr)->yes();
+			if (
+				!$isVarTracked
+				&& !$varResult->containsNullsafe()
+				&& ($varExpr instanceof ArrayDimFetch || $varExpr instanceof PropertyFetch || $varExpr instanceof StaticPropertyFetch)
+			) {
+				$varType = ($useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain() : $scope)->getStateType($varExpr);
+			} elseif ($reprocessUntrackedLinks && !$isVarTracked) {
+				$varType = $useNativeTypes ? $scope->doNotTreatPhpDocTypesAsCertain()->getNativeType($varExpr) : $scope->getType($varExpr);
+			} else {
+				$varType = $varResult->getTypeOnScope($scope, $useNativeTypes);
+			}
 			$dimType = $dimResult->getTypeOnScope($scope, $useNativeTypes);
 			$hasOffsetValue = $varType->hasOffsetValueType($dimType);
 			$valueType = $hasOffsetValue->no() ? new NeverType() : $varType->getOffsetValueType($dimType);

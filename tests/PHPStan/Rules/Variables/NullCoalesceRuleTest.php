@@ -716,6 +716,11 @@ class NullCoalesceRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-12780.php'], []);
 	}
 
+	public function testBug15722(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15722.php'], []);
+	}
+
 	#[RequiresPhp('>= 8.2.0')]
 	public function testReadonlyPropertyOnNullableReceiver(): void
 	{

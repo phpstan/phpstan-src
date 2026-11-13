@@ -15,7 +15,8 @@ class Foo
 		return is_nan(\max(0.0, \min(1.0, $f)));
 	}
 
-	public function min(int|float $n): bool
+	/** @param int|float $n */
+	public function min($n): bool
 	{
 		return \min($n, 100) === 100.0;
 	}

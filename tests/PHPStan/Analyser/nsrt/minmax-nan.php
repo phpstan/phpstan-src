@@ -94,7 +94,8 @@ class Foo
 		assertType('1', min(1, 2));
 	}
 
-	public function intOrFloat(int|float $n, int $i): void
+	/** @param int|float $n */
+	public function intOrFloat($n, int $i): void
 	{
 		assertType('NAN|float<min, 100.0>|int<min, 100>', min($n, 100));
 		assertType('NAN|float<min, 100.0>|int<min, 100>', min(100, $n));

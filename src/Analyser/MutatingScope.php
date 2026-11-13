@@ -4486,10 +4486,43 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			if (!$expr instanceof FuncCall && !$expr instanceof MethodCall && !$expr instanceof Expr\StaticCall) {
 				continue;
 			}
+			if (!self::hasNarrowableArgument($expr)) {
+				continue;
+			}
 			$candidates[$exprString] = $holder;
 		}
 
 		return $candidates;
+	}
+
+	/**
+	 * Whether the call has an argument that later narrowing can change - only then
+	 * can its remembered entry go stale. Any other call keeps its entry even when
+	 * it is uninformative: merging with a branch that lacks the entry would leave a
+	 * Maybe holder instead, which derives no conditional guards and is intersected
+	 * as if it held the call's type when a conditional expression narrows the call.
+	 */
+	private static function hasNarrowableArgument(FuncCall|MethodCall|Expr\StaticCall $call): bool
+	{
+		foreach ($call->args as $arg) {
+			if (!$arg instanceof Arg) {
+				continue;
+			}
+			$value = $arg->value;
+			if ($value instanceof Scalar && !$value instanceof Scalar\InterpolatedString) {
+				continue;
+			}
+			if ($value instanceof ConstFetch) {
+				continue;
+			}
+			if ($value instanceof ClassConstFetch && $value->class instanceof Name && $value->name instanceof Identifier) {
+				continue;
+			}
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

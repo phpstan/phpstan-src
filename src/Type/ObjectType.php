@@ -1505,7 +1505,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		foreach (self::EXTRA_OFFSET_CLASSES as $extraOffsetClass) {
-			if ($classReflection->is($extraOffsetClass)) {
+			// like $classReflection->is($extraOffsetClass), without looking up the class: the answer
+			// depends only on the ancestors, and a lookup is recorded as a dependency of the analysed file
+			$ancestor = $classReflection->getAncestorWithClassName($extraOffsetClass);
+			if ($ancestor === null) {
+				continue;
+			}
+			if ($ancestor === $classReflection || $classReflection->isSubclassOfClass($ancestor)) {
 				return TrinaryLogic::createYes();
 			}
 		}

@@ -1888,9 +1888,17 @@ public:
 		zend_object *reflection = Z_OBJ_P(classReflection.raw());
 
 		for (const pt_superglobal_name &extraOffsetClass : pt_ot_extra_offset_classes) {
-			bool is;
-			if (UNEXPECTED(!reflectionIs(reflection, extraOffsetClass.name, extraOffsetClass.len, is))) return -1;
-			if (is) return PT_TRI_YES;
+			/* like $classReflection->is(), without looking up the class: the
+			 * answer depends only on the ancestors, and a lookup is recorded
+			 * as a dependency of the analysed file */
+			zv::Val name = zv::Val::string(extraOffsetClass.name, extraOffsetClass.len);
+			zv::Val ancestor = pt_type_call(reflection, PT_LC("getancestorwithclassname"), 1, name.raw());
+			if (UNEXPECTED(ancestor.isUndef())) return -1;
+			if (ancestor.isNull()) continue;
+			if (Z_OBJ_P(ancestor.raw()) == reflection) return PT_TRI_YES;
+			bool subclass;
+			if (UNEXPECTED(!pt_type_call_bool(reflection, PT_LC("issubclassofclass"), 1, ancestor.raw(), subclass))) return -1;
+			if (subclass) return PT_TRI_YES;
 		}
 
 		bool isInterface;

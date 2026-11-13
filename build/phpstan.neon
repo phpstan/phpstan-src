@@ -112,7 +112,7 @@ parameters:
 		-
 			# Tally calls the benchmark methods, their data providers and #[Before] methods
 			identifier: shipmonk.deadMethod
-			path: ../tests/bench/AnalysisBench.php
+			path: ../tests/bench/*Bench.php
 			reportUnmatched: false
 		-
 			identifier: shipmonk.deadConstant

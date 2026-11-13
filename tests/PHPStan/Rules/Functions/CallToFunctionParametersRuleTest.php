@@ -1868,6 +1868,25 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNamedArgumentsCountOfMultiVariantFunctions(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant-errors.php'], [
+			[
+				'Function mt_rand invoked with 1 parameter, 2 required.',
+				5,
+			],
+			[
+				'Argument #1 ($min) must be passed explicitly, because the default value is not known.',
+				6,
+			],
+			[
+				'Function array_udiff invoked with 1 parameter, at least 3 required.',
+				8,
+			],
+		]);
+	}
+
 	public function testBug9793(): void
 	{
 		$errors = [];

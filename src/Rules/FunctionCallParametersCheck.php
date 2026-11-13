@@ -20,6 +20,7 @@ use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\ResolvedFunctionVariant;
@@ -42,6 +43,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\VerbosityLevel;
 use function array_fill;
 use function array_key_exists;
+use function array_keys;
 use function array_last;
 use function array_merge;
 use function count;
@@ -88,6 +90,7 @@ final class FunctionCallParametersCheck
 	/**
 	 * @param 'attribute'|'callable'|'method'|'staticMethod'|'function'|'new' $nodeType
 	 * @param array{class-string, string}|null $renamedNamedArgumentParameterData
+	 * @param list<ParametersAcceptor> $namedCallVariants positional variants of a callee whose named arguments resolve against its php-src signature
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -117,6 +120,7 @@ final class FunctionCallParametersCheck
 		string $bitmaskNotAllowedMessage,
 		?array $renamedNamedArgumentParameterData,
 		FunctionReflection|MethodReflection|null $calleeReflection = null,
+		array $namedCallVariants = [],
 	): array
 	{
 		if ($funcCall instanceof Node\Expr\MethodCall || $funcCall instanceof Node\Expr\StaticCall || $funcCall instanceof Node\Expr\FuncCall) {
@@ -312,6 +316,7 @@ final class FunctionCallParametersCheck
 				->build();
 		}
 
+		$argumentsCount = null;
 		if (!$hasNamedArguments) {
 			$invokedParametersCount = count($arguments);
 			foreach ($arguments as [2 => $unpack]) {
@@ -320,7 +325,13 @@ final class FunctionCallParametersCheck
 					break;
 				}
 			}
+			$argumentsCount = [$invokedParametersCount, $functionParametersMinCount, $functionParametersMaxCount];
+		} elseif (!$isPartialApplication) {
+			$argumentsCount = self::getNamedArgumentsCount($arguments, $parametersAcceptor, $namedCallVariants);
+		}
 
+		if ($argumentsCount !== null) {
+			[$invokedParametersCount, $functionParametersMinCount, $functionParametersMaxCount] = $argumentsCount;
 			if (
 				// ... of a partial application fills in the parameters left
 				($invokedParametersCount < $functionParametersMinCount && !$hasVariadicPlaceholder)
@@ -1312,6 +1323,78 @@ final class FunctionCallParametersCheck
 			return null;
 		}
 
+		return self::getClosestVariant($argsCount, $variants);
+	}
+
+	/**
+	 * PHP resolves named arguments against the one signature php-src stubs declare,
+	 * passes the default of each parameter they skip, and then the function checks
+	 * the number of arguments like for a positional call: mt_rand(min: 1) throws.
+	 * So the count is checked against the variants like a positional call's.
+	 *
+	 * @param array<int, array{Expr|Node\ArgPlaceholder, Type|null, bool, string|null, int}> $arguments
+	 * @param list<ParametersAcceptor> $variants
+	 * @return array{int, int, int}|null the arguments count and the minimum and maximum (-1 when variadic) to report it against, null when a variant accepts it
+	 */
+	private static function getNamedArgumentsCount(array $arguments, ParametersAcceptor $namedArgumentsVariant, array $variants): ?array
+	{
+		if (count($variants) < 2) {
+			return null;
+		}
+
+		$positionsByName = [];
+		foreach ($namedArgumentsVariant->getParameters() as $i => $parameter) {
+			if ($parameter->isVariadic()) {
+				continue;
+			}
+			$positionsByName[$parameter->getName()] = $i;
+		}
+
+		$passedPositions = [];
+		foreach ($arguments as $i => [, , $unpack, $argumentName]) {
+			if ($unpack) {
+				return null;
+			}
+			if ($argumentName === null) {
+				$passedPositions[$i] = true;
+				continue;
+			}
+			if (!array_key_exists($argumentName, $positionsByName)) {
+				// reported as an unknown parameter
+				return null;
+			}
+			$passedPositions[$positionsByName[$argumentName]] = true;
+		}
+
+		$argsCount = $passedPositions === [] ? 0 : max(array_keys($passedPositions)) + 1;
+		foreach ($namedArgumentsVariant->getParameters() as $i => $parameter) {
+			if ($i >= $argsCount) {
+				break;
+			}
+			if (!array_key_exists($i, $passedPositions) && $parameter->getDefaultValue() instanceof ErrorType) {
+				// PHP throws before the function checks the count
+				return null;
+			}
+		}
+
+		$combinedVariant = ParametersAcceptorSelector::combineAcceptors($variants);
+		$variant = self::acceptsArgumentsCount($combinedVariant, $argsCount)
+			? self::getClosestVariant($argsCount, $variants)
+			: $combinedVariant;
+		if ($variant === null) {
+			return null;
+		}
+
+		[$minCount, $maxCount] = self::getArgumentsCountRange($variant);
+
+		return [$argsCount, $minCount, $maxCount ?? -1];
+	}
+
+	/**
+	 * @param list<ParametersAcceptor> $variants
+	 */
+	private static function getClosestVariant(int $argsCount, array $variants): ?ParametersAcceptor
+	{
 		$closestVariant = null;
 		$closestDistance = null;
 		foreach ($variants as $variant) {

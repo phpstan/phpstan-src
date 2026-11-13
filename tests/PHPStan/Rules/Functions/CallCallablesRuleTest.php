@@ -49,6 +49,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				checkMissingTypehints: true,
 			),
 			$ruleLevelHelper,
+			$reflectionProvider,
 			reportMaybes: true,
 		);
 	}
@@ -196,6 +197,25 @@ class CallCallablesRuleTest extends RuleTestCase
 			[
 				'Unknown parameter $z in call to callable callable(int, int): void.',
 				25,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNamedArgumentsOfMultiVariantFirstClassCallable(): void
+	{
+		$this->analyse([__DIR__ . '/data/callables-named-arguments-multi-variant.php'], [
+			[
+				'Callable (Closure(): int)|(Closure(int, int): int) invoked with 1 parameter, 2 required.',
+				7,
+			],
+			[
+				'Argument #2 ($close) must be passed explicitly, because the default value is not known.',
+				11,
+			],
+			[
+				'Callable (Closure<TV of mixed, TK of mixed>(array<(int&TK)|(string&TK), TV>, array<(int&TK)|(string&TK), TV>, array, array|callable(mixed, mixed): int, array|callable(mixed, mixed): int ...): array<(int&TK)|(string&TK), TV>)|(Closure<TV of mixed, TK of mixed>(array<(int&TK)|(string&TK), TV>, array<(int&TK)|(string&TK), TV>, callable(TV, TV): int): array<(int&TK)|(string&TK), TV>) invoked with 1 parameter, at least 3 required.',
+				14,
 			],
 		]);
 	}

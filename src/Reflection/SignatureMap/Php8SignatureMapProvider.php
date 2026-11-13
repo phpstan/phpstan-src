@@ -378,67 +378,10 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			return ['positional' => [], 'named' => null];
 		}
 
-		$nativeParams = $nativeSignature->getParameters();
-		$namedArgumentsVariants = [];
-		$allParamNamesMatchNative = true;
-		foreach ($functionMapSignatures['positional'] as $functionMapSignature) {
-			$isPrevParamVariadic = false;
-			$hasMiddleVariadicParam = false;
-			// avoid weird functions like array_diff_uassoc
-			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
-				$nativeParam = $nativeParams[$i] ?? null;
-				$allParamNamesMatchNative = $allParamNamesMatchNative && $nativeParam !== null && $functionParam->getName() === $nativeParam->getName();
-				$hasMiddleVariadicParam = $hasMiddleVariadicParam || $isPrevParamVariadic;
-				$isPrevParamVariadic = $functionParam->isVariadic() || (
-					$nativeParam !== null
-						? $nativeParam->isVariadic()
-						: false
-					);
-			}
-
-			if ($hasMiddleVariadicParam) {
-				continue;
-			}
-
-			$parameters = [];
-			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
-				if (!array_key_exists($i, $nativeParams)) {
-					continue 2;
-				}
-
-				// it seems that variadic parameters cannot be named in native functions/methods.
-				$nativeParam = $nativeParams[$i];
-				if ($nativeParam->isVariadic()) {
-					break;
-				}
-
-				$parameters[] = new ParameterSignature(
-					$nativeParam->getName(),
-					$functionParam->isOptional(),
-					$functionParam->getType(),
-					$functionParam->getNativeType(),
-					$functionParam->passedByReference(),
-					$functionParam->isVariadic(),
-					$nativeParam->getDefaultValue() instanceof ErrorType ? $nativeParam->getDefaultValue() : $functionParam->getDefaultValue() ?? $nativeParam->getDefaultValue(),
-					$functionParam->getOutType() ?? $nativeParam->getOutType(),
-				);
-			}
-
-			$namedArgumentsVariants[] = new FunctionSignature(
-				$parameters,
-				$functionMapSignature->getReturnType(),
-				$functionMapSignature->getNativeReturnType(),
-				$functionMapSignature->isVariadic(),
-			);
-		}
-
-		if ($allParamNamesMatchNative || count($namedArgumentsVariants) === 0) {
-			$namedArgumentsVariants = null;
-		}
-
 		return [
 			'positional' => array_map(fn (FunctionSignature $signature): FunctionSignature => $this->withUnknownDefaultValues($nativeSignature, $signature), $functionMapSignatures['positional']),
-			'named' => $namedArgumentsVariants,
+			// PHP resolves named arguments against the one signature php-src stubs declare
+			'named' => [$nativeSignature],
 		];
 	}
 

@@ -7,11 +7,10 @@ use PhpParser\Node\Expr\BinaryOp\GreaterOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
-use PhpParser\Node\Expr\UnaryMinus;
-use PhpParser\Node\Scalar;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\AlwaysRememberedExpr;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
@@ -65,10 +64,8 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			$argType1 = $scope->getType($args[1]->value);
 
 			if ($argType0->isArray()->no() && $argType1->isArray()->no()) {
-				// a literal in the comparison must stay a literal: narrowing skips those,
-				// and a comparison with NAN would otherwise turn the literal into never
-				$left = $this->rememberType($args[0]->value, $argType0, $scope);
-				$right = $this->rememberType($args[1]->value, $argType1, $scope);
+				$left = $this->comparisonOperand($args[0]->value, $argType0, $scope);
+				$right = $this->comparisonOperand($args[1]->value, $argType1, $scope);
 
 				if ($functionName === 'min') {
 					$rewrites = [
@@ -264,10 +261,14 @@ final class MinMaxFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		return null;
 	}
 
-	private function rememberType(Expr $expr, Type $type, Scope $scope): Expr
+	/**
+	 * A single value cannot be narrowed, and narrowing it by a comparison with NAN
+	 * would turn the branch that PHP can return into never.
+	 */
+	private function comparisonOperand(Expr $expr, Type $type, Scope $scope): Expr
 	{
-		if ($expr instanceof Scalar || ($expr instanceof UnaryMinus && $expr->expr instanceof Scalar)) {
-			return $expr;
+		if (count($type->getConstantScalarValues()) === 1) {
+			return new TypeExpr($type);
 		}
 
 		return new AlwaysRememberedExpr($expr, $type, $scope->getNativeType($expr));

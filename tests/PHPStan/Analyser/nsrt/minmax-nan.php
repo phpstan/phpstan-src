@@ -7,6 +7,8 @@ use function PHPStan\Testing\assertType;
 class Foo
 {
 
+	public const NEG = -1;
+
 	public function floats(float $f, float $g): void
 	{
 		assertType('NAN|float<0.0, max>', max(0.0, $f));
@@ -100,6 +102,13 @@ class Foo
 		assertType('-1|NAN', max(-1, NAN));
 		assertType('-1|NAN', min(NAN, -1));
 		assertType('-1|NAN', min(-1, NAN));
+	}
+
+	public function constantsNotWrittenAsLiterals(): void
+	{
+		assertType('-1|NAN', max(NAN, Foo::NEG));
+		assertType('-1|NAN', max(Foo::NEG, NAN));
+		assertType('-1|NAN', min(NAN, Foo::NEG));
 	}
 
 	/**

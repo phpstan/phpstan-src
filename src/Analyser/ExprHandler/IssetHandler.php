@@ -36,7 +36,6 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_map;
 use function array_merge;
-use function array_reverse;
 use function count;
 
 /**
@@ -68,11 +67,25 @@ final class IssetHandler implements ExprHandler
 		$hasYield = false;
 		$throwPoints = [];
 		$impurePoints = [];
-		$nonNullabilityResults = [];
 		$isAlwaysTerminating = false;
 		$varResults = [];
-		foreach ($expr->vars as $var) {
-			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $var);
+		$chainResults = [];
+		$subjectScope = $scope;
+		$mergedScope = null;
+		foreach ($expr->vars as $i => $var) {
+			if ($i > 0) {
+				// isset() stops at the first unset subject, so each subject is
+				// walked only when the ones before it are set - like
+				// isset($a) && isset($b)
+				$subjectScope = $subjectScope->applySpecifiedTypes($this->defaultNarrowingHelper->createIssetTruthyChainTypes(
+					$subjectScope,
+					$expr->vars[$i - 1],
+					$this->defaultNarrowingHelper->buildChainTypeReader($chainResults, $subjectScope),
+					$expr,
+					TypeSpecifierContext::createTruthy(),
+				));
+			}
+			$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($subjectScope, $var);
 			$scope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $var);
 			$varResult = $nodeScopeResolver->processExprNode($stmt, $var, $scope, $storage, $nodeCallback, $context->enterDeep());
 			$varResults[] = $varResult;
@@ -81,7 +94,22 @@ final class IssetHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $varResult->getThrowPoints());
 			$impurePoints = array_merge($impurePoints, $varResult->getImpurePoints());
 			$isAlwaysTerminating = $isAlwaysTerminating || $varResult->isAlwaysTerminating();
-			$nonNullabilityResults[] = $nonNullabilityResult;
+
+			// the next subject is walked without this subject's devices
+			$subjectScope = $this->nonNullabilityHelper->revertNonNullability(
+				$nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var),
+				$nonNullabilityResult->getSpecifiedExpressions(),
+			);
+
+			// The subject and its chain links were just processed, so their
+			// ExpressionResults are in the storage; capture them (the results, not the
+			// storage - no reference cycle) so the narrowing reads their types via
+			// getTypeOnScope() instead of re-walking through Scope::getType().
+			$this->defaultNarrowingHelper->captureChainResults($var, $storage, $chainResults);
+
+			// the walk may stop after any subject: the narrowing the later
+			// subjects were walked with holds only when they were reached
+			$mergedScope = $mergedScope === null ? $subjectScope : $mergedScope->mergeWith($subjectScope);
 
 			if (!($var instanceof ArrayDimFetch)) {
 				continue;
@@ -99,21 +127,7 @@ final class IssetHandler implements ExprHandler
 				new MethodCall(new TypeExpr($varType), 'offsetExists'),
 			));
 		}
-		foreach (array_reverse($expr->vars) as $var) {
-			$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $var);
-		}
-		foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult) {
-			$scope = $this->nonNullabilityHelper->revertNonNullability($scope, $nonNullabilityResult->getSpecifiedExpressions());
-		}
-
-		// The subjects and their chain links were just processed, so their
-		// ExpressionResults are in the storage; capture them (the results, not the
-		// storage - no reference cycle) so the narrowing reads their types via
-		// getTypeOnScope() instead of re-walking through Scope::getType().
-		$chainResults = [];
-		foreach ($expr->vars as $var) {
-			$this->defaultNarrowingHelper->captureChainResults($var, $storage, $chainResults);
-		}
+		$scope = $mergedScope ?? $scope;
 
 		$nodeScopeResolver->callNodeCallbackWithExpression($nodeCallback, new IssetExpressionNode($expr, $varResults), $beforeScope, $storage, $context);
 

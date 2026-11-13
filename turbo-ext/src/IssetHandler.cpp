@@ -204,15 +204,35 @@ public:
 		// foreach iterates the array it was handed
 		zv::Val vars = zv::Val::copyOf(zv::Ref(varsSlot));
 		uint32_t varCount = zend_hash_num_elements(Z_ARRVAL_P(vars.raw()));
-		zv::Arr nonNullabilityResults = zv::Arr::create(varCount);
 		zv::Arr varResults = zv::Arr::create(varCount);
+		zv::Val chainResults = zv::Val(zv::Arr::empty());
+		zval *defaultNarrowingHelper = OBJ_PROP_NUM(self, slots::defaultNarrowingHelper);
+		zv::Val subjectScope = zv::Val::copyOf(zv::Ref(scope.raw()));
+		// UNDEF = null
+		zv::Val mergedScope;
 
 		zend_class_entry *arrayDimFetchCe = pt_class(PT_CLASS_ARRAY_DIM_FETCH);
 		if (UNEXPECTED(arrayDimFetchCe == NULL)) return zv::Val();
 		zv::Val hold;
+		zval *previousVar = NULL;
 		for (zv::ArrayEntry entry : zv::TableRef(Z_ARRVAL_P(vars.raw()))) {
 			zval *var = entry.value().deref().raw();
-			zv::Val nonNullabilityResult = pt_non_nullability_helper_ensure_non_nullability(nonNullabilityHelper, scope.raw(), var);
+			if (previousVar != NULL) {
+				// isset() stops at the first unset subject, so each subject is
+				// walked only when the ones before it are set - like
+				// isset($a) && isset($b)
+				zv::Val readType = pt_default_narrowing_helper_build_chain_type_reader(defaultNarrowingHelper, chainResults.raw(), subjectScope.raw());
+				if (UNEXPECTED(readType.isUndef())) return zv::Val();
+				zend_object *truthy = pt_type_specifier_context_create_truthy();
+				if (UNEXPECTED(truthy == NULL)) return zv::Val();
+				zval truthyZval;
+				ZVAL_OBJ(&truthyZval, truthy);
+				zv::Val next = applySpecifiedTypes(subjectScope.raw(), pt_default_narrowing_helper_create_isset_truthy_chain_types(defaultNarrowingHelper, subjectScope.raw(), previousVar, readType.raw(), expr, &truthyZval));
+				if (UNEXPECTED(next.isUndef())) return zv::Val();
+				subjectScope = std::move(next);
+			}
+			previousVar = var;
+			zv::Val nonNullabilityResult = pt_non_nullability_helper_ensure_non_nullability(nonNullabilityHelper, subjectScope.raw(), var);
 			if (UNEXPECTED(nonNullabilityResult.isUndef())) return zv::Val();
 			if (UNEXPECTED(!nonNullabilityResult.ref().isObject())) {
 				zend_throw_error(NULL, "Call to a member function getScope() on %s", zend_zval_value_name(nonNullabilityResult.raw()));
@@ -244,7 +264,34 @@ public:
 			if (UNEXPECTED(borrowed == NULL)) return zv::Val();
 			impurePoints = arrayMerge(impurePoints.raw(), borrowed);
 			if (!isAlwaysTerminating && UNEXPECTED(!pt_expression_result_is_always_terminating(varResult.raw(), isAlwaysTerminating))) return zv::Val();
-			nonNullabilityResults.push(std::move(nonNullabilityResult));
+
+			// the next subject is walked without this subject's devices
+			{
+				zv::Val unset = pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(nodeScopeResolver, scope.raw(), var);
+				if (UNEXPECTED(unset.isUndef())) return zv::Val();
+				zval *specifiedExpressions = pt_ensured_non_nullability_result_specified_expressions(nonNullabilityResult.raw(), hold);
+				if (UNEXPECTED(specifiedExpressions == NULL)) return zv::Val();
+				zv::Val heldExpressions = zv::Val::copyOf(zv::Ref(specifiedExpressions));
+				subjectScope = pt_non_nullability_helper_revert_non_nullability(nonNullabilityHelper, unset.raw(), heldExpressions.raw());
+				if (UNEXPECTED(subjectScope.isUndef())) return zv::Val();
+			}
+
+			// capture the subject's and its chain links' stored results
+			if (UNEXPECTED(!captureChainResults(defaultNarrowingHelper, var, storage, chainResults))) return zv::Val();
+
+			// the walk may stop after any subject: the narrowing the later
+			// subjects were walked with holds only when they were reached
+			if (mergedScope.isUndef()) {
+				mergedScope = zv::Val::copyOf(zv::Ref(subjectScope.raw()));
+			} else {
+				if (UNEXPECTED(!mergedScope.ref().isObject())) {
+					zend_throw_error(NULL, "Call to a member function mergeWith() on %s", zend_zval_value_name(mergedScope.raw()));
+					return zv::Val();
+				}
+				zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(mergedScope.raw()), subjectScope.raw());
+				if (UNEXPECTED(merged.isUndef())) return zv::Val();
+				mergedScope = std::move(merged);
+			}
 
 			if (Z_TYPE_P(var) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(var), arrayDimFetchCe)) continue;
 
@@ -296,38 +343,8 @@ public:
 			throwPoints = arrayMerge(throwPoints.raw(), callThrowPoints.raw());
 		}
 
-		// foreach (array_reverse($expr->vars) as $var)
-		{
-			HashTable *table = Z_ARRVAL_P(vars.raw());
-			zval *var;
-			ZEND_HASH_REVERSE_FOREACH_VAL(table, var) {
-				ZVAL_DEREF(var);
-				zv::Val next = pt_node_scope_resolver_look_for_unset_allowed_undefined_expressions(nodeScopeResolver, scope.raw(), var);
-				if (UNEXPECTED(next.isUndef())) return zv::Val();
-				scope = std::move(next);
-			} ZEND_HASH_FOREACH_END();
-		}
-		// foreach (array_reverse($nonNullabilityResults) as $nonNullabilityResult)
-		{
-			HashTable *table = nonNullabilityResults.table();
-			zval *nonNullabilityResult;
-			ZEND_HASH_REVERSE_FOREACH_VAL(table, nonNullabilityResult) {
-				zval *specifiedExpressions = pt_ensured_non_nullability_result_specified_expressions(nonNullabilityResult, hold);
-				if (UNEXPECTED(specifiedExpressions == NULL)) return zv::Val();
-				zv::Val heldExpressions = zv::Val::copyOf(zv::Ref(specifiedExpressions));
-				zv::Val next = pt_non_nullability_helper_revert_non_nullability(nonNullabilityHelper, scope.raw(), heldExpressions.raw());
-				if (UNEXPECTED(next.isUndef())) return zv::Val();
-				scope = std::move(next);
-			} ZEND_HASH_FOREACH_END();
-		}
-
-		// capture the subjects' and their chain links' stored results
-		zv::Val chainResults = zv::Val(zv::Arr::empty());
-		{
-			zval *defaultNarrowingHelper = OBJ_PROP_NUM(self, slots::defaultNarrowingHelper);
-			for (zv::ArrayEntry entry : zv::TableRef(Z_ARRVAL_P(vars.raw()))) {
-				if (UNEXPECTED(!captureChainResults(defaultNarrowingHelper, entry.value().deref().raw(), storage, chainResults))) return zv::Val();
-			}
+		if (!mergedScope.isUndef()) {
+			scope = std::move(mergedScope);
 		}
 
 		zv::Val varResultsValue(std::move(varResults));

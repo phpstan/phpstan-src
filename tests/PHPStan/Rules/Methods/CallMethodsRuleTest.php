@@ -4663,4 +4663,18 @@ class CallMethodsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../Functions/data/unknown-default-value.php'], [
+			[
+				'Argument #3 ($dayOfMonth) must be passed explicitly, because the default value is not known.',
+				18,
+			],
+		]);
+	}
+
 }

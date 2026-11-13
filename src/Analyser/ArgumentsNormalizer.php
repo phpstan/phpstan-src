@@ -16,7 +16,6 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -29,7 +28,6 @@ use function is_string;
 use function key;
 use function ksort;
 use function max;
-use function sprintf;
 
 /**
  * @api
@@ -443,7 +441,8 @@ final class ArgumentsNormalizer
 			$defaultValue = $parameter->getDefaultValue();
 			if ($defaultValue === null) {
 				if (!$parameter->isVariadic()) {
-					throw new ShouldNotHappenException(sprintf('An optional parameter $%s must have a default value', $parameter->getName()));
+					// like an optional parameter combined from variants that do not all have it
+					return null;
 				}
 				$defaultValue = new ConstantArrayType([], []);
 			}

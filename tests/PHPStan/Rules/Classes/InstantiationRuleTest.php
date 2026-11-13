@@ -826,4 +826,15 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14002-2.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->analyse([__DIR__ . '/../Functions/data/unknown-default-value.php'], [
+			[
+				'Argument #2 ($interval) must be passed explicitly, because the default value is not known.',
+				19,
+			],
+		]);
+	}
+
 }

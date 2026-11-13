@@ -272,6 +272,22 @@ class FunctionCallableRuleTest extends RuleTestCase
 				'Function mt_rand partially applied with 3 arguments, 0-2 required.',
 				98,
 			],
+			[
+				'Argument #2 ($filter_value) must be passed explicitly, because the default value is not known.',
+				106,
+			],
+			[
+				'Argument #2 ($filter_value) must be passed explicitly, because the default value is not known.',
+				107,
+			],
+			[
+				'Argument #2 ($max) must be passed explicitly, because the default value is not known.',
+				108,
+			],
+			[
+				'Argument #3 ($arg) must be passed explicitly, because the default value is not known.',
+				109,
+			],
 		]);
 	}
 

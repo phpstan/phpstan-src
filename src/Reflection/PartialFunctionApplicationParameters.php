@@ -10,12 +10,14 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Reflection\Php\ExtendedDummyParameter;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeTraverser;
 use function array_key_exists;
+use function array_keys;
 use function count;
 use function max;
 use function min;
@@ -274,6 +276,17 @@ final class PartialFunctionApplicationParameters
 			$named[] = self::required($declared[$index], $nameString);
 		}
 
+		$lastCovered = $covered === [] ? -1 : max(array_keys($covered));
+		foreach ($declared as $i => $parameter) {
+			if (isset($covered[$i]) || !$parameter->getDefaultValue() instanceof ErrorType) {
+				continue;
+			}
+			if ($hasVariadicPlaceholder || ($i < $lastCovered && $parameter->isOptional())) {
+				// PHP refuses to fill in a default it does not know
+				return null;
+			}
+		}
+
 		$closureParameters = [...$positional, ...$named];
 		if (!$hasVariadicPlaceholder) {
 			foreach ($declared as $i => $parameter) {
@@ -335,6 +348,12 @@ final class PartialFunctionApplicationParameters
 			}
 		}
 
+		foreach ($variants as $variant) {
+			if (self::leavesUnknownDefaultValue([$variant], $args)) {
+				return $variant;
+			}
+		}
+
 		if (count($variants) === 1) {
 			return $variants[0];
 		}
@@ -359,6 +378,50 @@ final class PartialFunctionApplicationParameters
 		}
 
 		return ParametersAcceptorSelector::combineAcceptors(count($fitting) > 0 ? $fitting : $variants);
+	}
+
+	/**
+	 * The variants of a built-in describe one real signature, so when ... leaves out a parameter
+	 * whose default PHP does not know in any of them, like $value of ReflectionProperty::setValue(?, ...),
+	 * creating the closure throws whichever variant the arguments fit.
+	 *
+	 * @param ParametersAcceptor[] $variants
+	 * @param array<Arg|ArgPlaceholder|VariadicPlaceholder> $args
+	 */
+	public static function leavesUnknownDefaultValue(array $variants, array $args): bool
+	{
+		$positionalCount = 0;
+		$names = [];
+		$hasVariadicPlaceholder = false;
+		foreach ($args as $arg) {
+			if ($arg instanceof VariadicPlaceholder) {
+				$hasVariadicPlaceholder = true;
+				continue;
+			}
+			if ($arg->name !== null) {
+				$names[$arg->name->toString()] = true;
+				continue;
+			}
+			$positionalCount++;
+		}
+		if (!$hasVariadicPlaceholder) {
+			return false;
+		}
+
+		foreach ($variants as $variant) {
+			foreach ($variant->getParameters() as $i => $parameter) {
+				if (
+					$i >= $positionalCount
+					&& !$parameter->isVariadic()
+					&& !array_key_exists($parameter->getName(), $names)
+					&& $parameter->getDefaultValue() instanceof ErrorType
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

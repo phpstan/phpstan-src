@@ -730,19 +730,8 @@ private:
 				bool variadic = false;
 				if (UNEXPECTED(!parameterIsVariadic(parameter, variadic))) return zv::Val();
 				if (!variadic) {
-					zv::Val name = parameterGetName(parameter);
-					if (UNEXPECTED(name.isUndef())) return zv::Val();
-					zend_string *nameString = zval_get_string(name.raw());
-					zend_string *message = zend_strpprintf(0, "An optional parameter $%s must have a default value", ZSTR_VAL(nameString));
-					zend_string_release(nameString);
-					zval messageZv;
-					ZVAL_STR(&messageZv, message);
-					zv::Val exception = pt_type_new(PT_CLASS_SHOULD_NOT_HAPPEN, 1, &messageZv);
-					zend_string_release(message);
-					if (UNEXPECTED(exception.isUndef())) return zv::Val();
-					zval raw = exception.take();
-					zend_throw_exception_object(&raw);
-					return zv::Val();
+					// like an optional parameter combined from variants that do not all have it
+					return zv::Val::null();
 				}
 				zval emptyKeys, emptyValues, constantArray;
 				ZVAL_EMPTY_ARRAY(&emptyKeys);

@@ -30,6 +30,10 @@ interface ParameterReflection
 
 	public function isVariadic(): bool;
 
+	/**
+	 * An ErrorType for a parameter of a built-in function whose default PHP does not know,
+	 * like mt_rand()'s $min: it must be passed explicitly when a later parameter is.
+	 */
 	public function getDefaultValue(): ?Type;
 
 }

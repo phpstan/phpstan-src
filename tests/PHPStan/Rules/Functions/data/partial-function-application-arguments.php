@@ -99,3 +99,18 @@ function multiVariant(): void
 	mt_rand(1, ?);
 	mt_rand(...);
 }
+
+function unknownDefaults(): void
+{
+	// PHP does not know the default of $filter_value, mt_rand()'s $max or array_walk()'s $arg
+	array_keys(?, ...);
+	array_keys(?, strict: ?);
+	mt_rand(1, ...);
+	array_walk(?, ?, ...);
+
+	array_keys(?);
+	array_keys(?, ?, ...);
+	array_keys(?, ?, strict: ?);
+	mt_rand(?, ?);
+	array_walk(?, ?);
+}

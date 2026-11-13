@@ -31,6 +31,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
@@ -46,6 +47,7 @@ use PHPStan\Type\UnionType;
 use function array_is_list;
 use function array_key_exists;
 use function array_key_last;
+use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
@@ -685,6 +687,10 @@ final class ParametersAcceptorSelector
 
 		$typesCount = count($types);
 		$acceptableAcceptors = [];
+		// a named argument only fits a variant that has its parameter, like
+		// session_set_save_handler($open, read: $read), unless no variant has it
+		$acceptableAcceptorsWithNames = [];
+		$someAcceptorHasNames = false;
 
 		foreach ($parametersAcceptors as $parametersAcceptor) {
 			if ($unpack) {
@@ -694,13 +700,26 @@ final class ParametersAcceptorSelector
 
 			$functionParametersMinCount = 0;
 			$functionParametersMaxCount = 0;
+			$parameterNames = [];
 			foreach ($parametersAcceptor->getParameters() as $parameter) {
 				if (!$parameter->isOptional()) {
 					$functionParametersMinCount++;
 				}
 
 				$functionParametersMaxCount++;
+				$parameterNames[$parameter->getName()] = true;
 			}
+
+			$hasNames = true;
+			if (!$parametersAcceptor->isVariadic()) {
+				foreach (array_keys($types) as $key) {
+					if (is_string($key) && !array_key_exists($key, $parameterNames)) {
+						$hasNames = false;
+						break;
+					}
+				}
+			}
+			$someAcceptorHasNames = $someAcceptorHasNames || $hasNames;
 
 			if ($typesCount < $functionParametersMinCount) {
 				continue;
@@ -714,6 +733,15 @@ final class ParametersAcceptorSelector
 			}
 
 			$acceptableAcceptors[] = $parametersAcceptor;
+			if (!$hasNames) {
+				continue;
+			}
+
+			$acceptableAcceptorsWithNames[] = $parametersAcceptor;
+		}
+
+		if ($someAcceptorHasNames) {
+			$acceptableAcceptors = $acceptableAcceptorsWithNames;
 		}
 
 		if (count($acceptableAcceptors) === 0) {
@@ -892,7 +920,12 @@ final class ParametersAcceptorSelector
 				$isParameterVariadic = $parameters[$i]->isVariadic() || $parameter->isVariadic();
 				$defaultValueLeft = $parameters[$i]->getDefaultValue();
 				$defaultValueRight = $parameter->getDefaultValue();
-				if ($defaultValueLeft !== null && $defaultValueRight !== null) {
+				if ($defaultValueLeft instanceof ErrorType) {
+					// the parameter of the real signature keeps its unknown default
+					$defaultValue = $defaultValueLeft;
+				} elseif ($defaultValueRight instanceof ErrorType) {
+					$defaultValue = $defaultValueRight;
+				} elseif ($defaultValueLeft !== null && $defaultValueRight !== null) {
 					$defaultValue = TypeCombinator::union($defaultValueLeft, $defaultValueRight);
 				} else {
 					$defaultValue = null;

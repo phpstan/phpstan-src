@@ -154,6 +154,13 @@ function functions(): void
 	assertType('static-Closure(string): int<0, max>', strlen(?));
 	// PHP creates it from the declared mt_rand(int $min = UNKNOWN, int $max = UNKNOWN), calling it throws
 	assertType('Closure', mt_rand(?));
+	// PHP throws when ... or a later named argument leaves out a parameter whose default it does not know
+	assertType('Closure', array_keys(?, ...));
+	assertType('Closure', array_keys(?, strict: ?));
+	assertType('Closure', mt_rand(?, ...));
+	assertType('Closure', array_walk(?, ?, ...));
+	assertType('static-Closure(array, mixed, bool=): list<int|string>', array_keys(?, ?, ...));
+	assertType('static-Closure(array|object, callable): true', array_walk(?, ?));
 
 	// templates
 	assertType('static-Closure<T of mixed>(T): T', identity(?));

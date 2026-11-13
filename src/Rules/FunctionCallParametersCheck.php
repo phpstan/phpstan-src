@@ -1015,6 +1015,30 @@ final class FunctionCallParametersCheck
 			unset($unusedParametersByName[$parameter->getName()]);
 		}
 
+		// PHP refuses to fill in a default it does not know: for a parameter
+		// skipped by a later named argument, or left to ... of a partial application
+		$lastPassedPosition = -1;
+		foreach ($parameters as $i => $parameter) {
+			if ($parameter->isVariadic() || array_key_exists($parameter->getName(), $unusedParametersByName)) {
+				continue;
+			}
+			$lastPassedPosition = $i;
+		}
+		foreach ($parameters as $i => $parameter) {
+			if (
+				!array_key_exists($parameter->getName(), $unusedParametersByName)
+				|| !$parameter->getDefaultValue() instanceof ErrorType
+				|| ($checkMissingParameters && (!$hasNamedArguments || !$parameter->isOptional() || $i > $lastPassedPosition))
+			) {
+				continue;
+			}
+
+			$errors[] = RuleErrorBuilder::message(sprintf('Argument #%d ($%s) must be passed explicitly, because the default value is not known.', $i + 1, $parameter->getName()))
+				->identifier('argument.unknownDefaultValue')
+				->line($line)
+				->build();
+		}
+
 		if ($hasNamedArguments && $checkMissingParameters) {
 			foreach ($unusedParametersByName as $parameter) {
 				if ($parameter->isOptional()) {

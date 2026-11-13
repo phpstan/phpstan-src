@@ -30,6 +30,7 @@ final class SymfonyOutputTest extends TestCase
 			{
 			}
 
+			#[\Override]
 			public function isDecorated(): mixed
 			{
 				return $this->value;

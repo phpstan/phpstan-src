@@ -1,4 +1,10 @@
 <?php // lint >= 8.0
+
+/*
+ * instructions: 53.47M
+ * cycles: 75.86M
+ * memory: 36.05MiB
+ */
 declare(strict_types=1);
 
 namespace ConditionalExpressionInfiniteLoop;

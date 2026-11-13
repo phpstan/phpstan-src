@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 7.865B
+ * cycles: 10.96B
+ * memory: 177.1MiB
+ */
+
 namespace Bug14972ConcatBench;
 
 function f(array $a, string $s): string

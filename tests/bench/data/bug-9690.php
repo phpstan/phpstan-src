@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 396.9M
+ * cycles: 522.8M
+ * memory: 39.19MiB
+ */
+
 namespace Bug9690;
 
 class par {

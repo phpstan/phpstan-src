@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 4.257B
+ * cycles: 4.965B
+ * memory: 112.3MiB
+ */
+
 namespace Bug5081;
 
 use function PHPStan\Testing\assertType;

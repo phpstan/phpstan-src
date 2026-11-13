@@ -1,5 +1,11 @@
 <?php declare(strict_types=1);
 
+/*
+ * instructions: 2.951B
+ * cycles: 3.898B
+ * memory: 67.88MiB
+ */
+
 namespace Bug8147;
 
 use RuntimeException;

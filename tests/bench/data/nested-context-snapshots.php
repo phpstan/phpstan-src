@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 6.644B
+ * cycles: 8.373B
+ * memory: 60.10MiB
+ */
+
 namespace BenchNestedContextSnapshots;
 
 use Countable;

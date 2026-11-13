@@ -17,6 +17,7 @@ parameters:
 		- PHPStan
 		- ../src
 		- ../tests
+		- ../tally.php
 	bootstrapFiles:
 		- ../tests/phpstan-bootstrap.php
 	scanFiles:
@@ -90,7 +91,6 @@ parameters:
 			paths:
 				- ../src/File/FsEventsFileMonitor.php
 				- ../src/File/InotifyFileMonitor.php
-				- ../tests/bench/measure.php
 		-
 			identifier: shipmonk.deadMethod
 			message: '#^Unused .*?::__construct#' # likely used in DIC
@@ -108,6 +108,11 @@ parameters:
 			paths:
 				- ../tests/PHPStan/Tests
 				- ../tests/e2e
+			reportUnmatched: false
+		-
+			# Tally calls the benchmark methods, their data providers and #[Before] methods
+			identifier: shipmonk.deadMethod
+			path: ../tests/bench/AnalysisBench.php
 			reportUnmatched: false
 		-
 			identifier: shipmonk.deadConstant

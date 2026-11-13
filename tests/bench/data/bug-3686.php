@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 60.93M
+ * cycles: 86.88M
+ * memory: 36.42MiB
+ */
+
 namespace Bug3686;
 
 /**

@@ -1,5 +1,11 @@
 <?php // lint >= 8.1
 
+/*
+ * instructions: 1.923B
+ * cycles: 2.330B
+ * memory: 42.18MiB
+ */
+
 declare(strict_types = 1);
 
 namespace BenchEnumCaseUnionRemoval;

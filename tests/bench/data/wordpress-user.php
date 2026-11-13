@@ -1,5 +1,11 @@
 <?php // lint >= 8.0
 
+/*
+ * instructions: 2.781B
+ * cycles: 3.536B
+ * memory: 45.12MiB
+ */
+
 namespace BenchComplexUnion;
 
 class WP_User {

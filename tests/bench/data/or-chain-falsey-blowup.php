@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 247.6M
+ * cycles: 314.0M
+ * memory: 39.65MiB
+ */
+
 namespace BenchOrChainFalseyBlowup;
 
 /**

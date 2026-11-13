@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 646.8M
+ * cycles: 817.8M
+ * memory: 37.38MiB
+ */
+
 namespace Bug15498;
 
 /** @param list<list<array<string, mixed>>> $pl */

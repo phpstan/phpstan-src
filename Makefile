@@ -143,7 +143,7 @@ lint:
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14352.php \
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14351.php \
 		--exclude tests/PHPStan/Rules/Properties/data/bug-14457.php \
-		src tests
+		src tests tally.php
 
 install-paratest:
 	composer install --working-dir tests

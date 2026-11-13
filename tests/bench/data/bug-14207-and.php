@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 279.5M
+ * cycles: 356.6M
+ * memory: 39.52MiB
+ */
+
 namespace Bug14207And;
 
 use function PHPStan\Testing\assertType;

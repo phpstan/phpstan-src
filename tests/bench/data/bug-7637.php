@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 189.2M
+ * cycles: 239.0M
+ * memory: 37.91MiB
+ */
+
 namespace Bug7637;
 
 use InvalidArgumentException;

@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 1.690B
+ * cycles: 2.013B
+ * memory: 39.66MiB
+ */
+
 namespace UnrolledForeachListGuards;
 
 function rand_bool(): bool { return (bool) rand(0, 1); }

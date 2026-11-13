@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 1.102B
+ * cycles: 1.423B
+ * memory: 41.35MiB
+ */
+
 namespace BenchLoopWideningOptionalKeys;
 
 final class Answer

@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 1.038B
+ * cycles: 1.321B
+ * memory: 49.73MiB
+ */
+
 namespace Bug13933;
 
 $list = [];

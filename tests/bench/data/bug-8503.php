@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 972.5M
+ * cycles: 1.258B
+ * memory: 43.47MiB
+ */
+
 namespace Bug8503;
 
 class HelloWorld

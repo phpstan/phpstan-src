@@ -1,5 +1,11 @@
 <?php // lint >= 8.0
 
+/*
+ * instructions: 12.87B
+ * cycles: 17.65B
+ * memory: 175.9MiB
+ */
+
 namespace Bug13352;
 
 use Exception;

@@ -1,5 +1,11 @@
 <?php // lint >= 8.1
 
+/*
+ * instructions: 697.9M
+ * cycles: 877.6M
+ * memory: 53.48MiB
+ */
+
 namespace BenchEnumValueKeyedMap;
 
 enum Code: string

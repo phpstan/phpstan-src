@@ -1,5 +1,11 @@
 <?php // lint >= 8.0
 
+/*
+ * instructions: 819.9M
+ * cycles: 1.051B
+ * memory: 39.43MiB
+ */
+
 namespace UnionFastPath;
 
 /**

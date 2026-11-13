@@ -1,5 +1,11 @@
 <?php // lint >= 8.3
 
+/*
+ * instructions: 1.811B
+ * cycles: 2.245B
+ * memory: 58.08MiB
+ */
+
 namespace Bug12159;
 
 $func = static fn( int $Point ) : int => TestMatrix::Values[ $Point ][ 0 ];

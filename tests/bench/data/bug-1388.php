@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 317.2M
+ * cycles: 413.0M
+ * memory: 38.31MiB
+ */
+
 namespace Bug1388;
 
 final class Foo

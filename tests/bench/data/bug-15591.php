@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 42.69M
+ * cycles: 63.41M
+ * memory: 36.03MiB
+ */
+
 namespace MethodExistsLoopRepro;
 
 class Foo

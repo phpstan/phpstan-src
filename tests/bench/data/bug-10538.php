@@ -1,5 +1,11 @@
 <?php
 
+/*
+ * instructions: 14.44B
+ * cycles: 17.32B
+ * memory: 53.56MiB
+ */
+
 namespace Bug10538;
 
 class SomeClass {

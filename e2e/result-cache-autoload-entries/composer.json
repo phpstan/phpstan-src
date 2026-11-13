@@ -1,0 +1,29 @@
+{
+	"name": "phpstan/result-cache-autoload-entries-e2e",
+	"repositories": [
+		{
+			"type": "path",
+			"url": "./path-lib"
+		}
+	],
+	"require": {
+		"test/path-lib": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"AutoloadEntries\\": "src/",
+			"AutoloadEntries\\Lib\\": "lib/",
+			"AutoloadEntries\\Root\\": ""
+		},
+		"psr-0": {
+			"AutoloadEntries_Legacy_": "legacy/"
+		},
+		"classmap": ["classmap/"],
+		"files": ["helpers.php"]
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"AutoloadEntries\\Tests\\": "tests/"
+		}
+	}
+}

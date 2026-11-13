@@ -33,6 +33,7 @@ use PHPStan\Internal\ComposerHelper;
 use PHPStan\Php\ComposerPhpVersionFactory;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDoc\StubFilesProvider;
+use PHPStan\Reflection\BetterReflection\SourceLocator\ComposerJsonAndInstalledJsonSourceLocatorMaker;
 use PHPStan\Reflection\BetterReflection\SourceStubber\ExtensionVersionProvider;
 use PHPStan\ShouldNotHappenException;
 use ReflectionClass;
@@ -93,6 +94,7 @@ use function uasort;
 use function uniqid;
 use function unlink;
 use function unserialize;
+use const DIRECTORY_SEPARATOR;
 use const PHP_VERSION_ID;
 use const SEEK_CUR;
 
@@ -135,10 +137,11 @@ final class ResultCacheManager
 	 * Metadata keys whose change does not invalidate the whole result cache: the analysed files they
 	 * affect can be pinpointed and re-analysed on their own. See restore().
 	 *
-	 * The scannedFiles entry covers scanFiles, scanDirectories and the files excluded from the
-	 * analysis but living in an analysed directory - see getScannedFiles(). The bootstrapFiles are
-	 * deliberately not here: they are executed, not just read, so a change in one of them can affect
-	 * anything about the analysis. They stay in the fully invalidating executedFilesHashes entry.
+	 * The scannedFiles entry covers scanFiles, scanDirectories, the files excluded from the
+	 * analysis but living in an analysed directory, and the files of the project's Composer autoload
+	 * entries - see getScannedFiles(). The bootstrapFiles are deliberately not here: they are
+	 * executed, not just read, so a change in one of them can affect anything about the analysis.
+	 * They stay in the fully invalidating executedFilesHashes entry.
 	 */
 	private const PARTIALLY_INVALIDATING_META_KEYS = ['composerLocks', 'composerInstalled', 'extensionVersions', 'scannedFiles'];
 
@@ -261,6 +264,9 @@ final class ResultCacheManager
 		private ComposerPhpVersionFactory $composerPhpVersionFactory,
 		private FileStatSignatures $fileStatSignatures,
 		private ValueDependencyCollector $valueDependencyCollector,
+		private ComposerJsonAndInstalledJsonSourceLocatorMaker $composerSourceLocatorMaker,
+		#[AutowiredParameter]
+		private string $tmpDir,
 	)
 	{
 	}
@@ -512,12 +518,16 @@ final class ResultCacheManager
 				// and not found by the files waiting for it, which recorded that as a value dependency.
 				foreach ($this->getChangedScannedFiles($data['meta'], $meta) as $changedScannedFile) {
 					// The scanned files getFileAndPackageDependencies() leaves out: nothing would
-					// re-analyse the files depending on them, so the whole cache has to go.
+					// re-analyse the files depending on them, so the whole cache has to go. A package from a
+					// path repository is the project's own code and is tracked file by file.
 					$notTrackedReason = null;
 					if (str_starts_with($changedScannedFile, 'phar://')) {
 						$notTrackedReason = 'is inside a PHAR';
-					} elseif ($this->packageDependencyResolver->resolvePackage($changedScannedFile) !== null) {
-						$notTrackedReason = 'belongs to a Composer package';
+					} else {
+						$package = $this->packageDependencyResolver->resolvePackage($changedScannedFile);
+						if ($package !== null && !$this->packageDependencyResolver->isPathPackage($package)) {
+							$notTrackedReason = 'belongs to a Composer package';
+						}
 					}
 
 					if ($notTrackedReason !== null) {
@@ -3484,6 +3494,11 @@ final class ResultCacheManager
 	}
 
 	/**
+	 * The files the analysis reads symbols from without analysing them, other than the installed
+	 * packages: scanFiles, scanDirectories, the files excluded from the analysis in an analysed
+	 * directory, and the project's own Composer autoload entries - a class, function or constant can
+	 * appear in any of them without anything else changing.
+	 *
 	 * @param string[] $allAnalysedFiles
 	 * @return array<string, string>
 	 */
@@ -3503,13 +3518,27 @@ final class ResultCacheManager
 			$analysedDirectories[] = $analysedPath;
 		}
 
-		$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories));
+		$autoloadPaths = [];
+		$pathPackages = $this->packageDependencyResolver->getPathPackages();
+		foreach ($this->composerAutoloaderProjectPaths as $projectPath) {
+			$autoloadPaths[] = $this->composerSourceLocatorMaker->getAutoloadPaths($projectPath, $pathPackages);
+		}
+
+		$directories = array_unique(array_merge($analysedDirectories, $this->scanDirectories, ...$autoloadPaths));
 		foreach ($this->scanFileFinder->findFilesCached($directories)->getFiles() as $file) {
 			$scannedFiles[] = $file;
 		}
 
+		// PHPStan's own files - the result cache, the container - change on every run, and a
+		// directory holding the tmpDir, like a PSR-4 namespace mapped to the project root, would
+		// make them look like changed scanned files
+		$tmpDir = rtrim($this->tmpDir, '/\\') . DIRECTORY_SEPARATOR;
 		$hashes = [];
 		foreach (array_diff($scannedFiles, $allAnalysedFiles) as $file) {
+			if (str_starts_with($file, $tmpDir)) {
+				continue;
+			}
+
 			$hashes[$file] = $this->getFileHash($file);
 		}
 

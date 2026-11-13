@@ -1947,6 +1947,79 @@ jobs:
           gh release upload "$TAG" --repo phpstan/turbo-ext --clobber pie-assets/*
           gh release edit "$TAG" --repo phpstan/turbo-ext --draft=false
 
+  verify-pie-release-attestations:
+    name: "Verify Attestations of the PIE Release"
+    # Checks the published phpstan/turbo-ext release the way a user would:
+    # each asset as downloaded from it, and the binary inside each, against
+    # GitHub's release attestation of the immutable release (the asset is
+    # part of the release, unchanged) and the build provenance
+    # turbo-pie-release created, pinned to this workflow and this run's tag
+    # and commit.
+    needs: turbo-pie-release
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+
+    permissions:
+      attestations: read # gh attestation verify reads them from this repository
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: "Download the published release assets"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: gh release download "$TAG" --repo phpstan/turbo-ext --dir pie-assets
+
+      - name: "Verify the assets and the binaries inside them"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          FAILED=0
+          ASSETS=0
+          verify_provenance() {
+            if gh attestation verify "$1" --repo phpstan/phpstan-src \
+              --signer-workflow phpstan/phpstan-src/.github/workflows/phar.yml \
+              --source-ref "$GITHUB_REF" --source-digest "$GITHUB_SHA" \
+              --deny-self-hosted-runners > /dev/null; then
+              echo "build provenance verified: $1"
+            else
+              echo "::error::$1 has no valid build provenance attestation from this run"
+              FAILED=1
+            fi
+          }
+          for asset in pie-assets/*; do
+            [ -f "$asset" ] || continue
+            ASSETS=$((ASSETS + 1))
+            if gh release verify-asset "$TAG" "$asset" --repo phpstan/turbo-ext > /dev/null; then
+              echo "release attestation verified: $asset"
+            else
+              echo "::error::$asset does not match the release attestation of phpstan/turbo-ext $TAG"
+              FAILED=1
+            fi
+            verify_provenance "$asset"
+            extracted="extracted/$(basename "$asset" .zip)"
+            mkdir -p "$extracted"
+            if ! unzip -q -d "$extracted" "$asset"; then
+              echo "::error::$asset cannot be extracted"
+              FAILED=1
+              continue
+            fi
+            for binary in "$extracted"/*; do
+              verify_provenance "$binary"
+            done
+          done
+          if [[ "$ASSETS" -eq 0 ]]; then
+            echo "::error::the release has no assets"
+            FAILED=1
+          fi
+          exit "$FAILED"
+
   turbo-differential:
     name: "Run with Turbo Extension (differential tests)"
     # The differential tests (native vs the PHP implementations of this
@@ -2845,6 +2918,10 @@ jobs:
       id-token: write # the Sigstore certificate of the build provenance attestation
       attestations: write # stores the attestation in this repository
 
+    outputs:
+      # the phpstan/phpstan commit this job pushed, empty when it pushed none
+      dist-sha: ${{ steps.commit-development.outputs.sha || steps.commit-tag.outputs.commit_hash }}
+
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
@@ -3081,6 +3158,7 @@ jobs:
           args: --no-default-features
 
       - name: "Commit PHAR - development"
+        id: commit-development
         if: "!startsWith(github.ref, 'refs/tags/') && (steps.checksum-difference.outputs.result == 'different' || steps.turbo-difference.outputs.result == 'different')"
         working-directory: phpstan-dist
         env:
@@ -3094,8 +3172,10 @@ jobs:
           git commit --gpg-sign -m "Updated PHPStan to commit $AFTER_SHA" -m "$INPUT_LOG" --author "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
           lucky_commit "$SHORT_SRC_SHA"
           git push
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: "Commit PHAR - tag"
+        id: commit-tag
         if: "startsWith(github.ref, 'refs/tags/')"
         uses: stefanzweifel/git-auto-commit-action@d0b01107b5db882071f96de5dd4b54961ea93f4c # v7.2.1
         with:
@@ -3106,3 +3186,53 @@ jobs:
           repository: phpstan-dist
           commit_message: "PHPStan ${{github.ref_name}}"
           tagging_message: ${{github.ref_name}}
+
+  verify-commit-attestations:
+    name: "Verify Attestations of the Committed Binaries"
+    # Checks the binaries the commit job added to phpstan/phpstan or changed
+    # there the way a user would: as published, against the build provenance
+    # the commit job created, pinned to this workflow and this run's ref and
+    # commit.
+    needs: commit
+    if: needs.commit.outputs.dist-sha != ''
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+
+    permissions:
+      contents: read # actions/checkout of phpstan/phpstan
+      attestations: read # gh attestation verify reads them from this repository
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: "Checkout the pushed phpstan-dist commit"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: phpstan/phpstan
+          ref: ${{ needs.commit.outputs.dist-sha }}
+          fetch-depth: 2 # and its parent, to list what it changed
+          persist-credentials: false
+
+      - name: "Verify the binaries the commit added or changed"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          FAILED=0
+          VERIFIED=0
+          while IFS= read -r file; do
+            if gh attestation verify "$file" --repo phpstan/phpstan-src \
+              --signer-workflow phpstan/phpstan-src/.github/workflows/phar.yml \
+              --source-ref "$GITHUB_REF" --source-digest "$GITHUB_SHA" \
+              --deny-self-hosted-runners > /dev/null; then
+              echo "build provenance verified: $file"
+              VERIFIED=$((VERIFIED + 1))
+            else
+              echo "::error::$file has no valid build provenance attestation from this run"
+              FAILED=1
+            fi
+          done < <(git diff-tree --no-commit-id --name-only -r --diff-filter=AM HEAD -- phpstan.phar 'turbo-ext/*/phpstan_turbo*')
+          echo "$VERIFIED binaries verified"
+          exit "$FAILED"

@@ -454,4 +454,9 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function deprecatesCsvEscapeParameterDefault(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

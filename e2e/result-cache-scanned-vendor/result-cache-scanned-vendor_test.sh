@@ -11,6 +11,9 @@ function tear_down() {
 
 function test_result_cache_scanned_vendor() {
 	composer install
+	# A package from a path repository is the project's own code and is tracked file by file;
+	# record the fixture package as downloaded, like one from Packagist
+	php -r '$f = "vendor/composer/installed.json"; $j = json_decode(file_get_contents($f), true); foreach ($j["packages"] as &$p) { $p["dist"]["type"] = "zip"; } file_put_contents($f, json_encode($j, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));'
 	../../bin/phpstan analyse
 	# A scanned file that belongs to an installed Composer package is not tracked as a file
 	# dependency - packages are tracked at package granularity - so editing it still has to

@@ -18,6 +18,7 @@ use function array_map;
 use function array_merge;
 use function array_merge_recursive;
 use function array_reverse;
+use function array_values;
 use function count;
 use function dirname;
 use function glob;
@@ -25,7 +26,13 @@ use function is_array;
 use function is_dir;
 use function is_file;
 use function is_string;
+use function realpath;
+use function rtrim;
+use function scandir;
 use function str_contains;
+use function str_ends_with;
+use function str_starts_with;
+use const DIRECTORY_SEPARATOR;
 use const GLOB_ONLYDIR;
 
 #[AutowiredService]
@@ -47,30 +54,12 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 	 */
 	public function create(string $projectInstallationPath, ?OptimizedDirectorySourceLocatorBatch $batch = null): ?SourceLocator
 	{
-		$composer = ComposerHelper::getComposerConfig($projectInstallationPath);
-
-		if ($composer === null) {
+		$project = $this->readProject($projectInstallationPath);
+		if ($project === null) {
 			return null;
 		}
 
-		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($projectInstallationPath, $composer);
-
-		$installedJsonPath = $vendorDirectory . '/composer/installed.json';
-		if (!is_file($installedJsonPath)) {
-			return null;
-		}
-
-		$installedJsonDirectoryPath = dirname($installedJsonPath);
-
-		try {
-			$installedJsonContents = FileReader::read($installedJsonPath);
-			$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
-		} catch (CouldNotReadFileException | JsonException) {
-			return null;
-		}
-
-		$installed = $installedJson['packages'] ?? $installedJson;
-		$dev = (bool) ($installedJson['dev'] ?? true);
+		[$composer, $vendorDirectory, $installedJsonDirectoryPath, $installed, $dev] = $project;
 
 		$classMapPaths = array_merge(
 			$this->prefixPaths($this->packageToClassMapPaths($composer), $projectInstallationPath . '/'),
@@ -178,6 +167,149 @@ final class ComposerJsonAndInstalledJsonSourceLocatorMaker
 		}
 
 		return new AggregateSourceLocator($locators);
+	}
+
+	/**
+	 * The existing directories and files of the PSR-4, PSR-0, classmap and files entries of the
+	 * project and of the packages in $packageNames - where the project's own code that create()
+	 * finds lives. An entry containing the vendor directory, like a PSR-4 namespace mapped to the
+	 * project root, is left out: it would bring all the installed packages with it.
+	 *
+	 * @param array<string, true> $packageNames
+	 * @return list<string>
+	 */
+	public function getAutoloadPaths(string $projectInstallationPath, array $packageNames): array
+	{
+		$project = $this->readProject($projectInstallationPath);
+		if ($project === null) {
+			return [];
+		}
+
+		[$composer, $vendorDirectory, $installedJsonDirectoryPath, $installed, $dev] = $project;
+
+		// the project's own entries can point into the vendor directory too, like a files entry
+		// requiring a file of an installed package - that one changes only through Composer, and is
+		// tracked with its package
+		$packages = [[$composer, $projectInstallationPath . '/', $dev ? ['autoload', 'autoload-dev'] : ['autoload'], true]];
+		foreach ($installed as $package) {
+			if (!isset($packageNames[$package['name'] ?? ''])) {
+				continue;
+			}
+
+			$packages[] = [$package, $this->packagePrefixPath($installedJsonDirectoryPath, $package, $vendorDirectory), ['autoload'], false];
+		}
+
+		$realVendorDirectory = realpath($vendorDirectory);
+		$paths = [];
+		foreach ($packages as [$package, $prefix, $sections, $skipVendorPaths]) {
+			foreach ($sections as $section) {
+				$sectionPaths = $this->prefixPaths(array_merge(
+					$this->packageToClassMapPaths($package, $section),
+					$this->packageToFilePaths($package, $section),
+					...array_values($this->packageToPsr4AutoloadNamespaces($package, $section)),
+					...array_values($this->packageToPsr0AutoloadNamespaces($package, $section)),
+				), $prefix);
+				foreach ($sectionPaths as $path) {
+					$realPath = realpath($path);
+					if (
+						$skipVendorPaths
+						&& $realPath !== false
+						&& $realVendorDirectory !== false
+						&& str_starts_with($realPath, $realVendorDirectory . DIRECTORY_SEPARATOR)
+					) {
+						continue;
+					}
+
+					foreach ($this->withoutVendorDirectory($path, $realVendorDirectory) as $pathWithoutVendor) {
+						$paths[] = $pathWithoutVendor;
+					}
+				}
+			}
+		}
+
+		return $paths;
+	}
+
+	/**
+	 * The path itself, or when it is a directory containing the vendor directory, like a PSR-4
+	 * namespace mapped to the project root, its entries other than the vendor directory and the
+	 * hidden ones. The files are named the way the source locators name them - through the vendor
+	 * directory for a package from a path repository, not where its symlink points.
+	 *
+	 * @return list<string>
+	 */
+	private function withoutVendorDirectory(string $path, string|false $realVendorDirectory): array
+	{
+		$realPath = realpath($path);
+		if ($realPath === false) {
+			return [];
+		}
+
+		$realPath = rtrim($realPath, '/\\');
+		if ($realVendorDirectory === false || !str_starts_with($realVendorDirectory . DIRECTORY_SEPARATOR, $realPath . DIRECTORY_SEPARATOR)) {
+			return [$path];
+		}
+
+		$entries = scandir($realPath);
+		if ($entries === false) {
+			return [];
+		}
+
+		$paths = [];
+		foreach ($entries as $entry) {
+			if (str_starts_with($entry, '.')) {
+				continue;
+			}
+
+			$entryPath = $realPath . DIRECTORY_SEPARATOR . $entry;
+			if ($entryPath === $realVendorDirectory) {
+				continue;
+			}
+			// a file given by itself is taken whatever its extension, unlike one found in a directory
+			if (!is_dir($entryPath) && !str_ends_with($entry, '.php')) {
+				continue;
+			}
+
+			foreach ($this->withoutVendorDirectory($entryPath, $realVendorDirectory) as $entryPathWithoutVendor) {
+				$paths[] = $entryPathWithoutVendor;
+			}
+		}
+
+		return $paths;
+	}
+
+	/**
+	 * @return array{mixed[], string, string, list<mixed[]>, bool}|null composer.json, the vendor directory, the directory of installed.json, the installed packages, whether the dev ones are
+	 */
+	private function readProject(string $projectInstallationPath): ?array
+	{
+		$composer = ComposerHelper::getComposerConfig($projectInstallationPath);
+
+		if ($composer === null) {
+			return null;
+		}
+
+		$vendorDirectory = ComposerHelper::getVendorDirFromComposerConfig($projectInstallationPath, $composer);
+
+		$installedJsonPath = $vendorDirectory . '/composer/installed.json';
+		if (!is_file($installedJsonPath)) {
+			return null;
+		}
+
+		try {
+			$installedJsonContents = FileReader::read($installedJsonPath);
+			$installedJson = Json::decode($installedJsonContents, Json::FORCE_ARRAY);
+		} catch (CouldNotReadFileException | JsonException) {
+			return null;
+		}
+
+		return [
+			$composer,
+			$vendorDirectory,
+			dirname($installedJsonPath),
+			$installedJson['packages'] ?? $installedJson,
+			(bool) ($installedJson['dev'] ?? true),
+		];
 	}
 
 	/**

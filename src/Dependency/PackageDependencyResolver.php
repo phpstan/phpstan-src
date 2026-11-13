@@ -308,8 +308,8 @@ final class PackageDependencyResolver
 		return $this->installPathToPackage;
 	}
 
-	/** @return array<string, true> */
-	private function getPathPackages(): array
+	/** @return array<string, true> names of the installed packages that came from a path repository */
+	public function getPathPackages(): array
 	{
 		$this->resolveInstalledPackages();
 

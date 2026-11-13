@@ -102,9 +102,14 @@ class Foo
 
 	/**
 	 * @param list<int> $ints
+	 * @param array{0?: 1, 1: 2} $maybeList
 	 */
-	public function immediatelyInvoked(array $ints): void
+	public function immediatelyInvoked(array $ints, array $maybeList): void
 	{
+		(function ($a) {
+			assertType('1|2', $a);
+		})(...$maybeList);
+
 		(function ($a, $b) {
 			assertType('int', $a);
 			assertType('int', $b);

@@ -364,12 +364,13 @@ public:
 	explicit DefaultNarrowingHelper(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *exprPrinter, bool rememberPossiblyImpureFunctionValues, zval *reflectionProvider)
+	void construct(zval *exprPrinter, bool rememberPossiblyImpureFunctionValues, zval *reflectionProvider, bool treatPhpDocTypesAsCertain)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::exprPrinter, zv::Val::copyOf(zv::Ref(exprPrinter)));
 		object.propAtWrite(slots::rememberPossiblyImpureFunctionValues, zv::Val::boolean(rememberPossiblyImpureFunctionValues));
 		object.propAtWrite(slots::reflectionProvider, zv::Val::copyOf(zv::Ref(reflectionProvider)));
+		object.propAtWrite(slots::treatPhpDocTypesAsCertain, zv::Val::boolean(treatPhpDocTypesAsCertain));
 	}
 
 	/* Mirrors specifyTypesForNode(). */
@@ -1007,6 +1008,17 @@ public:
 		if (UNEXPECTED(exprType.isUndef())) return zv::Val();
 
 		if (isA(issetExpr, PT_CLASS_VARIABLE) && Z_TYPE_P(nameOf(issetExpr)) == IS_STRING) {
+			// the variable's existence is shared by the PHPDoc and native types:
+			// with uncertain PHPDoc types, a variable whose native type allows
+			// null still exists in !isset()
+			if (!isNullable && !treatPhpDocTypesAsCertain()) {
+				zv::Val nativeType = pt_expression_result_get_type_on_scope(varResult, s, true);
+				if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+				zend_long nativeTypeIsNull = typeTrinary(nativeType.raw(), PT_OP_IS_NULL, "isNull");
+				if (UNEXPECTED(nativeTypeIsNull < 0)) return zv::Val();
+				isNullable = nativeTypeIsNull != PT_TRI_NO;
+			}
+
 			if (isset == IS_TRUE) {
 				if (isNullable) return exprType;
 
@@ -1368,6 +1380,8 @@ private:
 	zend_object *self;
 
 	bool rememberPossiblyImpureFunctionValues() const { return Z_TYPE_P(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) == IS_TRUE; }
+
+	bool treatPhpDocTypesAsCertain() const { return Z_TYPE_P(OBJ_PROP_NUM(self, slots::treatPhpDocTypesAsCertain)) == IS_TRUE; }
 
 	/* $this->exprPrinter->printExpr($expr); NULL = pending exception */
 	zv::Str print(zval *expr) const
@@ -2234,9 +2248,9 @@ PT_MINIT_REGISTRATION(pt_register_default_narrowing_helper)
 	 * #[AutowiredParameter] by name) */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *exprPrinter, *reflectionProvider;
-		bool rememberPossiblyImpureFunctionValues;
-		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj>(execute_data, exprPrinter, rememberPossiblyImpureFunctionValues, reflectionProvider)) RETURN_THROWS();
-		PT_DNH_THIS.construct(exprPrinter, rememberPossiblyImpureFunctionValues, reflectionProvider);
+		bool rememberPossiblyImpureFunctionValues, treatPhpDocTypesAsCertain;
+		if (!zp::parse<zp::Obj, zp::Bool, zp::Obj, zp::Bool>(execute_data, exprPrinter, rememberPossiblyImpureFunctionValues, reflectionProvider, treatPhpDocTypesAsCertain)) RETURN_THROWS();
+		PT_DNH_THIS.construct(exprPrinter, rememberPossiblyImpureFunctionValues, reflectionProvider, treatPhpDocTypesAsCertain);
 	});
 
 	cls.method(sigs::specifyTypesForNode, [](INTERNAL_FUNCTION_PARAMETERS) {

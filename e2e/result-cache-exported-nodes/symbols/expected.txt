@@ -1,0 +1,2 @@
+src/ConstantNamespace/User.php:7:Constant ResultCacheE2EExportedNodes\ConstantNamespace\A\FOO not found.
+src/FunctionNamespace/User.php:7:Function ResultCacheE2EExportedNodes\FunctionNamespace\A\value not found.

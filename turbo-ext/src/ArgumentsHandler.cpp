@@ -783,18 +783,19 @@ bool thisVariableMatcher(zend_object *node, void *ctx)
 
 pt_method_site pt_ah_of_closure_type_site;
 
-/* DependencyTypes::ofClosureType($type); UNDEF = pending exception */
-zv::Val dependencyTypesOfClosureType(zval *type)
+/* DependencyTypes::ofClosureType($type, $scope, $expr); UNDEF = pending exception */
+zv::Val dependencyTypesOfClosureType(zval *type, zval *scope, zval *expr)
 {
-	return pt_call_static_cached(pt_ah_of_closure_type_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofclosuretype"), 1, type);
+	zv::Args argv{type, scope, expr};
+	return pt_call_static_cached(pt_ah_of_closure_type_site, PT_CLASS_DEPENDENCY_TYPES, PT_LC("ofclosuretype"), 3, argv);
 }
 
 /* Dependencies::merge($bodyDependencies, Dependencies::create($scope->getFile(),
- * DependencyTypes::ofClosureType($closureType))): what a closure or arrow
- * function argument depends on; UNDEF = pending exception */
-zv::Val closureArgDependencies(zval *bodyDependencies, zval *scope, zval *closureType)
+ * DependencyTypes::ofClosureType($closureType, $scope, $expr))): what a closure or
+ * arrow function argument depends on; UNDEF = pending exception */
+zv::Val closureArgDependencies(zval *bodyDependencies, zval *scope, zval *closureType, zval *expr)
 {
-	zv::Val closureTypes = dependencyTypesOfClosureType(closureType);
+	zv::Val closureTypes = dependencyTypesOfClosureType(closureType, scope, expr);
 	if (UNEXPECTED(closureTypes.isUndef())) return zv::Val();
 	zv::Val ownDependencies = pt_dependencies_create_in(scope, closureTypes.raw());
 	if (UNEXPECTED(ownDependencies.isUndef())) return zv::Val();
@@ -1971,7 +1972,7 @@ private:
 			zv::Val bodyDependenciesHold;
 			zval *bodyDependencies = pt_process_closure_result_dependencies(closureResult.raw(), bodyDependenciesHold);
 			if (UNEXPECTED(bodyDependencies == NULL)) return false;
-			zv::Val dependencies = closureArgDependencies(bodyDependencies, a.scopeToPass.raw(), storedType.raw());
+			zv::Val dependencies = closureArgDependencies(bodyDependencies, a.scopeToPass.raw(), storedType.raw(), value);
 			if (UNEXPECTED(dependencies.isUndef())) return false;
 			storedClosureResult = pt_expression_result_with_dependencies(storedClosureResult.raw(), dependencies.raw());
 			if (UNEXPECTED(storedClosureResult.isUndef())) return false;
@@ -2092,7 +2093,7 @@ private:
 			zv::Val bodyDependenciesHold;
 			zval *bodyDependencies = pt_expression_result_dependencies(exprResult, bodyDependenciesHold);
 			if (UNEXPECTED(bodyDependencies == NULL)) return false;
-			zv::Val dependencies = closureArgDependencies(bodyDependencies, a.scopeToPass.raw(), types[0].raw());
+			zv::Val dependencies = closureArgDependencies(bodyDependencies, a.scopeToPass.raw(), types[0].raw(), value);
 			if (UNEXPECTED(dependencies.isUndef())) return false;
 			storedArgs.withVariableFlow(variableFlow.raw()).withType(types[0].raw()).withNativeType(types[1].raw()).withDependencies(dependencies.raw());
 			zv::Val storedArrowResult = pt_expression_result_create(slot(slots::expressionResultFactory), storedArgs);

@@ -55,8 +55,8 @@ public:
 		writeSlot(slots::argumentsHandler, argumentsHandler);
 	}
 
-	/* Mirrors processAttributeGroups(): what the arguments of the attributes
-	 * depend on */
+	/* Mirrors processAttributeGroups(): what the attributes depend on - their
+	 * classes and what their arguments depend on */
 	zv::Val processAttributeGroups(zval *nodeScopeResolver, zval *stmt, zval *attrGroups, zval *scope, zval *storage, zval *nodeCallback) const
 	{
 		if (EXPECTED(zend_hash_num_elements(Z_ARRVAL_P(attrGroups)) == 0)) return zv::Val::null();
@@ -116,6 +116,11 @@ private:
 		}
 		zv::Val className = pt_mutating_scope_resolve_name(Z_OBJ_P(scope), Z_OBJ_P(name));
 		if (UNEXPECTED(className.isUndef())) return false;
+		zv::Arr classNames = zv::Arr::create(1);
+		classNames.push(className.ref());
+		zv::Val classDependency = pt_dependencies_create_in(scope, NULL, classNames.raw());
+		if (UNEXPECTED(classDependency.isUndef())) return false;
+		collect(dependencies, classDependency.raw());
 		zval *reflectionProvider = OBJ_PROP_NUM(self, slots::reflectionProvider);
 		bool hasClass = false;
 		if (UNEXPECTED(!pt_reflection_provider_has_class(Z_OBJ_P(reflectionProvider), className.raw(), hasClass))) return false;

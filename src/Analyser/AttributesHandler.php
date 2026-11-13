@@ -29,7 +29,7 @@ final class AttributesHandler
 	}
 
 	/**
-	 * Returns what the arguments of the attributes depend on.
+	 * Returns what the attributes depend on: their classes and what their arguments depend on.
 	 *
 	 * @param AttributeGroup[] $attrGroups
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
@@ -47,6 +47,7 @@ final class AttributesHandler
 		foreach ($attrGroups as $attrGroup) {
 			foreach ($attrGroup->attrs as $attr) {
 				$className = $scope->resolveName($attr->name);
+				$dependencies[] = Dependencies::create($scope->getFile(), classNames: [$className]);
 				if ($this->reflectionProvider->hasClass($className)) {
 					$classReflection = $this->reflectionProvider->getClass($className);
 					if ($classReflection->hasConstructor()) {

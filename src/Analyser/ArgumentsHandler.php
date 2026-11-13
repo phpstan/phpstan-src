@@ -452,7 +452,7 @@ final class ArgumentsHandler
 					);
 					$storedClosureResult = $storedClosureResult->withDependencies(Dependencies::merge(
 						$closureResult->getDependencies(),
-						Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($storedClosureResult->getType())),
+						Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($storedClosureResult->getType(), $scopeToPass, $arg->value)),
 					));
 					$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedClosureResult);
 					// the closure node's own callback fires after its result is
@@ -599,7 +599,7 @@ final class ArgumentsHandler
 						specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 						dependencies: Dependencies::merge(
 							$arrowFunctionExprResult->getDependencies(),
-							Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($arrowFunctionType)),
+							Dependencies::create($scopeToPass->getFile(), DependencyTypes::ofClosureType($arrowFunctionType, $scopeToPass, $arg->value)),
 						),
 					);
 					$nodeScopeResolver->storeExpressionResult($storage, $arg->value, $storedArrowResult);

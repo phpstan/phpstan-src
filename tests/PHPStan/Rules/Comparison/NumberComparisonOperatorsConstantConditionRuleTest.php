@@ -326,6 +326,17 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15243.php'], []);
 	}
 
+	public function testBug15713(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15713.php'], [
+			[
+				'Comparison operation ">=" between NAN and -2|-1 is always false.',
+				43,
+				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+			],
+		]);
+	}
+
 	public function testShiftLeftUnboundedRange(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/shift-left-unbounded-range.php'], []);

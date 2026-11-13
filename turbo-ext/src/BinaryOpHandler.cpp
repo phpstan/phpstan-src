@@ -1423,6 +1423,17 @@ private:
 		return pt_type_combinator_call(PT_LC("union"), 2, args);
 	}
 
+	/* (new ConstantFloatType(NAN))->isSuperTypeOf($type)->no() — a NAN operand
+	 * makes the comparison false for every value of the other operand, so the
+	 * false branch tells nothing about a side whose counterpart can be NAN;
+	 * -1 = pending exception */
+	static int cannotBeNan(zval *type)
+	{
+		zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
+		if (UNEXPECTED(nan.isUndef())) return -1;
+		return superTypeVerdict(nan.raw(), type, PT_TRI_NO);
+	}
+
 	/* $this->defaultNarrowingHelper->createForSubject($subject, $type,
 	 * $context, $scope)->setRootExpr($expr) */
 	zv::Val subjectTypes(zval *subject, zval *type, zval *context, zval *scope, zval *expr) const
@@ -1824,7 +1835,13 @@ private:
 			if (UNEXPECTED(left == NULL)) return zv::Val();
 			int leftIsScalar = isScalarOrNegatedScalar(left);
 			if (UNEXPECTED(leftIsScalar < 0)) return zv::Val();
-			if (!leftIsScalar) {
+			bool narrowLeft = leftIsScalar == 0;
+			if (narrowLeft && !contextTrue) {
+				int rightCannotBeNan = cannotBeNan(rightType.raw());
+				if (UNEXPECTED(rightCannotBeNan < 0)) return zv::Val();
+				narrowLeft = rightCannotBeNan != 0;
+			}
+			if (narrowLeft) {
 				zv::Val narrowed = contextTrue
 					? (orEqual ? comparisonType(rightType.raw(), PT_LC("getsmallerorequaltype")) : comparisonType(rightType.raw(), PT_LC("getsmallertype")))
 					: withNan(orEqual ? comparisonType(rightType.raw(), PT_LC("getgreatertype")) : comparisonType(rightType.raw(), PT_LC("getgreaterorequaltype")));
@@ -1835,7 +1852,13 @@ private:
 			if (UNEXPECTED(right == NULL)) return zv::Val();
 			int rightIsScalar = isScalarOrNegatedScalar(right);
 			if (UNEXPECTED(rightIsScalar < 0)) return zv::Val();
-			if (!rightIsScalar) {
+			bool narrowRight = rightIsScalar == 0;
+			if (narrowRight && !contextTrue) {
+				int leftCannotBeNan = cannotBeNan(leftType.raw());
+				if (UNEXPECTED(leftCannotBeNan < 0)) return zv::Val();
+				narrowRight = leftCannotBeNan != 0;
+			}
+			if (narrowRight) {
 				zv::Val narrowed = contextTrue
 					? (orEqual ? comparisonType(leftType.raw(), PT_LC("getgreaterorequaltype")) : comparisonType(leftType.raw(), PT_LC("getgreatertype")))
 					: withNan(orEqual ? comparisonType(leftType.raw(), PT_LC("getsmallertype")) : comparisonType(leftType.raw(), PT_LC("getsmallerorequaltype")));

@@ -667,21 +667,32 @@ final class BinaryOpHandler implements ExprHandler
 					}
 				} elseif ($context->false()) {
 					// NAN is neither smaller nor greater than anything: the false branch keeps it
-					if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
+					// on the narrowed side, and tells nothing about the other side at all,
+					// because a NAN operand makes the comparison false for every value of it
+					$nanType = new ConstantFloatType(NAN);
+					if (
+						!$expr->left instanceof Scalar
+						&& !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)
+						&& $nanType->isSuperTypeOf($rightType)->no()
+					) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
 								$expr->left,
-								TypeCombinator::union($orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion), new ConstantFloatType(NAN)),
+								TypeCombinator::union($orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion), $nanType),
 								TypeSpecifierContext::createTruthy(),
 								$scope,
 							)->setRootExpr($expr),
 						);
 					}
-					if (!$expr->right instanceof Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)) {
+					if (
+						!$expr->right instanceof Scalar
+						&& !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)
+						&& $nanType->isSuperTypeOf($leftType)->no()
+					) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
 								$expr->right,
-								TypeCombinator::union($orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion), new ConstantFloatType(NAN)),
+								TypeCombinator::union($orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion), $nanType),
 								TypeSpecifierContext::createTruthy(),
 								$scope,
 							)->setRootExpr($expr),

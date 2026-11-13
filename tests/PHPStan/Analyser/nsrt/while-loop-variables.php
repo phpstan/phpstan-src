@@ -49,7 +49,7 @@ function () {
 		assertType('int<1, 10>', $i);
 	}
 
-	assertType('int<0, 10>', $i);
+	assertType('int<0, 11>', $i); // the condition increments $i to 11 when $i++ < 10 fails
 
 	assertType('LoopVariables\Bar|LoopVariables\Foo|LoopVariables\Lorem|null', $foo);
 

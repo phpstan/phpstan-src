@@ -15,7 +15,6 @@ use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\RecordingNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredParameter;
@@ -196,12 +195,18 @@ final class WhileHandler implements StmtHandler
 		$backEdgeScope = $finalScopeResult->getLoopBackEdgeScope();
 		$backEdgeDead = $backEdgeScope === null;
 		$finalScope = $backEdgeScope ?? $finalScopeResult->getScope();
-		// the loop condition narrows the post-loop scope to its falsey branch;
-		// $finalScope (after the body ran) is a different scope than the condition's
-		// own, so reprocess the condition there rather than re-running its result.
-		// The duplicate lets subresults whose state did not change in the body
-		// answer from the final pass instead of being re-priced.
-		$finalScope = $finalScope->applySpecifiedTypes($nodeScopeResolver->processExprOnDemand($stmt->cond, $finalScope, $storage->duplicate())->getSpecifiedTypesForScope($finalScope, TypeSpecifierContext::createFalsey()));
+		// the loop exits when the condition, evaluated again after the body ran,
+		// is falsey - walk it on $finalScope and take its falsey scope, so the
+		// assignments it makes (`while ($row = fetch())`) replace the body's
+		// values instead of the body's stale values being narrowed by them.
+		// The duplicate keeps this walk's results out of the final pass's storage.
+		$exitCondStorage = $storage->duplicate();
+		$scope->pushExpressionResultStorage($exitCondStorage);
+		try {
+			$finalScope = $nodeScopeResolver->processExprNode($stmt, $stmt->cond, $finalScope, $exitCondStorage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getFalseyScope();
+		} finally {
+			$scope->popExpressionResultStorage();
+		}
 
 		$alwaysIterates = false;
 		$neverIterates = false;
@@ -236,7 +241,10 @@ final class WhileHandler implements StmtHandler
 			if (!$this->polluteScopeWithLoopInitialAssignments) {
 				$condScope = $condScope->mergeWith($scope);
 			}
-			$finalScope = $finalScope === null ? $condScope : $finalScope->mergeWith($condScope);
+			// the loop either ran or exited on its first condition, so these are
+			// alternative paths like an if's branches: keep a conditional that only
+			// one path records when the other path makes it vacuously true
+			$finalScope = $finalScope === null ? $condScope : $finalScope->mergeWith($condScope, true);
 		}
 		$finalScope ??= $finalScopeResult->getScope();
 

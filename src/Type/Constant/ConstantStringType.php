@@ -131,23 +131,26 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			return $this->cachedDescriptions[$levelValue];
 		}
 
-		return $level->handle(
-			static fn (): string => 'string',
-			function () use ($levelValue): string {
-				$value = $this->value;
+		// what VerbosityLevel::handle() would pick, without creating its callbacks
+		if ($level->isTypeOnly()) {
+			return 'string';
+		}
 
-				if (!$this->isClassString) {
-					try {
-						$value = Strings::truncate($value, self::DESCRIBE_LIMIT);
-					} catch (RegexpException) {
-						$value = substr($value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
-					}
+		if ($level->isValue()) {
+			$value = $this->value;
+
+			if (!$this->isClassString) {
+				try {
+					$value = Strings::truncate($value, self::DESCRIBE_LIMIT);
+				} catch (RegexpException) {
+					$value = substr($value, 0, self::DESCRIBE_LIMIT) . "\u{2026}";
 				}
+			}
 
-				return $this->cachedDescriptions[$levelValue] = self::export($value);
-			},
-			fn (): string => $this->cachedDescriptions[$levelValue] = self::export($this->value),
-		);
+			return $this->cachedDescriptions[$levelValue] = self::export($value);
+		}
+
+		return $this->cachedDescriptions[$levelValue] = self::export($this->value);
 	}
 
 	private function export(string $value): string

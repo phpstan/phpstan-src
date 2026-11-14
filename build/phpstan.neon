@@ -115,6 +115,10 @@ parameters:
 			path: ../tests/bench/*Bench.php
 			reportUnmatched: false
 		-
+			# the benchmarks name the cases by string, C0 to C255
+			identifier: shipmonk.deadEnumCase
+			path: ../tests/bench/BenchEnum.php
+		-
 			identifier: shipmonk.deadConstant
 			paths:
 				- ../tests/PHPStan/Fixture

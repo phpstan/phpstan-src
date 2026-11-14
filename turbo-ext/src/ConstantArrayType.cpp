@@ -2196,6 +2196,18 @@ public:
 	 * -1 = pending exception */
 	[[nodiscard]] zend_long isCallable() const
 	{
+		/* the shapes doFindTypeAndMethodNames() rejects by their keys alone,
+		 * without describing the whole shape for the recursion guard */
+		zval *k = keyTypes();
+		if (UNEXPECTED(k == NULL)) return -1;
+		zend_long keyTypesCount = arrayCount(k);
+		if (keyTypesCount > 2) return PT_TRI_NO;
+		if (keyTypesCount != 2) {
+			zend_long unsealedness = thisIsUnsealed();
+			if (UNEXPECTED(unsealedness < 0)) return -1;
+			if (unsealedness != PT_TRI_YES) return PT_TRI_NO;
+		}
+
 		zv::Val callback = pt_type_native_callback(isCallableCallback, thisZv(), NULL);
 		if (UNEXPECTED(callback.isUndef())) return -1;
 		zv::Val result = pt_type_recursion_guard_run(thisZv(), callback.raw());

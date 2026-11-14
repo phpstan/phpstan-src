@@ -2366,6 +2366,22 @@ private:
 	 * pending exception */
 	zend_long finiteTypeSetContainedIn(zval *otherType, bool yesOnly) const
 	{
+		bool otherIsUnion = zv::Ref(otherType).instanceOf(pt_ce_union_type);
+		if (otherIsUnion) {
+			bool isTemplate;
+			if (UNEXPECTED(!isInstance(otherType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return -1;
+			otherIsUnion = !isTemplate;
+		}
+
+		/* the key of a single other value comes first: without one this
+		 * union's set is not built */
+		zv::Val key;
+		if (!otherIsUnion) {
+			key = finiteKey(otherType);
+			if (UNEXPECTED(key.isUndef())) return -1;
+			if (!zv::Ref(key.raw()).isString()) return CONTAINMENT_UNSETTLED;
+		}
+
 		zv::Val finiteTypeSet = thisGetFiniteTypeSet();
 		if (UNEXPECTED(finiteTypeSet.isUndef())) return -1;
 		if (zv::Ref(finiteTypeSet.raw()).isNull()) return CONTAINMENT_UNSETTLED;
@@ -2374,16 +2390,7 @@ private:
 		if (UNEXPECTED(complete < 0)) return -1;
 		if (complete == 0) return CONTAINMENT_UNSETTLED;
 
-		bool otherIsUnion = zv::Ref(otherType).instanceOf(pt_ce_union_type);
-		if (otherIsUnion) {
-			bool isTemplate;
-			if (UNEXPECTED(!isInstance(otherType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return -1;
-			otherIsUnion = !isTemplate;
-		}
 		if (!otherIsUnion) {
-			zv::Val key = finiteKey(otherType);
-			if (UNEXPECTED(key.isUndef())) return -1;
-			if (!zv::Ref(key.raw()).isString()) return CONTAINMENT_UNSETTLED;
 			zend_long containment = pt_type_call_trinary(set, PT_LC("containedinkey"), 1, key.raw());
 			if (UNEXPECTED(containment < 0)) return -1;
 			if (containment != PT_TRI_YES && yesOnly) return CONTAINMENT_UNSETTLED;

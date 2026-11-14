@@ -1047,6 +1047,13 @@ class ConstantArrayType implements Type
 
 	public function isCallable(): TrinaryLogic
 	{
+		// the shapes doFindTypeAndMethodNames() rejects by their keys alone, without
+		// describing the whole shape for the recursion guard
+		$keyTypesCount = count($this->keyTypes);
+		if ($keyTypesCount > 2 || ($keyTypesCount !== 2 && !$this->isUnsealed()->yes())) {
+			return TrinaryLogic::createNo();
+		}
+
 		$result = RecursionGuard::run($this, function (): TrinaryLogic {
 			$hasNonExistentMethod = false;
 			$typeAndMethods = $this->doFindTypeAndMethodNames($hasNonExistentMethod);

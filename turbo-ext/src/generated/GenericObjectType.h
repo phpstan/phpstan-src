@@ -10,9 +10,9 @@ namespace ptdecl::GenericObjectType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t types = 10;
-inline constexpr uint32_t classReflection = 11;
-inline constexpr uint32_t variances = 12;
+inline constexpr uint32_t types = 11;
+inline constexpr uint32_t classReflection = 12;
+inline constexpr uint32_t variances = 13;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

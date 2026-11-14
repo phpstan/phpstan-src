@@ -44,6 +44,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FunctionParameterClosureThisExtension;
 use PHPStan\Type\FunctionParameterClosureTypeExtension;
 use PHPStan\Type\FunctionParameterOutTypeExtension;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -51,6 +52,7 @@ use PHPStan\Type\MethodParameterClosureThisExtension;
 use PHPStan\Type\MethodParameterClosureTypeExtension;
 use PHPStan\Type\MethodParameterOutTypeExtension;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\ResourceType;
 use PHPStan\Type\StaticMethodParameterClosureThisExtension;
@@ -59,6 +61,7 @@ use PHPStan\Type\StaticMethodParameterOutTypeExtension;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\TypeUtils;
 use function array_keys;
 use function array_last;
@@ -234,7 +237,7 @@ final class ArgumentsHandler
 				// resolution (see gatherClosureArgType()).
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
-					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
+					? $this->gatherClosureArgType($nodeScopeResolver, $args, $parametersAcceptors, $namedArgumentsVariants, $gatheredArgTypeByIndex, $i, $arg->value, $scope)
 					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
@@ -957,9 +960,26 @@ final class ArgumentsHandler
 	 * resolved from sibling args. That keeps the inferred return type (the U in
 	 * callable(T): U) faithful to the closure's own declaration.
 	 *
+	 * A template of the callee that the raw parameter leaks into the closure
+	 * type (the T in callable(T): T, read back from a closure returning its
+	 * parameter) would infer T from T itself, so it is resolved from the other
+	 * arguments gathered so far instead (see resolveCalleeTemplateTypes()).
+	 *
+	 * @param Node\Arg[] $args
 	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[]|null $namedArgumentsVariants
+	 * @param array<int, Type> $gatheredArgTypeByIndex
 	 */
-	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
+	private function gatherClosureArgType(
+		NodeScopeResolver $nodeScopeResolver,
+		array $args,
+		array $parametersAcceptors,
+		?array $namedArgumentsVariants,
+		array $gatheredArgTypeByIndex,
+		int $i,
+		Expr $closureExpr,
+		MutatingScope $scope,
+	): Type
 	{
 		$rawParameter = null;
 		if (count($parametersAcceptors) === 1) {
@@ -971,11 +991,76 @@ final class ArgumentsHandler
 			}
 		}
 
-		if ($rawParameter !== null) {
-			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
+		if ($rawParameter === null) {
+			return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
 		}
 
-		return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
+		$closureType = $this->closureParameterResolver->resolveCallableTypeForScope(
+			$closureExpr,
+			$scope->pushInFunctionCall(null, $rawParameter, false),
+		);
+
+		$calleeTemplateTypeMap = $parametersAcceptors[0]->getTemplateTypeMap();
+		if ($calleeTemplateTypeMap->isEmpty() || !self::referencesCalleeTemplateTypes($closureType, $calleeTemplateTypeMap)) {
+			return $closureType;
+		}
+
+		$siblingTypes = [];
+		$siblingUnpack = false;
+		$siblingHasName = false;
+		foreach ($args as $j => $siblingArg) {
+			$siblingOriginalArg = $siblingArg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $siblingArg;
+			$this->addGatheredArgType($siblingTypes, $siblingUnpack, $siblingHasName, $siblingOriginalArg, $j, $j !== $i ? ($gatheredArgTypeByIndex[$j] ?? new MixedType()) : new MixedType());
+		}
+
+		return self::resolveCalleeTemplateTypes(
+			$closureType,
+			$calleeTemplateTypeMap,
+			$this->selectArgsMetadataAcceptor($nodeScopeResolver, $args, $siblingTypes, $parametersAcceptors, $namedArgumentsVariants, $siblingHasName, $siblingUnpack, $scope)->getResolvedTemplateTypeMap(),
+		);
+	}
+
+	private static function referencesCalleeTemplateTypes(Type $type, TemplateTypeMap $calleeTemplateTypeMap): bool
+	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return false;
+		}
+
+		foreach ($type->getReferencedTemplateTypes(TemplateTypeVariance::createInvariant()) as $reference) {
+			if (self::isCalleeTemplateType($reference->getType(), $calleeTemplateTypeMap)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Replaces the callee's own template types with what the other arguments
+	 * resolve them to - their default or bound when they say nothing about them,
+	 * or pass no value of them at all (never, from an empty array).
+	 */
+	private static function resolveCalleeTemplateTypes(Type $type, TemplateTypeMap $calleeTemplateTypeMap, TemplateTypeMap $resolvedTemplateTypeMap): Type
+	{
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($calleeTemplateTypeMap, $resolvedTemplateTypeMap): Type {
+			if (!$type instanceof TemplateType || !self::isCalleeTemplateType($type, $calleeTemplateTypeMap)) {
+				return $traverse($type);
+			}
+
+			$resolvedType = $resolvedTemplateTypeMap->getType($type->getName());
+			if ($resolvedType === null || $resolvedType instanceof ErrorType || $resolvedType instanceof NeverType) {
+				return $traverse($type->getDefault() ?? $type->getBound());
+			}
+
+			return $resolvedType;
+		});
+	}
+
+	private static function isCalleeTemplateType(TemplateType $type, TemplateTypeMap $calleeTemplateTypeMap): bool
+	{
+		$calleeTemplateType = $calleeTemplateTypeMap->getType($type->getName());
+
+		return $calleeTemplateType instanceof TemplateType && $calleeTemplateType->getScope()->equals($type->getScope());
 	}
 
 	/**

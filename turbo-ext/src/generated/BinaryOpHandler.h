@@ -95,7 +95,8 @@ inline constexpr char strings[] =
 	"resolveEqualType\0" /* 1227 */
 	"rootExpr\0" /* 1244 */
 	"type\0" /* 1253 */
-	"createRangeTypes"; /* 1258 */
+	"createRangeTypes\0" /* 1258 */
+	"cannotBeNan"; /* 1275 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $initializerExprTypeResolver */
 	reg::packed(75, 0, 100), /* __construct $richerScopeGetTypeHelper */
@@ -140,6 +141,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1253, 0, 972), /* createRangeTypes $type */
 	reg::packed(846, 0, 1092), /* createRangeTypes $context */
 	reg::packed(659, 0, 1037), /* createRangeTypes return */
+	reg::packed(1253, 0, 972), /* cannotBeNan $type */
+	reg::packed(659, MAY_BE_BOOL), /* cannotBeNan return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -154,6 +157,7 @@ inline constexpr sigtab::Sig specifyRememberedComparisonForms = { { 1130 /* spec
 inline constexpr sigtab::Sig getEquivalentComparisonForms = { { 1163 /* getEquivalentComparisonForms */, 2, 30, 2, 32, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig resolveEqualType = { { 1227 /* resolveEqualType */, 4, 33, 4, 37, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig createRangeTypes = { { 1258 /* createRangeTypes */, 4, 38, 4, 42, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig cannotBeNan = { { 1275 /* cannotBeNan */, 1, 43, 1, 44, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::BinaryOpHandler

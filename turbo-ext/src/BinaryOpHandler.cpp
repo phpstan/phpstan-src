@@ -815,6 +815,27 @@ public:
 		return pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), formTypes.raw());
 	}
 
+	/* TypeCombinator::remove($type, new ConstantFloatType(NAN))->equals($type) —
+	 * NAN is the one float that no ordering comparison places, so narrowing by
+	 * such a comparison is sound only for an operand that cannot hold it, and
+	 * removing NAN from such a type leaves the type as it was;
+	 * -1 = pending exception */
+	static int cannotBeNan(zval *type)
+	{
+		zv::Val nan = pt_type_new_constant_float(static_cast<double>(NAN));
+		if (UNEXPECTED(nan.isUndef())) return -1;
+		zv::Args args{type, nan.raw()};
+		zv::Val removed = pt_type_combinator_call(PT_LC("remove"), 2, args);
+		if (UNEXPECTED(removed.isUndef())) return -1;
+		if (UNEXPECTED(Z_TYPE_P(removed.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function equals() on %s", zend_zval_value_name(removed.raw()));
+			return -1;
+		}
+		bool equals = false;
+		if (UNEXPECTED(!pt_type_op_bool(Z_OBJ_P(removed.raw()), PT_OP_EQUALS, 1, type, equals))) return -1;
+		return equals ? 1 : 0;
+	}
+
 	/* Mirrors createRangeTypes(); $rootExpr NULL or IS_NULL for null */
 	zv::Val createRangeTypes(zval *rootExpr, zval *expr, zval *type, zval *context) const
 	{
@@ -1451,7 +1472,19 @@ private:
 				NamedCall rightCall;
 				int rightIsCall = namedCall(right, false, rightCall);
 				if (UNEXPECTED(rightIsCall < 0)) return zv::Val();
-				if (!rightIsCall || !lowerNameIn(rightCall.name.get(), { "count", "sizeof", "strlen", "mb_strlen", "preg_match" })) {
+				bool useInverse = !rightIsCall || !lowerNameIn(rightCall.name.get(), { "count", "sizeof", "strlen", "mb_strlen", "preg_match" });
+				if (useInverse) {
+					// the inverse operator is not the negation of this one when an
+					// operand can be NAN: both of them are false for a NAN, so neither
+					// branch of this one is a branch of the inverse. The general path
+					// below narrows each side on its own terms instead.
+					zv::Val rightOperandType = specifyOperandType(captures, scope, nativeTypesPromoted, right);
+					if (UNEXPECTED(rightOperandType.isUndef())) return zv::Val();
+					int rightCannotBeNan = cannotBeNan(rightOperandType.raw());
+					if (UNEXPECTED(rightCannotBeNan < 0)) return zv::Val();
+					useInverse = rightCannotBeNan != 0;
+				}
+				if (useInverse) {
 					zv::Args inverseArgv{right, left};
 					zv::Val inverseOperator = pt_type_new(orEqual ? PT_CLASS_SMALLER_EXPR : PT_CLASS_SMALLER_OR_EQUAL_EXPR, 2, inverseArgv);
 					if (UNEXPECTED(inverseOperator.isUndef())) return zv::Val();
@@ -1824,7 +1857,13 @@ private:
 			if (UNEXPECTED(left == NULL)) return zv::Val();
 			int leftIsScalar = isScalarOrNegatedScalar(left);
 			if (UNEXPECTED(leftIsScalar < 0)) return zv::Val();
-			if (!leftIsScalar) {
+			bool narrowLeft = leftIsScalar == 0;
+			if (narrowLeft && !contextTrue) {
+				int rightCannotBeNan = cannotBeNan(rightType.raw());
+				if (UNEXPECTED(rightCannotBeNan < 0)) return zv::Val();
+				narrowLeft = rightCannotBeNan != 0;
+			}
+			if (narrowLeft) {
 				zv::Val narrowed = contextTrue
 					? (orEqual ? comparisonType(rightType.raw(), PT_LC("getsmallerorequaltype")) : comparisonType(rightType.raw(), PT_LC("getsmallertype")))
 					: withNan(orEqual ? comparisonType(rightType.raw(), PT_LC("getgreatertype")) : comparisonType(rightType.raw(), PT_LC("getgreaterorequaltype")));
@@ -1835,7 +1874,13 @@ private:
 			if (UNEXPECTED(right == NULL)) return zv::Val();
 			int rightIsScalar = isScalarOrNegatedScalar(right);
 			if (UNEXPECTED(rightIsScalar < 0)) return zv::Val();
-			if (!rightIsScalar) {
+			bool narrowRight = rightIsScalar == 0;
+			if (narrowRight && !contextTrue) {
+				int leftCannotBeNan = cannotBeNan(leftType.raw());
+				if (UNEXPECTED(leftCannotBeNan < 0)) return zv::Val();
+				narrowRight = leftCannotBeNan != 0;
+			}
+			if (narrowRight) {
 				zv::Val narrowed = contextTrue
 					? (orEqual ? comparisonType(leftType.raw(), PT_LC("getgreaterorequaltype")) : comparisonType(leftType.raw(), PT_LC("getgreatertype")))
 					: withNan(orEqual ? comparisonType(leftType.raw(), PT_LC("getsmallertype")) : comparisonType(leftType.raw(), PT_LC("getsmallerorequaltype")));
@@ -2012,6 +2057,16 @@ PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 			Z_PARAM_OBJECT(context)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).createRangeTypes(rootExpr, expr, type, context));
+	});
+
+	cls.method(sigs::cannotBeNan, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *type;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(type)
+		ZEND_PARSE_PARAMETERS_END();
+		int cannot = BinaryOpHandler::cannotBeNan(type);
+		if (UNEXPECTED(cannot < 0)) RETURN_THROWS();
+		RETURN_BOOL(cannot != 0);
 	});
 
 	cls.shadow(&pt_ce_binary_op_handler);

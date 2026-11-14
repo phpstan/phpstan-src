@@ -372,6 +372,11 @@ final class BinaryOpHandler implements ExprHandler
 						|| !$expr->right->name instanceof Name
 						|| !in_array(strtolower((string) $expr->right->name), ['count', 'sizeof', 'strlen', 'mb_strlen', 'preg_match'], true)
 					)
+					// the inverse operator is not the negation of this one when an operand
+					// can be NAN: both of them are false for a NAN, so neither branch of
+					// this one is a branch of the inverse. The general path below narrows
+					// each side on its own terms instead.
+					&& self::cannotBeNan($nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType())
 				) {
 					$inverseOperator = $expr instanceof BinaryOp\Smaller
 						? new BinaryOp\SmallerOrEqual($expr->right, $expr->left)
@@ -667,21 +672,32 @@ final class BinaryOpHandler implements ExprHandler
 					}
 				} elseif ($context->false()) {
 					// NAN is neither smaller nor greater than anything: the false branch keeps it
-					if (!$expr->left instanceof Scalar && !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)) {
+					// on the narrowed side, and tells nothing about the other side at all,
+					// because a NAN operand makes the comparison false for every value of it
+					$nanType = new ConstantFloatType(NAN);
+					if (
+						!$expr->left instanceof Scalar
+						&& !($expr->left instanceof Expr\UnaryMinus && $expr->left->expr instanceof Scalar)
+						&& self::cannotBeNan($rightType)
+					) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
 								$expr->left,
-								TypeCombinator::union($orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion), new ConstantFloatType(NAN)),
+								TypeCombinator::union($orEqual ? $rightType->getGreaterType($this->phpVersion) : $rightType->getGreaterOrEqualType($this->phpVersion), $nanType),
 								TypeSpecifierContext::createTruthy(),
 								$scope,
 							)->setRootExpr($expr),
 						);
 					}
-					if (!$expr->right instanceof Scalar && !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)) {
+					if (
+						!$expr->right instanceof Scalar
+						&& !($expr->right instanceof Expr\UnaryMinus && $expr->right->expr instanceof Scalar)
+						&& self::cannotBeNan($leftType)
+					) {
 						$result = $result->unionWith(
 							$this->defaultNarrowingHelper->createForSubject(
 								$expr->right,
-								TypeCombinator::union($orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion), new ConstantFloatType(NAN)),
+								TypeCombinator::union($orEqual ? $leftType->getSmallerType($this->phpVersion) : $leftType->getSmallerOrEqualType($this->phpVersion), $nanType),
 								TypeSpecifierContext::createTruthy(),
 								$scope,
 							)->setRootExpr($expr),
@@ -909,6 +925,18 @@ final class BinaryOpHandler implements ExprHandler
 		}
 
 		return (new SpecifiedTypes(sureNotTypes: $sureNotTypes))->setRootExpr($rootExpr);
+	}
+
+	/**
+	 * NAN is the one float that no ordering comparison places, so narrowing by
+	 * such a comparison is sound only for an operand that cannot hold it.
+	 * Removing NAN from a type that cannot hold it leaves the type as it was.
+	 * Asked as isSuperTypeOf() of the NAN constant instead, never would come out
+	 * as possibly NAN, because every type is a supertype of never.
+	 */
+	private static function cannotBeNan(Type $type): bool
+	{
+		return TypeCombinator::remove($type, new ConstantFloatType(NAN))->equals($type);
 	}
 
 }

@@ -1,0 +1,18 @@
+<?php
+
+namespace RenameFunction;
+
+function fooRenamed(): int
+{
+	return 1;
+}
+
+function barRenamed(): int
+{
+	return 2;
+}
+
+function bazRenamed(): int
+{
+	return 3;
+}

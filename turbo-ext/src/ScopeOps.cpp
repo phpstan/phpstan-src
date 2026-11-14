@@ -477,6 +477,33 @@ public:
 			return zv::Val();
 		}
 
+		/* Both target loops below pair targets only with guards, and a guard
+		 * needs its expression certainly defined in both branches - without
+		 * such a key nothing below can add a holder, so skip the passes over
+		 * every key. The twin also collects these keys for its guard loop to
+		 * avoid repeating the PHP-level checks; the guard loop here repeats
+		 * them on every differing key, which selects the same keys in the
+		 * same order. */
+		bool hasGuardCandidate = false;
+		for (auto diffEntry : differingKeys) {
+			zend_string *key = diffEntry.stringKeyOrNull();
+			zend_ulong idx = diffEntry.indexKey();
+
+			zval *ourSlot = pt_ht_find(ours.table(), key, idx);
+			if (ourSlot == NULL) continue;
+			zval *theirSlot = pt_ht_find(theirs.table(), key, idx);
+			if (theirSlot == NULL) continue;
+			zv::Ref holder = zv::Ref(ourSlot).deref();
+			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
+			if (pt_holder_certainty_value(holder.asObject()) != PT_TRI_YES) continue;
+			zv::Ref theirHolder = zv::Ref(theirSlot).deref();
+			if (UNEXPECTED(!pt_check_holder(theirHolder.raw()))) return zv::Val();
+			if (pt_holder_certainty_value(theirHolder.asObject()) != PT_TRI_YES) continue;
+			hasGuardCandidate = true;
+			break;
+		}
+		if (!hasGuardCandidate) return zv::Arr::copyOfTable(conditional.table());
+
 		/* A guard is only ever consumed paired with a target: a *different* key
 		 * in the first target loop below, any key in the second one. Deriving a
 		 * guard costs a TypeCombinator::remove() of the two branch types - the
@@ -639,6 +666,11 @@ public:
 		zv::ScratchTable guardIsSuperTypeOfTheirExprCache(8);
 		zv::ScratchTable theirExprIsSuperTypeOfGuardCache(8);
 		zv::ScratchTable guardIsConstantArrayCache(8);
+		/* Holder keys describe both the guard and the target type: describe
+		 * each guard once and each target once instead of once per pair -
+		 * the descriptions of big constant arrays dominate the merge
+		 * otherwise. Mirrors the twin. */
+		zv::Arr guardKeyPrefixes = zv::Arr::create(8);
 		zv::Arr result; /* stays UNDEF until the first append duplicates the input */
 
 		/* main loop: pair non-merged expressions with guards - the settled
@@ -654,6 +686,7 @@ public:
 			bool hasSelfGuard = pt_ht_exists(typeGuards.table(), key, idx);
 			if (typeGuards.size() - (hasSelfGuard ? 1 : 0) == 0) continue;
 			bool exprIsGuardExcluded = pt_ht_exists(guardsToExclude.table(), key, idx);
+			zv::Str targetSuffix;
 
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
 				zend_string *guardKey = guardEntry.stringKeyOrNull();
@@ -736,7 +769,13 @@ public:
 					}
 				}
 
-				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardKey, guardIdx, guardHolder, holder))) return zv::Val();
+				if (targetSuffix.isNull()) {
+					targetSuffix = zv::Str::adopt(pt_ceh_key_target_part(holder.raw()));
+					if (UNEXPECTED(targetSuffix.isNull())) return zv::Val();
+				}
+				zend_string *guardPrefix = guardKeyPrefix(guardKeyPrefixes, guardKey, guardIdx, guardHolder);
+				if (UNEXPECTED(guardPrefix == NULL)) return zv::Val();
+				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardKey, guardIdx, guardHolder, holder, guardPrefix, targetSuffix.get()))) return zv::Val();
 			}
 		}
 
@@ -754,10 +793,15 @@ public:
 			if (UNEXPECTED(!canBeUndefined(holderExpr(mergedHolder), &undefinable))) return zv::Val();
 			if (!undefinable) continue;
 
+			/* one undefined holder shared by every guard's pair, like the twin's */
+			zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());
+			if (UNEXPECTED(noHolder.isUndef())) return zv::Val();
+			zv::Str targetSuffix = zv::Str::adopt(pt_ceh_key_target_part(noHolder.raw()));
+			if (UNEXPECTED(targetSuffix.isNull())) return zv::Val();
 			for (auto guardEntry : zv::TableRef(typeGuards.table())) {
-				zv::Val noHolder = createNoErrorHolder(zv::ObjRef(mergedHolder.asObject()).propAt(PT_ETH_PROP_EXPR).raw());
-				if (UNEXPECTED(noHolder.isUndef())) return zv::Val();
-				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardEntry.stringKeyOrNull(), guardEntry.indexKey(), guardEntry.value(), noHolder.ref()))) {
+				zend_string *guardPrefix = guardKeyPrefix(guardKeyPrefixes, guardEntry.stringKeyOrNull(), guardEntry.indexKey(), guardEntry.value());
+				if (UNEXPECTED(guardPrefix == NULL)) return zv::Val();
+				if (UNEXPECTED(!appendConditional(result, conditional, key, idx, guardEntry.stringKeyOrNull(), guardEntry.indexKey(), guardEntry.value(), noHolder.ref(), guardPrefix, targetSuffix.get()))) {
 					return zv::Val();
 				}
 			}
@@ -1515,13 +1559,27 @@ private:
 	 * under $result[$exprKey][getKey()]. Duplicates the input array into
 	 * $result lazily on the first append.
 	 */
-	static bool appendConditional(zv::Arr &result, zv::TableRef input, zend_string *skey, zend_ulong idx, zend_string *guardKey, zend_ulong guardIdx, zv::Ref guardHolder, zv::Ref typeHolder)
+	/* the cached "<guard>=<type>" key part of a guard (borrowed from prefixes); NULL = pending exception */
+	static zend_string *guardKeyPrefix(zv::Arr &prefixes, zend_string *guardKey, zend_ulong guardIdx, zv::Ref guardHolder)
+	{
+		zval *cached = pt_ht_find(prefixes.table(), guardKey, guardIdx);
+		if (cached != NULL) return Z_STR_P(cached);
+		zend_string *prefix = pt_ceh_key_condition_part(guardKey, guardIdx, guardHolder.raw());
+		if (UNEXPECTED(prefix == NULL)) return NULL;
+		zval prefixZv;
+		ZVAL_STR(&prefixZv, prefix);
+		pt_ht_update(prefixes.table(), guardKey, guardIdx, &prefixZv);
+		return prefix;
+	}
+
+	/* cehKey: the holder's ConditionalExpressionHolder::getKey(), the guard's
+	 * key part followed by the target's, each described once by the caller */
+	static bool appendConditional(zv::Arr &result, zv::TableRef input, zend_string *skey, zend_ulong idx, zend_string *guardKey, zend_ulong guardIdx, zv::Ref guardHolder, zv::Ref typeHolder, zend_string *guardPrefix, zend_string *targetSuffix)
 	{
 		zv::Arr conditions = zv::Arr::create(1);
 		tableAddNewCopy(conditions.table(), guardKey, guardIdx, guardHolder);
 
-		zv::Str cehKey = zv::Str::adopt(pt_ceh_key_build(conditions.table(), typeHolder.raw()));
-		if (UNEXPECTED(cehKey.isNull())) return false;
+		zv::Str cehKey = zv::Str::adopt(zend_string_concat2(ZSTR_VAL(guardPrefix), ZSTR_LEN(guardPrefix), ZSTR_VAL(targetSuffix), ZSTR_LEN(targetSuffix)));
 
 		zval cehRaw;
 		object_init_ex(&cehRaw, pt_ce_cond_expr_holder);

@@ -983,6 +983,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function getNodeKey(Expr $node): string
 	{
+		// ScopeOps::nodeKey() has the same fast path, but this method is hot enough
+		// that the static call and the services fetch before it are measurable
+		if ($node instanceof Variable && !$node->name instanceof Expr) {
+			return '$' . $node->name;
+		}
+
 		return ScopeOps::nodeKey($node, $this->services->exprPrinter);
 	}
 

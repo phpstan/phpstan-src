@@ -1403,6 +1403,52 @@ bool pt_holder_equal_types(zval *a, zval *b, bool *out)
 	return !EG(exception);
 }
 
+/* "<expr>=<described type>": one condition of a ConditionalExpressionHolder::getKey() */
+static bool pt_ceh_key_append_condition(smart_str *str, zend_string *key_str, zend_ulong kidx, zval *holder)
+{
+	zval described;
+	ZVAL_DEREF(holder);
+	if (key_str != NULL) {
+		smart_str_append(str, key_str);
+	} else {
+		smart_str_append_long(str, (zend_long) kidx);
+	}
+	smart_str_appendc(str, '=');
+	if (UNEXPECTED(!pt_type_describe_precise(OBJ_PROP_NUM(Z_OBJ_P(holder), PT_ETH_PROP_TYPE), &described))) return false;
+	if (EXPECTED(Z_TYPE(described) == IS_STRING)) {
+		smart_str_append(str, Z_STR(described));
+	}
+	zval_ptr_dtor(&described);
+	return true;
+}
+
+/* " => <described type> (<certainty>)": the type holder's part of a ConditionalExpressionHolder::getKey() */
+static bool pt_ceh_key_append_target(smart_str *str, zval *type_holder)
+{
+	smart_str_appendl(str, " => ", 4);
+	{
+		zval described;
+		if (UNEXPECTED(!pt_type_describe_precise(OBJ_PROP_NUM(Z_OBJ_P(type_holder), PT_ETH_PROP_TYPE), &described))) return false;
+		if (EXPECTED(Z_TYPE(described) == IS_STRING)) {
+			smart_str_append(str, Z_STR(described));
+		}
+		zval_ptr_dtor(&described);
+	}
+	smart_str_appendl(str, " (", 2);
+	{
+		zend_long certainty = pt_holder_certainty_value(Z_OBJ_P(type_holder));
+		if (certainty == PT_TRI_YES) {
+			smart_str_appendl(str, "Yes", 3);
+		} else if (certainty == PT_TRI_MAYBE) {
+			smart_str_appendl(str, "Maybe", 5);
+		} else {
+			smart_str_appendl(str, "No", 2);
+		}
+	}
+	smart_str_appendc(str, ')');
+	return true;
+}
+
 zend_string *pt_ceh_key_build(HashTable *conds, zval *type_holder)
 {
 	smart_str str = {};
@@ -1412,54 +1458,41 @@ zend_string *pt_ceh_key_build(HashTable *conds, zval *type_holder)
 	bool first = true;
 
 	ZEND_HASH_FOREACH_KEY_VAL(conds, kidx, key_str, entry) {
-		zval described;
-		zval *entry_deref = entry;
-		ZVAL_DEREF(entry_deref);
 		if (!first) {
 			smart_str_appendl(&str, " && ", 4);
 		}
 		first = false;
-		if (key_str != NULL) {
-			smart_str_append(&str, key_str);
-		} else {
-			smart_str_append_long(&str, (zend_long) kidx);
-		}
-		smart_str_appendc(&str, '=');
-		if (UNEXPECTED(!pt_type_describe_precise(OBJ_PROP_NUM(Z_OBJ_P(entry_deref), PT_ETH_PROP_TYPE), &described))) {
+		if (UNEXPECTED(!pt_ceh_key_append_condition(&str, key_str, kidx, entry))) {
 			smart_str_free(&str);
 			return NULL;
 		}
-		if (EXPECTED(Z_TYPE(described) == IS_STRING)) {
-			smart_str_append(&str, Z_STR(described));
-		}
-		zval_ptr_dtor(&described);
 	} ZEND_HASH_FOREACH_END();
 
-	smart_str_appendl(&str, " => ", 4);
-	{
-		zval described;
-		if (UNEXPECTED(!pt_type_describe_precise(OBJ_PROP_NUM(Z_OBJ_P(type_holder), PT_ETH_PROP_TYPE), &described))) {
-			smart_str_free(&str);
-			return NULL;
-		}
-		if (EXPECTED(Z_TYPE(described) == IS_STRING)) {
-			smart_str_append(&str, Z_STR(described));
-		}
-		zval_ptr_dtor(&described);
+	if (UNEXPECTED(!pt_ceh_key_append_target(&str, type_holder))) {
+		smart_str_free(&str);
+		return NULL;
 	}
-	smart_str_appendl(&str, " (", 2);
-	{
-		zend_long certainty = pt_holder_certainty_value(Z_OBJ_P(type_holder));
-		if (certainty == PT_TRI_YES) {
-			smart_str_appendl(&str, "Yes", 3);
-		} else if (certainty == PT_TRI_MAYBE) {
-			smart_str_appendl(&str, "Maybe", 5);
-		} else {
-			smart_str_appendl(&str, "No", 2);
-		}
-	}
-	smart_str_appendc(&str, ')');
 
+	return smart_str_extract(&str);
+}
+
+zend_string *pt_ceh_key_condition_part(zend_string *key_str, zend_ulong kidx, zval *holder)
+{
+	smart_str str = {};
+	if (UNEXPECTED(!pt_ceh_key_append_condition(&str, key_str, kidx, holder))) {
+		smart_str_free(&str);
+		return NULL;
+	}
+	return smart_str_extract(&str);
+}
+
+zend_string *pt_ceh_key_target_part(zval *type_holder)
+{
+	smart_str str = {};
+	if (UNEXPECTED(!pt_ceh_key_append_target(&str, type_holder))) {
+		smart_str_free(&str);
+		return NULL;
+	}
 	return smart_str_extract(&str);
 }
 

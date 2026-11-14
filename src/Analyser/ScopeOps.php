@@ -27,6 +27,7 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use PHPStan\Type\VerbosityLevel;
 use function array_filter;
 use function array_key_exists;
 use function array_key_first;
@@ -389,6 +390,26 @@ final class ScopeOps
 	): array
 	{
 		$newVariableTypes = $ourExpressionTypes;
+		$differingExprStrings = array_keys($differingKeys);
+
+		// A guard needs its expression certainly defined in both branches. Collect
+		// those keys once - the guard loop below walks only them, and without any
+		// neither target loop can add a holder, which skips the passes over every key.
+		$guardCandidates = [];
+		foreach ($differingExprStrings as $exprString) {
+			if (
+				!array_key_exists($exprString, $newVariableTypes)
+				|| !array_key_exists($exprString, $theirExpressionTypes)
+				|| !$newVariableTypes[$exprString]->getCertainty()->yes()
+				|| !$theirExpressionTypes[$exprString]->getCertainty()->yes()
+			) {
+				continue;
+			}
+			$guardCandidates[] = $exprString;
+		}
+		if ($guardCandidates === []) {
+			return $conditionalExpressions;
+		}
 
 		// A guard is only ever consumed paired with a target: a *different* key in
 		// the first target loop below, any key in the second one. Deriving a guard
@@ -399,7 +420,7 @@ final class ScopeOps
 		// set instead of repeating the checks.
 		$targets = [];
 		$hasUndefinedTarget = false;
-		foreach (array_keys($differingKeys) as $exprString) {
+		foreach ($differingExprStrings as $exprString) {
 			if (!array_key_exists($exprString, $newVariableTypes)) {
 				if (
 					array_key_exists($exprString, $mergedExpressionTypes)
@@ -432,7 +453,7 @@ final class ScopeOps
 		// valid conditional *target*; the flag also lets the target loop skip
 		// pairing these absorbed targets with constant-array guards.
 		$guardsToExclude = [];
-		foreach (array_keys($differingKeys) as $exprString) {
+		foreach ($differingExprStrings as $exprString) {
 			if (!array_key_exists($exprString, $theirExpressionTypes)) {
 				continue;
 			}
@@ -457,10 +478,10 @@ final class ScopeOps
 		}
 
 		$typeGuards = [];
-		foreach (array_keys($differingKeys) as $exprString) {
-			if (!array_key_exists($exprString, $newVariableTypes)) {
-				continue;
-			}
+		// with no their-branch entry the merged holder keeps our type with lowered
+		// certainty, so no later type assertion can tell the branches apart - the
+		// candidates are certain in both branches
+		foreach ($guardCandidates as $exprString) {
 			$holder = $newVariableTypes[$exprString];
 			if ($holder->getExpr() instanceof VirtualNode) {
 				continue;
@@ -468,23 +489,11 @@ final class ScopeOps
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
-			if (!$holder->getCertainty()->yes()) {
-				continue;
-			}
 			if (array_key_exists($exprString, $guardsToExclude)) {
 				continue;
 			}
 
-			if (!array_key_exists($exprString, $theirExpressionTypes)) {
-				// with no their-branch entry the merged holder keeps our type with
-				// lowered certainty, so no later type assertion can tell the
-				// branches apart
-				continue;
-			}
 			$theirHolder = $theirExpressionTypes[$exprString];
-			if (!$theirHolder->getCertainty()->yes()) {
-				continue;
-			}
 			if ($holder->equalTypes($theirHolder)) {
 				continue;
 			}
@@ -530,6 +539,13 @@ final class ScopeOps
 		$guardIsSuperTypeOfTheirExprCache = [];
 		$theirExprIsSuperTypeOfGuardCache = [];
 
+		// The holders below are keyed by ConditionalExpressionHolder::getKey(),
+		// which describes both the guard and the target type of each pair. Build
+		// the same key from the guard part described once per guard and the
+		// target part described once per target instead of once per pair - the
+		// descriptions of big constant arrays dominate the merge otherwise.
+		$guardKeyPrefixes = [];
+
 		foreach (array_keys($targets) as $exprString) {
 			$holder = $newVariableTypes[$exprString];
 
@@ -539,6 +555,8 @@ final class ScopeOps
 			if (count($variableTypeGuards) === 0) {
 				continue;
 			}
+
+			$targetKeySuffix = null;
 
 			$exprIsGuardExcluded = array_key_exists($exprString, $guardsToExclude);
 			foreach ($variableTypeGuards as $guardExprString => $guardHolder) {
@@ -578,12 +596,13 @@ final class ScopeOps
 					}
 				}
 
-				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
-				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+				$targetKeySuffix ??= self::conditionalExpressionKeySuffix($holder);
+				$guardKeyPrefixes[$guardExprString] ??= self::conditionalExpressionKeyPrefix($guardExprString, $guardHolder);
+				$conditionalExpressions[$exprString][$guardKeyPrefixes[$guardExprString] . $targetKeySuffix] = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $holder);
 			}
 		}
 
-		foreach (array_keys($differingKeys) as $exprString) {
+		foreach ($differingExprStrings as $exprString) {
 			if (!array_key_exists($exprString, $mergedExpressionTypes)) {
 				continue;
 			}
@@ -595,13 +614,27 @@ final class ScopeOps
 				continue;
 			}
 
+			$undefinedHolder = new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo());
+			$targetKeySuffix = self::conditionalExpressionKeySuffix($undefinedHolder);
 			foreach ($typeGuards as $guardExprString => $guardHolder) {
-				$conditionalExpression = new ConditionalExpressionHolder([$guardExprString => $guardHolder], new ExpressionTypeHolder($mergedExprTypeHolder->getExpr(), new ErrorType(), TrinaryLogic::createNo()));
-				$conditionalExpressions[$exprString][$conditionalExpression->getKey()] = $conditionalExpression;
+				$guardKeyPrefixes[$guardExprString] ??= self::conditionalExpressionKeyPrefix($guardExprString, $guardHolder);
+				$conditionalExpressions[$exprString][$guardKeyPrefixes[$guardExprString] . $targetKeySuffix] = new ConditionalExpressionHolder([$guardExprString => $guardHolder], $undefinedHolder);
 			}
 		}
 
 		return $conditionalExpressions;
+	}
+
+	/** The part of ConditionalExpressionHolder::getKey() a single-guard holder's guard contributes. */
+	private static function conditionalExpressionKeyPrefix(string $guardExprString, ExpressionTypeHolder $guardHolder): string
+	{
+		return $guardExprString . '=' . $guardHolder->getType()->describe(VerbosityLevel::precise());
+	}
+
+	/** The part of ConditionalExpressionHolder::getKey() the target holder contributes. */
+	private static function conditionalExpressionKeySuffix(ExpressionTypeHolder $typeHolder): string
+	{
+		return ' => ' . $typeHolder->getType()->describe(VerbosityLevel::precise()) . ' (' . $typeHolder->getCertainty()->describe() . ')';
 	}
 
 	/**

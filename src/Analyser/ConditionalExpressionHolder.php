@@ -39,6 +39,7 @@ final class ConditionalExpressionHolder
 		return $this->typeHolder;
 	}
 
+	/** ScopeOps::createConditionalExpressions() builds the same key from parts; keep the two in sync. */
 	public function getKey(): string
 	{
 		$parts = [];

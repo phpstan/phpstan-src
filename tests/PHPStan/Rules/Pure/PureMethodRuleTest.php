@@ -438,4 +438,18 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureUnlessAllMethodsPure(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-all-methods-pure.php'], [
+			[
+				'Impure echo in pure method PureUnlessAllMethodsPure\ImpureClassInheritingReplacer::replace().',
+				78,
+			],
+			[
+				'Impure echo in pure method PureUnlessAllMethodsPure\ImpureClassInheritingReplacer::map().',
+				86,
+			],
+		]);
+	}
+
 }

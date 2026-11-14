@@ -66,7 +66,7 @@ final class TemplateTypeBench
 	 * T0 of int = 0, T1 of int = 1, …: the description of a default is guarded against recursion.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '150.0K', cycles: '261.1K', memory: '2.820KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '150.0K', cycles: '243.8K', memory: '2.820KiB')]
 	#[ExpectedFor(dataSet: 'members-256', instructions: '2.385M', cycles: '2.976M', memory: '10.51KiB')]
 	public function benchDescribeWithDefault(int $members): string
 	{
@@ -109,7 +109,7 @@ final class TemplateTypeBench
 	 * None of the strings is an int, so T is not inferred from any of them.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '72.31K', cycles: '193.8K', memory: '1.469KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '72.31K', cycles: '173.6K', memory: '1.469KiB')]
 	#[ExpectedFor(dataSet: 'members-256', instructions: '930.9K', cycles: '1.141M', memory: '32.22KiB')]
 	public function benchInferTemplateTypesFromUnion(int $members): TemplateTypeMap
 	{

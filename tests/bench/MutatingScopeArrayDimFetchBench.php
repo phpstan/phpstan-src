@@ -58,7 +58,7 @@ final class MutatingScopeArrayDimFetchBench
 	 * Specifying an offset also specifies the array: an array is offset-accessible already.
 	 */
 	#[DataProvider(method: 'arrays')]
-	#[ExpectedFor(dataSet: 'general-array', instructions: '132.8K', cycles: '508.2K', memory: '4.516KiB')]
+	#[ExpectedFor(dataSet: 'general-array', instructions: '132.8K', cycles: '481.3K', memory: '4.516KiB')]
 	#[ExpectedFor(dataSet: 'shape-32', instructions: '196.2K', cycles: '683.9K', memory: '6.398KiB')]
 	public function benchSpecifyArrayDimFetchType(int $keys): MutatingScope
 	{

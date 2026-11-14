@@ -50,7 +50,7 @@ final class BetterReflectionProviderBench
 	/**
 	 * Every scope that enters an anonymous class asks for its reflection again.
 	 */
-	#[Expected(instructions: '10.83K', cycles: '92.06K', memory: '256B')]
+	#[Expected(instructions: '10.83K', cycles: '78.18K', memory: '256B')]
 	public function benchGetAnonymousClassReflectionAgain(): ClassReflection
 	{
 		if ($this->reflectionProvider === null || $this->class === null || $this->scope === null) {

@@ -65,7 +65,7 @@ final class ConstantStringTypeBench
 	 * 'DateTime::format' and other methods of DateTime, static or not. Since PHP 8 such a string
 	 * may name an instance method, so the method is not looked into.
 	 */
-	#[Expected(instructions: '86.86K', cycles: '225.3K', memory: '952B')]
+	#[Expected(instructions: '86.85K', cycles: '204.5K', memory: '952B')]
 	public function benchIsCallable(): TrinaryLogic
 	{
 		$result = TrinaryLogic::createYes();

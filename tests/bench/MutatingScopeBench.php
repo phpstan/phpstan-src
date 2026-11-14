@@ -74,7 +74,7 @@ final class MutatingScopeBench
 	/**
 	 * The certainty is looked up once (#4726).
 	 */
-	#[Expected(instructions: '2.247K', cycles: '26.67K', memory: '32B')]
+	#[Expected(instructions: '2.247K', cycles: '19.93K', memory: '32B')]
 	public function benchGetVariableType(): Type
 	{
 		return $this->scope()->getVariableType('i');
@@ -101,7 +101,7 @@ final class MutatingScopeBench
 
 	#[DataProvider(method: 'keepVoidExprs')]
 	#[ExpectedFor(dataSet: 'func-call', instructions: '389.4K', cycles: '1.305M', memory: '15.49KiB')]
-	#[ExpectedFor(dataSet: 'variable', instructions: '7.615K', cycles: '68.25K', memory: '128B')]
+	#[ExpectedFor(dataSet: 'variable', instructions: '7.615K', cycles: '55.59K', memory: '128B')]
 	public function benchGetKeepVoidType(string $expr): Type
 	{
 		return $this->scope()->getKeepVoidType($expr === 'variable' ? new Expr\Variable('str') : self::funcCall('trim'));
@@ -119,7 +119,7 @@ final class MutatingScopeBench
 	/**
 	 * Creates a scope, without getting the parser from the container each time (#4672).
 	 */
-	#[Expected(instructions: '11.82K', cycles: '76.11K', memory: '944B')]
+	#[Expected(instructions: '11.82K', cycles: '57.24K', memory: '944B')]
 	public function benchPushInFunctionCall(): MutatingScope
 	{
 		return $this->scope()->pushInFunctionCall(null, null, true);
@@ -128,7 +128,7 @@ final class MutatingScopeBench
 	/**
 	 * An argument's type resolved before is not resolved again (#4648).
 	 */
-	#[Expected(instructions: '52.32K', cycles: '243.5K', memory: '3.086KiB')]
+	#[Expected(instructions: '52.32K', cycles: '219.8K', memory: '3.086KiB')]
 	public function benchPushInFunctionCallGetType(): Type
 	{
 		return $this->scope()->pushInFunctionCall(null, null, true)->getType(self::resolvedExpr());
@@ -137,7 +137,7 @@ final class MutatingScopeBench
 	/**
 	 * A scalar's type is not stored (#4663).
 	 */
-	#[Expected(instructions: '3.965K', cycles: '38.75K', memory: '176B')]
+	#[Expected(instructions: '3.965K', cycles: '23.76K', memory: '176B')]
 	public function benchSpecifyScalarType(): MutatingScope
 	{
 		return $this->scope()->specifyExpressionType(new String_('x'), new StringType(), new StringType(), TrinaryLogic::createYes());
@@ -178,7 +178,7 @@ final class MutatingScopeBench
 	/**
 	 * Finds the expressions on $this by their keys, not by searching them (#4697).
 	 */
-	#[Expected(instructions: '65.96K', cycles: '185.2K', memory: '16.61KiB')]
+	#[Expected(instructions: '66.12K', cycles: '169.7K', memory: '16.61KiB')]
 	public function benchRestoreThis(): MutatingScope
 	{
 		$scope = $this->scope();

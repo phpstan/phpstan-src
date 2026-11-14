@@ -34,7 +34,7 @@ final class FileCacheStorageMissBench
 	 * The reflection cache in front of the PHP-internal locator is asked for every class name the
 	 * locators before it do not find, and most were never written.
 	 */
-	#[Expected(instructions: '7.924K', cycles: '57.79K', memory: '824B')]
+	#[Expected(instructions: '7.912K', cycles: '48.44K', memory: '824B')]
 	public function benchLoadMissing(): mixed
 	{
 		if ($this->storage === null) {

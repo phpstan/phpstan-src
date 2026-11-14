@@ -47,7 +47,7 @@ final class VerbosityLevelBench
 	 * so the arrays in the other values are not looked into.
 	 */
 	#[DataProvider(method: 'values')]
-	#[ExpectedFor(dataSet: 'values-16', instructions: '89.62K', cycles: '224.3K', memory: '2.508KiB')]
+	#[ExpectedFor(dataSet: 'values-16', instructions: '89.62K', cycles: '204.0K', memory: '2.508KiB')]
 	#[ExpectedFor(dataSet: 'values-256', instructions: '749.4K', cycles: '937.2K', memory: '9.930KiB')]
 	public function benchGetRecommendedLevelByType(int $values): VerbosityLevel
 	{

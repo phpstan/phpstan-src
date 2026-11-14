@@ -38,7 +38,7 @@ final class RegexGroupParserBench
 
 	#[DataProvider(method: 'patterns')]
 	#[ExpectedFor(dataSet: 'date', instructions: '1.426M', cycles: '2.041M', memory: '9.656KiB')]
-	#[ExpectedFor(dataSet: 'unsupported-modifier', instructions: '1.286K', cycles: '15.92K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'unsupported-modifier', instructions: '1.286K', cycles: '13.41K', memory: '0B')]
 	public function benchParseGroupsAgain(string $pattern): bool
 	{
 		if ($this->parser === null) {

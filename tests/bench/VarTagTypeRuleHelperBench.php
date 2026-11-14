@@ -51,7 +51,7 @@ final class VarTagTypeRuleHelperBench
 	 * Without reportWrongPhpDocTypeInVarTag, only the native type of the expression is checked
 	 * against a @var tag that is not a PHPStan type.
 	 */
-	#[Expected(instructions: '353.4K', cycles: '603.9K', memory: '984B')]
+	#[Expected(instructions: '353.4K', cycles: '467.9K', memory: '984B')]
 	public function benchCheckExprTypeWithoutPhpDocCheck(): int
 	{
 		if ($this->helper === null || $this->varTagType === null) {

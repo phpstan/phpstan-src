@@ -27,7 +27,7 @@ final class BetterReflectionSourceLocatorFactoryBench
 	/**
 	 * Every process creates the source locator when it boots, also one that never locates a class.
 	 */
-	#[Expected(instructions: '2.283K', cycles: '29.67K', memory: '1.328KiB')]
+	#[Expected(instructions: '2.283K', cycles: '16.32K', memory: '1.328KiB')]
 	public function benchCreate(): SourceLocator
 	{
 		if ($this->factory === null) {

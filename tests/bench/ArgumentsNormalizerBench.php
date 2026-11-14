@@ -53,8 +53,8 @@ final class ArgumentsNormalizerBench
 	 * A call without named arguments is returned as it is, a call with them is rebuilt in the order of the parameters.
 	 */
 	#[DataProvider(method: 'calls')]
-	#[ExpectedFor(dataSet: 'named', instructions: '24.70K', cycles: '121.3K', memory: '2.516KiB')]
-	#[ExpectedFor(dataSet: 'positional', instructions: '2.670K', cycles: '27.86K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'named', instructions: '24.75K', cycles: '99.67K', memory: '2.516KiB')]
+	#[ExpectedFor(dataSet: 'positional', instructions: '2.670K', cycles: '21.83K', memory: '0B')]
 	public function benchReorderFuncArguments(bool $named): ?FuncCall
 	{
 		if ($this->acceptor === null || $this->call === null) {

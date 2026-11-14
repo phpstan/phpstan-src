@@ -32,7 +32,7 @@ final class CollectorsRegistryBench
 	 *
 	 * @return mixed[]
 	 */
-	#[Expected(instructions: '3.452K', cycles: '28.42K', memory: '376B')]
+	#[Expected(instructions: '3.452K', cycles: '21.94K', memory: '376B')]
 	public function benchGetCollectors(): array
 	{
 		if ($this->registry === null) {

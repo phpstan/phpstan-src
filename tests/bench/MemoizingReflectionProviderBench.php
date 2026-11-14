@@ -34,7 +34,7 @@ final class MemoizingReflectionProviderBench
 		$this->reflectionProvider->getClass('MemoizingReflectionProviderBench\Member');
 	}
 
-	#[Expected(instructions: '2.166K', cycles: '26.71K', memory: '64B')]
+	#[Expected(instructions: '2.166K', cycles: '19.09K', memory: '64B')]
 	public function benchHasClassAgain(): bool
 	{
 		return $this->reflectionProvider()->hasClass('MemoizingReflectionProviderBench\Member');
@@ -43,13 +43,13 @@ final class MemoizingReflectionProviderBench
 	/**
 	 * The memo is case-insensitive since 2.1.34, like class names.
 	 */
-	#[Expected(instructions: '2.166K', cycles: '26.82K', memory: '64B')]
+	#[Expected(instructions: '2.166K', cycles: '19.32K', memory: '64B')]
 	public function benchHasClassInOtherCase(): bool
 	{
 		return $this->reflectionProvider()->hasClass('memoizingReflectionProviderBench\member');
 	}
 
-	#[Expected(instructions: '2.345K', cycles: '29.09K', memory: '64B')]
+	#[Expected(instructions: '2.345K', cycles: '21.14K', memory: '64B')]
 	public function benchGetClassAgain(): ClassReflection
 	{
 		return $this->reflectionProvider()->getClass('MemoizingReflectionProviderBench\Member');

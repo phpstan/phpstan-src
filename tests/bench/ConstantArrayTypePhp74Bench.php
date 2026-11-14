@@ -50,7 +50,7 @@ final class ConstantArrayTypePhp74Bench
 	/**
 	 * [$dateTime, 'format'] and the other methods of DateTime, called on an object.
 	 */
-	#[Expected(instructions: '169.9K', cycles: '324.2K', memory: '1.164KiB')]
+	#[Expected(instructions: '170.0K', cycles: '302.5K', memory: '1.164KiB')]
 	public function benchFindTypeAndMethodNames(): int
 	{
 		$found = 0;

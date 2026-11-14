@@ -56,8 +56,8 @@ final class UnresolvableTypeHelperBench
 	 * once the first value is found, the rest of the type is not traversed.
 	 */
 	#[DataProvider(method: 'keys')]
-	#[ExpectedFor(dataSet: 'keys-16', instructions: '74.44K', cycles: '182.6K', memory: '6.461KiB')]
-	#[ExpectedFor(dataSet: 'keys-64', instructions: '260.1K', cycles: '413.9K', memory: '25.21KiB')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '74.44K', cycles: '158.3K', memory: '6.461KiB')]
+	#[ExpectedFor(dataSet: 'keys-64', instructions: '260.1K', cycles: '387.2K', memory: '25.21KiB')]
 	public function benchUnresolvableFirst(int $keys): bool
 	{
 		if ($this->type === null) {

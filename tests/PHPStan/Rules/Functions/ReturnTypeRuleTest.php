@@ -583,4 +583,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15714(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15714.php'], [
+			[
+				'Function Bug15714ReturnType\\returnsFloat() should return T of float but returns float.',
+				55,
+				'Type float is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 }

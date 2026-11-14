@@ -102,7 +102,8 @@ public:
 			return of(pt_template_constant_integer_type_new, scope, strategy, variance, nameStr, bound, defaultType);
 		}
 
-		if (instanceof_function(boundClass, pt_ce_float_type) && (boundClass == pt_ce_float_type || isTemplate)) {
+		/* Catches plain FloatType and the float subtypes that narrowing a bound produces, a FloatRangeType or a ConstantFloatType, neither of which has a dedicated Template* class to fall into — like the twin */
+		if (instanceof_function(boundClass, pt_ce_float_type)) {
 			return of(pt_template_float_type_new, scope, strategy, variance, nameStr, bound, defaultType);
 		}
 

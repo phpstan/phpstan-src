@@ -85,7 +85,10 @@ final class TemplateTypeFactory
 			return new TemplateConstantIntegerType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 
-		if ($bound instanceof FloatType && ($boundClass === FloatType::class || $bound instanceof TemplateType)) {
+		// Catches plain FloatType and the float subtypes that narrowing a bound
+		// produces, a FloatRangeType or a ConstantFloatType, neither of which has a
+		// dedicated Template* class to fall into.
+		if ($bound instanceof FloatType) {
 			return new TemplateFloatType($scope, $strategy, $variance, $name, $bound, $default);
 		}
 

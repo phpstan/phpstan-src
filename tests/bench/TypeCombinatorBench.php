@@ -2,6 +2,7 @@
 
 namespace PHPStan\Benchmark;
 
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -29,6 +30,12 @@ final class TypeCombinatorBench
 	/** @var list<Type> */
 	private array $unions = [];
 
+	/** @var list<ConstantArrayType> */
+	private array $taggedArrays = [];
+
+	/** @var list<Type> */
+	private array $benevolentUnions = [];
+
 	public function __construct(private ScratchDirectory $scratch)
 	{
 	}
@@ -55,6 +62,8 @@ final class TypeCombinatorBench
 		TypeCombinator::union(...$this->arrays);
 		TypeCombinator::intersect(...$this->unions);
 		TypeCombinator::remove(...$this->unions);
+		TypeCombinator::union(...$this->taggedArrays);
+		TypeCombinator::intersect(...$this->benevolentUnions);
 
 		$this->createTypes('type', $types);
 	}
@@ -98,6 +107,21 @@ final class TypeCombinatorBench
 		return TypeCombinator::remove(...$this->unions);
 	}
 
+	/**
+	 * Arrays of the same keys that differ in two constant values cannot be keys-supersets of each other.
+	 */
+	#[DataProvider(method: 'types')]
+	public function benchUnionTaggedConstantArrays(int $types): Type
+	{
+		return TypeCombinator::union(...$this->taggedArrays);
+	}
+
+	#[DataProvider(method: 'types')]
+	public function benchIntersectBenevolentUnion(int $types): Type
+	{
+		return TypeCombinator::intersect(...$this->benevolentUnions);
+	}
+
 	private function createTypes(string $prefix, int $types): void
 	{
 		$this->strings = [];
@@ -112,6 +136,14 @@ final class TypeCombinatorBench
 			$others[] = new ConstantStringType($prefix . ($i * 2));
 		}
 		$this->unions = [new UnionType($this->strings), new UnionType($others)];
+		$this->benevolentUnions = [new BenevolentUnionType($this->strings), new UnionType($others)];
+		$this->taggedArrays = [];
+		for ($i = 0; $i < $types; $i++) {
+			$this->taggedArrays[] = new ConstantArrayType(
+				[new ConstantStringType('kind'), new ConstantStringType('id')],
+				[new ConstantStringType($prefix . $i), new ConstantIntegerType($i)],
+			);
+		}
 	}
 
 }

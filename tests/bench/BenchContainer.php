@@ -16,12 +16,15 @@ use function dirname;
 final class BenchContainer
 {
 
-	public static function create(ScratchDirectory $scratch): Container
+	/**
+	 * @param list<string> $additionalConfigFiles such as one with the parameters a benchmark needs
+	 */
+	public static function create(ScratchDirectory $scratch, array $additionalConfigFiles = []): Container
 	{
 		// the root of the PHPStan that is loaded, so the benchmarks also run against other versions
 		$containerFactory = new ContainerFactory(dirname((string) (new ReflectionClass(ContainerFactory::class))->getFileName(), 3));
 
-		return $containerFactory->create($scratch->path(), [$containerFactory->getConfigDirectory() . '/config.level8.neon'], []);
+		return $containerFactory->create($scratch->path(), [$containerFactory->getConfigDirectory() . '/config.level8.neon', ...$additionalConfigFiles], []);
 	}
 
 }

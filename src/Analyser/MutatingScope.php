@@ -778,6 +778,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** @api */
 	public function getVariableType(string $variableName): Type
 	{
+		// a certainly defined variable, the common case, does not need the rest
+		$holder = $this->expressionTypes['$' . $variableName] ?? null;
+		if ($holder !== null && $holder->getCertainty()->yes()) {
+			return $holder->getType();
+		}
+
 		$hasVariableType = $this->hasVariableType($variableName);
 
 		if ($hasVariableType->maybe()) {
@@ -3562,7 +3568,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function specifyExpressionType(Expr $expr, Type $type, Type $nativeType, TrinaryLogic $certainty): self
 	{
-		if ($this->isSpecifyExpressionTypeNoop($expr, $type)) {
+		if ($expr instanceof Scalar || $this->isSpecifyExpressionTypeNoop($expr, $type)) {
 			return $this;
 		}
 
@@ -4335,10 +4341,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
 	{
-		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope?->getTemplateArgumentConstraints());
+		if ($otherScope === null || $otherScope === $this) {
+			return $this;
+		}
+
+		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
 		if (
-			$otherScope === null
-			|| $merged->templateArgumentConstraints === null
+			$merged->templateArgumentConstraints === null
 			|| $merged->templateArgumentFrame === null
 			|| !$merged->templateArgumentFrame->isObservingClosures()
 		) {

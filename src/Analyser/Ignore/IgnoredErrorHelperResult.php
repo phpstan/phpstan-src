@@ -368,16 +368,7 @@ final class IgnoredErrorHelperResult
 		$analysedFilesKeys = array_fill_keys($analysedFiles, true);
 
 		if (!$hasInternalErrors && !$collectedDataRuleSkipped) {
-			// asked only about an entry that would be reported; only an entry with `paths` has a part that differs from the entry
-			$judge = new UnmatchedIgnoredErrorJudge(
-				$this->fileHelper,
-				$this->analyseFileExcluder,
-				$analysedFiles,
-				$this->analysedPaths,
-				$this->analysedPathsFromConfig,
-				$collectedData,
-				$onlyFiles,
-			);
+			$judge = null;
 			foreach ($unmatchedIgnoredErrors as $i => $unmatchedIgnoredError) {
 				$reportUnmatched = is_array($unmatchedIgnoredError)
 					? ($unmatchedIgnoredError['reportUnmatched'] ?? $this->reportUnmatchedIgnoredErrors)
@@ -385,6 +376,16 @@ final class IgnoredErrorHelperResult
 				if ($reportUnmatched === false) {
 					continue;
 				}
+				// asked only about an entry that would be reported; only an entry with `paths` has a part that differs from the entry
+				$judge ??= new UnmatchedIgnoredErrorJudge(
+					$this->fileHelper,
+					$this->analyseFileExcluder,
+					$analysedFiles,
+					$this->analysedPaths,
+					$this->analysedPathsFromConfig,
+					$collectedData,
+					$onlyFiles,
+				);
 				$realCount = $realCounts[$i] ?? null;
 				if (
 					isset($unmatchedIgnoredError['count'])

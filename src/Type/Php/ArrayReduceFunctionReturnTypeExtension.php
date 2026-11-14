@@ -7,16 +7,22 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\TrinaryLogic;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 #[AutowiredService]
 final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
 {
+
+	public function __construct(
+		private ArrayReduceCarryTypeResolver $carryTypeResolver,
+	)
+	{
+	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection): bool
 	{
@@ -30,16 +36,21 @@ final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionRet
 			return null;
 		}
 
-		$callbackType = $scope->getType($args[1]->value);
-		if ($callbackType->isCallable()->no()) {
-			return null;
-		}
+		$resolvedCarry = $this->carryTypeResolver->resolve($functionCall, $scope);
+		if ($resolvedCarry !== null) {
+			$callbackReturnType = $resolvedCarry['return'];
+		} else {
+			$callbackType = $scope->getType($args[1]->value);
+			if ($callbackType->isCallable()->no()) {
+				return null;
+			}
 
-		$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$args,
-			$callbackType->getCallableParametersAcceptors($scope),
-		)->getReturnType();
+			$callbackReturnType = ParametersAcceptorSelector::selectFromArgs(
+				$scope,
+				$args,
+				$callbackType->getCallableParametersAcceptors($scope),
+			)->getReturnType();
+		}
 
 		if (isset($args[2])) {
 			$initialType = $scope->getType($args[2]->value);
@@ -47,23 +58,15 @@ final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionRet
 			$initialType = new NullType();
 		}
 
-		$arraysType = $scope->getType($args[0]->value);
-		$constantArrays = $arraysType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$onlyEmpty = TrinaryLogic::createYes();
-			$onlyNonEmpty = TrinaryLogic::createYes();
-			foreach ($constantArrays as $constantArray) {
-				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
-				$onlyEmpty = $onlyEmpty->and($iterableAtLeastOnce->negate());
-				$onlyNonEmpty = $onlyNonEmpty->and($iterableAtLeastOnce);
-			}
-
-			if ($onlyEmpty->yes()) {
-				return $initialType;
-			}
-			if ($onlyNonEmpty->yes()) {
-				return $callbackReturnType;
-			}
+		// array_reduce() throws on anything but an array, so only the arrays
+		// it is given decide whether the initial value can come back
+		$arrayType = TypeCombinator::intersect($scope->getType($args[0]->value), new ArrayType(new MixedType(), new MixedType()));
+		$iterableAtLeastOnce = $arrayType->isIterableAtLeastOnce();
+		if ($iterableAtLeastOnce->no()) {
+			return $initialType;
+		}
+		if ($iterableAtLeastOnce->yes()) {
+			return $callbackReturnType;
 		}
 
 		return TypeCombinator::union($callbackReturnType, $initialType);

@@ -4825,6 +4825,12 @@ private:
 			bool equal;
 			AH_OK(ahEquals(zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0), rhsType.raw(), equal));
 			if (!equal) return ahNull();
+			// in_array(0.0, ..., true): matches -0.0 too, never NAN; the sign of a zero is observable
+			AH_VAL(scalarValues, ahTypeOp(zend_hash_index_find(Z_ARRVAL_P(values.raw()), 0), PT_OP_GET_CONSTANT_SCALAR_VALUES, 0, NULL));
+			for (auto entry : zv::TableRef(Z_ARRVAL_P(scalarValues.raw()))) {
+				zval *value = entry.value().deref().raw();
+				if (Z_TYPE_P(value) == IS_DOUBLE && Z_DVAL_P(value) == 0.0) return ahNull();
+			}
 		}
 		AH_VAL(nativeValues, ahCall(nativeType.raw(), PT_LC("getfinitetypes"), 0, NULL));
 		if (zend_hash_num_elements(Z_ARRVAL_P(nativeValues.raw())) != 1) return ahNull();

@@ -45,12 +45,16 @@ final class MutatingScopeMergeBench
 	{
 		$container = BenchContainer::create($this->scratch);
 		$scopes = BenchScope::analyse($container, $this->scratch, 'merge', self::code());
-		[$this->ours, $this->theirs] = match ($merge) {
-			'same-scope' => [$scopes->scope('markerVariables'), $scopes->scope('markerVariables')],
-			'variables-on-one-side' => [$scopes->scope('markerVariables'), $scopes->scope('markerVariablesBefore')],
-			'property-fetches-on-one-side' => [$scopes->scope('markerProperties'), $scopes->scope('markerPropertiesBefore')],
-			default => throw new LogicException('Unknown merge ' . $merge . '.'),
-		};
+		$markers = [
+			'same-scope' => ['markerVariables', 'markerVariables'],
+			'variables-on-one-side' => ['markerVariables', 'markerVariablesBefore'],
+			'property-fetches-on-one-side' => ['markerProperties', 'markerPropertiesBefore'],
+		];
+		if (!isset($markers[$merge])) {
+			throw new LogicException('Unknown merge ' . $merge . '.');
+		}
+		$this->ours = $scopes->scope($markers[$merge][0]);
+		$this->theirs = $scopes->scope($markers[$merge][1]);
 
 		// the analysis merges the same expressions again and again, the first merge may remember what it learned about them
 		$this->ours->mergeWith($this->theirs);

@@ -111,6 +111,7 @@ parameters:
 	reportPossiblyNonexistentGeneralArrayOffset: false
 	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false
+	checkMissingPurePhpDocTag: false
 	checkMissingOverridePropertyAttribute: null
 	mixinExcludeClasses: []
 	scanFiles: []

@@ -115,6 +115,7 @@ parametersSchema:
 	reportPossiblyNonexistentGeneralArrayOffset: bool()
 	reportPossiblyNonexistentConstantArrayOffset: bool()
 	checkMissingOverrideMethodAttribute: bool()
+	checkMissingPurePhpDocTag: bool()
 	checkMissingOverridePropertyAttribute: schema(bool(), nullable())
 	parallel: structure([
 		jobSize: int(),

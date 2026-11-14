@@ -12,9 +12,11 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class PureFunctionRuleTest extends RuleTestCase
 {
 
+	private bool $checkMissingPurePhpDocTag = false;
+
 	public function getRule(): Rule
 	{
-		return new PureFunctionRule(new FunctionPurityCheck());
+		return new PureFunctionRule(self::getContainer()->getByType(FunctionPurityCheck::class), $this->checkMissingPurePhpDocTag);
 	}
 
 	public function testRule(): void
@@ -558,6 +560,35 @@ class PureFunctionRuleTest extends RuleTestCase
 				70,
 			],
 		]);
+	}
+
+	public function testMissingPureTag(): void
+	{
+		$this->checkMissingPurePhpDocTag = true;
+		$this->analyse([__DIR__ . '/data/missing-pure-tag.php'], [
+			[
+				'Function MissingPureTag\\add() does not have any side effects and can be marked @phpstan-pure.',
+				5,
+			],
+			[
+				'Function MissingPureTag\\addOne() does not have any side effects and can be marked @phpstan-pure.',
+				13,
+			],
+			[
+				'Function MissingPureTag\\markedImpure() is marked as impure but does not have any side effects.',
+				25,
+			],
+			[
+				'Function MissingPureTag\\callsPure() does not have any side effects and can be marked @phpstan-pure.',
+				132,
+			],
+		]);
+	}
+
+	public function testFixMissingPureTag(): void
+	{
+		$this->checkMissingPurePhpDocTag = true;
+		$this->fix(__DIR__ . '/data/missing-pure-function-tag-fix.php', __DIR__ . '/data/missing-pure-function-tag-fix.php.fixed');
 	}
 
 }

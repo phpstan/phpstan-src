@@ -287,8 +287,15 @@ final class ResolvedPhpDocBlock
 		$result->paramTags = self::mergeParamTags($this->getParamTags(), $parent, $parameterMapping, $parentClass);
 		$result->paramOutTags = self::mergeParamOutTags($this->getParamOutTags(), $parent, $parameterMapping, $parentClass);
 		$result->paramsImmediatelyInvokedCallable = self::mergeParamsImmediatelyInvokedCallable($this->getParamsImmediatelyInvokedCallable(), $parent, $parameterMapping);
-		$result->paramsPureUnlessCallableIsImpure = self::mergeParamsPureUnlessCallableIsImpure($this->getParamsPureUnlessCallableIsImpure(), $parent, $parameterMapping);
-		$result->paramsPureUnlessParameterPassed = self::mergeParamsPureUnlessParameterPassed($this->getParamsPureUnlessParameterPassed(), $parent, $parameterMapping);
+		// @phpstan-pure / @phpstan-impure on the method itself replaces the parent's
+		// conditional purity, so the @pure-unless-* tags are inherited only without them.
+		if ($this->isPure() === null) {
+			$result->paramsPureUnlessCallableIsImpure = self::mergeParamsPureUnlessCallableIsImpure($this->getParamsPureUnlessCallableIsImpure(), $parent, $parameterMapping);
+			$result->paramsPureUnlessParameterPassed = self::mergeParamsPureUnlessParameterPassed($this->getParamsPureUnlessParameterPassed(), $parent, $parameterMapping);
+		} else {
+			$result->paramsPureUnlessCallableIsImpure = $this->getParamsPureUnlessCallableIsImpure();
+			$result->paramsPureUnlessParameterPassed = $this->getParamsPureUnlessParameterPassed();
+		}
 		$result->paramClosureThisTags = self::mergeParamClosureThisTags($this->getParamClosureThisTags(), $parent, $parameterMapping, $parentClass);
 		$result->returnTag = self::mergeReturnTags($this->getReturnTag(), $declaringClass, $parent, $parameterMapping, $parentClass);
 		$result->throwsTag = self::mergeThrowsTags($this->getThrowsTag(), $parent, $parameterMapping);

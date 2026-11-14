@@ -180,6 +180,7 @@ final class TypeNodeResolver
 		}
 	}
 
+	/** The nested nodes of a type are resolved in the declaration resolve() entered, with a name scope of the same declaration. */
 	private function resolveType(TypeNode $typeNode, NameScope $nameScope): Type
 	{
 		foreach ($this->extensionRegistryProvider->getRegistry()->getExtensions() as $extension) {
@@ -647,7 +648,7 @@ final class TypeNodeResolver
 
 	private function resolveNullableTypeNode(NullableTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		return TypeCombinator::union($this->resolve($typeNode->type, $nameScope), new NullType());
+		return TypeCombinator::union($this->resolveType($typeNode->type, $nameScope), new NullType());
 	}
 
 	private function resolveUnionTypeNode(UnionTypeNode $typeNode, NameScope $nameScope): Type
@@ -710,10 +711,10 @@ final class TypeNodeResolver
 	private function resolveConditionalTypeNode(ConditionalTypeNode $typeNode, NameScope $nameScope): Type
 	{
 		return new ConditionalType(
-			$this->resolve($typeNode->subjectType, $nameScope),
-			$this->resolve($typeNode->targetType, $nameScope),
-			$this->resolve($typeNode->if, $nameScope),
-			$this->resolve($typeNode->else, $nameScope),
+			$this->resolveType($typeNode->subjectType, $nameScope),
+			$this->resolveType($typeNode->targetType, $nameScope),
+			$this->resolveType($typeNode->if, $nameScope),
+			$this->resolveType($typeNode->else, $nameScope),
 			$typeNode->negated,
 		);
 	}
@@ -722,16 +723,16 @@ final class TypeNodeResolver
 	{
 		return new ConditionalTypeForParameter(
 			$typeNode->parameterName,
-			$this->resolve($typeNode->targetType, $nameScope),
-			$this->resolve($typeNode->if, $nameScope),
-			$this->resolve($typeNode->else, $nameScope),
+			$this->resolveType($typeNode->targetType, $nameScope),
+			$this->resolveType($typeNode->if, $nameScope),
+			$this->resolveType($typeNode->else, $nameScope),
 			$typeNode->negated,
 		);
 	}
 
 	private function resolveArrayTypeNode(ArrayTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		$itemType = $this->resolve($typeNode->type, $nameScope);
+		$itemType = $this->resolveType($typeNode->type, $nameScope);
 		return new ArrayType((new BenevolentUnionType([new IntegerType(), new StringType()]))->toArrayKey(), $itemType);
 	}
 
@@ -1084,10 +1085,10 @@ final class TypeNodeResolver
 				$templateTags[$templateType->name] = new TemplateTag(
 					$templateType->name,
 					$templateType->bound !== null
-						? $this->resolve($templateType->bound, $nameScope)
+						? $this->resolveType($templateType->bound, $nameScope)
 						: new MixedType(),
 					$templateType->default !== null
-						? $this->resolve($templateType->default, $nameScope)
+						? $this->resolveType($templateType->default, $nameScope)
 						: null,
 					TemplateTypeVariance::createInvariant(),
 				);
@@ -1104,7 +1105,7 @@ final class TypeNodeResolver
 			$templateTypeMap = TemplateTypeMap::createEmpty();
 		}
 
-		$mainType = $this->resolve($typeNode->identifier, $nameScope);
+		$mainType = $this->resolveType($typeNode->identifier, $nameScope);
 
 		$isVariadic = false;
 		$parameters = array_values(array_map(
@@ -1118,7 +1119,7 @@ final class TypeNodeResolver
 				return new NativeParameterReflection(
 					$parameterName,
 					$parameterNode->isOptional || $parameterNode->isVariadic,
-					$this->resolve($parameterNode->type, $nameScope),
+					$this->resolveType($parameterNode->type, $nameScope),
 					$parameterNode->isReference ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 					$parameterNode->isVariadic,
 					defaultValue: null,
@@ -1131,7 +1132,7 @@ final class TypeNodeResolver
 		if ($assertions !== null) {
 			$returnType = new BooleanType();
 		} else {
-			$returnType = $this->resolve($typeNode->returnType, $nameScope);
+			$returnType = $this->resolveType($typeNode->returnType, $nameScope);
 		}
 
 		if ($mainType instanceof CallableType) {
@@ -1185,10 +1186,10 @@ final class TypeNodeResolver
 
 			return CallableAssertionsHelper::createAssertionsFromConditional(
 				$returnTypeNode->parameterName,
-				$this->resolve($returnTypeNode->targetType, $nameScope),
+				$this->resolveType($returnTypeNode->targetType, $nameScope),
 				$returnTypeNode->negated,
-				$this->resolve($returnTypeNode->if, $nameScope),
-				$this->resolve($returnTypeNode->else, $nameScope),
+				$this->resolveType($returnTypeNode->if, $nameScope),
+				$this->resolveType($returnTypeNode->else, $nameScope),
 			);
 		}
 
@@ -1201,7 +1202,7 @@ final class TypeNodeResolver
 		foreach ($typeNode->items as $itemNode) {
 			$items[] = [
 				$this->resolveArrayShapeOffsetType($itemNode, $nameScope),
-				$this->resolve($itemNode->valueType, $nameScope),
+				$this->resolveType($itemNode->valueType, $nameScope),
 				$itemNode->optional,
 			];
 		}
@@ -1212,11 +1213,11 @@ final class TypeNodeResolver
 			// when the shape gets built, so that it can be printed back as `...`.
 			$unsealedKeyType = $typeNode->unsealedType === null || $typeNode->unsealedType->keyType === null
 				? null
-				: $this->transformUnsafeArrayKey($this->resolve($typeNode->unsealedType->keyType, $nameScope));
+				: $this->transformUnsafeArrayKey($this->resolveType($typeNode->unsealedType->keyType, $nameScope));
 
 			$unsealedValueType = $typeNode->unsealedType === null
 				? new MixedType()
-				: $this->resolve($typeNode->unsealedType->valueType, $nameScope);
+				: $this->resolveType($typeNode->unsealedType->valueType, $nameScope);
 
 			$unsealed = [$unsealedKeyType, $unsealedValueType];
 		}
@@ -1324,7 +1325,7 @@ final class TypeNodeResolver
 				$keyType = new ConstantStringType($itemNode->keyName->value);
 			}
 
-			$items[] = [$keyType, $this->resolve($itemNode->valueType, $nameScope), $itemNode->optional];
+			$items[] = [$keyType, $this->resolveType($itemNode->valueType, $nameScope), $itemNode->optional];
 		}
 
 		return LateResolvableObjectShapeType::create($items);
@@ -1492,8 +1493,8 @@ final class TypeNodeResolver
 
 	private function resolveOffsetAccessNode(OffsetAccessTypeNode $typeNode, NameScope $nameScope): Type
 	{
-		$type = $this->resolve($typeNode->type, $nameScope);
-		$offset = $this->resolve($typeNode->offset, $nameScope);
+		$type = $this->resolveType($typeNode->type, $nameScope);
+		$offset = $this->resolveType($typeNode->offset, $nameScope);
 
 		if ($type->isOffsetAccessible()->no() || $type->hasOffsetValueType($offset)->no()) {
 			return new ErrorType();
@@ -1564,7 +1565,7 @@ final class TypeNodeResolver
 	{
 		$types = [];
 		foreach ($typeNodes as $typeNode) {
-			$types[] = $this->resolve($typeNode, $nameScope);
+			$types[] = $this->resolveType($typeNode, $nameScope);
 		}
 
 		return $types;

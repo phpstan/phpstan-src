@@ -123,7 +123,11 @@ final class BenchScope
 
 	public function scope(string $marker): MutatingScope
 	{
-		return $this->scopes[$marker] ?? throw new LogicException('No ' . $marker . '().');
+		if (!isset($this->scopes[$marker])) {
+			throw new LogicException('No ' . $marker . '().');
+		}
+
+		return $this->scopes[$marker];
 	}
 
 }

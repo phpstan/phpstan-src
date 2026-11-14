@@ -20,6 +20,7 @@ use function class_exists;
 use function dirname;
 use function explode;
 use function file_put_contents;
+use function get_class;
 use function interface_exists;
 use function is_a;
 use function str_starts_with;
@@ -66,7 +67,7 @@ final class AnalysedCode
 				$scope = $scope->toMutatingScope();
 			}
 			if (!$scope instanceof MutatingScope) {
-				throw new LogicException('The analysis gave a ' . $scope::class . '.');
+				throw new LogicException('The analysis gave a ' . get_class($scope) . '.');
 			}
 			$analysed->nodes[] = [$node, $scope];
 		});

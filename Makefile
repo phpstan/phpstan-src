@@ -16,6 +16,7 @@ lint:
 		--exclude tests/PHPStan/Analyser/data \
 		--exclude tests/bench/data \
 		--exclude tests/bench/Warmup.php \
+		--exclude tests/bench/BenchEnum.php \
 		--exclude tests/PHPStan/Analyser/nsrt \
 		--exclude tests/PHPStan/Rules/Methods/data \
 		--exclude tests/PHPStan/Rules/Functions/data \

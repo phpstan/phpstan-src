@@ -446,7 +446,10 @@ public:
 			if (!invalidate) {
 				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-				invalidate = hasSideEffects == PT_TRI_YES;
+				// When possibly impure values are not remembered, a possibly impure method
+				// may also have changed the object's properties, so forget them too.
+				invalidate = hasSideEffects == PT_TRI_YES
+					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects != PT_TRI_NO);
 			}
 			if (invalidate) {
 				zval *normalizedVar = exprVar(normalizedExpr.raw());

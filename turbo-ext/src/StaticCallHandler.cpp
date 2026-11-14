@@ -679,7 +679,8 @@ public:
 			if (!invalidate) {
 				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-				invalidate = hasSideEffects == PT_TRI_YES;
+				invalidate = hasSideEffects == PT_TRI_YES
+					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects != PT_TRI_NO);
 			}
 			if (invalidate && UNEXPECTED(!scopeClassIsDeclaringClass(currentScope.raw(), methodReflection.raw(), invalidate))) return zv::Val();
 			if (invalidate) {

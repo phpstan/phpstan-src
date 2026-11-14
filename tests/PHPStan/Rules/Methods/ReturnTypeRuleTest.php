@@ -1419,4 +1419,22 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13325.php'], []);
 	}
 
+	public function testBug15431(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15431.php'], [
+			[
+				'Method Bug15431\\WeakAnalysingMap::unboxValue() should return T of (TKey of array<mixed>|object)|(TValue of array<mixed>|object) but returns array<mixed>|(T of (TKey of object)|TValue of object).',
+				30,
+				'• Type #1 from the union: Type array<mixed> is not always the same as TKey. It breaks the contract for some argument types, typically subtypes.
+• Type #2 from the union: Type array<mixed> is not always the same as TValue. It breaks the contract for some argument types, typically subtypes.
+• Type array<mixed> is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
+	public function testBug15431Iterable(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15431-iterable.php'], []);
+	}
+
 }

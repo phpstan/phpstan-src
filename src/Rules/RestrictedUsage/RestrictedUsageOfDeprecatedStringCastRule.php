@@ -45,7 +45,9 @@ final class RestrictedUsageOfDeprecatedStringCastRule implements Rule
 		}
 
 		$exprType = $scope->getType($node->expr);
-		$referencedClasses = TypeCombinator::intersect($exprType, new ObjectWithoutClassType())->getObjectClassNames();
+		// the intersection only removes what is not an object, such as the null of a nullable type
+		$objectType = $exprType->isObject()->yes() ? $exprType : TypeCombinator::intersect($exprType, new ObjectWithoutClassType());
+		$referencedClasses = $objectType->getObjectClassNames();
 
 		$errors = [];
 

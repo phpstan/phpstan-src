@@ -64,6 +64,12 @@ final class TypeCombinator
 {
 
 	/**
+	 * Up to this many members of the one union doUnion() flattens, finding out whether two of
+	 * them were already compared by scanning it costs less than indexing it.
+	 */
+	private const ALREADY_NORMALIZED_SCAN_LIMIT = 4;
+
+	/**
 	 * Turned on by TurboExtensionEnabler when the native extension is active, so that
 	 * union(), intersect() and remove() route through the memoizing TypeCombinatorCache.
 	 * Without the extension the operations run exactly as they always have — the flag
@@ -526,27 +532,32 @@ final class TypeCombinator
 			static fn (IntegerRangeType $a, IntegerRangeType $b): int => ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN)
 				?: ($a->getMax() ?? PHP_INT_MAX) <=> ($b->getMax() ?? PHP_INT_MAX),
 		);
-		usort(
-			$floatRangeTypes,
-			static fn (FloatRangeType $a, FloatRangeType $b): int => $a->getMin() <=> $b->getMin() ?: $a->getMax() <=> $b->getMax(),
-		);
 		// array_merge() hands the first array back as it is when the second one
 		// is empty, so the keys the bucketing above unset must be renumbered here
-		// sorted by min, touching float ranges are neighbours: merging them now lets a
-		// constant meet the merged range (float<min, max> and NAN are float)
-		$mergedFloatRangeTypes = [];
-		foreach ($floatRangeTypes as $floatRangeType) {
-			$last = count($mergedFloatRangeTypes) - 1;
-			if ($last >= 0) {
-				$merged = $mergedFloatRangeTypes[$last]->tryUnion($floatRangeType);
-				if ($merged instanceof FloatRangeType) {
-					$mergedFloatRangeTypes[$last] = $merged;
-					continue;
+		if ($floatRangeTypes === []) {
+			// most unions have no float range, and sorting an empty list still creates the closure
+			$types = array_merge(array_values($types), $integerRangeTypes);
+		} else {
+			usort(
+				$floatRangeTypes,
+				static fn (FloatRangeType $a, FloatRangeType $b): int => $a->getMin() <=> $b->getMin() ?: $a->getMax() <=> $b->getMax(),
+			);
+			// sorted by min, touching float ranges are neighbours: merging them now lets a
+			// constant meet the merged range (float<min, max> and NAN are float)
+			$mergedFloatRangeTypes = [];
+			foreach ($floatRangeTypes as $floatRangeType) {
+				$last = count($mergedFloatRangeTypes) - 1;
+				if ($last >= 0) {
+					$merged = $mergedFloatRangeTypes[$last]->tryUnion($floatRangeType);
+					if ($merged instanceof FloatRangeType) {
+						$mergedFloatRangeTypes[$last] = $merged;
+						continue;
+					}
 				}
+				$mergedFloatRangeTypes[] = $floatRangeType;
 			}
-			$mergedFloatRangeTypes[] = $floatRangeType;
+			$types = array_merge(array_values($types), $integerRangeTypes, $mergedFloatRangeTypes);
 		}
-		$types = array_merge(array_values($types), $integerRangeTypes, $mergedFloatRangeTypes);
 		$typesCount = count($types);
 
 		if (isset($scalarTypes[IntersectionType::class])) {
@@ -625,7 +636,10 @@ final class TypeCombinator
 		// unique while this lookup refers to them
 		$normalizedGroupsByType = [];
 		$normalizedTwice = [];
-		if ($typesCount > 1) {
+		// a single flattened union of a few members, as in most unions, is cheaper to scan - without
+		// new local variables, which every call of this method initializes
+		$scanAlreadyNormalized = $alreadyNormalizedCounter === 1 && count($alreadyNormalized[0]) <= self::ALREADY_NORMALIZED_SCAN_LIMIT;
+		if ($typesCount > 1 && !$scanAlreadyNormalized) {
 			foreach ($alreadyNormalized as $group => $normalizedTypes) {
 				foreach ($normalizedTypes as $normalizedType) {
 					$normalizedTypeId = spl_object_id($normalizedType);
@@ -641,13 +655,31 @@ final class TypeCombinator
 		// transform A | A to A
 		// transform A | never to A
 		for ($i = 0; $i < $typesCount; $i++) {
-			$iGroups = $normalizedGroupsByType[spl_object_id($types[$i])] ?? null;
+			if ($scanAlreadyNormalized) {
+				// null for a type not in the flattened union, which skips the scan of its pairs below
+				$iGroups = in_array($types[$i], $alreadyNormalized[0], true) ? [] : null;
+			} else {
+				$iGroups = $normalizedGroupsByType[spl_object_id($types[$i])] ?? null;
+			}
 			for ($j = $i + 1; $j < $typesCount; $j++) {
 				if ($isPlainConstantArray !== null && $isPlainConstantArray[$i] && $isPlainConstantArray[$j]) {
 					continue;
 				}
-				if ($iGroups !== null && self::isAlreadyNormalized($iGroups, $normalizedGroupsByType, $normalizedTwice, $types[$i], $types[$j])) {
-					continue;
+				if ($iGroups !== null) {
+					if ($scanAlreadyNormalized) {
+						// what isAlreadyNormalized() answers: $types[$j] is another member of
+						// the flattened union, which holds $types[$i]
+						$normalizedTypes = $alreadyNormalized[0];
+						if (
+							$types[$i] !== $types[$j]
+								? in_array($types[$j], $normalizedTypes, true)
+								: count(array_keys($normalizedTypes, $types[$j], true)) > 1
+						) {
+							continue;
+						}
+					} elseif (self::isAlreadyNormalized($iGroups, $normalizedGroupsByType, $normalizedTwice, $types[$i], $types[$j])) {
+						continue;
+					}
 				}
 				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
 				if ($compareResult === null) {
@@ -657,7 +689,9 @@ final class TypeCombinator
 				[$a, $b] = $compareResult;
 				if ($a !== null) {
 					$types[$i] = $a;
-					$iGroups = $normalizedGroupsByType[spl_object_id($a)] ?? null;
+					$iGroups = $scanAlreadyNormalized
+						? (in_array($a, $alreadyNormalized[0], true) ? [] : null)
+						: ($normalizedGroupsByType[spl_object_id($a)] ?? null);
 					if ($isPlainConstantArray !== null) {
 						$isPlainConstantArray[$i] = $a->getConstantArrays() === [$a];
 						array_splice($isPlainConstantArray, $j, 1);

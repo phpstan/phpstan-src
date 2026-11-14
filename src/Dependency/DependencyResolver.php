@@ -177,15 +177,16 @@ final class DependencyResolver
 		$functionNames = [];
 		foreach ($reflectionsByFile as $file => $reflections) {
 			foreach ($reflections as $id => $reflection) {
-				if ($reflection instanceof FunctionReflection) {
-					$functionNames[$reflection->getName()] = $reflection->getName();
+				// classes first, they are most of the reflections
+				if ($reflection instanceof ClassReflection) {
+					$classReflections[$id] = $reflection;
 					continue;
 				}
-				if (!$reflection instanceof ClassReflection) {
+				if (!$reflection instanceof FunctionReflection) {
 					continue;
 				}
 
-				$classReflections[$id] = $reflection;
+				$functionNames[$reflection->getName()] = $reflection->getName();
 			}
 			$this->resolveFiles($file, $reflections, $analysedFiles, $fileDependencies, $packages);
 		}

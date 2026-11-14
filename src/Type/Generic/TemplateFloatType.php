@@ -37,4 +37,10 @@ final class TemplateFloatType extends FloatType implements TemplateType
 		$this->default = $default;
 	}
 
+	/** The absolute value of a T is not a T, and FloatType's own answer, $this, would claim it is. */
+	public function toAbsoluteNumber(): Type
+	{
+		return $this->getBound()->toAbsoluteNumber();
+	}
+
 }

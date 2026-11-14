@@ -2,8 +2,8 @@
 
 /*
  * instructions: 38.28M
- * cycles: 52.83M
- * memory: 322.5KiB
+ * cycles: 52.86M
+ * memory: 369.2KiB
  */
 
 namespace BenchImplodeOptionalKeysBlowup;

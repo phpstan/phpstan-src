@@ -136,3 +136,16 @@ function pureCallingMethodWithImpureCallbackByName(Mapper $mapper, array $arr): 
 		return $x * 2;
 	}, arr: $arr);
 }
+
+/**
+ * @param callable(int): int $f
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ */
+function forwardingCallbackByName(callable $f, array $arr): array
+{
+	myMap(arr: $arr, f: $f);
+
+	return array_map(array: $arr, callback: $f);
+}

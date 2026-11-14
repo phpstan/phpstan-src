@@ -48,8 +48,8 @@ final class PhpFunctionFromParserNodeReflectionBench
 	 * a yield unless the answer is memoized on its node.
 	 */
 	#[DataProvider(method: 'statements')]
-	#[ExpectedFor('statements-16', instructions: '1.268K', cycles: '16.56K', memory: '0B')]
-	#[ExpectedFor('statements-256', instructions: '1.268K', cycles: '16.67K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'statements-16', instructions: '1.268K', cycles: '16.56K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'statements-256', instructions: '1.268K', cycles: '16.67K', memory: '0B')]
 	public function benchIsGeneratorAgain(int $statements): bool
 	{
 		if ($this->function === null) {

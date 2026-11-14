@@ -63,7 +63,7 @@ final class MutatingScopeMergeBench
 
 	#[DataProvider(method: 'merges')]
 	#[ExpectedFor(dataSet: 'property-fetches-on-one-side', instructions: '1.749M', cycles: '2.291M', memory: '82.25KiB')]
-	#[ExpectedFor('same-scope', instructions: '1.083K', cycles: '12.96K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'same-scope', instructions: '1.083K', cycles: '12.96K', memory: '0B')]
 	#[ExpectedFor(dataSet: 'variables-on-one-side', instructions: '890.9K', cycles: '1.271M', memory: '53.26KiB')]
 	public function benchMergeWith(string $merge): MutatingScope
 	{

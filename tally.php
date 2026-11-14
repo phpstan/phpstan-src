@@ -12,4 +12,6 @@ return Configuration::create()
 	// The slowest benchmark takes a few seconds natively and about 13 minutes under the simulation.
 	// One stuck in a loop fails in the native run, one that regresses far beyond that fails as not
 	// measured instead of holding up its shard.
-	->withTimeLimits(30, 25 * 60);
+	->withTimeLimits(30, 25 * 60)
+	// tally accept writes #[ExpectedFor(dataSet: '…')] like the benchmarks do
+	->withNamedArguments(true);

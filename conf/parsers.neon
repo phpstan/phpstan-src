@@ -54,7 +54,7 @@ services:
 		arguments:
 			currentPhpVersionRichParser: @cachedRichParser
 			currentPhpVersionSimpleParser: @cachedSimpleParser
-			php8Parser: @php8Parser
+			php8Parser: @cachedPhp8Parser
 			singleReflectionFile: %singleReflectionFile%
 		autowired: false
 
@@ -79,6 +79,15 @@ services:
 		class: PHPStan\Parser\CachedParser
 		arguments:
 			originalParser: @currentPhpVersionSimpleParser
+			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
+			cachedSourceBytesMax: %cache.nodesByStringSourceBytesMax%
+		autowired: false
+
+	# reflection asks for the nodes of a stub again for each symbol it declares
+	cachedPhp8Parser:
+		class: PHPStan\Parser\CachedParser
+		arguments:
+			originalParser: @php8Parser
 			cachedNodesByStringCountMax: %cache.nodesByStringCountMax%
 			cachedSourceBytesMax: %cache.nodesByStringSourceBytesMax%
 		autowired: false

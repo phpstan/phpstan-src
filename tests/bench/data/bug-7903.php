@@ -1,9 +1,9 @@
 <?php
 
 /*
- * instructions: 5.763B
- * cycles: 7.270B
- * memory: 49.07MiB
+ * instructions: 5.093B
+ * cycles: 6.391B
+ * memory: 12.69MiB
  */
 
 declare(strict_types=1);

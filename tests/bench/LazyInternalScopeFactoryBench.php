@@ -8,6 +8,7 @@ use PHPStan\Analyser\InternalScopeFactoryFactory;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\ScopeContext;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 /**
@@ -35,6 +36,7 @@ final class LazyInternalScopeFactoryBench
 		$this->factory->create($this->context);
 	}
 
+	#[Expected(instructions: '1.962M', cycles: '2.006M', memory: '1.000KiB')]
 	public function benchCreate(): MutatingScope
 	{
 		if ($this->factory === null || $this->context === null) {

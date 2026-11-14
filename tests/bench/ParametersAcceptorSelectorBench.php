@@ -18,6 +18,7 @@ use PHPStan\Type\Type;
 use ReflectionMethod;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class ParametersAcceptorSelectorBench
@@ -59,6 +60,9 @@ final class ParametersAcceptorSelectorBench
 	 * of nested shapes. The search can stop at a template type in the first item.
 	 */
 	#[DataProvider(method: 'returnTypes')]
+	#[ExpectedFor(dataSet: 'no-template-256', instructions: '543.0K', cycles: '1.047M', memory: '0B')]
+	#[ExpectedFor(dataSet: 'template-first-16', instructions: '1.876K', cycles: '19.70K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'template-first-256', instructions: '1.876K', cycles: '19.70K', memory: '0B')]
 	public function benchHasAcceptorTemplateOrLateResolvableType(int $items, bool $templateFirst): bool
 	{
 		if ($this->hasTemplateOrLateResolvableType === null || $this->acceptor === null) {

@@ -10,6 +10,7 @@ use PHPStan\Analyser\Ignore\IgnoredErrorHelperProcessedResult;
 use PHPStan\Analyser\Ignore\IgnoredErrorHelperResult;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function file_put_contents;
 
@@ -85,6 +86,8 @@ final class IgnoredErrorHelperBench
 	 * Each error is matched against each ignoreErrors entry.
 	 */
 	#[DataProvider(method: 'ignoreErrors')]
+	#[ExpectedFor(dataSet: 'other-identifiers', instructions: '227.2K', cycles: '417.5K', memory: '3.438KiB')]
+	#[ExpectedFor(dataSet: 'paths-8', instructions: '21.83M', cycles: '29.11M', memory: '5.750KiB')]
 	public function benchProcess(int $paths, bool $otherIdentifiers): IgnoredErrorHelperProcessedResult
 	{
 		if ($this->result === null) {

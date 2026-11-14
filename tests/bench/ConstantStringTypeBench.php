@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class ConstantStringTypeBench
@@ -49,6 +50,7 @@ final class ConstantStringTypeBench
 	 *
 	 * @return list<Type>
 	 */
+	#[Expected(instructions: '302.2K', cycles: '435.1K', memory: '8.422KiB')]
 	public function benchToArrayKey(): array
 	{
 		$arrayKeys = [];
@@ -63,6 +65,7 @@ final class ConstantStringTypeBench
 	 * 'DateTime::format' and other methods of DateTime, static or not. Since PHP 8 such a string
 	 * may name an instance method, so the method is not looked into.
 	 */
+	#[Expected(instructions: '86.86K', cycles: '225.3K', memory: '952B')]
 	public function benchIsCallable(): TrinaryLogic
 	{
 		$result = TrinaryLogic::createYes();

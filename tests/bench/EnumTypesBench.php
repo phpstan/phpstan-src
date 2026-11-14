@@ -13,6 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 /**
@@ -54,6 +55,7 @@ final class EnumTypesBench
 	 * A member that is one enum case is set aside; whether the intersection with the enum is one
 	 * does not need all of its cases.
 	 */
+	#[Expected(instructions: '156.3K', cycles: '516.7K', memory: '4.328KiB')]
 	public function benchUnionWithIntersection(): Type
 	{
 		if ($this->unionMembers === []) {
@@ -66,6 +68,7 @@ final class EnumTypesBench
 	/**
 	 * @return list<Type>
 	 */
+	#[Expected(instructions: '804.4K', cycles: '1.086M', memory: '40.11KiB')]
 	public function benchUnionTypeGetFiniteTypes(): array
 	{
 		if ($this->union === null) {
@@ -80,6 +83,7 @@ final class EnumTypesBench
 	 *
 	 * @return list<Type>
 	 */
+	#[Expected(instructions: '1.121M', cycles: '1.668M', memory: '72.42KiB')]
 	public function benchIntersectionTypeGetFiniteTypes(): array
 	{
 		if ($this->intersection === null) {

@@ -16,6 +16,7 @@ use stdClass;
 use Tally\Attribute\Before;
 use Tally\Attribute\Constant;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\Attribute\Linear;
 use Tally\Attribute\Warmup;
 use Tally\ScratchDirectory;
@@ -115,6 +116,9 @@ final class ConstantArrayTypeBench
 	 * only described when it is reported.
 	 */
 	#[DataProvider(method: 'keys')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '49.30K', cycles: '158.1K', memory: '1.797KiB')]
+	#[ExpectedFor(dataSet: 'keys-64', instructions: '164.7K', cycles: '300.6K', memory: '4.070KiB')]
+	#[ExpectedFor(dataSet: 'keys-256', instructions: '625.6K', cycles: '871.5K', memory: '20.32KiB')]
 	public function benchIsSuperTypeOfSealedWithoutKey(int $keys): bool
 	{
 		if ($this->sealed === null || $this->sealedWithoutLastKey === null) {
@@ -128,6 +132,9 @@ final class ConstantArrayTypeBench
 	 * The verbosity of the reason is only chosen when an offset does not accept.
 	 */
 	#[DataProvider(method: 'keys')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '1.921M', cycles: '3.173M', memory: '157.0KiB')]
+	#[ExpectedFor(dataSet: 'keys-64', instructions: '3.080M', cycles: '4.728M', memory: '157.0KiB')]
+	#[ExpectedFor(dataSet: 'keys-256', instructions: '7.715M', cycles: '10.97M', memory: '160.8KiB')]
 	public function benchAcceptsSameShape(int $keys): bool
 	{
 		if ($this->sameShape === null) {

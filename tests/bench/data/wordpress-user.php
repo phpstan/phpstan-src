@@ -1,9 +1,9 @@
 <?php // lint >= 8.0
 
 /*
- * instructions: 2.781B
- * cycles: 3.536B
- * memory: 45.12MiB
+ * instructions: 2.076B
+ * cycles: 2.668B
+ * memory: 8.117MiB
  */
 
 namespace BenchComplexUnion;

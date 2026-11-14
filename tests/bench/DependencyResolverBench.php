@@ -17,6 +17,7 @@ use ReflectionClass;
 use SplFileInfo;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function dirname;
 
@@ -79,6 +80,9 @@ final class DependencyResolverBench
 	 * The files and packages a reference to a class from an analysed file depends on.
 	 */
 	#[DataProvider(method: 'references')]
+	#[ExpectedFor(dataSet: 'analysed', instructions: '75.18K', cycles: '221.1K', memory: '4.234KiB')]
+	#[ExpectedFor(dataSet: 'not-analysed', instructions: '84.77K', cycles: '226.1K', memory: '4.234KiB')]
+	#[ExpectedFor(dataSet: 'own-file', instructions: '73.58K', cycles: '217.5K', memory: '4.234KiB')]
 	public function benchResolveClassReference(string $case): ResolvedDependencies
 	{
 		if ($this->resolver === null || $this->dependencies === null) {

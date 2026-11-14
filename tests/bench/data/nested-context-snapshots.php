@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 6.644B
- * cycles: 8.373B
- * memory: 60.10MiB
+ * instructions: 6.111B
+ * cycles: 7.731B
+ * memory: 22.92MiB
  */
 
 namespace BenchNestedContextSnapshots;

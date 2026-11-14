@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class PhpMethodReflectionBench
@@ -37,6 +38,7 @@ final class PhpMethodReflectionBench
 		$this->method->getName();
 	}
 
+	#[Expected(instructions: '700', cycles: '8.840K', memory: '0B')]
 	public function benchGetNameAgain(): string
 	{
 		if ($this->method === null) {

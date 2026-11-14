@@ -10,6 +10,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class ArrayTypeBench
@@ -36,6 +37,7 @@ final class ArrayTypeBench
 	/**
 	 * array<int, mixed> may be a list, which takes two comparisons of its key type to find out.
 	 */
+	#[Expected(instructions: '616.4K', cycles: '654.3K', memory: '376B')]
 	public function benchIsList(): TrinaryLogic
 	{
 		$result = TrinaryLogic::createNo();
@@ -50,6 +52,7 @@ final class ArrayTypeBench
 	 * The constructor turns a benevolent (int|string) key into mixed, which other key types do not
 	 * need to be described for.
 	 */
+	#[Expected(instructions: '1.699M', cycles: '1.749M', memory: '416B')]
 	public function benchConstruct(): Type
 	{
 		$keyType = IntegerRangeType::fromInterval(0, 100);

@@ -15,6 +15,7 @@ use PHPStan\Type\UnionType;
 use ReflectionClass;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class UnresolvableTypeHelperBench
@@ -55,6 +56,8 @@ final class UnresolvableTypeHelperBench
 	 * once the first value is found, the rest of the type is not traversed.
 	 */
 	#[DataProvider(method: 'keys')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '74.44K', cycles: '182.6K', memory: '6.461KiB')]
+	#[ExpectedFor(dataSet: 'keys-64', instructions: '260.1K', cycles: '413.9K', memory: '25.21KiB')]
 	public function benchUnresolvableFirst(int $keys): bool
 	{
 		if ($this->type === null) {

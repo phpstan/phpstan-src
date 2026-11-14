@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Internal\DirectoryCreatorException;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class FileCacheStorageMissBench
@@ -33,6 +34,7 @@ final class FileCacheStorageMissBench
 	 * The reflection cache in front of the PHP-internal locator is asked for every class name the
 	 * locators before it do not find, and most were never written.
 	 */
+	#[Expected(instructions: '7.924K', cycles: '57.79K', memory: '824B')]
 	public function benchLoadMissing(): mixed
 	{
 		if ($this->storage === null) {

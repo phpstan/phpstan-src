@@ -10,6 +10,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\UnionType;
 use stdClass;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 /**
@@ -43,6 +44,7 @@ final class ObjectTypeIsSuperTypeOfBench
 		$this->dateTime->isSuperTypeOf($this->union);
 	}
 
+	#[Expected(instructions: '252.2K', cycles: '311.5K', memory: '368B')]
 	public function benchIsSuperTypeOfUnrelatedClass(): IsSuperTypeOfResult
 	{
 		if ($this->dateTime === null || $this->exception === null) {
@@ -57,6 +59,7 @@ final class ObjectTypeIsSuperTypeOfBench
 		return $result;
 	}
 
+	#[Expected(instructions: '850.0K', cycles: '1.075M', memory: '1.578KiB')]
 	public function benchIsSuperTypeOfUnionOfUnrelatedClasses(): IsSuperTypeOfResult
 	{
 		if ($this->dateTime === null || $this->union === null) {

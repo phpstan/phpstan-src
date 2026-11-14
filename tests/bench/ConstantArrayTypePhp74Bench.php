@@ -10,6 +10,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
 use ReflectionClass;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 use function count;
 use function dirname;
@@ -49,6 +50,7 @@ final class ConstantArrayTypePhp74Bench
 	/**
 	 * [$dateTime, 'format'] and the other methods of DateTime, called on an object.
 	 */
+	#[Expected(instructions: '169.9K', cycles: '324.2K', memory: '1.164KiB')]
 	public function benchFindTypeAndMethodNames(): int
 	{
 		$found = 0;

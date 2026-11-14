@@ -5,6 +5,7 @@ namespace PHPStan\Benchmark;
 use PHPStan\TrinaryLogic;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 
 /**
  * TrinaryLogic is combined everywhere types are compared, so each case combines it a thousand times.
@@ -60,6 +61,8 @@ final class TrinaryLogicBench
 	}
 
 	#[DataProvider(method: 'operands')]
+	#[ExpectedFor(dataSet: 'operands-1', instructions: '1.111M', cycles: '1.135M', memory: '0B')]
+	#[ExpectedFor(dataSet: 'operands-4', instructions: '2.356M', cycles: '2.387M', memory: '216B')]
 	public function benchAnd(int $operands): TrinaryLogic
 	{
 		$result = TrinaryLogic::createYes();
@@ -72,6 +75,8 @@ final class TrinaryLogicBench
 	}
 
 	#[DataProvider(method: 'operands')]
+	#[ExpectedFor(dataSet: 'operands-1', instructions: '1.111M', cycles: '1.136M', memory: '0B')]
+	#[ExpectedFor(dataSet: 'operands-4', instructions: '2.356M', cycles: '2.388M', memory: '216B')]
 	public function benchOr(int $operands): TrinaryLogic
 	{
 		$result = TrinaryLogic::createNo();
@@ -84,6 +89,7 @@ final class TrinaryLogicBench
 	}
 
 	#[DataProvider(method: 'fourOperands')]
+	#[ExpectedFor(dataSet: 'operands-4', instructions: '2.739M', cycles: '2.771M', memory: '216B')]
 	public function benchMaxMin(int $operands): TrinaryLogic
 	{
 		$result = TrinaryLogic::createNo();
@@ -99,6 +105,7 @@ final class TrinaryLogicBench
 	 * The lazy methods stop at the first no or yes, so every callback answers maybe.
 	 */
 	#[DataProvider(method: 'objects')]
+	#[ExpectedFor(dataSet: 'objects-8', instructions: '11.62M', cycles: '11.92M', memory: '832B')]
 	public function benchLazyAnd(int $objects): TrinaryLogic
 	{
 		$result = TrinaryLogic::createYes();
@@ -113,6 +120,7 @@ final class TrinaryLogicBench
 	 * The lazy methods stop at the first no or yes, so every callback answers maybe.
 	 */
 	#[DataProvider(method: 'objects')]
+	#[ExpectedFor(dataSet: 'objects-8', instructions: '11.62M', cycles: '11.98M', memory: '832B')]
 	public function benchLazyOr(int $objects): TrinaryLogic
 	{
 		$result = TrinaryLogic::createNo();
@@ -127,6 +135,7 @@ final class TrinaryLogicBench
 	 * The lazy methods stop at the first no or yes, so every callback answers maybe.
 	 */
 	#[DataProvider(method: 'objects')]
+	#[ExpectedFor(dataSet: 'objects-8', instructions: '8.283M', cycles: '8.323M', memory: '400B')]
 	public function benchLazyMaxMin(int $objects): TrinaryLogic
 	{
 		$result = TrinaryLogic::createNo();

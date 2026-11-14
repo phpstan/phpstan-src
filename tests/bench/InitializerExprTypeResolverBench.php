@@ -12,6 +12,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class InitializerExprTypeResolverBench
@@ -52,6 +53,8 @@ final class InitializerExprTypeResolverBench
 	 * A ternary with both branches, `[...] ? 1 : 2`, does not need the type of its condition.
 	 */
 	#[DataProvider(method: 'items')]
+	#[ExpectedFor(dataSet: 'items-8', instructions: '57.59K', cycles: '258.3K', memory: '2.516KiB')]
+	#[ExpectedFor(dataSet: 'items-128', instructions: '57.59K', cycles: '259.2K', memory: '2.516KiB')]
 	public function benchTernary(int $items): Type
 	{
 		if ($this->ternary === null) {
@@ -65,6 +68,8 @@ final class InitializerExprTypeResolverBench
 	 * `[...['k0' => 0, 'k1' => 1, ...]]`, whose string keys are kept since PHP 8.1
 	 */
 	#[DataProvider(method: 'items')]
+	#[ExpectedFor(dataSet: 'items-8', instructions: '234.4K', cycles: '467.9K', memory: '10.89KiB')]
+	#[ExpectedFor(dataSet: 'items-128', instructions: '11.05M', cycles: '12.69M', memory: '143.9KiB')]
 	public function benchUnpackStringKeys(int $items): Type
 	{
 		if ($this->unpack === null) {

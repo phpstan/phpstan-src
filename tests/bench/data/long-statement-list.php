@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 4.204B
- * cycles: 5.752B
- * memory: 70.02MiB
+ * instructions: 4.849B
+ * cycles: 6.733B
+ * memory: 34.30MiB
  */
 
 namespace LongStatementListBench;

@@ -4,6 +4,7 @@ namespace PHPStan\Benchmark;
 
 use PHPStan\Type\VerbosityLevel;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 
 final class VerbosityLevelFactoriesBench
 {
@@ -22,6 +23,7 @@ final class VerbosityLevelFactoriesBench
 	/**
 	 * Every describe() call gets its level from one of these.
 	 */
+	#[Expected(instructions: '1.101M', cycles: '1.115M', memory: '0B')]
 	public function benchFactories(): VerbosityLevel
 	{
 		$level = VerbosityLevel::typeOnly();

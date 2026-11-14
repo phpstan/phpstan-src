@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 18.14B
- * cycles: 22.76B
- * memory: 98.86MiB
+ * instructions: 14.00B
+ * cycles: 18.37B
+ * memory: 63.07MiB
  */
 
 namespace BenchNullsafeChainWalk;

@@ -15,6 +15,8 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\Expected;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function implode;
 use function sprintf;
@@ -72,6 +74,7 @@ final class MutatingScopeBench
 	/**
 	 * The certainty is looked up once (#4726).
 	 */
+	#[Expected(instructions: '2.247K', cycles: '26.67K', memory: '32B')]
 	public function benchGetVariableType(): Type
 	{
 		return $this->scope()->getVariableType('i');
@@ -80,6 +83,7 @@ final class MutatingScopeBench
 	/**
 	 * Only the cases with a left side that may be set narrow the scope by isset() (#4661).
 	 */
+	#[Expected(instructions: '965.3K', cycles: '2.091M', memory: '93.89KiB')]
 	public function benchGetTypeOfCoalesceWithNullLeft(): Type
 	{
 		return $this->scope()->getType(self::coalesce());
@@ -96,6 +100,8 @@ final class MutatingScopeBench
 	}
 
 	#[DataProvider(method: 'keepVoidExprs')]
+	#[ExpectedFor(dataSet: 'func-call', instructions: '389.4K', cycles: '1.305M', memory: '15.49KiB')]
+	#[ExpectedFor(dataSet: 'variable', instructions: '7.615K', cycles: '68.25K', memory: '128B')]
 	public function benchGetKeepVoidType(string $expr): Type
 	{
 		return $this->scope()->getKeepVoidType($expr === 'variable' ? new Expr\Variable('str') : self::funcCall('trim'));
@@ -104,6 +110,7 @@ final class MutatingScopeBench
 	/**
 	 * A function without a dynamic return type extension: the extensions for it are remembered (#4644).
 	 */
+	#[Expected(instructions: '377.5K', cycles: '1.270M', memory: '15.49KiB')]
 	public function benchGetTypeOfFuncCall(): Type
 	{
 		return $this->scope()->getType(self::funcCall('ucfirst'));
@@ -112,6 +119,7 @@ final class MutatingScopeBench
 	/**
 	 * Creates a scope, without getting the parser from the container each time (#4672).
 	 */
+	#[Expected(instructions: '11.82K', cycles: '76.11K', memory: '944B')]
 	public function benchPushInFunctionCall(): MutatingScope
 	{
 		return $this->scope()->pushInFunctionCall(null, null, true);
@@ -120,6 +128,7 @@ final class MutatingScopeBench
 	/**
 	 * An argument's type resolved before is not resolved again (#4648).
 	 */
+	#[Expected(instructions: '52.32K', cycles: '243.5K', memory: '3.086KiB')]
 	public function benchPushInFunctionCallGetType(): Type
 	{
 		return $this->scope()->pushInFunctionCall(null, null, true)->getType(self::resolvedExpr());
@@ -128,6 +137,7 @@ final class MutatingScopeBench
 	/**
 	 * A scalar's type is not stored (#4663).
 	 */
+	#[Expected(instructions: '3.965K', cycles: '38.75K', memory: '176B')]
 	public function benchSpecifyScalarType(): MutatingScope
 	{
 		return $this->scope()->specifyExpressionType(new String_('x'), new StringType(), new StringType(), TrinaryLogic::createYes());
@@ -136,6 +146,7 @@ final class MutatingScopeBench
 	/**
 	 * The keys of the narrowed expressions are not printed again (#4691).
 	 */
+	#[Expected(instructions: '2.047M', cycles: '3.874M', memory: '109.7KiB')]
 	public function benchFilterByTruthyValue(): MutatingScope
 	{
 		return $this->scope()->filterByTruthyValue(self::condition());
@@ -145,6 +156,7 @@ final class MutatingScopeBench
 	 * The scope remembers what the properties assigned in `if ($s !== null)` are when it holds,
 	 * but not what they are otherwise, so they are not intersected with anything (#4690).
 	 */
+	#[Expected(instructions: '611.7K', cycles: '1.427M', memory: '26.10KiB')]
 	public function benchFilterByConditionOfConditionalExpressions(): MutatingScope
 	{
 		if ($this->conditionalScope === null) {
@@ -157,6 +169,7 @@ final class MutatingScopeBench
 	/**
 	 * Invalidates the method calls on $this without searching each tracked expression (#4692).
 	 */
+	#[Expected(instructions: '324.9K', cycles: '640.5K', memory: '34.63KiB')]
 	public function benchAssignPropertyFetch(): MutatingScope
 	{
 		return $this->scope()->assignExpression(self::propertyFetch(0), new IntegerType(), new IntegerType());
@@ -165,6 +178,7 @@ final class MutatingScopeBench
 	/**
 	 * Finds the expressions on $this by their keys, not by searching them (#4697).
 	 */
+	#[Expected(instructions: '65.96K', cycles: '185.2K', memory: '16.61KiB')]
 	public function benchRestoreThis(): MutatingScope
 	{
 		$scope = $this->scope();

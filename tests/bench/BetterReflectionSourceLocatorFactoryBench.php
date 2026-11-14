@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\BetterReflection\SourceLocator\Type\SourceLocator;
 use PHPStan\Reflection\BetterReflection\BetterReflectionSourceLocatorFactory;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class BetterReflectionSourceLocatorFactoryBench
@@ -26,6 +27,7 @@ final class BetterReflectionSourceLocatorFactoryBench
 	/**
 	 * Every process creates the source locator when it boots, also one that never locates a class.
 	 */
+	#[Expected(instructions: '2.283K', cycles: '29.67K', memory: '1.328KiB')]
 	public function benchCreate(): SourceLocator
 	{
 		if ($this->factory === null) {

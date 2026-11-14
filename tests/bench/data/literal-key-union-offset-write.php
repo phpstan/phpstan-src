@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 10.71B
- * cycles: 14.65B
- * memory: 217.0MiB
+ * instructions: 10.55B
+ * cycles: 14.60B
+ * memory: 181.2MiB
  */
 
 namespace BenchLiteralKeyUnionOffsetWrite;

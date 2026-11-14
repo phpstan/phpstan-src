@@ -12,6 +12,7 @@ use PHPStan\Type\TypeUtils;
 use PHPStan\Type\UnionType;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class TypeUtilsBench
@@ -46,6 +47,8 @@ final class TypeUtilsBench
 	 * The traverser visits every member of a union that holds a conditional type to resolve it.
 	 */
 	#[DataProvider(method: 'members')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '320.6K', cycles: '570.7K', memory: '9.563KiB')]
+	#[ExpectedFor(dataSet: 'members-128', instructions: '2.804M', cycles: '3.271M', memory: '66.31KiB')]
 	public function benchResolveLateResolvableTypes(int $members): Type
 	{
 		if ($this->type === null) {

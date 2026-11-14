@@ -9,6 +9,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 /**
@@ -38,6 +39,7 @@ final class AccessoryArrayListTypeBench
 		$this->list->accepts($this->array, true);
 	}
 
+	#[Expected(instructions: '1.805M', cycles: '1.869M', memory: '472B')]
 	public function benchIsSuperTypeOf(): IsSuperTypeOfResult
 	{
 		[$list, $array] = $this->types();
@@ -49,6 +51,7 @@ final class AccessoryArrayListTypeBench
 		return $result;
 	}
 
+	#[Expected(instructions: '2.611M', cycles: '2.652M', memory: '216B')]
 	public function benchAccepts(): bool
 	{
 		[$list, $array] = $this->types();

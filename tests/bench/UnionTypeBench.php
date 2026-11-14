@@ -18,6 +18,7 @@ use stdClass;
 use Tally\Attribute\Before;
 use Tally\Attribute\Constant;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\Attribute\Linear;
 use Tally\Attribute\Linearithmic;
 use Tally\ScratchDirectory;
@@ -75,6 +76,9 @@ final class UnionTypeBench
 	 * Each member is an intersection, described in parentheses.
 	 */
 	#[DataProvider(method: 'members')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '1.728M', cycles: '2.738M', memory: '16.65KiB')]
+	#[ExpectedFor(dataSet: 'members-64', instructions: '7.620M', cycles: '10.73M', memory: '44.40KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '39.92M', cycles: '63.68M', memory: '198.8KiB')]
 	public function benchDescribeIntersections(int $members): string
 	{
 		if ($this->intersections === null) {
@@ -88,6 +92,9 @@ final class UnionTypeBench
 	 * The value types of the member arrays are unioned.
 	 */
 	#[DataProvider(method: 'members')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '151.6K', cycles: '310.4K', memory: '4.680KiB')]
+	#[ExpectedFor(dataSet: 'members-64', instructions: '573.3K', cycles: '796.1K', memory: '12.18KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '2.259M', cycles: '2.771M', memory: '62.18KiB')]
 	public function benchGetIterableValueType(int $members): Type
 	{
 		if ($this->arrays === null) {

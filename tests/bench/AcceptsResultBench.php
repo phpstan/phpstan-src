@@ -9,6 +9,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\UnionType;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class AcceptsResultBench
@@ -51,12 +52,16 @@ final class AcceptsResultBench
 	}
 
 	#[DataProvider(method: 'results')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '16.91K', cycles: '70.34K', memory: '1.180KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '212.4K', cycles: '362.0K', memory: '24.24KiB')]
 	public function benchMaxMin(int $results): AcceptsResult
 	{
 		return AcceptsResult::maxMin(...$this->results);
 	}
 
 	#[DataProvider(method: 'results')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '18.73K', cycles: '80.59K', memory: '1.547KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '227.3K', cycles: '392.4K', memory: '32.30KiB')]
 	public function benchExtremeIdentity(int $results): AcceptsResult
 	{
 		return AcceptsResult::extremeIdentity(...$this->results);
@@ -66,6 +71,8 @@ final class AcceptsResultBench
 	 * StringType::accepts() accepts each constant string of the union.
 	 */
 	#[DataProvider(method: 'results')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '43.10K', cycles: '136.6K', memory: '1.547KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '557.0K', cycles: '736.1K', memory: '32.30KiB')]
 	public function benchStringAcceptsUnion(int $results): AcceptsResult
 	{
 		return $this->string->accepts($this->union, true);

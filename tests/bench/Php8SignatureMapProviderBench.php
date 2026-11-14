@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\Reflection\SignatureMap\Php8SignatureMapProvider;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class Php8SignatureMapProviderBench
@@ -47,6 +48,9 @@ final class Php8SignatureMapProviderBench
 	 * @param list<string> $methods
 	 */
 	#[DataProvider(method: 'members')]
+	#[ExpectedFor(dataSet: 'constants-1', instructions: '4.015K', cycles: '36.03K', memory: '136B')]
+	#[ExpectedFor(dataSet: 'constants-8', instructions: '28.44K', cycles: '65.63K', memory: '144B')]
+	#[ExpectedFor(dataSet: 'constants-8-methods-8', instructions: '55.67K', cycles: '101.5K', memory: '144B')]
 	public function benchFindMembers(array $constants, array $methods): int
 	{
 		if ($this->provider === null) {

@@ -18,6 +18,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\VerbosityLevel;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 /**
@@ -59,6 +60,7 @@ final class IntersectionTypeQueriesBench
 		$this->string->describe(VerbosityLevel::precise());
 	}
 
+	#[Expected(instructions: '349.9K', cycles: '365.6K', memory: '0B')]
 	public function benchIsOffsetAccessible(): TrinaryLogic
 	{
 		if ($this->array === null) {
@@ -73,6 +75,7 @@ final class IntersectionTypeQueriesBench
 		return $result;
 	}
 
+	#[Expected(instructions: '1.180M', cycles: '1.199M', memory: '0B')]
 	public function benchDescribe(): string
 	{
 		if ($this->string === null) {

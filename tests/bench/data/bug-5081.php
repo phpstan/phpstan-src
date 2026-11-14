@@ -1,9 +1,9 @@
 <?php
 
 /*
- * instructions: 4.257B
- * cycles: 4.965B
- * memory: 112.3MiB
+ * instructions: 4.156B
+ * cycles: 4.861B
+ * memory: 76.50MiB
  */
 
 namespace Bug5081;

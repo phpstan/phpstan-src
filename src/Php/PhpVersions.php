@@ -414,4 +414,69 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function warnsOnContinueTargetingSwitch(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(70300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function restrictsGlobalsModification(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesArrayPointerFunctionsOnObjects(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesStaticTraitMemberAccess(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesMbstringPseudoEncodings(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80200, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesGetClassWithoutArguments(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesTriggerErrorWithUserError(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesPowerOfZeroWithNegativeExponent(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesCsvEscapeParameterDefault(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesUnderscoreClassName(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesDebugInfoReturningNull(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesOrdWithoutSingleByte(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function deprecatesFinfoBufferContext(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 }

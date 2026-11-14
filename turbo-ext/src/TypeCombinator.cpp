@@ -1244,6 +1244,18 @@ public:
 						types[i] = std::move(merged);
 						scalarTypeItems.erase(scalarTypeItems.begin() + (ptrdiff_t) j);
 						scalarTypeItemsCount--;
+						/* a float range that took a constant can touch the next one (they are
+						 * sorted by min), and the merged range meets the constants again:
+						 * float<min, max> and NAN are float */
+						if (i + 1 < typesCount && isInstance(types[i].raw(), pt_ce_float_range_type) && isInstance(types[i + 1].raw(), pt_ce_float_range_type)) {
+							zv::Val joined = call(types[i].raw(), PT_LC("tryunion"), 1, types[i + 1].raw());
+							if (UNEXPECTED(joined.isUndef())) return zv::Val();
+							if (!isNull(joined)) {
+								types[i] = std::move(joined);
+								types.erase(types.begin() + (ptrdiff_t) (i + 1));
+								typesCount--;
+							}
+						}
 						j = (size_t) -1;
 						continue;
 					}

@@ -579,6 +579,16 @@ final class TypeCombinator
 						$types[$i] = $a;
 						array_splice($scalarTypeItems, $j, 1);
 						$scalarTypeItemsCount--;
+						// a float range that took a constant can touch the next one (they are sorted by min),
+						// and the merged range meets the constants again: float<min, max> and NAN are float
+						if ($a instanceof FloatRangeType && $i + 1 < $typesCount && $types[$i + 1] instanceof FloatRangeType) {
+							$merged = $a->tryUnion($types[$i + 1]);
+							if ($merged !== null) {
+								$types[$i] = $merged;
+								array_splice($types, $i + 1, 1);
+								$typesCount--;
+							}
+						}
 						$j = -1;
 						continue 1;
 					}

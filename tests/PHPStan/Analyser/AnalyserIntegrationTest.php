@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use Bug4288\MyClass;
 use Bug4713\Service;
 use ExtendingKnownClassWithCheck\Foo;
+use PHPStan\Analyser\Generics\TemplateArgumentStats;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\SignatureMap\SignatureMapProvider;
@@ -1224,6 +1225,22 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertCount(2, $errors);
 		$this->assertSame('Enum case Bug7927\Test::One does not have a value but the enum is backed with the "int" type.', $errors[0]->getMessage());
 		$this->assertSame('Enum case Bug7927\Test::Two does not have a value but the enum is backed with the "int" type.', $errors[1]->getMessage());
+	}
+
+	public function testClosureInGenericCallIsWalkedOncePerTyping(): void
+	{
+		TemplateArgumentStats::reset();
+		TemplateArgumentStats::$enabled = true;
+		try {
+			// each closure is asked for with the same parameter types from inside
+			// the call (its argument) and from outside it (the call's type) - one
+			// body walk answers both
+			$errors = $this->runAnalyse(__DIR__ . '/data/closure-walks-in-generic-call.php');
+			$this->assertNoErrors($errors);
+			$this->assertSame(2, TemplateArgumentStats::getCounters()['closureTypeBodyWalks']);
+		} finally {
+			TemplateArgumentStats::$enabled = false;
+		}
 	}
 
 	public static function getAdditionalConfigFiles(): array

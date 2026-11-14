@@ -350,7 +350,7 @@ public:
 		if (shallow) return signatureClosureType(scope, expr, p.parameters.raw(), p.isVariadic);
 
 		zv::Val cachedTypes = findCachedTypes(expr);
-		zv::Str cacheKey = closureContextCacheKey(scope, expr, p.callableParameters.isNull() ? NULL : p.callableParameters.raw(), p.parameters.raw());
+		zv::Str cacheKey = closureContextCacheKey(scope, expr, p.callableParameters.isNull() ? NULL : p.callableParameters.raw(), p.parameters.raw(), p.contextFree);
 		if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
 		zval *cached = zend_symtable_find(Z_ARRVAL_P(cachedTypes.raw()), cacheKey.get());
 		if (cached != NULL) {
@@ -458,7 +458,7 @@ private:
 
 	/* the cache key of a flavour build: closureContextCacheKey($native ?
 	 * $scope->doNotTreatPhpDocTypesAsCertain() : $scope, $expr, $native ?
-	 * $nativeCallableParameters : $callableParameters, $parameters) */
+	 * $nativeCallableParameters : $callableParameters, $parameters, $contextFree) */
 	zv::Str flavourCacheKey(zval *scope, zval *expr, Parameters &p, bool native)
 	{
 		zv::Val nativeScope;
@@ -469,11 +469,11 @@ private:
 			keyScope = nativeScope.raw();
 		}
 		zv::Val &callable = native ? p.nativeCallableParameters : p.callableParameters;
-		return closureContextCacheKey(keyScope, expr, callable.isNull() ? NULL : callable.raw(), p.parameters.raw());
+		return closureContextCacheKey(keyScope, expr, callable.isNull() ? NULL : callable.raw(), p.parameters.raw(), p.contextFree);
 	}
 
 	/* Mirrors closureContextCacheKey() ($callableParameters NULL for null) */
-	zv::Str closureContextCacheKey(zval *scope, zval *expr, zval *callableParameters, zval *parameters)
+	zv::Str closureContextCacheKey(zval *scope, zval *expr, zval *callableParameters, zval *parameters, bool contextFree)
 	{
 		zval *cacheLevel = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_CACHE);
 		if (UNEXPECTED(cacheLevel == NULL)) return zv::Str();
@@ -533,6 +533,9 @@ private:
 			smart_str_append(&key, parts.s);
 		}
 		smart_str_free(&parts);
+		if (contextFree) {
+			smart_str_appendl(&key, "/free", sizeof("/free") - 1);
+		}
 		if (promoted) {
 			smart_str_appendl(&key, "/native", sizeof("/native") - 1);
 		} else {
@@ -1277,7 +1280,7 @@ private:
 
 		zv::Str ownKey;
 		if (cacheKey == NULL) {
-			ownKey = closureContextCacheKey(scope, expr, NULL, parameters);
+			ownKey = closureContextCacheKey(scope, expr, NULL, parameters, contextFree);
 			if (UNEXPECTED(ownKey.isNull())) return zv::Val();
 			cacheKey = ownKey.get();
 		}

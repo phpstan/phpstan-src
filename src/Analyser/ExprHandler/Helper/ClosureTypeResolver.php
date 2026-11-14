@@ -153,7 +153,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		}
 
 		$cachedTypes = $this->findCachedTypes($expr);
-		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
+		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters, $contextFree);
 		if (array_key_exists($cacheKey, $cachedTypes)) {
 			return $this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree);
 		}
@@ -346,6 +346,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				$expr,
 				$native ? $nativeCallableParameters : $callableParameters,
 				$parameters,
+				$contextFree,
 			),
 			$native,
 			$storage,
@@ -388,6 +389,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$expr,
 			$native ? $nativeCallableParameters : $callableParameters,
 			$parameters,
+			$contextFree,
 		), $contextFree);
 	}
 
@@ -397,10 +399,18 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * feeds in - array_map style callers type the same closure node per
 	 * element through the callable parameters.
 	 *
+	 * The function-call stack is not part of it: the body is walked on a scope
+	 * with an empty stack, and what the stack contributes when the caller
+	 * passes no parameter types (the innermost parameter's callable type) is
+	 * already in the key as the callable parameters. Keying on the stack made
+	 * the same closure, typed the same way, miss the cache when it was asked
+	 * from inside the call it is passed to and again from outside it.
+	 * $contextFree still tells apart a closure typed with no context at all.
+	 *
 	 * @param array<ParameterReflection>|null $callableParameters
 	 * @param array<ParameterReflection> $parameters
 	 */
-	private function closureContextCacheKey(MutatingScope $scope, Node\Expr\Closure|ArrowFunction $expr, ?array $callableParameters, array $parameters): string
+	private function closureContextCacheKey(MutatingScope $scope, Node\Expr\Closure|ArrowFunction $expr, ?array $callableParameters, array $parameters, bool $contextFree): string
 	{
 		$parts = [];
 		foreach ($callableParameters ?? $parameters as $parameter) {
@@ -412,7 +422,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		// for the second pass change its type
 		$frame = $scope->getCurrentTemplateArgumentFrame();
 
-		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . ($scope->nativeTypesPromoted ? '/native' : '/phpdoc')
+		return $scope->getClosureScopeCacheKey($this->freeVariableRoots($expr)) . '/' . implode('|', $parts) . ($contextFree ? '/free' : '') . ($scope->nativeTypesPromoted ? '/native' : '/phpdoc')
 			. ($frame !== null ? $frame->getResolutionCacheKeySuffix() : '');
 	}
 
@@ -914,7 +924,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$impurePointsForClosureType = array_map(static fn (ImpurePoint $impurePoint) => new SimpleImpurePoint($impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain()), $impurePoints);
 
 		$cachedTypes = $this->findCachedTypes($expr);
-		$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters);
+		$cacheKey ??= $this->closureContextCacheKey($scope, $expr, null, $parameters, $contextFree);
 		$cachedTypes[$cacheKey] = [
 			'returnType' => $returnType,
 			'throwPoints' => $throwPointsForClosureType,

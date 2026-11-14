@@ -4983,6 +4983,8 @@ PT_MINIT_REGISTRATION(pt_register_type_combinator)
 
 	reg::Class cls("PHPStan\\Type\\TypeCombinator");
 	ptdecl::TypeCombinator::declareClass(cls);
+	/* the twin's private const, which only its scan of a small flattened union reads */
+	cls.privateClassConstantLong("ALREADY_NORMALIZED_SCAN_LIMIT", 4);
 	cls.privateStaticTypedPropertyDefaultNull("cacheEnabled", MAY_BE_BOOL);
 
 	cls.method(sigs::clearCache, [](INTERNAL_FUNCTION_PARAMETERS) {

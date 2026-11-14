@@ -195,11 +195,14 @@ public:
 			zv::Val rvHold = zv::Val::adopt(rv);
 			if (UNEXPECTED(failed)) return zv::Val();
 			if (next != NULL && UNEXPECTED(!requireExprOrNull(next))) return zv::Val();
-			if (next == NULL || Z_TYPE_P(next) == IS_NULL) {
-				/* mark the levels on the way out */
+			bool nextMarked = false;
+			if (current == expr && next != NULL && Z_TYPE_P(next) == IS_OBJECT && UNEXPECTED(!isMarked(Z_OBJ_P(next), nextMarked))) return zv::Val();
+			if (next == NULL || Z_TYPE_P(next) == IS_NULL || nextMarked) {
+				/* mark the levels on the way out, down to a level marked already */
+				zend_object *stop = nextMarked ? Z_OBJ_P(next) : NULL;
 				zend_object *level = expr;
 				zv::Val levelHold;
-				while (level != NULL) {
+				while (level != NULL && level != stop) {
 					if (UNEXPECTED(!mark(level))) return zv::Val();
 					zval levelRv;
 					ZVAL_UNDEF(&levelRv);

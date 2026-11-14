@@ -28,9 +28,9 @@ final class AnalysedFileExpectations implements ExpectationSource
 	}
 
 	#[Override]
-	public function rewrite(string $code, Metrics $measured): string
+	public function edits(string $code, Metrics $measured): array
 	{
-		return $this->header->write($code, $measured);
+		return [$this->header->write($code, $measured)];
 	}
 
 	#[Override]

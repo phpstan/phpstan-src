@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "c8e816333f58f55b9348aa729f3d31a4",
+  "content-hash": "acd0e792aa33507c68e696d5190fabbd",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -4205,19 +4205,20 @@
     },
     {
       "name": "phpstan/tally",
-      "version": "dev-release/1.x",
+      "version": "1.0.0",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/tally.git",
-        "reference": "e67008ced513658b84e40992268763385218b228"
+        "reference": "e5f91f6e91b2e10aaa24032b881368a6228c37c4"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/tally/zipball/e67008ced513658b84e40992268763385218b228",
-        "reference": "e67008ced513658b84e40992268763385218b228",
+        "url": "https://api.github.com/repos/phpstan/tally/zipball/e5f91f6e91b2e10aaa24032b881368a6228c37c4",
+        "reference": "e5f91f6e91b2e10aaa24032b881368a6228c37c4",
         "shasum": ""
       },
       "require": {
+        "ext-posix": "*",
         "php": "^8.2"
       },
       "require-dev": {
@@ -4234,6 +4235,11 @@
         "bin/tally"
       ],
       "type": "library",
+      "extra": {
+        "skills": {
+          "source": "skills"
+        }
+      },
       "autoload": {
         "psr-4": {
           "Tally\\": "src/"
@@ -4251,10 +4257,10 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/tally/issues",
-        "source": "https://github.com/phpstan/tally/tree/release/1.x"
+        "source": "https://github.com/phpstan/tally/tree/1.0.0"
       },
-      "time": "2026-11-14T11:09:44+00:00",
-      "published-time": "2026-11-14T11:09:50+00:00"
+      "time": "2026-11-14T22:23:02+00:00",
+      "published-time": "2026-11-14T22:24:20+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",
@@ -5935,8 +5941,7 @@
   "aliases": [],
   "minimum-stability": "dev",
   "stability-flags": {
-    "jetbrains/phpstorm-stubs": 20,
-    "phpstan/tally": 20
+    "jetbrains/phpstorm-stubs": 20
   },
   "prefer-stable": true,
   "prefer-lowest": false,

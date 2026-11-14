@@ -10,12 +10,12 @@ namespace ptdecl::TemplateGenericObjectType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t name = 13;
-inline constexpr uint32_t scope = 14;
-inline constexpr uint32_t strategy = 15;
-inline constexpr uint32_t variance = 16;
-inline constexpr uint32_t bound = 17;
-inline constexpr uint32_t default_ = 18;
+inline constexpr uint32_t name = 14;
+inline constexpr uint32_t scope = 15;
+inline constexpr uint32_t strategy = 16;
+inline constexpr uint32_t variance = 17;
+inline constexpr uint32_t bound = 18;
+inline constexpr uint32_t default_ = 19;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

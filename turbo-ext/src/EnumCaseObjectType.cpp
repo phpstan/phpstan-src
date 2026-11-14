@@ -19,9 +19,8 @@ namespace sigs = ptdecl::EnumCaseObjectType::sig;
 
 zend_class_entry *pt_ce_enum_case_object_type = nullptr;
 
-/* OBJ_PROP_NUM slots: the parent's ten first (ObjectType.cpp) */
-#define PT_OT_PROP_COUNT 10
-#define PT_ECOT_PROP_ENUM_CASE_NAME (PT_OT_PROP_COUNT + 0)
+/* OBJ_PROP_NUM slots: the parent's first (ObjectType.cpp) */
+#define PT_ECOT_PROP_ENUM_CASE_NAME ptdecl::EnumCaseObjectType::slot::enumCaseName
 
 /* the handlers the $this-dispatch fast paths identify */
 static void ZEND_FASTCALL ecotGetEnumCaseName(INTERNAL_FUNCTION_PARAMETERS);

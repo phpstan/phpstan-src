@@ -475,15 +475,15 @@ final class TypeCombinator
 			// only a type containing every value of the scalar (not T of int, 1&T)
 			// absorbs all the constants of that scalar
 			if ($types[$i]->isBoolean()->yes()) {
-				if ($types[$i]->isSuperTypeOf(new BooleanType())->yes()) {
+				if (!isset($hasGenericScalarTypes[ConstantBooleanType::class]) && $types[$i]->isSuperTypeOf(new BooleanType())->yes()) {
 					$hasGenericScalarTypes[ConstantBooleanType::class] = true;
 				}
 			} elseif ($types[$i]->isFloat()->yes()) {
-				if ($types[$i]->isSuperTypeOf(new FloatType())->yes()) {
+				if (!isset($hasGenericScalarTypes[ConstantFloatType::class]) && $types[$i]->isSuperTypeOf(new FloatType())->yes()) {
 					$hasGenericScalarTypes[ConstantFloatType::class] = true;
 				}
 			} elseif ($types[$i]->isInteger()->yes() && !$types[$i] instanceof IntegerRangeType) {
-				if ($types[$i]->isSuperTypeOf(new IntegerType())->yes()) {
+				if (!isset($hasGenericScalarTypes[ConstantIntegerType::class]) && $types[$i]->isSuperTypeOf(new IntegerType())->yes()) {
 					$hasGenericScalarTypes[ConstantIntegerType::class] = true;
 				}
 			} elseif ($types[$i]->isString()->yes() && $types[$i]->isClassString()->no() && TypeUtils::getAccessoryTypes($types[$i]) === []) {
@@ -602,9 +602,22 @@ final class TypeCombinator
 			$types = array_values($newTypes);
 		}
 
+		// compareTypesInUnion() leaves a pair of constant arrays as it is unless
+		// both are intersections, so such pairs are skipped without calling it. A
+		// bare ConstantArrayType is the only type whose getConstantArrays() is
+		// itself. Every array went to processArrayTypes(), so only its results
+		// can be such.
+		$processedArrayTypes = self::processArrayTypes($arrayTypes);
+		$isPlainConstantArray = null;
+		if (count($processedArrayTypes) > 1) {
+			$isPlainConstantArray = array_fill(0, count($types), false);
+			foreach ($processedArrayTypes as $processedArrayType) {
+				$isPlainConstantArray[] = $processedArrayType->getConstantArrays() === [$processedArrayType];
+			}
+		}
 		$types = array_merge(
 			$types,
-			self::processArrayTypes($arrayTypes),
+			$processedArrayTypes,
 		);
 		$typesCount = count($types);
 
@@ -630,6 +643,9 @@ final class TypeCombinator
 		for ($i = 0; $i < $typesCount; $i++) {
 			$iGroups = $normalizedGroupsByType[spl_object_id($types[$i])] ?? null;
 			for ($j = $i + 1; $j < $typesCount; $j++) {
+				if ($isPlainConstantArray !== null && $isPlainConstantArray[$i] && $isPlainConstantArray[$j]) {
+					continue;
+				}
 				if ($iGroups !== null && self::isAlreadyNormalized($iGroups, $normalizedGroupsByType, $normalizedTwice, $types[$i], $types[$j])) {
 					continue;
 				}
@@ -642,16 +658,26 @@ final class TypeCombinator
 				if ($a !== null) {
 					$types[$i] = $a;
 					$iGroups = $normalizedGroupsByType[spl_object_id($a)] ?? null;
+					if ($isPlainConstantArray !== null) {
+						$isPlainConstantArray[$i] = $a->getConstantArrays() === [$a];
+						array_splice($isPlainConstantArray, $j, 1);
+					}
 					array_splice($types, $j--, 1);
 					$typesCount--;
 					continue 1;
 				}
-				if ($b !== null) {
-					$types[$j] = $b;
-					array_splice($types, $i--, 1);
-					$typesCount--;
-					continue 2;
+				if ($b === null) {
+					continue;
 				}
+
+				$types[$j] = $b;
+				if ($isPlainConstantArray !== null) {
+					$isPlainConstantArray[$j] = $b->getConstantArrays() === [$b];
+					array_splice($isPlainConstantArray, $i, 1);
+				}
+				array_splice($types, $i--, 1);
+				$typesCount--;
+				continue 2;
 			}
 		}
 
@@ -1002,17 +1028,17 @@ final class TypeCombinator
 
 		// numeric-string | non-decimal-int-string → string (preserving common accessories)
 		// Works because decimal-int-string ⊂ numeric-string, so together they cover all strings
+		// A base that is the type itself was compared with the other one above.
 		if ($a->isString()->yes() && $b->isString()->yes()) {
-			$decimalIntString = new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]);
 			if ($b->isDecimalIntegerString()->no()) {
 				$bBase = self::removeDecimalIntStringAccessory($b);
-				if ($bBase->isSuperTypeOf($a)->yes() && $a->isSuperTypeOf($decimalIntString)->yes()) {
+				if ($bBase !== $b && $bBase->isSuperTypeOf($a)->yes() && $a->isSuperTypeOf(new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]))->yes()) {
 					return [null, $bBase];
 				}
 			}
 			if ($a->isDecimalIntegerString()->no()) {
 				$aBase = self::removeDecimalIntStringAccessory($a);
-				if ($aBase->isSuperTypeOf($b)->yes() && $b->isSuperTypeOf($decimalIntString)->yes()) {
+				if ($aBase !== $a && $aBase->isSuperTypeOf($b)->yes() && $b->isSuperTypeOf(new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]))->yes()) {
 					return [$aBase, null];
 				}
 			}

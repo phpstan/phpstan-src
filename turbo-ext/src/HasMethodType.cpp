@@ -81,6 +81,14 @@ public:
 	 * as a fresh result; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
+		/* what $type->isSubTypeOf($this) answers for another HasMethodType,
+		 * without its callable checks */
+		if (Z_TYPE_P(type) == IS_OBJECT && Z_OBJCE_P(type) == pt_ce_has_method_type) {
+			zend_long has = otherHasMethod(type);
+			if (UNEXPECTED(has < 0)) return zv::Val();
+			return pt_type_is_super_type_of_result(has);
+		}
+
 		bool compound;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
 		if (compound) {

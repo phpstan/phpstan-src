@@ -443,19 +443,20 @@ class UnionType implements CompoundType
 	 */
 	private function finiteTypeSetContainedIn(Type $otherType, bool $yesOnly): ?TrinaryLogic
 	{
-		$finiteTypeSet = $this->getFiniteTypeSet();
-		if ($finiteTypeSet === null || !$finiteTypeSet->isComplete()) {
-			return null;
-		}
-
 		if (!$otherType instanceof self || $otherType instanceof TemplateType) {
 			// A single value covers a member iff they are the same value, and no member
 			// stands for a value it is not keyed by - so one lookup answers for every member
 			// at once. This is the shape TypeCombinator::remove() takes to ask whether
 			// removing a value empties a union of values, and the only way a non-union other
-			// type reaches this helper at all.
+			// type reaches this helper at all. Its key comes first: without one, such as for
+			// string accepting a union of strings, this union's set is not built.
 			$key = FiniteTypeSet::key($otherType);
 			if ($key === null) {
+				return null;
+			}
+
+			$finiteTypeSet = $this->getFiniteTypeSet();
+			if ($finiteTypeSet === null || !$finiteTypeSet->isComplete()) {
 				return null;
 			}
 
@@ -472,6 +473,11 @@ class UnionType implements CompoundType
 			}
 
 			return $containment;
+		}
+
+		$finiteTypeSet = $this->getFiniteTypeSet();
+		if ($finiteTypeSet === null || !$finiteTypeSet->isComplete()) {
+			return null;
 		}
 
 		$otherFiniteTypeSet = $otherType->getFiniteTypeSet();

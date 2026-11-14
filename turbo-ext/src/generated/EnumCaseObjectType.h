@@ -10,7 +10,7 @@ namespace ptdecl::EnumCaseObjectType {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t enumCaseName = 10;
+inline constexpr uint32_t enumCaseName = 11;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)

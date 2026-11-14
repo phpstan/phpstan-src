@@ -43,6 +43,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use function get_class;
 use function sprintf;
 use function strtolower;
 
@@ -105,6 +106,11 @@ class HasMethodType implements AccessoryType, CompoundType
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
+		// what $type->isSubTypeOf($this) answers for another HasMethodType, without its callable checks
+		if (get_class($type) === self::class) {
+			return IsSuperTypeOfResult::createFromTrinaryLogic($type->hasMethod($this->methodName));
+		}
+
 		if ($type instanceof CompoundType) {
 			return $type->isSubTypeOf($this);
 		}

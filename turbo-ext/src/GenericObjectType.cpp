@@ -41,12 +41,11 @@ zend_class_entry *pt_ce_generic_object_type = nullptr;
 	return false;
 }
 
-/* OBJ_PROP_NUM slots: the parent's ten first (ObjectType.cpp), then the
+/* OBJ_PROP_NUM slots: the parent's first (ObjectType.cpp), then the
  * twin's promoted properties in parameter order */
-#define PT_OT_PROP_COUNT 10
-#define PT_GOT_PROP_TYPES (PT_OT_PROP_COUNT + 0)
-#define PT_GOT_PROP_CLASS_REFLECTION (PT_OT_PROP_COUNT + 1)
-#define PT_GOT_PROP_VARIANCES (PT_OT_PROP_COUNT + 2)
+#define PT_GOT_PROP_TYPES ptdecl::GenericObjectType::slot::types
+#define PT_GOT_PROP_CLASS_REFLECTION ptdecl::GenericObjectType::slot::classReflection
+#define PT_GOT_PROP_VARIANCES ptdecl::GenericObjectType::slot::variances
 
 /* the handlers the $this-dispatch fast paths identify */
 static void ZEND_FASTCALL gotGetClassReflection(INTERNAL_FUNCTION_PARAMETERS);

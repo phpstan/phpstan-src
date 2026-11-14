@@ -3,9 +3,17 @@
 namespace PHPStan\Benchmark;
 
 use LogicException;
+use PHPStan\TrinaryLogic;
+use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\IntersectionType;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
+use stdClass;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
 use Tally\Attribute\Linear;
@@ -18,6 +26,10 @@ final class UnionTypeBench
 	private ?UnionType $union = null;
 
 	private ?UnionType $other = null;
+
+	private ?UnionType $intersections = null;
+
+	private ?UnionType $arrays = null;
 
 	public function __construct(private ScratchDirectory $scratch)
 	{
@@ -41,8 +53,38 @@ final class UnionTypeBench
 		[$union, $other] = self::unions('warmup', 4);
 		$union->describe(VerbosityLevel::precise());
 		$union->isSuperTypeOf($other);
+		self::intersections('warmup', 4)->describe(VerbosityLevel::precise());
+		self::arrays(4)->getIterableValueType();
 
 		[$this->union, $this->other] = self::unions('member', $members);
+		$this->intersections = self::intersections('member', $members);
+		$this->arrays = self::arrays($members);
+	}
+
+	/**
+	 * Each member is an intersection, described in parentheses.
+	 */
+	#[DataProvider(method: 'members')]
+	public function benchDescribeIntersections(int $members): string
+	{
+		if ($this->intersections === null) {
+			throw new LogicException('boot() did not run.');
+		}
+
+		return $this->intersections->describe(VerbosityLevel::precise());
+	}
+
+	/**
+	 * The value types of the member arrays are unioned.
+	 */
+	#[DataProvider(method: 'members')]
+	public function benchGetIterableValueType(int $members): Type
+	{
+		if ($this->arrays === null) {
+			throw new LogicException('boot() did not run.');
+		}
+
+		return $this->arrays->getIterableValueType();
 	}
 
 	/**
@@ -73,6 +115,29 @@ final class UnionTypeBench
 		}
 
 		return $this->union;
+	}
+
+	private static function intersections(string $prefix, int $members): UnionType
+	{
+		$types = [];
+		for ($i = 0; $i < $members; $i++) {
+			$types[] = new IntersectionType([new ObjectType(stdClass::class), new HasMethodType($prefix . $i)]);
+		}
+
+		return new UnionType($types);
+	}
+
+	/**
+	 * Lists with one constant integer each.
+	 */
+	private static function arrays(int $members): UnionType
+	{
+		$types = [];
+		for ($i = 0; $i < $members; $i++) {
+			$types[] = new ConstantArrayType([new ConstantIntegerType(0)], [new ConstantIntegerType($i)], [1], [], TrinaryLogic::createYes());
+		}
+
+		return new UnionType($types);
 	}
 
 	/**

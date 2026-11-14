@@ -19,7 +19,6 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VerbosityLevel;
 use function abs;
-use function sprintf;
 use const PHP_INT_MIN;
 
 /** @api */
@@ -76,10 +75,8 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 
 	public function describe(VerbosityLevel $level): string
 	{
-		return $level->handle(
-			static fn (): string => 'int',
-			fn (): string => sprintf('%s', $this->value),
-		);
+		// what VerbosityLevel::handle() would pick, without creating its callbacks
+		return $level->isTypeOnly() ? 'int' : (string) $this->value;
 	}
 
 	public function toFloat(): Type

@@ -150,6 +150,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	 */
 	private ?ClassReflection $lazyClassReflection = null;
 
+	/**
+	 * What getClassReflection() returns, made once: for a generic class the reflection with its
+	 * template types erased. Kept apart from the two above, which the other methods read with
+	 * the template types in place.
+	 */
+	private ?ClassReflection $returnedClassReflection = null;
+
 	/** @var array<string, list<EnumCaseObjectType>> */
 	private static array $enumCases = [];
 
@@ -1963,7 +1970,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 
 	public function getClassReflection(): ?ClassReflection
 	{
-		$classReflection = $this->resolvedClassReflection();
+		if ($this->returnedClassReflection !== null) {
+			return $this->returnedClassReflection;
+		}
+
+		$classReflection = $this->classReflection ?? $this->lazyClassReflection;
 		if ($classReflection === null) {
 			$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 			if (!$reflectionProvider->hasClass($this->className)) {
@@ -1974,10 +1985,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		}
 
 		if ($classReflection->isGeneric()) {
-			return $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
+			return $this->returnedClassReflection = $classReflection->withTypes(array_values($classReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()));
 		}
 
-		return $classReflection;
+		return $this->returnedClassReflection = $classReflection;
 	}
 
 	/** The reflection already known, from either source — never triggers a fetch. */

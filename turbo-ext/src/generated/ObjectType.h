@@ -17,9 +17,10 @@ inline constexpr uint32_t currentAncestors = 3;
 inline constexpr uint32_t cachedDescription = 4;
 inline constexpr uint32_t cachedPreciseName = 5;
 inline constexpr uint32_t lazyClassReflection = 6;
-inline constexpr uint32_t methodCache = 7;
-inline constexpr uint32_t className = 8;
-inline constexpr uint32_t classReflection = 9;
+inline constexpr uint32_t returnedClassReflection = 7;
+inline constexpr uint32_t methodCache = 8;
+inline constexpr uint32_t className = 9;
+inline constexpr uint32_t classReflection = 10;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -43,6 +44,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("cachedDescription", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_STRING);
 	cls.property("cachedPreciseName", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_STRING);
 	cls.property("lazyClassReflection", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection");
+	cls.property("returnedClassReflection", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Reflection\\ClassReflection");
 	cls.property("enumCases", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("descriptionCacheOrder", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Internal\\LruCache");
 	cls.property("lastTouchedDescription", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedNull, MAY_BE_NULL | MAY_BE_STRING);

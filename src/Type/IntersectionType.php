@@ -869,14 +869,12 @@ class IntersectionType implements CompoundType
 
 	public function isIterableAtLeastOnce(): TrinaryLogic
 	{
-		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
-			return TrinaryLogic::createYes();
-		}
-
-		return $this->isIterableAtLeastOnce ??= $this->intersectResults(
-			static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce(),
-			static fn (Type $type): bool => !$type->isIterable()->no(),
-		);
+		return $this->isIterableAtLeastOnce ??= $this->isCallable()->yes() && $this->isArray()->yes()
+			? TrinaryLogic::createYes()
+			: $this->intersectResults(
+				static fn (Type $type): TrinaryLogic => $type->isIterableAtLeastOnce(),
+				static fn (Type $type): bool => !$type->isIterable()->no(),
+			);
 	}
 
 	public function getArraySize(): Type
@@ -957,10 +955,9 @@ class IntersectionType implements CompoundType
 
 	public function isConstantArray(): TrinaryLogic
 	{
-		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
-			return TrinaryLogic::createYes();
-		}
-		return $this->isConstantArray ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantArray());
+		return $this->isConstantArray ??= $this->isCallable()->yes() && $this->isArray()->yes()
+			? TrinaryLogic::createYes()
+			: $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isConstantArray());
 	}
 
 	public function isOversizedArray(): TrinaryLogic
@@ -970,11 +967,9 @@ class IntersectionType implements CompoundType
 
 	public function isList(): TrinaryLogic
 	{
-		if ($this->isCallable()->yes() && $this->isArray()->yes()) {
-			return TrinaryLogic::createYes();
-		}
-
-		return $this->isList ??= $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
+		return $this->isList ??= $this->isCallable()->yes() && $this->isArray()->yes()
+			? TrinaryLogic::createYes()
+			: $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isList());
 	}
 
 	public function isString(): TrinaryLogic
@@ -1852,7 +1847,7 @@ class IntersectionType implements CompoundType
 		$result = [];
 		foreach ($first as $key => $finiteType) {
 			foreach ($others as $other) {
-				if (!self::hasFiniteType($other, is_string($key) ? $key : null, $finiteType)) {
+				if (is_string($key) ? !array_key_exists($key, $other) : !self::hasFiniteType($other, null, $finiteType)) {
 					continue 2;
 				}
 			}

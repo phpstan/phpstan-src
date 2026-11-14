@@ -1716,11 +1716,9 @@ public:
 			zend_long bString = callTrinary(b, PT_LC("isstring"));
 			if (UNEXPECTED(bString < 0)) return -1;
 			if (bString == PT_TRI_YES) {
-				zv::Val decimalIntString = decimalIntStringType();
-				if (UNEXPECTED(decimalIntString.isUndef())) return -1;
-				int result = compareStringsInUnion(a, b, decimalIntString.raw(), merged);
+				int result = compareStringsInUnion(a, b, merged);
 				if (result != 0) return result < 0 ? -1 : 2;
-				result = compareStringsInUnion(b, a, decimalIntString.raw(), merged);
+				result = compareStringsInUnion(b, a, merged);
 				if (result != 0) return result < 0 ? -1 : 1;
 			}
 		}
@@ -1802,17 +1800,21 @@ public:
 	 * absorbing $type: $other without its decimal-int-string accessory
 	 * covers $type, and $type covers decimal-int-string; 1 with $merged
 	 * the base of $other, 0 for no answer; -1 = pending exception */
-	static int compareStringsInUnion(zval *type, zval *other, zval *decimalIntString, zv::Val &merged)
+	static int compareStringsInUnion(zval *type, zval *other, zv::Val &merged)
 	{
 		zend_long isDecimal = callTrinary(other, PT_LC("isdecimalintegerstring"));
 		if (UNEXPECTED(isDecimal < 0)) return -1;
 		if (isDecimal != PT_TRI_NO) return 0;
 		zv::Val base = removeDecimalIntStringAccessory(other);
 		if (UNEXPECTED(base.isUndef())) return -1;
+		/* a base that is $other itself was compared with $type before */
+		if (Z_TYPE_P(base.raw()) == IS_OBJECT && Z_TYPE_P(other) == IS_OBJECT && Z_OBJ_P(base.raw()) == Z_OBJ_P(other)) return 0;
 		int baseCovers = isSuperTypeYes(base.raw(), type);
 		if (UNEXPECTED(baseCovers < 0)) return -1;
 		if (!baseCovers) return 0;
-		int coversDecimal = isSuperTypeYes(type, decimalIntString);
+		zv::Val decimalIntString = decimalIntStringType();
+		if (UNEXPECTED(decimalIntString.isUndef())) return -1;
+		int coversDecimal = isSuperTypeYes(type, decimalIntString.raw());
 		if (UNEXPECTED(coversDecimal < 0)) return -1;
 		if (!coversDecimal) return 0;
 		merged = std::move(base);

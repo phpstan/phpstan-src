@@ -2526,6 +2526,10 @@ public:
 	 * pending exception */
 	zv::Val getClassReflection() const
 	{
+		/* $this->returnedClassReflection, once made */
+		zval *returned = OBJ_PROP_NUM(self, slots::returnedClassReflection);
+		if (Z_TYPE_P(returned) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(returned));
+
 		zv::Val classReflection;
 		zval *resolved = resolvedClassReflection();
 		if (UNEXPECTED(resolved == NULL)) return zv::Val();
@@ -2560,9 +2564,13 @@ public:
 			for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
 				values.push(entry.value());
 			}
-			return pt_type_call(reflection, PT_LC("withtypes"), 1, values.raw());
+			zv::Val withTypes = pt_type_call(reflection, PT_LC("withtypes"), 1, values.raw());
+			if (UNEXPECTED(withTypes.isUndef())) return zv::Val();
+			zv::ObjRef(self).propAtWrite(slots::returnedClassReflection, zv::Val::copyOf(zv::Ref(withTypes.raw())));
+			return withTypes;
 		}
 
+		zv::ObjRef(self).propAtWrite(slots::returnedClassReflection, zv::Val::copyOf(zv::Ref(classReflection.raw())));
 		return classReflection;
 	}
 
@@ -3653,6 +3661,7 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 	cls.privateTypedPropertyDefaultNull("cachedDescription", MAY_BE_STRING);
 	cls.privateTypedPropertyDefaultNull("cachedPreciseName", MAY_BE_STRING);
 	cls.privateTypedClassPropertyDefaultNull("lazyClassReflection", "PHPStan\\Reflection\\ClassReflection");
+	cls.privateTypedClassPropertyDefaultNull("returnedClassReflection", "PHPStan\\Reflection\\ClassReflection");
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("enumCases");
 	cls.privateStaticTypedClassPropertyDefaultNull("descriptionCacheOrder", "PHPStan\\Internal\\LruCache");
 	cls.privateStaticTypedPropertyDefaultNull("lastTouchedDescription", MAY_BE_STRING);

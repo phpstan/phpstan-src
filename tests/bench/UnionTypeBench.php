@@ -5,6 +5,7 @@ namespace PHPStan\Benchmark;
 use LogicException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\HasMethodType;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -15,6 +16,7 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use stdClass;
 use Tally\Attribute\Before;
+use Tally\Attribute\Constant;
 use Tally\Attribute\DataProvider;
 use Tally\Attribute\Linear;
 use Tally\Attribute\Linearithmic;
@@ -30,6 +32,8 @@ final class UnionTypeBench
 	private ?UnionType $intersections = null;
 
 	private ?UnionType $arrays = null;
+
+	private ?BenevolentUnionType $benevolent = null;
 
 	public function __construct(private ScratchDirectory $scratch)
 	{
@@ -57,6 +61,12 @@ final class UnionTypeBench
 		self::arrays(4)->getIterableValueType();
 
 		[$this->union, $this->other] = self::unions('member', $members);
+		$this->benevolent = new BenevolentUnionType($this->union->getTypes());
+
+		// the queries the union memoizes
+		$this->union->getFiniteTypes();
+		$this->union->isNull();
+		$this->union->isCallable();
 		$this->intersections = self::intersections('member', $members);
 		$this->arrays = self::arrays($members);
 	}
@@ -106,6 +116,53 @@ final class UnionTypeBench
 		}
 
 		return $this->union()->isSuperTypeOf($this->other)->yes();
+	}
+
+	/**
+	 * Every member stays the same, so the union does too.
+	 */
+	#[DataProvider(method: 'members')]
+	#[Linear(size: 'members')]
+	public function benchUnchangedToString(int $members): Type
+	{
+		return $this->union()->toString();
+	}
+
+	#[DataProvider(method: 'members')]
+	#[Linear(size: 'members')]
+	public function benchBenevolentUnchangedToString(int $members): Type
+	{
+		if ($this->benevolent === null) {
+			throw new LogicException('boot() did not run.');
+		}
+
+		return $this->benevolent->toString();
+	}
+
+	/**
+	 * Asked again, as boot() asked it already.
+	 *
+	 * @return list<Type>
+	 */
+	#[DataProvider(method: 'members')]
+	#[Constant(size: 'members')]
+	public function benchGetFiniteTypesAgain(int $members): array
+	{
+		return $this->union()->getFiniteTypes();
+	}
+
+	#[DataProvider(method: 'members')]
+	#[Constant(size: 'members')]
+	public function benchIsNullAgain(int $members): TrinaryLogic
+	{
+		return $this->union()->isNull();
+	}
+
+	#[DataProvider(method: 'members')]
+	#[Constant(size: 'members')]
+	public function benchIsCallableAgain(int $members): TrinaryLogic
+	{
+		return $this->union()->isCallable();
 	}
 
 	private function union(): UnionType

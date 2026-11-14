@@ -32,11 +32,7 @@ final class UnionTypeHelper
 			return $types;
 		}
 
-		// usort() compares a member with many others - an array shape, whose description
-		// is costly, is described once
-		$arrayDescriptions = [];
-
-		usort($types, static function (Type $a, Type $b) use (&$arrayDescriptions): int {
+		usort($types, static function (Type $a, Type $b): int {
 			if ($a instanceof NullType) {
 				return 1;
 			} elseif ($b instanceof NullType) {
@@ -108,10 +104,6 @@ final class UnionTypeHelper
 				return -1;
 			}
 
-			if ($a instanceof FloatRangeType && $b instanceof FloatRangeType) {
-				return $a->getMin() <=> $b->getMin();
-			}
-
 			if ($a instanceof ConstantStringType && $b instanceof ConstantStringType) {
 				return self::compareStrings($a->getValue(), $b->getValue());
 			}
@@ -121,6 +113,10 @@ final class UnionTypeHelper
 					$a->getClassName() . '::' . $a->getEnumCaseName(),
 					$b->getClassName() . '::' . $b->getEnumCaseName(),
 				);
+			}
+
+			if ($a instanceof FloatRangeType && $b instanceof FloatRangeType) {
+				return $a->getMin() <=> $b->getMin();
 			}
 
 			if (
@@ -140,6 +136,12 @@ final class UnionTypeHelper
 				} elseif ($b->isIterableAtLeastOnce()->no()) {
 					return 1;
 				}
+
+				// usort() compares a member with many others - an array shape, whose description
+				// is costly, is described once. Each sortTypes() call creates the closure anew,
+				// with its own static variables, and binding them here instead of with use()
+				// spares the comparisons that do not reach this branch.
+				static $arrayDescriptions = [];
 
 				return self::compareStrings(
 					$arrayDescriptions[spl_object_id($a)] ??= $a->describe(VerbosityLevel::value()),

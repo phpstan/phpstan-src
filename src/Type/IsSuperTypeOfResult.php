@@ -141,12 +141,12 @@ final class IsSuperTypeOfResult
 	public static function createFromTrinaryLogic(TrinaryLogic $result): self
 	{
 		if ($result->yes()) {
-			return self::createYes();
+			return self::$YES ??= new self($result, []);
 		}
 		if ($result->no()) {
-			return self::createNo();
+			return self::$NO ??= new self($result, []);
 		}
-		return self::createMaybe();
+		return self::$MAYBE ??= new self($result, []);
 	}
 
 	/**
@@ -258,7 +258,11 @@ final class IsSuperTypeOfResult
 			}
 		}
 
-		return self::create(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)), $lazyReasons);
+		if ($reasons === [] && $lazyReasons === []) {
+			return self::createFromTrinaryLogic(TrinaryLogic::extremeIdentity(...$results));
+		}
+
+		return new self(TrinaryLogic::extremeIdentity(...$results), array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	/** @see TrinaryLogic::maxMin() */
@@ -281,7 +285,11 @@ final class IsSuperTypeOfResult
 			}
 		}
 
-		return self::create(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)), $lazyReasons);
+		if ($reasons === [] && $lazyReasons === []) {
+			return self::createFromTrinaryLogic(TrinaryLogic::maxMin(...$results));
+		}
+
+		return new self(TrinaryLogic::maxMin(...$results), array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	/**
@@ -313,16 +321,21 @@ final class IsSuperTypeOfResult
 			}
 		}
 
-		return self::create(
-			$hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe(),
-			array_values(array_unique($reasons)),
-			$lazyReasons,
-		);
+		$result = $hasNo ? TrinaryLogic::createNo() : TrinaryLogic::createMaybe();
+		if ($reasons === [] && $lazyReasons === []) {
+			return self::createFromTrinaryLogic($result);
+		}
+
+		return new self($result, array_values(array_unique($reasons)), $lazyReasons);
 	}
 
 	public function negate(): self
 	{
-		return self::create($this->result->negate(), $this->reasons, $this->lazyReasons);
+		if ($this->reasons === [] && $this->lazyReasons === []) {
+			return self::createFromTrinaryLogic($this->result->negate());
+		}
+
+		return new self($this->result->negate(), $this->reasons, $this->lazyReasons);
 	}
 
 	public function describe(): string

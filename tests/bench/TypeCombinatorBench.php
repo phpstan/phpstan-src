@@ -2,6 +2,9 @@
 
 namespace PHPStan\Benchmark;
 
+use LogicException;
+use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
+use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNumericStringType;
 use PHPStan\Type\Accessory\HasMethodType;
 use PHPStan\Type\ArrayType;
@@ -13,6 +16,8 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
+use PHPStan\Type\NeverType;
+use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -61,6 +66,13 @@ final class TypeCombinatorBench
 	/** @var list<Type> */
 	private array $intersections = [];
 
+	/** @var list<Type> */
+	private array $stringsAndNevers = [];
+
+	private ?Type $enumOrNull = null;
+
+	private ?UnionType $enumCases = null;
+
 	public function __construct(private ScratchDirectory $scratch)
 	{
 	}
@@ -73,6 +85,14 @@ final class TypeCombinatorBench
 		foreach ([16, 64, 256] as $types) {
 			yield 'types-' . $types => [$types];
 		}
+	}
+
+	/**
+	 * @return iterable<string, array{int}>
+	 */
+	public static function smallest(): iterable
+	{
+		yield 'types-16' => [16];
 	}
 
 	#[Before]
@@ -94,8 +114,15 @@ final class TypeCombinatorBench
 		TypeCombinator::union(...$this->arraysWithSameKeys);
 		TypeCombinator::union(...$this->arraysWithOwnKeys);
 		TypeCombinator::intersect(...$this->intersections);
+		TypeCombinator::union(...$this->stringsAndNevers);
+		TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType(), new AccessoryNumericStringType(), new AccessoryLowercaseStringType());
+		$warmupEnum = BenchEnumFile::create($this->scratch, 'Warmup4', 4);
+		TypeCombinator::remove(new UnionType([new ObjectType($warmupEnum), new NullType()]), new UnionType(BenchEnumFile::cases($warmupEnum, 4)));
 
 		$this->createTypes('type', $types);
+		$enum = BenchEnumFile::create($this->scratch, 'Cases' . $types, $types);
+		$this->enumOrNull = new UnionType([new ObjectType($enum), new NullType()]);
+		$this->enumCases = new UnionType(BenchEnumFile::cases($enum, $types));
 	}
 
 	#[DataProvider(method: 'types')]
@@ -198,13 +225,54 @@ final class TypeCombinatorBench
 		return TypeCombinator::intersect(...$this->intersections);
 	}
 
+	/**
+	 * The implicit never types an empty branch contributes are dropped from the union.
+	 */
+	#[DataProvider(method: 'types')]
+	#[Linear(size: 'types')]
+	public function benchUnionWithNevers(int $types): Type
+	{
+		return TypeCombinator::union(...$this->stringsAndNevers);
+	}
+
+	/**
+	 * Accessory types only, which need no sorting, a hundred times.
+	 */
+	#[DataProvider(method: 'smallest')]
+	public function benchIntersectAccessories(int $types): Type
+	{
+		$type = new StringType();
+		for ($i = 0; $i < 100; $i++) {
+			$type = TypeCombinator::intersect(new StringType(), new AccessoryNonEmptyStringType(), new AccessoryNumericStringType(), new AccessoryLowercaseStringType());
+		}
+
+		return $type;
+	}
+
+	/**
+	 * Enum|null minus all the cases of the enum, as a match over all of them leaves it.
+	 */
+	#[DataProvider(method: 'types')]
+	#[Linear(size: 'types')]
+	public function benchRemoveEnumCases(int $types): Type
+	{
+		if ($this->enumOrNull === null || $this->enumCases === null) {
+			throw new LogicException('boot() did not run.');
+		}
+
+		return TypeCombinator::remove($this->enumOrNull, $this->enumCases);
+	}
+
 	private function createTypes(string $prefix, int $types): void
 	{
 		$this->strings = [];
 		$this->integers = [];
 		$this->arrays = [];
+		$this->stringsAndNevers = [];
 		$others = [];
 		for ($i = 0; $i < $types; $i++) {
+			$this->stringsAndNevers[] = new ConstantStringType($prefix . $i);
+			$this->stringsAndNevers[] = new NeverType();
 			$this->strings[] = new ConstantStringType($prefix . $i);
 			$this->integers[] = new ConstantIntegerType($i * 3);
 			$this->arrays[] = new ConstantArrayType([new ConstantStringType($prefix . $i)], [new ConstantIntegerType($i)]);

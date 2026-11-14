@@ -150,6 +150,11 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		}
 
 		if (!$hasUnknownCombination && !$hasSkippedCombination) {
+			if (count($constantReturnTypes) === 1) {
+				// the union of one array type normalizes it again, which costs more than computing it
+				return $constantReturnTypes[0];
+			}
+
 			if (count($constantReturnTypes) > 0) {
 				return TypeCombinator::union(...$constantReturnTypes);
 			}

@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 3.119B
+ * instructions: 3.112B
  * cycles: 3.398B
- * memory: 44.49MiB
+ * memory: 8.716MiB
  */
 
 namespace BenchAndChainResolveTypeBlowup;

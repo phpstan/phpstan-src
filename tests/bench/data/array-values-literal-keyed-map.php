@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 3.331B
- * cycles: 3.466B
- * memory: 40.81MiB
+ * instructions: 3.012B
+ * cycles: 3.127B
+ * memory: 5.009MiB
  */
 
 namespace BenchArrayValuesOfLiteralKeyedMap;

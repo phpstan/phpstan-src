@@ -9,6 +9,7 @@ use PHPStan\File\FileHelper;
 use ReflectionClass;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function dirname;
 
@@ -49,6 +50,8 @@ final class PackageDependencyResolverBench
 	 * Every analysed file that depends on a file resolves it again.
 	 */
 	#[DataProvider(method: 'files')]
+	#[ExpectedFor(dataSet: 'package-file', instructions: '1.082K', cycles: '11.64K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'project-file', instructions: '1.082K', cycles: '11.64K', memory: '0B')]
 	public function benchResolvePackageAgain(string $file): ?string
 	{
 		if ($this->resolver === null) {

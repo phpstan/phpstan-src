@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\Type\Regex\RegexGroupParser;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class RegexGroupParserBench
@@ -36,6 +37,8 @@ final class RegexGroupParserBench
 	}
 
 	#[DataProvider(method: 'patterns')]
+	#[ExpectedFor(dataSet: 'date', instructions: '1.426M', cycles: '2.041M', memory: '9.656KiB')]
+	#[ExpectedFor(dataSet: 'unsupported-modifier', instructions: '1.286K', cycles: '15.92K', memory: '0B')]
 	public function benchParseGroupsAgain(string $pattern): bool
 	{
 		if ($this->parser === null) {

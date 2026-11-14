@@ -8,6 +8,7 @@ use PHPStan\Type\FiniteTypeSet;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class FiniteTypeSetBench
@@ -42,6 +43,7 @@ final class FiniteTypeSetBench
 	/**
 	 * Every value a union is compared with is keyed.
 	 */
+	#[Expected(instructions: '355.5K', cycles: '465.2K', memory: '336B')]
 	public function benchKey(): ?string
 	{
 		$key = null;

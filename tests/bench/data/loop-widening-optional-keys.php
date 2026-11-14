@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 1.102B
- * cycles: 1.423B
- * memory: 41.35MiB
+ * instructions: 1.101B
+ * cycles: 1.429B
+ * memory: 5.604MiB
  */
 
 namespace BenchLoopWideningOptionalKeys;

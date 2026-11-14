@@ -13,6 +13,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function array_fill;
 
@@ -52,6 +53,8 @@ final class ConstantArrayTypeAcceptsBench
 	}
 
 	#[DataProvider(method: 'keys')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '2.879M', cycles: '4.157M', memory: '18.22KiB')]
+	#[ExpectedFor(dataSet: 'keys-128', instructions: '22.85M', cycles: '30.77M', memory: '123.5KiB')]
 	public function benchAcceptsSharedValueType(int $keys): AcceptsResult
 	{
 		if ($this->accepting === null || $this->accepted === null) {

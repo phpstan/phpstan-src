@@ -29,6 +29,8 @@ use PHPStan\Type\StringType;
 use SplObjectStorage;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\Expected;
+use Tally\Attribute\ExpectedFor;
 use Tally\Meter;
 use Tally\ScratchDirectory;
 use function count;
@@ -87,6 +89,10 @@ final class TypeSpecifierBench
 	 * 'a' === $t || 'b' === $t || ..., which PHP parses to a chain as deep as it is long.
 	 */
 	#[DataProvider(method: 'chains')]
+	#[ExpectedFor(dataSet: 'falsey-16', instructions: '11.38M', cycles: '16.93M', memory: '476.1KiB')]
+	#[ExpectedFor(dataSet: 'falsey-64', instructions: '50.77M', cycles: '71.38M', memory: '1.886MiB')]
+	#[ExpectedFor(dataSet: 'truthy-16', instructions: '16.18M', cycles: '23.04M', memory: '497.0KiB')]
+	#[ExpectedFor(dataSet: 'truthy-64', instructions: '94.60M', cycles: '122.5M', memory: '2.028MiB')]
 	public function benchSpecifyBooleanOrChain(string $context, int $arms): SpecifiedTypes
 	{
 		$chain = $this->meter->exclude(static fn (): Expr => self::orChain('arm', $arms));
@@ -97,6 +103,7 @@ final class TypeSpecifierBench
 	/**
 	 * $i ?: $t
 	 */
+	#[Expected(instructions: '186.7M', cycles: '239.2M', memory: '2.017MiB')]
 	public function benchSpecifyShortTernary(): int
 	{
 		$exprs = $this->meter->exclude(static function (): array {
@@ -114,6 +121,7 @@ final class TypeSpecifierBench
 	/**
 	 * An int remembered by match() compared with a string is always false.
 	 */
+	#[Expected(instructions: '38.39M', cycles: '52.40M', memory: '284.4KiB')]
 	public function benchSpecifyAlwaysFalseIdentical(): int
 	{
 		$exprs = $this->meter->exclude(static function (): array {
@@ -132,6 +140,7 @@ final class TypeSpecifierBench
 	/**
 	 * abs($i) > 0 is not one of the calls a comparison narrows, like count() or strlen().
 	 */
+	#[Expected(instructions: '132.1M', cycles: '172.5M', memory: '140.2KiB')]
 	public function benchSpecifyComparisonWithCall(): int
 	{
 		$exprs = $this->meter->exclude(function (): array {
@@ -152,6 +161,8 @@ final class TypeSpecifierBench
 	 * Creating the narrowing of an expression: only the true and false contexts need its key.
 	 */
 	#[DataProvider(method: 'contexts')]
+	#[ExpectedFor(dataSet: 'true', instructions: '4.120M', cycles: '5.675M', memory: '79.96KiB')]
+	#[ExpectedFor(dataSet: 'truthy', instructions: '4.120M', cycles: '5.681M', memory: '79.96KiB')]
 	public function benchCreate(string $context): int
 	{
 		[$exprs, $type] = $this->meter->exclude(function (): array {

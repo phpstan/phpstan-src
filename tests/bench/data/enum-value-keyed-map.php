@@ -1,9 +1,9 @@
 <?php // lint >= 8.1
 
 /*
- * instructions: 697.9M
- * cycles: 877.6M
- * memory: 53.48MiB
+ * instructions: 668.5M
+ * cycles: 834.2M
+ * memory: 17.69MiB
  */
 
 namespace BenchEnumValueKeyedMap;

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * instructions: 9.444B
- * cycles: 11.14B
- * memory: 135.8MiB
+ * instructions: 9.363B
+ * cycles: 11.06B
+ * memory: 100.0MiB
  */
 
 namespace Bug14972Bench;

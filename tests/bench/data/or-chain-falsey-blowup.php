@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 247.6M
- * cycles: 314.0M
- * memory: 39.65MiB
+ * instructions: 244.4M
+ * cycles: 310.9M
+ * memory: 3.861MiB
  */
 
 namespace BenchOrChainFalseyBlowup;

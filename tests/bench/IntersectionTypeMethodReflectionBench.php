@@ -8,6 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\Type\IntersectionTypeMethodReflection;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function array_slice;
 use function sprintf;
@@ -57,6 +58,8 @@ final class IntersectionTypeMethodReflectionBench
 	 * @return list<ExtendedParametersAcceptor>
 	 */
 	#[DataProvider(method: 'methods')]
+	#[ExpectedFor(dataSet: 'methods-2', instructions: '186.4K', cycles: '493.4K', memory: '5.094KiB')]
+	#[ExpectedFor(dataSet: 'methods-8', instructions: '1.070M', cycles: '1.642M', memory: '7.250KiB')]
 	public function benchGetVariants(int $methods): array
 	{
 		if ($this->method === null) {

@@ -6,6 +6,7 @@ use LogicException;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\MutatingScope;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\Attribute\Warmup;
 use Tally\ScratchDirectory;
 use function count;
@@ -43,6 +44,7 @@ final class MutatingScopeImpureCallsBench
 	/**
 	 * Merging two branches after calls to user functions and methods that are possibly impure.
 	 */
+	#[Expected(instructions: '75.45K', cycles: '307.0K', memory: '3.523KiB')]
 	public function benchMergeWithAfterPossiblyImpureCalls(): MutatingScope
 	{
 		if ($this->scope === null || $this->otherScope === null) {

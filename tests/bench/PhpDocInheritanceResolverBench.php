@@ -8,6 +8,7 @@ use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function sprintf;
 
@@ -52,6 +53,8 @@ final class PhpDocInheritanceResolverBench
 	 * the PHPDoc of the root.
 	 */
 	#[DataProvider(method: 'depths')]
+	#[ExpectedFor(dataSet: 'depth-4', instructions: '3.208M', cycles: '5.530M', memory: '54.20KiB')]
+	#[ExpectedFor(dataSet: 'depth-16', instructions: '9.423M', cycles: '13.84M', memory: '161.0KiB')]
 	public function benchInheritedReturnType(int $depth): Type
 	{
 		if ($this->class === null) {

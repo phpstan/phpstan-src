@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
 use RecursiveArrayIterator;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 use function count;
 
@@ -32,6 +33,7 @@ final class DynamicReturnTypeExtensionRegistryBench
 		$this->registry->getDynamicStaticMethodReturnTypeExtensionsForClass(RecursiveArrayIterator::class);
 	}
 
+	#[Expected(instructions: '845.6K', cycles: '896.5K', memory: '424B')]
 	public function benchMethodExtensionsForClass(): int
 	{
 		$registry = $this->registry();
@@ -43,6 +45,7 @@ final class DynamicReturnTypeExtensionRegistryBench
 		return $count;
 	}
 
+	#[Expected(instructions: '845.6K', cycles: '891.2K', memory: '424B')]
 	public function benchStaticMethodExtensionsForClass(): int
 	{
 		$registry = $this->registry();

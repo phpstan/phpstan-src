@@ -6,6 +6,7 @@ use LogicException;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Collectors\Registry;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class CollectorsRegistryBench
@@ -31,6 +32,7 @@ final class CollectorsRegistryBench
 	 *
 	 * @return mixed[]
 	 */
+	#[Expected(instructions: '3.452K', cycles: '28.42K', memory: '376B')]
 	public function benchGetCollectors(): array
 	{
 		if ($this->registry === null) {

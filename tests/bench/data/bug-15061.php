@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 3.166B
- * cycles: 3.596B
- * memory: 39.71MiB
+ * instructions: 2.777B
+ * cycles: 3.097B
+ * memory: 3.945MiB
  */
 
 namespace Bug15061;

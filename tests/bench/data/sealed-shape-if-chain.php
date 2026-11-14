@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 1.631B
- * cycles: 1.979B
- * memory: 58.75MiB
+ * instructions: 1.584B
+ * cycles: 1.919B
+ * memory: 23.02MiB
  */
 
 namespace BenchSealedShapeIfChain;

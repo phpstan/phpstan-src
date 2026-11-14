@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\LoaderFactory;
 use PHPStan\File\FileHelper;
 use ReflectionClass;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 use function dirname;
 
@@ -37,6 +38,7 @@ final class LoaderFactoryBench
 	 *
 	 * @return mixed[]
 	 */
+	#[Expected(instructions: '549.6K', cycles: '1.044M', memory: '41.72KiB')]
 	public function benchLoadConfigAgain(): array
 	{
 		if ($this->loaderFactory === null) {

@@ -8,6 +8,7 @@ use PHPStan\Analyser\ExpressionTypeHolder;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\UnionType;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 /**
@@ -46,6 +47,7 @@ final class ExpressionTypeHolderBench
 	/**
 	 * The same holder (#4777).
 	 */
+	#[Expected(instructions: '1.101K', cycles: '14.52K', memory: '0B')]
 	public function benchEqualsSameHolder(): bool
 	{
 		$holder = $this->holder();
@@ -56,6 +58,7 @@ final class ExpressionTypeHolderBench
 	/**
 	 * Another holder of the same type object (#4800).
 	 */
+	#[Expected(instructions: '2.659K', cycles: '28.84K', memory: '0B')]
 	public function benchAndSameType(): ExpressionTypeHolder
 	{
 		if ($this->sameType === null) {

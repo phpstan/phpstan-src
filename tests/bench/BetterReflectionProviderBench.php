@@ -12,6 +12,7 @@ use PHPStan\Analyser\ScopeFactory;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 use function file_put_contents;
 
@@ -49,6 +50,7 @@ final class BetterReflectionProviderBench
 	/**
 	 * Every scope that enters an anonymous class asks for its reflection again.
 	 */
+	#[Expected(instructions: '10.83K', cycles: '92.06K', memory: '256B')]
 	public function benchGetAnonymousClassReflectionAgain(): ClassReflection
 	{
 		if ($this->reflectionProvider === null || $this->class === null || $this->scope === null) {

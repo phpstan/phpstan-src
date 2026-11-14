@@ -6,6 +6,7 @@ use PHPStan\DependencyInjection\ContainerFactory;
 use PHPStan\Internal\ComposerHelper;
 use ReflectionClass;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 use function dirname;
 
@@ -31,6 +32,7 @@ final class ComposerHelperBench
 	 *
 	 * @return array<string, mixed>|null
 	 */
+	#[Expected(instructions: '1.174K', cycles: '15.80K', memory: '0B')]
 	public function benchGetComposerConfigAgain(): ?array
 	{
 		return ComposerHelper::getComposerConfig($this->root);

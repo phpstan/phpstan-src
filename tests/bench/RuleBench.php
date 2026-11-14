@@ -28,6 +28,7 @@ use PHPStan\Rules\RestrictedUsage\RestrictedMethodUsageRule;
 use PHPStan\Rules\Rule;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\Attribute\Warmup;
 use Tally\ScratchDirectory;
 use function array_map;
@@ -123,6 +124,25 @@ final class RuleBench
 	 * @param class-string $rule
 	 */
 	#[DataProvider(method: 'rules')]
+	#[ExpectedFor(dataSet: 'call-private-method-through-static-final-class', instructions: '59.05K', cycles: '111.0K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'call-to-function-parameters-resolvable-types', instructions: '117.0M', cycles: '141.7M', memory: '13.45KiB')]
+	#[ExpectedFor(dataSet: 'call-to-method-statement-with-no-discard-dynamic-name', instructions: '20.65K', cycles: '50.36K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'call-to-static-method-statement-with-no-discard-dynamic-name', instructions: '20.80K', cycles: '50.52K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'dump-native-type-no-arguments', instructions: '21.29K', cycles: '48.81K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'dump-phpdoc-type-no-arguments', instructions: '21.29K', cycles: '49.24K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'dump-type-no-arguments', instructions: '21.29K', cycles: '48.80K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'duplicate-class-declaration', instructions: '116.2K', cycles: '225.8K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'duplicate-function-declaration', instructions: '163.0K', cycles: '296.3K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'file-assert-one-argument', instructions: '21.25K', cycles: '49.98K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'final-private-method-constructors', instructions: '138.0K', cycles: '236.5K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'function-conditional-return-type-without-conditional-types', instructions: '143.7K', cycles: '258.3K', memory: '376B')]
+	#[ExpectedFor(dataSet: 'impossible-check-type-function-call', instructions: '6.246M', cycles: '8.939M', memory: '5.758KiB')]
+	#[ExpectedFor(dataSet: 'instantiation-restricted-constructor', instructions: '3.525M', cycles: '5.588M', memory: '6.531KiB')]
+	#[ExpectedFor(dataSet: 'node-connecting-visitor-attributes-no-arguments', instructions: '38.75K', cycles: '77.96K', memory: '40B')]
+	#[ExpectedFor(dataSet: 'old-php-parser4-class-outside-class', instructions: '20.21K', cycles: '44.86K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'parameter-castable-to-string-diff-assoc', instructions: '6.028M', cycles: '7.718M', memory: '3.172KiB')]
+	#[ExpectedFor(dataSet: 'restricted-function-usage', instructions: '282.2K', cycles: '443.2K', memory: '848B')]
+	#[ExpectedFor(dataSet: 'restricted-method-usage', instructions: '376.2K', cycles: '607.7K', memory: '256B')]
 	public function benchProcessNode(string $rule, string $code, ?int $phpVersion): int
 	{
 		if ($this->rule === null) {

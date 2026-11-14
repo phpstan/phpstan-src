@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PHPStan\Parser\Parser;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function dirname;
 
@@ -49,6 +50,8 @@ final class PathRoutingParserBench
 	 * @return Node[]
 	 */
 	#[DataProvider(method: 'stubs')]
+	#[ExpectedFor(dataSet: 'class', instructions: '6.901K', cycles: '63.71K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'function', instructions: '6.901K', cycles: '63.72K', memory: '0B')]
 	public function benchParsePhp8StubAgain(string $file): array
 	{
 		if ($this->parser === null) {

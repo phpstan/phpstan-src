@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 2.865B
- * cycles: 3.920B
- * memory: 73.19MiB
+ * instructions: 2.826B
+ * cycles: 3.882B
+ * memory: 37.41MiB
  */
 
 namespace ClosureVariableInvocations;

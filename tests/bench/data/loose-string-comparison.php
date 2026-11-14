@@ -1,9 +1,9 @@
 <?php
 
 /*
- * instructions: 10.22B
- * cycles: 12.25B
- * memory: 85.98MiB
+ * instructions: 10.19B
+ * cycles: 12.18B
+ * memory: 50.19MiB
  */
 
 namespace LooseStringComparison;

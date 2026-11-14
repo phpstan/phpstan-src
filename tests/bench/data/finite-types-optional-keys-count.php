@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 4.336B
- * cycles: 5.332B
- * memory: 77.36MiB
+ * instructions: 4.204B
+ * cycles: 5.198B
+ * memory: 41.58MiB
  */
 
 namespace BenchFiniteTypesOptionalKeysCount;

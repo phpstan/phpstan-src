@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 1.672B
- * cycles: 2.088B
- * memory: 40.95MiB
+ * instructions: 1.636B
+ * cycles: 2.052B
+ * memory: 5.197MiB
  */
 
 namespace BenchNestedLoopsWrappingArray;

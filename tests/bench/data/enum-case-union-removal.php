@@ -1,9 +1,9 @@
 <?php // lint >= 8.1
 
 /*
- * instructions: 1.923B
- * cycles: 2.330B
- * memory: 42.18MiB
+ * instructions: 1.884B
+ * cycles: 2.287B
+ * memory: 6.379MiB
  */
 
 declare(strict_types = 1);

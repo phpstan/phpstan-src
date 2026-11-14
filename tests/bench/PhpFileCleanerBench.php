@@ -6,6 +6,7 @@ use LogicException;
 use PHPStan\Reflection\BetterReflection\SourceLocator\PhpFileCleaner;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use function sprintf;
 use function str_repeat;
 
@@ -37,6 +38,10 @@ final class PhpFileCleanerBench
 	 * matches as the file may declare symbols.
 	 */
 	#[DataProvider(method: 'files')]
+	#[ExpectedFor(dataSet: 'code', instructions: '3.054M', cycles: '3.365M', memory: '4.172KiB')]
+	#[ExpectedFor(dataSet: 'docblocks', instructions: '3.788M', cycles: '4.135M', memory: '4.172KiB')]
+	#[ExpectedFor(dataSet: 'line-comments', instructions: '3.947M', cycles: '4.288M', memory: '8.172KiB')]
+	#[ExpectedFor(dataSet: 'strings', instructions: '2.909M', cycles: '3.235M', memory: '4.164KiB')]
 	public function benchClean(string $contents): string
 	{
 		if ($this->cleaner === null) {

@@ -5,6 +5,7 @@ namespace PHPStan\Benchmark;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\VerbosityLevel;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class ConstantStringTypeDescribeBench
@@ -35,6 +36,7 @@ final class ConstantStringTypeDescribeBench
 	/**
 	 * Strings already described, as the members of a union of an enum's values are again and again.
 	 */
+	#[Expected(instructions: '513.6K', cycles: '726.7K', memory: '0B')]
 	public function benchDescribeAgain(): string
 	{
 		$description = '';

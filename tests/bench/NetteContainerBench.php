@@ -5,6 +5,7 @@ namespace PHPStan\Benchmark;
 use LogicException;
 use PHPStan\DependencyInjection\Container;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 
 final class NetteContainerBench
@@ -23,6 +24,7 @@ final class NetteContainerBench
 		$this->container->getParameter('tmpDir');
 	}
 
+	#[Expected(instructions: '1.051K', cycles: '12.71K', memory: '0B')]
 	public function benchGetParameter(): mixed
 	{
 		if ($this->container === null) {
@@ -32,6 +34,7 @@ final class NetteContainerBench
 		return $this->container->getParameter('tmpDir');
 	}
 
+	#[Expected(instructions: '1.529K', cycles: '16.16K', memory: '0B')]
 	public function benchHasParameter(): bool
 	{
 		if ($this->container === null) {

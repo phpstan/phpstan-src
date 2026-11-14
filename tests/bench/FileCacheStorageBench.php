@@ -7,6 +7,7 @@ use PHPStan\Cache\FileCacheStorage;
 use PHPStan\Internal\DirectoryCreatorException;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 
 final class FileCacheStorageBench
@@ -52,6 +53,8 @@ final class FileCacheStorageBench
 	 * @throws DirectoryCreatorException
 	 */
 	#[DataProvider(method: 'entries')]
+	#[ExpectedFor(dataSet: 'entries-100', instructions: '246.7K', cycles: '601.2K', memory: '17.29KiB')]
+	#[ExpectedFor(dataSet: 'entries-10000', instructions: '19.12M', cycles: '32.34M', memory: '1.345MiB')]
 	public function benchSave(int $entries): void
 	{
 		if ($this->storage === null) {
@@ -62,6 +65,8 @@ final class FileCacheStorageBench
 	}
 
 	#[DataProvider(method: 'entries')]
+	#[ExpectedFor(dataSet: 'entries-100', instructions: '388.9K', cycles: '763.4K', memory: '130.1KiB')]
+	#[ExpectedFor(dataSet: 'entries-10000', instructions: '37.00M', cycles: '70.18M', memory: '11.67MiB')]
 	public function benchLoad(int $entries): mixed
 	{
 		if ($this->storage === null) {

@@ -20,6 +20,7 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\Meter;
 use Tally\ScratchDirectory;
 use function implode;
@@ -91,6 +92,11 @@ final class NodeScopeResolverWalkBench
 	}
 
 	#[DataProvider(method: 'statements')]
+	#[ExpectedFor(dataSet: 'foreach', instructions: '16.95M', cycles: '25.08M', memory: '315.2KiB')]
+	#[ExpectedFor(dataSet: 'nested-dim-assign', instructions: '277.4M', cycles: '330.1M', memory: '801.3KiB')]
+	#[ExpectedFor(dataSet: 'or-chain-16', instructions: '22.42M', cycles: '31.58M', memory: '614.1KiB')]
+	#[ExpectedFor(dataSet: 'or-chain-32', instructions: '50.17M', cycles: '67.50M', memory: '1.219MiB')]
+	#[ExpectedFor(dataSet: 'while', instructions: '10.43M', cycles: '16.14M', memory: '236.3KiB')]
 	public function benchProcessStmtNodes(string $code): Type
 	{
 		$stmts = $this->meter->exclude(fn (): array => $this->parse($code));

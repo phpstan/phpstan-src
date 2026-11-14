@@ -15,6 +15,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\MixedType;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function array_reverse;
 
@@ -82,6 +83,8 @@ final class NullsafeOperatorHelperBench
 	 * The analyser asks about each level of a chain, innermost first.
 	 */
 	#[DataProvider(method: 'levelsWithoutNullsafe')]
+	#[ExpectedFor(dataSet: 'levels-16', instructions: '74.18K', cycles: '132.2K', memory: '6.242KiB')]
+	#[ExpectedFor(dataSet: 'levels-64', instructions: '283.4K', cycles: '379.1K', memory: '23.87KiB')]
 	public function benchGetNullsafeShortcircuitedExprOfEveryLevel(int $depth, bool $nullsafe): int
 	{
 		$unchanged = 0;
@@ -100,6 +103,8 @@ final class NullsafeOperatorHelperBench
 	 * Every link above a nullsafe one is rebuilt, a chain without one is returned as it is.
 	 */
 	#[DataProvider(method: 'chains')]
+	#[ExpectedFor(dataSet: 'innermost-nullsafe-64', instructions: '261.6K', cycles: '383.1K', memory: '9.609KiB')]
+	#[ExpectedFor(dataSet: 'without-nullsafe-64', instructions: '173.3K', cycles: '258.8K', memory: '23.87KiB')]
 	public function benchGetNullsafeShortcircuitedExpr(int $depth, bool $nullsafe): Expr
 	{
 		if ($this->chain === null) {
@@ -113,6 +118,7 @@ final class NullsafeOperatorHelperBench
 	 * A chain without a nullsafe link needs no type from the scope.
 	 */
 	#[DataProvider(method: 'chainsWithoutNullsafe')]
+	#[ExpectedFor(dataSet: 'without-nullsafe-8', instructions: '27.17K', cycles: '75.85K', memory: '3.305KiB')]
 	public function benchGetNullsafeShortcircuitedExprRespectingScope(int $depth, bool $nullsafe): Expr
 	{
 		if ($this->scope === null || $this->chain === null) {

@@ -1,9 +1,9 @@
 <?php
 
 /*
- * instructions: 7.865B
- * cycles: 10.96B
- * memory: 177.1MiB
+ * instructions: 7.901B
+ * cycles: 11.06B
+ * memory: 141.3MiB
  */
 
 namespace Bug14972ConcatBench;

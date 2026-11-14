@@ -1,9 +1,9 @@
 <?php // lint >= 8.0
 
 /*
- * instructions: 3.264B
- * cycles: 4.504B
- * memory: 104.9MiB
+ * instructions: 3.192B
+ * cycles: 4.415B
+ * memory: 69.14MiB
  */
 
 namespace ImpureCallColumnsBench;

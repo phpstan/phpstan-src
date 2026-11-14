@@ -10,6 +10,7 @@ use ReflectionClass;
 use ReflectionProperty;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function sprintf;
 
@@ -47,6 +48,8 @@ final class PhpFunctionFromParserNodeReflectionBench
 	 * a yield unless the answer is memoized on its node.
 	 */
 	#[DataProvider(method: 'statements')]
+	#[ExpectedFor(dataSet: 'statements-16', instructions: '1.268K', cycles: '14.69K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'statements-256', instructions: '1.268K', cycles: '14.69K', memory: '0B')]
 	public function benchIsGeneratorAgain(int $statements): bool
 	{
 		if ($this->function === null) {

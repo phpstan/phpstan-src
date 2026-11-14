@@ -1,9 +1,9 @@
 <?php // lint >= 8.0
 
 /*
- * instructions: 338.9M
- * cycles: 432.9M
- * memory: 37.44MiB
+ * instructions: 290.6M
+ * cycles: 369.4M
+ * memory: 1.648MiB
  */
 
 namespace BenchBug14319;

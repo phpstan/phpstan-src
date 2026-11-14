@@ -9,6 +9,7 @@ use PHPStan\File\FileFinder;
 use PHPStan\File\FileFinderResult;
 use PHPStan\File\FileHelper;
 use Tally\Attribute\Before;
+use Tally\Attribute\Expected;
 use Tally\ScratchDirectory;
 use function class_exists;
 use function is_dir;
@@ -59,6 +60,7 @@ final class FileFinderBench
 		$this->finder->findFiles([$this->paths[0], $this->paths[1]]);
 	}
 
+	#[Expected(instructions: '3.204M', cycles: '3.939M', memory: '46.80KiB')]
 	public function benchFindFiles(): FileFinderResult
 	{
 		if ($this->finder === null) {

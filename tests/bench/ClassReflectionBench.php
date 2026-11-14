@@ -10,6 +10,8 @@ use PHPStan\Reflection\ExtendedPropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\Expected;
+use Tally\Attribute\ExpectedFor;
 use Tally\ScratchDirectory;
 use function implode;
 use function sprintf;
@@ -69,11 +71,13 @@ final class ClassReflectionBench
 	/**
 	 * Asking again for a method answers from the cache filled by the first call.
 	 */
+	#[Expected(instructions: '2.194K', cycles: '28.37K', memory: '40B')]
 	public function benchGetMethodAgain(): ExtendedMethodReflection
 	{
 		return $this->class()->getMethod('doubled', new OutOfClassScope());
 	}
 
+	#[Expected(instructions: '2.515K', cycles: '32.66K', memory: '40B')]
 	public function benchGetPropertyAgain(): ExtendedPropertyReflection
 	{
 		// @phpstan-ignore method.deprecated (the method the cache early return is in)
@@ -83,6 +87,7 @@ final class ClassReflectionBench
 	/**
 	 * The hottest call on the class, memoized since 2.2.14.
 	 */
+	#[Expected(instructions: '1.016K', cycles: '13.78K', memory: '0B')]
 	public function benchGetName(): string
 	{
 		return $this->class()->getName();
@@ -95,6 +100,9 @@ final class ClassReflectionBench
 	 * @return array<string, ClassReflection>
 	 */
 	#[DataProvider(method: 'depths')]
+	#[ExpectedFor(dataSet: 'depth-3', instructions: '2.531M', cycles: '3.906M', memory: '35.68KiB')]
+	#[ExpectedFor(dataSet: 'depth-6', instructions: '10.28M', cycles: '12.70M', memory: '66.72KiB')]
+	#[ExpectedFor(dataSet: 'depth-9', instructions: '55.29M', cycles: '61.48M', memory: '115.8KiB')]
 	public function benchGetInterfacesOfLattice(int $depth): array
 	{
 		$class = $this->reflectionProvider()->getClass(sprintf('ClassReflectionBench\Lattice%d\Implementation', $depth));

@@ -11,6 +11,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\Type;
 use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
+use Tally\Attribute\ExpectedFor;
 use Tally\Attribute\Quadratic;
 use Tally\ScratchDirectory;
 
@@ -78,6 +79,8 @@ final class ConstantArrayTypeBuilderBench
 	 * A list of closures that return 0, 1, 2, …, like an array of handlers, and the type of its values.
 	 */
 	#[DataProvider(method: 'closures')]
+	#[ExpectedFor(dataSet: 'closures-16', instructions: '13.03M', cycles: '17.98M', memory: '7.516KiB')]
+	#[ExpectedFor(dataSet: 'closures-64', instructions: '62.79M', cycles: '76.63M', memory: '1.507MiB')]
 	public function benchListOfClosures(int $closures): Type
 	{
 		if ($this->closures === []) {

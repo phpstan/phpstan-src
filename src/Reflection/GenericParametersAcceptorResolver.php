@@ -69,20 +69,26 @@ final class GenericParametersAcceptorResolver
 		// the remaining template types are then inferred from what is left over,
 		// e.g. in partition(iterable<T0|T1> $values, callable(T0|T1): ($value is T0 ? true : false) $predicate)
 		// called with iterable<int|string> and is_int(...), T0 becomes int and T1 string
-		$predicateTypeMap = TemplateTypeMap::createEmpty();
+		// null when no passed callable has a type predicate, which is almost always
+		$predicateTypeMap = null;
 		foreach ($parameters as $param) {
-			if (!isset($namedArgTypes[$param->getName()])) {
+			$paramName = $param->getName();
+			if (!isset($namedArgTypes[$paramName])) {
 				continue;
 			}
 
-			$predicateTypeMap = $predicateTypeMap->union(
-				self::inferPredicateTemplateTypes($param->getType(), $namedArgTypes[$param->getName()]),
-			);
+			$paramPredicateTypeMap = self::inferPredicateTemplateTypes($param->getType(), $namedArgTypes[$paramName]);
+			if ($paramPredicateTypeMap === null || $paramPredicateTypeMap->isEmpty()) {
+				continue;
+			}
+
+			$predicateTypeMap = $predicateTypeMap === null ? $paramPredicateTypeMap : $predicateTypeMap->union($paramPredicateTypeMap);
 		}
 
 		foreach ($parameters as $param) {
-			if (isset($namedArgTypes[$param->getName()])) {
-				$argType = $namedArgTypes[$param->getName()];
+			$paramName = $param->getName();
+			if (isset($namedArgTypes[$paramName])) {
+				$argType = $namedArgTypes[$paramName];
 			} elseif ($param->getDefaultValue() !== null) {
 				$argType = $param->getDefaultValue();
 			} elseif ($param->isVariadic()) {
@@ -91,12 +97,14 @@ final class GenericParametersAcceptorResolver
 				continue;
 			}
 
-			$paramType = self::resolvePredicateTemplateTypes($param->getType(), $predicateTypeMap);
+			$paramType = $predicateTypeMap === null ? $param->getType() : self::resolvePredicateTemplateTypes($param->getType(), $predicateTypeMap);
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
-			$passedArgs['$' . $param->getName()] = $argType;
+			$passedArgs['$' . $paramName] = $argType;
 		}
 
-		$typeMap = $typeMap->union($predicateTypeMap);
+		if ($predicateTypeMap !== null) {
+			$typeMap = $typeMap->union($predicateTypeMap);
+		}
 
 		$returnType = $parametersAcceptor->getReturnType();
 		if (
@@ -104,7 +112,7 @@ final class GenericParametersAcceptorResolver
 			&& !$returnType->isNegated()
 			&& array_key_exists($returnType->getParameterName(), $passedArgs)
 		) {
-			$paramType = self::resolvePredicateTemplateTypes($returnType->getTarget(), $predicateTypeMap);
+			$paramType = $predicateTypeMap === null ? $returnType->getTarget() : self::resolvePredicateTemplateTypes($returnType->getTarget(), $predicateTypeMap);
 			$argType = $passedArgs[$returnType->getParameterName()];
 			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType));
 		}
@@ -169,9 +177,12 @@ final class GenericParametersAcceptorResolver
 		return $result;
 	}
 
-	private static function inferPredicateTemplateTypes(Type $paramType, Type $argType): TemplateTypeMap
+	/**
+	 * @return TemplateTypeMap|null null when the parameter type is no callable with a type predicate
+	 */
+	private static function inferPredicateTemplateTypes(Type $paramType, Type $argType): ?TemplateTypeMap
 	{
-		$typeMap = TemplateTypeMap::createEmpty();
+		$typeMap = null;
 		foreach ($paramType instanceof UnionType ? $paramType->getTypes() : [$paramType] as $innerType) {
 			if (!$innerType instanceof CallableParametersAcceptor) {
 				continue;
@@ -182,6 +193,7 @@ final class GenericParametersAcceptorResolver
 
 			// asked only for parameters with asserts - it reflects the class named by
 			// a callable-like argument
+			$typeMap ??= TemplateTypeMap::createEmpty();
 			if (!$argType->isCallable()->yes()) {
 				return $typeMap;
 			}
@@ -196,10 +208,6 @@ final class GenericParametersAcceptorResolver
 
 	private static function resolvePredicateTemplateTypes(Type $type, TemplateTypeMap $predicateTypeMap): Type
 	{
-		if ($predicateTypeMap->isEmpty()) {
-			return $type;
-		}
-
 		return TemplateTypeHelper::resolveTemplateTypes(
 			$type,
 			$predicateTypeMap,

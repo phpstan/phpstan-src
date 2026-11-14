@@ -82,7 +82,11 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 	{
 		$lowerClassName = strtolower($className);
 		$classReflection = $this->classes[$lowerClassName] ??= $this->provider->getClass($className);
-		$this->recordFoundClass($className, $lowerClassName);
+		// read after the class was found: building its reflection resolves declarations in other contexts
+		$context = ValueDependencyCollector::getContext();
+		if (($this->knownClasses[$lowerClassName] ?? null) !== $context) {
+			$this->recordFoundClass($className, $lowerClassName, $context);
+		}
 
 		return $classReflection;
 	}
@@ -91,7 +95,10 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 	{
 		$lowerClassName = strtolower($className);
 		$name = $this->classNames[$lowerClassName] ??= $this->provider->getClassName($className);
-		$this->recordFoundClass($className, $lowerClassName);
+		$context = ValueDependencyCollector::getContext();
+		if (($this->knownClasses[$lowerClassName] ?? null) !== $context) {
+			$this->recordFoundClass($className, $lowerClassName, $context);
+		}
 
 		return $name;
 	}
@@ -99,14 +106,8 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 	/**
 	 * @param lowercase-string $lowerClassName
 	 */
-	private function recordFoundClass(string $className, string $lowerClassName): void
+	private function recordFoundClass(string $className, string $lowerClassName, int $context): void
 	{
-		// read after the class was found: building its reflection resolves declarations in other contexts
-		$context = ValueDependencyCollector::getContext();
-		if (($this->knownClasses[$lowerClassName] ?? null) === $context) {
-			return;
-		}
-
 		$this->knownClasses[$lowerClassName] = $context;
 		$this->valueDependencyCollector->recordFoundSymbol(ValueDependencyCollector::KIND_CLASS, $className);
 	}

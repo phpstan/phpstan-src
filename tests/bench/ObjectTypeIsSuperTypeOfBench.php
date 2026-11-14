@@ -44,7 +44,7 @@ final class ObjectTypeIsSuperTypeOfBench
 		$this->dateTime->isSuperTypeOf($this->union);
 	}
 
-	#[Expected(instructions: '252.2K', cycles: '311.5K', memory: '368B')]
+	#[Expected(instructions: '252.2K', cycles: '295.4K', memory: '368B')]
 	public function benchIsSuperTypeOfUnrelatedClass(): IsSuperTypeOfResult
 	{
 		if ($this->dateTime === null || $this->exception === null) {

@@ -64,7 +64,7 @@ final class IsSuperTypeOfResultBench
 	}
 
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '17.77K', cycles: '64.88K', memory: '1.102KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '17.77K', cycles: '54.47K', memory: '1.102KiB')]
 	#[ExpectedFor(dataSet: 'results-256', instructions: '234.9K', cycles: '392.2K', memory: '24.16KiB')]
 	public function benchMaxMin(int $results): IsSuperTypeOfResult
 	{
@@ -72,7 +72,7 @@ final class IsSuperTypeOfResultBench
 	}
 
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '19.58K', cycles: '75.07K', memory: '1.469KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '19.58K', cycles: '61.75K', memory: '1.469KiB')]
 	#[ExpectedFor(dataSet: 'results-256', instructions: '249.9K', cycles: '422.3K', memory: '32.22KiB')]
 	public function benchExtremeIdentity(int $results): IsSuperTypeOfResult
 	{
@@ -83,7 +83,7 @@ final class IsSuperTypeOfResultBench
 	 * StringType::isSuperTypeOf() is asked about each constant string of the union.
 	 */
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '41.64K', cycles: '128.5K', memory: '1.469KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '41.64K', cycles: '108.7K', memory: '1.469KiB')]
 	#[ExpectedFor(dataSet: 'results-256', instructions: '548.1K', cycles: '720.9K', memory: '32.22KiB')]
 	public function benchStringIsSuperTypeOfUnion(int $results): IsSuperTypeOfResult
 	{

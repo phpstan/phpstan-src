@@ -71,13 +71,13 @@ final class ClassReflectionBench
 	/**
 	 * Asking again for a method answers from the cache filled by the first call.
 	 */
-	#[Expected(instructions: '2.194K', cycles: '28.37K', memory: '40B')]
+	#[Expected(instructions: '2.194K', cycles: '17.03K', memory: '40B')]
 	public function benchGetMethodAgain(): ExtendedMethodReflection
 	{
 		return $this->class()->getMethod('doubled', new OutOfClassScope());
 	}
 
-	#[Expected(instructions: '2.515K', cycles: '32.66K', memory: '40B')]
+	#[Expected(instructions: '2.515K', cycles: '21.25K', memory: '40B')]
 	public function benchGetPropertyAgain(): ExtendedPropertyReflection
 	{
 		// @phpstan-ignore method.deprecated (the method the cache early return is in)
@@ -87,7 +87,7 @@ final class ClassReflectionBench
 	/**
 	 * The hottest call on the class, memoized since 2.2.14.
 	 */
-	#[Expected(instructions: '1.016K', cycles: '13.78K', memory: '0B')]
+	#[Expected(instructions: '1.016K', cycles: '8.566K', memory: '0B')]
 	public function benchGetName(): string
 	{
 		return $this->class()->getName();

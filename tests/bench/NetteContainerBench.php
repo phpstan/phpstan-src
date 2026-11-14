@@ -24,7 +24,7 @@ final class NetteContainerBench
 		$this->container->getParameter('tmpDir');
 	}
 
-	#[Expected(instructions: '1.051K', cycles: '12.71K', memory: '0B')]
+	#[Expected(instructions: '1.051K', cycles: '9.651K', memory: '0B')]
 	public function benchGetParameter(): mixed
 	{
 		if ($this->container === null) {
@@ -34,7 +34,7 @@ final class NetteContainerBench
 		return $this->container->getParameter('tmpDir');
 	}
 
-	#[Expected(instructions: '1.529K', cycles: '16.16K', memory: '0B')]
+	#[Expected(instructions: '1.529K', cycles: '12.22K', memory: '0B')]
 	public function benchHasParameter(): bool
 	{
 		if ($this->container === null) {

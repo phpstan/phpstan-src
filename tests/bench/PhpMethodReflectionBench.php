@@ -38,7 +38,7 @@ final class PhpMethodReflectionBench
 		$this->method->getName();
 	}
 
-	#[Expected(instructions: '700', cycles: '8.840K', memory: '0B')]
+	#[Expected(instructions: '700', cycles: '5.670K', memory: '0B')]
 	public function benchGetNameAgain(): string
 	{
 		if ($this->method === null) {

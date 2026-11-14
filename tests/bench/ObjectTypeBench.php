@@ -42,8 +42,8 @@ final class ObjectTypeBench
 	 * The type was asked for its class before.
 	 */
 	#[DataProvider(method: 'classes')]
-	#[ExpectedFor(dataSet: 'class', instructions: '741', cycles: '9.321K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'generic-class', instructions: '741', cycles: '9.321K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'class', instructions: '741', cycles: '6.371K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'generic-class', instructions: '741', cycles: '6.361K', memory: '0B')]
 	public function benchGetClassReflection(string $className): ?ClassReflection
 	{
 		if ($this->object === null) {

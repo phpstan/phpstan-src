@@ -75,15 +75,15 @@ final class IntersectionTypeBench
 	 * stdClass, the first member, is already a subtype of stdClass.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '10.59K', cycles: '94.13K', memory: '1.188KiB')]
-	#[ExpectedFor(dataSet: 'members-64', instructions: '10.59K', cycles: '94.13K', memory: '1.188KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '10.59K', cycles: '71.32K', memory: '1.188KiB')]
+	#[ExpectedFor(dataSet: 'members-64', instructions: '10.59K', cycles: '71.36K', memory: '1.188KiB')]
 	public function benchIsSubTypeOf(int $members): IsSuperTypeOfResult
 	{
 		return $this->subject()->isSubTypeOf(new ObjectType(stdClass::class));
 	}
 
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '230.8K', cycles: '467.4K', memory: '5.898KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '230.8K', cycles: '441.1K', memory: '5.898KiB')]
 	#[ExpectedFor(dataSet: 'members-64', instructions: '1.378M', cycles: '1.659M', memory: '11.98KiB')]
 	public function benchIsAcceptedBy(int $members): AcceptsResult
 	{

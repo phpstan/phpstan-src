@@ -83,7 +83,7 @@ final class NullsafeOperatorHelperBench
 	 * The analyser asks about each level of a chain, innermost first.
 	 */
 	#[DataProvider(method: 'levelsWithoutNullsafe')]
-	#[ExpectedFor(dataSet: 'levels-16', instructions: '74.18K', cycles: '132.2K', memory: '6.242KiB')]
+	#[ExpectedFor(dataSet: 'levels-16', instructions: '74.18K', cycles: '124.6K', memory: '6.242KiB')]
 	#[ExpectedFor(dataSet: 'levels-64', instructions: '283.4K', cycles: '379.1K', memory: '23.87KiB')]
 	public function benchGetNullsafeShortcircuitedExprOfEveryLevel(int $depth, bool $nullsafe): int
 	{
@@ -118,7 +118,7 @@ final class NullsafeOperatorHelperBench
 	 * A chain without a nullsafe link needs no type from the scope.
 	 */
 	#[DataProvider(method: 'chainsWithoutNullsafe')]
-	#[ExpectedFor(dataSet: 'without-nullsafe-8', instructions: '27.17K', cycles: '75.85K', memory: '3.305KiB')]
+	#[ExpectedFor(dataSet: 'without-nullsafe-8', instructions: '27.17K', cycles: '67.74K', memory: '3.305KiB')]
 	public function benchGetNullsafeShortcircuitedExprRespectingScope(int $depth, bool $nullsafe): Expr
 	{
 		if ($this->scope === null || $this->chain === null) {

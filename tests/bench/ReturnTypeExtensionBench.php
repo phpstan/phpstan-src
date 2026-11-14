@@ -91,12 +91,12 @@ final class ReturnTypeExtensionBench
 	 * @return list<?Type>
 	 */
 	#[DataProvider(method: 'extensions')]
-	#[ExpectedFor(dataSet: 'array-chunk', instructions: '622.4K', cycles: '1.076M', memory: '23.70KiB')]
-	#[ExpectedFor(dataSet: 'array-column', instructions: '2.033M', cycles: '3.088M', memory: '10.32KiB')]
-	#[ExpectedFor(dataSet: 'date-non-constant-format', instructions: '72.79K', cycles: '163.2K', memory: '1016B')]
-	#[ExpectedFor(dataSet: 'preg-replace-string-subject', instructions: '1.029M', cycles: '1.676M', memory: '10.78KiB')]
-	#[ExpectedFor(dataSet: 'range-100000', instructions: '526.1K', cycles: '878.5K', memory: '16.39KiB')]
-	#[ExpectedFor(dataSet: 'str-replace-string-subject', instructions: '530.5K', cycles: '874.6K', memory: '2.594KiB')]
+	#[ExpectedFor(dataSet: 'array-chunk', instructions: '622.4K', cycles: '838.2K', memory: '23.70KiB')]
+	#[ExpectedFor(dataSet: 'array-column', instructions: '2.033M', cycles: '2.734M', memory: '10.32KiB')]
+	#[ExpectedFor(dataSet: 'date-non-constant-format', instructions: '72.79K', cycles: '85.26K', memory: '1016B')]
+	#[ExpectedFor(dataSet: 'preg-replace-string-subject', instructions: '1.029M', cycles: '1.416M', memory: '10.78KiB')]
+	#[ExpectedFor(dataSet: 'range-100000', instructions: '526.1K', cycles: '680.9K', memory: '16.39KiB')]
+	#[ExpectedFor(dataSet: 'str-replace-string-subject', instructions: '530.5K', cycles: '698.7K', memory: '2.594KiB')]
 	public function benchGetTypeFromFunctionCall(string $extension, string $code): array
 	{
 		if ($this->extension === null) {

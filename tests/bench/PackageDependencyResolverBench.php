@@ -50,8 +50,8 @@ final class PackageDependencyResolverBench
 	 * Every analysed file that depends on a file resolves it again.
 	 */
 	#[DataProvider(method: 'files')]
-	#[ExpectedFor(dataSet: 'package-file', instructions: '1.082K', cycles: '13.07K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'project-file', instructions: '1.082K', cycles: '13.07K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'package-file', instructions: '1.082K', cycles: '9.792K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'project-file', instructions: '1.082K', cycles: '9.902K', memory: '0B')]
 	public function benchResolvePackageAgain(string $file): ?string
 	{
 		if ($this->resolver === null) {

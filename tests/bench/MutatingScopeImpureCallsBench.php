@@ -44,7 +44,7 @@ final class MutatingScopeImpureCallsBench
 	/**
 	 * Merging two branches after calls to user functions and methods that are possibly impure.
 	 */
-	#[Expected(instructions: '75.45K', cycles: '307.0K', memory: '3.523KiB')]
+	#[Expected(instructions: '75.45K', cycles: '103.6K', memory: '3.523KiB')]
 	public function benchMergeWithAfterPossiblyImpureCalls(): MutatingScope
 	{
 		if ($this->scope === null || $this->otherScope === null) {

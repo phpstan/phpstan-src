@@ -61,8 +61,8 @@ final class ParametersAcceptorSelectorBench
 	 */
 	#[DataProvider(method: 'returnTypes')]
 	#[ExpectedFor(dataSet: 'no-template-256', instructions: '543.0K', cycles: '1.047M', memory: '0B')]
-	#[ExpectedFor(dataSet: 'template-first-16', instructions: '1.876K', cycles: '22.01K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'template-first-256', instructions: '1.876K', cycles: '22.01K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'template-first-16', instructions: '1.876K', cycles: '15.70K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'template-first-256', instructions: '1.876K', cycles: '15.58K', memory: '0B')]
 	public function benchHasAcceptorTemplateOrLateResolvableType(int $items, bool $templateFirst): bool
 	{
 		if ($this->hasTemplateOrLateResolvableType === null || $this->acceptor === null) {

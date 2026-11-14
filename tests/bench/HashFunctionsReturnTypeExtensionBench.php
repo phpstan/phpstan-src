@@ -18,7 +18,7 @@ final class HashFunctionsReturnTypeExtensionBench
 	 * The container creates the extension for every analysis, also of code that calls no hash function.
 	 * Since 2.3.0 its constructor takes no PHP version, PHP ignores the argument there.
 	 */
-	#[Expected(instructions: '1.640K', cycles: '19.02K', memory: '136B')]
+	#[Expected(instructions: '1.640K', cycles: '2.210K', memory: '136B')]
 	public function benchCreate(): HashFunctionsReturnTypeExtension
 	{
 		// @phpstan-ignore new.noConstructor (2.2.13 to 2.2.17 take the PHP version)

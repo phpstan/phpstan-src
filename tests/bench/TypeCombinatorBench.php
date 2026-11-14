@@ -178,7 +178,7 @@ final class TypeCombinatorBench
 	}
 
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '168.4K', cycles: '382.9K', memory: '8.875KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '168.5K', cycles: '358.3K', memory: '8.875KiB')]
 	#[ExpectedFor(dataSet: 'types-64', instructions: '601.1K', cycles: '919.0K', memory: '26.18KiB')]
 	#[ExpectedFor(dataSet: 'types-256', instructions: '2.307M', cycles: '3.020M', memory: '107.7KiB')]
 	public function benchIntersectBenevolentUnion(int $types): Type

@@ -4209,12 +4209,12 @@
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/tally.git",
-        "reference": "983007834286c7970a8a88b9e5428832ff42a3a0"
+        "reference": "c14039c1010da6bc2f1294c9923d4c594c83fb65"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/tally/zipball/983007834286c7970a8a88b9e5428832ff42a3a0",
-        "reference": "983007834286c7970a8a88b9e5428832ff42a3a0",
+        "url": "https://api.github.com/repos/phpstan/tally/zipball/c14039c1010da6bc2f1294c9923d4c594c83fb65",
+        "reference": "c14039c1010da6bc2f1294c9923d4c594c83fb65",
         "shasum": ""
       },
       "require": {
@@ -4253,8 +4253,8 @@
         "issues": "https://github.com/phpstan/tally/issues",
         "source": "https://github.com/phpstan/tally/tree/release/1.x"
       },
-      "time": "2026-11-14T07:38:21+00:00",
-      "published-time": "2026-11-14T07:38:28+00:00"
+      "time": "2026-11-14T10:13:37+00:00",
+      "published-time": "2026-11-14T10:13:44+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",

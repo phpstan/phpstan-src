@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "2903b076c8da1462199b1d569eefe18e",
+  "content-hash": "c8e816333f58f55b9348aa729f3d31a4",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -4205,16 +4205,16 @@
     },
     {
       "name": "phpstan/tally",
-      "version": "dev-main",
+      "version": "dev-release/1.x",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/tally.git",
-        "reference": "0a1ec271d83f1430607b9a6b36e1d619ff0928d6"
+        "reference": "983007834286c7970a8a88b9e5428832ff42a3a0"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/tally/zipball/0a1ec271d83f1430607b9a6b36e1d619ff0928d6",
-        "reference": "0a1ec271d83f1430607b9a6b36e1d619ff0928d6",
+        "url": "https://api.github.com/repos/phpstan/tally/zipball/983007834286c7970a8a88b9e5428832ff42a3a0",
+        "reference": "983007834286c7970a8a88b9e5428832ff42a3a0",
         "shasum": ""
       },
       "require": {
@@ -4230,10 +4230,6 @@
         "phpunit/phpunit": "^11.5 || ^12.5",
         "shipmonk/dead-code-detector": "^1.4"
       },
-      "suggest": {
-        "ext-ffi": "To count instructions under CodSpeed's CPU simulation"
-      },
-      "default-branch": true,
       "bin": [
         "bin/tally"
       ],
@@ -4255,10 +4251,10 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/tally/issues",
-        "source": "https://github.com/phpstan/tally/tree/main"
+        "source": "https://github.com/phpstan/tally/tree/release/1.x"
       },
-      "time": "2026-11-13T22:28:28+00:00",
-      "published-time": "2026-11-13T22:28:33+00:00"
+      "time": "2026-11-14T07:38:21+00:00",
+      "published-time": "2026-11-14T07:38:28+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",

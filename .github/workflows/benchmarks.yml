@@ -29,13 +29,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  CODSPEED_VERSION: "5.6.3"
-  # of codspeed-runner-x86_64-unknown-linux-musl.tar.gz in that release
-  CODSPEED_SHA256: "f29532a5cbcb3462bc5d6bcf5570ddb8c8cbfffed579cb48c35d3910ed5f7f00"
-  # Tally calls it over FFI to count only the benchmark, not the warm-up before it
-  INSTRUMENT_HOOKS_COMMIT: "8fd5b878499f819561b33219cdafaa6f8c28b4e4"
-
 jobs:
   run:
     name: "Benchmarks shard ${{ matrix.shard }}"
@@ -66,33 +59,14 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.5"
-          extensions: ds,ffi,mbstring,posix
+          extensions: ds,mbstring,posix
           ini-file: production
           ini-values: memory_limit=-1
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # v4.0.0
 
-      - name: "Install CodSpeed"
-        run: |
-          mkdir -p "$RUNNER_TEMP/codspeed"
-          cd "$RUNNER_TEMP/codspeed"
-          curl -fsSLO "https://github.com/CodSpeedHQ/codspeed/releases/download/v${CODSPEED_VERSION}/codspeed-runner-x86_64-unknown-linux-musl.tar.gz"
-          echo "${CODSPEED_SHA256}  codspeed-runner-x86_64-unknown-linux-musl.tar.gz" | sha256sum -c -
-          tar xzf codspeed-runner-x86_64-unknown-linux-musl.tar.gz --strip-components=1 codspeed-runner-x86_64-unknown-linux-musl/codspeed
-          echo "$RUNNER_TEMP/codspeed" >> "$GITHUB_PATH"
-          ./codspeed setup --mode=simulation
-
-      - name: "Build CodSpeed's instrument-hooks"
-        run: |
-          git init -q "$RUNNER_TEMP/instrument-hooks"
-          cd "$RUNNER_TEMP/instrument-hooks"
-          git fetch -q --depth=1 https://github.com/CodSpeedHQ/instrument-hooks.git "$INSTRUMENT_HOOKS_COMMIT"
-          git checkout -q FETCH_HEAD
-          gcc -shared -fPIC -O2 -Iincludes -w dist/core.c -o libinstrument_hooks.so
-
+      # Tally brings CodSpeed's Valgrind and its tally_hooks extension, nothing else to set up
       - name: "Run benchmarks"
-        env:
-          INSTRUMENT_HOOKS_LIBRARY: ${{ runner.temp }}/instrument-hooks/libinstrument_hooks.so
         # Valgrind runs each benchmark on one CPU, so the shard runs as many at once as the runner has
         run: "php vendor/bin/tally run --shard=${{ matrix.shard }}/${{ strategy.job-total }} --output=tmp/tally-results"
 

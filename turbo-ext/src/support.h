@@ -992,6 +992,9 @@ bool pt_holder_equal_types(zval *a, zval *b, bool *out);
 
 /* ConditionalExpressionHolder::getKey() builder, shared with ScopeOps */
 zend_string *pt_ceh_key_build(HashTable *conds, zval *type_holder);
+/* the two parts of a single-condition key, which concatenated equal pt_ceh_key_build(): "<expr>=<type>" and " => <type> (<certainty>)" */
+zend_string *pt_ceh_key_condition_part(zend_string *key_str, zend_ulong kidx, zval *holder);
+zend_string *pt_ceh_key_target_part(zval *type_holder);
 
 /* calls a (possibly private) method on the scope, coercing result to bool */
 bool pt_call_scope_bool(zval *scope, const char *lcname, size_t len, uint32_t argc, zval *argv, bool *out);

@@ -56,7 +56,7 @@ final class SymfonyOutput implements Output
 
 	public function isDecorated(): bool
 	{
-		return $this->symfonyOutput->isDecorated();
+		return (bool) $this->symfonyOutput->isDecorated(); // @phpstan-ignore cast.useless
 	}
 
 }

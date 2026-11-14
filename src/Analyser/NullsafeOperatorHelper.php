@@ -50,12 +50,14 @@ final class NullsafeOperatorHelper
 			&& !$current instanceof Expr\NullsafePropertyFetch
 		) {
 			$next = self::chainedInto($current);
-			if ($next === null) {
-				// Every level of a chain is resolved in turn and each one used to
-				// walk down to the root again, so a chain of depth N cost O(N^2)
-				// walk steps — with no nullsafe operator in it at all. Marking
-				// the levels on the way out makes that O(N) per chain.
-				for ($level = $expr; $level !== null; $level = self::chainedInto($level)) {
+			if ($next === null || ($current === $expr && $next->getAttribute(self::SHORTCIRCUITED_ATTRIBUTE) === true)) {
+				// Every level of a chain is resolved in turn, innermost first, and
+				// each one used to walk down to the root again, so a chain of depth N
+				// cost O(N^2) walk steps — with no nullsafe operator in it at all.
+				// A marked level has none at or below it: when the level right below
+				// is marked, as it is when the chain is resolved innermost first, only
+				// this level is marked, which makes that O(N) per chain.
+				for ($level = $expr; $level !== null && $level !== $next; $level = self::chainedInto($level)) {
 					$level->setAttribute(self::SHORTCIRCUITED_ATTRIBUTE, true);
 				}
 

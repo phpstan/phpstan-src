@@ -23,8 +23,6 @@
 namespace slots = ptdecl::IntegerRangeType::slot;
 namespace sigs = ptdecl::IntegerRangeType::sig;
 
-#include <cmath>
-
 zend_class_entry *pt_ce_integer_range_type = nullptr;
 
 /* nothing is memoized per request since InitializerExprTypeResolver's
@@ -170,78 +168,73 @@ public:
 	}
 
 	/* the createAll*() family: the range of integers beyond an int|float
-	 * $value. An int goes straight to fromInterval(); anything else is
-	 * first held against the int limits — a float the way the VM compares
-	 * int with float (both as doubles), any other value loosely — and what
-	 * passes is then rounded by ceil()/floor() and (int)-cast, which is
-	 * where a non-number fails under strict_types. */
+	 * $value. An int goes straight to fromInterval(); anything else goes to
+	 * fromFloatComparison(), whose float parameter is where a non-float fails
+	 * under strict_types. */
 
 	/* fromInterval(null, $value, -1) */
 	static zv::Val createAllSmallerThan(zval *value)
 	{
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::null(), NullableLong::of(Z_LVAL_P(value)), -1);
-		int againstMax, againstMin;
-		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
-		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
-			return integer();
-		}
-		if (againstMin <= 0) { /* $value <= PHP_INT_MIN */
-			return never();
-		}
-		zend_long rounded;
-		if (UNEXPECTED(!roundToLong(value, true, rounded))) return zv::Val();
-		return fromInterval(NullableLong::null(), NullableLong::of(rounded), -1);
+		return fromFloatComparison(value, [](zend_long i, double f) { return (double) i < f; }); /* fromFloatComparison($value, '<') */
 	}
 
 	/* fromInterval(null, $value) */
 	static zv::Val createAllSmallerThanOrEqualTo(zval *value)
 	{
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::null(), NullableLong::of(Z_LVAL_P(value)), 0);
-		int againstMax, againstMin;
-		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
-		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
-			return integer();
-		}
-		if (againstMin < 0) { /* $value < PHP_INT_MIN */
-			return never();
-		}
-		zend_long rounded;
-		if (UNEXPECTED(!roundToLong(value, false, rounded))) return zv::Val();
-		return fromInterval(NullableLong::null(), NullableLong::of(rounded), 0);
+		return fromFloatComparison(value, [](zend_long i, double f) { return (double) i <= f; }); /* fromFloatComparison($value, '<=') */
 	}
 
 	/* fromInterval($value, null, 1) */
 	static zv::Val createAllGreaterThan(zval *value)
 	{
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::of(Z_LVAL_P(value)), NullableLong::null(), 1);
-		int againstMax, againstMin;
-		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
-		if (againstMin < 0) { /* $value < PHP_INT_MIN */
-			return integer();
-		}
-		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
-			return never();
-		}
-		zend_long rounded;
-		if (UNEXPECTED(!roundToLong(value, false, rounded))) return zv::Val();
-		return fromInterval(NullableLong::of(rounded), NullableLong::null(), 1);
+		return fromFloatComparison(value, [](zend_long i, double f) { return (double) i > f; }); /* fromFloatComparison($value, '>') */
 	}
 
 	/* fromInterval($value, null) */
 	static zv::Val createAllGreaterThanOrEqualTo(zval *value)
 	{
 		if (Z_TYPE_P(value) == IS_LONG) return fromInterval(NullableLong::of(Z_LVAL_P(value)), NullableLong::null(), 0);
-		int againstMax, againstMin;
-		if (UNEXPECTED(!compareToLimits(value, againstMax, againstMin))) return zv::Val();
-		if (againstMin <= 0) { /* $value <= PHP_INT_MIN */
-			return integer();
+		return fromFloatComparison(value, [](zend_long i, double f) { return (double) i >= f; }); /* fromFloatComparison($value, '>=') */
+	}
+
+	/* fromFloatComparison($value, $operator): the ints for which
+	 * `$int <$operator> $value` holds. holds() is the VM's int-with-float
+	 * comparison, both sides as doubles, which rounds ints beyond 2^53 on
+	 * 64-bit builds; the bound is bisected with it, in the twin's order. */
+	template <typename Holds>
+	static zv::Val fromFloatComparison(zval *value, Holds holds)
+	{
+		if (UNEXPECTED(Z_TYPE_P(value) != IS_DOUBLE)) {
+			zend_type_error("PHPStan\\Type\\IntegerRangeType::fromFloatComparison(): Argument #1 ($value) must be of type float, %s given", zend_zval_value_name(value));
+			return zv::Val();
 		}
-		if (againstMax >= 0) { /* $value >= PHP_INT_MAX */
-			return never();
+		double f = Z_DVAL_P(value);
+		bool holdsAtMin = holds(ZEND_LONG_MIN, f);
+		if (holdsAtMin == holds(ZEND_LONG_MAX, f)) {
+			/* also a NAN $value, which no comparison holds for */
+			return holdsAtMin ? integer() : never();
 		}
-		zend_long rounded;
-		if (UNEXPECTED(!roundToLong(value, true, rounded))) return zv::Val();
-		return fromInterval(NullableLong::of(rounded), NullableLong::null(), 0);
+
+		/* holds() gives holdsAtMin for low and the opposite for high */
+		zend_long low = ZEND_LONG_MIN;
+		zend_long high = ZEND_LONG_MAX;
+		while (true) {
+			/* floor((low + high) / 2) without overflowing */
+			zend_long middle = (low >> 1) + (high >> 1) + (low & high & 1);
+			if (middle == low) break;
+			if (holds(middle, f) == holdsAtMin) {
+				low = middle;
+			} else {
+				high = middle;
+			}
+		}
+
+		return holdsAtMin
+			? fromInterval(NullableLong::null(), NullableLong::of(low), 0)
+			: fromInterval(NullableLong::of(high), NullableLong::null(), 0);
 	}
 
 	/* $this->min / $this->max; false with an Error pending when the
@@ -1133,48 +1126,6 @@ private:
 		return pt_type_call(Z_OBJ_P(result.raw()), PT_LC("toacceptsresult"), 0, NULL);
 	}
 
-	/* the three-way comparisons of a non-int $value against PHP_INT_MAX and
-	 * PHP_INT_MIN — the callers read `>`, `>=`, `<`, `<=` off the sign. A
-	 * float compares as the VM compares int with float, both sides as
-	 * doubles — so NAN is neither above nor below either limit, on either
-	 * side (a NAN answer of -1 against the max and 1 against the min keeps
-	 * every one of the four tests false); anything else compares loosely.
-	 * false = pending exception */
-	[[nodiscard]] static bool compareToLimits(zval *value, int &againstMax, int &againstMin)
-	{
-		if (EXPECTED(Z_TYPE_P(value) == IS_DOUBLE)) {
-			double d = Z_DVAL_P(value);
-			double max = (double) ZEND_LONG_MAX;
-			double min = (double) ZEND_LONG_MIN;
-			againstMax = d > max ? 1 : (d < max ? -1 : (d == max ? 0 : -1));
-			againstMin = d < min ? -1 : (d > min ? 1 : (d == min ? 0 : 1));
-			return true;
-		}
-		zval limit;
-		ZVAL_LONG(&limit, ZEND_LONG_MAX);
-		againstMax = zend_compare(value, &limit);
-		if (UNEXPECTED(EG(exception))) return false;
-		ZVAL_LONG(&limit, ZEND_LONG_MIN);
-		againstMin = zend_compare(value, &limit);
-		return !EG(exception);
-	}
-
-	/* (int) ceil($value) / (int) floor($value) for a non-int $value: a
-	 * float rounds and casts as the engine casts; anything else is what
-	 * ceil()/floor() reject under strict_types. false = pending exception */
-	[[nodiscard]] static bool roundToLong(zval *value, bool useCeil, zend_long &out)
-	{
-		if (UNEXPECTED(Z_TYPE_P(value) != IS_DOUBLE)) {
-			zend_type_error("%s(): Argument #1 ($num) must be of type int|float, %s given", useCeil ? "ceil" : "floor", zend_zval_value_name(value));
-			return false;
-		}
-		/* is_nan($value) ? 0 : (int) ceil($value) (or floor()): (int) NAN is 0,
-		 * without the engine's warning */
-		double rounded = useCeil ? ceil(Z_DVAL_P(value)) : floor(Z_DVAL_P(value));
-		out = std::isnan(rounded) ? 0 : zend_dval_to_lval(rounded);
-		return true;
-	}
-
 	/* $base ** $exponent — int, or float on overflow / negative exponent;
 	 * false = pending exception */
 	[[nodiscard]] static bool phpPow(zend_long base, zend_long exponent, zval *out)
@@ -1420,6 +1371,34 @@ PT_MINIT_REGISTRATION(pt_register_integer_range_type)
 
 	cls.method(sigs::createAllGreaterThanOrEqualTo, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_irt_create_all(INTERNAL_FUNCTION_PARAM_PASSTHRU, IntegerRangeType::createAllGreaterThanOrEqualTo);
+	});
+
+	/* only reflection reaches the private twin: the factories above bisect
+	 * natively. An unknown $operator fails at the first comparison, where the
+	 * twin's match() reaches its default arm */
+	cls.method(sigs::fromFloatComparison, [](INTERNAL_FUNCTION_PARAMETERS) {
+		double value;
+		zend_string *op;
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_DOUBLE(value)
+			Z_PARAM_STR(op)
+		ZEND_PARSE_PARAMETERS_END();
+		zval boxed;
+		ZVAL_DOUBLE(&boxed, value);
+		if (zend_string_equals_literal(op, "<")) {
+			PT_RETURN_VAL(IntegerRangeType::fromFloatComparison(&boxed, [](zend_long i, double f) { return (double) i < f; }));
+		}
+		if (zend_string_equals_literal(op, "<=")) {
+			PT_RETURN_VAL(IntegerRangeType::fromFloatComparison(&boxed, [](zend_long i, double f) { return (double) i <= f; }));
+		}
+		if (zend_string_equals_literal(op, ">")) {
+			PT_RETURN_VAL(IntegerRangeType::fromFloatComparison(&boxed, [](zend_long i, double f) { return (double) i > f; }));
+		}
+		if (zend_string_equals_literal(op, ">=")) {
+			PT_RETURN_VAL(IntegerRangeType::fromFloatComparison(&boxed, [](zend_long i, double f) { return (double) i >= f; }));
+		}
+		pt_throw_should_not_happen();
+		RETURN_THROWS();
 	});
 
 	cls.method(sigs::getMin, [](INTERNAL_FUNCTION_PARAMETERS) {

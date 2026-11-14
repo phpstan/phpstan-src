@@ -134,6 +134,9 @@ final class TemplateArgumentSolver
 	/** @var array<string, true> */
 	private array $resolving = [];
 
+	/** How many times a substitution reached a site that was still being resolved. */
+	private int $cyclesReached = 0;
+
 	private function resolveKey(string $key): Type
 	{
 		$key = $this->representative($key);
@@ -144,14 +147,18 @@ final class TemplateArgumentSolver
 		if (isset($this->resolving[$key])) {
 			// a site whose inferred argument refers back to itself through another
 			// site (wrap($x = new Foo($x))): the inferred type stands
+			$this->cyclesReached++;
 			return $observation['marker']->getDelegate();
 		}
 
 		$this->resolving[$key] = true;
+		$cyclesReached = $this->cyclesReached;
 		try {
 			return $this->resolutions[$key] = $this->resolveObservation($observation);
 		} finally {
 			unset($this->resolving[$key]);
+			// a cycle closed inside another site's resolution was settled there
+			$this->cyclesReached = $cyclesReached;
 		}
 	}
 
@@ -208,7 +215,14 @@ final class TemplateArgumentSolver
 		$template = $observation['marker']->getTemplate();
 		$lowerBounds = [];
 		foreach ($observation['lowerBounds'] as $lowerBound) {
-			$inferred = $template->inferTemplateTypes($this->substituteResolutions($lowerBound))->getType($template->getName());
+			$cyclesReached = $this->cyclesReached;
+			$lowerBound = $this->substituteResolutions($lowerBound);
+			if ($this->cyclesReached !== $cyclesReached) {
+				// the object is sent into its own argument ($map->set($map)): no
+				// finite type contains Foo<itself>, only the bound does
+				return $template->getBound();
+			}
+			$inferred = $template->inferTemplateTypes($lowerBound)->getType($template->getName());
 			if ($inferred === null) {
 				continue;
 			}

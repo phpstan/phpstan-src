@@ -593,6 +593,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 				55,
 				'Type float is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
 			],
+			[
+				'Function Bug15714ReturnType\\absolute() should return T of float but returns float.',
+				69,
+			],
+			[
+				'Function Bug15714ReturnType\\absolute() should return T of float but returns float.',
+				72,
+				'Type float is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
 		]);
 	}
 

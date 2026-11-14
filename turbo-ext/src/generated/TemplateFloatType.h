@@ -53,7 +53,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\FloatType\0" /* 182 */
 	"default\0" /* 205 */
 	"PHPStan\\Type\\Type\0" /* 213 */
-	"__construct"; /* 231 */
+	"__construct\0" /* 231 */
+	"\0" /* 243 */
+	"toAbsoluteNumber"; /* 244 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* __construct $scope */
 	reg::packed(45, 0, 66), /* __construct $templateTypeStrategy */
@@ -61,6 +63,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(171, MAY_BE_STRING), /* __construct $name */
 	reg::packed(176, 0, 182), /* __construct $bound */
 	reg::packed(205, MAY_BE_NULL, 213), /* __construct $default */
+	reg::packed(243, 0, 213), /* toAbsoluteNumber return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -68,6 +71,7 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 231 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 244 /* toAbsoluteNumber */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateFloatType

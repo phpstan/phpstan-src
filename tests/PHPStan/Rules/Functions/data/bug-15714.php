@@ -57,3 +57,29 @@ function returnsFloat(float $t, float $other): float
 
 	return $t;
 }
+
+/**
+ * @template T of float
+ * @param T $t
+ * @return T
+ */
+function absolute(float $t): float
+{
+	if ($t < 0.0) {
+		return abs($t);
+	}
+
+	return abs($t);
+}
+
+/**
+ * @template T of float
+ * @param T $t
+ * @return T
+ */
+function merged(float $t): float
+{
+	$sign = $t >= 0.0 ? 'positive' : 'negative';
+
+	return $t;
+}

@@ -5499,6 +5499,10 @@ $templateBounds = [
 	'int1' => new \PHPStan\Type\Constant\ConstantIntegerType(1),
 	'range' => \PHPStan\Type\IntegerRangeType::fromInterval(0, 10),
 	'float' => new \PHPStan\Type\FloatType(),
+	'floatRange' => \PHPStan\Type\FloatRangeType::fromInterval(0.0, 10.0),
+	'floatRangeNegative' => \PHPStan\Type\FloatRangeType::fromInterval(-10.0, -1.0),
+	'floatMinus1_5' => new \PHPStan\Type\Constant\ConstantFloatType(-1.5),
+	'nan' => new \PHPStan\Type\Constant\ConstantFloatType(NAN),
 	'bool' => new \PHPStan\Type\BooleanType(),
 	'true' => new \PHPStan\Type\Constant\ConstantBooleanType(true),
 	'string' => new \PHPStan\Type\StringType(),
@@ -5637,6 +5641,7 @@ $templateMapView = static fn (\PHPStan\Type\Generic\TemplateTypeMap $map) => arr
 		$r["$name comparisons"] = [$view($subject->isGreaterThan($others['null'], $templatePhpVersion)), $view($subject->isGreaterThan($others['int'], $templatePhpVersion)), $view($subject->isGreaterThanOrEqual($others['null'], $templatePhpVersion)), $view($subject->isGreaterThanOrEqual($others['int'], $templatePhpVersion)), $view($subject->isSmallerThan($others['int'], $templatePhpVersion)), $view($subject->isSmallerThanOrEqual($others['int'], $templatePhpVersion)), $view($subject->looseCompare($others['int'], $templatePhpVersion))];
 		$r["$name predicates"] = [$view($subject->isNull()), $view($subject->isObject()), $view($subject->isArray()), $view($subject->isString()), $view($subject->isInteger()), $view($subject->isIterable()), $view($subject->isCallable()), $view($subject->isScalar()), $view($subject->isConstantValue()), $view($subject->isSuperTypeOf($subject)), $view($subject->getObjectClassNames())];
 		$r["$name conversions"] = [$view($subject->toBoolean()), $view($subject->toNumber()), $view($subject->toString()), $view($subject->toInteger()), $view($subject->toFloat()), $view($subject->toArray()), $view($subject->getIterableKeyType()), $view($subject->getIterableValueType()), $view($subject->getClassStringType())];
+		$r["$name toAbsoluteNumber"] = $view($subject->toAbsoluteNumber());
 		$r["$name array ops"] = [$view($subject->getKeysArray()), $view($subject->getValuesArray()), $view($subject->popArray()), $view($subject->flipArray()), $view($subject->setOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('b'), new \PHPStan\Type\IntegerType())), $view($subject->setOffsetValueType(null, new \PHPStan\Type\FloatType())), $view($subject->unsetOffset(new \PHPStan\Type\Constant\ConstantStringType('a'))), $view($subject->getOffsetValueType(new \PHPStan\Type\Constant\ConstantStringType('a')))];
 		if ($subject instanceof \PHPStan\Type\Generic\GenericObjectType) {
 			$r["$name changeVariances"] = $view($subject->changeVariances([\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]));

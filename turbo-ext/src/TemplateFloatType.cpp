@@ -40,6 +40,17 @@ public:
 		return pt_template_type_create<TemplateFloatType>(pt_ce_template_float_type, scope, strategy, variance, name, bound, defaultType);
 	}
 
+	/* $this->getBound()->toAbsoluteNumber() — the trait's getter is the slot
+	 * (the class is final), the bound's method goes through its class entry
+	 * (a FloatType, FloatRangeType, ConstantFloatType or another template);
+	 * UNDEF = pending exception */
+	zv::Val toAbsoluteNumber() const
+	{
+		zval *bound = pt_template_type_bound(self, pt_ce_template_float_type);
+		if (UNEXPECTED(bound == NULL)) return zv::Val();
+		return pt_type_call(Z_OBJ_P(bound), PT_LC("toabsolutenumber"), 0, NULL);
+	}
+
 private:
 	zend_object *self;
 };
@@ -68,6 +79,8 @@ PT_MINIT_REGISTRATION(pt_register_template_float_type)
 		PT_TEMPLATE_TYPE_PARSE_CTOR(args);
 		if (UNEXPECTED(!PT_THIS.construct(args.scope, args.strategy, args.variance, args.name, args.bound, args.defaultType))) RETURN_THROWS();
 	});
+
+	cls.method<&TemplateFloatType::toAbsoluteNumber>(sigs::toAbsoluteNumber);
 
 	/* the traits the twin uses, after the class's own methods */
 	ptdecl::TemplateFloatType::registerTraits(cls);

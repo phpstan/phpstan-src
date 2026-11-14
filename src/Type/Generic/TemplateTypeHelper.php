@@ -174,6 +174,11 @@ final class TemplateTypeHelper
 	 */
 	public static function removeFinalByKeywordOverrides(Type $type): Type
 	{
+		// holds no object type, and the traversal would return it as it is
+		if ($type->isConstantScalarValue()->yes()) {
+			return $type;
+		}
+
 		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
 			if ($type instanceof ObjectType) {
 				$type = $type->withoutFinalByKeywordOverride();

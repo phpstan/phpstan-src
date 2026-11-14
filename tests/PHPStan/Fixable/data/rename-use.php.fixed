@@ -1,0 +1,10 @@
+<?php declare(strict_types = 1);
+
+namespace RenameUse;
+
+use RenameUseOther\Bar;
+use RenameUseOther\Bar as Lorem;
+
+function doFoo(Foo $foo, Lorem $lorem): void
+{
+}

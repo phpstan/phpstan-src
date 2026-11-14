@@ -1718,6 +1718,20 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(9, $errors[1]->getLine());
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValueNamedArguments(): void
+	{
+		// crash
+		$errors = $this->runAnalyse(__DIR__ . '/data/unknown-default-value-named-arguments.php');
+		$this->assertCount(3, $errors);
+		$this->assertSame('Argument #1 ($min) must be passed explicitly, because the default value is not known.', $errors[0]->getMessage());
+		$this->assertSame(7, $errors[0]->getLine());
+		$this->assertSame('Argument #1 ($min) must be passed explicitly, because the default value is not known.', $errors[1]->getMessage());
+		$this->assertSame(8, $errors[1]->getLine());
+		$this->assertSame('Argument #2 ($close) must be passed explicitly, because the default value is not known.', $errors[2]->getMessage());
+		$this->assertSame(9, $errors[2]->getLine());
+	}
+
 	public function testBug15364(): void
 	{
 		// crash

@@ -1243,7 +1243,9 @@ public:
 					bool firstClassCallable;
 					if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
 					if (firstClassCallable) {
-						return getFirstClassCallableType(expr, context, false);
+						zval nullBoundArgTypes;
+						ZVAL_NULL(&nullBoundArgTypes);
+						return getFirstClassCallableType(expr, context, false, &nullBoundArgTypes);
 					}
 					break;
 				}
@@ -2164,14 +2166,47 @@ public:
 		return 0;
 	}
 
-	/* Mirrors getFirstClassCallableType(). */
-	zv::Val getFirstClassCallableType(zval *expr, zval *context, bool nativeTypesPromoted) const
+	/* Mirrors getFirstClassCallableType(); $boundArgTypes PHP null for null */
+	zv::Val getFirstClassCallableType(zval *expr, zval *context, bool nativeTypesPromoted, zval *boundArgTypesIn) const
 	{
 		bool firstClassCallable;
 		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(expr), firstClassCallable))) return zv::Val();
+		zval nullArgs;
+		ZVAL_NULL(&nullArgs);
+		zval *partialApplicationArgs = &nullArgs;
+		zv::Val rawArgsHold;
+		// $boundArgTypes ?? []
+		zv::Val boundArgTypesHold = zv::Val(zv::Arr::empty());
+		zval *boundArgTypes = boundArgTypesHold.raw();
 		if (!firstClassCallable) {
-			// the signature of a partial function application is not inferred yet
-			return newObjectTypeLiteral(PT_LC("Closure"));
+			partialApplicationArgs = pt_call_like_raw_args(Z_OBJ_P(expr), rawArgsHold);
+			if (UNEXPECTED(partialApplicationArgs == NULL)) return zv::Val();
+			if (Z_TYPE_P(boundArgTypesIn) != IS_NULL) {
+				boundArgTypes = boundArgTypesIn;
+			} else {
+				if (UNEXPECTED(!requireArray(partialApplicationArgs))) return zv::Val();
+				zv::Arr resolved = zv::Arr::create(0);
+				for (zv::ArrayEntry entry : zv::ArrRef(partialApplicationArgs)) {
+					zval *arg = entry.value().deref().raw();
+					int isArg = isAClass(arg, PT_CLASS_ARG);
+					if (UNEXPECTED(isArg < 0)) return zv::Val();
+					if (!isArg) {
+						continue;
+					}
+					zval *value = nodeProp(pt_ietr_arg_value, arg);
+					if (UNEXPECTED(value == NULL)) return zv::Val();
+					IETR_VAL(argType, getType(value, context));
+					zval key;
+					if (entry.hasStringKey()) {
+						ZVAL_STR(&key, entry.stringKey());
+					} else {
+						ZVAL_LONG(&key, (zend_long) entry.indexKey());
+					}
+					if (UNEXPECTED(!arrayKeyUpdate(resolved, &key, std::move(argType)))) return zv::Val();
+				}
+				boundArgTypesHold = zv::Val(std::move(resolved));
+				boundArgTypes = boundArgTypesHold.raw();
+			}
 		}
 
 		int isFuncCall = isAClass(expr, PT_CLASS_FUNC_CALL);
@@ -2191,7 +2226,9 @@ public:
 					IETR_VAL(reflectionProvider, reflectionProviderOf(prop(slots::reflectionProviderProvider)));
 					IETR_VAL(function, pt_reflection_provider_get_function(reflectionProvider.raw(), name, context));
 					IETR_VAL(variants, callOn(function.raw(), mGetVariants));
-					return createFirstClassCallable(function.raw(), variants.raw(), nativeTypesPromoted);
+					IETR_VAL(functionName, callOn(function.raw(), mGetName));
+					IETR_VAL(origin, pt_closure_origin_for_function(functionName.raw()));
+					return createFirstClassCallable(function.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin.raw());
 				}
 
 				return newObjectTypeLiteral(PT_LC("Closure"));
@@ -2267,7 +2304,8 @@ public:
 			}
 
 			IETR_VAL(variants, callOn(method.raw(), mGetVariants));
-			return createFirstClassCallable(method.raw(), variants.raw(), nativeTypesPromoted);
+			IETR_VAL(origin, pt_closure_origin_for_method(classType.raw(), &methodName, true));
+			return createFirstClassCallable(method.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin.raw());
 		}
 
 		int isNew = isAClass(expr, PT_CLASS_NEW);
@@ -2333,9 +2371,25 @@ public:
 		return zv::Val(std::move(renamed));
 	}
 
-	/* Mirrors createFirstClassCallable(); $function PHP null for null */
-	static zv::Val createFirstClassCallable(zval *function, zval *variants, bool nativeTypesPromoted)
+	/* Mirrors createFirstClassCallable(); $function, $partialApplicationArgs and $origin PHP null for null */
+	static zv::Val createFirstClassCallable(zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes, zval *originIn)
 	{
+		bool partialApplication = Z_TYPE_P(partialApplicationArgs) != IS_NULL;
+		zv::Val origin = zv::Val::copyOf(zv::Ref(originIn));
+		if (Z_TYPE_P(originIn) == IS_OBJECT && partialApplication) {
+			zv::Args withArgv{partialApplicationArgs, boundArgTypes};
+			origin = pt_type_call(Z_OBJ_P(originIn), PT_LC("withpartialapplication"), 2, withArgv);
+			if (UNEXPECTED(origin.isUndef())) return zv::Val();
+		}
+		if (partialApplication) {
+			static pt_method_site leavesUnknownDefaultValueSite;
+			zv::Args leavesArgv{variants, partialApplicationArgs};
+			IETR_VAL(leavesUnknownDefaultValue, pt_call_static_cached(leavesUnknownDefaultValueSite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("leavesunknowndefaultvalue"), 2, leavesArgv));
+			if (zend_is_true(leavesUnknownDefaultValue.raw())) {
+				// creating the closure throws
+				return newObjectTypeLiteral(PT_LC("Closure"));
+			}
+		}
 		if (UNEXPECTED(Z_TYPE_P(variants) != IS_ARRAY)) {
 			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(variants));
 			if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
@@ -2381,27 +2435,6 @@ public:
 			if (extendedAcceptor && nativeTypesPromoted) {
 				IETR_VAL(nativeReturnType, callOn(variant, mGetNativeReturnType));
 				returnType = std::move(nativeReturnType);
-			}
-
-			zv::Arr templateTags = zv::Arr::create(0);
-			{
-				IETR_VAL(templateTypeMap, callOn(variant, mGetTemplateTypeMap));
-				IETR_VAL(templateTypes, callOn(templateTypeMap.raw(), mGetTypes));
-				if (UNEXPECTED(!requireArray(templateTypes.raw()))) return zv::Val();
-				for (zv::ArrayEntry entry : zv::ArrRef(templateTypes.raw())) {
-					zval *templateType = entry.value().raw();
-					if (!isA(templateType, templateTypeCe)) {
-						continue;
-					}
-					IETR_VAL(tagName, callOn(templateType, mGetName));
-					IETR_VAL(name, callOn(templateType, mGetName));
-					IETR_VAL(bound, callOn(templateType, mGetBound));
-					IETR_VAL(defaultType, callOn(templateType, mGetDefault));
-					IETR_VAL(variance, callOn(templateType, mGetVariance));
-					zv::Args tagArgs{name.raw(), bound.raw(), defaultType.raw(), variance.raw()};
-					IETR_VAL(tag, pt_type_new(PT_CLASS_TEMPLATE_TAG, 4, tagArgs));
-					if (UNEXPECTED(!arrayKeyUpdate(templateTags, tagName.raw(), std::move(tag)))) return zv::Val();
-				}
 			}
 
 			zv::Val throwPoints = zv::Val(zv::Arr::empty());
@@ -2472,6 +2505,18 @@ public:
 				if (UNEXPECTED(acceptsNamedArguments.isUndef())) return zv::Val();
 				mustUseReturnValue = callOn(function, mMustUseReturnValue);
 				if (UNEXPECTED(mustUseReturnValue.isUndef())) return zv::Val();
+				// binding an object to the closure of a static method, or to a partial
+				// application of a function, fails; a function's first-class callable can be bound
+				zend_class_entry *methodReflectionCe = pt_class(PT_CLASS_EXTENDED_METHOD_REFLECTION);
+				if (UNEXPECTED(methodReflectionCe == NULL)) return zv::Val();
+				bool staticClosure = partialApplication;
+				if (instanceof_function(Z_OBJCE_P(function), methodReflectionCe)) {
+					IETR_VAL(isStaticMethod, callOn(function, mIsStatic));
+					staticClosure = zend_is_true(isStaticMethod.raw());
+				}
+				if (staticClosure) {
+					isStaticClosure = zv::Val::copyOf(zv::Ref(pt_trinary_singleton(PT_TRI_YES)));
+				}
 			}
 
 			IETR_VAL(variantParameters, callOn(variant, mGetParameters));
@@ -2479,6 +2524,67 @@ public:
 			if (zend_hash_num_elements(namedArgumentNames.table()) > 0) {
 				IETR_VAL(renamedParameters, renameParameters(parameters.raw(), namedArgumentNames.raw()));
 				parameters = std::move(renamedParameters);
+			}
+			IETR_VAL(isVariadicHold, callOn(variant, mIsVariadic));
+			bool isVariadic = zend_is_true(isVariadicHold.raw());
+			IETR_VAL(templateTypeMapInit, callOn(variant, mGetTemplateTypeMap));
+			zv::Val templateTypeMap = std::move(templateTypeMapInit);
+			zv::Val variantOrigin = zv::Val::copyOf(zv::Ref(origin.raw()));
+			if (partialApplication) {
+				static pt_method_site applySite;
+				zv::Args applyArgv{parameters.raw(), isVariadic, partialApplicationArgs, boundArgTypes, returnType.raw(), templateTypeMap.raw()};
+				IETR_VAL(applied, pt_call_static_cached(applySite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("apply"), 6, applyArgv));
+				if (Z_TYPE_P(applied.raw()) == IS_NULL) {
+					// creating the closure from this variant throws
+					continue;
+				}
+				if (UNEXPECTED(!requireArray(applied.raw()))) return zv::Val();
+				zval *appliedParameters = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 0);
+				zval *appliedIsVariadic = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 1);
+				zval *appliedReturnType = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 2);
+				zval *appliedTemplateTypeMap = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 3);
+				zval *appliedBoundParameterNames = zend_hash_index_find(Z_ARRVAL_P(applied.raw()), 4);
+				if (UNEXPECTED(appliedParameters == NULL || appliedIsVariadic == NULL || appliedReturnType == NULL || appliedTemplateTypeMap == NULL || appliedBoundParameterNames == NULL)) {
+					pt_throw_should_not_happen();
+					return zv::Val();
+				}
+				parameters = zv::Val::copyOf(zv::Ref(appliedParameters));
+				isVariadic = zend_is_true(appliedIsVariadic);
+				returnType = zv::Val::copyOf(zv::Ref(appliedReturnType));
+				templateTypeMap = zv::Val::copyOf(zv::Ref(appliedTemplateTypeMap));
+				static pt_method_site magicNamesSite;
+				zv::Args magicNamesArgv{function, partialApplicationArgs};
+				IETR_VAL(magicMethodParameterNames, pt_call_static_cached(magicNamesSite, PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS, PT_LC("getmagicmethodparameternames"), 2, magicNamesArgv));
+				if (Z_TYPE_P(magicMethodParameterNames.raw()) == IS_NULL) {
+					// creating the closure of a method called through __call() throws
+					continue;
+				}
+				IETR_VAL(renamedForMagicMethod, renameParameters(parameters.raw(), magicMethodParameterNames.raw()));
+				parameters = std::move(renamedForMagicMethod);
+				if (Z_TYPE_P(variantOrigin.raw()) == IS_OBJECT) {
+					IETR_VAL(withBoundNames, pt_type_call(Z_OBJ_P(variantOrigin.raw()), PT_LC("withboundparameternames"), 1, appliedBoundParameterNames));
+					variantOrigin = std::move(withBoundNames);
+				}
+			}
+
+			zv::Arr templateTags = zv::Arr::create(0);
+			{
+				IETR_VAL(templateTypes, callOn(templateTypeMap.raw(), mGetTypes));
+				if (UNEXPECTED(!requireArray(templateTypes.raw()))) return zv::Val();
+				for (zv::ArrayEntry entry : zv::ArrRef(templateTypes.raw())) {
+					zval *templateType = entry.value().raw();
+					if (!isA(templateType, templateTypeCe)) {
+						continue;
+					}
+					IETR_VAL(tagName, callOn(templateType, mGetName));
+					IETR_VAL(name, callOn(templateType, mGetName));
+					IETR_VAL(bound, callOn(templateType, mGetBound));
+					IETR_VAL(defaultType, callOn(templateType, mGetDefault));
+					IETR_VAL(variance, callOn(templateType, mGetVariance));
+					zv::Args tagArgs{name.raw(), bound.raw(), defaultType.raw(), variance.raw()};
+					IETR_VAL(tag, pt_type_new(PT_CLASS_TEMPLATE_TAG, 4, tagArgs));
+					if (UNEXPECTED(!arrayKeyUpdate(templateTags, tagName.raw(), std::move(tag)))) return zv::Val();
+				}
 			}
 			zv::Val assertions;
 			if (hasFunction) {
@@ -2494,8 +2600,6 @@ public:
 			// like @return ($value is int ? true : false) on is_int(),
 			// also becomes a type predicate of the resulting Closure
 			IETR_VAL(predicateAssertions, withConditionalReturnPredicate(assertions.raw(), variant));
-			IETR_VAL(isVariadicHold, callOn(variant, mIsVariadic));
-			IETR_VAL(templateTypeMap, callOn(variant, mGetTemplateTypeMap));
 			IETR_VAL(resolvedTemplateTypeMap, callOn(variant, mGetResolvedTemplateTypeMap));
 			zv::Val callSiteVarianceMap = extendedAcceptor
 				? callOn(variant, mGetCallSiteVarianceMap)
@@ -2506,7 +2610,7 @@ public:
 				&closureType,
 				parameters.raw(),
 				returnType.raw(),
-				zend_is_true(isVariadicHold.raw()),
+				isVariadic,
 				templateTypeMap.raw(),
 				resolvedTemplateTypeMap.raw(),
 				callSiteVarianceMap.raw(),
@@ -2518,9 +2622,15 @@ public:
 				acceptsNamedArguments.raw(),
 				mustUseReturnValue.raw(),
 				predicateAssertions.raw(),
-				isStaticClosure.raw()
+				isStaticClosure.raw(),
+				NULL,
+				variantOrigin.raw()
 			))) return zv::Val();
 			closureTypes.push(zv::Val::adopt(closureType));
+		}
+
+		if (partialApplication && zend_hash_num_elements(closureTypes.table()) == 0) {
+			return newObjectTypeLiteral(PT_LC("Closure"));
 		}
 
 		return unionOf(closureTypes);
@@ -3472,20 +3582,20 @@ zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval
 	return callResolverMethod(site, resolver, PT_LC("getfunctiontype"), 4, argv);
 }
 
-zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted)
+zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted, zval *boundArgTypes)
 {
-	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getFirstClassCallableType(expr, context, nativeTypesPromoted);
+	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver(Z_OBJ_P(resolver)).getFirstClassCallableType(expr, context, nativeTypesPromoted, boundArgTypes);
 	static pt_method_site site;
-	zv::Args argv{expr, context, nativeTypesPromoted};
-	return callResolverMethod(site, resolver, PT_LC("getfirstclasscallabletype"), 3, argv);
+	zv::Args argv{expr, context, nativeTypesPromoted, boundArgTypes};
+	return callResolverMethod(site, resolver, PT_LC("getfirstclasscallabletype"), 4, argv);
 }
 
-zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted)
+zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes, zval *origin)
 {
-	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted);
+	if (EXPECTED(isNativeResolver(resolver))) return InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin);
 	static pt_method_site site;
-	zv::Args argv{function, variants, nativeTypesPromoted};
-	return callResolverMethod(site, resolver, PT_LC("createfirstclasscallable"), 3, argv);
+	zv::Args argv{function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin};
+	return callResolverMethod(site, resolver, PT_LC("createfirstclasscallable"), 6, argv);
 }
 
 zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted)
@@ -3693,17 +3803,44 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 	});
 
 	cls.method(sigs::getFirstClassCallableType, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expr, *context;
+		zval *expr, *context, *boundArgTypes = NULL;
 		bool nativeTypesPromoted;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Bool>(execute_data, expr, context, nativeTypesPromoted)) RETURN_THROWS();
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Bool, zp::Opt<zp::ArrOrNull>>(execute_data, expr, context, nativeTypesPromoted, boundArgTypes)) RETURN_THROWS();
 		if (UNEXPECTED(!ietrArgClass(expr, 1, PT_CLASS_CALL_LIKE, "PhpParser\\Node\\Expr\\CallLike") || !ietrArgContext(context, 2))) RETURN_THROWS();
-		PT_RETURN_VAL(IETR_THIS.getFirstClassCallableType(expr, context, nativeTypesPromoted));
+		zval nullBoundArgTypes;
+		if (boundArgTypes == NULL) {
+			ZVAL_NULL(&nullBoundArgTypes);
+			boundArgTypes = &nullBoundArgTypes;
+		}
+		PT_RETURN_VAL(IETR_THIS.getFirstClassCallableType(expr, context, nativeTypesPromoted, boundArgTypes));
 	});
 
 	cls.method(sigs::createFirstClassCallable, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *function, *variants;
+		zval *function, *variants, *partialApplicationArgs = NULL, *boundArgTypes = NULL, *origin = NULL;
 		bool nativeTypesPromoted;
-		if (!zp::parse<zp::ObjOrNull, zp::Arr, zp::Bool>(execute_data, function, variants, nativeTypesPromoted)) RETURN_THROWS();
+		if (!zp::parse<zp::ObjOrNull, zp::Arr, zp::Bool, zp::Opt<zp::ArrOrNull>, zp::Opt<zp::Arr>, zp::Opt<zp::ObjOrNull>>(execute_data, function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin)) RETURN_THROWS();
+		zval nullOrigin;
+		if (origin == NULL) {
+			ZVAL_NULL(&nullOrigin);
+			origin = &nullOrigin;
+		} else if (Z_TYPE_P(origin) == IS_OBJECT) {
+			zend_class_entry *closureOriginCe = pt_class(PT_CLASS_CLOSURE_ORIGIN);
+			if (UNEXPECTED(closureOriginCe == NULL)) RETURN_THROWS();
+			if (UNEXPECTED(!instanceof_function(Z_OBJCE_P(origin), closureOriginCe))) {
+				zend_argument_type_error(6, "must be of type ?PHPStan\\Type\\ClosureOrigin, %s given", zend_zval_value_name(origin));
+				RETURN_THROWS();
+			}
+		}
+		zval nullArgs;
+		if (partialApplicationArgs == NULL) {
+			ZVAL_NULL(&nullArgs);
+			partialApplicationArgs = &nullArgs;
+		}
+		zval emptyBoundArgTypes;
+		if (boundArgTypes == NULL) {
+			ZVAL_EMPTY_ARRAY(&emptyBoundArgTypes);
+			boundArgTypes = &emptyBoundArgTypes;
+		}
 		zval nullFunction;
 		if (function == NULL) {
 			ZVAL_NULL(&nullFunction);
@@ -3717,7 +3854,7 @@ PT_MINIT_REGISTRATION(pt_register_initializer_expr_type_resolver)
 				RETURN_THROWS();
 			}
 		}
-		PT_RETURN_VAL(InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted));
+		PT_RETURN_VAL(InitializerExprTypeResolver::createFirstClassCallable(function, variants, nativeTypesPromoted, partialApplicationArgs, boundArgTypes, origin));
 	});
 
 	cls.method(sigs::getBitwiseAndType, IETR_OPERATOR_GLUE(self.getOperatorType(IETR_BITWISE_AND, left, right, getTypeCallback)));

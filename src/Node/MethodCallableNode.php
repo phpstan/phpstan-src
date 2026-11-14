@@ -3,8 +3,11 @@
 namespace PHPStan\Node;
 
 use Override;
+use PhpParser\Node\Arg;
+use PhpParser\Node\ArgPlaceholder;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
+use PhpParser\Node\VariadicPlaceholder;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
@@ -43,6 +46,16 @@ final class MethodCallableNode extends Expr implements VirtualNode
 	public function getOriginalNode(): Expr\MethodCall
 	{
 		return $this->originalNode;
+	}
+
+	/**
+	 * The arguments of the call: bound arguments, `?` placeholders and the `...` placeholder.
+	 *
+	 * @return array<Arg|ArgPlaceholder|VariadicPlaceholder>
+	 */
+	public function getArgs(): array
+	{
+		return $this->originalNode->getRawArgs();
 	}
 
 	#[Override]

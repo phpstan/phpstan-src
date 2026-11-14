@@ -252,7 +252,6 @@ pt_property_site pt_fch_param_by_ref_site;
 pt_property_site pt_fch_param_var_site;
 pt_property_site pt_fch_variable_name_site;
 pt_property_site pt_fch_string_value_site;
-pt_property_site pt_fch_inner_name_site;
 pt_property_site pt_fch_attributes_site;
 pt_property_site pt_fch_closure_uses_site;
 pt_property_site pt_fch_use_by_ref_site;
@@ -301,12 +300,6 @@ zv::Val callArgs(zval *call)
 	zval *args = pt_call_like_args(Z_OBJ_P(call), hold);
 	if (UNEXPECTED(args == NULL)) return zv::Val();
 	return hold.isUndef() ? zv::Val::copyOf(zv::Ref(args)) : std::move(hold);
-}
-
-/* $call->isFirstClassCallable(); false = pending exception */
-[[nodiscard]] inline bool isFirstClassCallable(zval *call, bool &out)
-{
-	return pt_call_like_is_first_class_callable(Z_OBJ_P(call), out);
 }
 
 /* $call->isPartialFunctionApplication(); false = pending exception */
@@ -1288,7 +1281,13 @@ public:
 			dependencies = pt_dependencies_merge({nameDependencies, argsDependencies, ownDependencies.raw()});
 			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		}
-		return pt_expression_result_finalize(preliminaryResult.raw(), scope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
+		zv::Val result = pt_expression_result_finalize(preliminaryResult.raw(), scope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
+		if (UNEXPECTED(result.isUndef()) || nameResult.isNull() || calleeNameType.isNull()) return result;
+
+		/* ClosureOriginCallReplay::replay($nodeScopeResolver, $this->expressionResultFactory, $expr, $nameResult, $nameType, $scopeBeforeArgs, $storage, $result) */
+		static pt_method_site replaySite;
+		zv::Args replayArgv{nodeScopeResolver, slot(slots::expressionResultFactory), expr, nameResult.raw(), calleeNameType.raw(), scopeBeforeArgs, storage, result.raw()};
+		return pt_call_static_cached(replaySite, PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY, PT_LC("replay"), 8, replayArgv);
 	}
 
 	/* the handler entry (Engine.h) */
@@ -2102,14 +2101,6 @@ private:
 				if (UNEXPECTED(value == NULL)) return zv::Val();
 				functionName = pt_name_node_new(PT_CLASS_NAME, value);
 				if (UNEXPECTED(functionName.isUndef())) return zv::Val();
-			} else if (isA(name, PT_CLASS_FUNC_CALL)) {
-				zval *innerName = nodeProp(pt_fch_inner_name_site, name, PT_LC("name"));
-				if (UNEXPECTED(innerName == NULL)) return zv::Val();
-				if (isA(innerName, PT_CLASS_NAME)) {
-					bool firstClassCallable;
-					if (UNEXPECTED(!isFirstClassCallable(name, firstClassCallable))) return zv::Val();
-					if (firstClassCallable) functionName = zv::Val::copyOf(zv::Ref(innerName));
-				}
 			}
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 

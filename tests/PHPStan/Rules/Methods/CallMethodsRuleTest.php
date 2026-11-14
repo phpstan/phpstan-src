@@ -232,6 +232,10 @@ class CallMethodsRuleTest extends RuleTestCase
 				113,
 			],
 			[
+				'Method Closure::__invoke() invoked with 3 parameters, 0 required.',
+				139,
+			],
+			[
 				'Parameter #1 $bar of method Test\ClassWithNullableProperty::doBar() is passed by reference, so it expects variables only.',
 				167,
 			],
@@ -3334,7 +3338,7 @@ class CallMethodsRuleTest extends RuleTestCase
 				10,
 			],
 			[
-				'Missing parameter $name (array) in call to method XSLTProcessor::setParameter().',
+				'Missing parameter $name (array|string) in call to method XSLTProcessor::setParameter().',
 				10,
 			],
 			[
@@ -4655,6 +4659,20 @@ class CallMethodsRuleTest extends RuleTestCase
 			[
 				'Call to an undefined method InvalidArgumentException::nonExistentMethod().',
 				26,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = true;
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/../Functions/data/unknown-default-value.php'], [
+			[
+				'Argument #3 ($dayOfMonth) must be passed explicitly, because the default value is not known.',
+				18,
 			],
 		]);
 	}

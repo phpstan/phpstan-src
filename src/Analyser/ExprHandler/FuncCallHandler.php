@@ -22,6 +22,7 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
+use PHPStan\Analyser\ExprHandler\Helper\ClosureOriginCallReplay;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\DynamicReturnTypeStoragePrimer;
@@ -600,7 +601,12 @@ final class FuncCallHandler implements ExprHandler
 			$argsResult->getDependencies(),
 			$this->getDependencies($beforeScope, $functionReflection, $nameResult, $preliminaryResult),
 		);
-		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
+		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
+		if ($nameResult === null) {
+			return $result;
+		}
+
+		return ClosureOriginCallReplay::replay($nodeScopeResolver, $this->expressionResultFactory, $expr, $nameResult, $nameType, $scopeBeforeArgs, $storage, $result);
 	}
 
 	/**
@@ -863,12 +869,6 @@ final class FuncCallHandler implements ExprHandler
 				/** @var non-empty-string $name */
 				$name = $expr->name->value;
 				$functionName = new Name($name);
-			} elseif (
-				$expr->name instanceof FuncCall
-				&& $expr->name->name instanceof Name
-				&& $expr->name->isFirstClassCallable()
-			) {
-				$functionName = $expr->name->name;
 			}
 
 			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $expr);

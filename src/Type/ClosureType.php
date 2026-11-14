@@ -57,6 +57,7 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function count;
+use function in_array;
 
 /** @api */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ClosureType.cpp')]
@@ -111,6 +112,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	 * @param InvalidateExprNode[] $invalidateExpressions
 	 * @param string[] $usedVariables
 	 * @param array<string, Type> $byRefUseTypes per by-ref use of a closure whose effects apply where it is invoked, the marker of its site (see ClosureSignatureInference)
+	 * @param ClosureOrigin|null $origin the callee of a first-class callable or a partial function application, whose call a call of the closure replays
 	 */
 	public function __construct(
 		?array $parameters = null,
@@ -129,6 +131,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		?Assertions $assertions = null,
 		?TrinaryLogic $isStatic = null,
 		private array $byRefUseTypes = [],
+		private ?ClosureOrigin $origin = null,
 	)
 	{
 		if ($acceptsNamedArguments === null) {
@@ -267,12 +270,19 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			if (!$variant instanceof CallableParametersAcceptor) {
 				return IsSuperTypeOfResult::createNo([]);
 			}
-			return CallableTypeHelper::isParametersAcceptorSuperTypeOf(
+			$result = CallableTypeHelper::isParametersAcceptorSuperTypeOf(
 				$this,
 				$variant,
 				$treatMixedAsAny,
 				$strictTypes,
 			);
+			if (!$treatMixedAsAny && $this->origin !== null && !self::hasEqualOrigins($this, $type)) {
+				// a closure created from another callee, or from an unknown one,
+				// is not known to be created from this one
+				return $result->and(IsSuperTypeOfResult::createMaybe());
+			}
+
+			return $result;
 		}
 
 		if ($type->getObjectClassNames() === [Closure::class]) {
@@ -291,7 +301,17 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return $this->describe(VerbosityLevel::precise()) === $type->describe(VerbosityLevel::precise())
 			&& $this->isPure()->equals($type->isPure())
 			&& $this->isStatic->equals($type->isStatic)
-			&& $this->hasEqualUnresolvedSignature($type);
+			&& $this->hasEqualUnresolvedSignature($type)
+			&& self::hasEqualOrigins($this, $type);
+	}
+
+	private static function hasEqualOrigins(self $a, self $b): bool
+	{
+		if ($a->origin === null || $b->origin === null) {
+			return $a->origin === $b->origin;
+		}
+
+		return $a->origin->equals($b->origin);
 	}
 
 	/**
@@ -350,6 +370,14 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 				}
 
 				return $prefix . $this->describeCallable();
+			},
+			function (): string {
+				$description = $this->describe(VerbosityLevel::precise());
+				if ($this->origin === null) {
+					return $description;
+				}
+
+				return $description . ' from ' . $this->origin->describe();
 			},
 		);
 	}
@@ -480,10 +508,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 	public function getUnresolvedMethodPrototype(string $methodName, ClassMemberAccessAnswerer $scope): UnresolvedMethodPrototypeReflection
 	{
-		if ($methodName === 'call') {
+		if (in_array($methodName, ['call', '__invoke'], true)) {
 			return new ClosureCallUnresolvedMethodPrototypeReflection(
 				$this->objectType->getUnresolvedMethodPrototype($methodName, $scope),
 				$this,
+				$methodName === 'call',
 			);
 		}
 
@@ -569,6 +598,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function getByRefUseTypes(): array
 	{
 		return $this->byRefUseTypes;
+	}
+
+	public function getOrigin(): ?ClosureOrigin
+	{
+		return $this->origin;
 	}
 
 	/**
@@ -836,6 +870,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->assertions->mapTypes($cb),
 			$this->isStatic,
 			$this->byRefUseTypes,
+			$this->origin?->traverse($cb),
 		);
 	}
 
@@ -890,6 +925,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 			$this->assertions,
 			$this->isStatic,
 			$this->byRefUseTypes,
+			$this->origin,
 		);
 	}
 

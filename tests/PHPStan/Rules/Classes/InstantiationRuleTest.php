@@ -465,15 +465,11 @@ class InstantiationRuleTest extends RuleTestCase
 				21,
 			],
 			[
-				'Missing parameter $end (int|TEnd of DateTimeInterface) in call to DatePeriod constructor.',
-				18,
-			],
-			[
 				'Unknown parameter $isostr in call to DatePeriod constructor.',
 				25,
 			],
 			[
-				'Missing parameter $start (string) in call to DatePeriod constructor.',
+				'Missing parameter $start (string|TDate of DateTimeInterface) in call to DatePeriod constructor.',
 				24,
 			],
 			[
@@ -824,6 +820,17 @@ class InstantiationRuleTest extends RuleTestCase
 		$this->checkExplicitMixed = true;
 		$this->checkImplicitMixed = true;
 		$this->analyse([__DIR__ . '/data/bug-14002-2.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->analyse([__DIR__ . '/../Functions/data/unknown-default-value.php'], [
+			[
+				'Argument #2 ($interval) must be passed explicitly, because the default value is not known.',
+				19,
+			],
+		]);
 	}
 
 }

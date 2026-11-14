@@ -28,6 +28,7 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 	public function __construct(
 		private ExtendedMethodReflection $nativeMethodReflection,
 		private ClosureType $closureType,
+		private bool $takesNewThis = true,
 	)
 	{
 	}
@@ -70,16 +71,16 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 	public function getVariants(): array
 	{
 		$parameters = $this->closureType->getParameters();
-		$newThis = new NativeParameterReflection(
-			'newThis',
-			optional: false,
-			type: new ObjectWithoutClassType(),
-			passedByReference: PassedByReference::createNo(),
-			variadic: false,
-			defaultValue: null,
-		);
-
-		array_unshift($parameters, $newThis);
+		if ($this->takesNewThis) {
+			array_unshift($parameters, new NativeParameterReflection(
+				'newThis',
+				optional: false,
+				type: new ObjectWithoutClassType(),
+				passedByReference: PassedByReference::createNo(),
+				variadic: false,
+				defaultValue: null,
+			));
+		}
 
 		return [
 			new ExtendedFunctionVariant(

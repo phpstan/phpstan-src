@@ -49,6 +49,7 @@ class CallCallablesRuleTest extends RuleTestCase
 				checkMissingTypehints: true,
 			),
 			$ruleLevelHelper,
+			$reflectionProvider,
 			reportMaybes: true,
 		);
 	}
@@ -200,6 +201,25 @@ class CallCallablesRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testNamedArgumentsOfMultiVariantFirstClassCallable(): void
+	{
+		$this->analyse([__DIR__ . '/data/callables-named-arguments-multi-variant.php'], [
+			[
+				'Callable (Closure(): int)|(Closure(int, int): int) invoked with 1 parameter, 2 required.',
+				7,
+			],
+			[
+				'Argument #2 ($close) must be passed explicitly, because the default value is not known.',
+				11,
+			],
+			[
+				'Callable (Closure<TV of mixed, TK of mixed>(array<(int&TK)|(string&TK), TV>, array<(int&TK)|(string&TK), TV>, array, array|callable(mixed, mixed): int, array|callable(mixed, mixed): int ...): array<(int&TK)|(string&TK), TV>)|(Closure<TV of mixed, TK of mixed>(array<(int&TK)|(string&TK), TV>, array<(int&TK)|(string&TK), TV>, callable(TV, TV): int): array<(int&TK)|(string&TK), TV>) invoked with 1 parameter, at least 3 required.',
+				14,
+			],
+		]);
+	}
+
 	public static function dataBug3566(): array
 	{
 		return [
@@ -283,6 +303,26 @@ class CallCallablesRuleTest extends RuleTestCase
 			[
 				'Unknown parameter $str in call to callable (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)).',
 				54,
+			],
+			[
+				'Missing parameter $b (string) in call to closure.',
+				69,
+			],
+			[
+				'Argument for parameter $a has already been passed.',
+				70,
+			],
+			[
+				'Parameter $a of closure expects int, string given.',
+				72,
+			],
+			[
+				'Parameter $b of closure expects string, int given.',
+				72,
+			],
+			[
+				'Parameter #1 $array of closure is passed by reference, so it expects variables only.',
+				76,
 			],
 		]);
 	}
@@ -494,6 +534,69 @@ class CallCallablesRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
+	public function testPartialFunctionApplicationClosureCalls(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-closure-calls.php'], [
+			[
+				'Missing parameter $d0 (bool) in call to closure.',
+				24,
+			],
+			[
+				'Missing parameter $d1 (bool) in call to closure.',
+				24,
+			],
+			[
+				'Unknown parameter $d in call to closure.',
+				24,
+			],
+			[
+				'Parameter $rest0 of closure expects int, string given.',
+				29,
+			],
+			[
+				'Closure invoked with 1 parameter, 2 required.',
+				33,
+			],
+			[
+				'Parameter #2 $a of closure expects int, float given.',
+				39,
+			],
+			[
+				'Argument for parameter $a has already been bound by the partial function application.',
+				46,
+			],
+			[
+				'Argument for parameter $c has already been bound by the partial function application.',
+				48,
+			],
+			[
+				'Argument for parameter $x has already been bound by the partial function application.',
+				52,
+			],
+			[
+				'Unknown parameter $a in call to closure.',
+				56,
+			],
+			[
+				'Argument for parameter $a has already been bound by the partial function application.',
+				60,
+			],
+			[
+				'Missing parameter $arguments0 (string) in call to closure.',
+				93,
+			],
+			[
+				'Unknown parameter $x in call to closure.',
+				93,
+			],
+			[
+				'Parameter #1 $a of closure is passed by reference, so it expects variables only.',
+				105,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
 	public function testBug15235(): void
 	{
 		$this->analyse([__DIR__ . '/../Methods/data/bug-15235.php'], []);
@@ -511,6 +614,21 @@ class CallCallablesRuleTest extends RuleTestCase
 			[
 				'Parameter #1 of callable callable(Bug11935\Inv<int>): void expects Bug11935\Inv<int>, Bug11935\Inv<mixed> given.',
 				43,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->analyse([__DIR__ . '/data/unknown-default-value.php'], [
+			[
+				'Argument #2 ($filter_value) must be passed explicitly, because the default value is not known.',
+				27,
+			],
+			[
+				'Argument #1 ($min) must be passed explicitly, because the default value is not known.',
+				28,
 			],
 		]);
 	}

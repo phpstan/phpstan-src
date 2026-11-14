@@ -210,6 +210,7 @@ final class RuleLevelHelper
 					$acceptedType->acceptsNamedArguments(),
 					$acceptedType->mustUseReturnValue(),
 					isStatic: $acceptedType->isStaticClosure(),
+					origin: $acceptedType->getOrigin(),
 				);
 			}
 

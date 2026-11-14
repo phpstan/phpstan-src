@@ -18,9 +18,9 @@ enum WordEnum: string
 }
 
 function (): void {
-	assertType('Closure(int): Bug11421Types\NumberEnum', NumberEnum::from(...));
-	assertNativeType('Closure(int): mixed', NumberEnum::from(...));
-	assertType('Closure(int): (Bug11421Types\NumberEnum|null)', NumberEnum::tryFrom(...));
-	assertType('Closure(string): Bug11421Types\WordEnum', WordEnum::from(...));
-	assertType('Closure(string): (Bug11421Types\WordEnum|null)', WordEnum::tryFrom(...));
+	assertType('static-Closure(int): Bug11421Types\NumberEnum', NumberEnum::from(...));
+	assertNativeType('static-Closure(int): mixed', NumberEnum::from(...));
+	assertType('static-Closure(int): (Bug11421Types\NumberEnum|null)', NumberEnum::tryFrom(...));
+	assertType('static-Closure(string): Bug11421Types\WordEnum', WordEnum::from(...));
+	assertType('static-Closure(string): (Bug11421Types\WordEnum|null)', WordEnum::tryFrom(...));
 };

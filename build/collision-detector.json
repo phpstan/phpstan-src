@@ -29,6 +29,13 @@
 		"../tests/PHPStan/Rules/DeadCode/data/partial-function-application-bound-args.php",
 		"../tests/PHPStan/Rules/Exceptions/data/dead-catch-partial-function-application.php",
 		"../tests/PHPStan/Rules/Functions/data/partial-function-application-bound-args.php",
-		"../tests/PHPStan/Rules/Pure/data/partial-function-application-pure.php"
+		"../tests/PHPStan/Rules/Pure/data/partial-function-application-pure.php",
+		"../tests/PHPStan/Analyser/nsrt/partial-function-application-signature.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-closure-calls.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-arguments.php",
+		"../tests/PHPStan/Rules/Methods/data/partial-function-application-method-arguments.php",
+		"../tests/PHPStan/Rules/Functions/data/partial-function-application-callbacks.php",
+		"../tests/PHPStan/Analyser/nsrt/partial-function-application-replay.php",
+		"../tests/PHPStan/Rules/Classes/data/instantiation-partial-function-application.php"
     ]
 }

@@ -5,6 +5,7 @@ namespace PhpParser\Node\Expr;
 use PhpParser\Node;
 use PhpParser\NodeAbstract;
 use PhpParser\Node\Arg;
+use PhpParser\Node\ArgPlaceholder;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\VariadicPlaceholder;
@@ -13,38 +14,38 @@ use PhpParser\Node\FunctionLike;
 abstract class CallLike extends Expr {
 	/**
 	 * Return raw arguments, which may be actual Args, or VariadicPlaceholders for first-class
-	 * callables.
+	 * callables, or ArgPlaceholders for partial function application.
 	 *
-	 * @return list<Arg|VariadicPlaceholder>
+	 * @return list<Arg|VariadicPlaceholder|ArgPlaceholder>
 	 */
 	abstract public function getRawArgs(): array;
 	/**
-	 * Assert that this is not a first-class callable and return only ordinary Args.
+	 * Assert that this is not a partial function application and return only ordinary Args.
 	 *
 	 * @return list<Arg>
 	 */
 	public function getArgs(): array {
-		assert(!$this->isFirstClassCallable());
+		assert(!$this->isPartialFunctionApplication());
 		return $this->getRawArgs();
 	}
 }
 
 class FuncCall extends CallLike {
-	/** @var list<Node\Arg|Node\VariadicPlaceholder> Arguments */
+	/** @var list<Node\Arg|Node\VariadicPlaceholder|Node\ArgPlaceholder> Arguments */
 	public array $args;
 
 	/**
 	 * Constructs a function call node.
 	 *
 	 * @param Node\Name|Expr $name Function name
-	 * @param list<Node\Arg|Node\VariadicPlaceholder> $args Arguments
+	 * @param list<Node\Arg|Node\VariadicPlaceholder|Node\ArgPlaceholder> $args Arguments
 	 * @param array<string, mixed> $attributes Additional attributes
 	 */
 	public function __construct(Node $name, array $args = [], array $attributes = []) {}
 }
 
 class MethodCall extends CallLike {
-	/** @var list<Node\Arg|Node\VariadicPlaceholder> Arguments */
+	/** @var list<Node\Arg|Node\VariadicPlaceholder|Node\ArgPlaceholder> Arguments */
 	public array $args;
 
 	/**
@@ -52,28 +53,28 @@ class MethodCall extends CallLike {
 	 *
 	 * @param Expr $var Variable holding object
 	 * @param string|Identifier|Expr $name Method name
-	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param list<Arg|VariadicPlaceholder|ArgPlaceholder> $args Arguments
 	 * @param array<string, mixed> $attributes Additional attributes
 	 */
 	public function __construct(Expr $var, $name, array $args = [], array $attributes = []) {}
 }
 
 class New_ extends CallLike {
-	/** @var list<Arg|VariadicPlaceholder> Arguments */
+	/** @var list<Arg|VariadicPlaceholder|ArgPlaceholder> Arguments */
 	public array $args;
 
 	/**
 	 * Constructs a function call node.
 	 *
 	 * @param Node\Name|Expr|Node\Stmt\Class_ $class Class name (or class node for anonymous classes)
-	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param list<Arg|VariadicPlaceholder|ArgPlaceholder> $args Arguments
 	 * @param array<string, mixed> $attributes Additional attributes
 	 */
 	public function __construct(Node $class, array $args = [], array $attributes = []) {}
 }
 
 class NullsafeMethodCall extends CallLike {
-	/** @var list<Arg|VariadicPlaceholder> Arguments */
+	/** @var list<Arg|VariadicPlaceholder|ArgPlaceholder> Arguments */
 	public array $args;
 
 	/**
@@ -81,14 +82,14 @@ class NullsafeMethodCall extends CallLike {
 	 *
 	 * @param Expr $var Variable holding object
 	 * @param string|Identifier|Expr $name Method name
-	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param list<Arg|VariadicPlaceholder|ArgPlaceholder> $args Arguments
 	 * @param array<string, mixed> $attributes Additional attributes
 	 */
 	public function __construct(Expr $var, $name, array $args = [], array $attributes = []) {}
 }
 
 class StaticCall extends CallLike {
-	/** @var list<Arg|VariadicPlaceholder> Arguments */
+	/** @var list<Arg|VariadicPlaceholder|ArgPlaceholder> Arguments */
 	public array $args;
 
 	/**
@@ -96,7 +97,7 @@ class StaticCall extends CallLike {
 	 *
 	 * @param Node\Name|Expr $class Class name
 	 * @param string|Identifier|Expr $name Method name
-	 * @param list<Arg|VariadicPlaceholder> $args Arguments
+	 * @param list<Arg|VariadicPlaceholder|ArgPlaceholder> $args Arguments
 	 * @param array<string, mixed> $attributes Additional attributes
 	 */
 	public function __construct(Node $class, $name, array $args = [], array $attributes = []) {}

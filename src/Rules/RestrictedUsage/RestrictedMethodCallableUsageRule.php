@@ -54,7 +54,9 @@ final class RestrictedMethodCallableUsageRule implements Rule
 
 		$methodName = $node->getName()->name;
 		$methodCalledOnType = $scope->getType($node->getVar());
-		$referencedClasses = TypeCombinator::intersect($methodCalledOnType, new ObjectWithoutClassType())->getObjectClassNames();
+		// the intersection only removes what is not an object, such as the null of a nullable type
+		$objectType = $methodCalledOnType->isObject()->yes() ? $methodCalledOnType : TypeCombinator::intersect($methodCalledOnType, new ObjectWithoutClassType());
+		$referencedClasses = $objectType->getObjectClassNames();
 
 		$errors = [];
 

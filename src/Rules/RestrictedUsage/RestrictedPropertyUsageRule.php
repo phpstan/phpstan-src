@@ -53,7 +53,9 @@ final class RestrictedPropertyUsageRule implements Rule
 
 		$propertyName = $node->name->name;
 		$propertyCalledOnType = $scope->getType($node->var);
-		$referencedClasses = TypeCombinator::intersect($propertyCalledOnType, new ObjectWithoutClassType())->getObjectClassNames();
+		// the intersection only removes what is not an object, such as the null of a nullable type
+		$objectType = $propertyCalledOnType->isObject()->yes() ? $propertyCalledOnType : TypeCombinator::intersect($propertyCalledOnType, new ObjectWithoutClassType());
+		$referencedClasses = $objectType->getObjectClassNames();
 
 		$errors = [];
 

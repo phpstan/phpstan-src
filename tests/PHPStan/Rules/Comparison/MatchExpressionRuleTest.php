@@ -503,6 +503,18 @@ class MatchExpressionRuleTest extends RuleTestCase
 	}
 
 	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15654(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15654.php'], [
+			[
+				'Match arm comparison between \'b\' and \'b\' is always true.',
+				20,
+				'Remove remaining cases below this one and this error will disappear too.',
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14412(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-14412.php'], []);

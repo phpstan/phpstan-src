@@ -830,6 +830,322 @@ zv::Val argResultsDependencies(HashTable *argResults)
 
 /* }}} */
 
+/* {{{ the callee's own template types in a gathered closure type */
+
+/* $type->getName() of a template type (a string); UNDEF = pending exception */
+zv::Val templateTypeName(zval *type)
+{
+	zv::Val name = pt_type_call(Z_OBJ_P(type), PT_LC("getname"), 0, NULL);
+	if (UNEXPECTED(name.isUndef())) return zv::Val();
+	if (UNEXPECTED(!zv::Ref(name.raw()).isString())) {
+		zend_type_error("phpstan_turbo: getName() must return string");
+		return zv::Val();
+	}
+	return name;
+}
+
+/* Mirrors ArgumentsHandler::isCalleeTemplateType() of a template type; false
+ * = pending exception */
+[[nodiscard]] bool isCalleeTemplateType(zval *type, zval *calleeTemplateTypeMap, bool &out)
+{
+	out = false;
+	zv::Val name = templateTypeName(type);
+	if (UNEXPECTED(name.isUndef())) return false;
+	zv::Val calleeTemplateType = pt_template_type_map_get_type(calleeTemplateTypeMap, Z_STR_P(name.raw()));
+	if (UNEXPECTED(calleeTemplateType.isUndef())) return false;
+	bool calleeIsTemplate;
+	if (UNEXPECTED(!pt_type_instanceof(calleeTemplateType.raw(), PT_CLASS_TEMPLATE_TYPE, calleeIsTemplate))) return false;
+	if (!calleeIsTemplate) return true;
+	zv::Val calleeScope = pt_type_call(Z_OBJ_P(calleeTemplateType.raw()), PT_LC("getscope"), 0, NULL);
+	if (UNEXPECTED(calleeScope.isUndef())) return false;
+	zv::Val scope = pt_type_call(Z_OBJ_P(type), PT_LC("getscope"), 0, NULL);
+	if (UNEXPECTED(scope.isUndef())) return false;
+	return pt_template_type_scope_equals(calleeScope.raw(), scope.raw(), out);
+}
+
+/* Mirrors ArgumentsHandler::referencesCalleeTemplateTypes(); false = pending
+ * exception */
+[[nodiscard]] bool referencesCalleeTemplateTypes(zval *type, zval *calleeTemplateTypeMap, bool &out)
+{
+	out = false;
+	zv::Val hasTemplate = pt_type_op(Z_OBJ_P(type), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
+	if (UNEXPECTED(hasTemplate.isUndef())) return false;
+	if (!zend_is_true(hasTemplate.raw())) return true;
+	zval *invariant = pt_template_type_variance_singleton(PT_TEMPLATE_TYPE_VARIANCE_INVARIANT);
+	if (UNEXPECTED(invariant == NULL)) return false;
+	zv::Val references = pt_type_op(Z_OBJ_P(type), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, invariant);
+	if (UNEXPECTED(references.isUndef())) return false;
+	if (UNEXPECTED(!zv::Ref(references.raw()).isArray())) {
+		zend_type_error("phpstan_turbo: getReferencedTemplateTypes() must return array");
+		return false;
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(references.raw())) {
+		zv::Ref reference = entry.value().deref();
+		if (UNEXPECTED(!reference.isObject())) {
+			zend_type_error("phpstan_turbo: a template type reference must be an object");
+			return false;
+		}
+		zv::Val referenceType, positionVariance;
+		if (UNEXPECTED(!pt_template_type_reference_parts(reference.raw(), referenceType, positionVariance))) return false;
+		bool isCallee;
+		if (UNEXPECTED(!isCalleeTemplateType(referenceType.raw(), calleeTemplateTypeMap, isCallee))) return false;
+		if (isCallee) {
+			out = true;
+			return true;
+		}
+	}
+	return true;
+}
+
+/* the traversal callback of ArgumentsHandler::resolveCalleeTemplateTypes() -
+ * state0: the callee's template type map, state1: the resolved one */
+void resolveCalleeTemplateTypesBody(zval *calleeTemplateTypeMap, zval *resolvedTemplateTypeMap, uint32_t argc, zval *argv, zval *return_value)
+{
+	if (UNEXPECTED(argc < 2 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("ArgumentsHandler::resolveCalleeTemplateTypes() traversal: expected (Type $type, callable $traverse)");
+		return;
+	}
+	zval *type = &argv[0];
+	bool isCallee;
+	if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isCallee))) return;
+	if (isCallee && UNEXPECTED(!isCalleeTemplateType(type, calleeTemplateTypeMap, isCallee))) return;
+	if (!isCallee) {
+		(void) pt_type_traverser_traverse(return_value, &argv[1], type);
+		return;
+	}
+
+	zv::Val name = templateTypeName(type);
+	if (UNEXPECTED(name.isUndef())) return;
+	zv::Val resolvedType = pt_template_type_map_get_type(resolvedTemplateTypeMap, Z_STR_P(name.raw()));
+	if (UNEXPECTED(resolvedType.isUndef())) return;
+	bool fallBack = resolvedType.isNull();
+	if (!fallBack) {
+		bool isError, isNever;
+		(void) pt_type_instanceof_ce(resolvedType.raw(), pt_ce_error_type, isError);
+		(void) pt_type_instanceof_ce(resolvedType.raw(), pt_ce_never_type, isNever);
+		fallBack = isError || isNever;
+	}
+	if (fallBack) {
+		/* $type->getDefault() ?? $type->getBound() */
+		zv::Val fallback = pt_type_call(Z_OBJ_P(type), PT_LC("getdefault"), 0, NULL);
+		if (UNEXPECTED(fallback.isUndef())) return;
+		if (fallback.isNull()) {
+			fallback = pt_type_call(Z_OBJ_P(type), PT_LC("getbound"), 0, NULL);
+			if (UNEXPECTED(fallback.isUndef())) return;
+		}
+		(void) pt_type_traverser_traverse(return_value, &argv[1], fallback.raw());
+		return;
+	}
+
+	resolvedType.intoReturnValue(return_value);
+}
+
+/* Mirrors ArgumentsHandler::resolveCalleeTemplateTypes() */
+zv::Val resolveCalleeTemplateTypes(zval *type, zval *calleeTemplateTypeMap, zval *resolvedTemplateTypeMap)
+{
+	zv::Val callback = pt_type_native_callback(resolveCalleeTemplateTypesBody, calleeTemplateTypeMap, resolvedTemplateTypeMap);
+	if (UNEXPECTED(callback.isUndef())) return zv::Val();
+	return pt_type_traverser_map_of(type, callback.raw());
+}
+
+/* }}} */
+
+/* {{{ the template types a closure only receives */
+
+/* static fn (Type $innerType): bool => $innerType->isCallable()->yes() */
+void receivedTemplateNamesCallableFilterBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
+{
+	(void) captures;
+	if (UNEXPECTED(argc < 1 || Z_TYPE(argv[0]) != IS_OBJECT)) {
+		zend_type_error("ArgumentsHandler::getReceivedTemplateNames() filter: expected (Type $innerType)");
+		return;
+	}
+	zend_long isCallable = pt_type_op_trinary(Z_OBJ(argv[0]), PT_OP_IS_CALLABLE, 0, NULL);
+	if (UNEXPECTED(isCallable < 0)) return;
+	ZVAL_BOOL(return_value, isCallable == PT_TRI_YES);
+}
+
+/* the names of the template types $type->getReferencedTemplateTypes($variance)
+ * references, as keys of out (insertion order kept, value true); false =
+ * pending exception */
+[[nodiscard]] bool collectReferencedTemplateNames(zval *type, zend_long variance, zv::Arr &out)
+{
+	zval *positionVariance = pt_template_type_variance_singleton(variance);
+	if (UNEXPECTED(positionVariance == NULL)) return false;
+	zv::Val references = pt_type_op(Z_OBJ_P(type), PT_OP_GET_REFERENCED_TEMPLATE_TYPES, 1, positionVariance);
+	if (UNEXPECTED(references.isUndef())) return false;
+	if (UNEXPECTED(!zv::Ref(references.raw()).isArray())) {
+		zend_type_error("phpstan_turbo: getReferencedTemplateTypes() must return array");
+		return false;
+	}
+	for (zv::ArrayEntry entry : zv::ArrRef(references.raw())) {
+		zv::Ref reference = entry.value().deref();
+		if (UNEXPECTED(!reference.isObject())) {
+			zend_type_error("phpstan_turbo: a template type reference must be an object");
+			return false;
+		}
+		zv::Val referenceType, referenceVariance;
+		if (UNEXPECTED(!pt_template_type_reference_parts(reference.raw(), referenceType, referenceVariance))) return false;
+		zv::Val name = templateTypeName(referenceType.raw());
+		if (UNEXPECTED(name.isUndef())) return false;
+		out.set(Z_STR_P(name.raw()), zv::Val::boolean(true));
+	}
+	return true;
+}
+
+/* Mirrors ArgumentsHandler::getReceivedTemplateNames(): the names as the
+ * values of a list; UNDEF = pending exception */
+zv::Val getReceivedTemplateNames(zval *parameterType, zval *scope)
+{
+	zv::Val hasTemplate = pt_type_op(Z_OBJ_P(parameterType), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL);
+	if (UNEXPECTED(hasTemplate.isUndef())) return zv::Val();
+	if (!zend_is_true(hasTemplate.raw())) return zv::Val(zv::Arr::empty());
+	zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(parameterType), PT_OP_IS_CALLABLE, 0, NULL);
+	if (UNEXPECTED(isCallable < 0)) return zv::Val();
+	if (isCallable == PT_TRI_NO) return zv::Val(zv::Arr::empty());
+
+	zval *callableType = parameterType;
+	zv::Val filtered;
+	if (instanceof_function(Z_OBJCE_P(callableType), pt_ce_union_type)) {
+		zv::Val filter = pt_native_closure(&receivedTemplateNamesCallableFilterBody);
+		if (UNEXPECTED(filter.isUndef())) return zv::Val();
+		filtered = pt_type_call(Z_OBJ_P(callableType), PT_LC("filtertypes"), 1, filter.raw());
+		if (UNEXPECTED(filtered.isUndef())) return zv::Val();
+		if (UNEXPECTED(!filtered.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function isCallable() on %s", zend_zval_value_name(filtered.raw()));
+			return zv::Val();
+		}
+		callableType = filtered.raw();
+	}
+	isCallable = pt_type_op_trinary(Z_OBJ_P(callableType), PT_OP_IS_CALLABLE, 0, NULL);
+	if (UNEXPECTED(isCallable < 0)) return zv::Val();
+	if (isCallable != PT_TRI_YES) return zv::Val(zv::Arr::empty());
+
+	zv::Val acceptors = pt_type_call(Z_OBJ_P(callableType), PT_LC("getcallableparametersacceptors"), 1, scope);
+	if (UNEXPECTED(acceptors.isUndef())) return zv::Val();
+	if (UNEXPECTED(!acceptors.ref().isArray())) {
+		zend_type_error("phpstan_turbo: getCallableParametersAcceptors() must return array");
+		return zv::Val();
+	}
+	zv::Arr returnedTemplateNames = zv::Arr::empty();
+	for (zv::ArrayEntry entry : zv::ArrRef(acceptors.raw())) {
+		zval *acceptor = entry.value().deref().raw();
+		if (UNEXPECTED(Z_TYPE_P(acceptor) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getReturnType() on %s", zend_zval_value_name(acceptor));
+			return zv::Val();
+		}
+		zv::Val returnType = pt_parameters_acceptor_call(acceptor, PT_PA_GET_RETURN_TYPE);
+		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+		if (UNEXPECTED(!returnType.ref().isObject())) {
+			zend_type_error("phpstan_turbo: getReturnType() must return an object");
+			return zv::Val();
+		}
+		if (UNEXPECTED(!collectReferencedTemplateNames(returnType.raw(), PT_TEMPLATE_TYPE_VARIANCE_COVARIANT, returnedTemplateNames))) return zv::Val();
+	}
+
+	zv::Arr referencedTemplateNames = zv::Arr::empty();
+	if (UNEXPECTED(!collectReferencedTemplateNames(callableType, PT_TEMPLATE_TYPE_VARIANCE_INVARIANT, referencedTemplateNames))) return zv::Val();
+	zv::Arr receivedTemplateNames = zv::Arr::empty();
+	for (zv::ArrayEntry entry : zv::ArrRef(referencedTemplateNames.raw())) {
+		zend_string *name = entry.stringKeyOrNull();
+		if (UNEXPECTED(name == NULL)) continue;
+		if (zend_symtable_find(Z_ARRVAL_P(returnedTemplateNames.raw()), name) != NULL) continue;
+		receivedTemplateNames.push(zv::Val::adoptString(zend_string_copy(name)));
+	}
+	return zv::Val(std::move(receivedTemplateNames));
+}
+
+/* Mirrors ArgumentsHandler::resolveReceivedTemplateTypes(); UNDEF = pending
+ * exception */
+zv::Val resolveReceivedTemplateTypes(zval *parameter, zval *receivedTemplateNames, zval *siblingTemplateTypeMap)
+{
+	zv::Arr receivedTypes = zv::Arr::empty();
+	bool anyReceived = false;
+	for (zv::ArrayEntry entry : zv::ArrRef(receivedTemplateNames)) {
+		zval *name = entry.value().deref().raw();
+		zv::Val resolvedType = pt_template_type_map_get_type(siblingTemplateTypeMap, Z_STR_P(name));
+		if (UNEXPECTED(resolvedType.isUndef())) return zv::Val();
+		if (resolvedType.isNull()) continue;
+		bool isError, isNever;
+		(void) pt_type_instanceof_ce(resolvedType.raw(), pt_ce_error_type, isError);
+		(void) pt_type_instanceof_ce(resolvedType.raw(), pt_ce_never_type, isNever);
+		if (isError || isNever) continue;
+		receivedTypes.set(Z_STR_P(name), std::move(resolvedType));
+		anyReceived = true;
+	}
+	if (!anyReceived) return zv::Val::copyOf(zv::Ref(parameter));
+
+	zval receivedMap;
+	if (UNEXPECTED(!pt_template_type_map_new(&receivedMap, receivedTypes.raw()))) return zv::Val();
+	zv::Val receivedMapHold = zv::Val::adopt(receivedMap);
+	zval emptyVarianceMap;
+	if (UNEXPECTED(!pt_template_type_variance_map_empty(&emptyVarianceMap))) return zv::Val();
+	zv::Val emptyVarianceMapHold = zv::Val::adopt(emptyVarianceMap);
+	zval *invariant = pt_template_type_variance_singleton(PT_TEMPLATE_TYPE_VARIANCE_INVARIANT);
+	if (UNEXPECTED(invariant == NULL)) return zv::Val();
+	zv::Val parameterType = pt_parameter_reflection_call(parameter, PT_PR_GET_TYPE);
+	if (UNEXPECTED(parameterType.isUndef())) return zv::Val();
+	zv::Val type = pt_type_template_type_helper_resolve_template_types(parameterType.raw(), receivedMapHold.raw(), emptyVarianceMapHold.raw(), invariant, false);
+	if (UNEXPECTED(type.isUndef())) return zv::Val();
+
+	bool isExtended = false;
+	if (UNEXPECTED(!isA(parameter, PT_CLASS_EXTENDED_PARAMETER_REFLECTION, isExtended))) return zv::Val();
+	if (!isExtended) {
+		/* new DummyParameter($parameter->getName(), $type, ...) */
+		zv::Val name = pt_parameter_reflection_call(parameter, PT_PR_GET_NAME);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		if (UNEXPECTED(!name.ref().isString())) {
+			zend_type_error("phpstan_turbo: getName() must return string");
+			return zv::Val();
+		}
+		zv::Val optional = pt_parameter_reflection_call(parameter, PT_PR_IS_OPTIONAL);
+		if (UNEXPECTED(optional.isUndef())) return zv::Val();
+		zv::Val passedByReference = pt_parameter_reflection_call(parameter, PT_PR_PASSED_BY_REFERENCE);
+		if (UNEXPECTED(passedByReference.isUndef())) return zv::Val();
+		zv::Val variadic = pt_parameter_reflection_call(parameter, PT_PR_IS_VARIADIC);
+		if (UNEXPECTED(variadic.isUndef())) return zv::Val();
+		zv::Val defaultValue = pt_parameter_reflection_call(parameter, PT_PR_GET_DEFAULT_VALUE);
+		if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
+		return pt_dummy_parameter_new(
+			Z_STR_P(name.raw()),
+			type.raw(),
+			zend_is_true(optional.raw()),
+			passedByReference.isNull() ? NULL : passedByReference.raw(),
+			zend_is_true(variadic.raw()),
+			defaultValue.isNull() ? NULL : defaultValue.raw()
+		);
+	}
+
+	/* new ExtendedDummyParameter($parameter->getName(), $type, ...) - the
+	 * getters in argument order, $type also standing for the PHPDoc type */
+	static constexpr pt_parameter_reflection_member getters[13] = {
+		PT_PR_GET_NAME, PT_PR_IS_OPTIONAL, PT_PR_PASSED_BY_REFERENCE, PT_PR_IS_VARIADIC, PT_PR_GET_DEFAULT_VALUE,
+		PT_PR_GET_NATIVE_TYPE, PT_PR_GET_OUT_TYPE, PT_PR_IS_IMMEDIATELY_INVOKED_CALLABLE, PT_PR_GET_CLOSURE_THIS_TYPE,
+		PT_PR_GET_ATTRIBUTES, PT_PR_GET_ALLOWED_CONSTANTS, PT_PR_IS_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETER,
+		PT_PR_IS_PURE_UNLESS_PARAMETER_PASSED_PARAMETER,
+	};
+	zv::Val values[13];
+	for (int k = 0; k < 13; k++) {
+		values[k] = pt_parameter_reflection_call(parameter, getters[k]);
+		if (UNEXPECTED(values[k].isUndef())) return zv::Val();
+	}
+	zval args[15];
+	ZVAL_COPY_VALUE(&args[0], values[0].raw());
+	ZVAL_COPY_VALUE(&args[1], type.raw());
+	ZVAL_COPY_VALUE(&args[2], values[1].raw());
+	ZVAL_COPY_VALUE(&args[3], values[2].raw());
+	ZVAL_COPY_VALUE(&args[4], values[3].raw());
+	ZVAL_COPY_VALUE(&args[5], values[4].raw());
+	ZVAL_COPY_VALUE(&args[6], values[5].raw());
+	ZVAL_COPY_VALUE(&args[7], type.raw());
+	for (int k = 6; k < 13; k++) {
+		ZVAL_COPY_VALUE(&args[k + 2], values[k].raw());
+	}
+	return pt_extended_dummy_parameter_new(15, args);
+}
+
+/* }}} */
+
 } // namespace
 
 namespace phpstanturbo {
@@ -975,42 +1291,6 @@ private:
 		ZVAL_BOOL(&contains, out);
 		pt_node_set_attribute(Z_OBJ_P(value), pt_ah_contains_closure, &contains);
 		return true;
-	}
-
-	/* Mirrors gatherClosureArgType() */
-	zv::Val gatherClosureArgType(HashTable *parametersAcceptors, zend_ulong i, zval *closureExpr, zval *scope) const
-	{
-		zv::Val rawParametersHold;
-		zval *rawParameter = NULL;
-		if (zend_hash_num_elements(parametersAcceptors) == 1) {
-			zval *acceptor = readIndex(parametersAcceptors, 0);
-			if (UNEXPECTED(acceptor == NULL)) return zv::Val();
-			rawParametersHold = acceptorGetParameters(acceptor);
-			if (UNEXPECTED(rawParametersHold.isUndef())) return zv::Val();
-			if (UNEXPECTED(!requireArray(rawParametersHold.raw(), "getParameters()"))) return zv::Val();
-			HashTable *rawParameters = Z_ARRVAL_P(rawParametersHold.raw());
-			rawParameter = issetIndex(rawParameters, i);
-			if (rawParameter == NULL && zend_hash_num_elements(rawParameters) > 0) {
-				bool isVariadic = false;
-				acceptor = readIndex(parametersAcceptors, 0);
-				if (UNEXPECTED(acceptor == NULL || !acceptorIsVariadic(acceptor, isVariadic))) return zv::Val();
-				if (isVariadic) {
-					rawParameter = arrayLast(rawParameters);
-					ZVAL_DEREF(rawParameter);
-				}
-			}
-		}
-
-		zv::Val pushedScope;
-		if (rawParameter != NULL && Z_TYPE_P(rawParameter) != IS_NULL) {
-			zval null;
-			ZVAL_NULL(&null);
-			pushedScope = pt_mutating_scope_push_in_function_call(Z_OBJ_P(scope), &null, rawParameter, false);
-			if (UNEXPECTED(pushedScope.isUndef())) return zv::Val();
-			scope = pushedScope.raw();
-		}
-
-		return closureParameterResolverResolveCallableTypeForScope(slot(slots::closureParameterResolver), closureExpr, scope);
 	}
 
 	/* Mirrors selectArgsAcceptor() */
@@ -1734,8 +2014,9 @@ private:
 	}
 
 	/* the metadata acceptor selected over every argument's gathered type
-	 * (allMixed: over mixed for all of them), padded with mixed */
-	zend_never_inline zv::Val paddedMetadataAcceptor(Walk &w, bool allMixed) const
+	 * (allMixed: over mixed for all of them; mixedKey: over mixed for that
+	 * argument), padded with mixed */
+	zend_never_inline zv::Val paddedMetadataAcceptor(Walk &w, bool allMixed, const zend_ulong *mixedKey = NULL) const
 	{
 		zv::Arr paddedTypes = zv::Arr::empty();
 		bool paddedUnpack = false;
@@ -1745,7 +2026,7 @@ private:
 			zval *paddedOriginalArg = originalArgOf(record.arg);
 			zv::Val mixed;
 			zval *type;
-			if (!allMixed && Z_TYPE(record.gathered) != IS_UNDEF && Z_TYPE(record.gathered) != IS_NULL) {
+			if (!allMixed && (mixedKey == NULL || record.key != *mixedKey) && Z_TYPE(record.gathered) != IS_UNDEF && Z_TYPE(record.gathered) != IS_NULL) {
 				type = &record.gathered;
 			} else {
 				mixed = pt_type_new_mixed_type();
@@ -2429,6 +2710,91 @@ private:
 		return completeOtherArg(w, record, value, a, a.exprResult.raw(), a.enterExpressionAssignForByRef);
 	}
 
+	/* Mirrors gatherClosureArgType() */
+	zv::Val gatherClosureArgType(Walk &w, zend_ulong i, zval *closureExpr) const
+	{
+		HashTable *parametersAcceptors = Z_ARRVAL_P(w.parametersAcceptors);
+		zval *scope = w.scope.raw();
+		zv::Val rawParametersHold;
+		zval *rawParameter = NULL;
+		zval *acceptor = NULL;
+		if (zend_hash_num_elements(parametersAcceptors) == 1) {
+			acceptor = readIndex(parametersAcceptors, 0);
+			if (UNEXPECTED(acceptor == NULL)) return zv::Val();
+			rawParametersHold = acceptorGetParameters(acceptor);
+			if (UNEXPECTED(rawParametersHold.isUndef())) return zv::Val();
+			if (UNEXPECTED(!requireArray(rawParametersHold.raw(), "getParameters()"))) return zv::Val();
+			HashTable *rawParameters = Z_ARRVAL_P(rawParametersHold.raw());
+			rawParameter = issetIndex(rawParameters, i);
+			if (rawParameter == NULL && zend_hash_num_elements(rawParameters) > 0) {
+				bool isVariadic = false;
+				if (UNEXPECTED(!acceptorIsVariadic(acceptor, isVariadic))) return zv::Val();
+				if (isVariadic) {
+					rawParameter = arrayLast(rawParameters);
+					ZVAL_DEREF(rawParameter);
+				}
+			}
+		}
+
+		if (rawParameter == NULL || Z_TYPE_P(rawParameter) == IS_NULL) {
+			return closureParameterResolverResolveCallableTypeForScope(slot(slots::closureParameterResolver), closureExpr, scope);
+		}
+
+		zv::Val siblingTemplateTypeMap;
+		zv::Val pushedParameterHold;
+		zval *pushedParameter = rawParameter;
+		zv::Val rawParameterType = pt_parameter_reflection_call(rawParameter, PT_PR_GET_TYPE);
+		if (UNEXPECTED(rawParameterType.isUndef())) return zv::Val();
+		if (UNEXPECTED(!rawParameterType.ref().isObject())) {
+			zend_type_error("phpstan_turbo: getType() must return an object");
+			return zv::Val();
+		}
+		zv::Val receivedTemplateNames = getReceivedTemplateNames(rawParameterType.raw(), scope);
+		if (UNEXPECTED(receivedTemplateNames.isUndef())) return zv::Val();
+		if (zend_hash_num_elements(Z_ARRVAL_P(receivedTemplateNames.raw())) > 0) {
+			siblingTemplateTypeMap = siblingTemplateTypeMapOf(w, i);
+			if (UNEXPECTED(siblingTemplateTypeMap.isUndef())) return zv::Val();
+			pushedParameterHold = resolveReceivedTemplateTypes(rawParameter, receivedTemplateNames.raw(), siblingTemplateTypeMap.raw());
+			if (UNEXPECTED(pushedParameterHold.isUndef())) return zv::Val();
+			pushedParameter = pushedParameterHold.raw();
+		}
+
+		zval null;
+		ZVAL_NULL(&null);
+		zv::Val pushedScope = pt_mutating_scope_push_in_function_call(Z_OBJ_P(scope), &null, pushedParameter, false);
+		if (UNEXPECTED(pushedScope.isUndef())) return zv::Val();
+		zv::Val closureType = closureParameterResolverResolveCallableTypeForScope(slot(slots::closureParameterResolver), closureExpr, pushedScope.raw());
+		if (UNEXPECTED(closureType.isUndef())) return zv::Val();
+
+		zv::Val calleeTemplateTypeMap = pt_parameters_acceptor_call(acceptor, PT_PA_GET_TEMPLATE_TYPE_MAP);
+		if (UNEXPECTED(calleeTemplateTypeMap.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(calleeTemplateTypeMap.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: getTemplateTypeMap() must return an object");
+			return zv::Val();
+		}
+		zv::Val isEmpty = pt_type_call(Z_OBJ_P(calleeTemplateTypeMap.raw()), PT_LC("isempty"), 0, NULL);
+		if (UNEXPECTED(isEmpty.isUndef())) return zv::Val();
+		if (zend_is_true(isEmpty.raw())) return closureType;
+		bool references;
+		if (UNEXPECTED(!referencesCalleeTemplateTypes(closureType.raw(), calleeTemplateTypeMap.raw(), references))) return zv::Val();
+		if (!references) return closureType;
+
+		if (siblingTemplateTypeMap.isUndef()) {
+			siblingTemplateTypeMap = siblingTemplateTypeMapOf(w, i);
+			if (UNEXPECTED(siblingTemplateTypeMap.isUndef())) return zv::Val();
+		}
+
+		return resolveCalleeTemplateTypes(closureType.raw(), calleeTemplateTypeMap.raw(), siblingTemplateTypeMap.raw());
+	}
+
+	/* Mirrors selectSiblingTemplateTypeMap() */
+	zv::Val siblingTemplateTypeMapOf(Walk &w, zend_ulong i) const
+	{
+		zv::Val siblingAcceptor = paddedMetadataAcceptor(w, false, &i);
+		if (UNEXPECTED(siblingAcceptor.isUndef())) return zv::Val();
+		return pt_parameters_acceptor_call(siblingAcceptor.raw(), PT_PA_GET_RESOLVED_TEMPLATE_TYPE_MAP);
+	}
+
 	/* the closure-type gather ahead of a closure / arrow function argument's
 	 * metadata; false = pending exception */
 	zend_never_inline bool gatherClosureArg(Walk &w, ArgRecord &record, zval *value) const
@@ -2437,7 +2803,7 @@ private:
 		// the evolving scope, before the body is processed
 		zval *originalArgForGather = originalArgOf(record.arg);
 		zv::Val gathered = w.typeDrivenAcceptorSelection
-			? gatherClosureArgType(Z_ARRVAL_P(w.parametersAcceptors), record.key, value, w.scope.raw())
+			? gatherClosureArgType(w, record.key, value)
 			: closureTypeResolverGetClosureType(slot(slots::closureTypeResolver), w.scope.raw(), value, true, w.storage);
 		if (UNEXPECTED(gathered.isUndef())) return false;
 		zval_ptr_dtor(&record.gathered);

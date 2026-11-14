@@ -2,8 +2,8 @@
 
 /*
  * instructions: 27.14M
- * cycles: 39.31M
- * memory: 90.86KiB
+ * cycles: 39.40M
+ * memory: 154.9KiB
  */
 
 namespace Bug4308;

@@ -103,7 +103,12 @@ final class FiniteTypeSet
 	 */
 	public static function key(Type $type): ?string
 	{
-		if ($type instanceof TemplateType || $type instanceof UnresolvedTemplateArgumentType || $type instanceof UnionType || $type instanceof IntersectionType) {
+		// all four are compound types; the values this is asked about are not, and skip the
+		// rest, which includes a class that is rarely loaded - instanceof looks it up every time
+		if (
+			$type instanceof CompoundType
+			&& ($type instanceof TemplateType || $type instanceof UnresolvedTemplateArgumentType || $type instanceof UnionType || $type instanceof IntersectionType)
+		) {
 			return null;
 		}
 

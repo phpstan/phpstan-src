@@ -823,6 +823,7 @@ class ConstantArrayType implements Type
 
 			$results = [];
 			$valueResults = [];
+			$otherKeyIndexMap = $type->getKeyIndexMap();
 			foreach ($this->keyTypes as $i => $keyType) {
 				$hasOffset = $type->hasOffsetValueType($keyType);
 				if ($bothDefinite && $hasOffset->no() && $typeUnsealedness->yes()) {
@@ -848,13 +849,14 @@ class ConstantArrayType implements Type
 				// The offset value at one of $type's explicit keys depends only on
 				// the value type stored there, so keys sharing their value types on
 				// both sides (keys written through a union offset) compare them once.
-				$otherIndex = $type->getKeyIndex($keyType);
-				$valuePairKey = $otherIndex !== null
-					? spl_object_id($this->valueTypes[$i]) . ':' . spl_object_id($type->valueTypes[$otherIndex])
-					: null;
-				if ($valuePairKey !== null && array_key_exists($valuePairKey, $valueResults)) {
-					$results[] = $valueResults[$valuePairKey];
-					continue;
+				$otherIndex = $otherKeyIndexMap[$keyType->getValue()] ?? null;
+				if ($otherIndex !== null) {
+					$valueId = spl_object_id($this->valueTypes[$i]);
+					$otherValueId = spl_object_id($type->valueTypes[$otherIndex]);
+					if (isset($valueResults[$valueId][$otherValueId])) {
+						$results[] = $valueResults[$valueId][$otherValueId];
+						continue;
+					}
 				}
 
 				$otherValueType = $type->getOffsetValueType($keyType);
@@ -866,8 +868,8 @@ class ConstantArrayType implements Type
 				if ($isValueSuperType->no()) {
 					return $isValueSuperType->decorateReasons(static fn (string $reason) => sprintf('Offset %s: %s', $keyType->describe(VerbosityLevel::value()), $reason));
 				}
-				if ($valuePairKey !== null) {
-					$valueResults[$valuePairKey] = $isValueSuperType;
+				if ($otherIndex !== null) {
+					$valueResults[$valueId][$otherValueId] = $isValueSuperType;
 				}
 				$results[] = $isValueSuperType;
 			}

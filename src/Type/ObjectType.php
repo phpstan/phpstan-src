@@ -603,7 +603,10 @@ class ObjectType implements TypeWithClassName, SubtractableType
 			$description = $type->describe(VerbosityLevel::cache());
 		}
 
-		self::touchDescriptionCacheKey($thisDescription);
+		// the call is skipped while the same description is asked about again and again
+		if ($thisDescription !== self::$lastTouchedDescription) {
+			self::touchDescriptionCacheKey($thisDescription);
+		}
 
 		if (isset(self::$superTypes[$thisDescription][$description])) {
 			return self::$superTypes[$thisDescription][$description];

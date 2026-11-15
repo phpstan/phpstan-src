@@ -39,6 +39,7 @@ inline constexpr uint32_t opaque = 25;
 inline constexpr uint32_t readsAllVariables = 26;
 inline constexpr uint32_t allNamesMentioned = 27;
 inline constexpr uint32_t returnsByReference = 28;
+inline constexpr uint32_t loopHeads = 29;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -78,6 +79,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("readsAllVariables", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
 	cls.property("allNamesMentioned", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
 	cls.property("returnsByReference", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedBool, 0);
+	cls.property("loopHeads", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -115,10 +117,15 @@ inline constexpr char strings[] =
 	"observeWrite\0" /* 376 */
 	"observeOverwrite\0" /* 389 */
 	"killOverwriteMarkers\0" /* 406 */
-	"keys\0" /* 427 */
-	"withoutKeys\0" /* 432 */
-	"resolveDependencies\0" /* 444 */
-	"resolveCoverage"; /* 464 */
+	"set\0" /* 427 */
+	"subset\0" /* 431 */
+	"covers\0" /* 438 */
+	"subcontext\0" /* 445 */
+	"contextCovers\0" /* 456 */
+	"keys\0" /* 470 */
+	"withoutKeys\0" /* 475 */
+	"resolveDependencies\0" /* 487 */
+	"resolveCoverage"; /* 507 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 21), /* resolve $function */
 	reg::packed(49, MAY_BE_NULL, 54), /* resolve $flow */
@@ -154,8 +161,14 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(262, 0, 202), /* killOverwriteMarkers $write */
 	reg::packed(133, MAY_BE_ARRAY), /* killOverwriteMarkers $next */
 	reg::packed(84, MAY_BE_ARRAY), /* killOverwriteMarkers return */
+	reg::packed(427, MAY_BE_ARRAY), /* covers $set */
+	reg::packed(431, MAY_BE_ARRAY), /* covers $subset */
+	reg::packed(84, MAY_BE_BOOL), /* covers return */
+	reg::packed(138, 0, 146), /* contextCovers $context */
+	reg::packed(445, 0, 146), /* contextCovers $subcontext */
+	reg::packed(84, MAY_BE_BOOL), /* contextCovers return */
 	reg::packed(133, MAY_BE_ARRAY), /* withoutKeys $next */
-	reg::packed(427, MAY_BE_ARRAY), /* withoutKeys $keys */
+	reg::packed(470, MAY_BE_ARRAY), /* withoutKeys $keys */
 	reg::packed(84, MAY_BE_ARRAY), /* withoutKeys return */
 	reg::packed(84, MAY_BE_VOID), /* resolveDependencies return */
 	reg::packed(84, MAY_BE_VOID), /* resolveCoverage return */
@@ -178,9 +191,11 @@ inline constexpr sigtab::Sig replacedSlot = { { 360 /* replacedSlot */, 1, 23, 1
 inline constexpr sigtab::Sig observeWrite = { { 376 /* observeWrite */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig observeOverwrite = { { 389 /* observeOverwrite */, 2, 28, 2, 30, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig killOverwriteMarkers = { { 406 /* killOverwriteMarkers */, 2, 31, 2, 33, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig withoutKeys = { { 432 /* withoutKeys */, 2, 34, 2, 36, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig resolveDependencies = { { 444 /* resolveDependencies */, 0, 37, 0, 37, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveCoverage = { { 464 /* resolveCoverage */, 0, 38, 0, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig covers = { { 438 /* covers */, 2, 34, 2, 36, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig contextCovers = { { 456 /* contextCovers */, 2, 37, 2, 39, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig withoutKeys = { { 475 /* withoutKeys */, 2, 40, 2, 42, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig resolveDependencies = { { 487 /* resolveDependencies */, 0, 43, 0, 43, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveCoverage = { { 507 /* resolveCoverage */, 0, 44, 0, 44, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::VariableLivenessResolver

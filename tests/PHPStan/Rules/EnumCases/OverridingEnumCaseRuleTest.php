@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\EnumCases;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Constants\OverrideAttributeOnClassConstantCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -21,7 +20,6 @@ class OverridingEnumCaseRuleTest extends RuleTestCase
 		return new OverridingEnumCaseRule(
 			true,
 			new OverrideAttributeOnClassConstantCheck(
-				new PhpVersion(80600),
 				$this->checkMissingOverrideConstantAttribute,
 				null,
 				false,

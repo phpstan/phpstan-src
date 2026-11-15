@@ -2,7 +2,6 @@
 
 namespace PHPStan\Rules\Constants;
 
-use PHPStan\Php\PhpVersion;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -21,14 +20,11 @@ class OverridingConstantRuleTest extends RuleTestCase
 
 	private bool $checkMissingOverrideMethodAttribute = false;
 
-	private int $phpVersionId = PHP_VERSION_ID;
-
 	protected function getRule(): Rule
 	{
 		return new OverridingConstantRule(
 			true,
 			new OverrideAttributeOnClassConstantCheck(
-				new PhpVersion($this->phpVersionId),
 				$this->checkMissingOverrideConstantAttribute,
 				$this->checkMissingOverridePropertyAttribute,
 				$this->checkMissingOverrideMethodAttribute,
@@ -147,20 +143,20 @@ class OverridingConstantRuleTest extends RuleTestCase
 			],
 		];
 
-		// checkMissingOverrideConstantAttribute, checkMissingOverridePropertyAttribute, checkMissingOverrideMethodAttribute, PHP version
-		yield [null, null, false, 80500, []];
-		yield [null, null, false, 80600, []];
-		yield [null, null, true, 80500, []];
-		yield [null, null, true, 80600, $missingErrors];
-		yield [null, true, false, 80500, []];
-		yield [null, true, false, 80600, $missingErrors];
-		yield [null, false, true, 80600, $missingErrors];
-		yield [null, false, false, 80600, []];
-		yield [true, null, false, 80500, $missingErrors];
-		yield [true, null, false, 80600, $missingErrors];
-		yield [true, false, false, 80600, $missingErrors];
-		yield [false, null, true, 80600, []];
-		yield [false, true, true, 80600, []];
+		// the default follows the other options only when the analysed PHP version supports the attribute,
+		// OverridingConstantRuleConfigPhpTest covers PHP version ranges
+		$defaultErrors = PHP_VERSION_ID >= 80600 ? $missingErrors : [];
+
+		// checkMissingOverrideConstantAttribute, checkMissingOverridePropertyAttribute, checkMissingOverrideMethodAttribute
+		yield [null, null, false, []];
+		yield [null, null, true, $defaultErrors];
+		yield [null, true, false, $defaultErrors];
+		yield [null, false, true, $defaultErrors];
+		yield [null, false, false, []];
+		yield [true, null, false, $missingErrors];
+		yield [true, false, false, $missingErrors];
+		yield [false, null, true, []];
+		yield [false, true, true, []];
 	}
 
 	/**
@@ -172,14 +168,12 @@ class OverridingConstantRuleTest extends RuleTestCase
 		?bool $checkMissingOverrideConstantAttribute,
 		?bool $checkMissingOverridePropertyAttribute,
 		bool $checkMissingOverrideMethodAttribute,
-		int $phpVersionId,
 		array $expectedErrors,
 	): void
 	{
 		$this->checkMissingOverrideConstantAttribute = $checkMissingOverrideConstantAttribute;
 		$this->checkMissingOverridePropertyAttribute = $checkMissingOverridePropertyAttribute;
 		$this->checkMissingOverrideMethodAttribute = $checkMissingOverrideMethodAttribute;
-		$this->phpVersionId = $phpVersionId;
 
 		$errors = array_merge([
 			[

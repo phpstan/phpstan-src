@@ -23,12 +23,10 @@ class OverridingPropertyRuleTest extends RuleTestCase
 
 	private bool $checkMissingOverrideMethodAttribute = false;
 
-	private int $phpVersionId = PHP_VERSION_ID;
-
 	protected function getRule(): Rule
 	{
 		return new OverridingPropertyRule(
-			new PhpVersion($this->phpVersionId),
+			self::getContainer()->getByType(PhpVersion::class),
 			true,
 			$this->reportMaybes,
 			$this->checkMissingOverridePropertyAttribute,
@@ -301,29 +299,24 @@ class OverridingPropertyRuleTest extends RuleTestCase
 				44,
 			],
 		];
-		yield [null, false, 80400, []];
-		yield [null, false, 80500, []];
-		yield [null, true, 80400, []];
-		yield [null, true, 80500, $errors];
-		yield [true, false, 80400, $errors];
-		yield [true, false, 80500, $errors];
-		yield [true, true, 80400, $errors];
-		yield [true, true, 80500, $errors];
-		yield [false, false, 80400, []];
-		yield [false, false, 80500, []];
-		yield [false, true, 80400, []];
-		yield [false, true, 80500, []];
+		// the default follows checkMissingOverrideMethodAttribute only when the analysed PHP version supports the attribute,
+		// OverridingPropertyRuleConfigPhpTest covers PHP version ranges
+		yield [null, false, []];
+		yield [null, true, PHP_VERSION_ID >= 80500 ? $errors : []];
+		yield [true, false, $errors];
+		yield [true, true, $errors];
+		yield [false, false, []];
+		yield [false, true, []];
 	}
 
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $expectedErrors
 	 */
 	#[DataProvider('dataOverrideAttribute')]
-	public function testOverrideAttribute(?bool $checkMissingOverridePropertyAttribute, bool $checkMissingOverrideMethodAttribute, int $phpVersionId, array $expectedErrors): void
+	public function testOverrideAttribute(?bool $checkMissingOverridePropertyAttribute, bool $checkMissingOverrideMethodAttribute, array $expectedErrors): void
 	{
 		$this->checkMissingOverridePropertyAttribute = $checkMissingOverridePropertyAttribute;
 		$this->checkMissingOverrideMethodAttribute = $checkMissingOverrideMethodAttribute;
-		$this->phpVersionId = $phpVersionId;
 		$this->reportMaybes = true;
 		$errors = [
 			[

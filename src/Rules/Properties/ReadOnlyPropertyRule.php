@@ -41,7 +41,7 @@ final class ReadOnlyPropertyRule implements Rule
 				 ->build();
 		}
 
-		if ($node->getDefault() !== null) {
+		if ($node->getDefault() !== null && !$scope->getPhpVersion()->supportsReadonlyPropertyDefaultValues()->yes()) {
 			 $errors[] = RuleErrorBuilder::message('Readonly property cannot have a default value.')->nonIgnorable()
 				 ->identifier('property.readOnlyDefaultValue')
 				 ->build();

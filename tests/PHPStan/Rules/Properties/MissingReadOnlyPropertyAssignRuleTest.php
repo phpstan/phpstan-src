@@ -123,6 +123,18 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.6.0-dev')]
+	public function testDefaultValue(): void
+	{
+		// properties with a default value are initialized, assignments are reported by ReadOnlyPropertyAssignRule
+		$this->analyse([__DIR__ . '/data/readonly-property-default-value.php'], [
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\Foo::$promoted is already assigned.',
+				22,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug7119(): void
 	{

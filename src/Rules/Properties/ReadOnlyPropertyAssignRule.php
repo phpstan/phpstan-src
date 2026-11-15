@@ -93,9 +93,10 @@ final class ReadOnlyPropertyAssignRule implements Rule
 
 			$methodName = $scopeMethod->getName();
 			$inClone = $scope->getPhpVersion()->supportsReadonlyPropertyReinitializationOnClone()->yes() && strtolower($methodName) === '__clone';
+			$inUnserialize = strtolower($methodName) === '__unserialize';
 			if (
 				in_array($methodName, $this->constructorsHelper->getConstructors($scopeClassReflection), true)
-				|| strtolower($methodName) === '__unserialize'
+				|| $inUnserialize
 				|| $inClone
 			) {
 				if (TypeUtils::findThisType($scope->getType($propertyFetch->var)) === null) {
@@ -106,6 +107,18 @@ final class ReadOnlyPropertyAssignRule implements Rule
 				} elseif (
 					$inClone
 					&& !$scope->hasExpressionType(new CloneReinitializationExpr($propertyReflection->getName()))->no()
+				) {
+					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is already assigned.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
+						->line($propertyFetch->name->getStartLine())
+						->identifier('assign.readOnlyProperty')
+						->build();
+				} elseif (
+					// the default value already initialized the property, only __clone() and __unserialize() can reinitialize it
+					!$inClone
+					&& !$inUnserialize
+					&& !$nativeReflection->isPromoted()
+					&& $nativeReflection->getNativeReflection()->hasDefaultValue()
+					&& !$node->isArrayAccessOffsetWrite($scope)
 				) {
 					$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is already assigned.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
 						->line($propertyFetch->name->getStartLine())

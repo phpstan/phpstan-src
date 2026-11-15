@@ -49,7 +49,7 @@ final class OverridingConstantRule implements Rule
 			$errors = array_merge(
 				$errors,
 				$this->overrideAttributeCheck->check($scope, $node, $constantName, $prototype),
-				$this->processSingleConstant($scope->getClassReflection(), $constantName, $prototype),
+				$this->processSingleConstant($scope->getClassReflection(), $constantName),
 			);
 		}
 
@@ -59,13 +59,21 @@ final class OverridingConstantRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleConstant(ClassReflection $classReflection, string $constantName, ?ClassConstantReflection $prototype): array
+	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
 	{
-		if ($prototype === null) {
-			return [];
+		$errors = [];
+		foreach ($this->findPrototypes($classReflection, $constantName) as $prototype) {
+			$errors = array_merge($errors, $this->processPrototype($classReflection, $classReflection->getConstant($constantName), $prototype));
 		}
 
-		$constantReflection = $classReflection->getConstant($constantName);
+		return $errors;
+	}
+
+	/**
+	 * @return list<IdentifierRuleError>
+	 */
+	private function processPrototype(ClassReflection $classReflection, ClassConstantReflection $constantReflection, ClassConstantReflection $prototype): array
+	{
 		$errors = [];
 		if ($prototype->isFinal()) {
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -98,10 +106,6 @@ final class OverridingConstantRule implements Rule
 			))->identifier('classConstant.visibility')->nonIgnorable()->build();
 		}
 
-		if (!$this->checkPhpDocMethodSignatures) {
-			return $errors;
-		}
-
 		$prototypeNativeType = $prototype->getNativeType();
 		$constantNativeType = $constantReflection->getNativeType();
 		if ($prototypeNativeType !== null) {
@@ -130,6 +134,10 @@ final class OverridingConstantRule implements Rule
 			}
 		}
 
+		if (!$this->checkPhpDocMethodSignatures) {
+			return $errors;
+		}
+
 		if (!$prototype->hasPhpDocType()) {
 			return $errors;
 		}
@@ -151,6 +159,46 @@ final class OverridingConstantRule implements Rule
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Every constant the declared constant has to be compatible with: the parent class constant,
+	 * and the constants of interfaces the parent class does not already implement.
+	 *
+	 * @return list<ClassConstantReflection>
+	 */
+	private function findPrototypes(ClassReflection $classReflection, string $constantName): array
+	{
+		$prototypes = [];
+		$parentClass = $classReflection->getParentClass();
+		$parentInterfaces = $parentClass !== null ? $parentClass->getInterfaces() : [];
+		foreach ($classReflection->getInterfaces() as $interfaceName => $interface) {
+			if (isset($parentInterfaces[$interfaceName])) {
+				continue;
+			}
+			if (!$interface->hasConstant($constantName)) {
+				continue;
+			}
+
+			$constant = $interface->getConstant($constantName);
+			if ($constant->getDeclaringClass()->getName() !== $interface->getName()) {
+				// inherited from a parent interface which is checked separately
+				continue;
+			}
+
+			$prototypes[] = $constant;
+		}
+
+		if ($parentClass === null || !$parentClass->hasConstant($constantName)) {
+			return $prototypes;
+		}
+
+		$constant = $parentClass->getConstant($constantName);
+		if (!$constant->isPrivate()) {
+			$prototypes[] = $constant;
+		}
+
+		return $prototypes;
 	}
 
 }

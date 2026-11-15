@@ -14,6 +14,8 @@ use const PHP_VERSION_ID;
 class OverridingConstantRuleTest extends RuleTestCase
 {
 
+	private bool $checkPhpDocMethodSignatures = true;
+
 	private ?bool $checkMissingOverrideConstantAttribute = null;
 
 	private ?bool $checkMissingOverridePropertyAttribute = null;
@@ -23,7 +25,7 @@ class OverridingConstantRuleTest extends RuleTestCase
 	protected function getRule(): Rule
 	{
 		return new OverridingConstantRule(
-			true,
+			$this->checkPhpDocMethodSignatures,
 			new OverrideAttributeOnClassConstantCheck(
 				$this->checkMissingOverrideConstantAttribute,
 				$this->checkMissingOverridePropertyAttribute,
@@ -107,9 +109,17 @@ class OverridingConstantRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/overriding-final-constant.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.3.0')]
-	public function testNativeTypes(): void
+	public static function dataNativeTypes(): iterable
 	{
+		yield [true];
+		yield [false];
+	}
+
+	#[RequiresPhp('>= 8.3.0')]
+	#[DataProvider('dataNativeTypes')]
+	public function testNativeTypes(bool $checkPhpDocMethodSignatures): void
+	{
+		$this->checkPhpDocMethodSignatures = $checkPhpDocMethodSignatures;
 		$this->analyse([__DIR__ . '/data/overriding-constant-native-types.php'], [
 			[
 				'Native type int|string of constant OverridingConstantNativeTypes\Bar::D is not covariant with native type int of constant OverridingConstantNativeTypes\Foo::D.',
@@ -222,6 +232,29 @@ class OverridingConstantRuleTest extends RuleTestCase
 	{
 		$this->checkMissingOverrideConstantAttribute = true;
 		$this->fix(__DIR__ . '/data/constant-override-attr-fix.php', __DIR__ . '/data/constant-override-attr-fix.php.fixed');
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testMultiplePrototypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/overriding-constant-multiple-prototypes.php'], [
+			[
+				'Constant OverridingConstantMultiplePrototypes\ImplementsBoth::C overrides final constant OverridingConstantMultiplePrototypes\IsFinal::C.',
+				22,
+			],
+			[
+				'Constant OverridingConstantMultiplePrototypes\ExtendsAndImplementsFinal::C overrides final constant OverridingConstantMultiplePrototypes\IsFinal::C.',
+				38,
+			],
+			[
+				'Protected constant OverridingConstantMultiplePrototypes\ExtendsAndImplementsPublic::D overriding public constant OverridingConstantMultiplePrototypes\PublicD::D should also be public.',
+				52,
+			],
+			[
+				'Constant OverridingConstantMultiplePrototypes\ExtendsFinalAndImplements::E overrides final constant OverridingConstantMultiplePrototypes\ParentWithFinal::E.',
+				85,
+			],
+		]);
 	}
 
 }

@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
+use PHPStan\Rules\Methods\OverridingMethodCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -25,8 +27,12 @@ class OverridingPropertyRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$phpVersion = self::getContainer()->getByType(PhpVersion::class);
+
 		return new OverridingPropertyRule(
-			self::getContainer()->getByType(PhpVersion::class),
+			$phpVersion,
+			new OverridingMethodCheck(),
+			new MethodParameterComparisonHelper($phpVersion),
 			true,
 			$this->reportMaybes,
 			$this->checkMissingOverridePropertyAttribute,
@@ -344,22 +350,170 @@ class OverridingPropertyRuleTest extends RuleTestCase
 		$this->reportMaybes = true;
 		$this->analyse([__DIR__ . '/data/bug-14457.php'], [
 			[
-				'Cannot make non-abstract method Bug14457Property\ParentClass::$bar::get() abstract in class Bug14457Property\ChildClass.',
+				'Cannot make non-abstract get hook for property Bug14457Property\ParentClass::$bar abstract in class Bug14457Property\ChildClass.',
 				10,
 			],
 			[
-				'Cannot make non-abstract method Bug14457Property\SetParent::$setProp::set() abstract in class Bug14457Property\SetChild.',
+				'Cannot make non-abstract set hook for property Bug14457Property\SetParent::$setProp abstract in class Bug14457Property\SetChild.',
 				42,
 			],
 			[
-				'Cannot make non-abstract method Bug14457Property\BothParent::$bothProp::get() abstract in class Bug14457Property\BothChild.',
+				'Cannot make non-abstract get hook for property Bug14457Property\BothParent::$bothProp abstract in class Bug14457Property\BothChild.',
 				54,
 			],
 			[
-				'Cannot make non-abstract method Bug14457Property\BothParent::$bothProp::set() abstract in class Bug14457Property\BothChild.',
+				'Cannot make non-abstract set hook for property Bug14457Property\BothParent::$bothProp abstract in class Bug14457Property\BothChild.',
 				54,
 			],
 		]);
+	}
+
+	public function testEquivalentTypes(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/overriding-property-equivalent-types.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testMultiplePrototypes(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/overriding-property-multiple-prototypes.php'], [
+			[
+				'Property OverridingPropertyMultiplePrototypes\GetOnly::$prop overriding writable property OverridingPropertyMultiplePrototypes\HasSet::$prop also has to be writable.',
+				29,
+			],
+			[
+				'Type int of property OverridingPropertyMultiplePrototypes\WrongType::$prop is not covariant with type string of overridden property OverridingPropertyMultiplePrototypes\HasStringGet::$prop.',
+				38,
+			],
+			[
+				'Property OverridingPropertyMultiplePrototypes\ChildImplementingInterface::$prop overriding writable property OverridingPropertyMultiplePrototypes\HasSet::$prop also has to be writable.',
+				54,
+			],
+			[
+				'Property OverridingPropertyMultiplePrototypes\ImplementsExtendsBoth::$prop overriding readable property OverridingPropertyMultiplePrototypes\HasGet::$prop also has to be readable.',
+				82,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testSetVisibility(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/overriding-property-set-visibility.php'], [
+			[
+				'Private(set) property OverridingPropertySetVisibility\B::$protectedSetToPrivateSet overriding protected(set) property OverridingPropertySetVisibility\A::$protectedSetToPrivateSet should be protected(set) or public(set).',
+				37,
+			],
+			[
+				'Private(set) property OverridingPropertySetVisibility\B::$publicToPrivateSet overriding public(set) property OverridingPropertySetVisibility\A::$publicToPrivateSet should also be public(set).',
+				39,
+			],
+			[
+				'Protected(set) property OverridingPropertySetVisibility\B::$publicToProtectedSet overriding public(set) property OverridingPropertySetVisibility\A::$publicToProtectedSet should also be public(set).',
+				41,
+			],
+			[
+				'Private(set) property OverridingPropertySetVisibility\B::$protectedToProtectedPrivateSet overriding protected(set) property OverridingPropertySetVisibility\A::$protectedToProtectedPrivateSet should be protected(set) or public(set).',
+				45,
+			],
+			[
+				'Private(set) property OverridingPropertySetVisibility\B::$protectedToPublicPrivateSet overriding protected(set) property OverridingPropertySetVisibility\A::$protectedToPublicPrivateSet should be protected(set) or public(set).',
+				49,
+			],
+			[
+				'Private(set) property OverridingPropertySetVisibility\B::$readonlyToPrivateSetReadonly overriding protected(set) property OverridingPropertySetVisibility\A::$readonlyToPrivateSetReadonly should be protected(set) or public(set).',
+				53,
+			],
+			[
+				'Private(set) property OverridingPropertySetVisibility\ImplementsGetOnly::$getAndSet overriding public(set) property OverridingPropertySetVisibility\GetOnly::$getAndSet should also be public(set).',
+				77,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testHooks(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/overriding-property-hooks.php'], [
+			[
+				'Get hook for property OverridingPropertyHooks\FinalHookChild::$prop overrides final get hook for property OverridingPropertyHooks\FinalHookParent::$prop.',
+				26,
+			],
+			[
+				'Set hook for property OverridingPropertyHooks\FinalHookChild::$setProp overrides final set hook for property OverridingPropertyHooks\FinalHookParent::$setProp.',
+				30,
+			],
+			[
+				'Get hook for property OverridingPropertyHooks\ImplementsByRefGetByValue::$prop overriding get hook for property OverridingPropertyHooks\ByRefGet::$prop that returns by reference should also return by reference.',
+				52,
+			],
+			[
+				'Get hook of backed property OverridingPropertyHooks\BackedChild::$prop with set hook cannot return by reference.',
+				100,
+			],
+			[
+				'Type string of property OverridingPropertyHooks\ImplementsSetWider::$prop is not contravariant with set hook parameter type int|string of overridden property OverridingPropertyHooks\SetWider::$prop.',
+				128,
+			],
+			[
+				'Parameter #1 $prop (OverridingPropertyHooks\Y) of set hook for property OverridingPropertyHooks\SetParameterChild::$prop is not contravariant with parameter #1 $prop (OverridingPropertyHooks\X) of set hook for property OverridingPropertyHooks\SetParameterParent::$prop.',
+				178,
+			],
+			[
+				'Get hook for property OverridingPropertyHooks\OverrideChild::$setOnly has #[\Override] attribute but does not override any get hook.',
+				208,
+			],
+			[
+				'Set hook for property OverridingPropertyHooks\OverrideChild::$getOnly has #[\Override] attribute but does not override any set hook.',
+				215,
+			],
+			[
+				'Get hook for property OverridingPropertyHooks\OverrideChild::$notInParent has #[\Override] attribute but does not override any get hook.',
+				227,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testHookDeclarationErrorsAreNotRepeated(): void
+	{
+		$this->reportMaybes = true;
+		$this->analyse([__DIR__ . '/data/overriding-property-hooks-invalid-declaration.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testHooksMissingOverride(): void
+	{
+		$this->reportMaybes = true;
+		$this->checkMissingOverridePropertyAttribute = false;
+		$this->checkMissingOverrideMethodAttribute = true;
+		$this->analyse([__DIR__ . '/data/overriding-property-hooks-missing-override.php'], [
+			[
+				'Set hook for property OverridingPropertyHooksMissingOverride\Child::$both overrides set hook for property OverridingPropertyHooksMissingOverride\ParentClass::$both but is missing the #[\Override] attribute.',
+				27,
+			],
+			[
+				'Get hook for property OverridingPropertyHooksMissingOverride\Child::$getOnly overrides get hook for property OverridingPropertyHooksMissingOverride\ParentClass::$getOnly but is missing the #[\Override] attribute.',
+				31,
+			],
+			[
+				'Get hook for property OverridingPropertyHooksMissingOverride\ImplementsInterface::$prop overrides get hook for property OverridingPropertyHooksMissingOverride\HasHook::$prop but is missing the #[\Override] attribute.',
+				51,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testFixHookOverrideAttribute(): void
+	{
+		$this->reportMaybes = true;
+		$this->checkMissingOverridePropertyAttribute = false;
+		$this->checkMissingOverrideMethodAttribute = true;
+		$this->fix(__DIR__ . '/data/property-hook-override-attr.php', __DIR__ . '/data/property-hook-override-attr.php.fixed');
 	}
 
 }

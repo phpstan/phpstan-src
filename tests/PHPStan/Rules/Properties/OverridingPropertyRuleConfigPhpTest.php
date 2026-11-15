@@ -3,6 +3,8 @@
 namespace PHPStan\Rules\Properties;
 
 use PHPStan\Php\PhpVersion;
+use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
+use PHPStan\Rules\Methods\OverridingMethodCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 
@@ -16,8 +18,12 @@ class OverridingPropertyRuleConfigPhpTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
+		$phpVersion = self::getContainer()->getByType(PhpVersion::class);
+
 		return new OverridingPropertyRule(
-			self::getContainer()->getByType(PhpVersion::class),
+			$phpVersion,
+			new OverridingMethodCheck(),
+			new MethodParameterComparisonHelper($phpVersion),
 			true,
 			true,
 			$this->checkMissingOverridePropertyAttribute,

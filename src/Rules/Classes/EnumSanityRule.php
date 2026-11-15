@@ -80,6 +80,18 @@ final class EnumSanityRule implements Rule
 						->line($methodNode->getStartLine())
 						->nonIgnorable()
 						->build();
+				} elseif ($lowercasedMethodName === '__debuginfo') {
+					if (!$scope->getPhpVersion()->supportsDebugInfoOnEnums()->yes()) {
+						$errors[] = RuleErrorBuilder::message(sprintf(
+							'Enum %s contains magic method %s() but it\'s supported only on PHP 8.6 and later.',
+							$classReflection->getDisplayName(),
+							$methodNode->name->name,
+						))
+							->identifier('enum.debugInfoNotSupported')
+							->line($methodNode->getStartLine())
+							->nonIgnorable()
+							->build();
+					}
 				} elseif (!array_key_exists($lowercasedMethodName, self::ALLOWED_MAGIC_METHODS)) {
 					$errors[] = RuleErrorBuilder::message(sprintf(
 						'Enum %s contains magic method %s().',

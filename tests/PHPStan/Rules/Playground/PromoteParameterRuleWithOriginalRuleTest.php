@@ -8,6 +8,7 @@ use PHPStan\Rules\Methods\MethodParameterComparisonHelper;
 use PHPStan\Rules\Methods\MethodPrototypeFinder;
 use PHPStan\Rules\Methods\MethodSignatureRule;
 use PHPStan\Rules\Methods\MethodVisibilityComparisonHelper;
+use PHPStan\Rules\Methods\OverridingMethodCheck;
 use PHPStan\Rules\Methods\OverridingMethodRule;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
@@ -30,6 +31,7 @@ class PromoteParameterRuleWithOriginalRuleTest extends RuleTestCase
 				$container->getByType(MethodParameterComparisonHelper::class),
 				$container->getByType(MethodVisibilityComparisonHelper::class),
 				$container->getByType(MethodPrototypeFinder::class),
+				$container->getByType(OverridingMethodCheck::class),
 				true,
 				true,
 			),

@@ -35,6 +35,7 @@ class OverridingMethodRuleTest extends RuleTestCase
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
 			new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
+			new OverridingMethodCheck(),
 			$this->checkMissingOverrideMethodAttribute,
 			true,
 		);
@@ -898,6 +899,33 @@ class OverridingMethodRuleTest extends RuleTestCase
 	{
 		$this->phpVersionId = PHP_VERSION_ID;
 		$this->analyse([__DIR__ . '/data/backed-enum-from-trait.php'], []);
+	}
+
+	public function testReturnByRef(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-method-return-by-ref.php'], [
+			[
+				'Method OverridingMethodReturnByRef\Bar::byRef() overriding method OverridingMethodReturnByRef\Foo::byRef() that returns by reference should also return by reference.',
+				24,
+			],
+			[
+				'Method OverridingMethodReturnByRef\ImplementsByRefInterface::get() overriding method OverridingMethodReturnByRef\ByRefInterface::get() that returns by reference should also return by reference.',
+				58,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testVoidOverridingMixed(): void
+	{
+		$this->phpVersionId = PHP_VERSION_ID;
+		$this->analyse([__DIR__ . '/data/overriding-method-void-mixed.php'], [
+			[
+				'Return type void of method OverridingMethodVoidMixed\Bar::explicitMixed() is not covariant with return type mixed of method OverridingMethodVoidMixed\Foo::explicitMixed().',
+				28,
+			],
+		]);
 	}
 
 }

@@ -3,7 +3,6 @@
 namespace PHPStan\Rules\Methods;
 
 use PhpParser\Node;
-use PhpParser\Node\Attribute;
 use PHPStan\Analyser\CollectedDataEmitter;
 use PHPStan\Analyser\DependencyTracker;
 use PHPStan\Analyser\NodeCallbackInvoker;
@@ -42,6 +41,7 @@ final class OverridingMethodRule implements Rule
 		private MethodParameterComparisonHelper $methodParameterComparisonHelper,
 		private MethodVisibilityComparisonHelper $methodVisibilityComparisonHelper,
 		private MethodPrototypeFinder $methodPrototypeFinder,
+		private OverridingMethodCheck $overridingMethodCheck,
 		#[AutowiredParameter]
 		private bool $checkMissingOverrideMethodAttribute,
 		#[AutowiredParameter(ref: '%featureToggles.checkWholePhpVersionRange%')]
@@ -115,24 +115,7 @@ final class OverridingMethodRule implements Rule
 				}
 			}
 
-			if ($this->hasOverrideAttribute($node->getOriginalNode())) {
-				return [
-					RuleErrorBuilder::message(sprintf(
-						'Method %s::%s() has #[\Override] attribute but does not override any method.',
-						$method->getDeclaringClass()->getDisplayName(),
-						$method->getName(),
-					))
-						->nonIgnorable()
-						->identifier('method.override')
-						->fixNode($node->getOriginalNode(), function (Node\Stmt\ClassMethod $method) {
-							$method->attrGroups = $this->filterOverrideAttribute($method->attrGroups);
-							return $method;
-						})
-						->build(),
-				];
-			}
-
-			return [];
+			return $this->overridingMethodCheck->checkOverrideAttributeWithoutPrototype($method, $node->getOriginalNode());
 		}
 
 		[
@@ -143,92 +126,15 @@ final class OverridingMethodRule implements Rule
 			$inheritancePrototypeDeclaringClass,
 		] = $prototypeData;
 
-		$messages = [];
-		if (
-			$this->checkMissingOverrideMethodAttribute
-			&& !$scope->isInTrait()
-			&& !$this->hasOverrideAttribute($node->getOriginalNode())
-		) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() overrides method %s::%s() but is missing the #[\Override] attribute.',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$inheritancePrototypeDeclaringClass->getDisplayName(true),
-				$inheritancePrototype->getName(),
-			))
-				->identifier('method.missingOverride')
-				->fixNode($node->getOriginalNode(), static function (Node\Stmt\ClassMethod $method) {
-					$method->attrGroups[] = new Node\AttributeGroup([
-						new Attribute(new Node\Name\FullyQualified('Override')),
-					]);
-
-					return $method;
-				})
-				->build();
-		}
-		if ($inheritancePrototype->isFinalByKeyword()->yes()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() overrides final method %s::%s().',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$inheritancePrototypeDeclaringClass->getDisplayName(true),
-				$inheritancePrototype->getName(),
-			))
-				->nonIgnorable()
-				->identifier('method.parentMethodFinal')
-				->build();
-		} elseif ($inheritancePrototype->isFinal()->yes()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Method %s::%s() overrides @final method %s::%s().',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$inheritancePrototypeDeclaringClass->getDisplayName(true),
-				$inheritancePrototype->getName(),
-			))->identifier('method.parentMethodFinalByPhpDoc')
-				->build();
-		}
-
-		if ($prototype->isStatic()) {
-			if (!$method->isStatic()) {
-				$messages[] = RuleErrorBuilder::message(sprintf(
-					'Non-static method %s::%s() overrides static method %s::%s().',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
-				))
-					->nonIgnorable()
-					->identifier('method.nonStatic')
-					->build();
-			}
-		} elseif ($method->isStatic()) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Static method %s::%s() overrides non-static method %s::%s().',
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
-				$prototypeDeclaringClass->getDisplayName(true),
-				$prototype->getName(),
-			))
-				->nonIgnorable()
-				->identifier('method.static')
-				->build();
-		}
-
-		$prototypeAbstract = $prototype->isAbstract();
-		if (
-			$method->isAbstract()->yes()
-			&& !(is_bool($prototypeAbstract) ? $prototypeAbstract : $prototypeAbstract->yes())
-		) {
-			$messages[] = RuleErrorBuilder::message(sprintf(
-				'Cannot make non-abstract method %s::%s() abstract in class %s.',
-				$prototypeDeclaringClass->getDisplayName(true),
-				$prototype->getName(),
-				$method->getDeclaringClass()->getDisplayName(),
-			))
-				->nonIgnorable()
-				->identifier('method.abstractOverridingNonAbstract')
-				->build();
-		}
+		$messages = $this->overridingMethodCheck->checkInheritance(
+			$method,
+			$node->getOriginalNode(),
+			$prototype,
+			$prototypeDeclaringClass,
+			$inheritancePrototype,
+			$inheritancePrototypeDeclaringClass,
+			$this->checkMissingOverrideMethodAttribute && !$scope->isInTrait(),
+		);
 
 		if ($checkVisibility) {
 			$messages = array_merge($messages, $this->methodVisibilityComparisonHelper->compare($prototype, $prototypeDeclaringClass, $method, $node->getOriginalNode()));
@@ -352,30 +258,6 @@ final class OverridingMethodRule implements Rule
 	}
 
 	/**
-	 * @param Node\AttributeGroup[] $attrGroups
-	 * @return Node\AttributeGroup[]
-	 */
-	private function filterOverrideAttribute(array $attrGroups): array
-	{
-		foreach ($attrGroups as $i => $attrGroup) {
-			foreach ($attrGroup->attrs as $j => $attr) {
-				if ($attr->name->toLowerString() !== 'override') {
-					continue;
-				}
-
-				unset($attrGroup->attrs[$j]);
-				if (count($attrGroup->attrs) !== 0) {
-					continue;
-				}
-
-				unset($attrGroups[$i]);
-			}
-		}
-
-		return $attrGroups;
-	}
-
-	/**
 	 * @param list<IdentifierRuleError> $errors
 	 * @return list<IdentifierRuleError>
 	 */
@@ -401,19 +283,6 @@ final class OverridingMethodRule implements Rule
 		foreach ($method->attrGroups as $attrGroup) {
 			foreach ($attrGroup->attrs as $attr) {
 				if ($attr->name->toLowerString() === 'returntypewillchange') {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	private function hasOverrideAttribute(Node\Stmt\ClassMethod $method): bool
-	{
-		foreach ($method->attrGroups as $attrGroup) {
-			foreach ($attrGroup->attrs as $attr) {
-				if ($attr->name->toLowerString() === 'override') {
 					return true;
 				}
 			}

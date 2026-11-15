@@ -2396,6 +2396,19 @@ final class AssignHandler implements ExprHandler
 		$seenReadExprStrings = [];
 		/** @var Variable[] $readVariables */
 		$readVariables = (new NodeFinder())->findInstanceOf([$assignedExpr], Variable::class);
+		// arithmetic over variables reads nothing but their types: a condition on another
+		// variable cannot change what it evaluates to and is not assigned, and with no
+		// condition left the result depends on the consequent alone
+		$readVariableNames = null;
+		if (self::readsOnlyItsVariables($pricedExpr)) {
+			$readVariableNames = [];
+			foreach ($readVariables as $readVariable) {
+				if (!is_string($readVariable->name)) {
+					continue;
+				}
+				$readVariableNames['$' . $readVariable->name] = true;
+			}
+		}
 		foreach ($readVariables as $readVariable) {
 			if (!is_string($readVariable->name) || $readVariable->name === $variableName) {
 				continue;
@@ -2406,6 +2419,7 @@ final class AssignHandler implements ExprHandler
 			}
 			$seenReadExprStrings[$readExprString] = true;
 
+			$derivedTypesByConsequent = [];
 			foreach ($scopeConditionalExpressions[$readExprString] ?? [] as $holder) {
 				$consequent = $holder->getTypeHolder();
 				if (!$consequent->getCertainty()->yes()) {
@@ -2413,21 +2427,42 @@ final class AssignHandler implements ExprHandler
 				}
 
 				$conditionHolders = $holder->getConditionExpressionTypeHolders();
-				$evalScope = $scope;
+				$assignedConditionHolders = [];
 				foreach ($conditionHolders as $conditionExprString => $conditionHolder) {
 					if ($conditionExprString === $targetExprString || !$conditionHolder->getCertainty()->yes()) {
 						// a condition on the just-overwritten variable is stale
 						continue 2;
 					}
-					$evalScope = $evalScope->assignExpression($conditionHolder->getExpr(), $conditionHolder->getType(), $conditionHolder->getType());
+					if ($readVariableNames !== null && $conditionHolder->getExpr() instanceof Variable && !isset($readVariableNames[$conditionExprString])) {
+						continue;
+					}
+					$assignedConditionHolders[] = $conditionHolder;
 				}
 
 				if (++$evaluations > self::DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT) {
 					return $conditionalExpressions;
 				}
 
-				$evalScope = $evalScope->assignExpression($consequent->getExpr(), $consequent->getType(), $consequent->getType());
-				$derivedType = $nodeScopeResolver->readScopeStateOrSyntheticType($pricedExpr, $evalScope);
+				$derivedType = null;
+				if ($readVariableNames !== null && count($assignedConditionHolders) === 0) {
+					foreach ($derivedTypesByConsequent as [$consequentType, $consequentDerivedType]) {
+						if ($consequentType->equals($consequent->getType())) {
+							$derivedType = $consequentDerivedType;
+							break;
+						}
+					}
+				}
+				if ($derivedType === null) {
+					$evalScope = $scope;
+					foreach ($assignedConditionHolders as $conditionHolder) {
+						$evalScope = $evalScope->assignExpression($conditionHolder->getExpr(), $conditionHolder->getType(), $conditionHolder->getType());
+					}
+					$evalScope = $evalScope->assignExpression($consequent->getExpr(), $consequent->getType(), $consequent->getType());
+					$derivedType = $nodeScopeResolver->readScopeStateOrSyntheticType($pricedExpr, $evalScope);
+					if ($readVariableNames !== null && count($assignedConditionHolders) === 0) {
+						$derivedTypesByConsequent[] = [$consequent->getType(), $derivedType];
+					}
+				}
 				if ($derivedType->equals($assignedType)) {
 					continue;
 				}
@@ -2441,6 +2476,33 @@ final class AssignHandler implements ExprHandler
 		}
 
 		return $conditionalExpressions;
+	}
+
+	/**
+	 * Whether the type of $expr is read from the types of the variables it mentions alone:
+	 * arithmetic, concatenation and bitwise operators over named variables, literals and
+	 * constants - nothing in it is read in a narrowed scope or calls anything that could
+	 * look up another variable.
+	 */
+	private static function readsOnlyItsVariables(Expr $expr): bool
+	{
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+		if ($expr instanceof Node\Scalar) {
+			return !$expr instanceof Node\Scalar\InterpolatedString;
+		}
+		if ($expr instanceof Expr\ConstFetch) {
+			return true;
+		}
+		if ($expr instanceof Expr\UnaryMinus || $expr instanceof Expr\UnaryPlus || $expr instanceof Expr\Cast) {
+			return self::readsOnlyItsVariables($expr->expr);
+		}
+		if ($expr instanceof Expr\BinaryOp && !$expr instanceof Expr\BinaryOp\Coalesce && in_array($expr::class, self::ASSIGN_OP_BINARY_OPS, true)) {
+			return self::readsOnlyItsVariables($expr->left) && self::readsOnlyItsVariables($expr->right);
+		}
+
+		return false;
 	}
 
 	/**

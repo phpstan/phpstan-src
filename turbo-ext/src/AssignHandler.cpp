@@ -34,6 +34,7 @@ namespace sigs = ptdecl::AssignHandler::sig;
 
 #include <cstring>
 #include <utility>
+#include <vector>
 
 zend_class_entry *pt_ce_assign_handler = nullptr;
 
@@ -2682,6 +2683,23 @@ private:
 	}
 
 	/* (twin 2267) */
+	/* readsOnlyItsVariables(): arithmetic, concatenation and bitwise
+	 * operators (the AssignOp ones but ??) over named variables, literals and
+	 * constants */
+	static bool readsOnlyItsVariables(zval *expr)
+	{
+		if (ahIs(expr, PT_CLASS_VARIABLE)) return ahVariableName(expr) != NULL;
+		if (ahIs(expr, PT_CLASS_SCALAR)) return !ahIs(expr, PT_CLASS_INTERPOLATED_STRING);
+		if (ahIs(expr, PT_CLASS_CONST_FETCH)) return true;
+		if (ahIs(expr, PT_CLASS_UNARY_MINUS) || ahIs(expr, PT_CLASS_UNARY_PLUS) || ahIs(expr, PT_CLASS_CAST_EXPR)) return readsOnlyItsVariables(AH_PROP(expr, expr));
+		if (Z_TYPE_P(expr) != IS_OBJECT) return false;
+		for (const pt_ah_assign_op_binary_op &entry : pt_ah_assign_op_binary_ops) {
+			if (entry.binaryOpClass == PT_CLASS_COALESCE_EXPR || Z_OBJCE_P(expr) != pt_class(entry.binaryOpClass)) continue;
+			return readsOnlyItsVariables(AH_PROP(expr, left)) && readsOnlyItsVariables(AH_PROP(expr, right));
+		}
+		return false;
+	}
+
 	[[nodiscard]] static bool processDerivedConditionalExpressionsAfterAssign(zval *nsr, zval *scope, zend_string *variableName, zv::Val &conditionalExpressions, zval *assignedExpr, zval *assignedType, zval *rhsImpurePoints)
 	{
 		if (zend_hash_num_elements(Z_ARRVAL_P(rhsImpurePoints)) > 0) return true;
@@ -2712,6 +2730,21 @@ private:
 		zend_long evaluations = 0;
 		zv::Val seenReadExprStrings = ahEmptyArray();
 		AH_VALB(readVariables, nodeFinderFindVariables(assignedExpr));
+		// arithmetic over variables reads nothing but their types: a condition on another
+		// variable cannot change what it evaluates to and is not assigned, and with no
+		// condition left the result depends on the consequent alone
+		zv::Val readVariableNames; /* UNDEF = every condition is assigned */
+		if (readsOnlyItsVariables(pricedExpr.raw())) {
+			readVariableNames = ahEmptyArray();
+			for (auto readEntry : zv::TableRef(Z_ARRVAL_P(readVariables.raw()))) {
+				zend_string *readName = ahVariableName(readEntry.value().deref().raw());
+				if (readName == NULL) continue;
+				zv::Str readExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(readName), ZSTR_LEN(readName)));
+				zval trueZv;
+				ZVAL_TRUE(&trueZv);
+				ahSetKey(readVariableNames, readExprString.get(), &trueZv);
+			}
+		}
 		for (auto readEntry : zv::TableRef(Z_ARRVAL_P(readVariables.raw()))) {
 			zval *readVariable = readEntry.value().deref().raw();
 			zend_string *readName = ahVariableName(readVariable);
@@ -2726,13 +2759,15 @@ private:
 			if (holders == NULL) continue;
 			ZVAL_DEREF(holders);
 			if (Z_TYPE_P(holders) != IS_ARRAY) continue;
+			/* $derivedTypesByConsequent: [consequent type, derived type] pairs */
+			std::vector<std::pair<zval *, zv::Val>> derivedTypesByConsequent;
 			for (auto holderEntry : zv::TableRef(Z_ARRVAL_P(holders))) {
 				zval *holder = holderEntry.value().deref().raw();
 				zval *consequent = holderTypeHolder(holder);
 				if (pt_holder_certainty_value(Z_OBJ_P(consequent)) != PT_TRI_YES) continue;
 
 				zval *conditionHolders = holderConditions(holder);
-				zv::Val evalScope = zv::Val::copyOf(zv::Ref(scope));
+				std::vector<zval *> assignedConditionHolders;
 				bool stale = false;
 				for (auto conditionEntry : zv::TableRef(Z_ARRVAL_P(conditionHolders))) {
 					zval *conditionHolder = conditionEntry.value().deref().raw();
@@ -2742,16 +2777,44 @@ private:
 						stale = true;
 						break;
 					}
-					zval *conditionType = OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_TYPE);
-					AH_SETB(evalScope, pt_mutating_scope_assign_expression(Z_OBJ_P(evalScope.raw()), Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_EXPR)), conditionType, conditionType));
+					if (!readVariableNames.isUndef()
+						&& ahIs(OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_EXPR), PT_CLASS_VARIABLE)
+						&& (conditionExprString != NULL
+							? zend_symtable_find(Z_ARRVAL_P(readVariableNames.raw()), conditionExprString)
+							: zend_hash_index_find(Z_ARRVAL_P(readVariableNames.raw()), conditionEntry.indexKey())) == NULL) {
+						continue;
+					}
+					assignedConditionHolders.push_back(conditionHolder);
 				}
 				if (stale) continue;
 
 				if (++evaluations > PT_AH_DERIVED_CONDITIONAL_EXPRESSIONS_LIMIT) return true;
 
 				zval *consequentType = OBJ_PROP_NUM(Z_OBJ_P(consequent), PT_ETH_PROP_TYPE);
-				AH_SETB(evalScope, pt_mutating_scope_assign_expression(Z_OBJ_P(evalScope.raw()), Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(consequent), PT_ETH_PROP_EXPR)), consequentType, consequentType));
-				AH_VALB(derivedType, nsrReadScopeStateOrSyntheticType(nsr, pricedExpr.raw(), evalScope.raw()));
+				const bool memoizable = !readVariableNames.isUndef() && assignedConditionHolders.empty();
+				zv::Val derivedType;
+				if (memoizable) {
+					for (auto &memo : derivedTypesByConsequent) {
+						bool sameConsequent;
+						AH_OKB(ahEquals(memo.first, consequentType, sameConsequent));
+						if (sameConsequent) {
+							derivedType = zv::Val::copyOf(zv::Ref(memo.second.raw()));
+							break;
+						}
+					}
+				}
+				if (derivedType.isUndef()) {
+					zv::Val evalScope = zv::Val::copyOf(zv::Ref(scope));
+					for (zval *conditionHolder : assignedConditionHolders) {
+						zval *conditionType = OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_TYPE);
+						AH_SETB(evalScope, pt_mutating_scope_assign_expression(Z_OBJ_P(evalScope.raw()), Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(conditionHolder), PT_ETH_PROP_EXPR)), conditionType, conditionType));
+					}
+					AH_SETB(evalScope, pt_mutating_scope_assign_expression(Z_OBJ_P(evalScope.raw()), Z_OBJ_P(OBJ_PROP_NUM(Z_OBJ_P(consequent), PT_ETH_PROP_EXPR)), consequentType, consequentType));
+					AH_SETB(derivedType, nsrReadScopeStateOrSyntheticType(nsr, pricedExpr.raw(), evalScope.raw()));
+					if (memoizable) {
+						derivedTypesByConsequent.emplace_back(consequentType, zv::Val::copyOf(zv::Ref(derivedType.raw())));
+					}
+				}
 				bool equal;
 				AH_OKB(ahEquals(derivedType.raw(), assignedType, equal));
 				if (equal) continue;

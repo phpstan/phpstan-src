@@ -64,22 +64,24 @@ class ReadOnlyPropertyRuleTest extends RuleTestCase
 			return;
 		}
 
-		yield [
+		$errors = [
 			[
-				[
-					'Readonly property must have a native type.',
-					9,
-				],
-				[
-					'Readonly property cannot have a default value.',
-					10,
-				],
-				[
-					'Readonly property cannot be static.',
-					23,
-				],
+				'Readonly property must have a native type.',
+				9,
 			],
 		];
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Readonly property cannot have a default value.',
+				10,
+			];
+		}
+		$errors[] = [
+			'Readonly property cannot be static.',
+			23,
+		];
+
+		yield [$errors];
 	}
 
 	/**

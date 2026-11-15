@@ -190,6 +190,41 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.6.0-dev')]
+	public function testDefaultValue(): void
+	{
+		$this->analyse([__DIR__ . '/data/readonly-property-default-value.php'], [
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\Foo::$prop is already assigned.',
+				19,
+			],
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\Foo::$nullable is already assigned.',
+				20,
+			],
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\Foo::$array is already assigned.',
+				23,
+			],
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\Foo::$prop is assigned outside of the constructor.',
+				28,
+			],
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\Foo::$prop is already assigned.',
+				39,
+			],
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\ReadonlyClass::$prop is already assigned.',
+				51,
+			],
+			[
+				'Readonly property ReadonlyPropertyDefaultValue\CloneReinitializationTwice::$prop is already assigned.',
+				76,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug11495(): void
 	{

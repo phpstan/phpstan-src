@@ -209,6 +209,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function supportsReadonlyPropertyDefaultValues(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80600, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function supportsFirstClassCallables(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80100, null)->isSuperTypeOf($this->phpVersions)->result;

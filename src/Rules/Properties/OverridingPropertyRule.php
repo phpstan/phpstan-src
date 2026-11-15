@@ -81,7 +81,7 @@ final class OverridingPropertyRule implements Rule
 				|| (
 					$this->checkMissingOverridePropertyAttribute === null
 					&& $this->checkMissingOverrideMethodAttribute
-					&& $this->phpVersion->supportsOverrideAttributeOnProperty()
+					&& $scope->getPhpVersion()->supportsOverrideAttributeOnProperty()->yes()
 				)
 			)
 			&& !$scope->isInTrait()

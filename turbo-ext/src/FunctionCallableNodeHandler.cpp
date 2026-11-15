@@ -255,12 +255,6 @@ public:
 		zv::Val originalNodeHold;
 		zval *originalNode = ptveh::getterRead(ptveh::functionCallableNodeOriginalNode, expr, PT_LC("getoriginalnode"), originalNodeHold);
 		if (UNEXPECTED(originalNode == NULL)) return zv::Val();
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(originalNode), firstClassCallable))) return zv::Val();
-		if (!firstClassCallable) {
-			// the signature of a partial function application is not inferred yet
-			return ptveh::closureObjectType();
-		}
 		zval *originalName = ptveh::nodeRead(ptveh::funcCallName, originalNode);
 		if (UNEXPECTED(originalName == NULL)) return zv::Val();
 		int originalNameIsExpr = ptveh::isInstance(originalName, PT_CLASS_EXPR);
@@ -279,8 +273,10 @@ public:
 			if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
 			zv::Val callableType = pt_expression_result_get_type_on_scope(nameResult, scope, nativeTypesPromoted);
 			if (UNEXPECTED(callableType.isUndef())) return zv::Val();
-			bool closureObject;
-			if (UNEXPECTED(!ptveh::isClosureObject(callableType.raw(), closureObject))) return zv::Val();
+			bool firstClassCallable;
+			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(originalNode), firstClassCallable))) return zv::Val();
+			bool closureObject = false;
+			if (firstClassCallable && UNEXPECTED(!ptveh::isClosureObject(callableType.raw(), closureObject))) return zv::Val();
 			if (closureObject) {
 				// the first-class callable of a closure object is the object itself
 				return callableType;
@@ -296,14 +292,27 @@ public:
 			if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
 			zval null = {};
 			ZVAL_NULL(&null);
-			return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), &null, acceptors.raw(), nativeTypesPromoted);
+			zval *partialApplicationArgs = &null;
+			zv::Val rawArgsHold;
+			if (!firstClassCallable) {
+				partialApplicationArgs = pt_call_like_raw_args(Z_OBJ_P(originalNode), rawArgsHold);
+				if (UNEXPECTED(partialApplicationArgs == NULL)) return zv::Val();
+			}
+			zv::Val boundArgTypes;
+			if (UNEXPECTED(!ptveh::boundArgTypesOrNull(scope, originalNode, boundArgTypes))) return zv::Val();
+			if (boundArgTypes.isNull()) {
+				boundArgTypes = zv::Val(zv::Arr::empty());
+			}
+			return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), &null, acceptors.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw(), &null);
 		}
 
 		zv::Val initializerExprContext = ptveh::initializerExprContextFromScope(scope);
 		if (UNEXPECTED(initializerExprContext.isUndef())) return zv::Val();
 		bool nativeTypesPromoted;
 		if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
-		return ptveh::getFirstClassCallableType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted);
+		zv::Val boundArgTypes;
+		if (UNEXPECTED(!ptveh::boundArgTypesOrNull(scope, originalNode, boundArgTypes))) return zv::Val();
+		return ptveh::getFirstClassCallableType(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted, boundArgTypes.raw());
 	}
 
 	/* the handler entry (Engine.h) */

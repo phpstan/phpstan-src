@@ -12,13 +12,16 @@ use PHPStan\Type\Type;
 final class ClosureCallUnresolvedMethodPrototypeReflection implements UnresolvedMethodPrototypeReflection
 {
 
-	public function __construct(private UnresolvedMethodPrototypeReflection $prototype, private ClosureType $closure)
+	/**
+	 * @param bool $takesNewThis whether the method takes the object to bind first, like call() and unlike __invoke()
+	 */
+	public function __construct(private UnresolvedMethodPrototypeReflection $prototype, private ClosureType $closure, private bool $takesNewThis = true)
 	{
 	}
 
 	public function doNotResolveTemplateTypeMapToBounds(): UnresolvedMethodPrototypeReflection
 	{
-		return new self($this->prototype->doNotResolveTemplateTypeMapToBounds(), $this->closure);
+		return new self($this->prototype->doNotResolveTemplateTypeMapToBounds(), $this->closure, $this->takesNewThis);
 	}
 
 	public function getNakedMethod(): ExtendedMethodReflection
@@ -28,12 +31,12 @@ final class ClosureCallUnresolvedMethodPrototypeReflection implements Unresolved
 
 	public function getTransformedMethod(): ExtendedMethodReflection
 	{
-		return new ClosureCallMethodReflection($this->prototype->getTransformedMethod(), $this->closure);
+		return new ClosureCallMethodReflection($this->prototype->getTransformedMethod(), $this->closure, $this->takesNewThis);
 	}
 
 	public function withCalledOnType(Type $type): UnresolvedMethodPrototypeReflection
 	{
-		return new self($this->prototype->withCalledOnType($type), $this->closure);
+		return new self($this->prototype->withCalledOnType($type), $this->closure, $this->takesNewThis);
 	}
 
 }

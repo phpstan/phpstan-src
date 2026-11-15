@@ -413,6 +413,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 				'Dead catch - DeadCatchPartialFunctionApplication\FooException is never thrown in the try block.',
 				61,
 			],
+			[
+				'Dead catch - JsonException is never thrown in the try block.',
+				76,
+			],
 		]);
 	}
 
@@ -422,6 +426,10 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			[
 				'Dead catch - InvalidArgumentException is never thrown in the try block.',
 				29,
+			],
+			[
+				'Dead catch - JsonException is never thrown in the try block.',
+				45,
 			],
 		]);
 	}

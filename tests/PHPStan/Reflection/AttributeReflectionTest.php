@@ -161,7 +161,7 @@ class AttributeReflectionTest extends PHPStanTestCase
 					[
 						'ClosureInAttribute\\AttrWithCallback',
 						[
-							'callback' => 'Closure(int): void',
+							'callback' => 'static-Closure(int): void',
 						],
 					],
 				],

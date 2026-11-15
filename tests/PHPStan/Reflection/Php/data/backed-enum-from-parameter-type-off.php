@@ -17,8 +17,8 @@ enum WordEnum: string
 }
 
 function (): void {
-	assertType('Closure(int|string): BackedEnumFromParameterTypeOff\NumberEnum', NumberEnum::from(...));
-	assertType('Closure(int|string): (BackedEnumFromParameterTypeOff\NumberEnum|null)', NumberEnum::tryFrom(...));
-	assertType('Closure(int|string): BackedEnumFromParameterTypeOff\WordEnum', WordEnum::from(...));
-	assertType('Closure(int|string): (BackedEnumFromParameterTypeOff\WordEnum|null)', WordEnum::tryFrom(...));
+	assertType('static-Closure(int|string): BackedEnumFromParameterTypeOff\NumberEnum', NumberEnum::from(...));
+	assertType('static-Closure(int|string): (BackedEnumFromParameterTypeOff\NumberEnum|null)', NumberEnum::tryFrom(...));
+	assertType('static-Closure(int|string): BackedEnumFromParameterTypeOff\WordEnum', WordEnum::from(...));
+	assertType('static-Closure(int|string): (BackedEnumFromParameterTypeOff\WordEnum|null)', WordEnum::tryFrom(...));
 };

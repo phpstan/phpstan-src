@@ -1868,6 +1868,25 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testNamedArgumentsCountOfMultiVariantFunctions(): void
+	{
+		$this->analyse([__DIR__ . '/data/call-to-function-named-params-multivariant-errors.php'], [
+			[
+				'Function mt_rand invoked with 1 parameter, 2 required.',
+				5,
+			],
+			[
+				'Argument #1 ($min) must be passed explicitly, because the default value is not known.',
+				6,
+			],
+			[
+				'Function array_udiff invoked with 1 parameter, at least 3 required.',
+				8,
+			],
+		]);
+	}
+
 	public function testBug9793(): void
 	{
 		$errors = [];
@@ -3535,6 +3554,101 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				'Unable to resolve the template type T in call to function Bug15700Functions\\userArrayValues',
 				22,
 				'See: https://phpstan.org/blog/solving-phpstan-error-unable-to-resolve-template-type',
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testFirstClassCallableCallbacks(): void
+	{
+		$this->analyse([__DIR__ . '/data/first-class-callable-callbacks.php'], [
+			[
+				'Parameter #2 $callback of function usort expects callable(string, string): int, Closure(int, int): int given.',
+				71,
+			],
+			[
+				'Parameter #2 $callback of function uasort expects callable(string, string): int, Closure(int, int): int given.',
+				72,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(string, string): int given.',
+				73,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(int, string): int, Closure(int, int): int given.',
+				74,
+			],
+			[
+				'Parameter #2 $callback of function array_reduce expects callable(string, int): string, Closure(string, string): string given.',
+				75,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(string, int<0, max>): mixed, Closure(int, int): void given.',
+				76,
+			],
+			[
+				'Parameter #2 $callback of function array_walk expects callable(int, int<0, max>): mixed, Closure(string, string): void given.',
+				77,
+			],
+			[
+				'Parameter #1 $callback of function array_map expects (callable(int): mixed)|null, (Closure(string): (non-empty-string|false))|(Closure(string, string): (non-empty-string|false)) given.',
+				78,
+				'Type #1 from the union: Parameter #2 $token of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+			],
+			[
+				'Parameter #1 $callback of function array_map expects (callable(int): mixed)|null, (Closure(string): lowercase-string)|(Closure(string): uppercase-string) given.',
+				87,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.6.0-dev')]
+	public function testPartialFunctionApplicationCallbacks(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-callbacks.php'], [
+			[
+				'Parameter #1 $callback of function array_map expects (callable(string): mixed)|null, Closure(int): string given.',
+				73,
+			],
+			[
+				'Parameter #1 $callback of function array_map expects (callable(int): mixed)|null, Closure(int, string): string given.',
+				74,
+				'Type #1 from the union: Parameter #2 $prefix of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
+			],
+			[
+				'Parameter #2 $callback of function array_filter expects (callable(int): bool)|null, Closure(string): bool given.',
+				75,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(string, string): int, Closure(int, int): int given.',
+				76,
+			],
+			[
+				'Parameter #2 $callback of function usort expects callable(int, int): int, Closure(int, bool): int given.',
+				77,
+			],
+			[
+				'Parameter #2 $fn of function PartialFunctionApplicationCallbacks\\mapList expects callable(string): string, Closure(int): string given.',
+				78,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testUnknownDefaultValue(): void
+	{
+		$this->analyse([__DIR__ . '/data/unknown-default-value.php'], [
+			[
+				'Argument #2 ($filter_value) must be passed explicitly, because the default value is not known.',
+				7,
+			],
+			[
+				'Argument #1 ($min) must be passed explicitly, because the default value is not known.',
+				8,
+			],
+			[
+				'Argument #2 ($close) must be passed explicitly, because the default value is not known.',
+				9,
 			],
 		]);
 	}

@@ -23,7 +23,9 @@ use PHPStan\Dependency\DependencyTypes;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\MethodCallableNode;
 use PHPStan\Reflection\InitializerExprTypeResolver;
+use PHPStan\Reflection\PartialFunctionApplicationParameters;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\ClosureOrigin;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use function array_merge;
@@ -145,10 +147,6 @@ final class MethodCallableNodeHandler implements ExprHandler
 		if (!$originalNode->name instanceof Identifier) {
 			return new ObjectType(Closure::class);
 		}
-		if (!$originalNode->isFirstClassCallable()) {
-			// the signature of a partial function application is not inferred yet
-			return new ObjectType(Closure::class);
-		}
 
 		// $originalNode->var is the same node as $expr->getVar(), processed in
 		// processExpr - read its ExpressionResult instead of Scope::getType()
@@ -162,6 +160,9 @@ final class MethodCallableNodeHandler implements ExprHandler
 			$method,
 			$method->getVariants(),
 			$scope->nativeTypesPromoted,
+			$originalNode->isFirstClassCallable() ? null : $originalNode->getRawArgs(),
+			$originalNode->isFirstClassCallable() ? [] : PartialFunctionApplicationParameters::getBoundArgTypes($scope, $originalNode),
+			ClosureOrigin::forMethod($varType, $originalNode->name->toString(), false),
 		);
 	}
 

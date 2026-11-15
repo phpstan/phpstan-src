@@ -416,7 +416,12 @@ class UnionType implements CompoundType
 			return IsSuperTypeOfResult::createFromBoolean($containment->yes());
 		}
 
-		return IsSuperTypeOfResult::extremeIdentity(...array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types));
+		$results = array_map(static fn (Type $innerType) => $otherType->isSuperTypeOf($innerType), $this->types);
+		if ($this->hasClosureMember()) {
+			$results = ClosureOrigin::combineOverloadIsSuperTypeOfResults($this->types, $results);
+		}
+
+		return IsSuperTypeOfResult::extremeIdentity(...$results);
 	}
 
 	public function isAcceptedBy(Type $acceptingType, bool $strictTypes): AcceptsResult
@@ -428,7 +433,24 @@ class UnionType implements CompoundType
 			return AcceptsResult::createYes();
 		}
 
-		return AcceptsResult::extremeIdentity(...array_map(static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes), $this->types));
+		$results = array_map(static fn (Type $innerType) => $acceptingType->accepts($innerType, $strictTypes), $this->types);
+		if ($this->hasClosureMember()) {
+			$results = ClosureOrigin::combineOverloadAcceptsResults($this->types, $results);
+		}
+
+		return AcceptsResult::extremeIdentity(...$results);
+	}
+
+	/** Closure members of one overloaded callee answer together, see ClosureOrigin::combineOverloadAcceptsResults(). */
+	private function hasClosureMember(): bool
+	{
+		foreach ($this->types as $type) {
+			if ($type instanceof ClosureType) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

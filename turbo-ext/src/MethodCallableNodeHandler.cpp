@@ -237,12 +237,6 @@ public:
 		if (!originalNameIsIdentifier) {
 			return ptveh::closureObjectType();
 		}
-		bool firstClassCallable;
-		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(originalNode), firstClassCallable))) return zv::Val();
-		if (!firstClassCallable) {
-			// the signature of a partial function application is not inferred yet
-			return ptveh::closureObjectType();
-		}
 
 		// $originalNode->var is the same node as $expr->getVar(), processed in
 		// processExpr - read its ExpressionResult instead of Scope::getType()
@@ -265,7 +259,24 @@ public:
 		zv::Val variants = pt_extended_method_reflection_call(method.raw(), PT_MR_GET_VARIANTS);
 		if (UNEXPECTED(variants.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_mutating_scope_native_types_promoted(Z_OBJ_P(scope), nativeTypesPromoted))) return zv::Val();
-		return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), method.raw(), variants.raw(), nativeTypesPromoted);
+		bool firstClassCallable;
+		if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(originalNode), firstClassCallable))) return zv::Val();
+		zval nullArgs;
+		ZVAL_NULL(&nullArgs);
+		zval *partialApplicationArgs = &nullArgs;
+		zv::Val rawArgsHold;
+		if (!firstClassCallable) {
+			partialApplicationArgs = pt_call_like_raw_args(Z_OBJ_P(originalNode), rawArgsHold);
+			if (UNEXPECTED(partialApplicationArgs == NULL)) return zv::Val();
+		}
+		zv::Val boundArgTypes;
+		if (UNEXPECTED(!ptveh::boundArgTypesOrNull(scope, originalNode, boundArgTypes))) return zv::Val();
+		if (boundArgTypes.isNull()) {
+			boundArgTypes = zv::Val(zv::Arr::empty());
+		}
+		zv::Val origin = pt_closure_origin_for_method(varType.raw(), methodName, false);
+		if (UNEXPECTED(origin.isUndef())) return zv::Val();
+		return ptveh::createFirstClassCallable(OBJ_PROP_NUM(self, slots::initializerExprTypeResolver), method.raw(), variants.raw(), nativeTypesPromoted, partialApplicationArgs, boundArgTypes.raw(), origin.raw());
 	}
 
 	/* the handler entry (Engine.h) */

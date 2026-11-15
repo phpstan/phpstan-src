@@ -20,6 +20,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider\ReflectionProviderProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ParserNodeTypeToPHPStanType;
@@ -377,65 +378,51 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 			return ['positional' => [], 'named' => null];
 		}
 
-		$nativeParams = $nativeSignature->getParameters();
-		$namedArgumentsVariants = [];
-		$allParamNamesMatchNative = true;
-		foreach ($functionMapSignatures['positional'] as $functionMapSignature) {
-			$isPrevParamVariadic = false;
-			$hasMiddleVariadicParam = false;
-			// avoid weird functions like array_diff_uassoc
-			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
-				$nativeParam = $nativeParams[$i] ?? null;
-				$allParamNamesMatchNative = $allParamNamesMatchNative && $nativeParam !== null && $functionParam->getName() === $nativeParam->getName();
-				$hasMiddleVariadicParam = $hasMiddleVariadicParam || $isPrevParamVariadic;
-				$isPrevParamVariadic = $functionParam->isVariadic() || (
-					$nativeParam !== null
-						? $nativeParam->isVariadic()
-						: false
-					);
-			}
+		return [
+			'positional' => array_map(fn (FunctionSignature $signature): FunctionSignature => $this->withUnknownDefaultValues($nativeSignature, $signature), $functionMapSignatures['positional']),
+			// PHP resolves named arguments against the one signature php-src stubs declare
+			'named' => [$nativeSignature],
+		];
+	}
 
-			if ($hasMiddleVariadicParam) {
+	/**
+	 * A parameter of a function map variant like mt_rand(int $min, int $max) keeps the unknown default
+	 * of the parameter it stands for, also over a default the PhpStorm stubs make up for it,
+	 * so that combining the variants knows that $min must be passed explicitly before $max.
+	 */
+	private function withUnknownDefaultValues(FunctionSignature $nativeSignature, FunctionSignature $signature): FunctionSignature
+	{
+		$nativeParameters = $nativeSignature->getParameters();
+		$parameters = [];
+		foreach ($signature->getParameters() as $i => $parameter) {
+			$nativeParameter = $nativeParameters[$i] ?? null;
+			if (
+				$nativeParameter === null
+				|| $nativeParameter->getName() !== $parameter->getName()
+				|| !$nativeParameter->getDefaultValue() instanceof ErrorType
+			) {
+				$parameters[] = $parameter;
 				continue;
 			}
 
-			$parameters = [];
-			foreach ($functionMapSignature->getParameters() as $i => $functionParam) {
-				if (!array_key_exists($i, $nativeParams)) {
-					continue 2;
-				}
-
-				// it seems that variadic parameters cannot be named in native functions/methods.
-				$nativeParam = $nativeParams[$i];
-				if ($nativeParam->isVariadic()) {
-					break;
-				}
-
-				$parameters[] = new ParameterSignature(
-					$nativeParam->getName(),
-					$functionParam->isOptional(),
-					$functionParam->getType(),
-					$functionParam->getNativeType(),
-					$functionParam->passedByReference(),
-					$functionParam->isVariadic(),
-					$functionParam->getDefaultValue() ?? $nativeParam->getDefaultValue(),
-					$functionParam->getOutType() ?? $nativeParam->getOutType(),
-				);
-			}
-
-			$namedArgumentsVariants[] = new FunctionSignature(
-				$parameters,
-				$functionMapSignature->getReturnType(),
-				$functionMapSignature->getNativeReturnType(),
-				$functionMapSignature->isVariadic(),
+			$parameters[] = new ParameterSignature(
+				$parameter->getName(),
+				$parameter->isOptional(),
+				$parameter->getType(),
+				$parameter->getNativeType(),
+				$parameter->passedByReference(),
+				$parameter->isVariadic(),
+				$nativeParameter->getDefaultValue(),
+				$parameter->getOutType(),
 			);
 		}
 
-		if ($allParamNamesMatchNative || count($namedArgumentsVariants) === 0) {
-			$namedArgumentsVariants = null;
-		}
-
-		return ['positional' => $functionMapSignatures['positional'], 'named' => $namedArgumentsVariants];
+		return new FunctionSignature(
+			$parameters,
+			$signature->getReturnType(),
+			$signature->getNativeReturnType(),
+			$signature->isVariadic(),
+		);
 	}
 
 	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature
@@ -570,6 +557,17 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 				}
 			}
 
+			$defaultValue = null;
+			if ($param->default instanceof ConstFetch && $param->default->name->toString() === 'UNKNOWN') {
+				// see ParameterReflection::getDefaultValue()
+				$defaultValue = new ErrorType();
+			} elseif ($param->default !== null) {
+				$defaultValue = $this->initializerExprTypeResolver->getType(
+					$param->default,
+					InitializerExprContext::fromStubParameter($className, $stubFile, $function),
+				);
+			}
+
 			$parameters[] = new ParameterSignature(
 				$name->name,
 				$param->default !== null || $param->variadic,
@@ -577,10 +575,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 				$parameterType,
 				$param->byRef ? PassedByReference::createCreatesNewVariable() : PassedByReference::createNo(),
 				$param->variadic,
-				$param->default !== null ? $this->initializerExprTypeResolver->getType(
-					$param->default,
-					InitializerExprContext::fromStubParameter($className, $stubFile, $function),
-				) : null,
+				$defaultValue,
 				null,
 			);
 

@@ -523,6 +523,11 @@ enum {
 	PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES,
 	/* the result cache's record of what a declaration's resolution looked up */
 	PT_CLASS_VALUE_DEPENDENCY_COLLECTOR,
+	/* the closure parameters of a partial function application */
+	PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS,
+	/* the callee of a closure created from a callable, and the replay of its calls */
+	PT_CLASS_CLOSURE_ORIGIN,
+	PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY,
 	PT_CLASS_COUNT
 };
 
@@ -1092,7 +1097,7 @@ extern zend_class_entry *pt_ce_closure_type;
  * exception */
 [[nodiscard]] bool pt_iterable_type_new(zval *out, zval *keyType, zval *itemType);
 bool pt_callable_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *templateTags = NULL, zval *isPure = NULL, zval *assertions = NULL);
-bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *callSiteVarianceMap = NULL, zval *templateTags = NULL, zval *throwPoints = NULL, zval *impurePoints = NULL, zval *invalidateExpressions = NULL, zval *usedVariables = NULL, zval *acceptsNamedArguments = NULL, zval *mustUseReturnValue = NULL, zval *assertions = NULL, zval *isStatic = NULL, zval *byRefUseTypes = NULL);
+bool pt_closure_type_new(zval *out, zval *parameters = NULL, zval *returnType = NULL, bool variadic = true, zval *templateTypeMap = NULL, zval *resolvedTemplateTypeMap = NULL, zval *callSiteVarianceMap = NULL, zval *templateTags = NULL, zval *throwPoints = NULL, zval *impurePoints = NULL, zval *invalidateExpressions = NULL, zval *usedVariables = NULL, zval *acceptsNamedArguments = NULL, zval *mustUseReturnValue = NULL, zval *assertions = NULL, zval *isStatic = NULL, zval *byRefUseTypes = NULL, zval *origin = NULL);
 
 /* merged from the parallel port branch */
 /* the array-shape type (ConstantArrayType.cpp) */
@@ -3295,6 +3300,10 @@ zv::Val pt_closure_signature_inference_add_absorbed_in_union_of_two(zval *scope,
 /* $closureParameterResolver->resolveCallableTypeForScope($expr, $scope);
  * UNDEF = pending exception */
 zv::Val pt_closure_parameter_resolver_resolve_callable_type_for_scope(zval *resolver, zval *expr, zval *scope);
+/* ClosureOrigin::forFunction($functionName) / ClosureOrigin::forMethod($calledOnType,
+ * $methodName, $isStaticCall); UNDEF = pending exception */
+zv::Val pt_closure_origin_for_function(zval *functionName);
+zv::Val pt_closure_origin_for_method(zval *calledOnType, zval *methodName, bool isStaticCall);
 /* $closureType->getByRefUseTypes(); UNDEF = pending exception */
 zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType);
 /* $closureType->containsUnresolvedTemplateArgument(); false = pending
@@ -4082,8 +4091,10 @@ enum pt_ietr_binary_operator : uint8_t
  * (a TypeResult) / ->getArrayType($expr, $getTypeCallback) /
  * ->getCastType($expr, $getTypeCallback) / ->getCastObjectType($exprType) /
  * ->getFunctionType($type, $isNullable, $isVariadic, $context) /
- * ->getFirstClassCallableType($expr, $context, $nativeTypesPromoted) /
- * ->createFirstClassCallable($function, $variants, $nativeTypesPromoted) /
+ * ->getFirstClassCallableType($expr, $context, $nativeTypesPromoted,
+ * $boundArgTypes) /
+ * ->createFirstClassCallable($function, $variants, $nativeTypesPromoted,
+ * $partialApplicationArgs, $boundArgTypes, $origin) /
  * ->getClassConstFetchTypeByReflection($class, $constantName,
  * $classReflection, $getTypeCallback) / ->getUnaryPlusType($expr,
  * $getTypeCallback) / ->getUnaryMinusType(...) / ->getBitwiseNotType(...):
@@ -4102,8 +4113,8 @@ zv::Val pt_initializer_expr_type_resolver_get_array_type(zval *resolver, zval *e
 zv::Val pt_initializer_expr_type_resolver_get_cast_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_cast_object_type(zval *resolver, zval *exprType);
 zv::Val pt_initializer_expr_type_resolver_get_function_type(zval *resolver, zval *type, bool isNullable, bool isVariadic, zval *context);
-zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted);
-zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted);
+zv::Val pt_initializer_expr_type_resolver_get_first_class_callable_type(zval *resolver, zval *expr, zval *context, bool nativeTypesPromoted, zval *boundArgTypes);
+zv::Val pt_initializer_expr_type_resolver_create_first_class_callable(zval *resolver, zval *function, zval *variants, bool nativeTypesPromoted, zval *partialApplicationArgs, zval *boundArgTypes, zval *origin);
 zv::Val pt_initializer_expr_type_resolver_get_class_const_fetch_type_by_reflection(zval *resolver, zval *class_, zval *constantName, zval *classReflection, const pt_ietr_get_type &getTypeCallback, bool nativeTypesPromoted = false);
 zv::Val pt_initializer_expr_type_resolver_get_unary_plus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);
 zv::Val pt_initializer_expr_type_resolver_get_unary_minus_type(zval *resolver, zval *expr, const pt_ietr_get_type &getTypeCallback);

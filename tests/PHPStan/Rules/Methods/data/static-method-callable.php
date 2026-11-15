@@ -67,3 +67,28 @@ class Ipsum
 	}
 
 }
+
+abstract class AbstractParent
+{
+
+	abstract public function doFoo(): int;
+
+	public function doBar(): int
+	{
+		return 1;
+	}
+
+}
+
+class AbstractChild extends AbstractParent
+{
+
+	public function doFoo(): int
+	{
+		parent::doFoo(...);
+		parent::doBar(...);
+
+		return 1;
+	}
+
+}

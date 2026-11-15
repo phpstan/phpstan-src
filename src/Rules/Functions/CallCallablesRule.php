@@ -10,8 +10,11 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Internal\SprintfHelper;
+use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Reflection\InaccessibleMethod;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -20,9 +23,11 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Type;
+use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function array_merge;
 use function count;
+use function in_array;
 use function sprintf;
 use function ucfirst;
 
@@ -36,6 +41,7 @@ final class CallCallablesRule implements Rule
 	public function __construct(
 		private FunctionCallParametersCheck $check,
 		private RuleLevelHelper $ruleLevelHelper,
+		private ReflectionProvider $reflectionProvider,
 		#[AutowiredParameter]
 		private bool $reportMaybes,
 	)
@@ -104,12 +110,23 @@ final class CallCallablesRule implements Rule
 			))->identifier('callable.inaccessibleMethod')->build();
 		}
 
+		$namedArgumentsVariants = $this->getCalleeNamedArgumentsVariants($type, $node, $scope);
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
 			$scope,
 			$node->getArgs(),
 			$parametersAcceptors,
-			null,
+			$namedArgumentsVariants,
 		);
+
+		foreach ($node->getArgs() as $arg) {
+			if ($arg->name === null || !self::isBoundByPartialApplication($type, $arg->name->toString())) {
+				continue;
+			}
+			$messages[] = RuleErrorBuilder::message(sprintf('Argument for parameter $%s has already been bound by the partial function application.', $arg->name->toString()))
+				->identifier('argument.duplicate')
+				->line($arg->getStartLine())
+				->build();
+		}
 
 		if ($type instanceof ClosureType) {
 			$callableDescription = 'closure';
@@ -146,8 +163,79 @@ final class CallCallablesRule implements Rule
 				'Combining constants with | is not allowed for %s of ' . $callableDescription . '.',
 				null,
 				null,
+				$namedArgumentsVariants !== null ? $parametersAcceptors : [],
 			),
 		);
+	}
+
+	/**
+	 * A first-class callable of a multi-variant built-in is a union of closures, one per variant,
+	 * but PHP resolves named arguments against the one signature of its callee.
+	 *
+	 * @return list<ParametersAcceptor>|null
+	 */
+	private function getCalleeNamedArgumentsVariants(Type $type, Node\Expr\FuncCall $node, Scope $scope): ?array
+	{
+		$members = $type instanceof UnionType ? $type->getTypes() : [$type];
+		$origin = null;
+		foreach ($members as $member) {
+			if (!$member instanceof ClosureType) {
+				return null;
+			}
+			$memberOrigin = $member->getOrigin();
+			if ($memberOrigin === null || !$memberOrigin->isFirstClassCallable()) {
+				return null;
+			}
+			if ($origin !== null && !$origin->equals($memberOrigin)) {
+				return null;
+			}
+			$origin = $memberOrigin;
+		}
+		if ($origin === null) {
+			return null;
+		}
+
+		$call = $origin->createCall($node, $members[0]);
+		if ($call instanceof Node\Expr\FuncCall && $call->name instanceof Node\Name) {
+			if (!$this->reflectionProvider->hasFunction($call->name, $scope)) {
+				return null;
+			}
+
+			return $this->reflectionProvider->getFunction($call->name, $scope)->getNamedArgumentsVariants();
+		}
+		if ($call instanceof Node\Expr\MethodCall) {
+			$calledOn = $call->var;
+		} elseif ($call instanceof Node\Expr\StaticCall) {
+			$calledOn = $call->class;
+		} else {
+			return null;
+		}
+		if (!$calledOn instanceof TypeExpr || !$call->name instanceof Node\Identifier) {
+			return null;
+		}
+
+		return $scope->getMethodReflection($calledOn->getExprType(), $call->name->toString())?->getNamedArgumentsVariants();
+	}
+
+	/**
+	 * Whether every closure the type can be is a variadic one a partial function application
+	 * created with the parameter bound - its call then throws "Named parameter overwrites
+	 * previous argument". A closure that is not variadic reports the name as unknown instead.
+	 */
+	private static function isBoundByPartialApplication(Type $type, string $name): bool
+	{
+		$members = $type instanceof UnionType ? $type->getTypes() : [$type];
+		foreach ($members as $member) {
+			if (!$member instanceof ClosureType || !$member->isVariadic()) {
+				return false;
+			}
+			$origin = $member->getOrigin();
+			if ($origin === null || !in_array($name, $origin->getBoundParameterNames(), true)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

@@ -194,7 +194,9 @@ private:
 			if (UNEXPECTED(originalNode == NULL)) return;
 			zv::Val initializerExprContext = ptveh::initializerExprContextFromScope(&captures[2]);
 			if (UNEXPECTED(initializerExprContext.isUndef())) return;
-			type = ptveh::getFirstClassCallableType(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted);
+			zval nullBoundArgTypes;
+			ZVAL_NULL(&nullBoundArgTypes);
+			type = ptveh::getFirstClassCallableType(OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::initializerExprTypeResolver), originalNode, initializerExprContext.raw(), nativeTypesPromoted, &nullBoundArgTypes);
 		});
 		if (UNEXPECTED(type.isUndef())) return;
 		type.intoReturnValue(return_value);

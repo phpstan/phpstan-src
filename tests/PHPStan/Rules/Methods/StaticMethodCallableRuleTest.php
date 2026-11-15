@@ -6,6 +6,7 @@ use PHPStan\Classes\ForbiddenClassNameExtension;
 use PHPStan\Rules\ClassCaseSensitivityCheck;
 use PHPStan\Rules\ClassForbiddenNameCheck;
 use PHPStan\Rules\ClassNameCheck;
+use PHPStan\Rules\FunctionCallParametersCheck;
 use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
@@ -52,6 +53,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				discoveringSymbolsTip: true,
 				reportMagicMethods: true,
 			),
+			self::getContainer()->getByType(FunctionCallParametersCheck::class),
 		);
 	}
 
@@ -104,6 +106,10 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 				'Cannot call static method doFoo() on int.',
 				22,
 			],
+			[
+				'Cannot call abstract method StaticMethodCallable\\AbstractParent::doFoo().',
+				88,
+			],
 		]);
 	}
 
@@ -131,6 +137,41 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		}
 
 		$this->analyse([__DIR__ . '/data/method-partial-function-application.php'], $errors);
+	}
+
+	#[RequiresPhp('>= 8.6.0-dev')]
+	public function testPartialFunctionApplicationArguments(): void
+	{
+		$this->analyse([__DIR__ . '/data/partial-function-application-method-arguments.php'], [
+			[
+				'Static method PartialFunctionApplicationMethodArguments\\Foo::doStatic() partially applied with 3 arguments, 1-2 required.',
+				31,
+			],
+			[
+				'Missing parameter $a (int) in partial application of static method PartialFunctionApplicationMethodArguments\\Foo::doStatic().',
+				32,
+			],
+			[
+				'Argument for parameter $a has already been passed.',
+				33,
+			],
+			[
+				'Variadic placeholder must be last.',
+				44,
+			],
+			[
+				'Cannot combine partial application and unpacking.',
+				45,
+			],
+			[
+				'Cannot use named placeholder for unknown or variadic parameter $y.',
+				73,
+			],
+			[
+				'Variadic placeholder may only appear once.',
+				79,
+			],
+		]);
 	}
 
 	public function testConditionallyExecutedCode(): void

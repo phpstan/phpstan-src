@@ -21,7 +21,18 @@ final class CrossCheckInterfacesHelper
 	{
 		$interfaceTemplateTypeMaps = [];
 		$errors = [];
-		$check = static function (ClassReflection $classReflection, bool $first) use (&$interfaceTemplateTypeMaps, &$check, &$errors): void {
+		// Each ancestor is reached once from every class below it, and a class seen again
+		// compares the same interfaces with the same maps, repeating only its errors - visiting
+		// it every time was exponential in the depth of the hierarchy.
+		$visited = [];
+		$check = static function (ClassReflection $classReflection, bool $first) use (&$interfaceTemplateTypeMaps, &$check, &$errors, &$visited): void {
+			if (!$first) {
+				if (array_key_exists($classReflection->getName(), $visited)) {
+					return;
+				}
+				$visited[$classReflection->getName()] = true;
+			}
+
 			foreach ($classReflection->getInterfaces() as $interface) {
 				if (!$interface->isGeneric()) {
 					continue;

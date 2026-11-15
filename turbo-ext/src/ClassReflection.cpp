@@ -987,14 +987,19 @@ public:
 					if (UNEXPECTED(extendedType.isUndef())) return zv::Val();
 				}
 
+				// a generic parent is a new reflection, remembered so that walking up a
+				// generic hierarchy does not resolve each ancestor again
+				zv::Val reflection;
 				if (!instanceOfShadowed(extendedType.ref(), pt_ce_generic_object_type, PT_LC(PT_CR_GENERIC_OBJECT_TYPE_NAME))) {
-					return providerGetClass(parentNameStr);
+					reflection = providerGetClass(parentNameStr);
+				} else {
+					reflection = typeGetClassReflection(extendedType.ref());
+					if (UNEXPECTED(reflection.isUndef())) return zv::Val();
+					if (reflection.isNull()) reflection = providerGetClass(parentNameStr);
 				}
-
-				zv::Val reflection = typeGetClassReflection(extendedType.ref());
 				if (UNEXPECTED(reflection.isUndef())) return zv::Val();
-				if (!reflection.isNull()) return reflection;
-				return providerGetClass(parentNameStr);
+				writeSlot(PT_CR_PROP_CACHED_PARENT_CLASS, zv::Val::copyOf(reflection.ref()));
+				return reflection;
 			}
 		}
 
@@ -1002,7 +1007,12 @@ public:
 		if (UNEXPECTED(parentReflection.isUndef())) return zv::Val();
 		bool parentGeneric;
 		if (UNEXPECTED(!crIsGeneric(parentReflection.ref(), parentGeneric))) return zv::Val();
-		if (parentGeneric) return crWithErrorTypes(parentReflection.ref());
+		if (parentGeneric) {
+			zv::Val withErrorTypes = crWithErrorTypes(parentReflection.ref());
+			if (UNEXPECTED(withErrorTypes.isUndef())) return zv::Val();
+			writeSlot(PT_CR_PROP_CACHED_PARENT_CLASS, zv::Val::copyOf(withErrorTypes.ref()));
+			return withErrorTypes;
+		}
 
 		writeSlot(PT_CR_PROP_CACHED_PARENT_CLASS, zv::Val::copyOf(parentReflection.ref()));
 

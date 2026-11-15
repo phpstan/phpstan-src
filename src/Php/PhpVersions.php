@@ -254,6 +254,11 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function deprecatesReturnInFinally(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80600, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function deprecatesDecOnNonNumericString(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80300, null)->isSuperTypeOf($this->phpVersions)->result;

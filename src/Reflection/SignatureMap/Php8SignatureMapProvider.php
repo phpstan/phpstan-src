@@ -441,12 +441,9 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 			$functionMapParameter = $functionMapSignature->getParameters()[$i];
 			$nativeParameterType = $nativeParameter->getNativeType();
-			if (
-				in_array($i, $parametersChangedByDelta, true)
-				&& $nativeParameterType->isSuperTypeOf($functionMapParameter->getType())->yes()
-			) {
+			if (in_array($i, $parametersChangedByDelta, true)) {
 				// unlike decideType(), keeps out members of the native union type the delta leaves out
-				$parameterType = $functionMapParameter->getType();
+				$parameterType = TypeCombinator::intersect($nativeParameterType, $functionMapParameter->getType());
 			} else {
 				$parameterType = TypehintHelper::decideType(
 					$nativeParameterType,

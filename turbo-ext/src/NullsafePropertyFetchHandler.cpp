@@ -11,7 +11,7 @@
  * $nodeScopeResolver and the by-reference $leftFalseyScope memo — a reference
  * zval shared with the left-falsey-scope closure), the createTypesCallback
  * ($this, $expr, $propertyFetch, $exprResult, $receiverResult,
- * $nullsafeTypeCallback, $beforeScope) and, inside the specifyTypesCallback,
+ * $nullsafeTypeCallback, $beforeScope and the by-reference $notNullTypes memo) and, inside the specifyTypesCallback,
  * the $leftTypes / $rightTypes / scope closures handed to
  * BooleanNarrowingHelper::specifyConjunction().
  *
@@ -282,7 +282,29 @@ public:
 			ZVAL_COPY_VALUE(&captures[8], leftFalseyScope.raw());
 			specifyTypesCallback = pt_native_closure_new(&specifyTypesCallbackBody, 9, captures, 1u << 8);
 		}
-		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, propertyFetch.raw(), exprResult.raw(), receiverResult, nullsafeTypeCallback.raw(), beforeScope);
+		// "this link did not short-circuit", by $nativeTypesPromoted (a reference the
+		// createTypesCallback fills)
+		zv::Val notNullTypes;
+		{
+			zval empty;
+			ZVAL_EMPTY_ARRAY(&empty);
+			zval reference;
+			ZVAL_NEW_REF(&reference, &empty);
+			notNullTypes = zv::Val::adopt(reference);
+		}
+		zv::Val createTypesCallback;
+		{
+			zval captures[8];
+			ZVAL_OBJ(&captures[0], self);
+			ZVAL_COPY_VALUE(&captures[1], expr);
+			ZVAL_COPY_VALUE(&captures[2], propertyFetch.raw());
+			ZVAL_COPY_VALUE(&captures[3], exprResult.raw());
+			ZVAL_COPY_VALUE(&captures[4], receiverResult);
+			ZVAL_COPY_VALUE(&captures[5], nullsafeTypeCallback.raw());
+			ZVAL_COPY_VALUE(&captures[6], beforeScope);
+			ZVAL_COPY_VALUE(&captures[7], notNullTypes.raw());
+			createTypesCallback = pt_native_closure_new(&createTypesCallbackBody, 8, captures, 1u << 7);
+		}
 
 		zv::Val exprDependenciesHold, receiverDependenciesHold;
 		zval *exprDependencies = pt_expression_result_dependencies(exprResult.raw(), exprDependenciesHold);
@@ -559,7 +581,7 @@ private:
 	 * $nativeTypesPromoted) use ($expr, $propertyFetch, $exprResult,
 	 * $receiverResult, $nullsafeTypeCallback, $beforeScope): SpecifiedTypes —
 	 * captures: $this, $expr, $propertyFetch, $exprResult, $receiverResult,
-	 * $nullsafeTypeCallback, $beforeScope */
+	 * $nullsafeTypeCallback, $beforeScope, &$notNullTypes */
 	static void createTypesCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(!requireArguments(argc, 3, pt_npfh_closure_name))) return;
@@ -585,6 +607,17 @@ private:
 			if (UNEXPECTED(result.isUndef())) return;
 			result.intoReturnValue(return_value);
 			return;
+		}
+
+		// the memoized "did not short-circuit" a link after this one asks for twice
+		bool isNotNull = Z_TYPE_P(type) == IS_OBJECT && Z_OBJCE_P(type) == pt_ce_null_type && Z_TYPE_P(context) == IS_OBJECT && Z_OBJ_P(context) == pt_type_specifier_context_create_false();
+		zend_ulong notNullIndex = nativeTypesPromoted ? 1 : 0;
+		if (isNotNull) {
+			zval *cached = zend_hash_index_find(Z_ARRVAL_P(Z_REFVAL(captures[7])), notNullIndex);
+			if (cached != NULL) {
+				ZVAL_COPY(return_value, cached);
+				return;
+			}
 		}
 
 		zv::Val promotedScope;
@@ -664,6 +697,13 @@ private:
 		if (UNEXPECTED(united.isUndef())) return;
 		zv::Val result = setRootExpr(united, expr);
 		if (UNEXPECTED(result.isUndef())) return;
+		if (isNotNull) {
+			zval *memo = Z_REFVAL(captures[7]);
+			SEPARATE_ARRAY(memo);
+			zval stored;
+			ZVAL_COPY(&stored, result.raw());
+			zend_hash_index_update(Z_ARRVAL_P(memo), notNullIndex, &stored);
+		}
 		result.intoReturnValue(return_value);
 	}
 

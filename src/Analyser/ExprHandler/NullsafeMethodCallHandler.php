@@ -136,6 +136,10 @@ final class NullsafeMethodCallHandler implements ExprHandler
 		$receiverResult = $processedReceiverResult;
 		// lazily memoized receiver-is-null branch scope of the decomposition
 		$leftFalseyScope = null;
+		// "this link did not short-circuit", by $nativeTypesPromoted: the link after this one
+		// asks for it twice, through its plain twin's receiver and through its own receiver
+		// term, so without it a chain N links deep would narrow its first link 2^N times
+		$notNullTypes = [];
 
 		return $this->expressionResultFactory->create(
 			$scope,
@@ -193,11 +197,16 @@ final class NullsafeMethodCallHandler implements ExprHandler
 			// Inside-out copy of TypeSpecifier::createForExpr()'s `?->` handling.
 			// The short-circuit's null surfaces here, never by walking the chain:
 			// a receiver that is itself a ?-> composes through the parent handler.
-			createTypesCallback: function (Type $type, TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $methodCall, $exprResult, $receiverResult, $nullsafeTypeCallback, $beforeScope): SpecifiedTypes {
+			createTypesCallback: function (Type $type, TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $methodCall, $exprResult, $receiverResult, $nullsafeTypeCallback, $beforeScope, &$notNullTypes): SpecifiedTypes {
 				// null() context: createForExpr never computes $containsNull and
 				// emits no entry for the subject - behave the same.
 				if ($context->null()) {
 					return (new SpecifiedTypes())->setRootExpr($expr);
+				}
+
+				$isNotNull = $type::class === NullType::class && $context === TypeSpecifierContext::createFalse();
+				if ($isNotNull && isset($notNullTypes[(int) $nativeTypesPromoted])) {
+					return $notNullTypes[(int) $nativeTypesPromoted];
 				}
 
 				$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
@@ -220,10 +229,15 @@ final class NullsafeMethodCallHandler implements ExprHandler
 				// double-key), and "receiver is not null".
 				// the receiver composes through its own result so a nullsafe
 				// receiver fans "not null" down its whole chain
-				return $this->defaultNarrowingHelper->createSubjectTypes($s, $methodCall, $exprResult, $type, $context)
+				$types = $this->defaultNarrowingHelper->createSubjectTypes($s, $methodCall, $exprResult, $type, $context)
 					->unionWith($this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context))
 					->unionWith($this->defaultNarrowingHelper->createSubjectTypes($s, $expr->var, $receiverResult, new NullType(), TypeSpecifierContext::createFalse()))
 					->setRootExpr($expr);
+				if ($isNotNull) {
+					$notNullTypes[(int) $nativeTypesPromoted] = $types;
+				}
+
+				return $types;
 			},
 			dependencies: Dependencies::merge($exprResult->getDependencies(), $processedReceiverResult->getDependencies()),
 		);

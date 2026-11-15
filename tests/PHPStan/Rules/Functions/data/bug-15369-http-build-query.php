@@ -1,4 +1,4 @@
-<?php
+<?php // lint >= 8.0
 
 // php-src tests of https://github.com/php/php-src/commit/a49acfa9a7aeaa44a0c49bea15058d97d9238960
 

@@ -28,7 +28,7 @@ use Tally\Attribute\Before;
 use Tally\Attribute\DataProvider;
 use Tally\Attribute\ExpectedFor;
 use Tally\Attribute\Linear;
-use Tally\Attribute\Polynomial;
+use Tally\Attribute\Linearithmic;
 use Tally\ScratchDirectory;
 
 final class TypeCombinatorBench
@@ -145,7 +145,7 @@ final class TypeCombinatorBench
 	 * only in their values.
 	 */
 	#[DataProvider(method: 'types')]
-	#[Polynomial(size: 'types', degree: 2)]
+	#[Linearithmic(size: 'types')]
 	public function benchUnionConstantArrays(int $types): Type
 	{
 		return TypeCombinator::union(...$this->arrays);
@@ -192,7 +192,7 @@ final class TypeCombinatorBench
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '436.3K', cycles: '627.1K', memory: '3.430KiB')]
 	#[ExpectedFor(dataSet: 'types-64', instructions: '473.0K', cycles: '682.2K', memory: '8.453KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '1.723M', cycles: '2.065M', memory: '38.72KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '1.759M', cycles: '2.081M', memory: '38.72KiB')]
 	public function benchUnionGeneralScalars(int $types): Type
 	{
 		return TypeCombinator::union(...$this->generalScalars);
@@ -228,7 +228,7 @@ final class TypeCombinatorBench
 	 */
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '3.245M', cycles: '4.253M', memory: '214.9KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '100.9M', cycles: '127.5M', memory: '902.8KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '101.5M', cycles: '128.4M', memory: '978.1KiB')]
 	#[ExpectedFor(dataSet: 'types-256', instructions: '315.7M', cycles: '400.5M', memory: '3.128MiB')]
 	public function benchUnionConstantArraysWithOwnKeys(int $types): Type
 	{

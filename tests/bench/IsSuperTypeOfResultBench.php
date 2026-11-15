@@ -64,16 +64,16 @@ final class IsSuperTypeOfResultBench
 	}
 
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '17.77K', cycles: '54.47K', memory: '1.102KiB')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '234.9K', cycles: '392.2K', memory: '24.16KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '18.40K', cycles: '55.15K', memory: '1.102KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '245.2K', cycles: '391.9K', memory: '24.16KiB')]
 	public function benchMaxMin(int $results): IsSuperTypeOfResult
 	{
 		return IsSuperTypeOfResult::maxMin(...$this->results);
 	}
 
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '19.58K', cycles: '61.75K', memory: '1.469KiB')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '249.9K', cycles: '422.3K', memory: '32.22KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '20.14K', cycles: '62.16K', memory: '1.469KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '259.0K', cycles: '417.9K', memory: '32.22KiB')]
 	public function benchExtremeIdentity(int $results): IsSuperTypeOfResult
 	{
 		return IsSuperTypeOfResult::extremeIdentity(...$this->results);
@@ -83,8 +83,8 @@ final class IsSuperTypeOfResultBench
 	 * StringType::isSuperTypeOf() is asked about each constant string of the union.
 	 */
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '41.64K', cycles: '108.7K', memory: '1.469KiB')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '548.1K', cycles: '720.9K', memory: '32.22KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '45.70K', cycles: '116.1K', memory: '1.836KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '609.3K', cycles: '776.2K', memory: '40.27KiB')]
 	public function benchStringIsSuperTypeOfUnion(int $results): IsSuperTypeOfResult
 	{
 		return $this->string->isSuperTypeOf($this->union);
@@ -94,8 +94,8 @@ final class IsSuperTypeOfResultBench
 	 * Each accessory type is asked about each constant string.
 	 */
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '262.0K', cycles: '350.0K', memory: '496B')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '4.107M', cycles: '4.341M', memory: '496B')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '267.5K', cycles: '342.9K', memory: '496B')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '4.198M', cycles: '4.439M', memory: '496B')]
 	public function benchAccessoriesIsSuperTypeOf(int $results): int
 	{
 		return self::accessoriesIsSuperTypeOf(self::accessories(), $this->strings);

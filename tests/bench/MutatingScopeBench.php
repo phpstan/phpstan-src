@@ -137,7 +137,7 @@ final class MutatingScopeBench
 	/**
 	 * A scalar's type is not stored (#4663).
 	 */
-	#[Expected(instructions: '3.965K', cycles: '23.76K', memory: '176B')]
+	#[Expected(instructions: '3.818K', cycles: '23.37K', memory: '176B')]
 	public function benchSpecifyScalarType(): MutatingScope
 	{
 		return $this->scope()->specifyExpressionType(new String_('x'), new StringType(), new StringType(), TrinaryLogic::createYes());
@@ -178,7 +178,7 @@ final class MutatingScopeBench
 	/**
 	 * Finds the expressions on $this by their keys, not by searching them (#4697).
 	 */
-	#[Expected(instructions: '66.12K', cycles: '169.7K', memory: '16.61KiB')]
+	#[Expected(instructions: '67.85K', cycles: '171.2K', memory: '16.61KiB')]
 	public function benchRestoreThis(): MutatingScope
 	{
 		$scope = $this->scope();

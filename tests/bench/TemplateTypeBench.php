@@ -109,8 +109,8 @@ final class TemplateTypeBench
 	 * None of the strings is an int, so T is not inferred from any of them.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '72.31K', cycles: '173.6K', memory: '1.469KiB')]
-	#[ExpectedFor(dataSet: 'members-256', instructions: '930.9K', cycles: '1.141M', memory: '32.22KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '77.20K', cycles: '183.0K', memory: '1.836KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '1.003M', cycles: '1.209M', memory: '40.27KiB')]
 	public function benchInferTemplateTypesFromUnion(int $members): TemplateTypeMap
 	{
 		if ($this->template === null || $this->strings === null) {

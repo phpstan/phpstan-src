@@ -60,7 +60,7 @@ final class ParametersAcceptorSelectorBench
 	 * of nested shapes. The search can stop at a template type in the first item.
 	 */
 	#[DataProvider(method: 'returnTypes')]
-	#[ExpectedFor(dataSet: 'no-template-256', instructions: '543.0K', cycles: '1.047M', memory: '0B')]
+	#[ExpectedFor(dataSet: 'no-template-256', instructions: '560.9K', cycles: '1.058M', memory: '0B')]
 	#[ExpectedFor(dataSet: 'template-first-16', instructions: '1.876K', cycles: '15.70K', memory: '0B')]
 	#[ExpectedFor(dataSet: 'template-first-256', instructions: '1.876K', cycles: '15.58K', memory: '0B')]
 	public function benchHasAcceptorTemplateOrLateResolvableType(int $items, bool $templateFirst): bool

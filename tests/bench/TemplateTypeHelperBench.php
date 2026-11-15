@@ -47,8 +47,8 @@ final class TemplateTypeHelperBench
 	 * An array shape without template types, such as the return type of most functions.
 	 */
 	#[DataProvider(method: 'keys')]
-	#[ExpectedFor(dataSet: 'keys-16', instructions: '8.998K', cycles: '40.68K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'keys-256', instructions: '95.16K', cycles: '205.0K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '9.296K', cycles: '41.29K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'keys-256', instructions: '99.54K', cycles: '204.9K', memory: '0B')]
 	public function benchResolveTemplateTypes(int $keys): Type
 	{
 		if ($this->shape === null) {

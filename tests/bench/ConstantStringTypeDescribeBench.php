@@ -36,7 +36,7 @@ final class ConstantStringTypeDescribeBench
 	/**
 	 * Strings already described, as the members of a union of an enum's values are again and again.
 	 */
-	#[Expected(instructions: '513.6K', cycles: '726.7K', memory: '0B')]
+	#[Expected(instructions: '525.1K', cycles: '733.0K', memory: '0B')]
 	public function benchDescribeAgain(): string
 	{
 		$description = '';

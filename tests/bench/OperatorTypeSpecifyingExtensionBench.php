@@ -73,9 +73,9 @@ final class OperatorTypeSpecifyingExtensionBench
 	 * @param class-string<OperatorTypeSpecifyingExtension> $extension
 	 */
 	#[DataProvider(method: 'extensions')]
-	#[ExpectedFor(dataSet: 'bcmath-integers', instructions: '309.3K', cycles: '380.8K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'bcmath-objects', instructions: '651.3K', cycles: '786.5K', memory: '216B')]
-	#[ExpectedFor(dataSet: 'gmp-integers', instructions: '294.4K', cycles: '365.1K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'bcmath-integers', instructions: '317.4K', cycles: '383.8K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'bcmath-objects', instructions: '665.4K', cycles: '781.7K', memory: '216B')]
+	#[ExpectedFor(dataSet: 'gmp-integers', instructions: '302.1K', cycles: '367.6K', memory: '0B')]
 	#[ExpectedFor(dataSet: 'gmp-objects', instructions: '593.5K', cycles: '718.6K', memory: '216B')]
 	public function benchSpecify(string $extension, string $operands): int
 	{

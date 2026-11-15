@@ -39,8 +39,10 @@ use SplPriorityQueue;
 use SplQueue;
 use SplStack;
 use Tally\Attribute\Before;
+use Tally\Attribute\Constant;
 use Tally\Attribute\DataProvider;
 use Tally\Attribute\Linear;
+use Tally\Attribute\Logarithmic;
 use Tally\Meter;
 use Tally\ScratchDirectory;
 use function count;
@@ -100,7 +102,7 @@ final class MutatingScopeExpressionsBench
 	 * Removing never from an expression changes nothing and does not need its type.
 	 */
 	#[DataProvider(method: 'expressions')]
-	#[Linear(size: 'expressions')]
+	#[Constant(size: 'expressions')]
 	public function benchRemoveNeverFromExpression(int $expressions): MutatingScope
 	{
 		[$scope, $exprs] = $this->meter->exclude(function () use ($expressions): array {
@@ -124,7 +126,7 @@ final class MutatingScopeExpressionsBench
 	 * Narrowing $array['key'] also narrows $array to the types that can be accessed by an offset.
 	 */
 	#[DataProvider(method: 'expressions')]
-	#[Linear(size: 'expressions')]
+	#[Logarithmic(size: 'expressions')]
 	public function benchSpecifyArrayDimFetch(int $expressions): MutatingScope
 	{
 		[$scope, $exprs] = $this->meter->exclude(function () use ($expressions): array {

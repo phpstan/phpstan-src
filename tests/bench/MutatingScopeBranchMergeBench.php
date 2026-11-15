@@ -71,10 +71,10 @@ final class MutatingScopeBranchMergeBench
 	#[ExpectedFor(dataSet: 'absorbed-targets-16', instructions: '3.036M', cycles: '4.672M', memory: '58.13KiB')]
 	#[ExpectedFor(dataSet: 'differing-unions-4', instructions: '3.576M', cycles: '4.634M', memory: '74.34KiB')]
 	#[ExpectedFor(dataSet: 'differing-unions-16', instructions: '16.78M', cycles: '20.46M', memory: '599.2KiB')]
-	#[ExpectedFor(dataSet: 'maybe-defined-64', instructions: '747.8K', cycles: '1.081M', memory: '18.58KiB')]
+	#[ExpectedFor(dataSet: 'maybe-defined-64', instructions: '764.0K', cycles: '1.072M', memory: '18.58KiB')]
 	#[ExpectedFor(dataSet: 'one-sided-64', instructions: '1.405M', cycles: '2.004M', memory: '50.22KiB')]
 	#[ExpectedFor(dataSet: 'shared-holders-16', instructions: '153.0K', cycles: '400.9K', memory: '9.445KiB')]
-	#[ExpectedFor(dataSet: 'shared-holders-256', instructions: '1.372M', cycles: '2.123M', memory: '121.9KiB')]
+	#[ExpectedFor(dataSet: 'shared-holders-256', instructions: '1.404M', cycles: '2.122M', memory: '121.9KiB')]
 	public function benchMergeWith(string $shape, int $variables): MutatingScope
 	{
 		if ($this->ours === null || $this->theirs === null) {

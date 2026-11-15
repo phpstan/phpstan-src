@@ -38,7 +38,7 @@ final class LoaderFactoryBench
 	 *
 	 * @return mixed[]
 	 */
-	#[Expected(instructions: '531.6K', cycles: '1.005M', memory: '37.03KiB')]
+	#[Expected(instructions: '426.2K', cycles: '772.1K', memory: '22.99KiB')]
 	public function benchLoadConfigAgain(): array
 	{
 		if ($this->loaderFactory === null) {

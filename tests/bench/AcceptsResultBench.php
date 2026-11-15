@@ -52,16 +52,16 @@ final class AcceptsResultBench
 	}
 
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '16.91K', cycles: '53.31K', memory: '1.180KiB')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '212.4K', cycles: '362.0K', memory: '24.24KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '17.49K', cycles: '53.87K', memory: '1.180KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '222.6K', cycles: '356.3K', memory: '24.24KiB')]
 	public function benchMaxMin(int $results): AcceptsResult
 	{
 		return AcceptsResult::maxMin(...$this->results);
 	}
 
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '18.73K', cycles: '61.35K', memory: '1.547KiB')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '227.3K', cycles: '392.4K', memory: '32.30KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '19.23K', cycles: '61.64K', memory: '1.547KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '236.2K', cycles: '382.8K', memory: '32.30KiB')]
 	public function benchExtremeIdentity(int $results): AcceptsResult
 	{
 		return AcceptsResult::extremeIdentity(...$this->results);
@@ -71,8 +71,8 @@ final class AcceptsResultBench
 	 * StringType::accepts() accepts each constant string of the union.
 	 */
 	#[DataProvider(method: 'results')]
-	#[ExpectedFor(dataSet: 'results-16', instructions: '43.10K', cycles: '113.9K', memory: '1.547KiB')]
-	#[ExpectedFor(dataSet: 'results-256', instructions: '557.0K', cycles: '736.1K', memory: '32.30KiB')]
+	#[ExpectedFor(dataSet: 'results-16', instructions: '47.12K', cycles: '121.3K', memory: '1.914KiB')]
+	#[ExpectedFor(dataSet: 'results-256', instructions: '618.6K', cycles: '789.3K', memory: '40.35KiB')]
 	public function benchStringAcceptsUnion(int $results): AcceptsResult
 	{
 		return $this->string->accepts($this->union, true);

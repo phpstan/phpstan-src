@@ -60,7 +60,7 @@ final class IntersectionTypeQueriesBench
 		$this->string->describe(VerbosityLevel::precise());
 	}
 
-	#[Expected(instructions: '349.9K', cycles: '365.6K', memory: '0B')]
+	#[Expected(instructions: '363.9K', cycles: '376.6K', memory: '0B')]
 	public function benchIsOffsetAccessible(): TrinaryLogic
 	{
 		if ($this->array === null) {
@@ -75,7 +75,7 @@ final class IntersectionTypeQueriesBench
 		return $result;
 	}
 
-	#[Expected(instructions: '1.180M', cycles: '1.199M', memory: '0B')]
+	#[Expected(instructions: '1.207M', cycles: '1.222M', memory: '0B')]
 	public function benchDescribe(): string
 	{
 		if ($this->string === null) {

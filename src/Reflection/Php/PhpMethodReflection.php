@@ -221,6 +221,34 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return $this->getVariants()[0];
 	}
 
+	/**
+	 * @phpstan-assert-if-true !null $this->getHookedPropertyName()
+	 * @phpstan-assert-if-true !null $this->getPropertyHookName()
+	 */
+	public function isPropertyHook(): bool
+	{
+		return $this->reflection->getBetterReflection()->isHook();
+	}
+
+	public function getHookedPropertyName(): ?string
+	{
+		return $this->reflection->getBetterReflection()->getHookProperty()?->getName();
+	}
+
+	/**
+	 * @return 'get'|'set'|null
+	 */
+	public function getPropertyHookName(): ?string
+	{
+		$betterReflection = $this->reflection->getBetterReflection();
+		$hookProperty = $betterReflection->getHookProperty();
+		if ($hookProperty === null) {
+			return null;
+		}
+
+		return $hookProperty->getHook('get') === $betterReflection ? 'get' : 'set';
+	}
+
 	public function getNamedArgumentsVariants(): ?array
 	{
 		return null;

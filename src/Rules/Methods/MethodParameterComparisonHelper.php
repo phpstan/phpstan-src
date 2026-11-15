@@ -9,7 +9,6 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
-use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
@@ -24,6 +23,7 @@ use function array_key_exists;
 use function array_slice;
 use function count;
 use function sprintf;
+use function ucfirst;
 
 #[AutowiredService]
 final class MethodParameterComparisonHelper
@@ -39,26 +39,25 @@ final class MethodParameterComparisonHelper
 	public function compare(
 		ExtendedMethodReflection $prototype,
 		ClassReflection $prototypeDeclaringClass,
-		PhpMethodFromParserNodeReflection $method,
+		ExtendedMethodReflection $method,
 		Scope&NodeCallbackInvoker&CollectedDataEmitter $scope,
 		bool $ignorable,
+		?int $line = null,
 	): array
 	{
 		/** @var list<IdentifierRuleError> $messages */
 		$messages = [];
 		$prototypeVariant = $prototype->getVariants()[0];
 
-		$methodParameters = $method->getParameters();
+		$methodParameters = $method->getOnlyVariant()->getParameters();
 
 		$prototypeAfterVariadic = false;
 		foreach ($prototypeVariant->getParameters() as $i => $prototypeParameter) {
 			if (!array_key_exists($i, $methodParameters)) {
 				$error = RuleErrorBuilder::message(sprintf(
-					'Method %s::%s() overrides method %s::%s() but misses parameter #%d $%s.',
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
+					'%s overrides %s but misses parameter #%d $%s.',
+					ucfirst(OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass())),
+					OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 					$i + 1,
 					$prototypeParameter->getName(),
 				))->identifier('parameter.missing');
@@ -67,7 +66,7 @@ final class MethodParameterComparisonHelper
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 
 				continue;
 			}
@@ -87,41 +86,37 @@ final class MethodParameterComparisonHelper
 			if ($prototypeParameter->passedByReference()->no()) {
 				if (!$methodParameter->passedByReference()->no()) {
 					$error = RuleErrorBuilder::message(sprintf(
-						'Parameter #%d $%s of method %s::%s() is passed by reference but parameter #%d $%s of method %s::%s() is not passed by reference.',
+						'Parameter #%d $%s of %s is passed by reference but parameter #%d $%s of %s is not passed by reference.',
 						$i + 1,
 						$methodParameter->getName(),
-						$method->getDeclaringClass()->getDisplayName(),
-						$method->getName(),
+						OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 						$i + 1,
 						$prototypeParameter->getName(),
-						$prototypeDeclaringClass->getDisplayName(true),
-						$prototype->getName(),
+						OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 					))->identifier('parameter.byRef');
 
 					if (! $ignorable) {
 						$error->nonIgnorable();
 					}
 
-					$messages[] = $error->build();
+					$messages[] = $this->buildError($error, $line);
 				}
 			} elseif ($methodParameter->passedByReference()->no()) {
 				$error = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s of method %s::%s() is not passed by reference but parameter #%d $%s of method %s::%s() is passed by reference.',
+					'Parameter #%d $%s of %s is not passed by reference but parameter #%d $%s of %s is passed by reference.',
 					$i + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
+					OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
+					OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 				))->identifier('parameter.notByRef');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 			}
 
 			if ($prototypeParameter->isVariadic()) {
@@ -130,55 +125,51 @@ final class MethodParameterComparisonHelper
 					if (!$methodParameter->isOptional()) {
 						if (count($methodParameters) !== $i + 1) {
 							$error = RuleErrorBuilder::message(sprintf(
-								'Parameter #%d $%s of method %s::%s() is not optional.',
+								'Parameter #%d $%s of %s is not optional.',
 								$i + 1,
 								$methodParameter->getName(),
-								$method->getDeclaringClass()->getDisplayName(),
-								$method->getName(),
+								OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 							))->identifier('parameter.notOptional');
 
 							if (! $ignorable) {
 								$error->nonIgnorable();
 							}
 
-							$messages[] = $error->build();
+							$messages[] = $this->buildError($error, $line);
 
 							continue;
 						}
 
 						$error = RuleErrorBuilder::message(sprintf(
-							'Parameter #%d $%s of method %s::%s() is not variadic but parameter #%d $%s of method %s::%s() is variadic.',
+							'Parameter #%d $%s of %s is not variadic but parameter #%d $%s of %s is variadic.',
 							$i + 1,
 							$methodParameter->getName(),
-							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName(),
+							OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 							$i + 1,
 							$prototypeParameter->getName(),
-							$prototypeDeclaringClass->getDisplayName(true),
-							$prototype->getName(),
+							OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 						))->identifier('parameter.notVariadic');
 
 						if (! $ignorable) {
 							$error->nonIgnorable();
 						}
 
-						$messages[] = $error->build();
+						$messages[] = $this->buildError($error, $line);
 
 						continue;
 					} elseif (count($methodParameters) === $i + 1) {
 						$error = RuleErrorBuilder::message(sprintf(
-							'Parameter #%d $%s of method %s::%s() is not variadic.',
+							'Parameter #%d $%s of %s is not variadic.',
 							$i + 1,
 							$methodParameter->getName(),
-							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName(),
+							OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 						))->identifier('parameter.notVariadic');
 
 						if (! $ignorable) {
 							$error->nonIgnorable();
 						}
 
-						$messages[] = $error->build();
+						$messages[] = $this->buildError($error, $line);
 					}
 				}
 			} elseif ($methodParameter->isVariadic()) {
@@ -190,66 +181,60 @@ final class MethodParameterComparisonHelper
 						}
 
 						$error = RuleErrorBuilder::message(sprintf(
-							'Parameter #%d ...$%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
+							'Parameter #%d ...$%s (%s) of %s is not contravariant with parameter #%d $%s (%s) of %s.',
 							$i + 1,
 							$methodParameter->getName(),
 							$methodParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
-							$method->getDeclaringClass()->getDisplayName(),
-							$method->getName(),
+							OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 							$i + $j + 1,
 							$remainingPrototypeParameter->getName(),
 							$remainingPrototypeParameter->getNativeType()->describe(VerbosityLevel::typeOnly()),
-							$prototypeDeclaringClass->getDisplayName(true),
-							$prototype->getName(),
+							OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 						))->identifier('method.childParameterType');
 
 						if (! $ignorable) {
 							$error->nonIgnorable();
 						}
 
-						$messages[] = $error->build();
+						$messages[] = $this->buildError($error, $line);
 					}
 					break;
 				}
 				$error = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s of method %s::%s() is variadic but parameter #%d $%s of method %s::%s() is not variadic.',
+					'Parameter #%d $%s of %s is variadic but parameter #%d $%s of %s is not variadic.',
 					$i + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
+					OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
+					OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 				))->identifier('parameter.variadic');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 
 				continue;
 			}
 
 			if ($prototypeParameter->isOptional() && !$methodParameter->isOptional()) {
 				$error = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s of method %s::%s() is required but parameter #%d $%s of method %s::%s() is optional.',
+					'Parameter #%d $%s of %s is required but parameter #%d $%s of %s is optional.',
 					$i + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
+					OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 					$i + 1,
 					$prototypeParameter->getName(),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
+					OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 				))->identifier('parameter.notOptional');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 			}
 
 			$methodParameterType = $methodParameter->getNativeType();
@@ -258,24 +243,22 @@ final class MethodParameterComparisonHelper
 			if (!$this->phpVersion->supportsParameterTypeWidening()) {
 				if (!$methodParameterType->equals($prototypeParameterType)) {
 					$error = RuleErrorBuilder::message(sprintf(
-						'Parameter #%d $%s (%s) of method %s::%s() does not match parameter #%d $%s (%s) of method %s::%s().',
+						'Parameter #%d $%s (%s) of %s does not match parameter #%d $%s (%s) of %s.',
 						$i + 1,
 						$methodParameter->getName(),
 						$methodParameterType->describe(VerbosityLevel::typeOnly()),
-						$method->getDeclaringClass()->getDisplayName(),
-						$method->getName(),
+						OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 						$i + 1,
 						$prototypeParameter->getName(),
 						$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-						$prototypeDeclaringClass->getDisplayName(true),
-						$prototype->getName(),
+						OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 					))->identifier('method.childParameterType');
 
 					if (! $ignorable) {
 						$error->nonIgnorable();
 					}
 
-					$messages[] = $error->build();
+					$messages[] = $this->buildError($error, $line);
 				}
 				continue;
 			}
@@ -286,44 +269,40 @@ final class MethodParameterComparisonHelper
 
 			if ($this->phpVersion->supportsParameterContravariance()) {
 				$error = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s (%s) of method %s::%s() is not contravariant with parameter #%d $%s (%s) of method %s::%s().',
+					'Parameter #%d $%s (%s) of %s is not contravariant with parameter #%d $%s (%s) of %s.',
 					$i + 1,
 					$methodParameter->getName(),
 					$methodParameterType->describe(VerbosityLevel::typeOnly()),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
+					OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
+					OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 				))->identifier('method.childParameterType');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 			} else {
 				$error = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s (%s) of method %s::%s() is not compatible with parameter #%d $%s (%s) of method %s::%s().',
+					'Parameter #%d $%s (%s) of %s is not compatible with parameter #%d $%s (%s) of %s.',
 					$i + 1,
 					$methodParameter->getName(),
 					$methodParameterType->describe(VerbosityLevel::typeOnly()),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
+					OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 					$i + 1,
 					$prototypeParameter->getName(),
 					$prototypeParameterType->describe(VerbosityLevel::typeOnly()),
-					$prototypeDeclaringClass->getDisplayName(true),
-					$prototype->getName(),
+					OverridingMethodCheck::describeMethod($prototype, $prototypeDeclaringClass, true),
 				))->identifier('method.childParameterType');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 			}
 		}
 
@@ -342,18 +321,17 @@ final class MethodParameterComparisonHelper
 				&& !$methodParameter->isVariadic()
 			) {
 				$error = RuleErrorBuilder::message(sprintf(
-					'Parameter #%d $%s of method %s::%s() is not variadic.',
+					'Parameter #%d $%s of %s is not variadic.',
 					$j + 1,
 					$methodParameter->getName(),
-					$method->getDeclaringClass()->getDisplayName(),
-					$method->getName(),
+					OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 				))->identifier('parameter.notVariadic');
 
 				if (! $ignorable) {
 					$error->nonIgnorable();
 				}
 
-				$messages[] = $error->build();
+				$messages[] = $this->buildError($error, $line);
 
 				continue;
 			}
@@ -363,18 +341,17 @@ final class MethodParameterComparisonHelper
 			}
 
 			$error = RuleErrorBuilder::message(sprintf(
-				'Parameter #%d $%s of method %s::%s() is not optional.',
+				'Parameter #%d $%s of %s is not optional.',
 				$j + 1,
 				$methodParameter->getName(),
-				$method->getDeclaringClass()->getDisplayName(),
-				$method->getName(),
+				OverridingMethodCheck::describeMethod($method, $method->getDeclaringClass()),
 			))->identifier('parameter.notOptional');
 
 			if (! $ignorable) {
 				$error->nonIgnorable();
 			}
 
-			$messages[] = $error->build();
+			$messages[] = $this->buildError($error, $line);
 		}
 
 		return $messages;
@@ -385,8 +362,29 @@ final class MethodParameterComparisonHelper
 		return $this->isTypeCompatible($methodParameterType, $prototypeParameterType, $supportsContravariance, false);
 	}
 
+	/**
+	 * @param RuleErrorBuilder<IdentifierRuleError> $error
+	 */
+	private function buildError(RuleErrorBuilder $error, ?int $line): IdentifierRuleError
+	{
+		if ($line !== null) {
+			$error->line($line);
+		}
+
+		return $error->build();
+	}
+
 	public function isReturnTypeCompatible(Type $methodParameterType, Type $prototypeParameterType, bool $supportsCovariance): bool
 	{
+		// void can only override void or a missing return type, mixed does not include it
+		if (
+			$methodParameterType instanceof MixedType
+			&& $methodParameterType->isExplicitMixed()
+			&& $prototypeParameterType->isVoid()->yes()
+		) {
+			return false;
+		}
+
 		return $this->isTypeCompatible($methodParameterType, $prototypeParameterType, $supportsCovariance, true);
 	}
 

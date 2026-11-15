@@ -34,6 +34,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 			new MethodParameterComparisonHelper($phpVersion),
 			new MethodVisibilityComparisonHelper(),
 			new MethodPrototypeFinder($phpVersion, $phpClassReflectionExtension),
+			new OverridingMethodCheck(),
 			false,
 			true,
 		);

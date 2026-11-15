@@ -229,3 +229,49 @@ class OverrideChild extends OverrideParent
 	}
 
 }
+
+class VirtualGetParent
+{
+
+	public string $prop {
+		get => 'parent';
+	}
+
+}
+
+class ReadonlyOverridesVirtualGet extends VirtualGetParent
+{
+
+	public readonly string $prop;
+
+}
+
+abstract class AbstractClassVirtualGetParent
+{
+
+	public string $prop {
+		get => 'parent';
+	}
+
+}
+
+class ReadonlyOverridesVirtualGetInAbstractClass extends AbstractClassVirtualGetParent
+{
+
+	public readonly string $prop;
+
+}
+
+abstract class AbstractGetParent
+{
+
+	abstract public string $prop { get; }
+
+}
+
+class ReadonlyImplementsAbstractGet extends AbstractGetParent
+{
+
+	public readonly string $prop;
+
+}

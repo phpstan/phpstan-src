@@ -475,6 +475,14 @@ class OverridingPropertyRuleTest extends RuleTestCase
 				'Get hook for property OverridingPropertyHooks\OverrideChild::$notInParent has #[\Override] attribute but does not override any get hook.',
 				227,
 			],
+			[
+				'Readonly property OverridingPropertyHooks\ReadonlyOverridesVirtualGet::$prop overrides readwrite property OverridingPropertyHooks\VirtualGetParent::$prop.',
+				245,
+			],
+			[
+				'Readonly property OverridingPropertyHooks\ReadonlyOverridesVirtualGetInAbstractClass::$prop overrides readwrite property OverridingPropertyHooks\AbstractClassVirtualGetParent::$prop.',
+				261,
+			],
 		]);
 	}
 

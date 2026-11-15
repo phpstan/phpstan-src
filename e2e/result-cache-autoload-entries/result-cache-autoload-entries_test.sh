@@ -119,6 +119,11 @@ function test_class_appears_in_a_path_package() {
 
 function test_class_appears_under_a_psr4_namespace_mapped_to_the_project_root() {
 	write_class_consumer 'AutoloadEntries\Root\Thing'
+	# A run cannot vouch for the stat of a file written in the second it started, so when the run in
+	# write_class_consumer started in the second its files were written, the next run records their
+	# stat signatures and rewrites the cache. Have a run that starts a second later record them.
+	sleep 1
+	analyse
 	# the tmpDir is under the project root too, but PHPStan's own files there are not scanned files
 	OUTPUT=$(../../bin/phpstan analyse -vv 2>&1) || true
 	assert_contains 'Result cache was not rewritten because it is unchanged.' "$OUTPUT"

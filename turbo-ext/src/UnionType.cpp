@@ -646,6 +646,18 @@ public:
 			break;
 		}
 
+		/* $type instanceof self && !$type instanceof TemplateType: the
+		 * member-by-member or() comes out yes only when the compound answer
+		 * does, which replaces any other */
+		if (instanceof_function(Z_OBJCE_P(type), pt_ce_union_type)) {
+			bool isTemplate;
+			if (UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+			if (!isTemplate) {
+				zv::Args args{&selfZv, &strictZv};
+				return pt_type_call(Z_OBJ_P(type), PT_LC("isacceptedby"), 2, args);
+			}
+		}
+
 		zv::Val sorted = thisGetSortedTypes();
 		if (UNEXPECTED(sorted.isUndef())) return zv::Val();
 		zv::Arr innerAccepts = zv::Arr::create(zv::ArrRef(sorted.raw()).size());

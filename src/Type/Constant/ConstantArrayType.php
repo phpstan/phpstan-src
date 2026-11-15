@@ -3758,15 +3758,18 @@ class ConstantArrayType implements Type
 			if ($isOptional) {
 				$exportValuesOnly = false;
 			}
+			// one of the two lists is returned, so they share the value node: describing it
+			// once per list would describe a value nested N shapes deep 2^N times
+			$valuePhpDocNode = $valueType->toPhpDocNode();
 			$items[] = new ArrayShapeItemNode(
 				$keyNode,
 				$isOptional,
-				$valueType->toPhpDocNode(),
+				$valuePhpDocNode,
 			);
 			$values[] = new ArrayShapeItemNode(
 				null,
 				$isOptional,
-				$valueType->toPhpDocNode(),
+				$valuePhpDocNode,
 			);
 		}
 

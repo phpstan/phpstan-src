@@ -32,6 +32,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function array_merge;
+use function get_class;
 
 /**
  * @implements ExprHandler<NullsafeMethodCall>
@@ -204,7 +205,7 @@ final class NullsafeMethodCallHandler implements ExprHandler
 					return (new SpecifiedTypes())->setRootExpr($expr);
 				}
 
-				$isNotNull = $type::class === NullType::class && $context === TypeSpecifierContext::createFalse();
+				$isNotNull = get_class($type) === NullType::class && $context === TypeSpecifierContext::createFalse();
 				if ($isNotNull && isset($notNullTypes[(int) $nativeTypesPromoted])) {
 					return $notNullTypes[(int) $nativeTypesPromoted];
 				}

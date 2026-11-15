@@ -306,6 +306,14 @@ class UnionType implements CompoundType
 			break;
 		}
 
+		if ($type instanceof self && !$type instanceof TemplateType) {
+			// A member accepts the other union only when it accepts each of its members, which
+			// this union then accepts too - the member-by-member or() below cannot come out
+			// yes unless the compound answer does, and that answer replaces any other. Asking
+			// both would walk the members' nested types twice at every level.
+			return $type->isAcceptedBy($this, $strictTypes);
+		}
+
 		$innerAccepts = [];
 		$result = AcceptsResult::createNo();
 		foreach ($this->getSortedTypes() as $i => $innerType) {

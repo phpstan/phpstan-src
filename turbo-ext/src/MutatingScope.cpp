@@ -2996,6 +2996,42 @@ public:
 		return true;
 	}
 
+	/* withRecordedStatementDelta()'s step for one conditional expression
+	 * key; a missing or null holder list (NULL here) is the twin's `?? []` */
+	static void applyRecordedConditionalDelta(zv::Arr &conditionalExpressions, const zv::ArrayEntry &key, zval *entryHolders, zval *exitHolders)
+	{
+		zval empty;
+		ZVAL_EMPTY_ARRAY(&empty);
+		if (entryHolders == NULL || Z_TYPE_P(entryHolders) == IS_NULL) entryHolders = &empty;
+		if (exitHolders == NULL || Z_TYPE_P(exitHolders) == IS_NULL) exitHolders = &empty;
+		if (zend_is_identical(entryHolders, exitHolders)) return;
+
+		zval *currentHolders = findByEntryKey(conditionalExpressions.table(), key);
+		if (currentHolders == NULL || Z_TYPE_P(currentHolders) == IS_NULL) currentHolders = &empty;
+		zval kept;
+		if (!zend_is_identical(currentHolders, entryHolders)) {
+			/* array_intersect_key($currentHolders, $entryHolders, $exitHolders) */
+			zv::Arr intersected = zv::Arr::create(0);
+			for (auto holder : zv::TableRef(Z_ARRVAL_P(currentHolders))) {
+				if (findByEntryKey(Z_ARRVAL_P(entryHolders), holder) == NULL || findByEntryKey(Z_ARRVAL_P(exitHolders), holder) == NULL) continue;
+				zval copy;
+				ZVAL_COPY(&copy, holder.value().raw());
+				updateByEntryKey(intersected.table(), holder, &copy);
+			}
+			kept = intersected.take();
+		} else {
+			ZVAL_COPY(&kept, exitHolders);
+		}
+
+		conditionalExpressions.separate();
+		if (zend_hash_num_elements(Z_ARRVAL(kept)) == 0) {
+			zval_ptr_dtor(&kept);
+			deleteByEntryKey(conditionalExpressions.table(), key);
+			return;
+		}
+		updateByEntryKey(conditionalExpressions.table(), key, &kept);
+	}
+
 	/* This scope after a statement whose recorded walk stands. */
 	zv::Val withRecordedStatementDelta(zend_object *recordedEntryObject, zend_object *recordedExitObject)
 	{
@@ -3009,18 +3045,14 @@ public:
 		zv::Arr conditionalExpressions = zv::Arr::copyOfTable(Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()));
 		HashTable *entryConditionals = Z_ARRVAL_P(recordedEntry.slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw());
 		HashTable *exitConditionals = Z_ARRVAL_P(recordedExit.slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw());
+		/* the twin's `$recordedExit + $recordedEntry` key walk: the exit's
+		 * keys, then the keys only the entry has */
 		for (auto entry : zv::TableRef(exitConditionals)) {
-			zval *entryHolders = findByEntryKey(entryConditionals, entry);
-			if (entryHolders != NULL && Z_TYPE_P(entryHolders) != IS_NULL && zend_is_identical(entryHolders, entry.value().raw())) continue;
-			conditionalExpressions.separate();
-			zval copy;
-			ZVAL_COPY(&copy, entry.value().raw());
-			updateByEntryKey(conditionalExpressions.table(), entry, &copy);
+			applyRecordedConditionalDelta(conditionalExpressions, entry, findByEntryKey(entryConditionals, entry), entry.value().raw());
 		}
 		for (auto entry : zv::TableRef(entryConditionals)) {
-			if (issetByEntryKey(exitConditionals, entry)) continue;
-			conditionalExpressions.separate();
-			deleteByEntryKey(conditionalExpressions.table(), entry);
+			if (findByEntryKey(exitConditionals, entry) != NULL) continue;
+			applyRecordedConditionalDelta(conditionalExpressions, entry, entry.value().raw(), NULL);
 		}
 
 		static const struct { uint32_t slot; const char *name; } holderTables[] = {

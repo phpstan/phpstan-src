@@ -6,7 +6,6 @@ use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Reflection\ClassConstantReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Rules\IdentifierRuleError;
@@ -23,7 +22,6 @@ final class OverrideAttributeOnClassConstantCheck
 {
 
 	public function __construct(
-		private PhpVersion $phpVersion,
 		#[AutowiredParameter]
 		private ?bool $checkMissingOverrideConstantAttribute,
 		#[AutowiredParameter]
@@ -115,7 +113,7 @@ final class OverrideAttributeOnClassConstantCheck
 		if (
 			$hasOverrideAttribute
 			|| $scope->isInTrait()
-			|| !$this->isMissingOverrideAttributeChecked()
+			|| !$this->isMissingOverrideAttributeChecked($scope)
 		) {
 			return [];
 		}
@@ -141,14 +139,15 @@ final class OverrideAttributeOnClassConstantCheck
 		return [$builder->build()];
 	}
 
-	private function isMissingOverrideAttributeChecked(): bool
+	private function isMissingOverrideAttributeChecked(Scope $scope): bool
 	{
 		if ($this->checkMissingOverrideConstantAttribute !== null) {
 			return $this->checkMissingOverrideConstantAttribute;
 		}
 
+		// every analysed PHP version must support the attribute, e.g. not with "php": "^8.5" in composer.json
 		return ($this->checkMissingOverridePropertyAttribute === true || $this->checkMissingOverrideMethodAttribute)
-			&& $this->phpVersion->supportsOverrideAttributeOnClassConstant();
+			&& $scope->getPhpVersion()->supportsOverrideAttributeOnClassConstant()->yes();
 	}
 
 	/**

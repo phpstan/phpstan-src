@@ -205,7 +205,7 @@ final class OverridingPropertyRule implements Rule
 			}
 		} elseif ($node->isReadOnly()) {
 			if (
-				!$this->phpVersion->supportsPropertyHooks()
+				!$prototype->isAbstract()->yes()
 				|| $prototype->isWritable()
 			) {
 				$errors[] = RuleErrorBuilder::message(sprintf(

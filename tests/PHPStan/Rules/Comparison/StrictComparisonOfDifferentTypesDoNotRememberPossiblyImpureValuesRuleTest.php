@@ -29,14 +29,9 @@ class StrictComparisonOfDifferentTypesDoNotRememberPossiblyImpureValuesRuleTest 
 		]);
 	}
 
-	public function testPropertyAfterPossiblyImpureCall(): void
+	public function testBug15734(): void
 	{
-		$this->analyse([__DIR__ . '/data/strict-comparison-property-after-possibly-impure-call.php'], [
-			[
-				"Strict comparison using === between 'ready' and 'complete' will always evaluate to false.",
-				41,
-			],
-		]);
+		$this->analyse([__DIR__ . '/data/bug-15734.php'], []);
 	}
 
 	public static function getAdditionalConfigFiles(): array

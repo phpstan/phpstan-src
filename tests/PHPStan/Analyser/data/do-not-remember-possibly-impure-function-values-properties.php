@@ -113,6 +113,53 @@ class StateMachine
 		assertType("'ready'", $this->state);
 	}
 
+	public static function doStaticFromStaticMethod(): void
+	{
+		self::$staticState = 'ready';
+		self::advanceStatic();
+		assertType("'done'|'ready'", self::$staticState);
+
+		self::$staticState = 'ready';
+		self::pureStatic();
+		assertType("'ready'", self::$staticState);
+	}
+
+}
+
+class Holder
+{
+
+	public ?\stdClass $foo = null;
+
+	/** @phpstan-assert-if-true !null $this->foo */
+	public function hasFoo(): bool
+	{
+		return $this->foo !== null;
+	}
+
+	public function doAssertIfTrue(): void
+	{
+		if ($this->hasFoo()) {
+			assertType('stdClass', $this->foo);
+		}
+	}
+
+}
+
+/** @extends \ArrayObject<int, int> */
+class Bag extends \ArrayObject
+{
+
+	public ?int $n = null;
+
+	public function doBuiltinMethod(): void
+	{
+		$this->n = 1;
+		$this->count();
+		$this->getIterator();
+		assertType('1', $this->n);
+	}
+
 }
 
 class ChildStateMachine extends StateMachine

@@ -321,12 +321,18 @@ final class MethodCallHandler implements ExprHandler
 				$throwPoints[] = $methodThrowPoint;
 			}
 
+			$hasSideEffects = $methodReflection->hasSideEffects();
 			if (
 				$methodReflection->getName() === '__construct'
-				|| $methodReflection->hasSideEffects()->yes()
+				|| $hasSideEffects->yes()
 				// When possibly impure values are not remembered, a possibly impure method
 				// may also have changed the object's properties, so forget them too.
-				|| (!$this->rememberPossiblyImpureFunctionValues && !$methodReflection->hasSideEffects()->no())
+				// Built-in methods are exempt, as they are from invalidating volatile expressions below.
+				|| (
+					!$this->rememberPossiblyImpureFunctionValues
+					&& !$hasSideEffects->no()
+					&& !$methodReflection->getDeclaringClass()->isBuiltin()
+				)
 			) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());

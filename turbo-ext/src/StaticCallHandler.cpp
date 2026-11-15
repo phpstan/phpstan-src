@@ -679,8 +679,17 @@ public:
 			if (!invalidate) {
 				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-				invalidate = hasSideEffects == PT_TRI_YES
-					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects != PT_TRI_NO);
+				invalidate = hasSideEffects == PT_TRI_YES;
+				// When possibly impure values are not remembered, a possibly impure method
+				// may also have changed the object's properties, so forget them too.
+				// Built-in methods are exempt, as they are from invalidating volatile expressions below.
+				if (!invalidate && !zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects != PT_TRI_NO) {
+					zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_DECLARING_CLASS);
+					if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+					bool builtin;
+					if (UNEXPECTED(!pt_class_reflection_is_builtin(Z_OBJ_P(declaringClass.raw()), builtin))) return zv::Val();
+					invalidate = !builtin;
+				}
 			}
 			if (invalidate && UNEXPECTED(!scopeClassIsDeclaringClass(currentScope.raw(), methodReflection.raw(), invalidate))) return zv::Val();
 			if (invalidate) {

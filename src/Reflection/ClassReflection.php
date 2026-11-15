@@ -277,16 +277,18 @@ final class ClassReflection
 				);
 			}
 
+			// a generic parent is a new reflection, remembered so that walking up a generic
+			// hierarchy does not resolve each ancestor again from every class below it
 			if (!$extendedType instanceof GenericObjectType) {
-				return $this->reflectionProvider->getClass($parentClass->getName());
+				return $this->cachedParentClass = $this->reflectionProvider->getClass($parentClass->getName());
 			}
 
-			return $extendedType->getClassReflection() ?? $this->reflectionProvider->getClass($parentClass->getName());
+			return $this->cachedParentClass = $extendedType->getClassReflection() ?? $this->reflectionProvider->getClass($parentClass->getName());
 		}
 
 		$parentReflection = $this->reflectionProvider->getClass($parentClass->getName());
 		if ($parentReflection->isGeneric()) {
-			return $parentReflection->withTypes(
+			return $this->cachedParentClass = $parentReflection->withTypes(
 				array_values($parentReflection->getTemplateTypeMap()->map(static fn (): Type => new ErrorType())->getTypes()),
 			);
 		}

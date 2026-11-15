@@ -103,6 +103,7 @@ use function array_pop;
 use function array_reverse;
 use function array_slice;
 use function count;
+use function get_class;
 use function in_array;
 use function is_float;
 use function is_int;
@@ -2498,7 +2499,7 @@ final class AssignHandler implements ExprHandler
 		if ($expr instanceof Expr\UnaryMinus || $expr instanceof Expr\UnaryPlus || $expr instanceof Expr\Cast) {
 			return self::readsOnlyItsVariables($expr->expr);
 		}
-		if ($expr instanceof Expr\BinaryOp && !$expr instanceof Expr\BinaryOp\Coalesce && in_array($expr::class, self::ASSIGN_OP_BINARY_OPS, true)) {
+		if ($expr instanceof Expr\BinaryOp && !$expr instanceof Expr\BinaryOp\Coalesce && in_array(get_class($expr), self::ASSIGN_OP_BINARY_OPS, true)) {
 			return self::readsOnlyItsVariables($expr->left) && self::readsOnlyItsVariables($expr->right);
 		}
 

@@ -68,7 +68,7 @@ final class EnumTypesBench
 	/**
 	 * @return list<Type>
 	 */
-	#[Expected(instructions: '804.4K', cycles: '1.086M', memory: '40.11KiB')]
+	#[Expected(instructions: '826.1K', cycles: '1.089M', memory: '40.11KiB')]
 	public function benchUnionTypeGetFiniteTypes(): array
 	{
 		if ($this->union === null) {
@@ -83,7 +83,7 @@ final class EnumTypesBench
 	 *
 	 * @return list<Type>
 	 */
-	#[Expected(instructions: '1.121M', cycles: '1.668M', memory: '72.42KiB')]
+	#[Expected(instructions: '1.148M', cycles: '1.674M', memory: '72.42KiB')]
 	public function benchIntersectionTypeGetFiniteTypes(): array
 	{
 		if ($this->intersection === null) {

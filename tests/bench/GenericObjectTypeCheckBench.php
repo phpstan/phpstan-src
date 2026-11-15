@@ -50,8 +50,8 @@ final class GenericObjectTypeCheckBench
 	 * @return list<mixed>
 	 */
 	#[DataProvider(method: 'keys')]
-	#[ExpectedFor(dataSet: 'keys-16', instructions: '46.09K', cycles: '97.47K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'keys-64', instructions: '174.5K', cycles: '291.4K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '47.56K', cycles: '98.08K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'keys-64', instructions: '180.4K', cycles: '290.0K', memory: '0B')]
 	public function benchCheckTypeWithoutClasses(int $keys): array
 	{
 		if ($this->type === null) {

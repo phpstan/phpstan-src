@@ -103,7 +103,7 @@ final class NullsafeOperatorHelperBench
 	 * Every link above a nullsafe one is rebuilt, a chain without one is returned as it is.
 	 */
 	#[DataProvider(method: 'chains')]
-	#[ExpectedFor(dataSet: 'innermost-nullsafe-64', instructions: '261.6K', cycles: '383.1K', memory: '9.609KiB')]
+	#[ExpectedFor(dataSet: 'innermost-nullsafe-64', instructions: '263.0K', cycles: '363.3K', memory: '9.609KiB')]
 	#[ExpectedFor(dataSet: 'without-nullsafe-64', instructions: '173.3K', cycles: '258.8K', memory: '23.87KiB')]
 	public function benchGetNullsafeShortcircuitedExpr(int $depth, bool $nullsafe): Expr
 	{

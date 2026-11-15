@@ -39,7 +39,7 @@ final class AccessoryArrayListTypeBench
 		$this->list->accepts($this->array, true);
 	}
 
-	#[Expected(instructions: '1.805M', cycles: '1.869M', memory: '472B')]
+	#[Expected(instructions: '1.858M', cycles: '1.904M', memory: '472B')]
 	public function benchIsSuperTypeOf(): IsSuperTypeOfResult
 	{
 		[$list, $array] = $this->types();

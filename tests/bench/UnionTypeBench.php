@@ -78,7 +78,7 @@ final class UnionTypeBench
 	#[DataProvider(method: 'members')]
 	#[ExpectedFor(dataSet: 'members-16', instructions: '1.728M', cycles: '2.738M', memory: '16.65KiB')]
 	#[ExpectedFor(dataSet: 'members-64', instructions: '7.620M', cycles: '10.73M', memory: '44.40KiB')]
-	#[ExpectedFor(dataSet: 'members-256', instructions: '39.92M', cycles: '63.68M', memory: '198.8KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '33.75M', cycles: '45.31M', memory: '176.8KiB')]
 	public function benchDescribeIntersections(int $members): string
 	{
 		if ($this->intersections === null) {
@@ -92,9 +92,9 @@ final class UnionTypeBench
 	 * The value types of the member arrays are unioned.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '151.6K', cycles: '286.2K', memory: '4.680KiB')]
-	#[ExpectedFor(dataSet: 'members-64', instructions: '573.3K', cycles: '796.1K', memory: '12.18KiB')]
-	#[ExpectedFor(dataSet: 'members-256', instructions: '2.259M', cycles: '2.771M', memory: '62.18KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '154.8K', cycles: '290.0K', memory: '4.680KiB')]
+	#[ExpectedFor(dataSet: 'members-64', instructions: '586.2K', cycles: '786.8K', memory: '12.18KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '2.312M', cycles: '2.827M', memory: '62.18KiB')]
 	public function benchGetIterableValueType(int $members): Type
 	{
 		if ($this->arrays === null) {

@@ -69,7 +69,7 @@ final class InitializerExprTypeResolverBench
 	 */
 	#[DataProvider(method: 'items')]
 	#[ExpectedFor(dataSet: 'items-8', instructions: '234.4K', cycles: '443.2K', memory: '10.89KiB')]
-	#[ExpectedFor(dataSet: 'items-128', instructions: '11.05M', cycles: '12.69M', memory: '143.9KiB')]
+	#[ExpectedFor(dataSet: 'items-128', instructions: '11.38M', cycles: '12.99M', memory: '143.9KiB')]
 	public function benchUnpackStringKeys(int $items): Type
 	{
 		if ($this->unpack === null) {

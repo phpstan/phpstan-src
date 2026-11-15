@@ -8,6 +8,7 @@ use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
+use function array_slice;
 use function count;
 use function in_array;
 
@@ -73,6 +74,21 @@ abstract class VariableFlow
 		}
 		if (count($branches) === 1 || (count($branches) === 2 && $branches[0] === $branches[1])) {
 			return $branches[0];
+		}
+		if (count($branches) === 2) {
+			// Both branches start with the same flow, like a `?->` and its short circuit that
+			// both evaluate the receiver: it runs once before the choice of the rest, or the
+			// receiver of a chain N links deep would be walked 2^N times.
+			foreach ([[$branches[0], $branches[1]], [$branches[1], $branches[0]]] as [$longer, $prefix]) {
+				if (
+					$prefix !== null
+					&& $longer instanceof VariableSequenceFlow
+					&& $longer->kind === self::SEQUENCE
+					&& $longer->children[0] === $prefix
+				) {
+					return self::sequence($prefix, new VariableSequenceFlow(self::CHOICE, [self::sequence(...array_slice($longer->children, 1)), null]));
+				}
+			}
 		}
 
 		return new VariableSequenceFlow(self::CHOICE, $branches);

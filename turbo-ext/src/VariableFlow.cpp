@@ -17,12 +17,14 @@
 
 #include "support.h"
 #include "generated/VariableFlow.h"
+#include "generated/VariableSequenceFlow.h"
 
 namespace sigs = ptdecl::VariableFlow::sig;
 #include "zv.h"
 #include "TypeTraits.h"
 
 #include <cstring>
+#include <vector>
 
 zend_class_entry *pt_ce_variable_flow;
 
@@ -232,6 +234,43 @@ public:
 	{
 		if (argc == 0) return zv::Val::null();
 		if (argc == 1 || (argc == 2 && zend_is_identical(&argv[0], &argv[1]))) return zv::Val::copyOf(zv::Ref(&argv[0]));
+		if (argc == 2) {
+			// both branches start with the same flow, like a `?->` and its short
+			// circuit that both evaluate the receiver: it runs once before the
+			// choice of the rest
+			for (int longerIndex = 0; longerIndex < 2; longerIndex++) {
+				zval *longer = &argv[longerIndex];
+				zval *prefix = &argv[1 - longerIndex];
+				if (Z_TYPE_P(prefix) != IS_OBJECT || Z_TYPE_P(longer) != IS_OBJECT || Z_OBJCE_P(longer) != pt_ce_variable_sequence_flow) continue;
+				zval *kind = OBJ_PROP_NUM(Z_OBJ_P(longer), ptdecl::VariableFlow::slot::kind);
+				zval *children = OBJ_PROP_NUM(Z_OBJ_P(longer), ptdecl::VariableSequenceFlow::slot::children);
+				if (Z_TYPE_P(kind) != IS_STRING || !zend_string_equals(Z_STR_P(kind), pt_vf_kind_strings[PT_VF_SEQUENCE]) || Z_TYPE_P(children) != IS_ARRAY) continue;
+				HashTable *childTable = Z_ARRVAL_P(children);
+				zval *first = zend_hash_index_find(childTable, 0);
+				if (first == NULL || Z_TYPE_P(first) != IS_OBJECT || Z_OBJ_P(first) != Z_OBJ_P(prefix)) continue;
+
+				/* self::sequence(...array_slice($longer->children, 1)) */
+				uint32_t restCount = zend_hash_num_elements(childTable) - 1;
+				std::vector<zval> rest(restCount);
+				for (uint32_t i = 0; i < restCount; i++) {
+					zval *child = zend_hash_index_find(childTable, i + 1);
+					if (child == NULL) {
+						ZVAL_NULL(&rest[i]);
+					} else {
+						ZVAL_COPY_VALUE(&rest[i], child);
+					}
+				}
+				zv::Val restFlow = sequence(restCount, rest.data());
+				if (UNEXPECTED(restFlow.isUndef())) return zv::Val();
+				zv::Arr restBranches = zv::Arr::create(2);
+				restBranches.push(zv::Ref(restFlow.raw()));
+				restBranches.push(zv::Val::null());
+				zv::Val restChoice = newSequenceFlow(PT_VF_CHOICE, restBranches.raw());
+				if (UNEXPECTED(restChoice.isUndef())) return zv::Val();
+				zv::Args sequenceArgv{prefix, restChoice.raw()};
+				return sequence(2, sequenceArgv);
+			}
+		}
 
 		zv::Arr branches = zv::Arr::create(argc);
 		for (uint32_t i = 0; i < argc; i++) {

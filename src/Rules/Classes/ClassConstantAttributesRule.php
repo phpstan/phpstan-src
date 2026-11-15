@@ -10,6 +10,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Rules\AttributesCheck;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 
 /**
  * @implements Rule<Node\Stmt\ClassConst>
@@ -29,6 +30,23 @@ final class ClassConstantAttributesRule implements Rule
 
 	public function processNode(Node $node, Scope&NodeCallbackInvoker&CollectedDataEmitter $scope): array
 	{
+		if (!$scope->getPhpVersion()->supportsOverrideAttributeOnClassConstant()->yes()) {
+			foreach ($node->attrGroups as $attrGroup) {
+				foreach ($attrGroup->attrs as $attr) {
+					if ($attr->name->toLowerString() !== 'override') {
+						continue;
+					}
+
+					return [
+						RuleErrorBuilder::message('Attribute class Override can be used with class constants only on PHP 8.6 and later.')
+							->identifier('classConstant.overrideAttribute')
+							->nonIgnorable()
+							->build(),
+					];
+				}
+			}
+		}
+
 		return $this->attributesCheck->check(
 			$scope,
 			$node->attrGroups,

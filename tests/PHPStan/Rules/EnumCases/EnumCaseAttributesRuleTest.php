@@ -18,6 +18,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<EnumCaseAttributesRule>
@@ -74,6 +75,26 @@ class EnumCaseAttributesRuleTest extends RuleTestCase
 				26,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testOverrideAttributePhpVersionNarrowedScope(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Attribute class Override does not have the class constant target.',
+				18,
+			];
+		}
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Attribute class Override can be used with enum cases only on PHP 8.6 and later.',
+				27,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/enum-case-override-attr-php-versions.php'], $errors);
 	}
 
 }

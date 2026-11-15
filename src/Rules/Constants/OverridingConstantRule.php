@@ -26,6 +26,7 @@ final class OverridingConstantRule implements Rule
 	public function __construct(
 		#[AutowiredParameter]
 		private bool $checkPhpDocMethodSignatures,
+		private OverrideAttributeOnClassConstantCheck $overrideAttributeCheck,
 	)
 	{
 	}
@@ -44,7 +45,12 @@ final class OverridingConstantRule implements Rule
 		$errors = [];
 		foreach ($node->consts as $const) {
 			$constantName = $const->name->toString();
-			$errors = array_merge($errors, $this->processSingleConstant($scope->getClassReflection(), $constantName));
+			$prototype = $this->overrideAttributeCheck->findPrototype($scope->getClassReflection(), $constantName);
+			$errors = array_merge(
+				$errors,
+				$this->overrideAttributeCheck->check($scope, $node, $constantName, $prototype),
+				$this->processSingleConstant($scope->getClassReflection(), $constantName, $prototype),
+			);
 		}
 
 		return $errors;
@@ -53,9 +59,8 @@ final class OverridingConstantRule implements Rule
 	/**
 	 * @return list<IdentifierRuleError>
 	 */
-	private function processSingleConstant(ClassReflection $classReflection, string $constantName): array
+	private function processSingleConstant(ClassReflection $classReflection, string $constantName, ?ClassConstantReflection $prototype): array
 	{
-		$prototype = $this->findPrototype($classReflection, $constantName);
 		if ($prototype === null) {
 			return [];
 		}
@@ -146,31 +151,6 @@ final class OverridingConstantRule implements Rule
 		}
 
 		return $errors;
-	}
-
-	private function findPrototype(ClassReflection $classReflection, string $constantName): ?ClassConstantReflection
-	{
-		foreach ($classReflection->getImmediateInterfaces() as $immediateInterface) {
-			if ($immediateInterface->hasConstant($constantName)) {
-				return $immediateInterface->getConstant($constantName);
-			}
-		}
-
-		$parentClass = $classReflection->getParentClass();
-		if ($parentClass === null) {
-			return null;
-		}
-
-		if (!$parentClass->hasConstant($constantName)) {
-			return null;
-		}
-
-		$constant = $parentClass->getConstant($constantName);
-		if ($constant->isPrivate()) {
-			return null;
-		}
-
-		return $constant;
 	}
 
 }

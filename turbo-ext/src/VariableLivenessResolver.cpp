@@ -32,6 +32,7 @@ namespace sigs = ptdecl::VariableLivenessResolver::sig;
 #include "Engine.h"
 
 #include <cstring>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -468,8 +469,64 @@ struct Context
 		return result;
 	}
 
+	Context share() const
+	{
+		Context copy;
+		copy.return_ = shareArray(return_);
+		copy.breaks = shareAll(breaks);
+		copy.continues = shareAll(continues);
+		copy.catches = shareCatches(catches);
+		copy.uncaught = shareArray(uncaught);
+		return copy;
+	}
+
+	/* Mirrors covers(): every key of $subset is in $set */
+	static bool covers(const zv::Val &set, const zv::Val &subset)
+	{
+		if (countOf(set) < countOf(subset)) return false;
+		HashTable *setTable = tableOf(set);
+		for (auto entry : zv::TableRef(tableOf(subset))) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL ? !zend_hash_exists(setTable, key) : !zend_hash_index_exists(setTable, entry.indexKey())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	static bool coversAll(const std::vector<zv::Val> &sets, const std::vector<zv::Val> &subsets)
+	{
+		if (sets.size() != subsets.size()) return false;
+		for (size_t i = 0; i < sets.size(); i++) {
+			if (!covers(sets[i], subsets[i])) return false;
+		}
+		return true;
+	}
+
+	/* Mirrors contextCovers(): each destination covers the same one of $subcontext */
+	bool covers(const Context &subcontext) const
+	{
+		if (catches.size() != subcontext.catches.size()) return false;
+		if (!covers(return_, subcontext.return_) || !covers(uncaught, subcontext.uncaught)) return false;
+		if (!coversAll(breaks, subcontext.breaks) || !coversAll(continues, subcontext.continues)) return false;
+		for (size_t i = 0; i < catches.size(); i++) {
+			if (Z_OBJ_P(catches[i].first) != Z_OBJ_P(subcontext.catches[i].first) || !covers(catches[i].second, subcontext.catches[i].second)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 private:
 	Context(const Context &) = delete;
+};
+
+/* the live sets after a loop and the head they resolved to */
+struct LoopHead
+{
+	zv::Val next;
+	Context context;
+	zv::Val head;
 };
 
 } // namespace
@@ -611,6 +668,7 @@ private:
 	bool readsAllVariables = false;
 	bool allNamesMentioned = false;
 	bool returnsByReference = false;
+	std::unordered_map<uint32_t, LoopHead> loopHeads; /* loop flow handle => its last resolution */
 
 	VariableLivenessResolver() = default;
 
@@ -1015,7 +1073,14 @@ private:
 			zval *condition = childTable != NULL ? childAt(childTable, 0) : NULL;
 			zval *bodyFlow = childTable != NULL ? childAt(childTable, 1) : NULL;
 			zval *updateFlow = childTable != NULL ? childAt(childTable, 2) : NULL;
+			// Liveness only grows with the live sets after the loop, so the head the loop
+			// resolved to for smaller sets is below the new one and the iteration can start
+			// from it.
 			zv::Val head = emptyArray();
+			auto previous = loopHeads.find(flow->handle);
+			if (previous != loopHeads.end() && Context::covers(next, previous->second.next) && context.covers(previous->second.context)) {
+				head = shareArray(previous->second.head);
+			}
 			zv::Val body;
 			uint32_t previousCount;
 			do {
@@ -1036,6 +1101,7 @@ private:
 				head = liveBefore(condition, std::move(afterCondition), context);
 				if (UNEXPECTED(head.isUndef())) return zv::Val();
 			} while (countOf(head) != previousCount);
+			loopHeads[flow->handle] = LoopHead{shareArray(next), context.share(), shareArray(head)};
 
 			return zend_is_true(atLeastOnce) ? liveBefore(condition, std::move(body), context) : std::move(head);
 		}

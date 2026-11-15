@@ -118,6 +118,9 @@ final class VariableLivenessResolver
 
 	private bool $returnsByReference = false;
 
+	/** @var array<int, array{array<string, true>, VariableFlowContext, array<string, true>}> loop flow id => the live sets after it and the head they resolved to */
+	private array $loopHeads = [];
+
 	private function __construct()
 	{
 	}
@@ -342,7 +345,18 @@ final class VariableLivenessResolver
 			return $next + $names;
 		}
 		if ($flow->kind === VariableFlow::LOOP) {
+			// Liveness only grows with the live sets after the loop, so the head the loop
+			// resolved to for smaller sets is below the new one and the iteration can start
+			// from it. Each pass of an enclosing loop asks again with sets at least as large,
+			// so a loop nested N deep is no longer walked 2^N times.
 			$head = [];
+			$flowId = spl_object_id($flow);
+			if (isset($this->loopHeads[$flowId])) {
+				[$previousNext, $previousContext, $previousHead] = $this->loopHeads[$flowId];
+				if (self::covers($next, $previousNext) && self::contextCovers($context, $previousContext)) {
+					$head = $previousHead;
+				}
+			}
 			do {
 				$previousCount = count($head);
 				$update = $this->liveBefore($flow->children[2], $head, $context);
@@ -351,6 +365,7 @@ final class VariableLivenessResolver
 				$afterCondition = $flow->canRepeat ? ($flow->canExit ? $body + $next : $body) : $next;
 				$head = $this->liveBefore($flow->children[0], $afterCondition, $context);
 			} while (count($head) !== $previousCount);
+			$this->loopHeads[$flowId] = [$next, $context, $head];
 
 			return $flow->atLeastOnce ? $this->liveBefore($flow->children[0], $body, $context) : $head;
 		}
@@ -719,6 +734,55 @@ final class VariableLivenessResolver
 		}
 
 		return self::withoutKeys($next, $markersBySlot[$slot] ?? []);
+	}
+
+	/**
+	 * @param array<string, true> $set
+	 * @param array<string, true> $subset
+	 */
+	private static function covers(array $set, array $subset): bool
+	{
+		if (count($set) < count($subset)) {
+			return false;
+		}
+		foreach (array_keys($subset) as $key) {
+			if (!isset($set[$key])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/** Whether each destination of $context covers the same one of $subcontext. */
+	private static function contextCovers(VariableFlowContext $context, VariableFlowContext $subcontext): bool
+	{
+		if (
+			count($context->breaks) !== count($subcontext->breaks)
+			|| count($context->continues) !== count($subcontext->continues)
+			|| count($context->catches) !== count($subcontext->catches)
+			|| !self::covers($context->return, $subcontext->return)
+			|| !self::covers($context->uncaught, $subcontext->uncaught)
+		) {
+			return false;
+		}
+		foreach ($subcontext->breaks as $i => $destination) {
+			if (!self::covers($context->breaks[$i], $destination)) {
+				return false;
+			}
+		}
+		foreach ($subcontext->continues as $i => $destination) {
+			if (!self::covers($context->continues[$i], $destination)) {
+				return false;
+			}
+		}
+		foreach ($subcontext->catches as $i => [$type, $destination]) {
+			if ($context->catches[$i][0] !== $type || !self::covers($context->catches[$i][1], $destination)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -17,6 +17,8 @@ use ReflectionFunctionAbstract;
 use function array_change_key_case;
 use function array_key_exists;
 use function array_keys;
+use function array_slice;
+use function array_values;
 use function is_array;
 use function sprintf;
 use function strtolower;
@@ -37,6 +39,9 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	 * @var array<string, mixed[]|false>
 	 */
 	private static array $arenaSignatureRows = [];
+
+	/** @var array<string, array<string, list<int>>> */
+	private static array $parametersChangedByDelta = [];
 
 	/** @var array<string, array{hasSideEffects: bool}>|null */
 	private static ?array $functionMetadata = null;
@@ -276,40 +281,8 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 
 		$signatureMap = array_change_key_case($signatureMap, CASE_LOWER);
 
-		if ($this->stricterFunctionMap) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_bleedingEdge.php');
-		}
-
-		if ($this->phpVersion->getVersionId() >= 70400) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php74delta.php');
-		}
-
-		if ($this->phpVersion->getVersionId() >= 80000) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php80delta.php');
-
-			if ($this->stricterFunctionMap) {
-				$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php80delta_bleedingEdge.php');
-			}
-		}
-
-		if ($this->phpVersion->getVersionId() >= 80100) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php81delta.php');
-		}
-
-		if ($this->phpVersion->getVersionId() >= 80200) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php82delta.php');
-		}
-
-		if ($this->phpVersion->getVersionId() >= 80300) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php83delta.php');
-		}
-
-		if ($this->phpVersion->getVersionId() >= 80400) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php84delta.php');
-		}
-
-		if ($this->phpVersion->getVersionId() >= 80500) {
-			$signatureMap = $this->computeSignatureMapFile($signatureMap, __DIR__ . '/../../../resources/functionMap_php85delta.php');
+		foreach ($this->getSignatureMapDeltaFiles() as $file) {
+			$signatureMap = $this->computeSignatureMap($signatureMap, $this->loadSignatureMapDelta($file));
 		}
 
 		self::$signatureMaps[$cacheKey] = $signatureMap;
@@ -319,17 +292,103 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @param array<string, mixed> $signatureMap
-	 * @return array<string, mixed>
+	 * Positions of the parameters whose type the last delta replacing the signature changes.
+	 *
+	 * Such a type describes exactly what the parameter accepts, so it may leave out members
+	 * of the native union type, like objects that PHP still accepts but deprecates.
+	 * Other function map types leave them in, because the native type can be newer than them.
+	 *
+	 * @return list<int>
 	 */
-	private function computeSignatureMapFile(array $signatureMap, string $file): array
+	public function getParametersChangedByDelta(string $name): array
+	{
+		$cacheKey = sprintf('%d-%d', $this->phpVersion->getVersionId(), $this->stricterFunctionMap ? 1 : 0);
+		if (!array_key_exists($cacheKey, self::$parametersChangedByDelta)) {
+			$changedParameters = [];
+			foreach ($this->getSignatureMapDeltaFiles() as $file) {
+				$delta = $this->loadSignatureMapDelta($file);
+				foreach (array_keys($delta['old'] + $delta['new']) as $key) {
+					unset($changedParameters[strtolower($key)]);
+				}
+				foreach ($delta['new'] as $key => $signature) {
+					if (!array_key_exists($key, $delta['old'])) {
+						continue;
+					}
+
+					$oldParameterTypes = array_values(array_slice($delta['old'][$key], 1));
+					$positions = [];
+					foreach (array_values(array_slice($signature, 1)) as $i => $parameterType) {
+						if (($oldParameterTypes[$i] ?? null) === $parameterType) {
+							continue;
+						}
+
+						$positions[] = $i;
+					}
+
+					$changedParameters[strtolower($key)] = $positions;
+				}
+			}
+
+			self::$parametersChangedByDelta[$cacheKey] = $changedParameters;
+		}
+
+		return self::$parametersChangedByDelta[$cacheKey][strtolower($name)] ?? [];
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private function getSignatureMapDeltaFiles(): array
+	{
+		$directory = __DIR__ . '/../../../resources';
+		$versionId = $this->phpVersion->getVersionId();
+		$files = [];
+		if ($this->stricterFunctionMap) {
+			$files[] = $directory . '/functionMap_bleedingEdge.php';
+		}
+		if ($versionId >= 70400) {
+			$files[] = $directory . '/functionMap_php74delta.php';
+		}
+		if ($versionId >= 80000) {
+			$files[] = $directory . '/functionMap_php80delta.php';
+			if ($this->stricterFunctionMap) {
+				$files[] = $directory . '/functionMap_php80delta_bleedingEdge.php';
+			}
+		}
+		if ($versionId >= 80100) {
+			$files[] = $directory . '/functionMap_php81delta.php';
+		}
+		if ($versionId >= 80200) {
+			$files[] = $directory . '/functionMap_php82delta.php';
+		}
+		if ($versionId >= 80300) {
+			$files[] = $directory . '/functionMap_php83delta.php';
+		}
+		if ($versionId >= 80400) {
+			$files[] = $directory . '/functionMap_php84delta.php';
+		}
+		if ($versionId >= 80500) {
+			$files[] = $directory . '/functionMap_php85delta.php';
+		}
+		if ($versionId >= 80600) {
+			$files[] = $directory . '/functionMap_php86delta.php';
+		}
+
+		return $files;
+	}
+
+	/**
+	 * @return array{new: array<string, mixed[]>, old: array<string, mixed[]>}
+	 */
+	private function loadSignatureMapDelta(string $file): array
 	{
 		$signatureMapDelta = include $file;
 		if (!is_array($signatureMapDelta)) {
 			throw new ShouldNotHappenException(sprintf('Signature map file "%s" could not be loaded.', $file));
 		}
 
-		return $this->computeSignatureMap($signatureMap, $signatureMapDelta);
+		/** @var array{new: array<string, mixed[]>, old: array<string, mixed[]>} $signatureMapDelta */
+		return $signatureMapDelta;
 	}
 
 	/**

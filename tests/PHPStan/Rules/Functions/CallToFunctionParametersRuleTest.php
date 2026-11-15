@@ -717,7 +717,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	public function testArrayWalkCallback(): void
 	{
-		$this->analyse([__DIR__ . '/data/array_walk.php'], [
+		$errors = [
 			[
 				'Parameter #2 $callback of function array_walk expects callable(1|2, \'bar\'|\'foo\'): mixed, Closure(stdClass, float): \'\' given.',
 				6,
@@ -731,7 +731,18 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				23,
 				'Parameter #3 $extra of passed callable is required but accepting callable does not have that parameter. It will be called without it.',
 			],
-		]);
+		];
+		if (PHP_VERSION_ID >= 80600) {
+			$errors[] = [
+				'Parameter #1 $array of function array_walk expects array, object{foo: string}&stdClass given.',
+				30,
+			];
+			$errors[] = [
+				'Parameter #1 $array of function array_walk_recursive expects array, object{foo: string}&stdClass given.',
+				37,
+			];
+		}
+		$this->analyse([__DIR__ . '/data/array_walk.php'], $errors);
 	}
 
 	public function testArrayWalkArrowFunctionCallback(): void

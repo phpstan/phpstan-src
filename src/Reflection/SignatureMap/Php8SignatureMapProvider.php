@@ -32,6 +32,7 @@ use function array_key_exists;
 use function array_map;
 use function count;
 use function explode;
+use function in_array;
 use function is_string;
 use function sprintf;
 use function strtolower;
@@ -274,7 +275,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 		if ($this->functionSignatureMapProvider->hasMethodSignature($className, $methodName)) {
 			$functionMapSignatures = $this->functionSignatureMapProvider->getMethodSignatures($className, $methodName, $reflectionMethod);
 
-			return $this->getMergedSignatures($signature, $functionMapSignatures);
+			return $this->getMergedSignatures($signature, $functionMapSignatures, $this->functionSignatureMapProvider->getParametersChangedByDelta(sprintf('%s::%s', $className, $methodName)));
 		}
 
 		return ['positional' => [$signature], 'named' => null];
@@ -293,7 +294,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 		if ($this->functionSignatureMapProvider->hasFunctionSignature($functionName)) {
 			$functionMapSignatures = $this->functionSignatureMapProvider->getFunctionSignatures($functionName, $className, $reflectionFunction);
 
-			return $this->getMergedSignatures($signature, $functionMapSignatures);
+			return $this->getMergedSignatures($signature, $functionMapSignatures, $this->functionSignatureMapProvider->getParametersChangedByDelta($functionName));
 		}
 
 		return ['positional' => [$signature], 'named' => null];
@@ -366,12 +367,13 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 	/**
 	 * @param array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>} $functionMapSignatures
+	 * @param list<int> $parametersChangedByDelta
 	 * @return array{positional: array<int, FunctionSignature>, named: ?array<int, FunctionSignature>}
 	 */
-	private function getMergedSignatures(FunctionSignature $nativeSignature, array $functionMapSignatures): array
+	private function getMergedSignatures(FunctionSignature $nativeSignature, array $functionMapSignatures, array $parametersChangedByDelta): array
 	{
 		if (count($functionMapSignatures['positional']) === 1) {
-			return ['positional' => [$this->mergeSignatures($nativeSignature, $functionMapSignatures['positional'][0])], 'named' => null];
+			return ['positional' => [$this->mergeSignatures($nativeSignature, $functionMapSignatures['positional'][0], $parametersChangedByDelta)], 'named' => null];
 		}
 
 		if (count($functionMapSignatures['positional']) === 0) {
@@ -425,7 +427,10 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 		);
 	}
 
-	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature): FunctionSignature
+	/**
+	 * @param list<int> $parametersChangedByDelta
+	 */
+	private function mergeSignatures(FunctionSignature $nativeSignature, FunctionSignature $functionMapSignature, array $parametersChangedByDelta): FunctionSignature
 	{
 		$parameters = [];
 		foreach ($nativeSignature->getParameters() as $i => $nativeParameter) {
@@ -436,16 +441,22 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 
 			$functionMapParameter = $functionMapSignature->getParameters()[$i];
 			$nativeParameterType = $nativeParameter->getNativeType();
-			$parameters[] = new ParameterSignature(
-				$nativeParameter->getName(),
-				$nativeParameter->isOptional(),
-				TypehintHelper::decideType(
+			if (in_array($i, $parametersChangedByDelta, true)) {
+				// unlike decideType(), keeps out members of the native union type the delta leaves out
+				$parameterType = TypeCombinator::intersect($nativeParameterType, $functionMapParameter->getType());
+			} else {
+				$parameterType = TypehintHelper::decideType(
 					$nativeParameterType,
 					TypehintHelper::decideType(
 						$nativeParameter->getType(),
 						$functionMapParameter->getType(),
 					),
-				),
+				);
+			}
+			$parameters[] = new ParameterSignature(
+				$nativeParameter->getName(),
+				$nativeParameter->isOptional(),
+				$parameterType,
 				$nativeParameterType,
 				$nativeParameter->passedByReference()->yes() ? $functionMapParameter->passedByReference() : $nativeParameter->passedByReference(),
 				$nativeParameter->isVariadic(),

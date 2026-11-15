@@ -160,7 +160,7 @@ function functions(): void
 	assertType('Closure', mt_rand(?, ...));
 	assertType('Closure', array_walk(?, ?, ...));
 	assertType('static-Closure(array, mixed, bool=): list<int|string>', array_keys(?, ?, ...));
-	assertType('static-Closure(array|object, callable): true', array_walk(?, ?));
+	assertType('static-Closure(array, callable): true', array_walk(?, ?));
 
 	// templates
 	assertType('static-Closure<T of mixed>(T): T', identity(?));

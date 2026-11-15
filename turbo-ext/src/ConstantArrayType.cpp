@@ -5868,10 +5868,8 @@ public:
 			zv::Val item = pt_type_new(PT_CLASS_ARRAY_SHAPE_ITEM_NODE, 3, args);
 			if (UNEXPECTED(item.isUndef())) return zv::Val();
 			items.push(std::move(item));
-			zv::Val valueNodeAgain = pt_type_call(Z_OBJ_P(valueType), PT_LC("tophpdocnode"), 0, NULL);
-			if (UNEXPECTED(valueNodeAgain.isUndef())) return zv::Val();
+			/* one of the two lists is returned, so they share the value node */
 			ZVAL_NULL(&args[0]);
-			ZVAL_COPY_VALUE(&args[2], valueNodeAgain.raw());
 			zv::Val valueItem = pt_type_new(PT_CLASS_ARRAY_SHAPE_ITEM_NODE, 3, args);
 			if (UNEXPECTED(valueItem.isUndef())) return zv::Val();
 			values.push(std::move(valueItem));

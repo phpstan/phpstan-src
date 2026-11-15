@@ -106,6 +106,7 @@ use Throwable;
 use function abs;
 use function array_diff_key;
 use function array_filter;
+use function array_intersect_key;
 use function array_key_exists;
 use function array_keys;
 use function array_last;
@@ -1515,17 +1516,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	public function withRecordedStatementDelta(self $recordedEntry, self $recordedExit): self
 	{
 		$conditionalExpressions = $this->conditionalExpressions;
-		foreach ($recordedExit->conditionalExpressions as $key => $holders) {
-			if (isset($recordedEntry->conditionalExpressions[$key]) && $recordedEntry->conditionalExpressions[$key] === $holders) {
+		foreach (array_keys($recordedExit->conditionalExpressions + $recordedEntry->conditionalExpressions) as $key) {
+			$entryHolders = $recordedEntry->conditionalExpressions[$key] ?? [];
+			$exitHolders = $recordedExit->conditionalExpressions[$key] ?? [];
+			if ($entryHolders === $exitHolders) {
 				continue;
 			}
-			$conditionalExpressions[$key] = $holders;
-		}
-		foreach (array_keys($recordedEntry->conditionalExpressions) as $key) {
-			if (isset($recordedExit->conditionalExpressions[$key])) {
+			$currentHolders = $conditionalExpressions[$key] ?? [];
+			if ($currentHolders !== $entryHolders) {
+				// the statement changed the holders of an expression whose holders
+				// differ here (e.g. it assigned the guard of one): the recorded
+				// exit's holders describe the recorded state, so keep only this
+				// scope's holders that the recorded walk kept
+				$exitHolders = array_intersect_key($currentHolders, $entryHolders, $exitHolders);
+			}
+			if ($exitHolders === []) {
+				unset($conditionalExpressions[$key]);
 				continue;
 			}
-			unset($conditionalExpressions[$key]);
+			$conditionalExpressions[$key] = $exitHolders;
 		}
 
 		return $this->duplicateWith(

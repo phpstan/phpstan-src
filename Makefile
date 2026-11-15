@@ -66,6 +66,9 @@ lint:
 		--exclude tests/PHPStan/Rules/Constants/data/class-as-class-constant.php \
 		--exclude tests/PHPStan/Rules/Constants/data/value-assigned-to-class-constant-native-type.php \
 		--exclude tests/PHPStan/Rules/Constants/data/overriding-constant-native-types.php \
+		--exclude tests/PHPStan/Rules/Constants/data/constant-override-attr.php \
+		--exclude tests/PHPStan/Rules/Constants/data/constant-override-attr-fix.php \
+		--exclude tests/PHPStan/Rules/Constants/data/constant-override-attr-fix.php.fixed \
 		--exclude tests/PHPStan/Rules/Methods/data/bug-10043.php \
 		--exclude tests/PHPStan/Rules/Methods/data/bug-7859.php \
 		--exclude tests/PHPStan/Rules/Methods/data/bug-8081.php \
@@ -140,6 +143,9 @@ lint:
 		--exclude tests/PHPStan/Rules/Classes/data/bug-14250-promoted-properties.php \
 		--exclude tests/PHPStan/Rules/Operators/data/bug-3585.php \
 		--exclude tests/PHPStan/Rules/EnumCases/data/bug-14252.php \
+		--exclude tests/PHPStan/Rules/EnumCases/data/enum-case-override-attr.php \
+		--exclude tests/PHPStan/Rules/EnumCases/data/enum-case-override-attr-fix.php \
+		--exclude tests/PHPStan/Rules/EnumCases/data/enum-case-override-native-types.php \
 		--exclude tests/PHPStan/Rules/Functions/data/bug-14241.php \
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14349.php \
 		--exclude tests/PHPStan/Rules/Variables/data/bug-14352.php \

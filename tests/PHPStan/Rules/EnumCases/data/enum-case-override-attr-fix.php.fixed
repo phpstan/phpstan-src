@@ -1,0 +1,26 @@
+<?php // lint >= 8.6
+
+namespace EnumCaseOverrideAttrFix;
+
+interface I
+{
+	public const I = 'I';
+}
+
+enum Foo implements I
+{
+	#[\Override]
+	case I;
+
+	case J;
+}
+
+enum Bar implements I
+{
+	/** Some description */
+	#[\Override]
+	case I;
+
+	#[\Deprecated]
+	case J;
+}

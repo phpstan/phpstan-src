@@ -17,6 +17,7 @@ use PHPStan\Rules\RestrictedUsage\RestrictedClassNameUsageExtension;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<ClassConstantAttributesRule>
@@ -72,6 +73,25 @@ class ClassConstantAttributesRuleTest extends RuleTestCase
 				26,
 			],
 		]);
+	}
+
+	public function testOverrideAttributePhpVersionNarrowedScope(): void
+	{
+		$errors = [];
+		if (PHP_VERSION_ID < 80300) {
+			$errors[] = [
+				'Attribute class Override does not have the class constant target.',
+				18,
+			];
+		}
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Attribute class Override can be used with class constants only on PHP 8.6 and later.',
+				27,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/class-constant-override-attr-php-versions.php'], $errors);
 	}
 
 }

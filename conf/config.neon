@@ -112,6 +112,7 @@ parameters:
 	reportPossiblyNonexistentConstantArrayOffset: false
 	checkMissingOverrideMethodAttribute: false
 	checkMissingOverridePropertyAttribute: null
+	checkMissingOverrideConstantAttribute: null
 	mixinExcludeClasses: []
 	scanFiles: []
 	scanDirectories: []

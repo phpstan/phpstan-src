@@ -2265,10 +2265,17 @@ private:
 		// The variable can prove an arm was taken even when the arm types overlap:
 		// the part of an arm's type not producible by the other arm implies that
 		// arm's condition outcome. With fully disjoint arms both remainders are
-		// the full arm types.
+		// the full arm types. Disjointness is checked in both directions because
+		// isSuperTypeOf() is not symmetric for constant arrays that are not
+		// sealed - array{'a'} is a supertype of array{'a', 'b'} - and a remainder
+		// matching values of the other arm would prove the wrong outcome.
 		AH_VALB(truthyRemainder, pt_type_combinator_remove(truthyType.raw(), falseyType.raw()));
 		zend_long truthyDisjoint = ahTypeOpTri(falseyType.raw(), PT_OP_IS_SUPER_TYPE_OF, 1, truthyRemainder.raw());
 		AH_OKB(truthyDisjoint >= 0);
+		if (truthyDisjoint == PT_TRI_NO) {
+			truthyDisjoint = ahTypeOpTri(truthyRemainder.raw(), PT_OP_IS_SUPER_TYPE_OF, 1, falseyType.raw());
+			AH_OKB(truthyDisjoint >= 0);
+		}
 		if (truthyDisjoint == PT_TRI_NO) {
 			AH_OKB(processSureTypesForConditionalExpressionsAfterAssign(nsr, condScope.raw(), storage, varName, conditionalExpressions, truthySpecifiedTypes.raw(), truthyRemainder.raw(), impurePoints, assignedExpr, stored));
 			AH_OKB(processSureNotTypesForConditionalExpressionsAfterAssign(nsr, condScope.raw(), storage, varName, conditionalExpressions, truthySpecifiedTypes.raw(), truthyRemainder.raw(), impurePoints, assignedExpr, stored));
@@ -2277,6 +2284,10 @@ private:
 		AH_VALB(falseyRemainder, pt_type_combinator_remove(falseyType.raw(), truthyType.raw()));
 		zend_long falseyDisjoint = ahTypeOpTri(truthyType.raw(), PT_OP_IS_SUPER_TYPE_OF, 1, falseyRemainder.raw());
 		AH_OKB(falseyDisjoint >= 0);
+		if (falseyDisjoint == PT_TRI_NO) {
+			falseyDisjoint = ahTypeOpTri(falseyRemainder.raw(), PT_OP_IS_SUPER_TYPE_OF, 1, truthyType.raw());
+			AH_OKB(falseyDisjoint >= 0);
+		}
 		if (falseyDisjoint == PT_TRI_NO) {
 			AH_OKB(processSureTypesForConditionalExpressionsAfterAssign(nsr, condScope.raw(), storage, varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyRemainder.raw(), impurePoints, assignedExpr, stored));
 			AH_OKB(processSureNotTypesForConditionalExpressionsAfterAssign(nsr, condScope.raw(), storage, varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyRemainder.raw(), impurePoints, assignedExpr, stored));

@@ -445,68 +445,69 @@ inline constexpr char strings[] =
 	"b\0" /* 7703 */
 	"depth\0" /* 7705 */
 	"generalizeType\0" /* 7711 */
-	"getArrayDepth\0" /* 7726 */
-	"equals\0" /* 7740 */
-	"otherConditionalExpressions\0" /* 7747 */
-	"compareConditionalExpressions\0" /* 7775 */
-	"compareVariableTypeHolders\0" /* 7805 */
-	"propertyReflection\0" /* 7832 */
-	"PHPStan\\Reflection\\PropertyReflection\0" /* 7851 */
-	"canAccessProperty\0" /* 7889 */
-	"PHPStan\\Reflection\\ExtendedPropertyReflection\0" /* 7907 */
-	"canReadProperty\0" /* 7953 */
-	"canWriteProperty\0" /* 7969 */
-	"methodReflection\0" /* 7986 */
-	"PHPStan\\Reflection\\MethodReflection\0" /* 8003 */
-	"canCallMethod\0" /* 8039 */
-	"constantReflection\0" /* 8053 */
-	"PHPStan\\Reflection\\ClassConstantReflection\0" /* 8072 */
-	"canAccessConstant\0" /* 8115 */
-	"classMemberReflection\0" /* 8133 */
-	"PHPStan\\Reflection\\ClassMemberReflection\0" /* 8155 */
-	"canAccessClassMember\0" /* 8196 */
-	"debug\0" /* 8217 */
-	"typeWithMethod\0" /* 8223 */
-	"methodName\0" /* 8238 */
-	"filterTypeWithMethod\0" /* 8249 */
-	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 8270 */
-	"getMethodReflection\0" /* 8314 */
-	"getNakedMethod\0" /* 8334 */
-	"typeWithProperty\0" /* 8349 */
-	"getPropertyReflection\0" /* 8366 */
-	"getInstancePropertyReflection\0" /* 8388 */
-	"getStaticPropertyReflection\0" /* 8418 */
-	"typeWithConstant\0" /* 8446 */
-	"constantName\0" /* 8463 */
-	"getConstantReflection\0" /* 8476 */
-	"constantType\0" /* 8498 */
-	"getConstantExplicitTypeFromConfig\0" /* 8511 */
-	"getConstantTypes\0" /* 8545 */
-	"getGlobalConstantType\0" /* 8562 */
-	"nameString\0" /* 8584 */
-	"createGlobalConstantFetches\0" /* 8595 */
-	"getNativeConstantTypes\0" /* 8623 */
-	"getIterableKeyType\0" /* 8646 */
-	"getIterableValueType\0" /* 8665 */
-	"PHPStan\\Php\\PhpVersions\0" /* 8686 */
-	"getPhpVersion\0" /* 8710 */
-	"resolvePhpVersion\0" /* 8724 */
-	"getConfiguredPhpVersionRange\0" /* 8742 */
-	"isOverallPhpVersionRange\0" /* 8771 */
-	"PhpParser\\Node\0" /* 8796 */
-	"invokeNodeCallback\0" /* 8811 */
-	"collectorType\0" /* 8830 */
-	"data\0" /* 8844 */
-	"emitCollectedData\0" /* 8849 */
-	"extensionClass\0" /* 8867 */
-	"trackValueDependency\0" /* 8882 */
-	"file\0" /* 8903 */
-	"trackFileDependency\0" /* 8908 */
-	"directory\0" /* 8928 */
-	"pattern\0" /* 8938 */
-	"'*'\0" /* 8946 */
-	"trackDirectoryDependency\0" /* 8950 */
-	"trackClassDependency"; /* 8975 */
+	"generalizeConstantFloats\0" /* 7726 */
+	"getArrayDepth\0" /* 7751 */
+	"equals\0" /* 7765 */
+	"otherConditionalExpressions\0" /* 7772 */
+	"compareConditionalExpressions\0" /* 7800 */
+	"compareVariableTypeHolders\0" /* 7830 */
+	"propertyReflection\0" /* 7857 */
+	"PHPStan\\Reflection\\PropertyReflection\0" /* 7876 */
+	"canAccessProperty\0" /* 7914 */
+	"PHPStan\\Reflection\\ExtendedPropertyReflection\0" /* 7932 */
+	"canReadProperty\0" /* 7978 */
+	"canWriteProperty\0" /* 7994 */
+	"methodReflection\0" /* 8011 */
+	"PHPStan\\Reflection\\MethodReflection\0" /* 8028 */
+	"canCallMethod\0" /* 8064 */
+	"constantReflection\0" /* 8078 */
+	"PHPStan\\Reflection\\ClassConstantReflection\0" /* 8097 */
+	"canAccessConstant\0" /* 8140 */
+	"classMemberReflection\0" /* 8158 */
+	"PHPStan\\Reflection\\ClassMemberReflection\0" /* 8180 */
+	"canAccessClassMember\0" /* 8221 */
+	"debug\0" /* 8242 */
+	"typeWithMethod\0" /* 8248 */
+	"methodName\0" /* 8263 */
+	"filterTypeWithMethod\0" /* 8274 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 8295 */
+	"getMethodReflection\0" /* 8339 */
+	"getNakedMethod\0" /* 8359 */
+	"typeWithProperty\0" /* 8374 */
+	"getPropertyReflection\0" /* 8391 */
+	"getInstancePropertyReflection\0" /* 8413 */
+	"getStaticPropertyReflection\0" /* 8443 */
+	"typeWithConstant\0" /* 8471 */
+	"constantName\0" /* 8488 */
+	"getConstantReflection\0" /* 8501 */
+	"constantType\0" /* 8523 */
+	"getConstantExplicitTypeFromConfig\0" /* 8536 */
+	"getConstantTypes\0" /* 8570 */
+	"getGlobalConstantType\0" /* 8587 */
+	"nameString\0" /* 8609 */
+	"createGlobalConstantFetches\0" /* 8620 */
+	"getNativeConstantTypes\0" /* 8648 */
+	"getIterableKeyType\0" /* 8671 */
+	"getIterableValueType\0" /* 8690 */
+	"PHPStan\\Php\\PhpVersions\0" /* 8711 */
+	"getPhpVersion\0" /* 8735 */
+	"resolvePhpVersion\0" /* 8749 */
+	"getConfiguredPhpVersionRange\0" /* 8767 */
+	"isOverallPhpVersionRange\0" /* 8796 */
+	"PhpParser\\Node\0" /* 8821 */
+	"invokeNodeCallback\0" /* 8836 */
+	"collectorType\0" /* 8855 */
+	"data\0" /* 8869 */
+	"emitCollectedData\0" /* 8874 */
+	"extensionClass\0" /* 8892 */
+	"trackValueDependency\0" /* 8907 */
+	"file\0" /* 8928 */
+	"trackFileDependency\0" /* 8933 */
+	"directory\0" /* 8953 */
+	"pattern\0" /* 8963 */
+	"'*'\0" /* 8971 */
+	"trackDirectoryDependency\0" /* 8975 */
+	"trackClassDependency"; /* 9000 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 9), /* __construct $services */
 	reg::packed(40, 0, 53), /* __construct $scopeFactory */
@@ -967,58 +968,61 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(7703, 0, 1424), /* generalizeType $b */
 	reg::packed(7705, MAY_BE_LONG), /* generalizeType $depth */
 	reg::packed(738, 0, 1424), /* generalizeType return */
+	reg::packed(7701, MAY_BE_ARRAY), /* generalizeConstantFloats $a */
+	reg::packed(7703, MAY_BE_ARRAY), /* generalizeConstantFloats $b */
+	reg::packed(738, 0, 1424), /* generalizeConstantFloats return */
 	reg::packed(3874, 0, 1424), /* getArrayDepth $type */
 	reg::packed(738, MAY_BE_LONG), /* getArrayDepth return */
 	reg::packed(6479, 0, 523), /* equals $otherScope */
 	reg::packed(738, MAY_BE_BOOL), /* equals return */
 	reg::packed(278, MAY_BE_ARRAY), /* compareConditionalExpressions $conditionalExpressions */
-	reg::packed(7747, MAY_BE_ARRAY), /* compareConditionalExpressions $otherConditionalExpressions */
+	reg::packed(7772, MAY_BE_ARRAY), /* compareConditionalExpressions $otherConditionalExpressions */
 	reg::packed(738, MAY_BE_BOOL), /* compareConditionalExpressions return */
 	reg::packed(7596, MAY_BE_ARRAY), /* compareVariableTypeHolders $variableTypeHolders */
 	reg::packed(7616, MAY_BE_ARRAY), /* compareVariableTypeHolders $otherVariableTypeHolders */
 	reg::packed(738, MAY_BE_BOOL), /* compareVariableTypeHolders return */
-	reg::packed(7832, 0, 7851), /* canAccessProperty $propertyReflection */
+	reg::packed(7857, 0, 7876), /* canAccessProperty $propertyReflection */
 	reg::packed(738, MAY_BE_BOOL), /* canAccessProperty return */
-	reg::packed(7832, 0, 7907), /* canReadProperty $propertyReflection */
+	reg::packed(7857, 0, 7932), /* canReadProperty $propertyReflection */
 	reg::packed(738, MAY_BE_BOOL), /* canReadProperty return */
-	reg::packed(7832, 0, 7907), /* canWriteProperty $propertyReflection */
+	reg::packed(7857, 0, 7932), /* canWriteProperty $propertyReflection */
 	reg::packed(738, MAY_BE_BOOL), /* canWriteProperty return */
-	reg::packed(7986, 0, 8003), /* canCallMethod $methodReflection */
+	reg::packed(8011, 0, 8028), /* canCallMethod $methodReflection */
 	reg::packed(738, MAY_BE_BOOL), /* canCallMethod return */
-	reg::packed(8053, 0, 8072), /* canAccessConstant $constantReflection */
+	reg::packed(8078, 0, 8097), /* canAccessConstant $constantReflection */
 	reg::packed(738, MAY_BE_BOOL), /* canAccessConstant return */
-	reg::packed(8133, 0, 8155), /* canAccessClassMember $classMemberReflection */
+	reg::packed(8158, 0, 8180), /* canAccessClassMember $classMemberReflection */
 	reg::packed(738, MAY_BE_BOOL), /* canAccessClassMember return */
 	reg::packed(738, MAY_BE_ARRAY), /* debug return */
-	reg::packed(8223, 0, 1424), /* filterTypeWithMethod $typeWithMethod */
-	reg::packed(8238, MAY_BE_STRING), /* filterTypeWithMethod $methodName */
+	reg::packed(8248, 0, 1424), /* filterTypeWithMethod $typeWithMethod */
+	reg::packed(8263, MAY_BE_STRING), /* filterTypeWithMethod $methodName */
 	reg::packed(738, MAY_BE_NULL, 1424), /* filterTypeWithMethod return */
-	reg::packed(8223, 0, 1424), /* getMethodReflection $typeWithMethod */
-	reg::packed(8238, MAY_BE_STRING), /* getMethodReflection $methodName */
-	reg::packed(738, MAY_BE_NULL, 8270), /* getMethodReflection return */
-	reg::packed(8223, 0, 1424), /* getNakedMethod $typeWithMethod */
-	reg::packed(8238, MAY_BE_STRING), /* getNakedMethod $methodName */
-	reg::packed(738, MAY_BE_NULL, 8270), /* getNakedMethod return */
-	reg::packed(8349, 0, 1424), /* getPropertyReflection $typeWithProperty */
+	reg::packed(8248, 0, 1424), /* getMethodReflection $typeWithMethod */
+	reg::packed(8263, MAY_BE_STRING), /* getMethodReflection $methodName */
+	reg::packed(738, MAY_BE_NULL, 8295), /* getMethodReflection return */
+	reg::packed(8248, 0, 1424), /* getNakedMethod $typeWithMethod */
+	reg::packed(8263, MAY_BE_STRING), /* getNakedMethod $methodName */
+	reg::packed(738, MAY_BE_NULL, 8295), /* getNakedMethod return */
+	reg::packed(8374, 0, 1424), /* getPropertyReflection $typeWithProperty */
 	reg::packed(3728, MAY_BE_STRING), /* getPropertyReflection $propertyName */
-	reg::packed(738, MAY_BE_NULL, 7907), /* getPropertyReflection return */
-	reg::packed(8349, 0, 1424), /* getInstancePropertyReflection $typeWithProperty */
+	reg::packed(738, MAY_BE_NULL, 7932), /* getPropertyReflection return */
+	reg::packed(8374, 0, 1424), /* getInstancePropertyReflection $typeWithProperty */
 	reg::packed(3728, MAY_BE_STRING), /* getInstancePropertyReflection $propertyName */
-	reg::packed(738, MAY_BE_NULL, 7907), /* getInstancePropertyReflection return */
-	reg::packed(8349, 0, 1424), /* getStaticPropertyReflection $typeWithProperty */
+	reg::packed(738, MAY_BE_NULL, 7932), /* getInstancePropertyReflection return */
+	reg::packed(8374, 0, 1424), /* getStaticPropertyReflection $typeWithProperty */
 	reg::packed(3728, MAY_BE_STRING), /* getStaticPropertyReflection $propertyName */
-	reg::packed(738, MAY_BE_NULL, 7907), /* getStaticPropertyReflection return */
-	reg::packed(8446, 0, 1424), /* getConstantReflection $typeWithConstant */
-	reg::packed(8463, MAY_BE_STRING), /* getConstantReflection $constantName */
-	reg::packed(738, MAY_BE_NULL, 8072), /* getConstantReflection return */
-	reg::packed(8463, MAY_BE_STRING), /* getConstantExplicitTypeFromConfig $constantName */
-	reg::packed(8498, 0, 1424), /* getConstantExplicitTypeFromConfig $constantType */
+	reg::packed(738, MAY_BE_NULL, 7932), /* getStaticPropertyReflection return */
+	reg::packed(8471, 0, 1424), /* getConstantReflection $typeWithConstant */
+	reg::packed(8488, MAY_BE_STRING), /* getConstantReflection $constantName */
+	reg::packed(738, MAY_BE_NULL, 8097), /* getConstantReflection return */
+	reg::packed(8488, MAY_BE_STRING), /* getConstantExplicitTypeFromConfig $constantName */
+	reg::packed(8523, 0, 1424), /* getConstantExplicitTypeFromConfig $constantType */
 	reg::packed(738, 0, 1424), /* getConstantExplicitTypeFromConfig return */
 	reg::packed(738, MAY_BE_ARRAY), /* getConstantTypes return */
 	reg::packed(1520, 0, 1525), /* getGlobalConstantType $name */
 	reg::packed(738, MAY_BE_NULL, 1424), /* getGlobalConstantType return */
 	reg::packed(1520, 0, 1525), /* createGlobalConstantFetches $name */
-	reg::packed(8584, MAY_BE_STRING), /* createGlobalConstantFetches $nameString */
+	reg::packed(8609, MAY_BE_STRING), /* createGlobalConstantFetches $nameString */
 	reg::packed(227, MAY_BE_NULL | MAY_BE_STRING), /* createGlobalConstantFetches $namespace */
 	reg::packed(738, MAY_BE_ARRAY), /* createGlobalConstantFetches return */
 	reg::packed(738, MAY_BE_ARRAY), /* getNativeConstantTypes return */
@@ -1026,23 +1030,23 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(738, 0, 1424), /* getIterableKeyType return */
 	reg::packed(5138, 0, 1424), /* getIterableValueType $iteratee */
 	reg::packed(738, 0, 1424), /* getIterableValueType return */
-	reg::packed(738, 0, 8686), /* getPhpVersion return */
-	reg::packed(738, 0, 8686), /* resolvePhpVersion return */
+	reg::packed(738, 0, 8711), /* getPhpVersion return */
+	reg::packed(738, 0, 8711), /* resolvePhpVersion return */
 	reg::packed(738, MAY_BE_NULL, 1424), /* getConfiguredPhpVersionRange return */
 	reg::packed(3874, 0, 1424), /* isOverallPhpVersionRange $type */
 	reg::packed(738, MAY_BE_BOOL), /* isOverallPhpVersionRange return */
-	reg::packed(1707, 0, 8796), /* invokeNodeCallback $node */
+	reg::packed(1707, 0, 8821), /* invokeNodeCallback $node */
 	reg::packed(738, MAY_BE_VOID), /* invokeNodeCallback return */
-	reg::packed(8830, MAY_BE_STRING), /* emitCollectedData $collectorType */
-	reg::packed(8844, MAY_BE_ANY), /* emitCollectedData $data */
+	reg::packed(8855, MAY_BE_STRING), /* emitCollectedData $collectorType */
+	reg::packed(8869, MAY_BE_ANY), /* emitCollectedData $data */
 	reg::packed(738, MAY_BE_VOID), /* emitCollectedData return */
-	reg::packed(8867, MAY_BE_STRING), /* trackValueDependency $extensionClass */
+	reg::packed(8892, MAY_BE_STRING), /* trackValueDependency $extensionClass */
 	reg::packed(2540, MAY_BE_STRING), /* trackValueDependency $key */
 	reg::packed(738, MAY_BE_VOID), /* trackValueDependency return */
-	reg::packed(8903, MAY_BE_STRING), /* trackFileDependency $file */
+	reg::packed(8928, MAY_BE_STRING), /* trackFileDependency $file */
 	reg::packed(738, MAY_BE_VOID), /* trackFileDependency return */
-	reg::packed(8928, MAY_BE_STRING), /* trackDirectoryDependency $directory */
-	reg::packed(8938, MAY_BE_STRING, reg::NoString, false, false, 8946), /* trackDirectoryDependency $pattern */
+	reg::packed(8953, MAY_BE_STRING), /* trackDirectoryDependency $directory */
+	reg::packed(8963, MAY_BE_STRING, reg::NoString, false, false, 8971), /* trackDirectoryDependency $pattern */
 	reg::packed(738, MAY_BE_VOID), /* trackDirectoryDependency return */
 	reg::packed(2977, MAY_BE_STRING), /* trackClassDependency $className */
 	reg::packed(738, MAY_BE_VOID), /* trackClassDependency return */
@@ -1220,41 +1224,42 @@ inline constexpr sigtab::Sig generalizeWithVariableState = { { 7568 /* generaliz
 inline constexpr sigtab::Sig generalizeVariableTypeHolders = { { 7641 /* generalizeVariableTypeHolders */, 3, 449, 3, 452, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig flattenUnionForGeneralization = { { 7671 /* flattenUnionForGeneralization */, 1, 453, 1, 454, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig generalizeType = { { 7711 /* generalizeType */, 3, 455, 3, 458, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getArrayDepth = { { 7726 /* getArrayDepth */, 1, 459, 1, 460, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig equals = { { 7740 /* equals */, 1, 461, 1, 462, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig compareConditionalExpressions = { { 7775 /* compareConditionalExpressions */, 2, 463, 2, 465, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig compareVariableTypeHolders = { { 7805 /* compareVariableTypeHolders */, 2, 466, 2, 468, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig canAccessProperty = { { 7889 /* canAccessProperty */, 1, 469, 1, 470, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canReadProperty = { { 7953 /* canReadProperty */, 1, 471, 1, 472, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canWriteProperty = { { 7969 /* canWriteProperty */, 1, 473, 1, 474, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canCallMethod = { { 8039 /* canCallMethod */, 1, 475, 1, 476, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canAccessConstant = { { 8115 /* canAccessConstant */, 1, 477, 1, 478, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canAccessClassMember = { { 8196 /* canAccessClassMember */, 1, 479, 1, 480, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig debug = { { 8217 /* debug */, 0, 481, 0, 481, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig filterTypeWithMethod = { { 8249 /* filterTypeWithMethod */, 2, 482, 2, 484, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getMethodReflection = { { 8314 /* getMethodReflection */, 2, 485, 2, 487, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNakedMethod = { { 8334 /* getNakedMethod */, 2, 488, 2, 490, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPropertyReflection = { { 8366 /* getPropertyReflection */, 2, 491, 2, 493, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getInstancePropertyReflection = { { 8388 /* getInstancePropertyReflection */, 2, 494, 2, 496, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getStaticPropertyReflection = { { 8418 /* getStaticPropertyReflection */, 2, 497, 2, 499, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstantReflection = { { 8476 /* getConstantReflection */, 2, 500, 2, 502, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstantExplicitTypeFromConfig = { { 8511 /* getConstantExplicitTypeFromConfig */, 2, 503, 2, 505, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstantTypes = { { 8545 /* getConstantTypes */, 0, 506, 0, 506, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getGlobalConstantType = { { 8562 /* getGlobalConstantType */, 1, 507, 1, 508, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createGlobalConstantFetches = { { 8595 /* createGlobalConstantFetches */, 3, 509, 3, 512, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getNativeConstantTypes = { { 8623 /* getNativeConstantTypes */, 0, 513, 0, 513, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getIterableKeyType = { { 8646 /* getIterableKeyType */, 1, 514, 1, 515, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getIterableValueType = { { 8665 /* getIterableValueType */, 1, 516, 1, 517, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPhpVersion = { { 8710 /* getPhpVersion */, 0, 518, 0, 518, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolvePhpVersion = { { 8724 /* resolvePhpVersion */, 0, 519, 0, 519, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getConfiguredPhpVersionRange = { { 8742 /* getConfiguredPhpVersionRange */, 0, 520, 0, 520, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 8771 /* isOverallPhpVersionRange */, 1, 521, 1, 522, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig invokeNodeCallback = { { 8811 /* invokeNodeCallback */, 1, 523, 1, 524, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig emitCollectedData = { { 8849 /* emitCollectedData */, 2, 525, 2, 527, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackValueDependency = { { 8882 /* trackValueDependency */, 2, 528, 2, 530, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackFileDependency = { { 8908 /* trackFileDependency */, 1, 531, 1, 532, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackDirectoryDependency = { { 8950 /* trackDirectoryDependency */, 1, 533, 2, 535, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig trackClassDependency = { { 8975 /* trackClassDependency */, 1, 536, 1, 537, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalizeConstantFloats = { { 7726 /* generalizeConstantFloats */, 2, 459, 2, 461, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getArrayDepth = { { 7751 /* getArrayDepth */, 1, 462, 1, 463, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig equals = { { 7765 /* equals */, 1, 464, 1, 465, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig compareConditionalExpressions = { { 7800 /* compareConditionalExpressions */, 2, 466, 2, 468, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig compareVariableTypeHolders = { { 7830 /* compareVariableTypeHolders */, 2, 469, 2, 471, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig canAccessProperty = { { 7914 /* canAccessProperty */, 1, 472, 1, 473, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canReadProperty = { { 7978 /* canReadProperty */, 1, 474, 1, 475, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canWriteProperty = { { 7994 /* canWriteProperty */, 1, 476, 1, 477, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canCallMethod = { { 8064 /* canCallMethod */, 1, 478, 1, 479, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canAccessConstant = { { 8140 /* canAccessConstant */, 1, 480, 1, 481, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canAccessClassMember = { { 8221 /* canAccessClassMember */, 1, 482, 1, 483, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig debug = { { 8242 /* debug */, 0, 484, 0, 484, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig filterTypeWithMethod = { { 8274 /* filterTypeWithMethod */, 2, 485, 2, 487, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMethodReflection = { { 8339 /* getMethodReflection */, 2, 488, 2, 490, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNakedMethod = { { 8359 /* getNakedMethod */, 2, 491, 2, 493, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyReflection = { { 8391 /* getPropertyReflection */, 2, 494, 2, 496, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getInstancePropertyReflection = { { 8413 /* getInstancePropertyReflection */, 2, 497, 2, 499, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStaticPropertyReflection = { { 8443 /* getStaticPropertyReflection */, 2, 500, 2, 502, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantReflection = { { 8501 /* getConstantReflection */, 2, 503, 2, 505, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantExplicitTypeFromConfig = { { 8536 /* getConstantExplicitTypeFromConfig */, 2, 506, 2, 508, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantTypes = { { 8570 /* getConstantTypes */, 0, 509, 0, 509, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getGlobalConstantType = { { 8587 /* getGlobalConstantType */, 1, 510, 1, 511, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createGlobalConstantFetches = { { 8620 /* createGlobalConstantFetches */, 3, 512, 3, 515, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getNativeConstantTypes = { { 8648 /* getNativeConstantTypes */, 0, 516, 0, 516, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getIterableKeyType = { { 8671 /* getIterableKeyType */, 1, 517, 1, 518, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIterableValueType = { { 8690 /* getIterableValueType */, 1, 519, 1, 520, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPhpVersion = { { 8735 /* getPhpVersion */, 0, 521, 0, 521, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolvePhpVersion = { { 8749 /* resolvePhpVersion */, 0, 522, 0, 522, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getConfiguredPhpVersionRange = { { 8767 /* getConfiguredPhpVersionRange */, 0, 523, 0, 523, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isOverallPhpVersionRange = { { 8796 /* isOverallPhpVersionRange */, 1, 524, 1, 525, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig invokeNodeCallback = { { 8836 /* invokeNodeCallback */, 1, 526, 1, 527, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig emitCollectedData = { { 8874 /* emitCollectedData */, 2, 528, 2, 530, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackValueDependency = { { 8907 /* trackValueDependency */, 2, 531, 2, 533, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackFileDependency = { { 8933 /* trackFileDependency */, 1, 534, 1, 535, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackDirectoryDependency = { { 8975 /* trackDirectoryDependency */, 1, 536, 2, 538, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig trackClassDependency = { { 9000 /* trackClassDependency */, 1, 539, 1, 540, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MutatingScope

@@ -51,7 +51,6 @@ use function strlen;
 use function strpos;
 use function substr;
 use function sys_get_temp_dir;
-use function time;
 use function uniqid;
 use function unlink;
 use function usleep;
@@ -379,6 +378,10 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 	/**
 	 * A save keeps the stat signature only of a file not modified in the second the save began,
 	 * so without waiting, saves on both sides of a second boundary differ in their signatures.
+	 *
+	 * Waits on the clock that timestamps writes, not on time(): right after a second boundary a
+	 * write can still be timestamped with the second before, so a file written as soon as time()
+	 * moves on could keep the signature it had.
 	 */
 	private function waitUntilTheFilesAreInThePast(): void
 	{
@@ -390,9 +393,20 @@ class ResultCacheManagerCollectedDataTest extends PHPStanTestCase
 			$latest = max($latest, $stat['mtime'], $stat['ctime']);
 		}
 
-		while (time() <= $latest) {
+		// outside src/, like the cache file, so it is not a scanned file
+		$probe = $this->directory . '/clock-probe';
+		while (true) {
+			file_put_contents($probe, '');
+			clearstatcache();
+			$stat = stat($probe);
+			$this->assertIsArray($stat);
+			if ($stat['mtime'] > $latest) {
+				break;
+			}
+
 			usleep(50_000);
 		}
+		unlink($probe);
 	}
 
 	/**

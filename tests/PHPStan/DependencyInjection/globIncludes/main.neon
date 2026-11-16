@@ -1,6 +1,7 @@
 includes:
 	- baselines/*.neon
 	- 'literal/[literal].neon'
+	- selfIncluding/_loader.neon
 
 parametersSchema:
 	globIncludesOrder: string()

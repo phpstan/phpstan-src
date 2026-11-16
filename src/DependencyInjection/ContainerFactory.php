@@ -291,6 +291,7 @@ final class ContainerFactory
 
 	/**
 	 * @param array<string, string> $loaderParameters
+	 * @param list<string> $loadingFiles the files that include $configFile, in turn
 	 * @return array{list<string>, array<mixed>}
 	 */
 	private static function getConfigFiles(
@@ -300,6 +301,7 @@ final class ContainerFactory
 		string $configFile,
 		array $loaderParameters,
 		?string $generateBaselineFile,
+		array $loadingFiles = [],
 	): array
 	{
 		if ($generateBaselineFile === $fileHelper->normalizePath($configFile)) {
@@ -320,8 +322,8 @@ final class ContainerFactory
 			$includes = Helpers::expand($data['includes'], $loaderParameters);
 			foreach ($includes as $include) {
 				$include = self::expandIncludedFile($include, $configFile);
-				foreach (IncludedFilePattern::expand($include) ?? [$include] as $includedFile) {
-					[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $includedFile, $loaderParameters, $generateBaselineFile);
+				foreach (IncludedFilePattern::expand($include, [...$loadingFiles, $configFile]) ?? [$include] as $includedFile) {
+					[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $includedFile, $loaderParameters, $generateBaselineFile, [...$loadingFiles, $configFile]);
 					$allConfigFiles = array_merge($allConfigFiles, $tmpConfigFiles);
 
 					/** @var array<mixed> $data */

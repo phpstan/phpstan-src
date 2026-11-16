@@ -18,6 +18,7 @@ class GlobIncludesTest extends PHPStanTestCase
 		$this->assertContains('a.identifier', $identifiers);
 		$this->assertContains('b.identifier', $identifiers);
 		$this->assertContains('literal.identifier', $identifiers);
+		$this->assertContains('sibling.identifier', $identifiers);
 	}
 
 	public function testMatchedFilesAreIncludedInAlphabeticalOrder(): void

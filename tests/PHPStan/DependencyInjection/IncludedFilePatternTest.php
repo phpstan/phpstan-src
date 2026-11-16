@@ -14,6 +14,12 @@ class IncludedFilePatternTest extends TestCase
 		$this->assertSame([$dir . '/a.neon', $dir . '/b.neon'], IncludedFilePattern::expand($dir . '/*.neon'));
 	}
 
+	public function testPatternDoesNotMatchFilesBeingLoaded(): void
+	{
+		$dir = __DIR__ . '/globIncludes/selfIncluding';
+		$this->assertSame([$dir . '/sibling.neon'], IncludedFilePattern::expand($dir . '/*.neon', [__DIR__ . '/globIncludes/main.neon', $dir . '/../selfIncluding/_loader.neon']));
+	}
+
 	public function testPatternMatchingNothingIsEmpty(): void
 	{
 		$this->assertSame([], IncludedFilePattern::expand(__DIR__ . '/globIncludes/nonexistent/*.neon'));

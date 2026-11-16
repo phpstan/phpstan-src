@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			identifier: sibling.identifier
+			path: '*/sibling.php'

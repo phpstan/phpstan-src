@@ -7,10 +7,14 @@ use Nette\Schema\Helpers;
 use Override;
 use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
+use function array_pop;
 use function is_array;
 
 final class NeonLoader extends Loader
 {
+
+	/** @var list<string> */
+	private array $loadingFiles = [];
 
 	public function __construct(
 		private FileHelper $fileHelper,
@@ -26,7 +30,7 @@ final class NeonLoader extends Loader
 	public function load(string $file, ?bool $merge = true): array
 	{
 		// Loader::load() passes each entry in includes back here, after expanding it to an absolute path
-		$matchedFiles = IncludedFilePattern::expand($file);
+		$matchedFiles = IncludedFilePattern::expand($file, $this->loadingFiles);
 		if ($matchedFiles !== null) {
 			$res = [];
 			foreach ($matchedFiles as $matchedFile) {
@@ -40,16 +44,16 @@ final class NeonLoader extends Loader
 			return $res;
 		}
 
-		if ($this->generateBaselineFile === null) {
-			return parent::load($file, $merge);
-		}
-
-		$normalizedFile = $this->fileHelper->normalizePath($file);
-		if ($this->generateBaselineFile === $normalizedFile) {
+		if ($this->generateBaselineFile !== null && $this->generateBaselineFile === $this->fileHelper->normalizePath($file)) {
 			return [];
 		}
 
-		return parent::load($file, $merge);
+		$this->loadingFiles[] = $file;
+		try {
+			return parent::load($file, $merge);
+		} finally {
+			array_pop($this->loadingFiles);
+		}
 	}
 
 }

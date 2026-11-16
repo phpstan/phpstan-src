@@ -47,6 +47,7 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("globalConstantFetchKeys", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("resolvingMergedCalls", ZEND_ACC_PRIVATE | ZEND_ACC_STATIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("resolvedTypes", ZEND_ACC_PUBLIC, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("nodeCallbackScope", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Analyser\\MutatingScope");
 	cls.property("namespace", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL | MAY_BE_STRING);

@@ -164,6 +164,18 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	private static array $globalConstantFetchKeys = [];
 
 	/**
+	 * Keys of the merged calls findUninformativeMergedCalls() is resolving.
+	 * Resolving a call processes its arguments again, and merging a ternary
+	 * among them can make the same call a candidate again, e.g. when
+	 * conditional expressions tie the call's type to the ternary's condition
+	 * after `$s = strlen($s ?: '') ?: 0;`. Such a nested check keeps the
+	 * merged entry instead of resolving the call once more.
+	 *
+	 * @var array<string, true>
+	 */
+	private static array $resolvingMergedCalls = [];
+
+	/**
 	 * @internal accessed by ScopeOps (native and PHP implementations)
 	 * @var array<string, Type>
 	 */
@@ -4561,12 +4573,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	{
 		$uninformativeKeys = [];
 		foreach ($candidates as $exprString => $holder) {
-			$expr = $holder->getExpr();
-			if (!$holder->getType()->equals($this->getType($expr))) {
+			if (isset(self::$resolvingMergedCalls[$exprString])) {
 				continue;
 			}
+			$expr = $holder->getExpr();
 			$nativeHolder = $mergedNativeTypes[$exprString] ?? null;
-			if ($nativeHolder !== null && !$nativeHolder->getType()->equals($this->getNativeType($expr))) {
+			self::$resolvingMergedCalls[$exprString] = true;
+			try {
+				$isUninformative = $holder->getType()->equals($this->getType($expr))
+					&& ($nativeHolder === null || $nativeHolder->getType()->equals($this->getNativeType($expr)));
+			} finally {
+				unset(self::$resolvingMergedCalls[$exprString]);
+			}
+			if (!$isUninformative) {
 				continue;
 			}
 			$uninformativeKeys[$exprString] = true;

@@ -8600,26 +8600,81 @@ public:
 		return true;
 	}
 
+	/* MutatingScope::$resolvingMergedCalls - the same static property the twin
+	 * guards findUninformativeMergedCalls() with; NULL = pending exception */
+	[[nodiscard]] static zval *resolvingMergedCallsTable()
+	{
+		if (UNEXPECTED(pt_ce_mutating_scope == NULL)) {
+			zend_throw_error(NULL, "phpstan_turbo: MutatingScope class entry is not available");
+			return NULL;
+		}
+		zval *table = zend_read_static_property(pt_ce_mutating_scope, PT_LC("resolvingMergedCalls"), 0);
+		if (UNEXPECTED(table == NULL)) return NULL;
+		ZVAL_DEREF(table);
+		if (UNEXPECTED(Z_TYPE_P(table) != IS_ARRAY)) {
+			zend_throw_error(NULL, "phpstan_turbo: MutatingScope::$resolvingMergedCalls is not an array");
+			return NULL;
+		}
+		return table;
+	}
+
+	/* the twin's `self::$resolvingMergedCalls[$exprString] = true` before
+	 * resolving a candidate and the `unset()` in its `finally`. The static
+	 * property's slot stays put, its array does not - nested checks separate
+	 * and grow it - so it is looked up through the slot on both ends */
+	class ResolvingMergedCall
+	{
+	public:
+		ResolvingMergedCall(zval *table, zend_string *key, zend_ulong index) : table(table), key(key), index(index)
+		{
+			SEPARATE_ARRAY(table);
+			zval trueZv;
+			ZVAL_TRUE(&trueZv);
+			pt_ht_update(Z_ARRVAL_P(table), key, index, &trueZv);
+		}
+
+		~ResolvingMergedCall()
+		{
+			if (!pt_ht_exists(Z_ARRVAL_P(table), key, index)) return;
+			SEPARATE_ARRAY(table);
+			pt_ht_del(Z_ARRVAL_P(table), key, index);
+		}
+
+		ResolvingMergedCall(const ResolvingMergedCall &) = delete;
+		ResolvingMergedCall &operator=(const ResolvingMergedCall &) = delete;
+
+	private:
+		zval *table;
+		zend_string *key;
+		zend_ulong index;
+	};
+
 	/* private (twin findUninformativeMergedCalls(), called on the merged scope
 	 * without the candidates): keys of candidates whose merged type (and
-	 * native type) is exactly what the call resolves to there */
+	 * native type) is exactly what the call resolves to there. A candidate
+	 * that resolving another candidate (or itself) led back to is kept, like
+	 * the twin's `isset(self::$resolvingMergedCalls[...])` */
 	static zv::Val findUninformativeMergedCalls(zv::Val &scope, HashTable *candidates, HashTable *mergedNativeTypes)
 	{
 		zend_object *scopeObject = requireObject(scope, "getType");
 		if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+		zval *resolving = resolvingMergedCallsTable();
+		if (UNEXPECTED(resolving == NULL)) return zv::Val();
 
 		zv::Arr uninformativeKeys = zv::Arr::create(0);
 		for (auto entry : zv::TableRef(candidates)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (pt_ht_exists(Z_ARRVAL_P(resolving), key, entry.indexKey())) continue;
 			zv::Val expr = holderExpr(entry.value());
 			if (UNEXPECTED(expr.isUndef())) return zv::Val();
 			zv::Val type = holderType(entry.value());
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
+			ResolvingMergedCall resolvingCall(resolving, key, entry.indexKey());
 			zv::Val freshType = pt_mutating_scope_get_type(scopeObject, expr.raw());
 			if (UNEXPECTED(freshType.isUndef())) return zv::Val();
 			bool equal = pt_call_type_equals(type.raw(), freshType.raw());
 			if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
 			if (!equal) continue;
-			zend_string *key = entry.stringKeyOrNull();
 			zval *nativeHolder = key != NULL ? zend_hash_find(mergedNativeTypes, key) : zend_hash_index_find(mergedNativeTypes, entry.indexKey());
 			if (nativeHolder != NULL) {
 				zv::Val nativeType = holderType(zv::Ref(nativeHolder));
@@ -12542,6 +12597,9 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	 * static takes no OBJ_PROP_NUM slot, and keeping it out of the run above
 	 * keeps that run a literal transcript of the PT_MS_PROP_* enum */
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("globalConstantFetchKeys");
+	/* the twin's `private static array $resolvingMergedCalls = []`, the
+	 * re-entry guard of findUninformativeMergedCalls() on both sides */
+	cls.privateStaticTypedArrayPropertyDefaultEmpty("resolvingMergedCalls");
 	cls.privateClassConstantLong("COMPLEX_UNION_TYPE_MEMBER_LIMIT", PT_MS_COMPLEX_UNION_TYPE_MEMBER_LIMIT);
 	cls.privateClassConstantLong("GLOBAL_CONSTANT_FETCH_KEYS_LIMIT", PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT);
 	pt_ms_custom_serialization_methods_list = pt_persistent_string_list(pt_ms_custom_serialization_methods, sizeof(pt_ms_custom_serialization_methods) / sizeof(pt_ms_custom_serialization_methods[0]));

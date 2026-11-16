@@ -1882,6 +1882,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15754(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15754.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Value assigned to variable $s is never read.', $errors[0]->getMessage());
+		$this->assertSame(5, $errors[0]->getLine());
+		$this->assertSame('Parameter #1 $string of function strlen expects string, int<1, max>|string given.', $errors[1]->getMessage());
+		$this->assertSame(23, $errors[1]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

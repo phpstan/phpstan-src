@@ -171,11 +171,19 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					368,
 				],
 				[
-					'Strict comparison using === between float and \'string\' will always evaluate to false.',
+					'Strict comparison using === between 2.0|float<min, 0.4> and 1000000.0 will always evaluate to false.',
+					383,
+				],
+				[
+					'Strict comparison using === between 2.0|float<min, 0.4> and \'string\' will always evaluate to false.',
 					386,
 				],
 				[
-					'Strict comparison using === between float and \'string\' will always evaluate to false.',
+					'Strict comparison using === between 2.0|10.0|float<min, 0.4> and 1000000.0 will always evaluate to false.',
+					391,
+				],
+				[
+					'Strict comparison using === between 2.0|10.0|float<min, 0.4> and \'string\' will always evaluate to false.',
 					394,
 				],
 				[

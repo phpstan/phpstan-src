@@ -3664,4 +3664,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testFloatConstantLoopGeneralize(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/float-constant-loop-generalize.php'], []);
+	}
+
 }

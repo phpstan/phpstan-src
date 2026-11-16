@@ -175,7 +175,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			$arrowFunctionImpurePoints = [];
 			$invalidateExpressions = [];
 			self::$resolveClosureTypeDepth++;
-			$walkStorage = new ExpressionResultStorage();
+			$walkStorage = $storage !== null ? $storage->duplicate() : new ExpressionResultStorage();
 			$arrowScope->pushExpressionResultStorage($walkStorage);
 			try {
 				$arrowFunctionExprResult = $this->nodeScopeResolver->processExprNode(
@@ -232,7 +232,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$invalidateExpressions = [];
 
 		try {
-			$walkStorage = new ExpressionResultStorage();
+			$walkStorage = $storage !== null ? $storage->duplicate() : new ExpressionResultStorage();
 			$closureScope->pushExpressionResultStorage($walkStorage);
 			$closureStatementResult = $this->nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $closureScope, $walkStorage, static function (Node $node, Scope $scope) use ($closureScope, &$closureReturnStatements, &$closureYieldStatements, &$closureExecutionEnds, &$closureImpurePoints, &$invalidateExpressions): void {
 				if ($scope->getAnonymousFunctionReflection() !== $closureScope->getAnonymousFunctionReflection()) {

@@ -362,8 +362,8 @@ public:
 		if (UNEXPECTED(!countClosureTypeBodyWalk())) return zv::Val();
 		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
 		if (UNEXPECTED(isArrowFunction < 0)) return zv::Val();
-		if (isArrowFunction) return walkArrowFunction(scope, expr, p, cacheKey.get());
-		return walkClosure(scope, expr, p, cacheKey.get());
+		if (isArrowFunction) return walkArrowFunction(scope, expr, p, cacheKey.get(), storage);
+		return walkClosure(scope, expr, p, cacheKey.get(), storage);
 	}
 
 	/* Mirrors buildClosureTypeForClosure() (the nullable ones NULL for null) */
@@ -1339,7 +1339,7 @@ private:
 	}
 
 	/* the arrow-function body walk of getClosureType() */
-	zv::Val walkArrowFunction(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey)
+	zv::Val walkArrowFunction(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey, zval *storage)
 	{
 		zval *body = ptclosure::prop(ptclosure::arrowExprSite, expr, PT_LC("expr"));
 		if (UNEXPECTED(body == NULL)) return zv::Val();
@@ -1356,7 +1356,7 @@ private:
 		zv::Val arrowFunctionImpurePoints = ptsh::newArrayReference();
 		zv::Val invalidateExpressions = ptsh::newArrayReference();
 		pt_ctr_resolve_closure_type_depth++;
-		zv::Val walkStorage = pt_expression_result_storage_new();
+		zv::Val walkStorage = storage != NULL ? pt_expression_result_storage_duplicate(storage) : pt_expression_result_storage_new();
 		if (UNEXPECTED(walkStorage.isUndef())) return zv::Val();
 		if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(arrowScope.raw()), walkStorage.raw()))) return zv::Val();
 		zv::Val exprResult;
@@ -1400,7 +1400,7 @@ private:
 	}
 
 	/* the closure body walk of getClosureType() */
-	zv::Val walkClosure(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey)
+	zv::Val walkClosure(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey, zval *storage)
 	{
 		pt_ctr_resolve_closure_type_depth++;
 
@@ -1421,7 +1421,7 @@ private:
 		zv::Val walkStorage;
 		zv::Val closureStatementResult;
 		{
-			walkStorage = pt_expression_result_storage_new();
+			walkStorage = storage != NULL ? pt_expression_result_storage_duplicate(storage) : pt_expression_result_storage_new();
 			if (EXPECTED(!walkStorage.isUndef()) && EXPECTED(pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(closureScope.raw()), walkStorage.raw()))) {
 				zval *stmts = ptclosure::prop(ptclosure::stmtsSite, expr, PT_LC("stmts"));
 				if (EXPECTED(stmts != NULL)) {

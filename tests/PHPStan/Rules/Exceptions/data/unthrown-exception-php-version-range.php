@@ -56,4 +56,22 @@ class Foo
 		}
 	}
 
+	public function rangeWithInvalidStep(): void
+	{
+		try {
+			range(1, 10, 0);
+		} catch (\ValueError $e) { // PHP 8 throws, PHP 7 returns false
+
+		}
+	}
+
+	public function rangeWithUnknownBoundary(int $i): void
+	{
+		try {
+			range(1, $i);
+		} catch (\ValueError $e) { // a range too long for an array throws on PHP 8
+
+		}
+	}
+
 }

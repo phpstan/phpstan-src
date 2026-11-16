@@ -10,6 +10,7 @@ use PHPStan\Rules\Rule;
 use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -1561,6 +1562,75 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 			[
 				'Dead catch - ValueError is never thrown in the try block.',
 				81,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testRangeThrowType(): void
+	{
+		$errors = [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				14,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				23,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				29,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				35,
+			],
+		];
+
+		// the helper decides a character range by the PHP 8.3 rules only when it runs on PHP 8.3 or newer
+		if (PHP_VERSION_ID >= 80300) {
+			$errors[] = [
+				'Dead catch - ValueError is never thrown in the try block.',
+				60,
+			];
+		}
+
+		$errors[] = [
+			'Dead catch - ValueError is never thrown in the try block.',
+			88,
+		];
+
+		$this->analyse([__DIR__ . '/data/range-throw-type.php'], $errors);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testRangeThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/range-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				14,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				23,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				29,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				35,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				88,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				136,
 			],
 		]);
 	}

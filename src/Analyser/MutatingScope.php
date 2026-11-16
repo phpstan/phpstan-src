@@ -123,6 +123,7 @@ use function explode;
 use function get_class;
 use function implode;
 use function in_array;
+use function is_nan;
 use function is_string;
 use function ltrim;
 use function max;
@@ -139,6 +140,7 @@ use function substr;
 use function uksort;
 use function usort;
 use const INF;
+use const NAN;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -5253,7 +5255,6 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 		$resultTypes = [];
 		foreach ([
-			$constantFloats,
 			$constantBooleans,
 			$constantStrings,
 		] as $constantTypes) {
@@ -5414,6 +5415,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			}
 		} elseif (count($generalArrays['b']) > 0) {
 			$resultTypes[] = TypeCombinator::union(...$generalArrays['b']);
+		}
+
+		if (count($constantFloats['a']) > 0) {
+			if (count($constantFloats['b']) === 0) {
+				$resultTypes[] = TypeCombinator::union(...$constantFloats['a']);
+			} else {
+				$resultTypes[] = $this->generalizeConstantFloats($constantFloats['a'], $constantFloats['b']);
+			}
+		} elseif (count($constantFloats['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$constantFloats['b']);
 		}
 
 		if (count($constantIntegers['a']) > 0) {
@@ -5615,6 +5626,77 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$combined,
 			...$accessoryTypes,
 		), ...$otherTypes);
+	}
+
+	/**
+	 * Constant floats widen like the constant integers in generalizeType(): a
+	 * bound that moved between the iterations is opened. NAN has no place in
+	 * the order, so it is set aside and added back to the result.
+	 *
+	 * @param non-empty-list<ConstantFloatType> $a
+	 * @param non-empty-list<ConstantFloatType> $b
+	 */
+	private function generalizeConstantFloats(array $a, array $b): Type
+	{
+		$constantFloatsA = TypeCombinator::union(...$a);
+		$constantFloatsB = TypeCombinator::union(...$b);
+		if ($constantFloatsA->equals($constantFloatsB)) {
+			return $constantFloatsA;
+		}
+
+		$hasNan = false;
+		$orderedA = [];
+		foreach ($a as $float) {
+			if (is_nan($float->getValue())) {
+				$hasNan = true;
+				continue;
+			}
+			$orderedA[] = $float;
+		}
+		$orderedB = [];
+		foreach ($b as $float) {
+			if (is_nan($float->getValue())) {
+				$hasNan = true;
+				continue;
+			}
+			$orderedB[] = $float;
+		}
+
+		if ($orderedA === [] || $orderedB === []) {
+			$result = TypeCombinator::union(...$orderedA, ...$orderedB);
+		} else {
+			$min = INF;
+			$max = -INF;
+			foreach ($orderedA as $float) {
+				$min = min($min, $float->getValue());
+				$max = max($max, $float->getValue());
+			}
+
+			$newMin = $min;
+			$newMax = $max;
+			foreach ($orderedB as $float) {
+				$newMin = min($newMin, $float->getValue());
+				$newMax = max($newMax, $float->getValue());
+			}
+
+			$gotGreater = $newMax > $max;
+			$gotSmaller = $newMin < $min;
+			if ($gotGreater && $gotSmaller) {
+				$result = FloatRangeType::fromInterval($newMin, $newMax);
+			} elseif ($gotGreater) {
+				$result = FloatRangeType::fromInterval($min, INF);
+			} elseif ($gotSmaller) {
+				$result = FloatRangeType::fromInterval(-INF, $max);
+			} else {
+				$result = TypeCombinator::union(...$orderedA, ...$orderedB);
+			}
+		}
+
+		if ($hasNan) {
+			return TypeCombinator::union($result, new ConstantFloatType(NAN));
+		}
+
+		return $result;
 	}
 
 	private static function getArrayDepth(Type $type): int

@@ -61,7 +61,12 @@ final class ConditionalType implements CompoundType, LateResolvableType
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
-		if ($type instanceof self) {
+		if (
+			$type instanceof self
+			&& $this->negated === $type->negated
+			&& $this->subject->equals($type->subject)
+			&& $this->target->equals($type->target)
+		) {
 			return $this->if->isSuperTypeOf($type->if)
 				->and($this->else->isSuperTypeOf($type->else));
 		}
@@ -92,6 +97,7 @@ final class ConditionalType implements CompoundType, LateResolvableType
 	public function equals(Type $type): bool
 	{
 		return $type instanceof self
+			&& $this->negated === $type->negated
 			&& $this->subject->equals($type->subject)
 			&& $this->target->equals($type->target)
 			&& $this->if->equals($type->if)

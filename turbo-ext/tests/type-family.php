@@ -5330,6 +5330,13 @@ $lateOthers = static fn (array $subjects): array => [
 		$subjects['condParamYIsT']->isSuperTypeOf($subjects['condParamIsInt']),
 		$subjects['condIntIsInt']->equals($subjects['condIntIsIntNegated']),
 		$subjects['condParamIsInt']->equals($subjects['condParamIsIntNegated']),
+		// only conditionals on the same condition compare their branches
+		$subjects['condIntIsInt']->isSuperTypeOf($subjects['condStringIsInt']),
+		$subjects['condIntIsInt']->isSuperTypeOf(new \PHPStan\Type\ConditionalType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantBooleanType(true), false)),
+		$subjects['condIntIsInt']->isSuperTypeOf(new \PHPStan\Type\ConditionalType(new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantIntegerType(1), new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantBooleanType(true), false)),
+		$subjects['condParamIsInt']->isSuperTypeOf(new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantBooleanType(true), false)),
+		$subjects['condParamIsInt']->isSuperTypeOf(new \PHPStan\Type\ConditionalTypeForParameter('$x', new \PHPStan\Type\StringType(), new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantBooleanType(true), false)),
+		$subjects['condParamIsInt']->isSuperTypeOf(new \PHPStan\Type\ConditionalTypeForParameter('$y', new \PHPStan\Type\IntegerType(), new \PHPStan\Type\Constant\ConstantStringType('a'), new \PHPStan\Type\Constant\ConstantBooleanType(true), false)),
 	]);
 	// a traversed conditional keeps the mapped normalized branches as its
 	// own: a chain of conditions on the same template type, narrowed level

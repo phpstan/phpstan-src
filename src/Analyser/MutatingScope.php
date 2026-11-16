@@ -79,6 +79,7 @@ use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -124,6 +125,7 @@ use function implode;
 use function in_array;
 use function is_string;
 use function ltrim;
+use function max;
 use function md5;
 use function min;
 use function preg_match;
@@ -136,6 +138,7 @@ use function strtolower;
 use function substr;
 use function uksort;
 use function usort;
+use const INF;
 use const PHP_INT_MAX;
 use const PHP_INT_MIN;
 
@@ -5176,6 +5179,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$constantArrays = ['a' => [], 'b' => []];
 		$generalArrays = ['a' => [], 'b' => []];
 		$integerRanges = ['a' => [], 'b' => []];
+		$floatRanges = ['a' => [], 'b' => []];
 		$otherTypes = [];
 
 		foreach ([
@@ -5209,6 +5213,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 				if ($type instanceof IntegerRangeType) {
 					$integerRanges[$key][] = $type;
+					continue;
+				}
+				if ($type instanceof FloatRangeType) {
+					$floatRanges[$key][] = $type;
 					continue;
 				}
 
@@ -5516,6 +5524,51 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			}
 		} elseif (count($integerRanges['b']) > 0) {
 			$resultTypes[] = TypeCombinator::union(...$integerRanges['b']);
+		}
+
+		// float ranges widen like integer ranges above: a bound that moved
+		// between the iterations is opened, so a loop accumulating a bounded
+		// float does not stop at the range the last iteration reached
+		if (count($floatRanges['a']) > 0) {
+			if (count($floatRanges['b']) === 0) {
+				$resultTypes[] = TypeCombinator::union(...$floatRanges['a']);
+			} else {
+				$floatRangesA = TypeCombinator::union(...$floatRanges['a']);
+				$floatRangesB = TypeCombinator::union(...$floatRanges['b']);
+
+				if ($floatRangesA->equals($floatRangesB)) {
+					$resultTypes[] = $floatRangesA;
+				} else {
+					$min = INF;
+					$max = -INF;
+					foreach ($floatRanges['a'] as $range) {
+						$min = min($min, $range->getMin());
+						$max = max($max, $range->getMax());
+					}
+
+					$newMin = $min;
+					$newMax = $max;
+					foreach ($floatRanges['b'] as $range) {
+						$newMin = min($newMin, $range->getMin());
+						$newMax = max($newMax, $range->getMax());
+					}
+
+					$gotGreater = $newMax > $max;
+					$gotSmaller = $newMin < $min;
+
+					if ($gotGreater && $gotSmaller) {
+						$resultTypes[] = FloatRangeType::fromInterval($newMin, $newMax);
+					} elseif ($gotGreater) {
+						$resultTypes[] = FloatRangeType::fromInterval($min, INF);
+					} elseif ($gotSmaller) {
+						$resultTypes[] = FloatRangeType::fromInterval(-INF, $max);
+					} else {
+						$resultTypes[] = TypeCombinator::union($floatRangesA, $floatRangesB);
+					}
+				}
+			}
+		} elseif (count($floatRanges['b']) > 0) {
+			$resultTypes[] = TypeCombinator::union(...$floatRanges['b']);
 		}
 
 		$accessoryTypes = array_map(

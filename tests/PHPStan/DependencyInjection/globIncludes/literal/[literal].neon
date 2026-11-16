@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			identifier: literal.identifier
+			path: '*/literal.php'

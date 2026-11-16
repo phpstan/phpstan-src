@@ -320,11 +320,13 @@ final class ContainerFactory
 			$includes = Helpers::expand($data['includes'], $loaderParameters);
 			foreach ($includes as $include) {
 				$include = self::expandIncludedFile($include, $configFile);
-				[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $include, $loaderParameters, $generateBaselineFile);
-				$allConfigFiles = array_merge($allConfigFiles, $tmpConfigFiles);
+				foreach (IncludedFilePattern::expand($include) ?? [$include] as $includedFile) {
+					[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $includedFile, $loaderParameters, $generateBaselineFile);
+					$allConfigFiles = array_merge($allConfigFiles, $tmpConfigFiles);
 
-				/** @var array<mixed> $data */
-				$data = \Nette\Schema\Helpers::merge($tmpConfigArray, $data);
+					/** @var array<mixed> $data */
+					$data = \Nette\Schema\Helpers::merge($tmpConfigArray, $data);
+				}
 			}
 		}
 

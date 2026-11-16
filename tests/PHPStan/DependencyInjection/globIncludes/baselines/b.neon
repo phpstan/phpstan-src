@@ -1,0 +1,6 @@
+parameters:
+	globIncludesOrder: b
+	ignoreErrors:
+		-
+			identifier: b.identifier
+			path: '*/b.php'

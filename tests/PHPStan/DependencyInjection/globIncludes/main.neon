@@ -1,0 +1,6 @@
+includes:
+	- baselines/*.neon
+	- 'literal/[literal].neon'
+
+parametersSchema:
+	globIncludesOrder: string()

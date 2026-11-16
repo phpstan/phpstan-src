@@ -314,6 +314,12 @@ parameters:
 			path: src/DependencyInjection/NeonAdapter.php
 
 		-
+			rawMessage: 'Call to static method merge() of internal class Nette\Schema\Helpers from outside its root namespace Nette.'
+			identifier: staticMethod.internalClass
+			count: 1
+			path: src/DependencyInjection/NeonLoader.php
+
+		-
 			rawMessage: 'Call to method getTokenCode() of internal class PhpParser\Internal\TokenStream from outside its root namespace PhpParser.'
 			identifier: method.internalClass
 			count: 1

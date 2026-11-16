@@ -72,16 +72,16 @@
     },
     {
       "name": "composer/semver",
-      "version": "3.5.2",
+      "version": "3.6.0",
       "source": {
         "type": "git",
         "url": "https://github.com/composer/semver.git",
-        "reference": "9dfce66f1e97360ea5e6d3e38ab14277e4cc591e"
+        "reference": "d92543b7ede9c4ec6b59853cefb061e39866d2cf"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/composer/semver/zipball/9dfce66f1e97360ea5e6d3e38ab14277e4cc591e",
-        "reference": "9dfce66f1e97360ea5e6d3e38ab14277e4cc591e",
+        "url": "https://api.github.com/repos/composer/semver/zipball/d92543b7ede9c4ec6b59853cefb061e39866d2cf",
+        "reference": "d92543b7ede9c4ec6b59853cefb061e39866d2cf",
         "shasum": ""
       },
       "require": {
@@ -133,7 +133,7 @@
       "support": {
         "irc": "ircs://irc.libera.chat:6697/composer",
         "issues": "https://github.com/composer/semver/issues",
-        "source": "https://github.com/composer/semver/tree/3.5.2"
+        "source": "https://github.com/composer/semver/tree/3.6.0"
       },
       "funding": [
         {
@@ -145,7 +145,7 @@
           "type": "github"
         }
       ],
-      "time": "2026-10-22T15:37:26+00:00"
+      "time": "2026-10-29T09:13:34+00:00"
     },
     {
       "name": "evenement/evenement",
@@ -470,16 +470,16 @@
     },
     {
       "name": "guzzlehttp/psr7",
-      "version": "2.13.2",
+      "version": "2.13.3",
       "source": {
         "type": "git",
         "url": "https://github.com/guzzle/psr7.git",
-        "reference": "adee536f95101929f262b8c59e8a61472f347d58"
+        "reference": "6d3cd8285a97eaa352956a4ada92fa03ecce1c4e"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/guzzle/psr7/zipball/adee536f95101929f262b8c59e8a61472f347d58",
-        "reference": "adee536f95101929f262b8c59e8a61472f347d58",
+        "url": "https://api.github.com/repos/guzzle/psr7/zipball/6d3cd8285a97eaa352956a4ada92fa03ecce1c4e",
+        "reference": "6d3cd8285a97eaa352956a4ada92fa03ecce1c4e",
         "shasum": ""
       },
       "require": {
@@ -569,7 +569,7 @@
       ],
       "support": {
         "issues": "https://github.com/guzzle/psr7/issues",
-        "source": "https://github.com/guzzle/psr7/tree/2.13.2"
+        "source": "https://github.com/guzzle/psr7/tree/2.13.3"
       },
       "funding": [
         {
@@ -585,7 +585,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-10-17T23:49:46+00:00"
+      "time": "2026-11-12T15:57:42+00:00"
     },
     {
       "name": "jetbrains/phpstorm-stubs",
@@ -633,8 +633,7 @@
       "support": {
         "source": "https://github.com/JetBrains/phpstorm-stubs/tree/master"
       },
-      "time": "2026-11-04T13:43:41+00:00",
-      "published-time": "2026-11-04T13:43:48+00:00"
+      "time": "2026-11-04T13:43:41+00:00"
     },
     {
       "name": "nette/bootstrap",
@@ -1412,8 +1411,7 @@
       "support": {
         "source": "https://github.com/ondrejmirtes/BetterReflection/tree/6.75.0.6"
       },
-      "time": "2026-11-10T12:42:46+00:00",
-      "published-time": "2026-11-10T12:43:19+00:00"
+      "time": "2026-11-10T12:42:46+00:00"
     },
     {
       "name": "ondrejmirtes/composer-attribute-collector",
@@ -1477,8 +1475,7 @@
       "support": {
         "source": "https://github.com/ondrejmirtes/composer-attribute-collector/tree/1.4.0"
       },
-      "time": "2026-11-02T17:12:26+00:00",
-      "published-time": "2026-11-02T17:24:34+00:00"
+      "time": "2026-11-02T17:12:26+00:00"
     },
     {
       "name": "ondrejmirtes/phplrt-runtime",
@@ -1580,8 +1577,7 @@
         "issues": "https://github.com/phpstan/php-8-stubs/issues",
         "source": "https://github.com/phpstan/php-8-stubs/tree/0.4.45"
       },
-      "time": "2026-11-13T09:05:42+00:00",
-      "published-time": "2026-11-13T09:05:48+00:00"
+      "time": "2026-11-13T09:05:42+00:00"
     },
     {
       "name": "phpstan/phpdoc-parser",
@@ -1628,8 +1624,7 @@
         "issues": "https://github.com/phpstan/phpdoc-parser/issues",
         "source": "https://github.com/phpstan/phpdoc-parser/tree/2.4.1"
       },
-      "time": "2026-10-30T19:36:28+00:00",
-      "published-time": "2026-10-30T19:37:11+00:00"
+      "time": "2026-10-30T19:36:28+00:00"
     },
     {
       "name": "psr/container",
@@ -2479,16 +2474,16 @@
     },
     {
       "name": "symfony/console",
-      "version": "v5.4.54",
+      "version": "v5.4.55",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/console.git",
-        "reference": "68a4a45af9fcb8c9bee567a88ae29e721fb22986"
+        "reference": "0b8208c757a9f97e372c6297a1863ffe19686dc0"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/console/zipball/68a4a45af9fcb8c9bee567a88ae29e721fb22986",
-        "reference": "68a4a45af9fcb8c9bee567a88ae29e721fb22986",
+        "url": "https://api.github.com/repos/symfony/console/zipball/0b8208c757a9f97e372c6297a1863ffe19686dc0",
+        "reference": "0b8208c757a9f97e372c6297a1863ffe19686dc0",
         "shasum": ""
       },
       "require": {
@@ -2558,7 +2553,7 @@
         "terminal"
       ],
       "support": {
-        "source": "https://github.com/symfony/console/tree/v5.4.54"
+        "source": "https://github.com/symfony/console/tree/v5.4.55"
       },
       "funding": [
         {
@@ -2578,20 +2573,20 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-10-07T15:50:15+00:00"
+      "time": "2026-10-28T09:02:56+00:00"
     },
     {
       "name": "symfony/deprecation-contracts",
-      "version": "v3.7.1",
+      "version": "v3.8.1",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/deprecation-contracts.git",
-        "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
+        "reference": "feb1edf4e546af3b85c5caebe8359a20db230ca3"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
-        "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
+        "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/feb1edf4e546af3b85c5caebe8359a20db230ca3",
+        "reference": "feb1edf4e546af3b85c5caebe8359a20db230ca3",
         "shasum": ""
       },
       "require": {
@@ -2604,7 +2599,7 @@
           "name": "symfony/contracts"
         },
         "branch-alias": {
-          "dev-main": "3.7-dev"
+          "dev-main": "3.8-dev"
         }
       },
       "autoload": {
@@ -2629,7 +2624,7 @@
       "description": "A generic function and convention to trigger deprecation notices",
       "homepage": "https://symfony.com",
       "support": {
-        "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
+        "source": "https://github.com/symfony/deprecation-contracts/tree/v3.8.1"
       },
       "funding": [
         {
@@ -2649,7 +2644,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-06-05T06:23:12+00:00"
+      "time": "2026-09-16T14:15:10+00:00"
     },
     {
       "name": "symfony/finder",
@@ -3375,16 +3370,16 @@
     },
     {
       "name": "symfony/polyfill-php85",
-      "version": "v1.43.0",
+      "version": "v1.44.0",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/polyfill-php85.git",
-        "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6"
+        "reference": "94c794cb5ba51784bc259f11e9f128593297d8dc"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/86a42cbcc07adc331481a5ab310a4024bfc227f6",
-        "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
+        "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/94c794cb5ba51784bc259f11e9f128593297d8dc",
+        "reference": "94c794cb5ba51784bc259f11e9f128593297d8dc",
         "shasum": ""
       },
       "require": {
@@ -3431,7 +3426,7 @@
         "shim"
       ],
       "support": {
-        "source": "https://github.com/symfony/polyfill-php85/tree/v1.43.0"
+        "source": "https://github.com/symfony/polyfill-php85/tree/v1.44.0"
       },
       "funding": [
         {
@@ -3451,7 +3446,7 @@
           "type": "tidelift"
         }
       ],
-      "time": "2026-09-25T15:46:47+00:00"
+      "time": "2026-10-30T15:20:09+00:00"
     },
     {
       "name": "symfony/process",
@@ -4093,16 +4088,16 @@
     },
     {
       "name": "phpstan/phpstan-phpunit",
-      "version": "2.1.x-dev",
+      "version": "2.1.2",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/phpstan-phpunit.git",
-        "reference": "414a487e64cd63a99e16dc86963288cd6c1405eb"
+        "reference": "ffff35d4f96c4642d7f41a3515d90afa0f58be62"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/414a487e64cd63a99e16dc86963288cd6c1405eb",
-        "reference": "414a487e64cd63a99e16dc86963288cd6c1405eb",
+        "url": "https://api.github.com/repos/phpstan/phpstan-phpunit/zipball/ffff35d4f96c4642d7f41a3515d90afa0f58be62",
+        "reference": "ffff35d4f96c4642d7f41a3515d90afa0f58be62",
         "shasum": ""
       },
       "require": {
@@ -4121,7 +4116,6 @@
         "phpunit/phpunit": "^9.6",
         "shipmonk/name-collision-detector": "^2.1"
       },
-      "default-branch": true,
       "type": "phpstan-extension",
       "extra": {
         "phpstan": {
@@ -4146,9 +4140,9 @@
       ],
       "support": {
         "issues": "https://github.com/phpstan/phpstan-phpunit/issues",
-        "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.1.x"
+        "source": "https://github.com/phpstan/phpstan-phpunit/tree/2.1.2"
       },
-      "time": "2026-09-30T16:47:59+00:00"
+      "time": "2026-11-12T15:27:53+00:00"
     },
     {
       "name": "phpstan/phpstan-strict-rules",
@@ -4200,8 +4194,7 @@
         "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
         "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.1.1"
       },
-      "time": "2026-11-02T08:16:15+00:00",
-      "published-time": "2026-11-02T10:55:07+00:00"
+      "time": "2026-11-02T08:16:15+00:00"
     },
     {
       "name": "phpstan/tally",
@@ -4259,8 +4252,7 @@
         "issues": "https://github.com/phpstan/tally/issues",
         "source": "https://github.com/phpstan/tally/tree/1.0.1"
       },
-      "time": "2026-11-14T22:36:03+00:00",
-      "published-time": "2026-11-14T22:42:17+00:00"
+      "time": "2026-11-14T22:36:03+00:00"
     },
     {
       "name": "phpunit/php-code-coverage",
@@ -4611,16 +4603,16 @@
     },
     {
       "name": "phpunit/phpunit",
-      "version": "11.5.57",
+      "version": "11.5.58",
       "source": {
         "type": "git",
         "url": "https://github.com/sebastianbergmann/phpunit.git",
-        "reference": "36b75bf56a8535623f5b3e24b27ea1823759da1a"
+        "reference": "c14b3145a2fcfa5dd9b25ee999ce2ba5933adf6f"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/36b75bf56a8535623f5b3e24b27ea1823759da1a",
-        "reference": "36b75bf56a8535623f5b3e24b27ea1823759da1a",
+        "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c14b3145a2fcfa5dd9b25ee999ce2ba5933adf6f",
+        "reference": "c14b3145a2fcfa5dd9b25ee999ce2ba5933adf6f",
         "shasum": ""
       },
       "require": {
@@ -4693,7 +4685,7 @@
       "support": {
         "issues": "https://github.com/sebastianbergmann/phpunit/issues",
         "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-        "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.57"
+        "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.58"
       },
       "funding": [
         {
@@ -4701,7 +4693,7 @@
           "type": "other"
         }
       ],
-      "time": "2026-10-05T05:47:54+00:00"
+      "time": "2026-11-13T11:08:08+00:00"
     },
     {
       "name": "sebastian/cli-parser",
@@ -5953,5 +5945,5 @@
   "platform-overrides": {
     "php": "8.2.99"
   },
-  "plugin-api-version": "2.11.0"
+  "plugin-api-version": "2.9.0"
 }

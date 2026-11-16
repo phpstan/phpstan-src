@@ -342,4 +342,9 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/shift-left-unbounded-range.php'], []);
 	}
 
+	public function testFloatRangeLoopGeneralize(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/float-range-loop-generalize.php'], []);
+	}
+
 }

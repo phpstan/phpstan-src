@@ -9549,7 +9549,7 @@ public:
 		 * can be re-wrapped at the end (see the twin's comment) */
 		bool wrapBenevolent = zv::Ref(a).instanceOf(pt_ce_benevolent_union_type) || zv::Ref(b).instanceOf(pt_ce_benevolent_union_type);
 
-		GeneralizeBucket constantIntegers, constantFloats, constantBooleans, constantStrings, constantArrays, generalArrays, integerRanges;
+		GeneralizeBucket constantIntegers, constantFloats, constantBooleans, constantStrings, constantArrays, generalArrays, integerRanges, floatRanges;
 		zv::Arr otherTypes = zv::Arr::create(0);
 
 		for (int side = 0; side < 2; side++) {
@@ -9593,6 +9593,10 @@ public:
 				}
 				if (instanceof_function(ce, pt_ce_integer_range_type)) {
 					integerRanges.list[side].push(type);
+					continue;
+				}
+				if (instanceof_function(ce, pt_ce_float_range_type)) {
+					floatRanges.list[side].push(type);
 					continue;
 				}
 
@@ -9998,6 +10002,62 @@ public:
 			}
 		} else if (integerRanges.count(1) > 0) {
 			zv::Val united = unionOfList(integerRanges.table(1));
+			if (UNEXPECTED(united.isUndef())) return zv::Val();
+			resultTypes.push(std::move(united));
+		}
+
+		/* float ranges widen like integer ranges (see the twin's comment) */
+		if (floatRanges.count(0) > 0) {
+			if (floatRanges.count(1) == 0) {
+				zv::Val united = unionOfList(floatRanges.table(0));
+				if (UNEXPECTED(united.isUndef())) return zv::Val();
+				resultTypes.push(std::move(united));
+			} else {
+				zv::Val floatRangesA = unionOfList(floatRanges.table(0));
+				if (UNEXPECTED(floatRangesA.isUndef())) return zv::Val();
+				zv::Val floatRangesB = unionOfList(floatRanges.table(1));
+				if (UNEXPECTED(floatRangesB.isUndef())) return zv::Val();
+				bool same;
+				if (UNEXPECTED(!typeEquals(floatRangesA.raw(), floatRangesB.raw(), same))) return zv::Val();
+				if (same) {
+					resultTypes.push(std::move(floatRangesA));
+				} else {
+					/* PHP's min()/max() over floats that are never NAN */
+					double min = INFINITY, max = -INFINITY;
+					for (auto rangeEntry : zv::TableRef(floatRanges.table(0))) {
+						double rangeMin, rangeMax;
+						if (UNEXPECTED(!pt_float_range_bounds(rangeEntry.value().deref().asObject(), rangeMin, rangeMax))) return zv::Val();
+						if (rangeMin < min) min = rangeMin;
+						if (rangeMax > max) max = rangeMax;
+					}
+
+					double newMin = min, newMax = max;
+					for (auto rangeEntry : zv::TableRef(floatRanges.table(1))) {
+						double rangeMin, rangeMax;
+						if (UNEXPECTED(!pt_float_range_bounds(rangeEntry.value().deref().asObject(), rangeMin, rangeMax))) return zv::Val();
+						if (rangeMin < newMin) newMin = rangeMin;
+						if (rangeMax > newMax) newMax = rangeMax;
+					}
+
+					bool gotGreater = newMax > max;
+					bool gotSmaller = newMin < min;
+
+					zv::Val result;
+					if (gotGreater && gotSmaller) {
+						result = pt_float_range_from_interval(newMin, newMax);
+					} else if (gotGreater) {
+						result = pt_float_range_from_interval(min, INFINITY);
+					} else if (gotSmaller) {
+						result = pt_float_range_from_interval(-INFINITY, max);
+					} else {
+						result = unionTypes(floatRangesA.raw(), floatRangesB.raw());
+					}
+					if (UNEXPECTED(result.isUndef())) return zv::Val();
+					resultTypes.push(std::move(result));
+				}
+			}
+		} else if (floatRanges.count(1) > 0) {
+			zv::Val united = unionOfList(floatRanges.table(1));
 			if (UNEXPECTED(united.isUndef())) return zv::Val();
 			resultTypes.push(std::move(united));
 		}

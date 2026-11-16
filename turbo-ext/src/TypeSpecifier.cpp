@@ -570,6 +570,7 @@ private:
 
 		bool isNullContext;
 		if (UNEXPECTED(!pt_type_specifier_context_null(Z_OBJ_P(context), isNullContext))) return zv::Val();
+		zv::Val exprType = zv::Val::copyOf(zv::Ref(type));
 		bool isCoalesce;
 		if (UNEXPECTED(!isA(expr.raw(), PT_CLASS_COALESCE_EXPR, isCoalesce))) return zv::Val();
 		if (!isNullContext && isCoalesce) {
@@ -599,6 +600,10 @@ private:
 			}
 			if (unwrap) {
 				expr = zv::Val::copyOf(zv::Ref(left));
+				// a null left side would make the coalesce the right side,
+				// which the type rules out, so the left side is not null either
+				exprType = isTrue ? pt_type_combinator_remove_null(type) : pt_type_combinator_add_null(type);
+				if (UNEXPECTED(exprType.isUndef())) return zv::Val();
 			}
 		}
 
@@ -628,12 +633,12 @@ private:
 		bool isFalse;
 		if (UNEXPECTED(!pt_type_specifier_context_false(Z_OBJ_P(context), isFalse))) return zv::Val();
 		if (isFalse) {
-			if (UNEXPECTED(!addEntries(sureNotTypes, expr.raw(), originalExpr, type))) return zv::Val();
+			if (UNEXPECTED(!addEntries(sureNotTypes, expr.raw(), exprType.raw(), originalExpr, type))) return zv::Val();
 		} else {
 			bool isTrue;
 			if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), isTrue))) return zv::Val();
 			if (isTrue) {
-				if (UNEXPECTED(!addEntries(sureTypes, expr.raw(), originalExpr, type))) return zv::Val();
+				if (UNEXPECTED(!addEntries(sureTypes, expr.raw(), exprType.raw(), originalExpr, type))) return zv::Val();
 			}
 		}
 
@@ -812,11 +817,12 @@ private:
 		return isNotPure(isPure == PT_TRI_YES ? PT_TRI_NO : (isPure == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE));
 	}
 
-	/* $types[$printer->printExpr($expr)] = [$expr, $type], then the same for
-	 * $originalExpr when the unwrap replaced it; false = pending exception */
-	[[nodiscard]] bool addEntries(zv::Arr &table, zval *expr, zval *originalExpr, zval *type) const
+	/* $types[$printer->printExpr($expr)] = [$expr, $exprType ?? $type], then
+	 * [$originalExpr, $type] when the unwrap replaced it; false = pending
+	 * exception */
+	[[nodiscard]] bool addEntries(zv::Arr &table, zval *expr, zval *exprType, zval *originalExpr, zval *type) const
 	{
-		if (UNEXPECTED(!addEntry(table, expr, type))) return false;
+		if (UNEXPECTED(!addEntry(table, expr, exprType))) return false;
 		if (Z_OBJ_P(expr) != Z_OBJ_P(originalExpr)) {
 			return addEntry(table, originalExpr, type);
 		}

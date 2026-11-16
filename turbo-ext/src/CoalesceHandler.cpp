@@ -498,10 +498,15 @@ private:
 				// the coalesce's own key is emitted alongside the left-side
 				// narrowing (createForExpr's double-key, like the nullsafe
 				// handlers) - consumers summing the checked expression's own
-				// entry (ImpossibleCheckTypeHelper) rely on it
+				// entry (ImpossibleCheckTypeHelper) rely on it;
+				// a null left side would make the coalesce the right
+				// side, which the type rules out, so the left side is
+				// not null either
 				zval *left = ptoh::binaryOpLeft(expr);
 				if (UNEXPECTED(left == NULL)) return zv::Val();
-				zv::Val leftTypes = pt_default_narrowing_helper_create_subject_types(defaultNarrowingHelper, s.raw(), left, condResult, type, context);
+				zv::Val leftType = contextTrue ? pt_type_combinator_remove_null(type) : pt_type_combinator_add_null(type);
+				if (UNEXPECTED(leftType.isUndef())) return zv::Val();
+				zv::Val leftTypes = pt_default_narrowing_helper_create_subject_types(defaultNarrowingHelper, s.raw(), left, condResult, leftType.raw(), context);
 				if (UNEXPECTED(leftTypes.isUndef())) return zv::Val();
 				if (UNEXPECTED(Z_TYPE_P(leftTypes.raw()) != IS_OBJECT)) {
 					zend_throw_error(NULL, "Call to a member function unionWith() on %s", zend_zval_value_name(leftTypes.raw()));

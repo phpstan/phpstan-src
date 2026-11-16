@@ -191,6 +191,9 @@ final class TypeSpecifier
 				|| ($context->false() && $type->isSuperTypeOf($scope->getType($expr->right))->yes())
 			) {
 				$expr = $expr->left;
+				// a null left side would make the coalesce the right side,
+				// which the type rules out, so the left side is not null either
+				$exprType = $context->true() ? TypeCombinator::removeNull($type) : TypeCombinator::addNull($type);
 			}
 		}
 
@@ -214,7 +217,7 @@ final class TypeSpecifier
 		$sureNotTypes = [];
 		if ($context->false()) {
 			$exprString = $this->exprPrinter->printExpr($expr);
-			$sureNotTypes[$exprString] = [$expr, $type];
+			$sureNotTypes[$exprString] = [$expr, $exprType ?? $type];
 
 			if ($expr !== $originalExpr) {
 				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
@@ -222,7 +225,7 @@ final class TypeSpecifier
 			}
 		} elseif ($context->true()) {
 			$exprString = $this->exprPrinter->printExpr($expr);
-			$sureTypes[$exprString] = [$expr, $type];
+			$sureTypes[$exprString] = [$expr, $exprType ?? $type];
 
 			if ($expr !== $originalExpr) {
 				$originalExprString = $this->exprPrinter->printExpr($originalExpr);

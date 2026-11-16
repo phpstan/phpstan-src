@@ -301,6 +301,7 @@ class FileTypeMapperTest extends PHPStanTestCase
 			$container->getByType(FileHelper::class),
 			new Cache($storage),
 			$container->getByType(FileContentHasher::class),
+			$container->getParameter('currentWorkingDirectory'),
 			2048,
 			128,
 		);

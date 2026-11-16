@@ -2635,6 +2635,13 @@ final class AssignHandler implements ExprHandler
 			return is_string($expr->name) && $expr->name !== $variableName;
 		}
 
+		// an expression reading the assigned variable, like strlen($s ?: '') in
+		// `$s = strlen($s ?: '') ?: 0`, is about the variable's previous value -
+		// a narrowing guarded by its new value does not apply to it
+		if ((new NodeFinder())->findFirst($expr, static fn (Node $node): bool => $node instanceof Variable && $node->name === $variableName) !== null) {
+			return false;
+		}
+
 		if (
 			$expr instanceof PropertyFetch
 			|| $expr instanceof ArrayDimFetch

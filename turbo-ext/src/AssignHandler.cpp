@@ -2924,6 +2924,39 @@ private:
 		return true;
 	}
 
+	struct ReadsVariableCtx
+	{
+		pt_find_ctx base;
+		zend_class_entry *variableCe;
+		zend_string *variableName;
+	};
+
+	/* matcher for the shared findFirst walker: a Variable named variableName */
+	static bool isVariableNamed(zend_object *node, void *vctx)
+	{
+		ReadsVariableCtx *ctx = (ReadsVariableCtx *) vctx;
+		if (!instanceof_function(node->ce, ctx->variableCe)) return false;
+		zval nodeZv;
+		ZVAL_OBJ(&nodeZv, node);
+		zend_string *name = ahVariableName(&nodeZv);
+		return name != NULL && zend_string_equals(name, ctx->variableName);
+	}
+
+	/* (new NodeFinder())->findFirst($expr, fn ($node) => $node instanceof Variable
+	 * && $node->name === $variableName) !== null; false = pending exception */
+	[[nodiscard]] static bool exprReadsVariable(zval *expr, zend_string *variableName, bool &out)
+	{
+		ReadsVariableCtx ctx;
+		memset(&ctx, 0, sizeof(ctx));
+		ctx.variableCe = pt_class(PT_CLASS_VARIABLE);
+		if (UNEXPECTED(ctx.variableCe == NULL)) return false;
+		ctx.variableName = variableName;
+		zend_object *found = pt_find_first_recursive(Z_OBJ_P(expr), isVariableNamed, &ctx);
+		if (UNEXPECTED(ctx.base.failed)) return false;
+		out = found != NULL;
+		return true;
+	}
+
 	/* (twin 2448) false = pending exception */
 	[[nodiscard]] static bool isExprSafeToProjectThroughVariable(zval *expr, zend_string *variableName, zval *rhsImpurePoints, zval *assignedExpr, bool &out)
 	{
@@ -2943,6 +2976,16 @@ private:
 		if (ahIs(expr, PT_CLASS_VARIABLE)) {
 			zend_string *name = ahVariableName(expr);
 			out = name != NULL && !zend_string_equals(name, variableName);
+			return true;
+		}
+
+		// an expression reading the assigned variable, like strlen($s ?: '') in
+		// `$s = strlen($s ?: '') ?: 0`, is about the variable's previous value -
+		// a narrowing guarded by its new value does not apply to it
+		bool readsVariable = false;
+		AH_OKB(exprReadsVariable(expr, variableName, readsVariable));
+		if (readsVariable) {
+			out = false;
 			return true;
 		}
 

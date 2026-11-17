@@ -27,6 +27,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\IntegerType;
@@ -35,6 +36,7 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StringType;
+use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
@@ -1379,6 +1381,43 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'in_array($string, [\'foo\', \'bar\'], true)' => 'true',
 					'$string' => '\'bar\'|\'foo\'',
 				],
+			],
+		];
+	}
+
+	/**
+	 * @param array<string, string> $expectedResult
+	 */
+	#[DataProvider('dataCreateForCoalesce')]
+	public function testCreateForCoalesce(Expr\BinaryOp\Coalesce $expr, Type $type, TypeSpecifierContext $context, array $expectedResult): void
+	{
+		$specifiedTypes = $this->typeSpecifier->create($expr, $type, $context, $this->scope);
+		$this->assertSame($expectedResult, $this->toReadableResult($specifiedTypes));
+	}
+
+	/**
+	 * @return iterable<array{Expr\BinaryOp\Coalesce, Type, TypeSpecifierContext, array<string, string>}>
+	 */
+	public static function dataCreateForCoalesce(): iterable
+	{
+		// a null left side would make the coalesce the right side, which the
+		// type rules out, so the left side is narrowed to non-null
+		yield [
+			new Expr\BinaryOp\Coalesce(new Variable('stringOrNull'), new LNumber(1)),
+			new UnionType([new ConstantStringType('a'), new NullType()]),
+			TypeSpecifierContext::createTrue(),
+			[
+				'$stringOrNull' => '\'a\'',
+				'$stringOrNull ?? 1' => '\'a\'|null',
+			],
+		];
+		yield [
+			new Expr\BinaryOp\Coalesce(new Variable('stringOrNull'), new String_('')),
+			new StringType(),
+			TypeSpecifierContext::createFalse(),
+			[
+				'$stringOrNull' => '~string|null',
+				'$stringOrNull ?? \'\'' => '~string',
 			],
 		];
 	}

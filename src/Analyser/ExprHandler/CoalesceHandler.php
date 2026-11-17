@@ -175,8 +175,12 @@ final class CoalesceHandler implements ExprHandler
 						// the coalesce's own key is emitted alongside the left-side
 						// narrowing (createForExpr's double-key, like the nullsafe
 						// handlers) - consumers summing the checked expression's own
-						// entry (ImpossibleCheckTypeHelper) rely on it
-						return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr->left, $condResult, $type, $context)
+						// entry (ImpossibleCheckTypeHelper) rely on it;
+						// a null left side would make the coalesce the right
+						// side, which the type rules out, so the left side is
+						// not null either
+						$leftType = $context->true() ? TypeCombinator::removeNull($type) : TypeCombinator::addNull($type);
+						return $this->defaultNarrowingHelper->createSubjectTypes($s, $expr->left, $condResult, $leftType, $context)
 							->unionWith($this->defaultNarrowingHelper->createSubjectTypes($s, $expr, null, $type, $context));
 					}
 				}

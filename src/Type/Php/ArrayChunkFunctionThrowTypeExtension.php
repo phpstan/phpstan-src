@@ -8,8 +8,10 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\IntegerRangeType;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use ValueError;
 use function count;
 
 /**
@@ -24,7 +26,7 @@ final class ArrayChunkFunctionThrowTypeExtension implements DynamicFunctionThrow
 		return $functionReflection->getName() === 'array_chunk';
 	}
 
-	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
+	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): Type
 	{
 		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
 			return new VoidType();
@@ -33,19 +35,19 @@ final class ArrayChunkFunctionThrowTypeExtension implements DynamicFunctionThrow
 		$args = $funcCall->getArgs();
 		foreach ($args as $arg) {
 			if ($arg->unpack || $arg->name !== null) {
-				return $functionReflection->getThrowType();
+				return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 			}
 		}
 
 		if (count($args) < 2) {
-			return $functionReflection->getThrowType();
+			return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 		}
 
 		if (IntegerRangeType::fromInterval(1, null)->isSuperTypeOf($scope->getNativeType($args[1]->value))->yes()) {
 			return new VoidType();
 		}
 
-		return $functionReflection->getThrowType();
+		return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 	}
 
 }

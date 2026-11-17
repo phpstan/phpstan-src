@@ -7,7 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use ValueError;
 use function count;
 
 #[AutowiredService]
@@ -25,9 +27,13 @@ final class ArrayCombineFunctionThrowTypeExtension implements DynamicFunctionThr
 
 	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
 	{
+		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
+			return null;
+		}
+
 		$args = $funcCall->getArgs();
 		if (count($args) < 2) {
-			return $functionReflection->getThrowType();
+			return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 		}
 
 		$firstArg = $args[0]->value;
@@ -35,7 +41,7 @@ final class ArrayCombineFunctionThrowTypeExtension implements DynamicFunctionThr
 
 		$hasValueError = $this->arrayCombineHelper->getReturnAndThrowType($firstArg, $secondArg, $scope)[1];
 		if (!$hasValueError->no()) {
-			return $functionReflection->getThrowType();
+			return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 		}
 
 		return null;

@@ -12,6 +12,7 @@ use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\VoidType;
+use ValueError;
 use function count;
 
 /**
@@ -27,7 +28,7 @@ final class RoundFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 		return $functionReflection->getName() === 'round';
 	}
 
-	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): ?Type
+	public function getThrowTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $funcCall, Scope $scope): Type
 	{
 		if ($scope->getPhpVersion()->throwsValueErrorForInvalidRoundingMode()->no()) {
 			return new VoidType();
@@ -36,7 +37,7 @@ final class RoundFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 		$args = $funcCall->getArgs();
 		foreach ($args as $arg) {
 			if ($arg->unpack || $arg->name !== null) {
-				return $functionReflection->getThrowType();
+				return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 			}
 		}
 
@@ -52,7 +53,7 @@ final class RoundFunctionThrowTypeExtension implements DynamicFunctionThrowTypeE
 			return new VoidType();
 		}
 
-		return $functionReflection->getThrowType();
+		return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 	}
 
 }

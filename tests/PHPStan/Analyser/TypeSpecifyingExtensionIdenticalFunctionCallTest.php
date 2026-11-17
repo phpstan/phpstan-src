@@ -3,32 +3,18 @@
 namespace PHPStan\Analyser;
 
 use PHPStan\Testing\TypeInferenceTestCase;
-use PHPUnit\Framework\Attributes\DataProvider;
-use const PHP_VERSION_ID;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 class TypeSpecifyingExtensionIdenticalFunctionCallTest extends TypeInferenceTestCase
 {
 
-	public static function dataAsserts(): iterable
+	#[RequiresPhp('>= 8.0.0')]
+	public function testAsserts(): void
 	{
-		if (PHP_VERSION_ID < 80000) {
-			return [];
+		// gathered here instead of in a data provider, so that mutation testing sees the coverage
+		foreach (self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-identical-function-call.php') as $args) {
+			$this->assertFileAsserts(...$args);
 		}
-
-		yield from self::gatherAssertTypes(__DIR__ . '/data/type-specifying-extensions-identical-function-call.php');
-	}
-
-	/**
-	 * @param mixed ...$args
-	 */
-	#[DataProvider('dataAsserts')]
-	public function testAsserts(
-		string $assertType,
-		string $file,
-		...$args,
-	): void
-	{
-		$this->assertFileAsserts($assertType, $file, ...$args);
 	}
 
 	public static function getAdditionalConfigFiles(): array

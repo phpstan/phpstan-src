@@ -72,3 +72,26 @@ function analogous(array $a, ?string $x, ?int $i, ?bool $b, ?Foo $o) {
 		assertType('string|null', $x);
 	}
 }
+
+/** @param int|string|null $z */
+function typeSpecifyingExtensions(?string $x, $z) {
+	if (is_callable($x ?? 1)) {
+		assertType('callable-string', $x);
+	}
+	if (is_callable($x ?? 'strlen') !== true) {
+		assertType('string', $x);
+	}
+	if (!is_array($z ?? [])) {
+		assertType('int|string', $z);
+	}
+}
+
+function negatedTrueContext(?string $x, bool $c) {
+	if ((($x ?? '') === '') !== true) {
+		assertType('non-empty-string', $x);
+	}
+	$w = $c ? '' : ($x ?? '');
+	if ($w !== '') {
+		assertType('non-empty-string', $x);
+	}
+}

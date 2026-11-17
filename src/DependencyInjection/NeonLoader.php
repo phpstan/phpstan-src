@@ -9,6 +9,7 @@ use PHPStan\File\FileHelper;
 use PHPStan\ShouldNotHappenException;
 use function array_pop;
 use function is_array;
+use function strpbrk;
 
 final class NeonLoader extends Loader
 {
@@ -75,6 +76,11 @@ final class NeonLoader extends Loader
 	public function expandIncludedFile(string $includedFile, string $mainFile): string
 	{
 		$expandedFile = parent::expandIncludedFile($includedFile, $mainFile);
+
+		// checked here too, so that the common case of a plain include does not pay for the call
+		if (strpbrk($includedFile, IncludedFilePattern::METACHARACTERS) === false) {
+			return $expandedFile;
+		}
 
 		$matchedFiles = IncludedFilePattern::expand($includedFile, $mainFile, $this->loadingFiles);
 		if ($matchedFiles !== null) {

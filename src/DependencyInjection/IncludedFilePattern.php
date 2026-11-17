@@ -41,6 +41,12 @@ final class IncludedFilePattern
 {
 
 	/**
+	 * The same metacharacters as FileExcluder::isFnmatchPattern() looks for, to find them with strpbrk()
+	 * rather than a regex, because every include is checked whenever the config is loaded.
+	 */
+	public const METACHARACTERS = '*?[]';
+
+	/**
 	 * @param string $include the entry in includes, with its parameters already expanded
 	 * @param string $mainFile the file with the includes
 	 * @param list<string> $loadingFiles $mainFile, and the files that include it in turn
@@ -49,9 +55,7 @@ final class IncludedFilePattern
 	 */
 	public static function expand(string $include, string $mainFile, array $loadingFiles): ?array
 	{
-		// the same metacharacters as FileExcluder::isFnmatchPattern(), but without a regex,
-		// because this runs for every include whenever the config is loaded
-		if (strpbrk($include, '*?[]') === false) {
+		if (strpbrk($include, self::METACHARACTERS) === false) {
 			return null;
 		}
 

@@ -9676,7 +9676,8 @@ public:
 				} else {
 					/* Neither input has unsealed extra keys — see the twin's
 					 * comment: keep the literal union instead of widening the
-					 * keys and values */
+					 * keys and values. Shapes of unknown sealedness (isUnsealed
+					 * maybe) are deliberately let through; only yes bails */
 					bool noneUnsealed = true;
 					for (uint32_t side = 0; side < 2 && noneUnsealed; side++) {
 						for (auto checkEntry : zv::TableRef(constantArrays.table((int) side))) {

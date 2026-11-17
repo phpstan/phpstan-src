@@ -5289,7 +5289,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					// Neither input has unsealed extra keys, so their key sets
 					// are finite — the constant keys of the shapes. That holds
 					// for sealed shapes as well as for shapes of unknown
-					// sealedness (the only kind without bleeding edge). On the
+					// sealedness (the only kind without bleeding edge). The
+					// latter report `isUnsealed()` as maybe and are deliberately
+					// let through: they carry no extra key type, so only
+					// `isUnsealed()->yes()` (an explicit `...<K, V>`) bails. On the
 					// fall-through ArrayType path, recursing into
 					// `generalizeType` would widen e.g. `0|1` to `int<0, max>`
 					// — for both the keys and the values — losing the loop's

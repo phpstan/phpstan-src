@@ -3,7 +3,6 @@
 namespace PHPStan\DependencyInjection;
 
 use Nette\FileNotFoundException;
-use PHPStan\File\FileExcluder;
 use function array_filter;
 use function array_map;
 use function array_values;
@@ -16,6 +15,7 @@ use function preg_match;
 use function realpath;
 use function sort;
 use function sprintf;
+use function strpbrk;
 use function strtr;
 use const SORT_STRING;
 
@@ -49,7 +49,9 @@ final class IncludedFilePattern
 	 */
 	public static function expand(string $include, string $mainFile, array $loadingFiles): ?array
 	{
-		if (!FileExcluder::isFnmatchPattern($include)) {
+		// the same metacharacters as FileExcluder::isFnmatchPattern(), but without a regex,
+		// because this runs for every include whenever the config is loaded
+		if (strpbrk($include, '*?[]') === false) {
 			return null;
 		}
 

@@ -56,12 +56,13 @@ final class NeonLoader extends Loader
 			return [];
 		}
 
+		// like Loader::$loadedFiles, which the parent does not unset either when loading fails,
+		// as a config that failed to load leaves the loader with nothing to continue with
 		$this->loadingFiles[] = $file;
-		try {
-			return parent::load($file, $merge);
-		} finally {
-			array_pop($this->loadingFiles);
-		}
+		$res = parent::load($file, $merge);
+		array_pop($this->loadingFiles);
+
+		return $res;
 	}
 
 	/**

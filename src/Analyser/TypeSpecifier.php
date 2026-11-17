@@ -178,6 +178,7 @@ final class TypeSpecifier
 		}
 
 		$originalExpr = $expr;
+		$exprType = $type;
 		if (isset($containsNull) && !$containsNull) {
 			$expr = NullsafeOperatorHelper::getNullsafeShortcircuitedExpr($expr);
 		}
@@ -217,7 +218,7 @@ final class TypeSpecifier
 		$sureNotTypes = [];
 		if ($context->false()) {
 			$exprString = $this->exprPrinter->printExpr($expr);
-			$sureNotTypes[$exprString] = [$expr, $exprType ?? $type];
+			$sureNotTypes[$exprString] = [$expr, $exprType];
 
 			if ($expr !== $originalExpr) {
 				$originalExprString = $this->exprPrinter->printExpr($originalExpr);
@@ -225,7 +226,7 @@ final class TypeSpecifier
 			}
 		} elseif ($context->true()) {
 			$exprString = $this->exprPrinter->printExpr($expr);
-			$sureTypes[$exprString] = [$expr, $exprType ?? $type];
+			$sureTypes[$exprString] = [$expr, $exprType];
 
 			if ($expr !== $originalExpr) {
 				$originalExprString = $this->exprPrinter->printExpr($originalExpr);

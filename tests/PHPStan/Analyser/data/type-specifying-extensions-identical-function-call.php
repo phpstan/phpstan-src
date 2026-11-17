@@ -21,6 +21,12 @@ function matchesIntOrFalse(mixed $value): int|false
 	return is_int($value) ? 1 : false;
 }
 
+/** @return 0 */
+function neverMatches(mixed $value): int
+{
+	return 0;
+}
+
 function truthy(mixed $value): void
 {
 	if (matchesInt($value)) {
@@ -59,6 +65,16 @@ function notIdenticalToOne(mixed $value): void
 	assertType('int', $value);
 }
 
+function notIdenticalToOneIsTrue(mixed $value): void
+{
+	if ((matchesInt($value) !== 1) === true) {
+		assertType('mixed', $value);
+	}
+	if ((matchesInt($value) != 1) === true) {
+		assertType('mixed', $value);
+	}
+}
+
 function otherConstants(mixed $value): void
 {
 	if (matchesInt($value) === 0) {
@@ -72,6 +88,19 @@ function otherConstants(mixed $value): void
 	}
 	if (matchesInt($value) === 2) {
 		assertType('mixed', $value);
+	}
+	if (neverMatches($value) === 1) {
+		assertType('mixed', $value);
+	}
+	if (neverMatches($value) == 1) {
+		assertType('mixed', $value);
+	}
+}
+
+function looselyEqualToZero(mixed $value): void
+{
+	if (matchesIntOrFails($value) == 0) {
+		assertType('0|false', matchesIntOrFails($value));
 	}
 }
 

@@ -25,7 +25,7 @@ class MatchesIntFunctionTypeSpecifyingExtension implements FunctionTypeSpecifyin
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool
 	{
-		return in_array($functionReflection->getName(), ['IdenticalFunctionCallExtension\\matchesInt', 'IdenticalFunctionCallExtension\\matchesIntOrFails', 'IdenticalFunctionCallExtension\\matchesIntOrFalse'], true) && !$context->null();
+		return in_array($functionReflection->getName(), ['IdenticalFunctionCallExtension\\matchesInt', 'IdenticalFunctionCallExtension\\matchesIntOrFails', 'IdenticalFunctionCallExtension\\matchesIntOrFalse', 'IdenticalFunctionCallExtension\\neverMatches'], true) && !$context->null();
 	}
 
 	public function specifyTypes(FunctionReflection $functionReflection, FuncCall $node, Scope $scope, TypeSpecifierContext $context): SpecifiedTypes

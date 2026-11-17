@@ -367,18 +367,18 @@ zv::Val constantStringValue(zval *constantString)
 	return true;
 }
 
-/* the twin's isOnlyTruthyResultOne(): 1 is among $callType's results and
- * removing it leaves only falsy ones; false = pending exception */
+/* the twin's isOnlyTruthyResultOne(): $callType can be truthy and
+ * removing 1 leaves only falsy results; false = pending exception */
 [[nodiscard]] bool isOnlyTruthyResultOne(zval *callType, bool &out)
 {
 	out = false;
+	zv::Val callBool = typeCall(callType, "toBoolean", PT_LC("toboolean"));
+	if (UNEXPECTED(callBool.isUndef())) return false;
+	zend_long alwaysFalse = PT_INH_IS_FALSE(callBool.raw());
+	if (UNEXPECTED(alwaysFalse < 0)) return false;
+	if (alwaysFalse == PT_TRI_YES) return true;
 	zv::Val one = newConstantInteger(1);
 	if (UNEXPECTED(one.isUndef())) return false;
-	zv::Val superType = pt_type_op(Z_OBJ_P(one.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, callType);
-	if (UNEXPECTED(superType.isUndef())) return false;
-	zend_long superValue = pt_type_result_trinary(superType.raw());
-	if (UNEXPECTED(superValue < 0)) return false;
-	if (superValue == PT_TRI_NO) return true;
 	zv::Val remaining = pt_type_combinator_remove(callType, one.raw());
 	if (UNEXPECTED(remaining.isUndef())) return false;
 	zv::Val remainingBool = typeCall(remaining.raw(), "toBoolean", PT_LC("toboolean"));
@@ -1392,17 +1392,11 @@ private:
 					if (UNEXPECTED(isString < 0)) return zv::Val();
 					if (isString == PT_TRI_YES) return specifyIdentical(nodeScopeResolver, left, right, leftResult, rightResult, context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback);
 				}
-				bool isTrue;
-				if (UNEXPECTED(!ctxTrue(context, isTrue))) return zv::Val();
-				if (isTrue) {
-					bool one;
-					if (UNEXPECTED(!constantIntegerContains(1, constantType, one))) return zv::Val();
-					bool onlyTruthyOne = false;
-					if (one) {
-						zv::Val callType = typeOnScope(subjectResult, evaluationScope);
-						if (UNEXPECTED(callType.isUndef())) return zv::Val();
-						if (UNEXPECTED(!isOnlyTruthyResultOne(callType.raw(), onlyTruthyOne))) return zv::Val();
-					}
+				if (Z_TYPE_P(value) == IS_LONG && Z_LVAL_P(value) == 1) {
+					zv::Val callType = typeOnScope(subjectResult, evaluationScope);
+					if (UNEXPECTED(callType.isUndef())) return zv::Val();
+					bool onlyTruthyOne;
+					if (UNEXPECTED(!isOnlyTruthyResultOne(callType.raw(), onlyTruthyOne))) return zv::Val();
 					if (onlyTruthyOne) return specifyIdentical(nodeScopeResolver, left, right, leftResult, rightResult, context, evaluationScope, leftArgResult, rightArgResult, identicalTypeCallback);
 				}
 			}

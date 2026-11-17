@@ -819,11 +819,7 @@ final class IdenticalNarrowingHelper
 			if (in_array($funcName, ['gettype', 'get_class', 'get_debug_type'], true) && $constantType->isString()->yes()) {
 				return $this->specifyIdentical($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			}
-			if (
-				$context->true()
-				&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
-				&& $this->isOnlyTruthyResultOne($subjectResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted))
-			) {
+			if ($value === 1 && $this->isOnlyTruthyResultOne($subjectResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted))) {
 				return $this->specifyIdentical($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			}
 		}
@@ -841,12 +837,11 @@ final class IdenticalNarrowingHelper
 
 	private function isOnlyTruthyResultOne(Type $callType): bool
 	{
-		$one = new ConstantIntegerType(1);
-		if ($one->isSuperTypeOf($callType)->no()) {
+		if ($callType->toBoolean()->isFalse()->yes()) {
 			return false;
 		}
 
-		return TypeCombinator::remove($callType, $one)->toBoolean()->isFalse()->yes();
+		return TypeCombinator::remove($callType, new ConstantIntegerType(1))->toBoolean()->isFalse()->yes();
 	}
 
 	/**

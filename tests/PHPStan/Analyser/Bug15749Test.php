@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 /**
  * Runs without bleeding edge, where constant array shapes have unknown sealedness.
  */
-class LegacyArrayShapeTypeInferenceTest extends TypeInferenceTestCase
+class Bug15749Test extends TypeInferenceTestCase
 {
 
 	public static function dataAsserts(): iterable

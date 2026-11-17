@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 12.48B
+ * cycles: 15.42B
+ * memory: 174.6MiB
+ */
+
 namespace BenchPossiblyImpureCallsRememberProperties;
 
 /**

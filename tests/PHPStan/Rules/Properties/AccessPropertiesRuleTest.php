@@ -1327,7 +1327,7 @@ class AccessPropertiesRuleTest extends RuleTestCase
 		$this->checkThisOnly = false;
 		$this->checkUnionTypes = true;
 		$this->checkDynamicProperties = false;
-		$this->analyse([__DIR__ . '/data/bug-9946.php'], []);
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-9946.php'], []);
 	}
 
 }

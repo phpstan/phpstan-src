@@ -25,12 +25,16 @@ use function error_reporting;
 use function file_get_contents;
 use function gc_disable;
 use function glob;
+use function is_file;
+use function strlen;
+use function substr;
 use const E_ALL;
 use const E_DEPRECATED;
 use const STDERR;
 
 /**
- * Analyses each file in data/ like bin/phpstan analyse does, with phpstan.neon. Only the analysis
+ * Analyses each file in data/ like bin/phpstan analyse does, with phpstan.neon, and with the .neon
+ * file of the same name next to it in data/ when there is one. Only the analysis
  * of the file is counted: before it, PHPStan boots and analyses Warmup.php, so the code every
  * analysis goes through is loaded and compiled. The native run Tally starts before the counted
  * one compiles the container and fills the caches in the case's scratch directory, which the
@@ -83,9 +87,16 @@ final class AnalysisBench
 		error_reporting(E_ALL & ~E_DEPRECATED);
 		gc_disable();
 
+		// a benchmark that needs other parameters has them in a .neon file of the same name
+		$includes = [__DIR__ . '/phpstan.neon'];
+		$benchmarkConfigFile = substr($file, 0, -strlen('.php')) . '.neon';
+		if (is_file($benchmarkConfigFile)) {
+			$includes[] = $benchmarkConfigFile;
+		}
+
 		$configFile = $this->scratch->path() . '/phpstan.neon';
 		FileSystem::write($configFile, Neon::encode([
-			'includes' => [__DIR__ . '/phpstan.neon'],
+			'includes' => $includes,
 			'parameters' => ['tmpDir' => $this->scratch->path() . '/cache'],
 		], true));
 

@@ -69,3 +69,19 @@ function disjointArmsStillNarrow(bool $blur): void
 		assertType('true', $blur);
 	}
 }
+
+function remainderMaybeSupertypeOfOtherArm(bool $blur, string $s): void
+{
+	$units = $blur ? ['px', 'rem'] : ['px', $s, '%'];
+	if ($units === ['px', 'rem', '%']) {
+		assertType('bool', $blur);
+	}
+}
+
+function remainderMaybeSupertypeOfOtherArmReversed(bool $blur, string $s): void
+{
+	$units = $blur ? ['px', $s, '%'] : ['px', 'rem'];
+	if ($units === ['px', 'rem', '%']) {
+		assertType('bool', $blur);
+	}
+}

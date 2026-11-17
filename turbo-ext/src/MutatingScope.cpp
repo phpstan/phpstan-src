@@ -9674,23 +9674,24 @@ public:
 					if (UNEXPECTED(resultArray.isUndef())) return zv::Val();
 					resultTypes.push(std::move(resultArray));
 				} else {
-					/* Both inputs are sealed constant array shapes — see the
-					 * twin's comment: keep the literal union instead of
-					 * widening the keys and values */
-					bool bothSealed = true;
-					for (uint32_t side = 0; side < 2 && bothSealed; side++) {
+					/* Neither input has unsealed extra keys — see the twin's
+					 * comment: keep the literal union instead of widening the
+					 * keys and values. Shapes of unknown sealedness (isUnsealed
+					 * maybe) are deliberately let through; only yes bails */
+					bool noneUnsealed = true;
+					for (uint32_t side = 0; side < 2 && noneUnsealed; side++) {
 						for (auto checkEntry : zv::TableRef(constantArrays.table((int) side))) {
 							zv::Val constantArrayInstances = pt_type_op(checkEntry.value().deref().asObject(), PT_OP_GET_CONSTANT_ARRAYS, 0, NULL);
 							if (UNEXPECTED(constantArrayInstances.isUndef() || Z_TYPE_P(constantArrayInstances.raw()) != IS_ARRAY)) return zv::Val();
 							for (auto instance : zv::TableRef(Z_ARRVAL_P(constantArrayInstances.raw()))) {
-								zend_long isSealed = pt_type_call_trinary(instance.value().deref().asObject(), PT_LC("issealed"), 0, NULL);
-								if (UNEXPECTED(isSealed < 0)) return zv::Val();
-								if (isSealed != PT_TRI_YES) {
-									bothSealed = false;
+								zend_long isUnsealed = pt_type_call_trinary(instance.value().deref().asObject(), PT_LC("isunsealed"), 0, NULL);
+								if (UNEXPECTED(isUnsealed < 0)) return zv::Val();
+								if (isUnsealed == PT_TRI_YES) {
+									noneUnsealed = false;
 									break;
 								}
 							}
-							if (!bothSealed) break;
+							if (!noneUnsealed) break;
 						}
 					}
 
@@ -9699,7 +9700,7 @@ public:
 					zv::Val valueTypeB = pt_type_op(Z_OBJ_P(constantArraysB.raw()), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 					if (UNEXPECTED(valueTypeB.isUndef())) return zv::Val();
 					zv::Val resultKeyType, resultValueType;
-					if (bothSealed) {
+					if (noneUnsealed) {
 						resultKeyType = unionTypes(keyTypeA.raw(), keyTypeB.raw());
 						if (UNEXPECTED(resultKeyType.isUndef())) return zv::Val();
 						resultValueType = unionTypes(valueTypeA.raw(), valueTypeB.raw());

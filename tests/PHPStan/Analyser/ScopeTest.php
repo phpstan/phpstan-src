@@ -26,8 +26,8 @@ class ScopeTest extends PHPStanTestCase
 	{
 		// A directly constructed shape is a legacy (unsealed) one only while bleeding
 		// edge is off - the toggle is process-global, and PHPUnit 9 evaluates the
-		// provider after earlier test classes may have left it on. The widening
-		// contract below is the legacy one, so the inputs are pinned to it.
+		// provider after earlier test classes may have left it on. The inputs are
+		// pinned to legacy shapes, so the expectations below are for those.
 		return BleedingEdgeToggle::withBleedingEdge(false, static fn (): array => [
 			[
 				new ConstantStringType('a'),
@@ -147,7 +147,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(1),
 				]),
-				'non-empty-array<literal-string&lowercase-string&non-falsy-string, 1>',
+				'non-empty-array<\'a\'|\'b\', 1>',
 			],
 			[
 				new ConstantArrayType([
@@ -162,7 +162,7 @@ class ScopeTest extends PHPStanTestCase
 					new ConstantIntegerType(1),
 					new ConstantIntegerType(2),
 				]),
-				'non-empty-array<literal-string&lowercase-string&non-falsy-string, int<1, max>>',
+				'non-empty-array<\'a\'|\'b\', 1|2>',
 			],
 			[
 				new UnionType([

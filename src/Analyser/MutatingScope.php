@@ -5286,25 +5286,28 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 					$resultTypes[] = $resultArrayBuilder->getArray();
 				} else {
-					// Both inputs are sealed constant array shapes — their key
-					// sets are finite by construction. On the fall-through
-					// ArrayType path, recursing into `generalizeType` would
-					// widen e.g. `0|1` to `int<0, max>` — for both the keys and
-					// the values — losing the loop's per-iteration precision.
-					// Keep the literal union instead so the loop's bounds stay
-					// visible. (Scoped to sealed shapes so the general
-					// `generalize()` widening contract for legacy arrays — see
-					// ScopeTest::testGeneralize — is unaffected.)
-					$bothSealed = true;
+					// Neither input has unsealed extra keys, so their key sets
+					// are finite — the constant keys of the shapes. That holds
+					// for sealed shapes as well as for shapes of unknown
+					// sealedness (the only kind without bleeding edge). The
+					// latter report `isUnsealed()` as maybe and are deliberately
+					// let through: they carry no extra key type, so only
+					// `isUnsealed()->yes()` (an explicit `...<K, V>`) bails. On the
+					// fall-through ArrayType path, recursing into
+					// `generalizeType` would widen e.g. `0|1` to `int<0, max>`
+					// — for both the keys and the values — losing the loop's
+					// per-iteration precision. Keep the literal union instead
+					// so the loop's bounds stay visible.
+					$noneUnsealed = true;
 					foreach ([...$constantArrays['a'], ...$constantArrays['b']] as $constantArrayCheck) {
 						foreach ($constantArrayCheck->getConstantArrays() as $constantArrayInstance) {
-							if (!$constantArrayInstance->isSealed()->yes()) {
-								$bothSealed = false;
+							if ($constantArrayInstance->isUnsealed()->yes()) {
+								$noneUnsealed = false;
 								break 2;
 							}
 						}
 					}
-					if ($bothSealed) {
+					if ($noneUnsealed) {
 						$resultKeyType = TypeCombinator::union($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType());
 						$resultValueType = TypeCombinator::union($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType());
 						if ($resultValueType->isOversizedArray()->yes()) {

@@ -57,7 +57,9 @@ final class IncludedFilePattern
 			return [];
 		}
 
-		$loadingPaths = array_map(static fn (string $file): string|false => realpath($file), $loadingFiles);
+		// realpath() fails on files that cannot be resolved, like the ones inside phpstan.phar,
+		// and a false among these would leave out every match that cannot be resolved either
+		$loadingPaths = array_filter(array_map(static fn (string $file): string|false => realpath($file), $loadingFiles), static fn (string|false $path): bool => $path !== false);
 		$files = array_values(array_filter(
 			$matches,
 			static fn (string $match): bool => is_file($match) && !in_array(realpath($match), $loadingPaths, true),

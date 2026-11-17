@@ -196,12 +196,48 @@ public:
 		return pt_type_traverser_map_of(type, callback.raw());
 	}
 
-	/* for another conditional-for-parameter the if branches' answer
-	 * combined with the else branches', the trait's default otherwise;
-	 * UNDEF = pending exception */
+	/* $type instanceof self with the same negation, the same parameter
+	 * name and an equal target; false with an exception pending */
+	[[nodiscard]] bool hasSameCondition(zval *type, bool &out) const
+	{
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_conditional_type_for_parameter)) {
+			out = false;
+			return true;
+		}
+		bool isNegated;
+		if (UNEXPECTED(!negated(isNegated))) return false;
+		zval *theirNegated = slot(Z_OBJ_P(type), slots::negated, "negated");
+		if (UNEXPECTED(theirNegated == NULL)) return false;
+		if (isNegated != (Z_TYPE_P(theirNegated) == IS_TRUE)) {
+			out = false;
+			return true;
+		}
+		zval *name = parameterName();
+		if (UNEXPECTED(name == NULL)) return false;
+		zval *theirName = slot(Z_OBJ_P(type), slots::parameterName, "parameterName");
+		if (UNEXPECTED(theirName == NULL)) return false;
+		if (!zend_string_equals(Z_STR_P(name), Z_STR_P(theirName))) {
+			out = false;
+			return true;
+		}
+		zval *mine = target();
+		if (UNEXPECTED(mine == NULL)) return false;
+		zval *theirs = slot(Z_OBJ_P(type), slots::target, "target");
+		if (UNEXPECTED(theirs == NULL)) return false;
+		zv::Val equal = pt_type_op(Z_OBJ_P(mine), PT_OP_EQUALS, 1, theirs);
+		if (UNEXPECTED(equal.isUndef())) return false;
+		out = zend_is_true(equal.raw());
+		return true;
+	}
+
+	/* for another conditional-for-parameter with the same condition the if
+	 * branches' answer combined with the else branches', the trait's
+	 * default otherwise; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
-		if (instanceof_function(Z_OBJCE_P(type), pt_ce_conditional_type_for_parameter)) {
+		bool sameCondition;
+		if (UNEXPECTED(!hasSameCondition(type, sameCondition))) return zv::Val();
+		if (sameCondition) {
 			zval *i = ifType();
 			if (UNEXPECTED(i == NULL)) return zv::Val();
 			zval *theirIf = slot(Z_OBJ_P(type), slots::if_, "if");
@@ -225,26 +261,15 @@ public:
 	/* array_merge() of the target's, if's and else's getReferencedTemplateTypes($positionVariance) */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const { return mergedOfParts(PT_LC("getreferencedtemplatetypes"), 1, positionVariance); }
 
-	/* $type instanceof self with the same parameter name and equal target,
-	 * if and else (the negation is not compared, as the twin does not);
-	 * false with an exception pending */
+	/* $type instanceof self with the same negation, the same parameter name
+	 * and equal target, if and else; false with an exception pending */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
-		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_conditional_type_for_parameter)) {
-			out = false;
-			return true;
-		}
-		zval *name = parameterName();
-		if (UNEXPECTED(name == NULL)) return false;
-		zval *theirName = slot(Z_OBJ_P(type), slots::parameterName, "parameterName");
-		if (UNEXPECTED(theirName == NULL)) return false;
-		if (!zend_string_equals(Z_STR_P(name), Z_STR_P(theirName))) {
-			out = false;
-			return true;
-		}
-		static const uint32_t parts[3] = { slots::target, slots::if_, slots::else_ };
-		static const char *const names[3] = { "target", "if", "else" };
-		for (int i = 0; i < 3; i++) {
+		if (UNEXPECTED(!hasSameCondition(type, out))) return false;
+		if (!out) return true;
+		static const uint32_t parts[2] = { slots::if_, slots::else_ };
+		static const char *const names[2] = { "if", "else" };
+		for (int i = 0; i < 2; i++) {
 			zval *mine = slot(self, parts[i], names[i]);
 			if (UNEXPECTED(mine == NULL)) return false;
 			zval *theirs = slot(Z_OBJ_P(type), parts[i], names[i]);

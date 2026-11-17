@@ -1,2 +1,2 @@
 includes:
-	- nonexistent/*.neon
+	- baselines/*.php

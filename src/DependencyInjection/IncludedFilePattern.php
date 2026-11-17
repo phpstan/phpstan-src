@@ -2,6 +2,7 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\FileNotFoundException;
 use PHPStan\File\FileExcluder;
 use function array_filter;
 use function array_map;
@@ -9,10 +10,12 @@ use function array_values;
 use function dirname;
 use function glob;
 use function in_array;
+use function is_dir;
 use function is_file;
 use function preg_match;
 use function realpath;
 use function sort;
+use function sprintf;
 use function strtr;
 use const SORT_STRING;
 
@@ -27,6 +30,9 @@ use const SORT_STRING;
  * An entry that names an existing file is never treated as a pattern,
  * so a file whose name contains a glob metacharacter can still be included.
  *
+ * A pattern that matches nothing includes nothing,
+ * but the directory it is matched in has to exist.
+ *
  * The files that are being loaded at the time are left out of the matches,
  * so that a loader like `baselines/_loader.neon` can include `*.neon`
  * without including itself.
@@ -39,6 +45,7 @@ final class IncludedFilePattern
 	 * @param string $mainFile the file with the includes
 	 * @param list<string> $loadingFiles $mainFile, and the files that include it in turn
 	 * @return list<string>|null the matched files, or null when $include is not a pattern
+	 * @throws FileNotFoundException when the directory the pattern is matched in is missing
 	 */
 	public static function expand(string $include, string $mainFile, array $loadingFiles): ?array
 	{
@@ -50,6 +57,13 @@ final class IncludedFilePattern
 		$baseDirectory = preg_match('#([a-z]+:)?[/\\\\]#Ai', $include) === 1 ? '' : dirname($mainFile) . '/';
 		if (is_file($baseDirectory . $include)) {
 			return null;
+		}
+
+		// a pattern that matches nothing includes nothing, so that the last matching file can be deleted,
+		// but one whose directory is missing is more likely a mistake, like a missing plain include
+		$patternDirectory = $baseDirectory . self::getDirectoryBeforePattern($include);
+		if (!is_dir($patternDirectory)) {
+			throw new FileNotFoundException(sprintf("Directory '%s' of the included pattern '%s' is missing.", $patternDirectory, $include));
 		}
 
 		$matches = glob(self::escape($baseDirectory) . $include);
@@ -69,6 +83,18 @@ final class IncludedFilePattern
 		sort($files, SORT_STRING);
 
 		return $files;
+	}
+
+	/**
+	 * Returns the part of $include up to the directory separator before the segment with its first metacharacter.
+	 */
+	private static function getDirectoryBeforePattern(string $include): string
+	{
+		if (preg_match('~^((?:[^*?[\]]*[/\\\\])?)[^/\\\\*?[\]]*[*?[\]]~', $include, $matches) !== 1) {
+			return '';
+		}
+
+		return $matches[1];
 	}
 
 	/**

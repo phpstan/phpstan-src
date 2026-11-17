@@ -2,7 +2,9 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\FileNotFoundException;
 use PHPUnit\Framework\TestCase;
+use function sprintf;
 
 class IncludedFilePatternTest extends TestCase
 {
@@ -41,6 +43,25 @@ class IncludedFilePatternTest extends TestCase
 	{
 		$mainFile = self::DIR . '/main.neon';
 		$this->assertSame([], IncludedFilePattern::expand('baselines/*.php', $mainFile, [$mainFile]));
+	}
+
+	public function testPatternInMissingDirectoryFails(): void
+	{
+		$mainFile = self::DIR . '/main.neon';
+
+		$this->expectException(FileNotFoundException::class);
+		$this->expectExceptionMessage(sprintf("Directory '%s/nonexistent/' of the included pattern 'nonexistent/*.neon' is missing.", self::DIR));
+		IncludedFilePattern::expand('nonexistent/*.neon', $mainFile, [$mainFile]);
+	}
+
+	public function testDirectoryOfPatternIsTheOneBeforeTheFirstMetacharacter(): void
+	{
+		// baselines/ exists, so this matches nothing rather than failing on the missing baselines/*/
+		$mainFile = self::DIR . '/main.neon';
+		$this->assertSame([], IncludedFilePattern::expand('baselines/*/missing/*.neon', $mainFile, [$mainFile]));
+
+		$this->expectException(FileNotFoundException::class);
+		IncludedFilePattern::expand('nonexistent/sub/*/x.neon', $mainFile, [$mainFile]);
 	}
 
 	public function testPatternIsResolvedLiterallyAgainstDirectoryWithMetacharacters(): void

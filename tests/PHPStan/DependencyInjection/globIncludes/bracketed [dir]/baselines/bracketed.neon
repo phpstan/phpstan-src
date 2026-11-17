@@ -1,0 +1,5 @@
+parameters:
+	ignoreErrors:
+		-
+			identifier: bracketed.identifier
+			path: '*/bracketed.php'

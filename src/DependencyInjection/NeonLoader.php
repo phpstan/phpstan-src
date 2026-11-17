@@ -16,6 +16,13 @@ final class NeonLoader extends Loader
 	/** @var list<string> */
 	private array $loadingFiles = [];
 
+	/**
+	 * The files matched by each included pattern, by the path that expandIncludedFile() returned for it.
+	 *
+	 * @var array<string, list<string>>
+	 */
+	private array $patternMatches = [];
+
 	public function __construct(
 		private FileHelper $fileHelper,
 		private ?string $generateBaselineFile,
@@ -29,9 +36,10 @@ final class NeonLoader extends Loader
 	#[Override]
 	public function load(string $file, ?bool $merge = true): array
 	{
-		// Loader::load() passes each entry in includes back here, after expanding it to an absolute path
-		$matchedFiles = IncludedFilePattern::expand($file, $this->loadingFiles);
-		if ($matchedFiles !== null) {
+		if (isset($this->patternMatches[$file])) {
+			$matchedFiles = $this->patternMatches[$file];
+			unset($this->patternMatches[$file]);
+
 			$res = [];
 			foreach ($matchedFiles as $matchedFile) {
 				// same merge as for consecutive entries in includes, so later files override earlier ones
@@ -54,6 +62,25 @@ final class NeonLoader extends Loader
 		} finally {
 			array_pop($this->loadingFiles);
 		}
+	}
+
+	/**
+	 * Loader::load() calls this for each entry in includes, and passes the result back to load().
+	 *
+	 * The pattern is matched here rather than in load(), because only here is the entry known as written,
+	 * apart from the directory of $mainFile it is resolved against.
+	 */
+	#[Override]
+	public function expandIncludedFile(string $includedFile, string $mainFile): string
+	{
+		$expandedFile = parent::expandIncludedFile($includedFile, $mainFile);
+
+		$matchedFiles = IncludedFilePattern::expand($includedFile, $mainFile, $this->loadingFiles);
+		if ($matchedFiles !== null) {
+			$this->patternMatches[$expandedFile] = $matchedFiles;
+		}
+
+		return $expandedFile;
 	}
 
 }

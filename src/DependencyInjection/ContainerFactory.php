@@ -320,10 +320,11 @@ final class ContainerFactory
 		if (isset($data['includes'])) {
 			Validators::assert($data['includes'], 'list', sprintf("section 'includes' in file '%s'", $configFile));
 			$includes = Helpers::expand($data['includes'], $loaderParameters);
+			$loadingFiles = [...$loadingFiles, $configFile];
 			foreach ($includes as $include) {
-				$include = self::expandIncludedFile($include, $configFile);
-				foreach (IncludedFilePattern::expand($include, [...$loadingFiles, $configFile]) ?? [$include] as $includedFile) {
-					[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $includedFile, $loaderParameters, $generateBaselineFile, [...$loadingFiles, $configFile]);
+				$includedFiles = IncludedFilePattern::expand($include, $configFile, $loadingFiles) ?? [self::expandIncludedFile($include, $configFile)];
+				foreach ($includedFiles as $includedFile) {
+					[$tmpConfigFiles, $tmpConfigArray] = self::getConfigFiles($fileHelper, $neonAdapter, $phpAdapter, $includedFile, $loaderParameters, $generateBaselineFile, $loadingFiles);
 					$allConfigFiles = array_merge($allConfigFiles, $tmpConfigFiles);
 
 					/** @var array<mixed> $data */

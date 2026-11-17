@@ -2,6 +2,8 @@
 
 namespace PHPStan\DependencyInjection;
 
+use Nette\FileNotFoundException;
+use PHPStan\File\FileHelper;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_column;
 use function array_map;
@@ -19,6 +21,7 @@ class GlobIncludesTest extends PHPStanTestCase
 		$this->assertContains('b.identifier', $identifiers);
 		$this->assertContains('literal.identifier', $identifiers);
 		$this->assertContains('sibling.identifier', $identifiers);
+		$this->assertContains('bracketed.identifier', $identifiers);
 	}
 
 	public function testMatchedFilesAreIncludedInAlphabeticalOrder(): void
@@ -36,6 +39,14 @@ class GlobIncludesTest extends PHPStanTestCase
 		$this->assertContains(realpath(__DIR__ . '/globIncludes/baselines/a.neon'), $allConfigFiles);
 		$this->assertContains(realpath(__DIR__ . '/globIncludes/baselines/b.neon'), $allConfigFiles);
 		$this->assertContains(realpath(__DIR__ . '/globIncludes/literal/[literal].neon'), $allConfigFiles);
+	}
+
+	public function testTopLevelConfigFileIsNotAPattern(): void
+	{
+		$loader = new NeonLoader(new FileHelper(__DIR__), null);
+
+		$this->expectException(FileNotFoundException::class);
+		$loader->load(__DIR__ . '/globIncludes/baselines/*.neon');
 	}
 
 	/**

@@ -2,6 +2,7 @@ includes:
 	- baselines/*.neon
 	- 'literal/[literal].neon'
 	- selfIncluding/_loader.neon
+	- 'bracketed [dir]/loader.neon'
 
 parametersSchema:
 	globIncludesOrder: string()

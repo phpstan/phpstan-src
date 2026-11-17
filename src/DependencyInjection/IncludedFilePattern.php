@@ -6,18 +6,25 @@ use PHPStan\File\FileExcluder;
 use function array_filter;
 use function array_map;
 use function array_values;
+use function dirname;
 use function glob;
 use function in_array;
 use function is_file;
+use function preg_match;
 use function realpath;
 use function sort;
+use function strtr;
 use const SORT_STRING;
 
 /**
  * Lets an entry in `includes` be a glob pattern, like `baselines/*.neon`,
  * which includes every matching file in alphabetical order.
  *
- * A path that names an existing file is never treated as a pattern,
+ * Only the entry as written is a pattern. The directory of the file with the includes,
+ * which a relative entry is resolved against, is matched literally,
+ * even if its path contains a glob metacharacter.
+ *
+ * An entry that names an existing file is never treated as a pattern,
  * so a file whose name contains a glob metacharacter can still be included.
  *
  * The files that are being loaded at the time are left out of the matches,
@@ -28,30 +35,50 @@ final class IncludedFilePattern
 {
 
 	/**
-	 * @param string $includedFile already expanded to an absolute path
-	 * @param list<string> $loadingFiles the file with the includes, and the files that include it in turn
-	 * @return list<string>|null the matched files, or null when $includedFile is not a pattern
+	 * @param string $include the entry in includes, with its parameters already expanded
+	 * @param string $mainFile the file with the includes
+	 * @param list<string> $loadingFiles $mainFile, and the files that include it in turn
+	 * @return list<string>|null the matched files, or null when $include is not a pattern
 	 */
-	public static function expand(string $includedFile, array $loadingFiles = []): ?array
+	public static function expand(string $include, string $mainFile, array $loadingFiles): ?array
 	{
-		if (is_file($includedFile) || !FileExcluder::isFnmatchPattern($includedFile)) {
+		if (!FileExcluder::isFnmatchPattern($include)) {
 			return null;
 		}
 
-		$matches = glob($includedFile);
+		// same check as Loader::expandIncludedFile()
+		$baseDirectory = preg_match('#([a-z]+:)?[/\\\\]#Ai', $include) === 1 ? '' : dirname($mainFile) . '/';
+		if (is_file($baseDirectory . $include)) {
+			return null;
+		}
+
+		$matches = glob(self::escape($baseDirectory) . $include);
 		if ($matches === false) {
 			return [];
 		}
 
-		// glob() sorts with the locale's collation, while the order of includes decides how values merge
 		$loadingPaths = array_map(static fn (string $file): string|false => realpath($file), $loadingFiles);
 		$files = array_values(array_filter(
 			$matches,
 			static fn (string $match): bool => is_file($match) && !in_array(realpath($match), $loadingPaths, true),
 		));
+
+		// glob() sorts with the locale's collation, while the order of includes decides how values merge
 		sort($files, SORT_STRING);
 
 		return $files;
+	}
+
+	/**
+	 * Makes glob() match $path literally, by putting each metacharacter in a bracket expression of its own.
+	 */
+	private static function escape(string $path): string
+	{
+		return strtr($path, [
+			'[' => '[[]',
+			'*' => '[*]',
+			'?' => '[?]',
+		]);
 	}
 
 }

@@ -55,3 +55,35 @@ function alternatives(int $x, string $d, string $nd, int $nonNegative): void
 	assertType('true', is_finite((float) $x));
 	assertType('false', is_nan($x + 0.0));
 }
+
+/**
+ * @param int<0, 10> $range
+ * @param int<0, max> $nonNegative
+ * @param int<min, 5> $upToFive
+ * @param 1|2|3 $constants
+ * @param int|bool $intOrBool
+ * @param int|decimal-int-string $intOrDecimal
+ * @param int|string $intOrString
+ * @param int|float $intOrFloat
+ */
+function review(bool $b, $range, $nonNegative, $upToFive, $constants, $intOrBool, $intOrDecimal, $intOrString, $intOrFloat, ?int $nullableInt): void
+{
+	// int ranges
+	assertType('float<0.0, 10.0>', (float) $range);
+	assertType('float<0.0, 9.223372036854776E+18>', (float) $nonNegative);
+	assertType('float<-9.223372036854776E+18, 5.0>', (float) $upToFive);
+	assertType('1.0|2.0|3.0', (float) $constants);
+	assertType('float<0.0, 10.0>', $range + 0.0);
+
+	// bool
+	assertType('0.0|1.0', (float) $b);
+	assertType('1.0', (float) true);
+
+	// unions
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', (float) $intOrBool);
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', floatval($intOrBool));
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', (float) $intOrDecimal);
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', (float) $nullableInt);
+	assertType('float', (float) $intOrString); // a string can be "1e999"
+	assertType('float', (float) $intOrFloat); // a float can be INF or NAN
+}

@@ -33,3 +33,32 @@ function int_settype(int $x): float {
 function non_decimal_int_string_to_float(string $x): float {
 	return (float) $x;
 }
+
+/**
+ * @param int<0, max> $x
+ * @return finite-float
+ */
+function int_range_to_float(int $x): float {
+	return (float) $x;
+}
+
+/** @return finite-float */
+function bool_to_float(bool $x): float {
+	return (float) $x;
+}
+
+/**
+ * @param int|bool|decimal-int-string|null $x
+ * @return finite-float
+ */
+function union_to_float($x): float {
+	return (float) $x;
+}
+
+/**
+ * @param int|string $x
+ * @return finite-float
+ */
+function int_or_string_to_float($x): float {
+	return (float) $x;
+}

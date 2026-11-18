@@ -614,6 +614,10 @@ class ReturnTypeRuleTest extends RuleTestCase
 				'Function Bug15767ReturnType\\non_decimal_int_string_to_float() should return float<-1.7976931348623157E+308, 1.7976931348623157E+308> but returns float.',
 				34,
 			],
+			[
+				'Function Bug15767ReturnType\\int_or_string_to_float() should return float<-1.7976931348623157E+308, 1.7976931348623157E+308> but returns float.',
+				63,
+			],
 		]);
 	}
 

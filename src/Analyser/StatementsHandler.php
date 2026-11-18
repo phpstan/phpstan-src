@@ -161,6 +161,11 @@ final class StatementsHandler
 				);
 
 				if ($alreadyTerminated) {
+					if ($node->getAttribute(GotoLabelVisitor::LABEL_IS_USED_ATTRIBUTE) !== true) {
+						$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
+						$this->processUnreachableStatement($nodeScopeResolver, $nextStmts, $scope, $expressionResultStorage, $nodeCallback);
+					}
+
 					continue;
 				}
 
@@ -681,6 +686,11 @@ final class StatementsHandler
 			);
 
 			if ($state->alreadyTerminated) {
+				if ($stmt->getAttribute(GotoLabelVisitor::LABEL_IS_USED_ATTRIBUTE) !== true) {
+					$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
+					$this->processUnreachableStatement($nodeScopeResolver, $nextStmts, $state->scope, $storage, $nodeCallback);
+				}
+
 				return;
 			}
 

@@ -6,9 +6,9 @@ use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * Runs without bleeding edge
+ * Runs without bleeding edge.
  */
-class NoBleedingEdgeTypeInferenceTestCase extends TypeInferenceTestCase
+class NoBleedingEdgeTypeInferenceTest extends TypeInferenceTestCase
 {
 
 	public static function dataAsserts(): iterable

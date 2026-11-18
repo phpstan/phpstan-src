@@ -24,8 +24,8 @@ class Foo
 		assertType('float<-6.0, 8.0>', $a * $b);
 		assertType('float<-3.0, 4.0>', $b * 1);
 
-		// a non-int bounded operand stays unbounded on that side
-		assertType('float<min, max>', $a + $int);
+		// an int operand ends at the floats closest to PHP_INT_MIN and PHP_INT_MAX
+		assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', $a + $int);
 		assertType('float', $a + $f);
 
 		// overflow reaches the infinities

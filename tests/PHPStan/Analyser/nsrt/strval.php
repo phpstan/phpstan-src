@@ -18,7 +18,7 @@ function strvalTest(string $string, string $class): void
 	assertType('\'\'|\'1\'', strval(rand(0, 1) === 0));
 	assertType('\'42\'', strval(42));
 	assertType('decimal-int-string', strval(rand()));
-	assertType('non-empty-string&uppercase-string', strval(rand() * 0.1));
+	assertType('numeric-string&uppercase-string', strval(rand() * 0.1));
 	assertType('decimal-int-string', strval(strval(rand())));
 	assertType('class-string<stdClass>', strval($class));
 	assertType('string', strval(new \Exception()));
@@ -40,7 +40,7 @@ function intvalTest(string $string): void
 	assertType('0|1', intval(rand(0, 1) === 0));
 	assertType('42', intval(42));
 	assertType('int<0, max>', intval(rand()));
-	assertType('int', intval(rand() * 0.1));
+	assertType('int<0, 922337203685477632>', intval(rand() * 0.1));
 	assertType('0', intval([]));
 	assertType('1', intval([null]));
 	assertType('int', intval(new \stdClass()));
@@ -60,7 +60,7 @@ function floatvalTest(string $string): void
 	assertType('0.0|1.0', floatval(rand(0, 1) === 0));
 	assertType('42.0', floatval(42));
 	assertType('float<0.0, 9.223372036854776E+18>', floatval(rand()));
-	assertType('float<0.0, max>', floatval(rand() * 0.1));
+	assertType('float<0.0, 9.223372036854776E+17>', floatval(rand() * 0.1));
 	assertType('0.0', floatval([]));
 	assertType('1.0', floatval([null]));
 	assertType('float', floatval(new \stdClass()));

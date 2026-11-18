@@ -605,4 +605,16 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15767(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15767.php'], [
+			[
+				'Function Bug15767ReturnType\\non_decimal_int_string_to_float() should return float<-1.7976931348623157E+308, 1.7976931348623157E+308> but returns float.',
+				34,
+			],
+		]);
+	}
+
 }

@@ -19,13 +19,13 @@ use function PHPStan\Testing\assertType;
  */
 function doFoo(int $range1, int $range2, int $int, int $r1, int $i, int $rMin, int $a, int $b, int $p, int $u): void
 {
-	assertType('float<0.0, 5.0>|int<1, 5>', 5 / $range1);
-	assertType('float<-5.0, 0.0>|int<-5, -1>', 5 / $range2);
-	assertType('float<min, 0.0>|int<min, 0>', $range1 / $range2);
-	assertType('(float<-5.0, 5.0>|int<-5, -1>|int<1, 5>)', 5 / $int);
-	assertType('(float<-10.0, 10.0>|int<-10, -1>|int<1, 10>)', $r1 / $i);
-	assertType('float<-10.0, 0.0>|float<0.2, 10.0>|int<-10, -1>|int<1, 10>', $r1 / $rMin);
-	assertType('float<0.0, max>|int<0, max>', $a / $b);
-	assertType('-1|1|float<-1.0, -0.2>|float<0.0, 1.0>', -1 / $rMin);
+	assertType('float<5.421010862427522E-19, 5.0>|int<1, 5>', 5 / $range1);
+	assertType('float<-5.0, -5.421010862427522E-19>|int<-5, -1>', 5 / $range2);
+	assertType('float<-9.223372036854776E+18, 0.0>|int<min, 0>', $range1 / $range2);
+	assertType('(float<-5.0, -5.421010862427522E-19>|float<5.421010862427522E-19, 5.0>|int<-5, -1>|int<1, 5>)', 5 / $int);
+	assertType('(float<-10.0, -1.0842021724855044E-19>|float<1.0842021724855044E-19, 10.0>|int<-10, -1>|int<1, 10>)', $r1 / $i);
+	assertType('float<-10.0, -1.0842021724855044E-19>|float<0.2, 10.0>|int<-10, -1>|int<1, 10>', $r1 / $rMin);
+	assertType('float<0.0, 9.223372036854776E+18>|int<0, max>', $a / $b);
+	assertType('-1|1|float<-1.0, -0.2>|float<1.0842021724855044E-19, 1.0>', -1 / $rMin);
 	assertType('float<-2.0, 2.0>|int<-2, 2>', $p / $u);
 }

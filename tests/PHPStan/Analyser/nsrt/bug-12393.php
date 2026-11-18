@@ -37,7 +37,7 @@ class HelloWorld
 
 	public function doBar(int $i){
 		$this->float = $i;
-		assertType('float', $this->float);
+		assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', $this->float);
 	}
 
 	public function doBaz(int $i){
@@ -89,7 +89,7 @@ class HelloWorldStatic
 
 	public function doBar(int $i){
 		self::$float = $i;
-		assertType('float', self::$float);
+		assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', self::$float);
 	}
 
 	public function doBaz(int $i){

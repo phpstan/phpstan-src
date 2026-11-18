@@ -286,10 +286,15 @@ public:
 		return pt_val_of<pt_integer_type_new>();
 	}
 
-	/* new FloatType() */
-	static zv::Val toFloat()
+	/* new FloatType() when inverted, (new IntegerType())->toFloat() otherwise:
+	 * FloatRangeType::fromInterval((float) PHP_INT_MIN, (float) PHP_INT_MAX);
+	 * UNDEF = pending exception */
+	zv::Val toFloat() const
 	{
-		return pt_val_of<pt_float_type_new>();
+		bool inverse = false;
+		if (UNEXPECTED(!this->inverse(inverse))) return zv::Val();
+		if (inverse) return pt_val_of<pt_float_type_new>();
+		return pt_float_range_from_interval((double) ZEND_LONG_MIN, (double) ZEND_LONG_MAX);
 	}
 
 	/* new ConstantArrayType([new ConstantIntegerType(0)], [$this], [1], isList: TrinaryLogic::createYes()) */

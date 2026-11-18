@@ -261,9 +261,14 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		return new IntegerType();
 	}
 
+	/** A decimal integer string holds an int, which converts to a finite float. */
 	public function toFloat(): Type
 	{
-		return new FloatType();
+		if ($this->inverse) {
+			return new FloatType();
+		}
+
+		return (new IntegerType())->toFloat();
 	}
 
 	public function toString(): Type

@@ -52,10 +52,10 @@ public:
 		return pt_integer_range_create_all_greater_than_or_equal_to(&zero);
 	}
 
-	/* new FloatType() — the shadowing class */
+	/* FloatRangeType::fromInterval((float) PHP_INT_MIN, (float) PHP_INT_MAX) */
 	static zv::Val toFloat()
 	{
-		return pt_val_of<pt_float_type_new>();
+		return pt_float_range_from_interval((double) ZEND_LONG_MIN, (double) ZEND_LONG_MAX);
 	}
 
 	/* $this */

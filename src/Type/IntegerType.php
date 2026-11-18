@@ -22,6 +22,8 @@ use PHPStan\Type\Traits\NonOffsetAccessibleTypeTrait;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /** @api */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/IntegerType.cpp')]
@@ -76,9 +78,10 @@ class IntegerType implements Type
 		return IntegerRangeType::createAllGreaterThanOrEqualTo(0);
 	}
 
+	/** An int converts to the float closest to it, which is never INF, -INF or NAN. */
 	public function toFloat(): Type
 	{
-		return new FloatType();
+		return FloatRangeType::fromInterval((float) PHP_INT_MIN, (float) PHP_INT_MAX);
 	}
 
 	public function toInteger(): Type

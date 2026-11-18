@@ -46,12 +46,12 @@ class Foo
 	 */
 	public function doDiv($a, $b, int $c, int $d): void
 	{
-		assertType('(float|int)', $a / $b);
+		assertType('(float<-9.223372036854776E+18, 9.223372036854776E+18>|int)', $a / $b);
 		assertNativeType('(float|int)', $a / $b);
 		assertType('1', 1 / 1);
 		assertNativeType('1', 1 / 1);
-		assertType('(float|int)', $c / $d);
-		assertNativeType('(float|int)', $c / $d);
+		assertType('(float<-9.223372036854776E+18, 9.223372036854776E+18>|int)', $c / $d);
+		assertNativeType('(float<-9.223372036854776E+18, 9.223372036854776E+18>|int)', $c / $d);
 
 		assertType('*ERROR*', $c / 0); // DivisionByZeroError
 	}

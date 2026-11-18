@@ -31,7 +31,7 @@ use function max;
 final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowTypeExtension
 {
 
-	private const INT_MAX = 2147483647;
+	private const INT_MAX = 2_147_483_647;
 
 	private const FUNCTIONS = ['sprintf', 'printf', 'fprintf', 'vsprintf', 'vprintf', 'vfprintf'];
 

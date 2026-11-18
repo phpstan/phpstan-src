@@ -23,8 +23,8 @@ class ErrorType extends MixedType
 	public function describe(VerbosityLevel $level): string
 	{
 		return $level->handle(
-			fn (): string => parent::describe($level),
-			fn (): string => parent::describe($level),
+			static fn (): string => parent::describe($level),
+			static fn (): string => parent::describe($level),
 			static fn (): string => '*ERROR*',
 		);
 	}

@@ -225,14 +225,14 @@ final class ConstantResolver
 		}
 		if ($resolvedConstantName === 'PHP_INT_MAX') {
 			return PHP_INT_SIZE === 8
-				? new UnionType([new ConstantIntegerType(2147483647), new ConstantIntegerType(9223372036854775807)])
-				: new ConstantIntegerType(2147483647);
+				? new UnionType([new ConstantIntegerType(2_147_483_647), new ConstantIntegerType(9_223_372_036_854_775_807)])
+				: new ConstantIntegerType(2_147_483_647);
 		}
 		if ($resolvedConstantName === 'PHP_INT_MIN') {
 			// Why the -1 you might wonder, the answer is to fit it into an int :/ see https://3v4l.org/4SHIQ
 			return PHP_INT_SIZE === 8
-				? new UnionType([new ConstantIntegerType(-9223372036854775807 - 1), new ConstantIntegerType(-2147483647 - 1)])
-				: new ConstantIntegerType(-2147483647 - 1);
+				? new UnionType([new ConstantIntegerType(-9_223_372_036_854_775_807 - 1), new ConstantIntegerType(-2_147_483_647 - 1)])
+				: new ConstantIntegerType(-2_147_483_647 - 1);
 		}
 		if ($resolvedConstantName === 'PHP_INT_SIZE') {
 			return new UnionType([

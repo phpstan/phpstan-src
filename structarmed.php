@@ -126,7 +126,5 @@ return Architecture::define()
         'Testing'             => ['+DependencyInjection'],
     ])
     ->skip([
-        CodeQualityPreset::ANONYMOUS_FUNCTIONS_MUST_BE_STATIC => [
-            __DIR__ . '/src/Type/ErrorType.php',
-        ],
+        CodeQualityPreset::ANONYMOUS_FUNCTIONS_MUST_BE_STATIC,
     ]);

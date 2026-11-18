@@ -6,21 +6,22 @@ use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * Runs without bleeding edge, so that constant arrays are not sealed.
+ * Runs without bleeding edge
  */
-class Bug15760Test extends TypeInferenceTestCase
+class NoBleedingEdgeTypeInferenceTestCase extends TypeInferenceTestCase
 {
 
-	public static function dataFileAsserts(): iterable
+	public static function dataAsserts(): iterable
 	{
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15749.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15760.php');
 	}
 
 	/**
 	 * @param mixed ...$args
 	 */
-	#[DataProvider('dataFileAsserts')]
-	public function testFileAsserts(
+	#[DataProvider('dataAsserts')]
+	public function testAsserts(
 		string $assertType,
 		string $file,
 		...$args,

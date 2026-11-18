@@ -25,7 +25,7 @@ class ErrorType extends MixedType
 		return $level->handle(
 			fn (): string => parent::describe($level),
 			fn (): string => parent::describe($level),
-			fn (): string => '*ERROR*',
+			static fn (): string => '*ERROR*',
 		);
 	}
 

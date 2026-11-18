@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Boundwize\StructArmed\Architecture;
 use Boundwize\StructArmed\Preset\Preset;
+use Boundwize\StructArmed\Preset\Presets\CodeQualityPreset;
 
 return Architecture::define()
     ->withPresets(Preset::PSR4(), Preset::CODEQUALITY())
@@ -123,4 +124,9 @@ return Architecture::define()
         // Composition root: wires every layer together.
         'DependencyInjection' => ['+Command'],
         'Testing'             => ['+DependencyInjection'],
+    ])
+    ->skip([
+        CodeQualityPreset::ANONYMOUS_FUNCTIONS_MUST_BE_STATIC => [
+            __DIR__ . '/src/Type/ErrorType.php',
+        ],
     ]);

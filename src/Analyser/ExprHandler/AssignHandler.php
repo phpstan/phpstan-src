@@ -1279,15 +1279,18 @@ final class AssignHandler implements ExprHandler
 					// The variable can prove an arm was taken even when the arm types overlap:
 					// the part of an arm's type not producible by the other arm implies that
 					// arm's condition outcome. With fully disjoint arms both remainders are
-					// the full arm types.
+					// the full arm types. Disjointness is checked in both directions because
+					// isSuperTypeOf() is not symmetric for constant arrays that are not
+					// sealed - array{'a'} is a supertype of array{'a', 'b'} - and a remainder
+					// matching values of the other arm would prove the wrong outcome.
 					$truthyRemainder = TypeCombinator::remove($truthyType, $falseyType);
-					if ($falseyType->isSuperTypeOf($truthyRemainder)->no()) {
+					if ($falseyType->isSuperTypeOf($truthyRemainder)->no() && $truthyRemainder->isSuperTypeOf($falseyType)->no()) {
 						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $condScope, $storage, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyRemainder, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $condScope, $storage, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyRemainder, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 						$conditionalExpressions = $this->processTernaryArmValueImpliedTypesAfterAssign($nodeScopeResolver, $truthyScope, $storage, $var->name, $conditionalExpressions, $if, $truthyRemainder, $falseyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 					}
 					$falseyRemainder = TypeCombinator::remove($falseyType, $truthyType);
-					if ($truthyType->isSuperTypeOf($falseyRemainder)->no()) {
+					if ($truthyType->isSuperTypeOf($falseyRemainder)->no() && $falseyRemainder->isSuperTypeOf($truthyType)->no()) {
 						$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $condScope, $storage, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyRemainder, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 						$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $condScope, $storage, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyRemainder, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 						$conditionalExpressions = $this->processTernaryArmValueImpliedTypesAfterAssign($nodeScopeResolver, $falsyScope, $storage, $var->name, $conditionalExpressions, $assignedExpr->else, $falseyRemainder, $truthyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);

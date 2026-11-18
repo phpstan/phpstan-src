@@ -6,14 +6,16 @@ use PHPStan\Testing\TypeInferenceTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
- * Runs without bleeding edge, where constant array shapes have unknown sealedness.
+ * Runs without bleeding edge.
  */
-class Bug15749Test extends TypeInferenceTestCase
+class NoBleedingEdgeTypeInferenceTest extends TypeInferenceTestCase
 {
 
 	public static function dataAsserts(): iterable
 	{
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15736.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15749.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/bug-15760.php');
 	}
 
 	/**

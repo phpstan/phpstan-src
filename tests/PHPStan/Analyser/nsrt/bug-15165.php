@@ -14,8 +14,10 @@ function testNarrowGetNameTypeAfterIsBacked(string $class): void
 	assertType('class-string<UnitEnum>', $r->name);
 	assertType('ReflectionNamedType|null', $r->getBackingType());
 	assertType('array<ReflectionEnumUnitCase>', $r->getCases());
+	assertType('ReflectionEnumUnitCase', $r->getCase('A'));
 	if ($r->isBacked()) {
 		assertType('array<ReflectionEnumBackedCase>', $r->getCases());
+		assertType('ReflectionEnumBackedCase', $r->getCase('A'));
 		assertType('class-string<BackedEnum>', $r->getName());
 		assertType('class-string<BackedEnum>', $r->name);
 		assertType('ReflectionNamedType', $r->getBackingType());
@@ -28,9 +30,11 @@ function testNarrowGetNameTypeAfterIsBacked(string $class): void
  */
 function testTemplate(ReflectionEnum $enum): void
 {
+	assertType('ReflectionEnumUnitCase', $enum->getCase('A'));
 	if ($enum->isBacked()) {
 		assertType('ReflectionEnum<T of UnitEnum (function Bug15165Types\testTemplate(), argument)>', $enum);
 		assertType('ReflectionNamedType', $enum->getBackingType());
 		assertType('array<ReflectionEnumBackedCase>', $enum->getCases());
+		assertType('ReflectionEnumBackedCase', $enum->getCase('A'));
 	}
 }

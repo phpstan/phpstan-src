@@ -518,7 +518,9 @@ final class TypeCombinator
 				continue;
 			}
 
-			if (!$types[$i]->isArray()->yes()) {
+			// a late-resolvable type, such as a conditional type, stays as it is until it resolves:
+			// merged with the other arrays, it would lose its condition and its accessory types
+			if (!$types[$i]->isArray()->yes() || $types[$i] instanceof LateResolvableType) {
 				continue;
 			}
 

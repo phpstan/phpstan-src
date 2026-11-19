@@ -7,6 +7,7 @@ use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -354,7 +355,7 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			[
 				'Call to method ReflectionEnum<Bug15165\\UnitFoo>::isBacked() will always evaluate to false.',
 				58,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
+				PHP_VERSION_ID >= 80400 ? 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.' : null,
 			],
 		]);
 	}

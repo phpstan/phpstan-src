@@ -52,7 +52,7 @@ class NodeScopeResolverTest extends TypeInferenceTestCase
 			yield __DIR__ . '/data/enum-reflection-php81.php';
 		}
 
-		if (PHP_VERSION_ID >= 80100 && PHP_VERSION_ID < 80400) {
+		if (PHP_VERSION_ID >= 80100) {
 			yield __DIR__ . '/data/enum-reflection-backed.php';
 		}
 

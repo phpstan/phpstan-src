@@ -2,6 +2,7 @@
 
 namespace PHPStan\Process\Restart;
 
+use PHPStan\Php\PhpVersion;
 use PHPStan\Turbo\TurboExtensionSelector;
 use function array_key_exists;
 use function explode;
@@ -15,6 +16,7 @@ use function phpversion;
 use function sprintf;
 use function str_replace;
 use function strtolower;
+use const PHP_VERSION_ID;
 
 /**
  * The table of extensions PHPStan restarts for, and how each one is dealt with.
@@ -43,13 +45,14 @@ use function strtolower;
  *   reachable: elsewhere the main process stays as it is, as it did before
  *   this registry existed (on Windows a second OPcache instance of the same
  *   user would attach to the restarted process's named mapping).
- * - **extensions the turbo extension cannot run next to**: Tideways wraps
- *   internal function calls in a way that hands the extension's native code
- *   a corrupted argument, crashing the analysis
- *   (https://github.com/phpstan/phpstan/issues/15407). No startup switch is
- *   known to keep those hooks out — tideways.enable_cli is documented to
- *   stop trace collection only — so it is the one strip row, and only where
- *   turbo runs: without it Tideways is just another unmeasured profiler.
+ * - **extensions the turbo extension cannot run next to**: on PHP versions
+ *   without the fix for https://github.com/php/php-src/issues/17211, Tideways'
+ *   observer hands the extension's native code a corrupted argument, crashing
+ *   the analysis (https://github.com/phpstan/phpstan/issues/15407). No startup
+ *   switch is known to keep those hooks out — tideways.enable_cli is
+ *   documented to stop trace collection only — so it is the one strip row,
+ *   and only where turbo runs on an affected PHP version: elsewhere Tideways
+ *   is just another unmeasured profiler.
  *
  * Extensions that only arm on demand — excimer, xhprof, memprof,
  * opentelemetry — measured free while merely loaded, and are deliberately
@@ -82,6 +85,8 @@ final class RestartExtensionRegistry
 		'opentelemetry',
 		'xhprof',
 	];
+
+	private const TIDEWAYS_FIX_DESCRIPTION = 'fixed in PHP 8.2.28, 8.3.16 and 8.4.3';
 
 	/**
 	 * Reasons found in the current process.
@@ -151,6 +156,7 @@ final class RestartExtensionRegistry
 		bool $allowXdebug,
 		array $opcacheIniEntries = [],
 		array $currentOpcacheIniValues = [],
+		int $phpVersionId = PHP_VERSION_ID,
 	): array
 	{
 		$reasons = [];
@@ -207,10 +213,11 @@ final class RestartExtensionRegistry
 		if (
 			in_array('tideways', $loadedExtensions, true)
 			&& ($turboExtensionPath !== null || in_array('phpstan_turbo', $loadedExtensions, true))
+			&& self::isAffectedByTidewaysCrash($phpVersionId)
 		) {
 			$reasons[] = new RestartReason(
 				'tideways',
-				'crashes the turbo extension',
+				sprintf('crashes the turbo extension on PHP %s, %s', (new PhpVersion($phpVersionId))->getVersionString(), self::TIDEWAYS_FIX_DESCRIPTION),
 				strippedExtensions: ['tideways'],
 			);
 		}
@@ -267,7 +274,13 @@ final class RestartExtensionRegistry
 		}
 
 		if (extension_loaded('tideways')) {
-			$descriptions[] = sprintf('tideways %s (unloaded wherever the turbo extension runs)', self::describeVersion('tideways'));
+			$descriptions[] = sprintf(
+				self::isAffectedByTidewaysCrash(PHP_VERSION_ID)
+					? 'tideways %s (unloaded wherever the turbo extension runs: crashes it on PHP %s, ' . self::TIDEWAYS_FIX_DESCRIPTION . ')'
+					: 'tideways %s (kept next to the turbo extension: PHP %s is not affected by the crash)',
+				self::describeVersion('tideways'),
+				(new PhpVersion(PHP_VERSION_ID))->getVersionString(),
+			);
 		}
 
 		foreach (self::UNMEASURED_PROFILER_EXTENSIONS as $extension) {
@@ -329,6 +342,18 @@ final class RestartExtensionRegistry
 		}
 
 		return false;
+	}
+
+	/**
+	 * https://github.com/php/php-src/issues/17211 crashes the turbo extension
+	 * next to Tideways. The bug came with observing internal functions in
+	 * PHP 8.2.0 and was fixed in 8.2.28, 8.3.16 and 8.4.3.
+	 */
+	private static function isAffectedByTidewaysCrash(int $phpVersionId): bool
+	{
+		return ($phpVersionId >= 80200 && $phpVersionId < 80228)
+			|| ($phpVersionId >= 80300 && $phpVersionId < 80316)
+			|| ($phpVersionId >= 80400 && $phpVersionId < 80403);
 	}
 
 	private static function isForkCapable(): bool

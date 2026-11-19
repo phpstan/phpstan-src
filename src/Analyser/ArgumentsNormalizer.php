@@ -325,14 +325,24 @@ final class ArgumentsNormalizer
 		}
 
 		$hasNamedArgs = false;
+		$hasUnpackedArgs = false;
 		foreach ($callArgs as $arg) {
 			if ($arg->name !== null) {
 				$hasNamedArgs = true;
-				break;
 			}
+			if (!$arg->unpack) {
+				continue;
+			}
+
+			$hasUnpackedArgs = true;
 		}
 		if (!$hasNamedArgs) {
 			return array_values($callArgs);
+		}
+		if ($hasUnpackedArgs) {
+			// the number of parameters an unpacked argument fills is unknown here,
+			// so the positions of the named arguments that follow it cannot be determined
+			return null;
 		}
 
 		$hasVariadic = false;

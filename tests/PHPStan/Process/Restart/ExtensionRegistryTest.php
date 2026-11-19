@@ -179,7 +179,9 @@ class ExtensionRegistryTest extends TestCase
 		array $expectedExtensions,
 	): void
 	{
-		$reasons = RestartExtensionRegistry::collectReasonsFor($loadedExtensions, $iniSettings, $turboExtensionPath, $allowXdebug);
+		// a PHP version without the fix for the Tideways crash, so the tideways
+		// rows do not depend on the PHP running the tests
+		$reasons = RestartExtensionRegistry::collectReasonsFor($loadedExtensions, $iniSettings, $turboExtensionPath, $allowXdebug, [], [], 80306);
 
 		$this->assertSame(
 			$expectedExtensions,
@@ -212,15 +214,42 @@ class ExtensionRegistryTest extends TestCase
 		$this->assertSame([], $reasons[0]->getCommandLineArguments());
 	}
 
+	/**
+	 * @return iterable<string, array{int, bool}>
+	 */
+	public static function dataTidewaysPhpVersions(): iterable
+	{
+		yield 'PHP 8.1 predates the bug' => [80134, false];
+		yield 'PHP 8.2 before the fix' => [80227, true];
+		yield 'PHP 8.2 with the fix' => [80228, false];
+		yield 'PHP 8.3 before the fix' => [80315, true];
+		yield 'PHP 8.3 with the fix' => [80316, false];
+		yield 'PHP 8.4 before the fix' => [80402, true];
+		yield 'PHP 8.4 with the fix' => [80403, false];
+		yield 'PHP 8.5 was released with the fix' => [80500, false];
+	}
+
+	#[DataProvider('dataTidewaysPhpVersions')]
+	public function testTidewaysIsStrippedOnlyOnAffectedPhpVersions(int $phpVersionId, bool $expectedStripped): void
+	{
+		$reasons = RestartExtensionRegistry::collectReasonsFor(['tideways'], [], self::TURBO_BINARY, false, [], [], $phpVersionId);
+
+		$this->assertSame(
+			$expectedStripped ? ['phpstan_turbo', 'tideways'] : ['phpstan_turbo'],
+			array_map(static fn (RestartReason $reason): string => $reason->getExtension(), $reasons),
+		);
+	}
+
 	public function testTidewaysIsStrippedRatherThanFlagged(): void
 	{
-		$reasons = RestartExtensionRegistry::collectReasonsFor(['tideways', 'phpstan_turbo'], [], null, false);
+		$reasons = RestartExtensionRegistry::collectReasonsFor(['tideways', 'phpstan_turbo'], [], null, false, [], [], 80306);
 
 		$this->assertCount(1, $reasons);
 		$this->assertSame(['tideways'], $reasons[0]->getStrippedExtensions());
 		$this->assertSame([], $reasons[0]->getIniSettings());
 		$this->assertSame([], $reasons[0]->getEnvironmentVariables());
 		$this->assertSame([], $reasons[0]->getCommandLineArguments());
+		$this->assertSame('crashes the turbo extension on PHP 8.3.6, fixed in PHP 8.2.28, 8.3.16 and 8.4.3', $reasons[0]->getDescription());
 	}
 
 	public function testTurboIsAppendedToTheCommandLineTogetherWithItsMarker(): void

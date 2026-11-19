@@ -20,9 +20,10 @@ namespace PHPStan\Process\Restart;
  *   descendants inherit them;
  * - stripped extensions are commented out of the composed php.ini. Only
  *   Tideways needs this today — it has no off switch for the hooks that
- *   crash the turbo extension — and stripping is strictly worse where a
- *   flag exists: it takes the extension's own symbols out of reflection and so
- *   changes what PHPStan knows about code calling them;
+ *   crash the turbo extension on PHP versions without the fix — and
+ *   stripping is strictly worse where a flag exists: it takes the extension's
+ *   own symbols out of reflection and so changes what PHPStan knows about
+ *   code calling them;
  * - command-line arguments are passed to the restarted php binary, for the
  *   inverse case of *loading* an extension from a path that is not in any ini
  *   file. They deliberately do not reach descendant processes, which is why

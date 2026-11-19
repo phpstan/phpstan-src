@@ -1174,6 +1174,15 @@ public:
 				continue;
 			}
 
+			/* a late-resolvable type, such as a conditional type, stays as it is until it resolves:
+			 * merged with the other arrays, it would lose its condition and its accessory types */
+			int isLateResolvable = isInstanceMap(type, PT_CLASS_LATE_RESOLVABLE_TYPE);
+			PT_FAIL_IF_NEG(isLateResolvable);
+			if (isLateResolvable) {
+				remaining.push_back(copy(type));
+				continue;
+			}
+
 			arrayTypes.push_back(copy(type));
 		}
 

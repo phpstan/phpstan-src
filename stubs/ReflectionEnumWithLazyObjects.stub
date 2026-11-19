@@ -21,6 +21,7 @@ class ReflectionEnum extends ReflectionClass
 	/**
 	 * @phpstan-assert-if-true class-string<T&BackedEnum> $this->name
 	 * @phpstan-assert-if-true class-string<T&BackedEnum> $this->getName()
+	 * @phpstan-assert-if-true array<ReflectionEnumBackedCase> $this->getCases()
 	 * @phpstan-assert-if-true !null $this->getBackingType()
 	 */
 	public function isBacked(): bool {}

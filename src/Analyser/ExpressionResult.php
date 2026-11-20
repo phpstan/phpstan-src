@@ -42,13 +42,19 @@ final class ExpressionResult
 	private ?MutatingScope $falseyScope = null;
 
 	/**
-	 * Whether every ExpressionTypeResolverExtension declined this expression.
-	 * One full-null round settles it: a decline is (in practice) a structural
-	 * decision about the expression, and re-running an expensive extension
-	 * (phpstan-doctrine resolves the receiver's method reflection every time)
-	 * on every read of every call-typed result is what it costs to re-ask.
+	 * Whether every ExpressionTypeResolverExtension declined this expression
+	 * on a PHPDoc-flavoured scope. One full-null round settles it: a decline
+	 * is (in practice) a structural decision about the expression, and
+	 * re-running an expensive extension (phpstan-doctrine resolves the
+	 * receiver's method reflection every time) on every read of every
+	 * call-typed result is what it costs to re-ask. The decline is tracked per
+	 * flavour - an extension may answer on one and decline on the other (the
+	 * receiver can be typed by PHPDoc only).
 	 */
 	private bool $extensionsDeclined = false;
+
+	/** Like $extensionsDeclined, for the native-flavoured scope. */
+	private bool $nativeExtensionsDeclined = false;
 
 	/**
 	 * @param InternalThrowPoint[] $throwPoints
@@ -92,6 +98,7 @@ final class ExpressionResult
 		private ?Type $projectedNativeType = null,
 		private ?array $readVariableNames = null,
 		private ?Dependencies $dependencies = null,
+		bool $nativeExtensionsDeclined = false,
 	)
 	{
 		// A precomputed type and a lazy typeCallback are mutually exclusive, but
@@ -111,6 +118,7 @@ final class ExpressionResult
 		$this->specifyTypesCallback = $specifyTypesCallback;
 		$this->createTypesCallback = $createTypesCallback;
 		$this->extensionsDeclined = $extensionsDeclined;
+		$this->nativeExtensionsDeclined = $nativeExtensionsDeclined;
 	}
 
 	/**
@@ -146,6 +154,7 @@ final class ExpressionResult
 			specifiedTypes: $this->specifiedTypes,
 			cachedType: $this->cachedType,
 			extensionsDeclined: $this->extensionsDeclined,
+			nativeExtensionsDeclined: $this->nativeExtensionsDeclined,
 			cachedNativeType: $this->cachedNativeType,
 			resolvedType: $this->resolvedType,
 			resolvedNativeType: $this->resolvedNativeType,
@@ -382,7 +391,7 @@ final class ExpressionResult
 
 		// old-world getNativeType() promoted the scope and re-entered
 		// resolveType(), extension hook included
-		$extensionType = $this->extensionsDeclined ? null : $this->consultExpressionTypeResolverExtensions($this->beforeScope->doNotTreatPhpDocTypesAsCertain());
+		$extensionType = $this->nativeExtensionsDeclined ? null : $this->consultExpressionTypeResolverExtensions($this->beforeScope->doNotTreatPhpDocTypesAsCertain());
 		if ($extensionType !== null) {
 			return $this->cachedNativeType = $extensionType;
 		}
@@ -403,7 +412,8 @@ final class ExpressionResult
 
 	private function consultExpressionTypeResolverExtensions(MutatingScope $readScope): ?Type
 	{
-		if ($this->extensionsDeclined) {
+		$native = $readScope->nativeTypesPromoted;
+		if ($native ? $this->nativeExtensionsDeclined : $this->extensionsDeclined) {
 			return null;
 		}
 
@@ -414,7 +424,11 @@ final class ExpressionResult
 			}
 		}
 
-		$this->extensionsDeclined = true;
+		if ($native) {
+			$this->nativeExtensionsDeclined = true;
+		} else {
+			$this->extensionsDeclined = true;
+		}
 
 		return null;
 	}
@@ -839,6 +853,7 @@ final class ExpressionResult
 			variableFlow: $this->variableFlow,
 			specifiedTypes: $this->specifiedTypes,
 			extensionsDeclined: $this->extensionsDeclined,
+			nativeExtensionsDeclined: $this->nativeExtensionsDeclined,
 			resolvedType: $fromScope ? null : $this->resolvedType,
 			resolvedNativeType: $fromScope ? null : $this->resolvedNativeType,
 			projectedType: $fromScope ? null : $this->projectedType,
@@ -882,6 +897,7 @@ final class ExpressionResult
 			variableFlow: $this->variableFlow,
 			specifiedTypes: $this->specifiedTypes,
 			extensionsDeclined: $this->extensionsDeclined,
+			nativeExtensionsDeclined: $this->nativeExtensionsDeclined,
 			resolvedType: $this->resolvedType,
 			resolvedNativeType: $this->resolvedNativeType,
 			projectedType: $this->projectedType,

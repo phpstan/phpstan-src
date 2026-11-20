@@ -79,6 +79,7 @@ struct ConstructorArgs
 	zval *projectedNativeType = NULL;
 	zval *readVariableNames = NULL;
 	zval *dependencies = NULL;
+	bool nativeExtensionsDeclined = false;
 };
 
 /* a nullable slot value as a constructor argument: NULL for PHP null */
@@ -245,6 +246,7 @@ public:
 		writeSlot(object, slots::specifyTypesCallback, a.specifyTypesCallback);
 		writeSlot(object, slots::createTypesCallback, a.createTypesCallback);
 		writeBoolSlot(object, slots::extensionsDeclined, a.extensionsDeclined);
+		writeBoolSlot(object, slots::nativeExtensionsDeclined, a.nativeExtensionsDeclined);
 		return true;
 	}
 
@@ -275,6 +277,7 @@ public:
 		a.specifiedTypes = slot(slots::specifiedTypes);
 		a.cachedType = argOf(slot(slots::cachedType));
 		a.extensionsDeclined = boolSlot(slots::extensionsDeclined);
+		a.nativeExtensionsDeclined = boolSlot(slots::nativeExtensionsDeclined);
 		a.cachedNativeType = argOf(slot(slots::cachedNativeType));
 		a.resolvedType = argOf(slot(slots::resolvedType));
 		a.resolvedNativeType = argOf(slot(slots::resolvedNativeType));
@@ -426,7 +429,7 @@ public:
 		// old-world getNativeType() promoted the scope and re-entered
 		// resolveType(), extension hook included
 		zv::Val nativeScope;
-		if (!boolSlot(slots::extensionsDeclined)) {
+		if (!boolSlot(slots::nativeExtensionsDeclined)) {
 			nativeScope = scopeNativeView(slot(slots::beforeScope));
 			if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
 			zv::Val extensionType = consultExpressionTypeResolverExtensions(nativeScope.raw());
@@ -741,6 +744,7 @@ public:
 		a.variableFlow = argOf(slot(slots::variableFlow));
 		a.specifiedTypes = slot(slots::specifiedTypes);
 		a.extensionsDeclined = boolSlot(slots::extensionsDeclined);
+		a.nativeExtensionsDeclined = boolSlot(slots::nativeExtensionsDeclined);
 		a.resolvedType = fromScope ? NULL : argOf(slot(slots::resolvedType));
 		a.resolvedNativeType = fromScope ? NULL : argOf(slot(slots::resolvedNativeType));
 		a.projectedType = fromScope ? NULL : argOf(slot(slots::projectedType));
@@ -776,6 +780,7 @@ public:
 		a.variableFlow = argOf(slot(slots::variableFlow));
 		a.specifiedTypes = slot(slots::specifiedTypes);
 		a.extensionsDeclined = boolSlot(slots::extensionsDeclined);
+		a.nativeExtensionsDeclined = boolSlot(slots::nativeExtensionsDeclined);
 		a.resolvedType = argOf(slot(slots::resolvedType));
 		a.resolvedNativeType = argOf(slot(slots::resolvedNativeType));
 		a.projectedType = argOf(slot(slots::projectedType));
@@ -888,7 +893,10 @@ private:
 	 * PHP null when every extension declined; UNDEF = pending exception. */
 	zv::Val consultExpressionTypeResolverExtensions(zval *readScope)
 	{
-		if (boolSlot(slots::extensionsDeclined)) return zv::Val::null();
+		bool native;
+		if (UNEXPECTED(!scopeNativeTypesPromoted(readScope, native))) return zv::Val();
+		uint32_t declinedSlot = native ? slots::nativeExtensionsDeclined : slots::extensionsDeclined;
+		if (boolSlot(declinedSlot)) return zv::Val::null();
 
 		zv::Val extensions = pt_extensions_collection_get_all(Z_OBJ_P(slot(slots::expressionTypeResolverExtensions)));
 		if (UNEXPECTED(extensions.isUndef())) return zv::Val();
@@ -903,7 +911,7 @@ private:
 			}
 		}
 
-		writeBoolSlot(self, slots::extensionsDeclined, true);
+		writeBoolSlot(self, declinedSlot, true);
 
 		return zv::Val::null();
 	}
@@ -1630,16 +1638,18 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		reg::withDefault(reg::obj("projectedNativeType", pt_er_type, true), "null"),
 		reg::withDefault(reg::arrayArg("readVariableNames", true), "null"),
 		reg::withDefault(reg::obj("dependencies", "PHPStan\\Dependency\\Dependencies", true), "null"),
+		reg::withDefault(reg::boolArg("nativeExtensionsDeclined"), "false"),
 	}, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ConstructorArgs a;
 		zval *typeCallback, *specifyTypesCallback, *createTypesCallback = NULL;
 		bool hasYield, isAlwaysTerminating;
 		bool containsNullsafe = false;
 		bool extensionsDeclined = false;
+		bool nativeExtensionsDeclined = false;
 		zval *issetabilityDescriptor = NULL, *truthyScopeOverrideResult = NULL, *falseyScopeOverrideResult = NULL;
 		zval *type = NULL, *nativeType = NULL, *argsResult = NULL, *variableFlow = NULL;
 		zval *specifiedTypes = NULL, *cachedType = NULL, *cachedNativeType = NULL, *resolvedType = NULL, *resolvedNativeType = NULL, *projectedType = NULL, *projectedNativeType = NULL, *readVariableNames = NULL, *dependencies = NULL;
-		ZEND_PARSE_PARAMETERS_START(11, 30)
+		ZEND_PARSE_PARAMETERS_START(11, 31)
 			Z_PARAM_OBJECT(a.expressionTypeResolverExtensions)
 			Z_PARAM_OBJECT(a.defaultNarrowingHelper)
 			Z_PARAM_OBJECT(a.scope)
@@ -1671,6 +1681,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 			Z_PARAM_OBJECT_OR_NULL(projectedNativeType)
 			Z_PARAM_ARRAY_OR_NULL(readVariableNames)
 			Z_PARAM_OBJECT_OR_NULL(dependencies)
+			Z_PARAM_BOOL(nativeExtensionsDeclined)
 		ZEND_PARSE_PARAMETERS_END();
 		if (!pt_er_callable_arg(typeCallback, 10, true, a.typeCallback)
 			|| !pt_er_callable_arg(specifyTypesCallback, 11, false, a.specifyTypesCallback)
@@ -1697,6 +1708,7 @@ PT_MINIT_REGISTRATION(pt_register_expression_result)
 		a.projectedNativeType = projectedNativeType;
 		a.readVariableNames = readVariableNames;
 		a.dependencies = dependencies;
+		a.nativeExtensionsDeclined = nativeExtensionsDeclined;
 		if (UNEXPECTED(!ExpressionResult::construct(Z_OBJ_P(ZEND_THIS), a))) RETURN_THROWS();
 	});
 

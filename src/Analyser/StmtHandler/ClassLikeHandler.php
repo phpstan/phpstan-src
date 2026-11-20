@@ -32,6 +32,7 @@ use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\InClassNode;
+use PHPStan\PhpDoc\PhpDocPrivateClassConstFetchFinder;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\ReflectionProvider;
@@ -64,6 +65,7 @@ final class ClassLikeHandler implements StmtHandler
 		private AttributesHandler $attributesHandler,
 		#[AutowiredExtensions(of: ReadWritePropertiesExtension::class)]
 		private ExtensionsCollection $readWritePropertiesExtensions,
+		private PhpDocPrivateClassConstFetchFinder $phpDocPrivateClassConstFetchFinder,
 	)
 	{
 	}
@@ -116,7 +118,7 @@ final class ClassLikeHandler implements StmtHandler
 			throw new ShouldNotHappenException();
 		}
 
-		$classStatementsGatherer = new ClassStatementsGatherer($classReflection, $nodeCallback);
+		$classStatementsGatherer = new ClassStatementsGatherer($this->phpDocPrivateClassConstFetchFinder, $classReflection, $nodeCallback);
 		// the class attributes are processed before the InClassNode emission, so
 		// rules firing on it (ClassAttributesRule) read the attribute arguments
 		// from the storage

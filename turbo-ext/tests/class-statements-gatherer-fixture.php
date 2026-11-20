@@ -133,6 +133,18 @@ final class Gathered extends Base
 		return $this->name;
 	}
 
+	/**
+	 * @param value-of<self::NAMES> $name
+	 * @return self::LIMIT|self::LIM*
+	 */
+	public function phpDocConstants(string $name): int
+	{
+		/** @var key-of<self::NAMES> $key */
+		$key = 0;
+
+		return self::LIMIT + $key + strlen($name);
+	}
+
 }
 
 final class WithoutConstructor extends Base

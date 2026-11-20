@@ -132,4 +132,24 @@ class UnusedPrivateConstantRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug6415(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-6415.php'], []);
+	}
+
+	public function testBug7184(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7184.php'], []);
+	}
+
+	public function testBug9385(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9385.php'], []);
+	}
+
+	public function testPhpdocConstWildcard(): void
+	{
+		$this->analyse([__DIR__ . '/data/phpdoc-const-wildcard.php'], []);
+	}
+
 }

@@ -214,7 +214,7 @@ public:
 	explicit ClassLikeHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *reflector, zval *classReflectionFactory, zval *calledMethodProcessor, zval *reflectionProvider, zval *attributesHandler, zval *readWritePropertiesExtensions)
+	void construct(zval *reflector, zval *classReflectionFactory, zval *calledMethodProcessor, zval *reflectionProvider, zval *attributesHandler, zval *readWritePropertiesExtensions, zval *phpDocPrivateClassConstFetchFinder)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::reflector, zv::Val::copyOf(zv::Ref(reflector)));
@@ -223,6 +223,7 @@ public:
 		object.propAtWrite(slots::reflectionProvider, zv::Val::copyOf(zv::Ref(reflectionProvider)));
 		object.propAtWrite(slots::attributesHandler, zv::Val::copyOf(zv::Ref(attributesHandler)));
 		object.propAtWrite(slots::readWritePropertiesExtensions, zv::Val::copyOf(zv::Ref(readWritePropertiesExtensions)));
+		object.propAtWrite(slots::phpDocPrivateClassConstFetchFinder, zv::Val::copyOf(zv::Ref(phpDocPrivateClassConstFetchFinder)));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -321,7 +322,7 @@ public:
 		zv::Val classScope = pt_mutating_scope_enter_class(Z_OBJ_P(resultScope), classReflection.raw());
 		if (UNEXPECTED(classScope.isUndef())) return zv::Val();
 
-		zv::Val classStatementsGatherer = pt_class_statements_gatherer_new(classReflection.raw(), nodeCallback);
+		zv::Val classStatementsGatherer = pt_class_statements_gatherer_new(OBJ_PROP_NUM(self, slots::phpDocPrivateClassConstFetchFinder), classReflection.raw(), nodeCallback);
 		if (UNEXPECTED(classStatementsGatherer.isUndef())) return zv::Val();
 		// the class attributes are processed before the InClassNode emission, so
 		// rules firing on it (ClassAttributesRule) read the attribute arguments
@@ -629,16 +630,17 @@ PT_MINIT_REGISTRATION(pt_register_class_like_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflector, *classReflectionFactory, *calledMethodProcessor, *reflectionProvider, *attributesHandler, *readWritePropertiesExtensions;
-		ZEND_PARSE_PARAMETERS_START(6, 6)
+		zval *reflector, *classReflectionFactory, *calledMethodProcessor, *reflectionProvider, *attributesHandler, *readWritePropertiesExtensions, *phpDocPrivateClassConstFetchFinder;
+		ZEND_PARSE_PARAMETERS_START(7, 7)
 			Z_PARAM_OBJECT(reflector)
 			Z_PARAM_OBJECT(classReflectionFactory)
 			Z_PARAM_OBJECT(calledMethodProcessor)
 			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_OBJECT(attributesHandler)
 			Z_PARAM_OBJECT(readWritePropertiesExtensions)
+			Z_PARAM_OBJECT(phpDocPrivateClassConstFetchFinder)
 		ZEND_PARSE_PARAMETERS_END();
-		ClassLikeHandler(Z_OBJ_P(ZEND_THIS)).construct(reflector, classReflectionFactory, calledMethodProcessor, reflectionProvider, attributesHandler, readWritePropertiesExtensions);
+		ClassLikeHandler(Z_OBJ_P(ZEND_THIS)).construct(reflector, classReflectionFactory, calledMethodProcessor, reflectionProvider, attributesHandler, readWritePropertiesExtensions, phpDocPrivateClassConstFetchFinder);
 	});
 
 	cls.method<&ClassLikeHandler::supports, zp::Obj>(sigs::supports);

@@ -19,7 +19,7 @@
  *
  * State is the twin's properties in declaration order: the untyped
  * $nodeCallback, the eight collected arrays, then the promoted
- * $classReflection.
+ * $phpDocPrivateClassConstFetchFinder and $classReflection.
  */
 
 #include "ParserVisitors.h"
@@ -99,8 +99,9 @@ class ClassStatementsGatherer
 public:
 	explicit ClassStatementsGatherer(zend_object *self) : self(self) {}
 
-	void construct(zval *classReflection, zval *nodeCallback)
+	void construct(zval *phpDocPrivateClassConstFetchFinder, zval *classReflection, zval *nodeCallback)
 	{
+		zv::ObjRef(self).propAtWrite(slots::phpDocPrivateClassConstFetchFinder, zv::Val::copyOf(zv::Ref(phpDocPrivateClassConstFetchFinder)));
 		zv::ObjRef(self).propAtWrite(slots::classReflection, zv::Val::copyOf(zv::Ref(classReflection)));
 		zv::ObjRef(self).propAtWrite(slots::nodeCallback, zv::Val::copyOf(zv::Ref(nodeCallback)));
 	}
@@ -235,6 +236,29 @@ private:
 		return pt_type_call_static_ce(typeUtils, PT_LC("findthistype"), 1, type);
 	}
 
+	/* foreach ($this->phpDocPrivateClassConstFetchFinder->findClassConstFetches($text, $scope) as $constFetch)
+	 *     $this->constantFetches[] = $constFetch;
+	 * false = pending exception */
+	bool gatherConstFetchesFromDocComment(zval *text, zval *scope)
+	{
+		zval *finder = OBJ_PROP_NUM(self, slots::phpDocPrivateClassConstFetchFinder);
+		if (UNEXPECTED(Z_TYPE_P(finder) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Typed property PHPStan\\Node\\ClassStatementsGatherer::$phpDocPrivateClassConstFetchFinder must not be accessed before initialization");
+			return false;
+		}
+		zv::Args argv{text, scope};
+		zv::Val constFetches = pt_type_call(Z_OBJ_P(finder), PT_LC("findclassconstfetches"), 2, argv);
+		if (UNEXPECTED(constFetches.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(constFetches.raw()) != IS_ARRAY)) {
+			zend_type_error("phpstan_turbo: findClassConstFetches() must return a list");
+			return false;
+		}
+		for (zv::ArrayEntry entry : zv::ArrRef(constFetches.raw())) {
+			push(slots::constantFetches, entry.value().deref().raw());
+		}
+		return true;
+	}
+
 	bool gatherNodes(zend_object *node, zval *scope)
 	{
 		bool inClass;
@@ -250,6 +274,10 @@ private:
 
 		zval nodeZv;
 		ZVAL_OBJ(&nodeZv, node);
+
+		zv::Val docCommentText = pt_node_doc_comment_text(&nodeZv);
+		if (UNEXPECTED(docCommentText.isUndef())) return false;
+		if (!docCommentText.isNull() && UNEXPECTED(!gatherConstFetchesFromDocComment(docCommentText.raw(), scope))) return false;
 
 		if (isInstanceOf(node, PT_CLASS_CLASS_PROPERTY_NODE)) {
 			push(slots::properties, &nodeZv);
@@ -581,16 +609,16 @@ using phpstanturbo::ClassStatementsGatherer;
 
 /* {{{ direct entries for ClassLikeHandler.cpp */
 
-zv::Val pt_class_statements_gatherer_new(zval *classReflection, zval *nodeCallback)
+zv::Val pt_class_statements_gatherer_new(zval *phpDocPrivateClassConstFetchFinder, zval *classReflection, zval *nodeCallback)
 {
 	zval object;
 	if (UNEXPECTED(object_init_ex(&object, pt_ce_class_statements_gatherer) != SUCCESS)) return zv::Val();
 	zv::Val gatherer = zv::Val::adopt(object);
 	if (UNEXPECTED(!zend_is_callable(nodeCallback, 0, NULL))) {
-		zend_type_error("PHPStan\\Node\\ClassStatementsGatherer::__construct(): Argument #2 ($nodeCallback) must be of type callable, %s given", zend_zval_value_name(nodeCallback));
+		zend_type_error("PHPStan\\Node\\ClassStatementsGatherer::__construct(): Argument #3 ($nodeCallback) must be of type callable, %s given", zend_zval_value_name(nodeCallback));
 		return zv::Val();
 	}
-	ClassStatementsGatherer(Z_OBJ_P(gatherer.raw())).construct(classReflection, nodeCallback);
+	ClassStatementsGatherer(Z_OBJ_P(gatherer.raw())).construct(phpDocPrivateClassConstFetchFinder, classReflection, nodeCallback);
 	return gatherer;
 }
 
@@ -619,17 +647,18 @@ PT_MINIT_REGISTRATION(pt_register_class_statements_gatherer)
 	cls.privateTypedArrayPropertyDefaultEmpty("constantFetches");
 	cls.privateTypedArrayPropertyDefaultEmpty("returnStatementNodes");
 	cls.privateTypedArrayPropertyDefaultEmpty("propertyAssigns");
+	cls.privateTypedClassProperty("phpDocPrivateClassConstFetchFinder", "PHPStan\\PhpDoc\\PhpDocPrivateClassConstFetchFinder", false);
 	cls.privateTypedClassProperty("classReflection", "PHPStan\\Reflection\\ClassReflection", false);
 	cls.privateClassConstantValue("PROPERTY_ENUMERATING_FUNCTIONS", pt_csg_property_enumerating_functions_constant);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *classReflection, *nodeCallback;
-		if (!zp::parse<zp::Obj, zp::Zval>(execute_data, classReflection, nodeCallback)) RETURN_THROWS();
+		zval *phpDocPrivateClassConstFetchFinder, *classReflection, *nodeCallback;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval>(execute_data, phpDocPrivateClassConstFetchFinder, classReflection, nodeCallback)) RETURN_THROWS();
 		if (UNEXPECTED(!zend_is_callable(nodeCallback, 0, NULL))) {
-			zend_argument_type_error(2, "must be of type callable, %s given", zend_zval_value_name(nodeCallback));
+			zend_argument_type_error(3, "must be of type callable, %s given", zend_zval_value_name(nodeCallback));
 			RETURN_THROWS();
 		}
-		ClassStatementsGatherer(Z_OBJ_P(ZEND_THIS)).construct(classReflection, nodeCallback);
+		ClassStatementsGatherer(Z_OBJ_P(ZEND_THIS)).construct(phpDocPrivateClassConstFetchFinder, classReflection, nodeCallback);
 	});
 
 	cls.method(sigs::getProperties, [](INTERNAL_FUNCTION_PARAMETERS) {

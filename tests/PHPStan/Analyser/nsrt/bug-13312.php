@@ -32,6 +32,24 @@ function foo(array $arr): void {
 }
 
 
+/** @param array<string, int> $arr */
+function fooStringKeyed(array $arr): void {
+	assertType('array<string, int>', $arr);
+	foreach ($arr as $v) {
+		assertType('non-empty-array<string, int>', $arr);
+	}
+	assertType('array<string, int>', $arr);
+}
+
+/** @param list<mixed> $arr */
+function fooReassign(array $arr): void {
+	foreach ($arr as $v) {
+		$arr = [];
+		assertType('array{}', $arr);
+	}
+	assertType('array{}', $arr);
+}
+
 function fooBar(mixed $mixed): void {
 	assertType('mixed', $mixed);
 	foreach ($mixed as $v) {

@@ -90,6 +90,8 @@ final class ForeachHandler implements StmtHandler
 		private AssignHandler $assignHandler,
 		#[AutowiredParameter]
 		private bool $polluteScopeWithAlwaysIterableForeach,
+		#[AutowiredParameter(ref: '%featureToggles.narrowForeachBodyNonEmpty%')]
+		private bool $narrowForeachBodyNonEmpty,
 	)
 	{
 	}
@@ -156,9 +158,12 @@ final class ForeachHandler implements StmtHandler
 		// the "iteratee !== []" narrowing every loop pass merges in - composed
 		// once from the iteratee's result (the same sentinel comparison the
 		// walked synthetic would delegate to); the walk is the composition's
-		// miss seam
+		// miss seam. The loop body is only entered when the iteratee is
+		// non-empty; narrowForeachBodyNonEmpty narrows it there (list to
+		// non-empty-list, array to non-empty-array) even with
+		// polluteScopeWithAlwaysIterableForeach off.
 		$nonEmptyIterateeScope = $scope;
-		if ($this->polluteScopeWithAlwaysIterableForeach) {
+		if ($this->narrowForeachBodyNonEmpty || $this->polluteScopeWithAlwaysIterableForeach) {
 			$identicalNarrowingHelper = $this->container->getByType(IdenticalNarrowingHelper::class);
 			$emptyArrayType = new ConstantArrayType([], []);
 			$nonEmptyTypes = $identicalNarrowingHelper->specifyIdenticalAgainstType(

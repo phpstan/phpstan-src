@@ -271,3 +271,8 @@ parameters:
 			identifier: catch.neverThrown
 			count: 1
 			path: ../src/Type/Php/RangeFunctionArgumentsHelper.php
+
+		-
+			message: '#^Method PHPStan\\Type\\Php\\ReflectionEnumGetCaseDynamicReturnTypeExtension\:\:getClass\(\) should return class\-string but returns string\.$#'
+			count: 1
+			path: ../src/Type/Php/ReflectionEnumGetCaseDynamicReturnTypeExtension.php

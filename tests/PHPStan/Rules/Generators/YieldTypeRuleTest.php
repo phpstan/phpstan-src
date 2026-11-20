@@ -5,6 +5,7 @@ namespace PHPStan\Rules\Generators;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
+use PHPUnit\Framework\Attributes\RequiresPhp;
 
 /**
  * @extends RuleTestCase<YieldTypeRule>
@@ -85,6 +86,12 @@ class YieldTypeRuleTest extends RuleTestCase
 	public function testYieldOversizedSelfRejection(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-yield-oversized-self-rejection.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15476(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15476.php'], []);
 	}
 
 }

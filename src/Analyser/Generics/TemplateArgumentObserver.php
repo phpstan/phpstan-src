@@ -630,6 +630,15 @@ final class TemplateArgumentObserver
 						}
 						continue;
 					}
+					// a callable member says nothing flows into its markers, but
+					// it still takes the callable it accepts: (callable(T): bool)|T
+					// receiving a closure does not bind T to the closure
+					if ($member->isCallable()->yes()) {
+						if ($member->isSuperTypeOf($argumentMember)->yes()) {
+							$taken = true;
+						}
+						continue;
+					}
 					$before = $constraints;
 					$constraints = $this->observeLowerBound($constraints, $member, $argumentMember);
 					if ($constraints === $before) {

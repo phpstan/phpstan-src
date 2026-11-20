@@ -249,7 +249,7 @@ final class OpcacheSettings
 
 	private static function iniInt(string|false $value): int
 	{
-		return $value === false ? 0 : (int) $value;
+		return (int) $value;
 	}
 
 }

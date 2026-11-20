@@ -52,6 +52,7 @@ parametersSchema:
 		unusedLabel: bool()
 		newOnNonObject: bool()
 		unnecessaryNullCoalesce: bool()
+		unnecessaryTernary: bool()
 		finiteTypesInHaystack: bool()
 		switchConditionAlwaysFalse: bool()
 		checkImportedClassNameCase: bool()

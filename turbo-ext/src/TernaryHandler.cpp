@@ -19,8 +19,8 @@
  * ExpressionContext, MutatingScope, VariableFlow, SpecifiedTypes,
  * TypeSpecifierContext, DefaultNarrowingHelper, BooleanNarrowingHelper,
  * TypeCombinator and the Type kernel are called through their direct entries;
- * the fabricated BooleanNot / BooleanAnd nodes are instantiated through the
- * class map.
+ * the fabricated BooleanNot / BooleanAnd nodes and the virtual
+ * TernaryExpressionNode are instantiated through the class map.
  */
 
 #include "support.h"
@@ -166,6 +166,13 @@ public:
 			SEPARATE_ARRAY(capturedResults);
 			zval entryValue = zv::Val(std::move(entry)).take();
 			zend_hash_index_update(Z_ARRVAL_P(capturedResults), Z_OBJ_HANDLE_P(expr), &entryValue);
+		}
+
+		{
+			zv::Args nodeArgv{expr, ternaryCondResult.raw(), ifResult.raw(), elseResult.raw()};
+			zv::Val node = pt_type_new(PT_CLASS_TERNARY_EXPRESSION_NODE, 4, nodeArgv);
+			if (UNEXPECTED(node.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback_with_expression(nodeScopeResolver, nodeCallback, node.raw(), scope, storage, context))) return zv::Val();
 		}
 
 		bool treatPhpDocTypesAsCertain = Z_TYPE_P(OBJ_PROP_NUM(self, slots::treatPhpDocTypesAsCertain)) == IS_TRUE;

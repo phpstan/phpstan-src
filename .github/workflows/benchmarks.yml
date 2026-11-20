@@ -41,7 +41,7 @@ jobs:
       fail-fast: false
       matrix:
         # Each shard is one runner, tally run --shard balances them by the expected instructions
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5]
 
     steps:
       - name: Harden the runner (Audit all outbound calls)

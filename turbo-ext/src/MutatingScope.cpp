@@ -287,6 +287,7 @@ extern "C" {
 #include "zend_smart_str.h"
 
 #include <cctype>
+#include <cmath>
 #include <cstring>
 
 zend_class_entry *pt_ce_mutating_scope = nullptr;
@@ -9475,6 +9476,72 @@ public:
 
 	/* the 'a' / 'b' pair of type lists generalizeType() sorts its inputs
 	 * into (the twin's `['a' => [], 'b' => []]`) */
+	/* private (twin generalizeConstantFloats()) — constant floats widen
+	 * like constant integers, NAN set aside; UNDEF = pending exception */
+	zv::Val generalizeConstantFloats(HashTable *a, HashTable *b)
+	{
+		zv::Val constantFloatsA = unionOfList(a);
+		if (UNEXPECTED(constantFloatsA.isUndef())) return zv::Val();
+		zv::Val constantFloatsB = unionOfList(b);
+		if (UNEXPECTED(constantFloatsB.isUndef())) return zv::Val();
+		bool same;
+		if (UNEXPECTED(!typeEquals(constantFloatsA.raw(), constantFloatsB.raw(), same))) return zv::Val();
+		if (same) return constantFloatsA;
+
+		bool hasNan = false;
+		zv::Arr ordered[2] = { zv::Arr::create(0), zv::Arr::create(0) };
+		HashTable *sides[2] = { a, b };
+		for (int side = 0; side < 2; side++) {
+			for (auto entry : zv::TableRef(sides[side])) {
+				double value;
+				if (UNEXPECTED(!pt_constant_float_get_value(entry.value().deref().asObject(), value))) return zv::Val();
+				if (std::isnan(value)) {
+					hasNan = true;
+					continue;
+				}
+				ordered[side].push(entry.value().deref());
+			}
+		}
+
+		zv::Val result;
+		if (zend_hash_num_elements(ordered[0].table()) == 0 || zend_hash_num_elements(ordered[1].table()) == 0) {
+			result = unionOfLists(ordered[0].table(), ordered[1].table());
+		} else {
+			double min = INFINITY, max = -INFINITY;
+			for (auto entry : zv::TableRef(ordered[0].table())) {
+				double value;
+				if (UNEXPECTED(!pt_constant_float_get_value(entry.value().deref().asObject(), value))) return zv::Val();
+				if (value < min) min = value;
+				if (value > max) max = value;
+			}
+			double newMin = min, newMax = max;
+			for (auto entry : zv::TableRef(ordered[1].table())) {
+				double value;
+				if (UNEXPECTED(!pt_constant_float_get_value(entry.value().deref().asObject(), value))) return zv::Val();
+				if (value < newMin) newMin = value;
+				if (value > newMax) newMax = value;
+			}
+
+			bool gotGreater = newMax > max;
+			bool gotSmaller = newMin < min;
+			if (gotGreater && gotSmaller) {
+				result = pt_float_range_from_interval(newMin, newMax);
+			} else if (gotGreater) {
+				result = pt_float_range_from_interval(min, INFINITY);
+			} else if (gotSmaller) {
+				result = pt_float_range_from_interval(-INFINITY, max);
+			} else {
+				result = unionOfLists(ordered[0].table(), ordered[1].table());
+			}
+		}
+		if (UNEXPECTED(result.isUndef())) return zv::Val();
+
+		if (!hasNan) return result;
+		zv::Val nan = pt_type_new_constant_float(NAN);
+		if (UNEXPECTED(nan.isUndef())) return zv::Val();
+		return unionTypes(result.raw(), nan.raw());
+	}
+
 	struct GeneralizeBucket
 	{
 		zv::Arr list[2];
@@ -9601,8 +9668,8 @@ public:
 		}
 
 		zv::Arr resultTypes = zv::Arr::create(0);
-		GeneralizeBucket *scalarBuckets[3] = { &constantFloats, &constantBooleans, &constantStrings };
-		for (uint32_t i = 0; i < 3; i++) {
+		GeneralizeBucket *scalarBuckets[2] = { &constantBooleans, &constantStrings };
+		for (uint32_t i = 0; i < 2; i++) {
 			GeneralizeBucket &bucket = *scalarBuckets[i];
 			if (bucket.count(0) == 0) {
 				if (bucket.count(1) > 0) {
@@ -9866,6 +9933,18 @@ public:
 			}
 		} else if (generalArrays.count(1) > 0) {
 			zv::Val united = unionOfList(generalArrays.table(1));
+			if (UNEXPECTED(united.isUndef())) return zv::Val();
+			resultTypes.push(std::move(united));
+		}
+
+		if (constantFloats.count(0) > 0) {
+			zv::Val united = constantFloats.count(1) == 0
+				? unionOfList(constantFloats.table(0))
+				: generalizeConstantFloats(constantFloats.table(0), constantFloats.table(1));
+			if (UNEXPECTED(united.isUndef())) return zv::Val();
+			resultTypes.push(std::move(united));
+		} else if (constantFloats.count(1) > 0) {
+			zv::Val united = unionOfList(constantFloats.table(1));
 			if (UNEXPECTED(united.isUndef())) return zv::Val();
 			resultTypes.push(std::move(united));
 		}

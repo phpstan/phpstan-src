@@ -189,14 +189,27 @@ public:
 			zv::Val objectType = objectTypeOfConstantString(Z_OBJ_P(type));
 			if (UNEXPECTED(objectType.isUndef())) return zv::Val();
 
-			/* Do not use TemplateType's isSuperTypeOf handling directly
-			 * because it takes ObjectType uncertainty into account. */
 			bool isTemplate;
 			if (UNEXPECTED(!pt_type_instanceof(genericType.raw(), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+			zv::Val bound;
+			if (isTemplate) {
+				bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
+				if (UNEXPECTED(bound.isUndef())) return zv::Val();
+				if (UNEXPECTED(!zv::Ref(bound.raw()).isObject())) {
+					zend_type_error("phpstan_turbo: getBound() must return %s", ptcls::type);
+					return zv::Val();
+				}
+			}
+
+			/* A class name carries no type arguments, so it is compared in
+			 * the parameterization the generic type implies for its class. */
+			objectType = pt_generic_object_type_specialize_subclass(isTemplate ? bound.raw() : genericType.raw(), objectType.raw());
+			if (UNEXPECTED(objectType.isUndef())) return zv::Val();
+
+			/* Do not use TemplateType's isSuperTypeOf handling directly
+			 * because it takes ObjectType uncertainty into account. */
 			zv::Val isSuperType;
 			if (isTemplate) {
-				zv::Val bound = pt_type_call(Z_OBJ_P(genericType.raw()), PT_LC("getbound"), 0, NULL);
-				if (UNEXPECTED(bound.isUndef())) return zv::Val();
 				isSuperType = pt_type_op(Z_OBJ_P(bound.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());
 			} else {
 				isSuperType = pt_type_op(Z_OBJ_P(genericType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, objectType.raw());

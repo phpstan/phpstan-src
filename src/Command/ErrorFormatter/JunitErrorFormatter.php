@@ -7,10 +7,16 @@ use PHPStan\Command\Output;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\RelativePathHelper;
+use SplFileObject;
+use function array_filter;
+use function file_exists;
 use function htmlspecialchars;
+use function implode;
+use function is_null;
 use function sprintf;
 use const ENT_COMPAT;
 use const ENT_XML1;
+use const PHP_EOL;
 
 #[AutowiredService(name: 'errorFormatter.junit')]
 final class JunitErrorFormatter implements ErrorFormatter
@@ -33,7 +39,7 @@ final class JunitErrorFormatter implements ErrorFormatter
 
 		$result = '<?xml version="1.0" encoding="UTF-8"?>';
 		$result .= sprintf(
-			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.5.1/platform-tests/src/test/resources/jenkins-junit.xsd">',
+			'<testsuite failures="%d" name="phpstan" tests="%d" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/junit-team/junit5/r5.9.3/platform-tests/src/test/resources/jenkins-junit.xsd">',
 			$totalFailuresCount,
 			$totalTestsCount,
 		);
@@ -41,9 +47,11 @@ final class JunitErrorFormatter implements ErrorFormatter
 		foreach ($analysisResult->getFileSpecificErrors() as $fileSpecificError) {
 			$fileName = $this->relativePathHelper->getRelativePath($fileSpecificError->getFile());
 			$result .= $this->createTestCase(
-				sprintf('%s:%s', $fileName, (string) $fileSpecificError->getLine()),
+				$fileName,
 				'ERROR',
-				$fileSpecificError->getMessage(),
+				implode(PHP_EOL, array_filter([ $fileSpecificError->getMessage(), $fileSpecificError->getTip() ], static fn (?string $part): bool => $part !== null && $part !== '')),
+				$fileSpecificError->getLine(),
+				$fileSpecificError->getIdentifier(),
 			);
 		}
 
@@ -71,17 +79,51 @@ final class JunitErrorFormatter implements ErrorFormatter
 	 *
 	 *
 	 */
-	private function createTestCase(string $reference, string $type, ?string $message = null): string
+	private function createTestCase(string $reference, string $type, ?string $message = null, ?int $line = null, ?string $identifier = null): string
 	{
-		$result = sprintf('<testcase name="%s">', $this->escape($reference));
+		$result = sprintf(
+			'<testcase name="%s" classname="%s">', // class="%s"  file="%s" line="%d",
+			$this->escape(is_null($identifier) ? '' : $identifier),
+			//$this->escape($reference),
+			//$this->escape($reference),
+			$this->escape(sprintf('%s:%d', $reference, $line ?? 0)),
+			//$line,
+		);
 
 		if ($message !== null) {
-			$result .= sprintf('<failure type="%s" message="%s" />', $this->escape($type), $this->escape($message));
+			if ($line === null) {
+				$result .= sprintf(
+					'<failure type="%s" message="%s" />',
+					$this->escape($type),
+					$this->escape($message),
+				);
+			} else {
+				$result .= sprintf(
+					'<failure type="%s" message="%s"><![CDATA[%s]]></failure>',
+					$this->escape($type),
+					$this->escape($message),
+					$this->fileGetLine($reference, $line),
+				);
+			}
 		}
 
-		$result .= '</testcase>';
+		return $result . '</testcase>';
+	}
 
-		return $result;
+	private function fileGetLine(string $fileName, int $lineNumber): ?string
+	{
+		if (!file_exists($fileName)) {
+			return null;
+		}
+
+		$file = new SplFileObject($fileName);
+		if ($file->eof()) {
+			return null;
+		}
+
+		$file->seek($lineNumber);
+		// @phpstan-ignore-next-line
+		return $file->current(); // $contents would hold the data from line x
 	}
 
 	/**

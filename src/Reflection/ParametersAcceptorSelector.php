@@ -186,7 +186,7 @@ final class ParametersAcceptorSelector
 				continue;
 			}
 
-			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, array_values($args));
+			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, $args);
 			if ($reorderedArgs === null || count($reorderedArgs) === 0) {
 				return $args;
 			}

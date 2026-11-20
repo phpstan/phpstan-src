@@ -1,0 +1,24 @@
+<?php // lint >= 8.0
+
+namespace FinfoBufferContext;
+
+use finfo;
+
+/**
+ * @param resource $context
+ * @param list<mixed> $args
+ */
+function doFoo(finfo $finfo, string $data, $context, array $args): void
+{
+	finfo_buffer($finfo, $data, FILEINFO_NONE, null);
+	\finfo_buffer($finfo, $data, FILEINFO_MIME, $context);
+	finfo_buffer($finfo, $data, context: null);
+	$finfo->buffer($data, FILEINFO_NONE, null);
+	$finfo->buffer($data, context: stream_context_create());
+
+	finfo_buffer($finfo, $data);
+	finfo_buffer($finfo, $data, FILEINFO_MIME);
+	$finfo->buffer($data, FILEINFO_NONE);
+	finfo_buffer($finfo, ...$args);
+	finfo_file($finfo, __FILE__, FILEINFO_NONE, $context);
+}

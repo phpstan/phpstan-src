@@ -36,3 +36,4 @@ parameters:
 		reuseCollectedDataRuleErrors: true
 		checkWholePhpVersionRange: true
 		replaceCountMismatch: true
+		phpLanguageDeprecations: true

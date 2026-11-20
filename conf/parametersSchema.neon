@@ -65,6 +65,7 @@ parametersSchema:
 		reuseCollectedDataRuleErrors: bool()
 		checkWholePhpVersionRange: bool()
 		replaceCountMismatch: bool()
+		phpLanguageDeprecations: bool()
 	])
 	fileExtensions: listOf(string())
 	checkAdvancedIsset: bool()

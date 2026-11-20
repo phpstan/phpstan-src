@@ -68,6 +68,7 @@ parameters:
 		reuseCollectedDataRuleErrors: false
 		checkWholePhpVersionRange: false
 		replaceCountMismatch: false
+		phpLanguageDeprecations: false
 	fileExtensions:
 		- php
 	checkAdvancedIsset: false

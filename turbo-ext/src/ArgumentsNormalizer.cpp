@@ -288,26 +288,25 @@ public:
 		if (zend_hash_num_elements(args) == 0) return zv::Val(zv::Arr::empty());
 
 		bool hasNamedArgs = false;
-		bool hasUnpackedArgs = false;
 		for (zv::ArrayEntry entry : zv::TableRef(args)) {
-			zval *arg = entry.value().deref().raw();
 			zv::Val nameHold;
-			zval *name = readProperty(pt_an_arg_name_site, arg, PT_LC("name"), nameHold);
+			zval *name = readProperty(pt_an_arg_name_site, entry.value().deref().raw(), PT_LC("name"), nameHold);
 			if (UNEXPECTED(name == NULL)) return zv::Val();
 			if (Z_TYPE_P(name) != IS_NULL) {
 				hasNamedArgs = true;
-			}
-			zv::Val unpackHold;
-			zval *unpack = readProperty(pt_an_arg_unpack_site, arg, PT_LC("unpack"), unpackHold);
-			if (UNEXPECTED(unpack == NULL)) return zv::Val();
-			if (zend_is_true(unpack)) {
-				hasUnpackedArgs = true;
+				break;
 			}
 		}
 		if (EXPECTED(!hasNamedArgs)) return arrayValues(callArgs);
-		// the number of parameters an unpacked argument fills is unknown here,
-		// so the positions of the named arguments that follow it cannot be determined
-		if (hasUnpackedArgs) return zv::Val::null();
+
+		for (zv::ArrayEntry entry : zv::TableRef(args)) {
+			zv::Val unpackHold;
+			zval *unpack = readProperty(pt_an_arg_unpack_site, entry.value().deref().raw(), PT_LC("unpack"), unpackHold);
+			if (UNEXPECTED(unpack == NULL)) return zv::Val();
+			// the number of parameters an unpacked argument fills is unknown here,
+			// so the positions of the named arguments that follow it cannot be determined
+			if (zend_is_true(unpack)) return zv::Val::null();
+		}
 
 		return reorderNamedArgs(parametersAcceptor, args);
 	}

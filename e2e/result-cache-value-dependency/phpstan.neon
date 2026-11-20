@@ -5,6 +5,11 @@ parameters:
 		- src
 	inferPrivatePropertyTypeFromConstructor: true
 
+	# ValueDependencyCollector keeps class declarations per process, so Magic.php only gets
+	# the magic method dependency when it shares a process with a file that asked the extension
+	parallel:
+		maximumNumberOfProcesses: 1
+
 services:
 	-
 		class: ResultCacheE2EValueDependency\HasServiceValueExtension

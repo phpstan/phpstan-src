@@ -489,7 +489,14 @@ public:
 			}
 		}
 
-		if (isPure.isNull() && isFunctionLike) {
+		// A @pure-unless-* tag on the method, written or inherited, states its purity
+		// just like @phpstan-pure does, so the class-level tags do not override it.
+		if (
+			isPure.isNull()
+			&& zend_hash_num_elements(phpDocPureUnlessCallableIsImpureParameters.table()) == 0
+			&& zend_hash_num_elements(phpDocPureUnlessParameterPassedParameters.table()) == 0
+			&& isFunctionLike
+		) {
 			bool stillInClass;
 			if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), stillInClass))) return false;
 			if (stillInClass && UNEXPECTED(!resolveClassPurity(scope, node, classReflection, functionName.raw(), phpDocReturnType.raw(), isPure))) return false;

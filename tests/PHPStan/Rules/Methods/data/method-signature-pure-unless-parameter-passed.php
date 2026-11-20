@@ -68,11 +68,49 @@ class AllMethodsPureChild implements PureUnlessParent
 }
 
 /**
+ * The inherited @pure-unless-parameter-passed takes precedence over the
+ * class-level tag, as an inherited @phpstan-pure does.
+ *
  * @phpstan-all-methods-impure
  */
 class AllMethodsImpureChild implements PureUnlessParent
 {
 
+	public function replace(string $subject, int &$count = 0): string
+	{
+		echo 'side effect';
+		$count = 1;
+
+		return $subject;
+	}
+
+}
+
+/**
+ * @phpstan-all-methods-pure
+ */
+class AllMethodsPureParent
+{
+
+	/**
+	 * @param-out int $count
+	 * @pure-unless-parameter-passed $count
+	 */
+	public function replace(string $subject, int &$count = 0): string
+	{
+		$count = 1;
+
+		return $subject;
+	}
+
+}
+
+class ImpureChildOfAllMethodsPureParent extends AllMethodsPureParent
+{
+
+	/**
+	 * @phpstan-impure
+	 */
 	public function replace(string $subject, int &$count = 0): string
 	{
 		echo 'side effect';

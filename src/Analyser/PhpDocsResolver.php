@@ -215,7 +215,15 @@ final class PhpDocsResolver
 			$acceptsNamedArguments = $scope->getClassReflection()->acceptsNamedArguments();
 		}
 
-		if ($isPure === null && $node instanceof Node\FunctionLike && $scope->isInClass()) {
+		// A @pure-unless-* tag on the method, written or inherited, states its purity
+		// just like @phpstan-pure does, so the class-level tags do not override it.
+		if (
+			$isPure === null
+			&& $phpDocPureUnlessCallableIsImpureParameters === []
+			&& $phpDocPureUnlessParameterPassedParameters === []
+			&& $node instanceof Node\FunctionLike
+			&& $scope->isInClass()
+		) {
 			// a set hook has no return type node of its own, but it always returns
 			// void - the class-level @phpstan-pure must not make it pure
 			$isSetHook = $node instanceof Node\PropertyHook && $node->name->toLowerString() === 'set';

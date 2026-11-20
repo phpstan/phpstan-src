@@ -124,6 +124,15 @@ final class NativeFunctionReflectionProvider
 		} else {
 			$functionMetadata = null;
 		}
+		if ($phpDoc !== null) {
+			foreach ($phpDoc->getParamsPureUnlessCallableIsImpure() as $parameterName => $isPureUnlessCallableIsImpure) {
+				if (!$isPureUnlessCallableIsImpure) {
+					continue;
+				}
+
+				$pureUnlessCallableIsImpureParameters[$parameterName] = true;
+			}
+		}
 
 		$variantsByType = ['positional' => []];
 		foreach ($functionSignaturesResult as $signatureType => $functionSignatures) {
@@ -149,9 +158,6 @@ final class NativeFunctionReflectionProvider
 							}
 							if (array_key_exists($parameterSignature->getName(), $phpDoc->getParamClosureThisTags())) {
 								$closureThisType = $phpDoc->getParamClosureThisTags()[$parameterSignature->getName()]->getType();
-							}
-							if (($phpDoc->getParamsPureUnlessCallableIsImpure()[$parameterSignature->getName()] ?? false) === true) {
-								$pureUnlessCallableIsImpureParameter = TrinaryLogic::createYes();
 							}
 							if (($phpDoc->getParamsPureUnlessParameterPassed()[$parameterSignature->getName()] ?? false) === true) {
 								$pureUnlessParameterPassedParameter = TrinaryLogic::createYes();
@@ -199,6 +205,7 @@ final class NativeFunctionReflectionProvider
 			$docComment,
 			$returnsByReference,
 			$acceptsNamedArguments,
+			$pureUnlessCallableIsImpureParameters,
 			$this->attributeReflectionFactory->fromNativeReflection($attributes, InitializerExprContext::fromFunction($realFunctionName, $fileName)),
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;

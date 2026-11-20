@@ -40,6 +40,7 @@ use function count;
 use function implode;
 use function in_array;
 use function is_string;
+use function ltrim;
 use function sprintf;
 use function strtolower;
 
@@ -304,7 +305,7 @@ final class ImpossibleCheckTypeHelper
 
 					if ($methodType instanceof ConstantStringType) {
 						if ($objectType instanceof ConstantStringType) {
-							$objectType = new ObjectType($objectType->getValue());
+							$objectType = new ObjectType(ltrim($objectType->getValue(), '\\'));
 						}
 
 						if ($objectType->getObjectClassNames() !== []) {

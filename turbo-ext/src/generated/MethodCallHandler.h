@@ -10,17 +10,18 @@ namespace ptdecl::MethodCallHandler {
 
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
-inline constexpr uint32_t calledMethodProcessor = 0;
-inline constexpr uint32_t methodCallReturnTypeHelper = 1;
-inline constexpr uint32_t methodThrowPointHelper = 2;
-inline constexpr uint32_t reflectionProvider = 3;
-inline constexpr uint32_t rememberPossiblyImpureFunctionValues = 4;
-inline constexpr uint32_t expressionResultFactory = 5;
-inline constexpr uint32_t typeSpecifier = 6;
-inline constexpr uint32_t defaultNarrowingHelper = 7;
-inline constexpr uint32_t storagePrimer = 8;
-inline constexpr uint32_t earlyTerminatingHelper = 9;
-inline constexpr uint32_t argumentsHandler = 10;
+inline constexpr uint32_t promotedParameterNamesCache = 0;
+inline constexpr uint32_t calledMethodProcessor = 1;
+inline constexpr uint32_t methodCallReturnTypeHelper = 2;
+inline constexpr uint32_t methodThrowPointHelper = 3;
+inline constexpr uint32_t reflectionProvider = 4;
+inline constexpr uint32_t rememberPossiblyImpureFunctionValues = 5;
+inline constexpr uint32_t expressionResultFactory = 6;
+inline constexpr uint32_t typeSpecifier = 7;
+inline constexpr uint32_t defaultNarrowingHelper = 8;
+inline constexpr uint32_t storagePrimer = 9;
+inline constexpr uint32_t earlyTerminatingHelper = 10;
+inline constexpr uint32_t argumentsHandler = 11;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -32,6 +33,7 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
+	cls.property("promotedParameterNamesCache", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("calledMethodProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\CalledMethodProcessor");
 	cls.property("methodCallReturnTypeHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodCallReturnTypeHelper");
 	cls.property("methodThrowPointHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\MethodThrowPointHelper");
@@ -107,7 +109,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1421 */
 	"specifyTypes\0" /* 1453 */
 	"defaultMethodCallNarrowing\0" /* 1466 */
-	"isMethodCallNarrowable"; /* 1493 */
+	"isMethodCallNarrowable\0" /* 1493 */
+	"methodReflection\0" /* 1516 */
+	"getPromotedParameterNames"; /* 1533 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 22), /* __construct $calledMethodProcessor */
 	reg::packed(61, 0, 88), /* __construct $methodCallReturnTypeHelper */
@@ -156,6 +160,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(749, 0, 754), /* isMethodCallNarrowable $expr */
 	reg::packed(1117, 0, 1004), /* isMethodCallNarrowable $varResult */
 	reg::packed(774, MAY_BE_BOOL), /* isMethodCallNarrowable return */
+	reg::packed(1516, 0, 1334), /* getPromotedParameterNames $methodReflection */
+	reg::packed(774, MAY_BE_ARRAY), /* getPromotedParameterNames return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -169,6 +175,7 @@ inline constexpr sigtab::Sig resolveReturnType = { { 1253 /* resolveReturnType *
 inline constexpr sigtab::Sig specifyTypes = { { 1453 /* specifyTypes */, 7, 29, 8, 37, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig defaultMethodCallNarrowing = { { 1466 /* defaultMethodCallNarrowing */, 4, 38, 4, 42, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig isMethodCallNarrowable = { { 1493 /* isMethodCallNarrowable */, 3, 43, 3, 46, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getPromotedParameterNames = { { 1533 /* getPromotedParameterNames */, 1, 47, 1, 48, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::MethodCallHandler

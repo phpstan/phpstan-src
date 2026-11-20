@@ -43,7 +43,6 @@ use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function array_is_list;
 use function array_key_exists;
 use function array_key_last;
 use function array_last;
@@ -104,11 +103,6 @@ final class ParametersAcceptorSelector
 		$reorderedArgs = $args;
 		$singleParametersAcceptor = null;
 		if (count($parametersAcceptors) === 1) {
-			if (!array_is_list($args)) {
-				// actually $args parameter should be typed to list but we can't atm,
-				// because its a BC break.
-				$args = array_values($args);
-			}
 			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptors[0], $args);
 			$singleParametersAcceptor = $parametersAcceptors[0];
 		}
@@ -192,7 +186,7 @@ final class ParametersAcceptorSelector
 				continue;
 			}
 
-			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, array_values($args));
+			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptor, $args);
 			if ($reorderedArgs === null || count($reorderedArgs) === 0) {
 				return $args;
 			}

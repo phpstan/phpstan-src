@@ -76,7 +76,7 @@ final class OperatorTypeSpecifyingExtensionBench
 	#[ExpectedFor(dataSet: 'bcmath-integers', instructions: '317.4K', cycles: '383.8K', memory: '0B')]
 	#[ExpectedFor(dataSet: 'bcmath-objects', instructions: '665.4K', cycles: '781.7K', memory: '216B')]
 	#[ExpectedFor(dataSet: 'gmp-integers', instructions: '302.1K', cycles: '367.6K', memory: '0B')]
-	#[ExpectedFor(dataSet: 'gmp-objects', instructions: '593.5K', cycles: '718.6K', memory: '216B')]
+	#[ExpectedFor(dataSet: 'gmp-objects', instructions: '606.5K', cycles: '721.9K', memory: '216B')]
 	public function benchSpecify(string $extension, string $operands): int
 	{
 		if ($this->extension === null) {

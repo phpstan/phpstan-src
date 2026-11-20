@@ -61,7 +61,7 @@ final class TrinaryLogicBench
 	}
 
 	#[DataProvider(method: 'operands')]
-	#[ExpectedFor(dataSet: 'operands-1', instructions: '1.111M', cycles: '1.135M', memory: '0B')]
+	#[ExpectedFor(dataSet: 'operands-1', instructions: '1.134M', cycles: '1.154M', memory: '0B')]
 	#[ExpectedFor(dataSet: 'operands-4', instructions: '2.427M', cycles: '2.450M', memory: '216B')]
 	public function benchAnd(int $operands): TrinaryLogic
 	{
@@ -75,7 +75,7 @@ final class TrinaryLogicBench
 	}
 
 	#[DataProvider(method: 'operands')]
-	#[ExpectedFor(dataSet: 'operands-1', instructions: '1.111M', cycles: '1.136M', memory: '0B')]
+	#[ExpectedFor(dataSet: 'operands-1', instructions: '1.134M', cycles: '1.155M', memory: '0B')]
 	#[ExpectedFor(dataSet: 'operands-4', instructions: '2.427M', cycles: '2.451M', memory: '216B')]
 	public function benchOr(int $operands): TrinaryLogic
 	{

@@ -84,7 +84,7 @@ final class NullsafeOperatorHelperBench
 	 */
 	#[DataProvider(method: 'levelsWithoutNullsafe')]
 	#[ExpectedFor(dataSet: 'levels-16', instructions: '74.18K', cycles: '124.6K', memory: '6.242KiB')]
-	#[ExpectedFor(dataSet: 'levels-64', instructions: '283.4K', cycles: '379.1K', memory: '23.87KiB')]
+	#[ExpectedFor(dataSet: 'levels-64', instructions: '289.2K', cycles: '373.1K', memory: '23.87KiB')]
 	public function benchGetNullsafeShortcircuitedExprOfEveryLevel(int $depth, bool $nullsafe): int
 	{
 		$unchanged = 0;
@@ -104,7 +104,7 @@ final class NullsafeOperatorHelperBench
 	 */
 	#[DataProvider(method: 'chains')]
 	#[ExpectedFor(dataSet: 'innermost-nullsafe-64', instructions: '263.0K', cycles: '363.3K', memory: '9.609KiB')]
-	#[ExpectedFor(dataSet: 'without-nullsafe-64', instructions: '173.3K', cycles: '258.8K', memory: '23.87KiB')]
+	#[ExpectedFor(dataSet: 'without-nullsafe-64', instructions: '177.1K', cycles: '255.0K', memory: '23.87KiB')]
 	public function benchGetNullsafeShortcircuitedExpr(int $depth, bool $nullsafe): Expr
 	{
 		if ($this->chain === null) {

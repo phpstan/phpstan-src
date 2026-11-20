@@ -54,7 +54,7 @@ final class ArgumentsNormalizerBench
 	 */
 	#[DataProvider(method: 'calls')]
 	#[ExpectedFor(dataSet: 'named', instructions: '24.75K', cycles: '99.67K', memory: '2.516KiB')]
-	#[ExpectedFor(dataSet: 'positional', instructions: '2.670K', cycles: '21.83K', memory: '0B')]
+	#[ExpectedFor(dataSet: 'positional', instructions: '2.729K', cycles: '22.86K', memory: '0B')]
 	public function benchReorderFuncArguments(bool $named): ?FuncCall
 	{
 		if ($this->acceptor === null || $this->call === null) {

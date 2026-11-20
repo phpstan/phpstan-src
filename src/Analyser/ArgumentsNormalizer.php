@@ -335,6 +335,14 @@ final class ArgumentsNormalizer
 			return array_values($callArgs);
 		}
 
+		foreach ($callArgs as $arg) {
+			if ($arg->unpack) {
+				// the number of parameters an unpacked argument fills is unknown here,
+				// so the positions of the named arguments that follow it cannot be determined
+				return null;
+			}
+		}
+
 		$hasVariadic = false;
 		$argumentPositions = [];
 		$signatureParameters = $parametersAcceptor->getParameters();

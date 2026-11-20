@@ -299,6 +299,15 @@ public:
 		}
 		if (EXPECTED(!hasNamedArgs)) return arrayValues(callArgs);
 
+		for (zv::ArrayEntry entry : zv::TableRef(args)) {
+			zv::Val unpackHold;
+			zval *unpack = readProperty(pt_an_arg_unpack_site, entry.value().deref().raw(), PT_LC("unpack"), unpackHold);
+			if (UNEXPECTED(unpack == NULL)) return zv::Val();
+			// the number of parameters an unpacked argument fills is unknown here,
+			// so the positions of the named arguments that follow it cannot be determined
+			if (zend_is_true(unpack)) return zv::Val::null();
+		}
+
 		return reorderNamedArgs(parametersAcceptor, args);
 	}
 

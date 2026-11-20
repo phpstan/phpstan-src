@@ -79,6 +79,6 @@ parameters:
 			path: ../src/Reflection/BetterReflection/SourceLocator/CachingVisitor.php
 
 		-
-			'#^Method PHPStan\\Type\\Php\\ReflectionEnumGetCaseDynamicReturnTypeExtension\:\:getClass\(\) should return class\-string but returns string\.$#'
+			message: '#^Method PHPStan\\Type\\Php\\ReflectionEnumGetCaseDynamicReturnTypeExtension\:\:getClass\(\) should return class\-string but returns string\.$#'
 			count: 1
 			path: ../src/Type/Php/ReflectionEnumGetCaseDynamicReturnTypeExtension.php

@@ -23,6 +23,16 @@ class ComposerPhpVersionParserTest extends TestCase
 		yield ['>8.2.3', 80204, null];
 		yield ['>8.2.3 <8.5.2', 80204, 80501];
 		yield ['>8.2', 80201, null];
+		yield ['>8.2.99', 80300, null];
+		yield ['~8.2.0 || ~8.3.2', 80200, 80399];
+
+		// PHP_VERSION_ID is the same for a release and its prereleases
+		yield ['>8.5.0-RC1', 80500, null];
+		yield ['<8.5.0-RC1', null, 80500];
+		yield ['>8.5.0-dev', 80500, null];
+		yield ['<8.5.0-dev', null, 80499];
+		yield ['<8.5.2-stable', null, 80502];
+		yield ['>8.5.0-p1', 80500, null];
 	}
 
 	#[DataProvider('dataParse')]

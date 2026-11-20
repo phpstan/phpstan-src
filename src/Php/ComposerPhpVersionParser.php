@@ -5,6 +5,8 @@ namespace PHPStan\Php;
 use Composer\Semver\VersionParser;
 use Nette\Utils\Strings;
 use function sprintf;
+use function str_contains;
+use function str_ends_with;
 
 final class ComposerPhpVersionParser
 {
@@ -23,14 +25,22 @@ final class ComposerPhpVersionParser
 
 		$lowerBound = $constraint->getLowerBound();
 		if (!$lowerBound->isZero()) {
-			$minVersion = $this->buildVersion($lowerBound->getVersion(), $lowerBound->isInclusive() ? 0 : 1, false, $buildPhpVersion);
+			// PHP_VERSION_ID can't tell a prerelease from the release, so only skip the bound itself
+			// when it is a stable release: ">8.5.0-RC1" still allows PHP 8.5.0 (80500).
+			$lowerVersion = $lowerBound->getVersion();
+			$adjustment = !$lowerBound->isInclusive() && !str_contains($lowerVersion, '-') ? 1 : 0;
+			$minVersion = $this->buildVersion($lowerVersion, $adjustment, false, $buildPhpVersion);
 		}
 		$upperBound = $constraint->getUpperBound();
 		if ($upperBound->isPositiveInfinity()) {
 			return [ $minVersion, null ];
 		}
 
-		$maxVersion = $this->buildVersion($upperBound->getVersion(), $upperBound->isInclusive() ? 0 : -1, true, $buildPhpVersion);
+		// "<8.5" is normalized to "<8.5.0.0-dev", below every 8.5.0 prerelease, so 80499 is the maximum.
+		// Any other exclusive bound, e.g. "<8.5.0-RC1", still allows prereleases with the same PHP_VERSION_ID.
+		$upperVersion = $upperBound->getVersion();
+		$adjustment = !$upperBound->isInclusive() && str_ends_with($upperVersion, '-dev') ? -1 : 0;
+		$maxVersion = $this->buildVersion($upperVersion, $adjustment, true, $buildPhpVersion);
 		return [ $minVersion, $maxVersion ];
 	}
 

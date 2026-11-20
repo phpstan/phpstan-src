@@ -13,11 +13,13 @@ use PHPUnit\Framework\Attributes\RequiresPhp;
 class PureMethodRuleTest extends RuleTestCase
 {
 
+	private bool $checkMissingPurePhpDocTag = false;
+
 	private bool $treatPhpDocTypesAsCertain;
 
 	public function getRule(): Rule
 	{
-		return new PureMethodRule(new FunctionPurityCheck());
+		return new PureMethodRule(self::getContainer()->getByType(FunctionPurityCheck::class), $this->checkMissingPurePhpDocTag);
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -436,6 +438,31 @@ class PureMethodRuleTest extends RuleTestCase
 				44,
 			],
 		]);
+	}
+
+	public function testMissingPureTag(): void
+	{
+		$this->checkMissingPurePhpDocTag = true;
+		$this->analyse([__DIR__ . '/data/missing-pure-tag.php'], [
+			[
+				'Method MissingPureTag\\FinalClass::getValue() does not have any side effects and can be marked @phpstan-pure.',
+				77,
+			],
+			[
+				'Method MissingPureTag\\OpenClass::finalMethod() does not have any side effects and can be marked @phpstan-pure.',
+				98,
+			],
+			[
+				'Method MissingPureTag\\OpenClass::privateMethod() does not have any side effects and can be marked @phpstan-pure.',
+				103,
+			],
+		]);
+	}
+
+	public function testFixMissingPureTag(): void
+	{
+		$this->checkMissingPurePhpDocTag = true;
+		$this->fix(__DIR__ . '/data/missing-pure-method-tag-fix.php', __DIR__ . '/data/missing-pure-method-tag-fix.php.fixed');
 	}
 
 }

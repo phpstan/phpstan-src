@@ -1,0 +1,37 @@
+<?php
+
+namespace MissingPureTagFix;
+
+/**
+ * @phpstan-pure
+ */
+function add(int $a, int $b): int
+{
+	return $a + $b;
+}
+
+/**
+ * Adds one.
+ * @phpstan-pure
+ */
+function addOne(int $a): int
+{
+	return $a + 1;
+}
+
+/**
+ * @param positive-int $a
+ * @phpstan-pure
+ */
+function singleLine(int $a): int
+{
+	return $a;
+}
+
+/**
+ * @phpstan-pure
+ */
+function emptyPhpDoc(): int
+{
+	return 1;
+}

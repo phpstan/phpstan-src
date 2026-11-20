@@ -1,0 +1,34 @@
+<?php
+
+namespace MissingPureMethodTagFix;
+
+final class Foo
+{
+
+	/**
+	 * @param positive-int $a
+	 * @phpstan-pure
+	 */
+	public function double(int $a): int
+	{
+		return $a * 2;
+	}
+
+	/**
+	 * @phpstan-pure
+	 */
+	private function one(): int
+	{
+		return 1;
+	}
+
+	/**
+	 * Returns two.
+	 * @phpstan-pure
+	 */
+	private function two(): int
+	{
+		return 2;
+	}
+
+}

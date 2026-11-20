@@ -2,6 +2,7 @@
 
 namespace PHPStan\Rules\Pure;
 
+use PhpParser\Comment\Doc;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
@@ -10,12 +11,19 @@ use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ThrowPoint;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Fixable\PhpDoc\PhpDocEditor;
+use PHPStan\PhpDocParser\Ast\Node as PhpDocAstNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
+use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\PassedByReference;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
@@ -25,10 +33,17 @@ use function in_array;
 use function is_string;
 use function lcfirst;
 use function sprintf;
+use function str_contains;
+use function substr;
+use function trim;
 
 #[AutowiredService]
 final class FunctionPurityCheck
 {
+
+	public function __construct(private PhpDocEditor $phpDocEditor)
+	{
+	}
 
 	/**
 	 * @param 'Function'|'Method'|'PropertyHook' $identifier
@@ -224,6 +239,117 @@ final class FunctionPurityCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Whether a function without a purity tag could get @phpstan-pure without
+	 * any error from check(), and without changing what calling it as a
+	 * statement means. Overridable methods are left out, because the tag
+	 * would bind the overriding methods too.
+	 *
+	 * @param ExtendedParameterReflection[] $parameters
+	 * @param ImpurePoint[] $impurePoints
+	 * @param ThrowPoint[] $throwPoints
+	 */
+	public function canBeMarkedPure(
+		FunctionReflection|ExtendedMethodReflection $functionReflection,
+		array $parameters,
+		Type $returnType,
+		array $impurePoints,
+		array $throwPoints,
+		bool $isGenerator,
+		bool $returnsByRef,
+		bool $isConstructor,
+	): bool
+	{
+		if (!$functionReflection->isPure()->maybe()) {
+			return false;
+		}
+
+		if (
+			$functionReflection->getPureUnlessCallableIsImpureParameters() !== []
+			|| $functionReflection->getPureUnlessParameterPassedParameters() !== []
+		) {
+			return false;
+		}
+
+		// a caller can write through a returned reference
+		if (!$returnType->isVoid()->no() || $isGenerator || $returnsByRef) {
+			return false;
+		}
+
+		if (count($impurePoints) !== 0) {
+			return false;
+		}
+
+		// a function that throws on purpose may be called only for that, and
+		// a call to a pure function as a statement is reported as useless;
+		// implicit throw points come from every call and do not count
+		foreach ($throwPoints as $throwPoint) {
+			if ($throwPoint->isExplicit()) {
+				return false;
+			}
+		}
+
+		$throwType = $functionReflection->getThrowType();
+		if ($throwType !== null && !$throwType->isVoid()->yes()) {
+			return false;
+		}
+
+		if (count($functionReflection->getAsserts()->getAll()) !== 0) {
+			return false;
+		}
+
+		foreach ($parameters as $parameter) {
+			if (!$parameter->passedByReference()->equals(PassedByReference::createNo())) {
+				return false;
+			}
+		}
+
+		if ($isConstructor) {
+			return false;
+		}
+
+		if ($functionReflection instanceof ExtendedMethodReflection) {
+			return $functionReflection->isPrivate()
+				|| $functionReflection->isFinal()->equals(TrinaryLogic::createYes())
+				|| $functionReflection->getDeclaringClass()->isFinal();
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param 'Function'|'Method' $identifier
+	 */
+	public function createMissingPureTagError(string $functionDescription, string $identifier, Stmt\Function_|Stmt\ClassMethod $node): IdentifierRuleError
+	{
+		return RuleErrorBuilder::message(sprintf(
+			'%s does not have any side effects and can be marked @phpstan-pure.',
+			$functionDescription,
+		))
+			->identifier(sprintf('pure%s.missing', $identifier))
+			->fixNode($node, function (Stmt\Function_|Stmt\ClassMethod $node): Stmt\Function_|Stmt\ClassMethod {
+				// a tag appended to a single-line PHPDoc would stay on its line
+				$docComment = $node->getDocComment();
+				if ($docComment !== null && !str_contains($docComment->getText(), "\n")) {
+					$text = trim(substr($docComment->getText(), 3, -2));
+					$node->setDocComment(new Doc($text === '' ? '/** */' : sprintf("/**\n * %s\n */", $text)));
+				}
+
+				$this->phpDocEditor->edit($node, static function (PhpDocAstNode $phpDocNode): ?PhpDocAstNode {
+					if (!$phpDocNode instanceof PhpDocNode) {
+						return null;
+					}
+
+					$phpDocNode->children[] = new PhpDocTagNode('@phpstan-pure', new GenericTagValueNode(''));
+
+					return $phpDocNode;
+				});
+
+				return $node;
+			})
+			->build();
 	}
 
 	/**

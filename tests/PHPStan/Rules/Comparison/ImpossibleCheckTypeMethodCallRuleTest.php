@@ -7,6 +7,7 @@ use PHPStan\Testing\CompositeRule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\RequiresPhp;
+use const PHP_VERSION_ID;
 
 /**
  * @extends RuleTestCase<CompositeRule>
@@ -342,6 +343,19 @@ class ImpossibleCheckTypeMethodCallRuleTest extends RuleTestCase
 			[
 				'Call to method Bug14705\Foo::assertValid() with non-empty-string will always evaluate to true.',
 				107,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15165(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15165.php'], [
+			[
+				'Call to method ReflectionEnum<Bug15165\\UnitFoo>::isBacked() will always evaluate to false.',
+				58,
+				PHP_VERSION_ID >= 80400 ? 'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.' : null,
 			],
 		]);
 	}

@@ -4273,14 +4273,22 @@ public:
 		return pt_type_call(Z_OBJ_P(variance), PT_LC("isvalidvariance"), 4, args);
 	}
 
-	/* the rebuild over TypeCombinator::remove($this->getBound(), $typeToRemove) */
+	/* the rebuild over TypeCombinator::remove($this->getBound(), $typeToRemove),
+	 * or that never itself when it removes the whole bound */
 	zv::Val subtract(zval *typeToRemove) const
 	{
 		zv::Val bound = thisGetBound();
 		if (UNEXPECTED(bound.isUndef())) return zv::Val();
 		zv::Val removedBound = pt_type_combinator_remove(bound.raw(), typeToRemove);
 		if (UNEXPECTED(removedBound.isUndef())) return zv::Val();
+		if (isNever(removedBound.raw())) return removedBound;
 		return recreateKeepingDefault(removedBound.raw());
+	}
+
+	/* $type instanceof NeverType */
+	static bool isNever(zval *type)
+	{
+		return Z_TYPE_P(type) == IS_OBJECT && instanceof_function(Z_OBJCE_P(type), pt_ce_never_type);
 	}
 
 	/* $bound instanceof SubtractableType; false = pending exception */
@@ -4798,6 +4806,7 @@ public:
 		zv::Val equal = pt_type_op(Z_OBJ_P(boundOnceMore.raw()), PT_OP_EQUALS, 1, removed.raw());
 		if (UNEXPECTED(equal.isUndef())) return zv::Val();
 		if (zend_is_true(equal.raw())) return zv::Val::null();
+		if (isNever(removed.raw())) return removed;
 		return recreateKeepingDefault(removed.raw());
 	}
 

@@ -613,4 +613,17 @@ class ReturnTypeRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateNeverBound(): void
+	{
+		$this->checkNullables = true;
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/template-never-bound.php'], [
+			[
+				'Function TemplateNeverBoundReturnType\\stillReported() should return T of int but returns int.',
+				86,
+				'Type int is not always the same as T. It breaks the contract for some argument types, typically subtypes.',
+			],
+		]);
+	}
+
 }

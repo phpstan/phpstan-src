@@ -15,6 +15,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Node\Constant\ClassConstantFetch;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
+use PHPStan\Node\Method\MethodVariableWrites;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\Property\PropertyAssign;
 use PHPStan\Node\Property\PropertyRead;
@@ -50,6 +51,9 @@ final class ClassStatementsGatherer
 
 	/** @var \PHPStan\Node\Method\MethodCall[] */
 	private array $methodCalls = [];
+
+	/** @var list<MethodVariableWrites> */
+	private array $methodVariableWrites = [];
 
 	/** @var array<int, PropertyWrite|PropertyRead> */
 	private array $propertyUsages = [];
@@ -99,6 +103,14 @@ final class ClassStatementsGatherer
 	public function getMethodCalls(): array
 	{
 		return $this->methodCalls;
+	}
+
+	/**
+	 * @return list<MethodVariableWrites>
+	 */
+	public function getMethodVariableWrites(): array
+	{
+		return $this->methodVariableWrites;
 	}
 
 	/**
@@ -189,6 +201,10 @@ final class ClassStatementsGatherer
 		}
 		if ($node instanceof MethodReturnStatementsNode) {
 			$this->returnStatementNodes[strtolower($node->getMethodName())] = $node;
+			return;
+		}
+		if ($node instanceof VariableWritesNode && $node->getFunctionLike() instanceof Node\Stmt\ClassMethod) {
+			$this->methodVariableWrites[] = new MethodVariableWrites($node, $scope);
 			return;
 		}
 		if (

@@ -21,6 +21,7 @@ function doFoo(string $s): void
 function doBar(string $s): void
 {
 	if (preg_match('/^(?:(?:(a))?(b)|(c))$/', $s, $matches)) {
-		assertType("array{non-falsy-string, '', '', 'c'}|list{0: non-falsy-string, 1?: ''|'a', 2: 'b'}", $matches);
+		// in a list, the required key 2 implies the key 1
+		assertType("array{non-falsy-string, '', '', 'c'}|array{non-falsy-string, ''|'a', 'b'}", $matches);
 	}
 }

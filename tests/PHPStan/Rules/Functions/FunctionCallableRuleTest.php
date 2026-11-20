@@ -160,7 +160,7 @@ class FunctionCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/function-partial-function-application.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testPartialFunctionApplicationArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/partial-function-application-arguments.php'], [

@@ -139,7 +139,7 @@ class StaticMethodCallableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/method-partial-function-application.php'], $errors);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testPartialFunctionApplicationArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/partial-function-application-method-arguments.php'], [

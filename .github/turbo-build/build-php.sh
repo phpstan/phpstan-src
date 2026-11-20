@@ -1,9 +1,9 @@
 #!/bin/sh
 # Builds and installs the newest release of PHP $PHP_MINOR into /usr/local
 # from the official tarball, thread-safe when $PHP_ZTS is 1. Used by the
-# Dockerfile for the PHP builds ondrej/php does not ship (prerelease
-# minors, and every thread-safe build), and by the musl ZTS legs in
-# phar.yml, which run it in Alpine — Alpine packages no thread-safe PHP.
+# Dockerfile for the thread-safe builds, which ondrej/php does not ship,
+# and by the musl legs in phar.yml that Alpine has no packages for
+# (thread-safe builds, 8.2 and 8.6).
 #
 # The extensions match what the turbo-compile legs use from the PPA
 # images: tokenizer for the parser tests, pcntl + posix for the fork
@@ -12,26 +12,17 @@
 set -eu
 
 # The release is resolved from php.net at build time, so the weekly image
-# rebuild and every musl leg pick up a new patch release (or the next
-# release candidate of a prerelease minor) without a change here: an
-# extension built against one patch release loads into every other of the
-# minor. The sha256 published next to the tarball guards the download. A
-# minor without a stable release yet is not in the releases API; its
-# current release candidate is in the pre-release one, under <minor>.0.
+# rebuild and every musl leg pick up a new patch release without a change
+# here: an extension built against one patch release loads into every other
+# of the minor. The sha256 published next to the tarball guards the
+# download.
 php_net() {
 	curl -fsSL --retry 3 "$1"
 }
 RELEASE_JSON="$(php_net "https://www.php.net/releases/index.php?json&version=$PHP_MINOR")"
 PHP_VERSION="$(printf '%s' "$RELEASE_JSON" | jq -r '.version // empty')"
-if [ -n "$PHP_VERSION" ]; then
-	PHP_URL="https://www.php.net/distributions/php-$PHP_VERSION.tar.xz"
-	PHP_SHA256="$(printf '%s' "$RELEASE_JSON" | jq -r --arg file "php-$PHP_VERSION.tar.xz" '.source[] | select(.filename == $file) | .sha256')"
-else
-	PRERELEASE_JSON="$(php_net "https://www.php.net/pre-release-builds.php?format=json" | jq --arg minor "$PHP_MINOR.0" '.[$minor].release // empty')"
-	PHP_VERSION="$(printf '%s' "$PRERELEASE_JSON" | jq -r '.version // empty')"
-	PHP_URL="$(printf '%s' "$PRERELEASE_JSON" | jq -r '.files.xz.path // empty')"
-	PHP_SHA256="$(printf '%s' "$PRERELEASE_JSON" | jq -r '.files.xz.sha256 // empty')"
-fi
+PHP_URL="https://www.php.net/distributions/php-$PHP_VERSION.tar.xz"
+PHP_SHA256="$(printf '%s' "$RELEASE_JSON" | jq -r --arg file "php-$PHP_VERSION.tar.xz" '.source[]? | select(.filename == $file) | .sha256')"
 case "$PHP_VERSION" in
 	"$PHP_MINOR".*) ;;
 	*)
@@ -39,7 +30,7 @@ case "$PHP_VERSION" in
 		exit 1
 		;;
 esac
-if [ -z "$PHP_URL" ] || [ -z "$PHP_SHA256" ]; then
+if [ -z "$PHP_SHA256" ]; then
 	echo "build-php.sh: php.net lists no tar.xz with a sha256 for PHP $PHP_VERSION" >&2
 	exit 1
 fi

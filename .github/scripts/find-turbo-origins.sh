@@ -49,7 +49,6 @@ BUILD_INPUT_PATHS=(
 	.github/scripts/install-alpine-php.sh
 	.github/scripts/download-composer.sh
 	.github/scripts/composer-tags.pub
-	.github/scripts/install-php-windows-prerelease.sh
 	.github/scripts/download-php-windows-devel.sh
 	turbo-ext/bin/shared-core
 )

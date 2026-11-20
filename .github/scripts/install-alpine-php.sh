@@ -3,8 +3,8 @@
 # containers of the musl turbo legs in phar.yml. It builds PHP from the
 # release tarball instead (build-php.sh) with PHP_ZTS=1 — Alpine packages
 # no thread-safe PHP, while the official php:*-alpine Docker images are
-# thread-safe from 8.6 on — and for a minor the Alpine release no longer
-# packages (8.2).
+# thread-safe from 8.6 on — and for a minor the Alpine release does not
+# package (8.2, 8.6).
 #
 # That build takes minutes, so with $PHP_CACHE_DIR set the PHP it installs
 # into /usr/local (where nothing else lives in the Alpine images) is kept
@@ -12,8 +12,7 @@
 # it. phar.yml keeps the directory in actions/cache under the key
 # `install-alpine-php.sh --resolve` prints: the Alpine release, the
 # architecture, the PHP release build-php.sh resolves and the thread
-# safety, so a new patch release (or release candidate) or a new Alpine
-# snapshot builds again. --resolve installs no PHP and prints
+# safety, so a new patch release or a new Alpine release builds again. --resolve installs no PHP and prints
 # `release=<key>` when this leg builds PHP, `release=` when it installs
 # Alpine's packages.
 set -eu
@@ -21,11 +20,6 @@ set -eu
 apk add --no-cache bash curl git make g++ musl-dev linux-headers patch tar zstd >&2
 
 V="$(echo "$PHP_MINOR" | tr -d .)"
-# Alpine's php86 packages are currently only in edge/testing.
-EDGE_TESTING='https://dl-cdn.alpinelinux.org/alpine/edge/testing'
-if [ "$PHP_MINOR" = "8.6" ] && ! grep -qx "$EDGE_TESTING" /etc/apk/repositories; then
-	echo "$EDGE_TESTING" >> /etc/apk/repositories
-fi
 
 BUILD_PHP="$(dirname "$0")/../turbo-build/build-php.sh"
 BUILDS_PHP=0

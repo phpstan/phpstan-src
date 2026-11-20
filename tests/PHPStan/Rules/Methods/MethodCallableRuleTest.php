@@ -116,7 +116,7 @@ class MethodCallableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testPartialFunctionApplicationArguments(): void
 	{
 		$this->analyse([__DIR__ . '/data/partial-function-application-method-arguments.php'], [

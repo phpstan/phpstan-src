@@ -18,16 +18,9 @@ ARG PHP_MINOR
 ARG PHP_ZTS=0
 ENV DEBIAN_FRONTEND=noninteractive
 
-# These images build PHP from the newest official tarball of the minor
-# (build-php.sh resolves it from php.net) instead of installing it from
-# ondrej/php:
-# - PHP 8.6 is a prerelease, and ondrej/php trails its tags by weeks: on
-#   2026-09-25 it still served 8.6.0beta3, whose module API (20250926) the
-#   8.6.0RC2 that the php:8.6-rc images ship had already replaced
-#   (20260924) — an extension built against one refuses to load into the
-#   other. Switch the NTS 8.6 image to the PPA once it ships 8.6.0.
-# - ondrej/php packages no thread-safe PHP at all, so the ZTS images always
-#   build from source.
+# ondrej/php packages no thread-safe PHP at all, so the ZTS images build PHP
+# from the newest official tarball of the minor instead (build-php.sh
+# resolves it from php.net).
 
 # The source label links the GHCR package to this repository.
 LABEL org.opencontainers.image.source="https://github.com/phpstan/phpstan-src"
@@ -50,7 +43,7 @@ RUN test -n "$PHP_MINOR"; \
 		return 1; \
 	}; \
 	apt_install software-properties-common gnupg ca-certificates curl git make g++ patch unzip zstd \
-	&& if [ "$PHP_MINOR" = "8.6" ] || [ "$PHP_ZTS" = "1" ]; then \
+	&& if [ "$PHP_ZTS" = "1" ]; then \
 		apt_install jq pkg-config xz-utils libxml2-dev libonig-dev libcurl4-openssl-dev libssl-dev zlib1g-dev \
 		&& PHP_MINOR="$PHP_MINOR" PHP_ZTS="$PHP_ZTS" sh /tmp/build-php.sh; \
 	else \

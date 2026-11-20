@@ -28,7 +28,7 @@ class HelloWorld
 	public function withRange(int $limit, int $offset, int $offsetRange): void
 	{
 		if ($limit) {
-			assertType('(float|int)', $offset / $limit);
+			assertType('(float<-9.223372036854776E+18, 9.223372036854776E+18>|int)', $offset / $limit);
 			assertType('float<-2.0, 2.0>|int<-2, 2>', $offsetRange / $limit);
 		}
 	}

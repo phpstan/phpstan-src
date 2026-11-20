@@ -78,8 +78,8 @@ class Foo
 		assertType('float<0.0, max>', microtime(true));
 
 		// https://github.com/phpstan/phpstan/issues/6963
-		assertType('float<0.0, max>|int<0, max>', count($list) / 4);
-		assertType('float<0.0, max>', ceil(count($list) / 4));
+		assertType('float<0.0, 2.305843009213694E+18>|int<0, max>', count($list) / 4);
+		assertType('float<0.0, 9.223372036854776E+18>', ceil(count($list) / 4));
 	}
 
 }

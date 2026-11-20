@@ -65,7 +65,7 @@ function doFloat(string $s, int $i, float $f, array $a, object $o)
 	assertType('float', $s);
 
 	settype($i, 'float');
-	assertType('float', $i);
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', $i);
 
 	settype($f, 'float');
 	assertType('float', $f);
@@ -83,7 +83,7 @@ function doDouble(string $s, int $i, float $f, array $a, object $o)
 	assertType('float', $s);
 
 	settype($i, 'double');
-	assertType('float', $i);
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', $i);
 
 	settype($f, 'double');
 	assertType('float', $f);

@@ -339,8 +339,8 @@ private:
 	static FloatBounds integerToFloatInterval(const NumberSetData::IntegerInterval &interval)
 	{
 		return {
-			interval.min.isNull ? -HUGE_VAL : static_cast<double>(interval.min.value),
-			interval.max.isNull ? HUGE_VAL : static_cast<double>(interval.max.value),
+			static_cast<double>(interval.min.isNull ? ZEND_LONG_MIN : interval.min.value),
+			static_cast<double>(interval.max.isNull ? ZEND_LONG_MAX : interval.max.value),
 			false,
 		};
 	}

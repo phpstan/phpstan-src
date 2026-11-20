@@ -285,7 +285,7 @@ class Foo
 		assertType('1', 1 * 1);
 		assertType('1', 1 ** 1);
 		assertType('0', 1 % 1);
-		assertType('(float|int)', $integer1 /= 2);
+		assertType('(float<-4.611686018427388E+18, 4.611686018427388E+18>|int)', $integer1 /= 2);
 		assertType('int', $integer2 *= 1);
 		assertType('2.5999999999999996', 1.2 + 1.4);
 		assertType('-0.19999999999999996', 1.2 - 1.4);
@@ -301,10 +301,10 @@ class Foo
 		assertType('1.4', 1 * 1.4);
 		assertType('1.0', 1 ** 1.4);
 		assertType('1', 3 % 2.4);
-		assertType('float', $integer3 /= 2.4);
-		assertType('float', $integer4 *= 2.4);
+		assertType('float<-3.8430716820228234E+18, 3.8430716820228234E+18>', $integer3 /= 2.4);
+		assertType('float<-2.213609288845146E+19, 2.213609288845146E+19>', $integer4 *= 2.4);
 		assertType('int', $otherInteger + 1);
-		assertType('float', $otherInteger + 1.0);
+		assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', $otherInteger + 1.0);
 		assertType('2.2', 1.2 + 1);
 		assertType('0.19999999999999996', 1.2 - 1);
 		assertType('0.6', 1.2 / 2);
@@ -459,8 +459,8 @@ class Foo
 		assertType('int<0, max>', count($appendingToArrayInBranches));
 		assertType('3|5', count($conditionalArray));
 		assertType('2', $array[1]);
-		assertType('(float|int)', $integer / $integer);
-		assertType('(float|int)', $otherInteger / $integer);
+		assertType('(float<-9.223372036854776E+18, 9.223372036854776E+18>|int)', $integer / $integer);
+		assertType('(float<-9.223372036854776E+18, 9.223372036854776E+18>|int)', $otherInteger / $integer);
 		assertType('(array|float|int)', $mixed + $mixed);
 		assertType('(float|int)', $mixed - $mixed);
 		assertType('array', $mixed + []);

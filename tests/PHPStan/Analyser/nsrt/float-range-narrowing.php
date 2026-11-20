@@ -103,7 +103,7 @@ function casts(int $oneToFive, int $nonNegative, int $upToMinusThree, int $int):
 	assertType('float<1.0, 5.0>', (float) $oneToFive);
 	assertType('float<0.0, 9.223372036854776E+18>', (float) $nonNegative);
 	assertType('float<-9.223372036854776E+18, -3.0>', floatval($upToMinusThree));
-	assertType('float', (float) $int);
+	assertType('float<-9.223372036854776E+18, 9.223372036854776E+18>', (float) $int);
 }
 
 /**

@@ -449,8 +449,8 @@ final class NumberSet
 	}
 
 	/**
-	 * The floats an integer interval stands for. An unbounded side reaches the
-	 * infinity on that side, which the integer never is.
+	 * The floats an integer interval stands for. An unbounded side ends at the
+	 * float closest to PHP_INT_MIN or PHP_INT_MAX: an int is never infinite.
 	 *
 	 * @param array{int|null, int|null} $interval
 	 * @return array{float, float, bool} [min, max, whether an infinite bound is a value]
@@ -459,7 +459,7 @@ final class NumberSet
 	{
 		[$min, $max] = $interval;
 
-		return [$min === null ? -INF : (float) $min, $max === null ? INF : (float) $max, false];
+		return [(float) ($min ?? PHP_INT_MIN), (float) ($max ?? PHP_INT_MAX), false];
 	}
 
 	/**

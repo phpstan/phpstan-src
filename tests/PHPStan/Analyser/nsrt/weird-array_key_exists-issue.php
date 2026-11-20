@@ -31,7 +31,7 @@ class HelloWorld
 			} else {
 				$key = 'Ostatní';
 				assertType('bool', array_key_exists($key, $otherData));
-				assertType('array<\'Ostatní\', array{abs: int, rel: (float|int)}>', $otherData);
+				assertType('array<\'Ostatní\', array{abs: int, rel: (float<-9.223372036854776E+20, 9.223372036854776E+20>|int)}>', $otherData);
 				if (!array_key_exists($key, $otherData)) {
 					$otherData[$key] = [
 						'abs' => 0,
@@ -41,7 +41,7 @@ class HelloWorld
 				}
 				$otherData[$key]['abs'] += $count;
 				$otherData[$key]['rel'] += $count / $total * 100;
-				assertType('array{Ostatní: array{abs: int, rel: (float|int)}}', $otherData);
+				assertType('array{Ostatní: array{abs: int, rel: (float<-1.8446744073709552E+21, 1.8446744073709552E+21>|int)}}', $otherData);
 			}
 			$i++;
 		}

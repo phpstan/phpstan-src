@@ -75,6 +75,16 @@ use Symfony\Component\Finder\Finder;
 							break 2;
 						}
 
+						// phpstorm-stubs marks mb_str_pad #[Pure(true)], unlike other mbstring string
+						// functions (#[Pure]). The result can change if the analysed program changes
+						// internal encoding (mb_internal_encoding() or default_charset); PHPStan does
+						// not track that. Treat as pure to match mb_strlen et al.
+						// https://github.com/phpstan/phpstan/issues/15224
+						if ($functionName === 'mb_str_pad') {
+							$this->functions[] = $functionName;
+							break 2;
+						}
+
 						// PhpStorm stub's #[Pure(true)] means the function has side effects but its return value is important.
 						// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
 						if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {

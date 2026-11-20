@@ -5,6 +5,7 @@ namespace PHPStan\Command;
 use PHPStan\Analyser\ResultCache\ResultCacheClearer;
 use PHPStan\Command\ErrorFormatter\CiDetectedErrorFormatter;
 use PHPStan\Command\ErrorFormatter\GithubErrorFormatter;
+use PHPStan\Command\ErrorFormatter\GitlabErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TableErrorFormatter;
 use PHPStan\Command\ErrorFormatter\TeamcityErrorFormatter;
 use PHPStan\Command\Symfony\SymfonyOutput;
@@ -72,6 +73,7 @@ class AnalyseApplicationIntegrationTest extends PHPStanTestCase
 			new CiDetectedErrorFormatter(
 				new GithubErrorFormatter($relativePathHelper),
 				new TeamcityErrorFormatter($relativePathHelper),
+				new GitlabErrorFormatter($relativePathHelper),
 			),
 			false,
 			null,

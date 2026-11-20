@@ -195,7 +195,7 @@ jobs:
       # the compiler-tests job runs the phar only for `list`, which prints
       # no note
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         with:
           coverage: "none"
           php-version: "8.4"
@@ -238,7 +238,7 @@ jobs:
           fetch-depth: 0 # git log over turbo-ext/src needs full history
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         with:
           coverage: "none"
           php-version: "8.5"
@@ -308,7 +308,7 @@ jobs:
           fetch-depth: 0 # the VERSION.txt written below bakes from git log over turbo-ext/src
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         with:
           coverage: "none"
           php-version: "8.5"
@@ -378,45 +378,6 @@ jobs:
           make -C "$RUNNER_TEMP/turbo-ext" install INSTALL_ROOT="$RUNNER_TEMP/install-root"
           find "$RUNNER_TEMP/install-root" -name 'phpstan_turbo.so' | grep .
 
-  php-windows-prereleases:
-    name: "Find PHP Prereleases for Windows"
-    # For an unreleased minor, setup-php installs a nightly build on Windows,
-    # which has no devel pack to compile against; the Windows legs replace it
-    # with the official prerelease. This resolves the current one for every
-    # minor in this workflow's matrices that has no stable Windows build yet
-    # (.github/scripts/find-php-windows-prereleases.sh), once per run, so all
-    # legs install the same build even when a new release candidate comes out
-    # in the meantime.
-    runs-on: "ubuntu-latest"
-    timeout-minutes: 5
-
-    permissions:
-      contents: read # actions/checkout of this repository
-
-    outputs:
-      prereleases: ${{ steps.find.outputs.prereleases }}
-
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
-        with:
-          egress-policy: audit
-
-      - name: "Checkout"
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-          sparse-checkout: |
-            .github/scripts
-            .github/workflows
-
-      - name: "Find the prerelease of every PHP minor without a stable Windows build"
-        id: find
-        run: |
-          MINORS="$(yq -r '[.jobs[].strategy.matrix["php-version"] | select(. != null) | .[]] | unique | .[] | select(test("^[0-9]+\\.[0-9]+$"))' .github/workflows/phar.yml | tr '\n' ' ')"
-          echo "PHP minors in the matrices: $MINORS"
-          MINORS="$MINORS" bash .github/scripts/find-php-windows-prereleases.sh
-
   turbo-origins:
     name: "Find Reusable Turbo Extension Builds"
     # Most pushes and pull requests leave the extension's build inputs
@@ -431,8 +392,7 @@ jobs:
     # minute each) against it, then go through the version check and the
     # differential tests of the turbo-differential jobs like any build —
     # they compare the native side with the PHP side of this commit, which
-    # may have changed. An extension compiled against 8.6 prerelease headers
-    # that moved on since fails its own leg, not the reused core.
+    # may have changed.
     # Only runs of this workflow triggered by a push to 2.3.x qualify — the
     # same runs whose compiled binaries the commit job stages into
     # phpstan/phpstan — so reusing their artifacts trusts no code the
@@ -596,7 +556,7 @@ jobs:
 
       - name: "Install PHP (macOS)"
         if: env.ORIGIN_RUN_ID == '' && matrix.target.family == 'macos'
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         with:
           coverage: "none"
           php-version: "${{ matrix.target.php-version }}"
@@ -857,11 +817,9 @@ jobs:
     # (turbo-shared-core-gate compares the two builds too) — so a ZTS leg
     # compiles only those few sources. ondrej/php packages no thread-safe
     # PHP, so the gnu-php<minor>-zts images build the minor's newest
-    # official tarball (build-php.sh; so does gnu-php8.6, a prerelease), and
-    # the musl ZTS legs build it in alpine:3.24, since Alpine packages no
-    # thread-safe PHP either. Alpine's NTS php86 packages are
-    # currently only in edge/testing.
-    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '') || matrix.target.family == 'musl' && matrix.php-version == '8.6' && matrix.ts != 'zts' && 'alpine:edge' || matrix.target.container || '' }}
+    # official tarball (build-php.sh), and the musl ZTS legs build it in
+    # alpine:3.24, since Alpine packages no thread-safe PHP either.
+    container: ${{ matrix.target.family == 'gnu' && format('ghcr.io/phpstan/turbo-build:gnu-php{0}{1}', matrix.php-version, matrix.ts == 'zts' && '-zts' || '') || matrix.target.container || '' }}
     needs: turbo-compile-core
     # one platform's failed core must not skip every platform's legs: a leg
     # whose core is missing fails at its download instead
@@ -957,7 +915,7 @@ jobs:
 
       - name: "Install PHP (macOS)"
         if: matrix.target.family == 'macos'
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -1115,13 +1073,11 @@ jobs:
           path: "turbo-ext"
 
       - name: "Start the Alpine build container"
-        env:
-          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && matrix.ts == 'nts' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
           docker run -d --name alpine-build \
             -v "$PWD:/work" -w /work \
             -e PHP_MINOR -e PHP_ZTS -e PHP_CACHE_DIR=/work/alpine-php-cache \
-            "$ALPINE_IMAGE" sleep 7200
+            alpine:3.24 sleep 7200
 
       # see turbo-compile
       - name: "Resolve the PHP build to cache"
@@ -1331,7 +1287,7 @@ jobs:
     # token-numbering bug: 2462 of 21065 tests fail and self-analysis
     # crashes on the Bison 3.0.4 image, both green on the matched one).
     # The 8.3 images are pinned to one release of each known numbering;
-    # 8.4/8.5 float on the minor tag and 8.6 on the prerelease tag so a future
+    # 8.4/8.5/8.6 float on the minor tag so a future
     # release with a surprising build is picked up on the next run without
     # a workflow change. Legs run on x86_64 only: the token numbering comes
     # from the bison that generated the tarball's parser, not from arch or
@@ -1364,8 +1320,8 @@ jobs:
           - "php:8.5-cli-bookworm"
           - "php:8.5-zts-bookworm"
           - "php:8.5-zts-alpine"
-          - "php:8.6-rc-cli-bookworm"
-          - "php:8.6-rc-cli-alpine"
+          - "php:8.6-cli-bookworm"
+          - "php:8.6-cli-alpine"
         check: ["tests", "phpstan"]
         include:
           - image: "php:8.2-cli-bookworm"
@@ -1389,10 +1345,10 @@ jobs:
           - image: "php:8.5-zts-alpine"
             php-version: "8.5"
             binary: "linux-musl-x86_64-php8.5-zts"
-          - image: "php:8.6-rc-cli-bookworm"
+          - image: "php:8.6-cli-bookworm"
             php-version: "8.6"
             binary: "linux-gnu-x86_64-php8.6-zts"
-          - image: "php:8.6-rc-cli-alpine"
+          - image: "php:8.6-cli-alpine"
             php-version: "8.6"
             binary: "linux-musl-x86_64-php8.6-zts"
           # The tests legs invoke paratest directly instead of a literal
@@ -1420,7 +1376,7 @@ jobs:
       # runner host and only read from the mounted workspace: the
       # docker-library images carry neither a composer nor an unzip.
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
@@ -1439,11 +1395,11 @@ jobs:
           name: "phpstan_turbo-${{ matrix.binary }}"
           path: "turbo-ext"
 
-      - name: "Add mbstring, bash and make to the 8.6 prerelease and Alpine images"
+      - name: "Add mbstring, bash and make to the 8.6 and Alpine images"
         if: matrix.php-version == '8.6' || contains(matrix.image, 'alpine')
         env:
           PHP_IMAGE: ${{ matrix.image }}
-        # Unlike the stable images, the 8.6 prerelease omits mbstring,
+        # Unlike the older minors' images, the 8.6 ones omit mbstring,
         # which PHPUnit and PHPStan's test fixtures require. The Alpine
         # images also drop the build tools after building PHP, and carry no
         # bash, which the run step below needs, and no make, which
@@ -1568,7 +1524,7 @@ jobs:
 
       - name: "Install PHP"
         if: env.ORIGIN_RUN_ID == ''
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         env:
           phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
         with:
@@ -1653,7 +1609,6 @@ jobs:
     # PHP 8.6's vs18 development packs need the VS2026 toolchain.
     runs-on: ${{ matrix.php-version == '8.6' && 'windows-2025-vs2026' || 'windows-2022' }}
     needs:
-      - php-windows-prereleases
       - turbo-compile-core-windows
     # see turbo-compile
     if: ${{ !cancelled() }}
@@ -1699,27 +1654,18 @@ jobs:
           fetch-depth: 0
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         env:
           phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
 
-      - name: "Install the PHP prerelease runtime"
-        if: fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
-        shell: bash
-        env:
-          MATRIX_TS: ${{ matrix.ts }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
-        run: bash .github/scripts/install-php-windows-prerelease.sh
-
       - name: "Compute the extension version and download the build tools"
         shell: bash
         env:
           MATRIX_TS: ${{ matrix.ts }}
           MATRIX_VS: ${{ matrix.vs }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
         run: bash .github/scripts/download-php-windows-devel.sh
 
       # the DLL and its import library, into the extension directory where
@@ -2028,13 +1974,9 @@ jobs:
     # binary is built for. Kept out of the compile jobs so the commit job,
     # which only needs the binaries, does not wait for them (see there).
     # The musl binaries are tested in turbo-differential-musl. The linux-gnu
-    # 8.6 and ZTS legs run in the image the binary is compiled in instead:
-    # setup-php's Linux 8.6 is a nightly snapshot that can predate the
-    # release the binary targets, and a module API mismatch refuses to load
-    # it at all; the ZTS legs so as not to depend on setup-php's thread-safe
-    # Linux builds.
+    # ZTS legs run in the image the binary is compiled in instead, so as not
+    # to depend on setup-php's thread-safe Linux builds.
     needs:
-      - php-windows-prereleases
       - turbo-compile
       - turbo-compile-windows
     runs-on: ${{ matrix.runs-on }}
@@ -2068,14 +2010,6 @@ jobs:
           # see turbo-run for why windows-latest loads the DLL
           - target: "windows-x86_64"
             runs-on: "windows-latest"
-          - target: "linux-gnu-x86_64"
-            php-version: "8.6"
-            ts: "nts"
-            container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
-          - target: "linux-gnu-arm64"
-            php-version: "8.6"
-            ts: "nts"
-            container: "ghcr.io/phpstan/turbo-build:gnu-php8.6"
           # the linux-gnu ZTS legs, in the image the binary is compiled in
           # (see above); the official php:*-zts images get turbo-docker-run
           - target: "linux-gnu-x86_64"
@@ -2144,19 +2078,12 @@ jobs:
 
       - name: "Install PHP"
         if: ${{ !matrix.container }}
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         env:
           phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-
-      - name: "Install the PHP prerelease runtime"
-        if: matrix.target == 'windows-x86_64' && fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
-        env:
-          MATRIX_TS: ${{ matrix.ts }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
-        run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # 4.0.0
         if: ${{ !matrix.container }}
@@ -2277,13 +2204,11 @@ jobs:
 
       # The same container, packages and composer as turbo-compile-musl-arm64.
       - name: "Start the Alpine container"
-        env:
-          ALPINE_IMAGE: ${{ matrix.php-version == '8.6' && matrix.ts == 'nts' && 'alpine:edge' || 'alpine:3.24' }}
         run: |
           docker run -d --name alpine-test \
             -v "$PWD:/work" -w /work \
             -e PHP_MINOR -e PHP_ZTS -e PHP_CACHE_DIR=/work/alpine-php-cache \
-            "$ALPINE_IMAGE" sleep 7200
+            alpine:3.24 sleep 7200
 
       # see turbo-compile
       - name: "Resolve the PHP build to cache"
@@ -2363,7 +2288,6 @@ jobs:
   turbo-run:
     name: "Run with Turbo Extension"
     needs:
-      - php-windows-prereleases
       - turbo-compile
       - turbo-compile-windows
     runs-on: ${{ matrix.operating-system }}
@@ -2389,13 +2313,6 @@ jobs:
         exclude:
           - operating-system: "ubuntu-latest"
             ts: "zts"
-          # setup-php's Linux 8.6 is a nightly snapshot that can predate the
-          # release the binary is compiled against (on 2026-09-25 it still
-          # had the module API 8.6.0RC2 replaced), and a module API mismatch
-          # refuses to load the extension at all. turbo-docker-run runs the
-          # same checks with this binary in the official 8.6 prerelease image.
-          - operating-system: "ubuntu-latest"
-            php-version: "8.6"
         # macOS runs the shipped ad-hoc-signed arm64 binary; there is no
         # macOS zts build, and 8.3/8.4 coverage comes from the other legs.
         include:
@@ -2429,19 +2346,12 @@ jobs:
           fetch-depth: 0 # the autoloader dump generates the expected turbo version from git log over turbo-ext/src
 
       - name: "Install PHP"
-        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        uses: "shivammathur/setup-php@2001cd3148dcbaf467b7fa06cd7155ebb6d4cacf" # develop (PHP 8.6 stable, unreleased)
         env:
           phpts: "${{ matrix.ts == 'zts' && 'ts' || 'nts' }}"
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-
-      - name: "Install the PHP prerelease runtime"
-        if: matrix.operating-system == 'windows-latest' && fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]
-        env:
-          MATRIX_TS: ${{ matrix.ts }}
-          PHP_PRERELEASE: ${{ toJSON(fromJSON(needs.php-windows-prereleases.outputs.prereleases)[matrix.php-version]) }} # zizmor: ignore[obfuscation] -- looks up this leg's entry in a JSON map output by an earlier job
-        run: bash .github/scripts/install-php-windows-prerelease.sh
 
       - name: "Download extension artifact"
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -2900,7 +2810,7 @@ jobs:
     # builds from the phpstan/turbo-ext subsplit). They produce nothing the
     # commit consumes, waiting for them would delay every dev phar by their
     # duration, and a red leg caused by environment drift (the floating
-    # docker-library tags, the PHP 8.6 prerelease) would skip the commit and
+    # docker-library tags) would skip the commit and
     # halt phar publication while the binaries already in dist are equally
     # affected — nothing protective gained. They still fail the workflow
     # loudly for follow-up.

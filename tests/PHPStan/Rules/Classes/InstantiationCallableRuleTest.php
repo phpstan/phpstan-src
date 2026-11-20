@@ -27,7 +27,7 @@ class InstantiationCallableRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testPartialFunctionApplication(): void
 	{
 		$this->analyse([__DIR__ . '/data/instantiation-partial-function-application.php'], [

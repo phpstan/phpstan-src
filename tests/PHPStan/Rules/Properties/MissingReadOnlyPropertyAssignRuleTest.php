@@ -123,7 +123,7 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testDefaultValue(): void
 	{
 		// properties with a default value are initialized, assignments are reported by ReadOnlyPropertyAssignRule

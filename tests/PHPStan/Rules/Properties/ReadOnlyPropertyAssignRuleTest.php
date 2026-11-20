@@ -190,7 +190,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-property-assign-clone-with.php'], []);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testDefaultValue(): void
 	{
 		$this->analyse([__DIR__ . '/data/readonly-property-default-value.php'], [

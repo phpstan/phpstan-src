@@ -3613,7 +3613,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.6.0-dev')]
+	#[RequiresPhp('>= 8.6.0')]
 	public function testPartialFunctionApplicationCallbacks(): void
 	{
 		$this->analyse([__DIR__ . '/data/partial-function-application-callbacks.php'], [

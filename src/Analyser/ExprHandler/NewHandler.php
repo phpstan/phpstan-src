@@ -783,8 +783,12 @@ final class NewHandler implements ExprHandler
 			if (!$type instanceof TemplateType) {
 				return $type;
 			}
-			if ($synthetic || ($allowUnresolved && $frame->isObserving())) {
+			if ($synthetic) {
 				return new UnresolvedTemplateArgumentType($site, $type, null);
+			}
+			if ($allowUnresolved && $frame->isObserving()) {
+				// a send in a body enclosing this one decided the site
+				return $frame->resolveSentFromEnclosingBody($site, $type->getName()) ?? new UnresolvedTemplateArgumentType($site, $type, null);
 			}
 
 			return $frame->resolveOrUnconstrained($site, $type);
@@ -797,7 +801,8 @@ final class NewHandler implements ExprHandler
 			return $type->getInitialType() ?? $template->getDefault() ?? $template->getBound();
 		}
 		if ($allowUnresolved && $frame->isObserving()) {
-			return $type->withSite($site, $template);
+			// a send in a body enclosing this one decided the site
+			return $frame->resolveSentFromEnclosingBody($site, $template->getName()) ?? $type->withSite($site, $template);
 		}
 
 		return $frame->resolve($site, $template->getName()) ?? $type->getInitialType() ?? $frame->resolveOrUnconstrained($site, $template);

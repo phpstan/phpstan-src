@@ -104,11 +104,6 @@ final class ParametersAcceptorSelector
 		$reorderedArgs = $args;
 		$singleParametersAcceptor = null;
 		if (count($parametersAcceptors) === 1) {
-			if (!array_is_list($args)) {
-				// actually $args parameter should be typed to list but we can't atm,
-				// because its a BC break.
-				$args = array_values($args);
-			}
 			$reorderedArgs = ArgumentsNormalizer::reorderArgs($parametersAcceptors[0], $args);
 			$singleParametersAcceptor = $parametersAcceptors[0];
 		}

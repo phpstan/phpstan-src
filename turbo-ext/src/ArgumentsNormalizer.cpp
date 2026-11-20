@@ -299,6 +299,7 @@ public:
 		}
 		if (EXPECTED(!hasNamedArgs)) return arrayValues(callArgs);
 
+		bool callArgsAreList = zend_array_is_list(args);
 		for (zv::ArrayEntry entry : zv::TableRef(args)) {
 			zv::Val unpackHold;
 			zval *unpack = readProperty(pt_an_arg_unpack_site, entry.value().deref().raw(), PT_LC("unpack"), unpackHold);
@@ -308,7 +309,7 @@ public:
 			if (zend_is_true(unpack)) return zv::Val::null();
 		}
 
-		return reorderNamedArgs(parametersAcceptor, args);
+		return reorderNamedArgs(parametersAcceptor, args, callArgsAreList);
 	}
 
 	/* Mirrors reorderFuncArguments() / reorderMethodArguments() /
@@ -620,7 +621,7 @@ private:
 	}
 
 	/* reorderArgs() past its no-named-arguments return */
-	static zend_never_inline zv::Val reorderNamedArgs(zval *parametersAcceptor, HashTable *args)
+	static zend_never_inline zv::Val reorderNamedArgs(zval *parametersAcceptor, HashTable *args, bool callArgsAreList)
 	{
 		bool hasVariadic = false;
 		zv::Arr argumentPositions = zv::Arr::empty();
@@ -650,6 +651,7 @@ private:
 		zv::Arr reorderedArgs = zv::Arr::empty();
 		zv::Arr additionalNamedArgs = zv::Arr::empty();
 		zv::Arr appendArgs = zv::Arr::empty();
+		zend_long lastReorderedArgPosition = -1;
 		for (zv::ArrayEntry entry : zv::TableRef(args)) {
 			zval *arg = entry.value().deref().raw();
 			zv::Val nameHold;
@@ -662,6 +664,7 @@ private:
 				zval key;
 				keyOf(entry, &key);
 				setKey(reorderedArgs, &key, std::move(normalized));
+				if (callArgsAreList) lastReorderedArgPosition = (zend_long) entry.indexKey();
 				continue;
 			}
 
@@ -678,6 +681,8 @@ private:
 				zv::Val normalized = normalizedArg(arg);
 				if (UNEXPECTED(normalized.isUndef())) return zv::Val();
 				setKey(reorderedArgs, position, std::move(normalized));
+				zend_long positionIndex = Z_LVAL_P(position);
+				if (positionIndex > lastReorderedArgPosition) lastReorderedArgPosition = positionIndex;
 				continue;
 			}
 
@@ -696,9 +701,11 @@ private:
 			additionalNamedArgsOffset++;
 		}
 		for (zv::ArrayEntry entry : zv::TableRef(additionalNamedArgs.table())) {
+			zend_long position = additionalNamedArgsOffset + (zend_long) entry.indexKey();
 			zval key;
-			ZVAL_LONG(&key, additionalNamedArgsOffset + (zend_long) entry.indexKey());
+			ZVAL_LONG(&key, position);
 			setKey(reorderedArgs, &key, zv::Val::copyOf(entry.value()));
+			if (position > lastReorderedArgPosition) lastReorderedArgPosition = position;
 		}
 
 		if (zend_hash_num_elements(reorderedArgs.table()) == 0) {
@@ -711,18 +718,24 @@ private:
 		// fill up all holes with default values until the last given argument
 		zval maxKey;
 		ZVAL_UNDEF(&maxKey);
-		for (zv::ArrayEntry entry : zv::TableRef(reorderedArgs.table())) {
-			zval key;
-			keyOf(entry, &key);
-			if (Z_TYPE(maxKey) == IS_UNDEF || zend_compare(&key, &maxKey) > 0) {
-				ZVAL_COPY_VALUE(&maxKey, &key);
+		if (!callArgsAreList) {
+			for (zv::ArrayEntry entry : zv::TableRef(reorderedArgs.table())) {
+				zval key;
+				keyOf(entry, &key);
+				if (Z_TYPE(maxKey) == IS_UNDEF || zend_compare(&key, &maxKey) > 0) {
+					ZVAL_COPY_VALUE(&maxKey, &key);
+				}
 			}
 		}
 		HashTable *signature = Z_ARRVAL_P(signatureParameters.raw());
 		for (zend_long j = 0;; j++) {
 			zval jZv;
 			ZVAL_LONG(&jZv, j);
-			if (!(zend_compare(&jZv, &maxKey) < 0)) break;
+			if (callArgsAreList) {
+				if (j >= lastReorderedArgPosition) break;
+			} else {
+				if (!(zend_compare(&jZv, &maxKey) < 0)) break;
+			}
 			if (zend_hash_index_exists(reorderedArgs.table(), (zend_ulong) j)) continue;
 			zval *parameter = zend_hash_index_find(signature, (zend_ulong) j);
 			if (parameter == NULL) return zv::Val::null();
@@ -754,6 +767,19 @@ private:
 			zv::Val filler = pt_type_new(PT_CLASS_ARG, 1, typeExpr.raw());
 			if (UNEXPECTED(filler.isUndef())) return zv::Val();
 			setKey(reorderedArgs, &jZv, std::move(filler));
+		}
+
+		if (callArgsAreList) {
+			zv::Arr orderedArgs = zv::Arr::empty();
+			for (zend_long j = 0; j <= lastReorderedArgPosition; j++) {
+				zval *arg = zend_hash_index_find(reorderedArgs.table(), (zend_ulong) j);
+				if (UNEXPECTED(arg == NULL)) return zv::Val::null();
+				orderedArgs.push(zv::Ref(arg));
+			}
+			for (zv::ArrayEntry entry : zv::TableRef(appendArgs.table())) {
+				orderedArgs.push(zv::Ref(entry.value().raw()));
+			}
+			return zv::Val(std::move(orderedArgs));
 		}
 
 		reorderedArgs.separate();

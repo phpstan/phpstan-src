@@ -538,6 +538,11 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testPureBuiltins(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-builtins.php'], []);
+	}
+
 	public function testPureUnlessParameterPassedBuiltin(): void
 	{
 		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed-builtin.php'], [

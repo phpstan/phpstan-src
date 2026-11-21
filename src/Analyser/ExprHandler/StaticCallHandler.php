@@ -373,21 +373,30 @@ final class StaticCallHandler implements ExprHandler
 			}
 		}
 
-		if (
-			$expr->class instanceof Name
-			&& $methodReflection !== null
-			&& (
+		if ($expr->class instanceof Name && $methodReflection !== null) {
+			$hasSideEffects = $methodReflection->hasSideEffects();
+			if (
 				(
-					!$methodReflection->isStatic()
-					&& $methodReflection->getName() === '__construct'
+					(
+						!$methodReflection->isStatic()
+						&& $methodReflection->getName() === '__construct'
+					)
+					|| $hasSideEffects->yes()
+					// When possibly impure values are not remembered, a possibly impure method
+					// may also have changed the object's properties, so forget them too.
+					// Built-in methods are exempt, as they are from invalidating volatile expressions below.
+					|| (
+						!$this->rememberPossiblyImpureFunctionValues
+						&& !$hasSideEffects->no()
+						&& !$methodReflection->getDeclaringClass()->isBuiltin()
+					)
 				)
-				|| $methodReflection->hasSideEffects()->yes()
-			)
-			&& $scope->isInClass()
-			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
-		) {
-			// a static method never receives $this, so property fetches on it survive
-			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
+				&& $scope->isInClass()
+				&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
+			) {
+				// a static method never receives $this, so property fetches on it survive
+				$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
+			}
 		}
 
 		if (

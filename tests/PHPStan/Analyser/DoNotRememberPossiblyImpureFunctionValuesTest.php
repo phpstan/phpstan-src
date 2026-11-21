@@ -11,6 +11,7 @@ class DoNotRememberPossiblyImpureFunctionValuesTest extends TypeInferenceTestCas
 	public static function dataAsserts(): iterable
 	{
 		yield from self::gatherAssertTypes(__DIR__ . '/data/do-not-remember-possibly-impure-function-values.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/data/do-not-remember-possibly-impure-function-values-properties.php');
 	}
 
 	/**

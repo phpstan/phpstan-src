@@ -7291,6 +7291,24 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 			$r["function $functionName $argListName narrowed"] = $catching(static fn () => array_map($viewImpurePoint, \PHPStan\Reflection\Callables\SimpleImpurePoint::narrowByConditionalPurity(['certain' => new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain call', true), 3 => new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'possible call', false)], $variant, $sipScope, $args)));
 		}
 	}
+	$multiVariantArgLists = [
+		'arrays pure' => [$arg('array'), $arg('array'), $arg('array'), $arg('pure')],
+		'arrays impure' => [$arg('array'), $arg('array'), $arg('array'), $arg('impure')],
+		'five arrays pure' => [$arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('pure')],
+		'five arrays impure' => [$arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('impure')],
+		'arrays string' => [$arg('array'), $arg('array'), $arg('array'), $arg('string')],
+		'arrays pure unpacked' => [$arg('array'), $arg('array'), $arg('array'), $arg('pure'), new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('array'), unpack: true)],
+		'named rest' => [$arg('array', 'array'), $arg('array', 'rest'), $arg('impure', 'other')],
+	] + $argLists;
+	foreach (['array_udiff', 'array_diff_uassoc', 'array_uintersect_uassoc'] as $functionName) {
+		$function = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
+		foreach (array_merge($function->getVariants(), $function->getNamedArgumentsVariants() ?? []) as $variantIndex => $variant) {
+			foreach ($multiVariantArgLists as $argListName => $args) {
+				$r["function $functionName variant $variantIndex $argListName verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $sipScope, $args)));
+				$r["function $functionName variant $variantIndex $argListName"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant, $sipScope, $args)));
+			}
+		}
+	}
 	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
 		$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($fixture->getNativeMethod($methodName), $fixture, true, $calledOnTypes['object']);
 		foreach (['transformed' => $prototype->getTransformedMethod(), 'plain' => $fixture->getNativeMethod($methodName), 'builtin' => $stringReflectionProvider->getClass(\ArrayObject::class)->getNativeMethod('append')] as $methodKind => $method) {

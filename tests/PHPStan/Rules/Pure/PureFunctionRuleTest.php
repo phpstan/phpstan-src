@@ -249,6 +249,20 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6574.php'], []);
 	}
 
+	public function testPureUnlessCallableIsImpureMultiVariant(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-multi-variant.php'], [
+			[
+				'Impure call to function array_udiff() in pure function PureUnlessCallableIsImpureMultiVariant\\impureCallbackAfterFiveArrays().',
+				37,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureMultiVariant\\impureCallbackAfterFiveArrays().',
+				38,
+			],
+		]);
+	}
+
 	public function testPureUnlessCallableIsImpure(): void
 	{
 		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [

@@ -360,59 +360,71 @@ public:
 				verdict = PT_TRI_YES;
 			}
 
-			zval *matchedArg = NULL;
+			bool matchedAny = false;
 			bool hasUnpackedArg = false;
-			if (UNEXPECTED(!matchArg(args, parameter, parameterEntry, declaredParameterNames.table(), matchedArg, hasUnpackedArg))) return false;
+			bool matched = matchArgs(args, parameter, parameterEntry, declaredParameterNames.table(), matchedAny, hasUnpackedArg, [&](zval *matchedArg) -> bool {
+				return matchedArgVerdict(matchedArg, scope, verdict);
+			});
+			if (UNEXPECTED(!matched)) return false;
 
-			if (matchedArg == NULL) {
-				if (hasUnpackedArg) {
+			/* $hasUnpackedArg && ($matchedArgs === [] || $parameter->isVariadic()) */
+			if (hasUnpackedArg) {
+				bool isVariadic = false;
+				if (matchedAny && UNEXPECTED(!pt_parameter_reflection_bool(parameter, PT_PR_IS_VARIADIC, isVariadic))) return false;
+				if (!matchedAny || isVariadic) {
 					verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
 				}
-				continue;
-			}
-
-			zval *argValue = nodeProperty(pt_sip_arg_value_site, matchedArg, PT_LC("value"));
-			if (UNEXPECTED(EG(exception))) return false;
-			if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(scope));
-				return false;
-			}
-			zv::Val argType = pt_mutating_scope_get_type(Z_OBJ_P(scope), argValue);
-			if (UNEXPECTED(argType.isUndef())) return false;
-			zend_long isNull = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_NULL, 0, NULL);
-			if (UNEXPECTED(isNull < 0)) return false;
-			if (isNull == PT_TRI_YES) continue;
-
-			zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
-			if (UNEXPECTED(isCallable < 0)) return false;
-			if (isCallable != PT_TRI_YES) {
-				verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
-				continue;
-			}
-
-			zv::Val acceptors = pt_type_call(Z_OBJ_P(argType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope);
-			if (UNEXPECTED(acceptors.isUndef())) return false;
-			if (UNEXPECTED(Z_TYPE_P(acceptors.raw()) != IS_ARRAY)) {
-				zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(acceptors.raw()));
-				return false;
-			}
-			if (zend_hash_num_elements(Z_ARRVAL_P(acceptors.raw())) == 0) {
-				verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
-				continue;
-			}
-
-			for (auto acceptorEntry : zv::TableRef(Z_ARRVAL_P(acceptors.raw()))) {
-				zval *acceptor = acceptorEntry.value().deref().raw();
-				if (UNEXPECTED(Z_TYPE_P(acceptor) != IS_OBJECT)) {
-					zend_throw_error(NULL, "Call to a member function isPure() on %s", zend_zval_value_name(acceptor));
-					return false;
-				}
-				zend_long pure = trinaryOf(pt_parameters_acceptor_call(acceptor, PT_PA_IS_PURE));
-				if (UNEXPECTED(pure < 0)) return false;
-				verdict = pt_trinary_and(verdict, pure);
 			}
 		}
 
+		return true;
+	}
+
+	/* The body of the loop over $matchedArgs in
+	 * resolvePureUnlessCallableIsImpureVerdict(); false = pending exception */
+	[[nodiscard]] static bool matchedArgVerdict(zval *matchedArg, zval *scope, zend_long &verdict)
+	{
+		zval *argValue = nodeProperty(pt_sip_arg_value_site, matchedArg, PT_LC("value"));
+		if (UNEXPECTED(EG(exception))) return false;
+		if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(scope));
+			return false;
+		}
+		zv::Val argType = pt_mutating_scope_get_type(Z_OBJ_P(scope), argValue);
+		if (UNEXPECTED(argType.isUndef())) return false;
+		zend_long isNull = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_NULL, 0, NULL);
+		if (UNEXPECTED(isNull < 0)) return false;
+		if (isNull == PT_TRI_YES) return true;
+
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
+		if (UNEXPECTED(isCallable < 0)) return false;
+		if (isCallable == PT_TRI_NO) return true;
+		if (isCallable == PT_TRI_MAYBE) {
+			verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
+			return true;
+		}
+
+		zv::Val acceptors = pt_type_call(Z_OBJ_P(argType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope);
+		if (UNEXPECTED(acceptors.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(acceptors.raw()) != IS_ARRAY)) {
+			zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(acceptors.raw()));
+			return false;
+		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(acceptors.raw())) == 0) {
+			verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
+			return true;
+		}
+
+		for (auto acceptorEntry : zv::TableRef(Z_ARRVAL_P(acceptors.raw()))) {
+			zval *acceptor = acceptorEntry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(acceptor) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function isPure() on %s", zend_zval_value_name(acceptor));
+				return false;
+			}
+			zend_long pure = trinaryOf(pt_parameters_acceptor_call(acceptor, PT_PA_IS_PURE));
+			if (UNEXPECTED(pure < 0)) return false;
+			verdict = pt_trinary_and(verdict, pure);
+		}
 		return true;
 	}
 
@@ -446,11 +458,11 @@ public:
 				verdict = PT_TRI_YES;
 			}
 
-			zval *matchedArg = NULL;
+			bool matchedAny = false;
 			bool hasUnpackedArg = false;
-			if (UNEXPECTED(!matchArg(args, parameter, parameterEntry, declaredParameterNames.table(), matchedArg, hasUnpackedArg))) return false;
+			if (UNEXPECTED(!matchArgs(args, parameter, parameterEntry, declaredParameterNames.table(), matchedAny, hasUnpackedArg, [](zval *) -> bool { return true; }))) return false;
 
-			if (matchedArg == NULL) {
+			if (!matchedAny) {
 				if (hasUnpackedArg) {
 					verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
 				}
@@ -482,17 +494,20 @@ private:
 		return true;
 	}
 
-	/* Mirrors matchArgForParameter(): the argument the parameter receives
-	 * (NULL for none) and whether an unpacked argument list might have
-	 * supplied it. A trailing variadic collects the positional arguments
-	 * from its own position onwards and the named arguments bound to no
-	 * declared parameter. false = pending exception. */
-	[[nodiscard]] static bool matchArg(zval *args, zval *parameter, const zv::ArrayEntry &parameterEntry, HashTable *declaredParameterNames, zval *&matched, bool &hasUnpackedArg)
+	/* Mirrors matchArgsForParameter(): onMatch(arg) for each argument the
+	 * parameter receives, in order (matchedAny whether there was one), and
+	 * whether an unpacked argument list was seen before the only argument
+	 * of a non-variadic parameter, or anywhere for a variadic one. A
+	 * trailing variadic collects the positional arguments from its own
+	 * position onwards and the named arguments bound to its own name or to
+	 * no declared parameter. false = pending exception, also from onMatch. */
+	template<typename OnMatch>
+	[[nodiscard]] static bool matchArgs(zval *args, zval *parameter, const zv::ArrayEntry &parameterEntry, HashTable *declaredParameterNames, bool &matchedAny, bool &hasUnpackedArg, OnMatch &&onMatch)
 	{
-		matched = NULL;
+		matchedAny = false;
 		hasUnpackedArg = false;
 		if (UNEXPECTED(parameterEntry.stringKeyOrNull() != NULL)) {
-			zend_type_error("PHPStan\\Reflection\\Callables\\SimpleImpurePoint::matchArgForParameter(): Argument #3 ($parameterIndex) must be of type int, string given");
+			zend_type_error("PHPStan\\Reflection\\Callables\\SimpleImpurePoint::matchArgsForParameter(): Argument #3 ($parameterIndex) must be of type int, string given");
 			return false;
 		}
 		zend_long parameterIndex = (zend_long) parameterEntry.indexKey();
@@ -519,20 +534,25 @@ private:
 				if (UNEXPECTED(EG(exception))) return false;
 				zv::Val parameterNameValue = parameterName(parameter);
 				if (UNEXPECTED(parameterNameValue.isUndef())) return false;
-				if (zend_is_identical(identifierName, parameterNameValue.raw())) {
-					matched = arg;
-					return true;
+				bool isOwnName = zend_is_identical(identifierName, parameterNameValue.raw());
+				if (isOwnName && !isVariadic) {
+					matchedAny = true;
+					return onMatch(arg);
 				}
 				if (isVariadic) {
-					/* !array_key_exists($arg->name->name, $declaredParameterNames) */
-					if (UNEXPECTED(Z_TYPE_P(identifierName) != IS_STRING)) {
-						/* Identifier::$name is a string; anything else is the builtin's TypeError */
-						zend_type_error("array_key_exists(): Argument #1 ($key) must be a valid array offset type");
-						return false;
+					/* $arg->name->name === $parameter->getName() || !array_key_exists($arg->name->name, $declaredParameterNames) */
+					bool collected = isOwnName;
+					if (!collected) {
+						if (UNEXPECTED(Z_TYPE_P(identifierName) != IS_STRING)) {
+							/* Identifier::$name is a string; anything else is the builtin's TypeError */
+							zend_type_error("array_key_exists(): Argument #1 ($key) must be a valid array offset type");
+							return false;
+						}
+						collected = !zend_symtable_exists(declaredParameterNames, Z_STR_P(identifierName));
 					}
-					if (!zend_symtable_exists(declaredParameterNames, Z_STR_P(identifierName))) {
-						matched = arg;
-						return true;
+					if (collected) {
+						matchedAny = true;
+						if (UNEXPECTED(!onMatch(arg))) return false;
 					}
 				}
 				continue;
@@ -541,8 +561,10 @@ private:
 			/* $i === $parameterIndex || ($isVariadic && $i > $parameterIndex) */
 			zend_string *argKey = argEntry.stringKeyOrNull();
 			if (argKey == NULL && (zend_long) argEntry.indexKey() == parameterIndex) {
-				matched = arg;
-				return true;
+				matchedAny = true;
+				if (!isVariadic) return onMatch(arg);
+				if (UNEXPECTED(!onMatch(arg))) return false;
+				continue;
 			}
 			if (isVariadic) {
 				zval iZv, parameterIndexZv;
@@ -553,8 +575,8 @@ private:
 				}
 				ZVAL_LONG(&parameterIndexZv, parameterIndex);
 				if (zend_compare(&iZv, &parameterIndexZv) > 0) {
-					matched = arg;
-					return true;
+					matchedAny = true;
+					if (UNEXPECTED(!onMatch(arg))) return false;
 				}
 			}
 		}

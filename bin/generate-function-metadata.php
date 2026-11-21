@@ -124,7 +124,7 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
+	/** @var array<string, array{hasSideEffects?: bool, effects?: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
@@ -168,7 +168,7 @@ use Symfony\Component\Finder\Finder;
 				throw new ShouldNotHappenException($functionName);
 			}
 		}
-		$metadata[$functionName] = ['hasSideEffects' => true];
+		$metadata[$functionName] = ['hasSideEffects' => true] + ($metadata[$functionName] ?? []);
 	}
 
 	foreach ($visitor->methods as $methodName) {
@@ -201,6 +201,8 @@ use Symfony\Component\Finder\Finder;
  * The array is keyed by lowercase function name or "Class::method". Each entry is
  * exactly one of:
  *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
+ *     An entry with side effects may also list them all in 'effects' => list<string>,
+ *     e.g. var_dump()'s 'io.output'.
  *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
  *     one of the listed callable parameters (keyed by parameter name) receives an
  *     impure callable, e.g. array_map()'s 'callback'.
@@ -209,7 +211,7 @@ use Symfony\Component\Finder\Finder;
  *     an argument, e.g. str_replace()'s 'count'.
  */
 
-/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, effects?: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 %s
 ];
@@ -232,6 +234,9 @@ php;
 		$entries = [];
 		if (isset($meta['hasSideEffects'])) {
 			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
+		}
+		if (isset($meta['effects'])) {
+			$entries[] = sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($escape, $meta['effects'])));
 		}
 		if (isset($meta['pureUnlessCallableIsImpureParameters'])) {
 			$entries[] = sprintf('%s => %s', $escape('pureUnlessCallableIsImpureParameters'), $encodeParameterMap($meta['pureUnlessCallableIsImpureParameters']));

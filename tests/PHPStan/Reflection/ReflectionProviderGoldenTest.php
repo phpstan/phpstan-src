@@ -416,6 +416,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= 'Has side-effects: ' . $sideEffects->hasAny()->describe() . "\n";
 		}
 
+		if ($sideEffects->getEffectNames() !== []) {
+			$result .= 'Effects: ' . implode(', ', $sideEffects->getEffectNames()) . "\n";
+		}
+
 		foreach ($sideEffects->getCalledParameters() as $parameterName => $called) {
 			$result .= 'Calls parameter $' . $parameterName . ': ' . $called->describe() . "\n";
 		}

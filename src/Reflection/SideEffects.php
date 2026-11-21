@@ -3,28 +3,35 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
-use function array_filter;
+use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
  * The side effects of a function or method, as returned by getSideEffects().
  *
- * hasAny() answers what hasSideEffects() answers. The called parameters are
- * those flagged as pure unless the callable is impure: the call has the side
- * effects of the callable passed there. The written parameters are those
- * flagged as pure unless the parameter is passed: the call writes to the
- * argument passed there.
+ * A function has the named effects, such as io.output, and possibly any other
+ * effect as much as $others says: No when the list is known to be complete,
+ * Maybe when nothing is known, Yes when it has some effects that are not
+ * named.
+ *
+ * The called parameters are those flagged as pure unless the callable is
+ * impure: the call has the side effects of the callable passed there. The
+ * written parameters are those flagged as pure unless the parameter is passed:
+ * the call writes to the argument passed there.
  *
  * @api
  */
+#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/SideEffects.cpp')]
 final class SideEffects
 {
 
 	/**
+	 * @param list<string> $effects
 	 * @param array<string, TrinaryLogic> $calledParameters
 	 * @param array<string, TrinaryLogic> $writtenParameters
 	 */
 	private function __construct(
-		private TrinaryLogic $any,
+		private array $effects,
+		private TrinaryLogic $others,
 		private array $calledParameters,
 		private array $writtenParameters,
 	)
@@ -33,64 +40,46 @@ final class SideEffects
 
 	public static function none(): self
 	{
-		return new self(TrinaryLogic::createNo(), [], []);
+		return new self([], TrinaryLogic::createNo(), [], []);
 	}
 
 	public static function all(): self
 	{
-		return new self(TrinaryLogic::createYes(), [], []);
+		return new self([], TrinaryLogic::createYes(), [], []);
 	}
 
 	public static function unknown(): self
 	{
-		return new self(TrinaryLogic::createMaybe(), [], []);
+		return new self([], TrinaryLogic::createMaybe(), [], []);
 	}
 
 	/**
-	 * Derives the side effects from hasSideEffects() and the conditional purity
-	 * flags of the variants' parameters.
+	 * @param list<string> $effects
+	 * @param array<string, TrinaryLogic> $calledParameters
+	 * @param array<string, TrinaryLogic> $writtenParameters
 	 */
-	public static function createFromReflection(FunctionReflection|ExtendedMethodReflection $reflection): self
+	public static function create(array $effects, TrinaryLogic $others, array $calledParameters = [], array $writtenParameters = []): self
 	{
-		$called = [];
-		$written = [];
-		foreach ($reflection->getVariants() as $variant) {
-			$variantCalled = [];
-			$variantWritten = [];
-			foreach ($variant->getParameters() as $parameter) {
-				$variantCalled[$parameter->getName()] = $parameter->isPureUnlessCallableIsImpureParameter();
-				$variantWritten[$parameter->getName()] = $parameter->isPureUnlessParameterPassedParameter();
-			}
-			$called[] = $variantCalled;
-			$written[] = $variantWritten;
-		}
-
-		return new self($reflection->hasSideEffects(), self::mergeVariants($called), self::mergeVariants($written));
-	}
-
-	/**
-	 * A parameter flagged differently by the variants that have it is flagged
-	 * Maybe. A variant without the parameter does not count: it cannot pass
-	 * anything to it.
-	 *
-	 * @param list<array<string, TrinaryLogic>> $variants
-	 * @return array<string, TrinaryLogic>
-	 */
-	private static function mergeVariants(array $variants): array
-	{
-		$merged = [];
-		foreach ($variants as $variant) {
-			foreach ($variant as $name => $flag) {
-				$merged[$name] = isset($merged[$name]) && !$merged[$name]->equals($flag) ? TrinaryLogic::createMaybe() : $flag;
-			}
-		}
-
-		return array_filter($merged, static fn (TrinaryLogic $flag): bool => !$flag->no());
+		return new self($effects, $others, $calledParameters, $writtenParameters);
 	}
 
 	public function hasAny(): TrinaryLogic
 	{
-		return $this->any;
+		if ($this->effects !== []) {
+			return TrinaryLogic::createYes();
+		}
+
+		return $this->others;
+	}
+
+	/**
+	 * For messages and the reflection golden test only, never for comparisons.
+	 *
+	 * @return list<string>
+	 */
+	public function getEffectNames(): array
+	{
+		return $this->effects;
 	}
 
 	/**
@@ -107,6 +96,12 @@ final class SideEffects
 	public function getWrittenParameters(): array
 	{
 		return $this->writtenParameters;
+	}
+
+	/** Whether the call writes to the argument passed to the parameter. */
+	public function writesParameter(string $parameterName): TrinaryLogic
+	{
+		return $this->writtenParameters[$parameterName] ?? $this->others;
 	}
 
 }

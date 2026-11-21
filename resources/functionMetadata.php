@@ -16,6 +16,8 @@
  * The array is keyed by lowercase function name or "Class::method". Each entry is
  * exactly one of:
  *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
+ *     An entry with side effects may also list them all in 'effects' => list<string>,
+ *     e.g. var_dump()'s 'io.output'.
  *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
  *     one of the listed callable parameters (keyed by parameter name) receives an
  *     impure callable, e.g. array_map()'s 'callback'.
@@ -24,7 +26,7 @@
  *     an argument, e.g. str_replace()'s 'count'.
  */
 
-/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, effects?: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 	'ArrayIterator::count' => ['hasSideEffects' => false],
 	'ArrayIterator::getArrayCopy' => ['hasSideEffects' => false],
@@ -2123,6 +2125,7 @@ return [
 	'urlencode' => ['hasSideEffects' => false],
 	'utf8_decode' => ['hasSideEffects' => false],
 	'utf8_encode' => ['hasSideEffects' => false],
+	'var_dump' => ['hasSideEffects' => true, 'effects' => ['io.output']],
 	'version_compare' => ['hasSideEffects' => false],
 	'vsprintf' => ['hasSideEffects' => false],
 	'wordwrap' => ['hasSideEffects' => false],

@@ -2538,6 +2538,17 @@ zv::Val pt_class_reflection_get_display_name(zend_object *classReflection, bool 
 
 /* }}} */
 
+/* {{{ SideEffects.cpp */
+
+extern zend_class_entry *pt_ce_side_effects;
+/* $sideEffects->hasAny() / ->writesParameter($parameterName) of a
+ * SideEffects (final, so always the native class), the PT_TRI_* value;
+ * -1 = pending exception */
+zend_long pt_side_effects_has_any(zend_object *sideEffects);
+zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string *parameterName);
+
+/* }}} */
+
 /* {{{ SimpleImpurePoint.cpp */
 
 extern zend_class_entry *pt_ce_simple_impure_point;

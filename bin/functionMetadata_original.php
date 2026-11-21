@@ -9,6 +9,9 @@
  *
  *   - ['hasSideEffects' => bool]
  *         false: the call is pure. true: the call has side effects.
+ *         With true, 'effects' => list<string> can list all of them, such as
+ *         'io.output' for a call that only prints. Any other effect is then
+ *         known not to happen.
  *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>]
  *         the call is pure unless one of the listed callable parameters
  *         (keyed by parameter name) receives an impure callable, e.g. array_map()
@@ -21,7 +24,7 @@
  * The last two can be combined for a call that is pure unless either happens.
  */
 
-/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
+/** @var array<string, array{hasSideEffects?: bool, effects?: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 	'abs' => ['hasSideEffects' => false],
 	'acos' => ['hasSideEffects' => false],
@@ -401,6 +404,7 @@ return [
 	'touch' => ['hasSideEffects' => true],
 	'umask' => ['hasSideEffects' => true],
 	'unlink' => ['hasSideEffects' => true],
+	'var_dump' => ['hasSideEffects' => true, 'effects' => ['io.output']],
 
 	// random functions, do not have side effects but are not deterministic
 	'mt_rand' => ['hasSideEffects' => true],

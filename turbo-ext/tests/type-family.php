@@ -9141,6 +9141,48 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 	}
 }
 
+// ---- SideEffects ----
+// The value class from its factories and from real reflections: void and
+// listed-effects built-ins, conditional purity parameters, pure functions and
+// an unannotated user method; every query, including written parameters that
+// are listed, unlisted and numeric-looking
+$observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new ReflectionMethod(\PHPStan\Reflection\SideEffects::class, 'writesParameter'))->isInternal();
+{
+	$yes = \PHPStan\TrinaryLogic::createYes();
+	$maybe = \PHPStan\TrinaryLogic::createMaybe();
+	$no = \PHPStan\TrinaryLogic::createNo();
+	$viewSideEffects = static fn (\PHPStan\Reflection\SideEffects $sideEffects): array => [
+		$view($sideEffects->hasAny()),
+		$sideEffects->getEffectNames(),
+		array_map($view, $sideEffects->getCalledParameters()),
+		array_map($view, $sideEffects->getWrittenParameters()),
+		$view($sideEffects->writesParameter('count')),
+		$view($sideEffects->writesParameter('other')),
+		$view($sideEffects->writesParameter('0')),
+	];
+	$sideEffectsSubjects = [
+		'none' => static fn () => \PHPStan\Reflection\SideEffects::none(),
+		'all' => static fn () => \PHPStan\Reflection\SideEffects::all(),
+		'unknown' => static fn () => \PHPStan\Reflection\SideEffects::unknown(),
+		'create listed' => static fn () => \PHPStan\Reflection\SideEffects::create(['io.output'], $no),
+		'create empty no' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no),
+		'create maybe parameters' => static fn () => \PHPStan\Reflection\SideEffects::create([], $maybe, ['callback' => $yes], ['count' => $yes, 'other' => $maybe, 0 => $yes]),
+		'create named' => static fn () => \PHPStan\Reflection\SideEffects::create(others: $yes, effects: ['sleep', 'io.files'], writtenParameters: ['count' => $maybe]),
+	];
+	foreach (['var_dump', 'str_replace', 'array_map', 'array_udiff', 'strlen', 'usleep', 'print_r'] as $functionName) {
+		$sideEffectsSubjects["function $functionName"] = static fn () => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null)->getSideEffects();
+	}
+	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
+		$sideEffectsSubjects["method $methodName"] = static fn () => $fixture->getNativeMethod($methodName)->getSideEffects();
+	}
+	foreach ($sideEffectsSubjects as $name => $subject) {
+		$observations["SideEffects $name"] = $catching(static fn () => $viewSideEffects($subject()));
+	}
+	$observations['SideEffects create wrong others'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([], new \stdClass()));
+	$observations['SideEffects wrong written parameter'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([], $no, [], ['count' => 'yes'])->writesParameter('count'));
+	$observations['SideEffects new'] = $catching(static fn () => (new ReflectionClass(\PHPStan\Reflection\SideEffects::class))->newInstance());
+}
+
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's
 // descriptions) go out base64-encoded so json_encode() keeps every byte; the
 // non-finite floats (the NAN and infinity subjects' values) as their names

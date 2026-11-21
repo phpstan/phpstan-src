@@ -200,6 +200,7 @@ final class NativeFunctionReflectionProvider
 			$returnsByReference,
 			$acceptsNamedArguments,
 			$this->attributeReflectionFactory->fromNativeReflection($attributes, InitializerExprContext::fromFunction($realFunctionName, $fileName)),
+			$functionMetadata['effects'] ?? null,
 		);
 		$this->functionMap[$lowerCasedFunctionName] = $functionReflection;
 

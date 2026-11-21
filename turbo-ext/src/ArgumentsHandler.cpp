@@ -648,6 +648,35 @@ zend_long calleeHasSideEffects(zval *reflection)
 	return trinaryOf(result);
 }
 
+/* Mirrors writesArgument(): whether the callee writes to the argument passed
+ * to $parameter (NULL or IS_NULL for an argument no parameter receives), the
+ * PT_TRI_* value; -1 = pending exception */
+zend_long calleeWritesArgument(zval *reflection, zval *parameter)
+{
+	bool isFunction = false;
+	bool isExtendedMethod = false;
+	if (UNEXPECTED(!isA(reflection, PT_CLASS_FUNCTION_REFLECTION, isFunction))) return -1;
+	if (!isFunction && UNEXPECTED(!isA(reflection, PT_CLASS_EXTENDED_METHOD_REFLECTION, isExtendedMethod))) return -1;
+	if (!isFunction && !isExtendedMethod) return calleeHasSideEffects(reflection);
+
+	zv::Val sideEffects = calleeCall(reflection, PT_MR_GET_SIDE_EFFECTS, "getSideEffects");
+	if (UNEXPECTED(sideEffects.isUndef())) return -1;
+	/* getSideEffects(): SideEffects, a final class only the native one implements */
+	if (UNEXPECTED(Z_TYPE_P(sideEffects.raw()) != IS_OBJECT || Z_OBJCE_P(sideEffects.raw()) != pt_ce_side_effects)) {
+		zend_throw_error(NULL, "Call to a member function writesParameter() on %s", zend_zval_value_name(sideEffects.raw()));
+		return -1;
+	}
+	if (parameter == NULL || Z_TYPE_P(parameter) == IS_NULL) return pt_side_effects_has_any(Z_OBJ_P(sideEffects.raw()));
+
+	zv::Val name = parameterGetName(parameter);
+	if (UNEXPECTED(name.isUndef())) return -1;
+	if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
+		zend_type_error("PHPStan\\Reflection\\SideEffects::writesParameter(): Argument #1 ($parameterName) must be of type string, %s given", zend_zval_value_name(name.raw()));
+		return -1;
+	}
+	return pt_side_effects_writes_parameter(Z_OBJ_P(sideEffects.raw()), Z_STR_P(name.raw()));
+}
+
 zend_long calleeIsPure(zval *reflection)
 {
 	zv::Val result = calleeCall(reflection, PT_MR_IS_PURE, "isPure");
@@ -2736,9 +2765,9 @@ private:
 		}
 
 		if (Z_TYPE_P(w.calleeReflection) == IS_NULL) return true;
-		zend_long hasSideEffects = calleeHasSideEffects(w.calleeReflection);
-		if (UNEXPECTED(hasSideEffects < 0)) return false;
-		if (hasSideEffects != PT_TRI_YES) return true;
+		zend_long writesArgument = calleeWritesArgument(w.calleeReflection, currentParameter);
+		if (UNEXPECTED(writesArgument < 0)) return false;
+		if (writesArgument != PT_TRI_YES) return true;
 
 		zval *argResult = readArgResult(w.argResults.table(), argValueZv);
 		if (UNEXPECTED(argResult == NULL)) return false;

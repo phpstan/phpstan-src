@@ -824,7 +824,7 @@ final class ArgumentsHandler
 						)->getScope();
 						$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $argValue);
 					}
-				} elseif ($calleeReflection !== null && $calleeReflection->hasSideEffects()->yes()) {
+				} elseif ($calleeReflection !== null && self::writesArgument($calleeReflection, $currentParameter)->yes()) {
 					$argType = $this->readArgResult($argResults, $arg->value)->getTypeOnScope($scope, false);
 					if (!$argType->isObject()->no()) {
 						$nakedReturnType = null;
@@ -872,6 +872,24 @@ final class ArgumentsHandler
 			$argResults,
 			$byRefArguments,
 		);
+	}
+
+	/**
+	 * Whether the callee writes to the argument passed to the parameter, or to
+	 * an argument no parameter receives.
+	 */
+	private static function writesArgument(MethodReflection|FunctionReflection $calleeReflection, ?ParameterReflection $parameter): TrinaryLogic
+	{
+		if (!$calleeReflection instanceof FunctionReflection && !$calleeReflection instanceof ExtendedMethodReflection) {
+			return $calleeReflection->hasSideEffects();
+		}
+
+		$sideEffects = $calleeReflection->getSideEffects();
+		if ($parameter === null) {
+			return $sideEffects->hasAny();
+		}
+
+		return $sideEffects->writesParameter($parameter->getName());
 	}
 
 	/**

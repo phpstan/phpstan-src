@@ -7,6 +7,7 @@ use PHPStan\Reflection\AttributeReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
@@ -26,6 +27,7 @@ final class NativeFunctionReflection implements FunctionReflection
 	 * @param list<ExtendedParametersAcceptor> $variants
 	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
 	 * @param list<AttributeReflection> $attributes
+	 * @param list<string>|null $effects the complete list of side effects, null when unknown
 	 */
 	public function __construct(
 		private string $name,
@@ -39,6 +41,7 @@ final class NativeFunctionReflection implements FunctionReflection
 		?TrinaryLogic $returnsByReference,
 		private bool $acceptsNamedArguments,
 		private array $attributes,
+		private ?array $effects = null,
 	)
 	{
 		$this->assertions = $assertions ?? Assertions::createEmpty();
@@ -125,7 +128,7 @@ final class NativeFunctionReflection implements FunctionReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return SideEffects::createFromReflection($this);
+		return SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	private function isVoid(): bool

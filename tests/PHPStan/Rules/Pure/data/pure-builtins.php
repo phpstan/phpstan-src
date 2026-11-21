@@ -42,9 +42,9 @@ function throwables(\Throwable $e): string
 }
 
 /** @phpstan-pure */
-function dates(\DateTimeImmutable $d, \DateInterval $i): string
+function dates(\DateInterval $i): string
 {
-	return $d->getMicrosecond() . $i->format('%d') . (new \DateTimeZone('UTC'))->getName();
+	return $i->format('%d') . (new \DateTimeZone('UTC'))->getName();
 }
 
 /**
@@ -63,5 +63,5 @@ function spl(\ArrayObject $a, \SplObjectStorage $s, object $o): int
  */
 function reflection(\ReflectionClass $c, \ReflectionProperty $p): bool
 {
-	return $c->hasMethod('foo') && $c->isEnum() && $p->hasType() && $p->isReadOnly();
+	return $c->hasMethod('foo') && $c->hasConstant('FOO') && $p->hasType();
 }

@@ -20,6 +20,12 @@ namespace sigs = ptdecl::SideEffects::sig;
 
 zend_class_entry *pt_ce_side_effects = nullptr;
 
+/* the built-in effect names the analysis asks about */
+static constexpr char pt_se_nondeterministic[] = "nondeterministic";
+static constexpr char pt_se_writes_this[] = "writes-this";
+static constexpr char pt_se_writes_global[] = "writes-global";
+static constexpr char pt_se_writes_args[] = "writes-args";
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Reflection\SideEffects. */
@@ -86,7 +92,41 @@ public:
 		return others;
 	}
 
-	/* any effect "nondeterministic" or "nondeterministic.*" ? No : others->negate() */
+	/* has($effect): Yes when $effect or one of its sub-effects is listed,
+	 * else $this->others, or-ed with Maybe for each listed parent of $effect */
+	zv::Val has(zend_string *effect) const
+	{
+		zend_long value = hasValue(ZSTR_VAL(effect), ZSTR_LEN(effect));
+		if (UNEXPECTED(value < 0)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(value)));
+	}
+
+	/* has() as PT_TRI_*; -1 = pending exception */
+	zend_long hasValue(const char *effect, size_t len) const
+	{
+		zval *others = pt_typed_slot(self, slots::others, self->ce, "others");
+		if (UNEXPECTED(others == NULL)) return -1;
+		zend_long result = pt_trinary_value(Z_OBJ_P(others));
+		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
+		if (UNEXPECTED(effects == NULL)) return -1;
+		zval *listedZv;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(effects), listedZv) {
+			ZVAL_DEREF(listedZv);
+			if (Z_TYPE_P(listedZv) != IS_STRING) {
+				zend_type_error("str_starts_with(): Argument #1 ($haystack) must be of type string, %s given", zend_zval_value_name(listedZv));
+				return -1;
+			}
+			const char *listed = Z_STRVAL_P(listedZv);
+			size_t listedLen = Z_STRLEN_P(listedZv);
+			/* $listed === $effect || str_starts_with($listed, $effect . '.') */
+			if (listedLen >= len && memcmp(listed, effect, len) == 0 && (listedLen == len || listed[len] == '.')) return PT_TRI_YES;
+			/* str_starts_with($effect, $listed . '.'): $result->or(Maybe) */
+			if (len > listedLen && memcmp(effect, listed, listedLen) == 0 && effect[listedLen] == '.' && result == PT_TRI_NO) result = PT_TRI_MAYBE;
+		} ZEND_HASH_FOREACH_END();
+		return result;
+	}
+
+	/* $this->has('nondeterministic')->negate() */
 	zv::Val isDeterministic() const
 	{
 		zend_long value = isDeterministicValue();
@@ -97,31 +137,16 @@ public:
 	/* isDeterministic() as PT_TRI_*; -1 = pending exception */
 	zend_long isDeterministicValue() const
 	{
-		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
-		if (UNEXPECTED(effects == NULL)) return -1;
-		zval *effect;
-		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(effects), effect) {
-			ZVAL_DEREF(effect);
-			if (Z_TYPE_P(effect) != IS_STRING) {
-				zend_type_error("str_starts_with(): Argument #1 ($haystack) must be of type string, %s given", zend_zval_value_name(effect));
-				return -1;
-			}
-			if (zend_string_equals_literal(Z_STR_P(effect), "nondeterministic")
-				|| (Z_STRLEN_P(effect) >= sizeof("nondeterministic.") - 1 && memcmp(Z_STRVAL_P(effect), "nondeterministic.", sizeof("nondeterministic.") - 1) == 0)) {
-				return PT_TRI_NO;
-			}
-		} ZEND_HASH_FOREACH_END();
-		zval *others = pt_typed_slot(self, slots::others, self->ce, "others");
-		if (UNEXPECTED(others == NULL)) return -1;
-		zend_long othersValue = pt_trinary_value(Z_OBJ_P(others));
-		return othersValue == PT_TRI_YES ? PT_TRI_NO : (othersValue == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
+		zend_long has = hasValue(pt_se_nondeterministic, sizeof(pt_se_nondeterministic) - 1);
+		if (UNEXPECTED(has < 0)) return -1;
+		return has == PT_TRI_YES ? PT_TRI_NO : (has == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
 	}
 
 	zv::Val getEffectNames() const { return read(slots::effects, "effects"); }
 	zv::Val getCalledParameters() const { return read(slots::calledParameters, "calledParameters"); }
 	zv::Val getWrittenParameters() const { return read(slots::writtenParameters, "writtenParameters"); }
 
-	/* $this->writtenParameters[$parameterName] ?? $this->others */
+	/* $this->writtenParameters[$parameterName] ?? $this->has('writes-args') */
 	zv::Val writesParameter(zend_string *parameterName) const
 	{
 		zval *writtenParameters = pt_typed_slot(self, slots::writtenParameters, self->ce, "writtenParameters");
@@ -138,7 +163,9 @@ public:
 				return zv::Val::copyOf(zv::Ref(written));
 			}
 		}
-		return read(slots::others, "others");
+		zend_long writesArgs = hasValue(pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
+		if (UNEXPECTED(writesArgs < 0)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(writesArgs)));
 	}
 
 private:
@@ -185,6 +212,29 @@ static zend_long pt_side_effects_result_varies_of(zv::Val sideEffects)
 	zend_long deterministic = SideEffects(Z_OBJ_P(sideEffects.raw())).isDeterministicValue();
 	if (UNEXPECTED(deterministic < 0)) return -1;
 	return deterministic == PT_TRI_YES ? PT_TRI_NO : (deterministic == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
+}
+
+zend_long pt_method_reflection_writes_receiver(zval *methodReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(methodReflection));
+		return -1;
+	}
+	zv::Val sideEffects = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS);
+	if (UNEXPECTED(sideEffects.isUndef())) return -1;
+	if (UNEXPECTED(Z_TYPE_P(sideEffects.raw()) != IS_OBJECT || Z_OBJCE_P(sideEffects.raw()) != pt_ce_side_effects)) {
+		zend_throw_error(NULL, "Call to a member function has() on %s", zend_zval_value_name(sideEffects.raw()));
+		return -1;
+	}
+	SideEffects view(Z_OBJ_P(sideEffects.raw()));
+	zend_long writesThis = view.hasValue(pt_se_writes_this, sizeof(pt_se_writes_this) - 1);
+	if (UNEXPECTED(writesThis < 0)) return -1;
+	zend_long writesGlobal = view.hasValue(pt_se_writes_global, sizeof(pt_se_writes_global) - 1);
+	if (UNEXPECTED(writesGlobal < 0)) return -1;
+	/* TrinaryLogic::or() */
+	if (writesThis == PT_TRI_YES || writesGlobal == PT_TRI_YES) return PT_TRI_YES;
+	if (writesThis == PT_TRI_MAYBE || writesGlobal == PT_TRI_MAYBE) return PT_TRI_MAYBE;
+	return PT_TRI_NO;
 }
 
 zend_long pt_function_reflection_result_varies(zval *functionReflection)
@@ -259,6 +309,7 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 	});
 
 	cls.method<&SideEffects::hasAny>(sigs::hasAny);
+	cls.method<&SideEffects::has, zp::Str>(sigs::has);
 	cls.method<&SideEffects::isDeterministic>(sigs::isDeterministic);
 	cls.method<&SideEffects::getEffectNames>(sigs::getEffectNames);
 	cls.method<&SideEffects::getCalledParameters>(sigs::getCalledParameters);

@@ -79,6 +79,27 @@ final class SideEffects
 	}
 
 	/**
+	 * Whether the call has the effect, or one of its sub-effects: has('io') is
+	 * Yes for io.files. A listed parent effect makes a sub-effect Maybe.
+	 */
+	public function has(string $effect): TrinaryLogic
+	{
+		$result = $this->others;
+		foreach ($this->effects as $listed) {
+			if ($listed === $effect || str_starts_with($listed, $effect . '.')) {
+				return TrinaryLogic::createYes();
+			}
+			if (!str_starts_with($effect, $listed . '.')) {
+				continue;
+			}
+
+			$result = $result->or(TrinaryLogic::createMaybe());
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Whether calling it again with the same arguments gives the same result.
 	 * A result that depends on global state is deterministic until the state
 	 * is written. The callables passed to the called parameters do not count:
@@ -86,13 +107,7 @@ final class SideEffects
 	 */
 	public function isDeterministic(): TrinaryLogic
 	{
-		foreach ($this->effects as $effect) {
-			if ($effect === 'nondeterministic' || str_starts_with($effect, 'nondeterministic.')) {
-				return TrinaryLogic::createNo();
-			}
-		}
-
-		return $this->others->negate();
+		return $this->has('nondeterministic')->negate();
 	}
 
 	/**
@@ -121,10 +136,13 @@ final class SideEffects
 		return $this->writtenParameters;
 	}
 
-	/** Whether the call writes to the argument passed to the parameter. */
+	/**
+	 * Whether the call writes to the argument passed to the parameter. A
+	 * listed writes-args without parameters writes to every argument.
+	 */
 	public function writesParameter(string $parameterName): TrinaryLogic
 	{
-		return $this->writtenParameters[$parameterName] ?? $this->others;
+		return $this->writtenParameters[$parameterName] ?? $this->has('writes-args');
 	}
 
 }

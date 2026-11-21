@@ -443,11 +443,12 @@ public:
 			zv::Val methodName = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_NAME);
 			if (UNEXPECTED(methodName.isUndef())) return zv::Val();
 			bool invalidate = Z_TYPE_P(methodName.raw()) == IS_STRING && zend_string_equals_literal(Z_STR_P(methodName.raw()), "__construct");
-			zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-			if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
+			/* the receiver's state: writes-this or writes-global */
+			zend_long writesReceiver = pt_method_reflection_writes_receiver(methodReflection.raw());
+			if (UNEXPECTED(writesReceiver < 0)) return zv::Val();
 			if (!invalidate) {
-				invalidate = hasSideEffects == PT_TRI_YES
-					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects == PT_TRI_MAYBE);
+				invalidate = writesReceiver == PT_TRI_YES
+					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && writesReceiver == PT_TRI_MAYBE);
 			}
 			if (invalidate) {
 				zval *normalizedVar = exprVar(normalizedExpr.raw());
@@ -465,7 +466,7 @@ public:
 				if (UNEXPECTED(preservedPropertyNames.isUndef())) return zv::Val();
 				currentScope = pt_mutating_scope_invalidate_expression(Z_OBJ_P(currentScope.raw()), normalizedVar, true, declaringClass.raw(), zend_is_true(isStatic.raw()), preservedPropertyNames.isNull() ? NULL : preservedPropertyNames.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-			} else if (hasSideEffects != PT_TRI_NO) {
+			} else if (writesReceiver != PT_TRI_NO) {
 				currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr, methodReflection.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			}

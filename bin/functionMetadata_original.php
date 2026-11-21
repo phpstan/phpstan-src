@@ -659,6 +659,7 @@ return [
 	'ReflectionProperty::isProtectedSet' => ['effects' => []],
 	'ReflectionProperty::isReadOnly' => ['effects' => []],
 	'ReflectionProperty::isVirtual' => ['effects' => []],
+	'ReflectionProperty::setRawValue' => ['effects' => ['writes-args']],
 	'ReflectionType::allowsNull' => ['effects' => []],
 	'ResourceBundle::create' => ['effects' => []],
 	'ResourceBundle::getLocales' => ['effects' => []],
@@ -674,7 +675,7 @@ return [
 	'SplDoublyLinkedList::shift' => ['effects' => ['*']],
 	'SplDoublyLinkedList::top' => ['effects' => []],
 
-	'SplFileObject::fflush' => ['effects' => ['*']],
+	'SplFileObject::fflush' => ['effects' => ['io.files', 'nondeterministic', 'writes-this']],
 	'SplFileObject::fgetc' => ['effects' => ['*']],
 	'SplFileObject::fgetcsv' => ['effects' => ['*']],
 	'SplFileObject::fgets' => ['effects' => ['io.files', 'nondeterministic', 'writes-this']],

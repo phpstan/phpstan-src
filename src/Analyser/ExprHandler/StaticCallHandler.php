@@ -44,6 +44,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
@@ -375,6 +376,10 @@ final class StaticCallHandler implements ExprHandler
 			}
 		}
 
+		// the receiver's state: $this, or the static properties of the class
+		$writesReceiver = $methodReflection !== null
+			? $methodReflection->getSideEffects()->has('writes-this')->or($methodReflection->getSideEffects()->has('writes-global'))
+			: TrinaryLogic::createNo();
 		if (
 			$expr->class instanceof Name
 			&& $methodReflection !== null
@@ -383,8 +388,8 @@ final class StaticCallHandler implements ExprHandler
 					!$methodReflection->isStatic()
 					&& $methodReflection->getName() === '__construct'
 				)
-				|| $methodReflection->hasSideEffects()->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe())
+				|| $writesReceiver->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && $writesReceiver->maybe())
 			)
 			&& $scope->isInClass()
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
@@ -400,7 +405,7 @@ final class StaticCallHandler implements ExprHandler
 		} elseif (
 			$expr->class instanceof Name
 			&& $methodReflection !== null
-			&& !$methodReflection->hasSideEffects()->no()
+			&& !$writesReceiver->no()
 		) {
 			$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr, $methodReflection);
 		}

@@ -2553,6 +2553,9 @@ zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string
 /* $reflection->getSideEffects()->isDeterministic()->negate() as PT_TRI_*; -1 = pending exception */
 zend_long pt_function_reflection_result_varies(zval *functionReflection);
 zend_long pt_side_effects_is_deterministic(zend_object *sideEffects);
+/* $sideEffects->has('writes-this')->or($sideEffects->has('writes-global')) of
+ * $methodReflection->getSideEffects() as PT_TRI_*; -1 = pending exception */
+zend_long pt_method_reflection_writes_receiver(zval *methodReflection);
 zend_long pt_method_reflection_result_varies(zval *methodReflection);
 
 /* }}} */

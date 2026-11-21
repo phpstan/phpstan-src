@@ -320,11 +320,13 @@ final class MethodCallHandler implements ExprHandler
 				$throwPoints[] = $methodThrowPoint;
 			}
 
-			$hasSideEffects = $methodReflection->hasSideEffects();
+			// the receiver's state: the object itself, or the static properties of its class
+			$sideEffects = $methodReflection->getSideEffects();
+			$writesReceiver = $sideEffects->has('writes-this')->or($sideEffects->has('writes-global'));
 			if (
 				$methodReflection->getName() === '__construct'
-				|| $hasSideEffects->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && $hasSideEffects->maybe())
+				|| $writesReceiver->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && $writesReceiver->maybe())
 			) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression(
@@ -334,7 +336,7 @@ final class MethodCallHandler implements ExprHandler
 					$methodReflection->isStatic(),
 					$this->preservedPropertiesResolver->resolve($expr),
 				);
-			} elseif (!$hasSideEffects->no()) {
+			} elseif (!$writesReceiver->no()) {
 				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr, $methodReflection);
 			}
 			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);

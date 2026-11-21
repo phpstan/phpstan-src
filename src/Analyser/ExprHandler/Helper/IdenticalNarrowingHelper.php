@@ -824,7 +824,7 @@ final class IdenticalNarrowingHelper
 			if (in_array($funcName, ['gettype', 'get_class', 'get_debug_type'], true) && $constantType->isString()->yes()) {
 				return $this->specifyIdentical($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			}
-			if ($context->true() && $funcName === 'preg_match' && (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()) {
+			if ($value === 1 && $this->isOnlyTruthyResultOne($subjectResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted))) {
 				return $this->specifyIdentical($nodeScopeResolver, $left, $right, $leftResult, $rightResult, $context, $evaluationScope, $leftArgResult, $rightArgResult, $identicalTypeCallback);
 			}
 		}
@@ -838,6 +838,15 @@ final class IdenticalNarrowingHelper
 		}
 
 		return false;
+	}
+
+	private function isOnlyTruthyResultOne(Type $callType): bool
+	{
+		if ($callType->toBoolean()->isFalse()->yes()) {
+			return false;
+		}
+
+		return TypeCombinator::remove($callType, new ConstantIntegerType(1))->toBoolean()->isFalse()->yes();
 	}
 
 	/**
@@ -863,16 +872,13 @@ final class IdenticalNarrowingHelper
 			return false;
 		}
 
-		// preg_match(...) === 1 is the call's own truthy narrowing - the
-		// type-specifying extensions narrow the by-ref \$matches argument
+		// f(...) === 1 narrows like the truthy call when 1 is its only truthy result
 		if (
-			$call->name->toLowerString() === 'preg_match'
+			$context->true()
+			&& (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()
+			&& $this->isOnlyTruthyResultOne($subjectResult->getTypeOnScope($evaluationScope, $evaluationScope->nativeTypesPromoted))
 		) {
-			if ($context->true() && (new ConstantIntegerType(1))->isSuperTypeOf($constantType)->yes()) {
-				return $subjectResult->getSpecifiedTypesForScope($evaluationScope, $context);
-			}
-
-			// other constants and contexts only pin the call below
+			return $subjectResult->getSpecifiedTypesForScope($evaluationScope, $context);
 		}
 
 		// a trimmed string that is not '' was a non-empty string already

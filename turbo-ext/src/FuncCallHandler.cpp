@@ -1079,7 +1079,7 @@ public:
 			pt_simple_impure_point_data impurePoint;
 			if (UNEXPECTED(!pt_simple_impure_point_resolve(functionReflection.raw(), parametersAcceptor.raw(), scope.raw(), args.raw(), impurePoint))) return zv::Val();
 			if (impurePoint.exists) {
-				zv::Val converted = pt_impure_point_new(scopeBeforeArgs, expr, impurePoint.identifier, impurePoint.description, impurePoint.certain);
+				zv::Val converted = pt_impure_point_new_with_side_effects(scopeBeforeArgs, expr, impurePoint.identifier, impurePoint.description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
 				zend_string_release(impurePoint.description);
 				if (UNEXPECTED(converted.isUndef())) return zv::Val();
 				ptcall::appendTo(impurePoints, std::move(converted));
@@ -2518,21 +2518,15 @@ private:
 
 			zv::Val functionReflection = getFunction(slot(slots::reflectionProvider), name, scope);
 			if (UNEXPECTED(functionReflection.isUndef())) return false;
-			zv::Val sideEffectsHold;
-			zval *hasSideEffects = pt_function_reflection_has_side_effects(functionReflection.raw(), sideEffectsHold);
-			if (UNEXPECTED(hasSideEffects == NULL)) return false;
-			if (UNEXPECTED(Z_TYPE_P(hasSideEffects) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function yes() on %s", zend_zval_value_name(hasSideEffects));
-				return false;
-			}
-			zend_long sideEffects = pt_type_trinary_value(hasSideEffects);
-			if (UNEXPECTED(sideEffects < 0)) return false;
-			if (sideEffects == PT_TRI_YES) {
+			/* $resultVaries = ...->getSideEffects()->isDeterministic()->negate() */
+			zend_long resultVaries = pt_function_reflection_result_varies(functionReflection.raw());
+			if (UNEXPECTED(resultVaries < 0)) return false;
+			if (resultVaries == PT_TRI_YES) {
 				out = false;
 				return true;
 			}
 
-			out = remember || sideEffects == PT_TRI_NO;
+			out = remember || resultVaries == PT_TRI_NO;
 			return true;
 		}
 		if (UNEXPECTED(EG(exception))) return false;

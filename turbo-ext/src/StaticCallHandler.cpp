@@ -606,7 +606,7 @@ public:
 			pt_simple_impure_point_data impurePoint;
 			if (UNEXPECTED(!pt_simple_impure_point_resolve(methodReflection.raw(), parametersAcceptor.raw(), currentScope.raw(), args, impurePoint))) return zv::Val();
 			if (impurePoint.exists) {
-				zv::Val point = pt_impure_point_new(scopeBeforeArgs.raw(), expr, impurePoint.identifier, impurePoint.description, impurePoint.certain);
+				zv::Val point = pt_impure_point_new_with_side_effects(scopeBeforeArgs.raw(), expr, impurePoint.identifier, impurePoint.description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
 				zend_string_release(impurePoint.description);
 				if (UNEXPECTED(point.isUndef())) return zv::Val();
 				appendTo(impurePoints, std::move(point));
@@ -1108,14 +1108,15 @@ public:
 			return true;
 		}
 
-		zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-		if (UNEXPECTED(hasSideEffects < 0)) return false;
-		if (hasSideEffects == PT_TRI_YES) {
+		/* $resultVaries = $methodReflection->getSideEffects()->isDeterministic()->negate() */
+		zend_long resultVaries = pt_method_reflection_result_varies(methodReflection.raw());
+		if (UNEXPECTED(resultVaries < 0)) return false;
+		if (resultVaries == PT_TRI_YES) {
 			out = false;
 			return true;
 		}
 
-		out = zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) || hasSideEffects == PT_TRI_NO;
+		out = zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) || resultVaries == PT_TRI_NO;
 		return true;
 	}
 

@@ -2008,6 +2008,10 @@ zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolve
 extern zend_class_entry *pt_ce_impure_point;
 /* new ImpurePoint($scope, $node, $identifier, $description, $certain) */
 zv::Val pt_impure_point_new(zval *scope, zval *node, zend_string *identifier, zend_string *description, bool certain);
+/* the same with the sixth argument, $sideEffects NULL for null */
+zv::Val pt_impure_point_new_with_side_effects(zval *scope, zval *node, zend_string *identifier, zend_string *description, bool certain, zval *sideEffects);
+/* $impurePoint->getSideEffects()'s slot; NULL with the uninitialized-read Error pending */
+zval *pt_impure_point_side_effects(zend_object *impurePoint);
 
 extern zend_class_entry *pt_ce_throw_point;
 /* ThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) /
@@ -2546,6 +2550,10 @@ extern zend_class_entry *pt_ce_side_effects;
  * -1 = pending exception */
 zend_long pt_side_effects_has_any(zend_object *sideEffects);
 zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string *parameterName);
+/* $reflection->getSideEffects()->isDeterministic()->negate() as PT_TRI_*; -1 = pending exception */
+zend_long pt_function_reflection_result_varies(zval *functionReflection);
+zend_long pt_side_effects_is_deterministic(zend_object *sideEffects);
+zend_long pt_method_reflection_result_varies(zval *methodReflection);
 
 /* }}} */
 
@@ -2554,10 +2562,11 @@ zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string
 extern zend_class_entry *pt_ce_simple_impure_point;
 /* new SimpleImpurePoint($identifier, $description, $certain); UNDEF =
  * pending exception */
-zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain);
+zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects = NULL);
 /* SimpleImpurePoint::createFromVariant($function, $variant, $scope, $args)
  * without the object: exists false for the twin's null, the three
  * constructor arguments otherwise (identifier a permanent interned string,
+ * sideEffects UNDEF for null,
  * description owned by the caller, who releases it); $variant / $scope NULL
  * or IS_NULL for null, $args an array; false = pending exception */
 struct pt_simple_impure_point_data
@@ -2566,6 +2575,13 @@ struct pt_simple_impure_point_data
 	zend_string *identifier = nullptr;
 	zend_string *description = nullptr;
 	bool certain = false;
+	/* the twin's $sideEffects, owned: UNDEF for null */
+	zval sideEffects = {};
+
+	pt_simple_impure_point_data() = default;
+	pt_simple_impure_point_data(const pt_simple_impure_point_data &) = delete;
+	pt_simple_impure_point_data &operator=(const pt_simple_impure_point_data &) = delete;
+	~pt_simple_impure_point_data() { zval_ptr_dtor(&sideEffects); }
 };
 [[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out);
 

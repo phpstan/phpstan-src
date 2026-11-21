@@ -274,7 +274,7 @@ final class StaticCallHandler implements ExprHandler
 			// available once its result is stored
 			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
 			if ($impurePoint !== null) {
-				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
+				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain(), $impurePoint->getSideEffects());
 			}
 		} else {
 			$impurePoints[] = new ImpurePoint(
@@ -709,12 +709,12 @@ final class StaticCallHandler implements ExprHandler
 			return false;
 		}
 
-		$hasSideEffects = $methodReflection->hasSideEffects();
-		if ($hasSideEffects->yes()) {
+		$resultVaries = $methodReflection->getSideEffects()->isDeterministic()->negate();
+		if ($resultVaries->yes()) {
 			return false;
 		}
 
-		return $this->rememberPossiblyImpureFunctionValues || $hasSideEffects->no();
+		return $this->rememberPossiblyImpureFunctionValues || $resultVaries->no();
 	}
 
 	/**

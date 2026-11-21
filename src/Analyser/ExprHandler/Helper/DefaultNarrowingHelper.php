@@ -184,6 +184,11 @@ final class DefaultNarrowingHelper
 				continue;
 			}
 
+			// a call with effects whose result does not vary, like printf()
+			if ($impurePoint->getSideEffects() !== null && $impurePoint->getSideEffects()->isDeterministic()->yes()) {
+				continue;
+			}
+
 			return false;
 		}
 

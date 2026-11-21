@@ -314,6 +314,7 @@ return [
 	'pclose' => ['effects' => ['*']],
 	'popen' => ['effects' => ['*']],
 	'preg_replace_callback' => ['effects' => [], 'pureUnlessCallableIsImpureParameters' => ['callback' => true]],
+	'printf' => ['effects' => ['io.output']],
 	'similar_text' => ['effects' => [], 'pureUnlessParameterPassedParameters' => ['percent' => true]],
 	'readfile' => ['effects' => ['*']],
 	'rename' => ['effects' => ['*']],
@@ -405,7 +406,7 @@ return [
 	'str_replace' => ['effects' => [], 'pureUnlessParameterPassedParameters' => ['count' => true, 'replace_count' => true]],
 	'symlink' => ['effects' => ['*']],
 	'tidy_get_release' => ['effects' => []],
-	'time' => ['effects' => ['*']],
+	'time' => ['effects' => ['nondeterministic.time']],
 	'tempnam' => ['effects' => ['*']],
 	'tmpfile' => ['effects' => ['*']],
 	'touch' => ['effects' => ['*']],
@@ -418,6 +419,7 @@ return [
 	'rand' => ['effects' => ['*']],
 	'random_bytes' => ['effects' => ['*']],
 	'random_int' => ['effects' => ['*']],
+	'vprintf' => ['effects' => ['io.output']],
 
 	// methods
 	'ArrayIterator::count' => ['effects' => []],
@@ -510,6 +512,7 @@ return [
 	'IntlCalendar::fromDateTime' => ['effects' => []],
 	'IntlCalendar::getAvailableLocales' => ['effects' => []],
 	'IntlCalendar::getKeywordValuesForLocale' => ['effects' => []],
+	'IntlCalendar::getNow' => ['effects' => ['nondeterministic.time']],
 	'IntlChar::charAge' => ['effects' => []],
 	'IntlChar::charDigitValue' => ['effects' => []],
 	'IntlChar::charDirection' => ['effects' => []],
@@ -603,6 +606,7 @@ return [
 	'Locale::getScript' => ['effects' => []],
 	'Locale::lookup' => ['effects' => []],
 	'Locale::parseLocale' => ['effects' => []],
+	'Locale::setDefault' => ['effects' => ['writes-global']],
 	'MessageFormatter::create' => ['effects' => []],
 	'MessageFormatter::formatMessage' => ['effects' => []],
 	'MessageFormatter::parseMessage' => ['effects' => []],
@@ -673,7 +677,7 @@ return [
 	'SplFileObject::fflush' => ['effects' => ['*']],
 	'SplFileObject::fgetc' => ['effects' => ['*']],
 	'SplFileObject::fgetcsv' => ['effects' => ['*']],
-	'SplFileObject::fgets' => ['effects' => ['*']],
+	'SplFileObject::fgets' => ['effects' => ['io.files', 'nondeterministic', 'writes-this']],
 	'SplFileObject::fgetss' => ['effects' => ['*']],
 	'SplFileObject::fpassthru' => ['effects' => ['*']],
 	'SplFileObject::fputcsv' => ['effects' => ['*']],
@@ -687,7 +691,7 @@ return [
 	'SplFixedArray::offsetExists' => ['effects' => []],
 	'SplFixedArray::offsetGet' => ['effects' => []],
 
-	'SplFixedArray::setSize' => ['effects' => ['*']],
+	'SplFixedArray::setSize' => ['effects' => ['writes-this']],
 	'SplFixedArray::toArray' => ['effects' => []],
 	'SplHeap::count' => ['effects' => []],
 

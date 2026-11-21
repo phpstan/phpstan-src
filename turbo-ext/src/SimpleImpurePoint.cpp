@@ -165,8 +165,9 @@ public:
 	explicit SimpleImpurePoint(zend_object *self) : self(self) {}
 
 	/* __construct(private string $identifier, private string $description,
-	 * private bool $certain) */
-	void construct(zend_string *identifier, zend_string *description, bool certain) const
+	 * private bool $certain, private ?SideEffects $sideEffects = null);
+	 * $sideEffects NULL for null */
+	void construct(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects) const
 	{
 		zval value;
 		ZVAL_STR(&value, identifier);
@@ -175,20 +176,27 @@ public:
 		pt_write_slot(self, slots::description, &value);
 		ZVAL_BOOL(&value, certain);
 		pt_write_slot(self, slots::certain, &value);
+		if (sideEffects != NULL) {
+			pt_write_slot(self, slots::sideEffects, sideEffects);
+		} else {
+			ZVAL_NULL(&value);
+			pt_write_slot(self, slots::sideEffects, &value);
+		}
 	}
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zend_string *identifier, zend_string *description, bool certain)
+	static zv::Val create(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_simple_impure_point) != SUCCESS)) return zv::Val();
-		SimpleImpurePoint(Z_OBJ(object)).construct(identifier, description, certain);
+		SimpleImpurePoint(Z_OBJ(object)).construct(identifier, description, certain, sideEffects);
 		return zv::Val::adopt(object);
 	}
 
 	zv::Val getIdentifier() const { return read(slots::identifier, "identifier"); }
 	zv::Val getDescription() const { return read(slots::description, "description"); }
 	zv::Val isCertain() const { return read(slots::certain, "certain"); }
+	zv::Val getSideEffects() const { return read(slots::sideEffects, "sideEffects"); }
 
 	/* Mirrors createFromVariant() up to the constructor call: out.exists
 	 * false for the twin's null; false = pending exception. $variant /
@@ -196,6 +204,8 @@ public:
 	[[nodiscard]] static bool resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out)
 	{
 		out.exists = false;
+		zval_ptr_dtor(&out.sideEffects);
+		ZVAL_UNDEF(&out.sideEffects);
 		if (variant != NULL && Z_TYPE_P(variant) == IS_NULL) variant = NULL;
 		if (scope != NULL && Z_TYPE_P(scope) == IS_NULL) scope = NULL;
 
@@ -214,9 +224,10 @@ public:
 			certain = isVoid == PT_TRI_YES;
 		}
 
+		/* the twin's $verdict !== null */
+		bool hasVerdict = false;
 		if (!certain && scope != NULL && variant != NULL) {
 			zend_long verdict = PT_TRI_YES;
-			bool hasVerdict = false;
 			if (UNEXPECTED(!resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) return false;
 			if (hasVerdict) {
 				if (verdict == PT_TRI_YES) return true;
@@ -240,6 +251,14 @@ public:
 				if (sideEffectFlipped) return true;
 			}
 
+			/* $verdict === null ? $function->getSideEffects() : null, the
+			 * constructor's last argument (getName() before it has no effects) */
+			if (!hasVerdict) {
+				zv::Val sideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+				if (UNEXPECTED(sideEffects.isUndef())) return false;
+				out.sideEffects = sideEffects.take();
+			}
+
 			zv::Val name = pt_extended_method_reflection_call(function, PT_MR_GET_NAME);
 			if (UNEXPECTED(name.isUndef())) return false;
 			smart_str description = {NULL, 0};
@@ -251,6 +270,12 @@ public:
 			out.description = smart_str_extract(&description);
 			out.certain = certain;
 			return true;
+		}
+
+		if (!hasVerdict) {
+			zv::Val sideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+			if (UNEXPECTED(sideEffects.isUndef())) return false;
+			out.sideEffects = sideEffects.take();
 		}
 
 		zv::Val declaringClass = pt_extended_method_reflection_call(function, PT_MR_GET_DECLARING_CLASS);
@@ -315,7 +340,7 @@ public:
 				if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 				zv::Val description = point.getDescription();
 				if (UNEXPECTED(description.isUndef())) return zv::Val();
-				mapped = create(Z_STR_P(identifier.raw()), Z_STR_P(description.raw()), true);
+				mapped = create(Z_STR_P(identifier.raw()), Z_STR_P(description.raw()), true, NULL);
 				if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 			}
 			zend_string *key = entry.stringKeyOrNull();
@@ -653,9 +678,9 @@ using phpstanturbo::SimpleImpurePoint;
 
 /* {{{ exported helpers: the shadowing class for native callers */
 
-zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain)
+zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects)
 {
-	return SimpleImpurePoint::create(identifier, description, certain);
+	return SimpleImpurePoint::create(identifier, description, certain, sideEffects);
 }
 
 bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out)
@@ -697,9 +722,18 @@ PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *identifier, *description;
 		bool certain;
-		if (!zp::parse<zp::Str, zp::Str, zp::Bool>(execute_data, identifier, description, certain)) RETURN_THROWS();
-		SimpleImpurePoint(Z_OBJ_P(ZEND_THIS)).construct(identifier, description, certain);
+		zval *sideEffects = NULL;
+		ZEND_PARSE_PARAMETERS_START(3, 4)
+			Z_PARAM_STR(identifier)
+			Z_PARAM_STR(description)
+			Z_PARAM_BOOL(certain)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_OBJECT_OR_NULL(sideEffects)
+		ZEND_PARSE_PARAMETERS_END();
+		SimpleImpurePoint(Z_OBJ_P(ZEND_THIS)).construct(identifier, description, certain, sideEffects);
 	});
+
+	cls.method<&SimpleImpurePoint::getSideEffects>(sigs::getSideEffects);
 
 	cls.method(sigs::createFromVariant, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *function, *variant, *scope = NULL, *args = NULL;
@@ -718,7 +752,7 @@ PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 		pt_simple_impure_point_data data;
 		if (UNEXPECTED(!SimpleImpurePoint::resolve(function, variant, scope, args, data))) RETURN_THROWS();
 		if (!data.exists) RETURN_NULL();
-		zv::Val point = SimpleImpurePoint::create(data.identifier, data.description, data.certain);
+		zv::Val point = SimpleImpurePoint::create(data.identifier, data.description, data.certain, Z_ISUNDEF(data.sideEffects) ? NULL : &data.sideEffects);
 		zend_string_release(data.description);
 		PT_RETURN_VAL(std::move(point));
 	});

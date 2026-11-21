@@ -198,6 +198,8 @@ foreach ($avSides as $side => $c) {
 	$r['impure'] = [$impure->getScope() === $avScope, $impure->getNode() === $avN['call'], $impure->getIdentifier(), $impure->getDescription(), $impure->isCertain(), $avDescribe($impure)];
 	$named = new $c['ImpurePoint'](certain: false, description: 'd', identifier: 'echo', node: $avN['stmt'], scope: $avOtherScope);
 	$r['impure named'] = $avDescribe($named);
+	$withSideEffects = new $c['ImpurePoint']($avScope, $avN['call'], 'functionCall', 'call to function f', true, \PHPStan\Reflection\SideEffects::create(['io.output'], \PHPStan\TrinaryLogic::createNo()));
+	$r['impure side effects'] = [$withSideEffects->getSideEffects()?->getEffectNames(), $impure->getSideEffects(), $named->getSideEffects()];
 	$r['impure uninitialized'] = $avCatch(static fn () => (new \ReflectionClass($c['ImpurePoint']))->newInstanceWithoutConstructor()->getIdentifier());
 	$r['throw point private constructor'] = $avCatch(static fn () => new $c['InternalThrowPoint']($avScope, $avInt, $avN['call'], true, true));
 

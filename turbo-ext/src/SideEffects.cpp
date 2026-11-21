@@ -11,6 +11,7 @@
 
 #include "support.h"
 #include "generated/SideEffects.h"
+#include "Engine.h"
 
 namespace slots = ptdecl::SideEffects::slot;
 namespace sigs = ptdecl::SideEffects::sig;
@@ -85,6 +86,37 @@ public:
 		return others;
 	}
 
+	/* any effect "nondeterministic" or "nondeterministic.*" ? No : others->negate() */
+	zv::Val isDeterministic() const
+	{
+		zend_long value = isDeterministicValue();
+		if (UNEXPECTED(value < 0)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(value)));
+	}
+
+	/* isDeterministic() as PT_TRI_*; -1 = pending exception */
+	zend_long isDeterministicValue() const
+	{
+		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
+		if (UNEXPECTED(effects == NULL)) return -1;
+		zval *effect;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(effects), effect) {
+			ZVAL_DEREF(effect);
+			if (Z_TYPE_P(effect) != IS_STRING) {
+				zend_type_error("str_starts_with(): Argument #1 ($haystack) must be of type string, %s given", zend_zval_value_name(effect));
+				return -1;
+			}
+			if (zend_string_equals_literal(Z_STR_P(effect), "nondeterministic")
+				|| (Z_STRLEN_P(effect) >= sizeof("nondeterministic.") - 1 && memcmp(Z_STRVAL_P(effect), "nondeterministic.", sizeof("nondeterministic.") - 1) == 0)) {
+				return PT_TRI_NO;
+			}
+		} ZEND_HASH_FOREACH_END();
+		zval *others = pt_typed_slot(self, slots::others, self->ce, "others");
+		if (UNEXPECTED(others == NULL)) return -1;
+		zend_long othersValue = pt_trinary_value(Z_OBJ_P(others));
+		return othersValue == PT_TRI_YES ? PT_TRI_NO : (othersValue == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
+	}
+
 	zv::Val getEffectNames() const { return read(slots::effects, "effects"); }
 	zv::Val getCalledParameters() const { return read(slots::calledParameters, "calledParameters"); }
 	zv::Val getWrittenParameters() const { return read(slots::writtenParameters, "writtenParameters"); }
@@ -138,6 +170,50 @@ zend_long pt_side_effects_has_any(zend_object *sideEffects)
 	return pt_side_effects_trinary(SideEffects(sideEffects).hasAny());
 }
 
+/* $reflection->getSideEffects()->isDeterministic()->negate() for a
+ * FunctionReflection or an ExtendedMethodReflection; -1 = pending exception */
+static pt_method_site pt_se_function_get_side_effects_site;
+
+static zend_long pt_side_effects_result_varies_of(zv::Val sideEffects)
+{
+	if (UNEXPECTED(sideEffects.isUndef())) return -1;
+	/* getSideEffects(): SideEffects, a final class only the native one implements */
+	if (UNEXPECTED(Z_TYPE_P(sideEffects.raw()) != IS_OBJECT || Z_OBJCE_P(sideEffects.raw()) != pt_ce_side_effects)) {
+		zend_throw_error(NULL, "Call to a member function isDeterministic() on %s", zend_zval_value_name(sideEffects.raw()));
+		return -1;
+	}
+	zend_long deterministic = SideEffects(Z_OBJ_P(sideEffects.raw())).isDeterministicValue();
+	if (UNEXPECTED(deterministic < 0)) return -1;
+	return deterministic == PT_TRI_YES ? PT_TRI_NO : (deterministic == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
+}
+
+zend_long pt_function_reflection_result_varies(zval *functionReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(functionReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(functionReflection));
+		return -1;
+	}
+	return pt_side_effects_result_varies_of(pt_call_method_cached(pt_se_function_get_side_effects_site, Z_OBJ_P(functionReflection), PT_LC("getsideeffects"), 0, NULL));
+}
+
+zend_long pt_method_reflection_result_varies(zval *methodReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(methodReflection));
+		return -1;
+	}
+	return pt_side_effects_result_varies_of(pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS));
+}
+
+static pt_method_site pt_se_is_deterministic_site;
+
+zend_long pt_side_effects_is_deterministic(zend_object *sideEffects)
+{
+	if (EXPECTED(sideEffects->ce == pt_ce_side_effects)) return SideEffects(sideEffects).isDeterministicValue();
+	/* a twin from a test that mixes both implementations */
+	return pt_side_effects_trinary(pt_call_method_cached(pt_se_is_deterministic_site, sideEffects, PT_LC("isdeterministic"), 0, NULL));
+}
+
 zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string *parameterName)
 {
 	return pt_side_effects_trinary(SideEffects(sideEffects).writesParameter(parameterName));
@@ -183,6 +259,7 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 	});
 
 	cls.method<&SideEffects::hasAny>(sigs::hasAny);
+	cls.method<&SideEffects::isDeterministic>(sigs::isDeterministic);
 	cls.method<&SideEffects::getEffectNames>(sigs::getEffectNames);
 	cls.method<&SideEffects::getCalledParameters>(sigs::getCalledParameters);
 	cls.method<&SideEffects::getWrittenParameters>(sigs::getWrittenParameters);

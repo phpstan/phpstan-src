@@ -513,17 +513,17 @@ private:
 		return emptySpecifiedTypes();
 	}
 
-	/* isNotPure(): $hasSideEffects->yes() || (!$this->rememberPossiblyImpureFunctionValues
-	 * && !$hasSideEffects->no()); -1 = pending exception, else 0 / 1 */
-	int isNotPure(zend_long hasSideEffects) const
+	/* isNotPure(): $resultVaries->yes() || (!$this->rememberPossiblyImpureFunctionValues
+	 * && !$resultVaries->no()); -1 = pending exception, else 0 / 1 */
+	int isNotPure(zend_long resultVaries) const
 	{
-		if (hasSideEffects == PT_TRI_YES) return 1;
+		if (resultVaries == PT_TRI_YES) return 1;
 		bool remember;
 		if (UNEXPECTED(!rememberPossiblyImpureFunctionValues(remember))) return -1;
-		return !remember && hasSideEffects != PT_TRI_NO ? 1 : 0;
+		return !remember && resultVaries != PT_TRI_NO ? 1 : 0;
 	}
 
-	/* $methodReflection === null || $this->isNotPure($methodReflection->hasSideEffects());
+	/* $methodReflection === null || $this->isNotPure($methodReflection->getSideEffects()->isDeterministic()->negate());
 	 * -1 = pending exception, else 0 / 1 */
 	int methodIsNotPure(zval *methodReflection) const
 	{
@@ -532,9 +532,9 @@ private:
 			zend_throw_error(NULL, "Call to a member function hasSideEffects() on %s", zend_zval_value_name(methodReflection));
 			return -1;
 		}
-		zend_long hasSideEffects = pt_extended_method_reflection_trinary(methodReflection, PT_MR_HAS_SIDE_EFFECTS);
-		if (UNEXPECTED(hasSideEffects < 0)) return -1;
-		return isNotPure(hasSideEffects);
+		zend_long resultVaries = pt_method_reflection_result_varies(methodReflection);
+		if (UNEXPECTED(resultVaries < 0)) return -1;
+		return isNotPure(resultVaries);
 	}
 
 	/* $this->reflectionProvider->hasFunction($name, $scope); -1 = pending
@@ -743,9 +743,9 @@ private:
 				if (has <= 0) return has;
 				zv::Val functionReflection = pt_reflection_provider_get_function(slot(slots::reflectionProvider), name, scope);
 				if (UNEXPECTED(functionReflection.isUndef())) return -1;
-				zend_long hasSideEffects = trinaryOf(functionReflection.raw(), PT_LC("hassideeffects"), "hasSideEffects");
-				if (UNEXPECTED(hasSideEffects < 0)) return -1;
-				return isNotPure(hasSideEffects);
+				zend_long resultVaries = pt_function_reflection_result_varies(functionReflection.raw());
+				if (UNEXPECTED(resultVaries < 0)) return -1;
+				return isNotPure(resultVaries);
 			}
 			return callableIsNotPure(name, scope);
 		}

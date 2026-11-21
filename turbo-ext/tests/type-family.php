@@ -7238,7 +7238,7 @@ foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflect
 $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class] = (new ReflectionMethod(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'createFromVariant'))->isInternal();
 {
 	$r = [];
-	$viewImpurePoint = static fn (?\PHPStan\Reflection\Callables\SimpleImpurePoint $point): ?array => $point === null ? null : [$point->getIdentifier(), $point->getDescription(), $point->isCertain()];
+	$viewImpurePoint = static fn (?\PHPStan\Reflection\Callables\SimpleImpurePoint $point): ?array => $point === null ? null : [$point->getIdentifier(), $point->getDescription(), $point->isCertain(), $point->getSideEffects() === null ? null : [$point->getSideEffects()->hasAny()->describe(), $point->getSideEffects()->isDeterministic()->describe(), $point->getSideEffects()->getEffectNames()]];
 	$bool = new \PHPStan\Type\BooleanType();
 	$pureClosure = new \PHPStan\Type\ClosureType([], $int, false, impurePoints: []);
 	$impureClosure = new \PHPStan\Type\ClosureType([], $int, false, impurePoints: [new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain', true)]);
@@ -9153,6 +9153,7 @@ $observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new Reflect
 	$no = \PHPStan\TrinaryLogic::createNo();
 	$viewSideEffects = static fn (\PHPStan\Reflection\SideEffects $sideEffects): array => [
 		$view($sideEffects->hasAny()),
+		$view($sideEffects->isDeterministic()),
 		$sideEffects->getEffectNames(),
 		array_map($view, $sideEffects->getCalledParameters()),
 		array_map($view, $sideEffects->getWrittenParameters()),
@@ -9170,6 +9171,9 @@ $observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new Reflect
 		'create no written' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no, [], ['count' => $maybe]),
 		'create maybe parameters' => static fn () => \PHPStan\Reflection\SideEffects::create([], $maybe, ['callback' => $yes], ['count' => $yes, 'other' => $maybe, 0 => $yes]),
 		'create named' => static fn () => \PHPStan\Reflection\SideEffects::create(others: $yes, effects: ['sleep', 'io.files'], writtenParameters: ['count' => $maybe]),
+		'create nondeterministic' => static fn () => \PHPStan\Reflection\SideEffects::create(['nondeterministic'], $no),
+		'create nondeterministic sub' => static fn () => \PHPStan\Reflection\SideEffects::create(['io.files', 'nondeterministic.time'], $no),
+		'create nondeterministic prefix only' => static fn () => \PHPStan\Reflection\SideEffects::create(['nondeterministicish'], $no),
 	];
 	foreach (['var_dump', 'str_replace', 'array_map', 'array_udiff', 'strlen', 'usleep', 'print_r'] as $functionName) {
 		$sideEffectsSubjects["function $functionName"] = static fn () => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null)->getSideEffects();

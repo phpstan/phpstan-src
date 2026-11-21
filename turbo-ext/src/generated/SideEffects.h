@@ -47,11 +47,12 @@ inline constexpr char strings[] =
 	"[]\0" /* 132 */
 	"create\0" /* 135 */
 	"hasAny\0" /* 142 */
-	"getEffectNames\0" /* 149 */
-	"getCalledParameters\0" /* 164 */
-	"getWrittenParameters\0" /* 184 */
-	"parameterName\0" /* 205 */
-	"writesParameter"; /* 219 */
+	"isDeterministic\0" /* 149 */
+	"getEffectNames\0" /* 165 */
+	"getCalledParameters\0" /* 180 */
+	"getWrittenParameters\0" /* 200 */
+	"parameterName\0" /* 221 */
+	"writesParameter"; /* 235 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $effects */
 	reg::packed(8, 0, 15), /* __construct $others */
@@ -66,10 +67,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(53, MAY_BE_ARRAY, reg::NoString, false, false, 132), /* create $writtenParameters */
 	reg::packed(83, 0, 84), /* create return */
 	reg::packed(83, 0, 15), /* hasAny return */
+	reg::packed(83, 0, 15), /* isDeterministic return */
 	reg::packed(83, MAY_BE_ARRAY), /* getEffectNames return */
 	reg::packed(83, MAY_BE_ARRAY), /* getCalledParameters return */
 	reg::packed(83, MAY_BE_ARRAY), /* getWrittenParameters return */
-	reg::packed(205, MAY_BE_STRING), /* writesParameter $parameterName */
+	reg::packed(221, MAY_BE_STRING), /* writesParameter $parameterName */
 	reg::packed(83, 0, 15), /* writesParameter return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -83,10 +85,11 @@ inline constexpr sigtab::Sig all = { { 120 /* all */, 0, 5, 0, 5, ZEND_ACC_PUBLI
 inline constexpr sigtab::Sig unknown = { { 124 /* unknown */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig create = { { 135 /* create */, 2, 7, 4, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig hasAny = { { 142 /* hasAny */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getEffectNames = { { 149 /* getEffectNames */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCalledParameters = { { 164 /* getCalledParameters */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getWrittenParameters = { { 184 /* getWrittenParameters */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig writesParameter = { { 219 /* writesParameter */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDeterministic = { { 149 /* isDeterministic */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEffectNames = { { 165 /* getEffectNames */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCalledParameters = { { 180 /* getCalledParameters */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getWrittenParameters = { { 200 /* getWrittenParameters */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig writesParameter = { { 235 /* writesParameter */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::SideEffects

@@ -15,6 +15,7 @@ inline constexpr uint32_t node = 1;
 inline constexpr uint32_t identifier = 2;
 inline constexpr uint32_t description = 3;
 inline constexpr uint32_t certain = 4;
+inline constexpr uint32_t sideEffects = 5;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -30,6 +31,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("identifier", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_STRING);
 	cls.property("description", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_STRING);
 	cls.property("certain", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
+	cls.property("sideEffects", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_NULL, "PHPStan\\Reflection\\SideEffects");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -42,35 +44,42 @@ inline constexpr char strings[] =
 	"identifier\0" /* 49 */
 	"description\0" /* 60 */
 	"certain\0" /* 72 */
-	"__construct\0" /* 80 */
-	"\0" /* 92 */
-	"getScope\0" /* 93 */
-	"getNode\0" /* 102 */
-	"getIdentifier\0" /* 110 */
-	"getDescription\0" /* 124 */
-	"isCertain"; /* 139 */
+	"sideEffects\0" /* 80 */
+	"PHPStan\\Reflection\\SideEffects\0" /* 92 */
+	"null\0" /* 123 */
+	"__construct\0" /* 128 */
+	"\0" /* 140 */
+	"getScope\0" /* 141 */
+	"getNode\0" /* 150 */
+	"getIdentifier\0" /* 158 */
+	"getDescription\0" /* 172 */
+	"isCertain\0" /* 187 */
+	"getSideEffects"; /* 197 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* __construct $scope */
 	reg::packed(29, 0, 34), /* __construct $node */
 	reg::packed(49, MAY_BE_STRING), /* __construct $identifier */
 	reg::packed(60, MAY_BE_STRING), /* __construct $description */
 	reg::packed(72, MAY_BE_BOOL), /* __construct $certain */
-	reg::packed(92, 0, 6), /* getScope return */
-	reg::packed(92, MAY_BE_STRING), /* getIdentifier return */
-	reg::packed(92, MAY_BE_STRING), /* getDescription return */
-	reg::packed(92, MAY_BE_BOOL), /* isCertain return */
+	reg::packed(80, MAY_BE_NULL, 92, false, false, 123), /* __construct $sideEffects */
+	reg::packed(140, 0, 6), /* getScope return */
+	reg::packed(140, MAY_BE_STRING), /* getIdentifier return */
+	reg::packed(140, MAY_BE_STRING), /* getDescription return */
+	reg::packed(140, MAY_BE_BOOL), /* isCertain return */
+	reg::packed(140, MAY_BE_NULL, 92), /* getSideEffects return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 80 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getScope = { { 93 /* getScope */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNode = { { 102 /* getNode */, 0, 6, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getIdentifier = { { 110 /* getIdentifier */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getDescription = { { 124 /* getDescription */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isCertain = { { 139 /* isCertain */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 128 /* __construct */, 5, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getScope = { { 141 /* getScope */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNode = { { 150 /* getNode */, 0, 7, 0, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getIdentifier = { { 158 /* getIdentifier */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getDescription = { { 172 /* getDescription */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCertain = { { 187 /* isCertain */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSideEffects = { { 197 /* getSideEffects */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ImpurePoint

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\Node\VirtualNode;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
@@ -17,6 +18,7 @@ final class ImpurePoint
 	/**
 	 * @param Node\Expr|Node\Stmt|VirtualNode $node
 	 * @param ImpurePointIdentifier $identifier
+	 * @param SideEffects|null $sideEffects the side effects of the called function, null when unknown
 	 */
 	public function __construct(
 		private Scope $scope,
@@ -24,6 +26,7 @@ final class ImpurePoint
 		private string $identifier,
 		private string $description,
 		private bool $certain,
+		private ?SideEffects $sideEffects = null,
 	)
 	{
 	}
@@ -57,6 +60,11 @@ final class ImpurePoint
 	public function isCertain(): bool
 	{
 		return $this->certain;
+	}
+
+	public function getSideEffects(): ?SideEffects
+	{
+		return $this->sideEffects;
 	}
 
 }

@@ -395,7 +395,7 @@ final class FuncCallHandler implements ExprHandler
 			// is only available once its result is stored
 			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs());
 			if ($impurePoint !== null) {
-				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
+				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain(), $impurePoint->getSideEffects());
 			}
 		}
 
@@ -1190,12 +1190,12 @@ final class FuncCallHandler implements ExprHandler
 				return false;
 			}
 
-			$hasSideEffects = $this->reflectionProvider->getFunction($expr->name, $scope)->hasSideEffects();
-			if ($hasSideEffects->yes()) {
+			$resultVaries = $this->reflectionProvider->getFunction($expr->name, $scope)->getSideEffects()->isDeterministic()->negate();
+			if ($resultVaries->yes()) {
 				return false;
 			}
 
-			return $this->rememberPossiblyImpureFunctionValues || $hasSideEffects->no();
+			return $this->rememberPossiblyImpureFunctionValues || $resultVaries->no();
 		}
 
 		if ($nameResult === null) {

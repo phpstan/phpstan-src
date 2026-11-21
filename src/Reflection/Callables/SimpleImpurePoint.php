@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Type;
@@ -45,11 +46,13 @@ final class SimpleImpurePoint
 
 	/**
 	 * @param ImpurePointIdentifier $identifier
+	 * @param SideEffects|null $sideEffects the side effects of the called function, null when unknown
 	 */
 	public function __construct(
 		private string $identifier,
 		private string $description,
 		private bool $certain,
+		private ?SideEffects $sideEffects = null,
 	)
 	{
 	}
@@ -63,6 +66,7 @@ final class SimpleImpurePoint
 	{
 		if (!$function->hasSideEffects()->no()) {
 			$certain = $function->isPure()->no();
+			$verdict = null;
 			if ($variant !== null) {
 				$certain = $certain || $variant->getReturnType()->isVoid()->yes();
 			}
@@ -123,6 +127,7 @@ final class SimpleImpurePoint
 					'functionCall',
 					sprintf('call to function %s()', $function->getName()),
 					$certain,
+					$verdict === null ? $function->getSideEffects() : null,
 				);
 			}
 
@@ -130,6 +135,7 @@ final class SimpleImpurePoint
 				'methodCall',
 				sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
 				$certain,
+				$verdict === null ? $function->getSideEffects() : null,
 			);
 		}
 
@@ -378,6 +384,11 @@ final class SimpleImpurePoint
 	public function isCertain(): bool
 	{
 		return $this->certain;
+	}
+
+	public function getSideEffects(): ?SideEffects
+	{
+		return $this->sideEffects;
 	}
 
 }

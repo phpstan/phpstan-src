@@ -497,6 +497,16 @@ public:
 				if (UNEXPECTED(!impurePointIsCertain(impurePoint, certain))) return false;
 				if (!certain && rememberPossiblyImpureFunctionValues()) continue;
 
+				/* a call with effects whose result does not vary, like printf():
+				 * $impurePoint->getSideEffects()?->isDeterministic()->yes() */
+				zval *sideEffects = pt_impure_point_side_effects(Z_OBJ_P(impurePoint));
+				if (UNEXPECTED(sideEffects == NULL)) return false;
+				if (Z_TYPE_P(sideEffects) == IS_OBJECT) {
+					zend_long deterministic = pt_side_effects_is_deterministic(Z_OBJ_P(sideEffects));
+					if (UNEXPECTED(deterministic < 0)) return false;
+					if (deterministic == PT_TRI_YES) continue;
+				}
+
 				out = false;
 				return true;
 			}

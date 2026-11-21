@@ -4,6 +4,7 @@ namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use function str_starts_with;
 
 /**
  * The side effects of a function or method, as returned by getSideEffects().
@@ -75,6 +76,23 @@ final class SideEffects
 		}
 
 		return $this->others;
+	}
+
+	/**
+	 * Whether calling it again with the same arguments gives the same result.
+	 * A result that depends on global state is deterministic until the state
+	 * is written. The callables passed to the called parameters do not count:
+	 * a call only knows its own effects.
+	 */
+	public function isDeterministic(): TrinaryLogic
+	{
+		foreach ($this->effects as $effect) {
+			if ($effect === 'nondeterministic' || str_starts_with($effect, 'nondeterministic.')) {
+				return TrinaryLogic::createNo();
+			}
+		}
+
+		return $this->others->negate();
 	}
 
 	/**

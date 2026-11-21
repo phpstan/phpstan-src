@@ -64,21 +64,21 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 		foreach ($args as $i => $arg) {
 			$originalArg = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
 			if ($arg->name !== null || ($originalArg instanceof Arg && $originalArg->name !== null)) {
-				return $functionReflection->getThrowType();
+				return $this->getDefaultThrowType($functionReflection, $scope);
 			}
 			if ($i <= $formatPosition && $arg->unpack) {
-				return $functionReflection->getThrowType();
+				return $this->getDefaultThrowType($functionReflection, $scope);
 			}
 		}
 
 		if (!isset($args[$formatPosition])) {
-			return $functionReflection->getThrowType();
+			return $this->getDefaultThrowType($functionReflection, $scope);
 		}
 
 		$formatType = $scope->getNativeType($args[$formatPosition]->value);
 		$formats = $formatType->getConstantStrings();
 		if (!$formatType->isString()->yes() || count($formats) === 0) {
-			return $functionReflection->getThrowType();
+			return $this->getDefaultThrowType($functionReflection, $scope);
 		}
 
 		$uses = [];
@@ -86,7 +86,7 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 		foreach ($formats as $format) {
 			$formatUses = $this->formatParser->parse($format->getValue(), $scope->getPhpVersion());
 			if ($formatUses === null) {
-				return $functionReflection->getThrowType();
+				return $this->getDefaultThrowType($functionReflection, $scope);
 			}
 
 			foreach ($formatUses as $use) {
@@ -133,6 +133,27 @@ final class PrintfFunctionThrowTypeExtension implements DynamicFunctionThrowType
 		}
 
 		return TypeCombinator::union(...$throwTypes);
+	}
+
+	/**
+	 * The stubs of a PHP version range below PHP 8 leave out the errors these functions throw as of PHP 8.
+	 */
+	private function getDefaultThrowType(FunctionReflection $functionReflection, Scope $scope): ?Type
+	{
+		$throwType = $functionReflection->getThrowType();
+		if (!$scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->maybe()) {
+			return $throwType;
+		}
+
+		$php8ThrowTypes = [new ObjectType(ValueError::class)];
+		if (!in_array($functionReflection->getName(), self::ARRAY_FUNCTIONS, true)) {
+			$php8ThrowTypes[] = new ObjectType(ArgumentCountError::class);
+		}
+		if ($throwType !== null) {
+			$php8ThrowTypes[] = $throwType;
+		}
+
+		return TypeCombinator::union(...$php8ThrowTypes);
 	}
 
 	/**

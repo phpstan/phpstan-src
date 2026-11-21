@@ -7,7 +7,9 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
+use ValueError;
 
 #[AutowiredService]
 final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFunctionThrowTypeExtension
@@ -35,7 +37,7 @@ final class VersionCompareFunctionDynamicThrowTypeExtension implements DynamicFu
 
 		$operatorStrings = $scope->getType($args[2]->value)->getConstantStrings();
 		if (VersionCompareFunctionDynamicReturnTypeExtension::mightBeInvalidOperator($operatorStrings)) {
-			return $functionReflection->getThrowType();
+			return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 		}
 
 		return null;

@@ -31,6 +31,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 	 * @param list<ExtendedParametersAcceptor> $variants
 	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
 	 * @param list<AttributeReflection> $attributes
+	 * @param list<string>|null $effects the complete list of side effects, null when unknown
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -47,6 +48,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		private ?string $phpDocComment,
 		private array $attributes,
 		private bool $isDeprecatedInSignatureMap,
+		private ?array $effects = null,
 	)
 	{
 	}
@@ -204,7 +206,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return SideEffectsFactory::createFromReflection($this);
+		return SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	private function isVoid(): bool

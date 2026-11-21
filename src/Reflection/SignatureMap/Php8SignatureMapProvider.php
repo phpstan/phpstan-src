@@ -497,7 +497,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}
+	 * @return array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
 	{
@@ -505,7 +505,7 @@ final class Php8SignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}
+	 * @return array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}
 	 */
 	public function getFunctionMetadata(string $functionName): array
 	{

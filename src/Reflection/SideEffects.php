@@ -63,10 +63,15 @@ final class SideEffects
 		return new self($effects, $others, $calledParameters, $writtenParameters);
 	}
 
+	/** Maybe when only the called and written parameters can bring effects in. */
 	public function hasAny(): TrinaryLogic
 	{
 		if ($this->effects !== []) {
 			return TrinaryLogic::createYes();
+		}
+
+		if ($this->others->no() && ($this->calledParameters !== [] || $this->writtenParameters !== [])) {
+			return TrinaryLogic::createMaybe();
 		}
 
 		return $this->others;

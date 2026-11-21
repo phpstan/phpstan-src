@@ -9166,6 +9166,8 @@ $observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new Reflect
 		'unknown' => static fn () => \PHPStan\Reflection\SideEffects::unknown(),
 		'create listed' => static fn () => \PHPStan\Reflection\SideEffects::create(['io.output'], $no),
 		'create empty no' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no),
+		'create no called' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no, ['callback' => $yes]),
+		'create no written' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no, [], ['count' => $maybe]),
 		'create maybe parameters' => static fn () => \PHPStan\Reflection\SideEffects::create([], $maybe, ['callback' => $yes], ['count' => $yes, 'other' => $maybe, 0 => $yes]),
 		'create named' => static fn () => \PHPStan\Reflection\SideEffects::create(others: $yes, effects: ['sleep', 'io.files'], writtenParameters: ['count' => $maybe]),
 	];

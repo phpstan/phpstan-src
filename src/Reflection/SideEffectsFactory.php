@@ -12,12 +12,18 @@ final class SideEffectsFactory
 	 * Derives the side effects of a function or method from the variants'
 	 * parameters flagged as pure unless the callable is impure or unless they
 	 * are passed, and from $effects when the function lists them. Without the
-	 * list, any effect is as possible as hasSideEffects() says.
+	 * list, when it is ['*'], or when it is empty but hasSideEffects() says
+	 * Yes, such as for a method returning void, any effect is as possible as
+	 * hasSideEffects() says.
 	 *
 	 * @param list<string>|null $effects
 	 */
 	public static function createFromReflection(FunctionReflection|ExtendedMethodReflection $reflection, ?array $effects = null): SideEffects
 	{
+		if ($effects === ['*'] || ($effects === [] && $reflection->hasSideEffects()->yes())) {
+			$effects = null;
+		}
+
 		$called = [];
 		$written = [];
 		foreach ($reflection->getVariants() as $variant) {

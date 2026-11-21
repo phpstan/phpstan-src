@@ -28,6 +28,9 @@ use Symfony\Component\Finder\Finder;
 		/** @var list<string> */
 		public array $impureFunctions = [];
 
+		/** @var list<string> */
+		public array $managedStateFunctions = [];
+
 		/** @var string[] */
 		public array $methods = [];
 
@@ -43,7 +46,8 @@ use Symfony\Component\Finder\Finder;
 							continue;
 						}
 
-						// The following functions have side effects, but their state is managed within the PHPStan scope:
+						// The following functions read global state, but PHPStan tracks that state in the scope,
+						// so they stay pure for the rules:
 						if (in_array($functionName, [
 							'stat',
 							'lstat',
@@ -71,12 +75,12 @@ use Symfony\Component\Finder\Finder;
 							'json_last_error_msg',
 							'ob_get_level',
 						], true)) {
-							$this->functions[] = $functionName;
+							$this->managedStateFunctions[] = $functionName;
 							break 2;
 						}
 
-						// PhpStorm stub's #[Pure(true)] means the function has side effects but its return value is important.
-						// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
+						// PhpStorm stub's #[Pure(true)] means the function writes nothing, but its result
+						// depends on global or external state, so it is not remembered either.
 						if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
 							$this->impureFunctions[] = $functionName;
 						} else {
@@ -124,30 +128,23 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects?: bool, effects?: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
+	/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			if (isset($metadata[$functionName]['hasSideEffects']) && $metadata[$functionName]['hasSideEffects']) {
+			if ($metadata[$functionName]['effects'] !== []) {
 				throw new ShouldNotHappenException($functionName);
 			}
 
-			$conditions = [];
-			foreach (['pureUnlessCallableIsImpureParameters', 'pureUnlessParameterPassedParameters'] as $conditionKey) {
-				if (!isset($metadata[$functionName][$conditionKey])) {
-					continue;
-				}
-
-				$conditions[$conditionKey] = $metadata[$functionName][$conditionKey];
-			}
-
-			if ($conditions !== []) {
-				$metadata[$functionName] = $conditions;
-
-				continue;
-			}
+			continue;
 		}
-		$metadata[$functionName] = ['hasSideEffects' => false];
+		$metadata[$functionName] = ['effects' => []];
+	}
+	foreach ($visitor->managedStateFunctions as $functionName) {
+		if (array_key_exists($functionName, $metadata)) {
+			throw new ShouldNotHappenException($functionName);
+		}
+		$metadata[$functionName] = ['effects' => ['reads-global'], 'hasSideEffects' => false];
 	}
 	foreach ($visitor->impureFunctions as $functionName) {
 		if (in_array($functionName, [
@@ -164,20 +161,22 @@ use Symfony\Component\Finder\Finder;
 			], true)) {
 				continue;
 			}
-			if (!$metadata[$functionName]['hasSideEffects']) {
+			if ($metadata[$functionName]['effects'] === []) {
 				throw new ShouldNotHappenException($functionName);
 			}
+
+			continue;
 		}
-		$metadata[$functionName] = ['hasSideEffects' => true] + ($metadata[$functionName] ?? []);
+		$metadata[$functionName] = ['effects' => ['reads-global', 'nondeterministic']];
 	}
 
 	foreach ($visitor->methods as $methodName) {
 		if (array_key_exists($methodName, $metadata)) {
-			if ($metadata[$methodName]['hasSideEffects']) {
+			if ($metadata[$methodName]['effects'] !== []) {
 				throw new ShouldNotHappenException($methodName);
 			}
 		}
-		$metadata[$methodName] = ['hasSideEffects' => false];
+		$metadata[$methodName] = ['effects' => []];
 	}
 
 	ksort($metadata);
@@ -194,24 +193,15 @@ use Symfony\Component\Finder\Finder;
  *
  * If you want to add new entries here follow these steps:
  * 1) verify on https://phpstan.org/try whether the entry you are going to add does not already work as expected.
- * 2) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
+ * 2) Contribute functions with side effects, and corrections of the attributes, to bin/functionMetadata_original.php.
  * 3) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
  * 4) Once the PR from 3) is merged, please update the package here and run ./bin/generate-function-metadata.php.
  *
- * The array is keyed by lowercase function name or "Class::method". Each entry is
- * exactly one of:
- *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
- *     An entry with side effects may also list them all in 'effects' => list<string>,
- *     e.g. var_dump()'s 'io.output'.
- *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
- *     one of the listed callable parameters (keyed by parameter name) receives an
- *     impure callable, e.g. array_map()'s 'callback'.
- *   - ['pureUnlessParameterPassedParameters' => array<string, true>] - pure unless
- *     one of the listed (by-ref out) parameters (keyed by parameter name) receives
- *     an argument, e.g. str_replace()'s 'count'.
+ * The array is keyed by lowercase function name or "Class::method". The format of
+ * the entries is described in bin/functionMetadata_original.php.
  */
 
-/** @var array<string, array{hasSideEffects?: bool, effects?: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
+/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 %s
 ];
@@ -231,12 +221,9 @@ php;
 	);
 
 	foreach ($metadata as $name => $meta) {
-		$entries = [];
+		$entries = [sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($escape, $meta['effects'])))];
 		if (isset($meta['hasSideEffects'])) {
 			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
-		}
-		if (isset($meta['effects'])) {
-			$entries[] = sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($escape, $meta['effects'])));
 		}
 		if (isset($meta['pureUnlessCallableIsImpureParameters'])) {
 			$entries[] = sprintf('%s => %s', $escape('pureUnlessCallableIsImpureParameters'), $encodeParameterMap($meta['pureUnlessCallableIsImpureParameters']));
@@ -244,10 +231,6 @@ php;
 		if (isset($meta['pureUnlessParameterPassedParameters'])) {
 			$entries[] = sprintf('%s => %s', $escape('pureUnlessParameterPassedParameters'), $encodeParameterMap($meta['pureUnlessParameterPassedParameters']));
 		}
-		if ($entries === []) {
-			throw new ShouldNotHappenException($escape($meta));
-		}
-
 		$content .= sprintf(
 			"\t%s => [%s],\n",
 			var_export($name, true),

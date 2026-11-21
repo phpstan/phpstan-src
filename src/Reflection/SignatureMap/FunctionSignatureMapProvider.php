@@ -43,10 +43,10 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	/** @var array<string, array<string, list<int>>> */
 	private static array $parametersChangedByDelta = [];
 
-	/** @var array<string, array{hasSideEffects: bool}>|null */
+	/** @var array<string, array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}>|null */
 	private static ?array $functionMetadata = null;
 
-	/** @var array<string, array{hasSideEffects: bool}|false> */
+	/** @var array<string, array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}|false> */
 	private static array $arenaMetadataRows = [];
 
 	public function __construct(
@@ -200,7 +200,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}|null
+	 * @return array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}|null
 	 */
 	private function getFunctionMetadataEntry(string $lowerName): ?array
 	{
@@ -219,7 +219,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 				$row = null;
 			}
 
-			/** @var array{hasSideEffects: bool}|null $row */
+			/** @var array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}|null $row */
 			self::$arenaMetadataRows[$lowerName] = $row ?? false;
 
 			return $row;
@@ -229,7 +229,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}
+	 * @return array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}
 	 */
 	public function getMethodMetadata(string $className, string $methodName): array
 	{
@@ -237,7 +237,7 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array{hasSideEffects: bool}
+	 * @return array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}
 	 */
 	public function getFunctionMetadata(string $functionName): array
 	{
@@ -250,13 +250,24 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	}
 
 	/**
-	 * @return array<string, array{hasSideEffects: bool}>
+	 * @return array<string, array{effects: list<string>, hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}>
 	 */
 	private static function getFunctionMetadataMap(): array
 	{
 		if (self::$functionMetadata === null) {
-			/** @var array<string, array{hasSideEffects: bool}> $metadata */
+			/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 			$metadata = require __DIR__ . '/../../../resources/functionMetadata.php';
+			foreach ($metadata as $name => $entry) {
+				if (
+					isset($entry['hasSideEffects'])
+					|| isset($entry['pureUnlessCallableIsImpureParameters'])
+					|| isset($entry['pureUnlessParameterPassedParameters'])
+				) {
+					continue;
+				}
+
+				$metadata[$name]['hasSideEffects'] = $entry['effects'] !== [];
+			}
 			self::$functionMetadata = array_change_key_case($metadata, CASE_LOWER);
 			ArenaCache::publishHash('funcmeta', self::$functionMetadata);
 		}

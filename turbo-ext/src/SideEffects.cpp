@@ -65,13 +65,24 @@ public:
 		return newSelf(effects, others, calledParameters != NULL ? calledParameters : &empty, writtenParameters != NULL ? writtenParameters : &empty);
 	}
 
-	/* $this->effects !== [] ? TrinaryLogic::createYes() : $this->others */
+	/* effects !== [] ? Yes : (others is No and called/written parameters !== [] ? Maybe : others) */
 	zv::Val hasAny() const
 	{
 		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
 		if (UNEXPECTED(effects == NULL)) return zv::Val();
 		if (zend_hash_num_elements(Z_ARRVAL_P(effects)) > 0) return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(PT_TRI_YES)));
-		return read(slots::others, "others");
+		zv::Val others = read(slots::others, "others");
+		if (UNEXPECTED(others.isUndef())) return zv::Val();
+		if (pt_trinary_value(Z_OBJ_P(others.raw())) == PT_TRI_NO) {
+			zval *calledParameters = pt_typed_slot(self, slots::calledParameters, self->ce, "calledParameters");
+			if (UNEXPECTED(calledParameters == NULL)) return zv::Val();
+			zval *writtenParameters = pt_typed_slot(self, slots::writtenParameters, self->ce, "writtenParameters");
+			if (UNEXPECTED(writtenParameters == NULL)) return zv::Val();
+			if (zend_hash_num_elements(Z_ARRVAL_P(calledParameters)) > 0 || zend_hash_num_elements(Z_ARRVAL_P(writtenParameters)) > 0) {
+				return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(PT_TRI_MAYBE)));
+			}
+		}
+		return others;
 	}
 
 	zv::Val getEffectNames() const { return read(slots::effects, "effects"); }

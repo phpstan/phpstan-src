@@ -199,6 +199,8 @@ final class Describer
 			'internal' => $method->isInternal()->describe(),
 			'throwType' => $method->getThrowType() === null ? null : $method->getThrowType()->describe(VerbosityLevel::precise()),
 			'hasSideEffects' => $method->hasSideEffects()->describe(),
+			'effects' => $method instanceof \PHPStan\Reflection\Native\NativeMethodReflection ? (new \ReflectionProperty($method, 'effects'))->getValue($method) : '(not native)',
+			'sideEffects' => $method instanceof \PHPStan\Reflection\ExtendedMethodReflection ? [$method->getSideEffects()->hasAny()->describe(), $method->getSideEffects()->getEffectNames()] : null,
 			'pure' => $method->isPure()->describe(),
 			'acceptsNamedArguments' => $method->acceptsNamedArguments()->describe(),
 			'returnsByReference' => $method->returnsByReference()->describe(),
@@ -514,6 +516,11 @@ check(
 	$pcreBackedEnumFromOffObservations['php']['getMethod from']['class'] !== $pcreObservations['php']['PhpClassReflectionFamilyFixture\FixtureBackedEnum::from']['getMethod']['class'],
 	'PhpClassReflectionExtension backedEnumFromParameterType off: from() is not wrapped',
 );
+// }}}
+
+// {{{ built-in methods get their effects list
+[$pcrePhpSide] = $pcreBuildSides(true, 4096);
+check($pcreDescriber->describeMethod($pcrePhpSide->getNativeMethod($pcreReflectionProvider->getClass('DateTime'), 'format'))['effects'] === [], 'PhpClassReflectionExtension: DateTime::format() lists no effects');
 // }}}
 
 // {{{ the shared member-cache LRU: the same keys survive, the same are evicted

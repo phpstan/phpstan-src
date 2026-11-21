@@ -326,6 +326,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperRenamedChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingRenamedInheritedMethodWithOpaqueCallback().',
 				399,
 			],
+			[
+				'Impure call to function call_user_func() in pure function PureUnlessCallableIsImpureFunction\pureCallUserFuncWithImpureCallback().',
+				423,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureCallUserFuncWithImpureCallback().',
+				424,
+			],
 		]);
 	}
 

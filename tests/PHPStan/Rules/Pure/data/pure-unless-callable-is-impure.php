@@ -398,3 +398,30 @@ function pureCallingRenamedInheritedMethodWithOpaqueCallback(InheritedMapperRena
 	// makes the call possibly impure.
 	return $mapper->map($cb, $arr);
 }
+
+/** @phpstan-pure */
+function pureCallUserFuncWithPureCallback(string $s): int
+{
+	return call_user_func('strlen', $s);
+}
+
+/** @phpstan-pure */
+function pureCallUserFuncArrayWithPureCallback(string $s): int
+{
+	return call_user_func_array('strlen', [$s]);
+}
+
+/** @phpstan-pure */
+function pureForwardStaticCallWithPureCallback(string $s): int
+{
+	return forward_static_call(static fn (string $s): int => strlen($s), $s);
+}
+
+/** @phpstan-pure */
+function pureCallUserFuncWithImpureCallback(): int
+{
+	return call_user_func(static function (): int {
+		echo 'x';
+		return 1;
+	});
+}

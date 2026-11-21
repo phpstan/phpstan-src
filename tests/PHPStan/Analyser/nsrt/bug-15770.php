@@ -40,3 +40,21 @@ function test(Opt $o): void
 	assertType('Bug15770\\Opt<int>', $o->orElse(static fn () => throw new RuntimeException()));
 	assertType('Bug15770\\Opt<int>', $o->orElseCallable(static fn () => throw new RuntimeException()));
 }
+
+/**
+ * @template T
+ * @template E
+ * @param Opt<T> $o
+ * @param (Closure(): (Opt<E>|null)) $closure
+ * @return Opt<T|E>
+ */
+function orElseNullable(Opt $o, Closure $closure): Opt
+{
+	return $o;
+}
+
+/** @param Opt<int> $o */
+function testNullable(Opt $o): void
+{
+	assertType('Bug15770\\Opt<mixed>', orElseNullable($o, static fn () => throw new RuntimeException()));
+}

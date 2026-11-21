@@ -24,7 +24,6 @@ final class CallableTypeHelper
 			!$received instanceof NeverType
 			|| !$received->isExplicit()
 			|| $expected instanceof TemplateType
-			|| !$expected->isObject()->yes()
 		) {
 			return $typeMap->union($expected->inferTemplateTypes($received));
 		}

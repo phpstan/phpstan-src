@@ -3194,18 +3194,14 @@ zv::Val pt_callable_infer_return_template_types(zval *expected, zval *received, 
 	if (isExplicit && UNEXPECTED(!pt_type_instanceof(expected, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
 	bool isGenericObject = false;
 	if (isExplicit && !isTemplate) {
-		zv::Val isObject = pt_type_call(expectedObject, PT_LC("isobject"), 0, NULL);
-		if (UNEXPECTED(isObject.isUndef())) return zv::Val();
-		if (pt_type_trinary_value(isObject.raw()) == PT_TRI_YES) {
-			zv::Val classes = pt_callable_call_array(expectedObject, PT_LC("getobjectclassreflections"), 0, NULL);
-			if (UNEXPECTED(classes.isUndef())) return zv::Val();
-			if (zv::ArrRef(classes.raw()).size() == 1) {
-				zend_object *classReflection = pt_callable_element_object(zend_hash_index_find(Z_ARRVAL_P(classes.raw()), 0), "a class reflection");
-				if (UNEXPECTED(classReflection == NULL)) return zv::Val();
-				int isGeneric = pt_callable_call_bool(classReflection, PT_LC("isgeneric"), 0, NULL);
-				if (UNEXPECTED(isGeneric < 0)) return zv::Val();
-				isGenericObject = isGeneric != 0;
-			}
+		zv::Val classes = pt_callable_call_array(expectedObject, PT_LC("getobjectclassreflections"), 0, NULL);
+		if (UNEXPECTED(classes.isUndef())) return zv::Val();
+		if (zv::ArrRef(classes.raw()).size() == 1) {
+			zend_object *classReflection = pt_callable_element_object(zend_hash_index_find(Z_ARRVAL_P(classes.raw()), 0), "a class reflection");
+			if (UNEXPECTED(classReflection == NULL)) return zv::Val();
+			int isGeneric = pt_callable_call_bool(classReflection, PT_LC("isgeneric"), 0, NULL);
+			if (UNEXPECTED(isGeneric < 0)) return zv::Val();
+			isGenericObject = isGeneric != 0;
 		}
 	}
 	if (!isGenericObject) {

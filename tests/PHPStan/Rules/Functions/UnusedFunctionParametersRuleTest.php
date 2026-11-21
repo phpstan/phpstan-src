@@ -17,6 +17,16 @@ class UnusedFunctionParametersRuleTest extends RuleTestCase
 		return new UnusedFunctionParametersRule(self::getContainer()->getByType(UnusedParametersCheck::class));
 	}
 
+	public function testDeclareBlock(): void
+	{
+		$this->analyse([__DIR__ . '/data/unused-function-parameters-declare.php'], [
+			[
+				'Function UnusedFunctionParametersDeclare\\unusedWithDeclare() has an unused parameter $x.',
+				12,
+			],
+		]);
+	}
+
 	public function testRule(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-function-parameters.php'], [

@@ -22,7 +22,7 @@
 		"composer/semver": "^3.4",
 		"fidry/cpu-core-counter": "^1.4",
 		"guzzlehttp/guzzle": "^7.9",
-		"jetbrains/phpstorm-stubs": "dev-master#813c2107a021ee7f9d27efbe3de76dfe54977f1c",
+		"jetbrains/phpstorm-stubs": "dev-master#6797f096283d09bddf73e53689076c63b41300f9",
 		"nette/bootstrap": "^3.0",
 		"nette/di": "^3.1.10",
 		"nette/neon": "3.3.4",

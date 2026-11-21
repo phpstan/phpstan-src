@@ -8,6 +8,8 @@ use PHPStan\Internal\DirectoryCreatorException;
 use PHPStan\Testing\PHPStanTestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use SplFileInfo;
+use function assert;
 use function file_put_contents;
 use function is_dir;
 use function mkdir;
@@ -42,6 +44,7 @@ final class FileCacheStorageTest extends PHPStanTestCase
 			RecursiveIteratorIterator::CHILD_FIRST,
 		);
 		foreach ($files as $file) {
+			assert($file instanceof SplFileInfo);
 			if ($file->isDir()) {
 				rmdir($file->getPathname());
 				continue;

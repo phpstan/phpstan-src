@@ -438,4 +438,11 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.6.0')]
+	public function testClamp(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/clamp.php'], []);
+	}
+
 }

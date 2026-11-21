@@ -831,6 +831,7 @@ return [
 	'chown' => ['hasSideEffects' => true],
 	'chr' => ['hasSideEffects' => false],
 	'chunk_split' => ['hasSideEffects' => false],
+	'clamp' => ['hasSideEffects' => false],
 	'class_implements' => ['hasSideEffects' => false],
 	'class_parents' => ['hasSideEffects' => false],
 	'cli_get_process_title' => ['hasSideEffects' => true],

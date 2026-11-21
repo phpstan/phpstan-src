@@ -116,6 +116,7 @@ return [
 	'chgrp' => ['hasSideEffects' => true],
 	'chmod' => ['hasSideEffects' => true],
 	'chown' => ['hasSideEffects' => true],
+	'clamp' => ['hasSideEffects' => false],
 	'copy' => ['hasSideEffects' => true],
 	'count' => ['hasSideEffects' => false],
 	'error_log' => ['hasSideEffects' => true],

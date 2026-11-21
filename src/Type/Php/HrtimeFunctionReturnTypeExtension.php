@@ -31,7 +31,7 @@ final class HrtimeFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 	{
 		$arrayType = new ConstantArrayType(
 			[new ConstantIntegerType(0), new ConstantIntegerType(1)],
-			[IntegerRangeType::fromInterval(1, null), IntegerRangeType::fromInterval(0, 999999999)],
+			[IntegerRangeType::fromInterval(1, null), IntegerRangeType::fromInterval(0, 999_999_999)],
 			[2],
 			isList: TrinaryLogic::createYes(),
 		);

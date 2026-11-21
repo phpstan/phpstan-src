@@ -48,7 +48,7 @@ final class ValueSet
 {
 
 	// a float with a larger magnitude is not exact enough to tell its neighbouring integers apart
-	private const EXACT_FLOAT_INTEGER_LIMIT = 9007199254740992;
+	private const EXACT_FLOAT_INTEGER_LIMIT = 9_007_199_254_740_992;
 
 	// the significant digits every double can be told apart by, and those that print it without noise
 	private const EXACT_FLOAT_DIGITS = 17;

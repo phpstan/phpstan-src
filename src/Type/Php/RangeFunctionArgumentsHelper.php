@@ -28,7 +28,7 @@ final class RangeFunctionArgumentsHelper
 {
 
 	/** 2 ** 53, above which a float no longer holds every integer */
-	private const PRECISE_INTEGER_LIMIT = 9007199254740992;
+	private const PRECISE_INTEGER_LIMIT = 9_007_199_254_740_992;
 
 	/** 2 ** 63, from which PHP 8.3 keeps an integral float step as a float */
 	private const INTEGER_STEP_LIMIT = 9.2233720368547758E18;

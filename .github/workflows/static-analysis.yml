@@ -151,6 +151,35 @@ jobs:
           make phpstan-result-cache
           make phpstan-result-cache
 
+  structarmed:
+    name: "StructArmed"
+
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 60
+
+    steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+        with:
+          egress-policy: audit
+
+      - name: "Checkout"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962" # 2.40.0
+        with:
+          coverage: "none"
+          php-version: "8.2"
+          ini-file: development
+
+      - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # 4.0.0
+
+      - name: "StructArmed"
+        run: "make structarmed"
+
   generate-baseline:
     name: "Generate baseline"
 

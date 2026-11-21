@@ -65,6 +65,7 @@
 		"ext-posix": "Used together with ext-pcntl for forked parallel analysis workers"
 	},
 	"require-dev": {
+		"boundwize/structarmed": "^0.21.27",
 		"cweagans/composer-patches": "^1.7.3",
 		"php-parallel-lint/php-parallel-lint": "^1.2.0",
 		"phpstan/phpstan-deprecation-rules": "^2.0.2",

@@ -21,4 +21,13 @@ final class ClassResultCacheValueExtensionTest extends PHPStanTestCase
 		$this->assertNotSame($value, $extension->getValue(ClassResultCacheValueExtension::createKey(DirectoryResultCacheValueExtensionTest::class)));
 	}
 
+	public static function getAdditionalConfigFiles(): array
+	{
+		// the values are compared when the result cache is restored, before the bootstrapFiles
+		// have run - getValue() must not reach the StubFilesExtensions
+		return [
+			__DIR__ . '/classResultCacheValueExtension.neon',
+		];
+	}
+
 }

@@ -68,6 +68,7 @@ const MemberName memberNames[PT_MR_MEMBER_COUNT] = {
 	/* PT_MR_IS_PURE */ {PT_LC("ispure")},
 	/* PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS */ {PT_LC("getpureunlesscallableisimpureparameters")},
 	/* PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS */ {PT_LC("getpureunlessparameterpassedparameters")},
+	/* PT_MR_GET_SIDE_EFFECTS */ {PT_LC("getsideeffects")},
 	/* PT_MR_GET_ASSERTS */ {PT_LC("getasserts")},
 	/* PT_MR_ACCEPTS_NAMED_ARGUMENTS */ {PT_LC("acceptsnamedarguments")},
 	/* PT_MR_GET_SELF_OUT_TYPE */ {PT_LC("getselfouttype")},
@@ -219,6 +220,7 @@ public:
 	zv::Val isPure() const { return delegate(PT_MR_IS_PURE); }
 	zv::Val getPureUnlessCallableIsImpureParameters() const { return delegate(PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS); }
 	zv::Val getPureUnlessParameterPassedParameters() const { return delegate(PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS); }
+	zv::Val getSideEffects() const { return delegate(PT_MR_GET_SIDE_EFFECTS); }
 
 	/* Mirrors getAsserts(): $this->asserts ??= the wrapped reflection's
 	 * asserts with their types resolved against the template maps */
@@ -357,6 +359,7 @@ zv::Val pt_resolved_method_reflection_call(zend_object *method, pt_method_reflec
 		case PT_MR_IS_PURE: return reflection.isPure();
 		case PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS: return reflection.getPureUnlessCallableIsImpureParameters();
 		case PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS: return reflection.getPureUnlessParameterPassedParameters();
+		case PT_MR_GET_SIDE_EFFECTS: return reflection.getSideEffects();
 		case PT_MR_GET_ASSERTS: return reflection.getAsserts();
 		case PT_MR_ACCEPTS_NAMED_ARGUMENTS: return reflection.acceptsNamedArguments();
 		case PT_MR_GET_SELF_OUT_TYPE: return reflection.getSelfOutType();
@@ -433,6 +436,7 @@ PT_MINIT_REGISTRATION(pt_register_resolved_method_reflection)
 	cls.method<&ResolvedMethodReflection::isPure>(sigs::isPure);
 	cls.method<&ResolvedMethodReflection::getPureUnlessCallableIsImpureParameters>(sigs::getPureUnlessCallableIsImpureParameters);
 	cls.method<&ResolvedMethodReflection::getPureUnlessParameterPassedParameters>(sigs::getPureUnlessParameterPassedParameters);
+	cls.method<&ResolvedMethodReflection::getSideEffects>(sigs::getSideEffects);
 	cls.method<&ResolvedMethodReflection::getAsserts>(sigs::getAsserts);
 	cls.method<&ResolvedMethodReflection::acceptsNamedArguments>(sigs::acceptsNamedArguments);
 	cls.method<&ResolvedMethodReflection::getSelfOutType>(sigs::getSelfOutType);

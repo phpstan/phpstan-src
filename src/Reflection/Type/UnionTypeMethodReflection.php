@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -179,6 +180,11 @@ final class UnionTypeMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return MergedConditionalPurityParameters::mergePureUnlessParameterPassed($this->methods);
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffects::createFromReflection($this);
 	}
 
 	public function getDocComment(): ?string

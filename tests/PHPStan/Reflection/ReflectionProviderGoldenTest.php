@@ -411,8 +411,17 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= 'Returns by reference: ' . $reflection->returnsByReference()->describe() . "\n";
 		}
 
-		if (! $reflection->hasSideEffects()->no()) {
-			$result .= 'Has side-effects: ' . $reflection->hasSideEffects()->describe() . "\n";
+		$sideEffects = $reflection->getSideEffects();
+		if (! $sideEffects->hasAny()->no()) {
+			$result .= 'Has side-effects: ' . $sideEffects->hasAny()->describe() . "\n";
+		}
+
+		foreach ($sideEffects->getCalledParameters() as $parameterName => $called) {
+			$result .= 'Calls parameter $' . $parameterName . ': ' . $called->describe() . "\n";
+		}
+
+		foreach ($sideEffects->getWrittenParameters() as $parameterName => $written) {
+			$result .= 'Writes parameter $' . $parameterName . ': ' . $written->describe() . "\n";
 		}
 
 		if ($reflection->getThrowType() !== null) {

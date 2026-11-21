@@ -123,6 +123,7 @@ public:
 	zv::Val isPure() const { return delegate(PT_MR_IS_PURE); }
 	zv::Val getPureUnlessCallableIsImpureParameters() const { return delegate(PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS); }
 	zv::Val getPureUnlessParameterPassedParameters() const { return delegate(PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS); }
+	zv::Val getSideEffects() const { return delegate(PT_MR_GET_SIDE_EFFECTS); }
 	zv::Val getAttributes() const { return delegate(PT_MR_GET_ATTRIBUTES); }
 	zv::Val mustUseReturnValue() const { return delegate(PT_MR_MUST_USE_RETURN_VALUE); }
 	zv::Val getResolvedPhpDoc() const { return delegate(PT_MR_GET_RESOLVED_PHP_DOC); }
@@ -189,6 +190,7 @@ zv::Val pt_changed_type_method_reflection_call(zend_object *method, pt_method_re
 		case PT_MR_IS_PURE: return reflection.isPure();
 		case PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS: return reflection.getPureUnlessCallableIsImpureParameters();
 		case PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS: return reflection.getPureUnlessParameterPassedParameters();
+		case PT_MR_GET_SIDE_EFFECTS: return reflection.getSideEffects();
 		case PT_MR_GET_ASSERTS: return reflection.getAsserts();
 		case PT_MR_ACCEPTS_NAMED_ARGUMENTS: return reflection.acceptsNamedArguments();
 		case PT_MR_GET_SELF_OUT_TYPE: return reflection.getSelfOutType();
@@ -255,6 +257,7 @@ PT_MINIT_REGISTRATION(pt_register_changed_type_method_reflection)
 	cls.method<&ChangedTypeMethodReflection::isPure>(sigs::isPure);
 	cls.method<&ChangedTypeMethodReflection::getPureUnlessCallableIsImpureParameters>(sigs::getPureUnlessCallableIsImpureParameters);
 	cls.method<&ChangedTypeMethodReflection::getPureUnlessParameterPassedParameters>(sigs::getPureUnlessParameterPassedParameters);
+	cls.method<&ChangedTypeMethodReflection::getSideEffects>(sigs::getSideEffects);
 	cls.method<&ChangedTypeMethodReflection::getAttributes>(sigs::getAttributes);
 	cls.method<&ChangedTypeMethodReflection::mustUseReturnValue>(sigs::mustUseReturnValue);
 	cls.method<&ChangedTypeMethodReflection::getResolvedPhpDoc>(sigs::getResolvedPhpDoc);

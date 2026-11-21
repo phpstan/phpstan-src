@@ -15,6 +15,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
@@ -340,6 +341,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessParameterPassedParameters);
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffects::createFromReflection($this);
 	}
 
 	public function getAttributes(): array

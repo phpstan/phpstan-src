@@ -180,6 +180,11 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 		return $this->reflection->getPureUnlessParameterPassedParameters();
 	}
 
+	public function getSideEffects(): SideEffects
+	{
+		return $this->reflection->getSideEffects();
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return $this->asserts ??= $this->reflection->getAsserts()->mapTypes(fn (Type $type) => TemplateTypeHelper::resolveTemplateTypes(

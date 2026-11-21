@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -178,6 +179,11 @@ final class ChangedTypeMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return $this->reflection->getPureUnlessParameterPassedParameters();
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return $this->reflection->getSideEffects();
 	}
 
 	public function getAttributes(): array

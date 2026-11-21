@@ -8,6 +8,7 @@ use PHPStan\Reflection\ClassMemberReflection;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Type;
 
@@ -109,6 +110,11 @@ final class RewrittenDeclaringClassMethodReflection implements ExtendedMethodRef
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return $this->methodReflection->getPureUnlessParameterPassedParameters();
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return $this->methodReflection->getSideEffects();
 	}
 
 	public function getAttributes(): array

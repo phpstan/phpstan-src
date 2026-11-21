@@ -21,6 +21,7 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ArrayType;
@@ -461,6 +462,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessParameterPassedParameters);
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffects::createFromReflection($this);
 	}
 
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self

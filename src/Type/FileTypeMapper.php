@@ -87,6 +87,8 @@ final class FileTypeMapper
 		private FileHelper $fileHelper,
 		private Cache $cache,
 		private FileContentHasher $fileContentHasher,
+		#[AutowiredParameter(ref: '%currentWorkingDirectory%')]
+		private string $currentWorkingDirectory,
 		#[AutowiredParameter(ref: '%cache.resolvedPhpDocBlockCacheCountMax%')]
 		private int $resolvedPhpDocBlockCacheCountMax,
 		#[AutowiredParameter(ref: '%cache.nameScopeMapMemoryCacheCountMax%')]
@@ -398,7 +400,9 @@ final class FileTypeMapper
 		// created under the same use statements
 		// v8: the files are recorded with whether the map was built from their simplified AST;
 		// v7 entries may be built from it even under the key of the full AST
-		$variableCacheKey = sprintf('v8-%s', ComposerHelper::getPhpDocParserVersion());
+		// v9: the map names anonymous classes after their paths relative to the working directory,
+		// so an entry built in another directory does not have the names the analysis looks for
+		$variableCacheKey = sprintf('v9-%s-%s', ComposerHelper::getPhpDocParserVersion(), $this->currentWorkingDirectory);
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);

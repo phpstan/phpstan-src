@@ -136,6 +136,7 @@ services:
 		class: PHPStan\Type\FileTypeMapper
 		arguments:
 			phpParser: @stubParser
+			currentWorkingDirectory: %currentWorkingDirectory%
 			resolvedPhpDocBlockCacheCountMax: %cache.resolvedPhpDocBlockCacheCountMax%
 			nameScopeMapMemoryCacheCountMax: %cache.nameScopeMapMemoryCacheCountMax%
 		autowired: false

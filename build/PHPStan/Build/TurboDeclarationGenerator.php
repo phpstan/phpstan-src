@@ -448,14 +448,14 @@ final class TurboDeclarationGenerator
 			try {
 				$args = [];
 				foreach ($method->getParameters() as $parameter) {
-					[$mask, $className] = $this->signatureType($parameter->getType());
+					[$mask, $className] = $this->signatureType($parameter->getType(), $class->getName());
 					$default = $parameter->isDefaultValueAvailable() ? $this->defaultSource($parameter) : null;
 					$args[] = [$parameter->getName(), $mask, $className, $parameter->isPassedByReference(), $parameter->isVariadic(), $default];
 				}
 				$returnType = $method->getReturnType() ?? $method->getTentativeReturnType();
 				$return = null;
 				if ($returnType !== null) {
-					$return = ['', ...$this->signatureType($returnType), false, false, null];
+					$return = ['', ...$this->signatureType($returnType, $class->getName()), false, false, null];
 				}
 			} catch (RuntimeException $e) {
 				$sigs[] = sprintf('/* %s(): no signature — %s */', $method->getName(), $e->getMessage());
@@ -551,7 +551,7 @@ final class TurboDeclarationGenerator
 	/**
 	 * @return array{string, string|null} MAY_BE_* mask expression, literal class name(s)
 	 */
-	private function signatureType(?ReflectionType $type): array
+	private function signatureType(?ReflectionType $type, string $selfClassName): array
 	{
 		if ($type === null) {
 			return ['0', null];
@@ -575,7 +575,7 @@ final class TurboDeclarationGenerator
 			if (isset($builtin[$member->getName()])) {
 				$masks[$builtin[$member->getName()]] = true;
 			} else {
-				$classes[] = $member->getName();
+				$classes[] = $this->resolveSelf($member->getName(), $selfClassName);
 			}
 		}
 		if ($type instanceof ReflectionNamedType && $type->allowsNull() && !in_array($type->getName(), ['mixed', 'null'], true)) {
@@ -585,6 +585,12 @@ final class TurboDeclarationGenerator
 		$ordered = array_values(array_filter($order, static fn (string $m): bool => isset($masks[$m])));
 
 		return [$ordered === [] ? '0' : implode(' | ', $ordered), $classes === [] ? null : implode('|', $classes)];
+	}
+
+	/** The committed headers name the class; reflection on PHP 8.4 names self as written. */
+	private function resolveSelf(string $typeName, string $selfClassName): string
+	{
+		return strtolower($typeName) === 'self' ? $selfClassName : $typeName;
 	}
 
 	private function defaultSource(ReflectionParameter $parameter): string
@@ -694,7 +700,7 @@ final class TurboDeclarationGenerator
 			throw new RuntimeException('an untyped default reg::Class cannot declare');
 		}
 
-		[$masks, $classes] = $this->typeParts($property->getType());
+		[$masks, $classes] = $this->typeParts($property->getType(), $property->getDeclaringClass()->getName());
 		$mask = $masks === [] ? '0' : implode(' | ', $masks);
 		$classArg = count($classes) === 0 ? '' : ', ' . $this->cString(implode('|', $classes));
 
@@ -732,7 +738,7 @@ final class TurboDeclarationGenerator
 	/**
 	 * @return array{list<string>, list<string>} MAY_BE_* masks, class names
 	 */
-	private function typeParts(?ReflectionType $type): array
+	private function typeParts(?ReflectionType $type, string $selfClassName): array
 	{
 		if ($type instanceof ReflectionIntersectionType) {
 			throw new RuntimeException('an intersection type');
@@ -753,7 +759,7 @@ final class TurboDeclarationGenerator
 			if (isset($builtin[$typeName])) {
 				$masks[$builtin[$typeName]] = true;
 			} else {
-				$classes[] = $typeName;
+				$classes[] = $this->resolveSelf($typeName, $selfClassName);
 			}
 		}
 		if ($type instanceof ReflectionNamedType && $type->allowsNull() && $type->getName() !== 'mixed' && $type->getName() !== 'null') {

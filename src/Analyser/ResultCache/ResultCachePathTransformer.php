@@ -187,6 +187,17 @@ final class ResultCachePathTransformer
 	}
 
 	/**
+	 * The values one collector collected in one file, with the paths in them made relative.
+	 *
+	 * @param list<mixed> $collectedValues
+	 * @return list<mixed>
+	 */
+	public function relativizeCollectorValues(string $collectorType, array $collectedValues): array
+	{
+		return $this->transformCollectorValues($collectorType, $collectedValues, fn (string $path): string => $this->relativizeCompoundKey($path));
+	}
+
+	/**
 	 * The values one collector collected in one file, with the paths in them made absolute again.
 	 *
 	 * @param list<mixed> $collectedValues

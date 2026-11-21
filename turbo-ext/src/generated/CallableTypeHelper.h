@@ -22,28 +22,39 @@ inline void declareProperties(reg::Class &cls)
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"ours\0" /* 0 */
-	"PHPStan\\Reflection\\Callables\\CallableParametersAcceptor\0" /* 5 */
-	"theirs\0" /* 61 */
-	"treatMixedAsAny\0" /* 68 */
-	"strictTypes\0" /* 84 */
-	"true\0" /* 96 */
-	"\0" /* 101 */
-	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 102 */
-	"isParametersAcceptorSuperTypeOf"; /* 135 */
+	"expected\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 9 */
+	"received\0" /* 27 */
+	"typeMap\0" /* 36 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 44 */
+	"\0" /* 81 */
+	"inferReturnTemplateTypes\0" /* 82 */
+	"ours\0" /* 107 */
+	"PHPStan\\Reflection\\Callables\\CallableParametersAcceptor\0" /* 112 */
+	"theirs\0" /* 168 */
+	"treatMixedAsAny\0" /* 175 */
+	"strictTypes\0" /* 191 */
+	"true\0" /* 203 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 208 */
+	"isParametersAcceptorSuperTypeOf"; /* 241 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0, 5), /* isParametersAcceptorSuperTypeOf $ours */
-	reg::packed(61, 0, 5), /* isParametersAcceptorSuperTypeOf $theirs */
-	reg::packed(68, MAY_BE_BOOL), /* isParametersAcceptorSuperTypeOf $treatMixedAsAny */
-	reg::packed(84, MAY_BE_BOOL, reg::NoString, false, false, 96), /* isParametersAcceptorSuperTypeOf $strictTypes */
-	reg::packed(101, 0, 102), /* isParametersAcceptorSuperTypeOf return */
+	reg::packed(0, 0, 9), /* inferReturnTemplateTypes $expected */
+	reg::packed(27, 0, 9), /* inferReturnTemplateTypes $received */
+	reg::packed(36, 0, 44), /* inferReturnTemplateTypes $typeMap */
+	reg::packed(81, 0, 44), /* inferReturnTemplateTypes return */
+	reg::packed(107, 0, 112), /* isParametersAcceptorSuperTypeOf $ours */
+	reg::packed(168, 0, 112), /* isParametersAcceptorSuperTypeOf $theirs */
+	reg::packed(175, MAY_BE_BOOL), /* isParametersAcceptorSuperTypeOf $treatMixedAsAny */
+	reg::packed(191, MAY_BE_BOOL, reg::NoString, false, false, 203), /* isParametersAcceptorSuperTypeOf $strictTypes */
+	reg::packed(81, 0, 208), /* isParametersAcceptorSuperTypeOf return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig isParametersAcceptorSuperTypeOf = { { 135 /* isParametersAcceptorSuperTypeOf */, 3, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig inferReturnTemplateTypes = { { 82 /* inferReturnTemplateTypes */, 3, 0, 3, 3, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isParametersAcceptorSuperTypeOf = { { 241 /* isParametersAcceptorSuperTypeOf */, 3, 4, 4, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::CallableTypeHelper

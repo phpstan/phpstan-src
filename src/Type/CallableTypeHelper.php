@@ -5,6 +5,9 @@ namespace PHPStan\Type;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\Generic\TemplateTypeVariance;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -14,6 +17,43 @@ use function sprintf;
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/CallableTypeHelper.cpp')]
 final class CallableTypeHelper
 {
+
+	public static function inferReturnTemplateTypes(Type $expected, Type $received, TemplateTypeMap $typeMap): TemplateTypeMap
+	{
+		if (
+			!$received instanceof NeverType
+			|| !$received->isExplicit()
+			|| $expected instanceof TemplateType
+			|| !$expected->isObject()->yes()
+		) {
+			return $typeMap->union($expected->inferTemplateTypes($received));
+		}
+
+		$classes = $expected->getObjectClassReflections();
+		if (count($classes) !== 1 || !$classes[0]->isGeneric()) {
+			return $typeMap->union($expected->inferTemplateTypes($received));
+		}
+
+		// A callable that never returns cannot contribute a value of any of
+		// the generic return object's types. Keep any inference from its parameters.
+		$types = [];
+		foreach ($expected->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()) as $reference) {
+			$variance = $reference->getPositionVariance();
+			$template = $reference->getType();
+			$name = $template->getName();
+			if (
+				(!$variance->covariant() && !$variance->invariant())
+				|| $template->getDefault() !== null
+				|| $typeMap->hasType($name)
+			) {
+				continue;
+			}
+
+			$types[$name] = $received;
+		}
+
+		return $typeMap->union(new TemplateTypeMap($types));
+	}
 
 	public static function isParametersAcceptorSuperTypeOf(
 		CallableParametersAcceptor $ours,

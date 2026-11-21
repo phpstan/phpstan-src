@@ -3184,6 +3184,67 @@ static zv::Val pt_callable_type_map_union(zv::Val typeMap, zval *other)
 	return pt_type_call(Z_OBJ_P(typeMap.raw()), PT_LC("union"), 1, other);
 }
 
+zv::Val pt_callable_infer_return_template_types(zval *expected, zval *received, zval *typeMap)
+{
+	zend_object *expectedObject = pt_callable_element_object(expected, "the return type");
+	if (UNEXPECTED(expectedObject == NULL)) return zv::Val();
+	bool isNever, isExplicit = false, isTemplate = false;
+	if (UNEXPECTED(!pt_type_instanceof_ce(received, pt_ce_never_type, isNever))) return zv::Val();
+	if (isNever && UNEXPECTED(!pt_never_type_is_explicit(Z_OBJ_P(received), isExplicit))) return zv::Val();
+	if (isExplicit && UNEXPECTED(!pt_type_instanceof(expected, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+	bool isGenericObject = false;
+	if (isExplicit && !isTemplate) {
+		zv::Val isObject = pt_type_call(expectedObject, PT_LC("isobject"), 0, NULL);
+		if (UNEXPECTED(isObject.isUndef())) return zv::Val();
+		if (pt_type_trinary_value(isObject.raw()) == PT_TRI_YES) {
+			zv::Val classes = pt_callable_call_array(expectedObject, PT_LC("getobjectclassreflections"), 0, NULL);
+			if (UNEXPECTED(classes.isUndef())) return zv::Val();
+			if (zv::ArrRef(classes.raw()).size() == 1) {
+				zend_object *classReflection = pt_callable_element_object(zend_hash_index_find(Z_ARRVAL_P(classes.raw()), 0), "a class reflection");
+				if (UNEXPECTED(classReflection == NULL)) return zv::Val();
+				int isGeneric = pt_callable_call_bool(classReflection, PT_LC("isgeneric"), 0, NULL);
+				if (UNEXPECTED(isGeneric < 0)) return zv::Val();
+				isGenericObject = isGeneric != 0;
+			}
+		}
+	}
+	if (!isGenericObject) {
+		zv::Val inferred = pt_type_call(expectedObject, PT_LC("infertemplatetypes"), 1, received);
+		if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+		return pt_callable_type_map_union(zv::Val::copyOf(zv::Ref(typeMap)), inferred.raw());
+	}
+
+	zval *covariant = pt_template_type_variance_singleton(PT_TEMPLATE_TYPE_VARIANCE_COVARIANT);
+	if (UNEXPECTED(covariant == NULL)) return zv::Val();
+	zv::Val references = pt_callable_call_array(expectedObject, PT_LC("getreferencedtemplatetypes"), 1, covariant);
+	if (UNEXPECTED(references.isUndef())) return zv::Val();
+
+	zv::Arr types = zv::Arr::create(zv::ArrRef(references.raw()).size());
+	for (zv::ArrayEntry entry : zv::ArrRef(references.raw())) {
+		zv::Val type, variance;
+		if (UNEXPECTED(!pt_template_type_reference_parts(entry.value().raw(), type, variance))) return zv::Val();
+		zend_long position;
+		if (UNEXPECTED(!pt_template_type_variance_value_of(variance.raw(), position))) return zv::Val();
+		if (position != PT_TEMPLATE_TYPE_VARIANCE_COVARIANT && position != PT_TEMPLATE_TYPE_VARIANCE_INVARIANT) continue;
+
+		zv::Val defaultType = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getdefault"), 0, NULL);
+		if (UNEXPECTED(defaultType.isUndef())) return zv::Val();
+		if (!defaultType.isNull()) continue;
+		zv::Val name = pt_callable_call_string(Z_OBJ_P(type.raw()), PT_LC("getname"), 0, NULL);
+		if (UNEXPECTED(name.isUndef())) return zv::Val();
+		zv::Val existing = pt_template_type_map_get_type(typeMap, Z_STR_P(name.raw()));
+		if (UNEXPECTED(existing.isUndef())) return zv::Val();
+		if (!existing.isNull()) continue;
+
+		types.set(Z_STR_P(name.raw()), zv::Val::copyOf(zv::Ref(received)));
+	}
+
+	zval inferred;
+	if (UNEXPECTED(!pt_template_type_map_new(&inferred, types.raw()))) return zv::Val();
+	zv::Val inferredMap = zv::Val::adopt(inferred);
+	return pt_callable_type_map_union(zv::Val::copyOf(zv::Ref(typeMap)), inferredMap.raw());
+}
+
 zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *parametersAcceptor)
 {
 	/* $parameterTypes = array_map(static fn ($parameter) => $parameter->getType(), $this->getParameters()) */
@@ -3251,14 +3312,9 @@ zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *sel
 	if (UNEXPECTED(onAsserts.isUndef())) return zv::Val();
 	typeMap = pt_callable_type_map_union(std::move(typeMap), onAsserts.raw());
 	if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
-	/* return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType)) */
 	zv::Val ownReturnType = getReturnType(self);
 	if (UNEXPECTED(ownReturnType.isUndef())) return zv::Val();
-	zend_object *ownReturnTypeObject = pt_callable_element_object(ownReturnType.raw(), "the return type");
-	if (UNEXPECTED(ownReturnTypeObject == NULL)) return zv::Val();
-	zv::Val onReturn = pt_type_call(ownReturnTypeObject, PT_LC("infertemplatetypes"), 1, returnType.raw());
-	if (UNEXPECTED(onReturn.isUndef())) return zv::Val();
-	return pt_callable_type_map_union(std::move(typeMap), onReturn.raw());
+	return pt_callable_infer_return_template_types(ownReturnType.raw(), returnType.raw(), typeMap.raw());
 }
 
 zv::Val pt_callable_infer_template_types_on_acceptors(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *acceptors)

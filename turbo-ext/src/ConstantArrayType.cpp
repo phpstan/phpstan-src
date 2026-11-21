@@ -4974,6 +4974,16 @@ public:
 		zv::Val keyIndexMap = getKeyIndexMap();
 		if (UNEXPECTED(keyIndexMap.isUndef())) return false;
 		zv::Arr otherKeyValues = zv::Arr::create((uint32_t) otherKeyTypesCount);
+		/* the merged array has $this's key order, so a different order of the
+		 * shared integer keys would make the merged list-ness wrong */
+		zval *l = isListSlot();
+		zval *otherL = l != NULL ? slotOf(other, slots::isList, "isList") : NULL;
+		if (UNEXPECTED(otherL == NULL)) return false;
+		zend_long isListValue = trinaryOf(l);
+		zend_long otherIsListValue = trinaryOf(otherL);
+		if (UNEXPECTED(isListValue < 0 || otherIsListValue < 0)) return false;
+		bool checkKeyOrder = isListValue != PT_TRI_NO || otherIsListValue != PT_TRI_NO;
+		zend_long previousIndex = -1;
 
 		for (zv::ArrayEntry entry : zv::ArrRef(otherK)) {
 			zend_long j = (zend_long) entry.indexKey();
@@ -4983,6 +4993,14 @@ public:
 			if (iZv == NULL || Z_TYPE_P(iZv) != IS_LONG) {
 				out = false;
 				return true;
+			}
+
+			if (checkKeyOrder && Z_TYPE_P(keyValueZv.raw()) == IS_LONG) {
+				if (Z_LVAL_P(iZv) < previousIndex) {
+					out = false;
+					return true;
+				}
+				previousIndex = Z_LVAL_P(iZv);
 			}
 
 			zval trueZv;

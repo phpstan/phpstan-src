@@ -3159,12 +3159,23 @@ class ConstantArrayType implements Type
 
 		$keyIndexMap = $this->getKeyIndexMap();
 		$otherKeyValues = [];
+		// the merged array has $this's key order, so a different order of the
+		// shared integer keys would make the merged list-ness wrong
+		$checkKeyOrder = !$this->isList->no() || !$otherArray->isList->no();
+		$previousIndex = -1;
 
 		foreach ($otherArray->keyTypes as $j => $keyType) {
 			$keyValue = $keyType->getValue();
 			$i = $keyIndexMap[$keyValue] ?? null;
 			if ($i === null) {
 				return false;
+			}
+
+			if ($checkKeyOrder && is_int($keyValue)) {
+				if ($i < $previousIndex) {
+					return false;
+				}
+				$previousIndex = $i;
 			}
 
 			$otherKeyValues[$keyValue] = true;

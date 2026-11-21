@@ -10,8 +10,11 @@ use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Parser\Parser;
 use PHPStan\Php8StubsMap;
+use PHPStan\PhpDoc\Tag\AssertTag;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Testing\PHPStanTestCase;
+use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\VerbosityLevel;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
@@ -220,7 +223,35 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= "Consistent constructor\n";
 		}
 
+		if ($classReflection->getDeprecatedDescription() !== null) {
+			$result .= 'Deprecated description: ' . $classReflection->getDeprecatedDescription() . "\n";
+		}
+
+		if ($classReflection->isAttributeClass()) {
+			$result .= 'Attribute class flags: ' . $classReflection->getAttributeClassFlags() . "\n";
+		}
+
+		foreach (self::describeTemplateTypeMap($classReflection->getTemplateTypeMap(), '') as $templateLine) {
+			$result .= $templateLine;
+		}
+
 		$parentReflection = $classReflection->getParentClass();
+		if ($parentReflection !== null && $parentReflection->getDisplayName() !== $parentReflection->getName()) {
+			$result .= '@extends ' . $parentReflection->getDisplayName() . "\n";
+		}
+
+		foreach ($classReflection->getImmediateInterfaces() as $interfaceReflection) {
+			if ($interfaceReflection->getDisplayName() === $interfaceReflection->getName()) {
+				continue;
+			}
+
+			$result .= ($classReflection->isInterface() ? '@extends ' : '@implements ') . $interfaceReflection->getDisplayName() . "\n";
+		}
+
+		foreach ($classReflection->getResolvedMixinTypes() as $mixinType) {
+			$result .= '@mixin ' . $mixinType->describe(VerbosityLevel::precise()) . "\n";
+		}
+
 		$extends = '';
 
 		if ($parentReflection !== null) {
@@ -233,7 +264,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$attributes[] = "#[AllowDynamicProperties]\n";
 		}
 
-		$attributesTxt = implode('', $attributes);
+		$attributesTxt = implode('', $attributes) . self::describeAttributes($classReflection->getAttributes(), "\n");
 		$abstractTxt = $classReflection->isAbstract()
 			? 'abstract '
 			: '';
@@ -279,9 +310,16 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= $ident . 'use ' . $trait . ";\n";
 		}
 
-		$result .= "}\n";
+		if ($classReflection->isEnum()) {
+			foreach ($classReflection->getEnumCases() as $enumCase) {
+				$backingValueType = $enumCase->getBackingValueType();
+				$result .= $ident . 'case ' . $enumCase->getName()
+					. ($backingValueType !== null ? ' = ' . $backingValueType->describe($verbosityLevel) : '')
+					. ";\n";
+			}
+		}
 
-		return $result;
+		return $result . "}\n";
 	}
 
 	private static function generateClassMethodDescription(string $classMethodName): string
@@ -310,6 +348,11 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 
 		if ($methodReflection->isStatic()) {
 			$result .= "Static\n";
+		}
+
+		$isAbstract = $methodReflection->isAbstract();
+		if (is_bool($isAbstract) ? $isAbstract : ! $isAbstract->no()) {
+			$result .= 'Abstract' . (is_bool($isAbstract) ? '' : ': ' . $isAbstract->describe()) . "\n";
 		}
 
 		switch (true) {
@@ -344,6 +387,10 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= 'Is deprecated: ' . $reflection->isDeprecated()->describe() . "\n";
 		}
 
+		if ($reflection->getDeprecatedDescription() !== null) {
+			$result .= 'Deprecated description: ' . $reflection->getDeprecatedDescription() . "\n";
+		}
+
 		if ($reflection instanceof MethodReflection && ! $reflection->isFinal()->no()) {
 			$result .= 'Is final: ' . $reflection->isFinal()->describe() . "\n";
 		}
@@ -372,6 +419,20 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= 'Throw type: ' . $reflection->getThrowType()->describe(VerbosityLevel::precise()) . "\n";
 		}
 
+		if (! $reflection->acceptsNamedArguments()->yes()) {
+			$result .= 'Accepts named arguments: ' . $reflection->acceptsNamedArguments()->describe() . "\n";
+		}
+
+		if (! $reflection->mustUseReturnValue()->no()) {
+			$result .= 'Must use return value: ' . $reflection->mustUseReturnValue()->describe() . "\n";
+		}
+
+		foreach ($reflection->getAsserts()->getAll() as $assert) {
+			$result .= self::describeAssert($assert) . "\n";
+		}
+
+		$result .= self::describeAttributes($reflection->getAttributes(), "\n");
+
 		return $result;
 	}
 
@@ -388,13 +449,23 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 
 		foreach ($variants as $variant) {
 			$paramsNative = [];
-			$paramsPhpDoc = [];
+			$paramsPhpDoc = self::describeTemplateTypeMap($variant->getTemplateTypeMap(), $variantIdent . ' * ');
 
 			foreach ($variant->getParameters() as $param) {
 				$paramsPhpDoc[] = $variantIdent . ' * @param ' . $param->getType()->describe($verbosityLevel) . ' $' . $param->getName() . "\n";
 
 				if ($param->getOutType() !== null) {
 					$paramsPhpDoc[] = $variantIdent . ' * @param-out ' . $param->getOutType()->describe($verbosityLevel) . ' $' . $param->getName() . "\n";
+				}
+
+				if ($param->isImmediatelyInvokedCallable()->yes()) {
+					$paramsPhpDoc[] = $variantIdent . ' * @param-immediately-invoked-callable $' . $param->getName() . "\n";
+				} elseif ($param->isImmediatelyInvokedCallable()->no()) {
+					$paramsPhpDoc[] = $variantIdent . ' * @param-later-invoked-callable $' . $param->getName() . "\n";
+				}
+
+				if ($param->getClosureThisType() !== null) {
+					$paramsPhpDoc[] = $variantIdent . ' * @param-closure-this ' . $param->getClosureThisType()->describe($verbosityLevel) . ' $' . $param->getName() . "\n";
 				}
 
 				$passedByRef = $param->passedByReference();
@@ -412,7 +483,7 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 					? ' = ' . $param->getDefaultValue()->describe($verbosityLevel)
 					: '';
 
-				$paramsNative[] = $param->getNativeType()->describe($verbosityLevel) . ' ' . $variadicDesc . $refDes . '$' . $param->getName() . $defValueDesc;
+				$paramsNative[] = self::describeAttributes($param->getAttributes(), ' ') . $param->getNativeType()->describe($verbosityLevel) . ' ' . $variadicDesc . $refDes . '$' . $param->getName() . $defValueDesc;
 			}
 
 			$result .= $variantIdent . "/**\n";
@@ -421,6 +492,56 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= $variantIdent . " */\n";
 			$paramsTxt = implode(', ', $paramsNative);
 			$result .= $variantIdent . 'function ' . $name . '(' . $paramsTxt . '): ' . $variant->getNativeReturnType()->describe($verbosityLevel) . "\n";
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private static function describeTemplateTypeMap(TemplateTypeMap $templateTypeMap, string $prefix): array
+	{
+		$verbosityLevel = VerbosityLevel::precise();
+		$lines = [];
+		foreach ($templateTypeMap->getTypes() as $name => $type) {
+			if (! $type instanceof TemplateType) {
+				$lines[] = $prefix . '@template ' . $name . ' = ' . $type->describe($verbosityLevel) . "\n";
+				continue;
+			}
+
+			$variance = $type->getVariance()->invariant() ? '' : '-' . $type->getVariance()->describe();
+			$default = $type->getDefault() !== null ? ' = ' . $type->getDefault()->describe($verbosityLevel) : '';
+			$lines[] = $prefix . '@template' . $variance . ' ' . $name . ' of ' . $type->getBound()->describe($verbosityLevel) . $default . "\n";
+		}
+
+		return $lines;
+	}
+
+	private static function describeAssert(AssertTag $assert): string
+	{
+		$tag = '@phpstan-assert';
+		if ($assert->getIf() !== AssertTag::NULL) {
+			$tag .= '-if-' . $assert->getIf();
+		}
+
+		return $tag . ' ' . ($assert->isNegated() ? '!' : '') . ($assert->isEquality() ? '=' : '')
+			. $assert->getType()->describe(VerbosityLevel::precise()) . ' ' . $assert->getParameter()->describe();
+	}
+
+	/**
+	 * @param list<AttributeReflection> $attributes
+	 */
+	private static function describeAttributes(array $attributes, string $separator): string
+	{
+		$result = '';
+		foreach ($attributes as $attribute) {
+			$arguments = [];
+			foreach ($attribute->getArgumentTypes() as $argumentName => $argumentType) {
+				$arguments[] = $argumentName . ': ' . $argumentType->describe(VerbosityLevel::precise());
+			}
+
+			$result .= '#[' . $attribute->getName() . ($arguments !== [] ? '(' . implode(', ', $arguments) . ')' : '') . ']' . $separator;
 		}
 
 		return $result;
@@ -451,9 +572,41 @@ class ReflectionProviderGoldenTest extends PHPStanTestCase
 			$result .= 'Is deprecated: ' . $propertyReflection->isDeprecated()->describe() . "\n";
 		}
 
-		if (! $propertyReflection->isInternal()->no()) {
-			$result .= 'Is internal: ' . $propertyReflection->isDeprecated()->describe() . "\n";
+		if ($propertyReflection->getDeprecatedDescription() !== null) {
+			$result .= 'Deprecated description: ' . $propertyReflection->getDeprecatedDescription() . "\n";
 		}
+
+		if (! $propertyReflection->isInternal()->no()) {
+			$result .= 'Is internal: ' . $propertyReflection->isInternal()->describe() . "\n";
+		}
+
+		if (! $propertyReflection->isAbstract()->no()) {
+			$result .= 'Is abstract: ' . $propertyReflection->isAbstract()->describe() . "\n";
+		}
+
+		if (! $propertyReflection->isFinal()->no()) {
+			$result .= 'Is final: ' . $propertyReflection->isFinal()->describe() . "\n";
+		}
+
+		if (! $propertyReflection->isVirtual()->no()) {
+			$result .= 'Is virtual: ' . $propertyReflection->isVirtual()->describe() . "\n";
+		}
+
+		foreach (['get', 'set'] as $hookType) {
+			if (! $propertyReflection->hasHook($hookType)) {
+				continue;
+			}
+
+			$result .= 'Hook: ' . $hookType . "\n";
+		}
+
+		if ($propertyReflection->isPrivateSet()) {
+			$result .= "Set visibility: private\n";
+		} elseif ($propertyReflection->isProtectedSet()) {
+			$result .= "Set visibility: protected\n";
+		}
+
+		$result .= self::describeAttributes($propertyReflection->getAttributes(), "\n");
 
 		if ($propertyReflection->isStatic()) {
 			$result .= "Static\n";

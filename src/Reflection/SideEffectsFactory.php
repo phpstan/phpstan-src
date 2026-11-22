@@ -9,10 +9,18 @@ use function explode;
 use function in_array;
 use function ltrim;
 use function preg_match;
+use function strtolower;
 use function trim;
 
 final class SideEffectsFactory
 {
+
+	/**
+	 * Built-in functions that write the same to the argument they read on
+	 * every call, so the next call returns the same: end() and reset() move
+	 * the array pointer to the same element each time.
+	 */
+	private const REPEATABLE_WRITE_FUNCTION_NAMES = ['end', 'reset'];
 
 	/**
 	 * Derives the side effects of a function or method from the variants'
@@ -84,6 +92,9 @@ final class SideEffectsFactory
 		);
 
 		$readsWrittenArguments = false;
+		if ($reflection instanceof FunctionReflection && in_array(strtolower($reflection->getName()), self::REPEATABLE_WRITE_FUNCTION_NAMES, true)) {
+			return $sideEffects;
+		}
 		foreach ($reflection->getVariants() as $variant) {
 			foreach ($variant->getParameters() as $parameter) {
 				if (

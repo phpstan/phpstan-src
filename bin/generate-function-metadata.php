@@ -110,6 +110,43 @@ use Symfony\Component\Finder\Finder;
 
 	/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
+	// #[Pure] in the stubs, but they have side effects
+	$pureAttributeCorrections = [
+		// move the position of mb_ereg_search()
+		'mb_ereg_search',
+		'mb_ereg_search_pos',
+		'mb_ereg_search_regs',
+		'mb_ereg_search_setpos',
+		// use the global random number generator
+		'array_rand',
+		// read files or ask the network
+		'bzopen',
+		'checkdnsrr',
+		'finfo::file',
+		'gethostbyaddr',
+		'gethostbyname',
+		'gethostbynamel',
+		'getprotobyname',
+		'getprotobynumber',
+		'getservbyname',
+		'getservbyport',
+		'hash_file',
+		'hash_hmac_file',
+		'posix_getgrgid',
+		'posix_getgrnam',
+		'posix_getpwnam',
+		'posix_getpwuid',
+		// run the iterator's methods or a generator
+		'iterator_count',
+		// read changing state
+		'DateTime::createFromFormat',
+		'DateTime::getLastErrors',
+		'DateTimeImmutable::createFromFormat',
+		'DateTimeImmutable::getLastErrors',
+		'gethostname',
+		'posix_getlogin',
+		'posix_times',
+	];
 	$leavesError = static fn (array $effects): bool => count(array_filter(
 		$effects,
 		static fn (string $effect): bool => str_starts_with($effect, SideEffects::WRITES_GLOBAL_ERROR . '.'),
@@ -122,13 +159,7 @@ use Symfony\Component\Finder\Finder;
 				$metadata[$functionName]['effects'] !== []
 				&& ($metadata[$functionName]['hasSideEffects'] ?? null) !== false
 				&& !$leavesError($metadata[$functionName]['effects'])
-				// #[Pure] in the stubs, but they move the position of mb_ereg_search()
-				&& !in_array($functionName, [
-					'mb_ereg_search',
-					'mb_ereg_search_pos',
-					'mb_ereg_search_regs',
-					'mb_ereg_search_setpos',
-				], true)
+				&& !in_array($functionName, $pureAttributeCorrections, true)
 			) {
 				throw new ShouldNotHappenException($functionName);
 			}
@@ -155,6 +186,8 @@ use Symfony\Component\Finder\Finder;
 		if (array_key_exists($functionName, $metadata)) {
 			if (in_array($functionName, [
 				'ob_get_contents',
+				// #[Pure(true)] in the stubs, but the result depends only on the DateTime object
+				'date_format',
 			], true)) {
 				continue;
 			}
@@ -170,6 +203,9 @@ use Symfony\Component\Finder\Finder;
 	foreach ($visitor->methods as $methodName) {
 		if (array_key_exists($methodName, $metadata)) {
 			if ($leavesError($metadata[$methodName]['effects'])) {
+				continue;
+			}
+			if (in_array($methodName, $pureAttributeCorrections, true)) {
 				continue;
 			}
 			if ($metadata[$methodName]['effects'] !== []) {

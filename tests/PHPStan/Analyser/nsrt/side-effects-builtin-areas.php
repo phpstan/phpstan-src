@@ -38,6 +38,14 @@ class Foo
 		}
 	}
 
+	/** @param non-empty-list<string> $list */
+	public function randomKeysAreNotRemembered(array $list): void
+	{
+		if (array_rand($list) === 0) {
+			assertType('int<0, max>', array_rand($list));
+		}
+	}
+
 	public function globalReadsAreRemembered(): void
 	{
 		if (session_status() === PHP_SESSION_NONE) {

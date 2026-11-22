@@ -117,6 +117,29 @@ class Foo
 		}
 	}
 
+	public function readersOfLocaleHeadersAndErrors(string $s, \DateTimeInterface $date): void
+	{
+		if (json_last_error() === JSON_ERROR_NONE) {
+			json_validate($s);
+			assertType('0|1|2|3|4|5|6|7|8|9|10', json_last_error());
+		}
+		if (headers_list() === []) {
+			header('X-Foo: bar');
+			assertType('list<non-empty-string>', headers_list());
+		}
+		if (strcoll($s, 'a') === 0) {
+			setlocale(LC_COLLATE, 'cs_CZ');
+			assertType('int<-1, 1>', strcoll($s, 'a'));
+		}
+		if (strcoll($s, 'a') === 0) {
+			printf('a');
+			assertType('0', strcoll($s, 'a'));
+		}
+		if (date_format($date, 'Y') === '2020') {
+			assertType("'2020'", date_format($date, 'Y'));
+		}
+	}
+
 	public function mbstringState(string $s): void
 	{
 		if (mb_strlen($s) === 3) {

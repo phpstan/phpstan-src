@@ -20,4 +20,28 @@ class Foo
 		}
 	}
 
+	/**
+	 * @param non-empty-list<non-empty-string> $items
+	 */
+	public function movesArrayPointer(array $items): string
+	{
+		if (end($items) === 'x') {
+			assertType("'x'", end($items));
+		}
+		if (reset($items) === 'x') {
+			assertType("'x'", reset($items));
+		}
+		if (next($items) === 'x') {
+			assertType('non-empty-string|false', next($items));
+		}
+		if (prev($items) === 'x') {
+			assertType('non-empty-string|false', prev($items));
+		}
+		if (!end($items)) {
+			return '';
+		}
+
+		return end($items);
+	}
+
 }

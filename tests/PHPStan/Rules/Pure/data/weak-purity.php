@@ -96,3 +96,34 @@ function shufflesLocalCopy(array $items): int
 
 	return $items[0] ?? 0;
 }
+
+/**
+ * @phpstan-pure
+ * @param non-empty-list<int> $items
+ */
+function movesPointerOfLocalCopy(array $items): int
+{
+	$last = end($items);
+	reset($items);
+	next($items);
+	prev($items);
+
+	return (int) $last;
+}
+
+/**
+ * @phpstan-pure
+ */
+function asksTheOutsideWorld(string $host, string $file): bool
+{
+	return gethostbyname($host) !== hash_file('sha256', $file);
+}
+
+/**
+ * @phpstan-pure
+ * @param \Generator<int> $generator
+ */
+function runsGenerator(\Generator $generator): int
+{
+	return iterator_count($generator);
+}

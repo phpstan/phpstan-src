@@ -643,6 +643,18 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to function shuffle() in pure function WeakPurity\shufflesLocalCopy().',
 				95,
 			],
+			[
+				'Impure call to function gethostbyname() in pure function WeakPurity\\asksTheOutsideWorld().',
+				119,
+			],
+			[
+				'Impure call to function hash_file() in pure function WeakPurity\\asksTheOutsideWorld().',
+				119,
+			],
+			[
+				'Impure call to function iterator_count() in pure function WeakPurity\\runsGenerator().',
+				128,
+			],
 		]);
 	}
 

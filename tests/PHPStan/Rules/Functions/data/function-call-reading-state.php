@@ -26,3 +26,12 @@ function doFoo(string $file): void
 	call_user_func('not_loaded_function');
 	call_user_func('strlen', 'a');
 }
+
+/** @param \Generator<int> $generator */
+function writesWhatItReads(\Generator $generator): void
+{
+	// removes an error from the queue
+	openssl_error_string();
+	// runs the generator to the end
+	iterator_count($generator);
+}

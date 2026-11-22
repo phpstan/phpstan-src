@@ -35,6 +35,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		private bool $isVariadic,
 		private ?Type $throwType,
 		private TemplateTypeMap $templateTypeMap,
+		private ?bool $isPure = null,
 	)
 	{
 	}
@@ -135,6 +136,10 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 			return TrinaryLogic::createYes();
 		}
 
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
+
 		if ((new ThisType($this->declaringClass->withoutFinalByKeywordOverride()))->isSuperTypeOf($this->returnType)->yes()) {
 			return TrinaryLogic::createYes();
 		}
@@ -176,6 +181,10 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 	{
 		if ($this->hasSideEffects()->yes()) {
 			return TrinaryLogic::createNo();
+		}
+
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean($this->isPure);
 		}
 
 		return TrinaryLogic::createMaybe();

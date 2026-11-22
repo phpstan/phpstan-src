@@ -438,6 +438,18 @@ class PureMethodRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15322(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15322.php'], [
+			[
+				'Impure call to method Bug15322\\Impure::magicImpure() in pure method Bug15322\\Bar::magicImpure().',
+				59,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.6.0')]
 	public function testClamp(): void
 	{

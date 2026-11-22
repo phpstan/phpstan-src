@@ -26,7 +26,6 @@ namespace {
 /* the twin's private VOLATILE_FUNCTION_NAMES */
 const pt_superglobal_name pt_veh_volatile_function_names[] = {
 	{ PT_LC("ob_get_level") },
-	{ PT_LC("openssl_error_string") },
 };
 
 /* the twin's private EXISTENCE_CHECK_FUNCTION_NAMES */
@@ -242,8 +241,9 @@ public:
 	/*
 	 * Mirrors invalidateGlobalStateReads(); UNDEF = pending exception.
 	 */
-	static zv::Val invalidateGlobalStateReads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes)
+	static zv::Val invalidateGlobalStateReads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates)
 	{
+		if (writtenStates != NULL && Z_TYPE_P(writtenStates) == IS_NULL) writtenStates = NULL;
 		zend_class_entry *funcCallCe = pt_class(PT_CLASS_FUNC_CALL);
 		zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
 		if (UNEXPECTED(funcCallCe == NULL || nameCe == NULL)) return zv::Val();
@@ -285,12 +285,52 @@ public:
 			zend_long readsGlobal = pt_function_reflection_reads_global(function.raw());
 			if (UNEXPECTED(readsGlobal < 0)) return zv::Val();
 			if (readsGlobal != PT_TRI_YES) continue;
+			if (writtenStates != NULL) {
+				/* self::readsAnyOf($function->getSideEffects()->getListedSubEffects('reads-global'), $writtenStates) */
+				zv::Val sideEffects = pt_function_reflection_side_effects(function.raw());
+				if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
+				zv::Val readStates = pt_side_effects_listed_sub_effects(sideEffects.raw(), PT_LC("reads-global"));
+				if (UNEXPECTED(readStates.isUndef())) return zv::Val();
+				bool reads;
+				if (UNEXPECTED(!readsAnyOf(readStates.raw(), Z_ARRVAL_P(writtenStates), reads))) return zv::Val();
+				if (!reads) continue;
+			}
 
 			pt_veh_unset_both(expressionTypes, nativeExpressionTypes, entry.stringKeyOrNull(), entry.indexKey());
 			changed = true;
 		}
 
 		return zv::Val::boolean(changed);
+	}
+
+	/* readsAnyOf($readStates, $writtenStates): $readStates NULL or IS_NULL
+	 * for null; false = pending exception */
+	[[nodiscard]] static bool readsAnyOf(zval *readStates, HashTable *writtenStates, bool &out)
+	{
+		out = false;
+		if (readStates == NULL || Z_TYPE_P(readStates) == IS_NULL) return true;
+		for (auto readEntry : zv::TableRef(Z_ARRVAL_P(readStates))) {
+			zv::Ref readState = readEntry.value().deref();
+			for (auto writtenEntry : zv::TableRef(writtenStates)) {
+				zv::Ref writtenState = writtenEntry.value().deref();
+				if (UNEXPECTED(!readState.isString() || !writtenState.isString())) {
+					zend_type_error("str_starts_with(): Argument #1 ($haystack) must be of type string, %s given", zend_zval_value_name(!readState.isString() ? readState.raw() : writtenState.raw()));
+					return false;
+				}
+				zend_string *r = readState.asString();
+				zend_string *w = writtenState.asString();
+				/* $readState === $writtenState || str_starts_with($readState, $writtenState . '.') || str_starts_with($writtenState, $readState . '.') */
+				size_t shorter = ZSTR_LEN(r) < ZSTR_LEN(w) ? ZSTR_LEN(r) : ZSTR_LEN(w);
+				if (memcmp(ZSTR_VAL(r), ZSTR_VAL(w), shorter) != 0) continue;
+				if (ZSTR_LEN(r) == ZSTR_LEN(w)
+					|| (ZSTR_LEN(r) > shorter && ZSTR_VAL(r)[shorter] == '.')
+					|| (ZSTR_LEN(w) > shorter && ZSTR_VAL(w)[shorter] == '.')) {
+					out = true;
+					return true;
+				}
+			}
+		}
+		return true;
 	}
 
 private:
@@ -387,9 +427,9 @@ zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval 
 	return VolatileExpressionHelper::invalidateNegativeExistenceChecks(scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName);
 }
 
-zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes)
+zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates)
 {
-	return VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes);
+	return VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates);
 }
 
 /* }}} */
@@ -444,15 +484,24 @@ PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 	});
 
 	cls.method(sigs::invalidateGlobalStateReads, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *reflectionProvider, *expressionTypes, *nativeExpressionTypes;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval, zp::Zval>(execute_data, scope, reflectionProvider, expressionTypes, nativeExpressionTypes)) RETURN_THROWS();
+		zval *scope, *reflectionProvider, *expressionTypes, *nativeExpressionTypes, *writtenStates = NULL;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval, zp::Zval, zp::Opt<zp::ArrOrNull>>(execute_data, scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates)) RETURN_THROWS();
 		expressionTypes = pt_veh_array_ref(expressionTypes, 3);
 		if (UNEXPECTED(expressionTypes == NULL)) RETURN_THROWS();
 		nativeExpressionTypes = pt_veh_array_ref(nativeExpressionTypes, 4);
 		if (UNEXPECTED(nativeExpressionTypes == NULL)) RETURN_THROWS();
-		zv::Val result = VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes);
+		zv::Val result = VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::readsAnyOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *readStates;
+		HashTable *writtenStates;
+		if (!zp::parse<zp::ArrOrNull, zp::Ht>(execute_data, readStates, writtenStates)) RETURN_THROWS();
+		bool reads;
+		if (UNEXPECTED(!VolatileExpressionHelper::readsAnyOf(readStates, writtenStates, reads))) RETURN_THROWS();
+		RETURN_BOOL(reads);
 	});
 
 	cls.shadow(&pt_ce_volatile_expression_helper);

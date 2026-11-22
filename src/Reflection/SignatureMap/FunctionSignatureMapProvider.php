@@ -19,6 +19,8 @@ use function array_key_exists;
 use function array_keys;
 use function array_slice;
 use function array_values;
+use function count;
+use function in_array;
 use function is_array;
 use function sprintf;
 use function strtolower;
@@ -263,6 +265,11 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 					|| isset($entry['pureUnlessCallableIsImpureParameters'])
 					|| isset($entry['pureUnlessParameterPassedParameters'])
 				) {
+					continue;
+				}
+
+				// effects named next to '*' leave the others unknown
+				if (count($entry['effects']) > 1 && in_array('*', $entry['effects'], true)) {
 					continue;
 				}
 

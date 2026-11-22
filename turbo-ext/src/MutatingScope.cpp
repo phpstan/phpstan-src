@@ -1548,71 +1548,6 @@ public:
 		return scopeFactoryCreate(a);
 	}
 
-	zv::Val afterClearstatcacheCall()
-	{
-		/* list from https://www.php.net/manual/en/function.clearstatcache.php */
-		static const char *const functionNames[] = {
-			"stat", "lstat", "file_exists", "is_writable", "is_writeable", "is_readable", "is_executable", "is_file", "is_dir", "is_link",
-			"filectime", "fileatime", "filemtime", "fileinode", "filegroup", "fileowner", "filesize", "filetype", "fileperms",
-		};
-		TablePair tables(*this);
-		/* foreach (array_keys($expressionTypes) as $exprString): the keys of
-		 * the copy are the keys of the slot's table, walked there */
-		for (auto entry : zv::ArrRef(slot(PT_MS_PROP_EXPRESSION_TYPES).raw())) {
-			zend_string *exprString = entry.stringKeyOrNull();
-			if (exprString == NULL) {
-				/* an integer key never starts with a function name */
-				continue;
-			}
-			for (const char *functionName : functionNames) {
-				size_t len = strlen(functionName);
-				const char *s = ZSTR_VAL(exprString);
-				size_t n = ZSTR_LEN(exprString);
-				bool plain = n > len && memcmp(s, functionName, len) == 0 && s[len] == '(';
-				bool qualified = n > len + 1 && s[0] == '\\' && memcmp(s + 1, functionName, len) == 0 && s[len + 1] == '(';
-				if (!plain && !qualified) continue;
-				tables.unset(exprString);
-				tables.changed = true;
-				break;
-			}
-		}
-
-		if (!tables.changed) return self_();
-		return createWithTables(tables);
-	}
-
-	zv::Val afterOpenSslCall(zend_string *openSslFunctionName)
-	{
-		TablePair tables(*this);
-
-		if (!tables.existsInEither(PT_LC("\\openssl_error_string()"))) return self_();
-
-		static const char *const invalidating[] = {
-			"openssl_cipher_iv_length", "openssl_cms_decrypt", "openssl_cms_encrypt", "openssl_cms_read", "openssl_cms_sign", "openssl_cms_verify",
-			"openssl_csr_export_to_file", "openssl_csr_export", "openssl_csr_get_public_key", "openssl_csr_get_subject", "openssl_csr_new", "openssl_csr_sign",
-			"openssl_decrypt", "openssl_dh_compute_key", "openssl_digest", "openssl_encrypt", "openssl_get_curve_names", "openssl_get_privatekey",
-			"openssl_get_publickey", "openssl_open", "openssl_pbkdf2", "openssl_pkcs12_export_to_file", "openssl_pkcs12_export", "openssl_pkcs12_read",
-			"openssl_pkcs7_decrypt", "openssl_pkcs7_encrypt", "openssl_pkcs7_read", "openssl_pkcs7_sign", "openssl_pkcs7_verify", "openssl_pkey_derive",
-			"openssl_pkey_export_to_file", "openssl_pkey_export", "openssl_pkey_get_private", "openssl_pkey_get_public", "openssl_pkey_new",
-			"openssl_private_decrypt", "openssl_private_encrypt", "openssl_public_decrypt", "openssl_public_encrypt", "openssl_random_pseudo_bytes",
-			"openssl_seal", "openssl_sign", "openssl_spki_export_challenge", "openssl_spki_export", "openssl_spki_new", "openssl_spki_verify",
-			"openssl_verify", "openssl_x509_checkpurpose", "openssl_x509_export_to_file", "openssl_x509_export", "openssl_x509_fingerprint",
-			"openssl_x509_read", "openssl_x509_verify",
-		};
-		for (const char *name : invalidating) {
-			if (zend_string_equals_cstr(openSslFunctionName, name, strlen(name))) {
-				zend_string *key = zend_string_init(PT_LC("\\openssl_error_string()"), 0);
-				tables.unset(key);
-				zend_string_release(key);
-				tables.changed = true;
-				break;
-			}
-		}
-
-		if (!tables.changed) return self_();
-		return createWithTables(tables);
-	}
-
 	/* {{{ VolatileExpressionHelper::<method>(...): the twin passes the
 	 * two tables by reference — fresh references around the pair's
 	 * arrays, read back after the call; -1 = pending exception, else the
@@ -1673,6 +1608,25 @@ public:
 		}
 
 		if (!changed) return self_();
+		return createWithTables(tables);
+	}
+
+	zv::Val invalidateGlobalStateWrittenBy(zval *sideEffects)
+	{
+		zv::Val writtenStates = pt_side_effects_listed_sub_effects(sideEffects, PT_LC("writes-global"));
+		if (UNEXPECTED(writtenStates.isUndef())) return zv::Val();
+		if (Z_TYPE_P(writtenStates.raw()) == IS_NULL) return invalidateVolatileExpressions();
+		if (zend_hash_num_elements(Z_ARRVAL_P(writtenStates.raw())) == 0) return self_();
+
+		TablePair tables(*this);
+		zv::Ref reflectionProvider = service(PT_MSS_REFLECTION_PROVIDER);
+		if (UNEXPECTED(!reflectionProvider.isObject())) {
+			(void) uninitializedProperty("reflectionProvider");
+			return zv::Val();
+		}
+		zv::Val changed = pt_volatile_expression_helper_invalidate_global_state_reads(thisZval(), reflectionProvider.raw(), tables.expressionTypes.raw(), tables.nativeExpressionTypes.raw(), writtenStates.raw());
+		if (UNEXPECTED(changed.isUndef())) return zv::Val();
+		if (!zend_is_true(changed.raw())) return self_();
 		return createWithTables(tables);
 	}
 
@@ -12699,17 +12653,11 @@ zv::Val pt_mutating_scope_after_extract_call(zend_object *scope)
 	return pt_type_call(scope, PT_LC("afterextractcall"), 0, NULL);
 }
 
-zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope)
+zv::Val pt_mutating_scope_invalidate_global_state_written_by(zend_object *scope, zval *sideEffects)
 {
-	if (PT_MS_INHERITS(scope, "afterclearstatcachecall")) return MutatingScope(scope).afterClearstatcacheCall();
-	return pt_type_call(scope, PT_LC("afterclearstatcachecall"), 0, NULL);
-}
-
-zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName)
-{
-	if (PT_MS_INHERITS(scope, "afteropensslcall")) return MutatingScope(scope).afterOpenSslCall(openSslFunctionName);
-	zv::Args argv{openSslFunctionName};
-	return pt_type_call(scope, PT_LC("afteropensslcall"), 1, argv);
+	if (PT_MS_INHERITS(scope, "invalidateglobalstatewrittenby")) return MutatingScope(scope).invalidateGlobalStateWrittenBy(sideEffects);
+	zv::Args argv{sideEffects};
+	return pt_type_call(scope, PT_LC("invalidateglobalstatewrittenby"), 1, argv);
 }
 
 /* }}} */
@@ -12877,9 +12825,8 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 
 	cls.method<&MutatingScope::afterExtractCall>(sigs::afterExtractCall);
 
-	cls.method<&MutatingScope::afterClearstatcacheCall>(sigs::afterClearstatcacheCall);
 
-	cls.method<&MutatingScope::afterOpenSslCall, zp::Str>(sigs::afterOpenSslCall);
+	cls.method<&MutatingScope::invalidateGlobalStateWrittenBy, zp::Obj>(sigs::invalidateGlobalStateWrittenBy);
 
 	cls.method(sigs::invalidateVolatileExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool globalStateReads = true;

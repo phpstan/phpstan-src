@@ -43,6 +43,7 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -380,7 +381,7 @@ final class StaticCallHandler implements ExprHandler
 
 		// the receiver's state: $this, or the static properties of the class
 		$writesReceiver = $methodReflection !== null
-			? $methodReflection->getSideEffects()->has('writes-this')->or($methodReflection->getSideEffects()->has('writes-global'))
+			? $methodReflection->getSideEffects()->has(SideEffects::WRITES_THIS)->or($methodReflection->getSideEffects()->has(SideEffects::WRITES_GLOBAL))
 			: TrinaryLogic::createNo();
 		if (
 			$expr->class instanceof Name
@@ -439,9 +440,10 @@ final class StaticCallHandler implements ExprHandler
 		if (
 			$methodReflection === null
 			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
-			|| ($methodReflection->getDeclaringClass()->isBuiltin() && in_array('writes-global', $methodReflection->getSideEffects()->getEffectNames(), true))
 		) {
 			$scope = $scope->invalidateVolatileExpressions($methodReflection !== null && $methodReflection->hasSideEffects()->yes());
+		} elseif ($methodReflection->getDeclaringClass()->isBuiltin()) {
+			$scope = $scope->invalidateGlobalStateWrittenBy($methodReflection->getSideEffects());
 		}
 
 		$hasYield = $hasYield || $argsResult->hasYield();

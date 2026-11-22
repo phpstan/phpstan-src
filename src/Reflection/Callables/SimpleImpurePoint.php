@@ -52,25 +52,27 @@ final class SimpleImpurePoint
 	/**
 	 * Returns null if the function is known to be pure (no side effects).
 	 * $callSideEffects are the side effects of this call a dynamic side effects
-	 * extension described. They replace what the function reflection and its
-	 * parameters flagged as pure unless passed say; the callables passed to the
-	 * parameters flagged as pure unless the callable is impure still count.
+	 * extension described. They replace what the function reflection says;
+	 * the arguments passed to its flagged parameters still count.
 	 *
 	 * @param Arg[] $args
 	 */
 	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = [], ?SideEffects $callSideEffects = null): ?self
 	{
 		if ($callSideEffects !== null) {
-			$calledVerdict = $scope !== null && $variant !== null ? self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args) : null;
-			$hasAny = $callSideEffects->hasAny();
-			if ($hasAny->no() && ($calledVerdict === null || $calledVerdict->yes())) {
+			$verdict = $scope !== null && $variant !== null ? self::resolveConditionalPurityVerdict($variant, $scope, $args) : null;
+			// the effects of the call itself, without what the flagged parameters bring in
+			$own = $callSideEffects->getEffectNames() !== []
+				? TrinaryLogic::createYes()
+				: $callSideEffects->hasOnly([SideEffects::WRITES_ARGS])->negate();
+			if ($own->no() && ($verdict === null || $verdict->yes())) {
 				return null;
 			}
 
 			return self::createForFunction(
 				$function,
-				$hasAny->yes() || ($calledVerdict !== null && $calledVerdict->no()),
-				$calledVerdict === null || $calledVerdict->yes() ? $callSideEffects : null,
+				$own->yes() || ($verdict !== null && $verdict->no()),
+				$verdict === null || $verdict->yes() ? $callSideEffects : null,
 			);
 		}
 
@@ -83,8 +85,13 @@ final class SimpleImpurePoint
 		if ($variant !== null) {
 			$certain = $certain || $variant->getReturnType()->isVoid()->yes();
 		}
-		if (!$certain && $function->getSideEffects()->hasOnly(['writes-args'])->no()) {
-			// the flagged parameters do not undo effects other than writing the arguments
+		if (
+			!$certain
+			&& $function->getSideEffects()->hasOnly([SideEffects::WRITES_ARGS])->no()
+			&& !self::onlyLeavesErrors($function->getSideEffects())
+		) {
+			// the flagged parameters do not undo effects other than writing the arguments,
+			// and leaving the last error, which a call with the parameters unpassed also leaves
 			$certain = true;
 		}
 
@@ -101,6 +108,17 @@ final class SimpleImpurePoint
 		}
 
 		return self::createForFunction($function, $certain, $verdict === null ? $function->getSideEffects() : null);
+	}
+
+	/**
+	 * Whether every listed effect is writing the arguments or leaving the last
+	 * error, and the unlisted ones are not certain. A listed writes-global is
+	 * more than the last error.
+	 */
+	private static function onlyLeavesErrors(SideEffects $sideEffects): bool
+	{
+		return SideEffects::create($sideEffects->getEffectNames(), TrinaryLogic::createNo())->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->yes()
+			&& !$sideEffects->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->no();
 	}
 
 	private static function createForFunction(FunctionReflection|ExtendedMethodReflection $function, bool $certain, ?SideEffects $sideEffects): self

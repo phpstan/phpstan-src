@@ -4,7 +4,9 @@ namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
 use function array_filter;
+use function array_values;
 use function explode;
+use function in_array;
 use function ltrim;
 use function preg_match;
 use function trim;
@@ -18,9 +20,12 @@ final class SideEffectsFactory
 	 * are passed, and from $effects when the function lists them. Without the
 	 * list, when it is ['*'], or when it is empty but hasSideEffects() says
 	 * Yes, such as for a method returning void, any effect is as possible as
-	 * hasSideEffects() says. A listed writes-args($a, $b) makes $a and $b
-	 * written parameters. A written parameter passed by reference that is
-	 * also read makes the result nondeterministic.
+	 * hasSideEffects() says. '*' next to effect names, such as
+	 * ['*', 'writes-global.error.json'], names some effects of a function
+	 * that can also have any other effect as much as hasSideEffects() says.
+	 * A listed writes-args($a, $b) makes $a and $b written parameters. A
+	 * written parameter passed by reference that is also read makes the
+	 * result nondeterministic.
 	 *
 	 * @param list<string>|null $effects
 	 */
@@ -28,6 +33,10 @@ final class SideEffectsFactory
 	{
 		if ($effects === ['*'] || ($effects === [] && $reflection->hasSideEffects()->yes())) {
 			$effects = null;
+		} elseif ($effects !== null && in_array('*', $effects, true)) {
+			$named = array_values(array_filter($effects, static fn (string $effect): bool => $effect !== '*'));
+
+			return SideEffects::create($named, $reflection->hasSideEffects());
 		}
 
 		$called = [];

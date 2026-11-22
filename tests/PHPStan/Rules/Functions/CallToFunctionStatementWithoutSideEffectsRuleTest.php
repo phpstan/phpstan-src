@@ -246,6 +246,14 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				'Call to function highlight_string() on a separate line has no effect.',
 				25,
 			],
+			[
+				'Call to function preg_replace() on a separate line has no effect.',
+				29,
+			],
+			[
+				'Call to function preg_filter() on a separate line has no effect.',
+				30,
+			],
 		]);
 	}
 

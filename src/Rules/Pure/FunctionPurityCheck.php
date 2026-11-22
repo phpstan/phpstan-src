@@ -20,6 +20,7 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -250,8 +251,9 @@ final class FunctionPurityCheck
 			if ($this->isPureUnlessCallableInvocation($impurePoint, $pureUnlessCallableParamNames)) {
 				continue;
 			}
-			// a warning about the arguments does not make the result depend on anything else
-			if ($impurePoint->getSideEffects() !== null && $impurePoint->getSideEffects()->hasOnly(['warns'])->yes()) {
+			// a warning about the arguments, or the last error left for an error getter,
+			// does not make the result depend on anything else
+			if ($impurePoint->getSideEffects() !== null && $impurePoint->getSideEffects()->hasOnly([SideEffects::WARNS, SideEffects::WRITES_GLOBAL_ERROR])->yes()) {
 				continue;
 			}
 			if ($this->onlyWritesLocalArguments($impurePoint)) {
@@ -277,7 +279,8 @@ final class FunctionPurityCheck
 	}
 
 	/**
-	 * A call whose only effects are writes to its arguments is weakly pure when
+	 * A call whose only effects are writes to its arguments, and maybe the last
+	 * error it leaves for an error getter, is weakly pure when
 	 * each written argument is local: a variable passed by reference, which the
 	 * call reassigns like an assignment would, or an object it creates. Writing
 	 * through a by-ref argument to a property or a superglobal is an impure point
@@ -305,7 +308,7 @@ final class FunctionPurityCheck
 		}
 
 		$sideEffects = $reflection->getSideEffects();
-		if (!$sideEffects->hasOnly(['writes-args'])->yes() || $sideEffects->getCalledParameters() !== []) {
+		if (!$sideEffects->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->yes() || $sideEffects->getCalledParameters() !== []) {
 			return false;
 		}
 

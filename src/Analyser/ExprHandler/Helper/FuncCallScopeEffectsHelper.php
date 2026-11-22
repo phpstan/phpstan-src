@@ -43,7 +43,6 @@ use PHPStan\Type\UnionType;
 use function array_slice;
 use function count;
 use function in_array;
-use function str_starts_with;
 
 /**
  * The scope-only side effects of a function call, applied after the call's
@@ -122,16 +121,6 @@ final class FuncCallScopeEffectsHelper
 				$scope = $this->invalidateObjectArgs($nodeScopeResolver, $normalizedExpr, $argsResult, $scope, $storage, $nodeCallback);
 			}
 			$scope = $scope->invalidateExpression(new Variable('this'), true, null, $keepPropertyFetches);
-		}
-
-		if (
-			$functionReflection !== null
-			&& in_array($functionReflection->getName(), ['json_encode', 'json_decode'], true)
-		) {
-			$scope = $scope->invalidateExpression(new FuncCall(new Name('json_last_error'), []))
-				->invalidateExpression(new FuncCall(new Name\FullyQualified('json_last_error'), []))
-				->invalidateExpression(new FuncCall(new Name('json_last_error_msg'), []))
-				->invalidateExpression(new FuncCall(new Name\FullyQualified('json_last_error_msg'), []));
 		}
 
 		if (
@@ -345,20 +334,6 @@ final class FuncCallScopeEffectsHelper
 			}
 		}
 
-		if (
-			$functionReflection !== null
-			&& in_array($functionReflection->getName(), ['clearstatcache', 'unlink'], true)
-		) {
-			$scope = $scope->afterClearstatcacheCall();
-		}
-
-		if (
-			$functionReflection !== null
-			&& str_starts_with($functionReflection->getName(), 'openssl')
-		) {
-			$scope = $scope->afterOpenSslCall($functionReflection->getName());
-		}
-
 		$outputBufferDelta = $functionReflection !== null ? $this->outputBufferHelper->getLevelDelta($functionReflection->getName()) : 0;
 		if ($outputBufferDelta !== 0) {
 			$scope = $this->outputBufferHelper->applyLevelDelta($nodeScopeResolver, $scope, $outputBufferDelta);
@@ -368,11 +343,12 @@ final class FuncCallScopeEffectsHelper
 			&& count($parametersAcceptor->getImpurePoints()) === 0;
 		if (
 			($functionReflection !== null && !$functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no())
-			// a built-in forgets global state only when it lists writes-global, not when it is unclassified
-			|| ($functionReflection !== null && $functionReflection->isBuiltin() && in_array('writes-global', $functionReflection->getSideEffects()->getEffectNames(), true))
 			|| ($functionReflection === null && !$pureCallable)
 		) {
 			$scope = $scope->invalidateVolatileExpressions($functionReflection !== null && $functionReflection->hasSideEffects()->yes());
+		} elseif ($functionReflection !== null && $functionReflection->isBuiltin()) {
+			// a built-in forgets global state only when it lists writes-global, not when it is unclassified
+			$scope = $scope->invalidateGlobalStateWrittenBy($functionReflection->getSideEffects());
 		}
 		return $scope;
 	}

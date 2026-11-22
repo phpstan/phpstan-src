@@ -569,6 +569,21 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../Functions/data/bug-15355.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testErrorState(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-function-error-state.php'], [
+			[
+				'Possibly impure call to function json_encode() in pure function PureFunctionErrorState\\encodes().',
+				21,
+			],
+			[
+				'Impure call to function var_dump() in pure function PureFunctionErrorState\\prints().',
+				27,
+			],
+		]);
+	}
+
 	public function testWeakPurity(): void
 	{
 		$this->analyse([__DIR__ . '/data/weak-purity.php'], [

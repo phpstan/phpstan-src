@@ -5,6 +5,7 @@ namespace PHPStan\Reflection\SignatureMap;
 use Nette\Schema\Expect;
 use Nette\Schema\Processor;
 use PHPStan\Testing\PHPStanTestCase;
+use function array_slice;
 use function in_array;
 use function sprintf;
 
@@ -32,7 +33,10 @@ class FunctionMetadataTest extends PHPStanTestCase
 				continue;
 			}
 
-			$this->assertSame(['*'], $metadata['effects'], sprintf('%s: "*" cannot be combined with other effects.', $name));
+			// effects named next to '*' leave the others unknown, which the other keys cannot narrow
+			$this->assertSame(['effects' => $metadata['effects']], $metadata, sprintf('%s: "*" cannot be combined with other keys.', $name));
+			$this->assertSame('*', $metadata['effects'][0], sprintf('%s: "*" comes first.', $name));
+			$this->assertNotContains('*', array_slice($metadata['effects'], 1), sprintf('%s: "*" is listed twice.', $name));
 		}
 	}
 

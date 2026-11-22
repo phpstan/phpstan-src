@@ -2548,6 +2548,8 @@ extern zend_class_entry *pt_ce_side_effects;
 /* $sideEffects->hasAny() / ->writesParameter($parameterName) of a
  * SideEffects (final, so always the native class), the PT_TRI_* value;
  * -1 = pending exception */
+/* $sideEffects->getEffectNames() !== [] ? Yes : $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->negate() as PT_TRI_*; -1 = pending exception */
+zend_long pt_side_effects_own(zend_object *sideEffects);
 zend_long pt_side_effects_has_any(zend_object *sideEffects);
 zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string *parameterName);
 /* $reflection->getSideEffects()->isDeterministic()->negate() as PT_TRI_*; -1 = pending exception */
@@ -2560,16 +2562,19 @@ zend_long pt_method_reflection_result_varies(zval *methodReflection);
 /* $functionReflection->getSideEffects()->has('reads-global') as PT_TRI_*;
  * -1 = pending exception */
 zend_long pt_function_reflection_reads_global(zval *functionReflection);
-/* in_array('writes-global', $reflection->getSideEffects()->getEffectNames(), true)
- * of a FunctionReflection / an ExtendedMethodReflection as 1 / 0; -1 = pending exception */
-int pt_function_reflection_lists_writes_global(zval *functionReflection);
-int pt_method_reflection_lists_writes_global(zval *methodReflection);
+/* $reflection->getSideEffects() of a FunctionReflection / an
+ * ExtendedMethodReflection; UNDEF = pending exception */
+zv::Val pt_function_reflection_side_effects(zval *functionReflection);
+zv::Val pt_method_reflection_side_effects(zval *methodReflection);
+/* $sideEffects->getListedSubEffects($effect): null or the array; UNDEF =
+ * pending exception */
+zv::Val pt_side_effects_listed_sub_effects(zval *sideEffects, const char *effect, size_t len);
 /* whether an impure point counts for an unused expression statement: !($impurePoint->getSideEffects()?->hasOnly(['reads-global', 'nondeterministic'])->yes() ?? false)
  * of an ImpurePoint, as 1 / 0; -1 = pending exception */
 int pt_impure_point_is_observable(zend_object *impurePoint);
-/* $sideEffects->hasOnly(['writes-args'])->no() of a SideEffects as 1 / 0;
- * -1 = pending exception */
-int pt_side_effects_has_other_than_writes_args(zval *sideEffects);
+/* $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->no() && !SimpleImpurePoint::onlyLeavesErrors($sideEffects)
+ * of a SideEffects as 1 / 0; -1 = pending exception */
+int pt_side_effects_has_other_than_args_and_error_writes(zval *sideEffects);
 
 /* }}} */
 
@@ -2989,11 +2994,9 @@ zval *pt_parameters_acceptor_parameters(zval *acceptor, zv::Val &hold);
 zval *pt_assertions_all(zval *assertions, zv::Val &hold);
 
 /* MutatingScope.cpp — $scope->afterExtractCall() /
- * afterClearstatcacheCall() / afterOpenSslCall($name); UNDEF = pending
- * exception */
+ * invalidateGlobalStateWrittenBy($sideEffects); UNDEF = pending exception */
 zv::Val pt_mutating_scope_after_extract_call(zend_object *scope);
-zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope);
-zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName);
+zv::Val pt_mutating_scope_invalidate_global_state_written_by(zend_object *scope, zval *sideEffects);
 
 /* OutputBufferHelper.cpp — the shadowing class and its public methods for
  * native callers (the native body for the native class, the method by name
@@ -4033,8 +4036,8 @@ zv::Val pt_assertions_get_asserts(zval *assertions, int which);
 bool pt_volatile_expression_helper_invalidate_volatile_function_calls(zval *expressionTypes, zval *nativeExpressionTypes);
 bool pt_volatile_expression_helper_invalidate_superglobals(zval *expressionTypes, zval *nativeExpressionTypes);
 zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval *scope, zval *expressionTypes, zval *nativeExpressionTypes, HashTable *functionNames, zend_string *declaredSymbolName);
-/* invalidateGlobalStateReads(); UNDEF = pending exception */
-zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes);
+/* invalidateGlobalStateReads(); $writtenStates NULL for null; UNDEF = pending exception */
+zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates = NULL);
 
 /* PhpClassReflectionExtension.cpp — $extension->hasProperty($classReflection,
  * $name) / ->getNativeProperty() / ->hasMethod() / ->getMethod() /

@@ -26,6 +26,7 @@ static constexpr char pt_se_writes_this[] = "writes-this";
 static constexpr char pt_se_writes_global[] = "writes-global";
 static constexpr char pt_se_writes_args[] = "writes-args";
 static constexpr char pt_se_reads_global[] = "reads-global";
+static constexpr char pt_se_writes_global_error[] = "writes-global.error";
 
 namespace phpstanturbo {
 
@@ -150,6 +151,37 @@ public:
 	}
 
 	zv::Val getEffectNames() const { return read(slots::effects, "effects"); }
+
+	/* getListedSubEffects($effect): null when $effect itself is listed, else
+	 * the listed sub-effects without the "$effect." prefix */
+	zv::Val getListedSubEffects(zend_string *effect) const { return listedSubEffects(ZSTR_VAL(effect), ZSTR_LEN(effect)); }
+
+	zv::Val listedSubEffects(const char *effect, size_t len) const
+	{
+		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
+		if (UNEXPECTED(effects == NULL)) return zv::Val();
+		zval subEffects;
+		array_init(&subEffects);
+		zval *listedZv;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(effects), listedZv) {
+			ZVAL_DEREF(listedZv);
+			if (Z_TYPE_P(listedZv) != IS_STRING) {
+				zval_ptr_dtor(&subEffects);
+				zend_type_error("PHPStan\\Reflection\\SideEffects::baseName(): Argument #1 ($listed) must be of type string, %s given", zend_zval_value_name(listedZv));
+				return zv::Val();
+			}
+			const char *listed = Z_STRVAL_P(listedZv);
+			size_t listedLen = baseNameLength(listed, Z_STRLEN_P(listedZv));
+			if (listedLen < len || memcmp(listed, effect, len) != 0) continue;
+			if (listedLen == len) {
+				zval_ptr_dtor(&subEffects);
+				return zv::Val::null();
+			}
+			if (listed[len] != '.') continue;
+			add_next_index_stringl(&subEffects, listed + len + 1, listedLen - len - 1);
+		} ZEND_HASH_FOREACH_END();
+		return zv::Val::adopt(subEffects);
+	}
 
 	/* in_array($effect, $this->getEffectNames(), true) as 1 / 0; -1 = pending exception */
 	int listsValue(const char *effect, size_t len) const
@@ -304,6 +336,22 @@ zend_long pt_side_effects_has_any(zend_object *sideEffects)
 	return pt_side_effects_trinary(SideEffects(sideEffects).hasAny());
 }
 
+zend_long pt_side_effects_own(zend_object *sideEffects)
+{
+	SideEffects native(sideEffects);
+	zv::Val names = native.getEffectNames();
+	if (UNEXPECTED(names.isUndef())) return -1;
+	if (zend_hash_num_elements(Z_ARRVAL_P(names.raw())) > 0) return PT_TRI_YES;
+	/* $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->negate() */
+	zval allowed;
+	array_init_size(&allowed, 1);
+	add_next_index_stringl(&allowed, pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
+	zend_long hasOnly = pt_side_effects_trinary(native.hasOnly(Z_ARRVAL(allowed)));
+	zval_ptr_dtor(&allowed);
+	if (UNEXPECTED(hasOnly < 0)) return -1;
+	return hasOnly == PT_TRI_YES ? PT_TRI_NO : (hasOnly == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
+}
+
 /* $reflection->getSideEffects()->isDeterministic()->negate() for a
  * FunctionReflection or an ExtendedMethodReflection; -1 = pending exception */
 static pt_method_site pt_se_function_get_side_effects_site;
@@ -358,24 +406,9 @@ static zend_object *pt_se_side_effects_of(zv::Val &sideEffects, const char *next
 }
 
 static pt_method_site pt_se_has_site;
-static pt_method_site pt_se_get_effect_names_site;
-
-/* in_array('writes-global', $sideEffects->getEffectNames(), true) as 1 / 0; -1 = pending exception */
-static int pt_se_lists_writes_global(zend_object *object)
-{
-	if (EXPECTED(object->ce == pt_ce_side_effects)) return SideEffects(object).listsValue(pt_se_writes_global, sizeof(pt_se_writes_global) - 1);
-	zv::Val names = pt_call_method_cached(pt_se_get_effect_names_site, object, PT_LC("geteffectnames"), 0, NULL);
-	if (UNEXPECTED(names.isUndef())) return -1;
-	if (Z_TYPE_P(names.raw()) != IS_ARRAY) return 0;
-	zval *listed;
-	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(names.raw()), listed) {
-		ZVAL_DEREF(listed);
-		if (Z_TYPE_P(listed) == IS_STRING && Z_STRLEN_P(listed) == sizeof(pt_se_writes_global) - 1 && memcmp(Z_STRVAL_P(listed), pt_se_writes_global, sizeof(pt_se_writes_global) - 1) == 0) return 1;
-	} ZEND_HASH_FOREACH_END();
-	return 0;
-}
 
 static pt_method_site pt_se_has_only_site;
+static pt_method_site pt_se_get_effect_names_of_site;
 
 int pt_impure_point_is_observable(zend_object *impurePoint)
 {
@@ -404,27 +437,54 @@ int pt_impure_point_is_observable(zend_object *impurePoint)
 	return hasOnly == PT_TRI_YES ? 0 : 1;
 }
 
-int pt_side_effects_has_other_than_writes_args(zval *sideEffects)
+/* $sideEffects->hasOnly($allowed) as PT_TRI_*; -1 = pending exception */
+static zend_long pt_se_has_only_of(zend_object *object, zval *allowed)
+{
+	if (EXPECTED(object->ce == pt_ce_side_effects)) return pt_side_effects_trinary(SideEffects(object).hasOnly(Z_ARRVAL_P(allowed)));
+	/* a twin from a test that mixes both implementations */
+	return pt_side_effects_trinary(pt_call_method_cached(pt_se_has_only_site, object, PT_LC("hasonly"), 1, allowed));
+}
+
+int pt_side_effects_has_other_than_args_and_error_writes(zval *sideEffects)
 {
 	if (UNEXPECTED(Z_TYPE_P(sideEffects) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function hasOnly() on %s", zend_zval_value_name(sideEffects));
 		return -1;
 	}
-	/* ['writes-args'] */
-	zval allowed;
-	array_init_size(&allowed, 1);
-	add_next_index_stringl(&allowed, pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
 	zend_object *object = Z_OBJ_P(sideEffects);
-	zend_long hasOnly;
-	if (EXPECTED(object->ce == pt_ce_side_effects)) {
-		hasOnly = pt_side_effects_trinary(SideEffects(object).hasOnly(Z_ARRVAL(allowed)));
-	} else {
-		/* a twin from a test that mixes both implementations */
-		hasOnly = pt_side_effects_trinary(pt_call_method_cached(pt_se_has_only_site, object, PT_LC("hasonly"), 1, &allowed));
+	zval allowed;
+	array_init_size(&allowed, 2);
+	add_next_index_stringl(&allowed, pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
+	/* $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->no() */
+	zend_long onlyArgs = pt_se_has_only_of(object, &allowed);
+	if (onlyArgs != PT_TRI_NO) {
+		zval_ptr_dtor(&allowed);
+		return onlyArgs < 0 ? -1 : 0;
 	}
+	/* && !self::onlyLeavesErrors($sideEffects) */
+	add_next_index_stringl(&allowed, pt_se_writes_global_error, sizeof(pt_se_writes_global_error) - 1);
+	zv::Val names = pt_call_method_cached(pt_se_get_effect_names_of_site, object, PT_LC("geteffectnames"), 0, NULL);
+	if (UNEXPECTED(names.isUndef())) {
+		zval_ptr_dtor(&allowed);
+		return -1;
+	}
+	zval no;
+	ZVAL_OBJ_COPY(&no, Z_OBJ_P(pt_trinary_singleton(PT_TRI_NO)));
+	zv::Val listedOnly = SideEffects::create(names.raw(), &no, NULL, NULL, false);
+	zval_ptr_dtor(&no);
+	if (UNEXPECTED(listedOnly.isUndef())) {
+		zval_ptr_dtor(&allowed);
+		return -1;
+	}
+	zend_long namesOnlyErrors = pt_side_effects_trinary(SideEffects(Z_OBJ_P(listedOnly.raw())).hasOnly(Z_ARRVAL(allowed)));
+	if (namesOnlyErrors != PT_TRI_YES) {
+		zval_ptr_dtor(&allowed);
+		return namesOnlyErrors < 0 ? -1 : 1;
+	}
+	zend_long onlyArgsAndErrors = pt_se_has_only_of(object, &allowed);
 	zval_ptr_dtor(&allowed);
-	if (UNEXPECTED(hasOnly < 0)) return -1;
-	return hasOnly == PT_TRI_NO ? 1 : 0;
+	if (UNEXPECTED(onlyArgsAndErrors < 0)) return -1;
+	return onlyArgsAndErrors == PT_TRI_NO ? 1 : 0;
 }
 
 zend_long pt_function_reflection_reads_global(zval *functionReflection)
@@ -444,28 +504,39 @@ zend_long pt_function_reflection_reads_global(zval *functionReflection)
 	return result;
 }
 
-int pt_function_reflection_lists_writes_global(zval *functionReflection)
+zv::Val pt_function_reflection_side_effects(zval *functionReflection)
 {
 	if (UNEXPECTED(Z_TYPE_P(functionReflection) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(functionReflection));
-		return -1;
+		return zv::Val();
 	}
-	zv::Val sideEffects = pt_call_method_cached(pt_se_function_get_side_effects_site, Z_OBJ_P(functionReflection), PT_LC("getsideeffects"), 0, NULL);
-	zend_object *object = pt_se_side_effects_of(sideEffects, "getEffectNames");
-	if (UNEXPECTED(object == NULL)) return -1;
-	return pt_se_lists_writes_global(object);
+	return pt_call_method_cached(pt_se_function_get_side_effects_site, Z_OBJ_P(functionReflection), PT_LC("getsideeffects"), 0, NULL);
 }
 
-int pt_method_reflection_lists_writes_global(zval *methodReflection)
+zv::Val pt_method_reflection_side_effects(zval *methodReflection)
 {
 	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(methodReflection));
-		return -1;
+		return zv::Val();
 	}
-	zv::Val sideEffects = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS);
-	zend_object *object = pt_se_side_effects_of(sideEffects, "getEffectNames");
-	if (UNEXPECTED(object == NULL)) return -1;
-	return pt_se_lists_writes_global(object);
+	return pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS);
+}
+
+static pt_method_site pt_se_get_listed_sub_effects_site;
+
+zv::Val pt_side_effects_listed_sub_effects(zval *sideEffects, const char *effect, size_t len)
+{
+	if (UNEXPECTED(Z_TYPE_P(sideEffects) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getListedSubEffects() on %s", zend_zval_value_name(sideEffects));
+		return zv::Val();
+	}
+	if (EXPECTED(Z_OBJCE_P(sideEffects) == pt_ce_side_effects)) return SideEffects(Z_OBJ_P(sideEffects)).listedSubEffects(effect, len);
+	/* a twin from a test that mixes both implementations */
+	zval effectZv;
+	ZVAL_STRINGL(&effectZv, effect, len);
+	zv::Val result = pt_call_method_cached(pt_se_get_listed_sub_effects_site, Z_OBJ_P(sideEffects), PT_LC("getlistedsubeffects"), 1, &effectZv);
+	zval_ptr_dtor(&effectZv);
+	return result;
 }
 
 zend_long pt_function_reflection_result_varies(zval *functionReflection)
@@ -511,6 +582,33 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 	reg::Class cls("PHPStan\\Reflection\\SideEffects");
 	ptdecl::SideEffects::declareClass(cls);
 	ptdecl::SideEffects::declareProperties(cls);
+	cls.publicClassConstantString("WRITES_THIS", "writes-this");
+	cls.publicClassConstantString("WRITES_ARGS", "writes-args");
+	cls.publicClassConstantString("WRITES_GLOBAL", "writes-global");
+	cls.publicClassConstantString("READS_GLOBAL", "reads-global");
+	cls.publicClassConstantString("NONDETERMINISTIC", "nondeterministic");
+	cls.publicClassConstantString("NONDETERMINISTIC_TIME", "nondeterministic.time");
+	cls.publicClassConstantString("NONDETERMINISTIC_RANDOM", "nondeterministic.random");
+	cls.publicClassConstantString("IO", "io");
+	cls.publicClassConstantString("IO_OUTPUT", "io.output");
+	cls.publicClassConstantString("IO_FILES", "io.files");
+	cls.publicClassConstantString("IO_NETWORK", "io.network");
+	cls.publicClassConstantString("IO_DB", "io.db");
+	cls.publicClassConstantString("IO_PROCESS", "io.process");
+	cls.publicClassConstantString("SLEEP", "sleep");
+	cls.publicClassConstantString("EXIT", "exit");
+	cls.publicClassConstantString("WARNS", "warns");
+	cls.publicClassConstantString("WRITES_GLOBAL_STAT_CACHE", "writes-global.stat-cache");
+	cls.publicClassConstantString("READS_GLOBAL_STAT_CACHE", "reads-global.stat-cache");
+	cls.publicClassConstantString("WRITES_GLOBAL_ERROR", "writes-global.error");
+	cls.publicClassConstantString("WRITES_GLOBAL_ERROR_JSON", "writes-global.error.json");
+	cls.publicClassConstantString("READS_GLOBAL_ERROR_JSON", "reads-global.error.json");
+	cls.publicClassConstantString("WRITES_GLOBAL_ERROR_PREG", "writes-global.error.preg");
+	cls.publicClassConstantString("READS_GLOBAL_ERROR_PREG", "reads-global.error.preg");
+	cls.publicClassConstantString("WRITES_GLOBAL_ERROR_OPENSSL", "writes-global.error.openssl");
+	cls.publicClassConstantString("READS_GLOBAL_ERROR_OPENSSL", "reads-global.error.openssl");
+	cls.publicClassConstantString("WRITES_GLOBAL_ERROR_INTL", "writes-global.error.intl");
+	cls.publicClassConstantString("READS_GLOBAL_ERROR_INTL", "reads-global.error.intl");
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *effects, *others, *calledParameters, *writtenParameters;
@@ -555,6 +653,7 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 		RETURN_STRINGL(ZSTR_VAL(listed), SideEffects::baseNameLength(ZSTR_VAL(listed), ZSTR_LEN(listed)));
 	});
 	cls.method<&SideEffects::getEffectNames>(sigs::getEffectNames);
+	cls.method<&SideEffects::getListedSubEffects, zp::Str>(sigs::getListedSubEffects);
 	cls.method<&SideEffects::getCalledParameters>(sigs::getCalledParameters);
 	cls.method<&SideEffects::getWrittenParameters>(sigs::getWrittenParameters);
 	cls.method<&SideEffects::writesParameter, zp::Str>(sigs::writesParameter);

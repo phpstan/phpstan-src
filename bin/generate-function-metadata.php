@@ -10,6 +10,7 @@ use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Finder\Finder;
 
@@ -49,30 +50,9 @@ use Symfony\Component\Finder\Finder;
 						// The following functions read global state, but PHPStan tracks that state in the scope,
 						// so they stay pure for the rules:
 						if (in_array($functionName, [
-							'stat',
-							'lstat',
-							'file_exists',
-							'is_writable',
-							'is_writeable',
-							'is_readable',
-							'is_executable',
-							'is_file',
-							'is_dir',
-							'is_link',
-							'filectime',
-							'fileatime',
-							'filemtime',
-							'fileinode',
-							'filegroup',
-							'fileowner',
-							'filesize',
-							'filetype',
-							'fileperms',
 							'ftell',
 							'ini_get',
 							'function_exists',
-							'json_last_error',
-							'json_last_error_msg',
 							'ob_get_level',
 						], true)) {
 							$this->managedStateFunctions[] = $functionName;
@@ -130,10 +110,19 @@ use Symfony\Component\Finder\Finder;
 
 	/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
+	$leavesError = static fn (array $effects): bool => count(array_filter(
+		$effects,
+		static fn (string $effect): bool => str_starts_with($effect, SideEffects::WRITES_GLOBAL_ERROR . '.'),
+	)) > 0;
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			// reading state PHPStan tracks itself keeps the function pure for the rules
-			if ($metadata[$functionName]['effects'] !== [] && ($metadata[$functionName]['hasSideEffects'] ?? null) !== false) {
+			// reading state PHPStan tracks itself keeps the function pure for the rules,
+			// and so does leaving an error for an error getter
+			if (
+				$metadata[$functionName]['effects'] !== []
+				&& ($metadata[$functionName]['hasSideEffects'] ?? null) !== false
+				&& !$leavesError($metadata[$functionName]['effects'])
+			) {
 				throw new ShouldNotHappenException($functionName);
 			}
 
@@ -173,6 +162,9 @@ use Symfony\Component\Finder\Finder;
 
 	foreach ($visitor->methods as $methodName) {
 		if (array_key_exists($methodName, $metadata)) {
+			if ($leavesError($metadata[$methodName]['effects'])) {
+				continue;
+			}
 			if ($metadata[$methodName]['effects'] !== []) {
 				throw new ShouldNotHappenException($methodName);
 			}
@@ -184,6 +176,8 @@ use Symfony\Component\Finder\Finder;
 
 	$template = <<<'php'
 <?php declare(strict_types = 1);
+
+use PHPStan\Reflection\SideEffects;
 
 /**
  * GENERATED FILE - DO NOT EDIT!
@@ -209,6 +203,20 @@ return [
 php;
 	$content = '';
 	$escape = static fn (mixed $value): string => var_export($value, true);
+	$effectConstants = array_flip((new ReflectionClass(SideEffects::class))->getConstants());
+	$encodeEffect = static function (string $effect) use ($effectConstants, $escape): string {
+		if (isset($effectConstants[$effect])) {
+			return 'SideEffects::' . $effectConstants[$effect];
+		}
+		if (preg_match('~^' . preg_quote(SideEffects::WRITES_ARGS, '~') . '(\(.+\))$~', $effect, $matches) === 1) {
+			return 'SideEffects::' . $effectConstants[SideEffects::WRITES_ARGS] . ' . ' . $escape($matches[1]);
+		}
+		if ($effect !== '*') {
+			throw new ShouldNotHappenException(sprintf('Effect %s has no SideEffects constant.', $effect));
+		}
+
+		return $escape($effect);
+	};
 	$encodeParameterMap = static fn (array $parameters) => sprintf(
 		'[%s]',
 		implode(
@@ -222,7 +230,7 @@ php;
 	);
 
 	foreach ($metadata as $name => $meta) {
-		$entries = [sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($escape, $meta['effects'])))];
+		$entries = [sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($encodeEffect, $meta['effects'])))];
 		if (isset($meta['hasSideEffects'])) {
 			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
 		}

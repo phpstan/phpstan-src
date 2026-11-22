@@ -6,6 +6,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 use function str_starts_with;
+use function strlen;
 use function strpos;
 use function substr;
 
@@ -28,6 +29,44 @@ use function substr;
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/SideEffects.cpp')]
 final class SideEffects
 {
+
+	public const WRITES_THIS = 'writes-this';
+	public const WRITES_ARGS = 'writes-args';
+	public const WRITES_GLOBAL = 'writes-global';
+	public const READS_GLOBAL = 'reads-global';
+	public const NONDETERMINISTIC = 'nondeterministic';
+	public const NONDETERMINISTIC_TIME = 'nondeterministic.time';
+	public const NONDETERMINISTIC_RANDOM = 'nondeterministic.random';
+	public const IO = 'io';
+	public const IO_OUTPUT = 'io.output';
+	public const IO_FILES = 'io.files';
+	public const IO_NETWORK = 'io.network';
+	public const IO_DB = 'io.db';
+	public const IO_PROCESS = 'io.process';
+	public const SLEEP = 'sleep';
+	public const EXIT = 'exit';
+	public const WARNS = 'warns';
+
+	/**
+	 * Named parts of global state. A call that writes one forgets only the
+	 * remembered calls that read it, such as is_file($a) after clearstatcache().
+	 */
+	public const WRITES_GLOBAL_STAT_CACHE = 'writes-global.stat-cache';
+	public const READS_GLOBAL_STAT_CACHE = 'reads-global.stat-cache';
+
+	/**
+	 * The last error of an extension, which its error getters read. Writing it
+	 * is allowed in pure functions and makes a call on its own line useful.
+	 */
+	public const WRITES_GLOBAL_ERROR = 'writes-global.error';
+	public const WRITES_GLOBAL_ERROR_JSON = 'writes-global.error.json';
+	public const READS_GLOBAL_ERROR_JSON = 'reads-global.error.json';
+	public const WRITES_GLOBAL_ERROR_PREG = 'writes-global.error.preg';
+	public const READS_GLOBAL_ERROR_PREG = 'reads-global.error.preg';
+	public const WRITES_GLOBAL_ERROR_OPENSSL = 'writes-global.error.openssl';
+	public const READS_GLOBAL_ERROR_OPENSSL = 'reads-global.error.openssl';
+	public const WRITES_GLOBAL_ERROR_INTL = 'writes-global.error.intl';
+	public const READS_GLOBAL_ERROR_INTL = 'reads-global.error.intl';
 
 	/**
 	 * @param list<string> $effects
@@ -122,7 +161,7 @@ final class SideEffects
 			return TrinaryLogic::createNo();
 		}
 
-		return $this->has('nondeterministic')->negate();
+		return $this->has(self::NONDETERMINISTIC)->negate();
 	}
 
 	/**
@@ -160,7 +199,7 @@ final class SideEffects
 			$result = $result->and($listedResult);
 		}
 
-		if (!in_array('writes-args', $effects, true)) {
+		if (!in_array(self::WRITES_ARGS, $effects, true)) {
 			foreach ($this->writtenParameters as $written) {
 				$result = $result->and($written->negate());
 			}
@@ -178,6 +217,32 @@ final class SideEffects
 	public function getEffectNames(): array
 	{
 		return $this->effects;
+	}
+
+	/**
+	 * The listed sub-effects of $effect without its prefix, such as
+	 * ['stat-cache'] for writes-global.stat-cache: the named parts of the
+	 * global state a call writes or reads. Null when $effect itself is listed,
+	 * [] when neither is. Unlisted effects do not count.
+	 *
+	 * @return list<string>|null
+	 */
+	public function getListedSubEffects(string $effect): ?array
+	{
+		$subEffects = [];
+		foreach ($this->effects as $listed) {
+			$listed = self::baseName($listed);
+			if ($listed === $effect) {
+				return null;
+			}
+			if (!str_starts_with($listed, $effect . '.')) {
+				continue;
+			}
+
+			$subEffects[] = substr($listed, strlen($effect) + 1);
+		}
+
+		return $subEffects;
 	}
 
 	/**
@@ -207,7 +272,7 @@ final class SideEffects
 			return $this->writtenParameters[$parameterName];
 		}
 
-		return in_array('writes-args', $this->effects, true) ? TrinaryLogic::createYes() : $this->others;
+		return in_array(self::WRITES_ARGS, $this->effects, true) ? TrinaryLogic::createYes() : $this->others;
 	}
 
 	/** The name of a listed effect without its parameters: writes-args for writes-args($a). */

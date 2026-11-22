@@ -5,6 +5,7 @@ namespace PHPStan\Analyser;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function array_keys;
@@ -18,7 +19,7 @@ use function strtolower;
 final class VolatileExpressionHelper
 {
 
-	private const VOLATILE_FUNCTION_NAMES = ['ob_get_level', 'openssl_error_string'];
+	private const VOLATILE_FUNCTION_NAMES = ['ob_get_level'];
 
 	private const EXISTENCE_CHECK_FUNCTION_NAMES = [
 		'class_exists',
@@ -65,11 +66,17 @@ final class VolatileExpressionHelper
 	 * write that state. Existence checks are left to invalidateNegativeExistenceChecks():
 	 * symbols are only ever added, so a positive result stays true.
 	 *
+	 * With $writtenStates, the invalidating code writes only those named parts
+	 * of global state, such as ['stat-cache'] for writes-global.stat-cache, and
+	 * only calls that read a named part they overlap with are forgotten:
+	 * reads-global.error is forgotten for error.preg, reads-global alone is not.
+	 *
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
+	 * @param list<string>|null $writtenStates
 	 * @return bool whether anything was removed
 	 */
-	public static function invalidateGlobalStateReads(Scope $scope, ReflectionProvider $reflectionProvider, array &$expressionTypes, array &$nativeExpressionTypes): bool
+	public static function invalidateGlobalStateReads(Scope $scope, ReflectionProvider $reflectionProvider, array &$expressionTypes, array &$nativeExpressionTypes, ?array $writtenStates = null): bool
 	{
 		$changed = false;
 		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
@@ -86,7 +93,8 @@ final class VolatileExpressionHelper
 			$function = $reflectionProvider->getFunction($expr->name, $scope);
 			if (
 				in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true)
-				|| !$function->getSideEffects()->has('reads-global')->yes()
+				|| !$function->getSideEffects()->has(SideEffects::READS_GLOBAL)->yes()
+				|| ($writtenStates !== null && !self::readsAnyOf($function->getSideEffects()->getListedSubEffects(SideEffects::READS_GLOBAL), $writtenStates))
 			) {
 				continue;
 			}
@@ -97,6 +105,27 @@ final class VolatileExpressionHelper
 		}
 
 		return $changed;
+	}
+
+	/**
+	 * @param list<string>|null $readStates
+	 * @param list<string> $writtenStates
+	 */
+	private static function readsAnyOf(?array $readStates, array $writtenStates): bool
+	{
+		foreach ($readStates ?? [] as $readState) {
+			foreach ($writtenStates as $writtenState) {
+				if (
+					$readState === $writtenState
+					|| str_starts_with($readState, $writtenState . '.')
+					|| str_starts_with($writtenState, $readState . '.')
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

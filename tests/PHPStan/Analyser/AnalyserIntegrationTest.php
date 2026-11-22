@@ -571,6 +571,17 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		}
 	}
 
+	public function testBug15790(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15790.php');
+		$this->assertCount(2, $errors);
+		$this->assertSame('Cannot call method createInverse() on Transliterator|null.', $errors[0]->getMessage());
+		$this->assertSame(29, $errors[0]->getLine());
+		// the result does not depend on how long it takes
+		$this->assertSame('Call to function password_verify() on a separate line has no effect.', $errors[1]->getMessage());
+		$this->assertSame(38, $errors[1]->getLine());
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14715(): void
 	{

@@ -21,6 +21,7 @@ use PhpParser\Node\Scalar\String_;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\ScopeContext;
 use PHPStan\Analyser\ScopeFactory;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
@@ -90,12 +91,14 @@ final class MutatingScopeExpressionsBench
 	 * nothing to forget.
 	 */
 	#[DataProvider(method: 'expressions')]
-	#[Linear(size: 'expressions')]
-	public function benchAfterOpenSslAndClearstatcacheCall(int $expressions): MutatingScope
+	#[Constant(size: 'expressions')]
+	public function benchInvalidateNamedGlobalState(int $expressions): MutatingScope
 	{
 		$scope = $this->meter->exclude(fn (): MutatingScope => $this->scopeWithProperties($expressions));
 
-		return $scope->afterOpenSslCall('openssl_sign')->afterClearstatcacheCall();
+		return $scope
+			->invalidateGlobalStateWrittenBy(SideEffects::create([SideEffects::WRITES_GLOBAL_ERROR_OPENSSL], TrinaryLogic::createMaybe()))
+			->invalidateGlobalStateWrittenBy(SideEffects::create([SideEffects::WRITES_GLOBAL_STAT_CACHE], TrinaryLogic::createNo()));
 	}
 
 	/**

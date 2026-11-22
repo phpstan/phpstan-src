@@ -162,20 +162,21 @@ public:
 		if (callSideEffects != NULL && Z_TYPE_P(callSideEffects) == IS_NULL) callSideEffects = NULL;
 
 		if (callSideEffects != NULL) {
-			/* $calledVerdict = $scope !== null && $variant !== null ? self::resolvePureUnlessCallableIsImpureVerdict(...) : null */
-			bool hasCalledVerdict = false;
-			zend_long calledVerdict = PT_TRI_YES;
-			if (scope != NULL && variant != NULL && UNEXPECTED(!resolveVerdict(variant, scope, args, hasCalledVerdict, calledVerdict))) return false;
+			/* $verdict = $scope !== null && $variant !== null ? self::resolveConditionalPurityVerdict(...) : null */
+			bool hasVerdict = false;
+			zend_long verdict = PT_TRI_YES;
+			if (scope != NULL && variant != NULL && UNEXPECTED(!resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) return false;
 			if (UNEXPECTED(Z_TYPE_P(callSideEffects) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function hasAny() on %s", zend_zval_value_name(callSideEffects));
+				zend_throw_error(NULL, "Call to a member function getEffectNames() on %s", zend_zval_value_name(callSideEffects));
 				return false;
 			}
-			zend_long hasAny = pt_side_effects_has_any(Z_OBJ_P(callSideEffects));
-			if (UNEXPECTED(hasAny < 0)) return false;
-			bool calledPure = !hasCalledVerdict || calledVerdict == PT_TRI_YES;
-			if (hasAny == PT_TRI_NO && calledPure) return true;
-			bool certain = hasAny == PT_TRI_YES || (hasCalledVerdict && calledVerdict == PT_TRI_NO);
-			if (calledPure) ZVAL_COPY(&out.sideEffects, callSideEffects);
+			/* the effects of the call itself, without what the flagged parameters bring in */
+			zend_long own = pt_side_effects_own(Z_OBJ_P(callSideEffects));
+			if (UNEXPECTED(own < 0)) return false;
+			bool pureByVerdict = !hasVerdict || verdict == PT_TRI_YES;
+			if (own == PT_TRI_NO && pureByVerdict) return true;
+			bool certain = own == PT_TRI_YES || (hasVerdict && verdict == PT_TRI_NO);
+			if (pureByVerdict) ZVAL_COPY(&out.sideEffects, callSideEffects);
 			return describe(function, certain, out);
 		}
 
@@ -193,11 +194,11 @@ public:
 			if (UNEXPECTED(isVoid < 0)) return false;
 			certain = isVoid == PT_TRI_YES;
 		}
-		/* !$certain && $function->getSideEffects()->hasOnly(['writes-args'])->no() */
+		/* !$certain && hasOnly([WRITES_ARGS])->no() && !self::onlyLeavesErrors($function->getSideEffects()) */
 		if (!certain) {
 			zv::Val ownSideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
 			if (UNEXPECTED(ownSideEffects.isUndef())) return false;
-			int other = pt_side_effects_has_other_than_writes_args(ownSideEffects.raw());
+			int other = pt_side_effects_has_other_than_args_and_error_writes(ownSideEffects.raw());
 			if (UNEXPECTED(other < 0)) return false;
 			if (other == 1) certain = true;
 		}

@@ -24,6 +24,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\NoopExpressionNode;
 use PHPStan\Node\PropertyAssignNode;
 use PHPStan\Node\VariableAssignNode;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\NeverType;
@@ -97,7 +98,7 @@ final class ExpressionHandler implements StmtHandler
 		$observableImpurePoints = array_filter(
 			$result->getImpurePoints(),
 			static fn (ImpurePoint $impurePoint): bool => $impurePoint->getSideEffects() === null
-				|| !$impurePoint->getSideEffects()->hasOnly(['reads-global', 'nondeterministic'])->yes(),
+				|| !$impurePoint->getSideEffects()->hasOnly([SideEffects::READS_GLOBAL, SideEffects::NONDETERMINISTIC])->yes(),
 		);
 		if (
 			count($observableImpurePoints) === 0

@@ -43,6 +43,7 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicSideEffectsExtensionRegistry;
@@ -58,7 +59,6 @@ use PHPStan\Type\TypeCombinator;
 use function array_map;
 use function array_merge;
 use function count;
-use function in_array;
 use function strtolower;
 
 /**
@@ -325,7 +325,7 @@ final class MethodCallHandler implements ExprHandler
 
 			// the receiver's state: the object itself, or the static properties of its class
 			$sideEffects = $methodReflection->getSideEffects();
-			$writesReceiver = $sideEffects->has('writes-this')->or($sideEffects->has('writes-global'));
+			$writesReceiver = $sideEffects->has(SideEffects::WRITES_THIS)->or($sideEffects->has(SideEffects::WRITES_GLOBAL));
 			if (
 				$methodReflection->getName() === '__construct'
 				|| $writesReceiver->yes()
@@ -363,9 +363,10 @@ final class MethodCallHandler implements ExprHandler
 		if (
 			$methodReflection === null
 			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
-			|| ($methodReflection->getDeclaringClass()->isBuiltin() && in_array('writes-global', $methodReflection->getSideEffects()->getEffectNames(), true))
 		) {
 			$scope = $scope->invalidateVolatileExpressions($methodReflection !== null && $methodReflection->hasSideEffects()->yes());
+		} elseif ($methodReflection->getDeclaringClass()->isBuiltin()) {
+			$scope = $scope->invalidateGlobalStateWrittenBy($methodReflection->getSideEffects());
 		}
 
 		$hasYield = $hasYield || $argsResult->hasYield();

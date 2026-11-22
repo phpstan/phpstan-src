@@ -61,6 +61,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpFunctionFromParserNodeReflection;
 use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use PHPStan\Reflection\PropertyReflection;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -540,149 +541,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		);
 	}
 
-	public function afterClearstatcacheCall(): self
+	/**
+	 * Forgets what a call with $sideEffects may have changed in global state:
+	 * every volatile expression when it lists writes-global, and only the
+	 * calls that read the named parts when it lists sub-effects such as
+	 * writes-global.stat-cache, which clearstatcache() lists.
+	 */
+	public function invalidateGlobalStateWrittenBy(SideEffects $sideEffects): self
 	{
-		$changed = false;
-
-		$expressionTypes = $this->expressionTypes;
-		$nativeExpressionTypes = $this->nativeExpressionTypes;
-		foreach (array_keys($expressionTypes) as $exprString) {
-			// list from https://www.php.net/manual/en/function.clearstatcache.php
-
-			// stat(), lstat(), file_exists(), is_writable(), is_readable(), is_executable(), is_file(), is_dir(), is_link(), filectime(), fileatime(), filemtime(), fileinode(), filegroup(), fileowner(), filesize(), filetype(), and fileperms().
-			foreach ([
-				'stat',
-				'lstat',
-				'file_exists',
-				'is_writable',
-				'is_writeable',
-				'is_readable',
-				'is_executable',
-				'is_file',
-				'is_dir',
-				'is_link',
-				'filectime',
-				'fileatime',
-				'filemtime',
-				'fileinode',
-				'filegroup',
-				'fileowner',
-				'filesize',
-				'filetype',
-				'fileperms',
-			] as $functionName) {
-				if (!str_starts_with($exprString, $functionName . '(') && !str_starts_with($exprString, '\\' . $functionName . '(')) {
-					continue;
-				}
-
-				unset($expressionTypes[$exprString]);
-				unset($nativeExpressionTypes[$exprString]);
-				$changed = true;
-				continue 2;
-			}
+		$writtenStates = $sideEffects->getListedSubEffects(SideEffects::WRITES_GLOBAL);
+		if ($writtenStates === null) {
+			return $this->invalidateVolatileExpressions();
 		}
-
-		if (!$changed) {
+		if ($writtenStates === []) {
 			return $this;
 		}
 
-		return $this->scopeFactory->create(
-			$this->context,
-			$this->isDeclareStrictTypes(),
-			$this->getFunction(),
-			$this->getNamespace(),
-			$expressionTypes,
-			$nativeExpressionTypes,
-			$this->conditionalExpressions,
-			$this->inClosureBindScopeClasses,
-			$this->anonymousFunctionReflection,
-			$this->isInFirstLevelStatement(),
-			$this->currentlyAssignedExpressions,
-			$this->currentlyAllowedUndefinedExpressions,
-			$this->inFunctionCallsStack,
-			$this->afterExtractCall,
-			$this->parentScope,
-			$this->nativeTypesPromoted,
-			$this->templateArgumentFrame,
-			$this->templateArgumentConstraints,
-		);
-	}
-
-	public function afterOpenSslCall(string $openSslFunctionName): self
-	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
-
-		$errorStringFunction = '\openssl_error_string()';
-		if (
-			!array_key_exists($errorStringFunction, $expressionTypes)
-			&& !array_key_exists($errorStringFunction, $nativeExpressionTypes)
-		) {
-			return $this;
-		}
-
-		$changed = false;
-		if (in_array($openSslFunctionName, [
-			'openssl_cipher_iv_length',
-			'openssl_cms_decrypt',
-			'openssl_cms_encrypt',
-			'openssl_cms_read',
-			'openssl_cms_sign',
-			'openssl_cms_verify',
-			'openssl_csr_export_to_file',
-			'openssl_csr_export',
-			'openssl_csr_get_public_key',
-			'openssl_csr_get_subject',
-			'openssl_csr_new',
-			'openssl_csr_sign',
-			'openssl_decrypt',
-			'openssl_dh_compute_key',
-			'openssl_digest',
-			'openssl_encrypt',
-			'openssl_get_curve_names',
-			'openssl_get_privatekey',
-			'openssl_get_publickey',
-			'openssl_open',
-			'openssl_pbkdf2',
-			'openssl_pkcs12_export_to_file',
-			'openssl_pkcs12_export',
-			'openssl_pkcs12_read',
-			'openssl_pkcs7_decrypt',
-			'openssl_pkcs7_encrypt',
-			'openssl_pkcs7_read',
-			'openssl_pkcs7_sign',
-			'openssl_pkcs7_verify',
-			'openssl_pkey_derive',
-			'openssl_pkey_export_to_file',
-			'openssl_pkey_export',
-			'openssl_pkey_get_private',
-			'openssl_pkey_get_public',
-			'openssl_pkey_new',
-			'openssl_private_decrypt',
-			'openssl_private_encrypt',
-			'openssl_public_decrypt',
-			'openssl_public_encrypt',
-			'openssl_random_pseudo_bytes',
-			'openssl_seal',
-			'openssl_sign',
-			'openssl_spki_export_challenge',
-			'openssl_spki_export',
-			'openssl_spki_new',
-			'openssl_spki_verify',
-			'openssl_verify',
-			'openssl_x509_checkpurpose',
-			'openssl_x509_export_to_file',
-			'openssl_x509_export',
-			'openssl_x509_fingerprint',
-			'openssl_x509_read',
-			'openssl_x509_verify',
-		], true)) {
-			unset($expressionTypes[$errorStringFunction]);
-			unset($nativeExpressionTypes[$errorStringFunction]);
-			$changed = true;
-		}
-
-		if (!$changed) {
+		if (!VolatileExpressionHelper::invalidateGlobalStateReads($this, $this->services->reflectionProvider, $expressionTypes, $nativeExpressionTypes, $writtenStates)) {
 			return $this;
 		}
 

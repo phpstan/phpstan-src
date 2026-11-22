@@ -70,10 +70,50 @@ class Foo
 			assertType('string|false', session_id());
 		}
 
-		// written by calls that list no effect on it
+		// written by every preg_*() call
 		if (preg_last_error() === PREG_NO_ERROR) {
 			preg_match($pattern, '');
 			assertType('int', preg_last_error());
+		}
+	}
+
+	/** a call that writes a named part of global state forgets only the calls that read it */
+	public function namedGlobalState(string $file, string $s): void
+	{
+		if (is_file($file) && json_last_error() === JSON_ERROR_NONE && preg_last_error() === PREG_NO_ERROR && openssl_error_string() === false) {
+			clearstatcache();
+			assertType('bool', is_file($file));
+			assertType('0', json_last_error());
+			assertType('0', preg_last_error());
+			assertType('false', openssl_error_string());
+		}
+		if (is_file($file) && json_last_error() === JSON_ERROR_NONE && preg_last_error() === PREG_NO_ERROR && openssl_error_string() === false) {
+			preg_match('/a/', $s);
+			assertType('true', is_file($file));
+			assertType('0', json_last_error());
+			assertType('int', preg_last_error());
+			assertType('false', openssl_error_string());
+		}
+		if (is_file($file) && json_last_error() === JSON_ERROR_NONE && preg_last_error() === PREG_NO_ERROR && openssl_error_string() === false) {
+			json_decode($s);
+			assertType('true', is_file($file));
+			assertType('0|1|2|3|4|5|6|7|8|9|10', json_last_error());
+			assertType('0', preg_last_error());
+			assertType('false', openssl_error_string());
+		}
+		if (is_file($file) && json_last_error() === JSON_ERROR_NONE && preg_last_error() === PREG_NO_ERROR && openssl_error_string() === false) {
+			openssl_cipher_iv_length($s);
+			assertType('true', is_file($file));
+			assertType('0', json_last_error());
+			assertType('0', preg_last_error());
+			assertType('string|false', openssl_error_string());
+		}
+		if (is_file($file) && json_last_error() === JSON_ERROR_NONE && preg_last_error() === PREG_NO_ERROR && openssl_error_string() === false) {
+			ini_set('precision', '10');
+			assertType('bool', is_file($file));
+			assertType('0|1|2|3|4|5|6|7|8|9|10', json_last_error());
+			assertType('int', preg_last_error());
+			assertType('string|false', openssl_error_string());
 		}
 	}
 

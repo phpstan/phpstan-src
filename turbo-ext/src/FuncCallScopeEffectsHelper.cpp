@@ -223,7 +223,6 @@ template <size_t N>
 	return true;
 }
 
-const char *const pt_fcse_json[2] = { "json_encode", "json_decode" };
 const char *const pt_fcse_file_put_contents[1] = { "file_put_contents" };
 const char *const pt_fcse_pop_shift[2] = { "array_pop", "array_shift" };
 const char *const pt_fcse_push_unshift[2] = { "array_push", "array_unshift" };
@@ -233,7 +232,6 @@ const char *const pt_fcse_array_splice[1] = { "array_splice" };
 const char *const pt_fcse_sort[3] = { "sort", "rsort", "usort" };
 const char *const pt_fcse_key_sort[8] = { "natcasesort", "natsort", "arsort", "asort", "ksort", "krsort", "uasort", "uksort" };
 const char *const pt_fcse_extract[1] = { "extract" };
-const char *const pt_fcse_clearstatcache[2] = { "clearstatcache", "unlink" };
 
 /* static fn (Type $type): Type => $captured — captures: the type */
 void constantTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -335,16 +333,6 @@ public:
 		}
 
 		bool matches;
-		if (UNEXPECTED(!nameIsOneOf<2>(functionReflection, pt_fcse_json, matches))) return zv::Val();
-		if (matches) {
-			zval empty;
-			ZVAL_EMPTY_ARRAY(&empty);
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_NAME, PT_LC("json_last_error"), &empty))) return zv::Val();
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_FULLY_QUALIFIED, PT_LC("json_last_error"), &empty))) return zv::Val();
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_NAME, PT_LC("json_last_error_msg"), &empty))) return zv::Val();
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_FULLY_QUALIFIED, PT_LC("json_last_error_msg"), &empty))) return zv::Val();
-		}
-
 		if (UNEXPECTED(!nameIsOneOf<1>(functionReflection, pt_fcse_file_put_contents, matches))) return zv::Val();
 		if (matches) {
 			zv::Val args = callArgs(normalizedExpr);
@@ -481,27 +469,6 @@ public:
 		if (UNEXPECTED(!nameIsOneOf<1>(functionReflection, pt_fcse_extract, matches))) return zv::Val();
 		if (matches && UNEXPECTED(!applyExtract(scope, normalizedExpr, argsResult))) return zv::Val();
 
-		if (UNEXPECTED(!nameIsOneOf<2>(functionReflection, pt_fcse_clearstatcache, matches))) return zv::Val();
-		if (matches) {
-			zv::Val next = pt_mutating_scope_after_clearstatcache_call(Z_OBJ_P(scope.raw()));
-			if (UNEXPECTED(next.isUndef())) return zv::Val();
-			scope = std::move(next);
-		}
-
-		if (functionReflection != NULL) {
-			zv::Val nameHold;
-			zend_string *name = functionName(functionReflection, nameHold);
-			if (UNEXPECTED(name == NULL)) return zv::Val();
-			if (ZSTR_LEN(name) >= sizeof("openssl") - 1 && memcmp(ZSTR_VAL(name), "openssl", sizeof("openssl") - 1) == 0) {
-				zv::Val sslNameHold;
-				zend_string *sslName = functionName(functionReflection, sslNameHold);
-				if (UNEXPECTED(sslName == NULL)) return zv::Val();
-				zv::Val next = pt_mutating_scope_after_open_ssl_call(Z_OBJ_P(scope.raw()), sslName);
-				if (UNEXPECTED(next.isUndef())) return zv::Val();
-				scope = std::move(next);
-			}
-		}
-
 		zend_long outputBufferDelta = 0;
 		if (functionReflection != NULL) {
 			zval *outputBufferHelper = OBJ_PROP_NUM(self, slots::outputBufferHelper);
@@ -532,8 +499,8 @@ public:
 		bool invalidateVolatile;
 		/* a call that only may have side effects keeps the results of global state getters */
 		bool globalStateReads = false;
+		bool isBuiltin = false;
 		if (functionReflection != NULL) {
-			bool isBuiltin;
 			if (UNEXPECTED(!pt_function_reflection_is_builtin(functionReflection, isBuiltin))) return zv::Val();
 			invalidateVolatile = false;
 			if (!isBuiltin) {
@@ -544,18 +511,19 @@ public:
 				if (UNEXPECTED(sideEffectsValue < 0)) return zv::Val();
 				invalidateVolatile = sideEffectsValue != PT_TRI_NO;
 				globalStateReads = sideEffectsValue == PT_TRI_YES;
-			} else {
-				/* a built-in forgets global state only when it lists writes-global, not when it is unclassified */
-				int writesGlobal = pt_function_reflection_lists_writes_global(functionReflection);
-				if (UNEXPECTED(writesGlobal < 0)) return zv::Val();
-				invalidateVolatile = writesGlobal == 1;
-				globalStateReads = invalidateVolatile;
 			}
 		} else {
 			invalidateVolatile = !pureCallable;
 		}
 		if (invalidateVolatile) {
 			zv::Val next = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(scope.raw()), globalStateReads);
+			if (UNEXPECTED(next.isUndef())) return zv::Val();
+			scope = std::move(next);
+		} else if (functionReflection != NULL && isBuiltin) {
+			/* a built-in forgets global state only when it lists writes-global, not when it is unclassified */
+			zv::Val sideEffects = pt_function_reflection_side_effects(functionReflection);
+			if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
+			zv::Val next = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(scope.raw()), sideEffects.raw());
 			if (UNEXPECTED(next.isUndef())) return zv::Val();
 			scope = std::move(next);
 		}

@@ -55,6 +55,18 @@ foreach ($parserVisitorClasses as $shortName) {
 	}
 }
 
+foreach (['ArrayFilterArgVisitor', 'ArrayFindArgVisitor', 'ArrayMapArgVisitor', 'ArrayWalkArgVisitor', 'CurlSetOptArgVisitor', 'CurlSetOptArrayArgVisitor'] as $shortName) {
+	foreach (['PHPStan\\Parser\\', 'PHPStanTurbo\\'] as $prefix) {
+		$class = $prefix . $shortName;
+		try {
+			new $class(new \stdClass());
+			check(false, "$class rejects an invalid PHP version");
+		} catch (\TypeError $e) {
+			// Expected for both implementations.
+		}
+	}
+}
+
 $parserVisitorSnippets = [
 	// the "mark one argument of a named call" family, with the first-class
 	// callable and named-argument forms that must not be marked
@@ -66,6 +78,9 @@ $parserVisitorSnippets = [
 	'<?php array_find($a, $cb); array_any($a, $cb); array_all($a, $cb); array_find_key($a, $cb); array_search($a, $cb);',
 	'<?php array_map($cb, $a, $b); array_map($cb, $a); array_map($cb); array_map(null, $a, $b);
 		array_map(callback: $cb, array: $a); array_map(array: $a, callback: $cb); array_map(...);',
+	'<?php array_filter(callback: $cb, array: $a); array_find(callback: $cb, array: $a);
+		array_walk(callback: $cb, array: $a); curl_setopt(option: $o, handle: $ch);
+		curl_setopt_array(handle: $ch, other: $x, options: $opts);',
 
 	// partial function applications are not calls either
 	'<?php curl_setopt(?, CURLOPT_URL, $url); curl_setopt_array($ch, ?); array_walk(?, $cb); implode(",", ?);
@@ -143,12 +158,14 @@ foreach ([
 	$parserVisitorSnippets[] = file_get_contents(dirname(__DIR__, 2) . '/' . $sourceFile);
 }
 
-$runParserVisitors = static function (string $traverserClass, string $visitorPrefix, string $code) use ($smokeParser, $parserVisitorClasses): string {
+$runParserVisitors = static function (string $traverserClass, string $visitorPrefix, string $code, int $version) use ($smokeParser, $parserVisitorClasses): string {
 	$traverser = new $traverserClass();
 	$traitCollector = null;
 	foreach ($parserVisitorClasses as $shortName) {
 		$class = $visitorPrefix . $shortName;
-		$visitor = new $class();
+		$visitor = in_array($shortName, ['ArrayFilterArgVisitor', 'ArrayFindArgVisitor', 'ArrayMapArgVisitor', 'ArrayWalkArgVisitor', 'CurlSetOptArgVisitor', 'CurlSetOptArrayArgVisitor'], true)
+			? new $class(new \PHPStan\Php\PhpVersion($version))
+			: new $class();
 		if ($shortName === 'TraitCollectingVisitor') {
 			$traitCollector = $visitor;
 		}
@@ -162,17 +179,19 @@ $runParserVisitors = static function (string $traverserClass, string $visitorPre
 };
 
 foreach ($parserVisitorSnippets as $snippetIndex => $parserVisitorCode) {
-	$reference = $runParserVisitors(\PhpParser\NodeTraverser::class, 'PHPStan\\Parser\\', $parserVisitorCode);
-	$combinations = [
-		'native traverser, native visitors' => [\PHPStanTurbo\NodeTraverser::class, 'PHPStanTurbo\\'],
-		'PHP traverser, native visitors' => [\PhpParser\NodeTraverser::class, 'PHPStanTurbo\\'],
-		'native traverser, PHP visitors' => [\PHPStanTurbo\NodeTraverser::class, 'PHPStan\\Parser\\'],
-	];
-	foreach ($combinations as $label => [$traverserClass, $visitorPrefix]) {
-		check(
-			$runParserVisitors($traverserClass, $visitorPrefix, $parserVisitorCode) === $reference,
-			"parser visitors snippet #$snippetIndex ($label)",
-		);
+	foreach ([70400, 80000] as $version) {
+		$reference = $runParserVisitors(\PhpParser\NodeTraverser::class, 'PHPStan\\Parser\\', $parserVisitorCode, $version);
+		$combinations = [
+			'native traverser, native visitors' => [\PHPStanTurbo\NodeTraverser::class, 'PHPStanTurbo\\'],
+			'PHP traverser, native visitors' => [\PhpParser\NodeTraverser::class, 'PHPStanTurbo\\'],
+			'native traverser, PHP visitors' => [\PHPStanTurbo\NodeTraverser::class, 'PHPStan\\Parser\\'],
+		];
+		foreach ($combinations as $label => [$traverserClass, $visitorPrefix]) {
+			check(
+				$runParserVisitors($traverserClass, $visitorPrefix, $parserVisitorCode, $version) === $reference,
+				"parser visitors snippet #$snippetIndex ($label, PHP $version)",
+			);
+		}
 	}
 }
 

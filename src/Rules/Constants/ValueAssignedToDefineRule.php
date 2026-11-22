@@ -50,8 +50,8 @@ final class ValueAssignedToDefineRule implements Rule
 			return [];
 		}
 
-		$constantNameArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'constant_name');
-		$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+		$constantNameArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'constant_name', $scope->getPhpVersion());
+		$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value', $scope->getPhpVersion());
 		if ($constantNameArg === null || $valueArg === null) {
 			return [];
 		}

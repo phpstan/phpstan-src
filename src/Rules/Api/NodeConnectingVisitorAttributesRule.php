@@ -37,7 +37,7 @@ final class NodeConnectingVisitorAttributesRule implements Rule
 		}
 
 		$args = $node->getArgs();
-		$keyArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'key');
+		$keyArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'key', $scope->getPhpVersion());
 		if ($keyArg === null) {
 			return [];
 		}

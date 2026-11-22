@@ -4,6 +4,7 @@ namespace ExtDs;
 
 use Ds\Map;
 use Ds\Set;
+use Ds\Vector;
 use function PHPStan\Testing\assertType;
 
 class A
@@ -16,6 +17,12 @@ class B
 
 class Foo
 {
+	/** @param Vector<int> $vector */
+	public function vectorToArray(Vector $vector) : void
+	{
+		assertType('list<int>', $vector->toArray());
+	}
+
 	/** @param Map<int, int> $a */
 	public function mapGet(Map $a) : void
 	{

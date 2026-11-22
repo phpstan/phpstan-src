@@ -2650,6 +2650,11 @@ $vehInputs = static function (string $side): array {
 		'interface_exists()' => $holder($funcCall('interface_exists'), $false, $yes),
 		'$f(\'x\')' => $holder(new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Expr\Variable('f'), [$arg(new \PhpParser\Node\Scalar\String_('x'))]), $false, $yes),
 		'strlen(\'x\')' => $holder($funcCall('strlen', [$arg(new \PhpParser\Node\Scalar\String_('x'))]), $int, $yes),
+
+		'ini_get(\'precision\')' => $holder($funcCall('ini_get', [$arg(new \PhpParser\Node\Scalar\String_('precision'))]), $string, $yes),
+		'\date_default_timezone_get()' => $holder($funcCall('date_default_timezone_get', [], true), $string, $yes),
+		'date_default_timezone_get(...)' => $holder($funcCall('date_default_timezone_get', [new \PhpParser\Node\VariadicPlaceholder()]), $string, $yes),
+		'undefined_smoke_function()' => $holder($funcCall('undefined_smoke_function'), $int, $yes),
 	];
 	$nativeExpressionTypes = [
 		'ob_get_level()' => $expressionTypes['ob_get_level()'],
@@ -2658,6 +2663,8 @@ $vehInputs = static function (string $side): array {
 		'class_exists(\'Foo\')' => $expressionTypes['class_exists(\'Foo\')'],
 		'$b' => $holder(new \PhpParser\Node\Expr\Variable('b'), $int, $yes),
 		'openssl_error_string()' => $holder($funcCall('openssl_error_string'), $string, $yes),
+
+		'ini_get(\'precision\')' => $expressionTypes['ini_get(\'precision\')'],
 	];
 
 	return [$expressionTypes, $nativeExpressionTypes];
@@ -2685,6 +2692,8 @@ foreach (['php' => \PHPStan\Analyser\VolatileExpressionHelper::class, 'native' =
 	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['class_exists'], 'Other'), array_keys($e), array_keys($n)];
 	[$e, $n] = $vehInputs($side);
 	$r[] = [$vehClass::invalidateNegativeExistenceChecks($vehScope, $e, $n, ['strlen']), array_keys($e), array_keys($n)];
+	[$e, $n] = $vehInputs($side);
+	$r[] = [$vehClass::invalidateGlobalStateReads($vehScope, $scReflectionProvider, $e, $n), array_keys($e), array_keys($n)];
 	// the by-reference contract: the caller's copies change, the originals stay
 	[$e, $n] = $vehInputs($side);
 	$copyE = $e;
@@ -2694,6 +2703,7 @@ foreach (['php' => \PHPStan\Analyser\VolatileExpressionHelper::class, 'native' =
 }
 check($vehResults['php'] === $vehResults['native'], 'VolatileExpressionHelper parity: ' . json_encode($vehResults['php']) . ' vs ' . json_encode($vehResults['native']));
 check($vehResults['php'][0][0] === true && $vehResults['php'][2][0] === true && $vehResults['php'][4][0] === true && $vehResults['php'][3][0] === false, 'VolatileExpressionHelper: the fixture exercises removals and no-ops');
+check($vehResults['php'][9][0] === true, 'VolatileExpressionHelper invalidateGlobalStateReads: removes reads-global calls: ' . json_encode($vehResults['php'][9]));
 
 // ---- VariableFlow ----
 // The factories build each side's flow classes over shared nodes and writes

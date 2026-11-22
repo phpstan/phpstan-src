@@ -74,7 +74,7 @@ public:
 		ptse::ChildResult child;
 		if (UNEXPECTED(!child.read(exprResult.raw()))) return zv::Val();
 		// the evaluated code may read any variable
-		zv::Val resultScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(child.scope));
+		zv::Val resultScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(child.scope), true);
 		if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
 
 		zv::Val throwPoint = pt_internal_throw_point_create_implicit(resultScope.raw(), expr);

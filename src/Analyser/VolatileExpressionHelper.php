@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function array_keys;
@@ -53,6 +54,46 @@ final class VolatileExpressionHelper
 				unset($nativeExpressionTypes[$exprString]);
 				$changed = true;
 			}
+		}
+
+		return $changed;
+	}
+
+	/**
+	 * Forgets tracked calls of functions whose result depends on global state
+	 * (reads-global), such as ini_get('precision'): the invalidating code may
+	 * write that state. Existence checks are left to invalidateNegativeExistenceChecks():
+	 * symbols are only ever added, so a positive result stays true.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
+	 * @return bool whether anything was removed
+	 */
+	public static function invalidateGlobalStateReads(Scope $scope, ReflectionProvider $reflectionProvider, array &$expressionTypes, array &$nativeExpressionTypes): bool
+	{
+		$changed = false;
+		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$expr = $exprTypeHolder->getExpr();
+			if (
+				!$expr instanceof FuncCall
+				|| $expr->isPartialFunctionApplication()
+				|| !$expr->name instanceof Name
+				|| !$reflectionProvider->hasFunction($expr->name, $scope)
+			) {
+				continue;
+			}
+
+			$function = $reflectionProvider->getFunction($expr->name, $scope);
+			if (
+				in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true)
+				|| !$function->getSideEffects()->has('reads-global')->yes()
+			) {
+				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$changed = true;
 		}
 
 		return $changed;

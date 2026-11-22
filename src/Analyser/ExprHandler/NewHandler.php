@@ -316,7 +316,7 @@ final class NewHandler implements ExprHandler
 			($constructorReflection !== null && !$constructorReflection->getDeclaringClass()->isBuiltin() && !$constructorReflection->hasSideEffects()->no())
 			|| ($constructorReflection === null && !$calleeKnown)
 		) {
-			$scope = $scope->invalidateVolatileExpressions();
+			$scope = $scope->invalidateVolatileExpressions($constructorReflection !== null && $constructorReflection->hasSideEffects()->yes());
 		}
 
 		$variableFlow = VariableFlow::sequence(

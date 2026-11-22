@@ -121,7 +121,7 @@ public:
 		// the included file may read any variable
 		zv::Val extractedScope = pt_mutating_scope_after_extract_call(Z_OBJ_P(child.scope));
 		if (UNEXPECTED(extractedScope.isUndef())) return zv::Val();
-		zv::Val resultScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(extractedScope.raw()));
+		zv::Val resultScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(extractedScope.raw()), true);
 		if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
 
 		zv::Val throwPoint = pt_internal_throw_point_create_implicit(resultScope.raw(), expr);

@@ -677,6 +677,8 @@ public:
 			calleeKnown = isFinal;
 		}
 		bool invalidateVolatile;
+		/* a call that only may have side effects keeps the results of global state getters */
+		bool globalStateReads = false;
 		if (!parts.constructorReflection.isNull()) {
 			zv::Val declaringClass = pt_extended_method_reflection_call(parts.constructorReflection.raw(), PT_MR_GET_DECLARING_CLASS);
 			if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
@@ -687,12 +689,13 @@ public:
 				zend_long hasSideEffects = pt_extended_method_reflection_trinary(parts.constructorReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
 				invalidateVolatile = hasSideEffects != PT_TRI_NO;
+				globalStateReads = hasSideEffects == PT_TRI_YES;
 			}
 		} else {
 			invalidateVolatile = !calleeKnown;
 		}
 		if (invalidateVolatile) {
-			currentScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(currentScope.raw()));
+			currentScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(currentScope.raw()), globalStateReads);
 			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 		}
 

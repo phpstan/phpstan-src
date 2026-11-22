@@ -1649,7 +1649,7 @@ public:
 	}
 	/* }}} */
 
-	zv::Val invalidateVolatileExpressions()
+	zv::Val invalidateVolatileExpressions(bool globalStateReads = true)
 	{
 		TablePair tables(*this);
 
@@ -1661,6 +1661,16 @@ public:
 		zv::Val existence = pt_volatile_expression_helper_invalidate_negative_existence_checks(thisZval(), tables.expressionTypes.raw(), tables.nativeExpressionTypes.raw(), NULL, NULL);
 		if (UNEXPECTED(existence.isUndef())) return zv::Val();
 		changed = zend_is_true(existence.raw()) || changed;
+		if (globalStateReads) {
+			zv::Ref reflectionProvider = service(PT_MSS_REFLECTION_PROVIDER);
+			if (UNEXPECTED(!reflectionProvider.isObject())) {
+				(void) uninitializedProperty("reflectionProvider");
+				return zv::Val();
+			}
+			zv::Val readsChanged = pt_volatile_expression_helper_invalidate_global_state_reads(thisZval(), reflectionProvider.raw(), tables.expressionTypes.raw(), tables.nativeExpressionTypes.raw());
+			if (UNEXPECTED(readsChanged.isUndef())) return zv::Val();
+			changed = zend_is_true(readsChanged.raw()) || changed;
+		}
 
 		if (!changed) return self_();
 		return createWithTables(tables);
@@ -12569,10 +12579,12 @@ zv::Val pt_mutating_scope_get_naked_method(zend_object *scope, zval *typeWithMet
 	return pt_type_call(scope, PT_LC("getnakedmethod"), 2, argv);
 }
 
-zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope)
+zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope, bool globalStateReads)
 {
-	if (PT_MS_INHERITS(scope, "invalidatevolatileexpressions")) return MutatingScope(scope).invalidateVolatileExpressions();
-	return pt_type_call(scope, PT_LC("invalidatevolatileexpressions"), 0, NULL);
+	if (PT_MS_INHERITS(scope, "invalidatevolatileexpressions")) return MutatingScope(scope).invalidateVolatileExpressions(globalStateReads);
+	zval argv[1];
+	ZVAL_BOOL(&argv[0], globalStateReads);
+	return pt_type_call(scope, PT_LC("invalidatevolatileexpressions"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_enter_closure_call(zend_object *scope, zval *thisType, zval *nativeThisType)
@@ -12869,7 +12881,11 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 
 	cls.method<&MutatingScope::afterOpenSslCall, zp::Str>(sigs::afterOpenSslCall);
 
-	cls.method<&MutatingScope::invalidateVolatileExpressions>(sigs::invalidateVolatileExpressions);
+	cls.method(sigs::invalidateVolatileExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
+		bool globalStateReads = true;
+		if (!zp::parse<zp::Opt<zp::Bool>>(execute_data, globalStateReads)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.invalidateVolatileExpressions(globalStateReads));
+	});
 
 	cls.method(sigs::invalidateExistenceCheckExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *functionNames;

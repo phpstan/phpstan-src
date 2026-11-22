@@ -437,8 +437,9 @@ final class StaticCallHandler implements ExprHandler
 		if (
 			$methodReflection === null
 			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
+			|| ($methodReflection->getDeclaringClass()->isBuiltin() && in_array('writes-global', $methodReflection->getSideEffects()->getEffectNames(), true))
 		) {
-			$scope = $scope->invalidateVolatileExpressions();
+			$scope = $scope->invalidateVolatileExpressions($methodReflection !== null && $methodReflection->hasSideEffects()->yes());
 		}
 
 		$hasYield = $hasYield || $argsResult->hasYield();

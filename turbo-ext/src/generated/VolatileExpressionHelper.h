@@ -26,26 +26,34 @@ inline constexpr char strings[] =
 	"nativeExpressionTypes\0" /* 16 */
 	"\0" /* 38 */
 	"invalidateVolatileFunctionCalls\0" /* 39 */
-	"invalidateSuperglobals\0" /* 71 */
-	"scope\0" /* 94 */
-	"PHPStan\\Analyser\\Scope\0" /* 100 */
-	"functionNames\0" /* 123 */
-	"self::EXISTENCE_CHECK_FUNCTION_NAMES\0" /* 137 */
-	"declaredSymbolName\0" /* 174 */
-	"null\0" /* 193 */
-	"invalidateNegativeExistenceChecks"; /* 198 */
+	"scope\0" /* 71 */
+	"PHPStan\\Analyser\\Scope\0" /* 77 */
+	"reflectionProvider\0" /* 100 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 119 */
+	"invalidateGlobalStateReads\0" /* 157 */
+	"invalidateSuperglobals\0" /* 184 */
+	"functionNames\0" /* 207 */
+	"self::EXISTENCE_CHECK_FUNCTION_NAMES\0" /* 221 */
+	"declaredSymbolName\0" /* 258 */
+	"null\0" /* 277 */
+	"invalidateNegativeExistenceChecks"; /* 282 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $nativeExpressionTypes */
 	reg::packed(38, MAY_BE_BOOL), /* invalidateVolatileFunctionCalls return */
+	reg::packed(71, 0, 77), /* invalidateGlobalStateReads $scope */
+	reg::packed(100, 0, 119), /* invalidateGlobalStateReads $reflectionProvider */
+	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateGlobalStateReads $expressionTypes */
+	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateGlobalStateReads $nativeExpressionTypes */
+	reg::packed(38, MAY_BE_BOOL), /* invalidateGlobalStateReads return */
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateSuperglobals $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateSuperglobals $nativeExpressionTypes */
 	reg::packed(38, MAY_BE_BOOL), /* invalidateSuperglobals return */
-	reg::packed(94, 0, 100), /* invalidateNegativeExistenceChecks $scope */
+	reg::packed(71, 0, 77), /* invalidateNegativeExistenceChecks $scope */
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $nativeExpressionTypes */
-	reg::packed(123, MAY_BE_ARRAY, reg::NoString, false, false, 137), /* invalidateNegativeExistenceChecks $functionNames */
-	reg::packed(174, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 193), /* invalidateNegativeExistenceChecks $declaredSymbolName */
+	reg::packed(207, MAY_BE_ARRAY, reg::NoString, false, false, 221), /* invalidateNegativeExistenceChecks $functionNames */
+	reg::packed(258, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 277), /* invalidateNegativeExistenceChecks $declaredSymbolName */
 	reg::packed(38, MAY_BE_BOOL), /* invalidateNegativeExistenceChecks return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -54,8 +62,9 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig invalidateVolatileFunctionCalls = { { 39 /* invalidateVolatileFunctionCalls */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig invalidateSuperglobals = { { 71 /* invalidateSuperglobals */, 2, 3, 2, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 198 /* invalidateNegativeExistenceChecks */, 3, 6, 5, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateGlobalStateReads = { { 157 /* invalidateGlobalStateReads */, 4, 3, 4, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateSuperglobals = { { 184 /* invalidateSuperglobals */, 2, 8, 2, 10, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 282 /* invalidateNegativeExistenceChecks */, 3, 11, 5, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VolatileExpressionHelper

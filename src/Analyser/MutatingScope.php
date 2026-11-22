@@ -711,11 +711,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/**
 	 * Forgets every tracked volatile global-state expression: argument-less
 	 * function-call expressions whose value reflects mutable global/output-buffer
-	 * state rather than just their arguments, superglobal variables and their offsets
-	 * and negative results of existence checks (function_exists(), class_exists(), ...)
-	 * because the invalidating code may define the missing function/class/etc.
+	 * state rather than just their arguments, superglobal variables and their offsets,
+	 * negative results of existence checks (function_exists(), class_exists(), ...)
+	 * because the invalidating code may define the missing function/class/etc.,
+	 * and with $globalStateReads calls of functions that read global state.
+	 * A call that only may have side effects passes false: like the results
+	 * of possibly impure calls, those of global state getters stay remembered.
 	 */
-	public function invalidateVolatileExpressions(): self
+	public function invalidateVolatileExpressions(bool $globalStateReads = true): self
 	{
 		$expressionTypes = $this->expressionTypes;
 		$nativeExpressionTypes = $this->nativeExpressionTypes;
@@ -723,6 +726,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$changed = VolatileExpressionHelper::invalidateVolatileFunctionCalls($expressionTypes, $nativeExpressionTypes);
 		$changed = VolatileExpressionHelper::invalidateSuperglobals($expressionTypes, $nativeExpressionTypes) || $changed;
 		$changed = VolatileExpressionHelper::invalidateNegativeExistenceChecks($this, $expressionTypes, $nativeExpressionTypes) || $changed;
+		if ($globalStateReads) {
+			$changed = VolatileExpressionHelper::invalidateGlobalStateReads($this, $this->services->reflectionProvider, $expressionTypes, $nativeExpressionTypes) || $changed;
+		}
 
 		if (!$changed) {
 			return $this;

@@ -111,7 +111,8 @@ final class SideEffects
 	}
 
 	/**
-	 * For messages and the reflection golden test only, never for comparisons.
+	 * The listed names, for messages, the reflection golden test, and telling
+	 * a listed effect from one only possible through unlisted effects.
 	 *
 	 * @return list<string>
 	 */

@@ -530,6 +530,8 @@ public:
 			}
 		}
 		bool invalidateVolatile;
+		/* a call that only may have side effects keeps the results of global state getters */
+		bool globalStateReads = false;
 		if (functionReflection != NULL) {
 			bool isBuiltin;
 			if (UNEXPECTED(!pt_function_reflection_is_builtin(functionReflection, isBuiltin))) return zv::Val();
@@ -541,12 +543,19 @@ public:
 				zend_long sideEffectsValue = trinaryOf(sideEffects, "no");
 				if (UNEXPECTED(sideEffectsValue < 0)) return zv::Val();
 				invalidateVolatile = sideEffectsValue != PT_TRI_NO;
+				globalStateReads = sideEffectsValue == PT_TRI_YES;
+			} else {
+				/* a built-in forgets global state only when it lists writes-global, not when it is unclassified */
+				int writesGlobal = pt_function_reflection_lists_writes_global(functionReflection);
+				if (UNEXPECTED(writesGlobal < 0)) return zv::Val();
+				invalidateVolatile = writesGlobal == 1;
+				globalStateReads = invalidateVolatile;
 			}
 		} else {
 			invalidateVolatile = !pureCallable;
 		}
 		if (invalidateVolatile) {
-			zv::Val next = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(scope.raw()));
+			zv::Val next = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(scope.raw()), globalStateReads);
 			if (UNEXPECTED(next.isUndef())) return zv::Val();
 			scope = std::move(next);
 		}

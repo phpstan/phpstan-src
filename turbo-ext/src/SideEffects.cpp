@@ -25,6 +25,7 @@ static constexpr char pt_se_nondeterministic[] = "nondeterministic";
 static constexpr char pt_se_writes_this[] = "writes-this";
 static constexpr char pt_se_writes_global[] = "writes-global";
 static constexpr char pt_se_writes_args[] = "writes-args";
+static constexpr char pt_se_reads_global[] = "reads-global";
 
 namespace phpstanturbo {
 
@@ -143,6 +144,19 @@ public:
 	}
 
 	zv::Val getEffectNames() const { return read(slots::effects, "effects"); }
+
+	/* in_array($effect, $this->getEffectNames(), true) as 1 / 0; -1 = pending exception */
+	int listsValue(const char *effect, size_t len) const
+	{
+		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
+		if (UNEXPECTED(effects == NULL)) return -1;
+		zval *listed;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(effects), listed) {
+			ZVAL_DEREF(listed);
+			if (Z_TYPE_P(listed) == IS_STRING && Z_STRLEN_P(listed) == len && memcmp(Z_STRVAL_P(listed), effect, len) == 0) return 1;
+		} ZEND_HASH_FOREACH_END();
+		return 0;
+	}
 	zv::Val getCalledParameters() const { return read(slots::calledParameters, "calledParameters"); }
 	zv::Val getWrittenParameters() const { return read(slots::writtenParameters, "writtenParameters"); }
 
@@ -235,6 +249,78 @@ zend_long pt_method_reflection_writes_receiver(zval *methodReflection)
 	if (writesThis == PT_TRI_YES || writesGlobal == PT_TRI_YES) return PT_TRI_YES;
 	if (writesThis == PT_TRI_MAYBE || writesGlobal == PT_TRI_MAYBE) return PT_TRI_MAYBE;
 	return PT_TRI_NO;
+}
+
+/* the object a getSideEffects() call answered, NULL with an Error pending
+ * when it is not an object; a twin from a test that mixes both
+ * implementations is asked through its methods */
+static zend_object *pt_se_side_effects_of(zv::Val &sideEffects, const char *nextCall)
+{
+	if (UNEXPECTED(sideEffects.isUndef())) return NULL;
+	if (UNEXPECTED(Z_TYPE_P(sideEffects.raw()) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function %s() on %s", nextCall, zend_zval_value_name(sideEffects.raw()));
+		return NULL;
+	}
+	return Z_OBJ_P(sideEffects.raw());
+}
+
+static pt_method_site pt_se_has_site;
+static pt_method_site pt_se_get_effect_names_site;
+
+/* in_array('writes-global', $sideEffects->getEffectNames(), true) as 1 / 0; -1 = pending exception */
+static int pt_se_lists_writes_global(zend_object *object)
+{
+	if (EXPECTED(object->ce == pt_ce_side_effects)) return SideEffects(object).listsValue(pt_se_writes_global, sizeof(pt_se_writes_global) - 1);
+	zv::Val names = pt_call_method_cached(pt_se_get_effect_names_site, object, PT_LC("geteffectnames"), 0, NULL);
+	if (UNEXPECTED(names.isUndef())) return -1;
+	if (Z_TYPE_P(names.raw()) != IS_ARRAY) return 0;
+	zval *listed;
+	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(names.raw()), listed) {
+		ZVAL_DEREF(listed);
+		if (Z_TYPE_P(listed) == IS_STRING && Z_STRLEN_P(listed) == sizeof(pt_se_writes_global) - 1 && memcmp(Z_STRVAL_P(listed), pt_se_writes_global, sizeof(pt_se_writes_global) - 1) == 0) return 1;
+	} ZEND_HASH_FOREACH_END();
+	return 0;
+}
+
+zend_long pt_function_reflection_reads_global(zval *functionReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(functionReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(functionReflection));
+		return -1;
+	}
+	zv::Val sideEffects = pt_call_method_cached(pt_se_function_get_side_effects_site, Z_OBJ_P(functionReflection), PT_LC("getsideeffects"), 0, NULL);
+	zend_object *object = pt_se_side_effects_of(sideEffects, "has");
+	if (UNEXPECTED(object == NULL)) return -1;
+	if (EXPECTED(object->ce == pt_ce_side_effects)) return SideEffects(object).hasValue(pt_se_reads_global, sizeof(pt_se_reads_global) - 1);
+	zval effect;
+	ZVAL_STRINGL(&effect, pt_se_reads_global, sizeof(pt_se_reads_global) - 1);
+	zend_long result = pt_side_effects_trinary(pt_call_method_cached(pt_se_has_site, object, PT_LC("has"), 1, &effect));
+	zval_ptr_dtor(&effect);
+	return result;
+}
+
+int pt_function_reflection_lists_writes_global(zval *functionReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(functionReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(functionReflection));
+		return -1;
+	}
+	zv::Val sideEffects = pt_call_method_cached(pt_se_function_get_side_effects_site, Z_OBJ_P(functionReflection), PT_LC("getsideeffects"), 0, NULL);
+	zend_object *object = pt_se_side_effects_of(sideEffects, "getEffectNames");
+	if (UNEXPECTED(object == NULL)) return -1;
+	return pt_se_lists_writes_global(object);
+}
+
+int pt_method_reflection_lists_writes_global(zval *methodReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(methodReflection));
+		return -1;
+	}
+	zv::Val sideEffects = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS);
+	zend_object *object = pt_se_side_effects_of(sideEffects, "getEffectNames");
+	if (UNEXPECTED(object == NULL)) return -1;
+	return pt_se_lists_writes_global(object);
 }
 
 zend_long pt_function_reflection_result_varies(zval *functionReflection)

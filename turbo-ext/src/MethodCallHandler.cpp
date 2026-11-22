@@ -507,6 +507,8 @@ public:
 			appendTo(throwPoints, std::move(throwPoint));
 		}
 		bool invalidateVolatile = methodReflection.isNull();
+		/* a call that only may have side effects keeps the results of global state getters */
+		bool globalStateReads = false;
 		if (!invalidateVolatile) {
 			zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_DECLARING_CLASS);
 			if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
@@ -516,10 +518,16 @@ public:
 				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
 				invalidateVolatile = hasSideEffects != PT_TRI_NO;
+				globalStateReads = hasSideEffects == PT_TRI_YES;
+			} else {
+				int writesGlobal = pt_method_reflection_lists_writes_global(methodReflection.raw());
+				if (UNEXPECTED(writesGlobal < 0)) return zv::Val();
+				invalidateVolatile = writesGlobal == 1;
+				globalStateReads = invalidateVolatile;
 			}
 		}
 		if (invalidateVolatile) {
-			currentScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(currentScope.raw()));
+			currentScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(currentScope.raw()), globalStateReads);
 			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 		}
 

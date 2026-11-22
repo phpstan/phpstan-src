@@ -132,7 +132,8 @@ use Symfony\Component\Finder\Finder;
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			if ($metadata[$functionName]['effects'] !== []) {
+			// reading state PHPStan tracks itself keeps the function pure for the rules
+			if ($metadata[$functionName]['effects'] !== [] && ($metadata[$functionName]['hasSideEffects'] ?? null) !== false) {
 				throw new ShouldNotHappenException($functionName);
 			}
 

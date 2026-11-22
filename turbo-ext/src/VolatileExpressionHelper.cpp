@@ -2,7 +2,7 @@
  * PHPStanTurbo\VolatileExpressionHelper — native implementation of
  * PHPStan\Analyser\VolatileExpressionHelper.
  *
- * The three static methods forget tracked entries of the two by-reference
+ * The static methods forget tracked entries of the two by-reference
  * expression tables a MutatingScope hands in as copies of its own; like the
  * twin's `unset($table[$key])` the tables are separated only when an entry
  * is actually removed — the common call finds nothing tracked and must not
@@ -239,6 +239,60 @@ public:
 		return zv::Val::boolean(changed);
 	}
 
+	/*
+	 * Mirrors invalidateGlobalStateReads(); UNDEF = pending exception.
+	 */
+	static zv::Val invalidateGlobalStateReads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes)
+	{
+		zend_class_entry *funcCallCe = pt_class(PT_CLASS_FUNC_CALL);
+		zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
+		if (UNEXPECTED(funcCallCe == NULL || nameCe == NULL)) return zv::Val();
+
+		bool changed = false;
+		/* foreach by value walks the table as it was before any removal */
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(expressionTypes))) {
+			zv::Ref exprTypeHolder = entry.value().deref();
+			if (UNEXPECTED(!pt_check_holder(exprTypeHolder.raw()))) return zv::Val();
+			zend_object *expr = zv::ObjRef(exprTypeHolder.asObject()).propAt(PT_ETH_PROP_EXPR).asObject();
+
+			if (!instanceof_function(expr->ce, funcCallCe)) continue;
+			bool isFirstClassCallable;
+			if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, isFirstClassCallable))) return zv::Val();
+			if (isFirstClassCallable) continue;
+			zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
+			if (UNEXPECTED(name.raw() == NULL)) continue;
+			name = name.deref();
+			if (!name.instanceOf(nameCe)) continue;
+			bool hasFunction;
+			if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider, name.raw(), scope, hasFunction))) return zv::Val();
+			if (!hasFunction) continue;
+
+			zv::Val function = pt_reflection_provider_get_function(reflectionProvider, name.raw(), scope);
+			if (UNEXPECTED(function.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(function.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(function.raw()));
+				return zv::Val();
+			}
+			/* in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true) */
+			zv::Val functionName = pt_type_call(Z_OBJ_P(function.raw()), PT_LC("getname"), 0, NULL);
+			if (UNEXPECTED(functionName.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(functionName.raw()) != IS_STRING)) {
+				zend_type_error("strtolower(): Argument #1 ($string) must be of type string, %s given", zend_zval_value_name(functionName.raw()));
+				return zv::Val();
+			}
+			zv::Str lowerName = zv::Str::adopt(zend_string_tolower(Z_STR_P(functionName.raw())));
+			if (inFunctionNames(lowerName.get(), NULL)) continue;
+			zend_long readsGlobal = pt_function_reflection_reads_global(function.raw());
+			if (UNEXPECTED(readsGlobal < 0)) return zv::Val();
+			if (readsGlobal != PT_TRI_YES) continue;
+
+			pt_veh_unset_both(expressionTypes, nativeExpressionTypes, entry.stringKeyOrNull(), entry.indexKey());
+			changed = true;
+		}
+
+		return zv::Val::boolean(changed);
+	}
+
 private:
 	/* $exprString === '$' . $name || str_starts_with($exprString, '$' . $name . '[') */
 	static bool isSuperglobalExprString(zend_string *exprString, const pt_superglobal_name *superglobals, size_t superglobalCount)
@@ -333,6 +387,11 @@ zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval 
 	return VolatileExpressionHelper::invalidateNegativeExistenceChecks(scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName);
 }
 
+zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes)
+{
+	return VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -380,6 +439,18 @@ PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 		nativeExpressionTypes = pt_veh_array_ref(nativeExpressionTypes, 3);
 		if (UNEXPECTED(nativeExpressionTypes == NULL)) RETURN_THROWS();
 		zv::Val result = VolatileExpressionHelper::invalidateNegativeExistenceChecks(scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName);
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
+		result.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::invalidateGlobalStateReads, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *reflectionProvider, *expressionTypes, *nativeExpressionTypes;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval, zp::Zval>(execute_data, scope, reflectionProvider, expressionTypes, nativeExpressionTypes)) RETURN_THROWS();
+		expressionTypes = pt_veh_array_ref(expressionTypes, 3);
+		if (UNEXPECTED(expressionTypes == NULL)) RETURN_THROWS();
+		nativeExpressionTypes = pt_veh_array_ref(nativeExpressionTypes, 4);
+		if (UNEXPECTED(nativeExpressionTypes == NULL)) RETURN_THROWS();
+		zv::Val result = VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});

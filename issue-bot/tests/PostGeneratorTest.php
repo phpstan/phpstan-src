@@ -64,7 +64,7 @@ class PostGeneratorTest extends TestCase
 				new PlaygroundError(1, 'def', null),
 			])],
 			[
-				new BotComment('<text>', new PlaygroundExample('', 'abc-def'), 'some diff'),
+				new BotComment('<text>', new PlaygroundExample('', 'abc-def'), 'some diff', false),
 			],
 			$diff,
 			$details,
@@ -79,7 +79,7 @@ class PostGeneratorTest extends TestCase
 				new PlaygroundError(1, 'def', null),
 			])],
 			[
-				new BotComment('<text>', new PlaygroundExample('', 'abc-def'), $diff),
+				new BotComment('<text>', new PlaygroundExample('', 'abc-def'), $diff, false),
 			],
 			null,
 			null,

@@ -5,7 +5,7 @@ namespace PHPStan\IssueBot\Comment;
 class BotCommentParserResult
 {
 
-	public function __construct(private string $hash, private string $diff)
+	public function __construct(private string $hash, private string $diff, private bool $bleedingEdge)
 	{
 	}
 
@@ -17,6 +17,11 @@ class BotCommentParserResult
 	public function getDiff(): string
 	{
 		return $this->diff;
+	}
+
+	public function isBleedingEdge(): bool
+	{
+		return $this->bleedingEdge;
 	}
 
 }

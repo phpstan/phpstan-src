@@ -37,7 +37,7 @@ class IssueCommentDownloader
 					throw new BotCommentParserException();
 				}
 
-				$comments[] = new BotComment($issueComment['body'], $commentExamples[0], $parserResult->getDiff());
+				$comments[] = new BotComment($issueComment['body'], $commentExamples[0], $parserResult->getDiff(), $parserResult->isBleedingEdge());
 				continue;
 			}
 

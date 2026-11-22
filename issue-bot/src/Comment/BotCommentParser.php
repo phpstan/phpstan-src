@@ -7,9 +7,13 @@ use League\CommonMark\Extension\CommonMark\Node\Inline\Link;
 use League\CommonMark\Parser\MarkdownParser;
 use Nette\Utils\Strings;
 use function count;
+use function in_array;
 
 class BotCommentParser
 {
+
+	/** Second word of the diff code block info string in comments about results with bleeding edge enabled. */
+	public const BLEEDING_EDGE_INFO_WORD = 'bleeding-edge';
 
 	public function __construct(private MarkdownParser $docParser)
 	{
@@ -21,6 +25,7 @@ class BotCommentParser
 		$walker = $document->walker();
 		$hashes = [];
 		$diffs = [];
+		$bleedingEdge = false;
 		while ($event = $walker->next()) { // @phpstan-ignore while.condNotBoolean
 			if (!$event->isEntering()) {
 				continue;
@@ -42,11 +47,13 @@ class BotCommentParser
 				continue;
 			}
 
-			if ($node->getInfo() !== 'diff') {
+			$infoWords = $node->getInfoWords();
+			if ($infoWords[0] !== 'diff') {
 				continue;
 			}
 
 			$diffs[] = $node->getLiteral();
+			$bleedingEdge = in_array(self::BLEEDING_EDGE_INFO_WORD, $infoWords, true);
 		}
 
 		if (count($hashes) !== 1) {
@@ -57,7 +64,7 @@ class BotCommentParser
 			throw new BotCommentParserException();
 		}
 
-		return new BotCommentParserResult($hashes[0], $diffs[0]);
+		return new BotCommentParserResult($hashes[0], $diffs[0], $bleedingEdge);
 	}
 
 }

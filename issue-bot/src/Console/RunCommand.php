@@ -75,29 +75,48 @@ class RunCommand extends Command
 			if (!array_key_exists($hash, $playgroundCache->getResults())) {
 				throw new Exception(sprintf('Hash %s must exist', $hash));
 			}
-			$jobs[] = [$phpVersion, $hash, $playgroundCache->getResults()[$hash]];
+			$result = $playgroundCache->getResults()[$hash];
+
+			// written once here because both analyses of the same snippet run concurrently
+			$writeSuccess = file_put_contents($this->getCodePath($hash), $result->getCode());
+			if ($writeSuccess === false) {
+				throw new Exception('Code write unsuccessful');
+			}
+
+			$jobs[] = [$phpVersion, $hash, $result, false];
+			if ($result->isBleedingEdge()) {
+				continue;
+			}
+
+			// also analyse with bleeding edge to find out whether it already fixes the issue
+			$jobs[] = [$phpVersion, $hash, $result, true];
 		}
 
 		$allErrors = [];
+		$allBleedingEdgeErrors = [];
 
 		set_rejection_handler(static function (Throwable $t): void {
 			throw $t;
 		});
 
 		$this->runPool($jobs, $cpuCount, function (array $job) use ($output, $loop): PromiseInterface {
-			[$phpVersion, $hash, $result] = $job;
-			return $this->analyseHash($loop, $output, $phpVersion, $result)->then(
-				static fn (array $errors) => [$hash, $errors],
+			[$phpVersion, $hash, $result, $isAdditionalBleedingEdgeRun] = $job;
+			return $this->analyseHash($loop, $output, $phpVersion, $result, $isAdditionalBleedingEdgeRun)->then(
+				static fn (array $errors) => [$hash, $errors, $isAdditionalBleedingEdgeRun],
 			);
-		})->then(static function (array $results) use (&$allErrors): void {
-			foreach ($results as [$hash, $errors]) {
+		})->then(static function (array $results) use (&$allErrors, &$allBleedingEdgeErrors): void {
+			foreach ($results as [$hash, $errors, $isAdditionalBleedingEdgeRun]) {
+				if ($isAdditionalBleedingEdgeRun) {
+					$allBleedingEdgeErrors[$hash] = $errors;
+					continue;
+				}
 				$allErrors[$hash] = $errors;
 			}
 		});
 
 		$loop->run();
 
-		$data = ['phpVersion' => $phpVersion, 'errors' => $allErrors];
+		$data = ['phpVersion' => $phpVersion, 'errors' => $allErrors, 'bleedingEdgeErrors' => $allBleedingEdgeErrors];
 
 		$writeSuccess = file_put_contents(
 			sprintf($this->tmpDir . '/results-%d-%s.tmp', $phpVersion, sha1($commaSeparatedPlaygroundHashes)),
@@ -111,9 +130,9 @@ class RunCommand extends Command
 	}
 
 	/**
-	 * @param array<array{int, string, PlaygroundResult}> $jobs
-	 * @param callable(array{int, string, PlaygroundResult}): PromiseInterface<array{string, list<PlaygroundError>}> $jobRunner
-	 * @return PromiseInterface<list<array{string, list<PlaygroundError>}>>
+	 * @param array<array{int, string, PlaygroundResult, bool}> $jobs
+	 * @param callable(array{int, string, PlaygroundResult, bool}): PromiseInterface<array{string, list<PlaygroundError>, bool}> $jobRunner
+	 * @return PromiseInterface<list<array{string, list<PlaygroundError>, bool}>>
 	 */
 	private function runPool(array $jobs, int $concurrency, callable $jobRunner): PromiseInterface
 	{
@@ -168,19 +187,21 @@ class RunCommand extends Command
 	/**
 	 * @return PromiseInterface<list<PlaygroundError>>
 	 */
-	private function analyseHash(LoopInterface $loop, OutputInterface $output, int $phpVersion, PlaygroundResult $result): PromiseInterface
+	private function analyseHash(LoopInterface $loop, OutputInterface $output, int $phpVersion, PlaygroundResult $result, bool $isAdditionalBleedingEdgeRun): PromiseInterface
 	{
 		$configFiles = [
 			__DIR__ . '/../../playground.neon',
 			__DIR__ . '/../../vendor/phpstan/phpstan-deprecation-rules/rules.neon',
 		];
-		if ($result->isBleedingEdge()) {
+		if ($result->isBleedingEdge() || $isAdditionalBleedingEdgeRun) {
 			$configFiles[] = __DIR__ . '/../../../conf/bleedingEdge.neon';
 		}
 		if ($result->isStrictRules()) {
 			$configFiles[] = __DIR__ . '/../../vendor/phpstan/phpstan-strict-rules/rules.neon';
 		}
-		$tmpDir = sys_get_temp_dir() . '/phpstan-issue-bot-' . $result->getHash();
+		// the additional bleeding edge run of the same snippet runs concurrently, it needs its own files
+		$runSuffix = $isAdditionalBleedingEdgeRun ? '-bleeding-edge' : '';
+		$tmpDir = sys_get_temp_dir() . '/phpstan-issue-bot-' . $result->getHash() . $runSuffix;
 		@mkdir($tmpDir, 0777, true);
 
 		$options = $result->getOptions();
@@ -214,10 +235,9 @@ class RunCommand extends Command
 		]);
 
 		$hash = $result->getHash();
-		$neonPath = sprintf($this->tmpDir . '/%s.neon', $hash);
-		$codePath = sprintf($this->tmpDir . '/%s.php', $hash);
+		$neonPath = sprintf($this->tmpDir . '/%s%s.neon', $hash, $runSuffix);
+		$codePath = $this->getCodePath($hash);
 		file_put_contents($neonPath, $neon);
-		file_put_contents($codePath, $result->getCode());
 
 		$commandArray = [
 			escapeshellarg(__DIR__ . '/../../../bin/phpstan'),
@@ -230,10 +250,10 @@ class RunCommand extends Command
 			escapeshellarg($codePath),
 		];
 
-		$output->writeln(sprintf('Starting analysis of %s', $hash));
+		$output->writeln(sprintf('Starting analysis of %s%s', $hash, $runSuffix));
 		$process = new ProcessPromise($loop, implode(' ', $commandArray));
 		$startTime = microtime(true);
-		return $process->run()->then(static function (string $stdout) use ($hash, $output, $startTime) {
+		return $process->run()->then(static function (string $stdout) use ($hash, $runSuffix, $output, $startTime) {
 			try {
 				$json = Json::decode($stdout, forceArrays: true);
 			} catch (Throwable $e) {
@@ -244,7 +264,7 @@ class RunCommand extends Command
 			$errors = self::extractErrors($json, $hash);
 
 			$elapsedTime = microtime(true) - $startTime;
-			$output->writeln(sprintf('Analysis of %s took %.2f s', $hash, $elapsedTime));
+			$output->writeln(sprintf('Analysis of %s%s took %.2f s', $hash, $runSuffix, $elapsedTime));
 
 			return $errors;
 		});
@@ -278,6 +298,11 @@ class RunCommand extends Command
 		}
 
 		return $errors;
+	}
+
+	private function getCodePath(string $hash): string
+	{
+		return sprintf($this->tmpDir . '/%s.php', $hash);
 	}
 
 	private function loadPlaygroundCache(): PlaygroundCache

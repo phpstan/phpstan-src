@@ -6,6 +6,7 @@ use Exception;
 use Github\Api\Issue as GitHubIssueApi;
 use Github\Client;
 use PHPStan\IssueBot\Comment\BotComment;
+use PHPStan\IssueBot\Comment\BotCommentParser;
 use PHPStan\IssueBot\Comment\IssueCommentDownloader;
 use PHPStan\IssueBot\Issue\IssueCache;
 use PHPStan\IssueBot\Playground\NewlyUnparsableVersionFilter;
@@ -18,6 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -37,6 +39,8 @@ class EvaluateCommand extends Command
 	private const EXIT_ERROR = 1;
 	private const EXIT_AFFECTS_ISSUES = 2;
 	private const EXIT_NO_AFFECTED_ISSUES = 0;
+
+	private const BLEEDING_EDGE_URL = 'https://phpstan.org/blog/what-is-bleeding-edge';
 
 	public function __construct(
 		private TabCreator $tabCreator,
@@ -65,7 +69,7 @@ class EvaluateCommand extends Command
 	{
 		$issueCache = $this->loadIssueCache();
 		$originalResults = $this->loadPlaygroundCache()->getResults();
-		$newResults = $this->loadResults();
+		[$newResults, $newBleedingEdgeResults] = $this->loadResults();
 		$toPost = [];
 		$totalCodeSnippets = 0;
 
@@ -103,40 +107,49 @@ class EvaluateCommand extends Command
 					throw new Exception(sprintf('Hash %s does not exist in new results.', $hash));
 				}
 
-				$originalPhpVersions = array_keys($originalErrors);
-				$newResult = $newResults[$hash];
-				if (array_key_exists(70100, $originalErrors) || $originalPhpVersions === [70400]) {
-					$newResult[70100] = $newResult[70200];
+				$newResult = $this->fillPhp71Results($originalErrors, $newResults[$hash]);
+				$candidates = [[false, $newResult]];
+				if (array_key_exists($hash, $newBleedingEdgeResults)) {
+					$newBleedingEdgeResult = $this->fillPhp71Results($originalErrors, $newBleedingEdgeResults[$hash]);
+
+					// errors only added by bleeding edge come from its new rules, they do not tell whether the issue is fixed
+					if ($this->removesErrors($newResult, $newBleedingEdgeResult)) {
+						$candidates[] = [true, $newBleedingEdgeResult];
+					}
 				}
 
-				$originalTabs = $this->tabCreator->create($originalErrors);
-				$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $newResult));
-				$text = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $botComments);
-				if ($text === null) {
-					continue;
-				}
+				foreach ($candidates as [$bleedingEdge, $candidateResult]) {
+					$candidateBotComments = $this->filterBotComments($botComments, $bleedingEdge);
+					$originalTabs = $this->tabCreator->create($originalErrors);
+					$newTabs = $this->tabCreator->create($this->filterErrors($originalErrors, $candidateResult));
+					$text = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $candidateBotComments);
+					if ($text === null) {
+						continue;
+					}
 
-				if ($this->isOnlyParseErrorChange($hash, $originalErrors, $newResult, $botComments)) {
-					continue;
-				}
+					if ($this->isOnlyParseErrorChange($hash, $originalErrors, $candidateResult, $candidateBotComments)) {
+						continue;
+					}
 
-				if ($this->isIssueClosed($issue->getNumber())) {
-					continue;
-				}
+					if ($this->isIssueClosed($issue->getNumber())) {
+						continue;
+					}
 
-				$freshBotComments = $this->getFreshBotComments($issue->getNumber());
-				$textAgain = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $freshBotComments);
-				if ($textAgain === null) {
-					continue;
-				}
+					$freshBotComments = $this->filterBotComments($this->getFreshBotComments($issue->getNumber()), $bleedingEdge);
+					$textAgain = $this->postGenerator->createText($hash, $originalTabs, $newTabs, $freshBotComments);
+					if ($textAgain === null) {
+						continue;
+					}
 
-				$toPost[] = [
-					'issue' => $issue->getNumber(),
-					'hash' => $hash,
-					'users' => $users,
-					'diff' => $text['diff'],
-					'details' => $text['details'],
-				];
+					$toPost[] = [
+						'issue' => $issue->getNumber(),
+						'hash' => $hash,
+						'users' => $users,
+						'diff' => $text['diff'],
+						'details' => $text['details'],
+						'bleedingEdge' => $bleedingEdge,
+					];
+				}
 			}
 		}
 
@@ -146,13 +159,15 @@ class EvaluateCommand extends Command
 			$output->writeln(sprintf('No changes in results in %d code snippets from %d GitHub issues. :tada:', $totalCodeSnippets, count($issueCache->getIssues())));
 		}
 
-		foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details]) {
+		foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details, 'bleedingEdge' => $bleedingEdge]) {
 			$text = sprintf(
-				"Result of the [code snippet](https://phpstan.org/r/%s) from %s in [#%d](https://github.com/phpstan/phpstan/issues/%d) changed:\n\n```diff\n%s```",
+				"Result of the [code snippet](https://phpstan.org/r/%s) from %s in [#%d](https://github.com/phpstan/phpstan/issues/%d) changed%s:\n\n```%s\n%s```",
 				$hash,
 				implode(' ', array_map(static fn (string $user): string => sprintf('@%s', $user), $users)),
 				$issue,
 				$issue,
+				$bleedingEdge ? sprintf(' with [bleeding edge](%s) enabled', self::BLEEDING_EDGE_URL) : '',
+				$this->getDiffInfoString($bleedingEdge),
 				$diff,
 			);
 			if ($details !== null) {
@@ -174,14 +189,16 @@ class EvaluateCommand extends Command
 				$output->writeln('Too many comments to post, something is probably wrong.');
 				return self::EXIT_ERROR;
 			}
-			foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details]) {
+			foreach ($toPost as ['issue' => $issue, 'hash' => $hash, 'users' => $users, 'diff' => $diff, 'details' => $details, 'bleedingEdge' => $bleedingEdge]) {
 				$text = sprintf(
-					"%s After [the latest push in %s](https://github.com/phpstan/phpstan-src/compare/%s...%s), PHPStan now reports different result with your [code snippet](https://phpstan.org/r/%s):\n\n```diff\n%s```",
+					"%s After [the latest push in %s](https://github.com/phpstan/phpstan-src/compare/%s...%s), PHPStan%s now reports different result with your [code snippet](https://phpstan.org/r/%s):\n\n```%s\n%s```",
 					implode(' ', array_map(static fn (string $user): string => sprintf('@%s', $user), $users)),
 					$this->gitBranch,
 					$this->phpstanSrcCommitBefore,
 					$this->phpstanSrcCommitAfter,
+					$bleedingEdge ? sprintf(' with [bleeding edge](%s) enabled', self::BLEEDING_EDGE_URL) : '',
 					$hash,
+					$this->getDiffInfoString($bleedingEdge),
 					$diff,
 				);
 				if ($details !== null) {
@@ -201,6 +218,63 @@ class EvaluateCommand extends Command
 		}
 
 		return $exitCode;
+	}
+
+	private function getDiffInfoString(bool $bleedingEdge): string
+	{
+		if ($bleedingEdge) {
+			return 'diff ' . BotCommentParser::BLEEDING_EDGE_INFO_WORD;
+		}
+
+		return 'diff';
+	}
+
+	/**
+	 * Comments about the regular result and about the result with bleeding edge enabled are deduplicated separately.
+	 *
+	 * @param BotComment[] $botComments
+	 * @return list<BotComment>
+	 */
+	private function filterBotComments(array $botComments, bool $bleedingEdge): array
+	{
+		return array_values(array_filter($botComments, static fn (BotComment $comment): bool => $comment->isBleedingEdge() === $bleedingEdge));
+	}
+
+	/**
+	 * Playground snippets analysed on PHP 7.1 are compared with the PHP 7.2 result.
+	 *
+	 * @param array<int, list<PlaygroundError>> $originalErrors
+	 * @param array<int, list<PlaygroundError>> $newResult
+	 * @return array<int, list<PlaygroundError>>
+	 */
+	private function fillPhp71Results(array $originalErrors, array $newResult): array
+	{
+		if (array_key_exists(70100, $originalErrors) || array_keys($originalErrors) === [70400]) {
+			$newResult[70100] = $newResult[70200];
+		}
+
+		return $newResult;
+	}
+
+	/**
+	 * Whether some error reported in $errors is not reported in $bleedingEdgeErrors on the same PHP version.
+	 *
+	 * @param array<int, list<PlaygroundError>> $errors
+	 * @param array<int, list<PlaygroundError>> $bleedingEdgeErrors
+	 */
+	private function removesErrors(array $errors, array $bleedingEdgeErrors): bool
+	{
+		$describe = static fn (PlaygroundError $error): string => sprintf('%d: %s', $error->getLine(), $error->getMessage());
+		foreach ($errors as $phpVersion => $versionErrors) {
+			$remaining = array_map($describe, $bleedingEdgeErrors[$phpVersion] ?? []);
+			foreach (array_map($describe, $versionErrors) as $error) {
+				if (!in_array($error, $remaining, true)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -283,12 +357,13 @@ class EvaluateCommand extends Command
 	}
 
 	/**
-	 * @return array<string, array<int, list<PlaygroundError>>>
+	 * @return array{array<string, array<int, list<PlaygroundError>>>, array<string, array<int, list<PlaygroundError>>>} regular results and additional results with bleeding edge enabled
 	 */
 	private function loadResults(): array
 	{
 		$finder = new Finder();
 		$tmpResults = [];
+		$tmpBleedingEdgeResults = [];
 		foreach ($finder->files()->name('results-*.tmp')->in($this->tmpDir) as $resultFile) {
 			$contents = file_get_contents($resultFile->getPathname());
 			if ($contents === false) {
@@ -299,9 +374,12 @@ class EvaluateCommand extends Command
 			foreach ($result['errors'] as $hash => $errors) {
 				$tmpResults[(string) $hash][$phpVersion] = array_values($errors);
 			}
+			foreach ($result['bleedingEdgeErrors'] ?? [] as $hash => $errors) {
+				$tmpBleedingEdgeResults[(string) $hash][$phpVersion] = array_values($errors);
+			}
 		}
 
-		return $tmpResults;
+		return [$tmpResults, $tmpBleedingEdgeResults];
 	}
 
 	/**

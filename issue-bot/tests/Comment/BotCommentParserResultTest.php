@@ -13,7 +13,7 @@ class BotCommentParserResultTest extends TestCase
 {
 
 	/**
-	 * @return iterable<array{string, string, string}>
+	 * @return iterable<array{string, string, string, bool}>
 	 */
 	static public function dataParse(): iterable
 	{
@@ -30,11 +30,28 @@ class BotCommentParserResultTest extends TestCase
 -1: abc
 +1: def
 ',
+			false,
+		];
+
+		yield [
+			'@foobar After [the latest push in 2.3.x](https://github.com/phpstan/phpstan-src/compare/abc...def), PHPStan with [bleeding edge](https://phpstan.org/blog/what-is-bleeding-edge) enabled now reports different result with your [code snippet](https://phpstan.org/r/74c3b0af-5a87-47e7-907a-9ea6fbb1c396):
+
+```diff bleeding-edge
+@@ @@
+-1: abc
++1: def
+```',
+			'74c3b0af-5a87-47e7-907a-9ea6fbb1c396',
+			'@@ @@
+-1: abc
++1: def
+',
+			true,
 		];
 	}
 
 	#[DataProvider('dataParse')]
-	public function testParse(string $text, string $expectedHash, string $expectedDiff): void
+	public function testParse(string $text, string $expectedHash, string $expectedDiff, bool $expectedBleedingEdge): void
 	{
 		$markdownEnvironment = new Environment();
 		$markdownEnvironment->addExtension(new CommonMarkCoreExtension());
@@ -43,6 +60,7 @@ class BotCommentParserResultTest extends TestCase
 		$result = $parser->parse($text);
 		self::assertSame($expectedHash, $result->getHash());
 		self::assertSame($expectedDiff, $result->getDiff());
+		self::assertSame($expectedBleedingEdge, $result->isBleedingEdge());
 	}
 
 }

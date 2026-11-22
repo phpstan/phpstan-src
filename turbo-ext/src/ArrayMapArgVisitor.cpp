@@ -45,9 +45,6 @@ public:
 		if (functionName == NULL) return !EG(exception);
 		if (!visitors::lowerEquals(functionName, "array_map")) return true;
 
-		bool supportsNamedArguments;
-		if (UNEXPECTED(!pt_php_version_answer(OBJ_PROP_NUM(visitor, ptdecl::ArrayMapArgVisitor::slot::phpVersion), PT_PHP_VERSION_SUPPORTS_NAMED_ARGUMENTS, supportsNamedArguments))) return false;
-
 		/* every argument except the positional first one and the one named
 		 * "callback" */
 		zv::Arr arrayArgs = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(args)));
@@ -57,10 +54,6 @@ public:
 			zval *argName = argNameProp.of(arg.asObject());
 			bool named = argName != NULL && Z_TYPE_P(argName) == IS_OBJECT;
 			bool firstPosition = entry.stringKeyOrNull() == NULL && entry.indexKey() == 0;
-			if (!supportsNamedArguments) {
-				if (!firstPosition) arrayArgs.push(arg);
-				continue;
-			}
 			if (!named && firstPosition) continue;
 			if (named) {
 				zend_string *name = visitors::nameString(Z_OBJ_P(argName), identifierProp);
@@ -70,8 +63,7 @@ public:
 		}
 
 		/* ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback') */
-		zend_object *callbackArg = visitors::argForParameter(args, 0, "callback", OBJ_PROP_NUM(visitor, ptdecl::ArrayMapArgVisitor::slot::phpVersion));
-		if (UNEXPECTED(EG(exception))) return false;
+		zend_object *callbackArg = visitors::argForParameter(args, 0, "callback");
 		if (callbackArg == NULL || zend_hash_num_elements(arrayArgs.table()) == 0) return true;
 		zval *value = argValueProp.of(callbackArg);
 		if (value == NULL || Z_TYPE_P(value) != IS_OBJECT) return true;
@@ -101,14 +93,6 @@ PT_MINIT_REGISTRATION(pt_register_array_map_arg_visitor)
 	ptdecl::ArrayMapArgVisitor::declareClass(cls);
 	ptdecl::ArrayMapArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_array_map_arg_attribute);
-
-	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *phpVersion;
-		ZEND_PARSE_PARAMETERS_START(1, 1)
-			Z_PARAM_OBJECT_OF_CLASS(phpVersion, pt_class(PT_CLASS_PHP_VERSION))
-		ZEND_PARSE_PARAMETERS_END();
-		zv::ObjRef(Z_OBJ_P(ZEND_THIS)).propAtWrite(ptdecl::ArrayMapArgVisitor::slot::phpVersion, zv::Val::copyOf(zv::Ref(phpVersion)));
-	});
 
 	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;

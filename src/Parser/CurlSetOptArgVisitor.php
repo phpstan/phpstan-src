@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
@@ -17,17 +16,13 @@ final class CurlSetOptArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'isCurlSetOptArg';
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isPartialFunctionApplication()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'curl_setopt') {
-				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'handle', $this->phpVersion);
+				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'handle');
 				$arg?->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}

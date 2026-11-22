@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
-use PHPStan\Php\PhpVersion;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function count;
 
@@ -18,10 +17,6 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'arrayMapArgs';
 
-	public function __construct(private PhpVersion $phpVersion)
-	{
-	}
-
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
@@ -30,14 +25,7 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 			if ($functionName === 'array_map') {
 				$args = $node->getArgs();
 				$arrayArgs = [];
-				$supportsNamedArguments = $this->phpVersion->supportsNamedArguments();
 				foreach ($args as $i => $arg) {
-					if (!$supportsNamedArguments) {
-						if ($i !== 0) {
-							$arrayArgs[] = $arg;
-						}
-						continue;
-					}
 					if ($arg->name === null && $i === 0) {
 						continue;
 					}
@@ -47,7 +35,7 @@ final class ArrayMapArgVisitor extends NodeVisitorAbstract
 
 					$arrayArgs[] = $arg;
 				}
-				$callbackArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback', $this->phpVersion);
+				$callbackArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback');
 				if ($callbackArg !== null && count($arrayArgs) > 0) {
 					$callbackArg->value->setAttribute(self::ATTRIBUTE_NAME, $arrayArgs);
 				}

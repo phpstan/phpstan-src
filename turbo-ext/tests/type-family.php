@@ -7267,13 +7267,6 @@ $observations['native ' . \PHPStan\Analyser\ArgumentsNormalizer::class] = (new R
 		'unknownAndGap' => [$arg(9, 'zzz'), $arg(3, 'c'), $arg(1)],
 		'unpacked' => [$arg(1, null, true), $arg(2, 'b')],
 	];
-	foreach ([null, new \PHPStan\Php\PhpVersion(70400), new \PHPStan\Php\PhpVersion(80000), new \PHPStan\Php\PhpVersions(\PHPStan\Type\IntegerRangeType::fromInterval(70400, 79999)), new \PHPStan\Php\PhpVersions(\PHPStan\Type\IntegerRangeType::fromInterval(70400, 80000)), new \PHPStan\Php\PhpVersions(\PHPStan\Type\IntegerRangeType::fromInterval(80000, null))] as $index => $version) {
-		foreach ($argSets as $argSetName => $args) {
-			$found = \PHPStan\Analyser\ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'a', $version);
-			$r["getArgByPositionOrName $index $argSetName"] = $found === null ? null : array_search($found, $args, true);
-		}
-		$r['getArgByPositionOrName invalid version'] = $error(static fn () => \PHPStan\Analyser\ArgumentsNormalizer::getArgByPositionOrName([], 0, 'a', new \stdClass()));
-	}
 	$viewArgs = static function (?array $args) use ($view): array|string|null {
 		if ($args === null) {
 			return null;

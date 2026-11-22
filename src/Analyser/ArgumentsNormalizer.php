@@ -14,8 +14,6 @@ use PhpParser\Node\Scalar\Int_;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Node\Printer\ExprPrinter;
-use PHPStan\Php\PhpVersion;
-use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\TrinaryLogic;
@@ -305,27 +303,14 @@ final class ArgumentsNormalizer
 	 * @param 0|positive-int $position
 	 * @param non-empty-string $name
 	 */
-	public static function getArgByPositionOrName(
-		array $args,
-		int $position,
-		string $name,
-		PhpVersion|PhpVersions|null $phpVersion = null,
-	): ?Arg
+	public static function getArgByPositionOrName(array $args, int $position, string $name): ?Arg
 	{
 		$argByPosition = null;
 		foreach ($args as $i => $arg) {
 			if ($i === $position) {
 				$argByPosition = $arg;
 			}
-			if (
-				$arg->name !== null
-				&& $arg->name->toString() === $name
-				&& (
-					$phpVersion === null
-					|| ($phpVersion instanceof PhpVersion && $phpVersion->supportsNamedArguments())
-					|| ($phpVersion instanceof PhpVersions && !$phpVersion->supportsNamedArguments()->no())
-				)
-			) {
+			if ($arg->name !== null && $arg->name->toString() === $name) {
 				return $arg;
 			}
 		}

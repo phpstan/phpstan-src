@@ -8,11 +8,6 @@
 
 namespace ptdecl::ArrayFilterArgVisitor {
 
-/* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
-namespace slot {
-inline constexpr uint32_t phpVersion = 0;
-} // namespace slot
-
 inline void declareClass(reg::Class &cls)
 {
 	cls.final();
@@ -22,31 +17,26 @@ inline void declareClass(reg::Class &cls)
 /* the properties the class declares itself, in declaration order (a used trait's come from its registrar) */
 inline void declareProperties(reg::Class &cls)
 {
-	cls.property("phpVersion", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Php\\PhpVersion");
+	(void) cls;
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"phpVersion\0" /* 0 */
-	"PHPStan\\Php\\PhpVersion\0" /* 11 */
-	"__construct\0" /* 34 */
-	"node\0" /* 46 */
-	"PhpParser\\Node\0" /* 51 */
-	"\0" /* 66 */
-	"enterNode"; /* 67 */
+	"node\0" /* 0 */
+	"PhpParser\\Node\0" /* 5 */
+	"\0" /* 20 */
+	"enterNode"; /* 21 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, 0, 11), /* __construct $phpVersion */
-	reg::packed(46, 0, 51), /* enterNode $node */
-	reg::packed(66, MAY_BE_NULL, 51), /* enterNode return */
+	reg::packed(0, 0, 5), /* enterNode $node */
+	reg::packed(20, MAY_BE_NULL, 5), /* enterNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 34 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig enterNode = { { 67 /* enterNode */, 1, 1, 1, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig enterNode = { { 21 /* enterNode */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayFilterArgVisitor

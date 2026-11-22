@@ -76,7 +76,7 @@ final class RegularExpressionPatternRule implements Rule
 			return [];
 		}
 
-		$patternArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'pattern', $scope->getPhpVersion());
+		$patternArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'pattern');
 		if ($patternArg === null) {
 			return [];
 		}

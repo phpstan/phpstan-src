@@ -59,4 +59,22 @@ class Foo
 		}
 	}
 
+	public function getterOfGlobalState(string $pattern): void
+	{
+		// read again until a call writes the state
+		if (session_id()) {
+			assertType('non-falsy-string', session_id());
+		}
+		if (session_id() === 'a') {
+			session_id('b');
+			assertType('string|false', session_id());
+		}
+
+		// written by calls that list no effect on it
+		if (preg_last_error() === PREG_NO_ERROR) {
+			preg_match($pattern, '');
+			assertType('int', preg_last_error());
+		}
+	}
+
 }

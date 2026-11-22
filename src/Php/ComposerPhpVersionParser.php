@@ -46,6 +46,7 @@ final class ComposerPhpVersionParser
 
 	/**
 	 * @param callable(string, int, bool):PhpVersion $buildPhpVersion
+	 * @param -1|0|1 $exclusiveBoundAdjustment
 	 */
 	private function buildVersion(string $version, int $exclusiveBoundAdjustment, bool $isMaxVersion, callable $buildPhpVersion): ?PhpVersion
 	{

@@ -138,7 +138,7 @@ final class RuleBench
 	#[ExpectedFor(dataSet: 'function-conditional-return-type-without-conditional-types', instructions: '148.3K', cycles: '159.0K', memory: '376B')]
 	#[ExpectedFor(dataSet: 'impossible-check-type-function-call', instructions: '6.250M', cycles: '8.182M', memory: '5.758KiB')]
 	#[ExpectedFor(dataSet: 'instantiation-restricted-constructor', instructions: '3.628M', cycles: '5.050M', memory: '6.742KiB')]
-	#[ExpectedFor(dataSet: 'node-connecting-visitor-attributes-no-arguments', instructions: '39.53K', cycles: '41.61K', memory: '40B')]
+	#[ExpectedFor(dataSet: 'node-connecting-visitor-attributes-no-arguments', instructions: '42.01K', cycles: '44.26K', memory: '40B')]
 	#[ExpectedFor(dataSet: 'old-php-parser4-class-outside-class', instructions: '20.96K', cycles: '22.23K', memory: '0B')]
 	#[ExpectedFor(dataSet: 'parameter-castable-to-string-diff-assoc', instructions: '6.028M', cycles: '6.950M', memory: '3.172KiB')]
 	#[ExpectedFor(dataSet: 'restricted-function-usage', instructions: '287.9K', cycles: '355.2K', memory: '848B')]

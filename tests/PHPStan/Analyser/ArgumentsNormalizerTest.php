@@ -414,12 +414,12 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		// positional arguments followed by the named one
 		yield [[null, 'mode', 'callback'], 1, 'callback', 2];
 
-		// named argument at the position is bound to a different parameter
-		yield [['callback'], 0, 'array', null];
-		yield [[null, 'mode'], 1, 'callback', null];
+		// fall back to the argument at the position when the named argument is for a different parameter
+		yield [['callback'], 0, 'array', 0];
+		yield [[null, 'mode'], 1, 'callback', 1];
 
-		// argument names are case-sensitive
-		yield [['Array'], 0, 'array', null];
+		// argument names are case-sensitive, but fall back to the argument at the position
+		yield [['Array'], 0, 'array', 0];
 	}
 
 	/**
@@ -447,6 +447,23 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		}
 
 		$this->assertSame($arguments[$expectedIndex], $arg);
+	}
+
+	public function testGetArgByPositionOrNameWithUnpackAndNamedArguments(): void
+	{
+		$unpackedArgument = new Arg(new TypeExpr(new MixedType()), unpack: true);
+		$namedArgument = new Arg(new TypeExpr(new MixedType()), name: new Identifier('callback'));
+
+		$this->assertNull(ArgumentsNormalizer::getArgByPositionOrName(
+			[$unpackedArgument, $namedArgument],
+			0,
+			'callback',
+		));
+		$this->assertNull(ArgumentsNormalizer::getArgByPositionOrName(
+			[$namedArgument, $unpackedArgument],
+			0,
+			'callback',
+		));
 	}
 
 }

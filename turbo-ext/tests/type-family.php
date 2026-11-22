@@ -7267,6 +7267,18 @@ $observations['native ' . \PHPStan\Analyser\ArgumentsNormalizer::class] = (new R
 		'unknownAndGap' => [$arg(9, 'zzz'), $arg(3, 'c'), $arg(1)],
 		'unpacked' => [$arg(1, null, true), $arg(2, 'b')],
 	];
+	foreach ([
+		'unpackedBeforeNamed' => [$arg(1, null, true), $arg(2, 'callback')],
+		'namedBeforeUnpacked' => [$arg(1, 'callback'), $arg(2, null, true)],
+		'unpackedAndDifferentNamed' => [$arg(1, null, true), $arg(2, 'other')],
+		'unpackedWithoutNamed' => [$arg(1, null, true)],
+		'namedWithoutUnpack' => [$arg(1, 'callback')],
+	] as $case => $args) {
+		$r["getArgByPositionOrName $case"] = $error(static function () use (&$r, $args, $case): void {
+			$arg = \PHPStan\Analyser\ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'callback');
+			$r["getArgByPositionOrName $case result"] = $arg === null ? null : array_search($arg, $args, true);
+		});
+	}
 	$viewArgs = static function (?array $args) use ($view): array|string|null {
 		if ($args === null) {
 			return null;

@@ -18,6 +18,7 @@ interface FunctionReflectionFactory
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
 	 * @param array<string, bool> $phpDocParameterPureUnlessParameterPassed
+	 * @param list<string>|null $effects
 	 */
 	public function create(
 		ReflectionFunction $reflection,
@@ -39,6 +40,7 @@ interface FunctionReflectionFactory
 		array $attributes,
 		array $phpDocParameterPureUnlessCallableIsImpure,
 		array $phpDocParameterPureUnlessParameterPassed,
+		?array $effects = null,
 	): PhpFunctionReflection;
 
 }

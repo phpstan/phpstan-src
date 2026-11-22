@@ -918,6 +918,7 @@ final class PhpClassReflectionExtension
 		);
 
 		$isPure = null;
+		$effects = null;
 		$pureUnlessCallableIsImpureParameters = [];
 		$pureUnlessParameterPassedParameters = [];
 		if ($actualDeclaringClass->isBuiltin() || $actualDeclaringClass->isEnum()) {
@@ -926,6 +927,7 @@ final class PhpClassReflectionExtension
 					$methodMetadata = $this->signatureMapProvider->getMethodMetadata($className, $methodReflection->getName());
 					$hasSideEffects = $methodMetadata['hasSideEffects'] ?? true;
 					$isPure = !$hasSideEffects;
+					$effects = $methodMetadata['effects'];
 					$pureUnlessCallableIsImpureParameters += $methodMetadata['pureUnlessCallableIsImpureParameters'] ?? [];
 					$pureUnlessParameterPassedParameters += $methodMetadata['pureUnlessParameterPassedParameters'] ?? [];
 
@@ -1037,6 +1039,7 @@ final class PhpClassReflectionExtension
 			$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($actualDeclaringClass->getName(), $declaringTraitName, $methodReflection->getName(), $actualDeclaringClass->getFileName())),
 			$pureUnlessCallableIsImpureParameters,
 			$pureUnlessParameterPassedParameters,
+			$effects,
 		);
 	}
 

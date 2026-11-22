@@ -73,6 +73,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 * @param array<string, bool> $pureUnlessParameterPassedParameters
+	 * @param list<string>|null $effects
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -102,6 +103,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private array $attributes,
 		private array $pureUnlessCallableIsImpureParameters,
 		private array $pureUnlessParameterPassedParameters,
+		private ?array $effects = null,
 	)
 	{
 	}
@@ -469,7 +471,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this);
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self
@@ -502,6 +504,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributes,
 			$this->pureUnlessCallableIsImpureParameters,
 			$this->pureUnlessParameterPassedParameters,
+			$this->effects,
 		);
 	}
 
@@ -538,6 +541,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributes,
 			$this->pureUnlessCallableIsImpureParameters,
 			$this->pureUnlessParameterPassedParameters,
+			$this->effects,
 		);
 	}
 

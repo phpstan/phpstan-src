@@ -46,6 +46,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
 	 * @param array<string, bool> $phpDocParameterPureUnlessParameterPassed
+	 * @param list<string>|null $effects
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -70,6 +71,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private array $attributes,
 		private array $phpDocParameterPureUnlessCallableIsImpure,
 		private array $phpDocParameterPureUnlessParameterPassed,
+		private ?array $effects = null,
 	)
 	{
 	}
@@ -241,7 +243,7 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this);
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	public function isBuiltin(): bool

@@ -369,8 +369,13 @@ final class BetterReflectionProvider implements ReflectionProvider
 		}
 
 		$lowerCasedFunctionName = strtolower($reflectionFunction->getName());
+		$effects = null;
 		if ($this->signatureMapProvider->hasFunctionMetadata($lowerCasedFunctionName)) {
 			$functionMetadata = $this->signatureMapProvider->getFunctionMetadata($lowerCasedFunctionName);
+			$effects = $functionMetadata['effects'];
+			if (isset($functionMetadata['hasSideEffects'])) {
+				$isPure ??= !$functionMetadata['hasSideEffects'];
+			}
 			foreach ($functionMetadata['pureUnlessCallableIsImpureParameters'] ?? [] as $parameterName => $isPureUnlessCallableIsImpure) {
 				if (($phpDocParameterPureUnlessCallableIsImpure[$parameterName] ?? false) === true) {
 					continue;
@@ -407,6 +412,7 @@ final class BetterReflectionProvider implements ReflectionProvider
 			$this->attributeReflectionFactory->fromNativeReflection($reflectionFunction->getAttributes(), InitializerExprContext::fromFunction($reflectionFunction->getName(), $reflectionFunction->getFileName() !== false ? $reflectionFunction->getFileName() : null)),
 			$phpDocParameterPureUnlessCallableIsImpure,
 			$phpDocParameterPureUnlessParameterPassed,
+			$effects,
 		);
 	}
 

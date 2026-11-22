@@ -1299,6 +1299,11 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15464(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15464.php'], []);
+	}
+
 	public function testMinMaxNan(): void
 	{
 		$this->analyse([__DIR__ . '/data/minmax-nan.php'], []);

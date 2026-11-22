@@ -10,12 +10,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -37,7 +36,6 @@ final class IncludeHandler implements ExprHandler
 
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
-		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private IncludedFilePathResolver $includedFilePathResolver,
 	)
 	{
@@ -81,7 +79,8 @@ final class IncludeHandler implements ExprHandler
 			throwPoints: array_merge($exprResult->getThrowPoints(), [$throwPoint]),
 			impurePoints: array_merge($exprResult->getImpurePoints(), [new ImpurePoint($scope, $expr, $identifier, $identifier, true)]),
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => new MixedType(),
-			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			// the result can differ every time, so it is never narrowed
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: Dependencies::merge($exprResult->getDependencies(), Dependencies::create($beforeScope->getFile(), filePaths: $includedFiles)),
 		);
 	}

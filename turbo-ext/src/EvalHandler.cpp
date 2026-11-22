@@ -4,12 +4,11 @@
  *
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. processExpr() is registered as the class's
- * handler entry (Engine.h). The twin's closures are native closures capturing
- * what the PHP closures capture: the typeCallback (nothing) and the
- * specifyTypesCallback ($this, $expr).
+ * handler entry (Engine.h). The typeCallback is a native closure capturing
+ * nothing, and the specifyTypesCallback is SpecifiedTypes::emptySpecifyCallback().
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
- * InternalThrowPoint, ImpurePoint, VariableFlow, DefaultNarrowingHelper and
+ * InternalThrowPoint, ImpurePoint, VariableFlow, SpecifiedTypes and
  * the Type kernel are called through their direct entries.
  */
 
@@ -41,15 +40,13 @@ class EvalHandler
 {
 public:
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\EvalHandler::{closure}";
-	static constexpr uint32_t defaultNarrowingHelperSlot = slots::defaultNarrowingHelper;
 
 	explicit EvalHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *expressionResultFactory) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
-		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -101,7 +98,7 @@ public:
 		if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
 
 		zv::Val typeCallback = pt_native_closure(&ptse::mixedTypeBody<EvalHandler>);
-		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<EvalHandler>, self, expr);
+		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		zv::Val dependenciesHold;
 		zval *dependencies = pt_expression_result_dependencies(exprResult.raw(), dependenciesHold);
 		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
@@ -139,9 +136,9 @@ PT_MINIT_REGISTRATION(pt_register_eval_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		EvalHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper);
+		zval *expressionResultFactory;
+		if (!zp::parse<zp::Obj>(execute_data, expressionResultFactory)) RETURN_THROWS();
+		EvalHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

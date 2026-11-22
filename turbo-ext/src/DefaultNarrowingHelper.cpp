@@ -461,7 +461,7 @@ public:
 	}
 
 	/* Mirrors isSubjectValueRemembered(): a value computed by a (possibly)
-	 * impure call - the subject itself or any call nested in it - is not
+	 * impure call, an include or an eval - the subject itself or any call nested in it - is not
 	 * remembered; the result carries the impure points of its whole subtree.
 	 * false = pending exception */
 	[[nodiscard]] bool isSubjectValueRemembered(zval *subjectResult, zval *subject, bool &out) const
@@ -488,6 +488,8 @@ public:
 					&& !isA(node, PT_CLASS_METHOD_CALL)
 					&& !isA(node, PT_CLASS_STATIC_CALL)
 					&& !isA(node, PT_CLASS_NULLSAFE_METHOD_CALL)
+					&& !isA(node, PT_CLASS_INCLUDE_EXPR)
+					&& !isA(node, PT_CLASS_EVAL_EXPR)
 				) {
 					if (UNEXPECTED(EG(exception))) return false;
 					continue;
@@ -600,7 +602,7 @@ public:
 			// off the stored result, whose impure points cover the whole subtree;
 			// a nullsafe call is left to its handler, which narrows through its
 			// plain twin and so reaches this gate as a MethodCall
-			bool isCall = isA(subject, PT_CLASS_FUNC_CALL) || isA(subject, PT_CLASS_METHOD_CALL) || isA(subject, PT_CLASS_STATIC_CALL);
+			bool isCall = isA(subject, PT_CLASS_FUNC_CALL) || isA(subject, PT_CLASS_METHOD_CALL) || isA(subject, PT_CLASS_STATIC_CALL) || isA(subject, PT_CLASS_INCLUDE_EXPR) || isA(subject, PT_CLASS_EVAL_EXPR);
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 			if (isCall) {
 				bool remembered;

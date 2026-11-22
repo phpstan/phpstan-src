@@ -11,8 +11,7 @@ namespace ptdecl::IncludeHandler {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t expressionResultFactory = 0;
-inline constexpr uint32_t defaultNarrowingHelper = 1;
-inline constexpr uint32_t includedFilePathResolver = 2;
+inline constexpr uint32_t includedFilePathResolver = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -25,7 +24,6 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("expressionResultFactory", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExpressionResultFactory");
-	cls.property("defaultNarrowingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper");
 	cls.property("includedFilePathResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\File\\IncludedFilePathResolver");
 }
 
@@ -34,51 +32,48 @@ namespace sigtab {
 inline constexpr char strings[] =
 	"expressionResultFactory\0" /* 0 */
 	"PHPStan\\Analyser\\ExpressionResultFactory\0" /* 24 */
-	"defaultNarrowingHelper\0" /* 65 */
-	"PHPStan\\Analyser\\ExprHandler\\Helper\\DefaultNarrowingHelper\0" /* 88 */
-	"includedFilePathResolver\0" /* 147 */
-	"PHPStan\\File\\IncludedFilePathResolver\0" /* 172 */
-	"__construct\0" /* 210 */
-	"expr\0" /* 222 */
-	"PhpParser\\Node\\Expr\0" /* 227 */
-	"\0" /* 247 */
-	"supports\0" /* 248 */
-	"nodeScopeResolver\0" /* 257 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 275 */
-	"stmt\0" /* 310 */
-	"PhpParser\\Node\\Stmt\0" /* 315 */
-	"scope\0" /* 335 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 341 */
-	"storage\0" /* 372 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 380 */
-	"nodeCallback\0" /* 421 */
-	"context\0" /* 434 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 442 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 477 */
-	"processExpr"; /* 511 */
+	"includedFilePathResolver\0" /* 65 */
+	"PHPStan\\File\\IncludedFilePathResolver\0" /* 90 */
+	"__construct\0" /* 128 */
+	"expr\0" /* 140 */
+	"PhpParser\\Node\\Expr\0" /* 145 */
+	"\0" /* 165 */
+	"supports\0" /* 166 */
+	"nodeScopeResolver\0" /* 175 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 193 */
+	"stmt\0" /* 228 */
+	"PhpParser\\Node\\Stmt\0" /* 233 */
+	"scope\0" /* 253 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 259 */
+	"storage\0" /* 290 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 298 */
+	"nodeCallback\0" /* 339 */
+	"context\0" /* 352 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 360 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 395 */
+	"processExpr"; /* 429 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 24), /* __construct $expressionResultFactory */
-	reg::packed(65, 0, 88), /* __construct $defaultNarrowingHelper */
-	reg::packed(147, 0, 172), /* __construct $includedFilePathResolver */
-	reg::packed(222, 0, 227), /* supports $expr */
-	reg::packed(247, MAY_BE_BOOL), /* supports return */
-	reg::packed(257, 0, 275), /* processExpr $nodeScopeResolver */
-	reg::packed(310, 0, 315), /* processExpr $stmt */
-	reg::packed(222, 0, 227), /* processExpr $expr */
-	reg::packed(335, 0, 341), /* processExpr $scope */
-	reg::packed(372, 0, 380), /* processExpr $storage */
-	reg::packed(421, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(434, 0, 442), /* processExpr $context */
-	reg::packed(247, 0, 477), /* processExpr return */
+	reg::packed(65, 0, 90), /* __construct $includedFilePathResolver */
+	reg::packed(140, 0, 145), /* supports $expr */
+	reg::packed(165, MAY_BE_BOOL), /* supports return */
+	reg::packed(175, 0, 193), /* processExpr $nodeScopeResolver */
+	reg::packed(228, 0, 233), /* processExpr $stmt */
+	reg::packed(140, 0, 145), /* processExpr $expr */
+	reg::packed(253, 0, 259), /* processExpr $scope */
+	reg::packed(290, 0, 298), /* processExpr $storage */
+	reg::packed(339, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(352, 0, 360), /* processExpr $context */
+	reg::packed(165, 0, 395), /* processExpr return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 210 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 248 /* supports */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 511 /* processExpr */, 7, 5, 7, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 128 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 166 /* supports */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 429 /* processExpr */, 7, 4, 7, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::IncludeHandler

@@ -159,8 +159,9 @@ final class DefaultNarrowingHelper
 
 	/**
 	 * The impure gate read off an already-processed result: a value computed
-	 * by a (possibly) impure call - the subject itself or any call nested in
-	 * it, like strlen($record->getName()) - must not get a remembered type.
+	 * by a (possibly) impure call, an include or an eval - the subject itself or any
+	 * call nested in it, like strlen($record->getName()) - must not get a
+	 * remembered type.
 	 * The result carries the impure points of its whole subtree.
 	 */
 	private function isSubjectValueRemembered(ExpressionResult $subjectResult, Expr $subject): bool
@@ -176,6 +177,8 @@ final class DefaultNarrowingHelper
 				&& !$node instanceof Expr\MethodCall
 				&& !$node instanceof Expr\StaticCall
 				&& !$node instanceof Expr\NullsafeMethodCall
+				&& !$node instanceof Expr\Include_
+				&& !$node instanceof Expr\Eval_
 			) {
 				continue;
 			}
@@ -248,6 +251,8 @@ final class DefaultNarrowingHelper
 					$subject instanceof Expr\FuncCall
 					|| $subject instanceof Expr\MethodCall
 					|| $subject instanceof Expr\StaticCall
+					|| $subject instanceof Expr\Include_
+					|| $subject instanceof Expr\Eval_
 				)
 				&& !$this->isSubjectValueRemembered($subjectResult, $subject)
 			) {

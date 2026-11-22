@@ -2174,6 +2174,16 @@ zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *he
 	return pt_type_call(Z_OBJ_P(helper), PT_LC("createnullsafereceiveronlytypes"), 5, argv);
 }
 
+bool pt_default_narrowing_helper_is_subject_value_remembered(zval *helper, zval *subjectResult, zval *subject, bool &out)
+{
+	if (isNativeHelper(helper)) return DefaultNarrowingHelper(Z_OBJ_P(helper)).isSubjectValueRemembered(subjectResult, subject, out);
+	zv::Args argv{subjectResult, subject};
+	zv::Val result = pt_type_call(Z_OBJ_P(helper), PT_LC("issubjectvalueremembered"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out)
 {
 	if (receiverResult != NULL && Z_TYPE_P(receiverResult) == IS_NULL) receiverResult = NULL;
@@ -2312,6 +2322,14 @@ PT_MINIT_REGISTRATION(pt_register_default_narrowing_helper)
 		zval *s, *subject, *subjectResult, *type, *context;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::ObjOrNull, zp::Obj, zp::Obj>(execute_data, s, subject, subjectResult, type, context)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_DNH_THIS.createNullsafeReceiverOnlyTypes(s, subject, subjectResult, type, context));
+	});
+
+	cls.method(sigs::isSubjectValueRemembered, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *subjectResult, *subject;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, subjectResult, subject)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!PT_DNH_THIS.isSubjectValueRemembered(subjectResult, subject, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::callMayHaveBeenSkipped, [](INTERNAL_FUNCTION_PARAMETERS) {

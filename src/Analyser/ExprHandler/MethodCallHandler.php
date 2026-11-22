@@ -345,7 +345,8 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
-				if ($selfOutType !== null) {
+				// an impure call returns another object next time, which keeps its type
+				if ($selfOutType !== null && $this->defaultNarrowingHelper->isSubjectValueRemembered($varResult, $normalizedExpr->var)) {
 					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 					$scope = $scope->assignExpression(
 						$normalizedExpr->var,

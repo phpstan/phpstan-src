@@ -600,6 +600,13 @@ final class Vector implements Sequence
 	public function merge(iterable $values): Vector
 	{
 	}
+
+	/**
+	 * @return list<TValue>
+	 */
+	public function toArray(): array
+	{
+	}
 }
 
 /**

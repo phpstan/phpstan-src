@@ -242,18 +242,21 @@ inline zend_object *argForParameter(zval *args, zend_ulong position, const char 
 	static NodeProp identifierProp = PT_IDENTIFIER_PROP;
 
 	if (args == NULL || Z_TYPE_P(args) != IS_ARRAY) return NULL;
+	zend_object *argByPosition = NULL;
 	for (auto entry : zv::ArrRef(args)) {
 		zv::Ref arg = entry.value().deref();
 		if (!arg.isObject()) continue;
+		if (entry.stringKeyOrNull() == NULL && entry.indexKey() == position) {
+			argByPosition = arg.asObject();
+		}
+
 		zval *argName = argNameProp.of(arg.asObject());
 		if (argName != NULL && Z_TYPE_P(argName) == IS_OBJECT) {
 			zend_string *argNameString = nameString(Z_OBJ_P(argName), identifierProp);
 			if (argNameString != NULL && zend_string_equals_cstr(argNameString, name, nameLen)) return arg.asObject();
-			continue;
 		}
-		if (entry.stringKeyOrNull() == NULL && entry.indexKey() == position) return arg.asObject();
 	}
-	return NULL;
+	return argByPosition;
 }
 
 template<size_t N>

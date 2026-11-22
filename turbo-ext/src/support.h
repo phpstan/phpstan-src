@@ -2552,6 +2552,8 @@ extern zend_class_entry *pt_ce_side_effects;
  * -1 = pending exception */
 /* $sideEffects->getEffectNames() !== [] ? Yes : $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->negate() as PT_TRI_*; -1 = pending exception */
 zend_long pt_side_effects_own(zend_object *sideEffects);
+/* $sideEffects->getCalledParameters() !== [] as 1 / 0; -1 = pending exception */
+int pt_side_effects_has_called_parameters(zend_object *sideEffects);
 zend_long pt_side_effects_has_any(zend_object *sideEffects);
 zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string *parameterName);
 /* $reflection->getSideEffects()->isDeterministic()->negate() as PT_TRI_*; -1 = pending exception */

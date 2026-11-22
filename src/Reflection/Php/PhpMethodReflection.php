@@ -400,9 +400,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		// a void function that is pure unless its callable is impure has only the callable's effects
 		if (
 			strtolower($this->getName()) !== '__construct'
 			&& $this->getReturnType()->isVoid()->yes()
+			&& !in_array(true, $this->pureUnlessCallableIsImpureParameters, true)
 		) {
 			return TrinaryLogic::createYes();
 		}

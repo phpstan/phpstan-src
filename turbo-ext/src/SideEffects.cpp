@@ -336,6 +336,13 @@ zend_long pt_side_effects_has_any(zend_object *sideEffects)
 	return pt_side_effects_trinary(SideEffects(sideEffects).hasAny());
 }
 
+int pt_side_effects_has_called_parameters(zend_object *sideEffects)
+{
+	zval *calledParameters = pt_typed_slot(sideEffects, slots::calledParameters, sideEffects->ce, "calledParameters");
+	if (UNEXPECTED(calledParameters == NULL)) return -1;
+	return zend_hash_num_elements(Z_ARRVAL_P(calledParameters)) > 0 ? 1 : 0;
+}
+
 zend_long pt_side_effects_own(zend_object *sideEffects)
 {
 	SideEffects native(sideEffects);

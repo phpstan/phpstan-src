@@ -18,6 +18,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Reflection\SideEffects;
@@ -288,39 +289,15 @@ final class FunctionPurityCheck
 	 */
 	private function onlyWritesLocalArguments(ImpurePoint $impurePoint): bool
 	{
-		$node = $impurePoint->getNode();
+		$call = $this->resolveCall($impurePoint);
+		if ($call === null) {
+			return false;
+		}
+		[$reflection, $parametersAcceptor, $normalizedNode] = $call;
 		$scope = $impurePoint->getScope();
-		if ($node instanceof FuncCall && $node->name instanceof Name) {
-			if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
-				return false;
-			}
-			$reflection = $this->reflectionProvider->getFunction($node->name, $scope);
-		} elseif ($node instanceof MethodCall && $node->name instanceof Identifier) {
-			$reflection = $scope->getMethodReflection($scope->getType($node->var), $node->name->name);
-		} elseif ($node instanceof StaticCall && $node->name instanceof Identifier && $node->class instanceof Name) {
-			$reflection = $scope->getMethodReflection($scope->resolveTypeByName($node->class), $node->name->name);
-		} else {
-			return false;
-		}
-
-		if ($reflection === null || $node->isFirstClassCallable()) {
-			return false;
-		}
 
 		$sideEffects = $reflection->getSideEffects();
 		if (!$sideEffects->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->yes() || $sideEffects->getCalledParameters() !== []) {
-			return false;
-		}
-
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $reflection->getVariants(), $reflection->getNamedArgumentsVariants());
-		if ($node instanceof FuncCall) {
-			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-		} elseif ($node instanceof MethodCall) {
-			$normalizedNode = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $node);
-		} else {
-			$normalizedNode = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $node);
-		}
-		if ($normalizedNode === null) {
 			return false;
 		}
 
@@ -347,6 +324,53 @@ final class FunctionPurityCheck
 	}
 
 	/**
+	 * The called function or method of an impure point, its selected
+	 * variant, and the call with its arguments in parameter order.
+	 *
+	 * @return array{FunctionReflection|ExtendedMethodReflection, ParametersAcceptor, FuncCall|MethodCall|StaticCall}|null
+	 */
+	private function resolveCall(ImpurePoint $impurePoint): ?array
+	{
+		$node = $impurePoint->getNode();
+		$scope = $impurePoint->getScope();
+		if ($node instanceof FuncCall && $node->name instanceof Name) {
+			if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+				return null;
+			}
+			$reflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		} elseif ($node instanceof MethodCall && $node->name instanceof Identifier) {
+			$reflection = $scope->getMethodReflection($scope->getType($node->var), $node->name->name);
+		} elseif ($node instanceof StaticCall && $node->name instanceof Identifier && $node->class instanceof Name) {
+			$reflection = $scope->getMethodReflection($scope->resolveTypeByName($node->class), $node->name->name);
+		} else {
+			return null;
+		}
+
+		if ($reflection === null || $node->isFirstClassCallable()) {
+			return null;
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $reflection->getVariants(), $reflection->getNamedArgumentsVariants());
+		if ($node instanceof FuncCall) {
+			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+		} elseif ($node instanceof MethodCall) {
+			$normalizedNode = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $node);
+		} else {
+			$normalizedNode = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $node);
+		}
+		if ($normalizedNode === null) {
+			return null;
+		}
+
+		return [$reflection, $parametersAcceptor, $normalizedNode];
+	}
+
+	/**
+	 * A call of one of the function's own callable parameters, directly or by
+	 * a function it is passed to, or a call that is impure only through them:
+	 * a function that is pure unless its callable is impure passing its
+	 * callable on to another one.
+	 *
 	 * @param array<string, true> $pureUnlessCallableParamNames
 	 */
 	private function isPureUnlessCallableInvocation(ImpurePoint $impurePoint, array $pureUnlessCallableParamNames): bool
@@ -356,17 +380,55 @@ final class FunctionPurityCheck
 		}
 
 		$node = $impurePoint->getNode();
-		if (!$node instanceof FuncCall) {
-			return false;
+		if ($node instanceof FuncCall && $node->name instanceof Variable) {
+			return is_string($node->name->name) && array_key_exists($node->name->name, $pureUnlessCallableParamNames);
 		}
-		if (!$node->name instanceof Variable) {
-			return false;
+		// the callable passed to a parameter that invokes it
+		if ($node instanceof Variable) {
+			return is_string($node->name) && array_key_exists($node->name, $pureUnlessCallableParamNames);
 		}
-		if (!is_string($node->name->name)) {
+
+		if ($impurePoint->isCertain()) {
 			return false;
 		}
 
-		return array_key_exists($node->name->name, $pureUnlessCallableParamNames);
+		$call = $this->resolveCall($impurePoint);
+		if ($call === null) {
+			return false;
+		}
+		[, $parametersAcceptor, $normalizedNode] = $call;
+		$scope = $impurePoint->getScope();
+
+		$forwarded = false;
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($normalizedNode->getArgs() as $i => $arg) {
+			$parameter = $parameters[$i] ?? ($parametersAcceptor->isVariadic() ? $parameters[count($parameters) - 1] ?? null : null);
+			if ($parameter === null || $arg->unpack) {
+				return false;
+			}
+			if (!$parameter instanceof ExtendedParameterReflection || $parameter->isPureUnlessCallableIsImpureParameter()->no()) {
+				continue;
+			}
+			if ($arg->value instanceof Variable && is_string($arg->value->name) && array_key_exists($arg->value->name, $pureUnlessCallableParamNames)) {
+				$forwarded = true;
+				continue;
+			}
+
+			$argType = $scope->getType($arg->value);
+			if ($argType->isNull()->yes()) {
+				continue;
+			}
+			if (!$argType->isCallable()->yes()) {
+				return false;
+			}
+			foreach ($argType->getCallableParametersAcceptors($scope) as $acceptor) {
+				if (!$acceptor->isPure()->yes()) {
+					return false;
+				}
+			}
+		}
+
+		return $forwarded;
 	}
 
 }

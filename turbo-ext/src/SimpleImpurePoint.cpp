@@ -187,7 +187,20 @@ public:
 		zend_long isPure = trinaryOf(pt_extended_method_reflection_call(function, PT_MR_IS_PURE));
 		if (UNEXPECTED(isPure < 0)) return false;
 		bool certain = isPure == PT_TRI_NO;
+		// a void function does something, unless all it does is call the callables it is given
+		bool hasCalledParameters = false;
 		if (variant != NULL && !certain) {
+			zv::Val functionSideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+			if (UNEXPECTED(functionSideEffects.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(functionSideEffects.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getCalledParameters() on %s", zend_zval_value_name(functionSideEffects.raw()));
+				return false;
+			}
+			int called = pt_side_effects_has_called_parameters(Z_OBJ_P(functionSideEffects.raw()));
+			if (UNEXPECTED(called < 0)) return false;
+			hasCalledParameters = called == 1;
+		}
+		if (variant != NULL && !certain && !hasCalledParameters) {
 			zv::Val returnType = variantReturnType(variant);
 			if (UNEXPECTED(returnType.isUndef())) return false;
 			zend_long isVoid = pt_type_op_trinary(Z_OBJ_P(returnType.raw()), PT_OP_IS_VOID, 0, NULL);

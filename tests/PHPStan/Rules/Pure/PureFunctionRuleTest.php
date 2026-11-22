@@ -563,6 +563,32 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15075(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15075.php'], [
+			[
+				'Impure call to function Bug15075\\haveTwoFuns() in pure function Bug15075\\forwardsNextToImpure().',
+				37,
+			],
+			[
+				'Impure echo in pure function Bug15075\\forwardsNextToImpure().',
+				38,
+			],
+			[
+				'Impure call to function Bug15075\\impureHaveFun() in pure function Bug15075\\forwardsToImpure().',
+				63,
+			],
+			[
+				'Impure call to function Bug15075\\haveFun() in pure function Bug15075\\pureCaller().',
+				70,
+			],
+			[
+				'Impure echo in pure function Bug15075\\pureCaller().',
+				71,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.4.0')]
 	public function testBug15224(): void
 	{

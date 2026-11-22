@@ -27,6 +27,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_map;
 use function array_reverse;
+use function in_array;
 use function is_string;
 use function strtolower;
 
@@ -268,7 +269,8 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		if ($this->getReturnType()->isVoid()->yes()) {
+		// a void function that is pure unless its callable is impure has only the callable's effects
+		if ($this->getReturnType()->isVoid()->yes() && !$this->hasPureUnlessCallableIsImpureParameter()) {
 			return TrinaryLogic::createYes();
 		}
 		if ($this->isPure !== null) {
@@ -281,6 +283,11 @@ class PhpFunctionFromParserNodeReflection implements FunctionReflection, Extende
 	public function isBuiltin(): bool
 	{
 		return false;
+	}
+
+	protected function hasPureUnlessCallableIsImpureParameter(): bool
+	{
+		return in_array(true, $this->pureUnlessCallableIsImpureParameters, true);
 	}
 
 	public function isGenerator(): bool

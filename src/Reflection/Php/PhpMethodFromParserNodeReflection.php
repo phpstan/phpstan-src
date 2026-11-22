@@ -291,9 +291,11 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		// a void function that is pure unless its callable is impure has only the callable's effects
 		if (
 			strtolower($this->getName()) !== '__construct'
 			&& $this->getReturnType()->isVoid()->yes()
+			&& !$this->hasPureUnlessCallableIsImpureParameter()
 		) {
 			return TrinaryLogic::createYes();
 		}

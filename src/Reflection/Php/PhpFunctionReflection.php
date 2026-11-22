@@ -26,6 +26,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
+use function in_array;
 use function is_file;
 use function strtolower;
 
@@ -206,7 +207,8 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		if ($this->getReturnType()->isVoid()->yes()) {
+		// a void function that is pure unless its callable is impure has only the callable's effects
+		if ($this->getReturnType()->isVoid()->yes() && !in_array(true, $this->phpDocParameterPureUnlessCallableIsImpure, true)) {
 			return TrinaryLogic::createYes();
 		}
 		if ($this->isPure !== null) {

@@ -82,7 +82,8 @@ final class SimpleImpurePoint
 
 		$certain = $function->isPure()->no();
 		$verdict = null;
-		if ($variant !== null) {
+		// a void function does something, unless all it does is call the callables it is given
+		if ($variant !== null && $function->getSideEffects()->getCalledParameters() === []) {
 			$certain = $certain || $variant->getReturnType()->isVoid()->yes();
 		}
 		if (

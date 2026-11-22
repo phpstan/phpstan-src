@@ -3558,6 +3558,20 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15800(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15800.php'], [
+			[
+				'Parameter #2 $replace_pairs of function strtr expects array<bool|float|int|string|null>, array<string, stdClass> given.',
+				8,
+			],
+			[
+				'Parameter #2 $replace_pairs of function strtr expects array<bool|float|int|string|null>, array<string, array<int>> given.',
+				14,
+			],
+		]);
+	}
+
 	public function testBug15700(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15700.php'], [

@@ -113,7 +113,7 @@ final class NodeScopeResolverBench
 	#[DataProvider(method: 'statements')]
 	#[ExpectedFor(dataSet: 'assign-non-falsy', instructions: '9.434M', cycles: '13.90M', memory: '274.6KiB')]
 	#[ExpectedFor(dataSet: 'for-without-condition', instructions: '3.168M', cycles: '5.155M', memory: '64.02KiB')]
-	#[ExpectedFor(dataSet: 'func-call-args', instructions: '3.748M', cycles: '6.165M', memory: '146.4KiB')]
+	#[ExpectedFor(dataSet: 'func-call-args', instructions: '3.826M', cycles: '6.201M', memory: '146.5KiB')]
 	#[ExpectedFor(dataSet: 'match-with-default', instructions: '111.9M', cycles: '148.9M', memory: '425.7KiB')]
 	#[ExpectedFor(dataSet: 'nested-foreach', instructions: '16.72M', cycles: '24.15M', memory: '180.2KiB')]
 	#[ExpectedFor(dataSet: 'nested-while', instructions: '38.49M', cycles: '53.24M', memory: '382.7KiB')]

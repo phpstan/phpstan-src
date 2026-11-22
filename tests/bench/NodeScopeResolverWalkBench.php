@@ -92,7 +92,7 @@ final class NodeScopeResolverWalkBench
 	}
 
 	#[DataProvider(method: 'statements')]
-	#[ExpectedFor(dataSet: 'foreach', instructions: '16.95M', cycles: '25.08M', memory: '315.2KiB')]
+	#[ExpectedFor(dataSet: 'foreach', instructions: '17.29M', cycles: '25.33M', memory: '315.2KiB')]
 	#[ExpectedFor(dataSet: 'nested-dim-assign', instructions: '277.4M', cycles: '330.1M', memory: '801.3KiB')]
 	#[ExpectedFor(dataSet: 'or-chain-16', instructions: '22.42M', cycles: '31.58M', memory: '614.1KiB')]
 	#[ExpectedFor(dataSet: 'or-chain-32', instructions: '50.17M', cycles: '67.50M', memory: '1.219MiB')]

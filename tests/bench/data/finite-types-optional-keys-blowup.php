@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 36.88M
- * cycles: 48.43M
- * memory: 198.5KiB
+ * instructions: 37.23M
+ * cycles: 48.56M
+ * memory: 134.4KiB
  */
 
 namespace BenchFiniteTypesOptionalKeysBlowup;

@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
 /*
- * instructions: 29.20M
- * cycles: 44.46M
+ * instructions: 29.25M
+ * cycles: 44.55M
  * memory: 258.2KiB
  */
 

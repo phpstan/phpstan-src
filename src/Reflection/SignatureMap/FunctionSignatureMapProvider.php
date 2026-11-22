@@ -257,12 +257,11 @@ final class FunctionSignatureMapProvider implements SignatureMapProvider
 	private static function getFunctionMetadataMap(): array
 	{
 		if (self::$functionMetadata === null) {
-			/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
+			/** @var array<string, array{effects: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 			$metadata = require __DIR__ . '/../../../resources/functionMetadata.php';
 			foreach ($metadata as $name => $entry) {
 				if (
-					isset($entry['hasSideEffects'])
-					|| isset($entry['pureUnlessCallableIsImpureParameters'])
+					isset($entry['pureUnlessCallableIsImpureParameters'])
 					|| isset($entry['pureUnlessParameterPassedParameters'])
 				) {
 					continue;

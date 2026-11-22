@@ -28,3 +28,10 @@ function prints(string $json): mixed
 
 	return json_decode($json);
 }
+
+/** @phpstan-pure */
+function readsGlobalState(string $file): string|false
+{
+	// the result changes after header(), clearstatcache(), ini_set() or json_decode()
+	return headers_list() !== [] && is_file($file) ? ini_get('precision') : json_last_error_msg();
+}

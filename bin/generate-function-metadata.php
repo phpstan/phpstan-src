@@ -30,7 +30,7 @@ use Symfony\Component\Finder\Finder;
 		public array $impureFunctions = [];
 
 		/** @var list<string> */
-		public array $managedStateFunctions = [];
+		public array $globalStateReaderFunctions = [];
 
 		/** @var string[] */
 		public array $methods = [];
@@ -47,15 +47,15 @@ use Symfony\Component\Finder\Finder;
 							continue;
 						}
 
-						// The following functions read global state, but PHPStan tracks that state in the scope,
-						// so they stay pure for the rules:
+						// The following functions read global state, but their result is the same until a call
+						// writes it, so they are remembered until then:
 						if (in_array($functionName, [
 							'ftell',
 							'ini_get',
 							'function_exists',
 							'ob_get_level',
 						], true)) {
-							$this->managedStateFunctions[] = $functionName;
+							$this->globalStateReaderFunctions[] = $functionName;
 							break 2;
 						}
 
@@ -108,7 +108,7 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
+	/** @var array<string, array{effects: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
 	// #[Pure] in the stubs, but they have side effects
 	$pureAttributeCorrections = [
@@ -147,17 +147,20 @@ use Symfony\Component\Finder\Finder;
 		'posix_getlogin',
 		'posix_times',
 	];
+	$onlyReads = static fn (array $effects): bool => count(array_filter(
+		$effects,
+		static fn (string $effect): bool => $effect !== SideEffects::READS_GLOBAL && !str_starts_with($effect, SideEffects::READS_GLOBAL . '.'),
+	)) === 0;
 	$leavesError = static fn (array $effects): bool => count(array_filter(
 		$effects,
 		static fn (string $effect): bool => str_starts_with($effect, SideEffects::WRITES_GLOBAL_ERROR . '.'),
 	)) > 0;
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			// reading state PHPStan tracks itself keeps the function pure for the rules,
-			// and so does leaving an error for an error getter
+			// #[Pure] functions that read global state, or leave an error for an error getter
 			if (
 				$metadata[$functionName]['effects'] !== []
-				&& ($metadata[$functionName]['hasSideEffects'] ?? null) !== false
+				&& !$onlyReads($metadata[$functionName]['effects'])
 				&& !$leavesError($metadata[$functionName]['effects'])
 				&& !in_array($functionName, $pureAttributeCorrections, true)
 			) {
@@ -168,11 +171,11 @@ use Symfony\Component\Finder\Finder;
 		}
 		$metadata[$functionName] = ['effects' => []];
 	}
-	foreach ($visitor->managedStateFunctions as $functionName) {
+	foreach ($visitor->globalStateReaderFunctions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
 			throw new ShouldNotHappenException($functionName);
 		}
-		$metadata[$functionName] = ['effects' => ['reads-global'], 'hasSideEffects' => false];
+		$metadata[$functionName] = ['effects' => ['reads-global']];
 	}
 	foreach ($visitor->impureFunctions as $functionName) {
 		if (in_array($functionName, [
@@ -239,7 +242,7 @@ use PHPStan\Reflection\SideEffects;
  * the entries is described in bin/functionMetadata_original.php.
  */
 
-/** @var array<string, array{effects: list<string>, hasSideEffects?: false, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
+/** @var array<string, array{effects: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 %s
 ];
@@ -274,9 +277,6 @@ php;
 
 	foreach ($metadata as $name => $meta) {
 		$entries = [sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($encodeEffect, $meta['effects'])))];
-		if (isset($meta['hasSideEffects'])) {
-			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
-		}
 		if (isset($meta['pureUnlessCallableIsImpureParameters'])) {
 			$entries[] = sprintf('%s => %s', $escape('pureUnlessCallableIsImpureParameters'), $encodeParameterMap($meta['pureUnlessCallableIsImpureParameters']));
 		}

@@ -53,3 +53,19 @@ function test3b(): array
 {
     return mb_str_split('foo', encoding: 'UTF-8');
 }
+
+/**
+ * @phpstan-pure
+ */
+function nullableEncoding(string $s, ?string $encoding): int
+{
+	return mb_strlen($s, $encoding);
+}
+
+/**
+ * @phpstan-pure
+ */
+function iconvEncoding(string $s): int|false
+{
+	return iconv_strlen($s, 'UTF-8') + (int) iconv_strlen($s);
+}

@@ -592,7 +592,41 @@ class PureFunctionRuleTest extends RuleTestCase
 	#[RequiresPhp('>= 8.4.0')]
 	public function testBug15224(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-15224.php'], []);
+		// a call without an encoding reads the default one from global state
+		$this->analyse([__DIR__ . '/data/bug-15224.php'], [
+			[
+				'Impure call to function mb_trim() in pure function Bug15224\\test1().',
+				12,
+			],
+			[
+				'Impure call to function mb_strcut() in pure function Bug15224\\test1().',
+				14,
+			],
+			[
+				'Impure call to function mb_ucfirst() in pure function Bug15224\\test1().',
+				16,
+			],
+			[
+				'Impure call to function mb_str_pad() in pure function Bug15224\\test1().',
+				18,
+			],
+			[
+				'Impure call to function mb_strpos() in pure function Bug15224\\test2a().',
+				28,
+			],
+			[
+				'Impure call to function mb_str_split() in pure function Bug15224\\test3a().',
+				45,
+			],
+			[
+				'Impure call to function mb_strlen() in pure function Bug15224\\nullableEncoding().',
+				62,
+			],
+			[
+				'Impure call to function iconv_strlen() in pure function Bug15224\\iconvEncoding().',
+				70,
+			],
+		]);
 	}
 
 	#[RequiresPhp('>= 8.1.0')]
@@ -612,6 +646,22 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Impure call to function var_dump() in pure function PureFunctionErrorState\\prints().',
 				27,
+			],
+			[
+				'Impure call to function headers_list() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+			[
+				'Impure call to function ini_get() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+			[
+				'Impure call to function is_file() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+			[
+				'Impure call to function json_last_error_msg() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
 			],
 		]);
 	}

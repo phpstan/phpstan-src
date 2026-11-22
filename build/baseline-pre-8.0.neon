@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			identifier: method.childReturnType
+			count: 2
+			path: ../tests/PHPStan/Command/Symfony/SymfonyOutputTest.php
+
+		-
 			message: '#^Call to function method_exists\(\) with ReflectionFunction and ''getClosureCalledCla…'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1

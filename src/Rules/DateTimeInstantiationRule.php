@@ -44,7 +44,7 @@ final class DateTimeInstantiationRule implements Rule
 			return [];
 		}
 
-		$arg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'datetime', $scope->getPhpVersion());
+		$arg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'datetime');
 		if ($arg === null) {
 			return [];
 		}

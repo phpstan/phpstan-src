@@ -44,8 +44,8 @@ final class GetTemplateTypeRule implements Rule
 			return [];
 		}
 
-		$classArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'ancestorClassName', $scope->getPhpVersion());
-		$templateArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'templateTypeName', $scope->getPhpVersion());
+		$classArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'ancestorClassName');
+		$templateArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'templateTypeName');
 		if ($classArg === null || $templateArg === null) {
 			return [];
 		}

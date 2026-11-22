@@ -46,16 +46,13 @@ inline constexpr char strings[] =
 	"args\0" /* 435 */
 	"position\0" /* 440 */
 	"name\0" /* 449 */
-	"phpVersion\0" /* 454 */
-	"PHPStan\\Php\\PhpVersion|PHPStan\\Php\\PhpVersions\0" /* 465 */
-	"null\0" /* 512 */
-	"PhpParser\\Node\\Arg\0" /* 517 */
-	"getArgByPositionOrName\0" /* 536 */
-	"callArgs\0" /* 559 */
-	"reorderArgs\0" /* 568 */
-	"node\0" /* 580 */
-	"PhpParser\\Node\0" /* 585 */
-	"attributesWithoutPrintedForm"; /* 600 */
+	"PhpParser\\Node\\Arg\0" /* 454 */
+	"getArgByPositionOrName\0" /* 473 */
+	"callArgs\0" /* 496 */
+	"reorderArgs\0" /* 505 */
+	"node\0" /* 517 */
+	"PhpParser\\Node\0" /* 522 */
+	"attributesWithoutPrintedForm"; /* 537 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 17), /* reorderCallUserFuncArguments $callUserFuncCall */
 	reg::packed(46, 0, 52), /* reorderCallUserFuncArguments $scope */
@@ -78,12 +75,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(435, MAY_BE_ARRAY), /* getArgByPositionOrName $args */
 	reg::packed(440, MAY_BE_LONG), /* getArgByPositionOrName $position */
 	reg::packed(449, MAY_BE_STRING), /* getArgByPositionOrName $name */
-	reg::packed(454, MAY_BE_NULL, 465, false, false, 512), /* getArgByPositionOrName $phpVersion */
-	reg::packed(75, MAY_BE_NULL, 517), /* getArgByPositionOrName return */
+	reg::packed(75, MAY_BE_NULL, 454), /* getArgByPositionOrName return */
 	reg::packed(161, 0, 180), /* reorderArgs $parametersAcceptor */
-	reg::packed(559, MAY_BE_ARRAY), /* reorderArgs $callArgs */
+	reg::packed(496, MAY_BE_ARRAY), /* reorderArgs $callArgs */
 	reg::packed(75, MAY_BE_NULL | MAY_BE_ARRAY), /* reorderArgs return */
-	reg::packed(580, 0, 585), /* attributesWithoutPrintedForm $node */
+	reg::packed(517, 0, 522), /* attributesWithoutPrintedForm $node */
 	reg::packed(75, MAY_BE_ARRAY), /* attributesWithoutPrintedForm return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -97,9 +93,9 @@ inline constexpr sigtab::Sig reorderFuncArguments = { { 231 /* reorderFuncArgume
 inline constexpr sigtab::Sig reorderMethodArguments = { { 294 /* reorderMethodArguments */, 2, 9, 2, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig reorderStaticCallArguments = { { 359 /* reorderStaticCallArguments */, 2, 12, 2, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig reorderNewArguments = { { 415 /* reorderNewArguments */, 2, 15, 2, 17, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getArgByPositionOrName = { { 536 /* getArgByPositionOrName */, 3, 18, 4, 22, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderArgs = { { 568 /* reorderArgs */, 2, 23, 2, 25, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig attributesWithoutPrintedForm = { { 600 /* attributesWithoutPrintedForm */, 1, 26, 1, 27, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getArgByPositionOrName = { { 473 /* getArgByPositionOrName */, 3, 18, 3, 21, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderArgs = { { 505 /* reorderArgs */, 2, 22, 2, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig attributesWithoutPrintedForm = { { 537 /* attributesWithoutPrintedForm */, 1, 25, 1, 26, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArgumentsNormalizer

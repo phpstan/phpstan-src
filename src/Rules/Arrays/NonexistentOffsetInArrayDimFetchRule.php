@@ -118,7 +118,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& in_array($node->dim->name->toLowerString(), ['array_key_first', 'array_key_last'], true)
 			&& count($node->dim->getArgs()) >= 1
 		) {
-			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 0, 'array', $scope->getPhpVersion());
+			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 0, 'array');
 			if ($arrayArg !== null) {
 				$arrayArg = $arrayArg->value;
 				$arrayType = $scope->getType($arrayArg);
@@ -141,10 +141,10 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& $node->dim->name->toLowerString() === 'array_rand'
 			&& count($node->dim->getArgs()) >= 1
 		) {
-			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 0, 'array', $scope->getPhpVersion());
+			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 0, 'array');
 			if ($arrayArg !== null) {
 				$arrayArg = $arrayArg->value;
-				$numArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 1, 'num', $scope->getPhpVersion());
+				$numArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->getArgs(), 1, 'num');
 				$one = new ConstantIntegerType(1);
 				$arrayType = $scope->getType($arrayArg);
 
@@ -171,7 +171,7 @@ final class NonexistentOffsetInArrayDimFetchRule implements Rule
 			&& $node->dim->right instanceof Node\Scalar\Int_
 			&& $node->dim->right->value === 1
 		) {
-			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->left->getArgs(), 0, 'value', $scope->getPhpVersion());
+			$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->dim->left->getArgs(), 0, 'value');
 			if ($arrayArg !== null) {
 				$arrayArg = $arrayArg->value;
 				$arrayType = $scope->getType($arrayArg);

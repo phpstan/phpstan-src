@@ -57,7 +57,7 @@ final class PrintfArrayParametersRule implements Rule
 			return []; // caught by CallToFunctionParametersRule
 		}
 
-		$formatArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'format', $scope->getPhpVersion());
+		$formatArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'format');
 		if ($formatArg === null) {
 			return [];
 		}
@@ -97,7 +97,7 @@ final class PrintfArrayParametersRule implements Rule
 		}
 
 		$formatArgsCounts = [];
-		$formatValuesArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'values', $scope->getPhpVersion());
+		$formatValuesArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'values');
 		if ($formatValuesArg !== null) {
 			$formatArgsType = $scope->getType($formatValuesArg->value);
 

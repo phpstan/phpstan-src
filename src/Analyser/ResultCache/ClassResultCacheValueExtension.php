@@ -3,11 +3,13 @@
 namespace PHPStan\Analyser\ResultCache;
 
 use PHPStan\Analyser\ValueDependencyCollector;
+use PHPStan\BetterReflection\Reflection\ReflectionClass;
 use PHPStan\Dependency\ExportedNodeFetcher;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileContentHasher;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
+use function array_pop;
 use function hash;
 use function implode;
 use function json_encode;
@@ -52,20 +54,57 @@ final class ClassResultCacheValueExtension implements ResultCacheValueExtension
 			return ValueDependencyCollector::MISSING;
 		}
 
-		$classReflection = $this->reflectionProvider->getClass($key);
 		$declarations = [];
-		foreach ([$classReflection->getName() => $classReflection] + $classReflection->getAncestors() as $name => $declaringClass) {
+		$reflection = $this->reflectionProvider->getClass($key)->getNativeReflection()->getBetterReflection();
+		foreach ($this->getDeclaringClasses($reflection) as $lowercaseName => $declaringClass) {
 			// a built-in class is read from a stub, which one depends on the source locator that
 			// reflected it first; it changes only with PHP, its extensions or PHPStan itself
-			$fileName = $declaringClass->isBuiltin() ? null : $declaringClass->getFileName();
-			$declarations[strtolower($name)] = $fileName === null
+			$fileName = $declaringClass->isInternal() ? null : $declaringClass->getFileName();
+			$declarations[$lowercaseName] = $fileName === null
 				? 'built-in'
-				: sprintf('%s %s', $fileName, $this->getExportedNode($fileName, $name));
+				: sprintf('%s %s', $fileName, $this->getExportedNode($fileName, $declaringClass->getName()));
 		}
 
 		ksort($declarations);
 
 		return hash('sha256', implode("\n", $declarations));
+	}
+
+	/**
+	 * The class with its parents, interfaces and traits. ClassReflection::getAncestors() would also
+	 * resolve their generic types from the class PHPDocs, reaching StubPhpDocProvider - which runs
+	 * the StubFilesExtensions, while the result cache is restored before the bootstrapFiles they
+	 * can rely on.
+	 *
+	 * @return array<string, ReflectionClass> lowercase name => class
+	 */
+	private function getDeclaringClasses(ReflectionClass $reflection): array
+	{
+		$classes = [];
+		$queue = [$reflection];
+		while ($queue !== []) {
+			$class = array_pop($queue);
+			$lowercaseName = strtolower($class->getName());
+			if (array_key_exists($lowercaseName, $classes)) {
+				continue;
+			}
+
+			$classes[$lowercaseName] = $class;
+			foreach ($class->getImmediateInterfaces() as $interface) {
+				$queue[] = $interface;
+			}
+			foreach ($class->getTraits() as $trait) {
+				$queue[] = $trait;
+			}
+			$parentClass = $class->getParentClass();
+			if ($parentClass === null) {
+				continue;
+			}
+
+			$queue[] = $parentClass;
+		}
+
+		return $classes;
 	}
 
 	public function keyToResultCache(string $key): string

@@ -8,12 +8,10 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\VerbosityLevel;
-use function count;
 use function sprintf;
 
 /**
@@ -53,28 +51,15 @@ final class ArrayValuesRule implements Rule
 			return [];
 		}
 
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$node->getArgs(),
-			$functionReflection->getVariants(),
-			$functionReflection->getNamedArgumentsVariants(),
-		);
-
-		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-
-		if ($normalizedFuncCall === null) {
-			return [];
-		}
-
-		$args = $normalizedFuncCall->getArgs();
-		if (count($args) === 0) {
+		$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'array');
+		if ($arrayArg === null) {
 			return [];
 		}
 
 		if ($this->treatPhpDocTypesAsCertain) {
-			$arrayType = $scope->getType($args[0]->value);
+			$arrayType = $scope->getType($arrayArg->value);
 		} else {
-			$arrayType = $scope->getNativeType($args[0]->value);
+			$arrayType = $scope->getNativeType($arrayArg->value);
 		}
 
 		if ($arrayType->isIterableAtLeastOnce()->no()) {
@@ -84,7 +69,7 @@ final class ArrayValuesRule implements Rule
 				$arrayType->describe(VerbosityLevel::value()),
 			))->identifier('arrayValues.empty');
 			if ($this->treatPhpDocTypesAsCertain) {
-				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				$nativeArrayType = $scope->getNativeType($arrayArg->value);
 				if ($this->treatPhpDocTypesAsCertainTip && !$nativeArrayType->isIterableAtLeastOnce()->no()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}
@@ -102,7 +87,7 @@ final class ArrayValuesRule implements Rule
 				$arrayType->describe(VerbosityLevel::value()),
 			))->identifier('arrayValues.list');
 			if ($this->treatPhpDocTypesAsCertain) {
-				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				$nativeArrayType = $scope->getNativeType($arrayArg->value);
 				if ($this->treatPhpDocTypesAsCertainTip && !$nativeArrayType->isList()->yes()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}

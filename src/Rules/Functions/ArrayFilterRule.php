@@ -8,7 +8,6 @@ use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
-use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
@@ -54,27 +53,20 @@ final class ArrayFilterRule implements Rule
 			return [];
 		}
 
-		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs(
-			$scope,
-			$node->getArgs(),
-			$functionReflection->getVariants(),
-			$functionReflection->getNamedArgumentsVariants(),
-		);
-
-		$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
-		if ($normalizedFuncCall === null) {
-			return [];
-		}
-
-		$args = $normalizedFuncCall->getArgs();
+		$args = $node->getArgs();
 		if (count($args) !== 1) {
 			return [];
 		}
 
+		$arrayArg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'array');
+		if ($arrayArg === null) {
+			return [];
+		}
+
 		if ($this->treatPhpDocTypesAsCertain) {
-			$arrayType = $scope->getType($args[0]->value);
+			$arrayType = $scope->getType($arrayArg->value);
 		} else {
-			$arrayType = $scope->getNativeType($args[0]->value);
+			$arrayType = $scope->getNativeType($arrayArg->value);
 		}
 
 		if ($arrayType->isIterableAtLeastOnce()->no()) {
@@ -84,7 +76,7 @@ final class ArrayFilterRule implements Rule
 				$arrayType->describe(VerbosityLevel::value()),
 			))->identifier('arrayFilter.empty');
 			if ($this->treatPhpDocTypesAsCertain) {
-				$nativeArrayType = $scope->getNativeType($args[0]->value);
+				$nativeArrayType = $scope->getNativeType($arrayArg->value);
 				if ($this->treatPhpDocTypesAsCertainTip && !$nativeArrayType->isIterableAtLeastOnce()->no()) {
 					$errorBuilder->treatPhpDocTypesAsCertainTip();
 				}

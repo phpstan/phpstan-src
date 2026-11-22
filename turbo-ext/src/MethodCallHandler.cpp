@@ -126,6 +126,17 @@ zv::Val methodDeclaringClassName(zval *methodReflection)
 
 } // namespace
 
+/* $this->dynamicSideEffectsExtensionRegistry->getMethodCallSideEffects($reflection, $normalizedExpr, $scope); UNDEF = pending exception */
+static pt_method_site pt_mch_call_side_effects_site;
+static zv::Val getMethodCallSideEffects(zval *registry, zval *reflection, zval *normalizedExpr, zval *scope)
+{
+	zval argv[3];
+	ZVAL_COPY_VALUE(&argv[0], reflection);
+	ZVAL_COPY_VALUE(&argv[1], normalizedExpr);
+	ZVAL_COPY_VALUE(&argv[2], scope);
+	return pt_call_method_cached(pt_mch_call_side_effects_site, Z_OBJ_P(registry), PT_LC("getmethodcallsideeffects"), 3, argv);
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\ExprHandler\MethodCallHandler; UNDEF = pending
@@ -138,10 +149,10 @@ public:
 	/* the constructor body: the promoted properties */
 	void construct(zval **services, bool rememberPossiblyImpureFunctionValues) const
 	{
-		static const uint32_t serviceSlots[10] = {
+		static const uint32_t serviceSlots[11] = {
 			slots::methodCallReturnTypeHelper, slots::methodThrowPointHelper, slots::reflectionProvider,
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper, slots::storagePrimer,
-			slots::earlyTerminatingHelper, slots::argumentsHandler, slots::preservedPropertiesResolver,
+			slots::earlyTerminatingHelper, slots::argumentsHandler, slots::preservedPropertiesResolver, slots::dynamicSideEffectsExtensionRegistry,
 		};
 		for (uint32_t i = 0; i < 3; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
@@ -149,7 +160,7 @@ public:
 		zval remember = {};
 		ZVAL_BOOL(&remember, rememberPossiblyImpureFunctionValues);
 		pt_write_slot(self, slots::rememberPossiblyImpureFunctionValues, &remember);
-		for (uint32_t i = 3; i < 10; i++) {
+		for (uint32_t i = 3; i < 11; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
 		}
 	}
@@ -375,8 +386,10 @@ public:
 			// available once its result is stored
 			zval *args = exprArgs(expr);
 			if (UNEXPECTED(args == NULL)) return zv::Val();
+			zv::Val callSideEffects = getMethodCallSideEffects(OBJ_PROP_NUM(self, slots::dynamicSideEffectsExtensionRegistry), methodReflection.raw(), normalizedExpr.raw(), currentScope.raw());
+			if (UNEXPECTED(callSideEffects.isUndef())) return zv::Val();
 			pt_simple_impure_point_data impurePoint;
-			if (UNEXPECTED(!pt_simple_impure_point_resolve(methodReflection.raw(), parametersAcceptor.raw(), currentScope.raw(), args, impurePoint))) return zv::Val();
+			if (UNEXPECTED(!pt_simple_impure_point_resolve(methodReflection.raw(), parametersAcceptor.raw(), currentScope.raw(), args, impurePoint, callSideEffects.raw()))) return zv::Val();
 			if (impurePoint.exists) {
 				zv::Val point = pt_impure_point_new_with_side_effects(scopeBeforeArgs.raw(), expr, impurePoint.identifier, impurePoint.description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
 				zend_string_release(impurePoint.description);
@@ -1095,9 +1108,9 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *preservedPropertiesResolver;
+		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *preservedPropertiesResolver, *dynamicSideEffectsExtensionRegistry;
 		bool rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(11, 11)
+		ZEND_PARSE_PARAMETERS_START(12, 12)
 			Z_PARAM_OBJECT(methodCallReturnTypeHelper)
 			Z_PARAM_OBJECT(methodThrowPointHelper)
 			Z_PARAM_OBJECT(reflectionProvider)
@@ -1109,8 +1122,9 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 			Z_PARAM_OBJECT(earlyTerminatingHelper)
 			Z_PARAM_OBJECT(argumentsHandler)
 			Z_PARAM_OBJECT(preservedPropertiesResolver)
+			Z_PARAM_OBJECT(dynamicSideEffectsExtensionRegistry)
 		ZEND_PARSE_PARAMETERS_END();
-		zval *services[10] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, preservedPropertiesResolver};
+		zval *services[11] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, preservedPropertiesResolver, dynamicSideEffectsExtensionRegistry};
 		MethodCallHandler(Z_OBJ_P(ZEND_THIS)).construct(services, rememberPossiblyImpureFunctionValues);
 	});
 

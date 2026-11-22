@@ -212,4 +212,41 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15355(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15355.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testWarns(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-warns.php'], [
+			[
+				'Call to function preg_match() on a separate line has no effect.',
+				15,
+			],
+			[
+				'Call to function preg_grep() on a separate line has no effect.',
+				16,
+			],
+			[
+				'Call to function print_r() on a separate line has no effect.',
+				22,
+			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				23,
+			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				24,
+			],
+			[
+				'Call to function highlight_string() on a separate line has no effect.',
+				25,
+			],
+		]);
+	}
+
 }

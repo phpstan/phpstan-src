@@ -563,6 +563,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertNoErrors($errors);
 	}
 
+	public function testBug15355(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/bug-15355.php');
+		foreach ($errors as $error) {
+			$this->assertNotSame('function.resultUnused', $error->getIdentifier(), $error->getMessage());
+		}
+	}
+
 	#[RequiresPhp('>= 8.0.0')]
 	public function testBug14715(): void
 	{

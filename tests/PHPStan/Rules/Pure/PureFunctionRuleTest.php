@@ -563,6 +563,12 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15355(): void
+	{
+		$this->analyse([__DIR__ . '/../Functions/data/bug-15355.php'], []);
+	}
+
 	public function testWeakPurity(): void
 	{
 		$this->analyse([__DIR__ . '/data/weak-purity.php'], [

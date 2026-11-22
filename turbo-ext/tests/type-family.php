@@ -7315,6 +7315,10 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 			$variant = $method->getVariants()[0];
 			$r["method $methodName $methodKind"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, $sipScope, $argLists['array impure'])));
 			$r["method $methodName $methodKind no variant"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, null)));
+			foreach (['none' => \PHPStan\Reflection\SideEffects::none(), 'warns' => \PHPStan\Reflection\SideEffects::create(['warns'], \PHPStan\TrinaryLogic::createNo()), 'unknown' => \PHPStan\Reflection\SideEffects::unknown()] as $callKind => $callSideEffects) {
+				$r["method $methodName $methodKind call $callKind"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, $sipScope, $argLists['array impure'], $callSideEffects)));
+				$r["method $methodName $methodKind call $callKind no scope"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, null, [], $callSideEffects)));
+			}
 		}
 	}
 	$r['constructed'] = $viewImpurePoint(new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'a description', true));
@@ -7323,7 +7327,6 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 	foreach (['getIdentifier', 'getDescription', 'isCertain'] as $rawMethod) {
 		$r["unconstructed $rawMethod"] = $catching(static fn () => $raw->$rawMethod());
 	}
-	$r['constant'] = (new \ReflectionClassConstant(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'SIDE_EFFECT_FLIP_PARAMETERS'))->getValue();
 	foreach ($r as $key => $value) {
 		$observations["simple impure point $key"] = $value;
 	}

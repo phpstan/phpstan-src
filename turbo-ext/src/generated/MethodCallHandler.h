@@ -21,6 +21,7 @@ inline constexpr uint32_t storagePrimer = 7;
 inline constexpr uint32_t earlyTerminatingHelper = 8;
 inline constexpr uint32_t argumentsHandler = 9;
 inline constexpr uint32_t preservedPropertiesResolver = 10;
+inline constexpr uint32_t dynamicSideEffectsExtensionRegistry = 11;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -43,6 +44,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("earlyTerminatingHelper", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\EarlyTerminatingCallHelper");
 	cls.property("argumentsHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ArgumentsHandler");
 	cls.property("preservedPropertiesResolver", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\PreservedProperties\\PreservedPropertiesResolver");
+	cls.property("dynamicSideEffectsExtensionRegistry", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\DynamicSideEffectsExtensionRegistry");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -69,45 +71,47 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\ArgumentsHandler\0" /* 642 */
 	"preservedPropertiesResolver\0" /* 676 */
 	"PHPStan\\Analyser\\PreservedProperties\\PreservedPropertiesResolver\0" /* 704 */
-	"__construct\0" /* 769 */
-	"expr\0" /* 781 */
-	"PhpParser\\Node\\Expr\0" /* 786 */
-	"\0" /* 806 */
-	"supports\0" /* 807 */
-	"nodeScopeResolver\0" /* 816 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 834 */
-	"stmt\0" /* 869 */
-	"PhpParser\\Node\\Stmt\0" /* 874 */
-	"scope\0" /* 894 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 900 */
-	"storage\0" /* 931 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 939 */
-	"nodeCallback\0" /* 980 */
-	"context\0" /* 993 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 1001 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 1036 */
-	"processExpr\0" /* 1070 */
-	"reflectionScope\0" /* 1082 */
-	"nativeTypesPromoted\0" /* 1098 */
-	"PhpParser\\Node\\Expr\\MethodCall\0" /* 1118 */
-	"varResult\0" /* 1149 */
-	"nameResult\0" /* 1159 */
-	"preResolvedAcceptor\0" /* 1170 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1190 */
-	"argsResult\0" /* 1228 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 1239 */
-	"PHPStan\\Type\\Type\0" /* 1267 */
-	"resolveReturnType\0" /* 1285 */
-	"normalizedExpr\0" /* 1303 */
-	"resolvedParametersAcceptor\0" /* 1318 */
-	"walkMethodReflection\0" /* 1345 */
-	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1366 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1410 */
-	"null\0" /* 1448 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1453 */
-	"specifyTypes\0" /* 1485 */
-	"defaultMethodCallNarrowing\0" /* 1498 */
-	"isMethodCallNarrowable"; /* 1525 */
+	"dynamicSideEffectsExtensionRegistry\0" /* 769 */
+	"PHPStan\\Type\\DynamicSideEffectsExtensionRegistry\0" /* 805 */
+	"__construct\0" /* 854 */
+	"expr\0" /* 866 */
+	"PhpParser\\Node\\Expr\0" /* 871 */
+	"\0" /* 891 */
+	"supports\0" /* 892 */
+	"nodeScopeResolver\0" /* 901 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 919 */
+	"stmt\0" /* 954 */
+	"PhpParser\\Node\\Stmt\0" /* 959 */
+	"scope\0" /* 979 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 985 */
+	"storage\0" /* 1016 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 1024 */
+	"nodeCallback\0" /* 1065 */
+	"context\0" /* 1078 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 1086 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 1121 */
+	"processExpr\0" /* 1155 */
+	"reflectionScope\0" /* 1167 */
+	"nativeTypesPromoted\0" /* 1183 */
+	"PhpParser\\Node\\Expr\\MethodCall\0" /* 1203 */
+	"varResult\0" /* 1234 */
+	"nameResult\0" /* 1244 */
+	"preResolvedAcceptor\0" /* 1255 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1275 */
+	"argsResult\0" /* 1313 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 1324 */
+	"PHPStan\\Type\\Type\0" /* 1352 */
+	"resolveReturnType\0" /* 1370 */
+	"normalizedExpr\0" /* 1388 */
+	"resolvedParametersAcceptor\0" /* 1403 */
+	"walkMethodReflection\0" /* 1430 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1451 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1495 */
+	"null\0" /* 1533 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1538 */
+	"specifyTypes\0" /* 1570 */
+	"defaultMethodCallNarrowing\0" /* 1583 */
+	"isMethodCallNarrowable"; /* 1610 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 27), /* __construct $methodCallReturnTypeHelper */
 	reg::packed(90, 0, 113), /* __construct $methodThrowPointHelper */
@@ -120,55 +124,56 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(539, 0, 562), /* __construct $earlyTerminatingHelper */
 	reg::packed(625, 0, 642), /* __construct $argumentsHandler */
 	reg::packed(676, 0, 704), /* __construct $preservedPropertiesResolver */
-	reg::packed(781, 0, 786), /* supports $expr */
-	reg::packed(806, MAY_BE_BOOL), /* supports return */
-	reg::packed(816, 0, 834), /* processExpr $nodeScopeResolver */
-	reg::packed(869, 0, 874), /* processExpr $stmt */
-	reg::packed(781, 0, 786), /* processExpr $expr */
-	reg::packed(894, 0, 900), /* processExpr $scope */
-	reg::packed(931, 0, 939), /* processExpr $storage */
-	reg::packed(980, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(993, 0, 1001), /* processExpr $context */
-	reg::packed(806, 0, 1036), /* processExpr return */
-	reg::packed(1082, 0, 900), /* resolveReturnType $reflectionScope */
-	reg::packed(1098, MAY_BE_BOOL), /* resolveReturnType $nativeTypesPromoted */
-	reg::packed(781, 0, 1118), /* resolveReturnType $expr */
-	reg::packed(1149, 0, 1036), /* resolveReturnType $varResult */
-	reg::packed(1159, MAY_BE_NULL, 1036), /* resolveReturnType $nameResult */
-	reg::packed(1170, MAY_BE_NULL, 1190), /* resolveReturnType $preResolvedAcceptor */
-	reg::packed(1228, MAY_BE_NULL, 1239), /* resolveReturnType $argsResult */
-	reg::packed(806, 0, 1267), /* resolveReturnType return */
-	reg::packed(894, 0, 900), /* specifyTypes $scope */
-	reg::packed(781, 0, 786), /* specifyTypes $expr */
-	reg::packed(1303, 0, 786), /* specifyTypes $normalizedExpr */
-	reg::packed(1149, 0, 1036), /* specifyTypes $varResult */
-	reg::packed(1318, MAY_BE_NULL, 1190), /* specifyTypes $resolvedParametersAcceptor */
-	reg::packed(1345, MAY_BE_NULL, 1366), /* specifyTypes $walkMethodReflection */
-	reg::packed(993, 0, 1410), /* specifyTypes $context */
-	reg::packed(1228, MAY_BE_NULL, 1239, false, false, 1448), /* specifyTypes $argsResult */
-	reg::packed(806, 0, 1453), /* specifyTypes return */
-	reg::packed(894, 0, 900), /* defaultMethodCallNarrowing $scope */
-	reg::packed(781, 0, 786), /* defaultMethodCallNarrowing $expr */
-	reg::packed(1149, 0, 1036), /* defaultMethodCallNarrowing $varResult */
-	reg::packed(993, 0, 1410), /* defaultMethodCallNarrowing $context */
-	reg::packed(806, 0, 1453), /* defaultMethodCallNarrowing return */
-	reg::packed(894, 0, 900), /* isMethodCallNarrowable $scope */
-	reg::packed(781, 0, 786), /* isMethodCallNarrowable $expr */
-	reg::packed(1149, 0, 1036), /* isMethodCallNarrowable $varResult */
-	reg::packed(806, MAY_BE_BOOL), /* isMethodCallNarrowable return */
+	reg::packed(769, 0, 805), /* __construct $dynamicSideEffectsExtensionRegistry */
+	reg::packed(866, 0, 871), /* supports $expr */
+	reg::packed(891, MAY_BE_BOOL), /* supports return */
+	reg::packed(901, 0, 919), /* processExpr $nodeScopeResolver */
+	reg::packed(954, 0, 959), /* processExpr $stmt */
+	reg::packed(866, 0, 871), /* processExpr $expr */
+	reg::packed(979, 0, 985), /* processExpr $scope */
+	reg::packed(1016, 0, 1024), /* processExpr $storage */
+	reg::packed(1065, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(1078, 0, 1086), /* processExpr $context */
+	reg::packed(891, 0, 1121), /* processExpr return */
+	reg::packed(1167, 0, 985), /* resolveReturnType $reflectionScope */
+	reg::packed(1183, MAY_BE_BOOL), /* resolveReturnType $nativeTypesPromoted */
+	reg::packed(866, 0, 1203), /* resolveReturnType $expr */
+	reg::packed(1234, 0, 1121), /* resolveReturnType $varResult */
+	reg::packed(1244, MAY_BE_NULL, 1121), /* resolveReturnType $nameResult */
+	reg::packed(1255, MAY_BE_NULL, 1275), /* resolveReturnType $preResolvedAcceptor */
+	reg::packed(1313, MAY_BE_NULL, 1324), /* resolveReturnType $argsResult */
+	reg::packed(891, 0, 1352), /* resolveReturnType return */
+	reg::packed(979, 0, 985), /* specifyTypes $scope */
+	reg::packed(866, 0, 871), /* specifyTypes $expr */
+	reg::packed(1388, 0, 871), /* specifyTypes $normalizedExpr */
+	reg::packed(1234, 0, 1121), /* specifyTypes $varResult */
+	reg::packed(1403, MAY_BE_NULL, 1275), /* specifyTypes $resolvedParametersAcceptor */
+	reg::packed(1430, MAY_BE_NULL, 1451), /* specifyTypes $walkMethodReflection */
+	reg::packed(1078, 0, 1495), /* specifyTypes $context */
+	reg::packed(1313, MAY_BE_NULL, 1324, false, false, 1533), /* specifyTypes $argsResult */
+	reg::packed(891, 0, 1538), /* specifyTypes return */
+	reg::packed(979, 0, 985), /* defaultMethodCallNarrowing $scope */
+	reg::packed(866, 0, 871), /* defaultMethodCallNarrowing $expr */
+	reg::packed(1234, 0, 1121), /* defaultMethodCallNarrowing $varResult */
+	reg::packed(1078, 0, 1495), /* defaultMethodCallNarrowing $context */
+	reg::packed(891, 0, 1538), /* defaultMethodCallNarrowing return */
+	reg::packed(979, 0, 985), /* isMethodCallNarrowable $scope */
+	reg::packed(866, 0, 871), /* isMethodCallNarrowable $expr */
+	reg::packed(1234, 0, 1121), /* isMethodCallNarrowable $varResult */
+	reg::packed(891, MAY_BE_BOOL), /* isMethodCallNarrowable return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 769 /* __construct */, 11, 0, 11, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 807 /* supports */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 1070 /* processExpr */, 7, 13, 7, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveReturnType = { { 1285 /* resolveReturnType */, 7, 21, 7, 28, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyTypes = { { 1485 /* specifyTypes */, 7, 29, 8, 37, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig defaultMethodCallNarrowing = { { 1498 /* defaultMethodCallNarrowing */, 4, 38, 4, 42, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isMethodCallNarrowable = { { 1525 /* isMethodCallNarrowable */, 3, 43, 3, 46, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 854 /* __construct */, 12, 0, 12, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 892 /* supports */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 1155 /* processExpr */, 7, 14, 7, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveReturnType = { { 1370 /* resolveReturnType */, 7, 22, 7, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 1570 /* specifyTypes */, 7, 30, 8, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig defaultMethodCallNarrowing = { { 1583 /* defaultMethodCallNarrowing */, 4, 39, 4, 43, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isMethodCallNarrowable = { { 1610 /* isMethodCallNarrowable */, 3, 44, 3, 47, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::MethodCallHandler

@@ -13,7 +13,6 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -37,13 +36,6 @@ use function sprintf;
 final class SimpleImpurePoint
 {
 
-	private const SIDE_EFFECT_FLIP_PARAMETERS = [
-		// functionName => [name, pos, testName]
-		'print_r' => ['return', 1, 'isTruthy'],
-		'var_export' => ['return', 1, 'isTruthy'],
-		'highlight_string' => ['return', 1, 'isTruthy'],
-	];
-
 	/**
 	 * @param ImpurePointIdentifier $identifier
 	 * @param SideEffects|null $sideEffects the side effects of the called function, null when unknown
@@ -59,91 +51,75 @@ final class SimpleImpurePoint
 
 	/**
 	 * Returns null if the function is known to be pure (no side effects).
+	 * $callSideEffects are the side effects of this call a dynamic side effects
+	 * extension described. They replace what the function reflection and its
+	 * parameters flagged as pure unless passed say; the callables passed to the
+	 * parameters flagged as pure unless the callable is impure still count.
 	 *
 	 * @param Arg[] $args
 	 */
-	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = []): ?self
+	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = [], ?SideEffects $callSideEffects = null): ?self
 	{
-		if (!$function->hasSideEffects()->no()) {
-			$certain = $function->isPure()->no();
-			$verdict = null;
-			if ($variant !== null) {
-				$certain = $certain || $variant->getReturnType()->isVoid()->yes();
-			}
-			if (!$certain && $function->getSideEffects()->hasOnly(['writes-args'])->no()) {
-				// the flagged parameters do not undo effects other than writing the arguments
-				$certain = true;
+		if ($callSideEffects !== null) {
+			$calledVerdict = $scope !== null && $variant !== null ? self::resolvePureUnlessCallableIsImpureVerdict($variant, $scope, $args) : null;
+			$hasAny = $callSideEffects->hasAny();
+			if ($hasAny->no() && ($calledVerdict === null || $calledVerdict->yes())) {
+				return null;
 			}
 
-			if (!$certain && $scope !== null && $variant !== null) {
-				$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
-				if ($verdict !== null) {
-					if ($verdict->yes()) {
-						return null;
-					}
-					if ($verdict->no()) {
-						$certain = true;
-					}
-				}
-			}
-
-			if ($function instanceof FunctionReflection) {
-				if (isset(self::SIDE_EFFECT_FLIP_PARAMETERS[$function->getName()]) && $scope !== null) {
-					[
-						$flipParameterName,
-						$flipParameterPosition,
-						$testName,
-					] = self::SIDE_EFFECT_FLIP_PARAMETERS[$function->getName()];
-
-					$sideEffectFlipped = false;
-					$hasNamedParameter = false;
-					$checker = [
-						'isNotNull' => static fn (Type $type) => $type->isNull()->no(),
-						'isTruthy' => static fn (Type $type) => $type->toBoolean()->isTrue()->yes(),
-					][$testName];
-
-					foreach ($args as $i => $arg) {
-						$isFlipParameter = false;
-
-						if ($arg->name !== null) {
-							$hasNamedParameter = true;
-							if ($arg->name->name === $flipParameterName) {
-								$isFlipParameter = true;
-							}
-						}
-
-						if (!$hasNamedParameter && $i === $flipParameterPosition) {
-							$isFlipParameter = true;
-						}
-
-						if ($isFlipParameter) {
-							$sideEffectFlipped = $checker($scope->getType($arg->value));
-							break;
-						}
-					}
-
-					if ($sideEffectFlipped) {
-						return null;
-					}
-				}
-
-				return new SimpleImpurePoint(
-					'functionCall',
-					sprintf('call to function %s()', $function->getName()),
-					$certain,
-					$verdict === null ? $function->getSideEffects() : null,
-				);
-			}
-
-			return new SimpleImpurePoint(
-				'methodCall',
-				sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
-				$certain,
-				$verdict === null ? $function->getSideEffects() : null,
+			return self::createForFunction(
+				$function,
+				$hasAny->yes() || ($calledVerdict !== null && $calledVerdict->no()),
+				$calledVerdict === null || $calledVerdict->yes() ? $callSideEffects : null,
 			);
 		}
 
-		return null;
+		if ($function->hasSideEffects()->no()) {
+			return null;
+		}
+
+		$certain = $function->isPure()->no();
+		$verdict = null;
+		if ($variant !== null) {
+			$certain = $certain || $variant->getReturnType()->isVoid()->yes();
+		}
+		if (!$certain && $function->getSideEffects()->hasOnly(['writes-args'])->no()) {
+			// the flagged parameters do not undo effects other than writing the arguments
+			$certain = true;
+		}
+
+		if (!$certain && $scope !== null && $variant !== null) {
+			$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
+			if ($verdict !== null) {
+				if ($verdict->yes()) {
+					return null;
+				}
+				if ($verdict->no()) {
+					$certain = true;
+				}
+			}
+		}
+
+		return self::createForFunction($function, $certain, $verdict === null ? $function->getSideEffects() : null);
+	}
+
+	private static function createForFunction(FunctionReflection|ExtendedMethodReflection $function, bool $certain, ?SideEffects $sideEffects): self
+	{
+		if ($function instanceof FunctionReflection) {
+			return new SimpleImpurePoint(
+				'functionCall',
+				sprintf('call to function %s()', $function->getName()),
+				$certain,
+				$sideEffects,
+			);
+		}
+
+		return new SimpleImpurePoint(
+			'methodCall',
+			sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
+			$certain,
+			$sideEffects,
+		);
 	}
 
 	/**

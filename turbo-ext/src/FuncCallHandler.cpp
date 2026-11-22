@@ -142,6 +142,17 @@ zv::Val callNoArgs(pt_method_site &site, zval *object, const char *lcname, size_
 	return pt_call_method_cached(site, Z_OBJ_P(object), lcname, len, 0, NULL);
 }
 
+/* $this->dynamicSideEffectsExtensionRegistry->getFunctionCallSideEffects($reflection, $normalizedExpr, $scope); UNDEF = pending exception */
+static pt_method_site pt_fch_call_side_effects_site;
+static zv::Val getFunctionCallSideEffects(zval *registry, zval *reflection, zval *normalizedExpr, zval *scope)
+{
+	zval argv[3];
+	ZVAL_COPY_VALUE(&argv[0], reflection);
+	ZVAL_COPY_VALUE(&argv[1], normalizedExpr);
+	ZVAL_COPY_VALUE(&argv[2], scope);
+	return pt_call_method_cached(pt_fch_call_side_effects_site, Z_OBJ_P(registry), PT_LC("getfunctioncallsideeffects"), 3, argv);
+}
+
 /* $registry->getDynamicFunctionReturnTypeExtensions($functionReflection) */
 zv::Val getDynamicFunctionReturnTypeExtensions(zval *registry, zval *functionReflection)
 {
@@ -540,7 +551,7 @@ public:
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper,
 			slots::earlyTerminatingHelper, slots::storagePrimer, slots::impossibleCheckTypeHelper,
 			slots::closureTypeResolver, slots::argumentsHandler, slots::closureProcessor, slots::assignHandler,
-			slots::closureSignatureInference,
+			slots::closureSignatureInference, slots::dynamicSideEffectsExtensionRegistry,
 		};
 		zv::ObjRef object(self);
 		for (uint32_t i = 0; i < sizeof(order) / sizeof(order[0]); i++) {
@@ -1076,8 +1087,10 @@ public:
 			// is only available once its result is stored
 			zv::Val args = callArgs(expr);
 			if (UNEXPECTED(args.isUndef())) return zv::Val();
+			zv::Val callSideEffects = getFunctionCallSideEffects(slot(slots::dynamicSideEffectsExtensionRegistry), functionReflection.raw(), normalizedExpr.raw(), scope.raw());
+			if (UNEXPECTED(callSideEffects.isUndef())) return zv::Val();
 			pt_simple_impure_point_data impurePoint;
-			if (UNEXPECTED(!pt_simple_impure_point_resolve(functionReflection.raw(), parametersAcceptor.raw(), scope.raw(), args.raw(), impurePoint))) return zv::Val();
+			if (UNEXPECTED(!pt_simple_impure_point_resolve(functionReflection.raw(), parametersAcceptor.raw(), scope.raw(), args.raw(), impurePoint, callSideEffects.raw()))) return zv::Val();
 			if (impurePoint.exists) {
 				zv::Val converted = pt_impure_point_new_with_side_effects(scopeBeforeArgs, expr, impurePoint.identifier, impurePoint.description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
 				zend_string_release(impurePoint.description);
@@ -2863,9 +2876,9 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL;
+		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL, *dynamicSideEffectsExtensionRegistry = NULL;
 		bool implicitThrows, rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(17, 17)
+		ZEND_PARSE_PARAMETERS_START(18, 18)
 			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_OBJECT(dynamicFunctionThrowTypeExtensions)
 			Z_PARAM_OBJECT(dynamicReturnTypeExtensionRegistry)
@@ -2883,11 +2896,12 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 			Z_PARAM_OBJECT(closureProcessor)
 			Z_PARAM_OBJECT(assignHandler)
 			Z_PARAM_OBJECT(closureSignatureInference)
+			Z_PARAM_OBJECT(dynamicSideEffectsExtensionRegistry)
 		ZEND_PARSE_PARAMETERS_END();
 		zval implicitThrowsValue, rememberValue;
 		ZVAL_BOOL(&implicitThrowsValue, implicitThrows);
 		ZVAL_BOOL(&rememberValue, rememberPossiblyImpureFunctionValues);
-		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference };
+		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference, dynamicSideEffectsExtensionRegistry };
 		FuncCallHandler(Z_OBJ_P(ZEND_THIS)).construct(argv);
 	});
 

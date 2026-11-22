@@ -2599,7 +2599,8 @@ struct pt_simple_impure_point_data
 	pt_simple_impure_point_data &operator=(const pt_simple_impure_point_data &) = delete;
 	~pt_simple_impure_point_data() { zval_ptr_dtor(&sideEffects); }
 };
-[[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out);
+/* $callSideEffects: what a dynamic side effects extension described for the call, NULL for none */
+[[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out, zval *callSideEffects = NULL);
 
 /* }}} */
 

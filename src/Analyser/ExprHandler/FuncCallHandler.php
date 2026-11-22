@@ -71,6 +71,7 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
+use PHPStan\Type\DynamicSideEffectsExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -125,6 +126,7 @@ final class FuncCallHandler implements ExprHandler
 		private ClosureProcessor $closureProcessor,
 		private AssignHandler $assignHandler,
 		private ClosureSignatureInference $closureSignatureInference,
+		private DynamicSideEffectsExtensionRegistry $dynamicSideEffectsExtensionRegistry,
 	)
 	{
 	}
@@ -393,7 +395,7 @@ final class FuncCallHandler implements ExprHandler
 			// created after the args were processed - the side-effect flip
 			// parameters (print_r's $return, ...) read an argument's type, which
 			// is only available once its result is stored
-			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs());
+			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs(), $this->dynamicSideEffectsExtensionRegistry->getFunctionCallSideEffects($functionReflection, $normalizedExpr, $scope));
 			if ($impurePoint !== null) {
 				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain(), $impurePoint->getSideEffects());
 			}

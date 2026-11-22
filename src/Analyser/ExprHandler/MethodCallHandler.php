@@ -45,6 +45,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\DynamicSideEffectsExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -81,6 +82,7 @@ final class MethodCallHandler implements ExprHandler
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private ArgumentsHandler $argumentsHandler,
 		private PreservedPropertiesResolver $preservedPropertiesResolver,
+		private DynamicSideEffectsExtensionRegistry $dynamicSideEffectsExtensionRegistry,
 	)
 	{
 	}
@@ -197,7 +199,7 @@ final class MethodCallHandler implements ExprHandler
 			// created after the args were processed - the pure-unless-callable-
 			// is-impure parameters read an argument's type, which is only
 			// available once its result is stored
-			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
+			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs(), $this->dynamicSideEffectsExtensionRegistry->getMethodCallSideEffects($methodReflection, $normalizedExpr, $scope));
 			if ($impurePoint !== null) {
 				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain(), $impurePoint->getSideEffects());
 			}

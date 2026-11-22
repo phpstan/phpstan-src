@@ -250,6 +250,10 @@ final class FunctionPurityCheck
 			if ($this->isPureUnlessCallableInvocation($impurePoint, $pureUnlessCallableParamNames)) {
 				continue;
 			}
+			// a warning about the arguments does not make the result depend on anything else
+			if ($impurePoint->getSideEffects() !== null && $impurePoint->getSideEffects()->hasOnly(['warns'])->yes()) {
+				continue;
+			}
 			if ($this->onlyWritesLocalArguments($impurePoint)) {
 				continue;
 			}

@@ -291,8 +291,8 @@ public:
 	}
 
 	/* Mirrors applyCallScopeEffects(); $functionReflection /
-	 * $parametersAcceptor NULL for null. */
-	zv::Val applyCallScopeEffects(zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scopeIn, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback) const
+	 * $parametersAcceptor / $callSideEffects NULL for null. */
+	zv::Val applyCallScopeEffects(zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *callSideEffects, zval *argsResult, zval *scopeIn, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback) const
 	{
 		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeIn));
 
@@ -495,6 +495,12 @@ public:
 				if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
 				pureCallable = countOf(impurePoints.raw()) == 0;
 			}
+		}
+		if (callSideEffects != NULL) {
+			/* a call an extension describes forgets the global state it lists, like a built-in */
+			zv::Val next = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(scope.raw()), callSideEffects);
+			if (UNEXPECTED(next.isUndef())) return zv::Val();
+			return next;
 		}
 		bool invalidateVolatile;
 		/* a call that only may have side effects keeps the results of global state getters */
@@ -1349,15 +1355,16 @@ zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, 
 	return pt_type_call(Z_OBJ_P(helper), PT_LC("applyarraywalkresult"), 8, argv);
 }
 
-zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback)
+zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *callSideEffects, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback)
 {
 	if (functionReflection != NULL && Z_TYPE_P(functionReflection) == IS_NULL) functionReflection = NULL;
 	if (parametersAcceptor != NULL && Z_TYPE_P(parametersAcceptor) == IS_NULL) parametersAcceptor = NULL;
-	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_func_call_scope_effects_helper)) return FuncCallScopeEffectsHelper(Z_OBJ_P(helper)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, argsResult, scope, scopeBeforeArgs, storage, nodeCallback);
+	if (callSideEffects != NULL && Z_TYPE_P(callSideEffects) == IS_NULL) callSideEffects = NULL;
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_func_call_scope_effects_helper)) return FuncCallScopeEffectsHelper(Z_OBJ_P(helper)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, callSideEffects, argsResult, scope, scopeBeforeArgs, storage, nodeCallback);
 	zval null;
 	ZVAL_NULL(&null);
-	zv::Args argv{nodeScopeResolver, stmt, normalizedExpr, functionReflection != NULL ? functionReflection : &null, parametersAcceptor != NULL ? parametersAcceptor : &null, argsResult, scope, scopeBeforeArgs, storage, nodeCallback};
-	return pt_type_call(Z_OBJ_P(helper), PT_LC("applycallscopeeffects"), 10, argv);
+	zv::Args argv{nodeScopeResolver, stmt, normalizedExpr, functionReflection != NULL ? functionReflection : &null, parametersAcceptor != NULL ? parametersAcceptor : &null, callSideEffects != NULL ? callSideEffects : &null, argsResult, scope, scopeBeforeArgs, storage, nodeCallback};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("applycallscopeeffects"), 11, argv);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -1394,20 +1401,21 @@ PT_MINIT_REGISTRATION(pt_register_func_call_scope_effects_helper)
 	});
 
 	cls.method(sigs::applyCallScopeEffects, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *nodeScopeResolver, *stmt, *normalizedExpr, *functionReflection, *parametersAcceptor, *argsResult, *scope, *scopeBeforeArgs, *storage, *nodeCallback;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		zval *nodeScopeResolver, *stmt, *normalizedExpr, *functionReflection, *parametersAcceptor, *callSideEffects, *argsResult, *scope, *scopeBeforeArgs, *storage, *nodeCallback;
+		ZEND_PARSE_PARAMETERS_START(11, 11)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_OBJECT(normalizedExpr)
 			Z_PARAM_OBJECT_OR_NULL(functionReflection)
 			Z_PARAM_OBJECT_OR_NULL(parametersAcceptor)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
 			Z_PARAM_OBJECT(argsResult)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(scopeBeforeArgs)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(FuncCallScopeEffectsHelper(Z_OBJ_P(ZEND_THIS)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, argsResult, scope, scopeBeforeArgs, storage, nodeCallback));
+		PT_RETURN_VAL(FuncCallScopeEffectsHelper(Z_OBJ_P(ZEND_THIS)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, callSideEffects, argsResult, scope, scopeBeforeArgs, storage, nodeCallback));
 	});
 
 	cls.shadow(&pt_ce_func_call_scope_effects_helper);

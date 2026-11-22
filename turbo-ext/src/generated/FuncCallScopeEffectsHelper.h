@@ -56,13 +56,15 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\FunctionReflection\0" /* 502 */
 	"parametersAcceptor\0" /* 540 */
 	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 559 */
-	"scopeBeforeArgs\0" /* 597 */
-	"applyCallScopeEffects\0" /* 613 */
-	"invalidateObjectArgs\0" /* 635 */
-	"PHPStan\\Analyser\\Scope\0" /* 656 */
-	"expr\0" /* 679 */
-	"PHPStan\\Type\\Type\0" /* 684 */
-	"getArrayFunctionAppendingType"; /* 702 */
+	"callSideEffects\0" /* 597 */
+	"PHPStan\\Reflection\\SideEffects\0" /* 613 */
+	"scopeBeforeArgs\0" /* 644 */
+	"applyCallScopeEffects\0" /* 660 */
+	"invalidateObjectArgs\0" /* 682 */
+	"PHPStan\\Analyser\\Scope\0" /* 703 */
+	"expr\0" /* 726 */
+	"PHPStan\\Type\\Type\0" /* 731 */
+	"getArrayFunctionAppendingType"; /* 749 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $outputBufferHelper */
 	reg::packed(74, 0, 88), /* __construct $assignHandler */
@@ -80,9 +82,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(439, 0, 454), /* applyCallScopeEffects $normalizedExpr */
 	reg::packed(483, MAY_BE_NULL, 502), /* applyCallScopeEffects $functionReflection */
 	reg::packed(540, MAY_BE_NULL, 559), /* applyCallScopeEffects $parametersAcceptor */
+	reg::packed(597, MAY_BE_NULL, 613), /* applyCallScopeEffects $callSideEffects */
 	reg::packed(279, 0, 290), /* applyCallScopeEffects $argsResult */
 	reg::packed(318, 0, 324), /* applyCallScopeEffects $scope */
-	reg::packed(597, 0, 324), /* applyCallScopeEffects $scopeBeforeArgs */
+	reg::packed(644, 0, 324), /* applyCallScopeEffects $scopeBeforeArgs */
 	reg::packed(355, 0, 363), /* applyCallScopeEffects $storage */
 	reg::packed(404, MAY_BE_CALLABLE), /* applyCallScopeEffects $nodeCallback */
 	reg::packed(417, 0, 324), /* applyCallScopeEffects return */
@@ -94,10 +97,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(404, MAY_BE_CALLABLE), /* invalidateObjectArgs $nodeCallback */
 	reg::packed(417, 0, 324), /* invalidateObjectArgs return */
 	reg::packed(483, 0, 502), /* getArrayFunctionAppendingType $functionReflection */
-	reg::packed(318, 0, 656), /* getArrayFunctionAppendingType $scope */
-	reg::packed(679, 0, 454), /* getArrayFunctionAppendingType $expr */
+	reg::packed(318, 0, 703), /* getArrayFunctionAppendingType $scope */
+	reg::packed(726, 0, 454), /* getArrayFunctionAppendingType $expr */
 	reg::packed(279, 0, 290), /* getArrayFunctionAppendingType $argsResult */
-	reg::packed(417, 0, 684), /* getArrayFunctionAppendingType return */
+	reg::packed(417, 0, 731), /* getArrayFunctionAppendingType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -106,9 +109,9 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 131 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig applyArrayWalkResult = { { 418 /* applyArrayWalkResult */, 8, 2, 8, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig applyCallScopeEffects = { { 613 /* applyCallScopeEffects */, 10, 11, 10, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig invalidateObjectArgs = { { 635 /* invalidateObjectArgs */, 6, 22, 6, 28, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getArrayFunctionAppendingType = { { 702 /* getArrayFunctionAppendingType */, 4, 29, 4, 33, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig applyCallScopeEffects = { { 660 /* applyCallScopeEffects */, 11, 11, 11, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig invalidateObjectArgs = { { 682 /* invalidateObjectArgs */, 6, 23, 6, 29, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getArrayFunctionAppendingType = { { 749 /* getArrayFunctionAppendingType */, 4, 30, 4, 34, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::FuncCallScopeEffectsHelper

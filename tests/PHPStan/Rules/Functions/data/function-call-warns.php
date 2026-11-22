@@ -11,7 +11,7 @@ function doFoo(string $pattern, mixed $value, bool $return): void
 	preg_grep($pattern, ['a']);
 	preg_split($pattern, 'a');
 
-	// a constant pattern that compiles cannot warn
+	// a constant pattern that compiles cannot warn, preg_grep() still leaves an error for preg_last_error()
 	preg_match('/^a$/', '');
 	preg_grep('/^a$/', ['a']);
 

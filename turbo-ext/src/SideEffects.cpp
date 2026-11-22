@@ -376,13 +376,10 @@ static zend_long pt_side_effects_result_varies_of(zv::Val sideEffects)
 	return deterministic == PT_TRI_YES ? PT_TRI_NO : (deterministic == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
 }
 
-zend_long pt_method_reflection_writes_receiver(zval *methodReflection)
+/* $sideEffects->has('writes-this')->or($sideEffects->has('writes-global'));
+ * -1 = pending exception */
+static zend_long pt_side_effects_writes_receiver_of(zv::Val sideEffects)
 {
-	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
-		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(methodReflection));
-		return -1;
-	}
-	zv::Val sideEffects = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS);
 	if (UNEXPECTED(sideEffects.isUndef())) return -1;
 	if (UNEXPECTED(Z_TYPE_P(sideEffects.raw()) != IS_OBJECT || Z_OBJCE_P(sideEffects.raw()) != pt_ce_side_effects)) {
 		zend_throw_error(NULL, "Call to a member function has() on %s", zend_zval_value_name(sideEffects.raw()));
@@ -397,6 +394,25 @@ zend_long pt_method_reflection_writes_receiver(zval *methodReflection)
 	if (writesThis == PT_TRI_YES || writesGlobal == PT_TRI_YES) return PT_TRI_YES;
 	if (writesThis == PT_TRI_MAYBE || writesGlobal == PT_TRI_MAYBE) return PT_TRI_MAYBE;
 	return PT_TRI_NO;
+}
+
+zend_long pt_method_reflection_writes_receiver(zval *methodReflection)
+{
+	if (UNEXPECTED(Z_TYPE_P(methodReflection) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function getSideEffects() on %s", zend_zval_value_name(methodReflection));
+		return -1;
+	}
+	return pt_side_effects_writes_receiver_of(pt_extended_method_reflection_call(methodReflection, PT_MR_GET_SIDE_EFFECTS));
+}
+
+zend_long pt_side_effects_writes_receiver(zval *sideEffects)
+{
+	return pt_side_effects_writes_receiver_of(zv::Val::copyOf(zv::Ref(sideEffects)));
+}
+
+zend_long pt_side_effects_result_varies(zval *sideEffects)
+{
+	return pt_side_effects_result_varies_of(zv::Val::copyOf(zv::Ref(sideEffects)));
 }
 
 /* the object a getSideEffects() call answered, NULL with an Error pending

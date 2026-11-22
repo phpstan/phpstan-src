@@ -21,6 +21,7 @@ use PHPStan\Node\InvalidateExprNode;
 use PHPStan\Reflection\Callables\CallableParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
@@ -96,7 +97,7 @@ final class FuncCallScopeEffectsHelper
 	/**
 	 * @param callable(Node $node, Scope $scope): void $nodeCallback
 	 */
-	public function applyCallScopeEffects(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, FuncCall $normalizedExpr, ?FunctionReflection $functionReflection, ?ParametersAcceptor $parametersAcceptor, ArgsResult $argsResult, MutatingScope $scope, MutatingScope $scopeBeforeArgs, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
+	public function applyCallScopeEffects(NodeScopeResolver $nodeScopeResolver, Stmt $stmt, FuncCall $normalizedExpr, ?FunctionReflection $functionReflection, ?ParametersAcceptor $parametersAcceptor, ?SideEffects $callSideEffects, ArgsResult $argsResult, MutatingScope $scope, MutatingScope $scopeBeforeArgs, ExpressionResultStorage $storage, callable $nodeCallback): MutatingScope
 	{
 		if (
 			$parametersAcceptor instanceof ClosureType && count($parametersAcceptor->getImpurePoints()) > 0
@@ -341,7 +342,10 @@ final class FuncCallScopeEffectsHelper
 
 		$pureCallable = $parametersAcceptor instanceof CallableParametersAcceptor
 			&& count($parametersAcceptor->getImpurePoints()) === 0;
-		if (
+		if ($callSideEffects !== null) {
+			// a call an extension describes forgets the global state it lists, like a built-in
+			$scope = $scope->invalidateGlobalStateWrittenBy($callSideEffects);
+		} elseif (
 			($functionReflection !== null && !$functionReflection->isBuiltin() && !$functionReflection->hasSideEffects()->no())
 			|| ($functionReflection === null && !$pureCallable)
 		) {

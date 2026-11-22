@@ -107,16 +107,18 @@ inline constexpr char strings[] =
 	"walkMethodReflection\0" /* 1432 */
 	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1453 */
 	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1497 */
-	"null\0" /* 1535 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1540 */
-	"specifyTypes\0" /* 1572 */
-	"defaultStaticCallNarrowing\0" /* 1585 */
-	"isStaticCallNarrowable\0" /* 1612 */
-	"class\0" /* 1635 */
-	"PhpParser\\Node\\Name\0" /* 1641 */
-	"methodName\0" /* 1661 */
-	"PHPStan\\Type\\TypeWithClassName\0" /* 1672 */
-	"resolveTypeByNameWithLateStaticBinding"; /* 1703 */
+	"callSideEffects\0" /* 1535 */
+	"PHPStan\\Reflection\\SideEffects\0" /* 1551 */
+	"null\0" /* 1582 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1587 */
+	"specifyTypes\0" /* 1619 */
+	"defaultStaticCallNarrowing\0" /* 1632 */
+	"isStaticCallNarrowable\0" /* 1659 */
+	"class\0" /* 1682 */
+	"PhpParser\\Node\\Name\0" /* 1688 */
+	"methodName\0" /* 1708 */
+	"PHPStan\\Type\\TypeWithClassName\0" /* 1719 */
+	"resolveTypeByNameWithLateStaticBinding"; /* 1750 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 27), /* __construct $methodCallReturnTypeHelper */
 	reg::packed(90, 0, 113), /* __construct $methodThrowPointHelper */
@@ -155,21 +157,24 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1405, MAY_BE_NULL, 1277), /* specifyTypes $resolvedParametersAcceptor */
 	reg::packed(1432, MAY_BE_NULL, 1453), /* specifyTypes $walkMethodReflection */
 	reg::packed(1078, 0, 1497), /* specifyTypes $context */
-	reg::packed(1315, MAY_BE_NULL, 1326, false, false, 1535), /* specifyTypes $argsResult */
-	reg::packed(891, 0, 1540), /* specifyTypes return */
+	reg::packed(1535, MAY_BE_NULL, 1551), /* specifyTypes $callSideEffects */
+	reg::packed(1315, MAY_BE_NULL, 1326, false, false, 1582), /* specifyTypes $argsResult */
+	reg::packed(891, 0, 1587), /* specifyTypes return */
 	reg::packed(979, 0, 985), /* defaultStaticCallNarrowing $scope */
 	reg::packed(866, 0, 871), /* defaultStaticCallNarrowing $expr */
 	reg::packed(1234, MAY_BE_NULL, 1121), /* defaultStaticCallNarrowing $classResult */
 	reg::packed(1078, 0, 1497), /* defaultStaticCallNarrowing $context */
-	reg::packed(891, 0, 1540), /* defaultStaticCallNarrowing return */
+	reg::packed(1535, MAY_BE_NULL, 1551), /* defaultStaticCallNarrowing $callSideEffects */
+	reg::packed(891, 0, 1587), /* defaultStaticCallNarrowing return */
 	reg::packed(979, 0, 985), /* isStaticCallNarrowable $scope */
 	reg::packed(866, 0, 871), /* isStaticCallNarrowable $expr */
 	reg::packed(1234, MAY_BE_NULL, 1121), /* isStaticCallNarrowable $classResult */
+	reg::packed(1535, MAY_BE_NULL, 1551), /* isStaticCallNarrowable $callSideEffects */
 	reg::packed(891, MAY_BE_BOOL), /* isStaticCallNarrowable return */
 	reg::packed(979, 0, 985), /* resolveTypeByNameWithLateStaticBinding $scope */
-	reg::packed(1635, 0, 1641), /* resolveTypeByNameWithLateStaticBinding $class */
-	reg::packed(1661, MAY_BE_STRING), /* resolveTypeByNameWithLateStaticBinding $methodName */
-	reg::packed(891, 0, 1672), /* resolveTypeByNameWithLateStaticBinding return */
+	reg::packed(1682, 0, 1688), /* resolveTypeByNameWithLateStaticBinding $class */
+	reg::packed(1708, MAY_BE_STRING), /* resolveTypeByNameWithLateStaticBinding $methodName */
+	reg::packed(891, 0, 1719), /* resolveTypeByNameWithLateStaticBinding return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -180,10 +185,10 @@ inline constexpr sigtab::Sig __construct = { { 854 /* __construct */, 12, 0, 12,
 inline constexpr sigtab::Sig supports = { { 892 /* supports */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processExpr = { { 1155 /* processExpr */, 7, 14, 7, 21, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolveReturnType = { { 1372 /* resolveReturnType */, 7, 22, 7, 29, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyTypes = { { 1572 /* specifyTypes */, 7, 30, 8, 38, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig defaultStaticCallNarrowing = { { 1585 /* defaultStaticCallNarrowing */, 4, 39, 4, 43, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isStaticCallNarrowable = { { 1612 /* isStaticCallNarrowable */, 3, 44, 3, 47, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveTypeByNameWithLateStaticBinding = { { 1703 /* resolveTypeByNameWithLateStaticBinding */, 3, 48, 3, 51, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 1619 /* specifyTypes */, 8, 30, 9, 39, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig defaultStaticCallNarrowing = { { 1632 /* defaultStaticCallNarrowing */, 5, 40, 5, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isStaticCallNarrowable = { { 1659 /* isStaticCallNarrowable */, 4, 46, 4, 50, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveTypeByNameWithLateStaticBinding = { { 1750 /* resolveTypeByNameWithLateStaticBinding */, 3, 51, 3, 54, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::StaticCallHandler

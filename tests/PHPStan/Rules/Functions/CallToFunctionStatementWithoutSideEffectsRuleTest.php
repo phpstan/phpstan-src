@@ -246,10 +246,6 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 				15,
 			],
 			[
-				'Call to function preg_grep() on a separate line has no effect.',
-				16,
-			],
-			[
 				'Call to function print_r() on a separate line has no effect.',
 				22,
 			],

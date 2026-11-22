@@ -306,6 +306,17 @@ struct ConstructorReflectionParts
 	zv::Val parametersAcceptor = zv::Val::null();
 };
 
+/* $this->dynamicSideEffectsExtensionRegistry->getStaticCallSideEffects($reflection, $constructorCall, $scope); UNDEF = pending exception */
+static pt_method_site pt_nh_call_side_effects_site;
+static zv::Val getStaticCallSideEffects(zval *registry, zval *reflection, zval *constructorCall, zval *scope)
+{
+	zval argv[3];
+	ZVAL_COPY_VALUE(&argv[0], reflection);
+	ZVAL_COPY_VALUE(&argv[1], constructorCall);
+	ZVAL_COPY_VALUE(&argv[2], scope);
+	return pt_call_method_cached(pt_nh_call_side_effects_site, Z_OBJ_P(registry), PT_LC("getstaticcallsideeffects"), 3, argv);
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -320,9 +331,10 @@ public:
 	/* the constructor body: the promoted properties */
 	void construct(zval **services, bool implicitThrows) const
 	{
-		static const uint32_t serviceSlots[9] = {
+		static const uint32_t serviceSlots[10] = {
 			slots::reflectionProvider, slots::dynamicStaticMethodThrowTypeExtensions, slots::dynamicReturnTypeExtensionRegistry, slots::propertyReflectionFinder,
 			slots::expressionResultFactory, slots::defaultNarrowingHelper, slots::storagePrimer, slots::container, slots::argumentsHandler,
+			slots::dynamicSideEffectsExtensionRegistry,
 		};
 		for (uint32_t i = 0; i < 4; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
@@ -330,7 +342,7 @@ public:
 		zval implicitThrowsZv = {};
 		ZVAL_BOOL(&implicitThrowsZv, implicitThrows);
 		pt_write_slot(self, slots::implicitThrows, &implicitThrowsZv);
-		for (uint32_t i = 4; i < 9; i++) {
+		for (uint32_t i = 4; i < 10; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
 		}
 	}
@@ -611,11 +623,18 @@ public:
 			return zv::Val();
 		}
 		impurePoints = arrayMerge(impurePoints.raw(), borrowed);
+		// the side effects of this instantiation when an extension describes
+		// them, instead of the ones of the constructor reflection
+		zv::Val callSideEffects = zv::Val::null();
 		if (deferredConstructorImpureIsDynamic >= 0) {
 			// created after the args were processed - the pure-unless-callable-
 			// is-impure parameters read an argument's type, which is only
 			// available once its result is stored
-			zv::Val point = constructorImpurePoint(parts.constructorReflection.raw(), parts.classReflection.raw(), parts.parametersAcceptor.raw(), expr, currentScope.raw(), scopeBeforeArgs.raw(), deferredConstructorImpureIsDynamic == 1);
+			if (!parts.constructorReflection.isNull() && !parts.parametersAcceptor.isNull()) {
+				callSideEffects = constructorCallSideEffects(parts.constructorReflection.raw(), parts.parametersAcceptor.raw(), className.raw(), expr, currentScope.raw());
+				if (UNEXPECTED(callSideEffects.isUndef())) return zv::Val();
+			}
+			zv::Val point = constructorImpurePoint(parts.constructorReflection.raw(), parts.classReflection.raw(), parts.parametersAcceptor.raw(), callSideEffects.raw(), expr, currentScope.raw(), scopeBeforeArgs.raw(), deferredConstructorImpureIsDynamic == 1);
 			if (UNEXPECTED(point.isUndef())) return zv::Val();
 			if (!point.isNull()) {
 				appendTo(impurePoints, std::move(point));
@@ -679,7 +698,12 @@ public:
 		bool invalidateVolatile;
 		/* a call that only may have side effects keeps the results of global state getters */
 		bool globalStateReads = false;
-		if (!parts.constructorReflection.isNull()) {
+		if (!callSideEffects.isNull()) {
+			/* an instantiation an extension describes forgets the global state it lists, like a built-in */
+			invalidateVolatile = false;
+			currentScope = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(currentScope.raw()), callSideEffects.raw());
+			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
+		} else if (!parts.constructorReflection.isNull()) {
 			zv::Val declaringClass = pt_extended_method_reflection_call(parts.constructorReflection.raw(), PT_MR_GET_DECLARING_CLASS);
 			if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
 			bool builtin;
@@ -790,18 +814,68 @@ public:
 		return !parts.parametersAcceptor.isUndef();
 	}
 
+	/* the side effects a dynamic static method side effects extension
+	 * describes for the constructor call, as
+	 * ArgumentsNormalizer::reorderStaticCallArguments() of a StaticCall to
+	 * __construct; null when none does or the arguments do not reorder.
+	 * $className NULL or IS_NULL for null */
+	zv::Val constructorCallSideEffects(zval *constructorReflection, zval *parametersAcceptor, zval *className, zval *expr, zval *scope) const
+	{
+		zv::Val name;
+		if (className != NULL && Z_TYPE_P(className) != IS_NULL) {
+			name = zv::Val::copyOf(zv::Ref(className));
+		} else {
+			zv::Val declaringClass = pt_extended_method_reflection_call(constructorReflection, PT_MR_GET_DECLARING_CLASS);
+			if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+			name = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
+			if (UNEXPECTED(name.isUndef())) return zv::Val();
+		}
+		zv::Val fullyQualified = pt_name_node_new(PT_CLASS_FULLY_QUALIFIED, name.raw());
+		if (UNEXPECTED(fullyQualified.isUndef())) return zv::Val();
+		zv::Val constructorName = pt_extended_method_reflection_call(constructorReflection, PT_MR_GET_NAME);
+		if (UNEXPECTED(constructorName.isUndef())) return zv::Val();
+		zval *args = exprArgs(expr);
+		if (UNEXPECTED(args == NULL)) return zv::Val();
+		zv::Val argsHold = zv::Val::copyOf(zv::Ref(args));
+		zv::Args staticCallArgv{fullyQualified.raw(), constructorName.raw(), argsHold.raw()};
+		zv::Val methodCall = pt_type_new(PT_CLASS_STATIC_CALL, 3, staticCallArgv);
+		if (UNEXPECTED(methodCall.isUndef())) return zv::Val();
+		zv::Val constructorCall = reorderStaticCallArguments(parametersAcceptor, methodCall.raw());
+		if (UNEXPECTED(constructorCall.isUndef())) return zv::Val();
+		if (constructorCall.isNull()) return zv::Val::null();
+		return getStaticCallSideEffects(OBJ_PROP_NUM(self, slots::dynamicSideEffectsExtensionRegistry), constructorReflection, constructorCall.raw(), scope);
+	}
+
 	/* Mirrors getConstructorImpurePoints() as its only element: null for
 	 * the twin's [] ($constructorReflection / $classReflection /
-	 * $parametersAcceptor NULL or IS_NULL for null) */
-	zv::Val constructorImpurePoint(zval *constructorReflection, zval *classReflection, zval *parametersAcceptor, zval *expr, zval *scope, zval *scopeBeforeArgs, bool isDynamic) const
+	 * $parametersAcceptor / $callSideEffects NULL or IS_NULL for null) */
+	zv::Val constructorImpurePoint(zval *constructorReflection, zval *classReflection, zval *parametersAcceptor, zval *callSideEffects, zval *expr, zval *scope, zval *scopeBeforeArgs, bool isDynamic) const
 	{
 		if (constructorReflection != NULL && Z_TYPE_P(constructorReflection) == IS_NULL) constructorReflection = NULL;
 		if (classReflection != NULL && Z_TYPE_P(classReflection) == IS_NULL) classReflection = NULL;
 		if (parametersAcceptor != NULL && Z_TYPE_P(parametersAcceptor) == IS_NULL) parametersAcceptor = NULL;
+		if (callSideEffects != NULL && Z_TYPE_P(callSideEffects) == IS_NULL) callSideEffects = NULL;
 		if (constructorReflection != NULL) {
 			if (parametersAcceptor == NULL) {
 				pt_throw_should_not_happen();
 				return zv::Val();
+			}
+			if (callSideEffects != NULL) {
+				zval *callArgs = exprArgs(expr);
+				if (UNEXPECTED(callArgs == NULL)) return zv::Val();
+				zv::Val callArgsHold = zv::Val::copyOf(zv::Ref(callArgs));
+				pt_simple_impure_point_data impurePoint;
+				if (UNEXPECTED(!pt_simple_impure_point_resolve(constructorReflection, parametersAcceptor, scope, callArgsHold.raw(), impurePoint, callSideEffects))) return zv::Val();
+				if (!impurePoint.exists) return zv::Val::null();
+				zend_string_release(impurePoint.description);
+				zv::Val declaringClass = pt_extended_method_reflection_call(constructorReflection, PT_MR_GET_DECLARING_CLASS);
+				if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
+				zv::Val displayName = pt_class_reflection_get_display_name(Z_OBJ_P(declaringClass.raw()), true);
+				if (UNEXPECTED(displayName.isUndef())) return zv::Val();
+				zend_string *description = instantiationDescription(displayName.raw());
+				zv::Val point = pt_impure_point_new_with_side_effects(scopeBeforeArgs, expr, pt_nh_new, description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
+				zend_string_release(description);
+				return point;
 			}
 			zend_long hasSideEffects = pt_extended_method_reflection_trinary(constructorReflection, PT_MR_HAS_SIDE_EFFECTS);
 			if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
@@ -1814,9 +1888,9 @@ PT_MINIT_REGISTRATION(pt_register_new_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflectionProvider, *dynamicStaticMethodThrowTypeExtensions, *dynamicReturnTypeExtensionRegistry, *propertyReflectionFinder, *expressionResultFactory, *defaultNarrowingHelper, *storagePrimer, *container, *argumentsHandler;
+		zval *reflectionProvider, *dynamicStaticMethodThrowTypeExtensions, *dynamicReturnTypeExtensionRegistry, *propertyReflectionFinder, *expressionResultFactory, *defaultNarrowingHelper, *storagePrimer, *container, *argumentsHandler, *dynamicSideEffectsExtensionRegistry;
 		bool implicitThrows;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		ZEND_PARSE_PARAMETERS_START(11, 11)
 			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_OBJECT(dynamicStaticMethodThrowTypeExtensions)
 			Z_PARAM_OBJECT(dynamicReturnTypeExtensionRegistry)
@@ -1827,8 +1901,9 @@ PT_MINIT_REGISTRATION(pt_register_new_handler)
 			Z_PARAM_OBJECT(storagePrimer)
 			Z_PARAM_OBJECT(container)
 			Z_PARAM_OBJECT(argumentsHandler)
+			Z_PARAM_OBJECT(dynamicSideEffectsExtensionRegistry)
 		ZEND_PARSE_PARAMETERS_END();
-		zval *services[9] = {reflectionProvider, dynamicStaticMethodThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, propertyReflectionFinder, expressionResultFactory, defaultNarrowingHelper, storagePrimer, container, argumentsHandler};
+		zval *services[10] = {reflectionProvider, dynamicStaticMethodThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, propertyReflectionFinder, expressionResultFactory, defaultNarrowingHelper, storagePrimer, container, argumentsHandler, dynamicSideEffectsExtensionRegistry};
 		NewHandler(Z_OBJ_P(ZEND_THIS)).construct(services, implicitThrows);
 	});
 
@@ -1864,18 +1939,19 @@ PT_MINIT_REGISTRATION(pt_register_new_handler)
 	});
 
 	cls.method(sigs::getConstructorImpurePoints, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *constructorReflection, *classReflection, *parametersAcceptor, *expr, *scope, *scopeBeforeArgs;
+		zval *constructorReflection, *classReflection, *parametersAcceptor, *callSideEffects, *expr, *scope, *scopeBeforeArgs;
 		bool isDynamic;
-		ZEND_PARSE_PARAMETERS_START(7, 7)
+		ZEND_PARSE_PARAMETERS_START(8, 8)
 			Z_PARAM_OBJECT_OR_NULL(constructorReflection)
 			Z_PARAM_OBJECT_OR_NULL(classReflection)
 			Z_PARAM_OBJECT_OR_NULL(parametersAcceptor)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(scopeBeforeArgs)
 			Z_PARAM_BOOL(isDynamic)
 		ZEND_PARSE_PARAMETERS_END();
-		zv::Val point = NewHandler(Z_OBJ_P(ZEND_THIS)).constructorImpurePoint(constructorReflection, classReflection, parametersAcceptor, expr, scope, scopeBeforeArgs, isDynamic);
+		zv::Val point = NewHandler(Z_OBJ_P(ZEND_THIS)).constructorImpurePoint(constructorReflection, classReflection, parametersAcceptor, callSideEffects, expr, scope, scopeBeforeArgs, isDynamic);
 		if (UNEXPECTED(point.isUndef())) RETURN_THROWS();
 		if (point.isNull()) RETURN_EMPTY_ARRAY();
 		zv::Arr result = zv::Arr::create(1);

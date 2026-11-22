@@ -2563,6 +2563,10 @@ zend_long pt_side_effects_is_deterministic(zend_object *sideEffects);
  * $methodReflection->getSideEffects() as PT_TRI_*; -1 = pending exception */
 zend_long pt_method_reflection_writes_receiver(zval *methodReflection);
 zend_long pt_method_reflection_result_varies(zval *methodReflection);
+/* the same two questions asked of a call's own SideEffects, such as one a
+ * dynamic side effects extension returned; -1 = pending exception */
+zend_long pt_side_effects_writes_receiver(zval *sideEffects);
+zend_long pt_side_effects_result_varies(zval *sideEffects);
 /* $functionReflection->getSideEffects()->has('reads-global') as PT_TRI_*;
  * -1 = pending exception */
 zend_long pt_function_reflection_reads_global(zval *functionReflection);
@@ -3013,7 +3017,7 @@ zv::Val pt_output_buffer_helper_apply_level_delta(zval *helper, zval *nodeScopeR
  * $parametersAcceptor NULL (or IS_NULL) for null */
 extern zend_class_entry *pt_ce_func_call_scope_effects_helper;
 zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *arrayWalkArrayArg, zval *arrayWalkValueTypes, zval *argsResult, zval *scope, zval *storage, zval *nodeCallback);
-zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
+zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *callSideEffects, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
 
 /* FuncCallHandler.cpp — the shadowing class (processExpr() is its handler
  * entry) */

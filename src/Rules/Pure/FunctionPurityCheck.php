@@ -280,8 +280,8 @@ final class FunctionPurityCheck
 	}
 
 	/**
-	 * A call whose only effects are writes to its arguments, and maybe the last
-	 * error it leaves for an error getter, is weakly pure when
+	 * A call whose only effects are writes to its arguments, and maybe a warning
+	 * or the last error it leaves for an error getter, is weakly pure when
 	 * each written argument is local: a variable passed by reference, which the
 	 * call reassigns like an assignment would, or an object it creates. Writing
 	 * through a by-ref argument to a property or a superglobal is an impure point
@@ -296,8 +296,9 @@ final class FunctionPurityCheck
 		[$reflection, $parametersAcceptor, $normalizedNode] = $call;
 		$scope = $impurePoint->getScope();
 
-		$sideEffects = $reflection->getSideEffects();
-		if (!$sideEffects->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->yes() || $sideEffects->getCalledParameters() !== []) {
+		// the impure point has the effects of this call when an extension describes them
+		$sideEffects = $impurePoint->getSideEffects() ?? $reflection->getSideEffects();
+		if (!$sideEffects->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WARNS, SideEffects::WRITES_GLOBAL_ERROR])->yes() || $sideEffects->getCalledParameters() !== []) {
 			return false;
 		}
 

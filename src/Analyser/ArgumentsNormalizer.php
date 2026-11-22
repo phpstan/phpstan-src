@@ -306,16 +306,34 @@ final class ArgumentsNormalizer
 	public static function getArgByPositionOrName(array $args, int $position, string $name): ?Arg
 	{
 		$argByPosition = null;
+		$argByName = null;
+		$hasNamedArgs = false;
+		$hasUnpackedArg = false;
 		foreach ($args as $i => $arg) {
 			if ($i === $position) {
 				$argByPosition = $arg;
 			}
-			if ($arg->name !== null && $arg->name->toString() === $name) {
-				return $arg;
+			if ($arg->unpack) {
+				$hasUnpackedArg = true;
 			}
+			if ($arg->name === null) {
+				continue;
+			}
+
+			$hasNamedArgs = true;
+			if ($arg->name->toString() !== $name) {
+				continue;
+			}
+
+			$argByName = $arg;
 		}
 
-		return $argByPosition;
+		if ($hasNamedArgs && $hasUnpackedArg) {
+			// Match reorderArgs(): unpacking makes named argument positions indeterminate.
+			return null;
+		}
+
+		return $argByName ?? $argByPosition;
 	}
 
 	/**

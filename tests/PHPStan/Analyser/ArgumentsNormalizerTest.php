@@ -449,4 +449,21 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 		$this->assertSame($arguments[$expectedIndex], $arg);
 	}
 
+	public function testGetArgByPositionOrNameWithUnpackAndNamedArguments(): void
+	{
+		$unpackedArgument = new Arg(new TypeExpr(new MixedType()), unpack: true);
+		$namedArgument = new Arg(new TypeExpr(new MixedType()), name: new Identifier('callback'));
+
+		$this->assertNull(ArgumentsNormalizer::getArgByPositionOrName(
+			[$unpackedArgument, $namedArgument],
+			0,
+			'callback',
+		));
+		$this->assertNull(ArgumentsNormalizer::getArgByPositionOrName(
+			[$namedArgument, $unpackedArgument],
+			0,
+			'callback',
+		));
+	}
+
 }

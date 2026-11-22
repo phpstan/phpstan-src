@@ -4,6 +4,10 @@ namespace PHPStan\Reflection;
 
 use PHPStan\TrinaryLogic;
 use function array_filter;
+use function explode;
+use function ltrim;
+use function preg_match;
+use function trim;
 
 final class SideEffectsFactory
 {
@@ -14,7 +18,9 @@ final class SideEffectsFactory
 	 * are passed, and from $effects when the function lists them. Without the
 	 * list, when it is ['*'], or when it is empty but hasSideEffects() says
 	 * Yes, such as for a method returning void, any effect is as possible as
-	 * hasSideEffects() says.
+	 * hasSideEffects() says. A listed writes-args($a, $b) makes $a and $b
+	 * written parameters. A written parameter passed by reference that is
+	 * also read makes the result nondeterministic.
 	 *
 	 * @param list<string>|null $effects
 	 */
@@ -37,11 +43,49 @@ final class SideEffectsFactory
 			$written[] = $variantWritten;
 		}
 
-		return SideEffects::create(
+		$writtenParameters = self::mergeVariants($written);
+		foreach ($effects ?? [] as $effect) {
+			if (preg_match('~^writes-args\((.+)\)$~', $effect, $matches) !== 1) {
+				continue;
+			}
+
+			foreach (explode(',', $matches[1]) as $parameterName) {
+				$writtenParameters[ltrim(trim($parameterName), '$')] = TrinaryLogic::createYes();
+			}
+		}
+
+		$sideEffects = SideEffects::create(
 			$effects ?? [],
 			$effects !== null ? TrinaryLogic::createNo() : $reflection->hasSideEffects(),
 			self::mergeVariants($called),
-			self::mergeVariants($written),
+			$writtenParameters,
+		);
+
+		$readsWrittenArguments = false;
+		foreach ($reflection->getVariants() as $variant) {
+			foreach ($variant->getParameters() as $parameter) {
+				if (
+					!$parameter->passedByReference()->yes()
+					|| $parameter->passedByReference()->createsNewVariable()
+					|| !$sideEffects->writesParameter($parameter->getName())->yes()
+				) {
+					continue;
+				}
+
+				$readsWrittenArguments = true;
+			}
+		}
+
+		if (!$readsWrittenArguments) {
+			return $sideEffects;
+		}
+
+		return SideEffects::create(
+			$sideEffects->getEffectNames(),
+			$effects !== null ? TrinaryLogic::createNo() : $reflection->hasSideEffects(),
+			$sideEffects->getCalledParameters(),
+			$writtenParameters,
+			true,
 		);
 	}
 

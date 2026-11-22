@@ -168,18 +168,18 @@ function justContainsInlineHtml()
 /** @phpstan-pure */
 function bug13288(array $a)
 {
-	array_push($a, function () { // error because by ref arg
+	array_push($a, function () { // ok, array_push() only writes the local $a
 		exit(); // ok, as array_push() will not invoke the function
 	});
 
-	array_push($a, // error because by ref arg
+	array_push($a, // ok, array_push() only writes the local $a
 		fn() => exit() // ok, as array_push() will not invoke the function
 	);
 
 	$exitingClosure = function () {
 		exit();
 	};
-	array_push($a, // error because by ref arg
+	array_push($a, // ok, array_push() only writes the local $a
 		$exitingClosure // ok, as array_push() will not invoke the function
 	);
 

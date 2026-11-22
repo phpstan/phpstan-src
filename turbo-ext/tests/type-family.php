@@ -9161,6 +9161,7 @@ $observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new Reflect
 		$view($sideEffects->writesParameter('count')),
 		$view($sideEffects->writesParameter('other')),
 		$view($sideEffects->writesParameter('0')),
+		array_map(static fn (array $effects) => $view($sideEffects->hasOnly($effects)), [[], ['writes-args'], ['nondeterministic', 'reads-global'], ['io.files', 'nondeterministic'], ['io'], ['io.files.local']]),
 	];
 	$sideEffectsSubjects = [
 		'none' => static fn () => \PHPStan\Reflection\SideEffects::none(),
@@ -9178,8 +9179,12 @@ $observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new Reflect
 		'create parent effect' => static fn () => \PHPStan\Reflection\SideEffects::create(['io', 'writes-this'], $no),
 		'create parent effect yes' => static fn () => \PHPStan\Reflection\SideEffects::create(['io'], $yes),
 		'create writes-args' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args'], $no, [], ['other' => $no]),
+		'create writes-args parameters' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args($count)', 'io.files'], $no, [], ['count' => $yes]),
+		'create writes-args parameters maybe' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args($count)'], $maybe, [], ['count' => $yes]),
+		'create reads written arguments' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args($count)'], $no, [], ['count' => $yes], true),
+		'create reads only' => static fn () => \PHPStan\Reflection\SideEffects::create(['reads-global', 'nondeterministic.time'], $no),
 	];
-	foreach (['var_dump', 'str_replace', 'array_map', 'array_udiff', 'strlen', 'usleep', 'print_r'] as $functionName) {
+	foreach (['var_dump', 'str_replace', 'array_map', 'array_udiff', 'strlen', 'usleep', 'print_r', 'sort', 'settype', 'array_pop', 'preg_match'] as $functionName) {
 		$sideEffectsSubjects["function $functionName"] = static fn () => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null)->getSideEffects();
 	}
 	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
@@ -9190,6 +9195,7 @@ $observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new Reflect
 	}
 	$observations['SideEffects create wrong others'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([], new \stdClass()));
 	$observations['SideEffects wrong written parameter'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([], $no, [], ['count' => 'yes'])->writesParameter('count'));
+	$observations['SideEffects hasOnly wrong effect'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create(['io'], $no)->hasOnly([1]));
 	$observations['SideEffects new'] = $catching(static fn () => (new ReflectionClass(\PHPStan\Reflection\SideEffects::class))->newInstance());
 }
 

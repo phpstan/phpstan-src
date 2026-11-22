@@ -14,6 +14,7 @@ inline constexpr uint32_t effects = 0;
 inline constexpr uint32_t others = 1;
 inline constexpr uint32_t calledParameters = 2;
 inline constexpr uint32_t writtenParameters = 3;
+inline constexpr uint32_t readsWrittenArguments = 4;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -28,6 +29,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("others", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\TrinaryLogic");
 	cls.property("calledParameters", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
 	cls.property("writtenParameters", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_ARRAY);
+	cls.property("readsWrittenArguments", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, MAY_BE_BOOL);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -38,63 +40,76 @@ inline constexpr char strings[] =
 	"PHPStan\\TrinaryLogic\0" /* 15 */
 	"calledParameters\0" /* 36 */
 	"writtenParameters\0" /* 53 */
-	"__construct\0" /* 71 */
-	"\0" /* 83 */
-	"PHPStan\\Reflection\\SideEffects\0" /* 84 */
-	"none\0" /* 115 */
-	"all\0" /* 120 */
-	"unknown\0" /* 124 */
-	"[]\0" /* 132 */
-	"create\0" /* 135 */
-	"hasAny\0" /* 142 */
-	"effect\0" /* 149 */
-	"has\0" /* 156 */
-	"isDeterministic\0" /* 160 */
-	"getEffectNames\0" /* 176 */
-	"getCalledParameters\0" /* 191 */
-	"getWrittenParameters\0" /* 211 */
-	"parameterName\0" /* 232 */
-	"writesParameter"; /* 246 */
+	"readsWrittenArguments\0" /* 71 */
+	"__construct\0" /* 93 */
+	"\0" /* 105 */
+	"PHPStan\\Reflection\\SideEffects\0" /* 106 */
+	"none\0" /* 137 */
+	"all\0" /* 142 */
+	"unknown\0" /* 146 */
+	"[]\0" /* 154 */
+	"false\0" /* 157 */
+	"create\0" /* 163 */
+	"hasAny\0" /* 170 */
+	"effect\0" /* 177 */
+	"has\0" /* 184 */
+	"isDeterministic\0" /* 188 */
+	"hasOnly\0" /* 204 */
+	"getEffectNames\0" /* 212 */
+	"getCalledParameters\0" /* 227 */
+	"getWrittenParameters\0" /* 247 */
+	"parameterName\0" /* 268 */
+	"writesParameter\0" /* 282 */
+	"listed\0" /* 298 */
+	"baseName"; /* 305 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $effects */
 	reg::packed(8, 0, 15), /* __construct $others */
 	reg::packed(36, MAY_BE_ARRAY), /* __construct $calledParameters */
 	reg::packed(53, MAY_BE_ARRAY), /* __construct $writtenParameters */
-	reg::packed(83, 0, 84), /* none return */
-	reg::packed(83, 0, 84), /* all return */
-	reg::packed(83, 0, 84), /* unknown return */
+	reg::packed(71, MAY_BE_BOOL), /* __construct $readsWrittenArguments */
+	reg::packed(105, 0, 106), /* none return */
+	reg::packed(105, 0, 106), /* all return */
+	reg::packed(105, 0, 106), /* unknown return */
 	reg::packed(0, MAY_BE_ARRAY), /* create $effects */
 	reg::packed(8, 0, 15), /* create $others */
-	reg::packed(36, MAY_BE_ARRAY, reg::NoString, false, false, 132), /* create $calledParameters */
-	reg::packed(53, MAY_BE_ARRAY, reg::NoString, false, false, 132), /* create $writtenParameters */
-	reg::packed(83, 0, 84), /* create return */
-	reg::packed(83, 0, 15), /* hasAny return */
-	reg::packed(149, MAY_BE_STRING), /* has $effect */
-	reg::packed(83, 0, 15), /* has return */
-	reg::packed(83, 0, 15), /* isDeterministic return */
-	reg::packed(83, MAY_BE_ARRAY), /* getEffectNames return */
-	reg::packed(83, MAY_BE_ARRAY), /* getCalledParameters return */
-	reg::packed(83, MAY_BE_ARRAY), /* getWrittenParameters return */
-	reg::packed(232, MAY_BE_STRING), /* writesParameter $parameterName */
-	reg::packed(83, 0, 15), /* writesParameter return */
+	reg::packed(36, MAY_BE_ARRAY, reg::NoString, false, false, 154), /* create $calledParameters */
+	reg::packed(53, MAY_BE_ARRAY, reg::NoString, false, false, 154), /* create $writtenParameters */
+	reg::packed(71, MAY_BE_BOOL, reg::NoString, false, false, 157), /* create $readsWrittenArguments */
+	reg::packed(105, 0, 106), /* create return */
+	reg::packed(105, 0, 15), /* hasAny return */
+	reg::packed(177, MAY_BE_STRING), /* has $effect */
+	reg::packed(105, 0, 15), /* has return */
+	reg::packed(105, 0, 15), /* isDeterministic return */
+	reg::packed(0, MAY_BE_ARRAY), /* hasOnly $effects */
+	reg::packed(105, 0, 15), /* hasOnly return */
+	reg::packed(105, MAY_BE_ARRAY), /* getEffectNames return */
+	reg::packed(105, MAY_BE_ARRAY), /* getCalledParameters return */
+	reg::packed(105, MAY_BE_ARRAY), /* getWrittenParameters return */
+	reg::packed(268, MAY_BE_STRING), /* writesParameter $parameterName */
+	reg::packed(105, 0, 15), /* writesParameter return */
+	reg::packed(298, MAY_BE_STRING), /* baseName $listed */
+	reg::packed(105, MAY_BE_STRING), /* baseName return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 71 /* __construct */, 4, 0, 4, reg::NoArg, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig none = { { 115 /* none */, 0, 4, 0, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig all = { { 120 /* all */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig unknown = { { 124 /* unknown */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig create = { { 135 /* create */, 2, 7, 4, 11, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig hasAny = { { 142 /* hasAny */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig has = { { 156 /* has */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isDeterministic = { { 160 /* isDeterministic */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getEffectNames = { { 176 /* getEffectNames */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCalledParameters = { { 191 /* getCalledParameters */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getWrittenParameters = { { 211 /* getWrittenParameters */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig writesParameter = { { 246 /* writesParameter */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 93 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig none = { { 137 /* none */, 0, 5, 0, 5, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig all = { { 142 /* all */, 0, 6, 0, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig unknown = { { 146 /* unknown */, 0, 7, 0, 7, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig create = { { 163 /* create */, 2, 8, 5, 13, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasAny = { { 170 /* hasAny */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig has = { { 184 /* has */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDeterministic = { { 188 /* isDeterministic */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasOnly = { { 204 /* hasOnly */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEffectNames = { { 212 /* getEffectNames */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCalledParameters = { { 227 /* getCalledParameters */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getWrittenParameters = { { 247 /* getWrittenParameters */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig writesParameter = { { 282 /* writesParameter */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig baseName = { { 305 /* baseName */, 1, 25, 1, 26, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::SideEffects

@@ -14,7 +14,7 @@ class PureFunctionRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new PureFunctionRule(new FunctionPurityCheck());
+		return new PureFunctionRule(new FunctionPurityCheck($this->createReflectionProvider()));
 	}
 
 	public function testRule(): void
@@ -103,18 +103,6 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Impure output between PHP opening and closing tags in pure function PureFunction\justContainsInlineHtml().',
 				160,
-			],
-			[
-				'Impure call to function array_push() in pure function PureFunction\bug13288().',
-				171,
-			],
-			[
-				'Impure call to function array_push() in pure function PureFunction\bug13288().',
-				175,
-			],
-			[
-				'Impure call to function array_push() in pure function PureFunction\bug13288().',
-				182,
 			],
 			[
 				'Impure exit in pure function PureFunction\bug13288b().',
@@ -569,20 +557,49 @@ class PureFunctionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed-builtin.php'], [
 			[
-				'Impure call to function str_replace() in pure function PureUnlessParameterPassedBuiltin\pureStrReplaceWithCount().',
-				22,
+				'Impure property assignment in pure function PureUnlessParameterPassedBuiltin\pureStrReplaceWithCountProperty().',
+				86,
 			],
+		]);
+	}
+
+	public function testWeakPurity(): void
+	{
+		$this->analyse([__DIR__ . '/data/weak-purity.php'], [
 			[
-				'Possibly impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithoutMatches().',
-				32,
-			],
-			[
-				'Impure call to function str_ireplace() in pure function PureUnlessParameterPassedBuiltin\pureStrIreplaceWithCount().',
+				'Impure echo in pure function WeakPurity\\sortsWithImpureCallback().',
 				52,
 			],
 			[
-				'Impure call to function similar_text() in pure function PureUnlessParameterPassedBuiltin\pureSimilarTextWithPercent().',
-				70,
+				'Impure property assignment in pure function WeakPurity\\sortsProperty().',
+				64,
+			],
+			[
+				'Impure property assignment in pure function WeakPurity\\sortsStaticProperty().',
+				74,
+			],
+			[
+				'Impure static property access in pure function WeakPurity\\sortsStaticProperty().',
+				74,
+			],
+			[
+				'Impure access to superglobal variable in pure function WeakPurity\\sortsSuperglobal().',
+				84,
+			],
+			[
+				'Possibly impure call to function shuffle() in pure function WeakPurity\\shufflesLocalCopy().',
+				95,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testWeakPurityObjects(): void
+	{
+		$this->analyse([__DIR__ . '/data/weak-purity-objects.php'], [
+			[
+				'Impure call to method ReflectionProperty::setRawValue() in pure function WeakPurityObjects\\writesObjectParameter().',
+				15,
 			],
 		]);
 	}

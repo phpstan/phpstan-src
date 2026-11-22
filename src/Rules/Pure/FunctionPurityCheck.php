@@ -3,9 +3,14 @@
 namespace PHPStan\Rules\Pure;
 
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
+use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\Scope;
 use PHPStan\Analyser\ThrowPoint;
@@ -13,9 +18,12 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\ParametersAcceptorSelector;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Functions\CallToFunctionStatementWithoutSideEffectsRule;
 use PHPStan\Rules\IdentifierRuleError;
 use PHPStan\Rules\RuleErrorBuilder;
+use PHPStan\Type\ResourceType;
 use PHPStan\Type\Type;
 use function array_filter;
 use function array_key_exists;
@@ -29,6 +37,10 @@ use function sprintf;
 #[AutowiredService]
 final class FunctionPurityCheck
 {
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
+	}
 
 	/**
 	 * @param 'Function'|'Method'|'PropertyHook' $identifier
@@ -238,6 +250,9 @@ final class FunctionPurityCheck
 			if ($this->isPureUnlessCallableInvocation($impurePoint, $pureUnlessCallableParamNames)) {
 				continue;
 			}
+			if ($this->onlyWritesLocalArguments($impurePoint)) {
+				continue;
+			}
 
 			$errors[] = RuleErrorBuilder::message(sprintf(
 				'%s %s in pure %s.',
@@ -255,6 +270,73 @@ final class FunctionPurityCheck
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * A call whose only effects are writes to its arguments is weakly pure when
+	 * each written argument is local: a variable passed by reference, which the
+	 * call reassigns like an assignment would, or an object it creates. Writing
+	 * through a by-ref argument to a property or a superglobal is an impure point
+	 * of its own, so it is still reported.
+	 */
+	private function onlyWritesLocalArguments(ImpurePoint $impurePoint): bool
+	{
+		$node = $impurePoint->getNode();
+		$scope = $impurePoint->getScope();
+		if ($node instanceof FuncCall && $node->name instanceof Name) {
+			if (!$this->reflectionProvider->hasFunction($node->name, $scope)) {
+				return false;
+			}
+			$reflection = $this->reflectionProvider->getFunction($node->name, $scope);
+		} elseif ($node instanceof MethodCall && $node->name instanceof Identifier) {
+			$reflection = $scope->getMethodReflection($scope->getType($node->var), $node->name->name);
+		} elseif ($node instanceof StaticCall && $node->name instanceof Identifier && $node->class instanceof Name) {
+			$reflection = $scope->getMethodReflection($scope->resolveTypeByName($node->class), $node->name->name);
+		} else {
+			return false;
+		}
+
+		if ($reflection === null || $node->isFirstClassCallable()) {
+			return false;
+		}
+
+		$sideEffects = $reflection->getSideEffects();
+		if (!$sideEffects->hasOnly(['writes-args'])->yes() || $sideEffects->getCalledParameters() !== []) {
+			return false;
+		}
+
+		$parametersAcceptor = ParametersAcceptorSelector::selectFromArgs($scope, $node->getArgs(), $reflection->getVariants(), $reflection->getNamedArgumentsVariants());
+		if ($node instanceof FuncCall) {
+			$normalizedNode = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
+		} elseif ($node instanceof MethodCall) {
+			$normalizedNode = ArgumentsNormalizer::reorderMethodArguments($parametersAcceptor, $node);
+		} else {
+			$normalizedNode = ArgumentsNormalizer::reorderStaticCallArguments($parametersAcceptor, $node);
+		}
+		if ($normalizedNode === null) {
+			return false;
+		}
+
+		$parameters = $parametersAcceptor->getParameters();
+		foreach ($normalizedNode->getArgs() as $i => $arg) {
+			$parameter = $parameters[$i] ?? ($parametersAcceptor->isVariadic() ? $parameters[count($parameters) - 1] ?? null : null);
+			if ($parameter === null || $arg->unpack) {
+				return false;
+			}
+			if ($sideEffects->writesParameter($parameter->getName())->no()) {
+				continue;
+			}
+			if ($parameter->passedByReference()->yes() || $arg->value instanceof New_) {
+				continue;
+			}
+
+			$argType = $scope->getType($arg->value);
+			if (!$argType->isObject()->no() || !(new ResourceType())->isSuperTypeOf($argType)->no()) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**

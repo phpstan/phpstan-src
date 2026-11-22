@@ -19,7 +19,7 @@ class FunctionMetadataTest extends PHPStanTestCase
 		$processor = new Processor();
 		$processor->process(Expect::arrayOf(
 			Expect::structure([
-				'effects' => Expect::listOf(Expect::string()->pattern('\\*|[a-z]+(-[a-z]+)*(\\.[a-z]+(-[a-z]+)*)*'))->required(),
+				'effects' => Expect::listOf(Expect::string()->pattern('\\*|[a-z]+(-[a-z]+)*(\\.[a-z]+(-[a-z]+)*)*(\\(\\$[a-zA-Z_][a-zA-Z0-9_]*(, \\$[a-zA-Z_][a-zA-Z0-9_]*)*\\))?'))->required(),
 				'hasSideEffects' => Expect::anyOf(false),
 				'pureUnlessCallableIsImpureParameters' => Expect::arrayOf(Expect::bool(), Expect::string()),
 				'pureUnlessParameterPassedParameters' => Expect::arrayOf(Expect::bool(), Expect::string()),

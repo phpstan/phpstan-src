@@ -5,7 +5,7 @@
  * A final @api value class: function and method reflections create one in
  * getSideEffects() and the handlers ask it what a call does. The twin's
  * constructor is private; instances come from none() / all() / unknown() /
- * create(). State lives in the twin's four promoted property slots, in its
+ * create(). State lives in the twin's five promoted property slots, in its
  * order; native callers ask through pt_side_effects_*().
  */
 
@@ -36,20 +36,23 @@ public:
 	explicit SideEffects(zend_object *self) : self(self) {}
 
 	/* the private constructor's body */
-	void construct(zval *effects, zval *others, zval *calledParameters, zval *writtenParameters) const
+	void construct(zval *effects, zval *others, zval *calledParameters, zval *writtenParameters, bool readsWrittenArguments) const
 	{
 		pt_write_slot(self, slots::effects, effects);
 		pt_write_slot(self, slots::others, others);
 		pt_write_slot(self, slots::calledParameters, calledParameters);
 		pt_write_slot(self, slots::writtenParameters, writtenParameters);
+		zval reads;
+		ZVAL_BOOL(&reads, readsWrittenArguments);
+		pt_write_slot(self, slots::readsWrittenArguments, &reads);
 	}
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val newSelf(zval *effects, zval *others, zval *calledParameters, zval *writtenParameters)
+	static zv::Val newSelf(zval *effects, zval *others, zval *calledParameters, zval *writtenParameters, bool readsWrittenArguments)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_side_effects) != SUCCESS)) return zv::Val();
-		SideEffects(Z_OBJ(object)).construct(effects, others, calledParameters, writtenParameters);
+		SideEffects(Z_OBJ(object)).construct(effects, others, calledParameters, writtenParameters, readsWrittenArguments);
 		return zv::Val::adopt(object);
 	}
 
@@ -58,19 +61,19 @@ public:
 	{
 		zval empty;
 		ZVAL_EMPTY_ARRAY(&empty);
-		return newSelf(&empty, pt_trinary_singleton(others), &empty, &empty);
+		return newSelf(&empty, pt_trinary_singleton(others), &empty, &empty, false);
 	}
 
 	static zv::Val none() { return withOthers(PT_TRI_NO); }
 	static zv::Val all() { return withOthers(PT_TRI_YES); }
 	static zv::Val unknown() { return withOthers(PT_TRI_MAYBE); }
 
-	/* create($effects, $others, $calledParameters = [], $writtenParameters = []); the arrays NULL when omitted */
-	static zv::Val create(zval *effects, zval *others, zval *calledParameters, zval *writtenParameters)
+	/* create($effects, $others, $calledParameters = [], $writtenParameters = [], $readsWrittenArguments = false); the arrays NULL when omitted */
+	static zv::Val create(zval *effects, zval *others, zval *calledParameters, zval *writtenParameters, bool readsWrittenArguments)
 	{
 		zval empty;
 		ZVAL_EMPTY_ARRAY(&empty);
-		return newSelf(effects, others, calledParameters != NULL ? calledParameters : &empty, writtenParameters != NULL ? writtenParameters : &empty);
+		return newSelf(effects, others, calledParameters != NULL ? calledParameters : &empty, writtenParameters != NULL ? writtenParameters : &empty, readsWrittenArguments);
 	}
 
 	/* effects !== [] ? Yes : (others is No and called/written parameters !== [] ? Maybe : others) */
@@ -118,7 +121,7 @@ public:
 				return -1;
 			}
 			const char *listed = Z_STRVAL_P(listedZv);
-			size_t listedLen = Z_STRLEN_P(listedZv);
+			size_t listedLen = baseNameLength(listed, Z_STRLEN_P(listedZv));
 			/* $listed === $effect || str_starts_with($listed, $effect . '.') */
 			if (listedLen >= len && memcmp(listed, effect, len) == 0 && (listedLen == len || listed[len] == '.')) return PT_TRI_YES;
 			/* str_starts_with($effect, $listed . '.'): $result->or(Maybe) */
@@ -138,6 +141,9 @@ public:
 	/* isDeterministic() as PT_TRI_*; -1 = pending exception */
 	zend_long isDeterministicValue() const
 	{
+		zval *readsWrittenArguments = pt_typed_slot(self, slots::readsWrittenArguments, self->ce, "readsWrittenArguments");
+		if (UNEXPECTED(readsWrittenArguments == NULL)) return -1;
+		if (Z_TYPE_P(readsWrittenArguments) == IS_TRUE) return PT_TRI_NO;
 		zend_long has = hasValue(pt_se_nondeterministic, sizeof(pt_se_nondeterministic) - 1);
 		if (UNEXPECTED(has < 0)) return -1;
 		return has == PT_TRI_YES ? PT_TRI_NO : (has == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE);
@@ -160,7 +166,8 @@ public:
 	zv::Val getCalledParameters() const { return read(slots::calledParameters, "calledParameters"); }
 	zv::Val getWrittenParameters() const { return read(slots::writtenParameters, "writtenParameters"); }
 
-	/* $this->writtenParameters[$parameterName] ?? $this->has('writes-args') */
+	/* $this->writtenParameters[$parameterName], else Yes for a listed bare
+	 * writes-args, else $this->others */
 	zv::Val writesParameter(zend_string *parameterName) const
 	{
 		zval *writtenParameters = pt_typed_slot(self, slots::writtenParameters, self->ce, "writtenParameters");
@@ -177,13 +184,99 @@ public:
 				return zv::Val::copyOf(zv::Ref(written));
 			}
 		}
-		zend_long writesArgs = hasValue(pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
-		if (UNEXPECTED(writesArgs < 0)) return zv::Val();
-		return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(writesArgs)));
+		int listsWritesArgs = listsValue(pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
+		if (UNEXPECTED(listsWritesArgs < 0)) return zv::Val();
+		if (listsWritesArgs == 1) return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(PT_TRI_YES)));
+		return read(slots::others, "others");
+	}
+
+	/* strlen(baseName($listed)): the name without its parenthesised parameters */
+	static size_t baseNameLength(const char *listed, size_t len)
+	{
+		const char *paren = static_cast<const char *>(memchr(listed, '(', len));
+		return paren == NULL ? len : static_cast<size_t>(paren - listed);
+	}
+
+	/* hasOnly($effects) */
+	zv::Val hasOnly(HashTable *allowed) const
+	{
+		zval *others = pt_typed_slot(self, slots::others, self->ce, "others");
+		if (UNEXPECTED(others == NULL)) return zv::Val();
+		zend_long othersValue = pt_trinary_value(Z_OBJ_P(others));
+		if (othersValue == PT_TRI_YES) return trinary(PT_TRI_NO);
+		/* $this->others->negate() */
+		zend_long result = othersValue == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE;
+
+		zval *effects = pt_typed_slot(self, slots::effects, self->ce, "effects");
+		if (UNEXPECTED(effects == NULL)) return zv::Val();
+		zval *listedZv;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(effects), listedZv) {
+			ZVAL_DEREF(listedZv);
+			if (Z_TYPE_P(listedZv) != IS_STRING) {
+				zend_type_error("PHPStan\\Reflection\\SideEffects::baseName(): Argument #1 ($listed) must be of type string, %s given", zend_zval_value_name(listedZv));
+				return zv::Val();
+			}
+			const char *listed = Z_STRVAL_P(listedZv);
+			size_t listedLen = baseNameLength(listed, Z_STRLEN_P(listedZv));
+			zend_long listedResult = PT_TRI_NO;
+			zval *effectZv;
+			ZEND_HASH_FOREACH_VAL(allowed, effectZv) {
+				ZVAL_DEREF(effectZv);
+				if (Z_TYPE_P(effectZv) != IS_STRING) {
+					zend_type_error("str_starts_with(): Argument #2 ($needle) must be of type string, %s given", zend_zval_value_name(effectZv));
+					return zv::Val();
+				}
+				const char *effect = Z_STRVAL_P(effectZv);
+				size_t len = Z_STRLEN_P(effectZv);
+				/* $listed === $effect || str_starts_with($listed, $effect . '.') */
+				if (listedLen >= len && memcmp(listed, effect, len) == 0 && (listedLen == len || listed[len] == '.')) {
+					listedResult = PT_TRI_YES;
+					break;
+				}
+				/* str_starts_with($effect, $listed . '.') */
+				if (len > listedLen && memcmp(effect, listed, listedLen) == 0 && effect[listedLen] == '.') listedResult = PT_TRI_MAYBE;
+			} ZEND_HASH_FOREACH_END();
+			result = trinaryAnd(result, listedResult);
+		} ZEND_HASH_FOREACH_END();
+
+		bool allowsWritesArgs = false;
+		zval *effectZv;
+		ZEND_HASH_FOREACH_VAL(allowed, effectZv) {
+			if (Z_TYPE_P(effectZv) == IS_STRING && Z_STRLEN_P(effectZv) == sizeof(pt_se_writes_args) - 1 && memcmp(Z_STRVAL_P(effectZv), pt_se_writes_args, sizeof(pt_se_writes_args) - 1) == 0) {
+				allowsWritesArgs = true;
+				break;
+			}
+		} ZEND_HASH_FOREACH_END();
+		if (!allowsWritesArgs) {
+			zval *writtenParameters = pt_typed_slot(self, slots::writtenParameters, self->ce, "writtenParameters");
+			if (UNEXPECTED(writtenParameters == NULL)) return zv::Val();
+			zval *written;
+			ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(writtenParameters), written) {
+				ZVAL_DEREF(written);
+				if (UNEXPECTED(Z_TYPE_P(written) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(written), pt_ce_trinary))) {
+					zend_throw_error(NULL, "Call to a member function negate() on %s", zend_zval_value_name(written));
+					return zv::Val();
+				}
+				zend_long writtenValue = pt_trinary_value(Z_OBJ_P(written));
+				result = trinaryAnd(result, writtenValue == PT_TRI_YES ? PT_TRI_NO : (writtenValue == PT_TRI_NO ? PT_TRI_YES : PT_TRI_MAYBE));
+			} ZEND_HASH_FOREACH_END();
+		}
+
+		return trinary(result);
 	}
 
 private:
 	zend_object *self;
+
+	static zv::Val trinary(zend_long value) { return zv::Val::copyOf(zv::Ref(pt_trinary_singleton(value))); }
+
+	/* TrinaryLogic::and() */
+	static zend_long trinaryAnd(zend_long a, zend_long b)
+	{
+		if (a == PT_TRI_NO || b == PT_TRI_NO) return PT_TRI_NO;
+		if (a == PT_TRI_MAYBE || b == PT_TRI_MAYBE) return PT_TRI_MAYBE;
+		return PT_TRI_YES;
+	}
 
 	/* a copy of the typed slot; UNDEF with the uninitialized-read Error pending */
 	zv::Val read(uint32_t index, const char *name) const
@@ -369,13 +462,15 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *effects, *others, *calledParameters, *writtenParameters;
-		ZEND_PARSE_PARAMETERS_START(4, 4)
+		bool readsWrittenArguments;
+		ZEND_PARSE_PARAMETERS_START(5, 5)
 			Z_PARAM_ARRAY(effects)
 			Z_PARAM_OBJECT_OF_CLASS(others, pt_ce_trinary)
 			Z_PARAM_ARRAY(calledParameters)
 			Z_PARAM_ARRAY(writtenParameters)
+			Z_PARAM_BOOL(readsWrittenArguments)
 		ZEND_PARSE_PARAMETERS_END();
-		SideEffects(Z_OBJ_P(ZEND_THIS)).construct(effects, others, calledParameters, writtenParameters);
+		SideEffects(Z_OBJ_P(ZEND_THIS)).construct(effects, others, calledParameters, writtenParameters, readsWrittenArguments);
 	});
 
 	cls.method<&SideEffects::none>(sigs::none);
@@ -384,19 +479,29 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 
 	cls.method(sigs::create, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *effects, *others, *calledParameters = NULL, *writtenParameters = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 4)
+		bool readsWrittenArguments = false;
+		ZEND_PARSE_PARAMETERS_START(2, 5)
 			Z_PARAM_ARRAY(effects)
 			Z_PARAM_OBJECT_OF_CLASS(others, pt_ce_trinary)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY(calledParameters)
 			Z_PARAM_ARRAY(writtenParameters)
+			Z_PARAM_BOOL(readsWrittenArguments)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(SideEffects::create(effects, others, calledParameters, writtenParameters));
+		PT_RETURN_VAL(SideEffects::create(effects, others, calledParameters, writtenParameters, readsWrittenArguments));
 	});
 
 	cls.method<&SideEffects::hasAny>(sigs::hasAny);
 	cls.method<&SideEffects::has, zp::Str>(sigs::has);
 	cls.method<&SideEffects::isDeterministic>(sigs::isDeterministic);
+	cls.method<&SideEffects::hasOnly, zp::Ht>(sigs::hasOnly);
+	cls.method(sigs::baseName, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zend_string *listed;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_STR(listed)
+		ZEND_PARSE_PARAMETERS_END();
+		RETURN_STRINGL(ZSTR_VAL(listed), SideEffects::baseNameLength(ZSTR_VAL(listed), ZSTR_LEN(listed)));
+	});
 	cls.method<&SideEffects::getEffectNames>(sigs::getEffectNames);
 	cls.method<&SideEffects::getCalledParameters>(sigs::getCalledParameters);
 	cls.method<&SideEffects::getWrittenParameters>(sigs::getWrittenParameters);

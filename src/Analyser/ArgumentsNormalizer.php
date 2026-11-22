@@ -305,13 +305,17 @@ final class ArgumentsNormalizer
 	 */
 	public static function getArgByPositionOrName(array $args, int $position, string $name): ?Arg
 	{
+		$argByPosition = null;
 		foreach ($args as $i => $arg) {
-			if ($arg->name === null ? $i === $position : $arg->name->toString() === $name) {
+			if ($i === $position) {
+				$argByPosition = $arg;
+			}
+			if ($arg->name !== null && $arg->name->toString() === $name) {
 				return $arg;
 			}
 		}
 
-		return null;
+		return $argByPosition;
 	}
 
 	/**

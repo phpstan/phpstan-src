@@ -234,15 +234,19 @@ inline zend_string *plainFuncCallName(zend_object *node, FuncCallProps &props, N
  * The argument bound to the parameter at `position` named `name` — the
  * positional argument at that index or the one passed by that name. Mirrors
  * ArgumentsNormalizer::getArgByPositionOrName(). NULL when no argument is
- * bound to it.
+ * bound to it or named arguments are mixed with unpacking.
  */
 inline zend_object *argForParameter(zval *args, zend_ulong position, const char *name, size_t nameLen)
 {
 	static NodeProp argNameProp = PT_NODE_PROP(PT_CLASS_ARG, "name");
+	static NodeProp argUnpackProp = PT_NODE_PROP(PT_CLASS_ARG, "unpack");
 	static NodeProp identifierProp = PT_IDENTIFIER_PROP;
 
 	if (args == NULL || Z_TYPE_P(args) != IS_ARRAY) return NULL;
 	zend_object *argByPosition = NULL;
+	zend_object *argByName = NULL;
+	bool hasNamedArgs = false;
+	bool hasUnpackedArg = false;
 	for (auto entry : zv::ArrRef(args)) {
 		zv::Ref arg = entry.value().deref();
 		if (!arg.isObject()) continue;
@@ -250,12 +254,24 @@ inline zend_object *argForParameter(zval *args, zend_ulong position, const char 
 			argByPosition = arg.asObject();
 		}
 
+		zval *unpack = argUnpackProp.of(arg.asObject());
+		if (unpack != NULL && zend_is_true(unpack)) hasUnpackedArg = true;
+
 		zval *argName = argNameProp.of(arg.asObject());
-		if (argName != NULL && Z_TYPE_P(argName) == IS_OBJECT) {
-			zend_string *argNameString = nameString(Z_OBJ_P(argName), identifierProp);
-			if (argNameString != NULL && zend_string_equals_cstr(argNameString, name, nameLen)) return arg.asObject();
+		if (argName != NULL && Z_TYPE_P(argName) != IS_NULL) {
+			hasNamedArgs = true;
+			if (Z_TYPE_P(argName) == IS_OBJECT) {
+				zend_string *argNameString = nameString(Z_OBJ_P(argName), identifierProp);
+				if (argNameString != NULL && zend_string_equals_cstr(argNameString, name, nameLen)) {
+					argByName = arg.asObject();
+				}
+			}
 		}
 	}
+
+	// Match reorderArgs(): unpacking makes named argument positions indeterminate.
+	if (hasNamedArgs && hasUnpackedArg) return NULL;
+	if (argByName != NULL) return argByName;
 	return argByPosition;
 }
 

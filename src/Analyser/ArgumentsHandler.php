@@ -36,6 +36,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ResolvedFunctionVariant;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -851,6 +852,18 @@ final class ArgumentsHandler
 						$scope = $scope->invalidateExpression($arg->value, true);
 					}
 				}
+
+				if ($currentParameter === null || !$this->shouldInvalidateCallbackExpressions($currentParameter)) {
+					continue;
+				}
+
+				$writtenObject = $this->findObjectWrittenByCallable($arg->value, $currentParameter, $calleeReflection, $scope, $storage);
+				if ($writtenObject === null) {
+					continue;
+				}
+
+				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($writtenObject), $scope, $storage);
+				$scope = $scope->invalidateExpression($writtenObject, true);
 			}
 		}
 
@@ -890,6 +903,56 @@ final class ArgumentsHandler
 		}
 
 		return $sideEffects->writesParameter($parameter->getName());
+	}
+
+	/**
+	 * The object a callable argument passed to a callable parameter is bound
+	 * to, such as $object in [$object, 'method'] or $object->method(...), when
+	 * calling the method writes it, like calling the method directly does.
+	 *
+	 * @param MethodReflection|FunctionReflection|null $calleeReflection
+	 */
+	private function findObjectWrittenByCallable(Expr $value, ParameterReflection $parameter, $calleeReflection, MutatingScope $scope, ExpressionResultStorage $storage): ?Expr
+	{
+		if ($value instanceof MethodCall && $value->isFirstClassCallable() && $value->name instanceof Identifier) {
+			$object = $value->var;
+			$methodName = $value->name->toString();
+		} elseif (
+			$value instanceof Expr\Array_
+			&& count($value->items) === 2
+			&& $value->items[0]->key === null
+			&& !$value->items[0]->unpack
+			&& $value->items[1]->key === null
+			&& $value->items[1]->value instanceof Node\Scalar\String_
+		) {
+			$object = $value->items[0]->value;
+			$methodName = $value->items[1]->value->value;
+		} else {
+			return null;
+		}
+
+		// asking whether the parameter takes a callable can reflect the classes
+		// named by callable-like arrays, so it is asked only for such an argument
+		if (!$this->callCallbackImmediately($parameter, $parameter->getType(), $calleeReflection)) {
+			return null;
+		}
+
+		$objectResult = $storage->findExpressionResult($object);
+		if ($objectResult === null) {
+			return null;
+		}
+
+		$methodReflection = $scope->getMethodReflection($objectResult->getType(), $methodName);
+		if ($methodReflection === null || $methodReflection->isStatic()) {
+			return null;
+		}
+
+		$sideEffects = $methodReflection->getSideEffects();
+		if (!$sideEffects->has(SideEffects::WRITES_THIS)->or($sideEffects->has(SideEffects::WRITES_GLOBAL))->yes()) {
+			return null;
+		}
+
+		return $object;
 	}
 
 	/**

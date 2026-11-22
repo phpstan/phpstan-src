@@ -54,6 +54,19 @@ final class SideEffectsFactory
 			}
 		}
 
+		// a function whose effects are listed writes what it takes by reference
+		if ($effects !== null) {
+			foreach ($reflection->getVariants() as $variant) {
+				foreach ($variant->getParameters() as $parameter) {
+					if (!$parameter->passedByReference()->yes()) {
+						continue;
+					}
+
+					$writtenParameters[$parameter->getName()] = TrinaryLogic::createYes();
+				}
+			}
+		}
+
 		$sideEffects = SideEffects::create(
 			$effects ?? [],
 			$effects !== null ? TrinaryLogic::createNo() : $reflection->hasSideEffects(),

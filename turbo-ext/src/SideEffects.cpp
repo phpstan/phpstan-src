@@ -375,6 +375,58 @@ static int pt_se_lists_writes_global(zend_object *object)
 	return 0;
 }
 
+static pt_method_site pt_se_has_only_site;
+
+int pt_impure_point_is_observable(zend_object *impurePoint)
+{
+	zval *sideEffects = pt_impure_point_side_effects(impurePoint);
+	if (UNEXPECTED(sideEffects == NULL)) return -1;
+	if (Z_TYPE_P(sideEffects) == IS_NULL) return 1;
+	if (UNEXPECTED(Z_TYPE_P(sideEffects) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function hasOnly() on %s", zend_zval_value_name(sideEffects));
+		return -1;
+	}
+	/* ['reads-global', 'nondeterministic'] */
+	zval allowed;
+	array_init_size(&allowed, 2);
+	add_next_index_stringl(&allowed, pt_se_reads_global, sizeof(pt_se_reads_global) - 1);
+	add_next_index_stringl(&allowed, pt_se_nondeterministic, sizeof(pt_se_nondeterministic) - 1);
+	zend_object *object = Z_OBJ_P(sideEffects);
+	zend_long hasOnly;
+	if (EXPECTED(object->ce == pt_ce_side_effects)) {
+		hasOnly = pt_side_effects_trinary(SideEffects(object).hasOnly(Z_ARRVAL(allowed)));
+	} else {
+		/* a twin from a test that mixes both implementations */
+		hasOnly = pt_side_effects_trinary(pt_call_method_cached(pt_se_has_only_site, object, PT_LC("hasonly"), 1, &allowed));
+	}
+	zval_ptr_dtor(&allowed);
+	if (UNEXPECTED(hasOnly < 0)) return -1;
+	return hasOnly == PT_TRI_YES ? 0 : 1;
+}
+
+int pt_side_effects_has_other_than_writes_args(zval *sideEffects)
+{
+	if (UNEXPECTED(Z_TYPE_P(sideEffects) != IS_OBJECT)) {
+		zend_throw_error(NULL, "Call to a member function hasOnly() on %s", zend_zval_value_name(sideEffects));
+		return -1;
+	}
+	/* ['writes-args'] */
+	zval allowed;
+	array_init_size(&allowed, 1);
+	add_next_index_stringl(&allowed, pt_se_writes_args, sizeof(pt_se_writes_args) - 1);
+	zend_object *object = Z_OBJ_P(sideEffects);
+	zend_long hasOnly;
+	if (EXPECTED(object->ce == pt_ce_side_effects)) {
+		hasOnly = pt_side_effects_trinary(SideEffects(object).hasOnly(Z_ARRVAL(allowed)));
+	} else {
+		/* a twin from a test that mixes both implementations */
+		hasOnly = pt_side_effects_trinary(pt_call_method_cached(pt_se_has_only_site, object, PT_LC("hasonly"), 1, &allowed));
+	}
+	zval_ptr_dtor(&allowed);
+	if (UNEXPECTED(hasOnly < 0)) return -1;
+	return hasOnly == PT_TRI_NO ? 1 : 0;
+}
+
 zend_long pt_function_reflection_reads_global(zval *functionReflection)
 {
 	if (UNEXPECTED(Z_TYPE_P(functionReflection) != IS_OBJECT)) {

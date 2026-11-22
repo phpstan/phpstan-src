@@ -2564,6 +2564,12 @@ zend_long pt_function_reflection_reads_global(zval *functionReflection);
  * of a FunctionReflection / an ExtendedMethodReflection as 1 / 0; -1 = pending exception */
 int pt_function_reflection_lists_writes_global(zval *functionReflection);
 int pt_method_reflection_lists_writes_global(zval *methodReflection);
+/* whether an impure point counts for an unused expression statement: !($impurePoint->getSideEffects()?->hasOnly(['reads-global', 'nondeterministic'])->yes() ?? false)
+ * of an ImpurePoint, as 1 / 0; -1 = pending exception */
+int pt_impure_point_is_observable(zend_object *impurePoint);
+/* $sideEffects->hasOnly(['writes-args'])->no() of a SideEffects as 1 / 0;
+ * -1 = pending exception */
+int pt_side_effects_has_other_than_writes_args(zval *sideEffects);
 
 /* }}} */
 

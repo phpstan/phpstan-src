@@ -70,6 +70,10 @@ final class SimpleImpurePoint
 			if ($variant !== null) {
 				$certain = $certain || $variant->getReturnType()->isVoid()->yes();
 			}
+			if (!$certain && $function->getSideEffects()->hasOnly(['writes-args'])->no()) {
+				// the flagged parameters do not undo effects other than writing the arguments
+				$certain = true;
+			}
 
 			if (!$certain && $scope !== null && $variant !== null) {
 				$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
@@ -225,13 +229,13 @@ final class SimpleImpurePoint
 				}
 
 				$isCallable = $argType->isCallable();
-				if ($isCallable->no()) {
+				if ($isCallable->no() && $parameter->getType()->isSuperTypeOf($argType)->yes()) {
 					// A parameter that takes either data or the callable, such as
 					// the arrays before the callback of array_udiff(), got data.
 					continue;
 				}
 
-				if ($isCallable->maybe()) {
+				if (!$isCallable->yes()) {
 					$verdict = $verdict->and(TrinaryLogic::createMaybe());
 					continue;
 				}

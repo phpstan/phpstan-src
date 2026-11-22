@@ -223,6 +223,14 @@ public:
 			if (UNEXPECTED(isVoid < 0)) return false;
 			certain = isVoid == PT_TRI_YES;
 		}
+		/* !$certain && $function->getSideEffects()->hasOnly(['writes-args'])->no() */
+		if (!certain) {
+			zv::Val ownSideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+			if (UNEXPECTED(ownSideEffects.isUndef())) return false;
+			int other = pt_side_effects_has_other_than_writes_args(ownSideEffects.raw());
+			if (UNEXPECTED(other < 0)) return false;
+			if (other == 1) certain = true;
+		}
 
 		/* the twin's $verdict !== null */
 		bool hasVerdict = false;
@@ -388,7 +396,7 @@ public:
 			bool matchedAny = false;
 			bool hasUnpackedArg = false;
 			bool matched = matchArgs(args, parameter, parameterEntry, declaredParameterNames.table(), matchedAny, hasUnpackedArg, [&](zval *matchedArg) -> bool {
-				return matchedArgVerdict(matchedArg, scope, verdict);
+				return matchedArgVerdict(matchedArg, parameter, scope, verdict);
 			});
 			if (UNEXPECTED(!matched)) return false;
 
@@ -407,7 +415,7 @@ public:
 
 	/* The body of the loop over $matchedArgs in
 	 * resolvePureUnlessCallableIsImpureVerdict(); false = pending exception */
-	[[nodiscard]] static bool matchedArgVerdict(zval *matchedArg, zval *scope, zend_long &verdict)
+	[[nodiscard]] static bool matchedArgVerdict(zval *matchedArg, zval *parameter, zval *scope, zend_long &verdict)
 	{
 		zval *argValue = nodeProperty(pt_sip_arg_value_site, matchedArg, PT_LC("value"));
 		if (UNEXPECTED(EG(exception))) return false;
@@ -423,8 +431,22 @@ public:
 
 		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
 		if (UNEXPECTED(isCallable < 0)) return false;
-		if (isCallable == PT_TRI_NO) return true;
-		if (isCallable == PT_TRI_MAYBE) {
+		/* $isCallable->no() && $parameter->getType()->isSuperTypeOf($argType)->yes():
+		 * data passed to a parameter that also takes data */
+		if (isCallable == PT_TRI_NO) {
+			zv::Val parameterType = pt_parameter_reflection_call(parameter, PT_PR_GET_TYPE);
+			if (UNEXPECTED(parameterType.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(parameterType.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function isSuperTypeOf() on %s", zend_zval_value_name(parameterType.raw()));
+				return false;
+			}
+			zv::Val takesData = pt_type_op(Z_OBJ_P(parameterType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, argType.raw());
+			if (UNEXPECTED(takesData.isUndef())) return false;
+			zend_long takesDataValue = pt_type_result_trinary(takesData.raw());
+			if (UNEXPECTED(takesDataValue < 0)) return false;
+			if (takesDataValue == PT_TRI_YES) return true;
+		}
+		if (isCallable != PT_TRI_YES) {
 			verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
 			return true;
 		}

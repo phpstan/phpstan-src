@@ -93,8 +93,14 @@ final class ExpressionHandler implements StmtHandler
 
 		$nodeScopeResolver->callNodeCallback($nodeCallback, $stmt, $stmtScope, $storage);
 		$throwPoints = array_filter($result->getThrowPoints(), static fn ($throwPoint) => $throwPoint->isExplicit());
+		// a call that only reads state or gives a varying result has no effect when its result is unused
+		$observableImpurePoints = array_filter(
+			$result->getImpurePoints(),
+			static fn (ImpurePoint $impurePoint): bool => $impurePoint->getSideEffects() === null
+				|| !$impurePoint->getSideEffects()->hasOnly(['reads-global', 'nondeterministic'])->yes(),
+		);
 		if (
-			count($result->getImpurePoints()) === 0
+			count($observableImpurePoints) === 0
 			&& count($throwPoints) === 0
 			&& !$stmt->expr instanceof Expr\PostInc
 			&& !$stmt->expr instanceof Expr\PreInc

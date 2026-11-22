@@ -136,7 +136,20 @@ public:
 			zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(impurePoints));
 			return zv::Val();
 		}
-		if (zend_hash_num_elements(Z_ARRVAL_P(impurePoints)) == 0 && explicitThrowPoints == 0) {
+		/* a call that only reads state or gives a varying result has no effect when its result is unused */
+		uint32_t observableImpurePoints = 0;
+		zval *impurePoint;
+		ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(impurePoints), impurePoint) {
+			ZVAL_DEREF(impurePoint);
+			if (UNEXPECTED(Z_TYPE_P(impurePoint) != IS_OBJECT)) {
+				zend_type_error("{closure}(): Argument #1 ($impurePoint) must be of type PHPStan\\Analyser\\ImpurePoint, %s given", zend_zval_value_name(impurePoint));
+				return zv::Val();
+			}
+			int observable = pt_impure_point_is_observable(Z_OBJ_P(impurePoint));
+			if (UNEXPECTED(observable < 0)) return zv::Val();
+			observableImpurePoints += observable;
+		} ZEND_HASH_FOREACH_END();
+		if (observableImpurePoints == 0 && explicitThrowPoints == 0) {
 			expr = statementExpr(stmt);
 			if (UNEXPECTED(expr == NULL)) return zv::Val();
 			bool incDec = ptsh::isInstanceOf(expr, PT_CLASS_POST_INC, error)

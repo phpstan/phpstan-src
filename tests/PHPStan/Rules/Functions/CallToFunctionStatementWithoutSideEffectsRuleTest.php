@@ -180,4 +180,36 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testCallsReadingState(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-reading-state.php'], [
+			[
+				'Call to function time() on a separate line has no effect.',
+				7,
+			],
+			[
+				'Call to function getenv() on a separate line has no effect.',
+				8,
+			],
+			[
+				'Call to function date() on a separate line has no effect.',
+				9,
+			],
+			[
+				'Call to function call_user_func() on a separate line has no effect.',
+				27,
+			],
+		]);
+	}
+
+	public function testCallbackAfterArrays(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-callback-after-arrays.php'], [
+			[
+				'Call to function array_udiff() on a separate line has no effect.',
+				13,
+			],
+		]);
+	}
+
 }

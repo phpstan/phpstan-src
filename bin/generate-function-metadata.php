@@ -208,7 +208,7 @@ use Symfony\Component\Finder\Finder;
 			if ($leavesError($metadata[$methodName]['effects'])) {
 				continue;
 			}
-			if (in_array($methodName, $pureAttributeCorrections, true)) {
+			if (in_array($methodName, $pureAttributeCorrections, true) || $onlyReads($metadata[$methodName]['effects'])) {
 				continue;
 			}
 			if ($metadata[$methodName]['effects'] !== []) {

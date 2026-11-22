@@ -140,6 +140,31 @@ class Foo
 		}
 	}
 
+	/** @param ReflectionClass<self> $class */
+	public function methodsReadingGlobalState(ReflectionClass $class, ?ReflectionClass $maybeClass): void
+	{
+		if (\Locale::getDefault() === 'cs') {
+			printf('a');
+			assertType("'cs'", \Locale::getDefault());
+		}
+		if (\Locale::getDefault() === 'cs') {
+			ini_set('intl.default_locale', 'en');
+			assertType('non-empty-string', \Locale::getDefault());
+		}
+		if ($class->getStaticPropertyValue('foo') === 1) {
+			printf('a');
+			assertType('1', $class->getStaticPropertyValue('foo'));
+		}
+		if ($class->getStaticPropertyValue('foo') === 1) {
+			ini_set('precision', '10');
+			assertType('mixed', $class->getStaticPropertyValue('foo'));
+		}
+		if ($maybeClass?->getStaticPropertyValue('foo') === 1) {
+			ini_set('precision', '10');
+			assertType('mixed', $maybeClass?->getStaticPropertyValue('foo'));
+		}
+	}
+
 	public function mbstringState(string $s): void
 	{
 		if (mb_strlen($s) === 3) {

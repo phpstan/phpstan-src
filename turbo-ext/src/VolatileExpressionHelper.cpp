@@ -244,9 +244,6 @@ public:
 	static zv::Val invalidateGlobalStateReads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates)
 	{
 		if (writtenStates != NULL && Z_TYPE_P(writtenStates) == IS_NULL) writtenStates = NULL;
-		zend_class_entry *funcCallCe = pt_class(PT_CLASS_FUNC_CALL);
-		zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
-		if (UNEXPECTED(funcCallCe == NULL || nameCe == NULL)) return zv::Val();
 
 		bool changed = false;
 		/* foreach by value walks the table as it was before any removal */
@@ -255,39 +252,18 @@ public:
 			if (UNEXPECTED(!pt_check_holder(exprTypeHolder.raw()))) return zv::Val();
 			zend_object *expr = zv::ObjRef(exprTypeHolder.asObject()).propAt(PT_ETH_PROP_EXPR).asObject();
 
-			if (!instanceof_function(expr->ce, funcCallCe)) continue;
-			bool isFirstClassCallable;
-			if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, isFirstClassCallable))) return zv::Val();
-			if (isFirstClassCallable) continue;
-			zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
-			if (UNEXPECTED(name.raw() == NULL)) continue;
-			name = name.deref();
-			if (!name.instanceOf(nameCe)) continue;
-			bool hasFunction;
-			if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider, name.raw(), scope, hasFunction))) return zv::Val();
-			if (!hasFunction) continue;
-
-			zv::Val function = pt_reflection_provider_get_function(reflectionProvider, name.raw(), scope);
-			if (UNEXPECTED(function.isUndef())) return zv::Val();
-			if (UNEXPECTED(Z_TYPE_P(function.raw()) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(function.raw()));
-				return zv::Val();
-			}
-			/* in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true) */
-			zv::Val functionName = pt_type_call(Z_OBJ_P(function.raw()), PT_LC("getname"), 0, NULL);
-			if (UNEXPECTED(functionName.isUndef())) return zv::Val();
-			if (UNEXPECTED(Z_TYPE_P(functionName.raw()) != IS_STRING)) {
-				zend_type_error("strtolower(): Argument #1 ($string) must be of type string, %s given", zend_zval_value_name(functionName.raw()));
-				return zv::Val();
-			}
-			zv::Str lowerName = zv::Str::adopt(zend_string_tolower(Z_STR_P(functionName.raw())));
-			if (inFunctionNames(lowerName.get(), NULL)) continue;
-			zend_long readsGlobal = pt_function_reflection_reads_global(function.raw());
+			/* self::findCallSideEffects($scope, $reflectionProvider, $exprTypeHolder->getExpr()),
+			 * read through the reflection it comes from */
+			zv::Val reflection;
+			if (UNEXPECTED(!findCallReflection(scope, reflectionProvider, expr, reflection))) return zv::Val();
+			if (reflection.isUndef() || Z_TYPE_P(reflection.raw()) == IS_NULL) continue;
+			/* !$sideEffects->has(SideEffects::READS_GLOBAL)->yes() */
+			zend_long readsGlobal = pt_function_reflection_reads_global(reflection.raw());
 			if (UNEXPECTED(readsGlobal < 0)) return zv::Val();
 			if (readsGlobal != PT_TRI_YES) continue;
 			if (writtenStates != NULL) {
-				/* self::readsAnyOf($function->getSideEffects()->getListedSubEffects('reads-global'), $writtenStates) */
-				zv::Val sideEffects = pt_function_reflection_side_effects(function.raw());
+				/* self::readsAnyOf($sideEffects->getListedSubEffects('reads-global'), $writtenStates) */
+				zv::Val sideEffects = pt_function_reflection_side_effects(reflection.raw());
 				if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
 				zv::Val readStates = pt_side_effects_listed_sub_effects(sideEffects.raw(), PT_LC("reads-global"));
 				if (UNEXPECTED(readStates.isUndef())) return zv::Val();
@@ -301,6 +277,95 @@ public:
 		}
 
 		return zv::Val::boolean(changed);
+	}
+
+	/*
+	 * findCallSideEffects() without its last ->getSideEffects(): the function
+	 * or method reflection a call expression calls; out stays UNDEF (or is
+	 * null) when it is not known or is an existence check. false = pending
+	 * exception.
+	 */
+	[[nodiscard]] static bool findCallReflection(zval *scope, zval *reflectionProvider, zend_object *expr, zv::Val &out)
+	{
+		zend_class_entry *funcCallCe = pt_class(PT_CLASS_FUNC_CALL);
+		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
+		zend_class_entry *nullsafeMethodCallCe = pt_class(PT_CLASS_NULLSAFE_METHOD_CALL);
+		zend_class_entry *staticCallCe = pt_class(PT_CLASS_STATIC_CALL);
+		zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
+		zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
+		if (UNEXPECTED(funcCallCe == NULL || methodCallCe == NULL || nullsafeMethodCallCe == NULL || staticCallCe == NULL || nameCe == NULL || identifierCe == NULL)) return false;
+
+		bool isFuncCall = instanceof_function(expr->ce, funcCallCe);
+		bool isMethodCall = !isFuncCall && (instanceof_function(expr->ce, methodCallCe) || instanceof_function(expr->ce, nullsafeMethodCallCe));
+		bool isStaticCall = !isFuncCall && !isMethodCall && instanceof_function(expr->ce, staticCallCe);
+		if (!isFuncCall && !isMethodCall && !isStaticCall) return true;
+
+		bool isPartial;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, isPartial))) return false;
+		if (isPartial) return true;
+
+		zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
+		if (UNEXPECTED(name.raw() == NULL)) return true;
+		name = name.deref();
+
+		if (isFuncCall) {
+			if (!name.instanceOf(nameCe)) return true;
+			bool hasFunction;
+			if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider, name.raw(), scope, hasFunction))) return false;
+			if (!hasFunction) return true;
+
+			zv::Val function = pt_reflection_provider_get_function(reflectionProvider, name.raw(), scope);
+			if (UNEXPECTED(function.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(function.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(function.raw()));
+				return false;
+			}
+			/* in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true) */
+			zv::Val functionName = pt_type_call(Z_OBJ_P(function.raw()), PT_LC("getname"), 0, NULL);
+			if (UNEXPECTED(functionName.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(functionName.raw()) != IS_STRING)) {
+				zend_type_error("strtolower(): Argument #1 ($string) must be of type string, %s given", zend_zval_value_name(functionName.raw()));
+				return false;
+			}
+			zv::Str lowerName = zv::Str::adopt(zend_string_tolower(Z_STR_P(functionName.raw())));
+			if (inFunctionNames(lowerName.get(), NULL)) return true;
+
+			out = std::move(function);
+			return true;
+		}
+
+		/* $expr->name instanceof Identifier, then $expr->name->toString() */
+		if (!name.instanceOf(identifierCe)) return true;
+		zv::Ref methodName = zv::ObjRef(name.asObject()).prop(PT_LC("name"));
+		if (UNEXPECTED(methodName.raw() == NULL)) return true;
+		methodName = methodName.deref();
+		if (UNEXPECTED(!methodName.isString())) return true;
+
+		zv::Val type;
+		if (isMethodCall) {
+			/* $expr->var instanceof Variable, then $scope->getType($expr->var) */
+			zv::Ref var = zv::ObjRef(expr).prop(PT_LC("var"));
+			if (UNEXPECTED(var.raw() == NULL)) return true;
+			var = var.deref();
+			zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
+			if (UNEXPECTED(variableCe == NULL)) return false;
+			if (!var.instanceOf(variableCe)) return true;
+			type = pt_mutating_scope_get_type(Z_OBJ_P(scope), var.raw());
+		} else {
+			/* $expr->class instanceof Name, then $scope->resolveTypeByName($expr->class) */
+			zv::Ref className = zv::ObjRef(expr).prop(PT_LC("class"));
+			if (UNEXPECTED(className.raw() == NULL)) return true;
+			className = className.deref();
+			if (!className.instanceOf(nameCe)) return true;
+			type = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(scope), className.asObject());
+		}
+		if (UNEXPECTED(type.isUndef())) return false;
+
+		/* $scope->getMethodReflection($type, $methodName)?->getSideEffects() */
+		zv::Val method = pt_mutating_scope_get_method_reflection(Z_OBJ_P(scope), type.raw(), methodName.asString());
+		if (UNEXPECTED(method.isUndef())) return false;
+		out = std::move(method);
+		return true;
 	}
 
 	/* readsAnyOf($readStates, $writtenStates): $readStates NULL or IS_NULL
@@ -493,6 +558,17 @@ PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 		zv::Val result = VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::findCallSideEffects, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *reflectionProvider, *expr;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, reflectionProvider, expr)) RETURN_THROWS();
+		zv::Val reflection;
+		if (UNEXPECTED(!VolatileExpressionHelper::findCallReflection(scope, reflectionProvider, Z_OBJ_P(expr), reflection))) RETURN_THROWS();
+		if (reflection.isUndef() || Z_TYPE_P(reflection.raw()) == IS_NULL) RETURN_NULL();
+		zv::Val sideEffects = pt_function_reflection_side_effects(reflection.raw());
+		if (UNEXPECTED(sideEffects.isUndef())) RETURN_THROWS();
+		sideEffects.intoReturnValue(return_value);
 	});
 
 	cls.method(sigs::readsAnyOf, [](INTERNAL_FUNCTION_PARAMETERS) {

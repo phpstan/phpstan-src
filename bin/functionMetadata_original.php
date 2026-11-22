@@ -1092,6 +1092,8 @@ return [
 	'NumberFormatter::create' => ['effects' => [SideEffects::WRITES_GLOBAL_ERROR_INTL]],
 	'Reflection::getModifierNames' => ['effects' => []],
 	'ReflectionClass::getLazyInitializer' => ['effects' => []],
+	'ReflectionClass::getStaticProperties' => ['effects' => [SideEffects::READS_GLOBAL]],
+	'ReflectionClass::getStaticPropertyValue' => ['effects' => [SideEffects::READS_GLOBAL]],
 	'ReflectionClass::hasConstant' => ['effects' => []],
 	'ReflectionClass::hasMethod' => ['effects' => []],
 	'ReflectionClass::hasProperty' => ['effects' => []],

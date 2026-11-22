@@ -33,13 +33,17 @@ inline constexpr char strings[] =
 	"writtenStates\0" /* 157 */
 	"null\0" /* 171 */
 	"invalidateGlobalStateReads\0" /* 176 */
-	"readStates\0" /* 203 */
-	"readsAnyOf\0" /* 214 */
-	"invalidateSuperglobals\0" /* 225 */
-	"functionNames\0" /* 248 */
-	"self::EXISTENCE_CHECK_FUNCTION_NAMES\0" /* 262 */
-	"declaredSymbolName\0" /* 299 */
-	"invalidateNegativeExistenceChecks"; /* 318 */
+	"expr\0" /* 203 */
+	"PhpParser\\Node\\Expr\0" /* 208 */
+	"PHPStan\\Reflection\\SideEffects\0" /* 228 */
+	"findCallSideEffects\0" /* 259 */
+	"readStates\0" /* 279 */
+	"readsAnyOf\0" /* 290 */
+	"invalidateSuperglobals\0" /* 301 */
+	"functionNames\0" /* 324 */
+	"self::EXISTENCE_CHECK_FUNCTION_NAMES\0" /* 338 */
+	"declaredSymbolName\0" /* 375 */
+	"invalidateNegativeExistenceChecks"; /* 394 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateVolatileFunctionCalls $nativeExpressionTypes */
@@ -50,7 +54,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateGlobalStateReads $nativeExpressionTypes */
 	reg::packed(157, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 171), /* invalidateGlobalStateReads $writtenStates */
 	reg::packed(38, MAY_BE_BOOL), /* invalidateGlobalStateReads return */
-	reg::packed(203, MAY_BE_NULL | MAY_BE_ARRAY), /* readsAnyOf $readStates */
+	reg::packed(71, 0, 77), /* findCallSideEffects $scope */
+	reg::packed(100, 0, 119), /* findCallSideEffects $reflectionProvider */
+	reg::packed(203, 0, 208), /* findCallSideEffects $expr */
+	reg::packed(38, MAY_BE_NULL, 228), /* findCallSideEffects return */
+	reg::packed(279, MAY_BE_NULL | MAY_BE_ARRAY), /* readsAnyOf $readStates */
 	reg::packed(157, MAY_BE_ARRAY), /* readsAnyOf $writtenStates */
 	reg::packed(38, MAY_BE_BOOL), /* readsAnyOf return */
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateSuperglobals $expressionTypes */
@@ -59,8 +67,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(71, 0, 77), /* invalidateNegativeExistenceChecks $scope */
 	reg::packed(0, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $expressionTypes */
 	reg::packed(16, MAY_BE_ARRAY, reg::NoString, true, false), /* invalidateNegativeExistenceChecks $nativeExpressionTypes */
-	reg::packed(248, MAY_BE_ARRAY, reg::NoString, false, false, 262), /* invalidateNegativeExistenceChecks $functionNames */
-	reg::packed(299, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 171), /* invalidateNegativeExistenceChecks $declaredSymbolName */
+	reg::packed(324, MAY_BE_ARRAY, reg::NoString, false, false, 338), /* invalidateNegativeExistenceChecks $functionNames */
+	reg::packed(375, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 171), /* invalidateNegativeExistenceChecks $declaredSymbolName */
 	reg::packed(38, MAY_BE_BOOL), /* invalidateNegativeExistenceChecks return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -70,9 +78,10 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig invalidateVolatileFunctionCalls = { { 39 /* invalidateVolatileFunctionCalls */, 2, 0, 2, 2, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig invalidateGlobalStateReads = { { 176 /* invalidateGlobalStateReads */, 4, 3, 5, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig readsAnyOf = { { 214 /* readsAnyOf */, 2, 9, 2, 11, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig invalidateSuperglobals = { { 225 /* invalidateSuperglobals */, 2, 12, 2, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 318 /* invalidateNegativeExistenceChecks */, 3, 15, 5, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig findCallSideEffects = { { 259 /* findCallSideEffects */, 3, 9, 3, 12, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig readsAnyOf = { { 290 /* readsAnyOf */, 2, 13, 2, 15, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateSuperglobals = { { 301 /* invalidateSuperglobals */, 2, 16, 2, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateNegativeExistenceChecks = { { 394 /* invalidateNegativeExistenceChecks */, 3, 19, 5, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::VolatileExpressionHelper

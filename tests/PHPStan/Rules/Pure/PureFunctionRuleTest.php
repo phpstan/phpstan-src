@@ -587,7 +587,7 @@ class PureFunctionRuleTest extends RuleTestCase
 				84,
 			],
 			[
-				'Possibly impure call to function shuffle() in pure function WeakPurity\\shufflesLocalCopy().',
+				'Impure call to function shuffle() in pure function WeakPurity\shufflesLocalCopy().',
 				95,
 			],
 		]);

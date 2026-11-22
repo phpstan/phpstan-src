@@ -58,6 +58,19 @@ final class PossiblyPureStaticCallCollector implements Collector
 		if ($methodReflection === null) {
 			return null;
 		}
+		// static:: calls the method of the class it is called on, which can override this one
+		if (
+			$expr->class->toLowerString() === 'static'
+			&& !$methodReflection->isPrivate()
+			&& !$methodReflection->isFinal()->yes()
+			&& !$methodReflection->getDeclaringClass()->isFinal()
+		) {
+			foreach ($calledOnType->getObjectClassReflections() as $classReflection) {
+				if (!$classReflection->isFinal()) {
+					return null;
+				}
+			}
+		}
 		if (!$methodReflection->isPure()->maybe()) {
 			return null;
 		}

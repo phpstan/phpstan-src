@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function in_array;
 
@@ -17,13 +18,17 @@ final class ArrayFindArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'isArrayFindArg';
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isPartialFunctionApplication()) {
 			$functionName = $node->name->toLowerString();
 			if (in_array($functionName, ['array_all', 'array_any', 'array_find', 'array_find_key'], true)) {
-				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'array');
+				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 0, 'array', $this->phpVersion);
 				$arg?->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}

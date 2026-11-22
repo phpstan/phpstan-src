@@ -19,6 +19,7 @@
 #include "support.h"
 #include "zv.h"
 #include "reg.h"
+#include "TypeTraits.h"
 
 namespace phpstanturbo {
 namespace visitors {
@@ -236,7 +237,7 @@ inline zend_string *plainFuncCallName(zend_object *node, FuncCallProps &props, N
  * ArgumentsNormalizer::getArgByPositionOrName(). NULL when no argument is
  * bound to it.
  */
-inline zend_object *argForParameter(zval *args, zend_ulong position, const char *name, size_t nameLen)
+inline zend_object *argForParameter(zval *args, zend_ulong position, const char *name, size_t nameLen, zval *phpVersion)
 {
 	static NodeProp argNameProp = PT_NODE_PROP(PT_CLASS_ARG, "name");
 	static NodeProp identifierProp = PT_IDENTIFIER_PROP;
@@ -253,16 +254,28 @@ inline zend_object *argForParameter(zval *args, zend_ulong position, const char 
 		zval *argName = argNameProp.of(arg.asObject());
 		if (argName != NULL && Z_TYPE_P(argName) == IS_OBJECT) {
 			zend_string *argNameString = nameString(Z_OBJ_P(argName), identifierProp);
-			if (argNameString != NULL && zend_string_equals_cstr(argNameString, name, nameLen)) return arg.asObject();
+			if (argNameString == NULL || !zend_string_equals_cstr(argNameString, name, nameLen)) continue;
+			if (phpVersion == NULL || Z_TYPE_P(phpVersion) == IS_NULL) return arg.asObject();
+			zend_class_entry *versionsCe = pt_class(PT_CLASS_PHP_VERSIONS);
+			if (UNEXPECTED(versionsCe == NULL)) return NULL;
+			if (instanceof_function(Z_OBJCE_P(phpVersion), versionsCe)) {
+				zend_long supports = pt_type_call_trinary(Z_OBJ_P(phpVersion), PT_LC("supportsnamedarguments"), 0, NULL);
+				if (UNEXPECTED(supports < 0)) return NULL;
+				if (supports != PT_TRI_NO) return arg.asObject();
+			} else {
+				bool supports;
+				if (UNEXPECTED(!pt_php_version_answer(phpVersion, PT_PHP_VERSION_SUPPORTS_NAMED_ARGUMENTS, supports))) return NULL;
+				if (supports) return arg.asObject();
+			}
 		}
 	}
 	return argByPosition;
 }
 
 template<size_t N>
-inline zend_object *argForParameter(zval *args, zend_ulong position, const char (&name)[N])
+inline zend_object *argForParameter(zval *args, zend_ulong position, const char (&name)[N], zval *phpVersion)
 {
-	return argForParameter(args, position, name, N - 1);
+	return argForParameter(args, position, name, N - 1, phpVersion);
 }
 
 } // namespace visitors

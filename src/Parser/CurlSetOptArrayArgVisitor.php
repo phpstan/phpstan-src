@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Php\PhpVersion;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
 #[AutowiredService]
@@ -16,13 +17,17 @@ final class CurlSetOptArrayArgVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'isCurlSetOptArrayArg';
 
+	public function __construct(private PhpVersion $phpVersion)
+	{
+	}
+
 	#[Override]
 	public function enterNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Expr\FuncCall && $node->name instanceof Node\Name && !$node->isPartialFunctionApplication()) {
 			$functionName = $node->name->toLowerString();
 			if ($functionName === 'curl_setopt_array') {
-				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 1, 'options');
+				$arg = ArgumentsNormalizer::getArgByPositionOrName($node->getArgs(), 1, 'options', $this->phpVersion);
 				$arg?->setAttribute(self::ATTRIBUTE_NAME, true);
 			}
 		}

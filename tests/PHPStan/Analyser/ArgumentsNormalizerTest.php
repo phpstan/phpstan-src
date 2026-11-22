@@ -7,11 +7,14 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\Node\Expr\TypeExpr;
+use PHPStan\Php\PhpVersion;
+use PHPStan\Php\PhpVersions;
 use PHPStan\Reflection\FunctionVariant;
 use PHPStan\Reflection\Php\DummyParameter;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\TemplateTypeMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
@@ -440,13 +443,30 @@ class ArgumentsNormalizerTest extends PHPStanTestCase
 			$arguments[] = new Arg(new TypeExpr(new MixedType()), name: $argumentName === null ? null : new Identifier($argumentName));
 		}
 
-		$arg = ArgumentsNormalizer::getArgByPositionOrName($arguments, $position, $name);
+		$arg = ArgumentsNormalizer::getArgByPositionOrName($arguments, $position, $name, new PhpVersion(80000));
 		if ($expectedIndex === null) {
 			$this->assertNull($arg);
 			return;
 		}
 
 		$this->assertSame($arguments[$expectedIndex], $arg);
+	}
+
+	public function testGetArgByPositionOrNameWithPhpVersions(): void
+	{
+		$args = [
+			new Arg(new TypeExpr(new MixedType()), name: new Identifier('other')),
+			new Arg(new TypeExpr(new MixedType()), name: new Identifier('array')),
+		];
+
+		foreach ([new PhpVersion(70400), new PhpVersions(IntegerRangeType::fromInterval(70400, 79999))] as $version) {
+			$this->assertSame($args[0], ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'array', $version));
+			$this->assertNull(ArgumentsNormalizer::getArgByPositionOrName($args, 2, 'missing', $version));
+		}
+
+		foreach ([new PhpVersion(80000), new PhpVersions(IntegerRangeType::fromInterval(80000, null)), new PhpVersions(IntegerRangeType::fromInterval(70400, 80000))] as $version) {
+			$this->assertSame($args[1], ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'array', $version));
+		}
 	}
 
 }

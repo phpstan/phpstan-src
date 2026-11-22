@@ -40,7 +40,8 @@ public:
 		zend_string *functionName = visitors::plainFuncCallName(node, call, nameProp, &args);
 		if (functionName == NULL) return !EG(exception);
 		if (!(visitors::lowerEquals(functionName, "curl_setopt"))) return true;
-		zend_object *arg = visitors::argForParameter(args, 0, "handle");
+		zend_object *arg = visitors::argForParameter(args, 0, "handle", OBJ_PROP_NUM(visitor, ptdecl::CurlSetOptArgVisitor::slot::phpVersion));
+		if (UNEXPECTED(EG(exception))) return false;
 		if (arg != NULL) {
 			visitors::setAttributeTrue(arg, pt_curl_set_opt_arg_attribute_str);
 		}
@@ -69,6 +70,14 @@ PT_MINIT_REGISTRATION(pt_register_curl_set_opt_arg_visitor)
 	ptdecl::CurlSetOptArgVisitor::declareClass(cls);
 	ptdecl::CurlSetOptArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_curl_set_opt_arg_attribute);
+
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(phpVersion, pt_class(PT_CLASS_PHP_VERSION))
+		ZEND_PARSE_PARAMETERS_END();
+		zv::ObjRef(Z_OBJ_P(ZEND_THIS)).propAtWrite(ptdecl::CurlSetOptArgVisitor::slot::phpVersion, zv::Val::copyOf(zv::Ref(phpVersion)));
+	});
 
 	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;

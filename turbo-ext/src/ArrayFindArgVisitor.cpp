@@ -45,7 +45,8 @@ public:
 			|| visitors::lowerEquals(functionName, "array_find_key"))) {
 			return true;
 		}
-		zend_object *arg = visitors::argForParameter(args, 0, "array");
+		zend_object *arg = visitors::argForParameter(args, 0, "array", OBJ_PROP_NUM(visitor, ptdecl::ArrayFindArgVisitor::slot::phpVersion));
+		if (UNEXPECTED(EG(exception))) return false;
 		if (arg != NULL) {
 			visitors::setAttributeTrue(arg, pt_array_find_arg_attribute_str);
 		}
@@ -74,6 +75,14 @@ PT_MINIT_REGISTRATION(pt_register_array_find_arg_visitor)
 	ptdecl::ArrayFindArgVisitor::declareClass(cls);
 	ptdecl::ArrayFindArgVisitor::declareProperties(cls);
 	cls.publicClassConstantString("ATTRIBUTE_NAME", pt_array_find_arg_attribute);
+
+	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *phpVersion;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(phpVersion, pt_class(PT_CLASS_PHP_VERSION))
+		ZEND_PARSE_PARAMETERS_END();
+		zv::ObjRef(Z_OBJ_P(ZEND_THIS)).propAtWrite(ptdecl::ArrayFindArgVisitor::slot::phpVersion, zv::Val::copyOf(zv::Ref(phpVersion)));
+	});
 
 	cls.method(sigs::enterNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *node;

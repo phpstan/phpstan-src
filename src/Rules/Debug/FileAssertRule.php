@@ -50,8 +50,8 @@ final class FileAssertRule implements Rule
 		$name = $this->reflectionProvider->resolveFunctionName($node->name, $scope);
 		$args = $node->getArgs();
 		if ($name === 'PHPStan\\Testing\\assertType') {
-			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'type');
-			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'type', $scope->getPhpVersion());
+			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value', $scope->getPhpVersion());
 			if ($typeArg === null || $valueArg === null) {
 				return [];
 			}
@@ -59,8 +59,8 @@ final class FileAssertRule implements Rule
 		}
 
 		if ($name === 'PHPStan\\Testing\\assertNativeType') {
-			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'type');
-			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'type', $scope->getPhpVersion());
+			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value', $scope->getPhpVersion());
 			if ($typeArg === null || $valueArg === null) {
 				return [];
 			}
@@ -68,8 +68,8 @@ final class FileAssertRule implements Rule
 		}
 
 		if ($name === 'PHPStan\\Testing\\assertSuperType') {
-			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'superType');
-			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value');
+			$typeArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'superType', $scope->getPhpVersion());
+			$valueArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'value', $scope->getPhpVersion());
 			if ($typeArg === null || $valueArg === null) {
 				return [];
 			}
@@ -77,8 +77,8 @@ final class FileAssertRule implements Rule
 		}
 
 		if ($name === 'PHPStan\\Testing\\assertVariableCertainty') {
-			$certaintyArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'certainty');
-			$variableArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'variable');
+			$certaintyArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'certainty', $scope->getPhpVersion());
+			$variableArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'variable', $scope->getPhpVersion());
 			if ($certaintyArg === null || $variableArg === null) {
 				return [];
 			}

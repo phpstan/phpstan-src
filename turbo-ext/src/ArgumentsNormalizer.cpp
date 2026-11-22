@@ -871,15 +871,27 @@ PT_MINIT_REGISTRATION(pt_register_arguments_normalizer)
 	});
 
 	cls.method(sigs::getArgByPositionOrName, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *args;
+		zval *args, *phpVersion = NULL;
 		zend_long position;
 		zend_string *name;
-		ZEND_PARSE_PARAMETERS_START(3, 3)
+		ZEND_PARSE_PARAMETERS_START(3, 4)
 			Z_PARAM_ARRAY(args)
 			Z_PARAM_LONG(position)
 			Z_PARAM_STR(name)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_ZVAL(phpVersion)
 		ZEND_PARSE_PARAMETERS_END();
-		zend_object *arg = phpstanturbo::visitors::argForParameter(args, (zend_ulong) position, ZSTR_VAL(name), ZSTR_LEN(name));
+		if (phpVersion != NULL && Z_TYPE_P(phpVersion) != IS_NULL) {
+			zend_class_entry *versionCe = pt_class(PT_CLASS_PHP_VERSION);
+			zend_class_entry *versionsCe = pt_class(PT_CLASS_PHP_VERSIONS);
+			if (UNEXPECTED(versionCe == NULL || versionsCe == NULL)) RETURN_THROWS();
+			if (Z_TYPE_P(phpVersion) != IS_OBJECT || (!instanceof_function(Z_OBJCE_P(phpVersion), versionCe) && !instanceof_function(Z_OBJCE_P(phpVersion), versionsCe))) {
+				zend_argument_type_error(4, "must be of type PHPStan\\Php\\PhpVersion|PHPStan\\Php\\PhpVersions|null, %s given", zend_zval_value_name(phpVersion));
+				RETURN_THROWS();
+			}
+		}
+		zend_object *arg = phpstanturbo::visitors::argForParameter(args, (zend_ulong) position, ZSTR_VAL(name), ZSTR_LEN(name), phpVersion);
+		if (UNEXPECTED(EG(exception))) RETURN_THROWS();
 		if (arg == NULL) RETURN_NULL();
 		RETURN_OBJ_COPY(arg);
 	});

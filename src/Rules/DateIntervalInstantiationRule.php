@@ -46,7 +46,7 @@ final class DateIntervalInstantiationRule implements Rule
 			return [];
 		}
 
-		$arg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'duration');
+		$arg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'duration', $scope->getPhpVersion());
 		if ($arg === null) {
 			return [];
 		}

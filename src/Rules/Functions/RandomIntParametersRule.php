@@ -56,8 +56,8 @@ final class RandomIntParametersRule implements Rule
 			return [];
 		}
 
-		$minArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'min');
-		$maxArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'max');
+		$minArg = ArgumentsNormalizer::getArgByPositionOrName($args, 0, 'min', $scope->getPhpVersion());
+		$maxArg = ArgumentsNormalizer::getArgByPositionOrName($args, 1, 'max', $scope->getPhpVersion());
 		if ($minArg === null || $maxArg === null) {
 			return [];
 		}

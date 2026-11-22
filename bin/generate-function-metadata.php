@@ -122,6 +122,13 @@ use Symfony\Component\Finder\Finder;
 				$metadata[$functionName]['effects'] !== []
 				&& ($metadata[$functionName]['hasSideEffects'] ?? null) !== false
 				&& !$leavesError($metadata[$functionName]['effects'])
+				// #[Pure] in the stubs, but they move the position of mb_ereg_search()
+				&& !in_array($functionName, [
+					'mb_ereg_search',
+					'mb_ereg_search_pos',
+					'mb_ereg_search_regs',
+					'mb_ereg_search_setpos',
+				], true)
 			) {
 				throw new ShouldNotHappenException($functionName);
 			}

@@ -212,6 +212,25 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.3.0')]
+	public function testMbstring(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-mbstring.php'], [
+			[
+				'Call to function mb_strlen() on a separate line has no effect.',
+				10,
+			],
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				11,
+			],
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				12,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testBug15355(): void
 	{

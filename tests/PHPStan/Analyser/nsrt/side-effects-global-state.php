@@ -117,4 +117,24 @@ class Foo
 		}
 	}
 
+	public function mbstringState(string $s): void
+	{
+		if (mb_strlen($s) === 3) {
+			clearstatcache();
+			assertType('3', mb_strlen($s));
+		}
+		if (mb_strlen($s) === 3) {
+			mb_internal_encoding('ISO-8859-1');
+			assertType('int<1, max>', mb_strlen($s));
+		}
+		if (mb_ereg_search_getpos() === 0) {
+			clearstatcache();
+			assertType('0', mb_ereg_search_getpos());
+		}
+		if (mb_ereg_search_getpos() === 0) {
+			mb_ereg_search();
+			assertType('int', mb_ereg_search_getpos());
+		}
+	}
+
 }

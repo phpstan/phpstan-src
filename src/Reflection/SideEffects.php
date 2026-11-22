@@ -55,6 +55,14 @@ final class SideEffects
 	public const READS_GLOBAL_STAT_CACHE = 'reads-global.stat-cache';
 
 	/**
+	 * The settings of the mbstring extension, such as the internal encoding the
+	 * mb_*() functions fall back to without an $encoding argument, and the
+	 * position of mb_ereg_search().
+	 */
+	public const WRITES_GLOBAL_MBSTRING = 'writes-global.mbstring';
+	public const READS_GLOBAL_MBSTRING = 'reads-global.mbstring';
+
+	/**
 	 * The last error of an extension, which its error getters read. Writing it
 	 * is allowed in pure functions and makes a call on its own line useful.
 	 */

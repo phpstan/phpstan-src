@@ -23,6 +23,8 @@ final class NativeFunctionReflection implements FunctionReflection
 
 	private TrinaryLogic $returnsByReference;
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param list<ExtendedParametersAcceptor> $variants
 	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
@@ -128,7 +130,7 @@ final class NativeFunctionReflection implements FunctionReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return SideEffectsFactory::createFromReflection($this, $this->effects);
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	private function isVoid(): bool

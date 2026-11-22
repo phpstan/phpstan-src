@@ -15,9 +15,10 @@ inline constexpr uint32_t namedArgumentVariants = 1;
 inline constexpr uint32_t asserts = 2;
 inline constexpr uint32_t selfOutType = 3;
 inline constexpr uint32_t hasSideEffects = 4;
-inline constexpr uint32_t reflection = 5;
-inline constexpr uint32_t resolvedTemplateTypeMap = 6;
-inline constexpr uint32_t callSiteVarianceMap = 7;
+inline constexpr uint32_t sideEffects = 5;
+inline constexpr uint32_t reflection = 6;
+inline constexpr uint32_t resolvedTemplateTypeMap = 7;
+inline constexpr uint32_t callSiteVarianceMap = 8;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -34,6 +35,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("asserts", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Reflection\\Assertions");
 	cls.property("selfOutType", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedFalse, MAY_BE_NULL | MAY_BE_FALSE, "PHPStan\\Type\\Type");
 	cls.property("hasSideEffects", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\TrinaryLogic");
+	cls.property("sideEffects", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedNull, MAY_BE_NULL, "PHPStan\\Reflection\\SideEffects");
 	cls.property("reflection", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Reflection\\ExtendedMethodReflection");
 	cls.property("resolvedTemplateTypeMap", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Generic\\TemplateTypeMap");
 	cls.property("callSiteVarianceMap", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\Generic\\TemplateTypeVarianceMap");

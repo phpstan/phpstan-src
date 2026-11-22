@@ -220,7 +220,16 @@ public:
 	zv::Val isPure() const { return delegate(PT_MR_IS_PURE); }
 	zv::Val getPureUnlessCallableIsImpureParameters() const { return delegate(PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS); }
 	zv::Val getPureUnlessParameterPassedParameters() const { return delegate(PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS); }
-	zv::Val getSideEffects() const { return delegate(PT_MR_GET_SIDE_EFFECTS); }
+	/* Mirrors getSideEffects(): $this->sideEffects ??= ... */
+	zv::Val getSideEffects() const
+	{
+		zval *memo = OBJ_PROP_NUM(self, slots::sideEffects);
+		if (Z_TYPE_P(memo) == IS_OBJECT) return zv::Val::copyOf(zv::Ref(memo));
+		zv::Val sideEffects = delegate(PT_MR_GET_SIDE_EFFECTS);
+		if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
+		pt_write_slot(self, slots::sideEffects, sideEffects.raw());
+		return sideEffects;
+	}
 
 	/* Mirrors getAsserts(): $this->asserts ??= the wrapped reflection's
 	 * asserts with their types resolved against the template maps */

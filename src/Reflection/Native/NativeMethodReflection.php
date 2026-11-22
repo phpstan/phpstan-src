@@ -27,6 +27,8 @@ use function strtolower;
 final class NativeMethodReflection implements ExtendedMethodReflection
 {
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param list<ExtendedParametersAcceptor> $variants
 	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
@@ -206,7 +208,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return SideEffectsFactory::createFromReflection($this, $this->effects);
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	private function isVoid(): bool

@@ -63,6 +63,8 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	private ?string $name = null;
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
@@ -467,7 +469,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return SideEffectsFactory::createFromReflection($this);
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this);
 	}
 
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self

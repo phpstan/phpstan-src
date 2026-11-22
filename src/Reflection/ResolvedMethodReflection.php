@@ -28,6 +28,8 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	private ?TrinaryLogic $hasSideEffects = null;
 
+	private ?SideEffects $sideEffects = null;
+
 	public function __construct(
 		private ExtendedMethodReflection $reflection,
 		private TemplateTypeMap $resolvedTemplateTypeMap,
@@ -182,7 +184,7 @@ final class ResolvedMethodReflection implements ExtendedMethodReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return $this->reflection->getSideEffects();
+		return $this->sideEffects ??= $this->reflection->getSideEffects();
 	}
 
 	public function getAsserts(): Assertions

@@ -36,6 +36,8 @@ final class PhpFunctionReflection implements FunctionReflection
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param array<string, Type> $phpDocParameterTypes
 	 * @param array<string, Type> $phpDocParameterOutTypes
@@ -239,7 +241,7 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	public function getSideEffects(): SideEffects
 	{
-		return SideEffectsFactory::createFromReflection($this);
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this);
 	}
 
 	public function isBuiltin(): bool

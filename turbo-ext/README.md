@@ -115,7 +115,8 @@ unchanged.
 ### Native parser
 
 The extension reimplements php-parser's parser engine, from the shift/reduce
-loop to building the AST. Tokenization stays in PHP's own tokenizer. The
+loop to building the AST, for both of its grammars: `Php8`, and `Php7`, which
+PHPStan uses when `phpVersion` is below 8.0. Tokenization stays in PHP's own tokenizer. The
 resulting ASTs are byte-identical to php-parser's, which is verified over
 thousands of files and over php-parser's own test suite.
 

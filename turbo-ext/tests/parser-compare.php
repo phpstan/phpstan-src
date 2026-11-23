@@ -24,7 +24,7 @@ function summarizeErrors(PhpParser\ErrorHandler\Collecting $handler): string
  *
  * @return array{list<string>, bool}
  */
-function compareParse(string $code, PhpParser\Parser\Php8 $parserForNative, PhpParser\Parser\Php8 $parserForPhp): array
+function compareParse(string $code, PhpParser\ParserAbstract $parserForNative, PhpParser\ParserAbstract $parserForPhp): array
 {
 	$nativeHandler = new PhpParser\ErrorHandler\Collecting();
 	$phpHandler = new PhpParser\ErrorHandler\Collecting();

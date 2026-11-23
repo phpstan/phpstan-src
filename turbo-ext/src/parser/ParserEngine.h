@@ -4,11 +4,14 @@
  * Parser/Php8.php), structured to mirror ParserAbstract method for method:
  * doParse(), getAttributes(), emitError(), the semantic-action helpers
  * (handleNamespaces, parseLNumber, checkClass, ...) and the generated reduce
- * actions (reduceRange1/2/3, see bin/generate-parser-actions.php).
+ * actions (reduceRange1/2/3 for Php8, reducePhp7Range1/2/3 for Php7, see
+ * bin/generate-parser-actions.php).
  *
  * Shadowing seam: PHPStan\Parser\ParserRunner::parse($parser, $code, $errorHandler).
- * The native path activates only for exact PhpParser\Parser\Php8 objects with a
- * known-safe error handler; everything else falls back to $parser->parse().
+ * The native path activates only for exact PhpParser\Parser\Php8 and
+ * PhpParser\Parser\Php7 objects (each grammar has its own tables and generated
+ * actions) with a known-safe error handler; everything else falls back to
+ * $parser->parse().
  *
  * ===== Value ownership discipline (read before touching anything) =====
  *
@@ -66,6 +69,7 @@ zend_long tokenIdInlineHtml();
 struct Tables
 {
 	zend_class_entry *parserCe;
+	int grammar;              /* 8 = Php8 (reduceRange*), 7 = Php7 (reducePhp7Range*) */
 	int tokenToSymbolMapSize;
 	int actionTableSize;
 	int gotoTableSize;
@@ -172,13 +176,15 @@ public:
 class ParserEngine
 {
 public:
-	/* borrows the parser and error handler for the duration of one parse */
-	ParserEngine(zval *parserObj, zval *errorHandler);
+	/* borrows the parser, its grammar's tables (prepareTables()) and the
+	 * error handler for the duration of one parse */
+	ParserEngine(zval *parserObj, const Tables *tables, zval *errorHandler);
 	~ParserEngine();
 
-	/* extracts the process-wide tables from the first Php8 parser seen;
-	 * false → this parser cannot be handled natively (caller delegates) */
-	static bool prepareTables(zval *parserObj);
+	/* the process-wide tables of this parser's grammar, extracted from the
+	 * first Php8 / Php7 parser seen; NULL → this parser cannot be handled
+	 * natively (caller delegates) */
+	static const Tables *prepareTables(zval *parserObj);
 
 	/* mirrors ParserAbstract::parse(): tokenize → doParse → post-process.
 	 * false → delegate to the PHP implementation. */
@@ -220,6 +226,9 @@ private:
 	bool reduceRange1(int rule, int stackPos);          /* generated, ParserRunnerActions1.cpp */
 	bool reduceRange2(int rule, int stackPos);          /* generated, ParserRunnerActions2.cpp */
 	bool reduceRange3(int rule, int stackPos);          /* generated, ParserRunnerActions3.cpp */
+	bool reducePhp7Range1(int rule, int stackPos);      /* generated, ParserRunnerPhp7Actions1.cpp */
+	bool reducePhp7Range2(int rule, int stackPos);      /* generated, ParserRunnerPhp7Actions2.cpp */
+	bool reducePhp7Range3(int rule, int stackPos);      /* generated, ParserRunnerPhp7Actions3.cpp */
 	zend_string *getErrorMessage(int symbol, int state); /* ParserAbstract::getErrorMessage() */
 	void growStacks(int needed);
 	void writeSlot(int pos, zval owned);

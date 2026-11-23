@@ -5,8 +5,9 @@
  * ported semantic helpers in ParserRunnerHelpers.cpp. PHP twin:
  * PHPStan\Parser\ParserRunner.
  *
- * The parsing tables are read once per process from the first Php8 parser
- * object seen (they are generated data on the object); node classes resolve
+ * The parsing tables are read once per process and grammar from the first
+ * Php8 / Php7 parser object seen (they are generated data on the object);
+ * node classes resolve
  * relative to the parser CE's namespace so the scoped phar works unchanged.
  */
 
@@ -16,6 +17,7 @@
 namespace sigs = ptdecl::ParserRunner::sig;
 #include "../Engine.h"
 #include "ParserRunnerActionsSplit.h"
+#include "ParserRunnerPhp7ActionsSplit.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
@@ -34,9 +36,10 @@ namespace phpstanturbo {
 
 /* {{{ process-wide caches (NTS, CLI process lifetime) */
 
-static Tables g_tables;
-static bool g_tablesReady = false;
-static char *g_nsPrefix = NULL; /* malloc'd */
+/* one per grammar: [0] Php8, [1] Php7 */
+static Tables g_tables[2];
+static bool g_tablesReady[2] = {false, false};
+static char *g_nsPrefix = NULL; /* malloc'd, shared by both grammars */
 static size_t g_nsPrefixLen = 0;
 
 static HashTable g_classRegistry; /* alias => NodeClassInfo* (malloc'd) */
@@ -65,10 +68,9 @@ static void initAttributeKeys(void)
 
 /* {{{ lifecycle */
 
-ParserEngine::ParserEngine(zval *parserObj, zval *errorHandler)
-	: parserObj(parserObj), errorHandler(errorHandler)
+ParserEngine::ParserEngine(zval *parserObj, const Tables *tables, zval *errorHandler)
+	: tables(tables), parserObj(parserObj), errorHandler(errorHandler)
 {
-	tables = &g_tables;
 	semValue = zv::Val::null();
 	zend_hash_init(&createdArrays, 8, NULL, ZVAL_PTR_DTOR, 0);
 	zend_hash_init(&parenthesizedArrowFns, 8, NULL, ZVAL_PTR_DTOR, 0);
@@ -100,6 +102,11 @@ ParserEngine::~ParserEngine()
 
 bool ParserEngine::reduce(int rule, int stackPos)
 {
+	if (tables->grammar == 7) {
+		if (rule < PN_PHP7_REDUCE_SPLIT_1) return reducePhp7Range1(rule, stackPos);
+		if (rule < PN_PHP7_REDUCE_SPLIT_2) return reducePhp7Range2(rule, stackPos);
+		return reducePhp7Range3(rule, stackPos);
+	}
 	if (rule < PN_REDUCE_SPLIT_1) return reduceRange1(rule, stackPos);
 	if (rule < PN_REDUCE_SPLIT_2) return reduceRange2(rule, stackPos);
 	return reduceRange3(rule, stackPos);
@@ -558,26 +565,42 @@ static bool readIntArrayProp(zval *obj, const char *name, int **out, int *outSiz
 	return true;
 }
 
-static bool extractTables(zval *parserObj)
+/* 8 or 7 for an exact PhpParser\\Parser\\Php8 / Php7 class (under any
+ * namespace prefix, for the scoped phar), 0 for anything else */
+static int grammarOf(zend_class_entry *ce, size_t &prefixLen)
 {
-	zend_class_entry *ce = Z_OBJCE_P(parserObj);
-
-	/* namespace prefix for scoped-phar-safe class resolution */
 	static const char suffix[] = "PhpParser\\Parser\\Php8";
 	size_t suffixLen = sizeof(suffix) - 1;
 	zend_string *ceName = ce->name;
 	if (ZSTR_LEN(ceName) < suffixLen
-		|| memcmp(ZSTR_VAL(ceName) + ZSTR_LEN(ceName) - suffixLen, suffix, suffixLen) != 0) {
+		|| memcmp(ZSTR_VAL(ceName) + ZSTR_LEN(ceName) - suffixLen, suffix, suffixLen - 1) != 0) {
+		return 0;
+	}
+	char version = ZSTR_VAL(ceName)[ZSTR_LEN(ceName) - 1];
+	if (version != '8' && version != '7') return 0;
+	prefixLen = ZSTR_LEN(ceName) - suffixLen;
+	return version - '0';
+}
+
+static bool extractTables(zval *parserObj, int grammar, size_t prefixLen)
+{
+	zend_class_entry *ce = Z_OBJCE_P(parserObj);
+
+	/* namespace prefix for scoped-phar-safe class resolution: both grammars
+	 * come from one php-parser, the second one seen must agree */
+	if (g_nsPrefix == NULL) {
+		g_nsPrefixLen = prefixLen;
+		g_nsPrefix = (char *) malloc(g_nsPrefixLen + 1);
+		memcpy(g_nsPrefix, ZSTR_VAL(ce->name), g_nsPrefixLen);
+		g_nsPrefix[g_nsPrefixLen] = '\0';
+	} else if (g_nsPrefixLen != prefixLen || memcmp(g_nsPrefix, ZSTR_VAL(ce->name), prefixLen) != 0) {
 		return false;
 	}
-	g_nsPrefixLen = ZSTR_LEN(ceName) - suffixLen;
-	g_nsPrefix = (char *) malloc(g_nsPrefixLen + 1);
-	memcpy(g_nsPrefix, ZSTR_VAL(ceName), g_nsPrefixLen);
-	g_nsPrefix[g_nsPrefixLen] = '\0';
 
-	Tables *t = &g_tables;
+	Tables *t = &g_tables[grammar == 8 ? 0 : 1];
 	memset(t, 0, sizeof(*t));
 	t->parserCe = ce;
+	t->grammar = grammar;
 
 	bool ok = readIntProp(parserObj, "tokenToSymbolMapSize", &t->tokenToSymbolMapSize)
 		&& readIntProp(parserObj, "actionTableSize", &t->actionTableSize)
@@ -652,16 +675,24 @@ static bool extractTables(zval *parserObj)
 	return true;
 }
 
-bool ParserEngine::prepareTables(zval *parserObj)
+const Tables *ParserEngine::prepareTables(zval *parserObj)
 {
-	if (!g_tablesReady) {
-		if (!extractTables(parserObj)) {
-			/* remember the failure by leaving g_tablesReady false; delegate */
-			return false;
-		}
-		g_tablesReady = true;
+	zend_class_entry *ce = Z_OBJCE_P(parserObj);
+	/* the common case: a parser of a grammar already prepared */
+	for (int i = 0; i < 2; i++) {
+		if (g_tablesReady[i] && g_tables[i].parserCe == ce) return &g_tables[i];
 	}
-	return Z_OBJCE_P(parserObj) == g_tables.parserCe;
+	size_t prefixLen;
+	int grammar = grammarOf(ce, prefixLen);
+	if (grammar == 0) return NULL;
+	int idx = grammar == 8 ? 0 : 1;
+	if (g_tablesReady[idx]) return NULL; /* another class of that grammar's name: delegate */
+	if (!extractTables(parserObj, grammar, prefixLen)) {
+		/* remember the failure by leaving g_tablesReady false; delegate */
+		return NULL;
+	}
+	g_tablesReady[idx] = true;
+	return &g_tables[idx];
 }
 
 /* }}} */
@@ -1240,8 +1271,9 @@ PT_MINIT_REGISTRATION(pt_register_parser_runner)
 		zval *parserObj, *code, *errorHandler;
 		if (!zp::parse<zp::Obj, zp::Zval, zp::Obj>(execute_data, parserObj, code, errorHandler)) RETURN_THROWS();
 
-		if (Z_TYPE_P(code) == IS_STRING && ParserEngine::prepareTables(parserObj)) {
-			ParserEngine engine(parserObj, errorHandler);
+		const phpstanturbo::Tables *tables;
+		if (Z_TYPE_P(code) == IS_STRING && (tables = ParserEngine::prepareTables(parserObj)) != NULL) {
+			ParserEngine engine(parserObj, tables, errorHandler);
 			if (engine.parse(code, return_value)) return;
 		}
 

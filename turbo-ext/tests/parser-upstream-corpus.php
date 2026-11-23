@@ -13,9 +13,9 @@
  * let the test fetch that commit (kept in the system temp directory):
  *   php -d extension=$PWD/turbo-ext/phpstan_turbo.so turbo-ext/tests/parser-upstream-corpus.php [php-parser-checkout]
  *
- * Each case runs under its "!!version=" mode like upstream's tests do, except
- * that versions below 8.0 keep the Php8 grammar (upstream switches to Php7,
- * which the native engine never runs). The enabler is NOT run; the native
+ * Each case runs under its "!!version=" mode like upstream's tests do,
+ * including upstream's switch to the Php7 grammar below 8.0 (the native engine
+ * runs both). The enabler is NOT run; the native
  * class is declared as PHPStanTurbo\ParserRunner (tests/activate-prefixed.php)
  * and called directly.
  */
@@ -125,7 +125,7 @@ $sets = [
 	['test/code/formatPreservation', 'test', 3], // PrettyPrinterTest::testFormatPreservingPrint()
 ];
 
-/** @var array<string, array{PhpParser\Parser\Php8, PhpParser\Parser\Php8}> $parsers */
+/** @var array<string, array{PhpParser\ParserAbstract, PhpParser\ParserAbstract}> $parsers */
 $parsers = [];
 $checked = 0;
 $failed = 0;
@@ -155,11 +155,13 @@ foreach ($sets as [$directory, $extension, $chunksPerTest]) {
 				$phpVersion = is_string($version)
 					? PhpParser\PhpVersion::fromString($version)
 					: PhpParser\PhpVersion::getNewestSupported();
-				// the lexer ParserFactory::createForVersion() picks
-				$createParser = static fn (): PhpParser\Parser\Php8 => new PhpParser\Parser\Php8(
-					$phpVersion->isHostVersion() ? new PhpParser\Lexer() : new PhpParser\Lexer\Emulative($phpVersion),
-					$phpVersion,
-				);
+				// the lexer and grammar ParserFactory::createForVersion() picks
+				$createParser = static function () use ($phpVersion): PhpParser\ParserAbstract {
+					$lexer = $phpVersion->isHostVersion() ? new PhpParser\Lexer() : new PhpParser\Lexer\Emulative($phpVersion);
+					return $phpVersion->id >= 80000
+						? new PhpParser\Parser\Php8($lexer, $phpVersion)
+						: new PhpParser\Parser\Php7($lexer, $phpVersion);
+				};
 				$parsers[$versionKey] = [$createParser(), $createParser()];
 			}
 

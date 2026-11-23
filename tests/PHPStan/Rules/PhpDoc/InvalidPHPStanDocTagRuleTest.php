@@ -2,8 +2,7 @@
 
 namespace PHPStan\Rules\PhpDoc;
 
-use PHPStan\PhpDocParser\Lexer\Lexer;
-use PHPStan\PhpDocParser\Parser\PhpDocParser;
+use PHPStan\PhpDoc\PhpDocStringResolver;
 use PHPStan\Rules\Rule;
 use PHPStan\Testing\RuleTestCase;
 use PHPUnit\Framework\Attributes\RequiresPhp;
@@ -16,11 +15,7 @@ class InvalidPHPStanDocTagRuleTest extends RuleTestCase
 
 	protected function getRule(): Rule
 	{
-		$container = self::getContainer();
-		return new InvalidPHPStanDocTagRule(
-			$container->getByType(Lexer::class),
-			$container->getByType(PhpDocParser::class),
-		);
+		return new InvalidPHPStanDocTagRule(self::getContainer()->getByType(PhpDocStringResolver::class));
 	}
 
 	public function testRule(): void

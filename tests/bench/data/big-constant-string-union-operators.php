@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 2.840B
- * cycles: 3.536B
- * memory: 9.467MiB
+ * instructions: 2.688B
+ * cycles: 3.332B
+ * memory: 7.785MiB
  */
 
 namespace BenchBigConstantStringUnionOperators;

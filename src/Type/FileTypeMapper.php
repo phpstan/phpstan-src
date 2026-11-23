@@ -550,7 +550,11 @@ final class FileTypeMapper
 					|| ($node instanceof Node\PropertyHook && $node->getAttribute('propertyName') !== null)
 				) {
 					$docComment = GetLastDocComment::forNode($node);
-					if ($docComment !== null) {
+					if (
+						$docComment !== null
+						// only these nodes read the parsed PHPDoc below
+						&& ($node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_ || $node instanceof Node\PropertyHook)
+					) {
 						$phpDocNode = $this->phpDocStringResolver->resolve($docComment);
 					}
 				}

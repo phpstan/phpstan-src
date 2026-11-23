@@ -11,6 +11,7 @@ use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Reflection\ArrayMapCallbackParameterTypes;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\UnpackedArgumentTypes;
+use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -53,10 +54,7 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$unpacked = array_map(static fn (Node\Arg $arg) => $arg->unpack, $arrayArgs);
 			[$arrayTypes, $restType] = UnpackedArgumentTypes::expand($unpackedArgTypes, $unpacked);
 			if ($restType !== null) {
-				return self::getTypeForUnknownArrayCount($scope, $args[0]->value, [
-					...$arrayTypes,
-					$restType,
-				]);
+				return self::getTypeForUnknownArrayCount($scope, $args[0]->value, $unpackedArgTypes, $unpacked, $arrayTypes, $restType);
 			}
 
 			$args = [$args[0], ...array_map(static fn (Type $arrayType) => new Node\Arg(new TypeExpr($arrayType)), $arrayTypes)];
@@ -193,27 +191,39 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 	}
 
 	/**
-	 * The number of arrays is not known, so the values have the return type of the callback.
-	 * One array keeps its keys, more arrays give a list.
+	 * The number of arrays is not known, so the callback is called with the
+	 * arrays after the known ones unpacked. One array keeps its keys, more
+	 * arrays give a list.
 	 *
-	 * @param list<Type> $arrayTypes
+	 * @param list<Type> $argTypes the types of the args after the callback
+	 * @param list<bool> $unpacked whether each of these args is unpacked
+	 * @param list<Type> $arrayTypes the arrays whose position is known
+	 * @param Type $restArrayType the type of the arrays after them
 	 */
-	private static function getTypeForUnknownArrayCount(Scope $scope, Node\Expr $callback, array $arrayTypes): ?Type
+	private static function getTypeForUnknownArrayCount(Scope $scope, Node\Expr $callback, array $argTypes, array $unpacked, array $arrayTypes, Type $restArrayType): ?Type
 	{
 		$callableType = $scope->getType($callback);
 		if (!$callableType->isCallable()->yes()) {
 			return null;
 		}
 
-		$returnTypes = [];
-		foreach ($callableType->getCallableParametersAcceptors($scope) as $parametersAcceptor) {
-			$returnTypes[] = $parametersAcceptor->getReturnType();
+		[$valueTypes, $restValueType] = ArrayMapCallbackParameterTypes::getCallbackValueTypes($argTypes, $unpacked);
+		if ($restValueType === null) {
+			throw new ShouldNotHappenException();
 		}
-		$valueType = TypeCombinator::union(...$returnTypes);
+		$callArgs = [];
+		foreach ($valueTypes as $valueType) {
+			$callArgs[] = new Node\Arg(new TypeExpr($valueType));
+		}
+		$callArgs[] = new Node\Arg(
+			new TypeExpr(TypeCombinator::intersect(new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $restValueType), new AccessoryArrayListType())),
+			unpack: true,
+		);
+		$valueType = $scope->getType(new FuncCall($callback, $callArgs));
 
 		$keyTypes = [IntegerRangeType::createAllGreaterThanOrEqualTo(0)];
 		$isList = true;
-		foreach ($arrayTypes as $arrayType) {
+		foreach ([...$arrayTypes, $restArrayType] as $arrayType) {
 			if ($arrayType->isList()->yes()) {
 				continue;
 			}

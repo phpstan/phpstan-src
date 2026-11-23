@@ -134,6 +134,18 @@ class Foo
 		}, ...$maybeTwoArrays);
 	}
 
+	/**
+	 * @param list<list<int>> $lists
+	 * @param array{0: array{1}, 1?: array{2, 3}} $shorterFirst
+	 * @param list<array<string, int>> $maps
+	 */
+	public function genericCallbackWithUnknownCount(array $lists, array $shorterFirst, array $maps): void
+	{
+		assertType('list<int>', array_map('ArrayMapUnpackedArgs\\identity', ...$lists));
+		assertType('list<1|null>', array_map('ArrayMapUnpackedArgs\\identity', ...$shorterFirst));
+		assertType('array<int<0, max>|string, int>', array_map('ArrayMapUnpackedArgs\\identity', ...$maps));
+	}
+
 	public function shorterUnpackedArray(): void
 	{
 		array_map(function ($a, $b) {
@@ -211,4 +223,14 @@ class Foo
 		assertType('non-empty-list<array{1|4|5|null, 2|3|6|null}>', array_map(fn ($a, $b) => [$a, $b], ...$crossed));
 	}
 
+}
+
+/**
+ * @template T
+ * @param T $value
+ * @return T
+ */
+function identity($value)
+{
+	return $value;
 }

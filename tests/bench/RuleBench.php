@@ -141,7 +141,7 @@ final class RuleBench
 	#[ExpectedFor(dataSet: 'node-connecting-visitor-attributes-no-arguments', instructions: '42.01K', cycles: '44.26K', memory: '40B')]
 	#[ExpectedFor(dataSet: 'old-php-parser4-class-outside-class', instructions: '20.96K', cycles: '22.23K', memory: '0B')]
 	#[ExpectedFor(dataSet: 'parameter-castable-to-string-diff-assoc', instructions: '6.028M', cycles: '6.950M', memory: '3.172KiB')]
-	#[ExpectedFor(dataSet: 'restricted-function-usage', instructions: '287.9K', cycles: '355.2K', memory: '848B')]
+	#[ExpectedFor(dataSet: 'restricted-function-usage', instructions: '116.1K', cycles: '123.0K', memory: '48B')]
 	#[ExpectedFor(dataSet: 'restricted-method-usage', instructions: '384.3K', cycles: '487.7K', memory: '256B')]
 	public function benchProcessNode(string $rule, string $code, ?int $phpVersion): int
 	{

@@ -100,7 +100,7 @@ final class MutatingScopeBench
 	}
 
 	#[DataProvider(method: 'keepVoidExprs')]
-	#[ExpectedFor(dataSet: 'func-call', instructions: '389.4K', cycles: '1.305M', memory: '15.49KiB')]
+	#[ExpectedFor(dataSet: 'func-call', instructions: '377.0K', cycles: '1.247M', memory: '15.49KiB')]
 	#[ExpectedFor(dataSet: 'variable', instructions: '7.615K', cycles: '55.59K', memory: '128B')]
 	public function benchGetKeepVoidType(string $expr): Type
 	{
@@ -110,7 +110,7 @@ final class MutatingScopeBench
 	/**
 	 * A function without a dynamic return type extension: the extensions for it are remembered (#4644).
 	 */
-	#[Expected(instructions: '377.5K', cycles: '1.270M', memory: '15.49KiB')]
+	#[Expected(instructions: '360.9K', cycles: '1.197M', memory: '15.49KiB')]
 	public function benchGetTypeOfFuncCall(): Type
 	{
 		return $this->scope()->getType(self::funcCall('ucfirst'));

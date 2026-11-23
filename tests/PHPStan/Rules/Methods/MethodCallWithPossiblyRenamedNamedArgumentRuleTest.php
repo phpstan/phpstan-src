@@ -48,7 +48,7 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 				false,
 				true,
 			),
-			new MethodCallWithPossiblyRenamedNamedArgumentRule(),
+			new MethodCallWithPossiblyRenamedNamedArgumentRule($reflectionProvider),
 		]);
 	}
 
@@ -68,6 +68,16 @@ class MethodCallWithPossiblyRenamedNamedArgumentRuleTest extends RuleTestCase
 			[
 				'Call to Bug7434\Contract::method() uses named argument for parameter $val, but Bug7434\ImplementationWithDifferentName renames it to $wrong.',
 				28,
+			],
+		]);
+	}
+
+	public function testBug15803(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15803.php'], [
+			[
+				'Call to Bug15803\\AbstractView::add() uses named argument for parameter $object, but Bug15803\\Menu renames it to $seed.',
+				40,
 			],
 		]);
 	}

@@ -8,9 +8,10 @@ use PHPStan\Analyser\NodeCallbackInvoker;
 use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Node\CollectedDataNode;
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
-use function array_key_exists;
+use function array_values;
 use function sprintf;
 
 /**
@@ -19,6 +20,10 @@ use function sprintf;
 #[RegisteredRule(level: 0)]
 final class MethodCallWithPossiblyRenamedNamedArgumentRule implements Rule
 {
+
+	public function __construct(private ReflectionProvider $reflectionProvider)
+	{
+	}
 
 	public function getNodeType(): string
 	{
@@ -37,42 +42,45 @@ final class MethodCallWithPossiblyRenamedNamedArgumentRule implements Rule
 		$errors = [];
 		foreach ($node->get(OverridingMethodRenamesParameterCollector::class) as $data) {
 			foreach ($data as [$prototypeDeclaringClassName, $methodName, $methodDeclaringClassName, $prototypeParameterName, $methodParameterName]) {
-				if (!array_key_exists($prototypeDeclaringClassName, $calls)) {
-					continue;
-				}
+				foreach ($calls as $calledClassName => $calledClassCalls) {
+					if (!isset($calledClassCalls[$methodName][$prototypeParameterName])) {
+						continue;
+					}
 
-				$prototypeClassCalls = $calls[$prototypeDeclaringClassName];
-				if (!array_key_exists($methodName, $prototypeClassCalls)) {
-					continue;
-				}
+					// the called method can be declared in an ancestor of the prototype, with the same parameter name
+					if (
+						$calledClassName !== $prototypeDeclaringClassName
+						&& (
+							!$this->reflectionProvider->hasClass($prototypeDeclaringClassName)
+							|| !$this->reflectionProvider->hasClass($calledClassName)
+							|| !$this->reflectionProvider->getClass($prototypeDeclaringClassName)->isSubclassOfClass($this->reflectionProvider->getClass($calledClassName))
+						)
+					) {
+						continue;
+					}
 
-				$prototypeMethodCalls = $prototypeClassCalls[$methodName];
-				if (!array_key_exists($prototypeParameterName, $prototypeMethodCalls)) {
-					continue;
-				}
+					foreach ($calledClassCalls[$methodName][$prototypeParameterName] as [$file, $line]) {
+						$message = sprintf(
+							'Call to %s::%s() uses named argument for parameter $%s, but %s renames it to $%s.',
+							$calledClassName,
+							$methodName,
+							$prototypeParameterName,
+							$methodDeclaringClassName,
+							$methodParameterName,
+						);
 
-				if (!array_key_exists($prototypeParameterName, $prototypeMethodCalls)) {
-					continue;
-				}
-
-				$callsWithParameter = $prototypeMethodCalls[$prototypeParameterName];
-				foreach ($callsWithParameter as [$file, $line]) {
-					$errors[] = RuleErrorBuilder::message(sprintf(
-						'Call to %s::%s() uses named argument for parameter $%s, but %s renames it to $%s.',
-						$prototypeDeclaringClassName,
-						$methodName,
-						$prototypeParameterName,
-						$methodDeclaringClassName,
-						$methodParameterName,
-					))->identifier('argument.parameterRenamedInSubtype')
-						->file($file)
-						->line($line)
-						->build();
+						// one overriding method can rename the parameter of several prototypes matching the same call
+						$errors[sprintf('%s:%d:%s', $file, $line, $message)] = RuleErrorBuilder::message($message)
+							->identifier('argument.parameterRenamedInSubtype')
+							->file($file)
+							->line($line)
+							->build();
+					}
 				}
 			}
 		}
 
-		return $errors;
+		return array_values($errors);
 	}
 
 }

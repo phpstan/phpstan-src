@@ -52,6 +52,10 @@ final class ReflectionMethodConstructorThrowTypeExtension implements DynamicStat
 			}
 
 			foreach ($classes as $class) {
+				if (!$this->reflectionProvider->hasClass($class)) {
+					return $methodReflection->getThrowType();
+				}
+
 				$classReflection = $this->reflectionProvider->getClass($class);
 				foreach ($propertyType->getConstantStrings() as $constantPropertyString) {
 					if (!$classReflection->hasMethod($constantPropertyString->getValue())) {

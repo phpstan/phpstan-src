@@ -104,7 +104,7 @@ class Foo
 			assertType('4|null', $b);
 		}, ...$shorterRest);
 
-		assertType('list<1|null>', array_map(fn ($a) => $a, ...$shorterFirst));
+		assertType('non-empty-list<1|null>', array_map(fn ($a) => $a, ...$shorterFirst));
 	}
 
 	/**
@@ -142,8 +142,48 @@ class Foo
 	public function genericCallbackWithUnknownCount(array $lists, array $shorterFirst, array $maps): void
 	{
 		assertType('list<int>', array_map('ArrayMapUnpackedArgs\\identity', ...$lists));
-		assertType('list<1|null>', array_map('ArrayMapUnpackedArgs\\identity', ...$shorterFirst));
+		assertType('non-empty-list<1|null>', array_map('ArrayMapUnpackedArgs\\identity', ...$shorterFirst));
 		assertType('array<int<0, max>|string, int>', array_map('ArrayMapUnpackedArgs\\identity', ...$maps));
+	}
+
+	/**
+	 * @param mixed[][] $arrays
+	 * @param list<list<int>> $lists
+	 * @param array{0: array{1}, 1?: array{2, 3}} $shorterFirst
+	 * @param array{array{1}}|array{array{2}, array{3}} $either
+	 * @param list<array{1, 2}> $pairs
+	 */
+	public function nullCallback(array $arrays, array $lists, array $shorterFirst, array $either, array $pairs): void
+	{
+		assertType('list<non-empty-list<1|2>>', array_map(null, ...$pairs));
+		assertType('list<non-empty-list<mixed>>', array_map(null, ...$arrays));
+		assertType('list<non-empty-list<int|null>>', array_map(null, ...$lists));
+		assertType('array{1}|non-empty-list<array{1|null, 2|3|null}>', array_map(null, ...$shorterFirst));
+		assertType('array{1}|non-empty-list<array{2, 3}>', array_map(null, ...$either));
+		assertType('non-empty-list<1|2>', array_map(fn ($a) => $a, ...$either));
+	}
+
+	/**
+	 * @param array{0: array{1}, 1?: array{2}, 2?: array{3}} $twoOptional
+	 * @param array{0: array{1}, 1?: array{2}} $optional
+	 */
+	public function eachListOfArrays(array $twoOptional, array $optional, string $maybeCallable): void
+	{
+		assertType('array{1}|non-empty-list<array{0: 1, 1: 2, 2?: 3}>', array_map(null, ...$twoOptional));
+		// one array throws an ArgumentCountError, because the callback requires two values
+		assertType('non-empty-list<2>', array_map(fn ($a, $b) => $b, ...$optional));
+		assertType('non-empty-list', array_map($maybeCallable, ...$optional));
+	}
+
+	/**
+	 * @param list<array<int, int>> $maybeLists
+	 * @param list<list<int>> $lists
+	 */
+	public function unknownCountEdges(array $maybeLists, array $lists, string $maybeCallable, ?callable $maybeNull): void
+	{
+		assertType('array<int, int>', array_map(fn ($a) => $a, ...$maybeLists));
+		assertType('array', array_map($maybeCallable, ...$lists));
+		assertType('array', array_map($maybeNull, ...$lists));
 	}
 
 	public function shorterUnpackedArray(): void
@@ -219,7 +259,7 @@ class Foo
 			assertType('1|2|3|null', $b);
 		}, [1, 2], ...$arrays);
 
-		assertType('non-empty-list<array{1|4|5|null, 2|3|6|null}>', array_map(null, ...$crossed));
+		assertType('non-empty-list<array{1|null, 2|3|null}|array{4|5|null, 6|null}>', array_map(null, ...$crossed));
 		assertType('non-empty-list<array{1|4|5|null, 2|3|6|null}>', array_map(fn ($a, $b) => [$a, $b], ...$crossed));
 	}
 

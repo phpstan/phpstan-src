@@ -19,7 +19,10 @@ class ComposerPhpVersionParserTest extends TestCase
 		yield ['8.4.*', 80400, 80499];
 		yield ['~8.3.0', 80300, 80399];
 		yield ['>=8.2 <8.4', 80200, 80399];
+		yield ['>=8.3 <8.3.0.1', 80300, 80300];
 		yield ['<8.5.2', null, 80501];
+		yield ['<8.5.2.1', null, 80502];
+		yield ['<8.5.2.00', null, 80501];
 		yield ['>8.2.3', 80204, null];
 		yield ['>8.2.3 <8.5.2', 80204, 80501];
 		yield ['>8.2', 80201, null];

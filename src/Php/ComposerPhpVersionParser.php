@@ -6,7 +6,6 @@ use Composer\Semver\VersionParser;
 use Nette\Utils\Strings;
 use function sprintf;
 use function str_contains;
-use function str_ends_with;
 
 final class ComposerPhpVersionParser
 {
@@ -37,9 +36,9 @@ final class ComposerPhpVersionParser
 		}
 
 		// "<8.5" is normalized to "<8.5.0.0-dev", below every 8.5.0 prerelease, so 80499 is the maximum.
-		// Any other exclusive bound, e.g. "<8.5.0-RC1", still allows prereleases with the same PHP_VERSION_ID.
+		// "<8.5.0.1" still allows 8.5.0, and "<8.5.0-RC1" still allows 8.5.0-beta.
 		$upperVersion = $upperBound->getVersion();
-		$adjustment = !$upperBound->isInclusive() && str_ends_with($upperVersion, '-dev') ? -1 : 0;
+		$adjustment = !$upperBound->isInclusive() && Strings::match($upperVersion, '#^(?:\d+\.){3}0+-dev$#') !== null ? -1 : 0;
 		$maxVersion = $this->buildVersion($upperVersion, $adjustment, true, $buildPhpVersion);
 		return [ $minVersion, $maxVersion ];
 	}

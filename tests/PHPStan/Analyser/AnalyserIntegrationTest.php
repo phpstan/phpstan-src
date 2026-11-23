@@ -1893,6 +1893,14 @@ class AnalyserIntegrationTest extends PHPStanTestCase
 		$this->assertSame(23, $errors[1]->getLine());
 	}
 
+	public function testReflectionMethodOfClassStringOfNonExistentClass(): void
+	{
+		$errors = $this->runAnalyse(__DIR__ . '/data/reflection-method-of-class-string-of-non-existent-class.php');
+		$this->assertCount(1, $errors);
+		$this->assertSame('Parameter $object of function ReflectionMethodOfClassStringOfNonExistentClass\\inspect() has invalid type ReflectionMethodOfClassStringOfNonExistentClass\\DoesNotExist.', $errors[0]->getMessage());
+		$this->assertSame(5, $errors[0]->getLine());
+	}
+
 	/**
 	 * @param string[]|null $allAnalysedFiles
 	 * @return list<Error>

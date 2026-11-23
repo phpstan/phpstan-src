@@ -53,8 +53,8 @@ final class PhpDocInheritanceResolverBench
 	 * the PHPDoc of the root.
 	 */
 	#[DataProvider(method: 'depths')]
-	#[ExpectedFor(dataSet: 'depth-4', instructions: '3.208M', cycles: '5.530M', memory: '54.20KiB')]
-	#[ExpectedFor(dataSet: 'depth-16', instructions: '9.423M', cycles: '13.84M', memory: '161.0KiB')]
+	#[ExpectedFor(dataSet: 'depth-4', instructions: '2.839M', cycles: '4.805M', memory: '53.20KiB')]
+	#[ExpectedFor(dataSet: 'depth-16', instructions: '9.051M', cycles: '13.10M', memory: '154.6KiB')]
 	public function benchInheritedReturnType(int $depth): Type
 	{
 		if ($this->class === null) {

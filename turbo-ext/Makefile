@@ -319,7 +319,7 @@ FORCE:
 
 $(filter src/parser/%.o,$(OBJECTS)): src/parser/ParserEngine.h src/zv.h
 
-src/parser/ParserRunner.o: src/parser/ParserRunnerActionsSplit.h
+src/parser/ParserRunner.o: src/parser/ParserRunnerActionsSplit.h src/parser/ParserRunnerPhp7ActionsSplit.h
 
 # The profile-guided build, in three sub-makes so each stage gets its own
 # flags: instrumented objects + .so, the training run, the optimised
@@ -406,7 +406,8 @@ clean: pgo-clean
 # bin/generate-parser-actions.php, so a finding in them could only be fixed
 # in the generator, never in place.
 #
-GENERATED_SOURCES := src/parser/ParserRunnerActions1.cpp src/parser/ParserRunnerActions2.cpp src/parser/ParserRunnerActions3.cpp
+GENERATED_SOURCES := src/parser/ParserRunnerActions1.cpp src/parser/ParserRunnerActions2.cpp src/parser/ParserRunnerActions3.cpp \
+	src/parser/ParserRunnerPhp7Actions1.cpp src/parser/ParserRunnerPhp7Actions2.cpp src/parser/ParserRunnerPhp7Actions3.cpp
 LINT_SOURCES := $(filter-out $(GENERATED_SOURCES),$(SOURCES))
 LINT_JOBS ?= $(shell getconf _NPROCESSORS_ONLN 2>/dev/null || echo 4)
 

@@ -56,30 +56,39 @@ $files = array_slice($files, 0, $maxFiles);
 
 $lexer = new PhpParser\Lexer();
 $phpVersion = PhpParser\PhpVersion::fromString('8.5');
-$parserForNative = new PhpParser\Parser\Php8($lexer, $phpVersion);
-$parserForPhp = new PhpParser\Parser\Php8($lexer, $phpVersion);
 
 $checked = 0;
 $failed = 0;
 $parseErrors = 0;
 $firstDiffs = [];
 
-foreach ($files as $file) {
-	$code = file_get_contents($file);
-	if ($code === false) {
-		continue;
-	}
+// both grammars the native engine runs: Php8, and Php7, which
+// PhpParserFactory creates when the analysed PHP version is below 8.0
+$grammars = [
+	'Php8' => static fn (): PhpParser\ParserAbstract => new PhpParser\Parser\Php8($lexer, $phpVersion),
+	'Php7' => static fn (): PhpParser\ParserAbstract => new PhpParser\Parser\Php7($lexer, PhpParser\PhpVersion::fromString('7.4')),
+];
+foreach ($grammars as $grammar => $createParser) {
+	$parserForNative = $createParser();
+	$parserForPhp = $createParser();
 
-	[$problems, $hadParseErrors] = compareParse($code, $parserForNative, $parserForPhp);
+	foreach ($files as $file) {
+		$code = file_get_contents($file);
+		if ($code === false) {
+			continue;
+		}
 
-	$checked++;
-	if ($hadParseErrors) {
-		$parseErrors++;
-	}
-	if ($problems !== []) {
-		$failed++;
-		if (count($firstDiffs) < 10) {
-			$firstDiffs[] = sprintf("=== %s ===\n%s", $file, implode("\n", $problems));
+		[$problems, $hadParseErrors] = compareParse($code, $parserForNative, $parserForPhp);
+
+		$checked++;
+		if ($hadParseErrors) {
+			$parseErrors++;
+		}
+		if ($problems !== []) {
+			$failed++;
+			if (count($firstDiffs) < 10) {
+				$firstDiffs[] = sprintf("=== %s: %s ===\n%s", $grammar, $file, implode("\n", $problems));
+			}
 		}
 	}
 }

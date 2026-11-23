@@ -663,7 +663,7 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15801.php'], [
 			[
 				'Return type (($a is int ? int : string)) of method Bug15801\SwappedChild::foo() should be covariant with return type (($a is int ? int : string)) of method Bug15801\SwappedParent::foo()',
-				53,
+				55,
 			],
 		]);
 	}

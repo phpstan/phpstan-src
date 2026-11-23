@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\NodeVisitor;
 use PHPStan\Analyser\Error;
 use PHPStan\ShouldNotHappenException;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_map;
 use function class_exists;
 use function count;
@@ -17,6 +18,7 @@ use function sprintf;
  * @api
  * @template-covariant T of RuleError
  */
+#[ReferencedByTurboExtension(key: 'ruleErrorBuilder')]
 final class RuleErrorBuilder
 {
 

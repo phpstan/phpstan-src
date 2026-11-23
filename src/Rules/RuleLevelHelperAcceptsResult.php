@@ -2,11 +2,13 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use function array_merge;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'ruleLevelHelperAcceptsResult')]
 final class RuleLevelHelperAcceptsResult
 {
 

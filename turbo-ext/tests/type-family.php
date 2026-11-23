@@ -6598,6 +6598,175 @@ $observations['native ' . \PHPStan\Rules\PhpDoc\UnresolvableTypeHelper::class] =
 	}
 }
 
+// ---- RuleLevelHelper ----
+// accepts() over a matrix of accepting and accepted types, and
+// findTypeToCheck() over types handed in as TypeExprs, for the check*
+// combinations of the rule levels: the nullable and benevolent-union
+// leniency, the strict mixed mapping (top-level, in variant and invariant
+// generic arguments, behind a subtracted type), callables and closures whose
+// return types are traversed, unknown classes, traits, class_exists()
+// scopes, filtered unions and the template-mixed intersection. The Types are
+// one implementation per process; the helper is the twin on one side and
+// the native class on the other.
+$observations['native ' . \PHPStan\Rules\RuleLevelHelper::class] = (new ReflectionMethod(\PHPStan\Rules\RuleLevelHelper::class, 'accepts'))->isInternal();
+{
+	$rlhInt = new \PHPStan\Type\IntegerType();
+	$rlhString = new \PHPStan\Type\StringType();
+	$rlhNull = new \PHPStan\Type\NullType();
+	$rlhExplicitMixed = new \PHPStan\Type\MixedType(true);
+	$rlhImplicitMixed = new \PHPStan\Type\MixedType();
+	$rlhTemplateScope = \PHPStan\Type\Generic\TemplateTypeScope::createWithFunction('rlh');
+	$rlhTemplateMixed = \PHPStan\Type\Generic\TemplateTypeFactory::create($rlhTemplateScope, 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$rlhTemplateObject = \PHPStan\Type\Generic\TemplateTypeFactory::create($rlhTemplateScope, 'U', new \PHPStan\Type\ObjectType(\Traversable::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant());
+	$rlhNullableInt = \PHPStan\Type\TypeCombinator::addNull($rlhInt);
+	$rlhIntOrString = new \PHPStan\Type\UnionType([$rlhInt, $rlhString]);
+	$rlhBenevolent = new \PHPStan\Type\BenevolentUnionType([$rlhInt, $rlhString]);
+	$rlhParameter = new \PHPStan\Reflection\Native\NativeParameterReflection('p', false, $rlhInt, \PHPStan\Reflection\PassedByReference::createNo(), false, null);
+	$rlhGeneric = static fn (string $class, array $types, ?\PHPStan\Type\Type $subtracted = null, ?array $variances = null): \PHPStan\Type\Generic\GenericObjectType => new \PHPStan\Type\Generic\GenericObjectType($class, $types, $subtracted, variances: $variances ?? []);
+	$rlhTypes = [
+		'int' => $rlhInt,
+		'string' => $rlhString,
+		'null' => $rlhNull,
+		'?int' => $rlhNullableInt,
+		'int|string' => $rlhIntOrString,
+		'benevolent' => $rlhBenevolent,
+		'?benevolent' => new \PHPStan\Type\BenevolentUnionType([$rlhInt, $rlhString, $rlhNull]),
+		'explicitMixed' => $rlhExplicitMixed,
+		'implicitMixed' => $rlhImplicitMixed,
+		'templateMixed' => $rlhTemplateMixed,
+		'templateObject' => $rlhTemplateObject,
+		'never' => new \PHPStan\Type\NeverType(),
+		'error' => new \PHPStan\Type\ErrorType(),
+		'array<mixed>' => new \PHPStan\Type\ArrayType($rlhInt, $rlhExplicitMixed),
+		'array<?int>' => new \PHPStan\Type\ArrayType($rlhInt, $rlhNullableInt),
+		'array<int>' => new \PHPStan\Type\ArrayType($rlhInt, $rlhInt),
+		'ArrayObject<int,int>' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhInt]),
+		'ArrayObject<int,?int>' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhNullableInt]),
+		'ArrayObject<int,mixed>' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhExplicitMixed]),
+		'ArrayObject<int,implicit>' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhImplicitMixed]),
+		'ArrayObject<int,T>' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhTemplateMixed]),
+		'ArrayObject<int,benevolent>' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhBenevolent]),
+		'Traversable<int,mixed>' => $rlhGeneric(\Traversable::class, [$rlhInt, $rlhExplicitMixed]),
+		'Traversable<int,?int>' => $rlhGeneric(\Traversable::class, [$rlhInt, $rlhNullableInt]),
+		'Traversable<int,int>' => $rlhGeneric(\Traversable::class, [$rlhInt, $rlhInt]),
+		'Traversable covariant mixed' => $rlhGeneric(\Traversable::class, [$rlhInt, $rlhExplicitMixed], null, [\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant()]),
+		'ArrayObject subtracted' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhExplicitMixed], $rlhGeneric(\ArrayIterator::class, [$rlhInt, $rlhExplicitMixed])),
+		'Unknown<mixed>' => $rlhGeneric('RuleLevelHelperTest\\Unknown', [$rlhExplicitMixed]),
+		'nested generic' => $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhNullableInt])]),
+		'callable' => new \PHPStan\Type\CallableType(),
+		'callable(int): ?int' => new \PHPStan\Type\CallableType([$rlhParameter], $rlhNullableInt, false),
+		'callable(int): int' => new \PHPStan\Type\CallableType([$rlhParameter], $rlhInt, false),
+		'callable(int): ArrayObject<int,?int>' => new \PHPStan\Type\CallableType([$rlhParameter], $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhNullableInt]), false),
+		'callable(int): ArrayObject<int,int>' => new \PHPStan\Type\CallableType([$rlhParameter], $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhInt]), false),
+		'callable(int): mixed' => new \PHPStan\Type\CallableType([$rlhParameter], $rlhExplicitMixed, true),
+		'Closure' => new \PHPStan\Type\ClosureType(),
+		'Closure(int): ?int' => new \PHPStan\Type\ClosureType([$rlhParameter], $rlhNullableInt, false),
+		'Closure(int): int' => new \PHPStan\Type\ClosureType([$rlhParameter], $rlhInt, false),
+		'Closure(int): ArrayObject<int,?int>' => new \PHPStan\Type\ClosureType([$rlhParameter], $rlhGeneric(\ArrayObject::class, [$rlhInt, $rlhNullableInt]), true),
+		'Closure(int): benevolent' => new \PHPStan\Type\ClosureType([$rlhParameter], $rlhBenevolent, false, impurePoints: [], acceptsNamedArguments: \PHPStan\TrinaryLogic::createNo(), mustUseReturnValue: \PHPStan\TrinaryLogic::createYes(), isStatic: \PHPStan\TrinaryLogic::createYes()),
+		'non-empty-array<?int>' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType($rlhInt, $rlhNullableInt), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'array shape' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantStringType('a')], [$rlhNullableInt]),
+	];
+	// checkNullables, checkThisOnly, checkUnionTypes, checkExplicitMixed, checkImplicitMixed, checkBenevolentUnionTypes, discoveringSymbolsTip
+	$rlhConfigurations = [
+		'level 0' => [false, true, false, false, false, false, false],
+		'level 2' => [false, false, false, false, false, false, true],
+		'level 7' => [false, false, true, false, false, false, false],
+		'level 8' => [true, false, true, false, false, false, false],
+		'level 9' => [true, false, true, true, false, false, true],
+		'level 10' => [true, false, true, true, true, false, false],
+		'benevolent' => [true, false, true, true, true, true, false],
+		'benevolent lenient' => [false, false, false, false, false, true, false],
+		'implicit only' => [false, false, false, false, true, false, false],
+	];
+	$rlhView = static fn (\PHPStan\Type\Type $type): array => [get_class($type), $type->describe(\PHPStan\Type\VerbosityLevel::precise())];
+	$rlhScope = $stringContainer->getByType(\PHPStan\Analyser\ScopeFactory::class)->create(\PHPStan\Analyser\ScopeContext::create(__FILE__));
+	$rlhClassExistsScope = $rlhScope->filterByTruthyValue(new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name\FullyQualified('class_exists'), [new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\String_('RuleLevelHelperTest\\Guarded'))]));
+	$rlhThisScope = $rlhScope->assignVariable('this', new \PHPStan\Type\ObjectType(\ArrayObject::class), new \PHPStan\Type\ObjectType(\ArrayObject::class), \PHPStan\TrinaryLogic::createYes());
+	$rlhFound = [
+		'int' => $rlhInt,
+		'null' => $rlhNull,
+		'?int' => $rlhNullableInt,
+		'int|string' => $rlhIntOrString,
+		'benevolent' => $rlhBenevolent,
+		'explicitMixed' => $rlhExplicitMixed,
+		'implicitMixed' => $rlhImplicitMixed,
+		'templateMixed' => $rlhTemplateMixed,
+		'never' => new \PHPStan\Type\NeverType(),
+		'object' => new \PHPStan\Type\ObjectWithoutClassType(),
+		'ArrayObject' => new \PHPStan\Type\ObjectType(\ArrayObject::class),
+		'?ArrayObject' => \PHPStan\Type\TypeCombinator::addNull(new \PHPStan\Type\ObjectType(\ArrayObject::class)),
+		'ArrayObject|string' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\ArrayObject::class), $rlhString]),
+		'ArrayObject|ArrayIterator' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\ArrayObject::class), new \PHPStan\Type\ObjectType(\ArrayIterator::class)]),
+		'unknown' => new \PHPStan\Type\ObjectType('RuleLevelHelperTest\\Unknown'),
+		'unknown|other' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType('RuleLevelHelperTest\\Unknown'), new \PHPStan\Type\ObjectType('RuleLevelHelperTest\\Other'), $rlhInt]),
+		'guarded' => new \PHPStan\Type\ObjectType('RuleLevelHelperTest\\Guarded'),
+		'guarded|unknown' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType('RuleLevelHelperTest\\Guarded'), new \PHPStan\Type\ObjectType('RuleLevelHelperTest\\Unknown')]),
+		'trait' => new \PHPStan\Type\ObjectType(\PHPStan\Type\Traits\NonObjectTypeTrait::class),
+		'Arg|VariadicPlaceholder' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PhpParser\Node\Arg::class), new \PHPStan\Type\ObjectType(\PhpParser\Node\VariadicPlaceholder::class)]),
+		'VariadicPlaceholder|Arg' => new \PHPStan\Type\UnionType([new \PHPStan\Type\ObjectType(\PhpParser\Node\VariadicPlaceholder::class), new \PHPStan\Type\ObjectType(\PhpParser\Node\Arg::class)]),
+		'templateMixed&object' => new \PHPStan\Type\IntersectionType([$rlhTemplateMixed, new \PHPStan\Type\ObjectType(\Countable::class)]),
+		'Countable&Traversable' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ObjectType(\Countable::class), new \PHPStan\Type\ObjectType(\Traversable::class)]),
+		'union of mixed' => new \PHPStan\Type\UnionType([$rlhTemplateMixed, $rlhInt]),
+		'benevolent with null' => new \PHPStan\Type\BenevolentUnionType([$rlhInt, $rlhString, $rlhNull]),
+		'ArrayObject<int,?int>' => $rlhTypes['ArrayObject<int,?int>'],
+	];
+	$rlhCriteria = [
+		'any' => static fn (\PHPStan\Type\Type $type): bool => true,
+		'none' => static fn (\PHPStan\Type\Type $type): bool => false,
+		'object' => static fn (\PHPStan\Type\Type $type): bool => $type->isObject()->yes(),
+		'iterable' => static fn (\PHPStan\Type\Type $type): bool => $type->isIterable()->yes(),
+	];
+	$rlhViewFound = static function (\PHPStan\Rules\FoundTypeResult $result) use ($rlhView): array {
+		$errors = [];
+		foreach ($result->getUnknownClassErrors() as $error) {
+			$errors[] = [$error->getMessage(), $error->getIdentifier(), $error instanceof \PHPStan\Rules\LineRuleError ? $error->getLine() : null, $error instanceof \PHPStan\Rules\TipRuleError ? $error->getTip() : null];
+		}
+
+		return [$rlhView($result->getType()), $result->getReferencedClasses(), $errors, $result->getTip()];
+	};
+	$r = [];
+	foreach ($rlhConfigurations as $configurationName => $configuration) {
+		$helper = new \PHPStan\Rules\RuleLevelHelper($stringReflectionProvider, ...$configuration);
+		foreach ($rlhTypes as $acceptingName => $accepting) {
+			foreach ($rlhTypes as $acceptedName => $accepted) {
+				foreach ([false, true] as $strictTypes) {
+					$result = $helper->accepts($accepting, $accepted, $strictTypes);
+					$r["$configurationName accepts $acceptingName <- $acceptedName" . ($strictTypes ? ' strict' : '')] = [get_class($result), $result->result, $result->reasons];
+				}
+			}
+		}
+		foreach ($rlhFound as $typeName => $type) {
+			foreach ($rlhCriteria as $criteriaName => $criteria) {
+				$expr = new \PHPStan\Node\Expr\TypeExpr($type);
+				$expr->setAttribute('startLine', 42);
+				$r["$configurationName find $typeName by $criteriaName"] = $rlhViewFound($helper->findTypeToCheck($rlhScope, $expr, 'Access to property on an unknown class %s.', $criteria));
+				$r["$configurationName find guarded $typeName by $criteriaName"] = $rlhViewFound($helper->findTypeToCheck($rlhClassExistsScope, $expr, 'Unknown class %s.', $criteria));
+			}
+		}
+		$r["$configurationName find \$this"] = $rlhViewFound($helper->findTypeToCheck($rlhThisScope, new \PhpParser\Node\Expr\Variable('this'), 'Unknown class %s.', $rlhCriteria['any']));
+		$r["$configurationName find \$that"] = $rlhViewFound($helper->findTypeToCheck($rlhThisScope, new \PhpParser\Node\Expr\Variable('that'), 'Unknown class %s.', $rlhCriteria['any']));
+		$r["$configurationName isThis"] = [
+			$helper->isThis(new \PhpParser\Node\Expr\Variable('this')),
+			$helper->isThis(new \PhpParser\Node\Expr\Variable('that')),
+			$helper->isThis(new \PhpParser\Node\Expr\Variable(new \PhpParser\Node\Expr\Variable('this'))),
+			$helper->isThis(new \PhpParser\Node\Scalar\String_('this')),
+		];
+	}
+	// the criteria callback is asked the same questions in the same order
+	$rlhAsked = [];
+	$helper = new \PHPStan\Rules\RuleLevelHelper($stringReflectionProvider, false, false, false, false, false, false, false);
+	$helper->findTypeToCheck($rlhScope, new \PHPStan\Node\Expr\TypeExpr($rlhFound['benevolent with null']), '%s', static function (\PHPStan\Type\Type $type) use (&$rlhAsked, $rlhView): bool {
+		$rlhAsked[] = $rlhView($type);
+
+		return $type->isInteger()->yes();
+	});
+	$r['criteria asked'] = $rlhAsked;
+	foreach ($r as $key => $value) {
+		$observations["rule level helper $key"] = $value;
+	}
+}
+
 // ---- NativeParameterReflection ----
 // The value class over a parameter's name, optionality, type, by-reference
 // mode, variadicness and default: the getters, toOptional() (identity for

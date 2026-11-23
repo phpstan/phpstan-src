@@ -2,11 +2,13 @@
 
 namespace PHPStan\Rules;
 
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 
 /**
  * @api
  */
+#[ReferencedByTurboExtension(key: 'foundTypeResult')]
 final class FoundTypeResult
 {
 

@@ -39,11 +39,18 @@ final class FloatClassFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 	 */
 	public static function getRuledOutTypes(string $functionName): ?array
 	{
+		// both extensions ask this for every function call analysed: answer
+		// the other functions before building any type
+		$functionName = strtolower($functionName);
+		if ($functionName !== 'is_nan' && $functionName !== 'is_finite' && $functionName !== 'is_infinite') {
+			return null;
+		}
+
 		$nan = new ConstantFloatType(NAN);
 		$infinite = TypeCombinator::union(new ConstantFloatType(-INF), new ConstantFloatType(INF));
 		$finite = TypeCombinator::union(new IntegerType(), FloatRangeType::fromInterval(-PHP_FLOAT_MAX, PHP_FLOAT_MAX));
 
-		switch (strtolower($functionName)) {
+		switch ($functionName) {
 			case 'is_nan':
 				return [TypeCombinator::union($finite, $infinite), $nan];
 			case 'is_finite':

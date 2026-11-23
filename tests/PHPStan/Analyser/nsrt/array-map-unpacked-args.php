@@ -99,6 +99,33 @@ class Foo
 		}, ...$shorterRest);
 	}
 
+	/**
+	 * @param array{0: 1, 1?: 2} $maybePair
+	 * @param array{0: array{1}, 1?: array{2}} $maybeTwoArrays
+	 */
+	public function defaultAfterKnownPositions(array $maybePair, array $maybeTwoArrays): void
+	{
+		(function ($a, $b = 'fallback') {
+			assertType('1', $a);
+			assertType('mixed', $b);
+		})(...$maybePair);
+
+		(fn ($a, $b = 'fallback') => assertType('mixed', $b))(...$maybePair);
+
+		(function ($a, $b) {
+			assertType('2', $b);
+		})(...$maybePair);
+
+		(function ($a, $b = 'fallback', ...$rest) {
+			assertType('mixed', $b);
+		})(...$maybePair);
+
+		array_map(function ($a, $b = 'none') {
+			assertType('1', $a);
+			assertType('mixed', $b);
+		}, ...$maybeTwoArrays);
+	}
+
 	public function shorterUnpackedArray(): void
 	{
 		array_map(function ($a, $b) {

@@ -103,18 +103,27 @@ final class ContextualClosureParameterResolver
 			$unpacked[] = $arg->unpack;
 		}
 
+		$parameterHasDefault = [];
+		foreach ($expr->params as $param) {
+			if ($param->variadic) {
+				break;
+			}
+			$parameterHasDefault[] = $param->default !== null;
+		}
+
 		return new ClosureParameterTypes(
-			$this->createIntrinsicParameters($types, $unpacked, $arrayMapArgs !== null),
-			$this->createIntrinsicParameters($nativeTypes, $unpacked, $arrayMapArgs !== null),
+			$this->createIntrinsicParameters($types, $unpacked, $arrayMapArgs !== null, $parameterHasDefault),
+			$this->createIntrinsicParameters($nativeTypes, $unpacked, $arrayMapArgs !== null, $parameterHasDefault),
 		);
 	}
 
 	/**
 	 * @param list<Type> $argTypes
 	 * @param list<bool> $unpacked
+	 * @param list<bool> $parameterHasDefault whether each parameter before a variadic one has a default
 	 * @return list<DummyParameter>
 	 */
-	private function createIntrinsicParameters(array $argTypes, array $unpacked, bool $isArrayMap): array
+	private function createIntrinsicParameters(array $argTypes, array $unpacked, bool $isArrayMap, array $parameterHasDefault): array
 	{
 		$restType = null;
 		if (in_array(true, $unpacked, true)) {
@@ -131,6 +140,17 @@ final class ContextualClosureParameterResolver
 			$parameters[] = new DummyParameter('item', $type, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
 		if ($restType !== null) {
+			// a parameter after the known positions may get no value, and then has its default
+			$parametersCount = 0;
+			foreach ($parameterHasDefault as $i => $hasDefault) {
+				if (!$hasDefault) {
+					continue;
+				}
+				$parametersCount = $i + 1;
+			}
+			for ($i = count($parameters); $i < $parametersCount; $i++) {
+				$parameters[] = new DummyParameter('item', $parameterHasDefault[$i] ? new MixedType() : $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+			}
 			$parameters[] = new DummyParameter('item', $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: true, defaultValue: null);
 		}
 

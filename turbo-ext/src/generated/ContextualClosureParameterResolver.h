@@ -51,10 +51,11 @@ inline constexpr char strings[] =
 	"argTypes\0" /* 425 */
 	"unpacked\0" /* 434 */
 	"isArrayMap\0" /* 443 */
-	"createIntrinsicParameters\0" /* 454 */
-	"resolveExpectedReturnTypes\0" /* 480 */
-	"createPassedToTypeReturnType\0" /* 507 */
-	"createPassedToTypeParameters"; /* 536 */
+	"parameterHasDefault\0" /* 454 */
+	"createIntrinsicParameters\0" /* 474 */
+	"resolveExpectedReturnTypes\0" /* 500 */
+	"createPassedToTypeReturnType\0" /* 527 */
+	"createPassedToTypeParameters"; /* 556 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
 	reg::packed(53, 0, 79), /* __construct $closureSignatureInference */
@@ -71,6 +72,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(425, MAY_BE_ARRAY), /* createIntrinsicParameters $argTypes */
 	reg::packed(434, MAY_BE_ARRAY), /* createIntrinsicParameters $unpacked */
 	reg::packed(443, MAY_BE_BOOL), /* createIntrinsicParameters $isArrayMap */
+	reg::packed(454, MAY_BE_ARRAY), /* createIntrinsicParameters $parameterHasDefault */
 	reg::packed(210, MAY_BE_ARRAY), /* createIntrinsicParameters return */
 	reg::packed(242, 0, 248), /* resolveExpectedReturnTypes $scope */
 	reg::packed(143, 0, 148), /* resolveExpectedReturnTypes $expr */
@@ -93,10 +95,10 @@ inline constexpr sigtab::Sig __construct = { { 131 /* __construct */, 2, 0, 2, r
 inline constexpr sigtab::Sig hasIntrinsicArgs = { { 211 /* hasIntrinsicArgs */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasOwnContext = { { 228 /* hasOwnContext */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolve = { { 417 /* resolve */, 5, 6, 5, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createIntrinsicParameters = { { 454 /* createIntrinsicParameters */, 3, 12, 3, 15, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveExpectedReturnTypes = { { 480 /* resolveExpectedReturnTypes */, 4, 16, 4, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createPassedToTypeReturnType = { { 507 /* createPassedToTypeReturnType */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createPassedToTypeParameters = { { 536 /* createPassedToTypeParameters */, 2, 24, 2, 26, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createIntrinsicParameters = { { 474 /* createIntrinsicParameters */, 4, 12, 4, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveExpectedReturnTypes = { { 500 /* resolveExpectedReturnTypes */, 4, 17, 4, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createPassedToTypeReturnType = { { 527 /* createPassedToTypeReturnType */, 2, 22, 2, 24, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createPassedToTypeParameters = { { 556 /* createPassedToTypeParameters */, 2, 25, 2, 27, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ContextualClosureParameterResolver

@@ -123,14 +123,7 @@ final class ContextualClosureParameterResolver
 
 		$types = $argTypes;
 		if ($isArrayMap) {
-			$types = [];
-			foreach ($argTypes as $argType) {
-				$types[] = $argType->getIterableValueType();
-			}
-			// with a rest, the number of arrays is not known
-			if ($restType === null) {
-				$types = ArrayMapCallbackParameterTypes::addPaddingNull($types, $argTypes);
-			}
+			[$types, $restType] = ArrayMapCallbackParameterTypes::getCallbackValueTypes($argTypes, $restType);
 		}
 
 		$parameters = [];
@@ -138,7 +131,7 @@ final class ContextualClosureParameterResolver
 			$parameters[] = new DummyParameter('item', $type, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
 		if ($restType !== null) {
-			$parameters[] = new DummyParameter('item', $isArrayMap ? $restType->getIterableValueType() : $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: true, defaultValue: null);
+			$parameters[] = new DummyParameter('item', $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: true, defaultValue: null);
 		}
 
 		return $parameters;

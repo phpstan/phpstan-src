@@ -48,17 +48,17 @@ void isCallableYesBody(zval *captures, uint32_t argc, zval *argv, zval *return_v
 	ZVAL_BOOL(return_value, isCallable == PT_TRI_YES);
 }
 
-/* ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) */
-pt_method_site pt_ccpr_add_padding_null_site;
+/* ArrayMapCallbackParameterTypes::getCallbackValueTypes($arrayTypes, $restArrayType) */
+pt_method_site pt_ccpr_get_callback_value_types_site;
 /* UnpackedArgumentTypes::expand($argTypes, $unpacked) */
 pt_method_site pt_ccpr_expand_unpacked_site;
 /* $arg->unpack */
 pt_property_site pt_ccpr_arg_unpack_site;
 
-zv::Val addPaddingNull(zval *valueTypes, zval *arrayTypes)
+zv::Val getCallbackValueTypes(zval *arrayTypes, zval *restArrayType)
 {
-	zv::Args argv{valueTypes, arrayTypes};
-	return pt_call_static_cached(pt_ccpr_add_padding_null_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnull"), 2, argv);
+	zv::Args argv{arrayTypes, restArrayType};
+	return pt_call_static_cached(pt_ccpr_get_callback_value_types_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("getcallbackvaluetypes"), 2, argv);
 }
 
 zv::Val expandUnpacked(zval *argTypes, zval *unpacked)
@@ -228,22 +228,16 @@ private:
 		ZVAL_OBJ(&noZv, no);
 		zv::Val types = zv::Val::copyOf(argTypes.ref());
 		if (isArrayMap) {
-			zv::Arr valueTypeList = zv::Arr::empty();
-			for (zv::ArrayEntry entry : zv::ArrRef(argTypes.raw())) {
-				zv::Val valueType = itemType(entry.value().deref().raw(), true);
-				if (UNEXPECTED(valueType.isUndef())) return zv::Val();
-				valueTypeList.push(std::move(valueType));
+			zv::Val valueTypes = getCallbackValueTypes(argTypes.raw(), restType.raw());
+			if (UNEXPECTED(valueTypes.isUndef())) return zv::Val();
+			zval *values = Z_TYPE_P(valueTypes.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(valueTypes.raw()), 0) : NULL;
+			zval *restValue = Z_TYPE_P(valueTypes.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(valueTypes.raw()), 1) : NULL;
+			if (UNEXPECTED(values == NULL || restValue == NULL || Z_TYPE_P(values) != IS_ARRAY)) {
+				zend_throw_error(NULL, "ArrayMapCallbackParameterTypes::getCallbackValueTypes() did not return a pair");
+				return zv::Val();
 			}
-			types = zv::Val(std::move(valueTypeList));
-			// with a rest, the number of arrays is not known
-			if (restType.isNull()) {
-				types = addPaddingNull(types.raw(), argTypes.raw());
-				if (UNEXPECTED(types.isUndef())) return zv::Val();
-				if (UNEXPECTED(Z_TYPE_P(types.raw()) != IS_ARRAY)) {
-					zend_throw_error(NULL, "ArrayMapCallbackParameterTypes::addPaddingNull() did not return an array");
-					return zv::Val();
-				}
-			}
+			types = zv::Val::copyOf(zv::Ref(values));
+			restType = zv::Val::copyOf(zv::Ref(restValue));
 		}
 
 		zv::Arr parameterList = zv::Arr::empty();
@@ -253,24 +247,11 @@ private:
 			parameterList.push(std::move(parameter));
 		}
 		if (!restType.isNull()) {
-			zv::Val type = itemType(restType.raw(), isArrayMap);
-			if (UNEXPECTED(type.isUndef())) return zv::Val();
-			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, type.raw(), true, &noZv, true, NULL);
+			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, restType.raw(), true, &noZv, true, NULL);
 			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
 			parameterList.push(std::move(parameter));
 		}
 		return zv::Val(std::move(parameterList));
-	}
-
-	/* $isArrayMap ? $argType->getIterableValueType() : $argType */
-	static zv::Val itemType(zval *argType, bool isArrayMap)
-	{
-		if (!isArrayMap) return zv::Val::copyOf(zv::Ref(argType));
-		if (UNEXPECTED(Z_TYPE_P(argType) != IS_OBJECT)) {
-			zend_throw_error(NULL, "Call to a member function getIterableValueType() on %s", zend_zval_value_name(argType));
-			return zv::Val();
-		}
-		return pt_type_op(Z_OBJ_P(argType), PT_OP_GET_ITERABLE_VALUE_TYPE, 0, NULL);
 	}
 
 	/* Mirrors createPassedToTypeParameters() ($passedToType NULL for null):

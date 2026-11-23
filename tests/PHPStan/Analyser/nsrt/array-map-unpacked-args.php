@@ -83,6 +83,22 @@ class Foo
 		assertType('list<string>', array_map(fn ($a, $b) => $a . $b, ...$tuple));
 	}
 
+	/**
+	 * @param array{0: array{1}, 1?: array{2, 3}} $shorterFirst
+	 * @param array{0: array{1, 2, 3}, 1?: array{4}} $shorterRest
+	 */
+	public function shorterArrayWithUnknownCount(array $shorterFirst, array $shorterRest): void
+	{
+		array_map(function ($a) {
+			assertType('1|null', $a);
+		}, ...$shorterFirst);
+
+		array_map(function ($a, $b) {
+			assertType('1|2|3', $a);
+			assertType('4|null', $b);
+		}, ...$shorterRest);
+	}
+
 	public function shorterUnpackedArray(): void
 	{
 		array_map(function ($a, $b) {

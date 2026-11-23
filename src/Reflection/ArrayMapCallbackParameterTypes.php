@@ -5,6 +5,7 @@ namespace PHPStan\Reflection;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use function array_pop;
 use function count;
 use function is_int;
 use function max;
@@ -16,6 +17,35 @@ use function max;
 #[ReferencedByTurboExtension(key: 'arrayMapCallbackParameterTypes')]
 final class ArrayMapCallbackParameterTypes
 {
+
+	/**
+	 * Returns the value type of each array, and the value type of the arrays after
+	 * them when their number is not known (see UnpackedArgumentTypes::expand()).
+	 * The arrays after them are compared with the others as one more array.
+	 *
+	 * @param list<Type> $arrayTypes
+	 * @return array{list<Type>, Type|null}
+	 */
+	public static function getCallbackValueTypes(array $arrayTypes, ?Type $restArrayType): array
+	{
+		if ($restArrayType !== null) {
+			$arrayTypes[] = $restArrayType;
+		}
+
+		$valueTypes = [];
+		foreach ($arrayTypes as $arrayType) {
+			$valueTypes[] = $arrayType->getIterableValueType();
+		}
+		$valueTypes = self::addPaddingNull($valueTypes, $arrayTypes);
+
+		if ($restArrayType === null) {
+			return [$valueTypes, null];
+		}
+
+		$restValueType = array_pop($valueTypes);
+
+		return [$valueTypes, $restValueType];
+	}
 
 	/**
 	 * Adds null to the value type of each array that is shorter than another one

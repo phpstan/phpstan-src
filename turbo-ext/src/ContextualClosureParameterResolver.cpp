@@ -19,6 +19,8 @@ namespace slots = ptdecl::ContextualClosureParameterResolver::slot;
 namespace sigs = ptdecl::ContextualClosureParameterResolver::sig;
 #include "ClosureSupport.h"
 
+#include <vector>
+
 zend_class_entry *pt_ce_contextual_closure_parameter_resolver = nullptr;
 
 namespace {
@@ -195,10 +197,26 @@ public:
 			unpackedList.push(zv::Val::boolean(isUnpack));
 		}
 
+		std::vector<bool> parameterHasDefault;
+		zval *params = ptclosure::prop(ptclosure::paramsSite, expr, PT_LC("params"));
+		if (UNEXPECTED(params == NULL)) return false;
+		if (EXPECTED(Z_TYPE_P(params) == IS_ARRAY)) {
+			zv::Val paramsHold = zv::Val::copyOf(zv::Ref(params));
+			for (zv::ArrayEntry entry : zv::ArrRef(paramsHold.raw())) {
+				zval *param = entry.value().deref().raw();
+				zval *variadic = ptclosure::prop(ptclosure::paramVariadicSite, param, PT_LC("variadic"));
+				if (UNEXPECTED(variadic == NULL)) return false;
+				if (zend_is_true(variadic)) break;
+				zval *defaultValue = ptclosure::prop(ptclosure::paramDefaultSite, param, PT_LC("default"));
+				if (UNEXPECTED(defaultValue == NULL)) return false;
+				parameterHasDefault.push_back(Z_TYPE_P(defaultValue) != IS_NULL);
+			}
+		}
+
 		zv::Val unpacked = zv::Val(std::move(unpackedList));
-		parameters = createIntrinsicParameters(zv::Val(std::move(typeList)), unpacked.raw(), hasUnpacked, arrayMapArgs != NULL);
+		parameters = createIntrinsicParameters(zv::Val(std::move(typeList)), unpacked.raw(), hasUnpacked, arrayMapArgs != NULL, parameterHasDefault);
 		if (UNEXPECTED(parameters.isUndef())) return false;
-		nativeParameters = createIntrinsicParameters(zv::Val(std::move(nativeTypeList)), unpacked.raw(), hasUnpacked, arrayMapArgs != NULL);
+		nativeParameters = createIntrinsicParameters(zv::Val(std::move(nativeTypeList)), unpacked.raw(), hasUnpacked, arrayMapArgs != NULL, parameterHasDefault);
 		return !nativeParameters.isUndef();
 	}
 
@@ -206,7 +224,7 @@ private:
 	zend_object *self;
 
 	/* Mirrors createIntrinsicParameters(); UNDEF = pending exception */
-	static zv::Val createIntrinsicParameters(zv::Val argTypes, zval *unpacked, bool hasUnpacked, bool isArrayMap)
+	static zv::Val createIntrinsicParameters(zv::Val argTypes, zval *unpacked, bool hasUnpacked, bool isArrayMap, const std::vector<bool> &parameterHasDefault)
 	{
 		zv::Val restType = zv::Val::null();
 		if (hasUnpacked) {
@@ -247,6 +265,18 @@ private:
 			parameterList.push(std::move(parameter));
 		}
 		if (!restType.isNull()) {
+			// a parameter after the known positions may get no value, and then has its default
+			size_t parametersCount = 0;
+			for (size_t i = 0; i < parameterHasDefault.size(); i++) {
+				if (parameterHasDefault[i]) parametersCount = i + 1;
+			}
+			for (size_t i = zend_hash_num_elements(parameterList.table()); i < parametersCount; i++) {
+				zv::Val type = parameterHasDefault[i] ? pt_type_new_mixed_type() : zv::Val::copyOf(restType.ref());
+				if (UNEXPECTED(type.isUndef())) return zv::Val();
+				zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, type.raw(), true, &noZv, false, NULL);
+				if (UNEXPECTED(parameter.isUndef())) return zv::Val();
+				parameterList.push(std::move(parameter));
+			}
 			zv::Val parameter = pt_dummy_parameter_new(pt_ccpr_item, restType.raw(), true, &noZv, true, NULL);
 			if (UNEXPECTED(parameter.isUndef())) return zv::Val();
 			parameterList.push(std::move(parameter));

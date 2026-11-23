@@ -38,6 +38,12 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 	/** @var array<string, int> kind, namespace and name as written => context */
 	private array $nameLookups = [];
 
+	/** @var array<string, FunctionReflection> key of $nameLookups => function */
+	private array $functions = [];
+
+	/** @var array<string, string|false> key of $nameLookups => the name it resolved to */
+	private array $resolvedFunctionNames = [];
+
 	public function __construct(
 		private ReflectionProvider $provider,
 		private ValueDependencyCollector $valueDependencyCollector,
@@ -127,18 +133,35 @@ final class MemoizingReflectionProvider implements ReflectionProvider
 		return $this->resolveFunctionName($nameNode, $namespaceAnswerer) !== null;
 	}
 
+	/**
+	 * The rules of a function call ask for the same name one after another, so the answer is
+	 * remembered under the key the lookup is recorded with - see recordNameLookup(). Asking
+	 * again builds that key once and does not reach the provider.
+	 */
 	public function getFunction(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): FunctionReflection
 	{
-		$function = $this->provider->getFunction($nameNode, $namespaceAnswerer);
-		$this->recordNameLookup(ValueDependencyCollector::KIND_FUNCTION, $nameNode, $namespaceAnswerer, fn (): ?string => $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer));
+		$namespace = $namespaceAnswerer?->getNamespace();
+		$lookupKey = ValueDependencyCollector::KIND_FUNCTION . ':' . ($namespace !== null && !$nameNode->isFullyQualified() ? $namespace . '\\' : '\\') . $nameNode->name;
+		$function = $this->functions[$lookupKey] ??= $this->provider->getFunction($nameNode, $namespaceAnswerer);
+		// read after the function was found: building its reflection resolves declarations in other contexts
+		if (($this->nameLookups[$lookupKey] ?? null) !== ValueDependencyCollector::getContext()) {
+			$this->recordNameLookup(ValueDependencyCollector::KIND_FUNCTION, $nameNode, $namespaceAnswerer, fn (): ?string => $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer));
+		}
 
 		return $function;
 	}
 
 	public function resolveFunctionName(Node\Name $nameNode, ?NamespaceAnswerer $namespaceAnswerer): ?string
 	{
-		$resolved = $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer);
-		$this->recordNameLookup(ValueDependencyCollector::KIND_FUNCTION, $nameNode, $namespaceAnswerer, static fn (): ?string => $resolved);
+		$namespace = $namespaceAnswerer?->getNamespace();
+		$lookupKey = ValueDependencyCollector::KIND_FUNCTION . ':' . ($namespace !== null && !$nameNode->isFullyQualified() ? $namespace . '\\' : '\\') . $nameNode->name;
+		$resolved = $this->resolvedFunctionNames[$lookupKey] ??= $this->provider->resolveFunctionName($nameNode, $namespaceAnswerer) ?? false;
+		if ($resolved === false) {
+			$resolved = null;
+		}
+		if (($this->nameLookups[$lookupKey] ?? null) !== ValueDependencyCollector::getContext()) {
+			$this->recordNameLookup(ValueDependencyCollector::KIND_FUNCTION, $nameNode, $namespaceAnswerer, static fn (): ?string => $resolved);
+		}
 
 		return $resolved;
 	}

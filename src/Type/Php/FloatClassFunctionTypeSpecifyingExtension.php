@@ -58,8 +58,6 @@ final class FloatClassFunctionTypeSpecifyingExtension implements FunctionTypeSpe
 			case 'is_infinite':
 				return [TypeCombinator::union($nan, $finite), $infinite];
 		}
-
-		return null;
 	}
 
 	public function isFunctionSupported(FunctionReflection $functionReflection, FuncCall $node, TypeSpecifierContext $context): bool

@@ -6,7 +6,7 @@ use PhpParser\Node;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileHelper;
-use PHPStan\File\RelativePathHelper;
+use PHPStan\File\ParentDirectoryRelativePathHelper;
 use PHPStan\Parser\AnonymousClassVisitor;
 use PHPStan\ShouldNotHappenException;
 use function md5;
@@ -16,12 +16,27 @@ use function sprintf;
 final class AnonymousClassNameHelper
 {
 
+	private ParentDirectoryRelativePathHelper $relativePathHelper;
+
+	/**
+	 * The file path in the name is relative to the PHPStan installation, the anchor of the
+	 * result cache paths too, so the name does not change with the working directory.
+	 */
 	public function __construct(
 		private FileHelper $fileHelper,
-		#[AutowiredParameter(ref: '@simpleRelativePathHelper')]
-		private RelativePathHelper $relativePathHelper,
+		#[AutowiredParameter(ref: '%rootDir%')]
+		private string $rootDir,
 	)
 	{
+		$this->relativePathHelper = new ParentDirectoryRelativePathHelper($rootDir);
+	}
+
+	/**
+	 * Caches storing the names of anonymous classes must vary with this key.
+	 */
+	public function getCacheKey(): string
+	{
+		return $this->fileHelper->normalizePath($this->rootDir, '/');
 	}
 
 	/**

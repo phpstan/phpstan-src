@@ -398,7 +398,8 @@ final class FileTypeMapper
 		// created under the same use statements
 		// v8: the files are recorded with whether the map was built from their simplified AST;
 		// v7 entries may be built from it even under the key of the full AST
-		$variableCacheKey = sprintf('v8-%s', ComposerHelper::getPhpDocParserVersion());
+		// v9: the anonymous class names in the map depend on the PHPStan installation directory
+		$variableCacheKey = sprintf('v9-%s-%s', ComposerHelper::getPhpDocParserVersion(), $this->anonymousClassNameHelper->getCacheKey());
 		$cached = $this->loadCachedPhpDocNodeMap($cacheKey, $variableCacheKey);
 		if ($cached === null) {
 			[$nameScopeMap, $files] = $this->createPhpDocNodeMap($fileName, null, null, [], $fileName);

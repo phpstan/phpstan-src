@@ -655,6 +655,19 @@ class MethodSignatureRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-10942.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug15801(): void
+	{
+		$this->reportMaybes = true;
+		$this->reportStatic = true;
+		$this->analyse([__DIR__ . '/data/bug-15801.php'], [
+			[
+				'Return type (($a is int ? int : string)) of method Bug15801\SwappedChild::foo() should be covariant with return type (($a is int ? int : string)) of method Bug15801\SwappedParent::foo()',
+				53,
+			],
+		]);
+	}
+
 	public function testPureUnlessCallableIsImpureOverride(): void
 	{
 		$this->reportMaybes = true;

@@ -7,6 +7,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\InClassMethodNode;
+use PHPStan\PhpDoc\InheritedPhpDocParameterMapping;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
@@ -28,6 +29,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\VerbosityLevel;
+use function array_key_exists;
 use function count;
 use function min;
 use function sprintf;
@@ -201,6 +203,18 @@ final class MethodSignatureRule implements Rule
 			TemplateTypeHelper::resolveToBounds($parentVariant->getPhpDocReturnType()),
 		);
 		$parentReturnType = $this->transformStaticType($declaringClass, $originalParentReturnType);
+
+		// Conditional return types refer to parameters by name; match them to the child's names by position
+		$parameterNameMapping = [];
+		$currentParameters = $currentVariant->getParameters();
+		foreach ($parentVariant->getParameters() as $i => $parentParameter) {
+			if (!array_key_exists($i, $currentParameters)) {
+				continue;
+			}
+			$parameterNameMapping[$parentParameter->getName()] = $currentParameters[$i]->getName();
+		}
+		$parentReturnType = (new InheritedPhpDocParameterMapping($parameterNameMapping))->transformConditionalReturnTypeWithParameterNameMapping($parentReturnType);
+
 		// Allow adding `void` return type hints when the parent defines no return type
 		if ($returnType->isVoid()->yes() && $parentReturnType instanceof MixedType) {
 			return [TrinaryLogic::createYes(), $returnType, $parentReturnType];

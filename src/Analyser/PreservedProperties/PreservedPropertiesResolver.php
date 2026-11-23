@@ -90,12 +90,7 @@ final class PreservedPropertiesResolver
 	 */
 	private function isFunctionArgumentByValue(array $functionNames, int $position): bool
 	{
-		$key = implode('|', $functionNames) . '#' . $position;
-		if (isset($this->byValueCache[$key])) {
-			return $this->byValueCache[$key];
-		}
-
-		return $this->byValueCache[$key] = $this->findIsFunctionArgumentByValue($functionNames, $position);
+		return $this->byValueCache[implode('|', $functionNames) . '#' . $position] ??= $this->findIsFunctionArgumentByValue($functionNames, $position);
 	}
 
 	/**

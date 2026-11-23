@@ -913,6 +913,85 @@ final class FunctionArguments
 
 }
 
+function noParameters(): void
+{
+}
+
+function lastParameterByRef(int $a, ?int &$b): void
+{
+}
+
+function variadicByRef(int $a, ?int &...$rest): void
+{
+}
+
+/**
+ * An argument past the last parameter is by value, unless the function is variadic
+ * and its variadic parameter is by reference; a function that does not exist can write it.
+ */
+final class FunctionArgumentPositions
+{
+
+	private int $extraForNoParameters = 1;
+
+	private int $extraForLastByRef = 1;
+
+	private int $extraForVariadicByRef = 1;
+
+	private int $unknownFunction = 1;
+
+	public function run(): void
+	{
+		$this->extraForNoParameters = 2;
+		$this->extraForLastByRef = 2;
+		$this->extraForVariadicByRef = 2;
+		$this->unknownFunction = 2;
+		$this->callFunctions();
+		assertType('2', $this->extraForNoParameters);
+		assertType('2', $this->extraForLastByRef);
+		assertType('int', $this->extraForVariadicByRef);
+		assertType('int', $this->unknownFunction);
+	}
+
+	private function callFunctions(): void
+	{
+		$x = null;
+		noParameters($this->extraForNoParameters);
+		lastParameterByRef(1, $x, $this->extraForLastByRef);
+		variadicByRef(1, $x, $this->extraForVariadicByRef);
+		doesNotExist($this->unknownFunction);
+	}
+
+}
+
+/** A call not known to have side effects forgets a property it passes to a by-reference parameter. */
+final class MaybeImpureFunctionArguments
+{
+
+	/** @var list<int> */
+	private array $counted = [1];
+
+	/** @var list<int> */
+	private array $sorted = [1];
+
+	public function run(): void
+	{
+		$this->counted = [2];
+		$this->sorted = [2];
+		$this->countAndSort();
+		assertType('array{2}', $this->counted);
+		assertType('list<int>', $this->sorted);
+	}
+
+	private function countAndSort(): bool
+	{
+		sort($this->sorted);
+
+		return count($this->counted) > 0;
+	}
+
+}
+
 /** What the class hands out - first-class callables and closures - runs when outside code runs. */
 final class HandedOutCallables
 {

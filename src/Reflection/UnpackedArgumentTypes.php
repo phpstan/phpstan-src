@@ -3,6 +3,7 @@
 namespace PHPStan\Reflection;
 
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use function count;
@@ -50,7 +51,7 @@ final class UnpackedArgumentTypes
 			$constantArrays = $argType->getConstantArrays();
 			$shapesAreLists = true;
 			foreach ($constantArrays as $constantArray) {
-				if ($constantArray->isList()->yes()) {
+				if ($constantArray->isList()->yes() && !self::hasExtraItems($constantArray)) {
 					continue;
 				}
 
@@ -89,6 +90,15 @@ final class UnpackedArgumentTypes
 		}
 
 		return [$types, $restTypes === [] ? null : TypeCombinator::union(...$restTypes)];
+	}
+
+	/**
+	 * Whether an unsealed shape can have items after its keys, so the values it
+	 * passes when unpacked come in a number that is not known.
+	 */
+	public static function hasExtraItems(ConstantArrayType $array): bool
+	{
+		return $array->isUnsealed()->yes();
 	}
 
 }

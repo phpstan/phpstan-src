@@ -84,17 +84,18 @@ inline constexpr char strings[] =
 	"PHPStan\\Reflection\\ClassReflection\0" /* 1146 */
 	"keepPropertyFetches\0" /* 1181 */
 	"false\0" /* 1201 */
-	"invalidateExpressionEntries\0" /* 1207 */
-	"PHPStan\\Analyser\\Scope\0" /* 1235 */
-	"PhpParser\\Node\0" /* 1258 */
-	"expressionToInvalidateClass\0" /* 1273 */
-	"containsExpressionToInvalidate\0" /* 1301 */
-	"exprToInvalidate\0" /* 1332 */
-	"null\0" /* 1349 */
-	"shouldInvalidateExpression\0" /* 1354 */
-	"isPropertyFetchChainOn\0" /* 1381 */
-	"specifiedExpressions\0" /* 1404 */
-	"matchConditionalExpressions"; /* 1425 */
+	"preservedPropertyNames\0" /* 1207 */
+	"null\0" /* 1230 */
+	"invalidateExpressionEntries\0" /* 1235 */
+	"PHPStan\\Analyser\\Scope\0" /* 1263 */
+	"PhpParser\\Node\0" /* 1286 */
+	"expressionToInvalidateClass\0" /* 1301 */
+	"containsExpressionToInvalidate\0" /* 1329 */
+	"exprToInvalidate\0" /* 1360 */
+	"shouldInvalidateExpression\0" /* 1377 */
+	"isPropertyFetchChainOn\0" /* 1404 */
+	"specifiedExpressions\0" /* 1427 */
+	"matchConditionalExpressions"; /* 1448 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* nodeKey $node */
 	reg::packed(25, 0, 37), /* nodeKey $exprPrinter */
@@ -172,29 +173,31 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(270, MAY_BE_ARRAY), /* invalidateExpressionEntries $nativeExpressionTypes */
 	reg::packed(292, MAY_BE_ARRAY), /* invalidateExpressionEntries $conditionalExpressions */
 	reg::packed(1181, MAY_BE_BOOL, reg::NoString, false, false, 1201), /* invalidateExpressionEntries $keepPropertyFetches */
+	reg::packed(1207, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 1230), /* invalidateExpressionEntries $preservedPropertyNames */
 	reg::packed(70, MAY_BE_NULL | MAY_BE_ARRAY), /* invalidateExpressionEntries return */
-	reg::packed(79, 0, 1235), /* containsExpressionToInvalidate $scope */
+	reg::packed(79, 0, 1263), /* containsExpressionToInvalidate $scope */
 	reg::packed(25, 0, 37), /* containsExpressionToInvalidate $exprPrinter */
-	reg::packed(0, 0, 1258), /* containsExpressionToInvalidate $node */
-	reg::packed(1273, MAY_BE_STRING), /* containsExpressionToInvalidate $expressionToInvalidateClass */
+	reg::packed(0, 0, 1286), /* containsExpressionToInvalidate $node */
+	reg::packed(1301, MAY_BE_STRING), /* containsExpressionToInvalidate $expressionToInvalidateClass */
 	reg::packed(971, MAY_BE_STRING), /* containsExpressionToInvalidate $exprStringToInvalidate */
 	reg::packed(70, MAY_BE_BOOL), /* containsExpressionToInvalidate return */
 	reg::packed(79, 0, 85), /* shouldInvalidateExpression $scope */
 	reg::packed(25, 0, 37), /* shouldInvalidateExpression $exprPrinter */
 	reg::packed(971, MAY_BE_STRING), /* shouldInvalidateExpression $exprStringToInvalidate */
-	reg::packed(1332, 0, 5), /* shouldInvalidateExpression $exprToInvalidate */
+	reg::packed(1360, 0, 5), /* shouldInvalidateExpression $exprToInvalidate */
 	reg::packed(749, 0, 5), /* shouldInvalidateExpression $expr */
 	reg::packed(155, MAY_BE_STRING), /* shouldInvalidateExpression $exprString */
 	reg::packed(1106, MAY_BE_BOOL, reg::NoString, false, false, 1201), /* shouldInvalidateExpression $requireMoreCharacters */
-	reg::packed(1128, MAY_BE_NULL, 1146, false, false, 1349), /* shouldInvalidateExpression $invalidatingClass */
+	reg::packed(1128, MAY_BE_NULL, 1146, false, false, 1230), /* shouldInvalidateExpression $invalidatingClass */
 	reg::packed(1181, MAY_BE_BOOL, reg::NoString, false, false, 1201), /* shouldInvalidateExpression $keepPropertyFetches */
+	reg::packed(1207, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 1230), /* shouldInvalidateExpression $preservedPropertyNames */
 	reg::packed(70, MAY_BE_BOOL), /* shouldInvalidateExpression return */
 	reg::packed(749, 0, 5), /* isPropertyFetchChainOn $expr */
 	reg::packed(971, MAY_BE_STRING), /* isPropertyFetchChainOn $exprStringToInvalidate */
 	reg::packed(25, 0, 37), /* isPropertyFetchChainOn $exprPrinter */
 	reg::packed(70, MAY_BE_BOOL), /* isPropertyFetchChainOn return */
 	reg::packed(292, MAY_BE_ARRAY), /* matchConditionalExpressions $conditionalExpressions */
-	reg::packed(1404, MAY_BE_ARRAY), /* matchConditionalExpressions $specifiedExpressions */
+	reg::packed(1427, MAY_BE_ARRAY), /* matchConditionalExpressions $specifiedExpressions */
 	reg::packed(70, MAY_BE_ARRAY), /* matchConditionalExpressions return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -219,11 +222,11 @@ inline constexpr sigtab::Sig createGuardType = { { 955 /* createGuardType */, 2,
 inline constexpr sigtab::Sig invalidateMethodsOnExpression = { { 994 /* invalidateMethodsOnExpression */, 4, 57, 4, 61, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig keyMayHideSubExpressions = { { 1024 /* keyMayHideSubExpressions */, 1, 62, 1, 63, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig getIntertwinedRefRootVariableName = { { 1049 /* getIntertwinedRefRootVariableName */, 1, 64, 1, 65, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig invalidateExpressionEntries = { { 1207 /* invalidateExpressionEntries */, 9, 66, 10, 76, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig containsExpressionToInvalidate = { { 1301 /* containsExpressionToInvalidate */, 5, 77, 5, 82, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig shouldInvalidateExpression = { { 1354 /* shouldInvalidateExpression */, 6, 83, 9, 92, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig isPropertyFetchChainOn = { { 1381 /* isPropertyFetchChainOn */, 3, 93, 3, 96, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig matchConditionalExpressions = { { 1425 /* matchConditionalExpressions */, 2, 97, 2, 99, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig invalidateExpressionEntries = { { 1235 /* invalidateExpressionEntries */, 9, 66, 11, 77, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig containsExpressionToInvalidate = { { 1329 /* containsExpressionToInvalidate */, 5, 78, 5, 83, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig shouldInvalidateExpression = { { 1377 /* shouldInvalidateExpression */, 6, 84, 10, 94, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig isPropertyFetchChainOn = { { 1404 /* isPropertyFetchChainOn */, 3, 95, 3, 98, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig matchConditionalExpressions = { { 1448 /* matchConditionalExpressions */, 2, 99, 2, 101, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ScopeOps

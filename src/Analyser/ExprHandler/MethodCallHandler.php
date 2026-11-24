@@ -27,6 +27,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\PreservedProperties\PreservedPropertiesResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -81,6 +82,7 @@ final class MethodCallHandler implements ExprHandler
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private ArgumentsHandler $argumentsHandler,
+		private PreservedPropertiesResolver $preservedPropertiesResolver,
 	)
 	{
 	}
@@ -323,7 +325,15 @@ final class MethodCallHandler implements ExprHandler
 
 			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
-				$scope = $scope->invalidateExpression($normalizedExpr->var, true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
+				$scope = $scope->invalidateExpression(
+					$normalizedExpr->var,
+					true,
+					$methodReflection->getDeclaringClass(),
+					$methodReflection->isStatic(),
+					$this->preservedPropertiesResolver->resolve($expr),
+				);
+			} elseif (!$methodReflection->hasSideEffects()->no()) {
+				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
 			}
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();

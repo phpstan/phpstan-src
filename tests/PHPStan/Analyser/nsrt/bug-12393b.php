@@ -306,7 +306,7 @@ class FooVoidInt {
         assertType('null', $this->foo);
 
         $this->fooNonNull = $this->returnVoid();
-        assertType('int|null', $this->foo); // should be *NEVER*
+        assertType('null', $this->foo); // should be *NEVER*
     }
 
     public function returnVoid(): void {

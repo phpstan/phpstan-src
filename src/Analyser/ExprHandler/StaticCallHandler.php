@@ -26,6 +26,7 @@ use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
+use PHPStan\Analyser\PreservedProperties\PreservedPropertiesResolver;
 use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\TypeSpecifier;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -82,6 +83,7 @@ final class StaticCallHandler implements ExprHandler
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private ArgumentsHandler $argumentsHandler,
+		private PreservedPropertiesResolver $preservedPropertiesResolver,
 	)
 	{
 	}
@@ -387,7 +389,19 @@ final class StaticCallHandler implements ExprHandler
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())
 		) {
 			// a static method never receives $this, so property fetches on it survive
-			$scope = $scope->invalidateExpression(new Variable('this'), true, $methodReflection->getDeclaringClass(), $methodReflection->isStatic());
+			$scope = $scope->invalidateExpression(
+				new Variable('this'),
+				true,
+				$methodReflection->getDeclaringClass(),
+				$methodReflection->isStatic(),
+				$this->preservedPropertiesResolver->resolve($expr),
+			);
+		} elseif (
+			$expr->class instanceof Name
+			&& $methodReflection !== null
+			&& !$methodReflection->hasSideEffects()->no()
+		) {
+			$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
 		}
 
 		if (

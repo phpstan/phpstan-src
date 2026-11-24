@@ -1271,8 +1271,8 @@ PT_MINIT_REGISTRATION(pt_register_parser_runner)
 		zval *parserObj, *code, *errorHandler;
 		if (!zp::parse<zp::Obj, zp::Zval, zp::Obj>(execute_data, parserObj, code, errorHandler)) RETURN_THROWS();
 
-		const phpstanturbo::Tables *tables;
-		if (Z_TYPE_P(code) == IS_STRING && (tables = ParserEngine::prepareTables(parserObj)) != NULL) {
+		const phpstanturbo::Tables *tables = Z_TYPE_P(code) == IS_STRING ? ParserEngine::prepareTables(parserObj) : NULL;
+		if (tables != NULL) {
 			ParserEngine engine(parserObj, tables, errorHandler);
 			if (engine.parse(code, return_value)) return;
 		}

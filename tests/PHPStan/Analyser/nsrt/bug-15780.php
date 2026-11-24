@@ -46,6 +46,7 @@ function doFoo(Bag $data, string $secret): void
 			}
 		}
 	}
+	assertType("array{client_id: 'a', issued_at: 1, token: 'b', uri_path: 'c', client_name?: bool|float|int|string|null, logo_uri?: bool|float|int|string|null, token_endpoint_auth_method?: bool|float|int|string|null, policy_uri?: bool|float|int|string|null, tos_uri?: bool|float|int|string|null, sector_identifier_uri?: bool|float|int|string|null, subject_type?: bool|float|int|string|null, default_max_age?: bool|float|int|string|null, require_auth_time?: bool|float|int|string|null, initiate_login_uri?: bool|float|int|string|null, scope?: bool|float|int|string|null, dsi_type?: bool|float|int|string|null, client_secret?: string, client_role?: 'user', jwks_uri?: string, jwks?: non-empty-string, dsi_source_attributes?: array<mixed>, redirect_uris?: string, request_uris?: string, post_logout_redirect_uris?: string, response_types?: string, default_acr_values?: string}", $params);
 	unset($params['uri_path']);
 	if (isset($params['jwks'])) {
 		assertType('non-empty-string', $params['jwks']);

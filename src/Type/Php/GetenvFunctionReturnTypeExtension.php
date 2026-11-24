@@ -40,12 +40,12 @@ final class GetenvFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return null;
 		}
 
-		$allVariables = new ArrayType(new StringType(), new StringType());
 		$args = $functionCall->getArgs();
 		if (count($args) === 0) {
-			return $allVariables;
+			return null;
 		}
 
+		$allVariables = new ArrayType(new StringType(), new StringType());
 		$singleVariable = TypeCombinator::union(new StringType(), new ConstantBooleanType(false));
 		$nullName = $supportsNullName->yes() ? $allVariables : TypeCombinator::union($allVariables, $singleVariable);
 

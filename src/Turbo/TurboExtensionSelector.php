@@ -3,16 +3,20 @@
 namespace PHPStan\Turbo;
 
 use Phar;
+use function basename;
 use function dirname;
+use function explode;
 use function file_get_contents;
 use function get_cfg_var;
-use function in_array;
 use function is_dir;
 use function is_file;
 use function is_string;
 use function php_uname;
+use function preg_match;
+use function readlink;
 use function sprintf;
 use function strpos;
+use function version_compare;
 use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
@@ -161,7 +165,8 @@ final class TurboExtensionSelector
 	 * The directory of turbo-ext/ next to the running phar that holds the
 	 * binaries for this platform, whether it exists or not. Null when no
 	 * binary is built for this runtime: PHP older than the minimum, a debug
-	 * build, a run from source, or a platform without binaries.
+	 * build, a run from source, or a platform without binaries. Also null
+	 * on Linux when shouldTryLinuxBinaries() finds a reason to skip them.
 	 */
 	private static function getPlatformDirectoryNextToPhar(?string $pharPath = null): ?string
 	{
@@ -182,7 +187,7 @@ final class TurboExtensionSelector
 		if ($platform === null) {
 			return null;
 		}
-		if (PHP_OS_FAMILY === 'Linux' && !self::resolveCanLoadLinuxBinaries($selfMaps)) {
+		if (PHP_OS_FAMILY === 'Linux' && !self::shouldTryLinuxBinaries($selfMaps, @readlink('/proc/self/exe'))) {
 			return null;
 		}
 
@@ -239,27 +244,64 @@ final class TurboExtensionSelector
 	}
 
 	/**
-	 * Whether this PHP can load the Linux binaries at all, judged from what is
-	 * mapped into the running process. Passing one that cannot load makes PHP
-	 * print a startup warning on every run, before PHPStan could react.
+	 * Whether to try the bundled Linux binaries, judged from the file-backed
+	 * mappings of the running process. True means no reason to skip them was
+	 * found, not that they will load: anything this cannot interpret keeps
+	 * the existing attempt.
 	 *
-	 * A statically linked PHP (Laravel Herd Lite, static-php-cli) maps no
-	 * dynamic loader and cannot load any extension. glibc before 2.34 maps
-	 * its versioned file names (libc-2.31.so), and the binaries need 2.34.
+	 * The binaries are skipped when
+	 * - a mapped libc has a versioned name older than 2.34 (libc-2.31.so),
+	 *   which glibc used for its own files before 2.34, the version the
+	 *   binaries are built against
+	 * - the PHP binary is mapped and no other executable file is, so no
+	 *   dynamic loader or shared library is there. The fully static musl
+	 *   builds of Laravel Herd Lite and static-php-cli (UPX-packed) look like
+	 *   this and fail to load any extension with
+	 *   "Dynamic loading not supported". A fully static glibc build looks the
+	 *   same and is skipped too, but none was tested.
+	 *
+	 * @param string|false $executable the target of /proc/self/exe
 	 */
-	public static function resolveCanLoadLinuxBinaries(string|false $selfMaps): bool
+	public static function shouldTryLinuxBinaries(string|false $selfMaps, string|false $executable): bool
 	{
-		if (in_array($selfMaps, [false, ''], true)) {
-			// nothing to judge from: try loading them as before
+		if ($selfMaps === false) {
 			return true;
 		}
 
-		// strpos() rather than str_contains(), see resolveIsMusl()
-		if (strpos($selfMaps, '/libc-2.') !== false) {
-			return false;
+		$executableMapped = false;
+		$otherExecutableMapped = false;
+		foreach (explode("\n", $selfMaps) as $line) {
+			// address perms offset dev inode pathname, the pathname may contain
+			// spaces and ends with " (deleted)" when the file was replaced, the
+			// same as the /proc/self/exe target then
+			if (preg_match('~^\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+(/.*)~', $line, $matches) !== 1) {
+				continue;
+			}
+
+			$path = $matches[2];
+			if (
+				preg_match('~\Alibc-(\d+\.\d+)(?:\.\d+)*\.so(?: \(deleted\))?\z~', basename($path), $versionMatches) === 1
+				&& version_compare($versionMatches[1], '2.34', '<')
+			) {
+				return false;
+			}
+
+			if ($path === $executable) {
+				$executableMapped = true;
+				continue;
+			}
+
+			// shared memory shows up as a deleted file: the memfd a UPX-packed
+			// binary runs from, or the opcache JIT buffer in /dev/zero. A file
+			// deleted right before this process started would be skipped too.
+			if (strpos($matches[1], 'x') === false || preg_match('~ \(deleted\)\z~', $path) === 1) {
+				continue;
+			}
+
+			$otherExecutableMapped = true;
 		}
 
-		return strpos($selfMaps, '/ld-linux-') !== false || strpos($selfMaps, '/ld-musl-') !== false;
+		return !$executableMapped || $otherExecutableMapped;
 	}
 
 	public static function resolveIsMusl(string|false $selfMaps, bool $hasAlpineRelease): bool

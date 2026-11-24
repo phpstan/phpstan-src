@@ -34,3 +34,11 @@ function mbSubstituteCharacter(): void
 	assertType('false', mb_substitute_character('foo'));
 	assertType('false', mb_substitute_character(0x110000));
 }
+
+function getenvNullName(string $s): void
+{
+	// getenv() only returns all the variables for a null name since PHP 8.0
+	assertType('array<string, string>|string|false', getenv(null));
+	assertType('string|false', getenv($s));
+	assertType('array<string, string>', getenv());
+}

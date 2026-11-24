@@ -34,8 +34,9 @@ final class GetenvFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 		Scope $scope,
 	): ?Type
 	{
-		// the nullable name came with PHP 8.0, as named arguments did, and the signature map covers older versions
-		if (!$scope->getPhpVersion()->supportsNamedArguments()->yes()) {
+		// the name became nullable in PHP 8.0, as named arguments appeared, and the signature map covers older versions
+		$supportsNullName = $scope->getPhpVersion()->supportsNamedArguments();
+		if ($supportsNullName->no()) {
 			return null;
 		}
 
@@ -45,18 +46,19 @@ final class GetenvFunctionReturnTypeExtension implements DynamicFunctionReturnTy
 			return $allVariables;
 		}
 
-		$nameType = $scope->getType($args[0]->value);
-		$isNull = $nameType->isNull();
+		$singleVariable = TypeCombinator::union(new StringType(), new ConstantBooleanType(false));
+		$nullName = $supportsNullName->yes() ? $allVariables : TypeCombinator::union($allVariables, $singleVariable);
+
+		$isNull = $scope->getType($args[0]->value)->isNull();
 		if ($isNull->yes()) {
-			return $allVariables;
+			return $nullName;
 		}
 
-		$singleVariable = TypeCombinator::union(new StringType(), new ConstantBooleanType(false));
 		if ($isNull->no()) {
 			return $singleVariable;
 		}
 
-		return TypeCombinator::union($allVariables, $singleVariable);
+		return TypeCombinator::union($nullName, $singleVariable);
 	}
 
 }

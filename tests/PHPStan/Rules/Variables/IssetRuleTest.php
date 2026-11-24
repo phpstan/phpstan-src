@@ -689,6 +689,13 @@ class IssetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15722.php'], []);
 	}
 
+	public function testBug13473(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+
+		$this->analyse([__DIR__ . '/data/bug-13473.php'], []);
+	}
+
 	public function testPregMatchOffsetCaptureWithoutTreatPhpDocTypesAsCertain(): void
 	{
 		$this->treatPhpDocTypesAsCertain = false;

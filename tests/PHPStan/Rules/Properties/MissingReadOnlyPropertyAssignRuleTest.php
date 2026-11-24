@@ -97,14 +97,14 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				'Readonly property MissingReadOnlyPropertyAssign\AdditionalAssignOfReadonlyPromotedProperty::$x is already assigned.',
 				188,
 			],
-			/*[
+			[
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledFromConstructorBeforeAssign::$foo.',
 				226,
 			],
 			[
 				'Access to an uninitialized readonly property MissingReadOnlyPropertyAssign\MethodCalledTwice::$foo.',
 				244,
-			],*/
+			],
 			[
 				'Class MissingReadOnlyPropertyAssign\PropertyAssignedOnDifferentObjectUninitialized has an uninitialized readonly property $foo. Assign it in the constructor.',
 				264,
@@ -197,6 +197,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	public function testBug9577(): void
 	{
 		$this->analyse([__DIR__ . '/../Classes/data/bug-9577.php'], [
+			[
+				'Class Bug9577\SpecializedException has an uninitialized readonly property $message. Assign it in the constructor.',
+				8,
+			],
 			[
 				'Class Bug9577\SpecializedException2 has an uninitialized readonly property $message. Assign it in the constructor.',
 				8,

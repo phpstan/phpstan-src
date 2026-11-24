@@ -32,6 +32,9 @@ namespace ptcall {
 inline pt_method_site getConstantStringsSite;
 inline pt_method_site preservedPropertiesResolveSite;
 inline pt_method_site forgetWrittenPropertiesSite;
+inline pt_method_site applyCalledMethodExitScopeSite;
+inline pt_property_site applyCalledMethodExitScopeVarSite;
+inline pt_property_site applyCalledMethodExitScopeVarNameSite;
 
 /* ParametersAcceptorSelector::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants) */
 inline zv::Val combineVariantsForNormalization(zval *args, zval *variants, zval *namedArgumentsVariants)
@@ -195,6 +198,25 @@ inline int isInstanceOf(zval *value, int classIdx)
 	zend_class_entry *ce = pt_class(classIdx);
 	if (UNEXPECTED(ce == NULL)) return -1;
 	return Z_TYPE_P(value) == IS_OBJECT && instanceof_function(Z_OBJCE_P(value), ce) ? 1 : 0;
+}
+
+/* $preservedPropertiesResolver->applyCalledMethodExitScope($scope, $call,
+ * $methodReflection) (PreservedPropertiesResolver stays PHP; a method call
+ * on anything but $this keeps the scope, as the resolver returns it) */
+inline zv::Val applyCalledMethodExitScope(zval *resolver, zval *scope, zval *call, zval *methodReflection, bool isMethodCall)
+{
+	if (isMethodCall) {
+		zval *var = nodeProperty(applyCalledMethodExitScopeVarSite, call, PT_LC("var"));
+		if (UNEXPECTED(var == NULL)) return zv::Val();
+		int isVariable = isInstanceOf(var, PT_CLASS_VARIABLE);
+		if (UNEXPECTED(isVariable < 0)) return zv::Val();
+		if (!isVariable) return zv::Val::copyOf(zv::Ref(scope));
+		zval *name = nodeProperty(applyCalledMethodExitScopeVarNameSite, var, PT_LC("name"));
+		if (UNEXPECTED(name == NULL)) return zv::Val();
+		if (Z_TYPE_P(name) != IS_STRING || !zend_string_equals_literal(Z_STR_P(name), "this")) return zv::Val::copyOf(zv::Ref(scope));
+	}
+	zv::Args argv{scope, call, methodReflection};
+	return pt_call_method_cached(applyCalledMethodExitScopeSite, Z_OBJ_P(resolver), PT_LC("applycalledmethodexitscope"), 3, argv);
 }
 
 /* whether $node instanceof Identifier; -1 = pending exception */

@@ -9,6 +9,7 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\AttributesHandler;
+use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\DeprecatedAttributeResolver;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ImpurePoint;
@@ -56,6 +57,7 @@ final class ClassMethodHandler implements StmtHandler
 		private PropertyHooksProcessor $propertyHooksProcessor,
 		private AttributesHandler $attributesHandler,
 		private ParametersProcessor $parametersProcessor,
+		private CalledMethodProcessor $calledMethodProcessor,
 	)
 	{
 	}
@@ -247,7 +249,7 @@ final class ClassMethodHandler implements StmtHandler
 					throw new ShouldNotHappenException();
 				}
 
-				$nodeScopeResolver->callNodeCallback($nodeCallback, new MethodReturnStatementsNode(
+				$returnStatementsNode = new MethodReturnStatementsNode(
 					$stmt,
 					$gatheredReturnStatements,
 					$gatheredReturnStatementsAfterFinally,
@@ -257,7 +259,9 @@ final class ClassMethodHandler implements StmtHandler
 					array_merge($statementResult->getImpurePoints(), $methodImpurePoints),
 					$classReflection,
 					$methodReflection,
-				), $methodScope, $bodyStorage);
+				);
+				$this->calledMethodProcessor->rememberWalkedMethod($returnStatementsNode);
+				$nodeScopeResolver->callNodeCallback($nodeCallback, $returnStatementsNode, $methodScope, $bodyStorage);
 				$nodeScopeResolver->callNodeCallback($nodeCallback, VariableLivenessResolver::resolve($stmt, $internalStatementResult->getVariableFlow()), $methodScope, $bodyStorage);
 			} finally {
 				$scope->popExpressionResultStorage();

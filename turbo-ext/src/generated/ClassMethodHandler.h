@@ -15,6 +15,7 @@ inline constexpr uint32_t phpDocsResolver = 1;
 inline constexpr uint32_t propertyHooksProcessor = 2;
 inline constexpr uint32_t attributesHandler = 3;
 inline constexpr uint32_t parametersProcessor = 4;
+inline constexpr uint32_t calledMethodProcessor = 5;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -31,6 +32,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("propertyHooksProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\PropertyHooksProcessor");
 	cls.property("attributesHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\AttributesHandler");
 	cls.property("parametersProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ParametersProcessor");
+	cls.property("calledMethodProcessor", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\CalledMethodProcessor");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -46,46 +48,49 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\AttributesHandler\0" /* 203 */
 	"parametersProcessor\0" /* 238 */
 	"PHPStan\\Analyser\\ParametersProcessor\0" /* 258 */
-	"__construct\0" /* 295 */
-	"stmt\0" /* 307 */
-	"PhpParser\\Node\\Stmt\0" /* 312 */
-	"\0" /* 332 */
-	"supports\0" /* 333 */
-	"nodeScopeResolver\0" /* 342 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 360 */
-	"scope\0" /* 395 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 401 */
-	"storage\0" /* 432 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 440 */
-	"nodeCallback\0" /* 481 */
-	"context\0" /* 494 */
-	"PHPStan\\Analyser\\StatementContext\0" /* 502 */
-	"PHPStan\\Analyser\\InternalStatementResult\0" /* 536 */
-	"processStmt"; /* 577 */
+	"calledMethodProcessor\0" /* 295 */
+	"PHPStan\\Analyser\\CalledMethodProcessor\0" /* 317 */
+	"__construct\0" /* 356 */
+	"stmt\0" /* 368 */
+	"PhpParser\\Node\\Stmt\0" /* 373 */
+	"\0" /* 393 */
+	"supports\0" /* 394 */
+	"nodeScopeResolver\0" /* 403 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 421 */
+	"scope\0" /* 456 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 462 */
+	"storage\0" /* 493 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 501 */
+	"nodeCallback\0" /* 542 */
+	"context\0" /* 555 */
+	"PHPStan\\Analyser\\StatementContext\0" /* 563 */
+	"PHPStan\\Analyser\\InternalStatementResult\0" /* 597 */
+	"processStmt"; /* 638 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 28), /* __construct $deprecatedAttributeResolver */
 	reg::packed(73, 0, 89), /* __construct $phpDocsResolver */
 	reg::packed(122, 0, 145), /* __construct $propertyHooksProcessor */
 	reg::packed(185, 0, 203), /* __construct $attributesHandler */
 	reg::packed(238, 0, 258), /* __construct $parametersProcessor */
-	reg::packed(307, 0, 312), /* supports $stmt */
-	reg::packed(332, MAY_BE_BOOL), /* supports return */
-	reg::packed(342, 0, 360), /* processStmt $nodeScopeResolver */
-	reg::packed(307, 0, 312), /* processStmt $stmt */
-	reg::packed(395, 0, 401), /* processStmt $scope */
-	reg::packed(432, 0, 440), /* processStmt $storage */
-	reg::packed(481, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
-	reg::packed(494, 0, 502), /* processStmt $context */
-	reg::packed(332, 0, 536), /* processStmt return */
+	reg::packed(295, 0, 317), /* __construct $calledMethodProcessor */
+	reg::packed(368, 0, 373), /* supports $stmt */
+	reg::packed(393, MAY_BE_BOOL), /* supports return */
+	reg::packed(403, 0, 421), /* processStmt $nodeScopeResolver */
+	reg::packed(368, 0, 373), /* processStmt $stmt */
+	reg::packed(456, 0, 462), /* processStmt $scope */
+	reg::packed(493, 0, 501), /* processStmt $storage */
+	reg::packed(542, MAY_BE_CALLABLE), /* processStmt $nodeCallback */
+	reg::packed(555, 0, 563), /* processStmt $context */
+	reg::packed(393, 0, 597), /* processStmt return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 295 /* __construct */, 5, 0, 5, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 333 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processStmt = { { 577 /* processStmt */, 6, 7, 6, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __construct = { { 356 /* __construct */, 6, 0, 6, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 394 /* supports */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processStmt = { { 638 /* processStmt */, 6, 8, 6, 14, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClassMethodHandler

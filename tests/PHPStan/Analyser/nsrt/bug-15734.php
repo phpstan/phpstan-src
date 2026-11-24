@@ -13,11 +13,11 @@ class Tokenizer
 	{
 		$this->state = 'ready';
 		if (!$this->parseNextTag()) {
-			assertType("'complete'|'matched'|'ready'", $this->state);
+			assertType("'complete'|'matched'", $this->state);
 			return $this->state === 'complete';
 		}
 
-		assertType("'complete'|'matched'|'ready'", $this->state);
+		assertType("'complete'|'matched'", $this->state);
 		return $this->state === 'matched';
 	}
 

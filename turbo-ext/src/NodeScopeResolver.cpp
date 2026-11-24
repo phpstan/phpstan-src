@@ -2419,7 +2419,7 @@ zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolv
 	return pt_type_call(Z_OBJ_P(nodeScopeResolver), PT_LC("narrowscopewithcondition"), 3, argv);
 }
 
-/* the declaration processors' (TraitUseHandler.cpp, CalledMethodProcessor.cpp) */
+/* the declaration processors' (TraitUseHandler.cpp) */
 bool pt_node_scope_resolver_is_analysed_file(zval *nodeScopeResolver, zval *fileName, bool &out)
 {
 	if (isNativeResolver(nodeScopeResolver) && EXPECTED(Z_TYPE_P(fileName) == IS_STRING)) {

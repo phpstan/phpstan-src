@@ -404,6 +404,9 @@ final class StaticCallHandler implements ExprHandler
 		) {
 			$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
 		}
+		if ($methodReflection !== null) {
+			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);
+		}
 
 		if (
 			$expr->class instanceof Name

@@ -4740,7 +4740,6 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\PhpDocsResolver::class => 'walk-trace.php',
 	\PHPStan\Analyser\DeprecatedAttributeResolver::class => 'walk-trace.php',
 	\PHPStan\Analyser\PropertyHooksProcessor::class => 'walk-trace.php',
-	\PHPStan\Analyser\CalledMethodProcessor::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\PropertyHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\ClassConstHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StmtHandler\ConstHandler::class => 'walk-trace.php',

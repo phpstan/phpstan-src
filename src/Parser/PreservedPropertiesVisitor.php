@@ -31,6 +31,9 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 
 	public const ATTRIBUTE_NAME = 'preservedProperties';
 
+	/** Attached to each method of a class: ClassLikeHandler walks the methods by it, callees before their callers. */
+	public const RANK_ATTRIBUTE_NAME = 'calleesFirstRank';
+
 	private ?PreservedPropertiesClassScan $scan = null;
 
 	/** @var list<PreservedPropertiesClassScan|null> scans of the classes enclosing an anonymous class */
@@ -104,6 +107,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 	{
 		if ($node instanceof Node\Stmt\ClassLike) {
 			$this->scan?->annotateCalls();
+			$this->scan?->rankMethods($node);
 			$this->scan = array_pop($this->outerScans);
 			return null;
 		}
@@ -256,7 +260,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 			if ($this->isThis($node->var) && $node->name instanceof Identifier) {
 				$this->methodArgs($scan, $node->args, $node->name->toLowerString());
 			} else {
-				$this->writeArgs($scan, $node->args);
+				$this->writeArgs($scan, $node->args, true);
 			}
 			if (!$this->isThis($node->var)) {
 				// another object's method can do anything a call from outside the class can
@@ -322,7 +326,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 		}
 
 		if ($node instanceof Expr\Assign || $node instanceof Expr\AssignOp) {
-			$this->write($scan, $node->var);
+			$this->write($scan, $node->var, $node->var instanceof Expr\PropertyFetch);
 			return;
 		}
 
@@ -461,15 +465,17 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 	 * A property passed as an argument may be passed by reference.
 	 *
 	 * @param array<Node> $args
+	 * @param bool $toOtherObject whether the arguments go to a method of another object, which takes a
+	 *        property by reference so rarely that it does not keep the walk's type of what an override assigns
 	 */
-	private function writeArgs(PreservedPropertiesClassScan $scan, array $args): void
+	private function writeArgs(PreservedPropertiesClassScan $scan, array $args, bool $toOtherObject = false): void
 	{
 		foreach ($args as $arg) {
 			if (!$arg instanceof Arg) {
 				continue;
 			}
 
-			$this->write($scan, $arg->value);
+			$this->write($scan, $arg->value, false, $toOtherObject);
 		}
 	}
 
@@ -607,14 +613,17 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 		return $expr->name->toString();
 	}
 
-	private function write(PreservedPropertiesClassScan $scan, Expr $expr): void
+	/**
+	 * @param bool $plain whether the walk sees the value written, a PropertyAssignNode of an assignment
+	 */
+	private function write(PreservedPropertiesClassScan $scan, Expr $expr, bool $plain = false, bool $toOtherObject = false): void
 	{
 		if ($expr instanceof Expr\List_ || $expr instanceof Expr\Array_) {
 			foreach ($expr->items as $item) {
 				if ($item === null) {
 					continue;
 				}
-				$this->write($scan, $item->value);
+				$this->write($scan, $item->value, false, $toOtherObject);
 			}
 			return;
 		}
@@ -624,12 +633,17 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 			return;
 		}
 
-		$this->writeName($scan, $propertyName);
+		$this->writeName($scan, $propertyName, $plain, $toOtherObject);
 	}
 
-	private function writeName(PreservedPropertiesClassScan $scan, string $propertyName): void
+	private function writeName(PreservedPropertiesClassScan $scan, string $propertyName, bool $plain = false, bool $toOtherObject = false): void
 	{
 		$scan->summaries[(string) $scan->currentMethod]['writes'][$propertyName] = true;
+		if ($plain && $scan->closureDepth <= 0) {
+			$scan->assignments[(string) $scan->currentMethod][$propertyName] = true;
+		} elseif (!$toOtherObject) {
+			$scan->nonPlainWrites[$propertyName] = true;
+		}
 		if ($scan->closureDepth <= 0) {
 			return;
 		}

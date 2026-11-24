@@ -23,7 +23,7 @@ class PrivateCallee
 		$this->baz = true;
 		$this->writeBar();
 		assertType('true', $this->foo);
-		assertType('bool', $this->bar);
+		assertType('false', $this->bar);
 		assertType('true', $this->baz);
 	}
 
@@ -31,6 +31,35 @@ class PrivateCallee
 	{
 		echo 'x';
 		$this->bar = false;
+	}
+
+}
+
+/** A property a closure of the class writes can change whenever whoever holds the closure runs it, so the walk's type does not hold after the call. */
+class ClosureWritesAfterCall
+{
+
+	/** @var list<int> */
+	private array $history = [];
+
+	private ?int $plain = null;
+
+	public function test(): void
+	{
+		$callback = $this->prepare();
+		assertType('list<int>', $this->history);
+		assertType('1', $this->plain);
+		$callback();
+	}
+
+	private function prepare(): \Closure
+	{
+		$this->history = [];
+		$this->plain = 1;
+
+		return function (): void {
+			$this->history[] = 1;
+		};
 	}
 
 }
@@ -137,7 +166,7 @@ final class FinalClass
 		$this->baz = true;
 		$this->viaPrivate();
 		assertType('true', $this->foo);
-		assertType('bool', $this->bar);
+		assertType('false', $this->bar);
 		assertType('true', $this->baz);
 
 		$this->doNothing();
@@ -176,7 +205,7 @@ class FinalMethod
 		$this->bar = true;
 		$this->writeBar();
 		assertType('true', $this->foo);
-		assertType('bool', $this->bar);
+		assertType('false', $this->bar);
 	}
 
 	final public function writeBar(): void
@@ -229,16 +258,16 @@ final class WriteKinds
 		$this->listed = 1;
 		$this->untouched = 1;
 		$this->writeAll();
-		assertType('int', $this->assign);
+		assertType('2', $this->assign);
 		assertType('int', $this->compound);
 		assertType('int', $this->inc);
 		assertType('int|null', $this->unset);
-		assertType('list<int>', $this->push);
+		assertType('non-empty-list<int>', $this->push);
 		assertType('int', $this->ref);
 		assertType('list<int>', $this->foreachRef);
 		assertType('int', $this->byRefArg);
 		assertType('int', $this->closure);
-		assertType('int', $this->listed);
+		assertType('4', $this->listed);
 		assertType('1', $this->untouched);
 	}
 
@@ -350,7 +379,7 @@ class StaticCalls extends ParentClass
 		$this->baz = true;
 		self::writeBaz();
 		assertType('bool', $this->foo);
-		assertType('bool', $this->baz);
+		assertType('false', $this->baz);
 
 		$this->foo = true;
 		$this->baz = true;
@@ -1168,7 +1197,7 @@ function anonymousClass(): void
 			$this->bar = true;
 			$this->writeBar();
 			assertType('true', $this->foo);
-			assertType('bool', $this->bar);
+			assertType('false', $this->bar);
 		}
 
 		private function writeBar(): void
@@ -1179,6 +1208,234 @@ function anonymousClass(): void
 
 	};
 }
+
+/** The constructor's callees are walked before it, so their walks narrow and initialize what they assign. */
+class ConstructorCallee
+{
+
+	private int $foo;
+
+	public int $bar;
+
+	public function __construct()
+	{
+		$this->init();
+		assertType('1', $this->foo);
+		$this->initBar();
+		assertType('int', $this->bar);
+	}
+
+	private function init(): void
+	{
+		$this->foo = 1;
+	}
+
+	public function initBar(): void
+	{
+		$this->bar = 2;
+	}
+
+}
+
+/** A possibly impure call that writes a property on some paths forgets it: the walk ends with no type for it. */
+class SometimesWrittenBySelfCall
+{
+
+	private int $foo = 0;
+
+	public function run(): void
+	{
+		$this->foo = 1;
+		self::maybeWrite();
+		assertType('int', $this->foo);
+
+		$this->foo = 1;
+		$this->maybeWrite();
+		assertType('int', $this->foo);
+	}
+
+	private function maybeWrite(): int
+	{
+		if (rand(0, 1) === 1) {
+			$this->foo = 2;
+		}
+
+		return 1;
+	}
+
+}
+
+abstract class OverriddenWritesParent
+{
+
+	public function dispatch(): int
+	{
+		echo 'x';
+
+		return $this->post();
+	}
+
+	abstract protected function post(): int;
+
+}
+
+/**
+ * The parent's code can run an override of its method whenever it runs, which assigns a private property too: after a
+ * call that runs a walked method, the property has the type the walk ends with or a type the override assigns. A property
+ * only methods the parent does not have write takes the walk's type.
+ */
+class OverriddenWrites extends OverriddenWritesParent
+{
+
+	private ?\stdClass $order = null;
+
+	private ?\stdClass $other = null;
+
+	public function handle(): void
+	{
+		$this->reset();
+		assertType('stdClass|null', $this->order);
+		assertType('null', $this->other);
+		$this->dispatch();
+		assertType('stdClass|null', $this->order);
+		assertType('null', $this->other);
+	}
+
+	private function reset(): void
+	{
+		$this->order = null;
+		$this->other = null;
+	}
+
+	protected function post(): int
+	{
+		$this->order = new \stdClass();
+
+		return 1;
+	}
+
+	public function setOther(\stdClass $other): void
+	{
+		$this->other = $other;
+	}
+
+}
+
+abstract class OverriddenCreatesParent
+{
+
+	abstract public function check(): void;
+
+	public function getId(): int
+	{
+		echo 'x';
+
+		return 1;
+	}
+
+}
+
+/** An override the parent's code can run assigns only a narrower type than declared, so the walk's type of what it assigns stays narrowed. */
+class OverriddenCreates extends OverriddenCreatesParent
+{
+
+	private ?\stdClass $client = null;
+
+	public function check(): void
+	{
+		$this->create();
+	}
+
+	private function create(): void
+	{
+		$this->client ??= new \stdClass();
+	}
+
+	public function update(): void
+	{
+		$this->create();
+		assertType('stdClass', $this->client);
+		$this->getId();
+		assertType('stdClass', $this->client);
+	}
+
+}
+
+/** An override the parent's code can run writes the property in a way no walk sees the value of, so the walk's type does not hold after the call. */
+class OverriddenWritesByReference extends OverriddenCreatesParent
+{
+
+	private ?\stdClass $client = null;
+
+	public function check(): void
+	{
+		\settype($this->client, 'null');
+	}
+
+	private function create(): void
+	{
+		$this->client ??= new \stdClass();
+	}
+
+	public function update(): void
+	{
+		$this->create();
+		assertType('stdClass|null', $this->client);
+	}
+
+}
+abstract class ArgumentOverridesParent
+{
+
+	abstract public function in(): int;
+
+	abstract public function out(): int;
+
+}
+
+final class DefinitionResolver
+{
+
+	public function resolve(?\stdClass $definition): void
+	{
+		echo 'x';
+	}
+
+}
+
+/** An override that only passes a property to a method of another object does not keep the walk's type of what the class assigns from holding. */
+class ArgumentOverrides extends ArgumentOverridesParent
+{
+
+	private ?\stdClass $definition = null;
+
+	public function __construct(private DefinitionResolver $resolver)
+	{
+	}
+
+	public function in(): int
+	{
+		$this->load();
+		assertType('stdClass', $this->definition);
+
+		return 1;
+	}
+
+	public function out(): int
+	{
+		$this->load();
+		$this->resolver->resolve($this->definition);
+
+		return 1;
+	}
+
+	private function load(): void
+	{
+		$this->definition ??= new \stdClass();
+	}
+
+}
+
 
 class EscapedThisSender
 {

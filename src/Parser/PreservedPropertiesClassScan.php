@@ -2,12 +2,14 @@
 
 namespace PHPStan\Parser;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PHPStan\Analyser\PreservedProperties\PreservedProperties;
 use function array_key_exists;
 use function array_keys;
 use function array_pop;
 use function count;
+use function usort;
 
 /**
  * What PreservedPropertiesVisitor learns about one class while it walks it, and
@@ -43,6 +45,12 @@ final class PreservedPropertiesClassScan
 
 	/** @var array<string, bool> declared instance properties, each with whether only the class's own code can write it */
 	public array $properties = [];
+
+	/** @var array<string, true> properties written in ways no walk sees the value of: not by assigning it, or in closures */
+	public array $nonPlainWrites = [];
+
+	/** @var array<string, array<string, true>> properties each method by lowercase name assigns, which its walk sees the values of */
+	public array $assignments = [];
 
 	/** @var array<string, array{bool, bool}> methods by lowercase name, each with whether it is private and whether a subclass can override it */
 	public array $methods = [];
@@ -109,11 +117,12 @@ final class PreservedPropertiesClassScan
 			return;
 		}
 
+		$overrideWrites = $this->collectOverrideWrites();
 		$results = [];
 		foreach ($this->calls as [$node, $kind, $methodName]) {
 			$key = $kind . ':' . $methodName;
 			if (!array_key_exists($key, $results)) {
-				$results[$key] = $this->resolve($kind, $methodName);
+				$results[$key] = $this->resolve($kind, $methodName, $overrideWrites);
 			}
 			if ($results[$key] === null) {
 				continue;
@@ -124,9 +133,166 @@ final class PreservedPropertiesClassScan
 	}
 
 	/**
-	 * @param self::CALL_* $kind
+	 * Ranks the methods so that each comes after the methods of the class it calls - the
+	 * methods are walked by it, and a call can then use the walk of what it calls. The
+	 * constructor and what it calls come first: the other methods start from the scope the
+	 * constructor ends with. Mutually recursive methods keep their order in the class.
 	 */
-	private function resolve(int $kind, string $methodName): ?PreservedProperties
+	public function rankMethods(Node\Stmt\ClassLike $node): void
+	{
+		$methods = [];
+		foreach ($node->stmts as $stmt) {
+			if (!$stmt instanceof Node\Stmt\ClassMethod) {
+				continue;
+			}
+			$methods[] = $stmt;
+		}
+		usort($methods, static fn (Node\Stmt\ClassMethod $a, Node\Stmt\ClassMethod $b): int => ($a->name->toLowerString() !== '__construct') <=> ($b->name->toLowerString() !== '__construct'));
+
+		$methodsByName = [];
+		foreach ($methods as $method) {
+			$methodsByName[$method->name->toLowerString()] ??= $method;
+		}
+
+		$rank = 0;
+		$ranked = [];
+		foreach ($methods as $method) {
+			$this->rankMethod($method->name->toLowerString(), $methodsByName, $ranked, $rank);
+			if ($method->hasAttribute(PreservedPropertiesVisitor::RANK_ATTRIBUTE_NAME)) {
+				continue;
+			}
+
+			// a method declared twice
+			$method->setAttribute(PreservedPropertiesVisitor::RANK_ATTRIBUTE_NAME, $rank++);
+		}
+	}
+
+	/**
+	 * @param array<string, Node\Stmt\ClassMethod> $methodsByName
+	 * @param array<string, true> $ranked
+	 */
+	private function rankMethod(string $methodName, array $methodsByName, array &$ranked, int &$rank): void
+	{
+		if (isset($ranked[$methodName])) {
+			return;
+		}
+		$ranked[$methodName] = true;
+		foreach ($this->summaries[$methodName]['calls'] ?? [] as [$kind, $calledMethodName]) {
+			if ($kind === self::CALL_OUTSIDE || !isset($methodsByName[$calledMethodName])) {
+				continue;
+			}
+			$this->rankMethod($calledMethodName, $methodsByName, $ranked, $rank);
+		}
+		$methodsByName[$methodName]->setAttribute(PreservedPropertiesVisitor::RANK_ATTRIBUTE_NAME, $rank++);
+	}
+
+	/**
+	 * The private properties each non-private method of a class with a parent writes, by lowercase
+	 * method name: the parent's code can run the ones that override its methods whenever it runs.
+	 * Each property comes with the methods
+	 * the method runs that assign it and the function arguments it is passed as, which write it when
+	 * the parameter is by reference, or null when it is written in a way no walk sees the value of.
+	 *
+	 * @return array<string, array<string, array{list<string>, list<array{list<non-empty-string>, int, string}>}|null>>
+	 */
+	private function collectOverrideWrites(): array
+	{
+		if (!$this->hasParent) {
+			return [];
+		}
+
+		$overrideWrites = [];
+		foreach ($this->methods as $methodName => [$isPrivate]) {
+			if ($isPrivate || $methodName === '__construct' || !isset($this->summaries[$methodName])) {
+				continue;
+			}
+			$collected = $this->collect([[self::CALL_SELF, $methodName]]);
+			if ($collected === null) {
+				foreach ($this->properties as $propertyName => $isPrivateProperty) {
+					if (!$isPrivateProperty) {
+						continue;
+					}
+					$overrideWrites[$methodName][$propertyName] = null;
+				}
+				continue;
+			}
+
+			$followed = $this->followMethods($methodName, $collected[2]);
+			$written = $collected[0];
+			foreach ($collected[1] as [, , $propertyName]) {
+				// written when the parameter is by reference
+				$written[$propertyName] = true;
+			}
+			foreach (array_keys($written) as $propertyName) {
+				if (($this->properties[$propertyName] ?? false) !== true) {
+					continue;
+				}
+				if (isset($this->nonPlainWrites[$propertyName])) {
+					$overrideWrites[$methodName][$propertyName] = null;
+					continue;
+				}
+				$writers = [];
+				$functionArguments = [];
+				foreach ($followed as $followedMethodName) {
+					foreach ($this->summaries[$followedMethodName]['functionArguments'] as $functionArgument) {
+						if ($functionArgument[2] !== $propertyName) {
+							continue;
+						}
+						$functionArguments[] = $functionArgument;
+					}
+					if (!isset($this->assignments[$followedMethodName][$propertyName])) {
+						continue;
+					}
+					$writers[] = $followedMethodName;
+				}
+				if (count($writers) === 0 && count($functionArguments) === 0) {
+					// only passed to methods of other objects
+					continue;
+				}
+				$overrideWrites[$methodName][$propertyName] = [$writers, $functionArguments];
+			}
+		}
+
+		return $overrideWrites;
+	}
+
+	/**
+	 * The methods of the class the method runs, itself included, and what the class hands out
+	 * when code outside can run.
+	 *
+	 * @return list<string>
+	 */
+	private function followMethods(string $methodName, bool $escapes): array
+	{
+		$worklist = [$methodName];
+		if ($escapes) {
+			foreach ($this->handedOut as [, $handedOutMethodName]) {
+				$worklist[] = $handedOutMethodName;
+			}
+		}
+		$visited = [];
+		while (count($worklist) > 0) {
+			$name = array_pop($worklist);
+			if (isset($visited[$name]) || !isset($this->summaries[$name])) {
+				continue;
+			}
+			$visited[$name] = true;
+			foreach ($this->summaries[$name]['calls'] as [$kind, $calledMethodName]) {
+				if ($kind === self::CALL_OUTSIDE) {
+					continue;
+				}
+				$worklist[] = $calledMethodName;
+			}
+		}
+
+		return array_keys($visited);
+	}
+
+	/**
+	 * @param self::CALL_* $kind
+	 * @param array<string, array<string, array{list<string>, list<array{list<non-empty-string>, int, string}>}|null>> $overrideWrites
+	 */
+	private function resolve(int $kind, string $methodName, array $overrideWrites): ?PreservedProperties
 	{
 		$collected = $this->collect([[$kind, $methodName]]);
 		if ($collected === null) {
@@ -162,7 +328,7 @@ final class PreservedPropertiesClassScan
 			return null;
 		}
 
-		return new PreservedProperties($preserved, $preservedFunctionArguments, $directWritten, $directFunctionArgumentsUnwritten);
+		return new PreservedProperties($preserved, $preservedFunctionArguments, $directWritten, $directFunctionArgumentsUnwritten, $this->closures['writes'], $this->parentName, $overrideWrites);
 	}
 
 	/**

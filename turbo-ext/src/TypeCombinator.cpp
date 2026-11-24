@@ -2764,6 +2764,49 @@ public:
 			}
 		}
 
+		/* Stage 2: fold the non-empty shapes with different key sets into
+		 * one shape, the keys missing from some of them becoming optional -
+		 * only when the shapes share a required key */
+		{
+			zv::Val merged;
+			TypeList typesWithMerged;
+			for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+				zval *type = entry.value().raw();
+				bool fold = false;
+				if (isInstance(type, pt_ce_constant_array_type)) {
+					zend_long atLeastOnce = callTrinary(type, PT_LC("isiterableatleastonce"));
+					PT_FAIL_IF_NEG(atLeastOnce);
+					fold = atLeastOnce == PT_TRI_YES;
+				}
+				if (!fold) {
+					typesWithMerged.push_back(copy(type));
+					continue;
+				}
+				if (merged.isUndef()) {
+					merged = copy(type);
+					continue;
+				}
+				zv::Val next = call(merged.raw(), PT_LC("mergewith"), 1, type);
+				PT_FAIL_IF_UNDEF(next);
+				merged = std::move(next);
+			}
+			bool sharesRequiredKey = false;
+			if (!merged.isUndef() && typesWithMerged.size() + 1 < countOf(types.raw())) {
+				zv::Val optionalKeys = call(merged.raw(), PT_LC("getoptionalkeys"));
+				PT_FAIL_IF_UNDEF(optionalKeys);
+				zv::Val keyTypes = call(merged.raw(), PT_LC("getkeytypes"));
+				PT_FAIL_IF_UNDEF(keyTypes);
+				sharesRequiredKey = countOf(optionalKeys.raw()) < countOf(keyTypes.raw());
+			}
+			if (sharesRequiredKey) {
+				typesWithMerged.push_back(std::move(merged));
+				zv::Val candidate = zv::Val(listOf(typesWithMerged));
+				zend_long candidateCount = countConstantArrayValueTypes(candidate.raw());
+				PT_FAIL_IF_NEG(candidateCount);
+				if (candidateCount <= limit) return candidate;
+			}
+		}
+
 		zv::Arr results = zv::Arr::create(countOf(types.raw()));
 		zv::Arr emptyArrays = zv::Arr::create(0);
 		bool eachIsOversized = true;

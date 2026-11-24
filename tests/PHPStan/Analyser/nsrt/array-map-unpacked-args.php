@@ -163,4 +163,18 @@ class Foo
 		(fn ($a, $b) => assertType('2', $b))(1, ...[2]);
 	}
 
+	/**
+	 * @param array{array{1}, ...<int, array{2}>} $unsealed
+	 */
+	public function unsealedShapes(array $unsealed): void
+	{
+		array_map(function ($a, ...$rest) {
+			assertType('1|2', $a);
+		}, ...$unsealed);
+
+		(function ($a) {
+			assertType('array{1}|array{2}', $a);
+		})(...$unsealed);
+	}
+
 }

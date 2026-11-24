@@ -169,7 +169,7 @@ final class MutatingScopeBench
 	/**
 	 * Invalidates the method calls on $this without searching each tracked expression (#4692).
 	 */
-	#[Expected(instructions: '324.9K', cycles: '640.5K', memory: '34.63KiB')]
+	#[Expected(instructions: '373.9K', cycles: '676.0K', memory: '34.63KiB')]
 	public function benchAssignPropertyFetch(): MutatingScope
 	{
 		return $this->scope()->assignExpression(self::propertyFetch(0), new IntegerType(), new IntegerType());

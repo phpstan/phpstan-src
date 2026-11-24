@@ -3848,6 +3848,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->getNodeKey($expressionToInvalidate),
 			$this->expressionTypes,
 			$this->nativeExpressionTypes,
+			$this->conditionalExpressions,
 		);
 		if ($result === null) {
 			return $this;
@@ -3858,7 +3859,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this,
 			$result[0],
 			$result[1],
-			$this->conditionalExpressions,
+			$result[2],
 			$this->currentlyAssignedExpressions,
 			$this->currentlyAllowedUndefinedExpressions,
 			[],

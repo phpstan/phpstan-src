@@ -692,18 +692,20 @@ final class ScopeOps
 
 	/**
 	 * The scan of MutatingScope::invalidateMethodsOnExpression(): drops tracked
-	 * MethodCall expressions whose var matches the invalidated key, or returns
-	 * null when nothing changed.
+	 * expressions that read a method call on the invalidated key, and the conditional
+	 * expressions about them or conditioned on them, or returns null when nothing changed.
 	 *
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
-	 * @return array{array<string, ExpressionTypeHolder>, array<string, ExpressionTypeHolder>}|null
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @return array{array<string, ExpressionTypeHolder>, array<string, ExpressionTypeHolder>, array<string, ConditionalExpressionHolder[]>}|null
 	 */
 	public static function invalidateMethodsOnExpression(
 		ExprPrinter $exprPrinter,
 		string $exprStringToInvalidate,
 		array $expressionTypes,
 		array $nativeExpressionTypes,
+		array $conditionalExpressions,
 	): ?array
 	{
 		$invalidated = false;
@@ -724,12 +726,7 @@ final class ScopeOps
 			) {
 				continue;
 			}
-			$expr = $exprTypeHolder->getExpr();
-			if (!$expr instanceof MethodCall) {
-				continue;
-			}
-
-			if (self::nodeKey($expr->var, $exprPrinter) !== $exprStringToInvalidate) {
+			if (!self::readsMethodCallOn($exprTypeHolder->getExpr(), $exprPrinter, $exprStringToInvalidate)) {
 				continue;
 			}
 
@@ -738,11 +735,65 @@ final class ScopeOps
 			$invalidated = true;
 		}
 
+		foreach ($conditionalExpressions as $conditionalExprString => $holders) {
+			$conditionalExprString = (string) $conditionalExprString; // @phpstan-ignore cast.useless
+			foreach ($holders as $key => $holder) {
+				$key = (string) $key;
+				if (
+					$canUseKeyPrefilter
+					&& !str_contains($conditionalExprString, $exprStringToInvalidate)
+					&& !str_contains($key, $exprStringToInvalidate)
+					&& !self::keyMayHideSubExpressions($conditionalExprString)
+					&& !self::keyMayHideSubExpressions($key)
+				) {
+					continue;
+				}
+				$drop = self::readsMethodCallOn($holder->getTypeHolder()->getExpr(), $exprPrinter, $exprStringToInvalidate);
+				foreach ($holder->getConditionExpressionTypeHolders() as $conditionTypeHolder) {
+					if ($drop) {
+						break;
+					}
+					$drop = self::readsMethodCallOn($conditionTypeHolder->getExpr(), $exprPrinter, $exprStringToInvalidate);
+				}
+				if (!$drop) {
+					continue;
+				}
+
+				unset($conditionalExpressions[$conditionalExprString][$key]);
+				if (count($conditionalExpressions[$conditionalExprString]) === 0) {
+					unset($conditionalExpressions[$conditionalExprString]);
+				}
+				$invalidated = true;
+			}
+		}
+
 		if (!$invalidated) {
 			return null;
 		}
 
-		return [$expressionTypes, $nativeExpressionTypes];
+		return [$expressionTypes, $nativeExpressionTypes, $conditionalExpressions];
+	}
+
+	/**
+	 * Whether the expression is a method call on the invalidated receiver, or a fetch
+	 * or call on what such a call returned - like '$cache->current()->result'.
+	 */
+	private static function readsMethodCallOn(Expr $expr, ExprPrinter $exprPrinter, string $exprStringToInvalidate): bool
+	{
+		while (
+			$expr instanceof MethodCall
+			|| $expr instanceof Expr\NullsafeMethodCall
+			|| $expr instanceof PropertyFetch
+			|| $expr instanceof NullsafePropertyFetch
+			|| $expr instanceof Expr\ArrayDimFetch
+		) {
+			if ($expr instanceof MethodCall && self::nodeKey($expr->var, $exprPrinter) === $exprStringToInvalidate) {
+				return true;
+			}
+			$expr = $expr->var;
+		}
+
+		return false;
 	}
 
 	/**

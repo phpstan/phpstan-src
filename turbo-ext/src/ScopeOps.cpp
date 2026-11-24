@@ -895,17 +895,61 @@ public:
 	}
 
 	/*
-	 * Mirrors ScopeOps::invalidateMethodsOnExpression(): drops tracked
-	 * MethodCall expressions whose var matches the invalidated key. Returns
-	 * null when nothing changed.
+	 * Mirrors ScopeOps::readsMethodCallOn(): whether the expression is a method
+	 * call on the invalidated receiver, or a fetch or call on what such a call
+	 * returned. false with *failed set = pending exception.
 	 */
-	static zv::Val invalidateMethodsOnExpression(zval *exprPrinter, zend_string *exprStringToInvalidate, zv::TableRef expressionTypes, zv::TableRef nativeExpressionTypes)
+	static bool readsMethodCallOn(zend_object *expr, zval *exprPrinter, zend_string *exprStringToInvalidate, bool *failed)
 	{
 		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
-		if (UNEXPECTED(methodCallCe == NULL)) return zv::Val();
+		zend_class_entry *chainCes[] = {
+			methodCallCe,
+			pt_class(PT_CLASS_NULLSAFE_METHOD_CALL),
+			pt_class(PT_CLASS_PROPERTY_FETCH),
+			pt_class(PT_CLASS_NULLSAFE_PROPERTY_FETCH),
+			pt_class(PT_CLASS_ARRAY_DIM_FETCH),
+		};
+		for (zend_class_entry *ce : chainCes) {
+			if (UNEXPECTED(ce == NULL)) {
+				*failed = true;
+				return false;
+			}
+		}
+		while (true) {
+			bool inChain = false;
+			for (zend_class_entry *ce : chainCes) {
+				if (instanceof_function(expr->ce, ce)) {
+					inChain = true;
+					break;
+				}
+			}
+			if (!inChain) return false;
+			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
+			if (varOffset < 0) return false;
+			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
+			if (!var.isObject()) return false;
+			if (instanceof_function(expr->ce, methodCallCe)) {
+				zv::Str varKey = zv::Str::adopt(pt_node_key(var.asObject(), exprPrinter));
+				if (UNEXPECTED(varKey.isNull())) {
+					*failed = true;
+					return false;
+				}
+				if (zend_string_equals(varKey.get(), exprStringToInvalidate)) return true;
+			}
+			expr = var.asObject();
+		}
+	}
 
+	/*
+	 * Mirrors ScopeOps::invalidateMethodsOnExpression(): drops tracked
+	 * expressions that read a method call on the invalidated key, and the
+	 * conditional expressions about them or conditioned on them. Returns null
+	 * when nothing changed.
+	 */
+	static zv::Val invalidateMethodsOnExpression(zval *exprPrinter, zend_string *exprStringToInvalidate, zv::TableRef expressionTypes, zv::TableRef nativeExpressionTypes, zv::TableRef conditionalExpressions)
+	{
 		bool invalidated = false;
-		zv::Arr resultExpr, resultNative; /* stay UNDEF until the first hit */
+		zv::Arr resultExpr, resultNative, resultConditional; /* stay UNDEF until the first hit */
 
 		/* Same compositional-key shortcut as in invalidateExpressionEntries(): a
 		 * method call's key embeds its receiver's key verbatim, so when the
@@ -923,15 +967,10 @@ public:
 			}
 			zv::Ref holder = entry.value().deref();
 			if (UNEXPECTED(!pt_check_holder(holder.raw()))) return zv::Val();
-			zend_object *expr = holderExpr(holder);
-			if (!instanceof_function(expr->ce, methodCallCe)) continue;
-			int32_t varOffset = pt_instance_prop_offset(expr->ce, "var", sizeof("var") - 1);
-			if (varOffset < 0) continue;
-			zv::Ref var = zv::ObjRef(expr).propAtOffset((uint32_t) varOffset).deref();
-			if (!var.isObject()) continue;
-			zv::Str varKey = zv::Str::adopt(pt_node_key(var.asObject(), exprPrinter));
-			if (UNEXPECTED(varKey.isNull())) return zv::Val();
-			if (!zend_string_equals(varKey.get(), exprStringToInvalidate)) continue;
+			bool failed = false;
+			bool reads = readsMethodCallOn(holderExpr(holder), exprPrinter, exprStringToInvalidate, &failed);
+			if (UNEXPECTED(failed)) return zv::Val();
+			if (!reads) continue;
 
 			if (resultExpr.isUndef()) {
 				resultExpr = zv::Arr::adoptTable(zend_array_dup(expressionTypes.table()));
@@ -942,11 +981,75 @@ public:
 			invalidated = true;
 		}
 
+		for (auto entry : conditionalExpressions) {
+			zend_string *key = entry.stringKeyOrNull();
+			zv::Ref holders = entry.value().deref();
+			if (!holders.isArray()) continue;
+			zv::TableRef holdersTable(holders.asArrayTable());
+			zv::Arr filteredGroup; /* stays UNDEF until a holder of this group is dropped */
+			for (auto holderEntry : holdersTable) {
+				zend_string *holderKey = holderEntry.stringKeyOrNull();
+				if (canUseKeyPrefilter && key != NULL && holderKey != NULL
+					&& !strContainsStr(key, exprStringToInvalidate)
+					&& !strContainsStr(holderKey, exprStringToInvalidate)
+					&& !keyMayHideSubExpressions(key)
+					&& !keyMayHideSubExpressions(holderKey)) {
+					continue;
+				}
+				zv::Ref holder = holderEntry.value().deref();
+				if (UNEXPECTED(!holder.instanceOf(pt_ce_cond_expr_holder))) {
+					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
+					return zv::Val();
+				}
+				zv::Ref typeHolder = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER).deref();
+				if (UNEXPECTED(!pt_check_holder(typeHolder.raw()))) return zv::Val();
+				bool failed = false;
+				bool drop = readsMethodCallOn(holderExpr(typeHolder), exprPrinter, exprStringToInvalidate, &failed);
+				if (UNEXPECTED(failed)) return zv::Val();
+				zv::Ref conditions = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
+				if (!drop && conditions.isArray()) {
+					for (auto conditionEntry : zv::TableRef(conditions.asArrayTable())) {
+						zv::Ref conditionHolder = conditionEntry.value().deref();
+						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()))) return zv::Val();
+						drop = readsMethodCallOn(holderExpr(conditionHolder), exprPrinter, exprStringToInvalidate, &failed);
+						if (UNEXPECTED(failed)) return zv::Val();
+						if (drop) break;
+					}
+				}
+				if (!drop) continue;
+
+				if (filteredGroup.isUndef()) {
+					filteredGroup = zv::Arr::adoptTable(zend_array_dup(holdersTable.table()));
+				}
+				pt_ht_del(filteredGroup.table(), holderKey, holderEntry.indexKey());
+				invalidated = true;
+			}
+			if (filteredGroup.isUndef()) continue;
+
+			if (resultConditional.isUndef()) {
+				resultConditional = zv::Arr::adoptTable(zend_array_dup(conditionalExpressions.table()));
+			}
+			if (zend_hash_num_elements(filteredGroup.table()) == 0) {
+				pt_ht_del(resultConditional.table(), key, entry.indexKey());
+			} else {
+				zval group = filteredGroup.take();
+				pt_ht_update(resultConditional.table(), key, entry.indexKey(), &group);
+			}
+		}
+
 		if (!invalidated) return zv::Val::null();
 
-		zv::Arr result = zv::Arr::create(2);
+		if (resultExpr.isUndef()) {
+			resultExpr = zv::Arr::copyOfTable(expressionTypes.table());
+			resultNative = zv::Arr::copyOfTable(nativeExpressionTypes.table());
+		}
+		if (resultConditional.isUndef()) {
+			resultConditional = zv::Arr::copyOfTable(conditionalExpressions.table());
+		}
+		zv::Arr result = zv::Arr::create(3);
 		result.push(std::move(resultExpr));
 		result.push(std::move(resultNative));
+		result.push(std::move(resultConditional));
 		return zv::Val(std::move(result));
 	}
 
@@ -2251,10 +2354,10 @@ PT_MINIT_REGISTRATION(pt_register_scope_ops)
 	cls.method(sigs::invalidateMethodsOnExpression, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr_printer;
 		zend_string *invalidate_str;
-		HashTable *expression_types, *native_expression_types;
-		if (!zp::parse<zp::Obj, zp::Str, zp::Ht, zp::Ht>(execute_data, expr_printer, invalidate_str, expression_types, native_expression_types)) RETURN_THROWS();
+		HashTable *expression_types, *native_expression_types, *conditional_expressions;
+		if (!zp::parse<zp::Obj, zp::Str, zp::Ht, zp::Ht, zp::Ht>(execute_data, expr_printer, invalidate_str, expression_types, native_expression_types, conditional_expressions)) RETURN_THROWS();
 		pt_init_strs();
-		zv::Val result = ScopeOps::invalidateMethodsOnExpression(expr_printer, invalidate_str, zv::TableRef(expression_types), zv::TableRef(native_expression_types));
+		zv::Val result = ScopeOps::invalidateMethodsOnExpression(expr_printer, invalidate_str, zv::TableRef(expression_types), zv::TableRef(native_expression_types), zv::TableRef(conditional_expressions));
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
@@ -2317,10 +2420,10 @@ zv::Val pt_scope_ops_invalidate_expression_entries(zval *scope, zval *exprPrinte
 	return ScopeOps::invalidateExpressionEntries(scope, exprPrinter, exprStringToInvalidate, expressionToInvalidate, requireMoreCharacters, invalidatingClass, zv::TableRef(expressionTypes), zv::TableRef(nativeExpressionTypes), zv::TableRef(conditionalExpressions), keepPropertyFetches, preservedPropertyNames);
 }
 
-zv::Val pt_scope_ops_invalidate_methods_on_expression(zval *exprPrinter, zend_string *exprStringToInvalidate, HashTable *expressionTypes, HashTable *nativeExpressionTypes)
+zv::Val pt_scope_ops_invalidate_methods_on_expression(zval *exprPrinter, zend_string *exprStringToInvalidate, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions)
 {
 	pt_init_strs();
-	return ScopeOps::invalidateMethodsOnExpression(exprPrinter, exprStringToInvalidate, zv::TableRef(expressionTypes), zv::TableRef(nativeExpressionTypes));
+	return ScopeOps::invalidateMethodsOnExpression(exprPrinter, exprStringToInvalidate, zv::TableRef(expressionTypes), zv::TableRef(nativeExpressionTypes), zv::TableRef(conditionalExpressions));
 }
 
 zv::Val pt_scope_ops_intertwined_ref_root_variable_name(zend_object *expr)

@@ -93,4 +93,51 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 		$this->assertSame($expected, TurboExtensionSelector::resolveIsMusl($selfMaps, $hasAlpineRelease));
 	}
 
+	/**
+	 * @return iterable<array{string|false, bool}>
+	 */
+	public static function dataResolveCanLoadLinuxBinaries(): iterable
+	{
+		// php:8.5-cli (Debian 13, glibc 2.41)
+		yield [<<<'MAPS'
+		556643600000-556643781000 r--p 00000000 00:4b 451272                     /usr/local/bin/php
+		7f21f0bc9000-7f21f0bf1000 r--p 00000000 00:4b 135364                     /usr/lib/x86_64-linux-gnu/libc.so.6
+		7f21f1b79000-7f21f1b7a000 r--p 00000000 00:4b 135344                     /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2
+		7ffca2df7000-7ffca2e18000 rw-p 00000000 00:00 0                          [stack]
+		MAPS, true];
+
+		// php:8.4-cli-alpine3.23, from the musl case above
+		yield [<<<'MAPS'
+		58adcee00000-58adcef58000 r--p 00000000 00:67 14555462                   /usr/local/bin/php
+		7934c7f6a000-7934c7f7e000 r--p 00000000 00:67 14554411                   /lib/ld-musl-x86_64.so.1
+		7934c800c000-7934c8010000 rw-p 00000000 00:00 0
+		MAPS, true];
+
+		// php:8.3-cli-bullseye (glibc 2.31): the binaries need glibc 2.34
+		yield [<<<'MAPS'
+		55d57b200000-55d57b321000 r--p 00000000 00:4b 515798                     /usr/local/bin/php
+		7fb024bbb000-7fb024bdd000 r--p 00000000 00:4b 519011                     /lib/x86_64-linux-gnu/libc-2.31.so
+		7fb02572c000-7fb02572d000 r--p 00000000 00:4b 519018                     /lib/x86_64-linux-gnu/ld-2.31.so
+		7ffe763ba000-7ffe763db000 rw-p 00000000 00:00 0                          [stack]
+		MAPS, false];
+
+		// Laravel Herd Lite PHP 8.5, statically linked: no loader is mapped
+		yield [<<<'MAPS'
+		00400000-0267b000 r-xp 00000000 fe:10 2678858                            /home/user/.config/herd-lite/bin/php
+		02800000-05ec0000 r-xp 02400000 fe:10 2678858                            /home/user/.config/herd-lite/bin/php
+		7f6fb0cbb000-7f6fb0cbd000 r-xp 00000000 00:00 0                          [vdso]
+		7ffd060ab000-7ffd060cc000 rw-p 00000000 00:00 0                          [stack]
+		MAPS, false];
+
+		// no procfs to inspect
+		yield [false, true];
+		yield ['', true];
+	}
+
+	#[DataProvider('dataResolveCanLoadLinuxBinaries')]
+	public function testResolveCanLoadLinuxBinaries(string|false $selfMaps, bool $expected): void
+	{
+		$this->assertSame($expected, TurboExtensionSelector::resolveCanLoadLinuxBinaries($selfMaps));
+	}
+
 }

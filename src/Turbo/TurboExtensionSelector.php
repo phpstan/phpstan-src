@@ -6,6 +6,7 @@ use Phar;
 use function dirname;
 use function file_get_contents;
 use function get_cfg_var;
+use function in_array;
 use function is_dir;
 use function is_file;
 use function is_string;
@@ -176,8 +177,12 @@ final class TurboExtensionSelector
 			return null;
 		}
 
-		$platform = self::resolvePlatformDirectory(PHP_OS_FAMILY, php_uname('m'), self::isMusl());
+		$selfMaps = @file_get_contents('/proc/self/maps');
+		$platform = self::resolvePlatformDirectory(PHP_OS_FAMILY, php_uname('m'), self::resolveIsMusl($selfMaps, is_file('/etc/alpine-release')));
 		if ($platform === null) {
+			return null;
+		}
+		if (PHP_OS_FAMILY === 'Linux' && !self::resolveCanLoadLinuxBinaries($selfMaps)) {
 			return null;
 		}
 
@@ -231,6 +236,30 @@ final class TurboExtensionSelector
 	public static function isMusl(): bool
 	{
 		return self::resolveIsMusl(@file_get_contents('/proc/self/maps'), is_file('/etc/alpine-release'));
+	}
+
+	/**
+	 * Whether this PHP can load the Linux binaries at all, judged from what is
+	 * mapped into the running process. Passing one that cannot load makes PHP
+	 * print a startup warning on every run, before PHPStan could react.
+	 *
+	 * A statically linked PHP (Laravel Herd Lite, static-php-cli) maps no
+	 * dynamic loader and cannot load any extension. glibc before 2.34 maps
+	 * its versioned file names (libc-2.31.so), and the binaries need 2.34.
+	 */
+	public static function resolveCanLoadLinuxBinaries(string|false $selfMaps): bool
+	{
+		if (in_array($selfMaps, [false, ''], true)) {
+			// nothing to judge from: try loading them as before
+			return true;
+		}
+
+		// strpos() rather than str_contains(), see resolveIsMusl()
+		if (strpos($selfMaps, '/libc-2.') !== false) {
+			return false;
+		}
+
+		return strpos($selfMaps, '/ld-linux-') !== false || strpos($selfMaps, '/ld-musl-') !== false;
 	}
 
 	public static function resolveIsMusl(string|false $selfMaps, bool $hasAlpineRelease): bool

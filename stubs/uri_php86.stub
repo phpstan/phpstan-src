@@ -1,0 +1,13 @@
+<?php
+
+namespace Uri\WhatWg;
+
+final class UrlBuilder
+{
+
+	/**
+	 * @param-out list<UrlValidationError> $softErrors
+	 */
+	public function build(?Url $baseUrl = null, &$softErrors = null): Url {}
+
+}

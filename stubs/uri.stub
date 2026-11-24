@@ -1,0 +1,23 @@
+<?php
+
+namespace Uri\WhatWg;
+
+final readonly class Url
+{
+
+	/**
+	 * @param-out list<UrlValidationError> $softErrors
+	 */
+	public function __construct(string $uri, ?Url $baseUrl = null, &$softErrors = null) {}
+
+	/**
+	 * @param-out list<UrlValidationError> $errors
+	 */
+	public static function parse(string $uri, ?Url $baseUrl = null, &$errors = null): ?static {}
+
+	/**
+	 * @param-out list<UrlValidationError> $softErrors
+	 */
+	public function resolve(string $uri, &$softErrors = null): static {}
+
+}

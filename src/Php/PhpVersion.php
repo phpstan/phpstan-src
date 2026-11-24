@@ -559,6 +559,16 @@ final class PhpVersion
 		return $this->versionId >= 80500;
 	}
 
+	public function hasUriExtension(): bool
+	{
+		return $this->versionId >= 80500;
+	}
+
+	public function hasUriBuilders(): bool
+	{
+		return $this->versionId >= 80600;
+	}
+
 	public function throwsOnStringCast(): bool
 	{
 		return $this->versionId >= 70400;

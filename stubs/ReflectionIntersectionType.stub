@@ -1,0 +1,13 @@
+<?php
+
+class ReflectionIntersectionType extends ReflectionType
+{
+
+	/**
+	 * @return ReflectionNamedType[]
+	 */
+	public function getTypes(): array
+	{
+	}
+
+}

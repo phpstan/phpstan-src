@@ -161,6 +161,7 @@ parameters:
 		- ../stubs/ReflectionAttribute.stub
 		- ../stubs/ReflectionClassConstant.stub
 		- ../stubs/ReflectionFunctionAbstract.stub
+		- ../stubs/ReflectionIntersectionType.stub
 		- ../stubs/ReflectionMethod.stub
 		- ../stubs/ReflectionParameter.stub
 		- ../stubs/ReflectionProperty.stub

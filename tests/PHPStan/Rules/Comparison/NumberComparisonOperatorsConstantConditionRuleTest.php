@@ -347,4 +347,10 @@ class NumberComparisonOperatorsConstantConditionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/float-range-loop-generalize.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1')]
+	public function testBug15782(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15782.php'], []);
+	}
+
 }

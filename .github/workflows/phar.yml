@@ -2471,14 +2471,6 @@ jobs:
           php ../../tmp/phpstan.phar analyse -vv 2>&1 | tee output-warm.txt
           grep -F "Result cache restored. 0 files will be reanalysed." output-warm.txt
 
-      - name: "Resolve a pure enum case in a native function default value"
-        # https://github.com/phpstan/phpstan/issues/15813: below PHP 8.0 the
-        # enum RoundingMode is not reflected as an enum, and the default value
-        # of round()'s $mode on phpVersion 8.4 crashed the analysis.
-        run: |
-          cd e2e/bug-15813
-          php ../../tmp/phpstan.phar analyse --no-progress
-
   phar-run-windows:
     name: "Run PHAR on Windows, PHP ${{ matrix.php-version }}"
     needs:

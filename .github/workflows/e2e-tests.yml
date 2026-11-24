@@ -131,6 +131,8 @@ jobs:
           - script: "e2e/bashunit test e2e/bug-11359/bug-11359_test.sh::test_mb_ucfirst_found_on_php_8_4"
             php-version: "8.4"
             extensions: "mbstring"
+          - script: "e2e/bashunit test e2e/bug-15813/bug-15813_test.sh::test_pure_enum_case_default_value_on_php_7_4"
+            php-version: "7.4"
           - script: "e2e/bashunit test e2e/bug-15407/bug-15407_test.sh::test_pcov_loaded_restarts"
             coverage: "pcov"
           - script: "e2e/bashunit test e2e/bug-15407/bug-15407_test.sh::test_pcov_enabled_restarts"
@@ -162,6 +164,12 @@ jobs:
           extensions: ${{ matrix.extensions }}
 
       - uses: "ramsey/composer-install@65e4f84970763564f46a70b8a54b90d033b3bdda" # 4.0.0
+
+      # the source needs PHP 8.2, below that it runs downgraded like in the PHAR
+      - uses: ./.github/actions/downgrade-code
+        if: matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1'
+        with:
+          php-version: "${{ matrix.php-version }}"
 
       - name: "Install bashunit"
         uses: "TypedDevs/bashunit@97a6b664a59edcb1ade450c3a6400728f3481115" # 0.53.0

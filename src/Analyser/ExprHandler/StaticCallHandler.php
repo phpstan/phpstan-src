@@ -384,6 +384,7 @@ final class StaticCallHandler implements ExprHandler
 					&& $methodReflection->getName() === '__construct'
 				)
 				|| $methodReflection->hasSideEffects()->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && $methodReflection->hasSideEffects()->maybe())
 			)
 			&& $scope->isInClass()
 			&& $scope->getClassReflection()->is($methodReflection->getDeclaringClass()->getName())

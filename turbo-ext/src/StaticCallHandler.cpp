@@ -676,10 +676,11 @@ public:
 				if (UNEXPECTED(!reflectionIsStatic(methodReflection.raw(), isStatic))) return zv::Val();
 				if (!isStatic && UNEXPECTED(!isConstructorName(methodReflection.raw(), invalidate))) return zv::Val();
 			}
+			zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
+			if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
 			if (!invalidate) {
-				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-				invalidate = hasSideEffects == PT_TRI_YES;
+				invalidate = hasSideEffects == PT_TRI_YES
+					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects == PT_TRI_MAYBE);
 			}
 			if (invalidate && UNEXPECTED(!scopeClassIsDeclaringClass(currentScope.raw(), methodReflection.raw(), invalidate))) return zv::Val();
 			if (invalidate) {
@@ -694,13 +695,9 @@ public:
 				if (UNEXPECTED(preservedPropertyNames.isUndef())) return zv::Val();
 				currentScope = pt_mutating_scope_invalidate_expression(Z_OBJ_P(currentScope.raw()), thisVariable.raw(), true, declaringClass.raw(), isStatic, preservedPropertyNames.isNull() ? NULL : preservedPropertyNames.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-			} else {
-				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
-				if (hasSideEffects != PT_TRI_NO) {
-					currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr);
-					if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-				}
+			} else if (hasSideEffects != PT_TRI_NO) {
+				currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr);
+				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			}
 		}
 

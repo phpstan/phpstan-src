@@ -696,7 +696,7 @@ public:
 				currentScope = pt_mutating_scope_invalidate_expression(Z_OBJ_P(currentScope.raw()), thisVariable.raw(), true, declaringClass.raw(), isStatic, preservedPropertyNames.isNull() ? NULL : preservedPropertyNames.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			} else if (hasSideEffects != PT_TRI_NO) {
-				currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr);
+				currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr, methodReflection.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			}
 		}

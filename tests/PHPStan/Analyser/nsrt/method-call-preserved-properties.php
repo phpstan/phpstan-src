@@ -52,6 +52,13 @@ class ClosureWritesAfterCall
 		$callback();
 	}
 
+	public function overridable(): void
+	{
+		$this->history = [];
+		$this->prepareOverridable();
+		assertType('list<int>', $this->history);
+	}
+
 	private function prepare(): \Closure
 	{
 		$this->history = [];
@@ -60,6 +67,13 @@ class ClosureWritesAfterCall
 		return function (): void {
 			$this->history[] = 1;
 		};
+	}
+
+	public function prepareOverridable(): bool
+	{
+		$this->history = [];
+
+		return true;
 	}
 
 }
@@ -1384,6 +1398,7 @@ class OverriddenWritesByReference extends OverriddenCreatesParent
 	}
 
 }
+
 abstract class ArgumentOverridesParent
 {
 
@@ -1432,6 +1447,41 @@ class ArgumentOverrides extends ArgumentOverridesParent
 	private function load(): void
 	{
 		$this->definition ??= new \stdClass();
+	}
+
+}
+
+/** An overridable callee: a private property only the class's own code writes has its old type or the type the walk of the class's method ends with. */
+class OverridableCalleeWrites
+{
+
+	private ?\stdClass $client = null;
+
+	public ?\stdClass $publicClient = null;
+
+	private ?int $sometimes = null;
+
+	public function run(): void
+	{
+		if ($this->client === null || $this->publicClient === null) {
+			return;
+		}
+		$this->sometimes = 1;
+		$this->connect();
+		assertType('stdClass', $this->client);
+		assertType('stdClass|null', $this->publicClient);
+		assertType('int|null', $this->sometimes); // the walk starts from the declared type
+	}
+
+	public function connect(): bool
+	{
+		$this->client ??= new \stdClass();
+		$this->publicClient ??= new \stdClass();
+		if (rand(0, 1) === 1) {
+			$this->sometimes = 2;
+		}
+
+		return true;
 	}
 
 }

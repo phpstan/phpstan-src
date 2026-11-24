@@ -156,15 +156,15 @@ inline zv::Val preservedPropertiesResolve(zval *resolver, zval *call)
 	return pt_call_method_cached(preservedPropertiesResolveSite, Z_OBJ_P(resolver), PT_LC("resolve"), 1, argv);
 }
 
-/* $preservedPropertiesResolver->forgetWrittenProperties($scope, $call)
+/* $preservedPropertiesResolver->forgetWrittenProperties($scope, $call, $methodReflection)
  * (a call without the PreservedPropertiesVisitor attribute keeps the scope) */
-inline zv::Val forgetWrittenProperties(zval *resolver, zval *scope, zval *call)
+inline zv::Val forgetWrittenProperties(zval *resolver, zval *scope, zval *call, zval *methodReflection)
 {
 	static zend_string *attributeName = zend_string_init(PT_LC("preservedProperties"), 1);
 	zval *attribute = pt_node_attribute(Z_OBJ_P(call), attributeName);
 	if (attribute == NULL || Z_TYPE_P(attribute) != IS_OBJECT) return zv::Val::copyOf(zv::Ref(scope));
-	zv::Args argv{scope, call};
-	return pt_call_method_cached(forgetWrittenPropertiesSite, Z_OBJ_P(resolver), PT_LC("forgetwrittenproperties"), 2, argv);
+	zv::Args argv{scope, call, methodReflection};
+	return pt_call_method_cached(forgetWrittenPropertiesSite, Z_OBJ_P(resolver), PT_LC("forgetwrittenproperties"), 3, argv);
 }
 
 /* $type->getConstantStrings() */

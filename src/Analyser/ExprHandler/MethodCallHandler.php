@@ -335,7 +335,7 @@ final class MethodCallHandler implements ExprHandler
 					$this->preservedPropertiesResolver->resolve($expr),
 				);
 			} elseif (!$hasSideEffects->no()) {
-				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
+				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr, $methodReflection);
 			}
 			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);
 			if (!$methodReflection->isStatic()) {

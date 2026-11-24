@@ -402,7 +402,7 @@ final class StaticCallHandler implements ExprHandler
 			&& $methodReflection !== null
 			&& !$methodReflection->hasSideEffects()->no()
 		) {
-			$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
+			$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr, $methodReflection);
 		}
 		if ($methodReflection !== null) {
 			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);

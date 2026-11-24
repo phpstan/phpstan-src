@@ -7,7 +7,9 @@ use function basename;
 use function dirname;
 use function explode;
 use function file_get_contents;
+use function function_exists;
 use function get_cfg_var;
+use function in_array;
 use function is_dir;
 use function is_file;
 use function is_string;
@@ -187,8 +189,14 @@ final class TurboExtensionSelector
 		if ($platform === null) {
 			return null;
 		}
-		if (PHP_OS_FAMILY === 'Linux' && !self::shouldTryLinuxBinaries($selfMaps, @readlink('/proc/self/exe'))) {
-			return null;
+		if (PHP_OS_FAMILY === 'Linux') {
+			$executable = function_exists('readlink')
+				? @readlink('/proc/self/exe')
+				: false;
+
+			if (!self::shouldTryLinuxBinaries($selfMaps, $executable)) {
+				return null;
+			}
 		}
 
 		return sprintf('%s/turbo-ext/%s', dirname($pharPath), $platform);
@@ -246,18 +254,22 @@ final class TurboExtensionSelector
 	/**
 	 * Whether to try the bundled Linux binaries, judged from the file-backed
 	 * mappings of the running process. True means no reason to skip them was
-	 * found, not that they will load: anything this cannot interpret keeps
-	 * the existing attempt.
+	 * found, not that they will load. Unreadable or empty maps keep the
+	 * current behaviour. If the executable cannot be identified, the
+	 * static-layout check is skipped; a recognizable old-glibc mapping can
+	 * still be rejected.
 	 *
 	 * The binaries are skipped when
 	 * - a mapped libc has a versioned name older than 2.34 (libc-2.31.so),
 	 *   which glibc used for its own files before 2.34, the version the
 	 *   binaries are built against
-	 * - the PHP binary is mapped and no other executable file is, so no
-	 *   dynamic loader or shared library is there. The fully static musl
-	 *   builds of Laravel Herd Lite and static-php-cli (UPX-packed) look like
-	 *   this and fail to load any extension with
-	 *   "Dynamic loading not supported". A fully static glibc build looks the
+	 * - the PHP binary is mapped and no other executable file is, matching
+	 *   the layouts of the fully static musl builds of Laravel Herd Lite and
+	 *   static-php-cli (UPX-packed) tested here, which fail to load any
+	 *   extension with "Dynamic loading not supported". Those captures
+	 *   include an executable /memfd:upx (deleted) or /dev/zero (deleted)
+	 *   mapping (the latter is the opcache JIT buffer), which do not count
+	 *   as another executable file. A fully static glibc build looks the
 	 *   same and is skipped too, but none was tested.
 	 *
 	 * @param string|false $executable the target of /proc/self/exe
@@ -291,10 +303,13 @@ final class TurboExtensionSelector
 				continue;
 			}
 
-			// shared memory shows up as a deleted file: the memfd a UPX-packed
-			// binary runs from, or the opcache JIT buffer in /dev/zero. A file
-			// deleted right before this process started would be skipped too.
-			if (strpos($matches[1], 'x') === false || preg_match('~ \(deleted\)\z~', $path) === 1) {
+			if (strpos($matches[1], 'x') === false) {
+				continue;
+			}
+
+			// executable-memory mappings observed in the tested UPX and
+			// OPcache builds, not every unlinked backing file
+			if (in_array($path, ['/memfd:upx (deleted)', '/dev/zero (deleted)'], true)) {
 				continue;
 			}
 

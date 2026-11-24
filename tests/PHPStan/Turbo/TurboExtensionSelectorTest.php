@@ -4,7 +4,15 @@ namespace PHPStan\Turbo;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function escapeshellarg;
+use function exec;
+use function implode;
+use function sprintf;
 use function str_replace;
+use function var_export;
+use const PHP_BINARY;
+use const PHP_DEBUG;
+use const PHP_OS_FAMILY;
 
 final class TurboExtensionSelectorTest extends PHPStanTestCase
 {
@@ -118,14 +126,15 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 		yield 'glibc 2.41' => [$glibc241, '/usr/local/bin/php', true];
 
 		// php:8.4-cli-alpine
-		yield 'musl' => [<<<'MAPS'
+		$musl = <<<'MAPS'
 		56037fc00000-56037fd59000 r--p 00000000 00:51 584944                     /usr/local/bin/php
 		56037fe00000-560380334000 r-xp 00200000 00:51 584944                     /usr/local/bin/php
 		560381200000-5603812c4000 rw-p 01400000 00:51 584944                     /usr/local/bin/php
 		7fcb84616000-7fcb8462a000 r--p 00000000 00:51 585480                     /lib/ld-musl-x86_64.so.1
 		7fcb8462a000-7fcb84683000 r-xp 00014000 00:51 585480                     /lib/ld-musl-x86_64.so.1
 		7fcb846ba000-7fcb846bb000 rw-p 000a3000 00:51 585480                     /lib/ld-musl-x86_64.so.1
-		MAPS, '/usr/local/bin/php', true];
+		MAPS;
+		yield 'musl' => [$musl, '/usr/local/bin/php', true];
 
 		// php:8.3-cli-bullseye, glibc 2.31
 		yield 'glibc 2.31' => [<<<'MAPS'
@@ -229,6 +238,30 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 			'/usr/local/bin/php',
 			false,
 		];
+		yield 'glibc 2.41, libc and loader replaced while running' => [
+			$withBinaryAt($withBinaryAt(
+				$glibc241,
+				'/usr/lib/x86_64-linux-gnu/libc.so.6',
+				'/usr/lib/x86_64-linux-gnu/libc.so.6 (deleted)',
+			), '/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2', '/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 (deleted)'),
+			'/usr/local/bin/php',
+			true,
+		];
+		yield 'musl, runtime replaced while running' => [
+			$withBinaryAt($musl, '/lib/ld-musl-x86_64.so.1', '/lib/ld-musl-x86_64.so.1 (deleted)'),
+			'/usr/local/bin/php',
+			true,
+		];
+		yield 'static with a deleted custom loader' => [
+			$static . "\n7f4406300000-7f4406320000 r-xp 00000000 00:51 512499                     /opt/rt/custom-loader.so (deleted)",
+			'/opt/herd-lite/bin/php',
+			true,
+		];
+		yield 'static with an unfamiliar deleted memfd' => [
+			$static . "\n7f4406300000-7f4406320000 r-xp 00000000 00:00 0                          /memfd:unknown-runtime (deleted)",
+			'/opt/herd-lite/bin/php',
+			true,
+		];
 
 		yield 'maps not readable' => [false, '/usr/local/bin/php', true];
 		yield 'maps empty' => ['', '/usr/local/bin/php', true];
@@ -239,6 +272,26 @@ final class TurboExtensionSelectorTest extends PHPStanTestCase
 	public function testShouldTryLinuxBinaries(string|false $selfMaps, string|false $executable, bool $expected): void
 	{
 		$this->assertSame($expected, TurboExtensionSelector::shouldTryLinuxBinaries($selfMaps, $executable));
+	}
+
+	public function testFindExtensionDoesNotErrorWhenReadlinkIsDisabled(): void
+	{
+		if (PHP_OS_FAMILY !== 'Linux' || (bool) PHP_DEBUG) {
+			$this->markTestSkipped('the readlink() call only runs on a non-debug Linux PHP');
+		}
+
+		$code = sprintf(
+			'require %s; echo function_exists("readlink") ? "defined" : json_encode(\\PHPStan\\Turbo\\TurboExtensionSelector::findExtension("/tmp/nonexistent/phpstan.phar"));',
+			var_export(__DIR__ . '/../../../src/Turbo/TurboExtensionSelector.php', true),
+		);
+		exec(sprintf(
+			'%s -d disable_functions=readlink -r %s',
+			escapeshellarg(PHP_BINARY),
+			escapeshellarg($code),
+		), $output, $exitCode);
+
+		$this->assertSame(0, $exitCode, implode("\n", $output));
+		$this->assertSame('null', implode('', $output));
 	}
 
 }

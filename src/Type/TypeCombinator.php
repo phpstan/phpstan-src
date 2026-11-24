@@ -1618,6 +1618,34 @@ final class TypeCombinator
 			}
 		}
 
+		// Stage 2: fold the non-empty shapes with different key sets into one
+		// shape, the keys missing from some of them becoming optional - as
+		// loop generalization folds them. Which keys go together is lost, but
+		// unlike the generalization below, every key keeps its own value type.
+		// Only shapes sharing a required key fold: they are variants of one
+		// record. Shapes without one, such as lookup maps of disjoint keys,
+		// would fold into a shape of all their keys, too big to keep inside
+		// the shape enclosing them.
+		$merged = null;
+		$typesWithMerged = [];
+		foreach ($types as $type) {
+			if (!$type instanceof ConstantArrayType || !$type->isIterableAtLeastOnce()->yes()) {
+				$typesWithMerged[] = $type;
+				continue;
+			}
+			$merged = $merged === null ? $type : $merged->mergeWith($type);
+		}
+		if (
+			$merged !== null
+			&& count($typesWithMerged) + 1 < count($types)
+			&& count($merged->getOptionalKeys()) < count($merged->getKeyTypes())
+		) {
+			$typesWithMerged[] = $merged;
+			if (self::countConstantArrayValueTypes($typesWithMerged) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+				return $typesWithMerged;
+			}
+		}
+
 		$results = [];
 		$emptyArrays = [];
 		$eachIsOversized = true;

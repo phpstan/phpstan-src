@@ -19,6 +19,14 @@ final class AnonymousClassNameHelper
 	private ParentDirectoryRelativePathHelper $relativePathHelper;
 
 	/**
+	 * Every scope that enters an anonymous class asks for its name again, and the relative path
+	 * costs splitting and joining both paths.
+	 *
+	 * @var array<string, string>
+	 */
+	private array $relativePaths = [];
+
+	/**
 	 * The file path in the name is relative to the PHPStan installation, the anchor of the
 	 * result cache paths too, so the name does not change with the working directory.
 	 */
@@ -51,7 +59,7 @@ final class AnonymousClassNameHelper
 			throw new ShouldNotHappenException();
 		}
 
-		$filename = $this->relativePathHelper->getRelativePath(
+		$filename = $this->relativePaths[$filename] ??= $this->relativePathHelper->getRelativePath(
 			$this->fileHelper->normalizePath($filename, '/'),
 		);
 

@@ -3785,8 +3785,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * @param bool $keepPropertyFetches Keeps property fetches on the invalidated expression
 	 *                                  (like '$this->foo') - for callees that never receive
 	 *                                  the object, like static methods and static closures.
+	 * @param array<string, true>|null $preservedPropertyNames Names of properties whose fetches directly
+	 *                                  on the invalidated expression (like '$this->foo') are kept - for a
+	 *                                  called method that cannot write them (PreservedPropertiesResolver).
 	 */
-	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false): self
+	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false, ?array $preservedPropertyNames = null): self
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 
@@ -3801,6 +3804,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->nativeExpressionTypes,
 			$this->conditionalExpressions,
 			$keepPropertyFetches,
+			$preservedPropertyNames,
 		);
 		if ($result === null) {
 			return $this;

@@ -30,6 +30,8 @@ namespace ptcall {
  * entries once they are ported) */
 
 inline pt_method_site getConstantStringsSite;
+inline pt_method_site preservedPropertiesResolveSite;
+inline pt_method_site forgetWrittenPropertiesSite;
 
 /* ParametersAcceptorSelector::combineVariantsForNormalization($args, $variants, $namedArgumentsVariants) */
 inline zv::Val combineVariantsForNormalization(zval *args, zval *variants, zval *namedArgumentsVariants)
@@ -137,6 +139,29 @@ inline zv::Val assertionsGetAll(zval *assertions)
 inline zv::Val assertionsMapTypes(zval *assertions, zval *callable)
 {
 	return pt_assertions_map_types(assertions, callable);
+}
+
+/* $preservedPropertiesResolver->resolve($call)
+ * (PreservedPropertiesResolver stays PHP; most calls carry no
+ * PreservedPropertiesVisitor attribute, and those answer null without it) */
+inline zv::Val preservedPropertiesResolve(zval *resolver, zval *call)
+{
+	static zend_string *attributeName = zend_string_init(PT_LC("preservedProperties"), 1);
+	zval *attribute = pt_node_attribute(Z_OBJ_P(call), attributeName);
+	if (attribute == NULL || Z_TYPE_P(attribute) != IS_OBJECT) return zv::Val::null();
+	zv::Args argv{call};
+	return pt_call_method_cached(preservedPropertiesResolveSite, Z_OBJ_P(resolver), PT_LC("resolve"), 1, argv);
+}
+
+/* $preservedPropertiesResolver->forgetWrittenProperties($scope, $call)
+ * (a call without the PreservedPropertiesVisitor attribute keeps the scope) */
+inline zv::Val forgetWrittenProperties(zval *resolver, zval *scope, zval *call)
+{
+	static zend_string *attributeName = zend_string_init(PT_LC("preservedProperties"), 1);
+	zval *attribute = pt_node_attribute(Z_OBJ_P(call), attributeName);
+	if (attribute == NULL || Z_TYPE_P(attribute) != IS_OBJECT) return zv::Val::copyOf(zv::Ref(scope));
+	zv::Args argv{scope, call};
+	return pt_call_method_cached(forgetWrittenPropertiesSite, Z_OBJ_P(resolver), PT_LC("forgetwrittenproperties"), 2, argv);
 }
 
 /* $type->getConstantStrings() */

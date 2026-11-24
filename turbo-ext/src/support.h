@@ -1631,7 +1631,7 @@ zv::Val pt_scope_ops_expression_type_by_key(zval *scope, zend_object *node, zend
  * natively (ScopeOps.cpp), for the native MutatingScope's assignment and
  * invalidation family; UNDEF = pending exception */
 zv::Val pt_scope_ops_scope_with(zval *scope, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, HashTable *currentlyAssignedExpressions, HashTable *currentlyAllowedUndefinedExpressions, HashTable *inFunctionCallsStack, bool inFirstLevelStatement, bool afterExtractCall);
-zv::Val pt_scope_ops_invalidate_expression_entries(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, bool keepPropertyFetches);
+zv::Val pt_scope_ops_invalidate_expression_entries(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, bool keepPropertyFetches, HashTable *preservedPropertyNames = NULL);
 zv::Val pt_scope_ops_invalidate_methods_on_expression(zval *exprPrinter, zend_string *exprStringToInvalidate, HashTable *expressionTypes, HashTable *nativeExpressionTypes);
 zv::Val pt_scope_ops_intertwined_ref_root_variable_name(zend_object *expr);
 zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions);
@@ -1639,7 +1639,7 @@ zv::Val pt_scope_ops_merge_variable_holders(HashTable *ourVariableTypeHolders, H
 zv::Val pt_scope_ops_finish_merge(HashTable *mergedExpressionTypes, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *ourNativeExpressionTypes, HashTable *theirNativeExpressionTypes);
 zv::Val pt_scope_ops_intersect_conditional_expressions(HashTable *ourConditionalExpressions, HashTable *theirConditionalExpressions);
 zv::Val pt_scope_ops_create_conditional_expressions(HashTable *conditionalExpressions, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *mergedExpressionTypes, HashTable *differingKeys);
-bool pt_scope_ops_should_invalidate_expression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, bool *failed);
+bool pt_scope_ops_should_invalidate_expression(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *exprToInvalidate, zend_object *expr, zend_string *exprString, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, HashTable *preservedPropertyNames, bool *failed);
 /* the shadowing ExpressionResultStorage (ExpressionResultStorage.cpp) — new
  * ExpressionResultStorage(), $storage->findExpressionResult($expr) and
  * $storage->duplicate(): the native bodies for a native storage, the
@@ -2444,7 +2444,7 @@ zv::Val pt_mutating_scope_get_file(zend_object *scope);
 zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *variableName, zval *type, zval *nativeType, zval *certainty);
 zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType);
 zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty);
-zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters = false, zval *invalidatingClass = NULL, bool keepPropertyFetches = false);
+zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters = false, zval *invalidatingClass = NULL, bool keepPropertyFetches = false, zval *preservedPropertyNames = NULL);
 
 /* ExpressionResult.cpp — $result->withScope($scope) / getArgsResult() /
  * getTypeOnScope($scope, $useNativeTypes) /

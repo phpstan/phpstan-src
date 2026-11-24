@@ -5027,7 +5027,7 @@ public:
 		optionalArg(&args[2], invalidatingClass);
 		ZVAL_BOOL(&args[3], keepPropertyFetches);
 		return thisCall(PT_LC("invalidateexpression"), msInvalidateExpression, 4, args, [&]() {
-			return invalidateExpression(expr, requireMoreCharacters, invalidatingClass, keepPropertyFetches);
+			return invalidateExpression(expr, requireMoreCharacters, invalidatingClass, keepPropertyFetches, NULL);
 		});
 	}
 
@@ -7045,7 +7045,7 @@ public:
 	}
 
 	/* (twin 3813) */
-	zv::Val invalidateExpression(zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches)
+	zv::Val invalidateExpression(zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, zval *preservedPropertyNames)
 	{
 		zv::Val exprString = thisGetNodeKey(expressionToInvalidate);
 		if (UNEXPECTED(exprString.isUndef())) return zv::Val();
@@ -7066,7 +7066,8 @@ public:
 			Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()),
 			Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()),
 			Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()),
-			keepPropertyFetches);
+			keepPropertyFetches,
+			preservedPropertyNames != NULL && Z_TYPE_P(preservedPropertyNames) == IS_ARRAY ? Z_ARRVAL_P(preservedPropertyNames) : NULL);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		if (result.ref().isNull()) return self_();
 		zval *expressionTypes = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 0);
@@ -9423,6 +9424,7 @@ public:
 					false,
 					NULL,
 					false,
+					NULL,
 					&failed);
 				if (UNEXPECTED(failed)) return zv::Val();
 				if (!should) continue;
@@ -11908,18 +11910,19 @@ static void ZEND_FASTCALL msSpecifyExpressionType(INTERNAL_FUNCTION_PARAMETERS)
 
 static void ZEND_FASTCALL msInvalidateExpression(INTERNAL_FUNCTION_PARAMETERS)
 {
-	zval *expressionToInvalidate, *invalidatingClass = NULL;
+	zval *expressionToInvalidate, *invalidatingClass = NULL, *preservedPropertyNames = NULL;
 	bool requireMoreCharacters = false, keepPropertyFetches = false;
 	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
 	if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
-	ZEND_PARSE_PARAMETERS_START(1, 4)
+	ZEND_PARSE_PARAMETERS_START(1, 5)
 		Z_PARAM_OBJECT_OF_CLASS(expressionToInvalidate, exprCe)
 		Z_PARAM_OPTIONAL
 		Z_PARAM_BOOL(requireMoreCharacters)
 		Z_PARAM_OBJECT_OR_NULL(invalidatingClass)
 		Z_PARAM_BOOL(keepPropertyFetches)
+		Z_PARAM_ARRAY_OR_NULL(preservedPropertyNames)
 	ZEND_PARSE_PARAMETERS_END();
-	PT_RETURN_VAL(PT_THIS.invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches));
+	PT_RETURN_VAL(PT_THIS.invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches, preservedPropertyNames));
 }
 
 static void ZEND_FASTCALL msFilterByTruthyValue(INTERNAL_FUNCTION_PARAMETERS)
@@ -12525,11 +12528,25 @@ zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_objec
 	return pt_type_call(scope, PT_LC("specifyexpressiontype"), 4, argv);
 }
 
-zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches)
+zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, zval *preservedPropertyNames)
 {
 	if (invalidatingClass != NULL && Z_TYPE_P(invalidatingClass) == IS_NULL) invalidatingClass = NULL;
-	if (PT_MS_INHERITS(scope, "invalidateexpression")) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches);
-	if (!requireMoreCharacters && invalidatingClass == NULL && !keepPropertyFetches) return pt_type_call(scope, PT_LC("invalidateexpression"), 1, expressionToInvalidate);
+	if (preservedPropertyNames != NULL && Z_TYPE_P(preservedPropertyNames) != IS_ARRAY) preservedPropertyNames = NULL;
+	if (PT_MS_INHERITS(scope, "invalidateexpression")) return MutatingScope(scope).invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches, preservedPropertyNames);
+	if (!requireMoreCharacters && invalidatingClass == NULL && !keepPropertyFetches && preservedPropertyNames == NULL) return pt_type_call(scope, PT_LC("invalidateexpression"), 1, expressionToInvalidate);
+	if (preservedPropertyNames != NULL) {
+		zval argv5[5];
+		ZVAL_COPY_VALUE(&argv5[0], expressionToInvalidate);
+		ZVAL_BOOL(&argv5[1], requireMoreCharacters);
+		if (invalidatingClass != NULL) {
+			ZVAL_COPY_VALUE(&argv5[2], invalidatingClass);
+		} else {
+			ZVAL_NULL(&argv5[2]);
+		}
+		ZVAL_BOOL(&argv5[3], keepPropertyFetches);
+		ZVAL_COPY_VALUE(&argv5[4], preservedPropertyNames);
+		return pt_type_call(scope, PT_LC("invalidateexpression"), 5, argv5);
+	}
 	zval argv[4];
 	ZVAL_COPY_VALUE(&argv[0], expressionToInvalidate);
 	ZVAL_BOOL(&argv[1], requireMoreCharacters);
@@ -13471,6 +13488,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		reg::withDefault(reg::boolArg("requireMoreCharacters"), "false"),
 		reg::withDefault(reg::obj("invalidatingClass", classReflection, true), "null"),
 		reg::withDefault(reg::boolArg("keepPropertyFetches"), "false"),
+		reg::withDefault(reg::arrayArg("preservedPropertyNames", true), "null"),
 	}, msInvalidateExpression, &returnsSelf);
 
 	cls.method(sigs::isPrivatePropertyOfDifferentClass, [](INTERNAL_FUNCTION_PARAMETERS) {

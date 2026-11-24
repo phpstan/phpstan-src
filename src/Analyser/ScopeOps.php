@@ -785,6 +785,7 @@ final class ScopeOps
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
 	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, true>|null $preservedPropertyNames
 	 * @return array{array<string, ExpressionTypeHolder>, array<string, ExpressionTypeHolder>, array<string, ConditionalExpressionHolder[]>}|null
 	 */
 	public static function invalidateExpressionEntries(
@@ -798,6 +799,7 @@ final class ScopeOps
 		array $nativeExpressionTypes,
 		array $conditionalExpressions,
 		bool $keepPropertyFetches = false,
+		?array $preservedPropertyNames = null,
 	): ?array
 	{
 		$invalidated = false;
@@ -819,7 +821,7 @@ final class ScopeOps
 			) {
 				continue;
 			}
-			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprTypeHolder->getExpr(), $exprString, $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches)) {
+			if (!self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $exprTypeHolder->getExpr(), $exprString, $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches, $preservedPropertyNames)) {
 				continue;
 			}
 
@@ -840,7 +842,7 @@ final class ScopeOps
 				|| self::keyMayHideSubExpressions($conditionalExprString)
 			) {
 				$firstHolder = $holders[array_key_first($holders)]->getTypeHolder();
-				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstHolder->getExpr(), self::nodeKey($firstHolder->getExpr(), $exprPrinter), $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches)) {
+				if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $firstHolder->getExpr(), self::nodeKey($firstHolder->getExpr(), $exprPrinter), $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches, $preservedPropertyNames)) {
 					$invalidated = true;
 					continue;
 				}
@@ -870,7 +872,7 @@ final class ScopeOps
 				$shouldKeep = true;
 				$conditionalTypeHolders = $holder->getConditionExpressionTypeHolders();
 				foreach ($conditionalTypeHolders as $conditionalTypeHolderExprString => $conditionalTypeHolder) {
-					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass, keepPropertyFetches: $keepPropertyFetches)) {
+					if (self::shouldInvalidateExpression($scope, $exprPrinter, $exprStringToInvalidate, $expressionToInvalidate, $conditionalTypeHolder->getExpr(), $conditionalTypeHolderExprString, invalidatingClass: $invalidatingClass, keepPropertyFetches: $keepPropertyFetches, preservedPropertyNames: $preservedPropertyNames)) {
 						$invalidated = true;
 						$shouldKeep = false;
 						break;
@@ -956,8 +958,10 @@ final class ScopeOps
 
 	/**
 	 * Mirrors the former MutatingScope::shouldInvalidateExpression().
+	 *
+	 * @param array<string, true>|null $preservedPropertyNames
 	 */
-	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false): bool
+	public static function shouldInvalidateExpression(MutatingScope $scope, ExprPrinter $exprPrinter, string $exprStringToInvalidate, Expr $exprToInvalidate, Expr $expr, string $exprString, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false, ?array $preservedPropertyNames = null): bool
 	{
 		if (
 			$expr instanceof IntertwinedVariableByReferenceWithExpr
@@ -990,6 +994,17 @@ final class ScopeOps
 		}
 
 		if ($keepPropertyFetches && self::isPropertyFetchChainOn($expr, $exprStringToInvalidate, $exprPrinter)) {
+			return false;
+		}
+
+		if (
+			$preservedPropertyNames !== null
+			&& ($expr instanceof PropertyFetch || $expr instanceof NullsafePropertyFetch)
+			&& $expr->name instanceof Node\Identifier
+			&& isset($preservedPropertyNames[$expr->name->toString()])
+			&& self::nodeKey($expr->var, $exprPrinter) === $exprStringToInvalidate
+		) {
+			// a property the called method cannot write, fetched directly on the receiver
 			return false;
 		}
 

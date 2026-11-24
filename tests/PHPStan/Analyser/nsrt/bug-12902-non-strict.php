@@ -49,8 +49,8 @@ class NarrowsNativeUnion {
 		assertNativeType('int', $this->i);
 
 		$this->impureCall();
-		assertType('float|int', $this->i);
-		assertNativeType('float|int', $this->i);
+		assertType('int', $this->i);
+		assertNativeType('int', $this->i);
 	}
 
 	public function doFoo(): void {

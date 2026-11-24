@@ -7154,21 +7154,23 @@ public:
 		if (UNEXPECTED(exprString.isUndef())) return zv::Val();
 		zv::Str key = zv::Str::adopt(zval_get_string(exprString.raw()));
 		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) return zv::Val();
 		zv::Val result = pt_scope_ops_invalidate_methods_on_expression(
 			exprPrinter.raw(),
 			key.get(),
 			Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()),
-			Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()));
+			Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()),
+			Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()));
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 		if (result.ref().isNull()) return self_();
 		zval *expressionTypes = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 0);
 		zval *nativeExpressionTypes = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 1);
-		if (UNEXPECTED(expressionTypes == NULL || nativeExpressionTypes == NULL)) {
+		zval *conditionalExpressions = zend_hash_index_find(Z_ARRVAL_P(result.raw()), 2);
+		if (UNEXPECTED(expressionTypes == NULL || nativeExpressionTypes == NULL || conditionalExpressions == NULL)) {
 			zend_throw_error(NULL, "phpstan_turbo: ScopeOps::invalidateMethodsOnExpression() answered an unexpected shape");
 			return zv::Val();
 		}
-		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) return zv::Val();
-		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), true);
+		return scopeWith(Z_ARRVAL_P(expressionTypes), Z_ARRVAL_P(nativeExpressionTypes), Z_ARRVAL_P(conditionalExpressions), true);
 	}
 
 	/* private (twin 3893); its only caller is applySpecifiedTypes() */

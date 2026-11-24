@@ -111,6 +111,9 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 
 				$choices = [];
 				foreach ($constantArrays as $constantArray) {
+					if (UnpackedArgumentTypes::hasExtraItems($constantArray)) {
+						return null;
+					}
 					foreach ($constantArray->getAllArrays() as $array) {
 						if (!self::hasPositionKeys($array)) {
 							continue;

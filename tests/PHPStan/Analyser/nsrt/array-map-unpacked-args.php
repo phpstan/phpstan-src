@@ -225,12 +225,16 @@ class Foo
 
 	/**
 	 * @param array{array{1}, ...<int, array{2}>} $unsealed
+	 * @param array{array{1}, array{2}, ...<int, array{3}>} $unsealedPair
 	 */
-	public function unsealedShapes(array $unsealed): void
+	public function unsealedShapes(array $unsealed, array $unsealedPair): void
 	{
 		array_map(function ($a, ...$rest) {
 			assertType('1|2', $a);
 		}, ...$unsealed);
+
+		assertType('list<1|2>', array_map(fn ($a) => $a, ...$unsealed));
+		assertType('list<non-empty-list<1|2|3>>', array_map(null, ...$unsealedPair));
 
 		(function ($a) {
 			assertType('array{1}|array{2}', $a);

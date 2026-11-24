@@ -156,3 +156,46 @@ function testEnumExistsFalseNotRemembered(): void
 
 	assertType('bool', \enum_exists('Bug8579FalseNotRememberedE'));
 }
+
+class Bug15734Tokenizer
+{
+
+	/** @var 'ready'|'matched'|'complete' */
+	public string $state = 'ready';
+
+	public function parseNextTag(): bool
+	{
+		$this->state = rand(0, 1) === 1 ? 'matched' : 'complete';
+		return $this->state === 'matched';
+	}
+
+	/** @phpstan-pure */
+	public function isReady(): bool
+	{
+		return $this->state === 'ready';
+	}
+
+	public static function parseStatic(): bool
+	{
+		return rand(0, 1) === 1;
+	}
+
+	public function nextTokenOf(self $other): void
+	{
+		$other->state = 'ready';
+		$other->parseNextTag();
+		assertType("'complete'|'matched'|'ready'", $other->state);
+
+		$other->state = 'ready';
+		$other->isReady();
+		assertType("'ready'", $other->state);
+	}
+
+	public function staticCall(): void
+	{
+		$this->state = 'ready';
+		self::parseStatic();
+		assertType("'ready'", $this->state);
+	}
+
+}

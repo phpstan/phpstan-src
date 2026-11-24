@@ -323,7 +323,12 @@ final class MethodCallHandler implements ExprHandler
 				$throwPoints[] = $methodThrowPoint;
 			}
 
-			if ($methodReflection->getName() === '__construct' || $methodReflection->hasSideEffects()->yes()) {
+			$hasSideEffects = $methodReflection->hasSideEffects();
+			if (
+				$methodReflection->getName() === '__construct'
+				|| $hasSideEffects->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && $hasSideEffects->maybe())
+			) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression(
 					$normalizedExpr->var,
@@ -332,7 +337,7 @@ final class MethodCallHandler implements ExprHandler
 					$methodReflection->isStatic(),
 					$this->preservedPropertiesResolver->resolve($expr),
 				);
-			} elseif (!$methodReflection->hasSideEffects()->no()) {
+			} elseif (!$hasSideEffects->no()) {
 				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
 			}
 			if (!$methodReflection->isStatic()) {

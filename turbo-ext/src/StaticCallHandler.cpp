@@ -700,6 +700,11 @@ public:
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			}
 		}
+		// the resolver keeps the scope of a call on a class name that is an expression
+		if (classIsName && !methodReflection.isNull()) {
+			currentScope = applyCalledMethodExitScope(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr, methodReflection.raw(), false);
+			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
+		}
 
 		if (classIsName && !methodReflection.isNull()) {
 			bool initializeProperties;

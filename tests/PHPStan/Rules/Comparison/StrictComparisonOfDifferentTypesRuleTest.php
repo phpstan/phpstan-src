@@ -271,6 +271,10 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 					910,
 				],
 				[
+					'Strict comparison using === between null and 456 will always evaluate to false.',
+					927,
+				],
+				[
 					'Strict comparison using === between INF and INF will always evaluate to true.',
 					979,
 				],

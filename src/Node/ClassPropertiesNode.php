@@ -260,14 +260,14 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 		}
 
 		return [
-			$this->collectUninitializedProperties(array_keys($methodsCalledFromConstructor), $uninitializedProperties),
+			$this->collectUninitializedProperties($constructors, $uninitializedProperties),
 			$prematureAccess,
 			$additionalAssigns,
 		];
 	}
 
 	/**
-	 * @param list<string> $constructors
+	 * @param string[] $constructors
 	 * @param array<string, ClassPropertyNode> $uninitializedProperties
 	 * @return array<string, ClassPropertyNode>
 	 */
@@ -414,7 +414,12 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 	private function getInitializedProperties(Scope $scope, array $initialInitializedProperties): array
 	{
 		foreach ($initialInitializedProperties as $propertyName => $isInitialized) {
-			$initialInitializedProperties[$propertyName] = $isInitialized->or($scope->hasExpressionType(new PropertyInitializationExpr($propertyName)));
+			$propertyInitializationExpr = new PropertyInitializationExpr($propertyName);
+			$isInitialized = $isInitialized->or($scope->hasExpressionType($propertyInitializationExpr));
+			if (!$isInitialized->yes() && $scope->isInAnonymousFunction() && $scope->getParentScope() !== null) {
+				$isInitialized = $isInitialized->or($scope->getParentScope()->hasExpressionType($propertyInitializationExpr));
+			}
+			$initialInitializedProperties[$propertyName] = $isInitialized;
 		}
 
 		return $initialInitializedProperties;

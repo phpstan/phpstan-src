@@ -20,7 +20,7 @@
  * ImpurePoint, InternalThrowPoint, TemplateArgumentFrame, SpecifiedTypes,
  * TypeSpecifierContext, TypeSpecifier, DefaultNarrowingHelper,
  * EarlyTerminatingCallHelper, MethodCallReturnTypeHelper,
- * MethodThrowPointHelper, CalledMethodProcessor and the Type kernel are called
+ * MethodThrowPointHelper and the Type kernel are called
  * through their direct entries; the collaborators that stay PHP for now
  * (ArgumentsHandler, ParametersAcceptorSelector, ArgumentsNormalizer, the
  * parameters acceptors, Assertions and the extensions) through the cached
@@ -138,18 +138,18 @@ public:
 	/* the constructor body: the promoted properties */
 	void construct(zval **services, bool rememberPossiblyImpureFunctionValues) const
 	{
-		static const uint32_t serviceSlots[11] = {
-			slots::calledMethodProcessor, slots::methodCallReturnTypeHelper, slots::methodThrowPointHelper, slots::reflectionProvider,
+		static const uint32_t serviceSlots[10] = {
+			slots::methodCallReturnTypeHelper, slots::methodThrowPointHelper, slots::reflectionProvider,
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper, slots::storagePrimer,
 			slots::earlyTerminatingHelper, slots::argumentsHandler, slots::preservedPropertiesResolver,
 		};
-		for (uint32_t i = 0; i < 4; i++) {
+		for (uint32_t i = 0; i < 3; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
 		}
 		zval remember = {};
 		ZVAL_BOOL(&remember, rememberPossiblyImpureFunctionValues);
 		pt_write_slot(self, slots::rememberPossiblyImpureFunctionValues, &remember);
-		for (uint32_t i = 4; i < 11; i++) {
+		for (uint32_t i = 3; i < 10; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
 		}
 	}
@@ -469,6 +469,8 @@ public:
 				currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr);
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			}
+			currentScope = applyCalledMethodExitScope(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr, methodReflection.raw(), true);
+			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			zv::Val isStatic = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_IS_STATIC);
 			if (UNEXPECTED(isStatic.isUndef())) return zv::Val();
 			if (!zend_is_true(isStatic.raw())) {
@@ -603,37 +605,7 @@ public:
 			dependencies = pt_dependencies_merge({varDependencies, nameDependencies, argsDependencies, ownDependencies.raw()});
 			if (UNEXPECTED(dependencies.isUndef())) return zv::Val();
 		}
-		zv::Val result = pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
-		if (UNEXPECTED(result.isUndef())) return zv::Val();
-
-		// the var was processed above as the receiver; read its already-computed
-		// result on the original scope instead of re-walking via Scope::getType().
-		calledOnType = pt_expression_result_get_type(varResult.raw());
-		if (UNEXPECTED(calledOnType.isUndef())) return zv::Val();
-		name = exprName(expr);
-		if (UNEXPECTED(name == NULL)) return zv::Val();
-		nameIsIdentifier = isIdentifier(name);
-		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
-		if (!nameIsIdentifier) return result;
-		zval *methodName = identifierName(name);
-		if (UNEXPECTED(methodName == NULL)) return zv::Val();
-		methodReflection = pt_mutating_scope_get_method_reflection(Z_OBJ_P(originalScope), calledOnType.raw(), Z_STR_P(methodName));
-		if (UNEXPECTED(methodReflection.isUndef())) return zv::Val();
-		if (methodReflection.isNull()) return result;
-
-		bool processCalled = false;
-		if (UNEXPECTED(!shouldProcessCalledMethod(currentScope.raw(), methodReflection.raw(), calledOnType.raw(), processCalled))) return zv::Val();
-		if (processCalled) {
-			zv::Val calledMethodScope = pt_called_method_processor_process_called_method(OBJ_PROP_NUM(self, slots::calledMethodProcessor), nodeScopeResolver, methodReflection.raw());
-			if (UNEXPECTED(calledMethodScope.isUndef())) return zv::Val();
-			if (!calledMethodScope.isNull()) {
-				currentScope = pt_mutating_scope_merge_initialized_properties(Z_OBJ_P(currentScope.raw()), calledMethodScope.raw());
-				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-				return pt_expression_result_with_scope(result.raw(), currentScope.raw());
-			}
-		}
-
-		return result;
+		return pt_expression_result_finalize(preliminaryResult.raw(), currentScope.raw(), hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), variableFlow.raw(), dependencies.raw());
 	}
 
 	/* the handler entry (Engine.h) */
@@ -986,46 +958,6 @@ private:
 		return zv::Val::null();
 	}
 
-	/* the purity gate of processCalledMethod(): $scope->isInClass() && the
-	 * class is the method's declaring class && the function is __construct
-	 * && the receiver is $this; false = pending exception */
-	[[nodiscard]] static bool shouldProcessCalledMethod(zval *scope, zval *methodReflection, zval *calledOnType, bool &out)
-	{
-		out = false;
-		bool inClass;
-		if (UNEXPECTED(!pt_scope_is_in_class(Z_OBJ_P(scope), inClass))) return false;
-		if (!inClass) return true;
-		zv::Val classReflection = pt_scope_get_class_reflection(Z_OBJ_P(scope));
-		if (UNEXPECTED(classReflection.isUndef())) return false;
-		if (UNEXPECTED(!classReflection.ref().isObject())) {
-			zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(classReflection.raw()));
-			return false;
-		}
-		zv::Val className = pt_class_reflection_get_name(Z_OBJ_P(classReflection.raw()));
-		if (UNEXPECTED(className.isUndef())) return false;
-		zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection, PT_MR_GET_DECLARING_CLASS);
-		if (UNEXPECTED(declaringClass.isUndef())) return false;
-		zv::Val declaringClassName = pt_class_reflection_get_name(Z_OBJ_P(declaringClass.raw()));
-		if (UNEXPECTED(declaringClassName.isUndef())) return false;
-		if (!zend_is_identical(className.raw(), declaringClassName.raw())) return true;
-
-		zv::Val functionName = pt_mutating_scope_get_function_name(Z_OBJ_P(scope));
-		if (UNEXPECTED(functionName.isUndef())) return false;
-		if (functionName.isNull()) return true;
-		zv::Val lowerFunctionName = pt_mutating_scope_get_function_name(Z_OBJ_P(scope));
-		if (UNEXPECTED(lowerFunctionName.isUndef())) return false;
-		if (UNEXPECTED(!lowerFunctionName.ref().isString())) {
-			zend_type_error("strtolower(): Argument #1 ($string) must be of type string, %s given", zend_zval_value_name(lowerFunctionName.raw()));
-			return false;
-		}
-		if (!zend_string_equals_literal_ci(Z_STR_P(lowerFunctionName.raw()), "__construct")) return true;
-
-		zv::Val thisType = pt_type_utils_find_this_type(calledOnType);
-		if (UNEXPECTED(thisType.isUndef())) return false;
-		out = !thisType.isNull();
-		return true;
-	}
-
 	/* static fn (bool $nativeTypesPromoted): Type => new NeverType(true) */
 	static void earlyTerminatingTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
@@ -1153,10 +1085,9 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *calledMethodProcessor, *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *preservedPropertiesResolver;
+		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *preservedPropertiesResolver;
 		bool rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(12, 12)
-			Z_PARAM_OBJECT(calledMethodProcessor)
+		ZEND_PARSE_PARAMETERS_START(11, 11)
 			Z_PARAM_OBJECT(methodCallReturnTypeHelper)
 			Z_PARAM_OBJECT(methodThrowPointHelper)
 			Z_PARAM_OBJECT(reflectionProvider)
@@ -1169,7 +1100,7 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 			Z_PARAM_OBJECT(argumentsHandler)
 			Z_PARAM_OBJECT(preservedPropertiesResolver)
 		ZEND_PARSE_PARAMETERS_END();
-		zval *services[11] = {calledMethodProcessor, methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, preservedPropertiesResolver};
+		zval *services[10] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, preservedPropertiesResolver};
 		MethodCallHandler(Z_OBJ_P(ZEND_THIS)).construct(services, rememberPossiblyImpureFunctionValues);
 	});
 

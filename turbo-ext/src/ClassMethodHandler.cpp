@@ -13,8 +13,8 @@
  * ImpurePoint, the statement results, ExpressionResultStorage,
  * VariableLivenessResolver, PropertyHooksProcessor and NodeScopeResolver are
  * called through their direct entries, the other declaration processors
- * through the shared helpers of StmtHandlerCalls.h; the PHP reflection and
- * node classes through the sites below.
+ * through the shared helpers of StmtHandlerCalls.h; CalledMethodProcessor,
+ * the PHP reflection and node classes through the sites below.
  */
 
 #include "support.h"
@@ -42,6 +42,7 @@ pt_method_site pt_cmh_get_return_node_site;
 pt_method_site pt_cmh_get_statement_result_site;
 pt_method_site pt_cmh_return_statement_get_scope_site;
 pt_method_site pt_cmh_of_declaration_site;
+pt_method_site pt_cmh_remember_walked_method_site;
 
 /* $param->getDocComment() */
 zv::Val getDocComment(zval *param)
@@ -170,7 +171,7 @@ public:
 	explicit ClassMethodHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *deprecatedAttributeResolver, zval *phpDocsResolver, zval *propertyHooksProcessor, zval *attributesHandler, zval *parametersProcessor)
+	void construct(zval *deprecatedAttributeResolver, zval *phpDocsResolver, zval *propertyHooksProcessor, zval *attributesHandler, zval *parametersProcessor, zval *calledMethodProcessor)
 	{
 		zv::ObjRef object(self);
 		object.propAtWrite(slots::deprecatedAttributeResolver, zv::Val::copyOf(zv::Ref(deprecatedAttributeResolver)));
@@ -178,6 +179,7 @@ public:
 		object.propAtWrite(slots::propertyHooksProcessor, zv::Val::copyOf(zv::Ref(propertyHooksProcessor)));
 		object.propAtWrite(slots::attributesHandler, zv::Val::copyOf(zv::Ref(attributesHandler)));
 		object.propAtWrite(slots::parametersProcessor, zv::Val::copyOf(zv::Ref(parametersProcessor)));
+		object.propAtWrite(slots::calledMethodProcessor, zv::Val::copyOf(zv::Ref(calledMethodProcessor)));
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -360,7 +362,7 @@ public:
 			zv::Val bodyStorage = pt_expression_result_storage_duplicate(storage);
 			if (UNEXPECTED(bodyStorage.isUndef())) return zv::Val();
 			if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), bodyStorage.raw()))) return zv::Val();
-			bool walked = walkBody(nodeScopeResolver, stmt, stmts, methodScope.raw(), bodyStorage.raw(), nodeCallback, context, classReflection.raw(), gatheredReturnStatements.raw(), gatheredReturnStatementsAfterFinally.raw(), gatheredYieldStatements.raw(), executionEnds.raw(), methodImpurePoints.raw(), dependencies);
+			bool walked = walkBody(OBJ_PROP_NUM(self, slots::calledMethodProcessor), nodeScopeResolver, stmt, stmts, methodScope.raw(), bodyStorage.raw(), nodeCallback, context, classReflection.raw(), gatheredReturnStatements.raw(), gatheredReturnStatementsAfterFinally.raw(), gatheredYieldStatements.raw(), executionEnds.raw(), methodImpurePoints.raw(), dependencies);
 			pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
 			if (UNEXPECTED(!walked || EG(exception) != NULL)) return zv::Val();
 
@@ -509,7 +511,7 @@ private:
 	 * then the MethodReturnStatementsNode and the liveness node emitted;
 	 * what the body depends on goes to `dependencies`; false = pending
 	 * exception */
-	[[nodiscard]] static bool walkBody(zval *nodeScopeResolver, zval *stmt, zval *stmts, zval *methodScope, zval *bodyStorage, zval *nodeCallback, zval *context, zval *classReflection, zval *gatheredReturnStatements, zval *gatheredReturnStatementsAfterFinally, zval *gatheredYieldStatements, zval *executionEnds, zval *methodImpurePoints, zv::Arr &dependencies)
+	[[nodiscard]] static bool walkBody(zval *calledMethodProcessor, zval *nodeScopeResolver, zval *stmt, zval *stmts, zval *methodScope, zval *bodyStorage, zval *nodeCallback, zval *context, zval *classReflection, zval *gatheredReturnStatements, zval *gatheredReturnStatementsAfterFinally, zval *gatheredYieldStatements, zval *executionEnds, zval *methodImpurePoints, zv::Arr &dependencies)
 	{
 		zval captures[7];
 		ZVAL_COPY_VALUE(&captures[0], nodeScopeResolver);
@@ -569,6 +571,7 @@ private:
 		ZVAL_COPY_VALUE(&nodeArgv[8], methodReflection.raw());
 		zv::Val returnStatementsNode = pt_type_new(PT_CLASS_METHOD_RETURN_STATEMENTS_NODE, 9, nodeArgv);
 		if (UNEXPECTED(returnStatementsNode.isUndef())) return false;
+		if (UNEXPECTED(pt_call_method_cached(pt_cmh_remember_walked_method_site, Z_OBJ_P(calledMethodProcessor), PT_LC("rememberwalkedmethod"), 1, returnStatementsNode.raw()).isUndef())) return false;
 		if (UNEXPECTED(!pt_node_scope_resolver_call_node_callback(nodeScopeResolver, nodeCallback, returnStatementsNode.raw(), methodScope, bodyStorage))) return false;
 
 		zv::Val flowHold;
@@ -792,9 +795,9 @@ PT_MINIT_REGISTRATION(pt_register_class_method_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *deprecatedAttributeResolver, *phpDocsResolver, *propertyHooksProcessor, *attributesHandler, *parametersProcessor;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, deprecatedAttributeResolver, phpDocsResolver, propertyHooksProcessor, attributesHandler, parametersProcessor)) RETURN_THROWS();
-		ClassMethodHandler(Z_OBJ_P(ZEND_THIS)).construct(deprecatedAttributeResolver, phpDocsResolver, propertyHooksProcessor, attributesHandler, parametersProcessor);
+		zval *deprecatedAttributeResolver, *phpDocsResolver, *propertyHooksProcessor, *attributesHandler, *parametersProcessor, *calledMethodProcessor;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, deprecatedAttributeResolver, phpDocsResolver, propertyHooksProcessor, attributesHandler, parametersProcessor, calledMethodProcessor)) RETURN_THROWS();
+		ClassMethodHandler(Z_OBJ_P(ZEND_THIS)).construct(deprecatedAttributeResolver, phpDocsResolver, propertyHooksProcessor, attributesHandler, parametersProcessor, calledMethodProcessor);
 	});
 
 	cls.method<&ClassMethodHandler::supports, zp::Obj>(sigs::supports);

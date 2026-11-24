@@ -4655,8 +4655,8 @@ zv::Val pt_class_reflection_get_native_property(zend_object *classReflection, ze
 	return pt_type_call(classReflection, PT_LC("getnativeproperty"), 1, &name);
 }
 
-/* the declaration processors' reads (PhpDocsResolver.cpp,
- * CalledMethodProcessor.cpp): $classReflection->isImmutable() /
+/* the declaration processors' reads (PhpDocsResolver.cpp):
+ * $classReflection->isImmutable() /
  * ->acceptsNamedArguments() / ->isAnonymous() (false = pending exception) /
  * ->getResolvedPhpDoc() (UNDEF = pending exception) */
 [[nodiscard]] bool pt_class_reflection_is_immutable(zend_object *classReflection, bool &out)

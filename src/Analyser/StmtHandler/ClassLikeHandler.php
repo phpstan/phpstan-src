@@ -32,6 +32,7 @@ use PHPStan\Node\ClassMethodsNode;
 use PHPStan\Node\ClassPropertiesNode;
 use PHPStan\Node\ClassStatementsGatherer;
 use PHPStan\Node\InClassNode;
+use PHPStan\Parser\PreservedPropertiesVisitor;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ClassReflectionFactory;
 use PHPStan\Reflection\ReflectionProvider;
@@ -124,7 +125,8 @@ final class ClassLikeHandler implements StmtHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new InClassNode($stmt, $classReflection), $classScope, $storage);
 
 		$classLikeStatements = $stmt->stmts;
-		// analyze static methods first; constructor next; instance methods and property hooks last so we can carry over the scope
+		// analyze static methods first; constructor and the methods it calls next; other instance methods and property hooks
+		// last so we can carry over the scope; methods called on $this before their callers, so that the calls can use their walks
 		usort($classLikeStatements, static function ($a, $b) {
 			if ($a instanceof Node\Stmt\Property) {
 				return 1;
@@ -137,7 +139,7 @@ final class ClassLikeHandler implements StmtHandler
 				return 0;
 			}
 
-			return [!$a->isStatic(), $a->name->toLowerString() !== '__construct'] <=> [!$b->isStatic(), $b->name->toLowerString() !== '__construct'];
+			return [!$a->isStatic(), $a->getAttribute(PreservedPropertiesVisitor::RANK_ATTRIBUTE_NAME, -1), $a->name->toLowerString() !== '__construct'] <=> [!$b->isStatic(), $b->getAttribute(PreservedPropertiesVisitor::RANK_ATTRIBUTE_NAME, -1), $b->name->toLowerString() !== '__construct'];
 		});
 
 		// Class members have their own inference context, including when the class
@@ -147,7 +149,7 @@ final class ClassLikeHandler implements StmtHandler
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassMethodsNode($stmt, $classStatementsGatherer->getMethods(), $classStatementsGatherer->getMethodCalls(), $classReflection), $classScope, $storage);
 		$nodeScopeResolver->callNodeCallback($nodeCallback, new ClassConstantsNode($stmt, $classStatementsGatherer->getConstants(), $classStatementsGatherer->getConstantFetches(), $classReflection), $classScope, $storage);
 		$classReflection->evictPrivateSymbols();
-		$this->calledMethodProcessor->clearCalledMethodResults();
+		$this->calledMethodProcessor->clearCalledMethodResults($classReflection);
 
 		return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge(
 			$declarationDependencies,

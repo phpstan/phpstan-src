@@ -9,7 +9,6 @@ use PhpParser\Node\Stmt;
 use PHPStan\Analyser\ArgsResult;
 use PHPStan\Analyser\ArgumentsHandler;
 use PHPStan\Analyser\ArgumentsNormalizer;
-use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\ConditionalTypeResolver;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResult;
@@ -55,7 +54,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\TypeUtils;
 use function array_map;
 use function array_merge;
 use function count;
@@ -70,7 +68,6 @@ final class MethodCallHandler implements ExprHandler
 {
 
 	public function __construct(
-		private CalledMethodProcessor $calledMethodProcessor,
 		private MethodCallReturnTypeHelper $methodCallReturnTypeHelper,
 		private MethodThrowPointHelper $methodThrowPointHelper,
 		private ReflectionProvider $reflectionProvider,
@@ -340,6 +337,7 @@ final class MethodCallHandler implements ExprHandler
 			} elseif (!$hasSideEffects->no()) {
 				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr);
 			}
+			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
 				if ($selfOutType !== null) {
@@ -397,33 +395,7 @@ final class MethodCallHandler implements ExprHandler
 				$walkMethodReflection !== null ? [$walkMethodReflection->getDeclaringClass()->getName()] : [],
 			),
 		);
-		$result = $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
-
-		// the var was processed above as the receiver; read its already-computed
-		// result on the original scope instead of re-walking via Scope::getType().
-		$calledOnType = $varResult->getType();
-		if (!$expr->name instanceof Identifier) {
-			return $result;
-		}
-		$methodName = $expr->name->name;
-		$methodReflection = $originalScope->getMethodReflection($calledOnType, $methodName);
-		if ($methodReflection === null) {
-			return $result;
-		}
-		if (
-			$scope->isInClass()
-			&& $scope->getClassReflection()->getName() === $methodReflection->getDeclaringClass()->getName()
-			&& ($scope->getFunctionName() !== null && strtolower($scope->getFunctionName()) === '__construct')
-			&& TypeUtils::findThisType($calledOnType) !== null
-		) {
-			$calledMethodScope = $this->calledMethodProcessor->processCalledMethod($nodeScopeResolver, $methodReflection);
-			if ($calledMethodScope !== null) {
-				$scope = $scope->mergeInitializedProperties($calledMethodScope);
-				return $result->withScope($scope);
-			}
-		}
-
-		return $result;
+		return $preliminaryResult->finalize($scope, $hasYield, $isAlwaysTerminating, $throwPoints, $impurePoints, $variableFlow, $dependencies);
 	}
 
 	/**

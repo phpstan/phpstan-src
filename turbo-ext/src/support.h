@@ -3511,13 +3511,11 @@ zv::Val pt_node_scope_resolver_narrow_scope_with_condition(zval *nodeScopeResolv
 /* }}} */
 
 /* {{{ PhpDocsResolver.cpp, DeprecatedAttributeResolver.cpp,
- * PropertyHooksProcessor.cpp, CalledMethodProcessor.cpp — the declaration
- * processors */
+ * PropertyHooksProcessor.cpp — the declaration processors */
 
 extern zend_class_entry *pt_ce_php_docs_resolver;
 extern zend_class_entry *pt_ce_deprecated_attribute_resolver;
 extern zend_class_entry *pt_ce_property_hooks_processor;
-extern zend_class_entry *pt_ce_called_method_processor;
 
 /* $phpDocsResolver->getPhpDocs($scope, $node) without the array: the 22
  * values of the twin's list, owned. For the shadowing class every item is
@@ -3581,15 +3579,10 @@ zv::Val pt_node_doc_comment_text(zval *node);
 
 /* $propertyHooksProcessor->processPropertyHooks($nodeScopeResolver, $stmt,
  * $nativeTypeNode, $phpDocType, $propertyName, $hooks, $scope, $storage,
- * $nodeCallback) (what the hooks depend on: a Dependencies or null) /
- * $calledMethodProcessor->processCalledMethod($nodeScopeResolver,
- * $methodReflection) (the end scope or null) / ->clearCalledMethodResults():
- * the native body for the shadowing class, the method otherwise (everything
- * borrowed, the nullable ones IS_NULL for null); false / UNDEF = pending
- * exception */
+ * $nodeCallback) (what the hooks depend on: a Dependencies or null): the
+ * native body for the shadowing class, the method otherwise (everything
+ * borrowed, the nullable ones IS_NULL for null); UNDEF = pending exception */
 zv::Val pt_property_hooks_processor_process_property_hooks(zval *processor, zval *nodeScopeResolver, zval *stmt, zval *nativeTypeNode, zval *phpDocType, zval *propertyName, zval *hooks, zval *scope, zval *storage, zval *nodeCallback);
-zv::Val pt_called_method_processor_process_called_method(zval *processor, zval *nodeScopeResolver, zval *methodReflection);
-[[nodiscard]] bool pt_called_method_processor_clear_called_method_results(zval *processor);
 
 /* ClassReflection.cpp — $classReflection->isImmutable() /
  * ->acceptsNamedArguments() / ->isAnonymous() (false = pending exception) /

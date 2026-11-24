@@ -21,12 +21,21 @@ final class PreservedProperties
 	 *        a call not known to have side effects forgets
 	 * @param list<array{list<non-empty-string>, int, string}> $writtenFunctionArguments the ones that code passes
 	 *        and does not write otherwise
+	 * @param array<string, true> $closureWrittenPropertyNames written by the class's closures, which whoever
+	 *        holds one can run at any time, so the walk of a method does not tell their type after it
+	 * @param array<string, array<string, array{list<string>, list<array{list<non-empty-string>, int, string}>}|null>> $overrideWrittenPropertyNames
+	 *        the private properties each non-private method of the class writes, by lowercase name - the parent's code can
+	 *        run the ones that override its methods whenever it runs - each with the methods it runs that assign it and the
+	 *        function arguments it is passed as, or null when it is written in a way no walk sees the value of
 	 */
 	public function __construct(
 		private array $propertyNames,
 		private array $functionArguments,
 		private array $writtenPropertyNames,
 		private array $writtenFunctionArguments,
+		private array $closureWrittenPropertyNames,
+		private ?string $parentClassName = null,
+		private array $overrideWrittenPropertyNames = [],
 	)
 	{
 	}
@@ -61,6 +70,27 @@ final class PreservedProperties
 	public function getWrittenFunctionArguments(): array
 	{
 		return $this->writtenFunctionArguments;
+	}
+
+	/**
+	 * @return array<string, true>
+	 */
+	public function getClosureWrittenPropertyNames(): array
+	{
+		return $this->closureWrittenPropertyNames;
+	}
+
+	public function getParentClassName(): ?string
+	{
+		return $this->parentClassName;
+	}
+
+	/**
+	 * @return array<string, array<string, array{list<string>, list<array{list<non-empty-string>, int, string}>}|null>>
+	 */
+	public function getOverrideWrittenPropertyNames(): array
+	{
+		return $this->overrideWrittenPropertyNames;
 	}
 
 }

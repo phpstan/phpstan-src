@@ -36,8 +36,8 @@ class HelloWorld
 				$this->createSuggestions();
 			}
 
-			assertType('array<DateTime>', $this->suggestions);
-			assertType('int<0, max>', count($this->suggestions));
+			assertType('non-empty-array<DateTime>', $this->suggestions);
+			assertType('int<1, max>', count($this->suggestions));
 		}
 
 		return null;

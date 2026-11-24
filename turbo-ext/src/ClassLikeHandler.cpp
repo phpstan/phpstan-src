@@ -10,10 +10,11 @@
  * The class-member ordering usort() runs zend_hash_sort() — the engine's
  * own sort usort() uses — with the twin's comparator natively and the
  * engine's stable fallback. MutatingScope, ClassReflection,
- * ClassStatementsGatherer, CalledMethodProcessor and NodeScopeResolver are
- * called through their direct entries; AttributesHandler through the shared
- * helper of StmtHandlerCalls.h; ReflectionProvider, ClassReflectionFactory,
- * BetterReflection and the php-parser node methods through the sites below.
+ * ClassStatementsGatherer and NodeScopeResolver are called through their
+ * direct entries; AttributesHandler through the shared helper of
+ * StmtHandlerCalls.h; ReflectionProvider, ClassReflectionFactory,
+ * CalledMethodProcessor, BetterReflection and the php-parser node methods
+ * through the sites below.
  */
 
 #include "support.h"
@@ -44,6 +45,7 @@ pt_method_site pt_clh_file_reader_read_site;
 pt_method_site pt_clh_better_reflection_get_name_site;
 pt_method_site pt_clh_class_reflection_factory_create_site;
 pt_method_site pt_clh_get_traits_site;
+pt_method_site pt_clh_clear_called_method_results_site;
 
 /* $name->toString() */
 zv::Val nameToString(zval *name)
@@ -153,12 +155,15 @@ zval *rawNodeProperty(pt_property_site &site, zval *node, const char *name, size
 	return pt_property_cached(site, Z_OBJ_P(node), name, len);
 }
 
-/* [!$method->isStatic(), $method->name->toLowerString() !== '__construct']
- * of a ClassMethod: the two bools */
-void methodSortKey(zval *method, bool &notStatic, bool &notConstructor)
+/* [!$method->isStatic(), $method->getAttribute(PreservedPropertiesVisitor::RANK_ATTRIBUTE_NAME, -1),
+ * $method->name->toLowerString() !== '__construct'] of a ClassMethod (the
+ * visitor only stores ints there) */
+void methodSortKey(zval *method, bool &notStatic, zend_long &rank, bool &notConstructor)
 {
 	zval *flags = pt_property_cached(pt_clh_class_method_flags_site, Z_OBJ_P(method), PT_LC("flags"));
 	notStatic = !(flags != NULL && Z_TYPE_P(flags) == IS_LONG && (Z_LVAL_P(flags) & PT_CLH_MODIFIER_STATIC) != 0);
+	zv::Val rankAttribute = pt_engine_node_get_attribute(Z_OBJ_P(method), PT_LC("calleesFirstRank"));
+	rank = !rankAttribute.isUndef() && Z_TYPE_P(rankAttribute.raw()) == IS_LONG ? Z_LVAL_P(rankAttribute.raw()) : -1;
 	zval *name = pt_property_cached(pt_clh_class_method_name_site, Z_OBJ_P(method), PT_LC("name"));
 	zend_string *nameString = NULL;
 	if (name != NULL && Z_TYPE_P(name) == IS_OBJECT) {
@@ -180,9 +185,11 @@ int compareClassStatementsUnstable(zval *a, zval *b)
 	if (Z_TYPE_P(a) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(a), pt_clh_sort_class_method_ce) || Z_TYPE_P(b) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(b), pt_clh_sort_class_method_ce)) return 0;
 
 	bool aNotStatic, aNotConstructor, bNotStatic, bNotConstructor;
-	methodSortKey(a, aNotStatic, aNotConstructor);
-	methodSortKey(b, bNotStatic, bNotConstructor);
+	zend_long aRank, bRank;
+	methodSortKey(a, aNotStatic, aRank, aNotConstructor);
+	methodSortKey(b, bNotStatic, bRank, bNotConstructor);
 	if (aNotStatic != bNotStatic) return aNotStatic ? 1 : -1;
+	if (aRank != bRank) return aRank > bRank ? 1 : -1;
 	if (aNotConstructor != bNotConstructor) return aNotConstructor ? 1 : -1;
 	return 0;
 }
@@ -392,7 +399,7 @@ public:
 			return zv::Val();
 		}
 		if (UNEXPECTED(!pt_class_reflection_evict_private_symbols(Z_OBJ_P(classReflection.raw())))) return zv::Val();
-		if (UNEXPECTED(!pt_called_method_processor_clear_called_method_results(OBJ_PROP_NUM(self, slots::calledMethodProcessor)))) return zv::Val();
+		if (UNEXPECTED(pt_call_method_cached(pt_clh_clear_called_method_results_site, Z_OBJ_P(OBJ_PROP_NUM(self, slots::calledMethodProcessor)), PT_LC("clearcalledmethodresults"), 1, classReflection.raw()).isUndef())) return zv::Val();
 
 		// the code of a trait is analysed as a part of every class using it
 		zv::Val traits = getTraitsRecursive(classReflection.raw());

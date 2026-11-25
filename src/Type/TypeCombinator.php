@@ -7,11 +7,9 @@ use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
-use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
 use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
 use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -402,7 +400,7 @@ final class TypeCombinator
 					continue;
 				}
 				foreach ($type->getTypes() as $benevolentInnerType) {
-					$benevolentTypes[$benevolentInnerType->describe(VerbosityLevel::value())] = $benevolentInnerType;
+					$benevolentTypes[] = $benevolentInnerType;
 					$flattenedTypes[] = $benevolentInnerType;
 				}
 				continue;
@@ -763,14 +761,10 @@ final class TypeCombinator
 		if ($benevolentTypes !== []) {
 			$allBenevolent = true;
 			foreach ($types as $type) {
-				if (isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
-					continue;
-				}
-
 				// a member that absorbed a benevolent member stays benevolent,
 				// like int absorbing int<1, max> from (int<1, max>|string) and 0
 				foreach ($benevolentTypes as $benevolentType) {
-					if ($type->isSuperTypeOf($benevolentType)->yes()) {
+					if ($type === $benevolentType || $type->isSuperTypeOf($benevolentType)->yes()) {
 						continue 2;
 					}
 				}
@@ -1024,12 +1018,9 @@ final class TypeCombinator
 			$a instanceof ConstantStringType
 		) {
 			if ($a->getValue() === '') {
-				$description = $b->describe(VerbosityLevel::value());
-				if (in_array($description, ['non-empty-string', 'non-falsy-string'], true)) {
-					return [null, self::intersect(
-						new StringType(),
-						...self::getAccessoryCaseStringTypes($b),
-					)];
+				$withEmpty = self::removeNonEmptyStringAccessory($b);
+				if ($withEmpty !== null && $withEmpty->isSuperTypeOf($a)->yes()) {
+					return [null, $withEmpty];
 				}
 			}
 
@@ -1045,12 +1036,9 @@ final class TypeCombinator
 			$b instanceof ConstantStringType
 		) {
 			if ($b->getValue() === '') {
-				$description = $a->describe(VerbosityLevel::value());
-				if (in_array($description, ['non-empty-string', 'non-falsy-string'], true)) {
-					return [self::intersect(
-						new StringType(),
-						...self::getAccessoryCaseStringTypes($a),
-					), null];
+				$withEmpty = self::removeNonEmptyStringAccessory($a);
+				if ($withEmpty !== null && $withEmpty->isSuperTypeOf($b)->yes()) {
+					return [$withEmpty, null];
 				}
 			}
 
@@ -1084,19 +1072,33 @@ final class TypeCombinator
 	}
 
 	/**
-	 * @return list<Type>
+	 * Removes the non-empty-string or non-falsy-string accessory of a string
+	 * intersection, keeping every other accessory - `'' | X` is the result
+	 * when '' satisfies the rest (literal-string, lowercase-string, ...).
+	 * Returns null when $type has no such accessory.
 	 */
-	private static function getAccessoryCaseStringTypes(Type $type): array
+	private static function removeNonEmptyStringAccessory(Type $type): ?Type
 	{
-		$accessory = [];
-		if ($type->isLowercaseString()->yes()) {
-			$accessory[] = new AccessoryLowercaseStringType();
-		}
-		if ($type->isUppercaseString()->yes()) {
-			$accessory[] = new AccessoryUppercaseStringType();
+		if (!$type instanceof IntersectionType || $type->isNonEmptyString()->no()) {
+			return null;
 		}
 
-		return $accessory;
+		$newTypes = [];
+		$found = false;
+		foreach ($type->getTypes() as $innerType) {
+			if ($innerType instanceof AccessoryNonEmptyStringType || $innerType instanceof AccessoryNonFalsyStringType) {
+				$found = true;
+				continue;
+			}
+
+			$newTypes[] = $innerType;
+		}
+
+		if (!$found) {
+			return null;
+		}
+
+		return self::intersect(...$newTypes);
 	}
 
 	/**

@@ -404,18 +404,6 @@ static zv::Val oversizedArrayType()
 	return adopted(pt_oversized_array_type_new(&raw), raw);
 }
 
-static zv::Val accessoryLowercaseStringType()
-{
-	zval raw;
-	return adopted(pt_accessory_lowercase_string_type_new(&raw), raw);
-}
-
-static zv::Val accessoryUppercaseStringType()
-{
-	zval raw;
-	return adopted(pt_accessory_uppercase_string_type_new(&raw), raw);
-}
-
 static zv::Val accessoryNonEmptyStringType()
 {
 	zval raw;
@@ -959,7 +947,6 @@ public:
 		std::vector<zv::Val> alreadyNormalized;
 		zv::Arr benevolentTypes = zv::Arr::create(0);
 		size_t neverCount = 0;
-		Level valueLevel(PT_LC("value"));
 		TypeList types;
 		types.reserve(argc);
 		for (uint32_t i = 0; i < argc; i++) {
@@ -1018,10 +1005,7 @@ public:
 				zv::Val typesInner = getTypes(type);
 				PT_FAIL_IF_UNDEF(typesInner);
 				for (zv::ArrayEntry entry : zv::ArrRef(typesInner.raw())) {
-					zv::Val description = describe(entry.value().raw(), valueLevel);
-					zend_string *key = describedKey(description);
-					if (UNEXPECTED(key == NULL)) return zv::Val();
-					benevolentTypes.set(key, copy(entry.value().raw()));
+					benevolentTypes.push(copy(entry.value().raw()));
 					flattenedTypes.push_back(copy(entry.value().raw()));
 				}
 				continue;
@@ -1367,15 +1351,14 @@ public:
 		if (zend_hash_num_elements(benevolentTypes.table()) > 0) {
 			bool allBenevolent = true;
 			for (zv::Val &type : types) {
-				zv::Val description = describe(type.raw(), valueLevel);
-				zend_string *key = describedKey(description);
-				if (UNEXPECTED(key == NULL)) return zv::Val();
-				if (zend_symtable_find(benevolentTypes.table(), key) != NULL) continue;
-
 				/* a member that absorbed a benevolent member stays benevolent,
 				 * like int absorbing int<1, max> from (int<1, max>|string) and 0 */
 				bool absorbed = false;
 				for (zv::ArrayEntry entry : zv::ArrRef(benevolentTypes.raw())) {
+					if (Z_TYPE_P(type.raw()) == IS_OBJECT && Z_TYPE_P(entry.value().raw()) == IS_OBJECT && Z_OBJ_P(type.raw()) == Z_OBJ_P(entry.value().raw())) {
+						absorbed = true;
+						break;
+					}
 					int superType = isSuperTypeYes(type.raw(), entry.value().raw());
 					if (UNEXPECTED(superType < 0)) return zv::Val();
 					if (superType == 1) {
@@ -1755,7 +1738,7 @@ public:
 
 	/* the ConstantStringType arm of compareTypesInUnion() for the constant
 	 * $constant against $other: '' absorbed by a non-empty/non-falsy string
-	 * (keeping its case accessories), '0' downgrading a non-falsy string to
+	 * whose other accessories accept '', '0' downgrading a non-falsy string to
 	 * non-empty; 1 with $merged the replacement for $other, 0 for no
 	 * answer; -1 = pending exception */
 	static int compareConstantStringInUnion(zval *constant, zval *other, zv::Val &merged)
@@ -1764,19 +1747,15 @@ public:
 		if (UNEXPECTED(value.isUndef())) return -1;
 		zend_string *valueString = Z_STR_P(value.raw());
 		if (ZSTR_LEN(valueString) == 0) {
-			Level valueLevel(PT_LC("value"));
-			zv::Val description = describe(other, valueLevel);
-			zend_string *described = describedKey(description);
-			if (UNEXPECTED(described == NULL)) return -1;
-			if (zend_string_equals_literal(described, "non-empty-string") || zend_string_equals_literal(described, "non-falsy-string")) {
-				zv::Val accessories = getAccessoryCaseStringTypes(other);
-				if (UNEXPECTED(accessories.isUndef())) return -1;
-				zv::Val string = stringType();
-				if (UNEXPECTED(string.isUndef())) return -1;
-				TypeList rest;
-				listFrom(accessories.raw(), rest);
-				merged = intersectWith(string.raw(), rest);
-				return merged.isUndef() ? -1 : 1;
+			zv::Val withEmpty = removeNonEmptyStringAccessory(other);
+			if (UNEXPECTED(withEmpty.isUndef())) return -1;
+			if (!isNull(withEmpty)) {
+				int covers = isSuperTypeYes(withEmpty.raw(), constant);
+				if (UNEXPECTED(covers < 0)) return -1;
+				if (covers) {
+					merged = std::move(withEmpty);
+					return 1;
+				}
 			}
 		}
 
@@ -1830,26 +1809,31 @@ public:
 		return 1;
 	}
 
-	/* private static getAccessoryCaseStringTypes(Type $type): list<Type> */
-	static zv::Val getAccessoryCaseStringTypes(zval *type)
+	/* private static removeNonEmptyStringAccessory(Type $type): ?Type
+	 * (IS_NULL for null) */
+	static zv::Val removeNonEmptyStringAccessory(zval *type)
 	{
-		zv::Arr accessory = zv::Arr::create(0);
-		zend_long isLowercase = callTrinary(type, PT_LC("islowercasestring"));
-		PT_FAIL_IF_NEG(isLowercase);
-		if (isLowercase == PT_TRI_YES) {
-			zv::Val lowercase = accessoryLowercaseStringType();
-			PT_FAIL_IF_UNDEF(lowercase);
-			accessory.push(std::move(lowercase));
-		}
-		zend_long isUppercase = callTrinary(type, PT_LC("isuppercasestring"));
-		PT_FAIL_IF_NEG(isUppercase);
-		if (isUppercase == PT_TRI_YES) {
-			zv::Val uppercase = accessoryUppercaseStringType();
-			PT_FAIL_IF_UNDEF(uppercase);
-			accessory.push(std::move(uppercase));
+		if (!isInstance(type, pt_ce_intersection_type)) return zv::Val::null();
+		zend_long isNonEmpty = callTrinary(type, PT_LC("isnonemptystring"));
+		PT_FAIL_IF_NEG(isNonEmpty);
+		if (isNonEmpty == PT_TRI_NO) return zv::Val::null();
+
+		zv::Val types = getTypes(type);
+		PT_FAIL_IF_UNDEF(types);
+		TypeList newTypes;
+		bool found = false;
+		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+			if (isInstance(entry.value().raw(), pt_ce_accessory_non_empty_string_type) || isInstance(entry.value().raw(), pt_ce_accessory_non_falsy_string_type)) {
+				found = true;
+				continue;
+			}
+
+			newTypes.push_back(copy(entry.value().raw()));
 		}
 
-		return zv::Val(std::move(accessory));
+		if (!found) return zv::Val::null();
+
+		return intersectOf(newTypes);
 	}
 
 	/* private static downgradeNonFalsyStringToNonEmpty(Type $type): ?Type

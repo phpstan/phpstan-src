@@ -226,6 +226,7 @@ final class ForeachHandler implements StmtHandler
 					$scope->popExpressionResultStorage();
 				}
 				$count = 0;
+				$fallbackScope = null;
 				$prevEntryScope = null;
 				// each pass after the first re-walks only the statements whose
 				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
@@ -255,7 +256,7 @@ final class ForeachHandler implements StmtHandler
 						$previousPassStorage = $storage;
 						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 						if ($backEdgeScope === null) {
-							$bodyScope = $prevScope;
+							$bodyScope = $fallbackScope ?? $prevScope;
 							break;
 						}
 						$bodyScope = $backEdgeScope;
@@ -273,12 +274,27 @@ final class ForeachHandler implements StmtHandler
 					if ($bodyScope->equals($prevScope)) {
 						break;
 					}
+					if ($fallbackScope !== null) {
+						// keep the bounded array keys only when the pass stays within them
+						$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, $bodyScopeResult->getVariableFlow()))->equals($prevScope) ? $prevScope : $fallbackScope;
+						break;
+					}
 
 					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, $bodyScopeResult->getVariableFlow()));
+						$writableVariableNames = LoopWrittenVariableNames::collect($stmt, $bodyScopeResult->getVariableFlow());
+						$generalizedScope = $prevScope->generalizeWith($bodyScope, $writableVariableNames);
+						if ($count === NodeScopeResolver::LOOP_SCOPE_ITERATIONS - 1) {
+							// the last generalization is not walked again - bounding array keys is a guess one more pass has to confirm
+							$boundedScope = $prevScope->generalizeWith($bodyScope, $writableVariableNames, true);
+							if (!$boundedScope->equals($generalizedScope)) {
+								$fallbackScope = $generalizedScope;
+								$generalizedScope = $boundedScope;
+							}
+						}
+						$bodyScope = $generalizedScope;
 					}
 					$count++;
-				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS || $fallbackScope !== null);
 			}
 		}
 

@@ -497,6 +497,7 @@ public:
 				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope.raw())); });
 				if (UNEXPECTED(EG(exception))) return zv::Val();
 				zend_long count = 0;
+				zv::Val fallbackScope = zv::Val::null();
 				zv::Val prevEntryScope;
 				// each pass after the first re-walks only the statements whose
 				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
@@ -544,7 +545,7 @@ public:
 						zv::Val backEdgeScope = pt_internal_statement_result_loop_back_edge_scope(bodyScopeResult.raw());
 						if (UNEXPECTED(backEdgeScope.isUndef())) return;
 						if (backEdgeScope.isNull()) {
-							bodyScope = std::move(prevScope);
+							bodyScope = fallbackScope.isNull() ? std::move(prevScope) : std::move(fallbackScope);
 							brokeOut = true;
 							return;
 						}
@@ -565,15 +566,16 @@ public:
 					if (UNEXPECTED(!ptlh::scopesEqual(bodyScope.raw(), prevScope.raw(), equal))) return zv::Val();
 					if (equal) break;
 
-					if (count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
+					if (!fallbackScope.isNull() || count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
 						zv::Val flowHold;
 						zval *passFlow = pt_internal_statement_result_variable_flow(bodyScopeResult.raw(), flowHold);
 						if (UNEXPECTED(passFlow == NULL)) return zv::Val();
-						bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow);
-						if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+						bool verified;
+						if (UNEXPECTED(!ptlh::generalizePass(bodyScope, prevScope, fallbackScope, count, stmt, passFlow, verified))) return zv::Val();
+						if (verified) break;
 					}
 					count++;
-				} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
+				} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT || !fallbackScope.isNull());
 			}
 		}
 

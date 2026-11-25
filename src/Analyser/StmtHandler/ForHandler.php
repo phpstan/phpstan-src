@@ -202,6 +202,7 @@ final class ForHandler implements StmtHandler
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			$previousPass = null;
 			$previousPassStorage = null;
+			$fallbackScope = null;
 			do {
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
@@ -232,7 +233,7 @@ final class ForHandler implements StmtHandler
 					$passFlows[] = $bodyScopeResult->getVariableFlow();
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 					if ($backEdgeScope === null) {
-						$bodyScope = $prevScope;
+						$bodyScope = $fallbackScope ?? $prevScope;
 						break;
 					}
 					$bodyScope = $backEdgeScope;
@@ -252,12 +253,27 @@ final class ForHandler implements StmtHandler
 				if ($bodyScope->equals($prevScope)) {
 					break;
 				}
+				if ($fallbackScope !== null) {
+					// keep the bounded array keys only when the pass stays within them
+					$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence(...$passFlows)))->equals($prevScope) ? $prevScope : $fallbackScope;
+					break;
+				}
 
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence(...$passFlows)));
+					$writableVariableNames = LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence(...$passFlows));
+					$generalizedScope = $prevScope->generalizeWith($bodyScope, $writableVariableNames);
+					if ($count === NodeScopeResolver::LOOP_SCOPE_ITERATIONS - 1) {
+						// the last generalization is not walked again - bounding array keys is a guess one more pass has to confirm
+						$boundedScope = $prevScope->generalizeWith($bodyScope, $writableVariableNames, true);
+						if (!$boundedScope->equals($generalizedScope)) {
+							$fallbackScope = $generalizedScope;
+							$generalizedScope = $boundedScope;
+						}
+					}
+					$bodyScope = $generalizedScope;
 				}
 				$count++;
-			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS || $fallbackScope !== null);
 		}
 
 		$storage = $originalStorage;

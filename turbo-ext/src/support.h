@@ -3483,7 +3483,8 @@ zv::Val pt_variable_flow_builder_child(zval *node, zval *storage);
 zv::Val pt_variable_flow_builder_writes(zval *flow);
 
 /* MutatingScope.cpp — $scope->generalizeWith($otherScope,
- * $writableVariableNames) ($writableVariableNames NULL or IS_NULL for null) /
+ * $writableVariableNames, $boundArrayKeys) ($writableVariableNames NULL or
+ * IS_NULL for null, $boundArrayKeys passed only when true) /
  * ->enterForeach($originalScope, $iteratee, $iterateeType,
  * $nativeIterateeType, $valueName, $keyName, $valueByRef) ($keyName NULL for
  * null) / ->enterForeachKey(...) / ->enterCatchType($catchType,
@@ -3492,7 +3493,7 @@ zv::Val pt_variable_flow_builder_writes(zval *flow);
  * ->processAlwaysIterableForeachScopeWithoutPollute($finalScope): the native
  * body for exactly a MutatingScope, the method otherwise (everything
  * borrowed); UNDEF = pending exception */
-zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames);
+zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames, bool boundArrayKeys = false);
 zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef);
 zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName);
 zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName);

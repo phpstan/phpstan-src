@@ -9292,9 +9292,9 @@ public:
 	}
 
 	/* (twin 4893) */
-	zv::Val generalizeWith(zend_object *otherScope, HashTable *writableVariableNames)
+	zv::Val generalizeWith(zend_object *otherScope, HashTable *writableVariableNames, bool boundArrayKeys = false)
 	{
-		zv::Val generalized = generalizeWithVariableState(otherScope, writableVariableNames);
+		zv::Val generalized = generalizeWithVariableState(otherScope, writableVariableNames, boundArrayKeys);
 		if (UNEXPECTED(generalized.isUndef())) return zv::Val();
 		zend_object *generalizedObject = requireObject(generalized, "addTemplateArgumentConstraints");
 		if (UNEXPECTED(generalizedObject == NULL)) return zv::Val();
@@ -9304,7 +9304,7 @@ public:
 	}
 
 	/* private (twin 4901) */
-	zv::Val generalizeWithVariableState(zend_object *otherScope, HashTable *writableVariableNames)
+	zv::Val generalizeWithVariableState(zend_object *otherScope, HashTable *writableVariableNames, bool boundArrayKeys)
 	{
 		HashTable *otherExpressionTypes = otherTable(otherScope, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
 		if (UNEXPECTED(otherExpressionTypes == NULL || !requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
@@ -9351,11 +9351,11 @@ public:
 		}
 
 		HashTable *writableTable = writableVariableNames == NULL ? NULL : writable.table();
-		zv::Val variableTypeHolders = generalizeVariableTypeHolders(ourExpressionTypes, otherExpressionTypes, writableTable);
+		zv::Val variableTypeHolders = generalizeVariableTypeHolders(ourExpressionTypes, otherExpressionTypes, writableTable, boundArrayKeys);
 		if (UNEXPECTED(variableTypeHolders.isUndef())) return zv::Val();
 		HashTable *otherNativeTypes = otherTable(otherScope, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"));
 		if (UNEXPECTED(otherNativeTypes == NULL || !requireSlot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, "nativeExpressionTypes"))) return zv::Val();
-		zv::Val nativeTypes = generalizeVariableTypeHolders(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), otherNativeTypes, writableTable);
+		zv::Val nativeTypes = generalizeVariableTypeHolders(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), otherNativeTypes, writableTable, boundArrayKeys);
 		if (UNEXPECTED(nativeTypes.isUndef())) return zv::Val();
 
 		CreateArgs a;
@@ -9371,7 +9371,7 @@ public:
 	}
 
 	/* private (twin 4961) */
-	zv::Val generalizeVariableTypeHolders(HashTable *variableTypeHolders, HashTable *otherVariableTypeHolders, HashTable *writableVariableNames)
+	zv::Val generalizeVariableTypeHolders(HashTable *variableTypeHolders, HashTable *otherVariableTypeHolders, HashTable *writableVariableNames, bool boundArrayKeys)
 	{
 		/* uksort(fn ($a, $b) => strlen($a) <=> strlen($b)) — PHP's sort is
 		 * stable, so equal lengths keep their insertion order */
@@ -9462,7 +9462,7 @@ public:
 			 * passes only by narrowing */
 			zv::Val generalizedType = byNarrowingOnly
 				? unionTypes(ourType.raw(), theirType.raw())
-				: generalizeType(ourType.raw(), theirType.raw(), 0);
+				: generalizeType(ourType.raw(), theirType.raw(), 0, boundArrayKeys);
 			if (UNEXPECTED(generalizedType.isUndef())) return zv::Val();
 			bool equal;
 			if (UNEXPECTED(!typeEquals(generalizedType.raw(), ourType.raw(), equal))) return zv::Val();
@@ -9611,7 +9611,7 @@ public:
 	}
 
 	/* private (twin 5011) */
-	zv::Val generalizeType(zval *a, zval *b, zend_long depth)
+	zv::Val generalizeType(zval *a, zval *b, zend_long depth, bool boundArrayKeys = false, bool boundConstantIntegers = false)
 	{
 		bool equal;
 		if (UNEXPECTED(!typeEquals(a, b, equal))) return zv::Val();
@@ -9741,7 +9741,7 @@ public:
 						if (UNEXPECTED(valueA.isUndef())) return zv::Val();
 						zv::Val valueB = pt_type_op(Z_OBJ_P(constantArraysB.raw()), PT_OP_GET_OFFSET_VALUE_TYPE, 1, keyType.raw());
 						if (UNEXPECTED(valueB.isUndef())) return zv::Val();
-						zv::Val generalizedValue = generalizeType(valueA.raw(), valueB.raw(), depth + 1);
+						zv::Val generalizedValue = generalizeType(valueA.raw(), valueB.raw(), depth + 1, boundArrayKeys);
 						if (UNEXPECTED(generalizedValue.isUndef())) return zv::Val();
 						zend_long hasA = typeOpTrinary(Z_OBJ_P(constantArraysA.raw()), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, keyType.raw());
 						if (UNEXPECTED(hasA < 0)) return zv::Val();
@@ -9793,17 +9793,19 @@ public:
 						if (UNEXPECTED(isOversized < 0)) return zv::Val();
 						if (isOversized == PT_TRI_YES) {
 							/* the literal value union outgrew the shape limit */
-							zv::Val generalizedValue = generalizeType(valueTypeA.raw(), valueTypeB.raw(), depth + 1);
+							zv::Val generalizedValue = generalizeType(valueTypeA.raw(), valueTypeB.raw(), depth + 1, boundArrayKeys);
 							if (UNEXPECTED(generalizedValue.isUndef())) return zv::Val();
 							resultValueType = pt_type_combinator_union(1, generalizedValue.raw());
 							if (UNEXPECTED(resultValueType.isUndef())) return zv::Val();
 						}
 					} else {
-						zv::Val generalizedKey = generalizeType(keyTypeA.raw(), keyTypeB.raw(), depth + 1);
+						bool boundKeys = false;
+						if (boundArrayKeys && UNEXPECTED(!neitherYes(constantArraysA.raw(), constantArraysB.raw(), PT_OP_IS_LIST, boundKeys))) return zv::Val();
+						zv::Val generalizedKey = generalizeType(keyTypeA.raw(), keyTypeB.raw(), depth + 1, boundArrayKeys, boundKeys);
 						if (UNEXPECTED(generalizedKey.isUndef())) return zv::Val();
 						resultKeyType = pt_type_combinator_union(1, generalizedKey.raw());
 						if (UNEXPECTED(resultKeyType.isUndef())) return zv::Val();
-						zv::Val generalizedValue = generalizeType(valueTypeA.raw(), valueTypeB.raw(), depth + 1);
+						zv::Val generalizedValue = generalizeType(valueTypeA.raw(), valueTypeB.raw(), depth + 1, boundArrayKeys);
 						if (UNEXPECTED(generalizedValue.isUndef())) return zv::Val();
 						resultValueType = pt_type_combinator_union(1, generalizedValue.raw());
 						if (UNEXPECTED(resultValueType.isUndef())) return zv::Val();
@@ -9894,11 +9896,13 @@ public:
 				if (UNEXPECTED(keyTypeA.isUndef())) return zv::Val();
 				zv::Val keyTypeB = pt_type_op(Z_OBJ_P(generalArraysB.raw()), PT_OP_GET_ITERABLE_KEY_TYPE, 0, NULL);
 				if (UNEXPECTED(keyTypeB.isUndef())) return zv::Val();
-				zv::Val generalizedKey = generalizeType(keyTypeA.raw(), keyTypeB.raw(), depth + 1);
+				bool boundKeys = false;
+				if (boundArrayKeys && UNEXPECTED(!neitherYes(generalArraysA.raw(), generalArraysB.raw(), PT_OP_IS_LIST, boundKeys))) return zv::Val();
+				zv::Val generalizedKey = generalizeType(keyTypeA.raw(), keyTypeB.raw(), depth + 1, boundArrayKeys, boundKeys);
 				if (UNEXPECTED(generalizedKey.isUndef())) return zv::Val();
 				zv::Val resultKeyType = pt_type_combinator_union(1, generalizedKey.raw());
 				if (UNEXPECTED(resultKeyType.isUndef())) return zv::Val();
-				zv::Val generalizedValue = generalizeType(aValueType.raw(), bValueType.raw(), depth + 1);
+				zv::Val generalizedValue = generalizeType(aValueType.raw(), bValueType.raw(), depth + 1, boundArrayKeys);
 				if (UNEXPECTED(generalizedValue.isUndef())) return zv::Val();
 				zv::Val resultValueType = pt_type_combinator_union(1, generalizedValue.raw());
 				if (UNEXPECTED(resultValueType.isUndef())) return zv::Val();
@@ -9998,7 +10002,7 @@ public:
 						newMin = value;
 					}
 
-					if (newMax > max && newMin < min) {
+					if ((newMax > max && newMin < min) || (boundConstantIntegers && (newMax > max || newMin < min))) {
 						zv::Val range = pt_integer_range_from_interval(phpstanturbo::NullableLong::of(newMin), phpstanturbo::NullableLong::of(newMax), 0);
 						if (UNEXPECTED(range.isUndef())) return zv::Val();
 						resultTypes.push(std::move(range));
@@ -10191,6 +10195,20 @@ public:
 		zend_long second = typeOpTrinary(Z_OBJ_P(b), op, 0, NULL);
 		if (UNEXPECTED(second < 0)) return false;
 		out = second == PT_TRI_YES;
+		return true;
+	}
+
+	/* !$a->op()->yes() && !$b->op()->yes(), $b asked only when $a is not
+	 * yes; false = pending exception */
+	[[nodiscard]] static bool neitherYes(zval *a, zval *b, pt_type_op_id op, bool &out)
+	{
+		out = false;
+		zend_long first = typeOpTrinary(Z_OBJ_P(a), op, 0, NULL);
+		if (UNEXPECTED(first < 0)) return false;
+		if (first == PT_TRI_YES) return true;
+		zend_long second = typeOpTrinary(Z_OBJ_P(b), op, 0, NULL);
+		if (UNEXPECTED(second < 0)) return false;
+		out = second != PT_TRI_YES;
 		return true;
 	}
 
@@ -13589,12 +13607,14 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.method(sigs::generalizeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherScope;
 		HashTable *writableVariableNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		bool boundArrayKeys = false;
+		ZEND_PARSE_PARAMETERS_START(1, 3)
 			Z_PARAM_OBJECT_OF_CLASS(otherScope, pt_ce_mutating_scope)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_HT_OR_NULL(writableVariableNames)
+			Z_PARAM_BOOL(boundArrayKeys)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_THIS.generalizeWith(Z_OBJ_P(otherScope), writableVariableNames));
+		PT_RETURN_VAL(PT_THIS.generalizeWith(Z_OBJ_P(otherScope), writableVariableNames, boundArrayKeys));
 	});
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -13907,20 +13927,21 @@ zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope,
  * ...): the native body for exactly a MutatingScope, the method through the
  * class entry for anything else (every argument borrowed) */
 
-zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames)
+zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames, bool boundArrayKeys)
 {
 	if (writableVariableNames != NULL && Z_TYPE_P(writableVariableNames) == IS_NULL) writableVariableNames = NULL;
 	if (PT_MS_INHERITS(scope, "generalizewith") && EXPECTED(otherScope->ce == pt_ce_mutating_scope || instanceof_function(otherScope->ce, pt_ce_mutating_scope)) && EXPECTED(writableVariableNames == NULL || Z_TYPE_P(writableVariableNames) == IS_ARRAY)) {
-		return MutatingScope(scope).generalizeWith(otherScope, writableVariableNames != NULL ? Z_ARRVAL_P(writableVariableNames) : NULL);
+		return MutatingScope(scope).generalizeWith(otherScope, writableVariableNames != NULL ? Z_ARRVAL_P(writableVariableNames) : NULL, boundArrayKeys);
 	}
-	zval argv[2];
+	zval argv[3];
 	ZVAL_OBJ(&argv[0], otherScope);
 	if (writableVariableNames != NULL) {
 		ZVAL_COPY_VALUE(&argv[1], writableVariableNames);
 	} else {
 		ZVAL_NULL(&argv[1]);
 	}
-	return pt_type_call(scope, PT_LC("generalizewith"), 2, argv);
+	ZVAL_BOOL(&argv[2], boundArrayKeys);
+	return pt_type_call(scope, PT_LC("generalizewith"), boundArrayKeys ? 3 : 2, argv);
 }
 
 zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef)

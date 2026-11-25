@@ -136,6 +136,7 @@ public:
 		zv::Val previousPassStorage = zv::Val::null();
 		if (isTopLevel) {
 			zend_long count = 0;
+			zv::Val fallbackScope = zv::Val::null();
 			zval *stmts = ptsh::readNodeProperty(pt_wh_stmts_site, stmt, PT_LC("stmts"));
 			if (UNEXPECTED(stmts == NULL)) return zv::Val();
 			bool bodyIsReplayable;
@@ -197,7 +198,7 @@ public:
 				pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope.raw())); });
 				if (UNEXPECTED(EG(exception))) return zv::Val();
 				if (backEdgeScope.isNull()) {
-					bodyScope = std::move(prevScope);
+					bodyScope = fallbackScope.isNull() ? std::move(prevScope) : std::move(fallbackScope);
 					break;
 				}
 				bodyScope = std::move(backEdgeScope);
@@ -214,7 +215,7 @@ public:
 				if (UNEXPECTED(!ptlh::scopesEqual(bodyScope.raw(), prevScope.raw(), equal))) return zv::Val();
 				if (equal) break;
 
-				if (count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
+				if (!fallbackScope.isNull() || count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
 					zv::Val condFlow = pt_expression_result_variable_flow(passCondResult.raw());
 					if (UNEXPECTED(condFlow.isUndef())) return zv::Val();
 					zv::Val bodyFlowHold;
@@ -223,11 +224,12 @@ public:
 					zv::Args flows{condFlow.raw(), bodyFlow};
 					zv::Val passFlow = pt_variable_flow_sequence(2, flows);
 					if (UNEXPECTED(passFlow.isUndef())) return zv::Val();
-					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw());
-					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+					bool verified;
+					if (UNEXPECTED(!ptlh::generalizePass(bodyScope, prevScope, fallbackScope, count, stmt, passFlow.raw(), verified))) return zv::Val();
+					if (verified) break;
 				}
 				count++;
-			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
+			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT || !fallbackScope.isNull());
 		}
 
 		bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), scope.raw());

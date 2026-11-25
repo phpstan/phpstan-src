@@ -5045,16 +5045,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/**
 	 * @param array<string, true>|null $writableVariableNames variables the loop can write, null when unknown
+	 * @param bool $boundArrayKeys Widen growing constant integer keys of arrays that are not lists to the
+	 *                             range they span instead of an open-ended one. The result is a guess that
+	 *                             another pass over the loop body has to confirm.
 	 */
-	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null): self
+	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null, bool $boundArrayKeys = false): self
 	{
-		return $this->generalizeWithVariableState($otherScope, $writableVariableNames)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
+		return $this->generalizeWithVariableState($otherScope, $writableVariableNames, $boundArrayKeys)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
 	}
 
 	/**
 	 * @param array<string, true>|null $writableVariableNames
 	 */
-	private function generalizeWithVariableState(self $otherScope, ?array $writableVariableNames): self
+	private function generalizeWithVariableState(self $otherScope, ?array $writableVariableNames, bool $boundArrayKeys): self
 	{
 		if ($writableVariableNames !== null) {
 			// a reference created before the loop lets the loop write a variable it does not name
@@ -5079,11 +5082,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->expressionTypes,
 			$otherScope->expressionTypes,
 			$writableVariableNames,
+			$boundArrayKeys,
 		);
 		$nativeTypes = $this->generalizeVariableTypeHolders(
 			$this->nativeExpressionTypes,
 			$otherScope->nativeExpressionTypes,
 			$writableVariableNames,
+			$boundArrayKeys,
 		);
 
 		return $this->scopeFactory->create(
@@ -5118,6 +5123,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		array $variableTypeHolders,
 		array $otherVariableTypeHolders,
 		?array $writableVariableNames,
+		bool $boundArrayKeys,
 	): array
 	{
 		uksort($variableTypeHolders, static fn (string $exprA, string $exprB): int => strlen($exprA) <=> strlen($exprB));
@@ -5147,7 +5153,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				// the loop does not write this variable, its types differ between passes only by narrowing
 				$generalizedType = TypeCombinator::union($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType());
 			} else {
-				$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
+				$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0, $boundArrayKeys);
 			}
 			if (
 				!$generalizedType->equals($variableTypeHolder->getType())
@@ -5189,7 +5195,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $types;
 	}
 
-	private function generalizeType(Type $a, Type $b, int $depth): Type
+	/**
+	 * @param bool $boundConstantIntegers Widen growing constant integers to the range they span instead of an
+	 *                                    open-ended one - for keys of arrays that are not lists when
+	 *                                    $boundArrayKeys is on. List keys grow through appends one by one,
+	 *                                    the guess would only cost a pass to refute.
+	 */
+	private function generalizeType(Type $a, Type $b, int $depth, bool $boundArrayKeys = false, bool $boundConstantIntegers = false): Type
 	{
 		if ($a->equals($b)) {
 			return $a;
@@ -5301,6 +5313,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 								$constantArraysA->getOffsetValueType($keyType),
 								$constantArraysB->getOffsetValueType($keyType),
 								$depth + 1,
+								$boundArrayKeys,
 							),
 							!$constantArraysA->hasOffsetValueType($keyType)->and($constantArraysB->hasOffsetValueType($keyType))->negate()->no(),
 						);
@@ -5337,11 +5350,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 							// deeply/widely nested value): fall back to generalizing
 							// it into a bounded range-keyed array rather than
 							// keeping an oversized literal shape.
-							$resultValueType = TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1));
+							$resultValueType = TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1, $boundArrayKeys));
 						}
 					} else {
-						$resultKeyType = TypeCombinator::union($this->generalizeType($constantArraysA->getIterableKeyType(), $constantArraysB->getIterableKeyType(), $depth + 1));
-						$resultValueType = TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1));
+						$resultKeyType = TypeCombinator::union($this->generalizeType(
+							$constantArraysA->getIterableKeyType(),
+							$constantArraysB->getIterableKeyType(),
+							$depth + 1,
+							$boundArrayKeys,
+							$boundArrayKeys && !$constantArraysA->isList()->yes() && !$constantArraysB->isList()->yes(),
+						));
+						$resultValueType = TypeCombinator::union($this->generalizeType($constantArraysA->getIterableValueType(), $constantArraysB->getIterableValueType(), $depth + 1, $boundArrayKeys));
 					}
 					$resultType = new ArrayType(
 						$resultKeyType,
@@ -5397,8 +5416,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 
 				$resultType = new ArrayType(
-					TypeCombinator::union($this->generalizeType($generalArraysA->getIterableKeyType(), $generalArraysB->getIterableKeyType(), $depth + 1)),
-					TypeCombinator::union($this->generalizeType($aValueType, $bValueType, $depth + 1)),
+					TypeCombinator::union($this->generalizeType(
+						$generalArraysA->getIterableKeyType(),
+						$generalArraysB->getIterableKeyType(),
+						$depth + 1,
+						$boundArrayKeys,
+						$boundArrayKeys && !$generalArraysA->isList()->yes() && !$generalArraysB->isList()->yes(),
+					)),
+					TypeCombinator::union($this->generalizeType($aValueType, $bValueType, $depth + 1, $boundArrayKeys)),
 				);
 
 				$accessories = [];
@@ -5468,7 +5493,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$newMin = $int->getValue();
 					}
 
-					if ($newMax > $max && $newMin < $min) {
+					if (($newMax > $max && $newMin < $min) || ($boundConstantIntegers && ($newMax > $max || $newMin < $min))) {
 						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
 					} elseif ($newMax > $max) {
 						$resultTypes[] = IntegerRangeType::fromInterval($min, null);

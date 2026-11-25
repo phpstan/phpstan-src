@@ -74,6 +74,7 @@ public:
 		zv::Val finalScope = zv::Val::null();
 		zv::Val bodyScope = zv::Val::copyOf(zv::Ref(scope));
 		zend_long count = 0;
+		zv::Val fallbackScope = zv::Val::null();
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
 
@@ -149,7 +150,7 @@ public:
 						replayPassResult = zv::Val::copyOf(bodyScopeResult.ref());
 					}
 					if (backEdgeScope.isNull()) {
-						bodyScope = std::move(prevScope);
+						bodyScope = fallbackScope.isNull() ? std::move(prevScope) : std::move(fallbackScope);
 						brokeOut = true;
 						return;
 					}
@@ -173,7 +174,7 @@ public:
 				if (UNEXPECTED(!ptlh::scopesEqual(bodyScope.raw(), prevScope.raw(), equal))) return zv::Val();
 				if (equal) break;
 
-				if (count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
+				if (!fallbackScope.isNull() || count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
 					zv::Val bodyFlowHold;
 					zval *bodyFlow = pt_internal_statement_result_variable_flow(bodyScopeResult.raw(), bodyFlowHold);
 					if (UNEXPECTED(bodyFlow == NULL)) return zv::Val();
@@ -182,11 +183,12 @@ public:
 					zv::Args flows{bodyFlow, condFlow.raw()};
 					zv::Val passFlow = pt_variable_flow_sequence(2, flows);
 					if (UNEXPECTED(passFlow.isUndef())) return zv::Val();
-					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw());
-					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+					bool verified;
+					if (UNEXPECTED(!ptlh::generalizePass(bodyScope, prevScope, fallbackScope, count, stmt, passFlow.raw(), verified))) return zv::Val();
+					if (verified) break;
 				}
 				count++;
-			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
+			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT || !fallbackScope.isNull());
 
 			bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), scope);
 			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();

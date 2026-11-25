@@ -205,6 +205,59 @@ inline uint32_t countOf(zval *list)
 	return pt_mutating_scope_equals(Z_OBJ_P(a), Z_OBJ_P(b), out);
 }
 
+/* the end of a convergence pass whose exit differs from its entry, in the
+ * loop handlers' PHP twins:
+ *
+ *   if ($fallbackScope !== null) {
+ *       $bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect(...))->equals($prevScope) ? $prevScope : $fallbackScope;
+ *       break;
+ *   }
+ *   if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+ *       $writableVariableNames = LoopWrittenVariableNames::collect(...);
+ *       $generalizedScope = $prevScope->generalizeWith($bodyScope, $writableVariableNames);
+ *       if ($count === NodeScopeResolver::LOOP_SCOPE_ITERATIONS - 1) {
+ *           $boundedScope = $prevScope->generalizeWith($bodyScope, $writableVariableNames, true);
+ *           if (!$boundedScope->equals($generalizedScope)) {
+ *               $fallbackScope = $generalizedScope;
+ *               $generalizedScope = $boundedScope;
+ *           }
+ *       }
+ *       $bodyScope = $generalizedScope;
+ *   }
+ *
+ * fallbackScope is IS_NULL while no bounded guess awaits its verification
+ * pass. Sets breakOut for the break; false = pending exception */
+[[nodiscard]] inline bool generalizePass(zv::Val &bodyScope, zv::Val &prevScope, zv::Val &fallbackScope, zend_long count, zval *stmt, zval *passFlow, bool &breakOut)
+{
+	breakOut = false;
+	if (!fallbackScope.isNull()) {
+		zv::Val checked = generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow);
+		if (UNEXPECTED(checked.isUndef())) return false;
+		bool equal;
+		if (UNEXPECTED(!scopesEqual(checked.raw(), prevScope.raw(), equal))) return false;
+		bodyScope = equal ? std::move(prevScope) : std::move(fallbackScope);
+		breakOut = true;
+		return true;
+	}
+	if (count < PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) return true;
+	zv::Val names = loopWrittenVariableNames(stmt, passFlow);
+	if (UNEXPECTED(names.isUndef())) return false;
+	zv::Val generalized = pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope.raw()), Z_OBJ_P(bodyScope.raw()), names.raw());
+	if (UNEXPECTED(generalized.isUndef())) return false;
+	if (count == PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT - 1) {
+		zv::Val bounded = pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope.raw()), Z_OBJ_P(bodyScope.raw()), names.raw(), true);
+		if (UNEXPECTED(bounded.isUndef())) return false;
+		bool equal;
+		if (UNEXPECTED(!scopesEqual(bounded.raw(), generalized.raw(), equal))) return false;
+		if (!equal) {
+			fallbackScope = std::move(generalized);
+			generalized = std::move(bounded);
+		}
+	}
+	bodyScope = std::move(generalized);
+	return true;
+}
+
 /* the twin's VariableWrite::KIND_* values the handlers pass */
 inline constexpr zend_long PT_LH_WRITE_KIND_FOREACH_VALUE = 9;
 inline constexpr zend_long PT_LH_WRITE_KIND_FOREACH_KEY = 10;

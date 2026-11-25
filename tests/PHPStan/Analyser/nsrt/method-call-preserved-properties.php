@@ -460,7 +460,7 @@ trait WritesBar
 
 }
 
-/** A trait's methods are not in the using class's code. */
+/** The code of a trait in an analysed file is read like the using class's own, so its private method writes only $bar. */
 final class UsesTrait
 {
 
@@ -475,8 +475,8 @@ final class UsesTrait
 		$this->foo = true;
 		$this->bar = true;
 		$this->writeBar();
-		assertType('bool', $this->foo);
-		assertType('bool', $this->bar);
+		assertType('true', $this->foo);
+		assertType('false', $this->bar);
 	}
 
 }
@@ -503,7 +503,7 @@ abstract class TraitRouteParent
 
 }
 
-/** A trait's code can write any property of the class, so a class using one keeps types across calls like any other class. */
+/** A class using a trait: the parent's code can run post(), which assigns $order too, so reset() leaves $order with the type it assigns or the one post() assigns. */
 class TraitRoute extends TraitRouteParent
 {
 
@@ -612,6 +612,105 @@ final class FinalProtectedChild extends ProtectedParent
 		$this->log();
 		assertType('int', $this->declaredByParent);
 		assertType('1', $this->childOnly);
+	}
+
+	private function log(): void
+	{
+		\error_log('x');
+	}
+
+}
+
+trait ResetsOrder
+{
+
+	private ?\stdClass $traitProperty = null;
+
+	private function resetOrder(): void
+	{
+		$this->order = null;
+		$this->traitProperty = null;
+	}
+
+	public function log(): void
+	{
+		echo 'x';
+	}
+
+}
+
+/** The code of a trait in an analysed file is read like the class's own. */
+final class UsesAnalysedTrait
+{
+
+	use ResetsOrder;
+
+	private ?\stdClass $order = null;
+
+	private int $count = 0;
+
+	public function run(): void
+	{
+		$this->order = new \stdClass();
+		$this->traitProperty = new \stdClass();
+		$this->count = 1;
+		$this->resetOrder();
+		assertType('null', $this->order);
+		assertType('null', $this->traitProperty);
+		assertType('1', $this->count);
+		$this->log();
+		assertType('null', $this->order);
+		assertType('1', $this->count);
+	}
+
+}
+
+/** A trait used with adaptations is not read. */
+final class UsesAdaptedTrait
+{
+
+	use ResetsOrder {
+		resetOrder as protected resetAlias;
+	}
+
+	private ?\stdClass $order = null;
+
+	private int $count = 0;
+
+	public function run(): void
+	{
+		$this->order = new \stdClass();
+		$this->count = 1;
+		$this->resetOrder();
+		assertType('stdClass|null', $this->order);
+		assertType('int', $this->count);
+	}
+
+}
+
+trait MagicGet
+{
+
+	public function __get(string $name): mixed
+	{
+		return null;
+	}
+
+}
+
+/** A trait whose code nothing summarises leaves the class as before. */
+final class UsesMagicTrait
+{
+
+	use MagicGet;
+
+	private int $count = 0;
+
+	public function run(): void
+	{
+		$this->count = 1;
+		$this->log();
+		assertType('int', $this->count);
 	}
 
 	private function log(): void

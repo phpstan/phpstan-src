@@ -21,9 +21,10 @@ use function is_string;
  * class's methods: the properties of $this no code the call can run writes,
  * read from the class's own code only (see PreservedPropertiesClassScan).
  *
- * Traits, interfaces and calls in closures (which can be bound to another
- * object) get nothing, so every property is forgotten there as before. Files
- * outside the analysed paths are not parsed by the rich parser at all.
+ * Interfaces and calls in traits and closures (which can be bound to another
+ * object) get nothing, so every property is forgotten there as before. A trait
+ * gets its scan, which the classes using it merge in. Files outside the analysed
+ * paths are not parsed by the rich parser at all, so a trait there has no scan.
  */
 #[AutowiredService]
 final class PreservedPropertiesVisitor extends NodeVisitorAbstract
@@ -33,6 +34,9 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 
 	/** Attached to each method of a class: ClassLikeHandler walks the methods by it, callees before their callers. */
 	public const RANK_ATTRIBUTE_NAME = 'calleesFirstRank';
+
+	/** Attached to each trait: its PreservedPropertiesClassScan, merged into the scans of the classes using it. */
+	public const TRAIT_SCAN_ATTRIBUTE_NAME = 'preservedPropertiesTraitScan';
 
 	private ?PreservedPropertiesClassScan $scan = null;
 
@@ -106,8 +110,17 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 	public function leaveNode(Node $node): ?Node
 	{
 		if ($node instanceof Node\Stmt\ClassLike) {
-			$this->scan?->annotateCalls();
-			$this->scan?->rankMethods($node);
+			$scan = $this->scan;
+			if ($node instanceof Node\Stmt\Trait_) {
+				$node->setAttribute(self::TRAIT_SCAN_ATTRIBUTE_NAME, $scan);
+			} elseif ($scan !== null) {
+				if ($scan->traitUses !== [] && !$scan->unsupported) {
+					$scan->deferCalls();
+				} else {
+					$scan->annotateCalls();
+				}
+				$scan->rankMethods($node);
+			}
 			$this->scan = array_pop($this->outerScans);
 			return null;
 		}
@@ -154,15 +167,17 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 				false,
 				($node->namespacedName ?? null)?->toLowerString(),
 			);
+		} elseif ($node instanceof Node\Stmt\Trait_) {
+			// its methods run in the classes that use it, which tell whether they are final or have a parent
+			$scan = new PreservedPropertiesClassScan(false, false, null);
 		} else {
-			// a trait's methods run in the classes that use it, an interface has no code
+			// an interface has no code
 			return null;
 		}
 
 		foreach ($node->stmts as $stmt) {
 			if ($stmt instanceof Node\Stmt\TraitUse) {
-				// the trait's code can write any property, so not all the class's writes are seen
-				$scan->unsupported = true;
+				$scan->traitUses[] = $stmt;
 			} elseif ($stmt instanceof Node\Stmt\Property) {
 				if ($stmt->isStatic()) {
 					continue;

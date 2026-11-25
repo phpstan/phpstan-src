@@ -15,6 +15,7 @@ use function array_pop;
 use function count;
 use function in_array;
 use function is_string;
+use function strtolower;
 
 /**
  * Attaches PreservedProperties to each method and static call on $this in a
@@ -37,6 +38,9 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 
 	/** Attached to each trait: its PreservedPropertiesClassScan, merged into the scans of the classes using it. */
 	public const TRAIT_SCAN_ATTRIBUTE_NAME = 'preservedPropertiesTraitScan';
+
+	/** Attached to a method only the class's own code calls: the lowercase names of the methods it is only ever run from (see PreservedPropertiesClassScan::annotateOnlyCalledFrom()). */
+	public const ONLY_CALLED_FROM_ATTRIBUTE_NAME = 'onlyCalledFrom';
 
 	private ?PreservedPropertiesClassScan $scan = null;
 
@@ -71,6 +75,12 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 
 		$scan = $this->scan;
 		if ($scan === null) {
+			return null;
+		}
+
+		if ($node instanceof Node\Scalar\String_) {
+			// may name a method in a callable
+			$scan->calledElsewhere[strtolower($node->value)] = true;
 			return null;
 		}
 
@@ -120,6 +130,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 					$scan->annotateCalls();
 				}
 				$scan->rankMethods($node);
+				$scan->annotateOnlyCalledFrom($node);
 			}
 			$this->scan = array_pop($this->outerScans);
 			return null;
@@ -233,6 +244,16 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 
 	private function enterBodyNode(PreservedPropertiesClassScan $scan, Node $node): void
 	{
+		if (
+			$node instanceof Expr\Array_
+			&& count($node->items) === 2
+			&& !$node->items[1]->value instanceof Node\Scalar\String_
+			&& $this->isThisOrSelf($node->items[0]->value)
+		) {
+			// a callable of a method whose name is not written here
+			$scan->hasDynamicCalls = true;
+		}
+
 		if ($node instanceof Expr\Variable && $node->name === 'this') {
 			if (!$this->containedThis->offsetExists($node)) {
 				// passed out, assigned or used as a callable: other code can call any method on it
@@ -277,7 +298,14 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 			} else {
 				$this->writeArgs($scan, $node->args, true);
 			}
+			if (!$node->name instanceof Identifier) {
+				$scan->hasDynamicCalls = true;
+			}
 			if (!$this->isThis($node->var)) {
+				if ($node->name instanceof Identifier) {
+					// another object of the class can call its private methods too
+					$scan->calledElsewhere[$node->name->toLowerString()] = true;
+				}
 				// another object's method can do anything a call from outside the class can
 				$this->escape($scan);
 				return;
@@ -415,11 +443,17 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 			$kind = PreservedPropertiesClassScan::CALL_THIS;
 		} else {
 			// '$class::m()' can name this class or an ancestor and run any of their methods with this $this
+			if ($node->name instanceof Identifier) {
+				$scan->calledElsewhere[$node->name->toLowerString()] = true;
+			} else {
+				$scan->hasDynamicCalls = true;
+			}
 			$this->markUnknown($scan);
 			return;
 		}
 
 		if (!$node->name instanceof Identifier) {
+			$scan->hasDynamicCalls = true;
 			$this->markUnknown($scan);
 			return;
 		}
@@ -444,9 +478,12 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 		}
 
 		if ($kind === PreservedPropertiesClassScan::CALL_OUTSIDE) {
+			$scan->calledElsewhere[$methodName] = true;
 			$this->escape($scan);
 			return;
 		}
+
+		$scan->callers[$methodName][$scan->closureDepth > 0 ? PreservedPropertiesClassScan::CLOSURES : (string) $scan->currentMethod] = true;
 
 		$scan->summaries[(string) $scan->currentMethod]['calls'][] = [$kind, $methodName];
 		if ($scan->closureDepth <= 0) {
@@ -686,6 +723,19 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 	private function isThis(Node $node): bool
 	{
 		return $node instanceof Expr\Variable && $node->name === 'this';
+	}
+
+	private function isThisOrSelf(Expr $expr): bool
+	{
+		if ($this->isThis($expr) || $expr instanceof Node\Scalar\MagicConst\Class_) {
+			return true;
+		}
+
+		return $expr instanceof Expr\ClassConstFetch
+			&& $expr->class instanceof Name
+			&& in_array($expr->class->toLowerString(), ['self', 'static'], true)
+			&& $expr->name instanceof Identifier
+			&& $expr->name->toLowerString() === 'class';
 	}
 
 	private function containThis(Node $node): void

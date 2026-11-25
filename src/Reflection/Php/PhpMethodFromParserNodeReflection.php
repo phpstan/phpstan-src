@@ -4,6 +4,7 @@ namespace PHPStan\Reflection\Php;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Parser\PreservedPropertiesVisitor;
 use PHPStan\PhpDoc\ResolvedPhpDocBlock;
 use PHPStan\Reflection\Assertions;
 use PHPStan\Reflection\AttributeReflection;
@@ -287,6 +288,18 @@ final class PhpMethodFromParserNodeReflection extends PhpFunctionFromParserNodeR
 	public function isConstructor(): bool
 	{
 		return $this->isConstructor;
+	}
+
+	/**
+	 * Lowercase names of the methods of the class this method is only ever run from,
+	 * null when other code can call it too.
+	 *
+	 * @internal
+	 * @return non-empty-list<string>|null
+	 */
+	public function getOnlyCalledFrom(): ?array
+	{
+		return $this->getClassMethod()->getAttribute(PreservedPropertiesVisitor::ONLY_CALLED_FROM_ATTRIBUTE_NAME);
 	}
 
 	public function hasSideEffects(): TrinaryLogic

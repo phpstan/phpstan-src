@@ -133,6 +133,14 @@ final class ReadOnlyPropertyAssignRule implements Rule
 				continue;
 			}
 
+			if (
+				$this->constructorsHelper->isOnlyCalledFromConstructors($scopeClassReflection, $scopeMethod)
+				&& TypeUtils::findThisType($scope->getType($propertyFetch->var)) !== null
+			) {
+				// a method the constructor calls initializes the property
+				continue;
+			}
+
 			$errors[] = RuleErrorBuilder::message(sprintf('Readonly property %s::$%s is assigned outside of the constructor.', $declaringClass->getDisplayName(), $propertyReflection->getName()))
 				->line($propertyFetch->name->getStartLine())
 				->identifier('property.readOnlyAssignNotInConstructor')

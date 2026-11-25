@@ -2401,17 +2401,16 @@ public:
 
 		/* no value of the slots' types names a method */
 		{
-			zv::Val objectWithoutClass = objectWithoutClassType();
-			zv::Val string = stringType();
-			if (UNEXPECTED(objectWithoutClass.isUndef() || string.isUndef())) return zv::Val();
-			zv::Val expected = combinator2(PT_LC("union"), objectWithoutClass.raw(), string.raw());
-			if (UNEXPECTED(expected.isUndef())) return zv::Val();
-			zend_long covers = isSuperTypeOfValue(expected.raw(), classOrObject.raw());
-			if (UNEXPECTED(covers < 0)) return zv::Val();
-			if (covers == PT_TRI_NO) return zv::Val(zv::Arr::empty());
-			covers = isSuperTypeOfValue(string.raw(), method.raw());
-			if (UNEXPECTED(covers < 0)) return zv::Val();
-			if (covers == PT_TRI_NO) return zv::Val(zv::Arr::empty());
+			zend_long isObject = pt_type_call_trinary(Z_OBJ_P(classOrObject.raw()), PT_LC("isobject"), 0, NULL);
+			if (UNEXPECTED(isObject < 0)) return zv::Val();
+			if (isObject == PT_TRI_NO) {
+				zend_long isString = pt_type_call_trinary(Z_OBJ_P(classOrObject.raw()), PT_LC("isstring"), 0, NULL);
+				if (UNEXPECTED(isString < 0)) return zv::Val();
+				if (isString == PT_TRI_NO) return zv::Val(zv::Arr::empty());
+			}
+			zend_long isMethodString = pt_type_call_trinary(Z_OBJ_P(method.raw()), PT_LC("isstring"), 0, NULL);
+			if (UNEXPECTED(isMethodString < 0)) return zv::Val();
+			if (isMethodString == PT_TRI_NO) return zv::Val(zv::Arr::empty());
 		}
 
 		/* [$classOrObject, $methods] = [$classOrObject, $method] */

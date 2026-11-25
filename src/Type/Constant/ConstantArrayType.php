@@ -1192,8 +1192,8 @@ class ConstantArrayType implements Type
 
 		// no value of the slots' types names a method
 		if (
-			TypeCombinator::union(new ObjectWithoutClassType(), new StringType())->isSuperTypeOf($classOrObject)->no()
-			|| (new StringType())->isSuperTypeOf($method)->no()
+			($classOrObject->isObject()->no() && $classOrObject->isString()->no())
+			|| $method->isString()->no()
 		) {
 			return [];
 		}

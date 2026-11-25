@@ -29,6 +29,10 @@ final class FinalOther
  * @param list<int> $list
  * @param list{int, int} $pair
  * @param array{object, string} $objectPair
+ * @param array{int|object, string} $maybeObjectPair
+ * @param array{int|string, string} $maybeStringPair
+ * @param array{object, int|string} $maybeMethodPair
+ * @param array{object, int} $intMethodPair
  */
 function test(
 	\stdClass $std,
@@ -40,6 +44,10 @@ function test(
 	array $list,
 	array $pair,
 	array $objectPair,
+	array $maybeObjectPair,
+	array $maybeStringPair,
+	array $maybeMethodPair,
+	array $intMethodPair,
 ): void
 {
 	// a subclass of stdClass may implement Traversable
@@ -69,5 +77,17 @@ function test(
 	}
 	if (is_callable($objectPair)) {
 		assertType('list{object, string}&callable(): mixed', $objectPair);
+	}
+	if (is_callable($maybeObjectPair)) {
+		assertType('list{int|object, string}&callable(): mixed', $maybeObjectPair);
+	}
+	if (is_callable($maybeStringPair)) {
+		assertType('list{int|string, string}&callable(): mixed', $maybeStringPair);
+	}
+	if (is_callable($maybeMethodPair)) {
+		assertType('list{object, int|string}&callable(): mixed', $maybeMethodPair);
+	}
+	if (is_callable($intMethodPair)) {
+		assertType('*NEVER*', $intMethodPair);
 	}
 }

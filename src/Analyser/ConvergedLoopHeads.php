@@ -23,19 +23,45 @@ final class ConvergedLoopHeads
 	/** @var array<int, MutatingScope> */
 	private array $heads = [];
 
+	/**
+	 * The last entry each loop was warm-started from and the warm entry it gave
+	 * with the current head - an enclosing loop's later passes mostly bring the
+	 * same entry again.
+	 *
+	 * @var array<int, array{MutatingScope, MutatingScope}>
+	 */
+	private array $warmEntries = [];
+
 	public function warmStart(Node $loop, MutatingScope $entryScope): MutatingScope
 	{
-		$head = $this->heads[spl_object_id($loop)] ?? null;
+		$id = spl_object_id($loop);
+		$head = $this->heads[$id] ?? null;
 		if ($head === null) {
 			return $entryScope;
 		}
 
-		return $entryScope->mergeWith($head);
+		$warmEntry = $this->warmEntries[$id] ?? null;
+		if ($warmEntry !== null && ($warmEntry[0] === $entryScope || $warmEntry[0]->equals($entryScope))) {
+			return $warmEntry[1];
+		}
+
+		$warmScope = $entryScope->mergeWith($head);
+		$this->warmEntries[$id] = [$entryScope, $warmScope];
+
+		return $warmScope;
 	}
 
 	public function record(Node $loop, MutatingScope $head): void
 	{
-		$this->heads[spl_object_id($loop)] = $head;
+		$id = spl_object_id($loop);
+		$previous = $this->heads[$id] ?? null;
+		// an unchanged head keeps the warm entry derived from it
+		if ($previous !== null && ($previous === $head || $previous->equals($head))) {
+			return;
+		}
+
+		$this->heads[$id] = $head;
+		unset($this->warmEntries[$id]);
 	}
 
 }

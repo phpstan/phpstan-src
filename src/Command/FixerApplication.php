@@ -820,7 +820,7 @@ final class FixerApplication
 
 				if ($progressBar->getMaxSteps() === 0) {
 					$progressBar->setFormat('file_download');
-					$progressBar->setMessage(sprintf('%.2f MB', $downloadTotal / 1000000), 'fileSize');
+					$progressBar->setMessage(sprintf('%.2f MB', $downloadTotal / 1_000_000), 'fileSize');
 					$progressBar->start($downloadTotal);
 				}
 

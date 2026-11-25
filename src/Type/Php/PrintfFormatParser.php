@@ -19,7 +19,7 @@ use function substr;
 final class PrintfFormatParser
 {
 
-	private const INT_MAX = 2147483647;
+	private const INT_MAX = 2_147_483_647;
 
 	private const SPECIFIERS = 'sdueEfFgGcoxXb%';
 

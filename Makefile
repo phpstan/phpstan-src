@@ -177,6 +177,9 @@ cs-fix: cs-install
 phpstan:
 	php bin/phpstan clear-result-cache -q && php -d memory_limit=512M bin/phpstan -v
 
+structarmed:
+	php vendor/bin/structarmed analyse
+
 phpstan-result-cache:
 	php -d memory_limit=512M bin/phpstan
 

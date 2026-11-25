@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "412d812c1c579d99f76d8b74d9bdec6f",
+  "content-hash": "844b6bd8d2ba34e416f84219253a7536",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -3685,6 +3685,155 @@
     }
   ],
   "packages-dev": [
+    {
+      "name": "boundwize/jsonrecast",
+      "version": "1.0.37",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/boundwize/jsonrecast.git",
+        "reference": "d37e0d808cd5c0a8f6e5d6f36ea363202950e399"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/boundwize/jsonrecast/zipball/d37e0d808cd5c0a8f6e5d6f36ea363202950e399",
+        "reference": "d37e0d808cd5c0a8f6e5d6f36ea363202950e399",
+        "shasum": ""
+      },
+      "require": {
+        "php": "^8.2"
+      },
+      "require-dev": {
+        "boundwize/pyrameter": "^0.5",
+        "boundwize/structarmed": "^0.19",
+        "laminas/laminas-coding-standard": "^3.1",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^11.5",
+        "rector/rector": "^2.4"
+      },
+      "type": "library",
+      "extra": {
+        "branch-alias": {
+          "dev-main": "1.x-dev"
+        }
+      },
+      "autoload": {
+        "psr-4": {
+          "Boundwize\\JsonRecast\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Abdul Malik Ikhsan",
+          "email": "samsonasik@gmail.com",
+          "homepage": "http://samsonasik.wordpress.com",
+          "role": "Developer"
+        }
+      ],
+      "description": "Editable JSON AST with visitor traversal and formatting-preserving printing.",
+      "homepage": "https://github.com/boundwize/jsonrecast",
+      "keywords": [
+        "ast",
+        "formatting",
+        "json",
+        "parser",
+        "refactoring"
+      ],
+      "support": {
+        "issues": "https://github.com/boundwize/jsonrecast/issues",
+        "source": "https://github.com/boundwize/jsonrecast/tree/1.0.37"
+      },
+      "funding": [
+        {
+          "url": "https://github.com/samsonasik",
+          "type": "github"
+        }
+      ],
+      "time": "2026-10-10T08:53:11+00:00",
+      "published-time": "2026-10-10T08:54:08+00:00"
+    },
+    {
+      "name": "boundwize/structarmed",
+      "version": "0.21.27",
+      "source": {
+        "type": "git",
+        "url": "https://github.com/boundwize/structarmed.git",
+        "reference": "007ea38073b64b49b7f906b78515086f356c6b8f"
+      },
+      "dist": {
+        "type": "zip",
+        "url": "https://api.github.com/repos/boundwize/structarmed/zipball/007ea38073b64b49b7f906b78515086f356c6b8f",
+        "reference": "007ea38073b64b49b7f906b78515086f356c6b8f",
+        "shasum": ""
+      },
+      "require": {
+        "boundwize/jsonrecast": "^1.0",
+        "composer-runtime-api": "^2.0",
+        "fidry/cpu-core-counter": "^1.4",
+        "nikic/php-parser": "^5.9",
+        "php": "^8.2"
+      },
+      "require-dev": {
+        "boundwize/pyrameter": "^0.5",
+        "laminas/laminas-coding-standard": "^3.1",
+        "phpstan/phpstan": "^2.2",
+        "phpunit/phpunit": "^11.5",
+        "rector/rector": "dev-main"
+      },
+      "bin": [
+        "bin/structarmed"
+      ],
+      "type": "library",
+      "autoload": {
+        "psr-4": {
+          "Boundwize\\StructArmed\\": "src/"
+        }
+      },
+      "notification-url": "https://packagist.org/downloads/",
+      "license": [
+        "MIT"
+      ],
+      "authors": [
+        {
+          "name": "Abdul Malik Ikhsan",
+          "email": "samsonasik@gmail.com",
+          "homepage": "http://samsonasik.wordpress.com",
+          "role": "Developer"
+        }
+      ],
+      "description": "Configurable PHP architecture guards — define your layers and rules, then keep them enforced",
+      "homepage": "https://github.com/boundwize/structarmed",
+      "keywords": [
+        "Enforcement",
+        "analysis",
+        "architecture",
+        "ddd",
+        "dev",
+        "layer",
+        "mvc",
+        "psr1",
+        "psr12",
+        "psr15",
+        "psr4",
+        "static analysis",
+        "yagni"
+      ],
+      "support": {
+        "issues": "https://github.com/boundwize/structarmed/issues",
+        "source": "https://github.com/boundwize/structarmed/tree/0.21.27"
+      },
+      "funding": [
+        {
+          "url": "https://github.com/samsonasik",
+          "type": "github"
+        }
+      ],
+      "time": "2026-11-18T17:16:38+00:00",
+      "published-time": "2026-11-18T17:17:00+00:00"
+    },
     {
       "name": "cweagans/composer-patches",
       "version": "1.7.3",

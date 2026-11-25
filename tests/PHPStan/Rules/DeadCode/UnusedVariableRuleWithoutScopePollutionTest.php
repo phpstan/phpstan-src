@@ -33,4 +33,13 @@ class UnusedVariableRuleWithoutScopePollutionTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/unused-variable-scope-pollution.php'], []);
 	}
 
+	public function testBug15394(): void
+	{
+		// a declare body is not a block - it always runs, whatever polluteScopeWithBlock says
+		$this->analyse([__DIR__ . '/data/bug-15394.php'], [
+			['Value assigned to variable $foo is never read before being overwritten.', 14],
+			['Variable $foo is never read.', 24],
+		]);
+	}
+
 }

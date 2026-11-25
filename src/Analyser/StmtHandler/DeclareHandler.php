@@ -39,11 +39,6 @@ final class DeclareHandler implements StmtHandler
 	): InternalStatementResult
 	{
 		$dependencies = [];
-		$hasYield = false;
-		$throwPoints = [];
-		$impurePoints = [];
-		$alwaysTerminating = false;
-		$exitPoints = [];
 		foreach ($stmt->declares as $declare) {
 			$nodeScopeResolver->callNodeCallback($nodeCallback, $declare, $scope, $storage);
 			// the value is a constant scalar - process it so its result is stored
@@ -60,18 +55,17 @@ final class DeclareHandler implements StmtHandler
 			$scope = $scope->enterDeclareStrictTypes();
 		}
 
-		if ($stmt->stmts !== null) {
-			$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
-			$dependencies[] = $result->getDependencies();
-			$scope = $result->getScope();
-			$hasYield = $result->hasYield();
-			$throwPoints = $result->getThrowPoints();
-			$impurePoints = $result->getImpurePoints();
-			$alwaysTerminating = $result->isAlwaysTerminating();
-			$exitPoints = $result->getExitPoints();
+		if ($stmt->stmts === null) {
+			return new InternalStatementResult($scope, hasYield: false, isAlwaysTerminating: false, exitPoints: [], throwPoints: [], impurePoints: [], dependencies: Dependencies::merge(...$dependencies));
 		}
 
-		return new InternalStatementResult($scope, hasYield: $hasYield, isAlwaysTerminating: $alwaysTerminating, exitPoints: $exitPoints, throwPoints: $throwPoints, impurePoints: $impurePoints, dependencies: Dependencies::merge(...$dependencies));
+		// the declare body always runs, in the enclosing scope - unlike a block,
+		// polluteScopeWithBlock does not apply, so the body's result is the
+		// statement's result, including its variable flow
+		$result = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $scope, $storage, $nodeCallback, $context);
+		$dependencies[] = $result->getDependencies();
+
+		return $result->withDependencies(Dependencies::merge(...$dependencies));
 	}
 
 }

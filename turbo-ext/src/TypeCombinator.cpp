@@ -4012,7 +4012,23 @@ public:
 			PT_FAIL_IF_UNDEF(hasOffset);
 			zend_long hasOffsetValue = pt_type_trinary_value(hasOffset.raw());
 			PT_FAIL_IF_NEG(hasOffsetValue);
-			if (hasOffsetValue == PT_TRI_NO) continue;
+			if (hasOffsetValue == PT_TRI_NO) {
+				/* a shape that may have keys it does not list answers No for them too */
+				zval keyIndex;
+				ZVAL_LONG(&keyIndex, (zend_long) entry.indexKey());
+				int keyOptional = callBool(constArray, PT_LC("isoptionalkey"), 1, &keyIndex);
+				PT_FAIL_IF_NEG(keyOptional);
+				if (!keyOptional) {
+					bool otherMayHaveUnlistedKeys = false;
+					if (isInstance(otherArray, pt_ce_constant_array_type)) {
+						zend_long otherUnsealed = callTrinary(otherArray, PT_LC("isunsealed"));
+						PT_FAIL_IF_NEG(otherUnsealed);
+						otherMayHaveUnlistedKeys = otherUnsealed == PT_TRI_MAYBE;
+					}
+					if (!otherMayHaveUnlistedKeys) return neverType();
+				}
+				continue;
+			}
 			zv::Val otherKeyType = call(otherArray, PT_LC("getiterablekeytype"));
 			PT_FAIL_IF_UNDEF(otherKeyType);
 			zv::Val newKeyType = intersect2(keyType, otherKeyType.raw());

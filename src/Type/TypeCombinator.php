@@ -2799,13 +2799,14 @@ final class TypeCombinator
 					if ($constArrayIsI || $constArrayIsJ) {
 						$constArray = $constArrayIsI ? $types[$i] : $types[$j];
 						$otherArray = $constArrayIsI ? $types[$j] : $types[$i];
+						$otherConstantArray = $otherArray instanceof ConstantArrayType ? $otherArray : null;
 
 						if (
-							$otherArray instanceof ConstantArrayType
+							$otherConstantArray !== null
 							&& !$constArray->isUnsealed()->maybe()
-							&& !$otherArray->isUnsealed()->maybe()
+							&& !$otherConstantArray->isUnsealed()->maybe()
 						) {
-							$merged = self::intersectDefiniteConstantArrays($constArray, $otherArray);
+							$merged = self::intersectDefiniteConstantArrays($constArray, $otherConstantArray);
 							if ($merged instanceof NeverType) {
 								if ($merged->getReason() === null) {
 									$reasons = array_merge($isSuperTypeA->getReasons(), $isSuperTypeB->getReasons());
@@ -2835,6 +2836,13 @@ final class TypeCombinator
 							foreach ($constArray->getKeyTypes() as $k => $keyType) {
 								$hasOffset = $otherArray->hasOffsetValueType($keyType);
 								if ($hasOffset->no()) {
+									// a shape that may have keys it does not list answers No for them too
+									if (
+										!$constArray->isOptionalKey($k)
+										&& ($otherConstantArray === null || !$otherConstantArray->isUnsealed()->maybe())
+									) {
+										return new NeverType();
+									}
 									continue;
 								}
 								$newArray->setOffsetValueType(

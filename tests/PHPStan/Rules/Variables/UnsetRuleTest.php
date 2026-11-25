@@ -223,6 +223,25 @@ class UnsetRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15792(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15792.php'], [
+			[
+				'Cannot unset hooked Bug15792\MixedRecord::$name property.',
+				48,
+			],
+			[
+				'Cannot unset hooked Bug15792\Concrete::$name property.',
+				64,
+			],
+			[
+				'Cannot unset property Bug15792\IntermediateRecord::$name because it might have hooks in a subclass.',
+				77,
+			],
+		]);
+	}
+
 	public function testNullCoalesceAssignRightSideScope(): void
 	{
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);

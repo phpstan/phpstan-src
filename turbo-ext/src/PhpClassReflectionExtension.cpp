@@ -1024,15 +1024,9 @@ public:
 			zval hookKind;
 			ZVAL_STRING(&hookKind, hookKinds[kind]);
 			zv::Val ownedKind = zv::Val::adopt(hookKind);
-			bool hasHook = callBool(betterReflection.raw(), PT_LC("hashook"), 1, ownedKind.raw(), ok);
-			if (UNEXPECTED(!ok)) return zv::Val();
-			if (!hasHook) continue;
-			zv::Val betterReflectionHook = call(betterReflection.raw(), PT_LC("gethook"), 1, ownedKind.raw());
+			zv::Val betterReflectionHook = getImplementedHook(betterReflection.raw(), ownedKind.raw());
 			if (UNEXPECTED(betterReflectionHook.isUndef())) return zv::Val();
-			if (Z_TYPE_P(betterReflectionHook.raw()) == IS_NULL) {
-				throwShouldNotHappen();
-				return zv::Val();
-			}
+			if (Z_TYPE_P(betterReflectionHook.raw()) == IS_NULL) continue;
 			zv::Val adapterMethod = pt_type_new(PT_CLASS_ADAPTER_REFLECTION_METHOD, 1, betterReflectionHook.raw());
 			if (UNEXPECTED(adapterMethod.isUndef())) return zv::Val();
 			zv::Val hook = createUserlandMethodReflection(declaringClass, declaringClass, adapterMethod.raw(), declaringTraitName.raw());
@@ -2848,6 +2842,77 @@ public:
 			}
 		}
 		return zv::Val::null();
+	}
+
+	/* Mirrors getImplementedHook(): the BetterReflection hook or PHP null. */
+	zv::Val getImplementedHook(zval *property, zval *hookType)
+	{
+		zv::Val hook = call(property, PT_LC("gethook"), 1, hookType);
+		if (UNEXPECTED(hook.isUndef()) || Z_TYPE_P(hook.raw()) == IS_NULL) return hook;
+		bool ok;
+		bool propertyIsAbstract = callBool(property, PT_LC("isabstract"), 0, NULL, ok);
+		if (UNEXPECTED(!ok)) return zv::Val();
+		if (propertyIsAbstract) return hook;
+
+		zv::Val hookProperty = call(hook.raw(), PT_LC("gethookproperty"));
+		if (UNEXPECTED(hookProperty.isUndef())) return zv::Val();
+		if (Z_TYPE_P(hookProperty.raw()) == IS_NULL) return hook;
+		bool hookPropertyIsAbstract = callBool(hookProperty.raw(), PT_LC("isabstract"), 0, NULL, ok);
+		if (UNEXPECTED(!ok)) return zv::Val();
+		if (!hookPropertyIsAbstract) return hook;
+
+		bool abstractHook = isAbstractHook(hook.raw(), hookType, ok);
+		if (UNEXPECTED(!ok)) return zv::Val();
+		return abstractHook ? zv::Val::null() : std::move(hook);
+	}
+
+	/* Mirrors isAbstractHook(); false with `ok` cleared on a pending exception */
+	bool isAbstractHook(zval *hook, zval *hookType, bool &ok)
+	{
+		ok = false;
+		zv::Val fileName = call(hook, PT_LC("getfilename"));
+		if (UNEXPECTED(fileName.isUndef())) return false;
+		if (Z_TYPE_P(fileName.raw()) == IS_NULL) {
+			ok = true;
+			return false;
+		}
+
+		zv::Val nodes = call(slot(slots::parser), PT_LC("parsefile"), 1, fileName.raw());
+		if (UNEXPECTED(nodes.isUndef())) return false;
+		zv::Val finder = pt_type_new(PT_CLASS_NODE_FINDER, 0, NULL);
+		if (UNEXPECTED(finder.isUndef())) return false;
+		zv::Val hookClass = zv::Val::string("PhpParser\\Node\\PropertyHook", sizeof("PhpParser\\Node\\PropertyHook") - 1);
+		zv::Args findArgs{nodes.raw(), hookClass.raw()};
+		zv::Val hookNodes = call(finder.raw(), PT_LC("findinstanceof"), 2, findArgs);
+		if (UNEXPECTED(hookNodes.isUndef())) return false;
+
+		for (zv::ArrayEntry entry : zv::ArrRef(hookNodes.raw())) {
+			zval *hookNode = entry.value().raw();
+			ZVAL_DEREF(hookNode);
+			zv::Ref name = zv::ObjRef(Z_OBJ_P(hookNode)).prop(PT_LC("name"));
+			zv::Str lowerName = callString(name.deref().raw(), PT_LC("tolowerstring"));
+			if (UNEXPECTED(lowerName.isNull())) return false;
+			if (!zend_string_equals(lowerName.get(), Z_STR_P(hookType))) continue;
+
+			zv::Val nodeStartLine = call(hookNode, PT_LC("getstartline"));
+			if (UNEXPECTED(nodeStartLine.isUndef())) return false;
+			zv::Val hookStartLine = call(hook, PT_LC("getstartline"));
+			if (UNEXPECTED(hookStartLine.isUndef())) return false;
+			if (!zend_is_identical(nodeStartLine.raw(), hookStartLine.raw())) continue;
+
+			zv::Val nodeEndLine = call(hookNode, PT_LC("getendline"));
+			if (UNEXPECTED(nodeEndLine.isUndef())) return false;
+			zv::Val hookEndLine = call(hook, PT_LC("getendline"));
+			if (UNEXPECTED(hookEndLine.isUndef())) return false;
+			if (!zend_is_identical(nodeEndLine.raw(), hookEndLine.raw())) continue;
+
+			zv::Ref body = zv::ObjRef(Z_OBJ_P(hookNode)).prop(PT_LC("body"));
+			ok = true;
+			return body.raw() == NULL || Z_TYPE_P(body.deref().raw()) == IS_NULL;
+		}
+
+		ok = true;
+		return false;
 	}
 
 	/* Mirrors findConstructorNode(): the ClassMethod node or PHP null. */

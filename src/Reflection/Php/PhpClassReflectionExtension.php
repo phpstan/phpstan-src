@@ -7,6 +7,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Declare_;
 use PhpParser\Node\Stmt\Namespace_;
+use PhpParser\NodeFinder;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\OutOfClassScope;
@@ -16,6 +17,8 @@ use PHPStan\Analyser\ScopeFactory;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionMethod;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionParameter;
 use PHPStan\BetterReflection\Reflection\Adapter\ReflectionProperty;
+use PHPStan\BetterReflection\Reflection\ReflectionMethod as BetterReflectionMethod;
+use PHPStan\BetterReflection\Reflection\ReflectionProperty as BetterReflectionProperty;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Internal\LruCache;
@@ -392,11 +395,8 @@ final class PhpClassReflectionExtension
 		$setHook = null;
 
 		$betterReflection = $propertyReflection->getBetterReflection();
-		if ($betterReflection->hasHook('get')) {
-			$betterReflectionGetHook = $betterReflection->getHook('get');
-			if ($betterReflectionGetHook === null) {
-				throw new ShouldNotHappenException();
-			}
+		$betterReflectionGetHook = $this->getImplementedHook($betterReflection, 'get');
+		if ($betterReflectionGetHook !== null) {
 			$getHook = $this->createUserlandMethodReflection(
 				$declaringClassReflection,
 				$declaringClassReflection,
@@ -417,11 +417,8 @@ final class PhpClassReflectionExtension
 			}
 		}
 
-		if ($betterReflection->hasHook('set')) {
-			$betterReflectionSetHook = $betterReflection->getHook('set');
-			if ($betterReflectionSetHook === null) {
-				throw new ShouldNotHappenException();
-			}
+		$betterReflectionSetHook = $this->getImplementedHook($betterReflection, 'set');
+		if ($betterReflectionSetHook !== null) {
 			$setHook = $this->createUserlandMethodReflection(
 				$declaringClassReflection,
 				$declaringClassReflection,
@@ -1140,6 +1137,51 @@ final class PhpClassReflectionExtension
 		}
 
 		return null;
+	}
+
+	/**
+	 * BetterReflection copies the hooks of the parent property into a redeclared property,
+	 * even an abstract hook that the redeclared property implements without a hook.
+	 *
+	 * @param 'get'|'set' $hookType
+	 */
+	private function getImplementedHook(BetterReflectionProperty $property, string $hookType): ?BetterReflectionMethod
+	{
+		$hook = $property->getHook($hookType);
+		if ($hook === null || $property->isAbstract()) {
+			return $hook;
+		}
+
+		$hookProperty = $hook->getHookProperty();
+		if ($hookProperty === null || !$hookProperty->isAbstract()) {
+			return $hook;
+		}
+
+		return $this->isAbstractHook($hook, $hookType) ? null : $hook;
+	}
+
+	/**
+	 * @param 'get'|'set' $hookType
+	 */
+	private function isAbstractHook(BetterReflectionMethod $hook, string $hookType): bool
+	{
+		$fileName = $hook->getFileName();
+		if ($fileName === null) {
+			return false;
+		}
+
+		$hookNodes = (new NodeFinder())->findInstanceOf($this->parser->parseFile($fileName), Node\PropertyHook::class);
+		foreach ($hookNodes as $hookNode) {
+			if (
+				$hookNode->name->toLowerString() === $hookType
+				&& $hookNode->getStartLine() === $hook->getStartLine()
+				&& $hookNode->getEndLine() === $hook->getEndLine()
+			) {
+				return $hookNode->body === null;
+			}
+		}
+
+		return false;
 	}
 
 	private function findMethodTrait(

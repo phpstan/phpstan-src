@@ -56,6 +56,7 @@ use function array_map;
 use function array_reverse;
 use function count;
 use function in_array;
+use function is_array;
 use function is_string;
 use function spl_object_id;
 use function strtolower;
@@ -159,8 +160,8 @@ final class DefaultNarrowingHelper
 
 	/**
 	 * The impure gate read off an already-processed result: a value computed
-	 * by a (possibly) impure call, an include, an eval, a yield or a shell
-	 * execution - the subject itself or any
+	 * by a (possibly) impure call, an include, an eval, a yield, a shell
+	 * execution, an increment or a compound assignment - the subject itself or any
 	 * call nested in it, like strlen($record->getName()) - must not get a
 	 * remembered type.
 	 * The result carries the impure points of its whole subtree.
@@ -169,6 +170,10 @@ final class DefaultNarrowingHelper
 	{
 		if ($subject instanceof AlwaysRememberedExpr) {
 			return true;
+		}
+
+		if (self::containsIncrement($subject)) {
+			return false;
 		}
 
 		foreach ($subjectResult->getImpurePoints() as $impurePoint) {
@@ -200,6 +205,40 @@ final class DefaultNarrowingHelper
 		}
 
 		return true;
+	}
+
+	/**
+	 * `$i++`, `--$i` and `$i += 1` evaluate to something else every time;
+	 * `$i ??= 1` assigns at most once.
+	 */
+	private static function containsIncrement(Node $node): bool
+	{
+		if (
+			$node instanceof Expr\PreInc
+			|| $node instanceof Expr\PreDec
+			|| $node instanceof Expr\PostInc
+			|| $node instanceof Expr\PostDec
+			|| ($node instanceof Expr\AssignOp && !$node instanceof Expr\AssignOp\Coalesce)
+		) {
+			return true;
+		}
+
+		foreach ($node->getSubNodeNames() as $subNodeName) {
+			$subNode = $node->$subNodeName;
+			if ($subNode instanceof Node) {
+				if (self::containsIncrement($subNode)) {
+					return true;
+				}
+			} elseif (is_array($subNode)) {
+				foreach ($subNode as $subNodeItem) {
+					if ($subNodeItem instanceof Node && self::containsIncrement($subNodeItem)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

@@ -208,9 +208,11 @@ final class AssignOpHandler implements ExprHandler
 
 			throw new ShouldNotHappenException(sprintf('Unhandled %s', get_class($expr)));
 		};
-		$specifyTypesCallback = function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $condResult, $beforeScope): SpecifiedTypes {
+		// the result of `$x += 1` can differ every time, so it is never narrowed;
+		// `$x ??= y` assigns at most once and keeps its value
+		$specifyTypesCallback = !$expr instanceof Expr\AssignOp\Coalesce ? SpecifiedTypes::emptySpecifyCallback() : function (TypeSpecifierContext $context, bool $nativeTypesPromoted) use ($expr, $condResult, $beforeScope): SpecifiedTypes {
 			$types = $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
-			if (!$expr instanceof Expr\AssignOp\Coalesce || $context->null()) {
+			if ($context->null()) {
 				return $types;
 			}
 

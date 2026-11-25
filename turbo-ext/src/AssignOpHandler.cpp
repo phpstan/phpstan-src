@@ -475,7 +475,9 @@ public:
 		}
 
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, self, expr, nsr, beforeScope, condResult.raw(), chainResults.raw(), rightResult.raw(), targetReadResult.raw(), rhsResult.raw());
-		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, expr, condResult.raw(), beforeScope);
+		// the result of `$x += 1` can differ every time, so it is never narrowed;
+		// `$x ??= y` assigns at most once and keeps its value
+		zv::Val specifyTypesCallback = isCoalesce ? pt_native_closure(&specifyTypesCallbackBody, self, expr, condResult.raw(), beforeScope) : pt_specified_types_empty_specify_callback();
 		zv::Val createTypesCallback = zv::Val::null();
 		if (isCoalesce) {
 			// a type constraint on `$x ??= y` constrains the assigned variable -
@@ -751,7 +753,6 @@ private:
 		zval *helper = OBJ_PROP_NUM(Z_OBJ(captures[0]), slots::defaultNarrowingHelper);
 		zval *expr = &captures[1];
 		AOH_VAL(types, dnhSpecifyDefaultTypes(helper, expr, context));
-		if (!aohIs(expr, PT_CLASS_COALESCE_ASSIGN_OP_EXPR)) return types;
 		bool contextNull;
 		AOH_OK(pt_type_specifier_context_null(Z_OBJ_P(context), contextNull));
 		if (contextNull) return types;

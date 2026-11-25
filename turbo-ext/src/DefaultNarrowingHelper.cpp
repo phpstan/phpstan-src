@@ -460,9 +460,28 @@ public:
 		return setRootExpr(unionWith(std::move(defaultTypes), std::move(twin)), expr);
 	}
 
+	/* Mirrors containsIncrement(): `$i++`, `--$i` and `$i += 1` evaluate to
+	 * something else every time; `$i ??= 1` assigns at most once */
+	static bool incrementMatcher(zend_object *node, void *ctx)
+	{
+		zval nodeZv;
+		ZVAL_OBJ(&nodeZv, node);
+		bool matches = isA(&nodeZv, PT_CLASS_PRE_INC)
+			|| isA(&nodeZv, PT_CLASS_PRE_DEC)
+			|| isA(&nodeZv, PT_CLASS_POST_INC)
+			|| isA(&nodeZv, PT_CLASS_POST_DEC)
+			|| (isA(&nodeZv, PT_CLASS_ASSIGN_OP_EXPR) && !isA(&nodeZv, PT_CLASS_COALESCE_ASSIGN_OP_EXPR));
+		if (UNEXPECTED(EG(exception))) {
+			static_cast<pt_find_ctx *>(ctx)->failed = true;
+			return false;
+		}
+		return matches;
+	}
+
 	/* Mirrors isSubjectValueRemembered(): a value computed by a (possibly)
-	 * impure call, an include, an eval, a yield or a shell execution - the
-	 * subject itself or any call nested in it - is not
+	 * impure call, an include, an eval, a yield, a shell execution, an
+	 * increment or a compound assignment - the subject itself or any call
+	 * nested in it - is not
 	 * remembered; the result carries the impure points of its whole subtree.
 	 * false = pending exception */
 	[[nodiscard]] bool isSubjectValueRemembered(zval *subjectResult, zval *subject, bool &out) const
@@ -472,6 +491,15 @@ public:
 			return true;
 		}
 		if (UNEXPECTED(EG(exception))) return false;
+
+		pt_find_ctx search;
+		memset(&search, 0, sizeof(search));
+		bool containsIncrement = pt_find_first_recursive(Z_OBJ_P(subject), incrementMatcher, &search) != NULL;
+		if (UNEXPECTED(search.failed)) return false;
+		if (containsIncrement) {
+			out = false;
+			return true;
+		}
 
 		zv::Val impurePointsHold;
 		zval *impurePoints = pt_expression_result_impure_points(subjectResult, impurePointsHold);

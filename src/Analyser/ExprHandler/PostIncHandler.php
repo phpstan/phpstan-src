@@ -11,12 +11,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\IncDecTypeHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -34,7 +32,6 @@ final class PostIncHandler implements ExprHandler
 
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
-		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private IncDecTypeHelper $incDecTypeHelper,
 		private AssignHandler $assignHandler,
 	)
@@ -65,7 +62,8 @@ final class PostIncHandler implements ExprHandler
 			throwPoints: [],
 			impurePoints: [],
 			typeCallback: $this->incDecTypeHelper->getTypeCallback($expr->var, $varResult, true),
-			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($virtualExpr, $context),
+			// the result can differ every time, so it is never narrowed
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 		);
 
 		// processVirtualAssign() emits nodes (PropertyAssignNode) carrying the
@@ -95,7 +93,8 @@ final class PostIncHandler implements ExprHandler
 			impurePoints: $varResult->getImpurePoints(),
 			// post-increment evaluates to the variable's pre-mutation value
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => ($nativeTypesPromoted ? $varResult->getNativeType() : $varResult->getType()),
-			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			// the result can differ every time, so it is never narrowed
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: $varResult->getDependencies(),
 		);
 	}

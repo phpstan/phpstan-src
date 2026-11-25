@@ -1304,6 +1304,39 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15464.php'], []);
 	}
 
+	public function testBug10521(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10521.php'], []);
+	}
+
+	public function testBug10109(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10109.php'], [
+			[
+				'Strict comparison using === between 0 and 0 will always evaluate to true.',
+				10,
+			],
+		]);
+	}
+
+	public function testBug7230(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-7230.php'], [
+			[
+				'Strict comparison using === between 100 and 100 will always evaluate to true.',
+				15,
+			],
+			[
+				'Strict comparison using === between \'tmp_hardcoded\' and \'tmp_hardcoded\' will always evaluate to true.',
+				21,
+			],
+			[
+				'Strict comparison using === between \'tmp_hardcoded\' and \'tmp_100\' will always evaluate to false.',
+				22,
+			],
+		]);
+	}
+
 	public function testMinMaxNan(): void
 	{
 		$this->analyse([__DIR__ . '/data/minmax-nan.php'], []);

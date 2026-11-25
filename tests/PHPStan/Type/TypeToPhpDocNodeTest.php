@@ -641,6 +641,37 @@ class TypeToPhpDocNodeTest extends PHPStanTestCase
 	}
 
 	/**
+	 * @return iterable<array{string, string}>
+	 */
+	public static function dataNonDecimalIntegerLiteralToPhpDocNode(): iterable
+	{
+		yield ['0x1F', '31'];
+		yield ['0X1f', '31'];
+		yield ['0b101', '5'];
+		yield ['0o17', '15'];
+		yield ['017', '15'];
+		yield ['-0x10', '-16'];
+		yield ['1_000', '1000'];
+		yield ['0x7FFF_FFFF_FFFF_FFFF', '9223372036854775807'];
+		yield ['int<0, 0xFF>', 'int<0, 255>'];
+		yield ['int<-0x80, 0x7F>', 'int<-128, 127>'];
+		yield ['int<0o10, max>', 'int<8, max>'];
+		yield ['array{0x10: int, 0b11: string}', 'array{16: int, 3: string}'];
+		yield ['list{0x0: int, 0b1: string}', 'array{int, string}'];
+	}
+
+	#[DataProvider('dataNonDecimalIntegerLiteralToPhpDocNode')]
+	public function testNonDecimalIntegerLiteralToPhpDocNode(string $typeString, string $expected): void
+	{
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		$type = $typeStringResolver->resolve($typeString);
+		$this->assertSame($expected, (string) $type->toPhpDocNode());
+
+		$typeAgain = $typeStringResolver->resolve($expected);
+		$this->assertTrue($type->equals($typeAgain), sprintf('%s->equals(%s)', $type->describe(VerbosityLevel::precise()), $typeAgain->describe(VerbosityLevel::precise())));
+	}
+
+	/**
 	 * @return iterable<array{string}>
 	 */
 	public static function dataLateResolvableArrayShapeToPhpDocNode(): iterable

@@ -3569,6 +3569,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testInvariantMutualSubtypes(): void
+	{
+		$this->analyse([__DIR__ . '/data/invariant-mutual-subtypes.php'], [
+			[
+				'Parameter #1 $box of function InvariantMutualSubtypes\\takeBox expects InvariantMutualSubtypes\\Box<iterable<int>|object>, InvariantMutualSubtypes\\Box<array<int>> given.',
+				35,
+				'Template type T on class InvariantMutualSubtypes\\Box is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.1.0')]
 	public function testFirstClassCallableCallbacks(): void
 	{

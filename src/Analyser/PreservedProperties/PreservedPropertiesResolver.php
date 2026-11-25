@@ -13,6 +13,7 @@ use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Node\Expr\PropertyInitializationExpr;
 use PHPStan\Parser\Parser;
 use PHPStan\Parser\PreservedPropertiesClassScan;
 use PHPStan\Parser\PreservedPropertiesVisitor;
@@ -401,8 +402,14 @@ final class PreservedPropertiesResolver
 		$closureWrittenPropertyNames = $preservedProperties->getClosureWrittenPropertyNames();
 		foreach (array_keys($propertyNames) as $propertyName) {
 			$propertyFetch = new PropertyFetch(new Variable('this'), $propertyName);
-			if ($scope->hasExpressionType($propertyFetch)->yes() && $scope->isReadonlyPropertyFetch($propertyFetch, true)) {
-				// remembered, so initialized, and a readonly property cannot change after that
+			if (
+				$scope->isReadonlyPropertyFetch($propertyFetch, true)
+				&& (
+					$scope->hasExpressionType($propertyFetch)->yes()
+					|| $scope->hasExpressionType(new PropertyInitializationExpr($propertyName))->yes()
+				)
+			) {
+				// remembered or initialized by the constructor, and a readonly property cannot change after that
 				continue;
 			}
 			$exitType = $overridableExitScope !== null && !isset($closureWrittenPropertyNames[$propertyName]) && $this->isPrivatelyWritten($scope, $propertyName)

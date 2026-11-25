@@ -465,10 +465,9 @@ public:
 	}
 
 	/* the TypeTraverser::map() callback: a StaticType is rebased onto the
-	 * scope's class (the own reflection outside a class), a ThisType
-	 * downgraded to static when $this is none, the own subtracted type
-	 * subtracted, and traversed on under the recursion guard — or, in a
-	 * final class, its static object type is; anything else is traversed;
+	 * scope's class (the own reflection outside a class) and handed to
+	 * transformChangedStaticType(), a GenericStaticType's result then to its
+	 * decideTypeArgumentsCarriedBy(); anything else is traversed;
 	 * UNDEF = pending exception */
 	zv::Val mapStaticType(zval *type, zval *scope, zval *traverse) const
 	{
@@ -494,7 +493,22 @@ public:
 			zend_type_error("phpstan_turbo: changeBaseClass() must return an object");
 			return zv::Val();
 		}
+		zv::Val transformed = transformChangedStaticType(std::move(mapped), isFinal, traverse);
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_generic_static_type) || UNEXPECTED(transformed.isUndef())) return transformed;
 
+		/* $type->decideTypeArgumentsCarriedBy($classReflection, <the transformed type>) */
+		zval decideArgs[2];
+		ZVAL_COPY_VALUE(&decideArgs[0], classReflection.raw());
+		ZVAL_COPY_VALUE(&decideArgs[1], transformed.raw());
+		return pt_type_call(Z_OBJ_P(type), PT_LC("decidetypeargumentscarriedby"), 2, decideArgs);
+	}
+
+	/* the twin's transformChangedStaticType(): a ThisType downgraded to
+	 * static when $this is none, the own subtracted type subtracted, and
+	 * traversed on under the recursion guard — or, in a final class, its
+	 * static object type is; UNDEF = pending exception */
+	zv::Val transformChangedStaticType(zv::Val mapped, bool isFinal, zval *traverse) const
+	{
 		/* When calling a method on a `static` type (not `$this`), `$this`
 		 * return type should be downgraded to `static` because we can't
 		 * guarantee the exact instance. */

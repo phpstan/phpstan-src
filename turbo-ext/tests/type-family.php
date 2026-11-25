@@ -1490,6 +1490,9 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 	'genericStaticMinus' => new $genericStatic($objectReflection(\ArrayObject::class), [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType()], new \PHPStan\Type\ObjectType(\stdClass::class), [\PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()]),
 	'genericStaticIterator' => new $genericStatic($objectReflection(\IteratorIterator::class), [new \PHPStan\Type\IntegerType(), new \PHPStan\Type\StringType(), new \PHPStan\Type\ObjectType(\Iterator::class)], null, [\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()]),
 	'genericStaticNonGeneric' => new $genericStatic($objectReflection(\Exception::class), [new \PHPStan\Type\IntegerType()], null, [\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()]),
+	// a template type argument: decideTypeArgumentsCarriedBy() wraps the
+	// rebased type in a ConditionalType for it
+	'genericStaticIteratorTemplate' => new $genericStatic($objectReflection(\IteratorIterator::class), [\PHPStan\Type\Generic\TemplateTypeFactory::create($objectTemplateScope, 'T', new \PHPStan\Type\IntegerType(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()), new \PHPStan\Type\StringType(), \PHPStan\Type\Generic\TemplateTypeFactory::create($objectTemplateScope, 'TIterator', new \PHPStan\Type\ObjectType(\Iterator::class), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant())], null, [\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()]),
 	'shape' => new $shape(['a' => new \PHPStan\Type\IntegerType(), 'b' => new \PHPStan\Type\StringType()], ['b']),
 	'shapeRequired' => new $shape(['a' => new \PHPStan\Type\IntegerType(), 'b' => new \PHPStan\Type\StringType()], []),
 	'shapeA' => new $shape(['a' => new \PHPStan\Type\IntegerType()], []),
@@ -1685,6 +1688,9 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 		}
 		if ($subject instanceof $genericStaticClass) {
 			$r["$name getTypes/getVariances"] = [$view($subject->getTypes()), array_map(static fn (\PHPStan\Type\Generic\TemplateTypeVariance $v): string => $v->describe(), $subject->getVariances())];
+			foreach ([\ArrayObject::class, \IteratorIterator::class, \CachingIterator::class, \AppendIterator::class, \Exception::class] as $className) {
+				$r["$name decideTypeArgumentsCarriedBy $className"] = $view($subject->decideTypeArgumentsCarriedBy($objectReflection($className), $subject->changeBaseClass($objectReflection($className))->getStaticObjectType()));
+			}
 		}
 		if ($subject instanceof $shapeClass) {
 			$r["$name getProperties/getOptionalProperties"] = [$view($subject->getProperties()), $subject->getOptionalProperties()];

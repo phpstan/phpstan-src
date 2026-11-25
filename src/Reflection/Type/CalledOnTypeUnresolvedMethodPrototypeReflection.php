@@ -149,7 +149,7 @@ final class CalledOnTypeUnresolvedMethodPrototypeReflection implements Unresolve
 				if (count($calledOnTypeReflections) === 1) {
 					$calledOnTypeReflection = $calledOnTypeReflections[0];
 
-					return $traverse($type->changeBaseClass($calledOnTypeReflection)->getStaticObjectType());
+					return $traverse($type->decideTypeArgumentsCarriedBy($calledOnTypeReflection, $type->changeBaseClass($calledOnTypeReflection)->getStaticObjectType()));
 				}
 
 				return $this->calledOnType;

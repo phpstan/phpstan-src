@@ -173,7 +173,7 @@ private:
 				return;
 			}
 			if (zend_hash_num_elements(Z_ARRVAL_P(reflections.raw())) == 1) {
-				/* return $traverse($type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType()); */
+				/* return $traverse($type->decideTypeArgumentsCarriedBy($fetchedOnTypeReflections[0], $type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType())); */
 				zval *first = zend_hash_index_find(Z_ARRVAL_P(reflections.raw()), 0);
 				if (UNEXPECTED(first == NULL)) {
 					zend_throw_error(NULL, "phpstan_turbo: getObjectClassReflections() must return a list");
@@ -188,7 +188,12 @@ private:
 				}
 				zv::Val staticObjectType = pt_type_call(Z_OBJ_P(changed.raw()), PT_LC("getstaticobjecttype"), 0, NULL);
 				if (UNEXPECTED(staticObjectType.isUndef())) return;
-				zv::Val traversed = pt_type_call_callable(&argv[1], 1, staticObjectType.raw());
+				zval decideArgs[2];
+				ZVAL_COPY_VALUE(&decideArgs[0], first);
+				ZVAL_COPY_VALUE(&decideArgs[1], staticObjectType.raw());
+				zv::Val decided = pt_type_call(Z_OBJ_P(type), PT_LC("decidetypeargumentscarriedby"), 2, decideArgs);
+				if (UNEXPECTED(decided.isUndef())) return;
+				zv::Val traversed = pt_type_call_callable(&argv[1], 1, decided.raw());
 				if (UNEXPECTED(traversed.isUndef())) return;
 				traversed.intoReturnValue(return_value);
 				return;

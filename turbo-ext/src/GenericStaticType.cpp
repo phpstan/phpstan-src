@@ -234,6 +234,13 @@ public:
 		zv::Val newName = pt_class_reflection_get_name(Z_OBJ_P(classReflection));
 		if (UNEXPECTED(newName.isUndef())) return zv::Val();
 		if (zend_is_identical(newName.raw(), ownClassName.raw())) return thisValue();
+		{
+			zv::Arr undecidedTypes = zv::Arr::create(0);
+			zv::Arr undecidedTargets = zv::Arr::create(0);
+			bool conflict;
+			if (UNEXPECTED(!typeArgumentsUndecidedBy(classReflection, undecidedTypes, undecidedTargets, conflict))) return zv::Val();
+			if (conflict) return thisValue();
+		}
 		bool generic;
 		if (UNEXPECTED(!pt_class_reflection_is_generic(Z_OBJ_P(classReflection), generic))) return zv::Val();
 		if (!generic) {
@@ -349,6 +356,126 @@ public:
 			return zv::Val();
 		}
 		return create(classReflection, listTypes.raw(), subtracted, listVariances.raw());
+	}
+
+	/* $rebasedType wrapped in a ConditionalType($type, $ancestorType,
+	 * <so far>, $this->getStaticObjectType(), false) for every pair of
+	 * getTypeArgumentsUndecidedBy(), unwrapped for the own class or
+	 * a class that cannot carry an argument; UNDEF = pending exception */
+	zv::Val decideTypeArgumentsCarriedBy(zval *classReflection, zval *rebasedType) const
+	{
+		zv::Val ownClassName = pt_static_type_this_class_name(self);
+		if (UNEXPECTED(ownClassName.isUndef())) return zv::Val();
+		zv::Val newName = pt_class_reflection_get_name(Z_OBJ_P(classReflection));
+		if (UNEXPECTED(newName.isUndef())) return zv::Val();
+		if (zend_is_identical(newName.raw(), ownClassName.raw())) return zv::Val::copyOf(zv::Ref(rebasedType));
+
+		zv::Arr undecidedTypes = zv::Arr::create(0);
+		zv::Arr undecidedTargets = zv::Arr::create(0);
+		bool conflict;
+		if (UNEXPECTED(!typeArgumentsUndecidedBy(classReflection, undecidedTypes, undecidedTargets, conflict))) return zv::Val();
+		zv::Val result = zv::Val::copyOf(zv::Ref(rebasedType));
+		if (conflict) return result;
+
+		uint32_t i = 0;
+		for (zv::ArrayEntry entry : zv::ArrRef(undecidedTypes.raw())) {
+			zval *target = zend_hash_index_find(undecidedTargets.table(), i++);
+			zv::Val ownObjectType = pt_static_type_this_static_object_type(self);
+			if (UNEXPECTED(ownObjectType.isUndef())) return zv::Val();
+			zval conditional;
+			if (UNEXPECTED(!pt_conditional_type_new(&conditional, entry.value().raw(), target, result.raw(), ownObjectType.raw(), false))) return zv::Val();
+			result = zv::Val::adopt(conditional);
+		}
+
+		return result;
+	}
+
+	/* the twin's private getTypeArgumentsUndecidedBy(): the own type
+	 * arguments the class declares, through its ancestor with the own class
+	 * name over its own template types, a type (the bound of a template type) that is not certainly their supertype,
+	 * pushed with that type onto the two arrays while they contain template
+	 * types; `conflict` for the null of an argument without them; false =
+	 * pending exception */
+	bool typeArgumentsUndecidedBy(zval *classReflection, zv::Arr &undecidedTypes, zv::Arr &undecidedTargets, bool &conflict) const
+	{
+		conflict = false;
+		zv::Val ownClassName = pt_static_type_this_class_name(self);
+		if (UNEXPECTED(ownClassName.isUndef())) return false;
+		bool generic;
+		if (UNEXPECTED(!pt_class_reflection_is_generic(Z_OBJ_P(classReflection), generic))) return false;
+		zv::Val ancestor;
+		if (generic) {
+			/* (new GenericObjectType($classReflection->getName(), $classReflection->typeMapToList($classReflection->getTemplateTypeMap())))
+			 *     ->getAncestorWithClassName($this->getClassName())?->getClassReflection() */
+			zv::Val newName = pt_class_reflection_get_name(Z_OBJ_P(classReflection));
+			if (UNEXPECTED(newName.isUndef())) return false;
+			zv::Val templateTypeMap = pt_type_call(Z_OBJ_P(classReflection), PT_LC("gettemplatetypemap"), 0, NULL);
+			if (UNEXPECTED(templateTypeMap.isUndef())) return false;
+			zv::Val declaredTypes = pt_type_call(Z_OBJ_P(classReflection), PT_LC("typemaptolist"), 1, templateTypeMap.raw());
+			if (UNEXPECTED(declaredTypes.isUndef())) return false;
+			zval declaredTypeRaw;
+			if (UNEXPECTED(!pt_generic_object_type_new(&declaredTypeRaw, Z_STR_P(newName.raw()), declaredTypes.raw()))) return false;
+			zv::Val declaredType = zv::Val::adopt(declaredTypeRaw);
+			zv::Val ancestorType = pt_type_call(Z_OBJ_P(declaredType.raw()), PT_LC("getancestorwithclassname"), 1, ownClassName.raw());
+			if (UNEXPECTED(ancestorType.isUndef())) return false;
+			if (ancestorType.isNull()) return true;
+			if (UNEXPECTED(!zv::Ref(ancestorType.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: getAncestorWithClassName() must return an object or null");
+				return false;
+			}
+			ancestor = pt_type_call(Z_OBJ_P(ancestorType.raw()), PT_LC("getclassreflection"), 0, NULL);
+		} else {
+			ancestor = pt_type_call(Z_OBJ_P(classReflection), PT_LC("getancestorwithclassname"), 1, ownClassName.raw());
+		}
+		if (UNEXPECTED(ancestor.isUndef())) return false;
+		if (ancestor.isNull()) return true;
+		if (UNEXPECTED(!zv::Ref(ancestor.raw()).isObject())) {
+			zend_type_error("phpstan_turbo: an ancestor reflection must be an object or null");
+			return false;
+		}
+		zend_object *ancestorReflection = Z_OBJ_P(ancestor.raw());
+		zv::Val activeTypeMap = pt_class_reflection_get_active_template_type_map(ancestorReflection);
+		if (UNEXPECTED(activeTypeMap.isUndef())) return false;
+		zv::Val ancestorTypes = pt_class_reflection_type_map_to_list(ancestorReflection, activeTypeMap.raw());
+		if (UNEXPECTED(ancestorTypes.isUndef())) return false;
+		if (UNEXPECTED(!zv::Ref(ancestorTypes.raw()).isArray())) {
+			zend_type_error("phpstan_turbo: typeMapToList() must return array");
+			return false;
+		}
+		zval *ownTypes = types();
+		if (UNEXPECTED(ownTypes == NULL)) return false;
+		for (zv::ArrayEntry entry : zv::ArrRef(ownTypes)) {
+			zval *ancestorType = entry.hasStringKey()
+				? zend_symtable_find(Z_ARRVAL_P(ancestorTypes.raw()), entry.stringKey())
+				: zend_hash_index_find(Z_ARRVAL_P(ancestorTypes.raw()), entry.indexKey());
+			if (ancestorType == NULL) break;
+			ZVAL_DEREF(ancestorType);
+			zval *type = entry.value().deref().raw();
+
+			zv::Val target = zv::Val::copyOf(zv::Ref(ancestorType));
+			bool isTemplate;
+			if (UNEXPECTED(!pt_type_instanceof(ancestorType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+			if (isTemplate) {
+				target = pt_type_call(Z_OBJ_P(ancestorType), PT_LC("getbound"), 0, NULL);
+				if (UNEXPECTED(target.isUndef())) return false;
+			}
+
+			zend_long isSuperType = pt_type_call_result_trinary(Z_OBJ_P(target.raw()), PT_LC("issupertypeof"), 1, type);
+			if (UNEXPECTED(isSuperType < 0)) return false;
+			if (isSuperType == PT_TRI_YES) continue;
+
+			bool hasTemplate;
+			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(type), PT_LC("hastemplateorlateresolvabletype"), 0, NULL, hasTemplate))) return false;
+			if (!hasTemplate) {
+				conflict = true;
+				return true;
+			}
+
+			undecidedTypes.push(zv::Ref(type));
+			undecidedTargets.push(std::move(target));
+		}
+
+		return true;
 	}
 
 	/* the CompoundType callback; the static object types' answer for
@@ -694,6 +821,8 @@ PT_MINIT_REGISTRATION(pt_register_generic_static_type)
 
 	cls.method<&GenericStaticType::changeBaseClass, zp::Obj>(sigs::changeBaseClass);
 	cls.op<PT_OP_CHANGE_BASE_CLASS, &GenericStaticType::changeBaseClass>();
+
+	cls.method<&GenericStaticType::decideTypeArgumentsCarriedBy, zp::Obj, zp::Obj>(sigs::decideTypeArgumentsCarriedBy);
 
 	cls.method<&GenericStaticType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 

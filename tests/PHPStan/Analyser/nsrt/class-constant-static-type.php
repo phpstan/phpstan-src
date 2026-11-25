@@ -60,5 +60,5 @@ function test(Base $base, Child $child, GenericBase $genericBase, GenericChild $
 	assertType('class-string<ClassConstantStaticType\Child>', $child::IMPL);
 	assertType('list<class-string<ClassConstantStaticType\Child>>', $child::IMPLS);
 	assertType('class-string<ClassConstantStaticType\GenericBase<int>>', $genericBase::IMPL);
-	assertType('class-string<ClassConstantStaticType\GenericChild>', $genericChild::IMPL);
+	assertType('class-string<ClassConstantStaticType\GenericBase<int>>', $genericChild::IMPL);
 }

@@ -1654,7 +1654,7 @@ final class InitializerExprTypeResolver
 			if ($type instanceof GenericStaticType) {
 				$fetchedOnTypeReflections = $fetchedOnType->getObjectClassReflections();
 				if (count($fetchedOnTypeReflections) === 1) {
-					return $traverse($type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType());
+					return $traverse($type->decideTypeArgumentsCarriedBy($fetchedOnTypeReflections[0], $type->changeBaseClass($fetchedOnTypeReflections[0])->getStaticObjectType()));
 				}
 			}
 

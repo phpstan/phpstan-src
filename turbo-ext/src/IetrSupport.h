@@ -166,6 +166,7 @@ inline constexpr Method mGetMethod{"getMethod", PT_OP_GET_METHOD};
 inline constexpr Method mIsStatic{"isStatic"};
 inline constexpr Method mGetStaticObjectType{"getStaticObjectType"};
 inline constexpr Method mChangeBaseClass{"changeBaseClass", PT_OP_CHANGE_BASE_CLASS};
+inline constexpr Method mDecideTypeArgumentsCarriedBy{"decideTypeArgumentsCarriedBy"};
 inline constexpr Method mGetClassReflection{"getClassReflection", PT_OP_GET_CLASS_REFLECTION};
 inline constexpr Method mGetObjectClassReflections{"getObjectClassReflections", PT_OP_GET_OBJECT_CLASS_REFLECTIONS};
 inline constexpr Method mGetAncestorWithClassName{"getAncestorWithClassName", PT_OP_GET_ANCESTOR_WITH_CLASS_NAME};

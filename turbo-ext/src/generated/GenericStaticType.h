@@ -55,23 +55,26 @@ inline constexpr char strings[] =
 	"getAncestorWithClassName\0" /* 239 */
 	"PHPStan\\Type\\StaticType\0" /* 264 */
 	"changeBaseClass\0" /* 288 */
-	"type\0" /* 304 */
-	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 309 */
-	"isSuperTypeOf\0" /* 342 */
-	"cb\0" /* 356 */
-	"traverse\0" /* 359 */
-	"right\0" /* 368 */
-	"traverseSimultaneously\0" /* 374 */
-	"changeSubtractedType\0" /* 397 */
-	"receivedType\0" /* 418 */
-	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 431 */
-	"inferTemplateTypes\0" /* 468 */
-	"positionVariance\0" /* 487 */
-	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 504 */
-	"getReferencedTemplateTypes\0" /* 546 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 573 */
-	"toPhpDocNode\0" /* 612 */
-	"hasTemplateOrLateResolvableType"; /* 625 */
+	"rebasedType\0" /* 304 */
+	"decideTypeArgumentsCarriedBy\0" /* 316 */
+	"getTypeArgumentsUndecidedBy\0" /* 345 */
+	"type\0" /* 373 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 378 */
+	"isSuperTypeOf\0" /* 411 */
+	"cb\0" /* 425 */
+	"traverse\0" /* 428 */
+	"right\0" /* 437 */
+	"traverseSimultaneously\0" /* 443 */
+	"changeSubtractedType\0" /* 466 */
+	"receivedType\0" /* 487 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 500 */
+	"inferTemplateTypes\0" /* 537 */
+	"positionVariance\0" /* 556 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 573 */
+	"getReferencedTemplateTypes\0" /* 615 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 642 */
+	"toPhpDocNode\0" /* 681 */
+	"hasTemplateOrLateResolvableType"; /* 694 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 16), /* __construct $classReflection */
 	reg::packed(51, MAY_BE_ARRAY), /* __construct $types */
@@ -85,20 +88,25 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(112, MAY_BE_NULL, 208), /* getAncestorWithClassName return */
 	reg::packed(0, 0, 16), /* changeBaseClass $classReflection */
 	reg::packed(112, 0, 264), /* changeBaseClass return */
-	reg::packed(304, 0, 72), /* isSuperTypeOf $type */
-	reg::packed(112, 0, 309), /* isSuperTypeOf return */
-	reg::packed(356, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(0, 0, 16), /* decideTypeArgumentsCarriedBy $classReflection */
+	reg::packed(304, 0, 72), /* decideTypeArgumentsCarriedBy $rebasedType */
+	reg::packed(112, 0, 72), /* decideTypeArgumentsCarriedBy return */
+	reg::packed(0, 0, 16), /* getTypeArgumentsUndecidedBy $classReflection */
+	reg::packed(112, MAY_BE_NULL | MAY_BE_ARRAY), /* getTypeArgumentsUndecidedBy return */
+	reg::packed(373, 0, 72), /* isSuperTypeOf $type */
+	reg::packed(112, 0, 378), /* isSuperTypeOf return */
+	reg::packed(425, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(112, 0, 72), /* traverse return */
-	reg::packed(368, 0, 72), /* traverseSimultaneously $right */
-	reg::packed(356, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(437, 0, 72), /* traverseSimultaneously $right */
+	reg::packed(425, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(112, 0, 72), /* traverseSimultaneously return */
 	reg::packed(57, MAY_BE_NULL, 72), /* changeSubtractedType $subtractedType */
 	reg::packed(112, 0, 72), /* changeSubtractedType return */
-	reg::packed(418, 0, 72), /* inferTemplateTypes $receivedType */
-	reg::packed(112, 0, 431), /* inferTemplateTypes return */
-	reg::packed(487, 0, 504), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(487, 0, 72), /* inferTemplateTypes $receivedType */
+	reg::packed(112, 0, 500), /* inferTemplateTypes return */
+	reg::packed(556, 0, 573), /* getReferencedTemplateTypes $positionVariance */
 	reg::packed(112, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
-	reg::packed(112, 0, 573), /* toPhpDocNode return */
+	reg::packed(112, 0, 642), /* toPhpDocNode return */
 	reg::packed(112, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -113,14 +121,16 @@ inline constexpr sigtab::Sig getClassReflection = { { 135 /* getClassReflection 
 inline constexpr sigtab::Sig getStaticObjectType = { { 178 /* getStaticObjectType */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getAncestorWithClassName = { { 239 /* getAncestorWithClassName */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig changeBaseClass = { { 288 /* changeBaseClass */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSuperTypeOf = { { 342 /* isSuperTypeOf */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverse = { { 359 /* traverse */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 374 /* traverseSimultaneously */, 2, 16, 2, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig changeSubtractedType = { { 397 /* changeSubtractedType */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig inferTemplateTypes = { { 468 /* inferTemplateTypes */, 1, 21, 1, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 546 /* getReferencedTemplateTypes */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 612 /* toPhpDocNode */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 625 /* hasTemplateOrLateResolvableType */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig decideTypeArgumentsCarriedBy = { { 316 /* decideTypeArgumentsCarriedBy */, 2, 12, 2, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeArgumentsUndecidedBy = { { 345 /* getTypeArgumentsUndecidedBy */, 1, 15, 1, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 411 /* isSuperTypeOf */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 428 /* traverse */, 1, 19, 1, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 443 /* traverseSimultaneously */, 2, 21, 2, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeSubtractedType = { { 466 /* changeSubtractedType */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig inferTemplateTypes = { { 537 /* inferTemplateTypes */, 1, 26, 1, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 615 /* getReferencedTemplateTypes */, 1, 28, 1, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 681 /* toPhpDocNode */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 694 /* hasTemplateOrLateResolvableType */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::GenericStaticType

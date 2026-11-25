@@ -9,6 +9,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\CompoundType;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
@@ -121,6 +122,10 @@ class GenericStaticType extends StaticType
 			return $this;
 		}
 
+		if ($this->getTypeArgumentsUndecidedBy($classReflection) === null) {
+			return $this;
+		}
+
 		if (!$classReflection->isGeneric()) {
 			return new StaticType($classReflection);
 		}
@@ -178,6 +183,76 @@ class GenericStaticType extends StaticType
 		}
 
 		return new self($classReflection, $classReflection->typeMapToList(new TemplateTypeMap($newClassTypes)), $this->subtractedType, $classReflection->varianceMapToList(new TemplateTypeVarianceMap($newClassVariances)));
+	}
+
+	/**
+	 * Wraps $rebasedType - this type rebased onto $classReflection - in
+	 * a conditional type for every type argument the class fixes that is
+	 * decided only once its template types are resolved, falling back to
+	 * the static object type when the class does not carry the argument.
+	 */
+	public function decideTypeArgumentsCarriedBy(ClassReflection $classReflection, Type $rebasedType): Type
+	{
+		if ($classReflection->getName() === $this->getClassName()) {
+			return $rebasedType;
+		}
+
+		$undecided = $this->getTypeArgumentsUndecidedBy($classReflection);
+		if ($undecided === null) {
+			return $rebasedType;
+		}
+
+		foreach ($undecided as [$type, $ancestorType]) {
+			$rebasedType = new ConditionalType($type, $ancestorType, $rebasedType, $this->getStaticObjectType(), false);
+		}
+
+		return $rebasedType;
+	}
+
+	/**
+	 * Pairs of a type argument of this type and the type the class declares
+	 * for it (the bound of its own template type), for the arguments decided
+	 * only once their template types are resolved; null when the class cannot
+	 * carry an argument.
+	 *
+	 * @return list<array{Type, Type}>|null
+	 */
+	private function getTypeArgumentsUndecidedBy(ClassReflection $classReflection): ?array
+	{
+		if ($classReflection->isGeneric()) {
+			$declaredType = new GenericObjectType($classReflection->getName(), $classReflection->typeMapToList($classReflection->getTemplateTypeMap()));
+			$ancestor = $declaredType->getAncestorWithClassName($this->getClassName())?->getClassReflection();
+		} else {
+			$ancestor = $classReflection->getAncestorWithClassName($this->getClassName());
+		}
+		if ($ancestor === null) {
+			return [];
+		}
+
+		$ancestorTypes = $ancestor->typeMapToList($ancestor->getActiveTemplateTypeMap());
+		$undecided = [];
+		foreach ($this->types as $i => $type) {
+			if (!array_key_exists($i, $ancestorTypes)) {
+				break;
+			}
+
+			$ancestorType = $ancestorTypes[$i];
+			if ($ancestorType instanceof TemplateType) {
+				$ancestorType = $ancestorType->getBound();
+			}
+
+			if ($ancestorType->isSuperTypeOf($type)->yes()) {
+				continue;
+			}
+
+			if (!$type->hasTemplateOrLateResolvableType()) {
+				return null;
+			}
+
+			$undecided[] = [$type, $ancestorType];
+		}
+
+		return $undecided;
 	}
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult

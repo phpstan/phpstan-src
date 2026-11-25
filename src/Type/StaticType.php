@@ -22,6 +22,7 @@ use PHPStan\Type\Accessory\AccessoryLiteralStringType;
 use PHPStan\Type\Enum\EnumCaseObjectType;
 use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\GenericStaticType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
 use PHPStan\Type\Traits\NonGenericTypeTrait;
@@ -368,31 +369,44 @@ class StaticType implements TypeWithClassName, SubtractableType
 					$classReflection = $scope->getClassReflection();
 					$isFinal = $classReflection->isFinal();
 				}
-				$type = $type->changeBaseClass($classReflection);
-
-				// When calling a method on a `static` type (not `$this`),
-				// `$this` return type should be downgraded to `static`
-				// because we can't guarantee the exact instance.
-				if ($type instanceof ThisType && !$this instanceof ThisType) {
-					$type = new self($type->getClassReflection(), $type->getSubtractedType());
+				if ($type instanceof GenericStaticType) {
+					return $type->decideTypeArgumentsCarriedBy(
+						$classReflection,
+						$this->transformChangedStaticType($type->changeBaseClass($classReflection), $isFinal, $traverse),
+					);
 				}
 
-				if ($this->getSubtractedType() !== null) {
-					$type = $type->subtract($this->getSubtractedType());
-					if (!$type instanceof StaticType) {
-						return $traverse($type);
-					}
-				}
-
-				if (!$isFinal || $type instanceof ThisType) {
-					return RecursionGuard::run($type, static fn () => $traverse($type));
-				}
-
-				return $traverse($type->getStaticObjectType());
+				return $this->transformChangedStaticType($type->changeBaseClass($classReflection), $isFinal, $traverse);
 			}
 
 			return $traverse($type);
 		});
+	}
+
+	/**
+	 * @param callable(Type): Type $traverse
+	 */
+	private function transformChangedStaticType(StaticType $type, bool $isFinal, callable $traverse): Type
+	{
+		// When calling a method on a `static` type (not `$this`),
+		// `$this` return type should be downgraded to `static`
+		// because we can't guarantee the exact instance.
+		if ($type instanceof ThisType && !$this instanceof ThisType) {
+			$type = new self($type->getClassReflection(), $type->getSubtractedType());
+		}
+
+		if ($this->getSubtractedType() !== null) {
+			$type = $type->subtract($this->getSubtractedType());
+			if (!$type instanceof StaticType) {
+				return $traverse($type);
+			}
+		}
+
+		if (!$isFinal || $type instanceof ThisType) {
+			return RecursionGuard::run($type, static fn () => $traverse($type));
+		}
+
+		return $traverse($type->getStaticObjectType());
 	}
 
 	public function canAccessConstants(): TrinaryLogic

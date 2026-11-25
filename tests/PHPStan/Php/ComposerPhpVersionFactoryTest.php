@@ -25,6 +25,11 @@ class ComposerPhpVersionFactoryTest extends TestCase
 		yield ['>8.2.99', 80300, PhpVersionFactory::MAX_PHP_VERSION];
 		yield ['>8.2.3-beta', 80203, PhpVersionFactory::MAX_PHP_VERSION];
 		yield ['<8.5.2.1', null, 80502];
+		yield ['<8.5.2.00', null, 80501];
+		yield ['<8.5.0-dev', null, 80499];
+		yield ['<8.5.0-RC1', null, 80500];
+		yield ['<8.5.2-stable', null, 80502];
+		yield ['>8.5.0-dev', 80500, PhpVersionFactory::MAX_PHP_VERSION];
 		yield ['<8.4', null, 80399];
 		yield ['^7.4', 70400, PhpVersionFactory::MAX_PHP7_VERSION];
 		yield ['^5.6', 50600, PhpVersionFactory::MAX_PHP5_VERSION];

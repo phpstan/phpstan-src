@@ -49,8 +49,10 @@ final class ComposerPhpVersionParser
 
 		if (!$isInclusive) {
 			if ($isMaxVersion) {
-				// <8.5.2 excludes 8.5.2 itself, but <8.5.2.1 still allows it
-				if ((int) ($matches[4] ?? 0) === 0) {
+				// <8.5.2 is normalized to <8.5.2.0-dev, which excludes every 8.5.2 release and prerelease.
+				// <8.5.2.1 still allows 8.5.2, and <8.5.2-RC1 or <8.5.2-stable still allow
+				// a prerelease of 8.5.2, which has the same PHP_VERSION_ID.
+				if ((int) ($matches[4] ?? 0) === 0 && ($matches[5] ?? '') === '-dev') {
 					$versionId--;
 				}
 			} elseif (($matches[5] ?? '') === '') {

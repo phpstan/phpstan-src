@@ -50,17 +50,26 @@ final class ParameterCastableToStringRule implements Rule
 		$functionReflection = $this->reflectionProvider->getFunction($node->name, $scope);
 		$functionName = $functionReflection->getName();
 		$checkAllArgsFunctions = ['array_intersect', 'array_intersect_assoc', 'array_diff', 'array_diff_assoc'];
-		$checkFirstArgFunctions = [
-			'array_combine',
-			'natcasesort',
-			'natsort',
-			'array_count_values',
-			'array_fill_keys',
+		$checkAllArgsExceptLastFunctions = ['array_diff_uassoc', 'array_intersect_uassoc'];
+		$checkArgsFunctions = [
+			'array_combine' => [0],
+			'natcasesort' => [0],
+			'natsort' => [0],
+			'array_count_values' => [0],
+			'array_fill_keys' => [0],
+			'strtr' => [1],
+			'substr_replace' => [0, 1],
+			'preg_grep' => [1],
+			'preg_replace_callback_array' => [1],
+			'setlocale' => [1],
+			'proc_open' => [0, 4],
+			'pcntl_exec' => [1, 2],
 		];
 
 		if (
 			!in_array($functionName, $checkAllArgsFunctions, true)
-			&& !in_array($functionName, $checkFirstArgFunctions, true)
+			&& !in_array($functionName, $checkAllArgsExceptLastFunctions, true)
+			&& !array_key_exists($functionName, $checkArgsFunctions)
 		) {
 			return [];
 		}
@@ -77,6 +86,18 @@ final class ParameterCastableToStringRule implements Rule
 
 		if (in_array($functionName, $checkAllArgsFunctions, true)) {
 			$argsToCheck = $origArgs;
+		} elseif (in_array($functionName, $checkAllArgsExceptLastFunctions, true)) {
+			$argsToCheck = [];
+			$lastArgIdx = count($origArgs) - 1;
+			foreach ($origArgs as $argIdx => $arg) {
+				if ($arg->unpack) {
+					return [];
+				}
+				if ($argIdx === $lastArgIdx) {
+					break;
+				}
+				$argsToCheck[$argIdx] = $arg;
+			}
 		} else {
 			$normalizedFuncCall = ArgumentsNormalizer::reorderFuncArguments($parametersAcceptor, $node);
 
@@ -85,10 +106,17 @@ final class ParameterCastableToStringRule implements Rule
 			}
 
 			$normalizedArgs = $normalizedFuncCall->getArgs();
-			if (!array_key_exists(0, $normalizedArgs)) {
+			if ($functionName === 'strtr' && count($normalizedArgs) !== 2) {
 				return [];
 			}
-			$argsToCheck = [0 => $normalizedArgs[0]];
+
+			$argsToCheck = [];
+			foreach ($checkArgsFunctions[$functionName] as $argIdx) {
+				if (!array_key_exists($argIdx, $normalizedArgs)) {
+					continue;
+				}
+				$argsToCheck[$argIdx] = $normalizedArgs[$argIdx];
+			}
 		}
 
 		$errors = [];

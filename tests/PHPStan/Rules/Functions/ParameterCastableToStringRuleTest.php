@@ -224,6 +224,69 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]));
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug15800(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15800.php'], [
+			[
+				'Parameter #2 $replace_pairs of function strtr expects an array of values castable to string, array<string, stdClass> given.',
+				8,
+			],
+			[
+				'Parameter #2 $replace_pairs of function strtr expects an array of values castable to string, array<string, array<int>> given.',
+				14,
+			],
+			[
+				'Parameter #1 $string of function substr_replace expects an array of values castable to string, array<stdClass> given.',
+				38,
+			],
+			[
+				'Parameter #2 $replace of function substr_replace expects an array of values castable to string, array<stdClass> given.',
+				39,
+			],
+			[
+				'Parameter #2 $array of function preg_grep expects an array of values castable to string, array<stdClass> given.',
+				42,
+			],
+			[
+				'Parameter #2 $subject of function preg_replace_callback_array expects an array of values castable to string, array<stdClass> given.',
+				44,
+			],
+			[
+				'Parameter #2 $locale of function setlocale expects an array of values castable to string, array<stdClass> given.',
+				46,
+			],
+			[
+				'Parameter #1 $command of function proc_open expects an array of values castable to string, array<stdClass> given.',
+				49,
+			],
+			[
+				'Parameter #5 $env_vars of function proc_open expects an array of values castable to string, array<stdClass> given.',
+				49,
+			],
+			[
+				'Parameter #2 $args of function pcntl_exec expects an array of values castable to string, array<stdClass> given.',
+				51,
+			],
+			[
+				'Parameter #3 $env_vars of function pcntl_exec expects an array of values castable to string, array<stdClass> given.',
+				51,
+			],
+			[
+				'Parameter #1 $arr1 of function array_diff_uassoc expects an array of values castable to string, array<stdClass> given.',
+				53,
+			],
+			[
+				'Parameter #2 $arr2 of function array_diff_uassoc expects an array of values castable to string, array<stdClass> given.',
+				53,
+			],
+			[
+				'Parameter #1 $arr1 of function array_intersect_uassoc expects an array of values castable to string, array<stdClass> given.',
+				55,
+			],
+		]);
+	}
+
 	/**
 	 * @param list<array{0: string, 1: int, 2?: string|null}> $errors
 	 * @return list<array{0: string, 1: int, 2?: string|null}>

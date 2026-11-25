@@ -130,21 +130,24 @@ final class PreservedPropertiesResolver
 	}
 
 	/**
-	 * After a call of a method of the class on $this that runs exactly that method - a private
-	 * or final one, or one called through self:: - the properties the walk of the method ended
-	 * with initialized are initialized, and the properties of $this the class's own code the call
-	 * runs writes get the types the walk ended with, but the ones the class's closures write, which
-	 * can run whenever. ClassLikeHandler walks the methods before
-	 * their callers.
+	 * After a call of a method of the class on $this, the properties the walk of the method ended
+	 * with initialized are initialized, even when an override may run instead: the override can
+	 * call it through parent::. When the call runs exactly that method - a private or final one,
+	 * or one called through self:: - the properties of $this the class's own code the call runs
+	 * writes also get the types the walk ended with, but the ones the class's closures write, which
+	 * can run whenever. ClassLikeHandler walks the methods before their callers.
 	 */
 	public function applyCalledMethodExitScope(MutatingScope $scope, Expr $call, MethodReflection $methodReflection): MutatingScope
 	{
 		$walk = $this->findWalk($scope, $call, $methodReflection);
-		if ($walk === null || !$walk[1]) {
+		if ($walk === null) {
 			return $scope;
 		}
 		$exitScope = $walk[0];
 		$scope = $scope->mergeInitializedProperties($exitScope);
+		if (!$walk[1]) {
+			return $scope;
+		}
 
 		$preservedProperties = $this->getPreservedProperties($call);
 		if (!$preservedProperties instanceof PreservedProperties) {

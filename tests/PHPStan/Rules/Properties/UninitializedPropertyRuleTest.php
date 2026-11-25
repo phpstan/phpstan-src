@@ -72,14 +72,10 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 				'Class UninitializedProperty\FooTraitClass has an uninitialized property $baz. Give it default value or assign it in the constructor.',
 				159,
 			],
-			[
-				'Class UninitializedProperty\InitializedInPublicSetterNonFinalClass has an uninitialized property $foo. Give it default value or assign it in the constructor.',
-				263,
-			],
-			[
+			/*[
 				'Access to an uninitialized property UninitializedProperty\InitializedInPublicSetterNonFinalClass::$foo.',
 				278,
-			],
+			],*/
 			[
 				'Class UninitializedProperty\SometimesInitializedInPrivateSetter has an uninitialized property $foo. Give it default value or assign it in the constructor.',
 				286,
@@ -132,10 +128,6 @@ class UninitializedPropertyRuleTest extends RuleTestCase
 			[
 				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $three. Give it default value or assign it in the constructor.',
 				11,
-			],
-			[
-				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $four. Give it default value or assign it in the constructor.',
-				13,
 			],
 			[
 				'Class TestInitializedProperty\TestAdditionalConstructor has an uninitialized property $one. Give it default value or assign it in the constructor.',

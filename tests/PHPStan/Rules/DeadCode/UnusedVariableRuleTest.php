@@ -443,6 +443,14 @@ class UnusedVariableRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15263.php'], []);
 	}
 
+	public function testBug15394(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15394.php'], [
+			['Value assigned to variable $foo is never read before being overwritten.', 14],
+			['Variable $foo is never read.', 24],
+		]);
+	}
+
 	public function testInferredBranchesStayPossible(): void
 	{
 		$this->analyse([__DIR__ . '/data/unused-variable-inferred-branches.php'], []);

@@ -103,25 +103,12 @@ public:
 			if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 			return pt_internal_statement_result_new(scope, false, false, &emptyArray, &emptyArray, &emptyArray, NULL, NULL, -1, mergedDependencies.raw());
 		}
+		// the declare body always runs, in the enclosing scope - unlike a block,
+		// polluteScopeWithBlock does not apply, so the body's result is the
+		// statement's result, including its variable flow
 		zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
 		zv::Val result = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmtsHold.raw(), scope, storage, nodeCallback, context);
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
-		zv::Val resultScopeHold;
-		zval *resultScope = pt_internal_statement_result_scope(result.raw(), resultScopeHold);
-		if (UNEXPECTED(resultScope == NULL)) return zv::Val();
-		bool hasYield;
-		if (UNEXPECTED(!pt_internal_statement_result_has_yield(result.raw(), hasYield))) return zv::Val();
-		zv::Val throwPointsHold;
-		zval *throwPoints = pt_internal_statement_result_throw_points(result.raw(), throwPointsHold);
-		if (UNEXPECTED(throwPoints == NULL)) return zv::Val();
-		zv::Val impurePointsHold;
-		zval *impurePoints = pt_internal_statement_result_impure_points(result.raw(), impurePointsHold);
-		if (UNEXPECTED(impurePoints == NULL)) return zv::Val();
-		bool alwaysTerminating;
-		if (UNEXPECTED(!pt_internal_statement_result_is_always_terminating(result.raw(), alwaysTerminating))) return zv::Val();
-		zv::Val exitPointsHold;
-		zval *exitPoints = pt_internal_statement_result_exit_points(result.raw(), exitPointsHold);
-		if (UNEXPECTED(exitPoints == NULL)) return zv::Val();
 		{
 			zv::Val hold;
 			zval *resultDependencies = pt_internal_statement_result_dependencies(result.raw(), hold);
@@ -130,7 +117,7 @@ public:
 		}
 		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
 		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
-		return pt_internal_statement_result_new(resultScope, hasYield, alwaysTerminating, exitPoints, throwPoints, impurePoints, NULL, NULL, -1, mergedDependencies.raw());
+		return pt_internal_statement_result_with_dependencies(result.raw(), mergedDependencies.raw());
 	}
 
 	/* the statement-handler entry (Engine.h) */

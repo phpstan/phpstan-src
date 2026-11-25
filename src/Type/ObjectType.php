@@ -1783,8 +1783,16 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		$reflectionProvider = ReflectionProviderStaticAccessor::getInstance();
 		if ($reflectionProvider->hasClass($className)) {
 			$thatClassReflection = $reflectionProvider->getClass($className);
+			// an instance of a subclass of this class may be one
+			if ($thatClassReflection->isSubclassOfClass($classReflection)) {
+				return TrinaryLogic::createMaybe();
+			}
 			if ($thatClassReflection->isFinal()) {
 				return TrinaryLogic::createNo();
+			}
+			// a subclass of a non-final class may implement the interface (as isSuperTypeOf() says)
+			if ($thatClassReflection->isInterface() && !$classReflection->isFinalByKeyword()) {
+				return TrinaryLogic::createMaybe();
 			}
 		}
 

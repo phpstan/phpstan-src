@@ -2240,9 +2240,22 @@ public:
 		if (hasClass) {
 			zv::Val thatClassReflection = pt_reflection_provider_get_class(Z_OBJ_P(provider.raw()), className);
 			if (UNEXPECTED(thatClassReflection.isUndef())) return -1;
+			zend_object *thatReflection = Z_OBJ_P(thatClassReflection.raw());
+			// an instance of a subclass of this class may be one
+			bool subclass;
+			if (UNEXPECTED(!pt_type_call_bool(thatReflection, PT_LC("issubclassofclass"), 1, classReflection.raw(), subclass))) return -1;
+			if (subclass) return PT_TRI_MAYBE;
 			bool isFinal;
-			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(thatClassReflection.raw()), PT_LC("isfinal"), 0, NULL, isFinal))) return -1;
+			if (UNEXPECTED(!pt_type_call_bool(thatReflection, PT_LC("isfinal"), 0, NULL, isFinal))) return -1;
 			if (isFinal) return PT_TRI_NO;
+			// a subclass of a non-final class may implement the interface (as isSuperTypeOf() says)
+			bool thatIsInterface;
+			if (UNEXPECTED(!pt_type_call_bool(thatReflection, PT_LC("isinterface"), 0, NULL, thatIsInterface))) return -1;
+			if (thatIsInterface) {
+				bool finalByKeyword;
+				if (UNEXPECTED(!pt_type_call_bool(reflection, PT_LC("isfinalbykeyword"), 0, NULL, finalByKeyword))) return -1;
+				if (!finalByKeyword) return PT_TRI_MAYBE;
+			}
 		}
 
 		bool isInterface;

@@ -136,3 +136,52 @@ function pureCallingMethodWithImpureCallbackByName(Mapper $mapper, array $arr): 
 		return $x * 2;
 	}, arr: $arr);
 }
+
+/**
+ * @param callable(int): int $f
+ * @param callable(int): int $g
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ * @pure-unless-callable-is-impure $g
+ */
+function myMapTwice(callable $f, callable $g, array $arr): array
+{
+	return myMap($g, myMap($f, $arr));
+}
+
+/**
+ * @param callable(int): int $f
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ */
+function forwardingByNameNextToPure(callable $f, array $arr): array
+{
+	return myMapTwice(arr: $arr, g: static fn (int $x): int => $x * 2, f: $f);
+}
+
+/**
+ * @param callable(int): int $f
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ */
+function forwardingByNameNextToImpure(callable $f, array $arr): array
+{
+	return myMapTwice(arr: $arr, g: static function (int $x): int {
+		echo 'side effect';
+		return $x;
+	}, f: $f);
+}
+
+/**
+ * @param callable(int): int $f
+ * @param array<int> $arr
+ * @return array<int>
+ * @pure-unless-callable-is-impure $f
+ */
+function forwardingToBuiltinByName(callable $f, array $arr): array
+{
+	return array_map(array: $arr, callback: $f);
+}

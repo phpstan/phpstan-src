@@ -73,3 +73,21 @@ function pureCaller(): int {
 
     return 1;
 }
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable(int): int $fun
+ * @param list<int> $arr
+ * @return list<int>
+ */
+function forwardsToBuiltin(callable $fun, array $arr): array {
+    return array_map($fun, $arr);
+}
+
+/**
+ * @pure-unless-callable-is-impure $fun
+ * @param callable():void $fun
+ */
+function forwardsUnpacked(callable $fun): void {
+    haveFun(...$fun);
+}

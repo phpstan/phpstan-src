@@ -163,6 +163,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_LIST_EXPR */ {"listExpr", "PhpParser\\Node\\Expr\\List_"},
 	/* PT_CLASS_VARIABLE_WRITES_NODE */ {"variableWritesNode", "PHPStan\\Node\\VariableWritesNode"},
 	/* PT_CLASS_VOID_TO_NULL_TRAVERSER */ {"voidToNullTraverser", "PHPStan\\Analyser\\Traverser\\VoidToNullTraverser"},
+	/* PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_FINDER */ {"unresolvedTemplateArgumentFinder", "PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentFinder"},
 	/* PT_CLASS_ALWAYS_REMEMBERED_EXPR */ {"alwaysRememberedExpr", "PHPStan\\Node\\Expr\\AlwaysRememberedExpr"},
 	/* PT_CLASS_NATIVE_METHOD_REFLECTION */ {"nativeMethodReflection", "PHPStan\\Reflection\\Native\\NativeMethodReflection"},
 	/* PT_CLASS_ENUM_CASES_METHOD_REFLECTION */ {"enumCasesMethodReflection", "PHPStan\\Reflection\\Php\\EnumCasesMethodReflection"},

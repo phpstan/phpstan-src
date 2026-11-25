@@ -218,9 +218,19 @@ final class TemplateTypeVariance
 			$result = $a->equals($b);
 			$reasons = [];
 			if (!$result) {
+				$isSuperType = $a->isSuperTypeOf($b)->yes();
+				// invariant arguments are the same type when each is a subtype of the other;
+				// an unresolved template argument stays opaque here - it never equals its delegate
 				if (
+					$isSuperType
+					&& !UnresolvedTemplateArgumentFinder::contains($a)
+					&& !UnresolvedTemplateArgumentFinder::contains($b)
+					&& $b->isSuperTypeOf($a)->yes()
+				) {
+					$result = true;
+				} elseif (
 					$templateType->getScope()->getClassName() !== null
-					&& $a->isSuperTypeOf($b)->yes()
+					&& $isSuperType
 				) {
 					$reasons[] = sprintf(
 						'Template type %s on class %s is not covariant. Learn more: <fg=cyan>https://phpstan.org/blog/whats-up-with-template-covariant</>',

@@ -299,6 +299,19 @@ private:
 	return pt_type_result_trinary(result.raw());
 }
 
+/* UnresolvedTemplateArgumentFinder::contains($type); false = pending exception */
+[[nodiscard]] static bool containsUnresolvedTemplateArgument(zval *type, bool &out)
+{
+	zv::Val finder = pt_type_new(PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_FINDER, 0, NULL);
+	if (UNEXPECTED(finder.isUndef())) return false;
+	zval mapped;
+	if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, finder.raw()))) return false;
+	zval_ptr_dtor(&mapped);
+	// the finder's only property, public bool $found
+	out = Z_TYPE_P(OBJ_PROP_NUM(Z_OBJ_P(finder.raw()), 0)) == IS_TRUE;
+	return true;
+}
+
 /* $x instanceof MixedType && !$x instanceof TemplateType; false with an
  * exception pending when the interface cannot be resolved */
 static bool isPlainMixed(zval *x, bool &out)
@@ -410,14 +423,28 @@ zv::Val TemplateTypeVariance::isValidVariance(zval *templateType, zval *a, zval 
 		if (UNEXPECTED(EG(exception))) return zv::Val();
 		zv::Arr reasons = zv::Arr::empty();
 		if (!result) {
-			zv::Val scope = scopeOf(templateType);
-			if (UNEXPECTED(scope.isUndef())) return zv::Val();
-			zv::Val className = pt_type_call(Z_OBJ_P(scope.raw()), PT_LC("getclassname"), 0, NULL);
-			if (UNEXPECTED(className.isUndef())) return zv::Val();
-			if (!className.isNull()) {
-				zend_long isSuperType = isSuperTypeOfValue(a, b);
-				if (UNEXPECTED(isSuperType < 0)) return zv::Val();
-				if (isSuperType == PT_TRI_YES) {
+			zend_long isSuperType = isSuperTypeOfValue(a, b);
+			if (UNEXPECTED(isSuperType < 0)) return zv::Val();
+			// invariant arguments are the same type when each is a subtype of the other;
+			// an unresolved template argument stays opaque here - it never equals its delegate
+			zend_long isSubType = PT_TRI_NO;
+			bool markers = false;
+			if (isSuperType == PT_TRI_YES) {
+				if (UNEXPECTED(!containsUnresolvedTemplateArgument(a, markers))) return zv::Val();
+				if (!markers && UNEXPECTED(!containsUnresolvedTemplateArgument(b, markers))) return zv::Val();
+			}
+			if (isSuperType == PT_TRI_YES && !markers) {
+				isSubType = isSuperTypeOfValue(b, a);
+				if (UNEXPECTED(isSubType < 0)) return zv::Val();
+			}
+			if (isSubType == PT_TRI_YES) {
+				result = true;
+			} else {
+				zv::Val scope = scopeOf(templateType);
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+				zv::Val className = pt_type_call(Z_OBJ_P(scope.raw()), PT_LC("getclassname"), 0, NULL);
+				if (UNEXPECTED(className.isUndef())) return zv::Val();
+				if (!className.isNull() && isSuperType == PT_TRI_YES) {
 					if (UNEXPECTED(!zv::Ref(className.raw()).isString())) {
 						zend_type_error("phpstan_turbo: getClassName() must return ?string");
 						return zv::Val();

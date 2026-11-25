@@ -299,6 +299,29 @@ private:
 	return pt_type_result_trinary(result.raw());
 }
 
+/* BleedingEdgeToggle::isBleedingEdge(): the private static the final class
+ * returns, read through the engine's static-property path under the
+ * class's own scope (the same value the method returns, without the
+ * userland frame); false = pending exception */
+[[nodiscard]] static bool isBleedingEdge(bool &out)
+{
+	zend_class_entry *ce = pt_class(PT_CLASS_BLEEDING_EDGE_TOGGLE);
+	if (UNEXPECTED(ce == NULL)) return false;
+	auto previousScope = EG(fake_scope); /* const from PHP 8.4 */
+	EG(fake_scope) = ce;
+	zval *value = zend_read_static_property(ce, PT_LC("bleedingEdge"), 1);
+	EG(fake_scope) = previousScope;
+	if (EXPECTED(value != NULL && (Z_TYPE_P(value) == IS_TRUE || Z_TYPE_P(value) == IS_FALSE))) {
+		out = Z_TYPE_P(value) == IS_TRUE;
+		return true;
+	}
+	if (UNEXPECTED(EG(exception))) return false;
+	zv::Val result = pt_type_call_static(PT_CLASS_BLEEDING_EDGE_TOGGLE, PT_LC("isbleedingedge"), 0, NULL);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 /* UnresolvedTemplateArgumentFinder::contains($type); false = pending exception */
 [[nodiscard]] static bool containsUnresolvedTemplateArgument(zval *type, bool &out)
 {
@@ -426,14 +449,21 @@ zv::Val TemplateTypeVariance::isValidVariance(zval *templateType, zval *a, zval 
 			zend_long isSuperType = isSuperTypeOfValue(a, b);
 			if (UNEXPECTED(isSuperType < 0)) return zv::Val();
 			// invariant arguments are the same type when each is a subtype of the other;
-			// an unresolved template argument stays opaque here - it never equals its delegate
+			// an unresolved template argument stays opaque here - it never equals its delegate.
+			// Legacy array shapes are open as subtypes and closed as supertypes, so array{a: int}
+			// and array{a: int, b?: int} would be subtypes of each other without bleeding edge
 			zend_long isSubType = PT_TRI_NO;
-			bool markers = false;
+			bool equalsOnly = false;
 			if (isSuperType == PT_TRI_YES) {
-				if (UNEXPECTED(!containsUnresolvedTemplateArgument(a, markers))) return zv::Val();
-				if (!markers && UNEXPECTED(!containsUnresolvedTemplateArgument(b, markers))) return zv::Val();
+				bool bleedingEdge;
+				if (UNEXPECTED(!isBleedingEdge(bleedingEdge))) return zv::Val();
+				equalsOnly = !bleedingEdge;
 			}
-			if (isSuperType == PT_TRI_YES && !markers) {
+			if (isSuperType == PT_TRI_YES && !equalsOnly) {
+				if (UNEXPECTED(!containsUnresolvedTemplateArgument(a, equalsOnly))) return zv::Val();
+				if (!equalsOnly && UNEXPECTED(!containsUnresolvedTemplateArgument(b, equalsOnly))) return zv::Val();
+			}
+			if (isSuperType == PT_TRI_YES && !equalsOnly) {
 				isSubType = isSuperTypeOfValue(b, a);
 				if (UNEXPECTED(isSubType < 0)) return zv::Val();
 			}

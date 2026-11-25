@@ -2,6 +2,8 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
+use PHPStan\PhpDoc\TypeStringResolver;
 use PHPStan\Testing\PHPStanTestCase;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\BenevolentUnionType;
@@ -74,6 +76,33 @@ class TemplateTypeVarianceTest extends PHPStanTestCase
 			$variance->isValidVariance($templateType, $b, $a, true)->result->describe(),
 			sprintf('%s->isValidVariance(%s, %s, true)', $variance->describe(), $b->describe(VerbosityLevel::precise()), $a->describe(VerbosityLevel::precise())),
 		);
+	}
+
+	public static function dataInvariantMutualSubtypes(): iterable
+	{
+		// subtypes of each other, written differently
+		yield [true, 'array<int>|object', 'iterable<int>|object', 'Yes'];
+		yield [false, 'array<int>|object', 'iterable<int>|object', 'No'];
+
+		// legacy shapes are open as subtypes and closed as supertypes - they look
+		// like subtypes of each other in both directions
+		yield [true, 'array{required: string, optional?: string}', 'array{required: string}', 'No'];
+		yield [false, 'array{required: string, optional?: string}', 'array{required: string}', 'No'];
+	}
+
+	#[DataProvider('dataInvariantMutualSubtypes')]
+	public function testInvariantMutualSubtypes(bool $bleedingEdge, string $a, string $b, string $expected): void
+	{
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		$variance = TemplateTypeVariance::createInvariant();
+		$templateType = TemplateTypeFactory::create(TemplateTypeScope::createWithFunction('foo'), 'T', null, $variance);
+
+		BleedingEdgeToggle::withBleedingEdge($bleedingEdge, function () use ($typeStringResolver, $variance, $templateType, $a, $b, $expected): void {
+			$typeA = $typeStringResolver->resolve($a);
+			$typeB = $typeStringResolver->resolve($b);
+			$this->assertSame($expected, $variance->isValidVariance($templateType, $typeA, $typeB)->result->describe());
+			$this->assertSame($expected, $variance->isValidVariance($templateType, $typeB, $typeA)->result->describe());
+		});
 	}
 
 }

@@ -228,4 +228,9 @@ class UnsetRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/null-coalesce-assign-right-side-scope.php'], []);
 	}
 
+	public function testBug15825(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15825.php'], []);
+	}
+
 }

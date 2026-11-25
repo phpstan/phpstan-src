@@ -790,6 +790,16 @@ public:
 						}
 						zv::Val offsetValue = callType(Z_OBJ_P(constArray), PT_LC("getoffsetvaluetype"), 1, keyType);
 						if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
+						/* only one entry of the general array is written, so
+						 * the other entries keep what the key held before */
+						zend_long hasOffset = pt_type_op_trinary(Z_OBJ_P(newItemType.raw()), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, keyType);
+						if (UNEXPECTED(hasOffset < 0)) return zv::Val();
+						if (hasOffset != PT_TRI_NO) {
+							zv::Val heldValue = pt_type_op(Z_OBJ_P(newItemType.raw()), PT_OP_GET_OFFSET_VALUE_TYPE, 1, keyType);
+							if (UNEXPECTED(heldValue.isUndef())) return zv::Val();
+							offsetValue = combinator2(PT_LC("union"), heldValue.raw(), offsetValue.raw());
+							if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
+						}
 						zv::Args args{keyType, offsetValue.raw()};
 						newItemType = callType(Z_OBJ_P(newItemType.raw()), PT_LC("setexistingoffsetvaluetype"), 2, args);
 						if (UNEXPECTED(newItemType.isUndef())) return zv::Val();

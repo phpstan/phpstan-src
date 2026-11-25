@@ -494,7 +494,13 @@ class ArrayType implements Type
 				$newItemType = $this->itemType;
 				$optionalKeyTypes = [];
 				foreach ($constArray->getKeyTypes() as $i => $keyType) {
-					$newItemType = $newItemType->setExistingOffsetValueType($keyType, $constArray->getOffsetValueType($keyType));
+					$offsetValueType = $constArray->getOffsetValueType($keyType);
+					if (!$newItemType->hasOffsetValueType($keyType)->no()) {
+						// Only one entry of the general array is written, so the
+						// other entries keep what the key held before.
+						$offsetValueType = TypeCombinator::union($newItemType->getOffsetValueType($keyType), $offsetValueType);
+					}
+					$newItemType = $newItemType->setExistingOffsetValueType($keyType, $offsetValueType);
 
 					if (!$constArray->isOptionalKey($i)) {
 						continue;
